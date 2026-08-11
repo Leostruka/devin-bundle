@@ -85,7 +85,7 @@ On top of whatever the repo documents, the Standards axis always carries the **s
 
 **Option A: Single sub-agent (lighter weight)**
 
-Dispatch a `general-purpose` subagent using the template at [code-reviewer.md](code-reviewer.md), enhanced with the two-axis methodology. Fill placeholders:
+Dispatch a `subagent_general` subagent using the template at [code-reviewer.md](code-reviewer.md), enhanced with the two-axis methodology. Fill placeholders:
 - `{DESCRIPTION}` — brief summary of what was built
 - `{PLAN_OR_REQUIREMENTS}` — what it should do (spec path, issue text, or requirements)
 - `{BASE_SHA}` — starting commit

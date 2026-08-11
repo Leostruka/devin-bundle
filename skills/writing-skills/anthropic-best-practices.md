@@ -2,9 +2,11 @@
 
 > Learn how to write effective Skills that agents can discover and use successfully.
 
+**Note for Devin CLI users:** This document was originally written for Claude Code/Anthropic skills. The concepts (concise prompts, frontmatter, testing) apply directly to Devin CLI skills, but paths and tool names differ: Devin CLI uses `~/.config/devin/skills/` or `%APPDATA%\devin\skills\`, `/skill-name` invocation, `run_subagent` for subagents, and `AGENTS.md` for global rules. Use this guide for authoring principles, and Devin CLI's official docs for tool-specific syntax.
+
 Good Skills are concise, well-structured, and tested with real usage. This guide provides practical authoring decisions to help you write Skills that agents can discover and use effectively.
 
-For conceptual background on how Skills work, see the [Skills overview](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview).
+For conceptual background on how Skills work, see the Devin CLI skills documentation.
 
 ## Core principles
 

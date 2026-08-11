@@ -7,12 +7,9 @@ new breakage. It is not a fresh review — the full review already happened.
 **Purpose:** Verify each finding from the previous review was addressed, and
 that the fix itself broke nothing.
 
+Use `run_subagent` with `profile: "subagent_general"` and `task:` the following prompt (substitute placeholders before dispatching):
+
 ```
-Subagent (general-purpose):
-  description: "Re-review Task N fix round R"
-  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
-  prompt: |
     You are re-reviewing one task's fix round. A previous review produced
     findings; an implementer has attempted to fix them. Your job is to
     verdict each finding and inspect the fix diff — nothing else.
