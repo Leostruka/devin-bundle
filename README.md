@@ -10,6 +10,8 @@ e restaura tudo no destino correto via um único comando.
 devin-bundle/
 ├── AGENTS.md          # regras consolidadas (4 seções, Devin-focused)
 ├── manifest.json      # lista das skills + origem + propósito
+├── export.ps1         # exportador Windows (PowerShell)
+├── export.sh          # exportador Linux/WSL/macOS (bash)
 ├── install.ps1        # instalador Windows (PowerShell)
 ├── install.sh         # instalador Linux/WSL/macOS (bash)
 ├── README.md          # este arquivo
@@ -87,12 +89,41 @@ cd devin-bundle
 ./install.sh --force   # ou install.ps1 -Force no Windows
 ```
 
+## Exportar (regenerar o bundle da máquina fonte)
+
+Depois de mudar skills/regras no dia a dia, regenere o bundle para que ele reflita o estado atual:
+
+### Windows (PowerShell)
+```powershell
+cd devin-bundle
+.\export.ps1                    # copia skills + regras para o bundle
+.\export.ps1 -DryRun            # só mostra o que faria
+.\export.ps1 -Commit -Push      # exporta + commita + pusha em um passo
+```
+
+### Linux / WSL / macOS (bash)
+```bash
+cd devin-bundle
+chmod +x export.sh
+./export.sh                     # copia skills + regras para o bundle
+./export.sh --dry-run           # só mostra
+./export.sh --commit --push     # exporta + commita + pusha
+```
+
+O que o exportador faz:
+1. Lê `manifest.json` para saber quais skills exportar e onde encontrá-las.
+2. Resolve `%APPDATA%`, `%USERPROFILE%`, `~` nos `original_path`.
+3. Copia cada skill do local original para `skills/<nome>/` (sobrescreve se mudou).
+4. Copia o `AGENTS.md` live (ou `rules.md` fallback) para `bundle/AGENTS.md`.
+5. Compara hashes: só copia se o conteúdo mudou (idempotente).
+6. Com `-Commit`/`--commit`: faz `git add -A && git commit` com mensagem datada.
+7. Com `-Push`/`--push`: faz `git push` depois do commit.
+
 ## Atualizar o bundle
 
 Para regenerar a partir da máquina fonte depois de mudar skills/regras:
-1. Edite os skills em `skills/` diretamente, ou substitua as pastas.
-2. Edite `AGENTS.md` se as regras mudarem.
-3. Atualize `manifest.json` se adicionou/removeu skills.
-4. `git add -A && git commit -m "update bundle" && git push`
+1. Rode `.\export.ps1` (ou `./export.sh`) para sincronizar o bundle com a máquina atual.
+2. Edite `manifest.json` se adicionou/removeu skills (adicione a entrada com `name` + `original_path`).
+3. `.\export.ps1 -Commit -Push` para commitar e pushar em um passo.
 
 O instalador é idempotente — rodar de novo só atualiza o que mudou (com `-Force`).
