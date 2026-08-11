@@ -9,13 +9,13 @@ e restaura tudo no destino correto via um único comando.
 ```
 devin-bundle/
 ├── AGENTS.md          # regras consolidadas (7 seções, Devin-focused)
-├── manifest.json      # 35 skills + origem + propósito
+├── manifest.json      # 34 skills + origem + propósito
 ├── export.ps1         # exportador Windows (PowerShell)
 ├── export.sh          # exportador Linux/WSL/macOS (bash)
 ├── install.ps1        # instalador Windows (PowerShell)
 ├── install.sh         # instalador Linux/WSL/macOS (bash)
 ├── README.md          # este arquivo
-└── skills/            # 35 skills
+└── skills/            # 34 skills
     │
     │  === Meta / discovery ===
     ├── tool-and-skill-discovery/   # achar skill certa pra qualquer tarefa
@@ -64,9 +64,6 @@ devin-bundle/
     ├── wait-what/                  # re-explicar mensagem que não fez sentido
     ├── to-questionnaire/           # decisão -> questionnaire markdown
     ├── wizard/                     # gerar bash wizard p/ procedimentos manuais
-    │
-    │  === UI animation ===
-    ├── animation-physics/          # matemática p/ animações: geometria, timing, z-index, performance
     │
     │  === Testing / CI ===
     ├── mutation-testing/           # ADAPTADO: mutation testing p/ encontrar gaps de teste
