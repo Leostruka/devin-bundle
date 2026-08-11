@@ -180,6 +180,11 @@
       "name": "debug-ci-failures",
       "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
       "purpose": "Debug CI build failures systematically. CI-agnostic: works with GitHub Actions, CircleCI, GitLab CI, Jenkins, or any CI. Integrates with systematic-debugging and diagnosing-bugs."
+    },
+    {
+      "name": "animation-physics",
+      "source": "github:obra/superpowers",
+      "purpose": "Mathematical abstraction for UI motion. Decomposes animation problems into coordinate geometry, timing tables, z-index stacking analysis, and performance classification. Framework-agnostic (GSAP examples only)."
     }
   ]
 }
