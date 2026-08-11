@@ -1,7 +1,7 @@
 {
   "name": "devin-bundle",
-  "version": "1.0.0",
-  "description": "Devin-focused export bundle: skills I use + consolidated rules. Cross-platform installer.",
+  "version": "2.0.0",
+  "description": "Devin-focused export bundle: skills I use + consolidated rules. Cross-platform installer. Absorbed mattpocock/skills engineering + productivity sets with unified overlapping skills.",
   "rules": {
     "source": "AGENTS.md",
     "targets": {
@@ -14,86 +14,162 @@
     {
       "name": "tool-and-skill-discovery",
       "source": "builtin:devin",
-      "original_path": "%APPDATA%/devin/skills/tool-and-skill-discovery",
       "purpose": "Meta-skill: discover and invoke the right skill/tool for any task"
     },
     {
       "name": "graphify",
       "source": "github:ar9av/obsidian-wiki",
-      "original_path": "~/.claude/skills/graphify",
       "purpose": "Turn any input into a persistent knowledge graph; query with /graphify"
     },
     {
       "name": "git-helper",
       "source": "github:joshuadavidthomas/opencode-agent-skills",
-      "original_path": "~/.claude/skills/git-helper",
       "purpose": "Git workflow assistance, branch management, commit messages"
     },
     {
       "name": "gh",
       "source": "github:cli/cli",
-      "original_path": "~/.copilot/skills/gh",
       "purpose": "Patterns for invoking the GitHub CLI (gh) from agents"
     },
     {
       "name": "find-skills",
       "source": "github:vercel-labs/skills",
-      "original_path": "~/.claude/skills/find-skills",
       "purpose": "Discover and install agent skills when none match"
     },
     {
       "name": "self-extend",
       "source": "github:obra/superpowers",
-      "original_path": "~/.agents/skills/self-extend",
       "purpose": "Self-iteration: create tools, hooks, and skills to evolve capabilities"
-    },
-    {
-      "name": "brainstorming",
-      "source": "github:obra/superpowers",
-      "original_path": "~/.claude/skills/brainstorming",
-      "purpose": "Explore user intent and design before any creative/feature work"
     },
     {
       "name": "systematic-debugging",
       "source": "github:obra/superpowers",
-      "original_path": "~/.claude/skills/systematic-debugging",
       "purpose": "Structured debugging: reproduce, trace, isolate root cause before fixing"
+    },
+    {
+      "name": "using-superpowers",
+      "source": "github:obra/superpowers",
+      "purpose": "Establishes how to find and use skills; skill invocation before any response"
     },
     {
       "name": "writing-plans",
       "source": "github:obra/superpowers",
-      "original_path": "~/.claude/skills/writing-plans",
       "purpose": "Write a plan from a spec before touching code"
-    },
-    {
-      "name": "requesting-code-review",
-      "source": "github:obra/superpowers",
-      "original_path": "~/.claude/skills/requesting-code-review",
-      "purpose": "Verify work meets requirements before merging"
     },
     {
       "name": "context7",
       "source": "github:intellectronica/agent-skills",
-      "original_path": "~/.claude/skills/context7",
       "purpose": "Retrieve up-to-date library/framework documentation via Context7 API"
     },
     {
       "name": "memory-bridge",
       "source": "github:ar9av/obsidian-wiki",
-      "original_path": "~/.claude/skills/memory-bridge",
       "purpose": "Browse and compare wiki knowledge by which AI tool produced it"
     },
     {
-      "name": "using-superpowers",
-      "source": "github:obra/superpowers",
-      "original_path": "~/.claude/skills/using-superpowers",
-      "purpose": "Establishes how to find and use skills; skill invocation before any response"
+      "name": "tdd",
+      "source": "unified:obra/superpowers + mattpocock/skills",
+      "purpose": "Test-driven development. Unified: iron-law discipline (test first, watch fail, minimal code) + seams-first operational approach (agree test boundaries, vertical slices, anti-patterns). Decision logic for when to use which."
     },
     {
-      "name": "test-driven-development",
-      "source": "github:obra/superpowers",
-      "original_path": "~/.claude/skills/test-driven-development",
-      "purpose": "TDD: write failing test, implement, verify pass"
+      "name": "code-review",
+      "source": "unified:obra/superpowers + mattpocock/skills",
+      "purpose": "Review code changes on two axes (Standards vs Spec) with parallel sub-agents. Unified: subagent-dispatch workflow + two-axis methodology + Fowler code smell baseline. Decision logic for when to use which."
+    },
+    {
+      "name": "grilling",
+      "source": "unified:obra/superpowers + mattpocock/skills",
+      "purpose": "Explore and stress-test ideas before implementation. Unified: collaborative brainstorming (one question at a time, visual companion, design doc) + relentless grilling (design tree, frontier rounds, numbered questions). Decision logic for when to use which."
+    },
+    {
+      "name": "diagnosing-bugs",
+      "source": "github:mattpocock/skills",
+      "purpose": "Disciplined diagnosis loop: build feedback loop that goes red -> minimise -> hypothesise -> instrument -> fix -> regression-test"
+    },
+    {
+      "name": "research",
+      "source": "github:mattpocock/skills",
+      "purpose": "Investigate a question against high-trust primary sources, capture findings as cited Markdown"
+    },
+    {
+      "name": "prototype",
+      "source": "github:mattpocock/skills",
+      "purpose": "Build a throwaway prototype to answer a design question: single HTML file or toggleable UI variations"
+    },
+    {
+      "name": "domain-modeling",
+      "source": "github:mattpocock/skills",
+      "purpose": "Domain modeling with CONTEXT.md and ADRs"
+    },
+    {
+      "name": "codebase-design",
+      "source": "github:mattpocock/skills",
+      "purpose": "Codebase design vocabulary: modules, interfaces, depth, seams, adapters, leverage, locality"
+    },
+    {
+      "name": "improve-codebase-architecture",
+      "source": "github:mattpocock/skills",
+      "purpose": "Scan codebase for deepening opportunities, present as visual HTML report, then grill through chosen one"
+    },
+    {
+      "name": "resolving-merge-conflicts",
+      "source": "github:mattpocock/skills",
+      "purpose": "Resolve merge conflicts systematically"
+    },
+    {
+      "name": "to-spec",
+      "source": "github:mattpocock/skills",
+      "purpose": "Turn current conversation into a spec and publish to issue tracker"
+    },
+    {
+      "name": "to-tickets",
+      "source": "github:mattpocock/skills",
+      "purpose": "Break any plan, spec, or conversation into tracer-bullet tickets with blocking edges"
+    },
+    {
+      "name": "wayfinder",
+      "source": "github:mattpocock/skills",
+      "purpose": "Plan huge work as a shared map of decision tickets on the issue tracker, resolved one at a time"
+    },
+    {
+      "name": "implement",
+      "source": "github:mattpocock/skills",
+      "purpose": "Build work described by spec or tickets, driving /tdd at pre-agreed seams, closing with /code-review"
+    },
+    {
+      "name": "grill-with-docs",
+      "source": "github:mattpocock/skills",
+      "purpose": "Grilling session that also builds project domain model, sharpening terminology and updating CONTEXT.md and ADRs"
+    },
+    {
+      "name": "wizard",
+      "source": "github:mattpocock/skills",
+      "purpose": "Generate interactive bash wizard that walks a human through manual steps (infra provisioning, credentials, CI secrets)"
+    },
+    {
+      "name": "handoff",
+      "source": "github:mattpocock/skills",
+      "purpose": "Compact current conversation into a handoff document so another agent can continue the work"
+    },
+    {
+      "name": "teach",
+      "source": "github:mattpocock/skills",
+      "purpose": "Teach user a new skill or concept over multiple sessions, using current directory as stateful teaching workspace"
+    },
+    {
+      "name": "writing-for-agents",
+      "source": "github:mattpocock/skills",
+      "purpose": "Writing documents for agents: skills, AGENTS.md/CLAUDE.md, and any doc an agent reaches by a pointer"
+    },
+    {
+      "name": "wait-what",
+      "source": "github:mattpocock/skills",
+      "purpose": "Re-pitch a message that didn't land, in plain English, using CONTEXT.md vocabulary"
+    },
+    {
+      "name": "to-questionnaire",
+      "source": "github:mattpocock/skills",
+      "purpose": "Turn a decision you can't answer alone into a Markdown questionnaire for the person who can"
     }
   ]
 }

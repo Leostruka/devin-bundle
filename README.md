@@ -8,28 +8,62 @@ e restaura tudo no destino correto via um único comando.
 
 ```
 devin-bundle/
-├── AGENTS.md          # regras consolidadas (4 seções, Devin-focused)
-├── manifest.json      # lista das skills + origem + propósito
+├── AGENTS.md          # regras consolidadas (5 seções, Devin-focused)
+├── manifest.json      # 32 skills + origem + propósito
 ├── export.ps1         # exportador Windows (PowerShell)
 ├── export.sh          # exportador Linux/WSL/macOS (bash)
 ├── install.ps1        # instalador Windows (PowerShell)
 ├── install.sh         # instalador Linux/WSL/macOS (bash)
 ├── README.md          # este arquivo
-└── skills/            # 14 skills copiadas in-loco
-    ├── brainstorming/
-    ├── context7/
-    ├── find-skills/
-    ├── gh/
-    ├── git-helper/
-    ├── graphify/
-    ├── memory-bridge/
-    ├── requesting-code-review/
-    ├── self-extend/
-    ├── systematic-debugging/
-    ├── test-driven-development/
-    ├── tool-and-skill-discovery/
-    ├── using-superpowers/
-    └── writing-plans/
+└── skills/            # 32 skills
+    │
+    │  === Meta / discovery ===
+    ├── tool-and-skill-discovery/   # achar skill certa pra qualquer tarefa
+    ├── find-skills/                # descobrir e instalar skills novas
+    ├── self-extend/                # auto-evoluir: criar tools, hooks, skills
+    ├── using-superpowers/          # invocar skills antes de qualquer resposta
+    │
+    │  === Git / GitHub ===
+    ├── git-helper/                 # workflow git, branches, commits
+    ├── gh/                         # padrões pro GitHub CLI
+    ├── resolving-merge-conflicts/  # resolver merge conflicts
+    │
+    │  === Design / planning ===
+    ├── grilling/                   # UNIFICADO: brainstorming + grilling
+    ├── writing-plans/              # plano a partir de spec
+    ├── to-spec/                    # conversa -> spec -> issue tracker
+    ├── to-tickets/                 # plan/spec -> tracer-bullet tickets
+    ├── wayfinder/                  # planejar trabalho enorme como decision tickets
+    ├── domain-modeling/            # domain model com CONTEXT.md + ADRs
+    ├── codebase-design/            # vocabulário de design de codebase
+    ├── grill-with-docs/            # grilling + domain model building
+    │
+    │  === Implementation ===
+    ├── tdd/                        # UNIFICADO: iron-law + seams-first TDD
+    ├── implement/                  # build from spec/tickets com TDD + code-review
+    ├── prototype/                  # protótipo descartável (HTML) p/ design question
+    ├── code-review/                # UNIFICADO: subagent dispatch + two-axis review
+    │
+    │  === Debugging / research ===
+    ├── systematic-debugging/       # reproduzir, rastrear, isolar root cause
+    ├── diagnosing-bugs/            # loop de diagnóstico: red -> minimise -> fix
+    ├── research/                   # investigar com fontes primárias citadas
+    │
+    │  === Architecture ===
+    ├── improve-codebase-architecture/  # scan codebase + relatório HTML
+    │
+    │  === Knowledge / docs ===
+    ├── graphify/                   # knowledge graph de qualquer input
+    ├── memory-bridge/              # comparar wiki knowledge entre AI tools
+    ├── context7/                   # docs atualizadas de libs/frameworks
+    ├── writing-for-agents/         # escrever docs para agents (skills, AGENTS.md)
+    │
+    │  === Workflow / UX ===
+    ├── handoff/                    # compactar conversa para outro agent
+    ├── teach/                      # ensinar skill/conceito multi-sessão
+    ├── wait-what/                  # re-explicar mensagem que não fez sentido
+    ├── to-questionnaire/           # decisão -> questionnaire markdown
+    └── wizard/                     # gerar bash wizard p/ procedimentos manuais
 ```
 
 ## Regras consolidadas (AGENTS.md)
@@ -37,7 +71,18 @@ devin-bundle/
 1. **No AI signatures** — nunca citar/assinar Devin em commits, PRs, releases, docs, código.
 2. **Skill self-maintenance** — skills são vivas: atualizar, criar, podar. É assim que o Devin vira especialista em qualquer coisa.
 3. **Skill/tool discovery** — descobrir e invocar skills no início de tarefas não-triviais.
-4. **graphify trigger** — `/graphify` ativa o skill graphify antes de tudo.
+4. **Functional programming and clean code** — FCIS, pure functions, immutability, pipeline composition, condense and reduce.
+5. **graphify trigger** — `/graphify` ativa o skill graphify antes de tudo.
+
+## Skills unificadas (3)
+
+Três pares de skills que sobrepunham entre obra/superpowers e mattpocock/skills foram unificadas em uma só, com lógica de decisão para quando usar qual abordagem:
+
+| Skill unificada | Fonte A (obra) | Fonte B (matt) | Lógica de decisão |
+|---|---|---|---|
+| `tdd` | test-driven-development (iron law, red-green-refactor, rationalizations) | tdd (seams, vertical slices, anti-patterns) | Seams-first para decidir ONDE testar; iron law para COMO testar. Ambos na implementação real. |
+| `code-review` | requesting-code-review (subagent dispatch, template, when to request) | code-review (two-axis Standards vs Spec, code smells baseline, parallel sub-agents) | Subagent dispatch para preservar contexto; two-axis para metodologia. Ambos no review real. |
+| `grilling` | brainstorming (one question at a time, visual companion, design doc, writing-plans) | grilling (design tree, frontier rounds, numbered questions, sub-agents for facts) | Brainstorm para explorar ideia fuzzy; grill para stress-testar design. Ambos em sequência: brainstorm -> grill -> spec. |
 
 ## Instalar
 
