@@ -1,7 +1,7 @@
 {
   "name": "devin-bundle",
   "version": "2.0.0",
-  "description": "Devin-focused export bundle: skills I use + consolidated rules. Cross-platform installer. Absorbed mattpocock/skills engineering + productivity sets with unified overlapping skills.",
+  "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
     "targets": {
@@ -14,217 +14,260 @@
     {
       "name": "tool-and-skill-discovery",
       "source": "builtin:devin",
-      "purpose": "Meta-skill: discover and invoke the right skill/tool for any task"
+      "purpose": "Meta-skill: discover and invoke the right skill/tool for any task",
+      "original_path": "%APPDATA%\\devin\\skills\\tool-and-skill-discovery"
     },
     {
       "name": "graphify",
-      "source": "github:ar9av/obsidian-wiki",
-      "purpose": "Turn any input into a persistent knowledge graph; query with /graphify"
+      "source": "devin-bundle",
+      "purpose": "Turn any input into a persistent knowledge graph; query with /graphify",
+      "original_path": "%APPDATA%\\devin\\skills\\graphify"
     },
     {
       "name": "git-helper",
-      "source": "github:joshuadavidthomas/opencode-agent-skills",
-      "purpose": "Git workflow assistance, branch management, commit messages"
+      "source": "devin-bundle",
+      "purpose": "Git workflow assistance, branch management, commit messages",
+      "original_path": "%APPDATA%\\devin\\skills\\git-helper"
     },
     {
       "name": "gh",
-      "source": "github:cli/cli",
-      "purpose": "Patterns for invoking the GitHub CLI (gh) from agents"
+      "source": "devin-bundle",
+      "purpose": "Patterns for invoking the GitHub CLI (gh) from agents",
+      "original_path": "%APPDATA%\\devin\\skills\\gh"
     },
     {
       "name": "find-skills",
-      "source": "github:vercel-labs/skills",
-      "purpose": "Discover and install agent skills when none match"
+      "source": "devin-bundle",
+      "purpose": "Discover and install agent skills when none match",
+      "original_path": "%APPDATA%\\devin\\skills\\find-skills"
     },
     {
       "name": "self-extend",
-      "source": "github:obra/superpowers",
-      "purpose": "Self-iteration: create tools, hooks, and skills to evolve capabilities"
+      "source": "devin-bundle",
+      "purpose": "Self-iteration: create tools, hooks, and skills to evolve capabilities",
+      "original_path": "%APPDATA%\\devin\\skills\\self-extend"
     },
     {
       "name": "systematic-debugging",
-      "source": "github:obra/superpowers",
-      "purpose": "Structured debugging: reproduce, trace, isolate root cause before fixing"
+      "source": "devin-bundle",
+      "purpose": "Structured debugging: reproduce, trace, isolate root cause before fixing",
+      "original_path": "%APPDATA%\\devin\\skills\\systematic-debugging"
     },
     {
-      "name": "using-superpowers",
-      "source": "github:obra/superpowers",
-      "purpose": "Establishes how to find and use skills; skill invocation before any response"
+      "name": "using-skills",
+      "source": "devin-bundle",
+      "purpose": "Establishes how to find and use skills; skill invocation before any response",
+      "original_path": "%APPDATA%\\devin\\skills\\using-skills"
     },
     {
       "name": "writing-plans",
-      "source": "github:obra/superpowers",
-      "purpose": "Write a plan from a spec before touching code"
+      "source": "devin-bundle",
+      "purpose": "Write a plan from a spec before touching code",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-plans"
     },
     {
       "name": "context7",
-      "source": "github:intellectronica/agent-skills",
-      "purpose": "Retrieve up-to-date library/framework documentation via Context7 API"
+      "source": "devin-bundle",
+      "purpose": "Retrieve up-to-date library/framework documentation via Context7 API",
+      "original_path": "%APPDATA%\\devin\\skills\\context7"
     },
     {
       "name": "memory-bridge",
-      "source": "github:ar9av/obsidian-wiki",
-      "purpose": "Browse and compare wiki knowledge by which AI tool produced it"
+      "source": "devin-bundle",
+      "purpose": "Browse and compare wiki knowledge by which AI tool produced it",
+      "original_path": "%APPDATA%\\devin\\skills\\memory-bridge"
     },
     {
       "name": "tdd",
-      "source": "unified:obra/superpowers + mattpocock/skills",
-      "purpose": "Test-driven development. Unified: iron-law discipline (test first, watch fail, minimal code) + seams-first operational approach (agree test boundaries, vertical slices, anti-patterns). Decision logic for when to use which."
+      "source": "devin-bundle",
+      "purpose": "Test-driven development. Unified: iron-law discipline (test first, watch fail, minimal code) + seams-first operational approach (agree test boundaries, vertical slices, anti-patterns). Decision logic for when to use which.",
+      "original_path": "%APPDATA%\\devin\\skills\\tdd"
     },
     {
       "name": "code-review",
-      "source": "unified:obra/superpowers + mattpocock/skills",
-      "purpose": "Review code changes on two axes (Standards vs Spec) with parallel sub-agents. Unified: subagent-dispatch workflow + two-axis methodology + Fowler code smell baseline. Decision logic for when to use which."
+      "source": "devin-bundle",
+      "purpose": "Review code changes on two axes (Standards vs Spec) with parallel sub-agents. Unified: subagent-dispatch workflow + two-axis methodology + Fowler code smell baseline. Decision logic for when to use which.",
+      "original_path": "%APPDATA%\\devin\\skills\\code-review"
     },
     {
       "name": "grilling",
-      "source": "unified:obra/superpowers + mattpocock/skills",
-      "purpose": "Explore and stress-test ideas before implementation. Unified: collaborative brainstorming (one question at a time, visual companion, design doc) + relentless grilling (design tree, frontier rounds, numbered questions). Decision logic for when to use which."
+      "source": "devin-bundle",
+      "purpose": "Explore and stress-test ideas before implementation. Unified: collaborative brainstorming (one question at a time, visual companion, design doc) + relentless grilling (design tree, frontier rounds, numbered questions). Decision logic for when to use which.",
+      "original_path": "%APPDATA%\\devin\\skills\\grilling"
     },
     {
       "name": "diagnosing-bugs",
-      "source": "github:mattpocock/skills",
-      "purpose": "Disciplined diagnosis loop: build feedback loop that goes red -> minimise -> hypothesise -> instrument -> fix -> regression-test"
+      "source": "devin-bundle",
+      "purpose": "Disciplined diagnosis loop: build feedback loop that goes red -> minimise -> hypothesise -> instrument -> fix -> regression-test",
+      "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs"
     },
     {
       "name": "research",
-      "source": "github:mattpocock/skills",
-      "purpose": "Investigate a question against high-trust primary sources, capture findings as cited Markdown"
+      "source": "devin-bundle",
+      "purpose": "Investigate a question against high-trust primary sources, capture findings as cited Markdown",
+      "original_path": "%APPDATA%\\devin\\skills\\research"
     },
     {
       "name": "prototype",
-      "source": "github:mattpocock/skills",
-      "purpose": "Build a throwaway prototype to answer a design question: single HTML file or toggleable UI variations"
+      "source": "devin-bundle",
+      "purpose": "Build a throwaway prototype to answer a design question: single HTML file or toggleable UI variations",
+      "original_path": "%APPDATA%\\devin\\skills\\prototype"
     },
     {
       "name": "domain-modeling",
-      "source": "github:mattpocock/skills",
-      "purpose": "Domain modeling with CONTEXT.md and ADRs"
+      "source": "devin-bundle",
+      "purpose": "Domain modeling with CONTEXT.md and ADRs",
+      "original_path": "%APPDATA%\\devin\\skills\\domain-modeling"
     },
     {
       "name": "codebase-design",
-      "source": "github:mattpocock/skills",
-      "purpose": "Codebase design vocabulary: modules, interfaces, depth, seams, adapters, leverage, locality"
+      "source": "devin-bundle",
+      "purpose": "Codebase design vocabulary: modules, interfaces, depth, seams, adapters, leverage, locality",
+      "original_path": "%APPDATA%\\devin\\skills\\codebase-design"
     },
     {
       "name": "improve-codebase-architecture",
-      "source": "github:mattpocock/skills",
-      "purpose": "Scan codebase for deepening opportunities, present as visual HTML report, then grill through chosen one"
+      "source": "devin-bundle",
+      "purpose": "Scan codebase for deepening opportunities, present as visual HTML report, then grill through chosen one",
+      "original_path": "%APPDATA%\\devin\\skills\\improve-codebase-architecture"
     },
     {
       "name": "resolving-merge-conflicts",
-      "source": "github:mattpocock/skills",
-      "purpose": "Resolve merge conflicts systematically"
+      "source": "devin-bundle",
+      "purpose": "Resolve merge conflicts systematically",
+      "original_path": "%APPDATA%\\devin\\skills\\resolving-merge-conflicts"
     },
     {
       "name": "to-spec",
-      "source": "github:mattpocock/skills",
-      "purpose": "Turn current conversation into a spec and publish to issue tracker"
+      "source": "devin-bundle",
+      "purpose": "Turn current conversation into a spec and publish to issue tracker",
+      "original_path": "%APPDATA%\\devin\\skills\\to-spec"
     },
     {
       "name": "to-tickets",
-      "source": "github:mattpocock/skills",
-      "purpose": "Break any plan, spec, or conversation into tracer-bullet tickets with blocking edges"
+      "source": "devin-bundle",
+      "purpose": "Break any plan, spec, or conversation into tracer-bullet tickets with blocking edges",
+      "original_path": "%APPDATA%\\devin\\skills\\to-tickets"
     },
     {
       "name": "wayfinder",
-      "source": "github:mattpocock/skills",
-      "purpose": "Plan huge work as a shared map of decision tickets on the issue tracker, resolved one at a time"
+      "source": "devin-bundle",
+      "purpose": "Plan huge work as a shared map of decision tickets on the issue tracker, resolved one at a time",
+      "original_path": "%APPDATA%\\devin\\skills\\wayfinder"
     },
     {
       "name": "implement",
-      "source": "github:mattpocock/skills",
-      "purpose": "Build work described by spec or tickets, driving /tdd at pre-agreed seams, closing with /code-review"
+      "source": "devin-bundle",
+      "purpose": "Build work described by spec or tickets, driving /tdd at pre-agreed seams, closing with /code-review",
+      "original_path": "%APPDATA%\\devin\\skills\\implement"
     },
     {
       "name": "grill-with-docs",
-      "source": "github:mattpocock/skills",
-      "purpose": "Grilling session that also builds project domain model, sharpening terminology and updating CONTEXT.md and ADRs"
+      "source": "devin-bundle",
+      "purpose": "Grilling session that also builds project domain model, sharpening terminology and updating CONTEXT.md and ADRs",
+      "original_path": "%APPDATA%\\devin\\skills\\grill-with-docs"
     },
     {
       "name": "wizard",
-      "source": "github:mattpocock/skills",
-      "purpose": "Generate interactive bash wizard that walks a human through manual steps (infra provisioning, credentials, CI secrets)"
+      "source": "devin-bundle",
+      "purpose": "Generate interactive bash wizard that walks a human through manual steps (infra provisioning, credentials, CI secrets)",
+      "original_path": "%APPDATA%\\devin\\skills\\wizard"
     },
     {
       "name": "handoff",
-      "source": "github:mattpocock/skills",
-      "purpose": "Compact current conversation into a handoff document so another agent can continue the work"
+      "source": "devin-bundle",
+      "purpose": "Compact current conversation into a handoff document so another agent can continue the work",
+      "original_path": "%APPDATA%\\devin\\skills\\handoff"
     },
     {
       "name": "teach",
-      "source": "github:mattpocock/skills",
-      "purpose": "Teach user a new skill or concept over multiple sessions, using current directory as stateful teaching workspace"
+      "source": "devin-bundle",
+      "purpose": "Teach user a new skill or concept over multiple sessions, using current directory as stateful teaching workspace",
+      "original_path": "%APPDATA%\\devin\\skills\\teach"
     },
     {
       "name": "writing-for-agents",
-      "source": "github:mattpocock/skills",
-      "purpose": "Writing documents for agents: skills, AGENTS.md/CLAUDE.md, and any doc an agent reaches by a pointer"
+      "source": "devin-bundle",
+      "purpose": "Writing documents for agents: skills, AGENTS.md, and any doc an agent reaches by a pointer",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-for-agents"
     },
     {
       "name": "wait-what",
-      "source": "github:mattpocock/skills",
-      "purpose": "Re-pitch a message that didn't land, in plain English, using CONTEXT.md vocabulary"
+      "source": "devin-bundle",
+      "purpose": "Re-pitch a message that didn't land, in plain English, using CONTEXT.md vocabulary",
+      "original_path": "%APPDATA%\\devin\\skills\\wait-what"
     },
     {
       "name": "to-questionnaire",
-      "source": "github:mattpocock/skills",
-      "purpose": "Turn a decision you can't answer alone into a Markdown questionnaire for the person who can"
+      "source": "devin-bundle",
+      "purpose": "Turn a decision you can't answer alone into a Markdown questionnaire for the person who can",
+      "original_path": "%APPDATA%\\devin\\skills\\to-questionnaire"
     },
     {
       "name": "mutation-testing",
       "source": "adapted:CircleCI-Public/chunk-cli (chunk-testing-gaps)",
-      "purpose": "Find gaps in test coverage via mutation testing. 4-stage process: discovery, validation (local first, CI optional), production cross-reference (optional), risk assessment. CI-agnostic."
+      "purpose": "Find gaps in test coverage via mutation testing. 4-stage process: discovery, validation (local first, CI optional), production cross-reference (optional), risk assessment. CI-agnostic.",
+      "original_path": "%APPDATA%\\devin\\skills\\mutation-testing"
     },
     {
       "name": "debug-ci-failures",
       "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
-      "purpose": "Debug CI build failures systematically. CI-agnostic: works with GitHub Actions, CircleCI, GitLab CI, Jenkins, or any CI. Integrates with systematic-debugging and diagnosing-bugs."
+      "purpose": "Debug CI build failures systematically. CI-agnostic: works with GitHub Actions, CircleCI, GitLab CI, Jenkins, or any CI. Integrates with systematic-debugging and diagnosing-bugs.",
+      "original_path": "%APPDATA%\\devin\\skills\\debug-ci-failures"
     },
     {
       "name": "subagent-driven-development",
-      "source": "github:obra/superpowers",
-      "purpose": "Execute implementation plans by dispatching a fresh implementer subagent per task, task review after each (spec + quality), broad final review. Coordinator never implements directly — preserves context for coordination. Has implementer/task-reviewer/re-review prompt templates + scripts."
+      "source": "devin-bundle",
+      "purpose": "Execute implementation plans by dispatching a fresh implementer subagent per task, task review after each (spec + quality), broad final review. Coordinator never implements directly — preserves context for coordination. Has implementer/task-reviewer/re-review prompt templates + scripts.",
+      "original_path": "%APPDATA%\\devin\\skills\\subagent-driven-development"
     },
     {
       "name": "obsidian-project-docs",
       "source": "created:Devin bundle",
-      "purpose": "Document software projects in Obsidian as SRS/ISO-style engineering wiki. Scaffolds notes, Bases for modules/functions/dependencies/config, modern C4/DDD/data-model Canvas diagrams, and a Daily/Logbook for running work history. Integrates with graphify, domain-modeling, and codebase-design."
+      "purpose": "Document software projects in Obsidian as SRS/ISO-style engineering wiki. Scaffolds notes, Bases for modules/functions/dependencies/config, modern C4/DDD/data-model Canvas diagrams, and a Daily/Logbook for running work history. Integrates with graphify, domain-modeling, and codebase-design.",
+      "original_path": "%APPDATA%\\devin\\skills\\obsidian-project-docs"
     },
     {
       "name": "dispatching-parallel-agents",
-      "source": "github:obra/superpowers",
-      "purpose": "Dispatch one subagent per independent problem domain (e.g. 3 test files failing with different root causes). Parallel dispatch in a single message. Review and integrate when all return."
+      "source": "devin-bundle",
+      "purpose": "Dispatch one subagent per independent problem domain (e.g. 3 test files failing with different root causes). Parallel dispatch in a single message. Review and integrate when all return.",
+      "original_path": "%APPDATA%\\devin\\skills\\dispatching-parallel-agents"
     },
     {
       "name": "executing-plans",
-      "source": "github:obra/superpowers",
-      "purpose": "Fallback for executing implementation plans when subagents are NOT available. Load plan, review critically, execute tasks in sequence with checkpoints, finish with finishing-a-development-branch."
+      "source": "devin-bundle",
+      "purpose": "Fallback for executing implementation plans when subagents are NOT available. Load plan, review critically, execute tasks in sequence with checkpoints, finish with finishing-a-development-branch.",
+      "original_path": "%APPDATA%\\devin\\skills\\executing-plans"
     },
     {
       "name": "finishing-a-development-branch",
-      "source": "github:obra/superpowers",
-      "purpose": "Final step of plan execution: verify all tests pass, present options (merge, PR, keep branch), execute chosen option. Used by subagent-driven-development and executing-plans."
+      "source": "devin-bundle",
+      "purpose": "Final step of plan execution: verify all tests pass, present options (merge, PR, keep branch), execute chosen option. Used by subagent-driven-development and executing-plans.",
+      "original_path": "%APPDATA%\\devin\\skills\\finishing-a-development-branch"
     },
     {
       "name": "receiving-code-review",
-      "source": "github:obra/superpowers",
-      "purpose": "How to handle incoming code review feedback: verify before implementing, push back with technical reasoning when wrong, no performative agreement. Complements code-review (which covers requesting + giving review)."
+      "source": "devin-bundle",
+      "purpose": "How to handle incoming code review feedback: verify before implementing, push back with technical reasoning when wrong, no performative agreement. Complements code-review (which covers requesting + giving review).",
+      "original_path": "%APPDATA%\\devin\\skills\\receiving-code-review"
     },
     {
       "name": "using-git-worktrees",
-      "source": "github:obra/superpowers",
-      "purpose": "Create isolated git worktrees for parallel work branches. Used by executing-plans and subagent-driven-development for workspace isolation."
+      "source": "devin-bundle",
+      "purpose": "Create isolated git worktrees for parallel work branches. Used by executing-plans and subagent-driven-development for workspace isolation.",
+      "original_path": "%APPDATA%\\devin\\skills\\using-git-worktrees"
     },
     {
       "name": "verification-before-completion",
-      "source": "github:obra/superpowers",
-      "purpose": "Iron law: NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE. Gate function: identify command, run it, read output, verify, only then claim. Complements rule 6 (inner-loop validation) with enforcement discipline."
+      "source": "devin-bundle",
+      "purpose": "Iron law: NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE. Gate function: identify command, run it, read output, verify, only then claim. Complements rule 6 (inner-loop validation) with enforcement discipline.",
+      "original_path": "%APPDATA%\\devin\\skills\\verification-before-completion"
     },
     {
       "name": "writing-skills",
-      "source": "github:obra/superpowers",
-      "purpose": "Meta-skill: how to write agent skills using TDD approach. RED (baseline test without skill), GREEN (write minimal skill), REFACTOR (close loopholes). Includes bulletproofing against rationalization, testing with subagents, persuasion principles. Complements self-extend (the why) with the how."
+      "source": "devin-bundle",
+      "purpose": "Meta-skill: how to write agent skills using TDD approach. RED (baseline test without skill), GREEN (write minimal skill), REFACTOR (close loopholes). Includes bulletproofing against rationalization, testing with subagents, persuasion principles. Complements self-extend (the why) with the how.",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-skills"
     }
   ]
 }

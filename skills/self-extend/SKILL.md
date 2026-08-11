@@ -1,132 +1,159 @@
 ---
-
 name: self-extend
-description: "Use when evolving the agent's own capabilities with a new skill, tool, hook, or project rule."
+description: Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.
 ---
-
 # Self-Extension
 
 ## Overview
 
-You can extend your own capabilities by writing files to `.mimocode/`. Changes to tools, hooks, and skills take effect immediately (next turn) — no restart needed.
+Extend Devin CLI's behavior by adding files to the project (`./.devin/`) or to your global Devin config (`~/.config/devin/` on Linux/macOS, `%APPDATA%\devin\` on Windows). Most changes are picked up at the next session or skill reload.
 
-## Creating Tools
+## What to create for each need
 
-Write to `.mimocode/tools/<name>.ts`:
+| I want to... | Create | Location | Hot-reload |
+|---|---|---|---|
+| Add a reusable workflow the agent can invoke | Skill | `.devin/skills/<name>/SKILL.md` (project) or `~/.config/devin/skills/<name>/SKILL.md` (global) | next `skill list` / session |
+| Define a specialized worker for a task type | Custom subagent profile | `.devin/agents/<name>.md` or `.devin/agents/<name>/AGENT.md` (project/global `~/.config/devin/agents/`) | next session |
+| Add always-on context for a project or globally | Rules | `AGENTS.md` (project root or `~/.config/devin/AGENTS.md`) or `.devin/global_rules.md` or `.devin/rules/*.md` | session start |
+| Run custom logic at lifecycle events | Hooks | `.devin/hooks.v1.json` or `.devin/hooks.json` | next session |
+| Give the agent new API/database tools | MCP server | `.devin/mcp_config.json` or `~/.config/devin/mcp_config.json` | next session |
+| Bundle skills/rules/hooks/MCP for distribution | Plugin | `.devin-plugin/plugin.json` manifest + skills/rules/hooks/mcp | install/reload |
 
-```ts
-import { tool } from "@mimo-ai/plugin"
+## Creating skills
 
-export default tool({
-  description: "What this tool does",
-  args: {
-    param1: tool.schema.string().describe("Parameter description"),
-  },
-  async execute(args, ctx) {
-    // ctx.directory — project root
-    // ctx.worktree — git worktree root
-    // ctx.abort — AbortSignal
-    return `Result: ${args.param1}`
-  },
-})
-```
-
-Multiple tools per file: use named exports instead of default.
-
-## Creating Hooks
-
-Write to `.mimocode/hooks/<name>.ts` — export a Hooks object:
-
-```ts
-export default {
-  "tool.execute.before": async (input, output) => {
-    if (input.tool === "bash" && output.args.command?.includes("rm -rf /")) {
-      output.cancel = true
-      output.cancelReason = "Blocked dangerous command"
-    }
-  },
-  "experimental.chat.system.transform": async (input, output) => {
-    output.system.push("Additional instruction here.")
-  },
-}
-```
-
-### Hook Events
-
-| Event | Capability |
-|-------|-----------|
-| `tool.execute.before` | Modify args or `cancel=true` to block |
-| `tool.execute.after` | Modify tool output |
-| `tool.definition` | Modify tool description/parameters |
-| `chat.params` | Modify temperature, topP, maxOutputTokens |
-| `experimental.chat.system.transform` | Append to system prompt |
-| `experimental.chat.messages.transform` | Modify message list sent to LLM |
-| `permission.ask` | Auto-allow/deny permission requests |
-| `shell.env` | Inject environment variables |
-
-## Tool Override
-
-A custom tool with the same id as a built-in replaces it:
-
-```ts
-// .mimocode/tools/bash.ts — overrides built-in bash
-import { tool } from "@mimo-ai/plugin"
-import { execSync } from "child_process"
-
-export default tool({
-  description: "Shell with safety checks",
-  args: { command: tool.schema.string() },
-  async execute(args, ctx) {
-    if (args.command.includes("sudo")) return "Error: sudo not allowed"
-    return execSync(args.command, { encoding: "utf-8", cwd: ctx.directory })
-  },
-})
-```
-
-## Creating Skills
-
-Write to `.mimocode/skills/<name>/SKILL.md`:
+Project skill (committed to repo):
 
 ```markdown
 ---
 name: my-skill
-description: Use when [conditions]
+description: Use when [specific triggering conditions]
 ---
-Instructions here...
+
+# My Skill
+
+## Overview
+...
 ```
 
-## File Locations
+Save as `.devin/skills/my-skill/SKILL.md`. For personal skills, use `~/.config/devin/skills/my-skill/SKILL.md` (or `%APPDATA%\devin\skills\my-skill\SKILL.md` on Windows).
 
-| Type | Path | Hot-reload |
-|------|------|-----------|
-| Tools | `.mimocode/tools/*.ts` | next turn |
-| Hooks | `.mimocode/hooks/*.ts` | next turn |
-| Skills | `.mimocode/skills/*/SKILL.md` | next turn |
-| TUI | `.mimocode/tui/*.tsx` | restart |
+Skill frontmatter can also set:
 
-## When to Use What
+- `allowed-tools`: restrict which tools the skill can use (e.g. `[read, grep, glob, exec]`)
+- `subagent: true`: run the skill as a `subagent_general` subagent
+- `agent: <profile>`: run the skill as a specific custom subagent
+- `model`: override the model for this skill (e.g. `swe`, `sonnet`)
+- `permissions`: add permission grants/restrictions (e.g. `allow: [Read(src/**)]`, `deny: [exec]`)
+- `triggers`: who can invoke it (default `[user, model]`)
 
-| I want to... | Use |
-|-------------|-----|
-| Wrap a repeated bash/API pattern | Tool |
-| Block or modify a tool's behavior | Hook (`tool.execute.before`) |
-| Inject context into system prompt | Hook (`chat.system.transform`) |
-| Accumulate domain knowledge for future use | Skill |
-| Override how a built-in tool works | Tool (same name as builtin) |
-| Add a custom UI panel or command | TUI plugin |
+Discover with `skill list --path .` and `skill search --path . --keywords "..."`. Invoke with `/my-skill`.
 
-## Detailed API Reference
+## Creating custom subagents
 
-For full type signatures, all available fields, and more examples:
+Custom subagents are Devin CLI profiles that specialize in a kind of work (e.g. `reviewer`, `researcher`).
 
-- See @reference/tool-api.md for Tool schema and ToolContext
-- See @reference/hook-api.md for all hook events with input/output types
-- See @reference/skill-api.md for SKILL.md format and frontmatter fields
-- See @reference/tui-api.md for TUI plugin slots, commands, dialogs, and state
+Profile definition in `.devin/agents/reviewer.md` or `.devin/agents/reviewer/AGENT.md`:
+
+```markdown
+---
+name: reviewer
+---
+
+You are a careful code reviewer. Read the diff, then report only concrete issues with file paths and line numbers.
+```
+
+Reference the profile in a skill frontmatter:
+
+```yaml
+---
+name: review-pr
+description: Use when the user asks for a focused PR review.
+agent: reviewer
+---
+```
+
+Or dispatch directly from a skill:
+
+```
+Run a `subagent_general` or `subagent_explore` subagent with the reviewer profile, passing the diff and the review checklist.
+```
+
+## Adding rules
+
+`AGENTS.md` at the project root (or `~/.config/devin/AGENTS.md` globally) is always loaded. Keep it small; put detailed guidance in skills.
+
+`.devin/rules/*.md` files can have `trigger` frontmatter (`always_on`, `manual`, `model_decision`, `agent`, `glob`) to load only when relevant.
+
+`.devin/global_rules.md` is an always-on file inside `.devin/`.
+
+## Adding hooks
+
+Hooks run custom logic at session lifecycle events. Place them in `.devin/hooks.v1.json` or `.devin/hooks.json`.
+
+Common events:
+
+| Event | Use |
+|---|---|
+| `PreToolUse` | Inspect or block a tool call |
+| `PostToolUse` | Log or modify tool output |
+| `PermissionRequest` | Auto-allow/deny specific permission patterns |
+| `UserPromptSubmit` | Inject context when the user sends a message |
+| `Stop` | Run cleanup before the agent stops |
+| `SessionStart` / `SessionEnd` | Setup/teardown |
+
+Example `.devin/hooks.v1.json`:
+
+```json
+{
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "matcher": "exec",
+      "type": "command",
+      "command": "echo 'exec called: {{tool_name}}' >> .devin/audit.log"
+    }
+  ]
+}
+```
+
+## Adding MCP servers
+
+MCP servers give the agent new tools. Configure them in `.devin/mcp_config.json` (project) or `~/.config/devin/mcp_config.json` (global):
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { }
+    }
+  }
+}
+```
+
+For secrets, use `.devin/mcp_config.local.json` (gitignored).
+
+## Packaging as a plugin
+
+A plugin is a directory with a `.devin-plugin/plugin.json` manifest. It can ship:
+
+- `skills/<name>/SKILL.md`
+- `AGENTS.md`
+- `rules/*.md`
+- `agents/<name>.md`
+- `mcp_config.json`
+- `hooks.json`/`hooks.v1.json`
+
+Plugins can be installed from a GitHub repo, git URL, or local folder when Devin CLI plugin support is enabled. See the Devin CLI docs for `plugin.json` format.
+
+## Helper scripts
+
+If a skill needs executable helpers, keep them in the skill's `scripts/` directory. Use Python for cross-platform work, Bash for one-off shell integration, or JavaScript if the helper is tool-specific. Document dependencies and exit codes.
 
 ## Constraints
 
-- Tools/hooks have same permissions as bash — no privilege escalation
-- Cannot modify the permission system
-- Tool output truncated at 50KB / 2000 lines
-- Prefer small, composable extensions over monolithic ones
+- Do not ask users for secrets; put credentials in `.devin/config.local.json` or env vars.
+- Do not modify repository security policies or CI compliance settings.
+- Keep `AGENTS.md` small; prefer skills for detailed guidance.
+- Prefer standard Devin CLI paths; do not reference non-Devin runtimes.

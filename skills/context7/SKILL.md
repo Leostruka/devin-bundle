@@ -1,9 +1,7 @@
 ---
-
 name: context7
-description: "Use when the user asks about a library, framework, or component and up-to-date docs would help."
+description: Use when the user asks about a library, framework, or component and up-to-date docs would help.
 ---
-
 # Context7
 
 ## Overview

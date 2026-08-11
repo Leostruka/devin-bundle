@@ -1,9 +1,7 @@
 ---
-
 name: git-helper
-description: "Use when managing branches, writing commits, or resolving simple git workflow questions."
+description: Use when managing branches, writing commits, or resolving simple git workflow questions.
 ---
-
 # Git Helper
 
 A comprehensive skill for git workflow management and best practices.

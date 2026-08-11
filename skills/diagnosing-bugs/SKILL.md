@@ -1,9 +1,7 @@
 ---
-
 name: diagnosing-bugs
-description: "Use when the user says 'diagnose', 'debug this', or reports something broken, throwing, failing, or slow."
+description: Use when the user says 'diagnose', 'debug this', or reports something broken, throwing, failing, or slow.
 ---
-
 # Diagnosing Bugs
 
 A discipline for hard bugs. Skip phases only when explicitly justified.

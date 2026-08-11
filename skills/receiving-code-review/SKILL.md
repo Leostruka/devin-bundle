@@ -1,9 +1,7 @@
 ---
-
 name: receiving-code-review
-description: "Use when the user receives code review feedback and needs to decide how to act on it."
+description: Use when the user receives code review feedback and needs to decide how to act on it.
 ---
-
 # Code Review Reception
 
 ## Overview

@@ -1,9 +1,7 @@
 ---
-
 name: code-review
-description: "Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'."
+description: Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'.
 ---
-
 # Code Review (Unified)
 
 Two traditions, one review. This skill merges the **subagent-dispatch workflow** (review early, review often, preserve coordinator context) with the **two-axis methodology** (Standards vs Spec, parallel sub-agents, code smell baseline).

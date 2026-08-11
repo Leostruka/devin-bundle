@@ -1,16 +1,15 @@
 ---
 name: memory-bridge
-description: "Use when the user wants to compare knowledge produced by different AI tools or explore cross-tool memory."
+description: Use when the user wants to compare wiki knowledge by source session or source type and surface cross-session blind spots.
 ---
+# Memory Bridge — Cross-Session Knowledge Browser
 
-# Memory Bridge — Cross-Tool Knowledge Browser
-
-You are helping the user browse and compare their Obsidian wiki knowledge filtered by which AI tool originally produced it. The wiki tracks source provenance in `.manifest.json` and page `sources:` frontmatter — this skill surfaces that metadata as a navigable view.
+You help the user browse and compare their Obsidian wiki knowledge filtered by its source provenance. The wiki tracks provenance in `.manifest.json` and page `sources:` frontmatter — this skill surfaces that metadata as a navigable view.
 
 ## Before You Start
 
 1. **Resolve config** — follow the Config Resolution Protocol in `llm-wiki/SKILL.md` (inline `@name` override → walk up CWD for `.env` → `~/.obsidian-wiki/config` → prompt setup). This gives `OBSIDIAN_VAULT_PATH`.
-2. Read `$OBSIDIAN_VAULT_PATH/.manifest.json` — this is the source-of-truth for what tool produced what.
+2. Read `$OBSIDIAN_VAULT_PATH/.manifest.json` — source-of-truth for what session/type produced what.
 3. Read `$OBSIDIAN_VAULT_PATH/index.md` for page titles and one-line descriptions.
 
 ## Commands
@@ -19,48 +18,44 @@ Parse the user's invocation to determine mode:
 
 | Invocation | Mode |
 |---|---|
-| `/memory-bridge <tool>` | **Browse** — list all wiki pages sourced from `<tool>` |
-| `/memory-bridge <tool> "<topic>"` | **Search** — pages from `<tool>` that mention `<topic>` |
-| `/memory-bridge diff` | **Diff** — pages unique to each tool; overlap; blind spots |
-| `/memory-bridge diff <tool-a> <tool-b>` | **Diff** — compare two specific tools |
-| `/memory-bridge map` | **Map** — full origin matrix: every page × every tool that touched it |
+| `/memory-bridge <source>` | **Browse** — list all wiki pages from `<source>` |
+| `/memory-bridge <source> "<topic>"` | **Search** — pages from `<source>` mentioning `<topic>` |
+| `/memory-bridge diff` | **Diff** — pages unique to each source; overlap; blind spots |
+| `/memory-bridge diff <source-a> <source-b>` | **Diff** — compare two specific sources |
+| `/memory-bridge map` | **Map** — full origin matrix: every page × each source that touched it |
 
-Recognized tool names: `claude`, `codex`, `hermes`, `openclaw`, `copilot`, `pi`, `manual` (hand-written), `ingest` (wiki-ingest documents).
+Recognized source types: `devin_session`, `manual` (hand-written), `ingest` (wiki-ingest documents).
 
 ## Step 1: Build the Source Map
 
 Read `.manifest.json`. For each source entry, extract:
-- `source_type` — maps to tool name:
-  - `claude_conversation`, `claude_memory`, `claude_audit_log`, `claude_desktop_session` → `claude`
-  - `codex_rollout`, `codex_index`, `codex_history` → `codex`
-  - `hermes_memory`, `hermes_session` → `hermes`
-  - `openclaw_memory`, `openclaw_daily_note`, `openclaw_session`, `openclaw_dreams` → `openclaw`
-  - `copilot_session`, `copilot_checkpoint`, `copilot_transcript`, `copilot_memory_artifact` → `copilot`
-  - `pi_session` → `pi`
+
+- `source_type` — maps to source name:
+  - `devin_conversation`, `devin_session`, `devin_audit_log`, `devin_desktop_session` → `devin_session`
   - `document` → `ingest`
   - anything else → `manual`
-- `pages_created` and `pages_updated` — the wiki pages that came out of this source
+- `pages_created` and `pages_updated` — the wiki pages produced by this source
 
 Build a map:
 
 ```
 tool_pages = {
-  "claude": set(pages created/updated by claude sources),
-  "codex":  set(pages created/updated by codex sources),
-  ...
+  "devin_session": set(pages created/updated by devin sources),
+  "manual": set(pages created/updated manually),
+  "ingest": set(pages created/updated by wiki ingest),
 }
 ```
 
-A page can appear in multiple tools' sets if multiple tools contributed to it.
+A page can appear in multiple source sets if multiple sources contributed.
 
 ## Step 2: Execute the Mode
 
 ### Browse Mode
 
-Filter `tool_pages[<tool>]` and present as a grouped list:
+Filter `tool_pages[<source>]` and present as a grouped list:
 
 ```
-## Knowledge from <tool> (<N> pages)
+## Knowledge from <source> (<N> pages)
 
 ### By category
 - concepts/ — N pages
@@ -80,64 +75,66 @@ Read frontmatter for the listed pages (grep for `^(title|category|tags|updated):
 ### Search Mode
 
 Within the filtered page set, run:
+
 ```
-rg -l "<topic>" <pages in tool set>
+rg -l "<topic>" <pages in source set>
 ```
+
 Then grep section headers (`^##`) around matches to give context without full reads. Present results as a ranked list with the matching excerpt.
 
 ### Diff Mode
 
 Compute:
+
 - `only_in_a` = `tool_pages[a]` − `tool_pages[b]`
 - `only_in_b` = `tool_pages[b]` − `tool_pages[a]`
 - `shared` = `tool_pages[a]` ∩ `tool_pages[b]`
 
-If no specific tools are given, compare all tools pairwise (limit to pairs with >0 overlap or unique pages to keep output concise).
+If no specific sources are given, compare all sources pairwise (limit to pairs with >0 overlap or unique pages to keep output concise).
 
 Present:
 
 ```
-## Memory Bridge Diff — <tool-a> vs <tool-b>
+## Memory Bridge Diff — <source-a> vs <source-b>
 
-### Only in <tool-a> (<N> pages)
-These concepts exist in your wiki from <tool-a> sessions but <tool-b> has never touched them.
+### Only in <source-a> (<N> pages)
+These concepts exist in your wiki from <source-a> sessions but <source-b> has never touched them.
 <list with one-line descriptions from index.md>
 
-### Only in <tool-b> (<N> pages)
+### Only in <source-b> (<N> pages)
 <list>
 
 ### Shared (<N> pages)
-Both tools have contributed to these pages.
+Both sources have contributed to these pages.
 <list — only show if ≤15; otherwise just the count>
 
 ### Notable gaps
-<highlight the most interesting asymmetries — e.g. "codex has 12 pages on build tooling that claude has never seen">
+<highlight the most interesting asymmetries — e.g. "devin_session has 12 pages on build tooling that manual has never seen">
 ```
 
 ### Map Mode
 
-Build a matrix showing every page and which tools have touched it. Cap at 50 rows; sort by number of contributing tools descending (most cross-tool pages first — these are the richest nodes).
+Build a matrix showing every page and which sources have touched it. Cap at 50 rows; sort by number of contributing sources descending (most cross-source pages first — these are the richest nodes).
 
 ```
-| Page | claude | codex | hermes | copilot | pi |
-|------|--------|-------|--------|---------|----|
-| [[react-patterns]] | ✓ | ✓ | — | ✓ | — |
-| [[rust-ownership]] | — | ✓ | — | — | ✓ |
+| Page | devin_session | manual | ingest |
+|------|---------------|--------|--------|
+| [[react-patterns]] | ✓ | ✓ | — |
+| [[rust-ownership]] | — | ✓ | — |
 ```
 
-## Step 3: Spawn impl-validator (if available)
+## Step 3: Validate
 
-After generating output, if the `impl-validator` skill is available in the current environment, spawn it as a subagent:
+After generating output, spawn a `subagent_general` or `subagent_explore` subagent to review:
 
 ```
-impl-validator check:
-  goal: "Browse/diff wiki knowledge by source tool and surface cross-tool blind spots"
-  artifacts: [the output you just generated]
-  checks:
-    - Did you correctly parse source_type from .manifest.json?
-    - Are page counts plausible (not 0 unless vault is empty)?
-    - Is the diff symmetric (a−b and b−a are disjoint)?
-    - Did you avoid reading full page bodies when not needed?
+Goal: "Browse/diff wiki knowledge by source and surface cross-session blind spots."
+Artifacts: [the output you just generated]
+Checks:
+- Did you correctly parse source_type from .manifest.json?
+- Are page counts plausible (not 0 unless vault is empty)?
+- Is the diff symmetric (a−b and b−a are disjoint)?
+- Did you avoid reading full page bodies when not needed?
 ```
 
 Apply any issues it surfaces before presenting output to the user.
@@ -145,13 +142,14 @@ Apply any issues it surfaces before presenting output to the user.
 ## Step 4: Log
 
 Append to `$OBSIDIAN_VAULT_PATH/log.md`:
+
 ```
-- [TIMESTAMP] MEMORY-BRIDGE mode=<browse|search|diff|map> tool=<tool> pages_shown=N
+- [TIMESTAMP] MEMORY-BRIDGE mode=<browse|search|diff|map> source=<source> pages_shown=N
 ```
 
 ## Output Conventions
 
-- Always show page counts so the user can calibrate how much knowledge is in each tool's silo.
+- Always show page counts so the user can calibrate how much knowledge is in each source's silo.
 - Use `[[wikilinks]]` for page references (or standard Markdown links if `OBSIDIAN_LINK_FORMAT=markdown` is set).
 - In diff mode, call out the most *surprising* asymmetry explicitly — that's the insight the user came for.
 - If `.manifest.json` is empty or missing, say so clearly and suggest running `/wiki-history-ingest` first.

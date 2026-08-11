@@ -54,6 +54,8 @@ resolve_path() {
   raw="${raw//\$APPDATA/$HOME/.config}"
   raw="${raw//%APPDATA%/$HOME/.config}"
   raw="${raw//%USERPROFILE%/$HOME}"
+  # Normalize Windows-style backslash separators for *nix
+  raw="$(python3 -c "import sys; print(sys.argv[1].replace('\\\\','/'))" "$raw" 2>/dev/null || echo "$raw")"
   echo "$raw"
 }
 
@@ -79,14 +81,14 @@ fi
 # --- 2. Export rules ---
 step "Export consolidated rules"
 RULES_FOUND=""
-for r in "$DEVIN_HOME/AGENTS.md" "$DEVIN_HOME/rules.md" "$HOME/.claude/CLAUDE.md"; do
+for r in "$DEVIN_HOME/AGENTS.md" "$DEVIN_HOME/rules.md"; do
   if [[ -f "$r" ]]; then RULES_FOUND="$r"; break; fi
 done
 if [[ -n "$RULES_FOUND" ]]; then
   if [[ $DRY_RUN -eq 1 ]]; then skip "would copy $RULES_FOUND -> $RULES_DST"
   else cp "$RULES_FOUND" "$RULES_DST"; ok "rules exported from $RULES_FOUND"; fi
 else
-  warn "no AGENTS.md/rules.md/CLAUDE.md found; keeping existing bundle/AGENTS.md"
+  warn "no AGENTS.md or rules.md found; keeping existing bundle/AGENTS.md"
 fi
 
 # --- 3. Export skills (parse manifest with python3 or jq) ---

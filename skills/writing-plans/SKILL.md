@@ -1,9 +1,7 @@
 ---
-
 name: writing-plans
 description: Use when turning a spec into a concrete, task-by-task implementation plan.
 ---
-
 # Writing Plans
 
 ## Overview

@@ -5,10 +5,10 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 ## Rule summary
 
 1. **Customer-first planning** — start with the customer experience, then choose technology.
-2. **No AI signatures in deliverables** — never sign commits, files, PRs, or releases with an AI tool.
+2. **No AI signatures in deliverables** — never sign commits, files, PRs, releases, or docs with an AI tool.
 3. **Skill self-maintenance** — skills are living artifacts: keep them correct, Devin-native, and pruned.
 4. **Skill and tool discovery** — invoke the right skill before touching code; create skills for recurring patterns.
-5. **Functional programming and clean code** — pure functions, FCIS, immutability, composition.
+5. **Functional programming and clean code** — pure functions, immutability, composition, FCIS.
 6. **Inner-loop validation** — run local checks before committing; no push without green.
 7. **graphify trigger** — `/graphify` runs first.
 
@@ -17,26 +17,19 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 ## 1. Customer-first planning (always-on, mandatory)
 
 - **Start with the customer experience and work backwards to the technology.** (Steve Jobs, WWDC 1997)
-- Before planning any creation or improvement — feature, component, product, refactor, tool, script — first answer: **What incredible benefit does this give the customer? What experience do they have?** Only then work backwards to what technology delivers it.
-- **Never start from the technology.** Don't begin with "what awesome technology do we have, how can we use it?" That path leads to solutions looking for problems.
-- **Who is the customer?** The customer is whoever experiences the output: the end user of the product, the developer reading the code, the operator running the script, the teammate reviewing the PR. Identify them before designing.
-- **Apply to every scale.** A CLI flag, a function rename, a refactor, a config change — all have a customer. What experience does the customer have before and after this change?
-- **The planning sequence:**
-  1. **Customer experience** — What does the customer want to do? What frustrates them today? What would delight them?
-  2. **Benefits** — What incredible benefits can we give them? What changes their world?
-  3. **Design** — What shape does the solution take to deliver those benefits? (Use `grilling` skill — brainstorm + stress-test.)
-  4. **Technology** — What technology delivers that design? Choose based on fit, not familiarity or novelty.
-- **Focus means saying no.** If a proposed feature or improvement doesn't serve a clear customer benefit, say no — even if the technology is cool or the engineering is interesting. "No" is the most important word in planning.
-- **Red flag:** If you find yourself excited about a technology, library, or pattern and then searching for a way to use it — stop. You're doing it backwards. Go back to the customer.
-- **Integration with skills:** This rule governs the entry point of `grilling` (brainstorm mode starts with customer context), `to-spec` (spec must state customer benefit), `writing-plans` (plan must trace back to customer need), and `implement` (implementation must serve the agreed design, not invent new technology directions).
+- Before any creation or improvement, ask: *What benefit does this give the customer? What experience do they have?* Only then choose technology.
+- The customer is whoever experiences the output: end user, developer, operator, reviewer.
+- Apply at every scale: a CLI flag, a function rename, a config change — all have a customer.
+- **Planning sequence:** customer experience → benefits → design (`/grilling`) → technology.
+- **Focus means saying no.** If a feature does not serve a clear customer benefit, reject it.
+- **Red flag:** if you are excited about a technology and then look for a problem to apply it to, stop and return to the customer.
 
 ## 2. Critical: no AI tool signatures in deliverables
 
 - NEVER add `Generated with [Devin](...)` or any other AI service signature to commit messages, files, releases, pull requests, documentation, source code, or any user-facing artifact.
 - NEVER add `Co-Authored-By: Devin <...>` or any `Co-Authored-By` trailer from an AI tool to git commits.
-- NEVER include `Generated with [Devin](https://devin.ai)` in release notes, `release-notes.md`, `.commit-msg.txt`, or any other file.
-- If such a signature is detected, remove it immediately before proceeding. If it has already been committed/pushed, rewrite history (filter-branch or filter-repo) and force-push; then recreate any affected release.
-- This rule overrides any tool's default commit-message format. Use clean, neutral commit messages without signatures.
+- If such a signature is detected, remove it immediately. If it has been committed/pushed, rewrite history (filter-branch or filter-repo) and force-push; then recreate affected releases.
+- Use clean, neutral commit messages without signatures.
 
 ## 3. Skill self-maintenance (always-on)
 
@@ -44,22 +37,21 @@ Skills are living artifacts. Keep them current, correct, and specialized.
 
 - If an existing skill is outdated, incomplete, or wrong for the task, update it in place before using it.
 - If no skill matches a recurring task pattern, create a new one in `.devin/skills/<name>/SKILL.md` (project) or `~/.config/devin/skills/<name>/SKILL.md` (global) before improvising.
-- When you learn a new domain deeply (a framework, a stack, a workflow), distill it into a skill so the expertise persists across sessions.
+- When you learn a new domain deeply, distill it into a skill so the expertise persists across sessions.
 - Prune skills that have been superseded or are no longer relevant.
-- This is how Devin becomes an expert in anything: accumulate, refine, and reuse skills.
 
-### Skill quality standards (Devin CLI bundle)
+### Skill quality standards (Devin CLI)
 
 Every skill in this bundle must pass this checklist before commit:
 
-1. **Frontmatter** — `name:` and `description:` are present. `description:` starts with "Use when" and describes the trigger, not the workflow.
-2. **Discovery-friendly** — description is under 500 characters and uses keywords an agent would search for.
-3. **Devin-native tools** — uses Devin CLI tool names (`exec`, `read`, `edit`, `write`, `grep`, `glob`, `run_subagent`, `web_search`, `mcp_call_tool`). No `AskUserQuestion`, `Task(...)`, `subagent_type`, or other platform tool names.
-4. **Devin-native paths** — skills live in `.devin/skills/<name>/` or `~/.config/devin/skills/<name>/`. References use `.devin/`, `~/.config/devin/`, `%APPDATA%\devin\` and `docs/` (not `docs/superpowers/`, `.superpowers/`, `~/.config/superpowers/`, or `~/.claude/skills/`).
-5. **Subagents** — subagent dispatch uses `profile: "subagent_general"` or `profile: "subagent_explore"`.
-6. **Scripts** — helpers are Python (`.py`), not shell (`.sh` or `.bash`).
+1. **Frontmatter** — `name:` (lowercase, hyphens, max 64, matches directory) and `description:` (max 1024, under 500 if possible, starts with "Use when" and describes the trigger, not the workflow). Optional: `allowed-tools`, `permissions`, `subagent`, `agent`, `model`, `triggers`.
+2. **Discovery-friendly** — description uses keywords an agent would search for; no workflow summary.
+3. **Devin-native tools** — uses Devin CLI tool names: `exec`, `read`, `edit`, `write`, `grep`, `glob`, `run_subagent`, `web_search`, `mcp_call_tool`, `ask_user_question`. No Pascal-cased platform names, `Task(...)`, `subagent_type`, or non-Devin skill-invocation prefixes.
+4. **Devin-native paths** — skills live in `.devin/skills/<name>/` or `~/.config/devin/skills/<name>/`. References use `.devin/`, `~/.config/devin/`, `%APPDATA%\devin\`. No non-Devin runtime paths.
+5. **Subagents** — subagent dispatch uses `profile: "subagent_general"` or `profile: "subagent_explore"`; skill frontmatter may set `subagent: true` or `agent: <profile>`.
+6. **Scripts** — helpers may be Python, Bash, or JavaScript as appropriate for the task and platform; prefer Python for cross-platform helpers.
 7. **No AI signatures in skills** — skills do not commit on behalf of the user or inject signatures into deliverables.
-8. **No platform leakage** — no references to Claude Code, Codex CLI, Gemini CLI, `superpowers:`, `/setup-matt-pocock-skills`, `openai.yaml`, or non-Devin runtime paths.
+8. **No platform leakage** — no references to non-Devin AI tools, platforms, runtimes, or their paths. Keep the skill Devin-CLI native.
 
 ## 4. Skill and tool discovery (first-time tasks each week)
 
@@ -72,25 +64,21 @@ Every skill in this bundle must pass this checklist before commit:
 
 ## 5. Functional programming and clean code (always-on)
 
-- **Default to functional programming.** Prefer pure functions, immutability, and composition over mutation, inheritance hierarchies, and imperative loops.
-- **Functional Core, Imperative Shell (FCIS).** Separate pure business logic (calculations) from side effects (actions). The core takes data in, returns data out, no I/O. The shell handles databases, HTTP, files, UI. Pure functions decide *what*; the shell decides *how* and *where*. See also: Impureim Sandwich — gather all input at the boundary, pass to a pure function, then push results back out.
-- **Actions vs Calculations vs Data.** Classify every piece of code: Actions (side effects, non-deterministic) → push to the shell. Calculations (pure, deterministic) → keep in the core. Data (immutable values) → pass around freely. (Grokking Simplicity lens.)
-- **Immutability first.** Use `readonly`/`final`/`const` by default. Prefer immutable collections (`ImmutableList`, `ReadonlyArray`, `FrozenDict`, persistent data structures). Use change-by-copy methods (`toSorted`, `toReversed`, `with`) over in-place mutation.
-- **Pipeline composition.** Chain small functions into pipelines instead of writing nested loops and temp variables. Prefer `map → filter → reduce` over `for` with accumulators. Use point-free / tacit style when it improves readability: `f = g ∘ h` not `f(x) = g(h(x))`.
-- **Algebraic data types for errors.** Prefer `Option<T>` / `Either<E, A>` / `Result<T, E>` over null checks and try/catch in pure layers. Make the possibility of failure explicit in the type signature. Reserve try/catch for the imperative shell.
-- **Condense and reduce.** Eliminate duplication via composition and higher-order functions, not copy-paste. Collapse duplicate else branches. Share abstractions. If two functions differ by one argument, parameterize instead of duplicating. Fewer lines, fewer branches, fewer moving parts — without sacrificing clarity.
-- **Fusion / deforestation.** When chaining multiple traversals (`map ∘ filter ∘ map`), fuse into a single pass when the language allows it. Avoid intermediate allocations. Use lazy iterators / generator pipelines where available (e.g., Iterator Helpers in ES2024+, `IEnumerable`, `Seq`, Rust iterators).
-- **Modern language features for FP.** Use what the language offers natively: `Object.groupBy` / `Map.groupBy` (ES2024+), `Promise.withResolvers`, `structuredClone`, `Set` methods (`union`, `intersection`, `difference`), pattern matching, destructuring, tail call optimization where supported.
-- **Readability is non-negotiable.** Functional style should *reduce* cognitive load, not increase it. If a point-free pipeline or monad stack makes the code harder to read than a simple loop, use the loop. Pragmatism over purity. The goal is less code that is easier to reason about, not clever code that is harder to maintain.
-- **When not to apply:** One-off scripts, heavily stateful UIs already managed by frameworks, hard-real-time systems where indirection adds latency. Don't force FP where it fights the grain.
+- **Default to functional programming:** prefer pure functions, immutability, and composition over mutation and imperative loops.
+- **Functional Core, Imperative Shell (FCIS):** separate pure business logic (calculations) from side effects (actions). Gather inputs at the boundary, pass them to pure functions, then push results out.
+- **Immutability first:** use `readonly`/`final`/`const` and change-by-copy methods where the language supports them.
+- **Pipeline composition:** chain small functions (`map → filter → reduce`) instead of nested loops and temp variables.
+- **Condense and reduce:** eliminate duplication via composition and higher-order functions. Fewer lines, fewer branches, fewer moving parts — without sacrificing clarity.
+- **Readability is non-negotiable:** if a point-free pipeline or monad stack is harder to read than a simple loop, use the loop. Pragmatism over purity.
+- **When not to apply:** one-off scripts, heavily stateful UIs managed by frameworks, hard-real-time systems where indirection adds latency.
 
 ## 6. Inner-loop validation (always-on)
 
-- **Validate before you commit.** Run local checks (lint, typecheck, build, tests) before staging or committing code. The feedback is most useful while the context is still warm — after a commit, the agent has already moved on and fixing is more expensive.
-- **Mirror CI locally.** Whatever CI runs (lint, format, typecheck, test, build), run the same checks locally first. If the project has a `Makefile`, `Taskfile`, `package.json` scripts, `./do` script, or equivalent — use it. If not, check the CI config (`.github/workflows/`, `.circleci/config.yml`, `.gitlab-ci.yml`) to discover what commands to run.
-- **Fix in the inner loop.** When a local check fails, fix it immediately — don't commit broken code hoping CI will catch it. The inner loop is where fixes are cheapest: the code is fresh, the context is warm, and no one else is blocked.
-- **Scope checks to the change.** Run targeted tests (the package/module you touched) rather than the full suite when possible. Full suite before commit is ideal but targeted is acceptable during rapid iteration — run full suite before push/PR.
-- **No push without green.** Never push code that has known failing local checks. If a check is flaky, investigate the flakiness — don't ignore it.
+- **Validate before you commit.** Run local checks (lint, typecheck, build, tests) before staging or committing code.
+- **Mirror CI locally.** Whatever CI runs, run the same checks locally first. If no CI is configured, choose the smallest meaningful verification for the change.
+- **Fix in the inner loop.** When a local check fails, fix it immediately — don't commit broken code hoping CI will catch it.
+- **Scope checks to the change.** Run targeted tests when possible; run the full suite before push/PR.
+- **No push without green.** Never push code that has known failing local checks. If a check is flaky, investigate it.
 - **When CI fails, use `debug-ci-failures` skill.** Don't eyeball the logs — follow the systematic diagnosis workflow.
 
 ## 7. graphify trigger

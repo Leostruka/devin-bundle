@@ -1,9 +1,7 @@
 ---
-
 name: using-git-worktrees
 description: Use when starting feature work that needs isolation from the current workspace.
 ---
-
 # Using Git Worktrees
 
 ## Overview

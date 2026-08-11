@@ -1,6 +1,6 @@
 # devin-bundle
 
-Export + instalador do Devin — análogo ao `opencode export`/install, mas voltado para o Devin CLI.
+Export + instalador do Devin CLI para sincronizar skills e regras consolidadas entre máquinas.
 Empacota **só as skills que o Devin usa de fato** + as **regras consolidadas** que você definiu,
 e restaura tudo no destino correto via um único comando.
 
@@ -21,7 +21,7 @@ devin-bundle/
     ├── tool-and-skill-discovery/   # achar skill certa pra qualquer tarefa
     ├── find-skills/                # descobrir e instalar skills novas
     ├── self-extend/                # auto-evoluir: criar tools, hooks, skills
-    ├── using-superpowers/          # invocar skills antes de qualquer resposta
+    ├── using-skills/          # invocar skills antes de qualquer resposta
     ├── writing-skills/             # como escrever skills (TDD: RED-GREEN-REFACTOR)
     │
     │  === Git / GitHub ===
@@ -91,9 +91,9 @@ devin-bundle/
 
 ## Skills unificadas (3)
 
-Três pares de skills que sobrepunham entre obra/superpowers e mattpocock/skills foram unificadas em uma só, com lógica de decisão para quando usar qual abordagem:
+Três pares de skills que sobrepunham entre conjuntos anteriores de skills foram unificadas em uma só, com lógica de decisão para quando usar qual abordagem:
 
-| Skill unificada | Fonte A (obra) | Fonte B (matt) | Lógica de decisão |
+| Skill unificada | Fonte A | Fonte B | Lógica de decisão |
 |---|---|---|---|
 | `tdd` | test-driven-development (iron law, red-green-refactor, rationalizations) | tdd (seams, vertical slices, anti-patterns) | Seams-first para decidir ONDE testar; iron law para COMO testar. Ambos na implementação real. |
 | `code-review` | requesting-code-review (subagent dispatch, template, when to request) | code-review (two-axis Standards vs Spec, code smells baseline, parallel sub-agents) | Subagent dispatch para preservar contexto; two-axis para metodologia. Ambos no review real. |

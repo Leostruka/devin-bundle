@@ -1,10 +1,8 @@
 ---
-
 name: teach
-description: "Use when the user wants to learn a skill or concept through a guided, multi-step session."
-argument-hint: "What would you like to learn about?"
+description: Use when the user wants to learn a skill or concept through a guided, multi-step session.
+argument-hint: What would you like to learn about?
 ---
-
 The user has asked you to teach them something. This is a stateful request - they intend to learn the topic over multiple sessions.
 
 ## Teaching Workspace

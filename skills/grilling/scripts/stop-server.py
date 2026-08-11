@@ -5,7 +5,7 @@ Usage:
   python stop-server.py <session_dir>
 
 Kills the server process. Only deletes session directory if it is
-under a temp dir. Persistent directories (.superpowers/) are kept
+under a temp dir. Persistent directories (.devin/) are kept
 so mockups can be reviewed later.
 """
 import os

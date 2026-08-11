@@ -24,11 +24,11 @@ To make graphify always-on in Devin CLI sessions, add a `## graphify` section to
 
 ```bash
 graphify agents install  # for Devin CLI AGENTS.md (use this in Devin projects)
-# graphify claude install  # for other agents that use CLAUDE.md
+# graphify the agent install  # for other agents that use AGENTS.md
 ```
 
 This writes a `## graphify` section that instructs the agent to check the graph before answering codebase questions and rebuild it after code changes. No manual `/graphify` needed in future sessions.
 
 ```bash
-graphify claude uninstall  # remove the section
+graphify the agent uninstall  # remove the section
 ```

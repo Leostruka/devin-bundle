@@ -1,9 +1,7 @@
 ---
-
-name: using-superpowers
+name: using-skills
 description: Use when starting any conversation and before taking any non-trivial action.
 ---
-
 **If you were dispatched as a subagent to execute a specific task, ignore this skill.**
 
 **If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.**
@@ -55,4 +53,4 @@ You are running in Devin CLI. Invoke skills with `/<skill-name>`. If a skill is 
 
 ## User Instructions
 
-User instructions (CLAUDE.md, AGENTS.md, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+User instructions (AGENTS.md, AGENTS.md, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.

@@ -1,9 +1,7 @@
 ---
-
 name: wizard
-description: "Use when a human must walk through a manual procedure such as provisioning, credentials, or a one-off cutover."
+description: Use when a human must walk through a manual procedure such as provisioning, credentials, or a one-off cutover.
 ---
-
 # Wizard
 
 A **wizard** is a Python script that walks a human, step by step, through a manual procedure that's tedious to do by hand and tedious to re-explain to an AI every time. It opens each URL, says exactly what to click and copy, captures the values, writes them where they belong (`.env`, GitHub secrets), confirms at every stage, and shows how many stages are left. It might configure third-party services, run a one-off migration, or move the project from one state to another.

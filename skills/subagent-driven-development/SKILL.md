@@ -1,9 +1,7 @@
 ---
-
 name: subagent-driven-development
 description: Use when executing a multi-task plan by dispatching a fresh subagent per task.
 ---
-
 # Subagent-Driven Development
 
 Execute plan by dispatching a fresh `subagent_general` subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end.

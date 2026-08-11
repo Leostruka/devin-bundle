@@ -102,14 +102,14 @@ const URL_HOST = process.env.BRAINSTORM_URL_HOST || (HOST === '127.0.0.1' ? 'loc
 const SESSION_DIR = process.env.BRAINSTORM_DIR || '/tmp/brainstorm';
 const CONTENT_DIR = path.join(SESSION_DIR, 'content');
 const STATE_DIR = path.join(SESSION_DIR, 'state');
-const SUPERPOWERS_VERSION = readSuperpowersVersion();
-const SUPERPOWERS_BRAND_IMAGE_URL = 'https://primeradiant.com/brand/superpowers-visual-brainstorming-logo.png';
+const Devin_VERSION = readDevinVersion();
+const Devin_BRAND_IMAGE_URL = '';
 const TELEMETRY_DISABLE_ENV_VARS = [
-  'SUPERPOWERS_DISABLE_TELEMETRY',
+  'Devin_DISABLE_TELEMETRY',
   'DISABLE_TELEMETRY',
-  'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC'
+  'DEVIN_DISABLE_NONESSENTIAL_TRAFFIC'
 ];
-const SUPERPOWERS_TELEMETRY_DISABLED = TELEMETRY_DISABLE_ENV_VARS.some(name => isTruthyEnv(process.env[name]));
+const Devin_TELEMETRY_DISABLED = TELEMETRY_DISABLE_ENV_VARS.some(name => isTruthyEnv(process.env[name]));
 let ownerPid = process.env.BRAINSTORM_OWNER_PID ? Number(process.env.BRAINSTORM_OWNER_PID) : null;
 
 // Per-session secret key. The companion is reachable by any local browser tab
@@ -205,11 +205,11 @@ const helperInjection = '<script>\n' + helperScript + '\n</script>';
 
 // ========== Helper Functions ==========
 
-function readSuperpowersVersion() {
+function readDevinVersion() {
   const root = path.join(__dirname, '../../..');
   const manifests = [
     path.join(root, 'package.json'),
-    path.join(root, '.codex-plugin/plugin.json')
+    path.join(root, '.devin-plugin/plugin.json')
   ];
 
   for (const manifest of manifests) {
@@ -217,7 +217,7 @@ function readSuperpowersVersion() {
       const data = JSON.parse(fs.readFileSync(manifest, 'utf-8'));
       if (data.version) return String(data.version);
     } catch (e) {
-      // Packaged Codex plugins omit package.json; try the next manifest.
+      // Packaged Devin plugins may omit package.json; try the next manifest.
     }
   }
 
@@ -240,15 +240,13 @@ function escapeHtmlText(value) {
 }
 
 function brandMarkup() {
-  const version = escapeHtmlText(SUPERPOWERS_VERSION);
-  const text = SUPERPOWERS_TELEMETRY_DISABLED
-    ? 'Prime Radiant Superpowers v' + version
-    : 'Superpowers v' + version;
-  const logo = SUPERPOWERS_TELEMETRY_DISABLED
+  const version = escapeHtmlText(Devin_VERSION);
+  const text = 'Devin v' + version;
+  const logo = Devin_TELEMETRY_DISABLED
     ? ''
-    : '<img class="brand-logo" src="' + SUPERPOWERS_BRAND_IMAGE_URL + '?v=' + encodeURIComponent(SUPERPOWERS_VERSION) + '" alt="Prime Radiant" referrerpolicy="no-referrer" decoding="async">';
+    : '<img class="brand-logo" src="' + Devin_BRAND_IMAGE_URL + '?v=' + encodeURIComponent(Devin_VERSION) + '" alt="Devin" referrerpolicy="no-referrer" decoding="async">';
 
-  return '<div class="brand"><a href="https://github.com/obra/superpowers">' + logo + '<span class="brand-copy">' + text + '</span></a></div>';
+  return '<div class="brand"><a href="#">' + logo + '<span class="brand-copy">' + text + '</span></a></div>';
 }
 
 function renderBranding(html) {

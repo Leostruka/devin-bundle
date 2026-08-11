@@ -1,9 +1,7 @@
 ---
-
 name: improve-codebase-architecture
-description: "Use when the user wants to identify deepening opportunities in a codebase and act on them."
+description: Use when the user wants to identify deepening opportunities in a codebase and act on them.
 ---
-
 # Improve Codebase Architecture
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.

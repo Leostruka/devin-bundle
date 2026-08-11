@@ -1,9 +1,7 @@
 ---
-
 name: dispatching-parallel-agents
 description: Use when facing two or more independent tasks with no shared state or ordering.
 ---
-
 # Dispatching Parallel Agents
 
 ## Overview

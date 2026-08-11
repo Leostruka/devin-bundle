@@ -1,9 +1,7 @@
 ---
-
 name: tool-and-skill-discovery
-description: "Use when the user asks how to do something, needs the right skill or tool, or no skill seems to match the task."
+description: Use when the user asks how to do something, needs the right skill or tool, or no skill seems to match the task.
 ---
-
 # Tool and Skill Discovery
 
 ## When to use

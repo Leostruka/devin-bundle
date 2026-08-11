@@ -1,9 +1,7 @@
 ---
-
 name: grilling
-description: "Use when exploring and stress-testing ideas before committing to a design or plan."
+description: Use when exploring and stress-testing ideas before committing to a design or plan.
 ---
-
 # Grilling & Brainstorming (Unified)
 
 Two traditions, one pipeline. This skill merges **collaborative brainstorming** (gentle exploration, one question at a time, visual companion, design doc) with **relentless grilling** (design tree, frontier rounds, numbered questions, recommended answers, sub-agents for facts).

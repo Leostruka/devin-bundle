@@ -1,9 +1,7 @@
 ---
-
 name: debug-ci-failures
-description: "Use when CI is failing and the cause needs to be found across builds, jobs, or environments."
+description: Use when CI is failing and the cause needs to be found across builds, jobs, or environments.
 ---
-
 # Debug CI Failures
 
 Systematically diagnose and resolve CI failures. CI-agnostic — works with GitHub Actions, CircleCI, GitLab CI, Jenkins, or any CI system.

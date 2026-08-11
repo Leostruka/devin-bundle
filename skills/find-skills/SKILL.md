@@ -1,8 +1,7 @@
 ---
 name: find-skills
-description: "Use when the user wants to discover, install, or evaluate a new skill for Devin CLI."
+description: Use when the user wants to discover, install, or evaluate a new skill for Devin CLI.
 ---
-
 # Find Skills
 
 Help the user discover and install skills for Devin CLI.
@@ -42,10 +41,7 @@ Examples:
 
 If the bundle does not have a match, search known skill repositories on GitHub. Good starting points:
 
-- `github:obra/superpowers` — generalist skills
 - `github:Leostruka/devin-bundle` — this bundle
-- `github:anthropics/skills` — Anthropic skills
-- `github:vercel-labs/agent-skills` — Vercel skills
 
 Use `gh search repos <keyword> skills` or `web_search` to find more.
 
@@ -54,7 +50,7 @@ Use `gh search repos <keyword> skills` or `web_search` to find more.
 Before installing or using an external skill, verify:
 
 1. **Relevance** — does the README describe the task the user asked about?
-2. **Compatibility** — does the skill use Devin CLI patterns (`run_subagent`, `skill list`, `.devin/skills/`)? If it references Claude Code, Codex CLI, or Gemini CLI paths, it will need adaptation.
+2. **Compatibility** — does the skill use Devin CLI patterns (`run_subagent`, `skill list`, `.devin/skills/`)? If it references non-Devin AI tools or paths, it will need adaptation.
 3. **Quality signals** — recent commits, tests, clear examples, and no hardcoded secrets.
 
 ### Step 5 — Install the skill
@@ -83,7 +79,7 @@ If the skill is not Devin CLI native:
 1. Replace non-Devin tool names with Devin CLI equivalents.
 2. Update file paths to `~/.config/devin/skills/` or `.devin/skills/`.
 3. Convert bash scripts to Python if the skill bundles helpers.
-4. Remove platform-specific frontmatter like `disable-model-invocation` or `superpowers:`.
+4. Remove platform-specific frontmatter like `disable-model-invocation` or `skill invocation`.
 
 ## When no skill is found
 

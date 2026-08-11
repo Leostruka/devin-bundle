@@ -1,9 +1,7 @@
 ---
-
 name: obsidian-project-docs
-description: "Use when the user wants to build or update project documentation in an Obsidian vault, create SRS/ISO docs, map dependencies, or visualize architecture."
+description: Use when the user wants to build or update project documentation in an Obsidian vault, create SRS/ISO docs, map dependencies, or visualize architecture.
 ---
-
 # obsidian-project-docs
 
 Build a **meticulous, SRS/ISO-style documentation suite** for a software project inside an Obsidian vault. The skill scaffolds notes, `.base` database views, and `.canvas` diagrams, then guides the agent to fill them from code, config, and conversation.

@@ -8,7 +8,7 @@ Starts server on a random high port, outputs JSON with URL.
 Each session gets its own directory to avoid conflicts.
 
 Options:
-  --project-dir <path>    Store session files under <path>/.superpowers/brainstorm/
+  --project-dir <path>    Store session files under <path>/.devin/brainstorm/
                           instead of a temp dir. Files persist after server stops.
   --host <bind-host>      Host/interface to bind (default: 127.0.0.1).
   --url-host <host>       Hostname shown in returned URL JSON.
@@ -73,7 +73,7 @@ def wait_for_process_alive(process, seconds=2.0):
 
 def main():
     parser = argparse.ArgumentParser(description="Start the brainstorm visual companion server.")
-    parser.add_argument("--project-dir", help="Store session files under <path>/.superpowers/brainstorm/")
+    parser.add_argument("--project-dir", help="Store session files under <path>/.devin/brainstorm/")
     parser.add_argument("--host", default="127.0.0.1", help="Host/interface to bind")
     parser.add_argument("--url-host", help="Hostname shown in returned URL JSON")
     parser.add_argument("--idle-timeout-minutes", type=int, help="Idle shutdown in minutes")
@@ -93,7 +93,7 @@ def main():
 
     # Determine session directory
     if args.project_dir:
-        session_root = Path(args.project_dir) / ".superpowers" / "brainstorm"
+        session_root = Path(args.project_dir) / ".devin" / "brainstorm"
         session_id = f"{os.getpid()}-{int(time.time())}"
         session_dir = session_root / session_id
         port_file = session_root / ".last-port"

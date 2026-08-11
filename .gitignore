@@ -4,4 +4,4 @@ __pycache__/
 *.pyo
 
 # Devin bundle scratch directories
-.superpowers/
+.devin/brainstorm/

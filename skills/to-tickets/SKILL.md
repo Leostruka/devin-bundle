@@ -1,11 +1,9 @@
 ---
-
 name: to-tickets
-description: "Use when breaking a plan or spec into independent, traceable tickets for an issue tracker."
+description: Use when breaking a plan or spec into independent, traceable tickets for an issue tracker.
 triggers:
-  - user
+- user
 ---
-
 # To Tickets
 
 Break a plan, spec, or conversation into a set of **tickets** — tracer-bullet vertical slices, each declaring the tickets that **block** it.

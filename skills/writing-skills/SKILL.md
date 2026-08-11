@@ -1,9 +1,7 @@
 ---
-
 name: writing-skills
-description: "Use when creating new skills, editing existing skills, or verifying skills work before deployment."
+description: Use when creating new skills, editing existing skills, or verifying skills work before deployment.
 ---
-
 # Writing Skills
 
 ## Overview
@@ -18,7 +16,7 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **REQUIRED BACKGROUND:** You MUST understand /tdd before using this skill. That skill defines the fundamental RED-GREEN-REFACTOR cycle. This skill adapts TDD to documentation.
 
-**Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
+**Official guidance:** For skill authoring best practices, see the Devin CLI skills documentation at https://docs.devin.ai/cli/extensibility/skills/creating-skills and the Agent Skills specification at https://agentskills.io/specification.
 
 ## What is a Skill?
 
