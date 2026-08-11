@@ -8,7 +8,7 @@ e restaura tudo no destino correto via um único comando.
 
 ```
 devin-bundle/
-├── AGENTS.md          # regras consolidadas (6 seções, Devin-focused)
+├── AGENTS.md          # regras consolidadas (7 seções, Devin-focused)
 ├── manifest.json      # 34 skills + origem + propósito
 ├── export.ps1         # exportador Windows (PowerShell)
 ├── export.sh          # exportador Linux/WSL/macOS (bash)
@@ -72,12 +72,13 @@ devin-bundle/
 
 ## Regras consolidadas (AGENTS.md)
 
-1. **No AI signatures** — nunca citar/assinar Devin em commits, PRs, releases, docs, código.
-2. **Skill self-maintenance** — skills são vivas: atualizar, criar, podar. É assim que o Devin vira especialista em qualquer coisa.
-3. **Skill/tool discovery** — descobrir e invocar skills no início de tarefas não-triviais.
-4. **Functional programming and clean code** — FCIS, pure functions, immutability, pipeline composition, condense and reduce.
-5. **Inner-loop validation** — validar (lint, typecheck, test) antes de commitar, enquanto o contexto está quente. Mirror CI localmente. No push without green.
-6. **graphify trigger** — `/graphify` ativa o skill graphify antes de tudo.
+1. **Customer-first planning** — começar pela experiência do cliente e trabalhar de trás pra frente até a tecnologia (Steve Jobs, WWDC 1997). Obrigatório em qualquer planejamento, criação ou melhoria.
+2. **No AI signatures** — nunca citar/assinar Devin em commits, PRs, releases, docs, código.
+3. **Skill self-maintenance** — skills são vivas: atualizar, criar, podar. É assim que o Devin vira especialista em qualquer coisa.
+4. **Skill/tool discovery** — descobrir e invocar skills no início de tarefas não-triviais.
+5. **Functional programming and clean code** — FCIS, pure functions, immutability, pipeline composition, condense and reduce.
+6. **Inner-loop validation** — validar (lint, typecheck, test) antes de commitar, enquanto o contexto está quente. Mirror CI localmente. No push without green.
+7. **graphify trigger** — `/graphify` ativa o skill graphify antes de tudo.
 
 ## Skills unificadas (3)
 
