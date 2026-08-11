@@ -7,7 +7,7 @@ description: Document software projects in Obsidian as an SRS/ISO-style engineer
 
 Build a **meticulous, SRS/ISO-style documentation suite** for a software project inside an Obsidian vault. The skill scaffolds notes, `.base` database views, and `.canvas` diagrams, then guides the agent to fill them from code, config, and conversation.
 
-**Scope:** dependencies, database schema, modules, functions, config files, environment variables, relationships, architecture, decisions, glossary.
+**Scope:** dependencies, database schema, modules, functions, config files, environment variables, relationships, architecture, diagrams, decisions, glossary, daily logbook.
 
 ## When to use
 
@@ -33,7 +33,9 @@ Inside the target Obsidian vault (or project subfolder) the skill creates:
 | Config | `06-Config.md` | Environment variables, config files, feature flags, defaults |
 | Glossary | `07-Glossary.md` | Domain terms from `CONTEXT.md` and the codebase |
 | Project base | `Project.base` | Obsidian Base tying modules, functions, dependencies, config into a queryable database |
-| Architecture canvas | `Architecture.canvas` | JSON Canvas with modules, databases, external systems and relationships |
+| Diagrams | `Diagrams/*.canvas` | Modern C4 / DDD / data-model / state / flow diagrams as JSON Canvas files |
+| Architecture canvas | `Architecture.canvas` | High-level architecture canvas (modules, databases, external systems and relationships) |
+| Logbook | `Logbook.md` + `Daily/YYYY-MM-DD.md` | Running daily log of work, tries, successes, failures, decisions and rationale |
 
 ## Quick start
 
@@ -170,19 +172,46 @@ The `.base` file ties everything together. Populate it with rows for modules, fu
 
 See `references/obsidian-bases-spec.md` for Base syntax.
 
-### Step 10 — Build / update the Architecture Canvas (`Architecture.canvas`)
+### Step 10 — Build / update diagrams (`Diagrams/*.canvas` and `Architecture.canvas`)
 
-Create a JSON Canvas with:
+Create a set of JSON Canvas diagrams. Use **modern diagrams** instead of (or alongside) heavy UML. See `references/modern-diagrams.md` for conventions.
 
-- Modules as text or file cards
-- Databases as groups or cards
-- External systems as link or text cards
-- Edges showing imports, calls, data flow
-- Color coding: green for modules, purple for databases, yellow for external systems
+Minimum diagrams:
 
-See `references/json-canvas-spec.md` for Canvas syntax.
+- `Diagrams/Context.canvas` — C4 System Context (users, in-scope system, external systems)
+- `Diagrams/Container.canvas` — C4 Container diagram (web, API, DB, queues, external services)
+- `Diagrams/Component.canvas` — C4 Component diagram for the most critical container
+- `Diagrams/Domain.canvas` — DDD context map (bounded contexts, upstream/downstream, domain events)
+- `Diagrams/DataModel.canvas` — ER/data model with tables/collections and relationships
+- `Diagrams/Flow.canvas` — Event / data flow or user-journey
+- `Architecture.canvas` — Master overview linking the others
 
-You may also use `graphify` first to extract the code graph and then translate key nodes and edges into the Canvas.
+Each diagram should:
+
+- Use node colors consistently (green internal, yellow DB, orange queue, red external, purple actor/person)
+- Label every edge with the relationship and technology
+- Include a small legend text node
+- Link back to the relevant note (`01-Architecture.md`, `02-Database.md`, `07-Glossary.md`, `Modules/*.md`)
+
+You may use `graphify` first to extract the code graph and then translate key nodes and edges into the Canvas.
+
+### Step 11 — Maintain the Logbook (`Logbook.md` and `Daily/YYYY-MM-DD.md`)
+
+At the end of each session create or update the daily note:
+
+1. Open `Daily/YYYY-MM-DD.md` from `templates/daily-note-template.md`.
+2. Fill:
+   - **Context** — current focus
+   - **Done** — what was completed
+   - **Tried** — experiments or approaches
+   - **What worked** — with rationale and evidence
+   - **What failed / blocked** — with lessons
+   - **Decisions made** — decision, rationale, consequences, linked ADR
+   - **Open questions**
+   - **Next** — next actions
+3. Append a link to `Logbook.md` under the `## Activity log` heading, grouped by week or month.
+
+Use tags to classify entries: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
 
 ## Running with graphify
 
@@ -208,15 +237,21 @@ Then write the findings into the Obsidian vault using this skill.
 - [ ] `05-Dependencies.md` matches the package manager files.
 - [ ] `06-Config.md` includes all env vars and config files.
 - [ ] `Project.base` renders as a table in Obsidian.
-- [ ] `Architecture.canvas` has no dangling edges and all nodes are readable.
+- [ ] `Diagrams/*.canvas` files have no dangling edges, use consistent colors and include a legend.
+- [ ] `Architecture.canvas` is an overview linking the other diagrams.
+- [ ] `Logbook.md` links to every `Daily/YYYY-MM-DD.md` entry.
+- [ ] Daily notes capture context, done, tried, worked, failed, decisions, rationale and next actions.
 - [ ] All internal references use Obsidian wikilinks `[[...]]`.
 
-## Templates
+## Templates and references
 
 - `templates/srs-template.md`
 - `templates/module-template.md`
 - `templates/database-template.md`
 - `templates/config-template.md`
 - `templates/function-template.md`
+- `templates/daily-note-template.md`
 - `references/json-canvas-spec.md`
 - `references/obsidian-bases-spec.md`
+- `references/modern-diagrams.md`
+- `references/daily-note-template.md`

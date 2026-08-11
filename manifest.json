@@ -189,7 +189,7 @@
     {
       "name": "obsidian-project-docs",
       "source": "created:Devin bundle",
-      "purpose": "Document software projects in Obsidian as SRS/ISO-style engineering wiki. Scaffolds notes, Bases for modules/functions/dependencies/config, and Canvas architecture diagrams. Integrates with graphify, domain-modeling, and codebase-design."
+      "purpose": "Document software projects in Obsidian as SRS/ISO-style engineering wiki. Scaffolds notes, Bases for modules/functions/dependencies/config, modern C4/DDD/data-model Canvas diagrams, and a Daily/Logbook for running work history. Integrates with graphify, domain-modeling, and codebase-design."
     },
     {
       "name": "dispatching-parallel-agents",

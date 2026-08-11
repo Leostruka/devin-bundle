@@ -65,7 +65,7 @@ devin-bundle/
     ├── memory-bridge/              # comparar wiki knowledge entre AI tools
     ├── context7/                   # docs atualizadas de libs/frameworks
     ├── writing-for-agents/         # escrever docs para agents (skills, AGENTS.md)
-    ├── obsidian-project-docs/      # documentar projetos em Obsidian (SRS, Bases, Canvas)
+    ├── obsidian-project-docs/      # documentar projetos em Obsidian (SRS, Bases, Canvas, C4/diagramas, logbook)
     │
     │  === Workflow / UX ===
     ├── handoff/                    # compactar conversa para outro agent
