@@ -9,13 +9,13 @@ e restaura tudo no destino correto via um único comando.
 ```
 devin-bundle/
 ├── AGENTS.md          # regras consolidadas (7 seções, Devin-focused)
-├── manifest.json      # 42 skills + origem + propósito
+├── manifest.json      # 43 skills + origem + propósito
 ├── export.ps1         # exportador Windows (PowerShell)
 ├── export.sh          # exportador Linux/WSL/macOS (bash)
 ├── install.ps1        # instalador Windows (PowerShell)
 ├── install.sh         # instalador Linux/WSL/macOS (bash)
 ├── README.md          # este arquivo
-└── skills/            # 42 skills
+└── skills/            # 43 skills
     │
     │  === Meta / discovery ===
     ├── tool-and-skill-discovery/   # achar skill certa pra qualquer tarefa
@@ -65,6 +65,7 @@ devin-bundle/
     ├── memory-bridge/              # comparar wiki knowledge entre AI tools
     ├── context7/                   # docs atualizadas de libs/frameworks
     ├── writing-for-agents/         # escrever docs para agents (skills, AGENTS.md)
+    ├── obsidian-project-docs/      # documentar projetos em Obsidian (SRS, Bases, Canvas)
     │
     │  === Workflow / UX ===
     ├── handoff/                    # compactar conversa para outro agent

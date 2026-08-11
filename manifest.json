@@ -187,6 +187,11 @@
       "purpose": "Execute implementation plans by dispatching a fresh implementer subagent per task, task review after each (spec + quality), broad final review. Coordinator never implements directly — preserves context for coordination. Has implementer/task-reviewer/re-review prompt templates + scripts."
     },
     {
+      "name": "obsidian-project-docs",
+      "source": "created:Devin bundle",
+      "purpose": "Document software projects in Obsidian as SRS/ISO-style engineering wiki. Scaffolds notes, Bases for modules/functions/dependencies/config, and Canvas architecture diagrams. Integrates with graphify, domain-modeling, and codebase-design."
+    },
+    {
       "name": "dispatching-parallel-agents",
       "source": "github:obra/superpowers",
       "purpose": "Dispatch one subagent per independent problem domain (e.g. 3 test files failing with different root causes). Parallel dispatch in a single message. Review and integrate when all return."
