@@ -36,5 +36,13 @@
 - **Readability is non-negotiable.** Functional style should *reduce* cognitive load, not increase it. If a point-free pipeline or monad stack makes the code harder to read than a simple loop, use the loop. Pragmatism over purity. The goal is less code that is easier to reason about, not clever code that is harder to maintain.
 - **When not to apply:** One-off scripts, heavily stateful UIs already managed by frameworks, hard-real-time systems where indirection adds latency. Don't force FP where it fights the grain.
 
-## 5. graphify trigger
+## 5. Inner-loop validation (always-on)
+- **Validate before you commit.** Run local checks (lint, typecheck, build, tests) before staging or committing code. The feedback is most useful while the context is still warm — after a commit, the agent has already moved on and fixing is more expensive.
+- **Mirror CI locally.** Whatever CI runs (lint, format, typecheck, test, build), run the same checks locally first. If the project has a `Makefile`, `Taskfile`, `package.json` scripts, `./do` script, or equivalent — use it. If not, check the CI config (`.github/workflows/`, `.circleci/config.yml`, `.gitlab-ci.yml`) to discover what commands to run.
+- **Fix in the inner loop.** When a local check fails, fix it immediately — don't commit broken code hoping CI will catch it. The inner loop is where fixes are cheapest: the code is fresh, the context is warm, and no one else is blocked.
+- **Scope checks to the change.** Run targeted tests (the package/module you touched) rather than the full suite when possible. Full suite before commit is ideal but targeted is acceptable during rapid iteration — run full suite before push/PR.
+- **No push without green.** Never push code that has known failing local checks. If a check is flaky, investigate the flakiness — don't ignore it.
+- **When CI fails, use `debug-ci-failures` skill.** Don't eyeball the logs — follow the systematic diagnosis workflow.
+
+## 6. graphify trigger
 - When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.

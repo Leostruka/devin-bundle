@@ -8,14 +8,14 @@ e restaura tudo no destino correto via um único comando.
 
 ```
 devin-bundle/
-├── AGENTS.md          # regras consolidadas (5 seções, Devin-focused)
-├── manifest.json      # 32 skills + origem + propósito
+├── AGENTS.md          # regras consolidadas (6 seções, Devin-focused)
+├── manifest.json      # 34 skills + origem + propósito
 ├── export.ps1         # exportador Windows (PowerShell)
 ├── export.sh          # exportador Linux/WSL/macOS (bash)
 ├── install.ps1        # instalador Windows (PowerShell)
 ├── install.sh         # instalador Linux/WSL/macOS (bash)
 ├── README.md          # este arquivo
-└── skills/            # 32 skills
+└── skills/            # 34 skills
     │
     │  === Meta / discovery ===
     ├── tool-and-skill-discovery/   # achar skill certa pra qualquer tarefa
@@ -63,7 +63,11 @@ devin-bundle/
     ├── teach/                      # ensinar skill/conceito multi-sessão
     ├── wait-what/                  # re-explicar mensagem que não fez sentido
     ├── to-questionnaire/           # decisão -> questionnaire markdown
-    └── wizard/                     # gerar bash wizard p/ procedimentos manuais
+    ├── wizard/                     # gerar bash wizard p/ procedimentos manuais
+    │
+    │  === Testing / CI ===
+    ├── mutation-testing/           # ADAPTADO: mutation testing p/ encontrar gaps de teste
+    └── debug-ci-failures/          # ADAPTADO: debug de falhas de CI (CI-agnostic)
 ```
 
 ## Regras consolidadas (AGENTS.md)
@@ -72,7 +76,8 @@ devin-bundle/
 2. **Skill self-maintenance** — skills são vivas: atualizar, criar, podar. É assim que o Devin vira especialista em qualquer coisa.
 3. **Skill/tool discovery** — descobrir e invocar skills no início de tarefas não-triviais.
 4. **Functional programming and clean code** — FCIS, pure functions, immutability, pipeline composition, condense and reduce.
-5. **graphify trigger** — `/graphify` ativa o skill graphify antes de tudo.
+5. **Inner-loop validation** — validar (lint, typecheck, test) antes de commitar, enquanto o contexto está quente. Mirror CI localmente. No push without green.
+6. **graphify trigger** — `/graphify` ativa o skill graphify antes de tudo.
 
 ## Skills unificadas (3)
 
@@ -83,6 +88,17 @@ Três pares de skills que sobrepunham entre obra/superpowers e mattpocock/skills
 | `tdd` | test-driven-development (iron law, red-green-refactor, rationalizations) | tdd (seams, vertical slices, anti-patterns) | Seams-first para decidir ONDE testar; iron law para COMO testar. Ambos na implementação real. |
 | `code-review` | requesting-code-review (subagent dispatch, template, when to request) | code-review (two-axis Standards vs Spec, code smells baseline, parallel sub-agents) | Subagent dispatch para preservar contexto; two-axis para metodologia. Ambos no review real. |
 | `grilling` | brainstorming (one question at a time, visual companion, design doc, writing-plans) | grilling (design tree, frontier rounds, numbered questions, sub-agents for facts) | Brainstorm para explorar ideia fuzzy; grill para stress-testar design. Ambos em sequência: brainstorm -> grill -> spec. |
+
+## Skills adaptadas (2)
+
+Duas skills do CircleCI `chunk-cli` foram adaptadas para serem CI-agnostic (funcionam sem CircleCLI):
+
+| Skill adaptada | Fonte original | O que mudou |
+|---|---|---|
+| `mutation-testing` | `chunk-testing-gaps` (CircleCI) | Stage 2 (validation) agora é local-first com CI opcional. Stage 3 (production cross-reference) já era opcional. Renomeado de `chunk-testing-gaps` para `mutation-testing` (nome mais descritivo). |
+| `debug-ci-failures` | `debug-ci-failures` (CircleCI) | Generalizado de CircleCI MCP-only para CI-agnostic: GitHub Actions via `gh` CLI, CircleCI via MCP, GitLab via `glab`, Jenkins via CLI, ou logs manuais. Tabela de decisão no topo para qual ferramenta usar. |
+
+**Não absorvidas:** `chunk-sidecar` e `chunk-review` — dependem de infra CircleCI provisionada (chunk CLI + token + sidecar cloud).
 
 ## Instalar
 

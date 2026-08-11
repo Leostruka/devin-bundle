@@ -170,6 +170,16 @@
       "name": "to-questionnaire",
       "source": "github:mattpocock/skills",
       "purpose": "Turn a decision you can't answer alone into a Markdown questionnaire for the person who can"
+    },
+    {
+      "name": "mutation-testing",
+      "source": "adapted:CircleCI-Public/chunk-cli (chunk-testing-gaps)",
+      "purpose": "Find gaps in test coverage via mutation testing. 4-stage process: discovery, validation (local first, CI optional), production cross-reference (optional), risk assessment. CI-agnostic."
+    },
+    {
+      "name": "debug-ci-failures",
+      "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
+      "purpose": "Debug CI build failures systematically. CI-agnostic: works with GitHub Actions, CircleCI, GitLab CI, Jenkins, or any CI. Integrates with systematic-debugging and diagnosing-bugs."
     }
   ]
 }
