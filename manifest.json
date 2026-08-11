@@ -1,0 +1,99 @@
+{
+  "name": "devin-bundle",
+  "version": "1.0.0",
+  "description": "Devin-focused export bundle: skills I use + consolidated rules. Cross-platform installer.",
+  "rules": {
+    "source": "AGENTS.md",
+    "targets": {
+      "windows": "%APPDATA%/devin/AGENTS.md",
+      "linux": "~/.config/devin/AGENTS.md",
+      "macos": "~/.config/devin/AGENTS.md"
+    }
+  },
+  "skills": [
+    {
+      "name": "tool-and-skill-discovery",
+      "source": "builtin:devin",
+      "original_path": "%APPDATA%/devin/skills/tool-and-skill-discovery",
+      "purpose": "Meta-skill: discover and invoke the right skill/tool for any task"
+    },
+    {
+      "name": "graphify",
+      "source": "github:ar9av/obsidian-wiki",
+      "original_path": "~/.claude/skills/graphify",
+      "purpose": "Turn any input into a persistent knowledge graph; query with /graphify"
+    },
+    {
+      "name": "git-helper",
+      "source": "github:joshuadavidthomas/opencode-agent-skills",
+      "original_path": "~/.claude/skills/git-helper",
+      "purpose": "Git workflow assistance, branch management, commit messages"
+    },
+    {
+      "name": "gh",
+      "source": "github:cli/cli",
+      "original_path": "~/.copilot/skills/gh",
+      "purpose": "Patterns for invoking the GitHub CLI (gh) from agents"
+    },
+    {
+      "name": "find-skills",
+      "source": "github:vercel-labs/skills",
+      "original_path": "~/.claude/skills/find-skills",
+      "purpose": "Discover and install agent skills when none match"
+    },
+    {
+      "name": "self-extend",
+      "source": "github:obra/superpowers",
+      "original_path": "~/.agents/skills/self-extend",
+      "purpose": "Self-iteration: create tools, hooks, and skills to evolve capabilities"
+    },
+    {
+      "name": "brainstorming",
+      "source": "github:obra/superpowers",
+      "original_path": "~/.claude/skills/brainstorming",
+      "purpose": "Explore user intent and design before any creative/feature work"
+    },
+    {
+      "name": "systematic-debugging",
+      "source": "github:obra/superpowers",
+      "original_path": "~/.claude/skills/systematic-debugging",
+      "purpose": "Structured debugging: reproduce, trace, isolate root cause before fixing"
+    },
+    {
+      "name": "writing-plans",
+      "source": "github:obra/superpowers",
+      "original_path": "~/.claude/skills/writing-plans",
+      "purpose": "Write a plan from a spec before touching code"
+    },
+    {
+      "name": "requesting-code-review",
+      "source": "github:obra/superpowers",
+      "original_path": "~/.claude/skills/requesting-code-review",
+      "purpose": "Verify work meets requirements before merging"
+    },
+    {
+      "name": "context7",
+      "source": "github:intellectronica/agent-skills",
+      "original_path": "~/.claude/skills/context7",
+      "purpose": "Retrieve up-to-date library/framework documentation via Context7 API"
+    },
+    {
+      "name": "memory-bridge",
+      "source": "github:ar9av/obsidian-wiki",
+      "original_path": "~/.claude/skills/memory-bridge",
+      "purpose": "Browse and compare wiki knowledge by which AI tool produced it"
+    },
+    {
+      "name": "using-superpowers",
+      "source": "github:obra/superpowers",
+      "original_path": "~/.claude/skills/using-superpowers",
+      "purpose": "Establishes how to find and use skills; skill invocation before any response"
+    },
+    {
+      "name": "test-driven-development",
+      "source": "github:obra/superpowers",
+      "original_path": "~/.claude/skills/test-driven-development",
+      "purpose": "TDD: write failing test, implement, verify pass"
+    }
+  ]
+}
