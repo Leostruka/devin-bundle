@@ -1,49 +1,69 @@
 ---
 name: obsidian-project-docs
-description: Use when the user wants to build or update project documentation in an Obsidian vault, create SRS/ISO docs, map dependencies, or visualize architecture.
+description: Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, and auto-refresh.
 ---
 # obsidian-project-docs
 
-Build a **meticulous, SRS/ISO-style documentation suite** for a software project inside an Obsidian vault. The skill scaffolds notes, `.base` database views, and `.canvas` diagrams, then guides the agent to fill them from code, config, and conversation.
+Build a **local codebase wiki** in an Obsidian vault at the same quality level as a cloud-generated wiki: architecture diagrams, source-linked documentation, hierarchical pages, codebase summaries, and a re-index workflow that keeps everything in sync with the code.
 
-**Scope:** dependencies, database schema, modules, functions, config files, environment variables, relationships, architecture, diagrams, decisions, glossary, daily logbook.
+**Scope:** codebase summary, architecture, modules, functions, database, dependencies, config, glossary, decisions, diagrams, logbook, re-index.
 
 ## When to use
 
-- "Document this project in Obsidian"
-- "Create SRS / technical specification"
-- "Build an architecture map"
-- "List all modules, functions, and dependencies"
-- "Visualize the system in Obsidian Canvas"
-- Updating an existing engineering wiki
+- "Document this codebase / project"
+- "Build a local wiki for this repo"
+- "Create architecture diagrams with source links"
+- "Map all modules, functions, and dependencies with code references"
+- "Visualize the system in Obsidian Canvas + Mermaid"
+- Updating an existing engineering wiki after code changes
+
+## Non-negotiable requirements
+
+Every artifact produced by this skill MUST meet these standards:
+
+1. **Source links** — every claim about code (module, function, class, route, schema, config) MUST cite the source file and line: `source: src/auth/login.ts:42`. No unsourced assertions.
+2. **Hierarchical pages** — every page has a `parent:` field in frontmatter (except the root). Pages form a tree, not a flat list.
+3. **Diagrams** — both Mermaid (inline, version-controllable) AND Canvas (interactive, spatial). Minimum: Context, Container, Component, Domain, DataModel, Flow.
+4. **Codebase summary** — a top-level `00-Overview.md` that summarizes the entire system in 1-2 paragraphs with links to every other page.
+5. **Re-index** — a `refresh.py` script in the vault that re-scans the codebase, detects changed files, and flags stale pages.
+6. **Steering config** — a `wiki-config.json` in the vault that defines pages, priorities, and notes (local equivalent of a cloud steering file).
 
 ## What is produced
 
-Inside the target Obsidian vault (or project subfolder) the skill creates:
+Inside the target Obsidian vault:
 
 | Artifact | File | Purpose |
 |----------|------|---------|
-| SRS | `00-SRS.md` | Software Requirements Specification — scope, stakeholders, functional/non-functional requirements |
-| Architecture | `01-Architecture.md` | System overview, layers, seams, adapters, data flow, decisions |
-| Database | `02-Database.md` | Schema, tables/collections, relationships, migrations, indexing |
-| Modules index | `03-Modules.md` + `Modules/*.md` | Module catalog with interfaces, invariants, tests, dependencies |
-| Functions index | `04-Functions.md` | Function / method registry, signatures, side effects, callers |
-| Dependencies | `05-Dependencies.md` | Third-party and internal dependencies with versions and rationale |
-| Config | `06-Config.md` | Environment variables, config files, feature flags, defaults |
-| Glossary | `07-Glossary.md` | Domain terms from `CONTEXT.md` and the codebase |
+| Overview | `00-Overview.md` | Codebase summary — 1-2 paragraphs, links to every page, entry point |
+| SRS | `01-SRS.md` | Software Requirements Specification — scope, stakeholders, functional/non-functional requirements |
+| Architecture | `02-Architecture.md` | System overview, layers, seams, adapters, data flow, ADRs, **source-linked** |
+| Database | `03-Database.md` | Schema, tables, relationships, migrations, **source-linked** |
+| Modules index | `04-Modules.md` + `Modules/*.md` | Module catalog with interfaces, invariants, tests, dependencies, **source-linked** |
+| Functions index | `05-Functions.md` | Function registry, signatures, side effects, callers, **source-linked** |
+| Dependencies | `06-Dependencies.md` | Third-party and internal dependencies with versions and rationale |
+| Config | `07-Config.md` | Environment variables, config files, feature flags, **source-linked** |
+| Glossary | `08-Glossary.md` | Domain terms with code references |
+| Decisions | `09-Decisions.md` + `Decisions/*.md` | ADR log with context, decision, consequences |
 | Project base | `Project.base` | Obsidian Base tying modules, functions, dependencies, config into a queryable database |
-| Diagrams | `Diagrams/*.canvas` | Modern C4 / DDD / data-model / state / flow diagrams as JSON Canvas files |
-| Architecture canvas | `Architecture.canvas` | High-level architecture canvas (modules, databases, external systems and relationships) |
-| Logbook | `Logbook.md` + `Daily/YYYY-MM-DD.md` | Running daily log of work, tries, successes, failures, decisions and rationale |
+| Mermaid diagrams | `Diagrams/*.md` | Mermaid diagrams (Context, Container, Component, Domain, DataModel, Flow) |
+| Canvas diagrams | `Diagrams/*.canvas` | JSON Canvas versions of the same diagrams (interactive, spatial) |
+| Architecture canvas | `Architecture.canvas` | Master canvas linking all other diagrams |
+| Logbook | `Logbook.md` + `Daily/YYYY-MM-DD.md` | Running daily log of work, decisions, rationale |
+| Steering config | `wiki-config.json` | Page definitions, priorities, notes for steering wiki generation |
+| Re-index script | `refresh.py` | Re-scans codebase, detects changes, flags stale pages |
+| Manifest | `project-manifest.json` | Project metadata, vault metadata, last-indexed timestamp |
 
 ## Quick start
 
 ```bash
-# 1. Scaffold a new vault/project doc tree
+# 1. Scaffold a new vault/project wiki
 python <skill-dir>/scaffold.py --project-dir C:\path\to\project --vault-dir C:\path\to\ObsidianVault\MyProject
 
-# 2. Or into a folder inside the current project (useful for Git-tracked docs)
+# 2. Or into a folder inside the current project (Git-tracked docs)
 python <skill-dir>/scaffold.py --project-dir . --vault-dir ./docs/obsidian
+
+# 3. After code changes, re-index to flag stale pages
+python <vault-dir>/refresh.py --project-dir C:\path\to\project
 ```
 
 Then invoke the rest of this skill to fill each artifact from code and conversation.
@@ -52,149 +72,247 @@ Then invoke the rest of this skill to fill each artifact from code and conversat
 
 ### Step 0 — Detect or confirm target
 
-1. If the user gave a vault path, use it. Otherwise default to a subfolder of the current project: `<project>/docs/obsidian/`.
-2. If the vault/docs folder already contains the artifact files, this is an **update** run. Read them first.
+1. If the user gave a vault path, use it. Otherwise default to `<project>/docs/obsidian/`.
+2. If the vault/docs folder already contains the artifact files, this is an **update** run. Read them first, then run `refresh.py` to identify stale pages.
 3. If the files do not exist, run the scaffold script in Step 1.
 
 ### Step 1 — Scaffold the vault
-
-Run the scaffold helper with the project and vault directories. It creates the file tree, the Base, and the Canvas shell.
 
 ```bash
 python <skill-dir>/scaffold.py --project-dir <PROJECT> --vault-dir <VAULT>
 ```
 
-The helper also writes a lightweight `project-manifest.json` in the vault:
+The helper creates:
+- The file tree (all pages with `parent:` frontmatter)
+- Mermaid diagram shells (`Diagrams/*.md`)
+- Canvas diagram shells (`Diagrams/*.canvas`)
+- `Project.base`
+- `wiki-config.json` (steering config)
+- `refresh.py` (re-index script)
+- `project-manifest.json`
+
+### Step 2 — Fill `wiki-config.json` (steering)
+
+Read the codebase structure first (`ls`, `tree`, `git ls-files`, or `graphify`). Then fill the steering config:
 
 ```json
 {
-  "project_name": "MyProject",
-  "project_dir": "C:/path/to/project",
-  "vault_dir": "C:/path/to/ObsidianVault/MyProject",
-  "created": "2026-08-11",
-  "version": "0.1.0"
+  "repo_notes": [
+    {
+      "content": "This repo has a frontend/ (React), backend/ (Node API), and infra/ (Terraform). Backend is highest priority.",
+      "author": "agent"
+    }
+  ],
+  "pages": [
+    { "title": "Overview", "purpose": "Codebase summary and entry point", "parent": null },
+    { "title": "Architecture", "purpose": "System layers, seams, data flow", "parent": "Overview" },
+    { "title": "Auth Module", "purpose": "Authentication flow, OAuth2, session management", "parent": "Architecture" },
+    { "title": "Database", "purpose": "Schema, tables, relationships", "parent": "Architecture" }
+  ]
 }
 ```
 
-### Step 2 — Build the SRS (`00-SRS.md`)
+Rules:
+- Max 30 pages in the config (the vault can have more, but the config steers the core set)
+- Each page has `title`, `purpose`, `parent` (or `null` for root)
+- `repo_notes` give context and priorities
 
-Read any existing README, specs, issues, or conversation context. Fill each section of `00-SRS.md`:
+### Step 3 — Build the Overview (`00-Overview.md`)
+
+Read the codebase structure, README, package files, and any existing docs. Write a 1-2 paragraph summary that answers:
+
+- What does this system do?
+- What are the main components?
+- What technologies are used?
+- Where do I start reading the code?
+
+Link to every other page: `[[02-Architecture]], [[04-Modules]], [[03-Database]], ...`
+
+This page is the **entry point** — anyone landing in the vault should understand the system from this page alone.
+
+### Step 4 — SRS (`01-SRS.md`)
+
+Read any existing README, specs, issues, or conversation context. Fill:
 
 - Purpose and scope
 - Stakeholders and actors
-- Functional requirements (numbered, testable)
+- Functional requirements (numbered, testable, **traced to modules with source links**)
 - Non-functional requirements (performance, security, reliability)
 - Constraints and assumptions
 - Acceptance criteria
 
-Use callouts for risk or open questions:
-
-```markdown
-> [!warning] Open question
-> The failover strategy is not yet defined.
-```
-
-### Step 3 — Architecture (`01-Architecture.md`)
+### Step 5 — Architecture (`02-Architecture.md`)
 
 Use the `codebase-design` vocabulary (module, interface, seam, adapter, depth, leverage, locality). Document:
 
 - Architectural drivers
-- Layers and modules
-- Seams and adapters
+- Layers and modules — **each with `source: path/to/file.ext:line`**
+- Seams and adapters — **with source links**
 - Data flow
 - External integrations
-- ADRs
+- ADRs (link to `Decisions/*.md`)
 
-### Step 4 — Database (`02-Database.md`)
+Every architectural claim must cite the source file and line where it is implemented.
+
+### Step 6 — Database (`03-Database.md`)
 
 For each database / persistence layer:
 
-- Technology and version
+- Technology and version — `source: package.json:23` or `source: requirements.txt:5`
 - Schema overview
-- Tables / collections with purpose
-- Columns / fields, types, constraints, indexes
+- Tables / collections with purpose — `source: migrations/001_create_users.sql:1`
+- Columns / fields, types, constraints, indexes — `source: src/models/User.ts:12`
 - Relationships (ER-style or wikilinks)
 - Migrations strategy
-- Backup / replication notes
 
-### Step 5 — Modules and Functions catalog
+### Step 7 — Modules and Functions catalog
 
 For each module:
 
 1. Create or update `Modules/<ModuleName>.md` from `templates/module-template.md`.
-2. Extract from code:
-   - interface (public functions, classes, exported symbols)
+2. Extract from code with **source links**:
+   - interface (public functions, classes, exported symbols) — `source: src/auth/Auth.ts:15`
    - invariants and ordering constraints
    - error modes
    - dependencies (internal and external)
-   - tests
-3. Update the central `03-Modules.md` index with a table and wikilinks.
+   - tests — `source: tests/auth.test.ts:1`
+3. Set `parent: 04-Modules` in frontmatter.
+4. Update the central `04-Modules.md` index with a table and wikilinks.
 
 For functions:
 
 1. Scan the codebase for exported / public functions.
-2. In `04-Functions.md`, build a registry table:
-   - Function, Module, Signature, Side effects, Calls, Tests
-3. For critical functions, create detailed sub-notes.
+2. In `05-Functions.md`, build a registry table:
+   - Function, Module, Signature, Source (`path:line`), Side effects, Calls, Tests
+3. For critical functions, create detailed sub-notes under `Functions/`.
 
-### Step 6 — Dependencies (`05-Dependencies.md`)
+### Step 8 — Dependencies (`06-Dependencies.md`)
 
-Read package managers and config files (`package.json`, `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, etc.). List:
+Read package managers and config files. List:
 
-- Production dependencies (name, version, purpose, license if known)
+- Production dependencies — `source: package.json:12`
 - Development dependencies
 - Internal dependencies (cross-module imports)
 - Optional / runtime dependencies
 - Deprecated or risky dependencies
 
-### Step 7 — Config (`06-Config.md`)
+### Step 9 — Config (`07-Config.md`)
 
-Collect config artifacts:
+Collect config artifacts with source links:
 
-- Environment variables (from `.env.example`, `docker-compose.yml`, code, docs)
-- Config files (`*.config.*`, `*.json`, `*.yaml`, `*.toml`, `*.ini`)
+- Environment variables — `source: .env.example:3` or `source: src/config/index.ts:8`
+- Config files — `source: docker-compose.yml:1`
 - Feature flags and defaults
 - Secrets management strategy
 
-### Step 8 — Glossary (`07-Glossary.md`)
+### Step 10 — Glossary (`08-Glossary.md`)
 
-Use `domain-modeling` discipline. Copy or extend `CONTEXT.md` terms. Add:
+Use `domain-modeling` discipline. Add:
 
 - Domain term
 - Definition
 - Synonyms / aliases
-- Where it appears in code
+- Where it appears in code — `source: src/types/Order.ts:5`
 
-### Step 9 — Build / update the Project Base (`Project.base`)
+### Step 11 — Decisions (`09-Decisions.md` + `Decisions/*.md`)
+
+For each architectural decision, create an ADR note:
+
+```markdown
+---
+title: "ADR-001: Use OAuth2 for authentication"
+parent: 09-Decisions
+tags: [decision, adr]
+date: 2026-01-15
+status: accepted
+---
+
+# ADR-001: Use OAuth2 for authentication
+
+## Context
+_Why this decision was needed._
+
+## Decision
+_What was decided._
+
+## Consequences
+_What follows from this decision._
+```
+
+### Step 12 — Build / update the Project Base (`Project.base`)
 
 The `.base` file ties everything together. Populate it with rows for modules, functions, dependencies, and config. Each row is an Obsidian note linked by `file.path`.
 
 See `references/obsidian-bases-spec.md` for Base syntax.
 
-### Step 10 — Build / update diagrams (`Diagrams/*.canvas` and `Architecture.canvas`)
+### Step 13 — Build / update diagrams
 
-Create a set of JSON Canvas diagrams. Use **modern diagrams** instead of (or alongside) heavy UML. See `references/modern-diagrams.md` for conventions.
+Create **both** Mermaid and Canvas versions of each diagram.
 
-Minimum diagrams:
+#### Mermaid diagrams (`Diagrams/*.md`)
 
-- `Diagrams/Context.canvas` — C4 System Context (users, in-scope system, external systems)
-- `Diagrams/Container.canvas` — C4 Container diagram (web, API, DB, queues, external services)
-- `Diagrams/Component.canvas` — C4 Component diagram for the most critical container
-- `Diagrams/Domain.canvas` — DDD context map (bounded contexts, upstream/downstream, domain events)
-- `Diagrams/DataModel.canvas` — ER/data model with tables/collections and relationships
-- `Diagrams/Flow.canvas` — Event / data flow or user-journey
-- `Architecture.canvas` — Master overview linking the others
+Mermaid renders inline in Obsidian and is version-controllable. Minimum:
 
-Each diagram should:
+- `Diagrams/Context.md` — C4 System Context
+- `Diagrams/Container.md` — C4 Container
+- `Diagrams/Component.md` — C4 Component for the most critical container
+- `Diagrams/Domain.md` — DDD context map
+- `Diagrams/DataModel.md` — ER/data model
+- `Diagrams/Flow.md` — Event / data flow
 
-- Use node colors consistently (green internal, yellow DB, orange queue, red external, purple actor/person)
+Example `Diagrams/Context.md`:
+
+```markdown
+---
+parent: 02-Architecture
+tags: [diagram, c4, context]
+---
+
+# System Context
+
+\`\`\`mermaid
+graph TB
+  User([User]) --> System[MyApp]
+  System --> Email[Email Service]
+  System --> Payment[Payment Gateway]
+\`\`\`
+
+## Links
+- [[02-Architecture]]
+- [[Modules/Auth]]
+```
+
+#### Canvas diagrams (`Diagrams/*.canvas`)
+
+JSON Canvas versions of the same diagrams (interactive, spatial). See `references/json-canvas-spec.md`.
+
+Each diagram (both formats) should:
+
+- Use node colors consistently (green internal, yellow DB, orange queue, red external, purple actor)
 - Label every edge with the relationship and technology
-- Include a small legend text node
-- Link back to the relevant note (`01-Architecture.md`, `02-Database.md`, `07-Glossary.md`, `Modules/*.md`)
+- Include a small legend
+- Link back to the relevant note
 
-You may use `graphify` first to extract the code graph and then translate key nodes and edges into the Canvas.
+You may use `graphify` first to extract the code graph and then translate key nodes and edges into the diagrams.
 
-### Step 11 — Maintain the Logbook (`Logbook.md` and `Daily/YYYY-MM-DD.md`)
+### Step 14 — Re-index workflow (`refresh.py`)
+
+The scaffold writes a `refresh.py` script into the vault. After code changes, run:
+
+```bash
+python <vault-dir>/refresh.py --project-dir <PROJECT>
+```
+
+It will:
+
+1. Scan the project directory for files changed since `project-manifest.json` `last_indexed`.
+2. For each changed file, find which wiki pages reference it (grep for `source: <file>`).
+3. Print a report: which pages are stale and need updating.
+4. Update `last_indexed` in `project-manifest.json`.
+
+This is the local equivalent of auto-reindexing. Run it before any update pass to know exactly which pages need attention.
+
+### Step 15 — Maintain the Logbook (`Logbook.md` and `Daily/YYYY-MM-DD.md`)
 
 At the end of each session create or update the daily note:
 
@@ -208,9 +326,9 @@ At the end of each session create or update the daily note:
    - **Decisions made** — decision, rationale, consequences, linked ADR
    - **Open questions**
    - **Next** — next actions
-3. Append a link to `Logbook.md` under the `## Activity log` heading, grouped by week or month.
+3. Append a link to `Logbook.md` under the `## Activity log` heading.
 
-Use tags to classify entries: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
+Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
 
 ## Running with graphify
 
@@ -226,18 +344,23 @@ Then write the findings into the Obsidian vault using this skill.
 ## Deviation / exceptions
 
 - If the project is not a software project, fall back to `grill-with-docs` or `domain-modeling`.
-- If the user only wants a Canvas, use `references/json-canvas-spec.md` and skip the SRS.
-- If the user only wants a database schema, use `02-Database.md` and the `Modules/Database/` notes.
+- If the user only wants diagrams, use `references/json-canvas-spec.md` and `references/modern-diagrams.md` and skip the SRS.
+- If the user only wants a database schema, use `03-Database.md` and the `Modules/Database/` notes.
 
 ## Quality checklist
 
-- [ ] Every module has a `Modules/*.md` note with interface and dependencies.
-- [ ] Every functional requirement in `00-SRS.md` is traceable to a module or function.
-- [ ] `05-Dependencies.md` matches the package manager files.
-- [ ] `06-Config.md` includes all env vars and config files.
+- [ ] `00-Overview.md` exists and summarizes the system in 1-2 paragraphs with links to all pages.
+- [ ] Every page has a `parent:` field in frontmatter (except `00-Overview.md`).
+- [ ] Every claim about code has a `source: path/to/file.ext:line` citation.
+- [ ] Every module has a `Modules/*.md` note with interface, dependencies, and source links.
+- [ ] Every functional requirement in `01-SRS.md` is traceable to a module or function with a source link.
+- [ ] `06-Dependencies.md` matches the package manager files (with source links).
+- [ ] `07-Config.md` includes all env vars and config files (with source links).
 - [ ] `Project.base` renders as a table in Obsidian.
-- [ ] `Diagrams/*.canvas` files have no dangling edges, use consistent colors and include a legend.
+- [ ] Both Mermaid (`Diagrams/*.md`) and Canvas (`Diagrams/*.canvas`) versions exist for each diagram type.
 - [ ] `Architecture.canvas` is an overview linking the other diagrams.
+- [ ] `wiki-config.json` exists with page definitions and repo notes.
+- [ ] `refresh.py` exists and runs without errors.
 - [ ] `Logbook.md` links to every `Daily/YYYY-MM-DD.md` entry.
 - [ ] Daily notes capture context, done, tried, worked, failed, decisions, rationale and next actions.
 - [ ] All internal references use Obsidian wikilinks `[[...]]`.
@@ -250,7 +373,8 @@ Then write the findings into the Obsidian vault using this skill.
 - `templates/config-template.md`
 - `templates/function-template.md`
 - `templates/daily-note-template.md`
+- `templates/overview-template.md`
+- `templates/adr-template.md`
 - `references/json-canvas-spec.md`
 - `references/obsidian-bases-spec.md`
 - `references/modern-diagrams.md`
-- `references/daily-note-template.md`

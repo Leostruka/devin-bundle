@@ -5,13 +5,15 @@ Usage:
     python scaffold.py --project-dir PROJECT --vault-dir VAULT [--project-name NAME]
 
 Creates:
-    - SRS, Architecture, Database, Modules index, Functions, Dependencies, Config, Glossary
-    - Modules/ and Functions/ subfolders
-    - Diagrams/ with C4 / DDD / data-model canvas shells
+    - Overview, SRS, Architecture, Database, Modules index, Functions, Dependencies, Config, Glossary, Decisions
+    - Modules/ and Functions/ and Decisions/ subfolders
+    - Diagrams/ with Mermaid (.md) and Canvas (.canvas) shells
     - Daily/ logbook folder and Logbook.md index
     - Project.base (Obsidian Base linking modules, functions, dependencies, config)
     - Architecture.canvas (JSON Canvas shell)
-    - project-manifest.json
+    - wiki-config.json (steering config)
+    - refresh.py (re-index script)
+    - project-manifest.json (with last_indexed timestamp)
 """
 import argparse
 import json
@@ -229,6 +231,261 @@ def flow_canvas():
     return nodes, edges
 
 
+MERMAID_TEMPLATES = {
+    "Context.md": """---
+parent: 02-Architecture
+tags: [diagram, c4, context]
+---
+
+# System Context
+
+```mermaid
+graph TB
+  User([User]) --> System[{project_name}]
+  System --> Email[Email Service]
+  System --> Payment[Payment Gateway]
+```
+
+## Links
+- [[02-Architecture]]
+""",
+    "Container.md": """---
+parent: 02-Architecture
+tags: [diagram, c4, container]
+---
+
+# Container Diagram
+
+```mermaid
+graph TB
+  User([User]) --> Web[Web App<br/>React]
+  Web --> API[API<br/>Node/Laravel/Go]
+  API --> DB[(Database<br/>Postgres)]
+  API --> Queue[Queue<br/>Redis]
+  API --> Ext[External Service]
+```
+
+## Links
+- [[02-Architecture]]
+""",
+    "Component.md": """---
+parent: 02-Architecture
+tags: [diagram, c4, component]
+---
+
+# Component Diagram
+
+```mermaid
+graph TB
+  Ctrl[Controller<br/>HTTP handlers] --> Svc[Service<br/>Business logic]
+  Svc --> Repo[Repository<br/>Data access]
+  Svc --> Gateway[Gateway<br/>External adapter]
+  Repo --> DB[(Database)]
+```
+
+## Links
+- [[02-Architecture]]
+""",
+    "Domain.md": """---
+parent: 02-Architecture
+tags: [diagram, ddd, domain]
+---
+
+# Domain Context Map
+
+```mermaid
+graph LR
+  subgraph ContextA[Context A]
+    A1[Aggregate 1]
+  end
+  subgraph ContextB[Context B]
+    B1[Aggregate 2]
+  end
+  A1 -->|upstream| B1
+  Event[Domain Event] --> B1
+```
+
+## Links
+- [[02-Architecture]]
+""",
+    "DataModel.md": """---
+parent: 03-Database
+tags: [diagram, er, data-model]
+---
+
+# Data Model
+
+```mermaid
+erDiagram
+  Users ||--o{ Orders : places
+  Orders ||--|{ OrderItems : contains
+  Users {
+    int id PK
+    string email
+    datetime created_at
+  }
+  Orders {
+    int id PK
+    int user_id FK
+    decimal total
+    string status
+  }
+  OrderItems {
+    int id PK
+    int order_id FK
+    int product_id
+    int qty
+  }
+```
+
+## Links
+- [[03-Database]]
+""",
+    "Flow.md": """---
+parent: 02-Architecture
+tags: [diagram, flow]
+---
+
+# Data / Event Flow
+
+```mermaid
+graph LR
+  Trigger[User Action] --> Cmd[Command]
+  Cmd --> Event[OrderCreated]
+  Event --> Handler[Send Email]
+  Cmd --> Read[Read Model]
+```
+
+## Links
+- [[02-Architecture]]
+""",
+}
+
+REFRESH_SCRIPT = r'''#!/usr/bin/env python3
+"""Re-index the wiki: detect changed source files and flag stale pages.
+
+Usage:
+    python refresh.py --project-dir <PROJECT>
+
+Scans the project for files changed since the last index (stored in
+project-manifest.json `last_indexed`). For each changed file, finds which
+wiki pages reference it via `source: <file>` citations. Prints a report
+of stale pages and updates the timestamp.
+"""
+import argparse
+import json
+import os
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def find_source_refs(vault_dir):
+    """Scan all .md files in the vault for `source: path/to/file` citations."""
+    refs = {}  # source_file -> set of wiki pages
+    for md_file in vault_dir.rglob("*.md"):
+        text = md_file.read_text(encoding="utf-8", errors="replace")
+        for m in re.finditer(r"source:\s*[`]?([^\s`]+)[`]?", text):
+            src_path = m.group(1).strip()
+            # Strip line number suffix
+            src_file = src_path.rsplit(":", 1)[0] if ":" in src_path else src_path
+            refs.setdefault(src_file, set()).add(str(md_file.relative_to(vault_dir)))
+    return refs
+
+
+def find_changed_files(project_dir, since_ts):
+    """Find files in project_dir modified after since_ts."""
+    changed = []
+    for root, dirs, files in os.walk(project_dir):
+        # Skip common ignore dirs
+        dirs[:] = [d for d in dirs if d not in {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build", "target"}]
+        for f in files:
+            fp = os.path.join(root, f)
+            try:
+                mtime = os.path.getmtime(fp)
+                if mtime > since_ts:
+                    rel = os.path.relpath(fp, project_dir).replace("\\\\", "/")
+                    changed.append(rel)
+            except OSError:
+                pass
+    return changed
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Re-index wiki and flag stale pages.")
+    parser.add_argument("--project-dir", required=True, help="Project directory to scan")
+    args = parser.parse_args()
+
+    project_dir = Path(args.project_dir).resolve()
+    vault_dir = Path(__file__).parent.resolve()
+    manifest_path = vault_dir / "project-manifest.json"
+
+    if not manifest_path.exists():
+        print("ERROR: project-manifest.json not found in vault dir.")
+        return 1
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    last_indexed = manifest.get("last_indexed_ts", 0)
+
+    print(f"Vault: {vault_dir}")
+    print(f"Project: {project_dir}")
+    print(f"Last indexed: {datetime.fromtimestamp(last_indexed, tz=timezone.utc).isoformat() if last_indexed else 'never'}")
+    print()
+
+    # Find changed files
+    changed = find_changed_files(project_dir, last_indexed)
+    print(f"Changed files since last index: {len(changed)}")
+
+    if not changed:
+        print("No changes detected. All pages are up to date.")
+        # Still update timestamp
+        manifest["last_indexed_ts"] = datetime.now(tz=timezone.utc).timestamp()
+        manifest["last_indexed"] = datetime.now(tz=timezone.utc).isoformat()
+        manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+        return 0
+
+    # Find source refs in vault
+    refs = find_source_refs(vault_dir)
+
+    # Map changed files to stale pages
+    stale_pages = set()
+    for changed_file in changed:
+        # Try exact match and basename match
+        if changed_file in refs:
+            for page in refs[changed_file]:
+                stale_pages.add(page)
+        else:
+            # Try basename match
+            basename = os.path.basename(changed_file)
+            for src_file, pages in refs.items():
+                if os.path.basename(src_file) == basename:
+                    stale_pages.update(pages)
+
+    print()
+    print(f"Stale pages ({len(stale_pages)}):")
+    for page in sorted(stale_pages):
+        print(f"  [STALE] {page}")
+
+    print()
+    print(f"Changed files with no wiki reference ({len(changed) - len(stale_pages)}):")
+    for f in changed:
+        if not any(f in pages or os.path.basename(f) in [os.path.basename(s) for s in refs] for pages in refs.values()):
+            print(f"  [NEW] {f}")
+
+    # Update manifest
+    manifest["last_indexed_ts"] = datetime.now(tz=timezone.utc).timestamp()
+    manifest["last_indexed"] = datetime.now(tz=timezone.utc).isoformat()
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    print()
+    print(f"Updated last_indexed: {manifest['last_indexed']}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+'''
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project-dir", required=True, help="Project directory to document")
@@ -256,6 +513,7 @@ def main():
     # Create vault directories
     (vault_dir / "Modules").mkdir(parents=True, exist_ok=True)
     (vault_dir / "Functions").mkdir(parents=True, exist_ok=True)
+    (vault_dir / "Decisions").mkdir(parents=True, exist_ok=True)
     (vault_dir / "Diagrams").mkdir(parents=True, exist_ok=True)
     (vault_dir / "Daily").mkdir(parents=True, exist_ok=True)
     (vault_dir / "Media").mkdir(parents=True, exist_ok=True)
@@ -266,87 +524,110 @@ def main():
         "DATE": date,
     }
 
-    files_to_write = {
-        "00-SRS.md": "srs-template.md",
-        "01-Architecture.md": "srs-template.md",
-        "02-Database.md": "database-template.md",
-        "03-Modules.md": None,
-        "04-Functions.md": None,
-        "05-Dependencies.md": None,
-        "06-Config.md": "config-template.md",
-        "07-Glossary.md": None,
-    }
+    # Write Overview from template
+    overview = vault_dir / "00-Overview.md"
+    if not overview.exists():
+        overview.write_text(load_template(skill_dir, "overview-template.md", mapping), encoding="utf-8")
 
-    # Write templated notes
-    for target, template in files_to_write.items():
-        dest = vault_dir / target
-        if dest.exists():
-            continue
-        if template:
-            text = load_template(skill_dir, template, mapping)
-        else:
-            text = f"---\ntitle: \"{project_name} - {target[3:].replace('-', ' ').strip('.md')}\"\nproject: \"{project_name}\"\ntags:\n  - {project_tag}\n---\n\n# {target[3:].replace('.md', '').replace('-', ' ')}\n\n_Generated on {date}. Fill this page with project-specific content._\n"
-        dest.write_text(text, encoding="utf-8")
+    # Write SRS from template (renumbered to 01)
+    srs = vault_dir / "01-SRS.md"
+    if not srs.exists():
+        srs_text = load_template(skill_dir, "srs-template.md", mapping)
+        # Add parent frontmatter
+        srs_text = srs_text.replace('status: draft', 'status: draft\nparent: 00-Overview')
+        srs.write_text(srs_text, encoding="utf-8")
 
-    # Fix Architecture title by rewriting the SRS template leftovers
-    arch = vault_dir / "01-Architecture.md"
-    arch.write_text(
-        f"---\ntitle: \"{project_name} - Architecture\"\nproject: \"{project_name}\"\ntags:\n  - architecture\n  - {project_tag}\n---\n\n# Architecture\n\n_Generated on {date}. Document system overview, layers, seams, adapters, data flow and ADRs._\n",
-        encoding="utf-8",
-    )
+    # Architecture
+    arch = vault_dir / "02-Architecture.md"
+    if not arch.exists():
+        arch.write_text(
+            f"---\ntitle: \"{project_name} - Architecture\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - architecture\n  - {project_tag}\n---\n\n# Architecture\n\n_Generated on {date}. Document system overview, layers, seams, adapters, data flow and ADRs. Every claim must have a `source: path/to/file:line` citation._\n",
+            encoding="utf-8",
+        )
+
+    # Database
+    db = vault_dir / "03-Database.md"
+    if not db.exists():
+        db_text = load_template(skill_dir, "database-template.md", mapping)
+        db_text = db_text.replace('---\n', '---\nparent: 00-Overview\n', 1)
+        db.write_text(db_text, encoding="utf-8")
 
     # Modules index
-    modules_index = vault_dir / "03-Modules.md"
-    modules_index.write_text(
-        f"---\ntitle: \"{project_name} - Modules\"\nproject: \"{project_name}\"\ntags:\n  - modules\n  - {project_tag}\n---\n\n# Modules\n\n| Module | Purpose | Dependencies | Tests | Status |\n|--------|---------|--------------|-------|--------|\n\n> Create one note per module inside `Modules/`.\n",
-        encoding="utf-8",
-    )
+    modules_index = vault_dir / "04-Modules.md"
+    if not modules_index.exists():
+        modules_index.write_text(
+            f"---\ntitle: \"{project_name} - Modules\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - modules\n  - {project_tag}\n---\n\n# Modules\n\n| Module | Purpose | Dependencies | Tests | Source | Status |\n|--------|---------|--------------|-------|--------|--------|\n\n> Create one note per module inside `Modules/`. Each must have `source: path/to/file:line`.\n",
+            encoding="utf-8",
+        )
 
     # Functions index
-    functions_index = vault_dir / "04-Functions.md"
-    functions_index.write_text(
-        f"---\ntitle: \"{project_name} - Functions\"\nproject: \"{project_name}\"\ntags:\n  - functions\n  - {project_tag}\n---\n\n# Functions\n\n| Function | Module | Signature | Side effects | Tests |\n|----------|--------|-----------|--------------|-------|\n",
-        encoding="utf-8",
-    )
+    functions_index = vault_dir / "05-Functions.md"
+    if not functions_index.exists():
+        functions_index.write_text(
+            f"---\ntitle: \"{project_name} - Functions\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - functions\n  - {project_tag}\n---\n\n# Functions\n\n| Function | Module | Signature | Source | Side effects | Tests |\n|----------|--------|-----------|--------|--------------|-------|\n",
+            encoding="utf-8",
+        )
 
     # Dependencies
-    deps = vault_dir / "05-Dependencies.md"
-    deps.write_text(
-        f"---\ntitle: \"{project_name} - Dependencies\"\nproject: \"{project_name}\"\ntags:\n  - dependencies\n  - {project_tag}\n---\n\n# Dependencies\n\n## Production dependencies\n\n| Name | Version | Purpose | License |\n|------|---------|---------|---------|\n\n## Development dependencies\n\n| Name | Version | Purpose | License |\n|------|---------|---------|---------|\n\n## Internal dependencies\n\n| Module | Depends on | Relationship |\n|--------|------------|--------------|\n",
-        encoding="utf-8",
-    )
+    deps = vault_dir / "06-Dependencies.md"
+    if not deps.exists():
+        deps.write_text(
+            f"---\ntitle: \"{project_name} - Dependencies\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - dependencies\n  - {project_tag}\n---\n\n# Dependencies\n\n## Production dependencies\n\n| Name | Version | Purpose | License | Source |\n|------|---------|---------|---------|--------|\n\n## Development dependencies\n\n| Name | Version | Purpose | License | Source |\n|------|---------|---------|---------|--------|\n\n## Internal dependencies\n\n| Module | Depends on | Relationship | Source |\n|--------|------------|--------------|--------|\n",
+            encoding="utf-8",
+        )
+
+    # Config
+    config = vault_dir / "07-Config.md"
+    if not config.exists():
+        config_text = load_template(skill_dir, "config-template.md", mapping)
+        config_text = config_text.replace('---\n', '---\nparent: 00-Overview\n', 1)
+        config.write_text(config_text, encoding="utf-8")
 
     # Glossary
-    glossary = vault_dir / "07-Glossary.md"
-    glossary.write_text(
-        f"---\ntitle: \"{project_name} - Glossary\"\nproject: \"{project_name}\"\ntags:\n  - glossary\n  - {project_tag}\n---\n\n# Glossary\n\n| Term | Definition | Aliases | Used in |\n|------|------------|---------|---------|\n",
-        encoding="utf-8",
-    )
+    glossary = vault_dir / "08-Glossary.md"
+    if not glossary.exists():
+        glossary.write_text(
+            f"---\ntitle: \"{project_name} - Glossary\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - glossary\n  - {project_tag}\n---\n\n# Glossary\n\n| Term | Definition | Aliases | Source | Used in |\n|------|------------|---------|--------|---------|\n",
+            encoding="utf-8",
+        )
+
+    # Decisions
+    decisions = vault_dir / "09-Decisions.md"
+    if not decisions.exists():
+        decisions.write_text(
+            f"---\ntitle: \"{project_name} - Decisions\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - decisions\n  - adr\n  - {project_tag}\n---\n\n# Decisions (ADRs)\n\n| ADR | Title | Status | Date |\n|-----|-------|--------|------|\n\n> Create one note per ADR inside `Decisions/`. Use `templates/adr-template.md`.\n",
+            encoding="utf-8",
+        )
 
     # Logbook index
     logbook = vault_dir / "Logbook.md"
-    logbook.write_text(
-        f"---\ntitle: \"{project_name} - Logbook\"\nproject: \"{project_name}\"\ntags:\n  - logbook\n  - {project_tag}\n---\n\n# Logbook\n\nRunning log of daily work. Each entry is a daily note under `Daily/`.\n\n## Activity log\n\n### [[{date}]]\n- Initial scaffold and project setup\n",
-        encoding="utf-8",
-    )
+    if not logbook.exists():
+        logbook.write_text(
+            f"---\ntitle: \"{project_name} - Logbook\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - logbook\n  - {project_tag}\n---\n\n# Logbook\n\nRunning log of daily work. Each entry is a daily note under `Daily/`.\n\n## Activity log\n\n### [[{date}]]\n- Initial scaffold and project setup\n",
+            encoding="utf-8",
+        )
 
     # First daily note from template
     daily_note = vault_dir / "Daily" / f"{date}.md"
-    daily_note.write_text(load_template(skill_dir, "daily-note-template.md", mapping), encoding="utf-8")
+    if not daily_note.exists():
+        daily_note.write_text(load_template(skill_dir, "daily-note-template.md", mapping), encoding="utf-8")
 
     # Project Base
     base_file = vault_dir / "Project.base"
-    base_file.write_text(
-        f"""filters:
+    if not base_file.exists():
+        base_file.write_text(
+            f"""filters:
   or:
     - 'file.hasTag("{project_tag}")'
     - 'file.inFolder("Modules")'
     - 'file.inFolder("Functions")'
+    - 'file.inFolder("Decisions")'
     - 'file.inFolder("Daily")'
 
 formulas:
   is_module: 'file.hasTag("module")'
   is_function: 'file.hasTag("function")'
+  is_decision: 'file.hasTag("adr")'
   is_logbook: 'file.hasTag("logbook")'
 
 properties:
@@ -354,6 +635,8 @@ properties:
     displayName: Status
   module:
     displayName: Module
+  parent:
+    displayName: Parent
 
 views:
   - type: table
@@ -361,6 +644,7 @@ views:
     order:
       - file.name
       - file.folder
+      - parent
       - status
   - type: table
     name: "Modules"
@@ -379,6 +663,14 @@ views:
       - file.name
       - module
   - type: table
+    name: "Decisions"
+    filters:
+      and:
+        - 'file.inFolder("Decisions")'
+    order:
+      - file.name
+      - status
+  - type: table
     name: "Logbook"
     filters:
       and:
@@ -387,10 +679,16 @@ views:
       - file.name
       - file.folder
 """,
-        encoding="utf-8",
-    )
+            encoding="utf-8",
+        )
 
-    # Diagram canvases
+    # Mermaid diagram shells
+    for name, template in MERMAID_TEMPLATES.items():
+        dest = vault_dir / "Diagrams" / name
+        if not dest.exists():
+            dest.write_text(template.replace("{project_name}", project_name), encoding="utf-8")
+
+    # Canvas diagrams
     write_canvas(vault_dir / "Diagrams" / "Context.canvas", *context_canvas(project_name))
     write_canvas(vault_dir / "Diagrams" / "Container.canvas", *container_canvas(project_name))
     write_canvas(vault_dir / "Diagrams" / "Component.canvas", *component_canvas())
@@ -460,25 +758,56 @@ views:
         json.dumps(architecture_canvas, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
-    # Manifest
+    # wiki-config.json (steering config)
+    wiki_config = {
+        "repo_notes": [
+            {
+                "content": f"This repository contains {project_name}. Document the main components, their interactions, and key architectural decisions.",
+                "author": "agent",
+            }
+        ],
+        "pages": [
+            {"title": "Overview", "purpose": "Codebase summary and entry point", "parent": None},
+            {"title": "SRS", "purpose": "Software requirements specification", "parent": "Overview"},
+            {"title": "Architecture", "purpose": "System layers, seams, data flow, ADRs", "parent": "Overview"},
+            {"title": "Database", "purpose": "Schema, tables, relationships", "parent": "Architecture"},
+            {"title": "Modules", "purpose": "Module catalog with interfaces and dependencies", "parent": "Architecture"},
+            {"title": "Functions", "purpose": "Function registry with signatures and callers", "parent": "Modules"},
+            {"title": "Dependencies", "purpose": "Third-party and internal dependencies", "parent": "Overview"},
+            {"title": "Config", "purpose": "Environment variables, config files, feature flags", "parent": "Overview"},
+            {"title": "Glossary", "purpose": "Domain terms with code references", "parent": "Overview"},
+            {"title": "Decisions", "purpose": "ADR log", "parent": "Overview"},
+        ],
+    }
+    (vault_dir / "wiki-config.json").write_text(
+        json.dumps(wiki_config, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+
+    # refresh.py (re-index script)
+    (vault_dir / "refresh.py").write_text(REFRESH_SCRIPT, encoding="utf-8")
+
+    # Manifest with last_indexed timestamp
+    now = datetime.now()
     manifest = {
         "project_name": project_name,
         "project_dir": str(project_dir),
         "vault_dir": str(vault_dir),
         "created": date,
-        "version": "0.1.0",
+        "version": "0.2.0",
+        "last_indexed": now.isoformat(),
+        "last_indexed_ts": now.timestamp(),
     }
     (vault_dir / "project-manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
 
     # Copy helper templates into vault for later reuse
-    for template in ["module-template.md", "function-template.md", "daily-note-template.md"]:
+    for template in ["module-template.md", "function-template.md", "daily-note-template.md", "overview-template.md", "adr-template.md"]:
         src = skill_dir / "templates" / template
         if src.exists():
             shutil.copy(src, vault_dir / "Media" / template)
 
     print(f"Scaffolded {vault_dir}")
     print(f"Project: {project_name}")
-    print(f"Files: {len(list(vault_dir.glob('*.*md')))} top-level notes, plus Daily/, Diagrams/, Project.base and Architecture.canvas")
+    print(f"Files: {len(list(vault_dir.glob('*.*md')))} top-level notes, plus Modules/, Functions/, Decisions/, Diagrams/, Daily/, Project.base, Architecture.canvas, wiki-config.json, refresh.py")
 
 
 if __name__ == "__main__":
