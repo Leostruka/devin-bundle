@@ -23,5 +23,18 @@
 - Apply this rule to first occurrences of task categories each week: first PR, first PR review, first CSV edit, first project in a given language/stack, first deployment, first debugging session, first UI change, first installer/script work, first GitHub operation, first API/MCP integration, etc.
 - This rule applies to all tools and integrations (MCP servers, skills, built-in commands, external CLIs, APIs, `gh`, `curl`, `python`, `powershell`) that can improve the task outcome.
 
-## 4. graphify trigger
+## 4. Functional programming and clean code (always-on)
+- **Default to functional programming.** Prefer pure functions, immutability, and composition over mutation, inheritance hierarchies, and imperative loops.
+- **Functional Core, Imperative Shell (FCIS).** Separate pure business logic (calculations) from side effects (actions). The core takes data in, returns data out, no I/O. The shell handles databases, HTTP, files, UI. Pure functions decide *what*; the shell decides *how* and *where*. See also: Impureim Sandwich — gather all input at the boundary, pass to a pure function, then push results back out.
+- **Actions vs Calculations vs Data.** Classify every piece of code: Actions (side effects, non-deterministic) → push to the shell. Calculations (pure, deterministic) → keep in the core. Data (immutable values) → pass around freely. (Grokking Simplicity lens.)
+- **Immutability first.** Use `readonly`/`final`/`const` by default. Prefer immutable collections (`ImmutableList`, `ReadonlyArray`, `FrozenDict`, persistent data structures). Use change-by-copy methods (`toSorted`, `toReversed`, `with`) over in-place mutation.
+- **Pipeline composition.** Chain small functions into pipelines instead of writing nested loops and temp variables. Prefer `map → filter → reduce` over `for` with accumulators. Use point-free / tacit style when it improves readability: `f = g ∘ h` not `f(x) = g(h(x))`.
+- **Algebraic data types for errors.** Prefer `Option<T>` / `Either<E, A>` / `Result<T, E>` over null checks and try/catch in pure layers. Make the possibility of failure explicit in the type signature. Reserve try/catch for the imperative shell.
+- **Condense and reduce.** Eliminate duplication via composition and higher-order functions, not copy-paste. Collapse duplicate else branches. Share abstractions. If two functions differ by one argument, parameterize instead of duplicating. Fewer lines, fewer branches, fewer moving parts — without sacrificing clarity.
+- **Fusion / deforestation.** When chaining multiple traversals (`map ∘ filter ∘ map`), fuse into a single pass when the language allows it. Avoid intermediate allocations. Use lazy iterators / generator pipelines where available (e.g., Iterator Helpers in ES2024+, `IEnumerable`, `Seq`, Rust iterators).
+- **Modern language features for FP.** Use what the language offers natively: `Object.groupBy` / `Map.groupBy` (ES2024+), `Promise.withResolvers`, `structuredClone`, `Set` methods (`union`, `intersection`, `difference`), pattern matching, destructuring, tail call optimization where supported.
+- **Readability is non-negotiable.** Functional style should *reduce* cognitive load, not increase it. If a point-free pipeline or monad stack makes the code harder to read than a simple loop, use the loop. Pragmatism over purity. The goal is less code that is easier to reason about, not clever code that is harder to maintain.
+- **When not to apply:** One-off scripts, heavily stateful UIs already managed by frameworks, hard-real-time systems where indirection adds latency. Don't force FP where it fights the grain.
+
+## 5. graphify trigger
 - When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
