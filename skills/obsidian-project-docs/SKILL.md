@@ -4,9 +4,9 @@ description: Use when the user wants to build or update a local codebase wiki in
 ---
 # obsidian-project-docs
 
-Build a **local codebase wiki** in an Obsidian vault at the same quality level as a cloud-generated wiki: architecture diagrams, source-linked documentation, hierarchical pages, codebase summaries, and a re-index workflow that keeps everything in sync with the code.
+Build a **meticulous, SRS/ISO-style local codebase wiki** in an Obsidian vault at the same quality level as a cloud-generated wiki: source-linked documentation, hierarchical pages, architecture diagrams (Mermaid + Canvas), codebase summaries, and a re-index workflow that keeps everything in sync with the code.
 
-**Scope:** codebase summary, architecture, modules, functions, database, dependencies, config, glossary, decisions, diagrams, logbook, re-index.
+**Scope:** codebase summary, architecture, modules, functions, database schema, dependencies, config files, environment variables, relationships, decisions, diagrams, glossary, daily logbook, re-index.
 
 ## When to use
 
@@ -132,7 +132,7 @@ This page is the **entry point** — anyone landing in the vault should understa
 
 ### Step 4 — SRS (`01-SRS.md`)
 
-Read any existing README, specs, issues, or conversation context. Fill:
+Read any existing README, specs, issues, or conversation context. Fill each section of `01-SRS.md`:
 
 - Purpose and scope
 - Stakeholders and actors
@@ -140,6 +140,13 @@ Read any existing README, specs, issues, or conversation context. Fill:
 - Non-functional requirements (performance, security, reliability)
 - Constraints and assumptions
 - Acceptance criteria
+
+Use callouts for risk or open questions:
+
+```markdown
+> [!warning] Open question
+> The failover strategy is not yet defined.
+```
 
 ### Step 5 — Architecture (`02-Architecture.md`)
 
@@ -164,6 +171,7 @@ For each database / persistence layer:
 - Columns / fields, types, constraints, indexes — `source: src/models/User.ts:12`
 - Relationships (ER-style or wikilinks)
 - Migrations strategy
+- Backup / replication notes
 
 ### Step 7 — Modules and Functions catalog
 
@@ -188,9 +196,9 @@ For functions:
 
 ### Step 8 — Dependencies (`06-Dependencies.md`)
 
-Read package managers and config files. List:
+Read package managers and config files (`package.json`, `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, etc.). List:
 
-- Production dependencies — `source: package.json:12`
+- Production dependencies (name, version, purpose, license if known) — `source: package.json:12`
 - Development dependencies
 - Internal dependencies (cross-module imports)
 - Optional / runtime dependencies
@@ -207,7 +215,7 @@ Collect config artifacts with source links:
 
 ### Step 10 — Glossary (`08-Glossary.md`)
 
-Use `domain-modeling` discipline. Add:
+Use `domain-modeling` discipline. Copy or extend `CONTEXT.md` terms. Add:
 
 - Domain term
 - Definition
@@ -247,7 +255,7 @@ See `references/obsidian-bases-spec.md` for Base syntax.
 
 ### Step 13 — Build / update diagrams
 
-Create **both** Mermaid and Canvas versions of each diagram.
+Create **both** Mermaid and Canvas versions of each diagram. Use **modern diagrams** instead of (or alongside) heavy UML. See `references/modern-diagrams.md` for conventions.
 
 #### Mermaid diagrams (`Diagrams/*.md`)
 
@@ -326,7 +334,7 @@ At the end of each session create or update the daily note:
    - **Decisions made** — decision, rationale, consequences, linked ADR
    - **Open questions**
    - **Next** — next actions
-3. Append a link to `Logbook.md` under the `## Activity log` heading.
+3. Append a link to `Logbook.md` under the `## Activity log` heading, grouped by week or month.
 
 Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
 
@@ -358,6 +366,7 @@ Then write the findings into the Obsidian vault using this skill.
 - [ ] `07-Config.md` includes all env vars and config files (with source links).
 - [ ] `Project.base` renders as a table in Obsidian.
 - [ ] Both Mermaid (`Diagrams/*.md`) and Canvas (`Diagrams/*.canvas`) versions exist for each diagram type.
+- [ ] `Diagrams/*.canvas` files have no dangling edges, use consistent colors and include a legend.
 - [ ] `Architecture.canvas` is an overview linking the other diagrams.
 - [ ] `wiki-config.json` exists with page definitions and repo notes.
 - [ ] `refresh.py` exists and runs without errors.
