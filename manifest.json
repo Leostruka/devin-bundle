@@ -180,6 +180,46 @@
       "name": "debug-ci-failures",
       "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
       "purpose": "Debug CI build failures systematically. CI-agnostic: works with GitHub Actions, CircleCI, GitLab CI, Jenkins, or any CI. Integrates with systematic-debugging and diagnosing-bugs."
+    },
+    {
+      "name": "subagent-driven-development",
+      "source": "github:obra/superpowers",
+      "purpose": "Execute implementation plans by dispatching a fresh implementer subagent per task, task review after each (spec + quality), broad final review. Coordinator never implements directly — preserves context for coordination. Has implementer/task-reviewer/re-review prompt templates + scripts."
+    },
+    {
+      "name": "dispatching-parallel-agents",
+      "source": "github:obra/superpowers",
+      "purpose": "Dispatch one subagent per independent problem domain (e.g. 3 test files failing with different root causes). Parallel dispatch in a single message. Review and integrate when all return."
+    },
+    {
+      "name": "executing-plans",
+      "source": "github:obra/superpowers",
+      "purpose": "Fallback for executing implementation plans when subagents are NOT available. Load plan, review critically, execute tasks in sequence with checkpoints, finish with finishing-a-development-branch."
+    },
+    {
+      "name": "finishing-a-development-branch",
+      "source": "github:obra/superpowers",
+      "purpose": "Final step of plan execution: verify all tests pass, present options (merge, PR, keep branch), execute chosen option. Used by subagent-driven-development and executing-plans."
+    },
+    {
+      "name": "receiving-code-review",
+      "source": "github:obra/superpowers",
+      "purpose": "How to handle incoming code review feedback: verify before implementing, push back with technical reasoning when wrong, no performative agreement. Complements code-review (which covers requesting + giving review)."
+    },
+    {
+      "name": "using-git-worktrees",
+      "source": "github:obra/superpowers",
+      "purpose": "Create isolated git worktrees for parallel work branches. Used by executing-plans and subagent-driven-development for workspace isolation."
+    },
+    {
+      "name": "verification-before-completion",
+      "source": "github:obra/superpowers",
+      "purpose": "Iron law: NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE. Gate function: identify command, run it, read output, verify, only then claim. Complements rule 6 (inner-loop validation) with enforcement discipline."
+    },
+    {
+      "name": "writing-skills",
+      "source": "github:obra/superpowers",
+      "purpose": "Meta-skill: how to write agent skills using TDD approach. RED (baseline test without skill), GREEN (write minimal skill), REFACTOR (close loopholes). Includes bulletproofing against rationalization, testing with subagents, persuasion principles. Complements self-extend (the why) with the how."
     }
   ]
 }

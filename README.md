@@ -9,24 +9,26 @@ e restaura tudo no destino correto via um único comando.
 ```
 devin-bundle/
 ├── AGENTS.md          # regras consolidadas (7 seções, Devin-focused)
-├── manifest.json      # 34 skills + origem + propósito
+├── manifest.json      # 42 skills + origem + propósito
 ├── export.ps1         # exportador Windows (PowerShell)
 ├── export.sh          # exportador Linux/WSL/macOS (bash)
 ├── install.ps1        # instalador Windows (PowerShell)
 ├── install.sh         # instalador Linux/WSL/macOS (bash)
 ├── README.md          # este arquivo
-└── skills/            # 34 skills
+└── skills/            # 42 skills
     │
     │  === Meta / discovery ===
     ├── tool-and-skill-discovery/   # achar skill certa pra qualquer tarefa
     ├── find-skills/                # descobrir e instalar skills novas
     ├── self-extend/                # auto-evoluir: criar tools, hooks, skills
     ├── using-superpowers/          # invocar skills antes de qualquer resposta
+    ├── writing-skills/             # como escrever skills (TDD: RED-GREEN-REFACTOR)
     │
     │  === Git / GitHub ===
     ├── git-helper/                 # workflow git, branches, commits
     ├── gh/                         # padrões pro GitHub CLI
     ├── resolving-merge-conflicts/  # resolver merge conflicts
+    ├── using-git-worktrees/        # workspaces isolados com git worktrees
     │
     │  === Design / planning ===
     ├── grilling/                   # UNIFICADO: brainstorming + grilling
@@ -43,6 +45,12 @@ devin-bundle/
     ├── implement/                  # build from spec/tickets com TDD + code-review
     ├── prototype/                  # protótipo descartável (HTML) p/ design question
     ├── code-review/                # UNIFICADO: subagent dispatch + two-axis review
+    ├── receiving-code-review/      # como receber feedback: verificar antes de implementar
+    ├── subagent-driven-development/ # fresh subagent per task + task review + final review
+    ├── executing-plans/            # fallback: executar plan sem subagents (checkpoints)
+    ├── dispatching-parallel-agents/ # um subagent por problema independente (paralelo)
+    ├── finishing-a-development-branch/ # step final: verify tests, merge/PR/keep
+    ├── verification-before-completion/ # iron law: no completion claims without evidence
     │
     │  === Debugging / research ===
     ├── systematic-debugging/       # reproduzir, rastrear, isolar root cause
