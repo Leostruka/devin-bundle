@@ -1,6 +1,7 @@
 ---
+
 name: to-questionnaire
-description: Turn a decision you can't fully answer into a questionnaire for someone else to fill in.
+description: "Use when a decision cannot be fully answered and needs input from another person."
 triggers:
   - user
 ---

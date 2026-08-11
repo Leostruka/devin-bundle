@@ -1,6 +1,7 @@
 ---
+
 name: obsidian-project-docs
-description: Document software projects in Obsidian as an SRS/ISO-style engineering wiki. Scaffolds notes, Bases (modules, functions, dependencies, config) and Canvas architecture diagrams. Use when the user wants to build or update project documentation in an Obsidian vault, create SRS/ISO docs, map dependencies, or visualize architecture.
+description: "Use when the user wants to build or update project documentation in an Obsidian vault, create SRS/ISO docs, map dependencies, or visualize architecture."
 ---
 
 # obsidian-project-docs

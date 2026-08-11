@@ -1,6 +1,7 @@
 ---
+
 name: tool-and-skill-discovery
-description: Meta-skill to discover and invoke the right skill, MCP server, CLI, or built-in tool for any task.
+description: "Use when the user asks how to do something, needs the right skill or tool, or no skill seems to match the task."
 ---
 
 # Tool and Skill Discovery
@@ -43,15 +44,15 @@ description: Meta-skill to discover and invoke the right skill, MCP server, CLI,
 
 | Task category | Tools/skills to consider |
 |---------------|--------------------------|
-| Git / PR      | `git-helper`, `gh`, `skill requesting-code-review` |
+| Git / PR      | `git-helper`, `gh`, `skill code-review`, `skill receiving-code-review` |
 | GitHub ops    | `gh`, `mcp_call_tool` for GitHub MCP, `web_search` |
 | CSV / data    | `python` (pandas), `powershell` `Import-Csv`, `grep` |
 | .NET / C#     | `dotnet build`, `dotnet test`, `skill xaml-patterns`, `skill avalonia-pro-max` |
 | Laravel / PHP | `skill laravel-patterns`, `skill laravel-tdd`, `skill filament-pro` |
 | UI / design   | `skill wa-design-desktop`, `skill avalonia-pro-max`, `skill apple-hig` |
 | Installers    | `ISCC.exe`, `powershell`, `schtasks` |
-| Debugging     | `skill systematic-debugging`, `skill test-driven-development` |
-| Verification  | `skill verification-planning`, `skill laravel-verification` |
+| Debugging     | `skill systematic-debugging`, `skill tdd` |
+| Verification  | `skill verification-before-completion`, `skill laravel-verification` |
 | Documentation | `context7`, `web_search`, `webfetch` |
 
 ## Creating or updating a skill

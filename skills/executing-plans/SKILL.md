@@ -1,6 +1,7 @@
 ---
+
 name: executing-plans
-description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
+description: Use when executing a written implementation plan with checkpoints and reviews.
 ---
 
 # Executing Plans
@@ -11,7 +12,7 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents (your agent, your agent, your agent, your agent, and your agent all qualify; see the per-platform tool refs in `../using-superpowers/references/`). If subagents are available, use /subagent-driven-development instead of this skill.
+**Note:** This skill works best when subagents are available (Devin CLI supports `run_subagent`). If the plan has independent tasks that benefit from fresh contexts, use `/subagent-driven-development` instead of this skill.
 
 ## The Process
 

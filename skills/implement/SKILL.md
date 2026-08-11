@@ -1,6 +1,7 @@
 ---
+
 name: implement
-description: "Implement a piece of work based on a spec or set of tickets."
+description: "Use when the user wants to implement a feature or fix from a spec or set of tickets."
 ---
 
 Implement the work described by the user in the spec or tickets.

@@ -1,6 +1,7 @@
 ---
+
 name: writing-skills
-description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
+description: "Use when creating new skills, editing existing skills, or verifying skills work before deployment."
 ---
 
 # Writing Skills
@@ -9,7 +10,7 @@ description: Use when creating new skills, editing existing skills, or verifying
 
 **Writing skills IS Test-Driven Development applied to process documentation.**
 
-**Personal skills live in your runtime's skills directory** (`~/.claude/skills/` on your agent) — see [codex-tools.md](../using-superpowers/references/codex-tools.md) or [gemini-tools.md](../using-superpowers/references/gemini-tools.md) for the path on those runtimes. Codex, your agent, and your agent all also recognize `~/.agents/skills/` as a cross-runtime alias.
+**Personal skills live in your Devin CLI skills directory** (`~/.config/devin/skills/` on Linux/macOS or `%APPDATA%\devin\skills\` on Windows). Project-specific skills live in `.devin/skills/<name>/`. The Devin CLI also recognizes the `.agents/skills/` standard for cross-runtime compatibility.
 
 You write test cases (pressure scenarios with subagents), watch them fail (baseline behavior), write the skill (documentation), watch tests pass (agents comply), and refactor (close loopholes).
 

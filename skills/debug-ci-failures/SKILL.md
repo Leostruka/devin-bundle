@@ -1,6 +1,7 @@
 ---
+
 name: debug-ci-failures
-description: "Debug CI build failures systematically. Use when the user says 'debug CI', 'why is CI failing', 'fix CI failures', 'find flaky tests', 'what broke in CI', or asks about failing pipelines or build errors. CI-agnostic: works with GitHub Actions, CircleCI, GitLab CI, or any CI. Adapted from CircleCI chunk debug-ci-failures to be CI-agnostic."
+description: "Use when CI is failing and the cause needs to be found across builds, jobs, or environments."
 ---
 
 # Debug CI Failures

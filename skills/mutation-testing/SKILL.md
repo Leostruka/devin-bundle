@@ -1,6 +1,7 @@
 ---
+
 name: mutation-testing
-description: "Find gaps in test coverage via mutation testing. Use when asked to 'find testing gaps', 'mutation test', 'mutate this code', 'test mutation coverage', or 'find surviving mutants'. Runs a 4-stage process: discovery, validation (local first, CI optional), production cross-reference (optional), and risk assessment. Adapted from CircleCI chunk-testing-gaps to be CI-agnostic."
+description: "Use when the user asks to find testing gaps, mutation test, or identify surviving mutants."
 ---
 
 # Mutation Testing

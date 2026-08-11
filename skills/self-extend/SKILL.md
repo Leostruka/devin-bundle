@@ -1,6 +1,7 @@
 ---
+
 name: self-extend
-description: Use when you want to evolve your own capabilities — create new tools to avoid repeating patterns, add hooks to improve your own behavior, build skills to accumulate domain knowledge, or override built-in tools to adapt to project needs. This is your self-iteration interface.
+description: "Use when evolving the agent's own capabilities with a new skill, tool, hook, or project rule."
 ---
 
 # Self-Extension

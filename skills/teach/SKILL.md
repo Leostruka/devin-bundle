@@ -1,6 +1,7 @@
 ---
+
 name: teach
-description: Teach the user a new skill or concept, within this workspace.
+description: "Use when the user wants to learn a skill or concept through a guided, multi-step session."
 argument-hint: "What would you like to learn about?"
 ---
 

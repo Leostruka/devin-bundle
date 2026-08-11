@@ -1,6 +1,7 @@
 ---
+
 name: code-review
-description: "Review code changes against two axes — Standards (does the code follow documented conventions + code smell baseline?) and Spec (does the code match what was asked for?). Dispatches parallel sub-agents to preserve context. Use when completing tasks, reviewing a branch/PR, before merging, or when the user asks to 'review since X'. Merges the subagent-dispatch workflow with the two-axis review methodology."
+description: "Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'."
 ---
 
 # Code Review (Unified)

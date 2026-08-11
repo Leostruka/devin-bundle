@@ -1,6 +1,7 @@
 ---
+
 name: grilling
-description: "Explore and stress-test ideas before implementation. Merges collaborative brainstorming (one question at a time, visual companion, design doc output) with relentless grilling (design tree, frontier rounds, numbered questions with recommended answers). Use before any creative work — creating features, building components, adding functionality, or modifying behavior. Also use when the user wants to stress-test a plan or decision."
+description: "Use when exploring and stress-testing ideas before committing to a design or plan."
 ---
 
 # Grilling & Brainstorming (Unified)
@@ -110,7 +111,7 @@ You MUST complete these in order:
 4. **Propose 2-3 approaches** — with trade-offs and recommendation
 5. **Present design** — in sections, get user approval after each
 6. **Grill the design** — design tree, frontier rounds, stress-test every branch (grill mode)
-7. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
+7. **Write design doc** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit
 8. **Spec self-review** — quick inline check (see below)
 9. **User reviews written spec** — ask user to review before proceeding
 10. **Transition to implementation** — invoke writing-plans skill
@@ -119,7 +120,7 @@ You MUST complete these in order:
 
 ### Design doc
 
-Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Commit the design document to git.
+Write the validated design (spec) to `docs/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Commit the design document to git.
 
 ### Spec Self-Review
 

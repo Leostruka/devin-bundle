@@ -1,6 +1,7 @@
 ---
+
 name: tdd
-description: "Test-driven development with red-green-refactor. Use when implementing any feature or bugfix, before writing implementation code. Merges the iron-law discipline (write test first, watch it fail, minimal code) with the seams-first operational approach (agree on test boundaries, vertical slices, anti-patterns)."
+description: "Use when implementing any feature or bugfix and a test-driven approach is appropriate."
 ---
 
 # Test-Driven Development (Unified)

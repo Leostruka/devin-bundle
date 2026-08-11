@@ -4,7 +4,7 @@ implementer reads in one call, so the task text never has to be pasted
 through the controller's context.
 
 Usage: task-brief.py PLAN_FILE TASK_NUMBER [OUTFILE]
-Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-basename>/task-<N>-brief.md
+Default OUTFILE: <repo-root>/.devin/sdd/<plan-basename>/task-<N>-brief.md
 """
 import os, sys, re, argparse
 

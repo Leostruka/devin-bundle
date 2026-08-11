@@ -4,7 +4,7 @@ diff with extended context, written to a file the reviewer reads in one call.
 Using the recorded per-task BASE (not HEAD~1) keeps multi-commit tasks intact.
 
 Usage: review-package.py PLAN_FILE BASE HEAD [OUTFILE]
-Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-basename>/review-<base7>..<head7>.diff
+Default OUTFILE: <repo-root>/.devin/sdd/<plan-basename>/review-<base7>..<head7>.diff
 """
 import os, sys, re, argparse, subprocess
 

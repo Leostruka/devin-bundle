@@ -1,6 +1,7 @@
 ---
+
 name: to-spec
-description: Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
+description: "Use when the conversation already contains enough context to turn into a written spec."
 triggers:
   - user
 ---

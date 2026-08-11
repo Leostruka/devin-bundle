@@ -3,14 +3,14 @@
 short-lived artifacts: task briefs, implementer reports, review packages,
 and the progress ledger. Print the plan directory's absolute path.
 
-One directory per plan (.superpowers/sdd/<plan-basename>/) so a follow-up
+One directory per plan (.devin/sdd/<plan-basename>/) so a follow-up
 plan in the same working tree can never read or overwrite another plan's
 artifacts. A stale ledger misread as current progress makes controllers
 skip whole task sequences.
 
 The workspace lives in the working tree (not under .git/) because some
 agents treat .git/ as a protected path. A self-ignoring .gitignore at
-.superpowers/sdd/ keeps every plan's workspace out of git status.
+.devin/sdd/ keeps every plan's workspace out of git status.
 
 Usage: sdd-workspace.py PLAN_FILE
 """
@@ -44,7 +44,7 @@ def main():
         print("not in a git repository", file=sys.stderr)
         sys.exit(2)
 
-    base = os.path.join(root, ".superpowers", "sdd")
+    base = os.path.join(root, ".devin", "sdd")
     directory = os.path.join(base, slug)
     os.makedirs(directory, exist_ok=True)
 

@@ -1,141 +1,100 @@
 ---
 name: find-skills
-description: Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.
+description: "Use when the user wants to discover, install, or evaluate a new skill for Devin CLI."
 ---
 
 # Find Skills
 
-This skill helps you discover and install skills from the open agent skills ecosystem.
+Help the user discover and install skills for Devin CLI.
 
-## When to Use This Skill
+## When to use this skill
 
-Use this skill when the user:
+- The user asks "how do I do X" and no skill in the current bundle matches.
+- The user says "find a skill for X" or "is there a skill for X".
+- The user wants to install a new skill from a repository.
+- The user wants to evaluate an existing skill against a task.
 
-- Asks "how do I do X" where X might be a common task with an existing skill
-- Says "find a skill for X" or "is there a skill for X"
-- Asks "can you do X" where X is a specialized capability
-- Expresses interest in extending agent capabilities
-- Wants to search for tools, templates, or workflows
-- Mentions they wish they had help with a specific domain (design, testing, deployment, etc.)
+## Where Devin CLI looks for skills
 
-## What is the Skills CLI?
+1. **Project skills** — `.devin/skills/<name>/SKILL.md`
+2. **Global user skills** — `~/.config/devin/skills/<name>/SKILL.md` (Linux/macOS) or `%APPDATA%\devin\skills\<name>\SKILL.md` (Windows)
+3. **Cross-runtime skills** — `.agents/skills/<name>/SKILL.md`
+4. **Built-in skill discovery** — `skill list --path <dir>` and `skill search --path <dir> --keywords "..."`
 
-The Skills CLI (`npx skills`) is the package manager for the open agent skills ecosystem. Skills are modular packages that extend agent capabilities with specialized knowledge, workflows, and tools.
+## How to help users find skills
 
-**Key commands:**
+### Step 1 — Understand the need
 
-- `npx skills find [query] [--owner <owner>]` - Search for skills interactively or by keyword, optionally scoped to a GitHub owner
-- `npx skills add <package>` - Install a skill from GitHub or other sources
-- `npx skills update` - Update all installed skills
+- Domain (e.g., testing, deployment, UI, documentation)
+- Specific task (e.g., "review PRs", "create animations", "mutation test")
+- Whether this is a recurring task that justifies a skill
 
-**Browse skills at:** https://skills.sh/
+### Step 2 — Search the current bundle first
 
-## How to Help Users Find Skills
+Use `skill list --path <project>` and `skill search --path <project> --keywords "<keyword>"` to see if a matching skill already exists in the project or global Devin skills directory.
 
-### Step 1: Understand What They Need
+Examples:
 
-When a user asks for help with something, identify:
+- "find a skill for PR review" → `skill search --path . --keywords "review code pr"`
+- "how do I mutation test?" → `skill search --path ~/.config/devin --keywords "mutation test"`
 
-1. The domain (e.g., React, testing, design, deployment)
-2. The specific task (e.g., writing tests, creating animations, reviewing PRs)
-3. Whether this is a common enough task that a skill likely exists
+### Step 3 — Search for external skills
 
-### Step 2: Check the Leaderboard First
+If the bundle does not have a match, search known skill repositories on GitHub. Good starting points:
 
-Before running a CLI search, check the [skills.sh leaderboard](https://skills.sh/) to see if a well-known skill already exists for the domain. The leaderboard ranks skills by total installs, surfacing the most popular and battle-tested options.
+- `github:obra/superpowers` — generalist skills
+- `github:Leostruka/devin-bundle` — this bundle
+- `github:anthropics/skills` — Anthropic skills
+- `github:vercel-labs/agent-skills` — Vercel skills
 
-For example, top skills for web development include:
-- `vercel-labs/agent-skills` — React, Next.js, web design (100K+ installs each)
-- `anthropics/skills` — Frontend design, document processing (100K+ installs)
+Use `gh search repos <keyword> skills` or `web_search` to find more.
 
-### Step 3: Search for Skills
+### Step 4 — Evaluate before recommending
 
-If the leaderboard doesn't cover the user's need, run the find command:
+Before installing or using an external skill, verify:
 
-```bash
-npx skills find [query] [--owner <owner>]
-```
+1. **Relevance** — does the README describe the task the user asked about?
+2. **Compatibility** — does the skill use Devin CLI patterns (`run_subagent`, `skill list`, `.devin/skills/`)? If it references Claude Code, Codex CLI, or Gemini CLI paths, it will need adaptation.
+3. **Quality signals** — recent commits, tests, clear examples, and no hardcoded secrets.
 
-For example:
+### Step 5 — Install the skill
 
-- User asks "how do I make my React app faster?" → `npx skills find react performance`
-- User asks "can you help me with PR reviews?" → `npx skills find pr review`
-- User asks "I need to create a changelog" → `npx skills find changelog`
-
-### Step 4: Verify Quality Before Recommending
-
-**Do not recommend a skill based solely on search results.** Always verify:
-
-1. **Install count** — Prefer skills with 1K+ installs. Be cautious with anything under 100.
-2. **Source reputation** — Official sources (`vercel-labs`, `anthropics`, `microsoft`) are more trustworthy than unknown authors.
-3. **GitHub stars** — Check the source repository. A skill from a repo with <100 stars should be treated with skepticism.
-
-### Step 5: Present Options to the User
-
-When you find relevant skills, present them to the user with:
-
-1. The skill name and what it does
-2. The install count and source
-3. The install command they can run
-4. A link to learn more at skills.sh
-
-Example response:
-
-```
-I found a skill that might help! The "react-best-practices" skill provides
-React and Next.js performance optimization guidelines from Vercel Engineering.
-(185K installs)
-
-To install it:
-npx skills add vercel-labs/agent-skills@react-best-practices
-
-Learn more: https://skills.sh/vercel-labs/agent-skills/react-best-practices
-```
-
-### Step 6: Offer to Install
-
-If the user wants to proceed, you can install the skill for them:
+If the skill is a GitHub repository, install it into the global Devin skills directory:
 
 ```bash
-npx skills add <owner/repo@skill> -g -y
+# Clone to the global Devin skills directory
+git clone https://github.com/<owner>/<repo>.git ~/.config/devin/skills/<name>
+
+# Or into a project
+mkdir -p .devin/skills/<name>
+# copy SKILL.md and supporting files
 ```
 
-The `-g` flag installs globally (user-level) and `-y` skips confirmation prompts.
+Then verify it appears:
 
-## Common Skill Categories
-
-When searching, consider these common categories:
-
-| Category        | Example Queries                          |
-| --------------- | ---------------------------------------- |
-| Web Development | react, nextjs, typescript, css, tailwind |
-| Testing         | testing, jest, playwright, e2e           |
-| DevOps          | deploy, docker, kubernetes, ci-cd        |
-| Documentation   | docs, readme, changelog, api-docs        |
-| Code Quality    | review, lint, refactor, best-practices   |
-| Design          | ui, ux, design-system, accessibility     |
-| Productivity    | workflow, automation, git                |
-
-## Tips for Effective Searches
-
-1. **Use specific keywords**: "react testing" is better than just "testing"
-2. **Try alternative terms**: If "deploy" doesn't work, try "deployment" or "ci-cd"
-3. **Check popular sources**: Many skills come from `vercel-labs/agent-skills` or `ComposioHQ/awesome-claude-skills`
-
-## When No Skills Are Found
-
-If no relevant skills exist:
-
-1. Acknowledge that no existing skill was found
-2. Offer to help with the task directly using your general capabilities
-3. Suggest the user could create their own skill with `npx skills init`
-
-Example:
-
+```bash
+skill list --path ~/.config/devin
 ```
-I searched for skills related to "xyz" but didn't find any matches.
-I can still help you with this task directly! Would you like me to proceed?
 
-If this is something you do often, you could create your own skill:
-npx skills init my-xyz-skill
-```
+### Step 6 — Adapt if necessary
+
+If the skill is not Devin CLI native:
+
+1. Replace non-Devin tool names with Devin CLI equivalents.
+2. Update file paths to `~/.config/devin/skills/` or `.devin/skills/`.
+3. Convert bash scripts to Python if the skill bundles helpers.
+4. Remove platform-specific frontmatter like `disable-model-invocation` or `superpowers:`.
+
+## When no skill is found
+
+1. Acknowledge that no existing skill was found.
+2. Offer to help directly with the task.
+3. Suggest creating a minimal skill in `.devin/skills/<name>/SKILL.md` if the task is recurring.
+
+## Output
+
+Return a short summary of:
+
+- Which skills were searched
+- Any matching skill found
+- The recommended install/adaptation steps

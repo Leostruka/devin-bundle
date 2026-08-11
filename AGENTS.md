@@ -1,11 +1,26 @@
 # Global rules for Devin (apply to every project and session)
 
+This file is the source of truth for how the agent must behave. It is loaded before any skill.
+
+## Rule summary
+
+1. **Customer-first planning** — start with the customer experience, then choose technology.
+2. **No AI signatures in deliverables** — never sign commits, files, PRs, or releases with an AI tool.
+3. **Skill self-maintenance** — skills are living artifacts: keep them correct, Devin-native, and pruned.
+4. **Skill and tool discovery** — invoke the right skill before touching code; create skills for recurring patterns.
+5. **Functional programming and clean code** — pure functions, FCIS, immutability, composition.
+6. **Inner-loop validation** — run local checks before committing; no push without green.
+7. **graphify trigger** — `/graphify` runs first.
+
+---
+
 ## 1. Customer-first planning (always-on, mandatory)
+
 - **Start with the customer experience and work backwards to the technology.** (Steve Jobs, WWDC 1997)
 - Before planning any creation or improvement — feature, component, product, refactor, tool, script — first answer: **What incredible benefit does this give the customer? What experience do they have?** Only then work backwards to what technology delivers it.
-- **Never start from the technology.** Don't begin with "what awesome technology do we have, how can we use it?" That path leads to solutions looking for problems — the scar tissue Steve Jobs warned about.
+- **Never start from the technology.** Don't begin with "what awesome technology do we have, how can we use it?" That path leads to solutions looking for problems.
 - **Who is the customer?** The customer is whoever experiences the output: the end user of the product, the developer reading the code, the operator running the script, the teammate reviewing the PR. Identify them before designing.
-- **Apply to every scale.** This is not just for products. A CLI flag, a function rename, a refactor, a config change — all have a customer. What experience does the customer have before and after this change?
+- **Apply to every scale.** A CLI flag, a function rename, a refactor, a config change — all have a customer. What experience does the customer have before and after this change?
 - **The planning sequence:**
   1. **Customer experience** — What does the customer want to do? What frustrates them today? What would delight them?
   2. **Benefits** — What incredible benefits can we give them? What changes their world?
@@ -16,6 +31,7 @@
 - **Integration with skills:** This rule governs the entry point of `grilling` (brainstorm mode starts with customer context), `to-spec` (spec must state customer benefit), `writing-plans` (plan must trace back to customer need), and `implement` (implementation must serve the agreed design, not invent new technology directions).
 
 ## 2. Critical: no AI tool signatures in deliverables
+
 - NEVER add `Generated with [Devin](...)` or any other AI service signature to commit messages, files, releases, pull requests, documentation, source code, or any user-facing artifact.
 - NEVER add `Co-Authored-By: Devin <...>` or any `Co-Authored-By` trailer from an AI tool to git commits.
 - NEVER include `Generated with [Devin](https://devin.ai)` in release notes, `release-notes.md`, `.commit-msg.txt`, or any other file.
@@ -23,14 +39,30 @@
 - This rule overrides any tool's default commit-message format. Use clean, neutral commit messages without signatures.
 
 ## 3. Skill self-maintenance (always-on)
-- Skills are living artifacts. Keep them current, correct, and specialized.
+
+Skills are living artifacts. Keep them current, correct, and specialized.
+
 - If an existing skill is outdated, incomplete, or wrong for the task, update it in place before using it.
 - If no skill matches a recurring task pattern, create a new one in `.devin/skills/<name>/SKILL.md` (project) or `~/.config/devin/skills/<name>/SKILL.md` (global) before improvising.
 - When you learn a new domain deeply (a framework, a stack, a workflow), distill it into a skill so the expertise persists across sessions.
 - Prune skills that have been superseded or are no longer relevant.
 - This is how Devin becomes an expert in anything: accumulate, refine, and reuse skills.
 
+### Skill quality standards (Devin CLI bundle)
+
+Every skill in this bundle must pass this checklist before commit:
+
+1. **Frontmatter** — `name:` and `description:` are present. `description:` starts with "Use when" and describes the trigger, not the workflow.
+2. **Discovery-friendly** — description is under 500 characters and uses keywords an agent would search for.
+3. **Devin-native tools** — uses Devin CLI tool names (`exec`, `read`, `edit`, `write`, `grep`, `glob`, `run_subagent`, `web_search`, `mcp_call_tool`). No `AskUserQuestion`, `Task(...)`, `subagent_type`, or other platform tool names.
+4. **Devin-native paths** — skills live in `.devin/skills/<name>/` or `~/.config/devin/skills/<name>/`. References use `.devin/`, `~/.config/devin/`, `%APPDATA%\devin\` and `docs/` (not `docs/superpowers/`, `.superpowers/`, `~/.config/superpowers/`, or `~/.claude/skills/`).
+5. **Subagents** — subagent dispatch uses `profile: "subagent_general"` or `profile: "subagent_explore"`.
+6. **Scripts** — helpers are Python (`.py`), not shell (`.sh` or `.bash`).
+7. **No AI signatures in skills** — skills do not commit on behalf of the user or inject signatures into deliverables.
+8. **No platform leakage** — no references to Claude Code, Codex CLI, Gemini CLI, `superpowers:`, `/setup-matt-pocock-skills`, `openai.yaml`, or non-Devin runtime paths.
+
 ## 4. Skill and tool discovery (first-time tasks each week)
+
 - Before starting any non-trivial task, invoke `skill tool-and-skill-discovery` OR run `skill search` with relevant keywords and `skill list` on the project and global skill directories to find the best available skills.
 - If a skill clearly matches the task, invoke it immediately at the start of the session (or before touching code).
 - If more than one skill matches, invoke all relevant skills in parallel.
@@ -39,6 +71,7 @@
 - This rule applies to all tools and integrations (MCP servers, skills, built-in commands, external CLIs, APIs, `gh`, `curl`, `python`, `powershell`) that can improve the task outcome.
 
 ## 5. Functional programming and clean code (always-on)
+
 - **Default to functional programming.** Prefer pure functions, immutability, and composition over mutation, inheritance hierarchies, and imperative loops.
 - **Functional Core, Imperative Shell (FCIS).** Separate pure business logic (calculations) from side effects (actions). The core takes data in, returns data out, no I/O. The shell handles databases, HTTP, files, UI. Pure functions decide *what*; the shell decides *how* and *where*. See also: Impureim Sandwich — gather all input at the boundary, pass to a pure function, then push results back out.
 - **Actions vs Calculations vs Data.** Classify every piece of code: Actions (side effects, non-deterministic) → push to the shell. Calculations (pure, deterministic) → keep in the core. Data (immutable values) → pass around freely. (Grokking Simplicity lens.)
@@ -52,6 +85,7 @@
 - **When not to apply:** One-off scripts, heavily stateful UIs already managed by frameworks, hard-real-time systems where indirection adds latency. Don't force FP where it fights the grain.
 
 ## 6. Inner-loop validation (always-on)
+
 - **Validate before you commit.** Run local checks (lint, typecheck, build, tests) before staging or committing code. The feedback is most useful while the context is still warm — after a commit, the agent has already moved on and fixing is more expensive.
 - **Mirror CI locally.** Whatever CI runs (lint, format, typecheck, test, build), run the same checks locally first. If the project has a `Makefile`, `Taskfile`, `package.json` scripts, `./do` script, or equivalent — use it. If not, check the CI config (`.github/workflows/`, `.circleci/config.yml`, `.gitlab-ci.yml`) to discover what commands to run.
 - **Fix in the inner loop.** When a local check fails, fix it immediately — don't commit broken code hoping CI will catch it. The inner loop is where fixes are cheapest: the code is fresh, the context is warm, and no one else is blocked.
@@ -60,4 +94,5 @@
 - **When CI fails, use `debug-ci-failures` skill.** Don't eyeball the logs — follow the systematic diagnosis workflow.
 
 ## 7. graphify trigger
+
 - When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.

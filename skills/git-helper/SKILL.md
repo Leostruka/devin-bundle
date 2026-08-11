@@ -1,6 +1,7 @@
 ---
+
 name: git-helper
-description: Provides git workflow assistance, branch management, and commit message optimization
+description: "Use when managing branches, writing commits, or resolving simple git workflow questions."
 ---
 
 # Git Helper
@@ -48,14 +49,6 @@ git remote prune origin
 ```bash
 git branch -d branch-name
 ```
-
-## Scripts
-
-This skill includes helper scripts:
-
-• `create-branch.sh` - Creates new feature branches with proper naming
-• `commit-check.sh` - Validates commit message format
-• `cleanup.sh` - Removes stale branches
 
 ## Best Practices
 
