@@ -1,3 +1,8 @@
+---
+name: tool-and-skill-discovery
+description: Meta-skill to discover and invoke the right skill, MCP server, CLI, or built-in tool for any task.
+---
+
 # Tool and Skill Discovery
 
 ## When to use
@@ -9,7 +14,7 @@
 1. **List available skills**
    - `skill list --path <project>`
    - `skill list --path ~/.config/devin`
-   - `skill list --path ~/.claude/skills`
+   - `skill list --path %APPDATA%\devin\skills` (Windows)
    - `skill list --path ~/.agents/skills`
 
 2. **Search for relevant skills**

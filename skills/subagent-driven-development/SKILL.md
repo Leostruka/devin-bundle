@@ -441,7 +441,7 @@ You: I'm using Subagent-Driven Development to execute this plan.
 
 Task 1: Hook installation script
 
-[Run task-brief for Task 1; dispatch implementer with brief + report paths + context]
+[Run python scripts/task-brief.py for Task 1; dispatch implementer with brief + report paths + context]
 
 Implementer: "Before I begin - should the hook be installed at user or system level?"
 
@@ -453,7 +453,7 @@ Implementer: [Later]
   - Self-review: Found I missed --force flag, added it
   - Committed
 
-[Run review-package PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the task-reviewer prompt for the printed path]
+[Run python scripts/review-package.py PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the task-reviewer prompt for the printed path]
 Task reviewer: Spec ✅ - all requirements met, nothing extra.
   Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
 
@@ -461,14 +461,14 @@ Task reviewer: Spec ✅ - all requirements met, nothing extra.
 
 Task 2: Recovery modes
 
-[Run task-brief for Task 2; dispatch implementer with brief + report paths + context]
+[Run python scripts/task-brief.py for Task 2; dispatch implementer with brief + report paths + context]
 
 Implementer: [No questions]
   - Added verify/repair modes
   - 8/8 tests passing
   - Committed
 
-[Run review-package PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the task-reviewer prompt for the printed path]
+[Run python scripts/review-package.py PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the task-reviewer prompt for the printed path]
 Task reviewer: Spec ❌:
   - Missing: Progress reporting (spec says "report every 100 items")
   Issues (Important): Magic number (100)
@@ -477,7 +477,7 @@ Task reviewer: Spec ❌:
 Implementer: Added progress reporting, extracted PROGRESS_INTERVAL constant.
   Re-ran test/recovery.test.js — 10/10 passing. Fix report appended.
 
-[Run review-package PLAN_FILE FIX_BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the re-review prompt]
+[Run python scripts/review-package.py PLAN_FILE FIX_BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the re-review prompt]
 Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
   Magic number — ADDRESSED (src/recovery.js:7). New breakage: none.
   Verdict: all findings addressed.
@@ -488,7 +488,7 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 ...
 
 [After all tasks]
-[Run review-package PLAN_FILE MERGE_BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the code-review template]
+[Run python scripts/review-package.py PLAN_FILE MERGE_BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the code-review template]
 Final reviewer: All requirements met. Deferred minors triaged: none block merge.
 
 [Delete this plan's workspace — the record now lives in git]

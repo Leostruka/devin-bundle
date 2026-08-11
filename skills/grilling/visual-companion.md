@@ -35,7 +35,7 @@ The server watches a directory for HTML files and serves the newest one to the b
 ```bash
 # Start AFTER the user approves the companion. --open auto-opens their browser on
 # the first screen; --project-dir persists mockups and enables same-port restart.
-scripts/start-server.sh --project-dir /path/to/project --open
+python scripts/start-server.py --project-dir /path/to/project --open
 
 # Returns: {"type":"server-started","port":52341,
 #           "url":"http://localhost:52341/?key=ab12…",
@@ -59,15 +59,15 @@ without repeating it.
 
 **Launching the server in Devin CLI:**
 
-Devin CLI does not use platform-specific bash wrappers. Run the server directly with Node from the skill directory:
+Devin CLI does not use platform-specific bash wrappers. Use the cross-platform Python wrapper:
 
 - Windows:
 ```powershell
-node <skill-dir>\scripts\server.cjs --project-dir C:\path\to\project
+python <skill-dir>\scripts\start-server.py --project-dir C:\path\to\project --open
 ```
 - macOS/Linux:
 ```bash
-node <skill-dir>/scripts/server.cjs --project-dir /path/to/project
+python <skill-dir>/scripts/start-server.py --project-dir /path/to/project --open
 ```
 
 Then use Devin CLI's `browser_preview` tool with the URL from the server output (or from `<STATE_DIR>/server-info`) to interact with the visual companion. The server runs as a background `exec` command; if it is killed between turns, restart it.
@@ -75,7 +75,7 @@ Then use Devin CLI's `browser_preview` tool with the URL from the server output 
 If the URL is unreachable from your browser (common in remote/containerized setups), bind a non-loopback host:
 
 ```bash
-scripts/start-server.sh \
+python scripts/start-server.py \
   --project-dir /path/to/project \
   --host 0.0.0.0 \
   --url-host localhost
@@ -86,7 +86,7 @@ Use `--url-host` to control what hostname is printed in the returned URL JSON.
 ## The Loop
 
 1. **Check server is alive**, then **write HTML** to a new file in `screen_dir`:
-   - **Required: confirm the server is alive before referring to the URL or pushing a screen.** Check that `$STATE_DIR/server-info` exists and `$STATE_DIR/server-stopped` does not. If it has shut down, restart it with `start-server.sh` using the **same `--project-dir`** — it reuses the same port, so the user's open tab reconnects on its own (it shows a "paused" overlay while the server is down) and you don't need to send a new URL. The server auto-exits after 4 hours idle (configurable with `--idle-timeout-minutes`).
+   - **Required: confirm the server is alive before referring to the URL or pushing a screen.** Check that `$STATE_DIR/server-info` exists and `$STATE_DIR/server-stopped` does not. If it has shut down, restart it with `start-server.py` using the **same `--project-dir`** — it reuses the same port, so the user's open tab reconnects on its own (it shows a "paused" overlay while the server is down) and you don't need to send a new URL. The server auto-exits after 4 hours idle (configurable with `--idle-timeout-minutes`).
    - Use semantic filenames: `platform.html`, `visual-style.html`, `layout.html`
    - **Never reuse filenames** — each screen gets a fresh file
    - Use your file-creation tool — **never use cat/heredoc** (dumps noise into terminal)
@@ -268,7 +268,7 @@ If `$STATE_DIR/events` doesn't exist, the user didn't interact with the browser 
 ## Cleaning Up
 
 ```bash
-scripts/stop-server.sh $SESSION_DIR
+python scripts/stop-server.py $SESSION_DIR
 ```
 
 If the session used `--project-dir`, mockup files persist in `.superpowers/brainstorm/` for later reference. Only `/tmp` sessions get deleted on stop.

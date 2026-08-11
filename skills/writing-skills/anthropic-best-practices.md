@@ -2,7 +2,7 @@
 
 > Learn how to write effective Skills that agents can discover and use successfully.
 
-**Note for Devin CLI users:** This document was originally written for Claude Code/Anthropic skills. The concepts (concise prompts, frontmatter, testing) apply directly to Devin CLI skills, but paths and tool names differ: Devin CLI uses `~/.config/devin/skills/` or `%APPDATA%\devin\skills\`, `/skill-name` invocation, `run_subagent` for subagents, and `AGENTS.md` for global rules. Use this guide for authoring principles, and Devin CLI's official docs for tool-specific syntax.
+**Note for Devin CLI users:** This document was originally written for Anthropic's agent-skills format. The concepts (concise prompts, frontmatter, testing) apply directly to Devin CLI skills, but paths and tool names differ: Devin CLI uses `~/.config/devin/skills/` or `%APPDATA%\devin\skills\`, `/skill-name` invocation, `run_subagent` for subagents, and `AGENTS.md` for global rules. Use this guide for authoring principles, and Devin CLI's official docs for tool-specific syntax.
 
 Good Skills are concise, well-structured, and tested with real usage. This guide provides practical authoring decisions to help you write Skills that agents can discover and use effectively.
 
@@ -1131,22 +1131,12 @@ Before sharing a Skill, verify:
 ### Testing
 
 * [ ] At least three evaluations created
-* [ ] Tested with Haiku, Sonnet, and Opus
+* [ ] Tested with the Devin CLI models you plan to use (e.g., SWE-1.6, Sonnet)
 * [ ] Tested with real usage scenarios
 * [ ] Team feedback incorporated (if applicable)
 
 ## Next steps
 
-<CardGroup cols={2}>
-  <Card title="Get started with Agent Skills" icon="rocket" href="https://platform.claude.com/docs/en/agents-and-tools/agent-skills/quickstart">
-    Create your first Skill
-  </Card>
-
-  <Card title="Use Skills in Claude Code" icon="terminal" href="https://code.claude.com/docs/en/skills">
-    Create and manage Skills in Claude Code
-  </Card>
-
-  <Card title="Use Skills with the API" icon="code" href="https://platform.claude.com/docs/en/build-with-claude/skills-guide">
-    Upload and use Skills programmatically
-  </Card>
-</CardGroup>
+- Get started with Devin CLI skills: see `~/.config/devin/cli/share/devin/docs/extensibility/skills.mdx` (or the Devin CLI documentation at `https://devin.ai/docs` for the latest).
+- Create and manage skills in Devin CLI: use `%APPDATA%\devin\skills\` on Windows or `~/.config/devin/skills/` on macOS/Linux.
+- (Original Anthropic resources: this guide was adapted from Anthropic's skill authoring best practices; concepts apply to Devin CLI, but paths and tool names differ.)
