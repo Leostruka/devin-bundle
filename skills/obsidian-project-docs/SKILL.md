@@ -4,7 +4,7 @@ description: Use when the user wants to build or update a local codebase wiki in
 ---
 # obsidian-project-docs
 
-Build a **meticulous, SRS/ISO-style local codebase wiki** in an Obsidian vault at the same quality level as a cloud-generated wiki: source-linked documentation, hierarchical pages, architecture diagrams (Mermaid + Canvas), codebase summaries, and a re-index workflow that keeps everything in sync with the code.
+Build a **meticulous, SRS/ISO-style local codebase wiki** in an Obsidian vault at the same quality level as a cloud-generated wiki: source-linked documentation, hierarchical pages, architecture diagrams (Mermaid), codebase summaries, and a re-index workflow that keeps everything in sync with the code.
 
 **Scope:** codebase summary, architecture, modules, functions, database schema, dependencies, config files, environment variables, relationships, decisions, diagrams, glossary, daily logbook, re-index.
 
@@ -14,7 +14,7 @@ Build a **meticulous, SRS/ISO-style local codebase wiki** in an Obsidian vault a
 - "Build a local wiki for this repo"
 - "Create architecture diagrams with source links"
 - "Map all modules, functions, and dependencies with code references"
-- "Visualize the system in Obsidian Canvas + Mermaid"
+- "Visualize the system with Mermaid diagrams"
 - Updating an existing engineering wiki after code changes
 
 ## Non-negotiable requirements
@@ -23,7 +23,7 @@ Every artifact produced by this skill MUST meet these standards:
 
 1. **Source links** — every claim about code (module, function, class, route, schema, config) MUST cite the source file and line: `source: src/auth/login.ts:42`. No unsourced assertions. **Minimum 5 distinct source files cited per page.**
 2. **Hierarchical pages** — every page has a `parent:` field in frontmatter (except the root). Pages form a tree, not a flat list.
-3. **Diagrams** — both Mermaid (inline, version-controllable) AND Canvas (interactive, spatial). Minimum 13 types: Context, Container, Component, Domain, DataModel, Flow, Sequence, Class, State, C4Dynamic, C4Deployment, GitGraph, Mindmap.
+3. **Diagrams** — Mermaid (inline, version-controllable). Minimum 13 types: Context, Container, Component, Domain, DataModel, Flow, Sequence, Class, State, C4Dynamic, C4Deployment, GitGraph, Mindmap.
 4. **Codebase summary** — a top-level `00-Overview.md` that summarizes the entire system in 1-2 paragraphs with links to every other page.
 5. **Re-index** — a `refresh.py` script in the vault that re-scans the codebase, detects changed files, and flags stale pages. Supports `--branch` for multi-branch awareness.
 6. **Steering config** — a `wiki-config.json` in the vault that defines pages, priorities, notes, importance, filePaths, mode, and language (local equivalent of a cloud steering file). Validated by `validate_wiki_config.py`.
@@ -52,8 +52,6 @@ Inside the target Obsidian vault:
 | Decisions | `09-Decisions.md` + `Decisions/*.md` | ADR log with context, decision, consequences |
 | Project base | `Project.base` | Obsidian Base tying modules, functions, dependencies, config into a queryable database |
 | Mermaid diagrams | `Diagrams/*.md` | Mermaid diagrams (Context, Container, Component, Domain, DataModel, Flow, Sequence, Class, State, C4Dynamic, C4Deployment, GitGraph, Mindmap) |
-| Canvas diagrams | `Diagrams/*.canvas` | JSON Canvas versions of the same diagrams (interactive, spatial) |
-| Architecture canvas | `Architecture.canvas` | Master canvas linking all other diagrams |
 | Logbook | `Logbook.md` + `Daily/YYYY-MM-DD.md` | Running daily log of work, decisions, rationale |
 | Steering config | `wiki-config.json` | Page definitions, priorities, notes, importance, filePaths, mode, language for steering wiki generation |
 | Re-index script | `refresh.py` | Re-scans codebase, detects changes, flags stale pages, supports `--branch` |
@@ -103,7 +101,6 @@ python <skill-dir>/scaffold.py --project-dir <PROJECT> --vault-dir <VAULT>
 The helper creates:
 - The file tree (all pages with `parent:` frontmatter)
 - Mermaid diagram shells (`Diagrams/*.md`) — 13 types
-- Canvas diagram shells (`Diagrams/*.canvas`) — 6 core types
 - `Project.base`
 - `wiki-config.json` (steering config with `mode`, `language`, `importance`, `filePaths`)
 - `refresh.py` (re-index script with `--branch` support)
@@ -332,7 +329,7 @@ See `references/obsidian-bases-spec.md` for Base syntax.
 
 ### Step 13 — Build / update diagrams
 
-Create **both** Mermaid and Canvas versions of each diagram. Use **modern diagrams** instead of (or alongside) heavy UML. See `references/modern-diagrams.md` for conventions.
+Create Mermaid versions of each diagram. Use **modern diagrams** instead of (or alongside) heavy UML. See `references/modern-diagrams.md` for conventions.
 
 #### Mermaid diagrams (`Diagrams/*.md`)
 
@@ -376,11 +373,7 @@ graph TB
 - [[Modules/Auth]]
 ```
 
-#### Canvas diagrams (`Diagrams/*.canvas`)
-
-JSON Canvas versions of the 6 core diagrams (Context, Container, Component, Domain, DataModel, Flow). See `references/json-canvas-spec.md`.
-
-Each diagram (both formats) should:
+Each diagram should:
 
 - Use node colors consistently (green internal, yellow DB, orange queue, red external, purple actor)
 - Label every edge with the relationship and technology
@@ -450,7 +443,7 @@ Then write the findings into the Obsidian vault using this skill.
 ## Deviation / exceptions
 
 - If the project is not a software project, fall back to `grill-with-docs` or `domain-modeling`.
-- If the user only wants diagrams, use `references/json-canvas-spec.md` and `references/modern-diagrams.md` and skip the SRS.
+- If the user only wants diagrams, use `references/modern-diagrams.md` and skip the SRS.
 - If the user only wants a database schema, use `03-Database.md` and the `Modules/Database/` notes.
 
 ## Quality checklist
@@ -471,9 +464,6 @@ Then write the findings into the Obsidian vault using this skill.
 - [ ] `07-Config.md` includes all env vars and config files (with source links).
 - [ ] `Project.base` renders as a table in Obsidian.
 - [ ] All 13 Mermaid diagram types exist (`Diagrams/*.md`).
-- [ ] 6 core Canvas diagrams exist (`Diagrams/*.canvas`).
-- [ ] `Diagrams/*.canvas` files have no dangling edges, use consistent colors and include a legend.
-- [ ] `Architecture.canvas` is an overview linking the other diagrams.
 - [ ] `wiki-config.json` exists with page definitions, repo notes, mode, language, importance, filePaths.
 - [ ] `validate_wiki_config.py` exists and passes without errors.
 - [ ] `refresh.py` exists, runs without errors, and supports `--branch`.
@@ -494,6 +484,5 @@ Then write the findings into the Obsidian vault using this skill.
 - `templates/daily-note-template.md`
 - `templates/overview-template.md`
 - `templates/adr-template.md`
-- `references/json-canvas-spec.md`
 - `references/obsidian-bases-spec.md`
 - `references/modern-diagrams.md`

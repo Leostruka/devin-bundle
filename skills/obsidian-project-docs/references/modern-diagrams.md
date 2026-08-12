@@ -1,29 +1,29 @@
-# Modern diagram types for Obsidian Canvas
+# Modern diagram types for Mermaid
 
-This reference maps modern diagram approaches to JSON Canvas files inside the Obsidian vault. The goal is to reduce abstraction by giving each stakeholder the right zoom level.
+This reference maps modern diagram approaches to Mermaid diagrams inside the Obsidian vault. The goal is to reduce abstraction by giving each stakeholder the right zoom level.
 
 ## Why not UML?
 
-UML is comprehensive but heavy. Most engineering teams use only a subset. Modern alternatives are lean, zoomable, and fit the "boxes and lines" style that Obsidian Canvas renders well.
+UML is comprehensive but heavy. Most engineering teams use only a subset. Modern alternatives are lean, zoomable, and fit the "boxes and lines" style that Mermaid renders well.
 
-| Modern approach | Replaces / complements UML | Best for | Obsidian Canvas file |
-|-----------------|----------------------------|----------|----------------------|
-| **C4 model** | Package, component, deployment, use-case diagrams | Communicating architecture at 4 zoom levels | `Diagrams/Context.canvas`, `Container.canvas`, `Component.canvas` |
-| **Domain / DDD context map** | UML class diagram (domain view) | Bounded contexts, teams, upstream/downstream | `Diagrams/Domain.canvas` |
-| **Event storming / flow** | Activity, sequence, state diagrams | Business / data flow over time | `Diagrams/Flow.canvas` |
-| **Data model** | ER / class diagram | Tables, entities, relationships | `Diagrams/DataModel.canvas` |
-| **State / lifecycle** | State machine diagram | Entity states and transitions | `Diagrams/State.canvas` |
+| Modern approach | Replaces / complements UML | Best for | Mermaid diagram |
+|-----------------|----------------------------|----------|-----------------|
+| **C4 model** | Package, component, deployment, use-case diagrams | Communicating architecture at 4 zoom levels | `Diagrams/Context.md`, `Container.md`, `Component.md` |
+| **Domain / DDD context map** | UML class diagram (domain view) | Bounded contexts, teams, upstream/downstream | `Diagrams/Domain.md` |
+| **Event storming / flow** | Activity, sequence, state diagrams | Business / data flow over time | `Diagrams/Flow.md` |
+| **Data model** | ER / class diagram | Tables, entities, relationships | `Diagrams/DataModel.md` |
+| **State / lifecycle** | State machine diagram | Entity states and transitions | `Diagrams/State.md` |
 
-## C4 model on Canvas
+## C4 model in Mermaid
 
-The C4 model has four static levels. Each is a separate `.canvas` file.
+The C4 model has four static levels. Each is a separate Mermaid diagram.
 
 ### Level 1 — System Context
 
-- **Person** (users/actors): purple `6`
-- **System** (in scope): green `4`
-- **External system**: orange `2`
-- **Relationship arrows**: labelled edges
+- **Person** (users/actors): `User([User])` rounded shape
+- **System** (in scope): `System[MyApp]` square
+- **External system**: `Email[Email Service]` square
+- **Relationship arrows**: labelled edges (`System --> Email : sends`)
 
 Zoom: highest. Audience: non-technical stakeholders.
 
@@ -38,13 +38,13 @@ Containers are separately deployable / runnable units:
 - File store
 - Mobile app
 
-Colors:
+Node styling conventions:
 
-- Web / mobile app: `4` green
-- API / service: `5` cyan
-- Database: `3` yellow
-- Queue / broker: `2` orange
-- External: `1` red
+- Web / mobile app: green
+- API / service: cyan
+- Database: yellow
+- Queue / broker: orange
+- External: red
 
 Zoom: high. Audience: technical but cross-functional.
 
@@ -64,14 +64,14 @@ Zoom: medium. Audience: the team owning the container.
 
 ### Level 4 — Code
 
-Optional. Usually use the IDE or generated class diagrams. In Canvas this can be a small group with key classes and inheritance/composition edges.
+Optional. Usually use the IDE or generated class diagrams. In Mermaid this can be a small `classDiagram` with key classes and inheritance/composition edges.
 
 ## DDD context map
 
-Use `Diagrams/Domain.canvas` for bounded contexts:
+Use `Diagrams/Domain.md` for bounded contexts:
 
-- Bounded contexts as colored group nodes
-- Domain events as small text nodes
+- Bounded contexts as `subgraph` blocks
+- Domain events as small nodes
 - Arrows labelled with:
   - `upstream` / `downstream`
   - `partnership`
@@ -83,46 +83,47 @@ Use `Diagrams/Domain.canvas` for bounded contexts:
 ## Event / data flow
 
 - Start with a trigger node
-- Flow left-to-right or top-to-bottom
+- Flow left-to-right (`graph LR`) or top-to-bottom (`graph TB`)
 - Use edges with labels like `emits`, `reads`, `writes`, `calls`, `returns`
-- Group swim-lanes by module or actor
+- Group swim-lanes by module or actor using `subgraph`
 
-## Data model canvas
+## Data model diagram
 
-- Entity / table as text or group node
-- Columns listed inside the text
-- Relationships as edges with cardinality labels: `1`, `0..1`, `*`, `1..*`
+- Use `erDiagram` syntax
+- Entities with columns listed inside `{ }`
+- Relationships as edges with cardinality labels: `||--o{`, `||--|{`, `}o--o{`
 - Distinguish strong/weak, identifying/non-identifying relationships by edge style
 
-## State / lifecycle canvas
+## State / lifecycle diagram
 
-- States as rounded-ish text nodes (or just text nodes)
+- Use `stateDiagram-v2` syntax
+- States as nodes
 - Transitions as directed edges with trigger / guard labels
-- Initial state in green, terminal in red, intermediate in blue
+- Initial state `[*]` in green, terminal `[*]` in red, intermediate in blue
 
-## Canvas conventions for this project
+## Mermaid conventions for this project
 
-- Align nodes to a 20 px grid.
-- Keep edges short and orthogonal when possible.
-- Group nodes by concern (domain, layer, system).
-- Use colors consistently across all diagrams.
-- Add a legend text node in the corner of every diagram.
+- Use `graph TB` or `graph LR` for flow diagrams
+- Label every edge with the relationship and technology
+- Add a legend comment block at the top of the diagram
+- Use consistent node shapes: `([ ])` for actors, `[ ]` for systems, `[( )]` for databases
+- Include a `<!-- Sources: ... -->` comment block listing source files
 
 ## When to create / update diagrams
 
 - At project start: Context and Container diagrams.
-- When adding a domain or bounded context: Domain canvas.
+- When adding a domain or bounded context: Domain diagram.
 - When adding / changing a module: Component diagram.
-- When adding / changing a data model: Data model canvas.
-- When defining a workflow or state machine: Flow / State canvas.
+- When adding / changing a data model: Data model diagram.
+- When defining a workflow or state machine: Flow / State diagram.
 
 ## Linking diagrams to notes
 
 Every diagram should have a companion note:
 
-- `Diagrams/Context.canvas` ↔ `01-Architecture.md`
-- `Diagrams/DataModel.canvas` ↔ `02-Database.md`
-- `Diagrams/Domain.canvas` ↔ `07-Glossary.md`
-- `Diagrams/Component.canvas` ↔ `Modules/<Module>.md`
+- `Diagrams/Context.md` ↔ `02-Architecture.md`
+- `Diagrams/DataModel.md` ↔ `03-Database.md`
+- `Diagrams/Domain.md` ↔ `08-Glossary.md`
+- `Diagrams/Component.md` ↔ `Modules/<Module>.md`
 
-Use Obsidian file cards (`type: "file"`) to embed the note inside the canvas when useful.
+Use wikilinks (`[[...]]`) in the `## Links` section of each diagram to connect back to the relevant note.

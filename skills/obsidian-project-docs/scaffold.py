@@ -7,35 +7,21 @@ Usage:
 Creates:
     - Overview, SRS, Architecture, Database, Modules index, Functions, Dependencies, Config, Glossary, Decisions
     - Modules/ and Functions/ and Decisions/ subfolders
-    - Diagrams/ with Mermaid (.md) and Canvas (.canvas) shells
+    - Diagrams/ with Mermaid (.md) shells
     - Daily/ logbook folder and Logbook.md index
     - Project.base (Obsidian Base linking modules, functions, dependencies, config)
-    - Architecture.canvas (JSON Canvas shell)
     - wiki-config.json (steering config)
     - refresh.py (re-index script)
     - project-manifest.json (with last_indexed timestamp)
 """
 import argparse
 import json
-import random
 import re
 import shutil
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-
-
-C4_COLORS = {
-    "actor": "6",      # purple
-    "module": "4",     # green
-    "app": "4",        # green
-    "api": "5",        # cyan
-    "db": "3",         # yellow
-    "queue": "2",      # orange
-    "external": "1",   # red
-    "legend": "0",
-}
 
 
 def load_template(skill_dir, name, mapping):
@@ -63,172 +49,6 @@ def git_name(project_dir):
     except Exception:
         pass
     return None
-
-
-def new_id():
-    return "".join(random.choice("0123456789abcdef") for _ in range(16))
-
-
-def make_text_node(x, y, w, h, text, color="0", **kwargs):
-    node = {
-        "id": new_id(),
-        "type": "text",
-        "x": x,
-        "y": y,
-        "width": w,
-        "height": h,
-        "text": text,
-    }
-    if color:
-        node["color"] = color
-    node.update(kwargs)
-    return node
-
-
-def make_edge(from_id, to_id, label="", from_side="right", to_side="left", color=""):
-    edge = {
-        "id": new_id(),
-        "fromNode": from_id,
-        "fromSide": from_side,
-        "toNode": to_id,
-        "toSide": to_side,
-        "toEnd": "arrow",
-        "label": label,
-    }
-    if color:
-        edge["color"] = color
-    return edge
-
-
-def write_canvas(path, nodes, edges):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps({"nodes": nodes, "edges": edges}, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-
-
-def context_canvas(project_name):
-    user = make_text_node(
-        -320, 40, 160, 80, f"# User\n\nUses {project_name}.", C4_COLORS["actor"]
-    )
-    system = make_text_node(
-        0, 0, 280, 160, f"# {project_name}\n\nThe system in scope.", C4_COLORS["module"]
-    )
-    email = make_text_node(
-        400, -60, 220, 100, "# Email system\n\nExternal.", C4_COLORS["external"]
-    )
-    payment = make_text_node(
-        400, 120, 220, 100, "# Payment gateway\n\nExternal.", C4_COLORS["external"]
-    )
-    legend = make_text_node(
-        -360, 180, 260, 120,
-        "# Legend\n\n| Color | Meaning |\n|-------|---------|\n| green | in scope |\n| red | external |\n| purple | person/actor |",
-        color=C4_COLORS["legend"],
-    )
-    nodes = [user, system, email, payment, legend]
-    edges = [
-        make_edge(user["id"], system["id"], "uses", "right", "left"),
-        make_edge(system["id"], email["id"], "sends", "top", "left"),
-        make_edge(system["id"], payment["id"], "charges", "bottom", "left"),
-    ]
-    return nodes, edges
-
-
-def container_canvas(project_name):
-    web = make_text_node(-120, -60, 220, 100, "# Web App\n\nReact / Vue", C4_COLORS["app"])
-    api = make_text_node(200, -60, 220, 100, "# API\n\nNode / Laravel / Go", C4_COLORS["api"])
-    db = make_text_node(520, -80, 200, 140, "# Database\n\nPostgres / MySQL\n\nMain store.", C4_COLORS["db"])
-    queue = make_text_node(520, 120, 200, 100, "# Queue\n\nRedis / RabbitMQ", C4_COLORS["queue"])
-    ext = make_text_node(200, 200, 220, 100, "# External service\n\nAPI / webhook", C4_COLORS["external"])
-    user = make_text_node(-460, -40, 160, 80, "# User", C4_COLORS["actor"])
-    legend = make_text_node(-480, 120, 280, 160,
-        "# Legend\n\n| Color | Meaning |\n|-------|---------|\n| green | app |\n| cyan | API/service |\n| yellow | database |\n| orange | queue/broker |\n| red | external |",
-        color=C4_COLORS["legend"],
-    )
-    nodes = [web, api, db, queue, ext, user, legend]
-    edges = [
-        make_edge(user["id"], web["id"], "uses", "right", "left"),
-        make_edge(web["id"], api["id"], "calls /json", "right", "left"),
-        make_edge(api["id"], db["id"], "reads/writes", "right", "left"),
-        make_edge(api["id"], queue["id"], "publishes", "bottom", "top"),
-        make_edge(api["id"], ext["id"], "calls /api", "bottom", "top"),
-    ]
-    return nodes, edges
-
-
-def component_canvas():
-    ctrl = make_text_node(-200, 0, 220, 100, "# Controller\n\nHTTP handlers", C4_COLORS["api"])
-    svc = make_text_node(80, 0, 220, 100, "# Service\n\nBusiness logic", C4_COLORS["api"])
-    repo = make_text_node(360, 0, 220, 100, "# Repository\n\nData access", C4_COLORS["api"])
-    gateway = make_text_node(80, 180, 220, 100, "# Gateway\n\nExternal adapter", C4_COLORS["external"])
-    db = make_text_node(360, 180, 220, 100, "# Database", C4_COLORS["db"])
-    nodes = [ctrl, svc, repo, gateway, db]
-    edges = [
-        make_edge(ctrl["id"], svc["id"], "calls", "right", "left"),
-        make_edge(svc["id"], repo["id"], "uses", "right", "left"),
-        make_edge(svc["id"], gateway["id"], "calls", "bottom", "top"),
-        make_edge(repo["id"], db["id"], "reads/writes", "bottom", "top"),
-    ]
-    return nodes, edges
-
-
-def domain_canvas():
-    ctx_a = {
-        "id": new_id(),
-        "type": "group",
-        "x": -300,
-        "y": 0,
-        "width": 260,
-        "height": 220,
-        "label": "Context A",
-        "color": "4",
-    }
-    ctx_b = {
-        "id": new_id(),
-        "type": "group",
-        "x": 100,
-        "y": 0,
-        "width": 260,
-        "height": 220,
-        "label": "Context B",
-        "color": "5",
-    }
-    event = make_text_node(20, -140, 200, 80, "# Domain Event\n\nSomething happened.", C4_COLORS["queue"])
-    nodes = [ctx_a, ctx_b, event]
-    edges = [
-        make_edge(ctx_a["id"], ctx_b["id"], "upstream → downstream", "right", "left"),
-        make_edge(event["id"], ctx_b["id"], "consumed by", "bottom", "top"),
-    ]
-    return nodes, edges
-
-
-def data_model_canvas():
-    users = make_text_node(-280, 0, 240, 160, "# Users\n\n- id: PK\n- email\n- created_at", C4_COLORS["db"])
-    orders = make_text_node(40, 0, 260, 180, "# Orders\n\n- id: PK\n- user_id: FK\n- total\n- status", C4_COLORS["db"])
-    items = make_text_node(380, 0, 240, 180, "# OrderItems\n\n- id: PK\n- order_id: FK\n- product_id\n- qty", C4_COLORS["db"])
-    nodes = [users, orders, items]
-    edges = [
-        make_edge(users["id"], orders["id"], "1 : *", "right", "left"),
-        make_edge(orders["id"], items["id"], "1 : *", "right", "left"),
-    ]
-    return nodes, edges
-
-
-def flow_canvas():
-    trigger = make_text_node(-420, 60, 180, 80, "# Trigger\n\nUser action", C4_COLORS["actor"])
-    cmd = make_text_node(-140, 60, 200, 80, "# Command\n\nCreate order", C4_COLORS["api"])
-    event1 = make_text_node(140, 60, 200, 80, "# Event\n\nOrderCreated", C4_COLORS["queue"])
-    handler = make_text_node(140, 200, 220, 80, "# Handler\n\nSend email", C4_COLORS["api"])
-    read = make_text_node(460, 60, 200, 80, "# Read model\n\nOrder view", C4_COLORS["db"])
-    nodes = [trigger, cmd, event1, handler, read]
-    edges = [
-        make_edge(trigger["id"], cmd["id"], "", "right", "left"),
-        make_edge(cmd["id"], event1["id"], "emits", "right", "left"),
-        make_edge(event1["id"], handler["id"], "subscribes", "bottom", "top"),
-        make_edge(cmd["id"], read["id"], "updates", "top", "bottom"),
-    ]
-    return nodes, edges
 
 
 MERMAID_TEMPLATES = {
@@ -1272,76 +1092,6 @@ views:
         if not dest.exists():
             dest.write_text(template.replace("{project_name}", project_name), encoding="utf-8")
 
-    # Canvas diagrams
-    write_canvas(vault_dir / "Diagrams" / "Context.canvas", *context_canvas(project_name))
-    write_canvas(vault_dir / "Diagrams" / "Container.canvas", *container_canvas(project_name))
-    write_canvas(vault_dir / "Diagrams" / "Component.canvas", *component_canvas())
-    write_canvas(vault_dir / "Diagrams" / "Domain.canvas", *domain_canvas())
-    write_canvas(vault_dir / "Diagrams" / "DataModel.canvas", *data_model_canvas())
-    write_canvas(vault_dir / "Diagrams" / "Flow.canvas", *flow_canvas())
-
-    # Master Architecture canvas
-    module_id = new_id()
-    db_id = new_id()
-    ext_id = new_id()
-    architecture_canvas = {
-        "nodes": [
-            {
-                "id": module_id,
-                "type": "text",
-                "x": 0,
-                "y": 0,
-                "width": 300,
-                "height": 160,
-                "text": f"# {project_name}\n\nCore modules and logic.",
-                "color": C4_COLORS["module"],
-            },
-            {
-                "id": db_id,
-                "type": "text",
-                "x": 400,
-                "y": 0,
-                "width": 260,
-                "height": 120,
-                "text": "# Database\n\nPersistence layer.",
-                "color": C4_COLORS["db"],
-            },
-            {
-                "id": ext_id,
-                "type": "text",
-                "x": 200,
-                "y": 240,
-                "width": 260,
-                "height": 120,
-                "text": "# External systems\n\nAPIs, third-party services.",
-                "color": C4_COLORS["external"],
-            },
-        ],
-        "edges": [
-            {
-                "id": new_id(),
-                "fromNode": module_id,
-                "fromSide": "right",
-                "toNode": db_id,
-                "toSide": "left",
-                "toEnd": "arrow",
-                "label": "reads/writes",
-            },
-            {
-                "id": new_id(),
-                "fromNode": module_id,
-                "fromSide": "bottom",
-                "toNode": ext_id,
-                "toSide": "top",
-                "toEnd": "arrow",
-                "label": "calls",
-            },
-        ],
-    }
-    (vault_dir / "Architecture.canvas").write_text(
-        json.dumps(architecture_canvas, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
-
     # wiki-config.json (steering config with mode, language, importance, filePaths)
     wiki_config = {
         "mode": "comprehensive",
@@ -1413,7 +1163,7 @@ views:
     print(f"Project: {project_name}")
     if indexed_branch:
         print(f"Branch: {indexed_branch}")
-    print(f"Files: {len(list(vault_dir.glob('*.*md')))} top-level notes, plus Modules/, Functions/, Decisions/, Diagrams/ (13 Mermaid + 6 Canvas), Daily/, Project.base, Architecture.canvas, wiki-config.json, refresh.py, validate_wiki_config.py, wiki_structure.py, wiki_contents.py, query.py")
+    print(f"Files: {len(list(vault_dir.glob('*.*md')))} top-level notes, plus Modules/, Functions/, Decisions/, Diagrams/ (13 Mermaid), Daily/, Project.base, wiki-config.json, refresh.py, validate_wiki_config.py, wiki_structure.py, wiki_contents.py, query.py")
 
 
 if __name__ == "__main__":

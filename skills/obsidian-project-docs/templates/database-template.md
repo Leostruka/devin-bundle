@@ -14,7 +14,7 @@ tags:
 - Versioning: _e.g. Alembic, Flyway_
 
 ## Schema overview
-_High-level ER description or link to [[Architecture.canvas]]._
+_High-level ER description or link to [[Diagrams/DataModel]]._
 
 ## Tables / collections
 

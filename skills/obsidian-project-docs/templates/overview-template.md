@@ -46,4 +46,3 @@ Sources: `source: README.md:1`
 - [[Diagrams/C4Deployment]] — C4 Deployment
 - [[Diagrams/GitGraph]] — Git branching strategy
 - [[Diagrams/Mindmap]] — Feature/domain mindmap
-- [[Architecture.canvas]] — Master canvas
