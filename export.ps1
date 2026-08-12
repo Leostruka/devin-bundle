@@ -151,6 +151,8 @@ Write-Host "    Skills failed    : $failed"
 if ($Commit -and -not $DryRun -and $failed -eq 0) {
   Write-Step "Git commit"
   Push-Location $bundleRoot
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
   try {
     git add -A 2>&1 | Out-Null
     $status = git status --porcelain
@@ -166,6 +168,7 @@ if ($Commit -and -not $DryRun -and $failed -eq 0) {
       Write-Ok "nothing to commit (bundle already up to date)"
     }
   } finally {
+    $ErrorActionPreference = $prevEAP
     Pop-Location
   }
 }
