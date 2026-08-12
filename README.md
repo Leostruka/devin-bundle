@@ -66,6 +66,7 @@ devin-bundle/
     ├── context7/                   # docs atualizadas de libs/frameworks
     ├── writing-for-agents/         # escrever docs para agents (skills, AGENTS.md)
     ├── obsidian-project-docs/      # documentar projetos em Obsidian (SRS, Bases, Mermaid/C4/diagramas, logbook)
+    ├── vault-organizer/            # diagnosticar e reorganizar vaults/knowledge bases (metodologias adaptativas)
     │
     │  === Workflow / UX ===
     ├── handoff/                    # compactar conversa para outro agent
