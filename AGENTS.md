@@ -1,4 +1,4 @@
-# Global rules for Devin (apply to every project and session)
+﻿# Global rules for Devin (apply to every project and session)
 
 This file is the source of truth for how the agent must behave. It is loaded before any skill.
 

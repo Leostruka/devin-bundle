@@ -88,7 +88,9 @@ foreach ($r in $rulesSources) {
 if ($rulesFound) {
   if ($DryRun) { Write-Skip "would copy $rulesFound -> $rulesDst" }
   else {
-    Copy-Item $rulesFound $rulesDst -Force
+    # Read source and write with LF line endings to match .gitattributes (eol=lf)
+    $content = (Get-Content $rulesFound -Raw) -replace "`r`n", "`n"
+    [IO.File]::WriteAllText($rulesDst, $content, [Text.Encoding]::UTF8)
     Write-Ok "rules exported from $rulesFound"
   }
 } else {
@@ -137,7 +139,8 @@ foreach ($skill in $manifest.skills) {
 # --- 4. Update manifest.json ---
 if (-not $DryRun) {
   Write-Step "Update manifest.json"
-  $manifest | ConvertTo-Json -Depth 10 | Set-Content $manifestPath -Encoding UTF8
+  $json = ($manifest | ConvertTo-Json -Depth 10) -replace "`r`n", "`n"
+  [IO.File]::WriteAllText($manifestPath, $json, [Text.Encoding]::UTF8)
   Write-Ok "manifest.json updated with hashes + timestamps"
 }
 
