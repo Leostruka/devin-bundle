@@ -25,6 +25,25 @@ _Brief description of what {{PROJECT_NAME}} is and its purpose._
 
 _Adjust component list to match actual project components._
 
+### Component Diagram
+
+```mermaid
+graph TB
+  User([User])
+  Web["{{PROJECT_NAME}} — Web"]
+  API["{{PROJECT_NAME}} — API"]
+  Mobile["{{PROJECT_NAME}} — Mobile"]
+  Extension["{{PROJECT_NAME}} — Extension"]
+
+  User --> Web
+  User --> Mobile
+  Web --> API
+  Mobile --> API
+  Extension --> API
+```
+
+_Replace nodes and edges with the actual components and their dependencies._
+
 ## Documentation
 
 - [[{{PROJECT_NAME}}/_wiki/]] — _deepwiki or project documentation_

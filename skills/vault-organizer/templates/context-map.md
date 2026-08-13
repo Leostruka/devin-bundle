@@ -33,6 +33,18 @@ _Other contexts this one relates to, and the nature of the relationship (partner
 
 - [[Other Context MOC]] — _relationship type and description_
 
+### Context Map Diagram
+
+```mermaid
+graph LR
+  {{CONTEXT_NAME}}["{{CONTEXT_NAME}}"]
+  OtherContext["Other Context"]
+  {{CONTEXT_NAME}} -.->|partnership| OtherContext
+  {{CONTEXT_NAME}} -->|customer-supplier| SharedKernel["Shared Kernel"]
+```
+
+_Replace nodes and edges with the actual contexts and relationship types (Partnership, Customer-Supplier, Conformist, Anti-Corruption Layer, Shared Kernel, Open Host Service)._
+
 ## Ubiquitous Language
 
 _Key terms used within this context and their definitions. Terms may have different meanings in other contexts._
