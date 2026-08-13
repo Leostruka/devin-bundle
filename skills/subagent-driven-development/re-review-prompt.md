@@ -7,7 +7,7 @@ new breakage. It is not a fresh review — the full review already happened.
 **Purpose:** Verify each finding from the previous review was addressed, and
 that the fix itself broke nothing.
 
-Use `run_subagent` with `profile: "subagent_general"` and `task:` the following prompt (substitute placeholders before dispatching):
+Use `run_subagent` with `profile: "reviewer"` and `task:` the following prompt (substitute placeholders before dispatching):
 
 ```
     You are re-reviewing one task's fix round. A previous review produced

@@ -10,6 +10,46 @@ description: Use when about to claim work is complete, fixed, or passing.
 
 **Violating the letter of this rule is violating the spirit of this rule.**
 
+## Pre-Execution Gate: Verification Functions (VFs)
+
+Before dispatching an implementer, define Verification Functions — concrete,
+checkable assertions that the completed work must satisfy. VFs distill the
+spec into local checks the implementer can self-verify.
+
+### How to define VFs
+
+For each requirement in the spec, write a VF as a natural-language assertion
+with a verification command:
+
+```
+VF1: API returns 200 for valid input → curl -s -o /dev/null -w "%{http_code}" localhost:3000/api/endpoint -d '{"valid":"data"}'
+VF2: API returns 400 for invalid input → curl -s -o /dev/null -w "%{http_code}" localhost:3000/api/endpoint -d '{"invalid":"data"}'
+VF3: Type checker passes → npx tsc --noEmit
+VF4: All tests pass → npm test -- --grep "endpoint"
+```
+
+### When to define VFs
+
+- Always for tasks dispatched to implementer subagents (include VFs in the brief)
+- Always for tasks with clear acceptance criteria
+- Optional for exploratory or research tasks (no implementation to verify)
+
+### The dual gate
+
+```
+Gate 1 (PRE): Define VFs before dispatching implementer
+  → Implementer receives VFs in brief
+  → Implementer must run every VF and show output before claiming DONE
+
+Gate 2 (POST): Fresh verification evidence before accepting DONE claim
+  → Controller re-runs VFs independently (or dispatches reviewer to do so)
+  → If any VF fails, implementer re-enters fix loop
+```
+
+VFs are not extra work — they are the spec made executable. If you cannot
+write a VF for a requirement, the requirement is ambiguous and needs
+clarification before implementation.
+
 ## The Iron Law
 
 ```

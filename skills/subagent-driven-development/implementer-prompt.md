@@ -2,7 +2,7 @@
 
 Use this template when dispatching an implementer subagent.
 
-Use `run_subagent` with `profile: "subagent_general"` and `task:` the following prompt (substitute placeholders before dispatching):
+Use `run_subagent` with `profile: "implementer"` and `task:` the following prompt (substitute placeholders before dispatching):
 
 ```
     You are implementing Task N: [task name]

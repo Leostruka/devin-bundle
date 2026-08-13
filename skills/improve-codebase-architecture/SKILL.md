@@ -1,6 +1,7 @@
 ---
 name: improve-codebase-architecture
 description: Use when the user wants to identify deepening opportunities in a codebase and act on them.
+agent: architect
 ---
 # Improve Codebase Architecture
 

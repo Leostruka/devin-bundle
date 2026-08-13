@@ -137,7 +137,31 @@ a ledger file, not only in todos.
   ledger at the old flat path `.devin/sdd/progress.md` — is another
   plan's progress: leave it in place and start your own, fresh.
 - Create the ledger with its identity as the first line:
-  `# SDD ledger — plan: <plan file path>`.
+  `# SDD ledger — plan: <plan file path>`. Structure it with an Index section
+  at the top for fast context reconstruction after compaction, and a Commit
+  Boundaries section marking safe recovery points:
+
+  ```
+  # SDD ledger — plan: <plan file path>
+
+  ## Index
+  - Task 1: complete (commits a1b..d4e, review clean)
+  - Task 2: fix round 1/5 → complete (commits d4e..b7c, 2 addressed)
+  - Task 3: in progress (dispatched, awaiting review)
+
+  ## Commit Boundaries
+  - a1b2c3d: Task 1 complete — safe recovery point
+  - d4e5f6a: Task 2 fix round 1 — safe recovery point
+
+  ## Detail Log
+  Task 1: complete (commits a1b2c3d..d4e5f6a, review clean)
+  Task 2: fix round 1/5 (2 addressed, 0 open — magic number, missing progress; commits d4e5f6a..b7c8d9e)
+  Task 2: complete (commits d4e5f6a..b7c8d9e, review clean)
+  ```
+
+  The Index lets you reconstruct task status at a glance after compaction.
+  Commit Boundaries mark points where `git reset --hard <SHA>` is safe.
+  The Detail Log is the append-only record of every action.
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,
   trust the ledger and `git log` over your own recollection.
@@ -190,7 +214,7 @@ Everything you paste into a dispatch prompt — and everything a subagent
 prints back — stays resident in your context for the rest of the session
 and is re-read on every later turn. Hand artifacts over as files.
 
-### 1. use `run_subagent` with `profile: "subagent_general"` and the filled implementer prompt as `task`
+### 1. use `run_subagent` with `profile: "implementer"` and the filled implementer prompt as `task`
 
 Record BASE (`git rev-parse HEAD`) before dispatching — the review package
 and fix-round diffs need it.
@@ -228,7 +252,7 @@ Template: [implementer-prompt.md](implementer-prompt.md)
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`<skill-dir>/scripts/review-package.py PLAN_FILE BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then use `run_subagent` with `profile: "subagent_general"` and the filled task-reviewer prompt as `task` with the printed path.
+**DONE:** Generate the review package (`<skill-dir>/scripts/review-package.py PLAN_FILE BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then use `run_subagent` with `profile: "reviewer"` and the filled task-reviewer prompt as `task` with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -239,6 +263,9 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 2. If the task requires more reasoning, re-dispatch with a more capable model
 3. If the task is too large, break it into smaller pieces
 4. If the plan itself is wrong, escalate to the human
+5. If a specific subtask within the task failed (not the whole task), re-dispatch
+   ONLY the failed subtask with targeted context. Don't re-run the entire task
+   pipeline when one piece failed — this wastes 50-70% of retry cost.
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 
@@ -310,15 +337,20 @@ Before the loop starts, two routes leave it immediately:
   Do not dismiss the finding because the plan mandates it, and do not
   run a fix via `run_subagent` that contradicts the plan without asking.
 Everything else enters the loop. A fix round is one `run_subagent` fix dispatch plus one
-scoped re-review. Five rounds maximum per task:
+scoped re-review. Exit conditions (checked in order after each re-review):
+
+1. **PRIMARY:** zero Critical/Important findings remain → exit clean
+2. **SECONDARY:** convergence — no new findings for 2 consecutive rounds → exit clean
+3. **HARD CAP:** 5 rounds (safety net — adjudicate as below)
+4. **ESCALATION:** not converged after round 3 → switch to more capable model (rounds 4-5 already do this)
 
 **Rounds 1-3 — resume the original implementer.** Send it the open findings
 verbatim. Its context is intact: it knows the task, the code, and its own
 choices. If you prefer a fresh context over resuming the same subagent,
-use `run_subagent` with `profile: "subagent_general"` for a fresh implementer carrying the brief path, the report-file path,
+use `run_subagent` with `profile: "implementer"` for a fresh implementer carrying the brief path, the report-file path,
 and the findings — the report file is the persistent memory either way.
 
-**Rounds 4-5 — use `run_subagent` with `profile: "subagent_general"` for a fresh implementer on a more capable model** (per
+**Rounds 4-5 — use `run_subagent` with `profile: "implementer"` for a fresh implementer on a more capable model** (per
 Model Selection), with the brief path, the report-file path, the open
 findings, and this framing: "A prior implementer attempted this task
 [N] times; you own it now. Read the report file for what was tried." A loop
@@ -329,7 +361,7 @@ own problem — fresh eyes and a capability bump in one move.
 covering the amended code, appends its fix report to the same report file,
 and returns the short contract. Before re-dispatching the reviewer, confirm
 the fix report contains the covering tests, the command run, and the
-output; use `run_subagent` for the re-review once all three are present. Name the
+output; use `run_subagent` with `profile: "reviewer"` for the re-review once all three are present. Name the
 covering test files in the fix message — a one-line fix does not need the
 whole suite.
 
@@ -394,7 +426,7 @@ on the most capable available model (see Model Selection), using
 the ledger's deferred-minor and parked lines so it can triage which must be
 fixed before merge.
 
-If the final whole-branch review returns findings, use `run_subagent` to dispatch one fix `subagent_general` subagent
+If the final whole-branch review returns findings, use `run_subagent` with `profile: "implementer"` to dispatch one fix subagent
 with the complete findings list — not one fixer per finding.
 Per-finding fixers each rebuild context and re-run suites; a real
 session's final-review fix wave cost more than all its tasks combined.
@@ -452,7 +484,7 @@ Implementer: [Later]
   - Self-review: Found I missed --force flag, added it
   - Committed
 
-[Run python scripts/review-package.py PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the task-reviewer prompt for the printed path]
+[Run python scripts/review-package.py PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "reviewer"` and the task-reviewer prompt for the printed path]
 Task reviewer: Spec ✅ - all requirements met, nothing extra.
   Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
 
@@ -467,7 +499,7 @@ Implementer: [No questions]
   - 8/8 tests passing
   - Committed
 
-[Run python scripts/review-package.py PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the task-reviewer prompt for the printed path]
+[Run python scripts/review-package.py PLAN_FILE BASE HEAD; use `run_subagent` with `profile: "reviewer"` and the task-reviewer prompt for the printed path]
 Task reviewer: Spec ❌:
   - Missing: Progress reporting (spec says "report every 100 items")
   Issues (Important): Magic number (100)
@@ -476,7 +508,7 @@ Task reviewer: Spec ❌:
 Implementer: Added progress reporting, extracted PROGRESS_INTERVAL constant.
   Re-ran test/recovery.test.js — 10/10 passing. Fix report appended.
 
-[Run python scripts/review-package.py PLAN_FILE FIX_BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the re-review prompt]
+[Run python scripts/review-package.py PLAN_FILE FIX_BASE HEAD; use `run_subagent` with `profile: "reviewer"` and the re-review prompt]
 Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
   Magic number — ADDRESSED (src/recovery.js:7). New breakage: none.
   Verdict: all findings addressed.
@@ -487,7 +519,7 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 ...
 
 [After all tasks]
-[Run python scripts/review-package.py PLAN_FILE MERGE_BASE HEAD; use `run_subagent` with `profile: "subagent_general"` and the code-review template]
+[Run python scripts/review-package.py PLAN_FILE MERGE_BASE HEAD; use `run_subagent` with `profile: "reviewer"` and the code-review template]
 Final reviewer: All requirements met. Deferred minors triaged: none block merge.
 
 [Delete this plan's workspace — the record now lives in git]

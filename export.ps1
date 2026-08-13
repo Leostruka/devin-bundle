@@ -36,6 +36,8 @@ $ErrorActionPreference = "Stop"
 $bundleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $manifestPath = Join-Path $bundleRoot "manifest.json"
 $skillsDst   = Join-Path $bundleRoot "skills"
+$agentsDst   = Join-Path $bundleRoot "agents"
+$agentsSrc   = Join-Path $env:APPDATA "devin\agents"
 $rulesDst    = Join-Path $bundleRoot "AGENTS.md"
 
 if (-not (Test-Path $manifestPath)) { throw "manifest.json not found at $manifestPath" }
@@ -134,6 +136,29 @@ foreach ($skill in $manifest.skills) {
   # Update manifest with hash + timestamp
   $skill | Add-Member -NotePropertyName "export_hash" -NotePropertyValue $srcHash -Force
   $skill | Add-Member -NotePropertyName "exported_at" -NotePropertyValue (Get-Date -Format "o") -Force
+}
+
+# --- 3b. Export agents ---
+Write-Step "Export agent profiles"
+if (Test-Path $agentsSrc) {
+  if (-not (Test-Path $agentsDst)) {
+    if ($DryRun) { Write-Skip "would create $agentsDst" }
+    else { New-Item -ItemType Directory -Force -Path $agentsDst | Out-Null }
+  }
+  $agentFiles = Get-ChildItem $agentsSrc -Filter "*.md"
+  $agentExported = 0
+  foreach ($agentFile in $agentFiles) {
+    $dstFile = Join-Path $agentsDst $agentFile.Name
+    if ($DryRun) { Write-Skip "would export $($agentFile.Name)" }
+    else {
+      $content = (Get-Content $agentFile.FullName -Raw) -replace "`r`n", "`n"
+      [IO.File]::WriteAllText($dstFile, $content, [Text.Encoding]::UTF8)
+      $agentExported++
+    }
+  }
+  if (-not $DryRun) { Write-Ok "exported $agentExported agent profiles" }
+} else {
+  Write-Warn "no agents directory found at $agentsSrc; skipping"
 }
 
 # --- 4. Update manifest.json ---

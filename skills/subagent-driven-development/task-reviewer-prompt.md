@@ -7,7 +7,7 @@ code quality.
 **Purpose:** Verify one task's implementation matches its requirements (nothing
 more, nothing less) and is well-built (clean, tested, maintainable)
 
-Use `run_subagent` with `profile: "subagent_general"` and `task:` the following prompt (substitute placeholders before dispatching):
+Use `run_subagent` with `profile: "reviewer"` and `task:` the following prompt (substitute placeholders before dispatching):
 
 ```
     You are reviewing one task's implementation: first whether it matches its

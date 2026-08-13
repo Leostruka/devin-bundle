@@ -23,6 +23,7 @@ param(
 $ErrorActionPreference = "Stop"
 $bundleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $skillsSrc  = Join-Path $bundleRoot "skills"
+$agentsSrc  = Join-Path $bundleRoot "agents"
 $rulesSrc   = Join-Path $bundleRoot "AGENTS.md"
 
 if (-not (Test-Path $skillsSrc)) { throw "skills/ folder not found next to install.ps1 ($bundleRoot)" }
@@ -31,6 +32,7 @@ if (-not (Test-Path $rulesSrc))  { throw "AGENTS.md not found next to install.ps
 # --- Resolve target dirs (Windows: %APPDATA%/devin) ---
 $devinHome = Join-Path $env:APPDATA "devin"
 $skillsDst = Join-Path $devinHome "skills"
+$agentsDst = Join-Path $devinHome "agents"
 $rulesDst  = Join-Path $devinHome "AGENTS.md"
 
 function Write-Step($msg) { Write-Host "`n[*] $msg" -ForegroundColor Cyan }
@@ -52,8 +54,10 @@ if ($DryRun) {
 } else {
   New-Item -ItemType Directory -Force -Path $devinHome | Out-Null
   New-Item -ItemType Directory -Force -Path $skillsDst | Out-Null
+  if (-not (Test-Path $agentsDst)) { New-Item -ItemType Directory -Force -Path $agentsDst | Out-Null }
   Write-Ok "$devinHome"
   Write-Ok "$skillsDst"
+  Write-Ok "$agentsDst"
 }
 
 # --- 2. Install rules (AGENTS.md) ---
@@ -101,10 +105,39 @@ foreach ($skill in $skillDirs) {
   }
 }
 
+# --- 3b. Install agent profiles ---
+if (Test-Path $agentsSrc) {
+  Write-Step "Install agent profiles"
+  $agentFiles = Get-ChildItem $agentsSrc -Filter "*.md"
+  $agentInstalled = 0; $agentUpdated = 0
+  foreach ($agentFile in $agentFiles) {
+    $dstFile = Join-Path $agentsDst $agentFile.Name
+    if (Test-Path $dstFile) {
+      $srcHash = (Get-FileHash $agentFile.FullName -Algorithm SHA256).Hash
+      $dstHash = (Get-FileHash $dstFile -Algorithm SHA256).Hash
+      if ($srcHash -eq $dstHash) {
+        Write-Ok "$($agentFile.Name) (unchanged)"
+      } elseif ($Force) {
+        if ($DryRun) { Write-Skip "would update $($agentFile.Name)" } else { Copy-Item $agentFile.FullName $dstFile -Force; Write-Ok "updated $($agentFile.Name)" }
+        $agentUpdated++
+      } else {
+        Write-Warn "$($agentFile.Name) exists and differs. Use -Force to update."
+      }
+    } else {
+      if ($DryRun) { Write-Skip "would install $($agentFile.Name)" } else { Copy-Item $agentFile.FullName $dstFile; Write-Ok "installed $($agentFile.Name)" }
+      $agentInstalled++
+    }
+  }
+}
+
 # --- 4. Summary ---
 Write-Step "Summary"
 Write-Host "    Skills installed : $installed"
 Write-Host "    Skills updated   : $updated"
 Write-Host "    Skills unchanged : $skipped"
+if (Test-Path $agentsSrc) {
+  Write-Host "    Agents installed : $agentInstalled"
+  Write-Host "    Agents updated   : $agentUpdated"
+}
 if ($DryRun) { Write-Host "`nDry-run complete. Re-run without -DryRun to apply." -ForegroundColor Yellow }
 else { Write-Host "`nDone. Restart Devin CLI to pick up new skills/rules." -ForegroundColor Green }

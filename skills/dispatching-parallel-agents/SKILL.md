@@ -12,6 +12,25 @@ When you have multiple unrelated failures (different test files, different subsy
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
+## Early Exit: When NOT to Dispatch
+
+Before dispatching any subagent, classify the task:
+
+- **Simple** (single file, <50 lines, clear path, no research needed):
+  Controller handles inline. Dispatching overhead exceeds value.
+  Signal: you can describe the change in one sentence and know the exact file.
+
+- **Medium** (multiple files, needs some investigation, scoped changes):
+  Dispatch a single subagent with the right profile.
+
+- **Complex** (multi-system, needs research + design + implementation):
+  Dispatch multiple subagents in sequence: researcher → architect → implementer → reviewer.
+
+40-60% of tasks are simple enough for inline handling. Dispatching a subagent
+for a 10-line fix costs more in coordination overhead than it saves in context
+preservation. Reserve subagent dispatch for tasks where context isolation or
+parallelism genuinely helps.
+
 ## When to Use
 
 ```dot
@@ -82,6 +101,26 @@ When agents return:
 - Verify fixes don't conflict
 - Run full test suite
 - Integrate all changes
+
+## Profile Selection by Cost and Capability
+
+When dispatching, match the profile to the task's capability needs AND cost
+sensitivity:
+
+| Task type | Profile | Why |
+|---|---|---|
+| Codebase research, doc lookup | `researcher` (SWE-1.6) | Read-only, cheap, fast |
+| Code review, spec compliance | `reviewer` (sonnet) | Needs judgment, mid-cost |
+| Bounded implementation | `implementer` (parent) | Needs full tools + reasoning |
+| Architecture, trade-offs | `architect` (sonnet) | Needs judgment, read-only |
+| Debugging, root cause | `debugger` (parent) | Needs exec + reasoning |
+
+Don't dispatch `implementer` for a research task — `researcher` is 10x cheaper
+and read-only. Don't dispatch `architect` for a typo fix — handle inline.
+
+Cost rule: if two profiles can handle the task, pick the cheaper one. The
+controller can override by switching the parent session model before dispatch
+when a task needs more capability than the profile's default model provides.
 
 ## Agent Prompt Structure
 

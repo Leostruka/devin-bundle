@@ -1,6 +1,7 @@
 ---
 name: code-review
 description: Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'.
+agent: reviewer
 ---
 # Code Review (Unified)
 
@@ -28,6 +29,19 @@ Two traditions, one review. This skill merges the **subagent-dispatch workflow**
 - When stuck (fresh perspective)
 - Before refactoring (baseline check)
 - After fixing complex bug
+
+## Budget Presets
+
+The review depth scales with risk. Choose a preset before dispatching:
+
+| Preset | Reviewers | Repair loops | Independent reflection | When to use |
+|---|---|---|---|---|
+| **economy** | 0-1 | 1 | No | Routine refactoring, docs, low-risk test additions |
+| **standard** | up to 2 | 2 | On critical changes only | Default — most implementation tasks |
+| **strict** | up to 3 | 3 | Always | Security changes, core logic, public API, first implementation in unfamiliar domain |
+
+The controller selects the preset based on task risk, not task size. A
+20-line auth change is strict; a 500-line doc update is economy.
 
 ## The Two Axes
 
@@ -106,11 +120,46 @@ Spawn both sub-agents in parallel so they don't pollute each other's context:
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
+**Option C: Independent Reflection (strict preset, critical changes only)**
+
+After Options A or B complete, dispatch a second reviewer that sees ONLY the diff —
+not the implementer's report, not the first reviewer's findings, not the brief's
+reasoning. Its job is to catch hallucinated comments and confirm findings from
+first principles.
+
+Independent reflection prompt:
+- The diff file path (same review-package output)
+- The spec path (if available)
+- The brief: "Review this diff against the spec. You see ONLY the diff — no
+  implementer report, no prior review. Report findings from first principles.
+  Flag any comment from the first review that you cannot independently confirm
+  from the diff alone. Under 300 words."
+
+Cross-reference: findings confirmed by both reviewers → high confidence.
+Findings from first review NOT confirmed by independent reflection → likely
+hallucination, drop or downgrade. Findings ONLY from independent reflection →
+new, enter fix loop.
+
 ### 5. Aggregate
 
 Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the two axes are deliberately separate.
 
 End with a one-line summary: total findings per axis, and the worst issue within each axis. Don't pick a single winner across axes.
+
+### Severity Calibration
+
+Every finding gets a severity:
+
+- **Critical (P0):** Security, auth, data loss, broken core functionality.
+  Blocks merge. Must fix before proceeding.
+- **Important (P1):** Architecture violations, missing spec requirements,
+  broken tests, performance regressions. Requires fix before proceeding.
+- **Minor (P2):** Style, naming, minor refactors, documentation gaps.
+  Non-blocking. Park in ledger for later.
+
+The controller adjudicates severity disputes between reviewers. When the
+first reviewer says Critical but independent reflection says Minor, the
+controller reads the diff and decides — never silently drop either.
 
 ### 6. Act on feedback
 

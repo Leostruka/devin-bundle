@@ -1,6 +1,7 @@
 ---
 name: diagnosing-bugs
 description: Use when the user says 'diagnose', 'debug this', or reports something broken, throwing, failing, or slow.
+agent: debugger
 ---
 # Diagnosing Bugs
 
