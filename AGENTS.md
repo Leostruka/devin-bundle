@@ -5,7 +5,7 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 ## Rule summary
 
 1. **Customer-first planning** — start with the customer experience, then choose technology.
-2. **No AI signatures in deliverables** — never sign commits, files, PRs, releases, or docs with an AI tool.
+2. **No AI signatures in deliverables** — never sign files, releases, or docs with an AI tool; remediate any AI signature found.
 3. **Skill self-maintenance** — skills are living artifacts: keep them correct, Devin-native, and pruned.
 4. **Skill and tool discovery** — invoke the right skill before touching code; create skills for recurring patterns.
 5. **Functional programming and clean code** — pure functions, immutability, composition, FCIS.
@@ -24,11 +24,12 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 - **Focus means saying no.** If a feature does not serve a clear customer benefit, reject it.
 - **Red flag:** if you are excited about a technology and then look for a problem to apply it to, stop and return to the customer.
 
-## 2. Critical: no AI tool signatures in deliverables
+## 2. No AI tool signatures in deliverables
 
-- NEVER add `Generated with [Devin](...)` or any other AI service signature to commit messages, files, releases, pull requests, documentation, source code, or any user-facing artifact.
-- NEVER add `Co-Authored-By: Devin <...>` or any `Co-Authored-By` trailer from an AI tool to git commits.
-- If such a signature is detected, remove it immediately. If it has been committed/pushed, rewrite history (filter-branch or filter-repo) and force-push; then recreate affected releases.
+Commit and PR attribution is disabled via `attribution: false` in `config.json`. This rule covers everything else.
+
+- NEVER add `Generated with [Devin](...)`, `Co-Authored-By: Devin`, or any other AI service signature to files, releases, documentation, source code, or any user-facing artifact that is not a commit/PR message.
+- If such a signature is detected in any artifact, remove it immediately. If it has been committed/pushed, rewrite history (filter-branch or filter-repo) and force-push; then recreate affected releases.
 - Use clean, neutral commit messages without signatures.
 
 ## 3. Skill self-maintenance (always-on)
