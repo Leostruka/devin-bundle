@@ -81,7 +81,7 @@ Based on the selected methodologies and diagnosed problems, design the new struc
 3. Design a tag taxonomy if polyhierarchical tags were selected.
 4. Design MOC hub notes if MOC was selected.
 5. Design frontmatter template for new and updated files (see `templates/frontmatter.md`).
-6. List files and folders that should NOT be moved (e.g., `.obsidian/`, canvas files, config).
+6. List files and folders that should NOT be moved (e.g., `.obsidian/`, config).
 
 Present the design to the user with `ask_user_question` before proceeding to the move plan.
 
