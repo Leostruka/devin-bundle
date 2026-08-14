@@ -166,7 +166,9 @@ function Test-JsonFile($path) {
 function Test-PythonSyntax($path) {
   if (-not (Test-Path $path)) { return $true }
   try {
-    $null = & python -m py_compile $path 2>&1
+    # Use ast.parse to validate syntax without writing .pyc files
+    $code = "import ast, sys; ast.parse(open(sys.argv[1], encoding='utf-8').read())"
+    $null = & python -c $code $path 2>&1
     return $LASTEXITCODE -eq 0
   } catch {
     return $false
