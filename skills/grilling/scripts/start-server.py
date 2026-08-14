@@ -118,7 +118,7 @@ def main():
         try:
             old_pid = int(pid_file.read_text().strip())
             if is_windows():
-                os.system(f'taskkill /PID {old_pid} /F >nul 2>&1')
+                subprocess.run(["taskkill", "/PID", str(old_pid), "/F"], capture_output=True, shell=False)
             else:
                 try:
                     os.kill(old_pid, 0)  # check exists

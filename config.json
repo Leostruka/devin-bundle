@@ -1,0 +1,14 @@
+﻿{
+  "version": 1,
+  "devin": {
+    "org_id": "MASKED"
+  },
+  "theme_mode": "dark",
+  "agent": {
+    "model": "glm-5-2"
+  },
+  "attribution": false,
+  "shell": {
+    "setup_complete": true
+  }
+}

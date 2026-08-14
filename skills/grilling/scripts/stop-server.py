@@ -91,12 +91,12 @@ def is_process_alive(pid):
 def terminate(pid):
     """Try graceful shutdown, then force kill."""
     if is_windows():
-        os.system(f"taskkill /PID {pid} >nul 2>&1")
+        subprocess.run(["taskkill", "/PID", str(pid)], capture_output=True, shell=False)
         for _ in range(20):
             if not is_process_alive(pid):
                 return True
             time.sleep(0.1)
-        os.system(f"taskkill /F /PID {pid} >nul 2>&1")
+        subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True, shell=False)
         time.sleep(0.1)
         return not is_process_alive(pid)
     else:

@@ -1,0 +1,63 @@
+﻿{
+  "PreToolUse": [
+    {
+      "matcher": "exec",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\check-push-green.py\"",
+          "timeout": 120
+        }
+      ]
+    },
+    {
+      "matcher": "write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PostCompaction": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\post-compaction-reminder.py\"",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+          "timeout": 15
+        }
+      ]
+    }
+  ]
+}
