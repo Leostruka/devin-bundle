@@ -254,7 +254,7 @@ For functions:
 1. Scan the codebase for exported / public functions.
 2. In `05-Functions.md`, build a registry table with a `Source` column:
    - Function, Module, Signature, Source (`path:line`), Side effects, Calls, Tests
-3. For critical functions, create detailed sub-notes under `Functions/` using `templates/function-template.md`. Each function note must include:
+3. **MANDATORY: Create one .md file per function in `Functions/`** using `templates/function-template.md`. Every function listed in the `05-Functions.md` registry table MUST have a corresponding `Functions/<name>.md` file. No exceptions. The word "critical" does NOT mean "optional" — if a function is listed in the registry, it gets a file. Each function note must include:
    - `## Relevant source files` — where the function is defined and tested.
    - `## Purpose and Scope` — what the function does and why it exists.
    - `## Signature` — fenced code block with the full signature.
@@ -267,6 +267,7 @@ For functions:
    - `## Tests` — link to test files with source links.
    - `Sources:` footer at the end.
 4. Minimum 5 distinct source files cited per function note (where the function is complex enough).
+5. **Validation**: after creating function pages, verify that the `Functions/` directory is not empty. If `05-Functions.md` lists N functions, `Functions/` must contain at least N `.md` files. Run `validate_wiki_structure.py` to confirm.
 
 ### Step 8 — Dependencies (`06-Dependencies.md`)
 
@@ -458,6 +459,7 @@ Then write the findings into the Obsidian vault using this skill.
 - [ ] Every Mermaid diagram includes a `<!-- Sources: ... -->` comment block.
 - [ ] Pages about code embed real code snippets (fenced, with language tag).
 - [ ] Function notes include Parameters, Return value, Throws, and Examples.
+- [ ] **Every function listed in `05-Functions.md` has a corresponding `Functions/<name>.md` file** (not just a table row). `Functions/` directory must not be empty.
 - [ ] Every module has a `Modules/*.md` note with interface, dependencies, and source links.
 - [ ] Every functional requirement in `01-SRS.md` is traceable to a module or function with a source link.
 - [ ] `06-Dependencies.md` matches the package manager files (with source links).
