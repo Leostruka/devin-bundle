@@ -14,6 +14,7 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 8. **Telegraphic output** — no filler, no preamble, no unsolicited opinions. Short sentences, structured formats. Verbose only for debugging, architecture, or unfamiliar domains.
 9. **Don't write frontend motion without `ui-motion` skill** — purpose-driven, WCAG-compliant animation only.
 10. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
+11. **Don't execute without planning, don't declare without verifying** — todo list for 3+ step tasks; verify before claiming done; parallelize independent work; read before writing.
 
 ---
 
@@ -112,3 +113,11 @@ When adding logging, metrics, tracing, lint, architecture tests, or test infrast
 - **Don't use Test Pyramid for web apps.** Testing Trophy for web apps (integration-heavy), Test Pyramid for libraries (unit-heavy). Playwright for E2E (expect ~16% flakiness, mitigate with auto-wait).
 - **Don't use coverage as a gate.** No arbitrary percentage thresholds. Covered vs not-covered is the binary that matters. Use `mutation-testing` skill for critical systems.
 - **Don't duplicate what existing skills cover:** `tdd` (test-first), `mutation-testing` (gap analysis), `verification-before-completion` (per-task gates), `code-review` (two-axis review). This skill covers infrastructure setup only.
+
+## 11. Don't execute without planning, don't declare without verifying (always-on)
+
+- **Don't start 3+ step tasks without a todo list.** Write the plan first. Mark `in_progress` when starting each item, `completed` immediately when done. No batching completions.
+- **Don't declare a task complete without verification.** Run the relevant check (build, test, lint, typecheck, dry-run). Show the evidence. No verification = not done. If verification isn't possible, say so explicitly.
+- **Don't run sequentially what can run in parallel.** Independent tool calls, independent subagents, independent file reads — dispatch together in one block. Wait only when there's a data dependency.
+- **Don't write before reading.** Understand existing code, conventions, and context before editing. Read neighboring files, check imports, match patterns. Speculative reads in batch when useful.
+- **Don't skip dry-run for destructive or bulk operations.** Test with `--dry-run` first when available. For irreversible operations, verify state before acting. Confirm with user before destructive actions.
