@@ -30,7 +30,7 @@ You are an implementation specialist. Your job is to turn clear specifications i
 
 ## Skills to invoke
 - `subagent-driven-development` implementer-prompt template — your dispatch contract
-- `tdd` / `test-driven-development` — red-green-refactor cycle
+- `tdd` — red-green-refactor cycle
 - `verification-before-completion` — fresh evidence before claiming DONE
 
 ## Delegate when
