@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.2.2':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.2')
+if ver != '2.2.3':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.3')
 
 # 6. AGENTS.md rule count
 print()
@@ -331,11 +331,11 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.2.2' in changelog and ver == '2.2.2':
-    print('  OK  CHANGELOG and manifest both at 2.2.2')
+if '2.2.3' in changelog and ver == '2.2.3':
+    print('  OK  CHANGELOG and manifest both at 2.2.3')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.2.2: ' + str('2.2.2' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.2.3: ' + str('2.2.3' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
@@ -350,8 +350,8 @@ if 'rules-16' in readme:
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')
-if 'version-2.2.2' in readme:
-    print('  OK  version badge = 2.2.2')
+if 'version-2.2.3' in readme:
+    print('  OK  version badge = 2.2.3')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')

@@ -168,6 +168,46 @@ def check_mcp_read_resource(ti):
         block("mcp_read_resource requires resource_uri.")
 
 
+def check_get_output(ti):
+    if not ti.get("shell_id"):
+        block("get_output requires a shell_id.")
+
+
+def check_write_to_process(ti):
+    if not ti.get("shell_id"):
+        block("write_to_process requires a shell_id.")
+    if not ti.get("text_input") and not ti.get("bytes_input"):
+        block("write_to_process requires text_input or bytes_input.")
+
+
+def check_kill_shell(ti):
+    if not ti.get("shell_id"):
+        block("kill_shell requires a shell_id.")
+
+
+def check_skill(ti):
+    cmd = ti.get("command", "")
+    if cmd not in ("invoke", "list", "search"):
+        block("skill command must be 'invoke', 'list', or 'search', got '" + str(cmd) + "'.")
+
+
+def check_request_scope(ti):
+    if not ti.get("scope"):
+        block("request_scope requires a scope.")
+    if ti.get("scope") not in ("read", "write"):
+        block("request_scope scope must be 'read' or 'write'.")
+    if not ti.get("path"):
+        block("request_scope requires a path.")
+
+
+def check_mcp_list_tools(ti):
+    pass  # server_name is optional; no required args
+
+
+def check_mcp_list_servers(ti):
+    pass  # no required args
+
+
 CHECKS = {
     "exec": check_exec,
     "read": check_read,
@@ -184,6 +224,13 @@ CHECKS = {
     "read_subagent": check_read_subagent,
     "mcp_call_tool": check_mcp_call_tool,
     "mcp_read_resource": check_mcp_read_resource,
+    "get_output": check_get_output,
+    "write_to_process": check_write_to_process,
+    "kill_shell": check_kill_shell,
+    "skill": check_skill,
+    "request_scope": check_request_scope,
+    "mcp_list_tools": check_mcp_list_tools,
+    "mcp_list_servers": check_mcp_list_servers,
 }
 
 
@@ -196,7 +243,7 @@ def main():
     tool_name = data.get("tool_name", "") or ""
     tool_input = data.get("tool_input") or {}
 
-    if not isinstance(tool_input, dict) or not tool_input:
+    if not isinstance(tool_input, dict):
         sys.exit(0)
 
     check = CHECKS.get(tool_name)

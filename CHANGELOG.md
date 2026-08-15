@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.3] - 2026-08-15
+
+### Fixed (coverage gaps vs official tool list)
+
+- **validate-tool-args.py missing 7 tools** — the official docs list
+  `get_output`, `write_to_process`, `kill_shell`, `skill`, `request_scope`,
+  `mcp_list_tools`, `mcp_list_servers` as available tool names. The validator
+  had no checks for them, so calls with missing required args (e.g. `get_output`
+  without `shell_id`) passed silently. Added validators for all 7.
+- **validate-tool-args.py early-exit on empty tool_input** — `if not tool_input`
+  treated `{}` as falsy and exited before validating. Tools like `get_output`
+  and `kill_shell` that require args but received `{}` were allowed. Fixed:
+  only skip on non-dict input, not empty dict.
+- **researcher.md model: swe** — `swe` is not a documented model value.
+  Changed to `sonnet` (documented in the subagent profiles example).
+- **researcher.md BOM** — UTF-8 BOM (EF BB BF) removed.
+- **Matcher expanded** — config.json and hooks.v1.json matchers now include
+  the 7 newly-validated tool names.
+
 ## [2.2.2] - 2026-08-15
 
 ### Fixed (critical — hook commands used %APPDATA% which is not expanded)
