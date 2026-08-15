@@ -138,3 +138,23 @@ Required before declaring done:
 - [ ] The hypothesis that turned out correct is stated in the commit / PR message — so the next debugger learns
 
 **Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling) hand off to the `/improve-codebase-architecture` skill with the specifics. Make the recommendation **after** the fix is in, not before — you have more information now than when you started.
+
+## Interaction-Centric Failure Dimension
+
+Beyond "what" (bug type), identify "where" — which component interaction failed.
+41 failure modes mapped to component edges with Cohen's κ=0.76 (arXiv:2607.28802).
+
+| Edge | Common failure modes |
+|---|---|
+| Model → Tool | Hallucinated arguments, wrong tool selection, invalid syntax |
+| Model → Memory | Stale context, forgotten constraints (Governance Decay), wrong retrieval |
+| Tool → Tool | Output format mismatch, missing dependency, timeout cascade |
+| Agent → Environment | Permission denied, file not found, network unreachable |
+
+When diagnosing, classify the bug on both dimensions:
+1. **What** — the failure type (syntax, logic, timeout, permission, etc.)
+2. **Where** — the component edge that failed
+
+This dual classification helps identify systemic issues. If multiple bugs cluster
+on the same edge, the architecture at that edge needs improvement, not just the
+individual bug fixes.

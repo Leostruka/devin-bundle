@@ -160,3 +160,23 @@ Return a one-line routing decision:
 ```
 
 Example: `COMPLEX → researcher → architect → implementer → reviewer (preset: strict) → subagent-driven-development`
+
+## Role Bottleneck Awareness (AgentCARD)
+
+Heterogeneous teams improve accuracy by up to 44% over cost-equivalent homogeneous
+teams, and match the strongest homogeneous team at up to 12x lower per-task cost
+(arXiv:2606.20629). Bottlenecks are **domain-dependent** and **model-agnostic**:
+
+| Task type | Bottleneck role | Routing implication |
+|---|---|---|
+| Debugging (SWE-bench-like) | **Planner/architect** (φ_P = +29%) | Use stronger model in architect role |
+| Document analysis (FinanceBench-like) | **Executor/reviewer** (φ_E = +34%) | Use stronger model in reviewer role |
+| Research (IMO-AnswerBench-like) | **Executor** (φ_E = +34%) | Use stronger model in researcher role |
+
+**How to apply:** When routing, identify which role is critical for the task type.
+Assign the strongest available model to the bottleneck role. Assign cheaper models
+to non-critical roles. This is orthogonal to complexity-based routing — a simple
+task can still have a bottleneck role that needs a strong model.
+
+**Source:** AgentCARD (arXiv:2606.20629). Uses Shapley values to identify role
+bottlenecks. Preprint (not peer-reviewed) — findings are directional, not definitive.

@@ -157,3 +157,25 @@ If a skill needs executable helpers, keep them in the skill's `scripts/` directo
 - Do not modify repository security policies or CI compliance settings.
 - Keep `AGENTS.md` small; prefer skills for detailed guidance.
 - Prefer standard Devin CLI paths; do not reference non-Devin runtimes.
+
+## Dynamic Subagent Construction (AOrchestra 4-tuple)
+
+Any subagent can be described as a 4-tuple: **⟨Instruction, Context, Tools, Model⟩**.
+The 7 fixed profiles (architect, debugger, implementer, researcher, reviewer,
+subagent_explore, subagent_general) are pre-configured 4-tuples. For task-specific
+specialization, override individual tuple elements instead of creating a new profile:
+
+| Element | What it controls | When to override |
+|---|---|---|
+| **Instruction** | What the subagent must accomplish | Task needs a specific goal not covered by any profile |
+| **Context** | Task-relevant working memory | Task needs scoped context (filter out irrelevant files/history) |
+| **Tools** | Actions the subagent can take | Task needs restricted tool access (e.g., read-only exploration) |
+| **Model** | Which LLM executes | Cost-performance trade-off (cheaper model for simple subtasks) |
+
+**How to apply:** When dispatching via `run_subagent`, specify `task` (instruction),
+`profile` (defaults for context/tools/model), and override with task-specific
+constraints in the `task` text. The 7 profiles remain as backward-compatible defaults.
+
+**Source:** AOrchestra (ICML 2026, arXiv:2602.03786). "Sub-agents should be treated
+as recipes created at runtime, not fixed roles." Training-free mode: 16.28% relative
+improvement over baselines. SFT mode: +11.51% pass@1 on GAIA (requires 2K trajectories).

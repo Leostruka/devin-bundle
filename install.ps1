@@ -246,7 +246,8 @@ function Merge-ConfigJson($src, $dst) {
   }
 
   $json = ($merged | ConvertTo-Json -Depth 10) -replace "`r`n", "`n"
-  [IO.File]::WriteAllText($dst, $json, [Text.Encoding]::UTF8)
+  $utf8NoBom = [Text.UTF8Encoding]::new($false)
+  [IO.File]::WriteAllText($dst, $json, $utf8NoBom)
   Write-Ok "merged config.json (preserved local org_id)"
   $script:Merged++
 }

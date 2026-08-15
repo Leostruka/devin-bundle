@@ -1,8 +1,13 @@
-﻿{
+{
   "PreToolUse": [
     {
-      "matcher": "exec",
+      "matcher": "^exec$",
       "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\destructive-gate.py\"",
+          "timeout": 10
+        },
         {
           "type": "command",
           "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
@@ -11,12 +16,12 @@
         {
           "type": "command",
           "command": "python \"%APPDATA%\\devin\\scripts\\check-push-green.py\"",
-          "timeout": 120
+          "timeout": 150
         }
       ]
     },
     {
-      "matcher": "write",
+      "matcher": "^(write|edit)$",
       "hooks": [
         {
           "type": "command",
@@ -26,11 +31,23 @@
       ]
     },
     {
-      "matcher": "edit",
+      "matcher": "^(exec|read|write|edit|grep|glob|notebook_read|notebook_edit|webfetch|web_search|find_file_by_name|run_subagent|read_subagent|mcp_call_tool|mcp_read_resource)$",
       "hooks": [
         {
           "type": "command",
-          "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+          "command": "python \"%APPDATA%\\devin\\scripts\\validate-tool-args.py\"",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\silent-error-review.py\"",
           "timeout": 10
         }
       ]
@@ -42,7 +59,31 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"%APPDATA%\\devin\\scripts\\post-compaction-reminder.py\"",
+          "command": "python \"%APPDATA%\\devin\\scripts\\constraint-pinning.py\"",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\constraint-pinning.py\"",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\constraint-pinning.py\"",
           "timeout": 5
         }
       ]

@@ -101,7 +101,8 @@ function Get-FileHash256($path) {
 
 function Write-FileLF($path, $content) {
   $lf = $content -replace "`r`n", "`n"
-  [IO.File]::WriteAllText($path, $lf, [Text.Encoding]::UTF8)
+  $utf8NoBom = [Text.UTF8Encoding]::new($false)
+  [IO.File]::WriteAllText($path, $lf, $utf8NoBom)
 }
 
 function Copy-DirRecursive($src, $dst, $label) {

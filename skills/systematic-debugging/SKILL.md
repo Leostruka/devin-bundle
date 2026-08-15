@@ -281,3 +281,24 @@ These techniques are part of systematic debugging and available in this director
 - **`root-cause-tracing.md`** - Trace bugs backward through call stack to find original trigger
 - **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
+
+## Stopping Criterion (VRR-Stop)
+
+If after 2+ repair rounds the true validity decreases (not just the proxy),
+stop and escalate. Don't keep repairing if each round makes it worse.
+
+**Signs you should stop:**
+- Each fix introduces new failures
+- Test count goes up but pass rate goes down
+- The fix addresses a symptom but creates a new one elsewhere
+- You've applied 3+ fixes to the same function without convergence
+
+**What to do instead:**
+1. Stop fixing. Revert to last known-good state.
+2. Re-read the original error with fresh eyes.
+3. Consider that the approach is wrong, not the implementation.
+4. Escalate to user with: "I've attempted N fixes. Each made it worse. The root cause may be architectural, not implementation-level."
+
+**Source:** VRR-Stop (arXiv:2607.17641). 60.6pp improvement over fixed five-round
+repair. The key insight: agents that stop early when validity decreases
+outperform agents that keep repairing. More repair rounds ≠ better outcomes.

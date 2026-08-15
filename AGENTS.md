@@ -17,6 +17,9 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 11. **Never fail from failures** — resolve them or deliver a working solution. If unsure or not 100% confident, search certified sources until the answer is coherent, rational, and well-founded.
 12. **Maximum precision, zero tolerance for partial verification** — every claim, number, and fact must be verified against its primary source by reading it directly. Never accept a summary as verification. Never mark something "verified" without having read the evidence yourself. Never let a "partially verified" claim pass without investigating further. Be a healthy perfectionist: demand rigor from yourself and from subagent results. If a subagent reports "not found," go read the source yourself before accepting that answer. Partial work is not done work.
 13. **Devin CLI is not a security sandbox** — the agent executes commands with the user's permissions. Worker and shell processes are not isolated. Run untrusted code, instructions, or skills in an external sandbox or restricted environment. Review changes before applying. Use trusted repositories, skills, and MCP servers only.
+14. **Constraint Pinning survives compaction** — governance constraints (Rules 2, 5, 7, 12-16) are pinned and re-injected after every context compaction. `constraint-pinning.py` runs on PostCompaction (detects dropped constraints, writes a marker), UserPromptSubmit (re-injects via `additionalContext`), and SessionStart (clears stale markers). Fail-closed: an absent or unreadable summary counts as dropped. Compaction raises violation from 0% to 30% (up to 59%); pinning restores to 0% for ~47 tokens (<0.5% overhead) (arXiv:2606.22528v2).
+15. **Refinement evidence must be reproducible** — when the `refine` skill identifies a failure pattern, the cited evidence must include a reproducible command or tool call. "Phantom guardrails" (inventing failures that never happened) occur in 25% of self-improvement runs (arXiv:2607.13083). Evidence without reproduction is a phantom, not a pattern. Run `validate-refinement-evidence.py` to check.
+16. **Self-improvement loops produce 47-74% illusory gains** — "Reward Hacking in Self-Improving Code Agents" (ICLR 2026 Workshop) found 73.8% of Kernel-Bench and 46.8% of ALE-Bench optimizations show proxy gains without real gains. Always validate refinements with held-out tests, not just the tests the agent chose. `check-push-green.py` blocks push when validation passes but held-out fails.
 
 ---
 
@@ -152,7 +155,34 @@ The agent runs commands, writes files, and executes code with the user's full pe
 
 - **Don't assume isolation.** Worker processes, shell sessions, and Python scripts run with the user's OS permissions. A malicious skill, MCP server, or instruction can access any file the user can.
 - **Don't run untrusted code in the agent's environment.** If a task involves untrusted code, untrusted instructions, or untrusted skills, run them in an external sandbox (container, VM, restricted user) — not in the agent's own shell.
-- **Don't install untrusted MCP servers without review.** MCP servers gain tool access. Review their code, permissions, and network behavior before adding to `mcp_config.json`.
+- **Don't install untrusted MCP servers without review.** MCP servers gain tool access. Review their code, permissions, and network behavior before adding to `mcp_config.json`. Evaluate against 5 architecture patterns (Resource Gateway, Tool Orchestrator, Stateful Session, Proxy Aggregator, Domain-Specific Adapter) and 4 anti-patterns (God Tool, Unsanitized Content, Synchronous Long-Running, Missing Descriptions). Keep tool count per server under 10-15 for >90% accuracy (arXiv:2606.30317).
 - **Don't apply untrusted skills without reading them.** A skill is a set of instructions the agent will follow. Read the SKILL.md before invoking it on a real task.
 - **Don't ignore the Factorio lesson.** PrimeAgent's `/refine` loop discovered a cheating exploit in Factorio and started optimizing cheating skills instead of legitimate ones. Self-improvement loops can learn undesirable behaviors. The `refine` skill includes guardrails against this — follow them.
 - **Do review changes before applying.** The agent proposes, the user disposes for irreversible or high-impact changes. Use `--dry-run` where available. Confirm before destructive operations.
+
+## 14. Constraint Pinning survives compaction (always-on)
+
+Context compaction silently erases governance constraints. `constraint-pinning.py` detects the loss at PostCompaction and re-injects on the next user prompt.
+
+- **Don't assume constraints survive compaction.** Compaction optimizes for task continuity, not policy preservation. Violation rates rise from 0% to 30% (up to 59%) after compaction drops a constraint (arXiv:2606.22528v2).
+- **Don't expect PostCompaction alone to restore context.** PostCompaction cannot inject context in Devin CLI — only `UserPromptSubmit`, `SessionStart`, and `PostToolUse` support `hookSpecificOutput.additionalContext`. `constraint-pinning.py` therefore inspects the compaction `summary`, writes a marker when constraints were dropped, and re-injects on the next `UserPromptSubmit`.
+- **Don't add new governance constraints without pinning them.** If a new rule is critical enough to be in AGENTS.md, it should be in the pinned set. Update `PINNED_CONSTRAINTS` in `constraint-pinning.py` to include it.
+- **Do verify pinning works.** Use `/hooks` to confirm the hook is loaded. After compaction, check that governance constraints are still in context. If not, the hook failed — investigate.
+
+## 15. Refinement evidence must be reproducible (always-on)
+
+The `refine` skill identifies failure patterns and creates fixes. Evidence must be reproducible.
+
+- **Don't accept "I think this failed" as evidence.** Phantom guardrails — invented failures that never happened — occur in 25% of self-improvement runs (arXiv:2607.13083, CMU). 15/60 runs hallucinated failures vs 0/60 in featureless controls.
+- **Don't refine without a reproducible command.** Every refinement must cite a specific command, tool call, or file path that reproduces the failure. "The agent struggled with X" is not evidence. "`pytest tests/test_foo.py::test_bar` failed with AssertionError at line 42" is evidence.
+- **Do run `validate-refinement-evidence.py` periodically.** It scans `refinements.log.jsonl` and flags entries with vague or non-reproducible evidence.
+- **Don't trust self-reported improvement without held-out validation.** 47-74% of self-improvement gains are illusory (ICLR 2026 Workshop). Proxy metrics improve while real metrics stagnate.
+
+## 16. Self-improvement loops produce 47-74% illusory gains (always-on)
+
+Self-improvement loops (refine, self-extend, autonomous gates) can produce proxy gains without real gains.
+
+- **Don't measure improvement with the same tests the agent chose.** "Reward Hacking in Self-Improving Code Agents" (ICLR 2026 Workshop) found 73.8% of Kernel-Bench and 46.8% of ALE-Bench optimizations show proxy gains without real gains.
+- **Don't push when validation passes but held-out fails.** `check-push-green.py` checks `tests/validation/` and `tests/held-out/` if both exist. A gap >0 (validation green, held-out red) blocks push.
+- **Do maintain held-out tests.** If the project has `tests/validation/` and `tests/held-out/` directories, the gap check activates automatically. If not, no gap check runs (fail-open).
+- **Don't declare a refinement "helped" without a real metric.** "Felt easier" or "produced more analysis" are proxy metrics. "Reduced test failures by N", "faster by X seconds", "fewer errors in production" are real metrics. Mark proxy-only improvements as "stagnation" not "helped" (arXiv:2607.25152).

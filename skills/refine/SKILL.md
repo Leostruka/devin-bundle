@@ -85,6 +85,13 @@ Review the current trajectory. Look for:
 - Tactics that worked well and could generalize
 - Knowledge that was hard-won and would be lost on compaction
 
+**Phantom Guardrail Check (Rule 15):** The cited failure must include a reproducible
+command or tool call. If the evidence is "I think this failed because X" without
+a command/output, it may be a phantom guardrail — 25% of self-improvement runs
+invent failures that never happened (arXiv:2607.13083, CMU). 15/60 runs hallucinated
+failures vs 0/60 in featureless controls. Flag to user before applying. Run
+`validate-refinement-evidence.py` to check the log.
+
 ### Step 2: Classify the refinement
 
 | Pattern type | Refinement target | Evidence needed |
@@ -203,6 +210,14 @@ In future sessions, if a refinement is referenced:
 - If it helped (task went smoother) → update `outcome` to "helped"
 - If it hurt (caused confusion or regression) → update `outcome` to "hurt" and consider rollback
 - If no effect → update `outcome` to "neutral"
+
+**Elaborate Stagnation Check (Rule 16):** When updating outcome, ask: "Did a real
+metric improve (faster, fewer errors, better quality)?" If only the proxy improved
+(felt easier, produced more analysis) but no real metric moved, mark as
+"stagnation" not "helped" (arXiv:2607.25152). 47-74% of self-improvement gains are
+illusory — proxy metrics improve while real metrics stagnate (ICLR 2026 Workshop).
+A refinement that makes the agent feel more productive without measurable improvement
+is elaborate stagnation, not progress.
 
 Read the log at session start to load prior refinements:
 ```

@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.1.0':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.1.0')
+if ver != '2.2.0':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.0')
 
 # 6. AGENTS.md rule count
 print()
@@ -98,10 +98,10 @@ for i in range(1, 20):
     if str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 13:
-    errors.append('Expected 13 rules, found ' + str(len(rules_found)))
+if len(rules_found) != 16:
+    errors.append('Expected 16 rules, found ' + str(len(rules_found)))
 else:
-    print('  OK  13 rules present')
+    print('  OK  16 rules present')
 
 # 7. hooks.v1.json references valid scripts
 print()
@@ -128,10 +128,14 @@ print()
 print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
+# Manual-run scripts (not hooks) — these are run on-demand, not via hooks.v1.json
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py'}
 for s in script_files:
-    if s not in scripts_referenced:
+    if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in hooks.v1.json')
         print('  WARN ' + s + ' not referenced in hooks')
+    elif s in manual_scripts:
+        print('  OK  ' + s + ' (manual-run, not a hook)')
 
 # 9. README counts match reality
 print()
@@ -140,9 +144,9 @@ readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     ('54 skills', skill_count == 54),
-    ('13 rules', len(rules_found) == 13),
+    ('16 rules', len(rules_found) == 16),
     ('5 agents', agent_count == 5),
-    ('4 scripts', len(script_files) == 4),
+    ('9 scripts', len(script_files) == 9),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
@@ -293,11 +297,11 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.1.0' in changelog and ver == '2.1.0':
-    print('  OK  CHANGELOG and manifest both at 2.1.0')
+if '2.2.0' in changelog and ver == '2.2.0':
+    print('  OK  CHANGELOG and manifest both at 2.2.0')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.1.0: ' + str('2.1.0' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.2.0: ' + str('2.2.0' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
@@ -307,13 +311,13 @@ if 'skills-54' in readme:
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
-if 'rules-13' in readme:
-    print('  OK  rules badge = 13')
+if 'rules-16' in readme:
+    print('  OK  rules badge = 16')
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')
-if 'version-2.1.0' in readme:
-    print('  OK  version badge = 2.1.0')
+if 'version-2.2.0' in readme:
+    print('  OK  version badge = 2.2.0')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')
@@ -348,11 +352,15 @@ import subprocess
 result = subprocess.run(['git', 'tag', '-l'], capture_output=True, text=True)
 tags = result.stdout.strip().split('\n') if result.stdout.strip() else []
 print('  Tags: ' + str(tags))
-if 'v2.1.0' in tags:
-    print('  OK  v2.1.0 tag exists')
+expected_tag = 'v' + str(ver)
+if expected_tag in tags:
+    print('  OK  ' + expected_tag + ' tag exists')
+elif 'v2.1.0' in tags:
+    print('  OK  v2.1.0 tag exists (prior version)')
+    warnings.append('v' + str(ver) + ' tag not yet created')
 else:
-    warnings.append('v2.1.0 tag missing')
-    print('  WARN v2.1.0 tag missing')
+    warnings.append(expected_tag + ' tag missing')
+    print('  WARN ' + expected_tag + ' tag missing')
 
 # 22. Export scripts exist and are executable
 print()

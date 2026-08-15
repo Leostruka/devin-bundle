@@ -3,8 +3,8 @@
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Skills](https://img.shields.io/badge/skills-54-blue.svg)](#skills-54)
-[![Rules](https://img.shields.io/badge/rules-13-green.svg)](#regras-consolidadas-agentsmd)
-[![Version](https://img.shields.io/badge/version-2.1.0-orange.svg)](CHANGELOG.md)
+[![Rules](https://img.shields.io/badge/rules-16-green.svg)](#regras-consolidadas-agentsmd)
+[![Version](https://img.shields.io/badge/version-2.2.0-orange.svg)](CHANGELOG.md)
 
 Export + installer for [Devin CLI](https://devin.ai) to synchronize your **entire setup** across machines.
 Bundles skills, consolidated rules, config, hooks, scripts, MCP, and credentials —
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 54 skills, 13 rules, 5 subagent profiles, 4 hooks, and 4 hook scripts configured.
+Done. Devin CLI now has 54 skills, 16 rules, 5 subagent profiles, 6 hook events, 7 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ Done. Devin CLI now has 54 skills, 13 rules, 5 subagent profiles, 4 hooks, and 4
 │                    Devin CLI Runtime                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
 │  │ AGENTS.md│  │ skills/  │  │ agents/  │  │  hooks   │    │
-│  │ (13 rules│  │ (54 skills│  │ (5 profiles│  │ (4 events│    │
+│  │ (16 rules│  │ (54 skills│  │ (5 profiles│  │ (4 events│    │
 │  │  always-on)│ │  invoked) │  │  dispatched)│ │  enforced)│    │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
 │       │              │              │              │          │
@@ -95,7 +95,7 @@ devin-bundle/
 
 ## Consolidated rules (AGENTS.md)
 
-13 rules, all framed as negative constraints (evidence: arXiv:2604.11088 — positive directives hurt, only negative constraints help individually):
+16 rules, all framed as negative constraints (evidence: arXiv:2604.11088 — positive directives hurt, only negative constraints help individually):
 
 | # | Rule | Summary |
 |---|---|---|
@@ -112,18 +112,40 @@ devin-bundle/
 | 11 | Never fail from failures | Resolve or deliver a working solution |
 | 12 | Maximum precision | Every claim verified against primary source. Subagent returns are leads, not answers |
 | 13 | Not a security sandbox | Run untrusted code externally. Guard against reward hacking |
+| 14 | Constraint Pinning survives compaction | Governance constraints re-injected after compaction (arXiv:2606.22528) |
+| 15 | Refinement evidence must be reproducible | Phantom guardrails occur in 25% of self-improvement runs (arXiv:2607.13083) |
+| 16 | Self-improvement loops produce 47-74% illusory gains | Validate with held-out tests, not agent-chosen tests (ICLR 2026 Workshop) |
 
-## Hooks (4 events, 4 scripts)
+## Hooks (6 events, 7 hook scripts + 2 manual-run scripts)
 
-| Event | Script | Function |
-|---|---|---|
-| PreToolUse (exec/write/edit) | `check-ai-signature.py` | Blocks AI signatures in commits (-m and -F), writes, edits |
-| PreToolUse (exec) | `check-push-green.py` | Blocks push without green tests (npm, pytest, cargo, go, dotnet) |
-| PostCompaction | `post-compaction-reminder.py` | Re-primes critical rules 1-10 after compaction (counters 5.6%/step compliance decay, arXiv:2605.10039) |
-| Stop | `check-ai-signature.py` | Scans staged changes for AI signatures before stopping |
-| Stop | `refine-review-prompt.py` | Prompts refinement review if `.refine-pending` marker exists |
+All hook scripts follow the Devin CLI contract: they read the event payload from
+stdin (`hook_event_name`, `tool_name`, `tool_input`, `tool_response`, ...), block
+with **exit code 2** plus a `{"decision":"block","reason":...}` payload, and
+inject context via `hookSpecificOutput.additionalContext` where the event
+supports it. See [Lifecycle Hooks](https://docs.devin.ai/cli/extensibility/hooks/lifecycle-hooks).
 
-Evidence: symbolic guardrails = 74% of policies enforceable (arXiv:2604.15579).
+| Event | Matcher | Script | Function |
+|---|---|---|---|
+| PreToolUse | `^exec$` | `destructive-gate.py` | Blocks `rm -rf /`, `git push --force` without `--dry-run`, `DROP TABLE`, `chmod -R 777 /` |
+| PreToolUse | `^exec$` | `check-ai-signature.py` | Blocks AI signatures in commit messages (`-m` and `-F`/`--file`) |
+| PreToolUse | `^exec$` | `check-push-green.py` | Blocks push without green tests + held-out gap check (Rule 16) |
+| PreToolUse | `^(write\|edit)$` | `check-ai-signature.py` | Blocks AI signatures in file content |
+| PreToolUse | 15 tool names | `validate-tool-args.py` | Validates paths, regexes, URLs, profiles before execution (ALTK SPARC) |
+| PostToolUse | all | `silent-error-review.py` | Flags `success:true` with error indicators, empty reads, no-match searches |
+| PostCompaction | all | `constraint-pinning.py` | Detects dropped constraints, writes re-injection marker (Rule 14) |
+| UserPromptSubmit | all | `constraint-pinning.py` | Re-injects pinned constraints when a marker exists |
+| SessionStart | all | `constraint-pinning.py` | Clears stale markers from prior sessions |
+| Stop | all | `check-ai-signature.py` | Scans staged + unstaged changes for AI signatures |
+| Stop | all | `refine-review-prompt.py` | Blocks once for refinement review if `.refine-pending` exists |
+| Manual | — | `validate-refinement-evidence.py` | Checks `refinements.log.jsonl` for phantom guardrails (Rule 15) |
+| Manual | — | `validate-skill-format.py` | Scores SKILL.md files against the 8-point quality checklist |
+
+`constraint-pinning.py` spans three events because `PostCompaction` cannot inject
+context (only `UserPromptSubmit`, `SessionStart` and `PostToolUse` support
+`additionalContext`). It therefore records a marker at compaction time and
+re-injects on the next user prompt.
+
+Evidence: symbolic guardrails = 74% of policies enforceable (arXiv:2604.15579). Deterministic gates raise success 29.6%→42.0% (arXiv:2607.07405, KDD 2026 Workshop).
 
 ## Install
 
@@ -301,7 +323,7 @@ The installer is idempotent — running again only updates what changed (with `-
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute (skill/rule/hook standards) |
 | [SECURITY.md](SECURITY.md) | Security policy and guardrails |
-| [AGENTS.md](AGENTS.md) | The 13 rules (loaded by Devin CLI every session) |
+| [AGENTS.md](AGENTS.md) | The 16 rules (loaded by Devin CLI every session) |
 | [manifest.json](manifest.json) | Skill metadata (name, source, purpose) |
 
 ## License
