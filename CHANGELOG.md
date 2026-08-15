@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2] - 2026-08-15
+
+### Fixed (critical — hook commands used %APPDATA% which is not expanded)
+
+- **`%APPDATA%` is not expanded in hook commands** — the hook shell does not run
+  through cmd.exe, so `%APPDATA%` stays literal and the path becomes
+  `D:\...\%APPDATA%\devin\scripts\...` (No such file or directory). All hooks failed
+  to find their scripts. Live config.json now uses absolute paths
+  (`C:/Users/leand/AppData/Roaming/devin/scripts/...`).
+- **Bundle uses `{{APPDATA}}` placeholder** — portable across users/machines.
+  `install.ps1` expands `{{APPDATA}}` to `$env:APPDATA` (forward slashes) during
+  merge. `export.ps1` normalizes absolute APPDATA paths back to `{{APPDATA}}`.
+- **audit.py** — regex now matches `scripts/` and `scripts\`; warns on `%APPDATA%`;
+  normalizes `{{APPDATA}}` vs absolute path before comparing live vs bundle hooks.
+
 ## [2.2.1] - 2026-08-15
 
 ### Fixed (critical — hooks at wrong location)

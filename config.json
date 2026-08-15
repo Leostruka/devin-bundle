@@ -18,17 +18,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\destructive-gate.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/destructive-gate.py\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\check-push-green.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-push-green.py\"",
             "timeout": 150
           }
         ]
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
             "timeout": 10
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\validate-tool-args.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/validate-tool-args.py\"",
             "timeout": 10
           }
         ]
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\silent-error-review.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/silent-error-review.py\"",
             "timeout": 10
           }
         ]
@@ -72,7 +72,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\constraint-pinning.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
             "timeout": 5
           }
         ]
@@ -84,7 +84,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\constraint-pinning.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
             "timeout": 5
           }
         ]
@@ -96,7 +96,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\constraint-pinning.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
             "timeout": 5
           }
         ]
@@ -108,12 +108,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "python \"%APPDATA%\\devin\\scripts\\refine-review-prompt.py\"",
+            "command": "python \"{{APPDATA}}/devin/scripts/refine-review-prompt.py\"",
             "timeout": 5
           }
         ]

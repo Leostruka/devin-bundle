@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.2.1':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.1')
+if ver != '2.2.2':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.2')
 
 # 6. AGENTS.md rule count
 print()
@@ -116,9 +116,14 @@ for event in hooks:
     for entry in hooks[event]:
         for h in entry.get('hooks', []):
             cmd = h.get('command', '')
-            m = re.search(r'scripts\\([a-z-]+\.py)', cmd)
+            # Match scripts/<name>.py with either slash direction
+            m = re.search(r'scripts[/\\]([a-z-]+\.py)', cmd)
             if m:
                 scripts_referenced.add(m.group(1))
+            # Warn if command uses %APPDATA% (not expanded by hook shell)
+            if '%APPDATA%' in cmd:
+                warnings.append('Hook command uses %APPDATA% (not expanded): ' + cmd[:80])
+                print('  WARN %APPDATA% in command (use {{APPDATA}} or absolute path)')
 for s in sorted(scripts_referenced):
     path = os.path.join('scripts', s)
     if os.path.exists(path):
@@ -276,10 +281,16 @@ if os.path.exists(live_cfg) and os.path.exists(bundle_cfg):
     try:
         live_hooks = json.load(open(live_cfg, encoding='utf-8-sig')).get('hooks', {})
         bundle_hooks = json.load(open(bundle_cfg, encoding='utf-8-sig')).get('hooks', {})
-        h1 = hashlib.sha256(json.dumps(live_hooks, sort_keys=True).encode()).hexdigest()[:16]
-        h2 = hashlib.sha256(json.dumps(bundle_hooks, sort_keys=True).encode()).hexdigest()[:16]
+        # Normalize: replace {{APPDATA}} in bundle with real APPDATA path (forward slashes)
+        appdata = os.environ.get('APPDATA', '').replace('\\', '/')
+        def normalize(obj):
+            s = json.dumps(obj, sort_keys=True)
+            s = s.replace('{{APPDATA}}', appdata)
+            return s
+        h1 = hashlib.sha256(normalize(live_hooks).encode()).hexdigest()[:16]
+        h2 = hashlib.sha256(normalize(bundle_hooks).encode()).hexdigest()[:16]
         if h1 == h2:
-            print('  OK  config.json hooks (live=bundle)')
+            print('  OK  config.json hooks (live=bundle, {{APPDATA}} normalized)')
         else:
             errors.append('config.json hooks live != bundle: ' + h1 + ' vs ' + h2)
             print('  FAIL config.json hooks live=' + h1 + ' bundle=' + h2)
@@ -320,11 +331,11 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.2.1' in changelog and ver == '2.2.1':
-    print('  OK  CHANGELOG and manifest both at 2.2.1')
+if '2.2.2' in changelog and ver == '2.2.2':
+    print('  OK  CHANGELOG and manifest both at 2.2.2')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.2.1: ' + str('2.2.1' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.2.2: ' + str('2.2.2' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
@@ -339,8 +350,8 @@ if 'rules-16' in readme:
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')
-if 'version-2.2.1' in readme:
-    print('  OK  version badge = 2.2.1')
+if 'version-2.2.2' in readme:
+    print('  OK  version badge = 2.2.2')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')

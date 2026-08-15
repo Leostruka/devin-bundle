@@ -189,11 +189,14 @@ function Merge-ConfigJson($src, $dst) {
   }
 
   if (-not (Test-Path $dst)) {
-    # No local config — just copy bundle
+    # No local config — just copy bundle with {{APPDATA}} expanded
     if ($DryRun) { Write-Skip "would install config.json" }
     else {
-      Copy-Item $src $dst -Force
-      Write-Ok "installed config.json"
+      $content = Get-Content $src -Raw
+      $content = $content -replace '\{\{APPDATA\}\}', ($env:APPDATA -replace '\\', '/')
+      $utf8NoBom = [Text.UTF8Encoding]::new($false)
+      [IO.File]::WriteAllText($dst, $content, $utf8NoBom)
+      Write-Ok "installed config.json ({{APPDATA}} expanded)"
     }
     $script:Copied++
     return
@@ -244,9 +247,11 @@ function Merge-ConfigJson($src, $dst) {
   }
 
   $json = ($merged | ConvertTo-Json -Depth 10) -replace "`r`n", "`n"
+  # Expand {{APPDATA}} placeholder to the real path (forward slashes)
+  $json = $json -replace '\{\{APPDATA\}\}', ($env:APPDATA -replace '\\', '/')
   $utf8NoBom = [Text.UTF8Encoding]::new($false)
   [IO.File]::WriteAllText($dst, $json, $utf8NoBom)
-  Write-Ok "merged config.json (preserved local org_id)"
+  Write-Ok "merged config.json (preserved local org_id, {{APPDATA}} expanded)"
   $script:Merged++
 }
 

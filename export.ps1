@@ -269,14 +269,19 @@ if (Test-Path $skillsSrc) {
 }
 
 # --- 4. config.json ---
-Write-Step "Export config.json (model, theme, attribution)"
+Write-Step "Export config.json (model, theme, attribution, hooks)"
 if (Test-Path $configSrc) {
   if ($DryRun) { Write-Skip "would copy config.json (mask=$(-not $NoMask))" }
   else {
     $content = Get-Content $configSrc -Raw
     $masked = Mask-JsonSecrets $content
+    # Normalize absolute APPDATA paths to {{APPDATA}} placeholder for portability
+    $appdataNorm = ($env:APPDATA -replace '\\', '/')
+    $appdataBack = $env:APPDATA
+    $masked = $masked -replace [regex]::Escape($appdataNorm), '{{APPDATA}}'
+    $masked = $masked -replace [regex]::Escape($appdataBack), '{{APPDATA}}'
     Write-FileLF $configDst $masked
-    if ($masked -ne $content) { Write-Ok "config.json exported (org_id MASKED)" }
+    if ($masked -ne $content) { Write-Ok "config.json exported (org_id MASKED, paths normalized to {{APPDATA}})" }
     else { Write-Ok "config.json exported" }
   }
 } else {
