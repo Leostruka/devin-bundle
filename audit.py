@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.2.0':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.0')
+if ver != '2.2.1':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.1')
 
 # 6. AGENTS.md rule count
 print()
@@ -103,10 +103,14 @@ if len(rules_found) != 16:
 else:
     print('  OK  16 rules present')
 
-# 7. hooks.v1.json references valid scripts
+# 7. config.json hooks references valid scripts
 print()
-print('[7] hooks.v1.json script references')
-hooks = json.load(open('hooks.v1.json', encoding='utf-8-sig'))
+print('[7] config.json hooks script references')
+config = json.load(open('config.json', encoding='utf-8-sig'))
+hooks = config.get('hooks', {})
+if not hooks:
+    errors.append('No "hooks" key in config.json')
+    print('  FAIL no hooks key in config.json')
 scripts_referenced = set()
 for event in hooks:
     for entry in hooks[event]:
@@ -128,11 +132,11 @@ print()
 print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
-# Manual-run scripts (not hooks) — these are run on-demand, not via hooks.v1.json
+# Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
 manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
-        warnings.append(s + ' not referenced in hooks.v1.json')
+        warnings.append(s + ' not referenced in config.json hooks')
         print('  WARN ' + s + ' not referenced in hooks')
     elif s in manual_scripts:
         print('  OK  ' + s + ' (manual-run, not a hook)')
@@ -250,7 +254,7 @@ for doc, check in docs:
 print()
 print('[15] Live vs bundle sync')
 live_base = r'C:\Users\leand\AppData\Roaming\devin'
-pairs = [('AGENTS.md', 'AGENTS.md'), ('hooks.v1.json', 'hooks.v1.json')]
+pairs = [('AGENTS.md', 'AGENTS.md'), ('mcp_config.json', 'mcp_config.json')]
 for live_rel, bundle_rel in pairs:
     lp = os.path.join(live_base, live_rel)
     bp = os.path.join('.', bundle_rel)
@@ -264,6 +268,25 @@ for live_rel, bundle_rel in pairs:
             print('  FAIL ' + bundle_rel + ' live=' + h1 + ' bundle=' + h2)
     else:
         print('  SKIP ' + bundle_rel)
+
+# config.json: compare hooks section only (org_id differs by design)
+live_cfg = os.path.join(live_base, 'config.json')
+bundle_cfg = os.path.join('.', 'config.json')
+if os.path.exists(live_cfg) and os.path.exists(bundle_cfg):
+    try:
+        live_hooks = json.load(open(live_cfg, encoding='utf-8-sig')).get('hooks', {})
+        bundle_hooks = json.load(open(bundle_cfg, encoding='utf-8-sig')).get('hooks', {})
+        h1 = hashlib.sha256(json.dumps(live_hooks, sort_keys=True).encode()).hexdigest()[:16]
+        h2 = hashlib.sha256(json.dumps(bundle_hooks, sort_keys=True).encode()).hexdigest()[:16]
+        if h1 == h2:
+            print('  OK  config.json hooks (live=bundle)')
+        else:
+            errors.append('config.json hooks live != bundle: ' + h1 + ' vs ' + h2)
+            print('  FAIL config.json hooks live=' + h1 + ' bundle=' + h2)
+    except Exception as e:
+        print('  SKIP config.json hooks (' + str(e) + ')')
+else:
+    print('  SKIP config.json hooks')
 
 for s in script_files:
     lp = os.path.join(live_base, 'scripts', s)
@@ -297,11 +320,11 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.2.0' in changelog and ver == '2.2.0':
-    print('  OK  CHANGELOG and manifest both at 2.2.0')
+if '2.2.1' in changelog and ver == '2.2.1':
+    print('  OK  CHANGELOG and manifest both at 2.2.1')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.2.0: ' + str('2.2.0' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.2.1: ' + str('2.2.1' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
@@ -316,8 +339,8 @@ if 'rules-16' in readme:
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')
-if 'version-2.2.0' in readme:
-    print('  OK  version badge = 2.2.0')
+if 'version-2.2.1' in readme:
+    print('  OK  version badge = 2.2.1')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')

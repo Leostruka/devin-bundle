@@ -61,7 +61,6 @@ $rulesDst      = Join-Path $bundleRoot "AGENTS.md"
 $agentsDst     = Join-Path $bundleRoot "agents"
 $skillsDst     = Join-Path $bundleRoot "skills"
 $configDst     = Join-Path $bundleRoot "config.json"
-$hooksDst      = Join-Path $bundleRoot "hooks.v1.json"
 $scriptsDst    = Join-Path $bundleRoot "scripts"
 $mcpDst        = Join-Path $bundleRoot "mcp_config.json"
 $credsDst      = Join-Path $bundleRoot "credentials.toml"
@@ -71,7 +70,6 @@ $rulesSrc      = Join-Path $devinHome "AGENTS.md"
 $agentsSrc     = Join-Path $devinHome "agents"
 $skillsSrc     = Join-Path $devinHome "skills"
 $configSrc     = Join-Path $devinHome "config.json"
-$hooksSrc      = Join-Path $devinHome "hooks.v1.json"
 $scriptsSrc    = Join-Path $devinHome "scripts"
 $mcpSrc        = Join-Path $devinHome "mcp_config.json"
 $credsSrc      = Join-Path $devinHome "credentials.toml"
@@ -285,27 +283,14 @@ if (Test-Path $configSrc) {
   Write-Warn "config.json not found at $configSrc"
 }
 
-# --- 5. hooks.v1.json ---
-Write-Step "Export hooks.v1.json (PreToolUse, PostCompaction, Stop)"
-if (Test-Path $hooksSrc) {
-  if ($DryRun) { Write-Skip "would copy hooks.v1.json" }
-  else {
-    $content = Get-Content $hooksSrc -Raw
-    Write-FileLF $hooksDst $content
-    Write-Ok "hooks.v1.json exported"
-  }
-} else {
-  Write-Warn "hooks.v1.json not found at $hooksSrc"
-}
-
-# --- 6. scripts/ (hook Python scripts) ---
+# --- 5. scripts/ (hook Python scripts) ---
 Write-Step "Export scripts/ (hook scripts)"
 $scriptCount = Copy-DirRecursive -src $scriptsSrc -dst $scriptsDst -label "scripts/"
 if ($scriptCount -eq 0 -and -not (Test-Path $scriptsSrc)) {
   Write-Warn "scripts/ not found at $scriptsSrc"
 }
 
-# --- 7. mcp_config.json ---
+# --- 6. mcp_config.json ---
 Write-Step "Export mcp_config.json (MCP servers)"
 if (Test-Path $mcpSrc) {
   if ($DryRun) { Write-Skip "would copy mcp_config.json (mask=$(-not $NoMask))" }
@@ -320,7 +305,7 @@ if (Test-Path $mcpSrc) {
   Write-Skip "mcp_config.json not found at $mcpSrc (no MCP servers configured)"
 }
 
-# --- 8. credentials.toml ---
+# --- 7. credentials.toml ---
 Write-Step "Export credentials.toml (API keys)"
 if (Test-Path $credsSrc) {
   if ($DryRun) {
@@ -339,19 +324,19 @@ if (Test-Path $credsSrc) {
   Write-Skip "credentials.toml not found at $credsSrc"
 }
 
-# --- 9. Summary ---
+# --- 8. Summary ---
 Write-Step "Summary"
 $componentCount = 0
-foreach ($p in @($rulesDst, $agentsDst, $skillsDst, $configDst, $hooksDst, $scriptsDst, $mcpDst, $credsDst)) {
+foreach ($p in @($rulesDst, $agentsDst, $skillsDst, $configDst, $scriptsDst, $mcpDst, $credsDst)) {
   if (Test-Path $p) { $componentCount++ }
 }
-Write-Host "    Components in bundle: $componentCount / 8"
+Write-Host "    Components in bundle: $componentCount / 7"
 
 if ($script:Warnings.Count -gt 0) {
   Write-Host "    Warnings: $($script:Warnings.Count)" -ForegroundColor Yellow
 }
 
-# --- 10. Pre-push validation ---
+# --- 9. Pre-push validation ---
 function Invoke-Validation {
   Write-Step "Pre-push validation"
   $errors = @()
@@ -397,7 +382,7 @@ function Invoke-Validation {
   return $true
 }
 
-# --- 11. Git commit + push ---
+# --- 10. Git commit + push ---
 if ($Commit -or $Push) {
   if ($DryRun) {
     Write-Step "Git (dry-run)"

@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Skills](https://img.shields.io/badge/skills-54-blue.svg)](#skills-54)
 [![Rules](https://img.shields.io/badge/rules-16-green.svg)](#regras-consolidadas-agentsmd)
-[![Version](https://img.shields.io/badge/version-2.2.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.2.1-orange.svg)](CHANGELOG.md)
 
 Export + installer for [Devin CLI](https://devin.ai) to synchronize your **entire setup** across machines.
 Bundles skills, consolidated rules, config, hooks, scripts, MCP, and credentials —
@@ -73,9 +73,9 @@ devin-bundle/
 ├── AGENTS.md            # 13 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
 ├── skills/              # 54 skills (auto-discover, not limited to manifest)
-├── config.json          # model, theme, attribution (org_id MASKED by default)
-├── hooks.v1.json        # PreToolUse + PostCompaction + Stop hooks (4 events)
-├── scripts/             # 4 hook Python scripts
+├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
+├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
+├── scripts/             # 9 hook Python scripts (7 hooks + 2 manual-run)
 ├── mcp_config.json      # MCP server config (tokens MASKED by default)
 ├── credentials.toml     # API keys (ALL values MASKED by default)
 ├── manifest.json        # skill metadata (name, source, purpose)
@@ -177,12 +177,11 @@ Destination: `${XDG_CONFIG_HOME:-~/.config}/devin/`
 2. **AGENTS.md** — install if absent; skip if identical; `-Force` to overwrite
 3. **agents/** — install each `.md` profile
 4. **skills/** — install each skill; skip if identical; `-Force` to update
-5. **config.json** — **MERGE** by default (preserves local `org_id`, applies model/theme from bundle). `-Force` to overwrite completely
-6. **hooks.v1.json** — install
-7. **scripts/** — install hook Python scripts
-8. **mcp_config.json** — skip if values MASKED. `-Force` for masked structure
-9. **credentials.toml** — only with `-RestoreSecrets`. Skip if MASKED
-10. Prints summary: installed, overwritten, merged, skipped, backups
+5. **config.json** — **MERGE** by default (preserves local `org_id`, applies model/theme/**hooks** from bundle). `-Force` to overwrite completely
+6. **scripts/** — install hook Python scripts
+7. **mcp_config.json** — skip if values MASKED. `-Force` for masked structure
+8. **credentials.toml** — only with `-RestoreSecrets`. Skip if MASKED
+9. Prints summary: installed, overwritten, merged, skipped, backups
 
 ## Export (regenerate bundle from source machine)
 
@@ -210,14 +209,13 @@ chmod +x export.sh
 1. **AGENTS.md** — copy from live to bundle (LF line endings)
 2. **agents/** — copy all `.md` profiles
 3. **skills/** — **auto-discovers** ALL skills in the live directory (not limited to manifest). Compares hashes, only copies if changed
-4. **config.json** — copy with `org_id` MASKED (or real with `-NoMask`)
-5. **hooks.v1.json** — copy
-6. **scripts/** — copy hook Python scripts
-7. **mcp_config.json** — copy with env values MASKED (or real with `-NoMask`)
-8. **credentials.toml** — copy with ALL values MASKED (or real with `-NoMask`)
-9. **Pre-push validation** (with `-Push`): validates JSON syntax + Python syntax before pushing. Aborts on failure
-10. **Commit** (with `-Commit`): `git add -A && git commit` with detailed message
-11. **Push** (with `-Push`): `git push` after validation passes
+4. **config.json** — copy with `org_id` MASKED (or real with `-NoMask`). Includes hooks under `"hooks"` key
+5. **scripts/** — copy hook Python scripts
+6. **mcp_config.json** — copy with env values MASKED (or real with `-NoMask`)
+7. **credentials.toml** — copy with ALL values MASKED (or real with `-NoMask`)
+8. **Pre-push validation** (with `-Push`): validates JSON syntax + Python syntax before pushing. Aborts on failure
+9. **Commit** (with `-Commit`): `git add -A && git commit` with detailed message
+10. **Push** (with `-Push`): `git push` after validation passes
 
 ### Secrets masking
 
@@ -308,7 +306,7 @@ The installer is idempotent — running again only updates what changed (with `-
 |---|---|---|
 | `install.ps1` cannot run | PowerShell execution policy | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
 | Skills not appearing | Wrong install path | Verify destination: `%APPDATA%\devin\skills\` (Windows) or `~/.config/devin/skills/` (Linux) |
-| Hooks not firing | Wrong hooks path | Verify `hooks.v1.json` is at `%APPDATA%\devin\hooks.v1.json` |
+| Hooks not firing | Wrong hooks location | Verify hooks are in `config.json` under `"hooks"` key at `%APPDATA%\devin\config.json` (not `hooks.v1.json` at user-level) |
 | `check-push-green.py` blocks all pushes | Test suite failing | Fix tests, then push. Or use `-Force` install to update the script |
 | AI signature detected on Stop | Staged changes contain signature | Remove signature from staged files: `git commit --amend` |
 | `export.ps1 -Push` aborts | JSON or Python syntax error | Fix the error, re-run export |

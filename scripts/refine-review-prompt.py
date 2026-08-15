@@ -89,7 +89,7 @@ def main():
         "decision": "block",
         "reason": REMINDER.format(detail=detail or "3+ todos completed"),
     }))
-    sys.exit(0)
+    sys.exit(2)
 
 
 if __name__ == "__main__":

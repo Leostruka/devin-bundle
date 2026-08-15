@@ -9,7 +9,7 @@
     - agents\*.md        → %APPDATA%\devin\agents\
     - skills\*           → %APPDATA%\devin\skills\
     - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
-    - hooks.v1.json      → %APPDATA%\devin\hooks.v1.json
+    - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
     - scripts\*          → %APPDATA%\devin\scripts\
     - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
     - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
@@ -59,7 +59,6 @@ $rulesSrc   = Join-Path $bundleRoot "AGENTS.md"
 $agentsSrc  = Join-Path $bundleRoot "agents"
 $skillsSrc  = Join-Path $bundleRoot "skills"
 $configSrc  = Join-Path $bundleRoot "config.json"
-$hooksSrc   = Join-Path $bundleRoot "hooks.v1.json"
 $scriptsSrc = Join-Path $bundleRoot "scripts"
 $mcpSrc     = Join-Path $bundleRoot "mcp_config.json"
 $credsSrc   = Join-Path $bundleRoot "credentials.toml"
@@ -69,7 +68,6 @@ $rulesDst   = Join-Path $devinHome "AGENTS.md"
 $agentsDst  = Join-Path $devinHome "agents"
 $skillsDst  = Join-Path $devinHome "skills"
 $configDst  = Join-Path $devinHome "config.json"
-$hooksDst   = Join-Path $devinHome "hooks.v1.json"
 $scriptsDst = Join-Path $devinHome "scripts"
 $mcpDst     = Join-Path $devinHome "mcp_config.json"
 $credsDst   = Join-Path $devinHome "credentials.toml"
@@ -328,15 +326,7 @@ if (Test-Path $configSrc) {
   Write-Skip "config.json not in bundle"
 }
 
-# --- 5. hooks.v1.json ---
-Write-Step "Install hooks.v1.json"
-if (Test-Path $hooksSrc) {
-  Install-File -src $hooksSrc -dst $hooksDst -label "hooks.v1.json"
-} else {
-  Write-Skip "hooks.v1.json not in bundle"
-}
-
-# --- 6. scripts/ ---
+# --- 5. scripts/ ---
 Write-Step "Install scripts/ (hook scripts)"
 if (Test-Path $scriptsSrc) {
   $scriptFiles = Get-ChildItem $scriptsSrc -File
@@ -347,7 +337,7 @@ if (Test-Path $scriptsSrc) {
   Write-Skip "scripts/ not in bundle"
 }
 
-# --- 7. mcp_config.json ---
+# --- 6. mcp_config.json ---
 Write-Step "Install mcp_config.json"
 if (Test-Path $mcpSrc) {
   if (Test-HasMasked $mcpSrc) {
@@ -365,7 +355,7 @@ if (Test-Path $mcpSrc) {
   Write-Skip "mcp_config.json not in bundle"
 }
 
-# --- 8. credentials.toml ---
+# --- 7. credentials.toml ---
 Write-Step "Install credentials.toml"
 if (Test-Path $credsSrc) {
   if (-not $RestoreSecrets) {

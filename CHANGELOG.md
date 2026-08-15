@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-08-15
+
+### Fixed (critical — hooks at wrong location)
+
+- **hooks.v1.json is not a valid user-level location** — the docs
+  ([Where Hooks Live](https://docs.devin.ai/cli/extensibility/hooks/overview#where-hooks-live))
+  list `hooks.v1.json` only under project-level (`.devin/hooks.v1.json`). At user-level,
+  hooks must be in `config.json` under the `"hooks"` key. The standalone `hooks.v1.json`
+  at `%APPDATA%\devin\` was silently ignored. Hooks are now merged into `config.json`.
+- **mcp_config.json BOM** — file had UTF-8 BOM (EF BB BF), removed.
+- **mcp_config.json undocumented fields** — `arxiv` server had `transport: stdio` (not
+  documented for stdio servers; transport is inferred from `command`) and a `note` field
+  (not in the schema). Both removed.
+- **refine-review-prompt.py exit code** — printed `{"decision":"block"}` but exited with
+  0 instead of 2. Changed to exit 2 for consistency with all other blocking scripts.
+- **export.ps1 / install.ps1 / audit.py** — updated to read/write hooks from `config.json`
+  instead of standalone `hooks.v1.json`. The bundle keeps `hooks.v1.json` for project-level
+  use (`.devin/hooks.v1.json`).
+
 ## [2.2.0] - 2026-08-15
 
 ### Fixed (critical — hooks were non-functional)

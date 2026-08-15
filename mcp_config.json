@@ -5,9 +5,7 @@
       "transport": "http"
     },
     "arxiv": {
-      "command": "arxiv-mcp-server",
-      "transport": "stdio",
-      "note": "14 tools (search, download, read, abstract, semantic_search, citation_graph, export_citations, latex, alerts, reindex). Core 5 well under 10-15 threshold. Domain-Specific Adapter pattern. Evaluated against MCP Server Architecture Patterns (arXiv:2606.30317)."
+      "command": "arxiv-mcp-server"
     }
   }
 }
