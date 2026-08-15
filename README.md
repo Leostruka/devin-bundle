@@ -51,8 +51,7 @@ devin-bundle/
 6. **graphify trigger** — `/graphify` runs first.
 7. **Execute-first, opinion-silent** — don't reframe, suggest alternatives, or critique clear tasks. Push back only on false premises, irreversible actions, or deliverable-changing ambiguity.
 8. **Telegraphic output** — no filler, no preamble, no unsolicited opinions. Short sentences, structured formats. Verbose only for debugging, architecture, or unfamiliar domains.
-9. **Don't write frontend motion without `ui-motion` skill** — purpose-driven, WCAG-compliant animation only.
-10. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
+9. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
 
 ## Hooks (3 eventos)
 

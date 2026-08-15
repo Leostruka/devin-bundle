@@ -12,9 +12,8 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 6. **graphify trigger** — `/graphify` runs first.
 7. **Execute-first, opinion-silent** — don't reframe, suggest alternatives, or critique clear tasks. Push back only on false premises, irreversible actions, or deliverable-changing ambiguity.
 8. **Telegraphic output** — no filler, no preamble, no unsolicited opinions. Short sentences, structured formats. Verbose only for debugging, architecture, or unfamiliar domains.
-9. **Don't write frontend motion without `ui-motion` skill** — purpose-driven, WCAG-compliant animation only.
-10. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
-11. **Don't execute without planning, don't declare without verifying** — todo list for 3+ step tasks; verify before claiming done; parallelize independent work; read before writing.
+9. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
+10. **Don't execute without planning, don't declare without verifying** — todo list for 3+ step tasks; verify before claiming done; parallelize independent work; read before writing.
 
 ---
 
@@ -94,17 +93,7 @@ You are a tool, not a colleague. Tools don't critique input. A calculator doesn'
 - **Max 12 words per sentence.** Fragments fine. Shorter if possible.
 - **Verbose only when:** debugging (reasoning chain), architecture (trade-offs), unfamiliar domain (orientation). Default is telegraphic.
 
-## 9. Don't write frontend motion without `ui-motion` skill (skill-referenced)
-
-When touching frontend files (`.tsx`, `.vue`, `.svelte`, `.css`, `.scss`, `.html`), invoke the `ui-motion` skill before writing animation, transition, or loading-state code.
-
-- **Don't animate without purpose.** Frequency gate: daily interactions = minimal motion, monthly = delightful OK. Keyboard-initiated actions never animate.
-- **Don't use spinners as default loading state.** Skeleton for informational full-page loads, progress bar for known duration, progressive rendering preferred. Spinners are last resort.
-- **Don't skip `prefers-reduced-motion` (WCAG 2.2 SC 2.3.3).** Every animation must handle it. No exceptions.
-- **Don't animate layout properties.** Only animate `transform` and `opacity`. `width`, `height`, `top`, `left` trigger reflow. Use FLIP for layout animations.
-- **Don't exceed timing bounds.** 100-200ms micro, 200-300ms standard, 300-500ms page. Exit = 75% of entrance. Easing: ease-out default.
-
-## 10. Don't add observability infrastructure without `observability-quality` skill (skill-referenced)
+## 9. Don't add observability infrastructure without `observability-quality` skill (skill-referenced)
 
 When adding logging, metrics, tracing, lint, architecture tests, or test infrastructure, invoke the `observability-quality` skill.
 
@@ -114,7 +103,7 @@ When adding logging, metrics, tracing, lint, architecture tests, or test infrast
 - **Don't use coverage as a gate.** No arbitrary percentage thresholds. Covered vs not-covered is the binary that matters. Use `mutation-testing` skill for critical systems.
 - **Don't duplicate what existing skills cover:** `tdd` (test-first), `mutation-testing` (gap analysis), `verification-before-completion` (per-task gates), `code-review` (two-axis review). This skill covers infrastructure setup only.
 
-## 11. Don't execute without planning, don't declare without verifying (always-on)
+## 10. Don't execute without planning, don't declare without verifying (always-on)
 
 - **Don't start 3+ step tasks without a todo list.** Write the plan first. Mark `in_progress` when starting each item, `completed` immediately when done. No batching completions.
 - **Don't declare a task complete without verification.** Run the relevant check (build, test, lint, typecheck, dry-run). Show the evidence. No verification = not done. If verification isn't possible, say so explicitly.

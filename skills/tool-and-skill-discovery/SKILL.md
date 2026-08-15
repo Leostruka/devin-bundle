@@ -45,12 +45,10 @@ description: Use when the user asks how to do something, needs the right skill o
 | Git / PR      | `git-helper`, `gh`, `skill code-review`, `skill receiving-code-review` |
 | GitHub ops    | `gh`, `mcp_call_tool` for GitHub MCP, `web_search` |
 | CSV / data    | `python` (pandas), `powershell` `Import-Csv`, `grep` |
-| .NET / C#     | `dotnet build`, `dotnet test`, `skill xaml-patterns`, `skill avalonia-pro-max` |
-| Laravel / PHP | `skill laravel-patterns`, `skill laravel-tdd`, `skill filament-pro` |
-| UI / design   | `skill wa-design-desktop`, `skill avalonia-pro-max`, `skill apple-hig` |
+| .NET / C#     | `dotnet build`, `dotnet test` |
 | Installers    | `ISCC.exe`, `powershell`, `schtasks` |
 | Debugging     | `skill systematic-debugging`, `skill tdd` |
-| Verification  | `skill verification-before-completion`, `skill laravel-verification` |
+| Verification  | `skill verification-before-completion` |
 | Documentation | `context7`, `web_search`, `webfetch` |
 
 ## Creating or updating a skill
