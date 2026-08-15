@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "devin-bundle",
   "version": "2.0.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
@@ -370,6 +370,69 @@
       "original_path": "%APPDATA%\\devin\\skills\\subagent-router",
       "export_hash": "DDF135C07D654CC86417E5020655ACEEA742E2E43AEA04EC9380AE075CD36856",
       "exported_at": "2026-08-13T12:29:08.3007582-03:00"
+    },
+    {
+      "name": "jira",
+      "source": "created:Devin bundle",
+      "purpose": "Jira/Atlassian integration via MCP server for issue tracking, sprint management, and ticket operations.",
+      "original_path": "%APPDATA%\\devin\\skills\\jira",
+      "exported_at": "2026-08-15T14:53:00-03:00"
+    },
+    {
+      "name": "observability-quality",
+      "source": "created:Devin bundle",
+      "purpose": "Context-dependent observability decisions: when to add tracing, logging, metrics, lint, architecture tests. Prevents universal tracing (16-180% latency) and tool mixing.",
+      "original_path": "%APPDATA%\\devin\\skills\\observability-quality",
+      "exported_at": "2026-08-15T14:53:00-03:00"
+    },
+    {
+      "name": "context-folding",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "RLM-style context folding for large contexts. Offload to file, grep/partition, subagent_explore sub-queries (depth=1 only). Adapts arXiv:2512.24601 to Devin CLI runtime.",
+      "original_path": "%APPDATA%\\devin\\skills\\context-folding",
+      "exported_at": "2026-08-15T15:30:00-03:00"
+    },
+    {
+      "name": "refine",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Continual Harness self-improvement. Trajectory review to small evidence-backed edits in skills/rules/agents/hooks. Base prompt immutable. Reward hacking guard (Factorio lesson). Adapts arXiv:2605.09998.",
+      "original_path": "%APPDATA%\\devin\\skills\\refine",
+      "exported_at": "2026-08-15T15:30:00-03:00"
+    },
+    {
+      "name": "autonomous-gates",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Bounded autonomous mode with quality gates. Define gates at planning time, run after each step, final gate before done. Bounded output, idempotent, no-change skip. Adapts PrimeAgent --autonomous-gate.",
+      "original_path": "%APPDATA%\\devin\\skills\\autonomous-gates",
+      "exported_at": "2026-08-15T15:30:00-03:00"
+    },
+    {
+      "name": "primeagent-reference",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Reference card of verified PrimeAgent/RLM findings. Feature adaptation map (9 features: 6 adapted, 3 runtime-limited), key numbers, source video errors. All claims verified against primary sources.",
+      "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
+      "exported_at": "2026-08-15T15:30:00-03:00"
+    },
+    {
+      "name": "a2a-mailbox",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "File-based A2A messaging for subagents. Filesystem as message broker. Sequential A2A via file routing. Emulates PrimeAgent agent_message.send().",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\a2a-mailbox",
+      "exported_at": "2026-08-15T16:00:00-03:00"
+    },
+    {
+      "name": "session-checkpoint",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Structured checkpoint for cross-session continuation. Captures todos, decisions, files, verification, next actions. Emulates PrimeAgent daemon-backed reattach.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\session-checkpoint",
+      "exported_at": "2026-08-15T16:00:00-03:00"
+    },
+    {
+      "name": "heartbeat",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Scheduled re-entry via OS scheduler + heartbeat script. Task Scheduler/cron launches new Devin CLI session with prompt. In-session nudges via PostToolUse hook. Emulates PrimeAgent /heartbeat.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\heartbeat",
+      "exported_at": "2026-08-15T16:00:00-03:00"
     }
   ]
 }

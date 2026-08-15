@@ -8,9 +8,9 @@ e restaura tudo no destino correto via um único comando.
 
 ```
 devin-bundle/
-├── AGENTS.md            # regras consolidadas (10 regras, negative-constraint framed)
+├── AGENTS.md            # regras consolidadas (13 regras, negative-constraint framed)
 ├── agents/              # 5 perfis de subagent (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 70 skills (auto-discover, não limitado ao manifest)
+├── skills/              # 54 skills (auto-discover, não limitado ao manifest)
 ├── config.json          # model, theme, attribution (org_id MASKED por padrão)
 ├── hooks.v1.json        # PreToolUse + PostCompaction + Stop hooks
 ├── scripts/             # hook Python scripts (check-ai-signature, check-push-green, post-compaction-reminder)
@@ -41,7 +41,7 @@ devin-bundle/
 
 ## Regras consolidadas (AGENTS.md)
 
-10 regras, todas framed como negative constraints (evidence-based: arXiv:2604.11088 — positive directives prejudicam, só negatives ajudam individualmente):
+13 regras, todas framed como negative constraints (evidence-based: arXiv:2604.11088 — positive directives prejudicam, só negatives ajudam individualmente):
 
 1. **Don't start with technology** — start with customer experience, then choose tech.
 2. **No AI signatures in deliverables** — never sign commits, files, PRs, releases, or docs with an AI tool.
@@ -52,6 +52,10 @@ devin-bundle/
 7. **Execute-first, opinion-silent** — don't reframe, suggest alternatives, or critique clear tasks. Push back only on false premises, irreversible actions, or deliverable-changing ambiguity.
 8. **Telegraphic output** — no filler, no preamble, no unsolicited opinions. Short sentences, structured formats. Verbose only for debugging, architecture, or unfamiliar domains.
 9. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
+10. **Don't execute without planning, don't declare without verifying** — todo list for 3+ step tasks; verify before claiming done; parallelize independent work; read before writing.
+11. **Never fail from failures** — resolve them or deliver a working solution. If unsure or not 100% confident, search certified sources until the answer is coherent, rational, and well-founded.
+12. **Maximum precision, zero tolerance for partial verification** — every claim verified against primary source by reading it directly. Subagent returns are leads, not answers.
+13. **Devin CLI is not a security sandbox** — agent runs with user's permissions. Run untrusted code in external sandbox. Review skills/MCP servers before installing. Guard against reward hacking in self-improvement loops.
 
 ## Hooks (3 eventos)
 
@@ -179,7 +183,7 @@ Depois de mudar skills/regras/config no dia a dia:
 
 O instalador é idempotente — rodar de novo só atualiza o que mudou (com `-Force`).
 
-## Skills (70)
+## Skills (54)
 
 O bundle auto-descobre todas as skills em `%APPDATA%\devin\skills\`. O `manifest.json` contém metadata (name, source, purpose) para referência, mas a lista de skills exportadas é determinada pelo diretório live, não pelo manifest.
 
@@ -197,3 +201,24 @@ O bundle auto-descobre todas as skills em `%APPDATA%\devin\skills\`. O `manifest
 |---|---|---|
 | `mutation-testing` | `chunk-testing-gaps` (CircleCI) | Local-first com CI opcional. |
 | `debug-ci-failures` | `debug-ci-failures` (CircleCI) | CI-agnostic: GitHub Actions, CircleCI, GitLab, Jenkins. |
+
+### Skills adaptadas do PrimeAgent/RLM (7)
+
+Adaptadas de pesquisa verificada contra fontes primárias (arXiv:2512.24601, arXiv:2605.09998, arXiv:2603.02615, PrimeAgent blog/GitHub, ARC Prize leaderboard). Ver `primeagent-reference` skill para o mapa completo de verificação.
+
+| Skill | Fonte PrimeAgent/RLM | Adapção para Devin CLI |
+|---|---|---|
+| `context-folding` | RLM (arXiv:2512.24601) — prompt-as-variable, REPL, recursive sub-queries | Offload para arquivo + grep/partition + subagent_explore (depth=1 only). Depth=2+ causa overthinking (arXiv:2603.02615: 3.6s→344.5s). |
+| `refine` | Continual Harness (arXiv:2605.09998) — `/refine` CRUD edits no harness | Trajectory review → small evidence-backed edits em skills/rules/agents/hooks. Base prompt imutável. Reward hacking guard (Factorio lesson). Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
+| `autonomous-gates` | PrimeAgent `--autonomous-gate` (PrimeAgent blog) | Gates definidos no planning, executados após cada step, final gate antes de declarar done. Bounded output, idempotent, no-change skip. |
+| `primeagent-reference` | Todas as fontes verificadas | Reference card: 9/9 features adaptadas (3 direct, 3 emulated, 1 partial, 2 guardrails), key numbers, erros do vídeo corrigidos. |
+| `a2a-mailbox` | PrimeAgent A2A messaging (PrimeAgent blog) | Filesystem as message broker. Mailboxes per agent. Sequential A2A via file routing. Emula `agent_message.send()`. Limitação: não real-time, não persistent handles. |
+| `session-checkpoint` | PrimeAgent daemon-backed reattach (PrimeAgent blog) | Structured checkpoint file (todos, decisions, files, verification, next actions). New session reads e resumes. Emula `prime-agent attach`. Limitação: não real-time reattach. |
+| `heartbeat` | PrimeAgent `/heartbeat` + `schedule` (PrimeAgent blog) | OS scheduler (Task Scheduler/cron) + heartbeat script launches new Devin CLI session. In-session nudges via PostToolUse hook. Limitação: não re-enters existing session. |
+
+### Status de adaptação: 9/9 features
+
+- **3 direct adaptations** (context-folding, autonomous-gates, Rule 13): feature maps cleanly to Devin CLI runtime
+- **3 emulated adaptations** (a2a-mailbox, session-checkpoint, heartbeat): pattern preserved via file-based workarounds, each documents limitations vs PrimeAgent
+- **1 partial** (skills as Python packages): already supported by Devin CLI's `scripts/` directory
+- **2 guardrails** (refine + reward hacking guard): adapted with safety mechanisms

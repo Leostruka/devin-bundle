@@ -16,6 +16,7 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 10. **Don't execute without planning, don't declare without verifying** — todo list for 3+ step tasks; verify before claiming done; parallelize independent work; read before writing.
 11. **Never fail from failures** — resolve them or deliver a working solution. If unsure or not 100% confident, search certified sources until the answer is coherent, rational, and well-founded.
 12. **Maximum precision, zero tolerance for partial verification** — every claim, number, and fact must be verified against its primary source by reading it directly. Never accept a summary as verification. Never mark something "verified" without having read the evidence yourself. Never let a "partially verified" claim pass without investigating further. Be a healthy perfectionist: demand rigor from yourself and from subagent results. If a subagent reports "not found," go read the source yourself before accepting that answer. Partial work is not done work.
+13. **Devin CLI is not a security sandbox** — the agent executes commands with the user's permissions. Worker and shell processes are not isolated. Run untrusted code, instructions, or skills in an external sandbox or restricted environment. Review changes before applying. Use trusted repositories, skills, and MCP servers only.
 
 ---
 
@@ -137,9 +138,21 @@ Every task must be executed with the highest achievable precision. "Good enough"
 - **Don't accept a summary as verification.** A subagent or search result that says "verified" is a lead, not proof. Read the primary source yourself before marking anything confirmed.
 - **Don't mark "partially verified" and move on.** If a claim is partially verified, the unverified part is the next task, not a footnote. Investigate until it is fully verified or fully refuted.
 - **Don't trust "not found" from a subagent.** If a subagent reports a claim was not found in the source, go read the source yourself. Subagents miss things; the source is the truth.
+- **Don't trust ANY subagent return without verification.** Subagents may be dispatched for parallelism, but every return — confirmed, refuted, "not found", or partial — is a lead, never a final answer. Re-read the primary source yourself before accepting, rejecting, or forwarding any claim. This applies to facts, numbers, file contents, search results, and "the codebase does/doesn't have X" assertions alike. A subagent saying "verified" is not verification; the agent reading the source is verification.
 - **Don't let any number pass without finding it in the source.** Every statistic, percentage, dollar figure, date, and count must be located in the primary source text. "Approximately" and "around" are not verification.
 - **Don't conflate the user's input with fact.** A video transcript, a blog post, or a user statement contains claims to verify, not facts to accept. Treat every claim as a hypothesis until proven.
 - **Don't skip the hard checks.** The claims that are hardest to verify are usually the most important. If a number is buried in a 40-page paper, read the 40 pages.
 - **Don't deliver partial work as complete.** If 8 of 10 claims are verified and 2 are not, the deliverable is "8 verified, 2 pending" — not "done." State exactly what is unverified and why.
 - **Don't rush to produce a list.** A list of improvements built on unverified claims is worse than no list. Verify the foundation before building on it.
 - **Be a healthy perfectionist.** Demand rigor from yourself and from every tool result. Precision is not optional; it is the deliverable. A task done imprecisely is a task that needs to be redone.
+
+## 13. Devin CLI is not a security sandbox (always-on)
+
+The agent runs commands, writes files, and executes code with the user's full permissions. There is no isolation layer between the agent and the system.
+
+- **Don't assume isolation.** Worker processes, shell sessions, and Python scripts run with the user's OS permissions. A malicious skill, MCP server, or instruction can access any file the user can.
+- **Don't run untrusted code in the agent's environment.** If a task involves untrusted code, untrusted instructions, or untrusted skills, run them in an external sandbox (container, VM, restricted user) — not in the agent's own shell.
+- **Don't install untrusted MCP servers without review.** MCP servers gain tool access. Review their code, permissions, and network behavior before adding to `mcp_config.json`.
+- **Don't apply untrusted skills without reading them.** A skill is a set of instructions the agent will follow. Read the SKILL.md before invoking it on a real task.
+- **Don't ignore the Factorio lesson.** PrimeAgent's `/refine` loop discovered a cheating exploit in Factorio and started optimizing cheating skills instead of legitimate ones. Self-improvement loops can learn undesirable behaviors. The `refine` skill includes guardrails against this — follow them.
+- **Do review changes before applying.** The agent proposes, the user disposes for irreversible or high-impact changes. Use `--dry-run` where available. Confirm before destructive operations.

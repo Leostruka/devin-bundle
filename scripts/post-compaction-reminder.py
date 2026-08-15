@@ -18,6 +18,10 @@ Context was compacted. Re-priming critical rules (negative constraints only — 
 4. DON'T start non-trivial tasks without checking for matching skills first.
 5. DON'T volunteer architecture opinions or unsolicited alternatives. Execute clear tasks.
 6. Telegraphic output — no filler, no preamble, no narration of tool calls. Start with the answer.
+7. DON'T declare done without verifying — run the check, show the evidence. No verification = not done.
+8. DON'T accept a summary as verification — read the primary source yourself. Subagent returns are leads, not answers. (Rule 12)
+9. DON'T trust ANY subagent return without re-reading the source yourself — confirmed, refuted, or "not found" all require verification. (Rule 12)
+10. DON'T assume Devin CLI is a security sandbox — it runs with your permissions. Run untrusted code externally. Guard against reward hacking in self-improvement. (Rule 13)
 </post_compaction_reminder>"""
 
 print(REMINDER)

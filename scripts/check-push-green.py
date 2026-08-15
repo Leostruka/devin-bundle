@@ -53,6 +53,10 @@ def main():
                  os.path.exists(os.path.join(cwd, "setup.cfg"))
     has_cargo = os.path.exists(os.path.join(cwd, "Cargo.toml"))
     has_go = os.path.exists(os.path.join(cwd, "go.mod"))
+    has_dotnet = os.path.exists(os.path.join(cwd, "*.sln")) or \
+                 os.path.exists(os.path.join(cwd, "*.csproj")) or \
+                 any(f.endswith('.sln') for f in os.listdir(cwd)) or \
+                 any(f.endswith('.csproj') for f in os.listdir(cwd))
 
     check_cmd = None
     if has_npm:
@@ -63,6 +67,8 @@ def main():
         check_cmd = "cargo test"
     elif has_go:
         check_cmd = "go test ./..."
+    elif has_dotnet:
+        check_cmd = "dotnet test"
 
     if not check_cmd:
         sys.exit(0)  # no test framework detected, allow push

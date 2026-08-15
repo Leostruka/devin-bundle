@@ -56,6 +56,11 @@
           "type": "command",
           "command": "python \"%APPDATA%\\devin\\scripts\\check-ai-signature.py\"",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "python \"%APPDATA%\\devin\\scripts\\refine-review-prompt.py\"",
+          "timeout": 5
         }
       ]
     }
