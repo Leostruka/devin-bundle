@@ -2,6 +2,37 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+.Python
 
 # Devin bundle scratch directories
 .devin/brainstorm/
+.devin/heartbeats/
+.devin/mailboxes/
+.devin/checkpoints/
+.devin/.refine-pending
+.devin/.resume-pending
+.devin/refinements.log.jsonl
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# Temporary files
+*.tmp
+*.log
+.git/COMMIT_MSG.tmp
+
+# Secrets (safety net — should never be committed)
+*.local.json
+.devin/config.local.json
+.devin/mcp_config.local.json

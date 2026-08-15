@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
