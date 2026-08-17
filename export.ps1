@@ -347,7 +347,7 @@ function Invoke-Validation {
   $errors = @()
 
   # Validate JSON files
-  $jsonFiles = @($configDst, $hooksDst, $mcpDst) | Where-Object { Test-Path $_ }
+  $jsonFiles = @($configDst, $mcpDst) | Where-Object { Test-Path $_ }
   foreach ($jf in $jsonFiles) {
     if (Test-JsonFile $jf) {
       Write-Ok "$([System.IO.Path]::GetFileName($jf)) — valid JSON"

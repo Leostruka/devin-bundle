@@ -99,8 +99,8 @@ function Get-FolderHash($path) {
 
 function Backup-File($path) {
   if (-not (Test-Path $path)) { return }
-  $rel = $path.Replace($env:APPDATA, "%APPDATA%")
-  $bPath = Join-Path $backupDir $rel
+  $rel = $path.Replace($env:APPDATA, "").TrimStart('\', '/')
+  $bPath = if ($rel) { Join-Path $backupDir $rel } else { $backupDir }
   New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force | Out-Null
   if ($DryRun) {
     Write-Skip "backup: $path → $bPath"
@@ -223,8 +223,11 @@ function Merge-ConfigJson($src, $dst) {
     if ($Backup) { Backup-File $dst }
     if ($DryRun) { Write-Skip "would overwrite config.json completely" }
     else {
-      Copy-Item $src $dst -Force
-      Write-Ok "overwrote config.json (complete)"
+      $content = Get-Content $src -Raw
+      $content = $content -replace '\{\{APPDATA\}\}', ($env:APPDATA -replace '\\', '/')
+      $utf8NoBom = [Text.UTF8Encoding]::new($false)
+      [IO.File]::WriteAllText($dst, $content, $utf8NoBom)
+      Write-Ok "overwrote config.json (complete, {{APPDATA}} expanded)"
     }
     $script:Overwritten++
     return
