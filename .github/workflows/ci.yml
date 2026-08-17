@@ -72,7 +72,7 @@ jobs:
               if 'description:' not in content:
                   errors.append(f'{skill_name}: description field missing')
               if 'Use when' not in content:
-                  errors.append(f"{skill_name}: description should start with 'Use when'")
+                  errors.append(f'{skill_name}: description should start with Use when')
               if errors and errors[-1].startswith(skill_name):
                   print(f'FAIL {skill_name}')
               else:
