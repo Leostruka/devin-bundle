@@ -33,16 +33,17 @@ Sources: `source: README.md:1`
 
 ## Diagrams
 
-- [[Diagrams/Context]] — System Context
-- [[Diagrams/Container]] — Container diagram
-- [[Diagrams/Component]] — Component diagram
-- [[Diagrams/Domain]] — Domain map
-- [[Diagrams/DataModel]] — Data model
-- [[Diagrams/Flow]] — Data/event flow
-- [[Diagrams/Sequence]] — Sequence diagrams
-- [[Diagrams/Class]] — Class diagram
-- [[Diagrams/State]] — State machine
-- [[Diagrams/C4Dynamic]] — C4 Dynamic
-- [[Diagrams/C4Deployment]] — C4 Deployment
-- [[Diagrams/GitGraph]] — Git branching strategy
-- [[Diagrams/Mindmap]] — Feature/domain mindmap
+- [[Diagrams/01-Context]] — System Context
+- [[Diagrams/02-Container]] — Container diagram
+- [[Diagrams/03-Component]] — Component diagram
+- [[Diagrams/04-Domain]] — Domain map
+- [[Diagrams/05-DataModel]] — Data model
+- [[Diagrams/06-Flow]] — Data/event flow
+- [[Diagrams/07-Sequence]] — Sequence diagrams
+- [[Diagrams/08-Class]] — Class diagram
+- [[Diagrams/09-State]] — State machine
+- [[Diagrams/10-C4Dynamic]] — C4 Dynamic
+- [[Diagrams/11-C4Deployment]] — C4 Deployment
+- [[Diagrams/12-GitGraph]] — Git branching strategy
+- [[Diagrams/13-Mindmap]] — Feature/domain mindmap
+- [[Diagrams/14-Architecture]] — Architecture overview

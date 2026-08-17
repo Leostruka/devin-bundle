@@ -52,7 +52,7 @@ def git_name(project_dir):
 
 
 MERMAID_TEMPLATES = {
-    "Context.md": """---
+    "01-Context.md": """---
 parent: 02-Architecture
 tags: [diagram, c4, context]
 ---
@@ -69,7 +69,7 @@ graph TB
 ## Links
 - [[02-Architecture]]
 """,
-    "Container.md": """---
+    "02-Container.md": """---
 parent: 02-Architecture
 tags: [diagram, c4, container]
 ---
@@ -88,7 +88,7 @@ graph TB
 ## Links
 - [[02-Architecture]]
 """,
-    "Component.md": """---
+    "03-Component.md": """---
 parent: 02-Architecture
 tags: [diagram, c4, component]
 ---
@@ -106,7 +106,7 @@ graph TB
 ## Links
 - [[02-Architecture]]
 """,
-    "Domain.md": """---
+    "04-Domain.md": """---
 parent: 02-Architecture
 tags: [diagram, ddd, domain]
 ---
@@ -128,7 +128,7 @@ graph LR
 ## Links
 - [[02-Architecture]]
 """,
-    "DataModel.md": """---
+    "05-DataModel.md": """---
 parent: 03-Database
 tags: [diagram, er, data-model]
 ---
@@ -161,7 +161,7 @@ erDiagram
 ## Links
 - [[03-Database]]
 """,
-    "Flow.md": """---
+    "06-Flow.md": """---
 parent: 02-Architecture
 tags: [diagram, flow]
 ---
@@ -181,7 +181,7 @@ graph LR
 ## Links
 - [[02-Architecture]]
 """,
-    "Sequence.md": """---
+    "07-Sequence.md": """---
 parent: 02-Architecture
 tags: [diagram, sequence]
 ---
@@ -209,7 +209,7 @@ sequenceDiagram
 - [[02-Architecture]]
 - [[Modules/Auth]]
 """,
-    "Class.md": """---
+    "08-Class.md": """---
 parent: 02-Architecture
 tags: [diagram, class]
 ---
@@ -247,7 +247,7 @@ classDiagram
 - [[02-Architecture]]
 - [[03-Database]]
 """,
-    "State.md": """---
+    "09-State.md": """---
 parent: 02-Architecture
 tags: [diagram, state]
 ---
@@ -273,7 +273,7 @@ stateDiagram-v2
 - [[02-Architecture]]
 - [[Modules/OrderService]]
 """,
-    "C4Dynamic.md": """---
+    "10-C4Dynamic.md": """---
 parent: 02-Architecture
 tags: [diagram, c4, dynamic]
 ---
@@ -296,7 +296,7 @@ C4Dynamic
 ## Links
 - [[02-Architecture]]
 """,
-    "C4Deployment.md": """---
+    "11-C4Deployment.md": """---
 parent: 02-Architecture
 tags: [diagram, c4, deployment]
 ---
@@ -318,7 +318,7 @@ C4Deployment
 - [[02-Architecture]]
 - [[07-Config]]
 """,
-    "GitGraph.md": """---
+    "12-GitGraph.md": """---
 parent: 02-Architecture
 tags: [diagram, git]
 ---
@@ -351,7 +351,7 @@ gitGraph
 ## Links
 - [[02-Architecture]]
 """,
-    "Mindmap.md": """---
+    "13-Mindmap.md": """---
 parent: 02-Architecture
 tags: [diagram, mindmap]
 ---
@@ -381,6 +381,38 @@ mindmap
 
 ## Links
 - [[02-Architecture]]
+""",
+    "14-Architecture.md": """---
+parent: 02-Architecture
+tags: [diagram, architecture, overview]
+---
+
+# Architecture Overview
+
+```mermaid
+graph TB
+  subgraph DNS["DNS & CDN"]
+    CF[Cloudflare<br/>DNS + SSL + WAF]
+  end
+  subgraph Server["Application Server"]
+    Apache[Apache 2.4]
+    PHP[PHP-FPM]
+    App[{project_name}]
+  end
+  subgraph Data["Data Layer"]
+    DB[(Database)]
+    Cache[(Cache)]
+  end
+  CF --> Apache
+  Apache --> PHP
+  PHP --> App
+  App --> DB
+  App --> Cache
+```
+
+## Links
+- [[02-Architecture]]
+- [[11-C4Deployment]]
 """,
 }
 

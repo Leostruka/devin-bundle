@@ -23,7 +23,7 @@ Every artifact produced by this skill MUST meet these standards:
 
 1. **Source links** — every claim about code (module, function, class, route, schema, config) MUST cite the source file and line: `source: src/auth/login.ts:42`. No unsourced assertions. **Minimum 5 distinct source files cited per page.**
 2. **Hierarchical pages** — every page has a `parent:` field in frontmatter (except the root). Pages form a tree, not a flat list.
-3. **Diagrams** — Mermaid (inline, version-controllable). Minimum 13 types: Context, Container, Component, Domain, DataModel, Flow, Sequence, Class, State, C4Dynamic, C4Deployment, GitGraph, Mindmap.
+3. **Diagrams** — Mermaid (inline, version-controllable). 14 types (numbered `{NN}-{Name}.md`): 01-Context, 02-Container, 03-Component, 04-Domain, 05-DataModel, 06-Flow, 07-Sequence, 08-Class, 09-State, 10-C4Dynamic, 11-C4Deployment, 12-GitGraph, 13-Mindmap, 14-Architecture.
 4. **Codebase summary** — a top-level `00-Overview.md` that summarizes the entire system in 1-2 paragraphs with links to every other page.
 5. **Re-index** — a `refresh.py` script in the vault that re-scans the codebase, detects changed files, and flags stale pages. Supports `--branch` for multi-branch awareness.
 6. **Steering config** — a `wiki-config.json` in the vault that defines pages, priorities, notes, importance, filePaths, mode, and language (local equivalent of a cloud steering file). Validated by `validate_wiki_config.py`.
@@ -334,21 +334,22 @@ Create Mermaid versions of each diagram. Use **modern diagrams** instead of (or 
 
 #### Mermaid diagrams (`Diagrams/*.md`)
 
-Mermaid renders inline in Obsidian and is version-controllable. Minimum 13 types:
+Mermaid renders inline in Obsidian and is version-controllable. 14 types (numbered `{NN}-{Name}.md`):
 
-- `Diagrams/Context.md` — C4 System Context
-- `Diagrams/Container.md` — C4 Container
-- `Diagrams/Component.md` — C4 Component for the most critical container
-- `Diagrams/Domain.md` — DDD context map
-- `Diagrams/DataModel.md` — ER/data model
-- `Diagrams/Flow.md` — Event / data flow
-- `Diagrams/Sequence.md` — Sequence diagram for critical interactions (e.g., auth flow, checkout)
-- `Diagrams/Class.md` — Class diagram for core domain types and inheritance
-- `Diagrams/State.md` — State machine for entities with lifecycle (e.g., order status)
-- `Diagrams/C4Dynamic.md` — C4 Dynamic diagram for runtime collaborations
-- `Diagrams/C4Deployment.md` — C4 Deployment diagram for infrastructure topology
-- `Diagrams/GitGraph.md` — Git branching/merge strategy
-- `Diagrams/Mindmap.md` — Mindmap for feature/domain brainstorming
+- `Diagrams/01-Context.md` — C4 System Context
+- `Diagrams/02-Container.md` — C4 Container
+- `Diagrams/03-Component.md` — C4 Component for the most critical container
+- `Diagrams/04-Domain.md` — DDD context map
+- `Diagrams/05-DataModel.md` — ER/data model
+- `Diagrams/06-Flow.md` — Event / data flow
+- `Diagrams/07-Sequence.md` — Sequence diagram for critical interactions (e.g., auth flow, checkout)
+- `Diagrams/08-Class.md` — Class diagram for core domain types and inheritance
+- `Diagrams/09-State.md` — State machine for entities with lifecycle (e.g., order status)
+- `Diagrams/10-C4Dynamic.md` — C4 Dynamic diagram for runtime collaborations
+- `Diagrams/11-C4Deployment.md` — C4 Deployment diagram for infrastructure topology
+- `Diagrams/12-GitGraph.md` — Git branching/merge strategy
+- `Diagrams/13-Mindmap.md` — Mindmap for feature/domain brainstorming
+- `Diagrams/14-Architecture.md` — Architecture overview (consolidated: DNS, SSL, server, DB, CI/CD)
 
 Every Mermaid diagram MUST include a `<!-- Sources: ... -->` comment block listing the source files it visualizes:
 

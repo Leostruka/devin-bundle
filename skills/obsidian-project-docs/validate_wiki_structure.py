@@ -6,7 +6,7 @@ Checks:
 2. Modules/ directory exists and is not empty
 3. Functions/ directory exists and is not empty
 4. Decisions/ directory exists and is not empty
-5. Diagrams/ directory exists with 13+ diagrams
+5. Diagrams/ directory exists with 14+ diagrams
 6. Daily/ directory exists with at least one note
 7. Project.base exists
 8. wiki-config.json exists and passes validation
@@ -93,14 +93,14 @@ def check_required_files(wiki_dir: Path) -> list:
 
 
 def check_diagrams_count(wiki_dir: Path) -> list:
-    """Check that at least 13 diagram files exist."""
+    """Check that at least 14 diagram files exist."""
     failures = []
     diagrams_dir = wiki_dir / "Diagrams"
     if not diagrams_dir.exists():
         return failures  # Already caught by check_required_files
     md_files = list(diagrams_dir.glob("*.md"))
-    if len(md_files) < 13:
-        failures.append(f"DIAGRAMS: only {len(md_files)} diagram files (minimum 13 required)")
+    if len(md_files) < 14:
+        failures.append(f"DIAGRAMS: only {len(md_files)} diagram files (minimum 14 required)")
     return failures
 
 
@@ -281,7 +281,7 @@ def main():
     all_failures = []
     all_checks = [
         ("Required files and directories", lambda: check_required_files(wiki_dir)),
-        ("Diagram count (min 13)", lambda: check_diagrams_count(wiki_dir)),
+        ("Diagram count (min 14)", lambda: check_diagrams_count(wiki_dir)),
         ("Functions/ not empty", lambda: check_functions_not_empty(wiki_dir)),
         ("Page structure (Relevant + Purpose)", lambda: check_page_structure(wiki_dir)),
         ("Frontmatter (parent + tags)", lambda: check_frontmatter(wiki_dir)),

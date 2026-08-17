@@ -14,7 +14,7 @@ tags:
 - Versioning: _e.g. Alembic, Flyway_
 
 ## Schema overview
-_High-level ER description or link to [[Diagrams/DataModel]]._
+_High-level ER description or link to [[Diagrams/05-DataModel]]._
 
 ## Tables / collections
 
