@@ -31,8 +31,15 @@ Every artifact produced by this skill MUST meet these standards:
 8. **Code snippets** — pages about code embed real snippets from the source (not just links), fenced with the language tag.
 9. **API depth** — function notes include Parameters table, Return value, Throws, and Examples (not just signature + side effects).
 10. **Source column** — tables listing components, APIs, configs, or modules MUST include a `Source` column with `path:line` citations.
-11. **Mermaid Sources blocks** — every Mermaid diagram includes a `<!-- Sources: path:line, path:line -->` comment block listing the files it visualizes.
-12. **Local Q&A** — `query.py`, `wiki_structure.py`, `wiki_contents.py` scripts provide local equivalents of cloud wiki query tools.
+11. **Mermaid Sources blocks** — every Mermaid diagram includes a `<!-- Sources: path:line, path:line -->` comment block listing the files it visualizes. **Must be OUTSIDE the ` ```mermaid ` block** (before it), never inside — HTML comments inside Mermaid break rendering.
+12. **Mermaid syntax** — all diagrams must use valid Mermaid syntax. Common errors to avoid:
+    - `<!-- Sources: -->` inside ` ```mermaid ` block (breaks rendering — move outside)
+    - Unclosed generics: `Items~` (odd `~` count) — use `Items[]` or `List~Items~`
+    - `<br///` (triple slash) — use `<br/>`
+    - `NODE fill:...` without `style` keyword — use `style NODE fill:...`
+    - ``mermaid (single/double backtick) — use triple ` ```mermaid `
+    - `subgraph` without matching `end`
+13. **Local Q&A** — `query.py`, `wiki_structure.py`, `wiki_contents.py` scripts provide local equivalents of cloud wiki query tools.
 
 ## What is produced
 
