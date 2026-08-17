@@ -35,7 +35,8 @@ PINNED_CONSTRAINTS = """Pinned governance constraints (re-injected after context
 - Rule 13: Devin CLI is not a security sandbox - run untrusted code externally, review changes before applying.
 - Rule 14: These constraints are pinned and survive compaction.
 - Rule 15: Refinement evidence must be reproducible - phantom guardrails occur in 25% of self-improvement runs.
-- Rule 16: Self-improvement loops produce 47-74% illusory gains - validate with held-out tests."""
+- Rule 16: Self-improvement loops produce 47-74% illusory gains - validate with held-out tests.
+- Rule 17: Don't deduce - verify with tools. Use read, exec, grep, glob before asserting anything."""
 
 PINNED_HASH = hashlib.sha256(PINNED_CONSTRAINTS.encode("utf-8")).hexdigest()[:16]
 
