@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -12,427 +12,476 @@
   },
   "skills": [
     {
-      "name": "tool-and-skill-discovery",
-      "source": "builtin:devin",
-      "purpose": "Meta-skill: discover and invoke the right skill/tool for any task",
-      "original_path": "%APPDATA%\\devin\\skills\\tool-and-skill-discovery",
-      "export_hash": "AE7213E54EB1FFCD71EDB32354199891DFB12A56F2D4F9BC503FD3D6B071AE61",
-      "exported_at": "2026-08-13T12:29:03.5967152-03:00"
-    },
-    {
-      "name": "graphify",
-      "source": "devin-bundle",
-      "purpose": "Turn any input into a persistent knowledge graph; query with /graphify",
-      "original_path": "%APPDATA%\\devin\\skills\\graphify",
-      "export_hash": "BC90E246B90DEDADFB20E627814DBE2D735E40FD00CD7B3A44BE79E076220550\nD6CB72688DE34600CF22E55A464D237BD1EBE3A9C61A64271EB72F917CC81B9E\n2AD240B29C223046CC328AA40F71B389FFCEB551D751CBBE52C37B25687E9BA6\nF72A6D2DFA67446F06F27A8F0053AF1ADC8D53B02E393C8472045F6740C6183E\n792522C9EDB09F6059B25618298D796FC073B0D231EE7ABB90B1F9FD2BC3216E\n007827ECDF780C1E7CE367EFC5434657159C627DF0DAA7714B79E80F7CB64A75\nE563DDCB1E155AA230F107E5EF9380BC1249C5CD8241128DE7ED8A7BD9C20CF5\n676A1E39AA6D43CDFCC416EC56616E36F7BAD74066A82BD33A9485515B9A865C\nC18FA98E608797D1C9DBE71F3AE01B4132E7517D07544CCCF0C04E7C8172BD76\n9A4C8F86A54952E32F650052B8BB1641565D11FAEFED181882EB3DF363A195C1",
-      "exported_at": "2026-08-13T12:29:03.7333545-03:00"
-    },
-    {
-      "name": "git-helper",
-      "source": "devin-bundle",
-      "purpose": "Git workflow assistance, branch management, commit messages",
-      "original_path": "%APPDATA%\\devin\\skills\\git-helper",
-      "export_hash": "430D2408F6D1B14A032194613A5A14208F4E4E07BA066F0FCE6AF3107B4FD12D",
-      "exported_at": "2026-08-13T12:29:03.7595237-03:00"
-    },
-    {
-      "name": "gh",
-      "source": "devin-bundle",
-      "purpose": "Patterns for invoking the GitHub CLI (gh) from agents",
-      "original_path": "%APPDATA%\\devin\\skills\\gh",
-      "export_hash": "5DB02137F9FBB17469B95D76A3CF02E3AD005B00567D7A125A6778FAC85C5231",
-      "exported_at": "2026-08-13T12:29:03.7906251-03:00"
-    },
-    {
-      "name": "find-skills",
-      "source": "devin-bundle",
-      "purpose": "Discover and install agent skills when none match",
-      "original_path": "%APPDATA%\\devin\\skills\\find-skills",
-      "export_hash": "A44F94F0799BB9EE89EABB57AB861E41DA4BF72B984CCEBC7079FAA279F8C283",
-      "exported_at": "2026-08-13T12:29:03.8036856-03:00"
-    },
-    {
-      "name": "self-extend",
-      "source": "devin-bundle",
-      "purpose": "Self-iteration: create tools, hooks, and skills to evolve capabilities",
-      "original_path": "%APPDATA%\\devin\\skills\\self-extend",
-      "export_hash": "D143868C99F153213D816AB0D8C13D5A7E10E7E6DC9D4CA805E6879BA79BD2CC",
-      "exported_at": "2026-08-13T12:29:03.8256141-03:00"
-    },
-    {
-      "name": "systematic-debugging",
-      "source": "devin-bundle",
-      "purpose": "Structured debugging: reproduce, trace, isolate root cause before fixing",
-      "original_path": "%APPDATA%\\devin\\skills\\systematic-debugging",
-      "export_hash": "288D26FD06B1BA94BCF4053B3F40BEDDBC1DCD6B6159999B2907B030258E5361\n40AE5EBE497FDF310200E43FE986552546D0A22837C0D39E855DB1CFD33EB88E\nE89FEC8400D6CD50F43407CEC9FAB50976BA4D55D0EC2EB51C0BD68036B54C26\n3439AC10BF4E1AF4FA59F14447BAD817FB8C5FE6495AC02EEF1F0112BE7AA06F\n1E175FB86FC357E58C6AEBF5441E481E1B7868B4380C0456B63A17EEFBD18BA7\nE32E761883B9BE090AB85AE97ADFE98E6F991542F1E3C813812432E7735FC38A\n50D06D316F6A2848A2800B375B2F97D06C4F9B8196535868A5EE7DCD2FB7113F\nBBC94A9881DB8B2E354E827A4A7A979D45A45D80968E4C7E7F9BA5ACC1E81D80\nFE2BA480D78AC0D686DC025F41C2A32A43D642BF533F91B0C6053A04D35D6486\n0B6A915DB0054577819834C79BE9EB614E97BDDBA10D73768E1FBE91CFED048A\nB2030AEFFBA07050E8AD573DDF87486457C4A016A786BB326235BEBD856F2016\n96B50A52E2C7989C9CF20FB752C47C1E9A3A70DC362F8F7989F8F5B64DAC7708",
-      "exported_at": "2026-08-13T12:29:04.1754056-03:00"
-    },
-    {
-      "name": "using-skills",
-      "source": "devin-bundle",
-      "purpose": "Establishes how to find and use skills; skill invocation before any response",
-      "original_path": "%APPDATA%\\devin\\skills\\using-skills",
-      "export_hash": "642B53131BF54D9643FA4C7E8501491F122E9A7A3DA05F6A13F1C5BF612A1D4B",
-      "exported_at": "2026-08-13T12:29:04.2018006-03:00"
-    },
-    {
-      "name": "writing-plans",
-      "source": "devin-bundle",
-      "purpose": "Write a plan from a spec before touching code",
-      "original_path": "%APPDATA%\\devin\\skills\\writing-plans",
-      "export_hash": "AA728B96AAD603C8BE28875A4305637F6C984AA81FFCADCB13E743202FA2A0C7\n0980295CD7BADD4F6913B2AA8C7EBD808D740F465AF737B4D4210BA5C69D1571",
-      "exported_at": "2026-08-13T12:29:04.2284729-03:00"
-    },
-    {
-      "name": "context7",
-      "source": "devin-bundle",
-      "purpose": "Retrieve up-to-date library/framework documentation via Context7 API",
-      "original_path": "%APPDATA%\\devin\\skills\\context7",
-      "export_hash": "D5DE99673FD29E4E50B19049FD812FDCECC90103DCEB942CE75639C31F46C912",
-      "exported_at": "2026-08-13T12:29:04.2574424-03:00"
-    },
-    {
-      "name": "memory-bridge",
-      "source": "devin-bundle",
-      "purpose": "Browse and compare wiki knowledge by which AI tool produced it",
-      "original_path": "%APPDATA%\\devin\\skills\\memory-bridge",
-      "export_hash": "EFB1140CC1969394A62B87971C51EF113BC69A45669D485B4EACE9E924727F0A",
-      "exported_at": "2026-08-13T12:29:04.2800840-03:00"
-    },
-    {
-      "name": "tdd",
-      "source": "devin-bundle",
-      "purpose": "Test-driven development. Unified: iron-law discipline (test first, watch fail, minimal code) + seams-first operational approach (agree test boundaries, vertical slices, anti-patterns). Decision logic for when to use which.",
-      "original_path": "%APPDATA%\\devin\\skills\\tdd",
-      "export_hash": "73A10B6A26B56197C738A764C1E4205AF98C74553F4A713795997F6BC35B917D\n6DBD254567D40CA1308A3DE9F59EAA1DDA53399588E912A5D2E90B4184882EAF\n0B401F98BD3684D2FEA6440D6946AFCF8F5F68AC6A65599DD7A2B90DD9F02EB5\n10E2F4728B2E3D5522868E4F90FC36C260CFA6012C765B9F706A1ACCBF0ACC84",
-      "exported_at": "2026-08-13T12:29:04.3438515-03:00"
-    },
-    {
-      "name": "code-review",
-      "source": "devin-bundle",
-      "purpose": "Review code changes on two axes (Standards vs Spec) with parallel sub-agents. Unified: subagent-dispatch workflow + two-axis methodology + Fowler code smell baseline. Decision logic for when to use which.",
-      "original_path": "%APPDATA%\\devin\\skills\\code-review",
-      "export_hash": "B2F2EC7596925FE52DAC158FDFBCA19B3A7D779D619C481E6706A6C0001662D3\nE106BB3FD12D55A56D43D23D0D86D7550B0C27193B9023C9666B310C4D5264BB",
-      "exported_at": "2026-08-13T12:29:04.3921205-03:00"
-    },
-    {
-      "name": "grilling",
-      "source": "devin-bundle",
-      "purpose": "Explore and stress-test ideas before implementation. Unified: collaborative brainstorming (one question at a time, visual companion, design doc) + relentless grilling (design tree, frontier rounds, numbered questions). Decision logic for when to use which.",
-      "original_path": "%APPDATA%\\devin\\skills\\grilling",
-      "export_hash": "630F3F7475E90C2179321D1C158E0ABBD151FDBCA5255F4CC593B06E3256D0AE\n1503FFCB67E05F5CD80316996ECB0679B220410A12CA983096B9B9D1C59CE570\n643F55A30C3136462E8D6575682857B80350AEE54CC1D91D8F4B427189DDE690\n43C6D69954A46EC34A2A262BCC62A9A7E83E839C739F199CB72646D397C686E3\n7A604EF97205EBBD4D3C16151A97A4DAB5F9A143E5A4B74F2D48EF836E140C25\nE345631561EB9F373F0D3FF53EBEE6DB913A6D3D06E5EBD5C24ACC38384476EE\n88FD7DEC6B924E58F60A041B5D02911BCB625F6830086686CB320E9EFAB7F91C\n1E5F543CDDA80D4B0D2A63B3E485FB08F28D4C803C05111E6D7F18BDDB099057\n0FAA70698AC7877DC0AB83E1320EB84BC95743DC54FDC1B06D428FC1E92B1157\n2140A783D613F076C59BB2FF9ACFB0B125AD5C4CF415312D89CB2E5AD3EB1DE4",
-      "exported_at": "2026-08-13T12:29:05.1507483-03:00"
-    },
-    {
-      "name": "diagnosing-bugs",
-      "source": "devin-bundle",
-      "purpose": "Disciplined diagnosis loop: build feedback loop that goes red -> minimise -> hypothesise -> instrument -> fix -> regression-test",
-      "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs",
-      "export_hash": "98D3ACE1BA2FA58CAABB1C56CED42EBE8E99D7EA39AC1C825FE8D27D2A34D355\n9B573D5163E0E2481A0A3EE0955928857E3359C7E1F00910B3BDC3A91A11BB31\nDC4B65B9BB28B477DB486AB342D78791F08EE10FDEE52AEED01A969B66D62DB4",
-      "exported_at": "2026-08-13T12:29:05.3798543-03:00"
-    },
-    {
-      "name": "research",
-      "source": "devin-bundle",
-      "purpose": "Investigate a question against high-trust primary sources, capture findings as cited Markdown",
-      "original_path": "%APPDATA%\\devin\\skills\\research",
-      "export_hash": "83C53C381888D1026F005162AEEFA58C10A2C8240ABFA55DF2CEC839D28FD4E0",
-      "exported_at": "2026-08-13T12:29:06.3937880-03:00"
-    },
-    {
-      "name": "prototype",
-      "source": "devin-bundle",
-      "purpose": "Build a throwaway prototype to answer a design question: single HTML file or toggleable UI variations",
-      "original_path": "%APPDATA%\\devin\\skills\\prototype",
-      "export_hash": "477281A10DAD9255B3AEC65BFDE9B729C7939DF7034E8E28B8E07418DE79F83A\nFBB812A4968C069FAD67C41B9ADBFE79ADCECB12FD2B3CC004EFE3A845D80300\nD54A5EEA3C823429FA617C13B11663C72FFF6B246CD5BE1F02FF0E2B73EB052C",
-      "exported_at": "2026-08-13T12:29:06.4333947-03:00"
-    },
-    {
-      "name": "domain-modeling",
-      "source": "devin-bundle",
-      "purpose": "Domain modeling with CONTEXT.md and ADRs",
-      "original_path": "%APPDATA%\\devin\\skills\\domain-modeling",
-      "export_hash": "DBA54707C3251660ECF7EE6FF154A816A62BADDDD4EF403062F3A34E23509636\nF229CD8485B77EA76428FFB807058EBD1D254A391B9669B10081942D3D6E8DD3\nA89C4A46852950F67C36334870E232FB89CAB183B6BAD1F74D07686D735E91CD",
-      "exported_at": "2026-08-13T12:29:06.4779270-03:00"
-    },
-    {
-      "name": "codebase-design",
-      "source": "devin-bundle",
-      "purpose": "Codebase design vocabulary: modules, interfaces, depth, seams, adapters, leverage, locality",
-      "original_path": "%APPDATA%\\devin\\skills\\codebase-design",
-      "export_hash": "793B7704484B704E1B5F93AAC197A5758018E838AFDB8BCB08AD6465960586DC\n1848F9825D4FC0DF4525E094AB32637F5CD324F16A7DCD5B9C39C52E23BC1CA1\nF98962ABB8273B09B8E89D1CF218E5607FDEAE7883C6C5E4F9DDD13CE7A78AD3",
-      "exported_at": "2026-08-13T12:29:06.7928551-03:00"
-    },
-    {
-      "name": "improve-codebase-architecture",
-      "source": "devin-bundle",
-      "purpose": "Scan codebase for deepening opportunities, present as visual HTML report, then grill through chosen one",
-      "original_path": "%APPDATA%\\devin\\skills\\improve-codebase-architecture",
-      "export_hash": "A1B8F23E710E68C2BBA04EDC4C6B9001A08AF7BDEBB8BC01C6964E76C9BA4855\n65007A2C56FED07C79FEDF6643C0DBD69ACD0CA68669D9A269870A52C54737B6",
-      "exported_at": "2026-08-13T12:29:06.8279298-03:00"
-    },
-    {
-      "name": "resolving-merge-conflicts",
-      "source": "devin-bundle",
-      "purpose": "Resolve merge conflicts systematically",
-      "original_path": "%APPDATA%\\devin\\skills\\resolving-merge-conflicts",
-      "export_hash": "37C4B2E9E097454E2D75F364B3903B86D3727755F14ED2ABF2FD01A069011262",
-      "exported_at": "2026-08-13T12:29:06.8463759-03:00"
-    },
-    {
-      "name": "to-spec",
-      "source": "devin-bundle",
-      "purpose": "Turn current conversation into a spec and publish to issue tracker",
-      "original_path": "%APPDATA%\\devin\\skills\\to-spec",
-      "export_hash": "8FFE97CE766D1E8654F0585C1BFF47A748EEEC868E50E960B918118D7DC6896E",
-      "exported_at": "2026-08-13T12:29:06.8654664-03:00"
-    },
-    {
-      "name": "to-tickets",
-      "source": "devin-bundle",
-      "purpose": "Break any plan, spec, or conversation into tracer-bullet tickets with blocking edges",
-      "original_path": "%APPDATA%\\devin\\skills\\to-tickets",
-      "export_hash": "82FD4F96EA8277BC6B04825C7ACF3BCA9CE11E7E5A3A93C40855BE1E6FAF34F8",
-      "exported_at": "2026-08-13T12:29:06.8783519-03:00"
-    },
-    {
-      "name": "wayfinder",
-      "source": "devin-bundle",
-      "purpose": "Plan huge work as a shared map of decision tickets on the issue tracker, resolved one at a time",
-      "original_path": "%APPDATA%\\devin\\skills\\wayfinder",
-      "export_hash": "B0DF21BD220A191DFDEED999BF4B8B2428A6EBDE859881E895B0722FDFAEACDC",
-      "exported_at": "2026-08-13T12:29:06.8997456-03:00"
-    },
-    {
-      "name": "implement",
-      "source": "devin-bundle",
-      "purpose": "Build work described by spec or tickets, driving /tdd at pre-agreed seams, closing with /code-review",
-      "original_path": "%APPDATA%\\devin\\skills\\implement",
-      "export_hash": "9777BDEE8F3B9205F51A0AE171758D21D1D38959FBFD9D27ACF06551B69F3FA4",
-      "exported_at": "2026-08-13T12:29:06.9191048-03:00"
-    },
-    {
-      "name": "grill-with-docs",
-      "source": "devin-bundle",
-      "purpose": "Grilling session that also builds project domain model, sharpening terminology and updating CONTEXT.md and ADRs",
-      "original_path": "%APPDATA%\\devin\\skills\\grill-with-docs",
-      "export_hash": "755E517D035EC4B4512A15B48ABC1DC6B81A952D01CA5E3B90C6EEEA1316F47F",
-      "exported_at": "2026-08-13T12:29:06.9412103-03:00"
-    },
-    {
-      "name": "wizard",
-      "source": "devin-bundle",
-      "purpose": "Generate interactive bash wizard that walks a human through manual steps (infra provisioning, credentials, CI secrets)",
-      "original_path": "%APPDATA%\\devin\\skills\\wizard",
-      "export_hash": "7172F1FAEACE46CD5CE84C55D95D8022791CB8BB1F179C9A0665AEACDD5C0619\nF13A1626E6B79ABD0EF8812126299EDBCD07AA8A43455B8555939B52C5F0C6A3\n531AFEFD0F896491CF62445B450C19BE58B6445CD10F9CBF4BD00E65FDAE83D9",
-      "exported_at": "2026-08-13T12:29:07.0440191-03:00"
-    },
-    {
-      "name": "handoff",
-      "source": "devin-bundle",
-      "purpose": "Compact current conversation into a handoff document so another agent can continue the work",
-      "original_path": "%APPDATA%\\devin\\skills\\handoff",
-      "export_hash": "170F525B9730A4FAD94DB7E615004352EE7757989E8CA6E04A391FC13F3126B2",
-      "exported_at": "2026-08-13T12:29:07.0635688-03:00"
-    },
-    {
-      "name": "teach",
-      "source": "devin-bundle",
-      "purpose": "Teach user a new skill or concept over multiple sessions, using current directory as stateful teaching workspace",
-      "original_path": "%APPDATA%\\devin\\skills\\teach",
-      "export_hash": "408C96DCE06BE99B53A6E05B1E3201C900BCBB46AE3CF08EAD8AA3E3CB545D8C\n7BBBF6E325370633C77EC772CF4D30DA19037FF2892C9E751F23E2696CF80888\nBA1BC536615A6940414D96A1D87562F8F2684F56649D44BA15ABAAF1833D0CE9\nB5C7F17CE7C7B7F49A3A0007162E5024948C7B5C45C549643CAFEB900ED431A6\n9E820334520E2F37F672C163EFFAF5792847A4CB05F54BA99C9B953F99DF70E8",
-      "exported_at": "2026-08-13T12:29:07.1116941-03:00"
-    },
-    {
-      "name": "writing-for-agents",
-      "source": "devin-bundle",
-      "purpose": "Writing documents for agents: skills, AGENTS.md, and any doc an agent reaches by a pointer",
-      "original_path": "%APPDATA%\\devin\\skills\\writing-for-agents",
-      "export_hash": "FDF21BD90B02EEF95614599F50A3D2649D253930A91FE984CBF6C9CFB09360D0\nEEEA64F7EC38D52A5B869A78781FC4640DA9C8231DCE1205E58A140E02EE72C8",
-      "exported_at": "2026-08-13T12:29:07.1604049-03:00"
-    },
-    {
-      "name": "wait-what",
-      "source": "devin-bundle",
-      "purpose": "Re-pitch a message that didn't land, in plain English, using CONTEXT.md vocabulary",
-      "original_path": "%APPDATA%\\devin\\skills\\wait-what",
-      "export_hash": "658900B712153FF11D81F9BF0702EA90293B5721427F76601359DED4B6417A94",
-      "exported_at": "2026-08-13T12:29:07.1717022-03:00"
-    },
-    {
-      "name": "to-questionnaire",
-      "source": "devin-bundle",
-      "purpose": "Turn a decision you can't answer alone into a Markdown questionnaire for the person who can",
-      "original_path": "%APPDATA%\\devin\\skills\\to-questionnaire",
-      "export_hash": "840CAD9EC1DD6044E937D0F95FB3BD300910CBD44D05AFAA2C1180574FAE7855",
-      "exported_at": "2026-08-13T12:29:07.1936211-03:00"
-    },
-    {
-      "name": "mutation-testing",
-      "source": "adapted:CircleCI-Public/chunk-cli (chunk-testing-gaps)",
-      "purpose": "Find gaps in test coverage via mutation testing. 4-stage process: discovery, validation (local first, CI optional), production cross-reference (optional), risk assessment. CI-agnostic.",
-      "original_path": "%APPDATA%\\devin\\skills\\mutation-testing",
-      "export_hash": "0F5078B383309A93EE08EEEFCA1A7F836122322996CC175377BE47C37D35EE07",
-      "exported_at": "2026-08-13T12:29:07.2149120-03:00"
-    },
-    {
-      "name": "debug-ci-failures",
-      "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
-      "purpose": "Debug CI build failures systematically. CI-agnostic: works with GitHub Actions, CircleCI, GitLab CI, Jenkins, or any CI. Integrates with systematic-debugging and diagnosing-bugs.",
-      "original_path": "%APPDATA%\\devin\\skills\\debug-ci-failures",
-      "export_hash": "5102F1BBDB16D71A7406375730B53782860367B04FDCAFEBB9B22C7B1307DABC",
-      "exported_at": "2026-08-13T12:29:07.2448477-03:00"
-    },
-    {
-      "name": "subagent-driven-development",
-      "source": "devin-bundle",
-      "purpose": "Execute implementation plans by dispatching a fresh implementer subagent per task, task review after each (spec + quality), broad final review. Coordinator never implements directly — preserves context for coordination. Has implementer/task-reviewer/re-review prompt templates + scripts.",
-      "original_path": "%APPDATA%\\devin\\skills\\subagent-driven-development",
-      "export_hash": "0A09EAB3DC7D4E74AE4BD45776E453664B9C6C78D833E06F5F70A6BE59C0FB18\n7172C282EFE5F8A4808D4F35BBFB0769440960FA3CB01D4C17601F87778237EB\n31C7D26DEB1EE51403E5134309F543E7850A9E0BF58A840FF2ED4B6DE94286EE\nAACE6BB475F3ACD64171E4F2913296C8DB2341C1C82DCC21F8FE4FFF60171CEF\n26DEF1E16C80B70DD8555125709FD2C2F343AE78B99AC136D49D3AC1CFF5B588\n41C4D0AA74CB9B0173AD3FBE0C15744A4E647128FB388A7EFAD332BA353C8C93\nA8C37CD364EA0C11EC562BE7B5FBBC3DE82A2FFDA3EC391234B03F16006AFA5C\n7727EBF809485219F2EDCBB51A7777435EB587459C17EF4A80BBCD72E4C2796D\nB3CC880C1631038FA4E7F7E334D00B4A5EA369BD1B61D50B77CDA07E20CFBD86\n079AB999B6BCDE46222F1DBEBA980486296391ED625A42BEB8436E84E7FDCA2E",
-      "exported_at": "2026-08-13T12:29:07.5286486-03:00"
-    },
-    {
-      "name": "obsidian-project-docs",
-      "source": "created:Devin bundle",
-      "purpose": "Document software projects in Obsidian as SRS/ISO-style engineering wiki. Scaffolds notes, Bases for modules/functions/dependencies/config, modern C4/DDD/data-model Mermaid diagrams, and a Daily/Logbook for running work history. Integrates with graphify, domain-modeling, and codebase-design.",
-      "original_path": "%APPDATA%\\devin\\skills\\obsidian-project-docs",
-      "export_hash": "1F4161D168F644EEF9EA3AB2017099FA74C375C6ADD01C897A786C29CCFA5C7A\nF6ED552E3883A5F78C959835AC4BCD8FF99774A5ED03D8E07B7BC007C58551AA\n756D370F5686B5BEA4FDACD52A720FCF3B214ABA9D49DEBD801137F02EF78E1E\nEBEB1860B19C8840C6812D14F315A1C3FC4C74A74B3E5ADE09BDDE571BFE87A6\n6DDBABDA407F1301608AB2CE4A7465AD08752997140157E781E934398C2859D9\nFEB7ED91B65C27A71D72F1BD03485380E72B1827782540AD6A42AB4C89BFD827\nB3C6856B859F71601C708FAC758F6AB753ED3903029E3E051286713A590EB134\nBDB39E04FDB647F20D7C6C8E54CF4460C221D6476E39104046282A6D56BF02AC\n549B25A37585AE74427BAE058CCC39D205B1D91BB716A7A9A04E9AA2ABBCE5EF\n22DDC0B2FCD6FEEC179A9E16D730B5A030171E9DE5EF38B117579D9BA130B550\nF0762C0B737ADE3FC3ED97AA38618F2A99F135E4EB4A116771708B39E1A9198A\nBC140AF89CB41D613736759CC47AD749BEAAD8C2BF3D09F2141FE6EDDE9F1BBE\nA420B69EE32ABE4E23F00BEB7916D006E560127677739B0F14DDAAF441CBE140\n03E31678D816A49FCA95E554F524F00511D02CF7B725A9AE707D79FC0E145858",
-      "exported_at": "2026-08-13T12:29:07.7938337-03:00"
-    },
-    {
-      "name": "dispatching-parallel-agents",
-      "source": "devin-bundle",
-      "purpose": "Dispatch one subagent per independent problem domain (e.g. 3 test files failing with different root causes). Parallel dispatch in a single message. Review and integrate when all return.",
-      "original_path": "%APPDATA%\\devin\\skills\\dispatching-parallel-agents",
-      "export_hash": "5D4489294220B673F9D0A7EB5F0DCF7C75493352A4D7A2565CBE6F52CBE70C6B",
-      "exported_at": "2026-08-13T12:29:07.8283957-03:00"
-    },
-    {
-      "name": "executing-plans",
-      "source": "devin-bundle",
-      "purpose": "Fallback for executing implementation plans when subagents are NOT available. Load plan, review critically, execute tasks in sequence with checkpoints, finish with finishing-a-development-branch.",
-      "original_path": "%APPDATA%\\devin\\skills\\executing-plans",
-      "export_hash": "84FEB95EBCA0C921CB4526825A5CE425BB4ECCCD01FE0902D20B21F61B273B98",
-      "exported_at": "2026-08-13T12:29:07.8512423-03:00"
-    },
-    {
-      "name": "finishing-a-development-branch",
-      "source": "devin-bundle",
-      "purpose": "Final step of plan execution: verify all tests pass, present options (merge, PR, keep branch), execute chosen option. Used by subagent-driven-development and executing-plans.",
-      "original_path": "%APPDATA%\\devin\\skills\\finishing-a-development-branch",
-      "export_hash": "5FEB2B7060774B23077FEBA9372960DB780A61AF8FC436FE607004C7CBEAB75B",
-      "exported_at": "2026-08-13T12:29:07.8643609-03:00"
-    },
-    {
-      "name": "receiving-code-review",
-      "source": "devin-bundle",
-      "purpose": "How to handle incoming code review feedback: verify before implementing, push back with technical reasoning when wrong, no performative agreement. Complements code-review (which covers requesting + giving review).",
-      "original_path": "%APPDATA%\\devin\\skills\\receiving-code-review",
-      "export_hash": "7EC67C58AF8C2837911CA751CCCF21465FEA24B457601DA36FC4433D0E9D204B",
-      "exported_at": "2026-08-13T12:29:07.8786067-03:00"
-    },
-    {
-      "name": "using-git-worktrees",
-      "source": "devin-bundle",
-      "purpose": "Create isolated git worktrees for parallel work branches. Used by executing-plans and subagent-driven-development for workspace isolation.",
-      "original_path": "%APPDATA%\\devin\\skills\\using-git-worktrees",
-      "export_hash": "7318F590052AB4FF88655AD90B246FE3F2F715933A5940645767BA7AADE4D5BA",
-      "exported_at": "2026-08-13T12:29:07.9033350-03:00"
-    },
-    {
-      "name": "verification-before-completion",
-      "source": "devin-bundle",
-      "purpose": "Iron law: NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE. Gate function: identify command, run it, read output, verify, only then claim. Complements rule 6 (inner-loop validation) with enforcement discipline.",
-      "original_path": "%APPDATA%\\devin\\skills\\verification-before-completion",
-      "export_hash": "3AF87E40FB2B513C3C04AF08D3FBDE50DC982C7EEFE3624EA2FF805E156FC2A7",
-      "exported_at": "2026-08-13T12:29:07.9241414-03:00"
-    },
-    {
-      "name": "writing-skills",
-      "source": "devin-bundle",
-      "purpose": "Meta-skill: how to write agent skills using TDD approach. RED (baseline test without skill), GREEN (write minimal skill), REFACTOR (close loopholes). Includes bulletproofing against rationalization, testing with subagents, persuasion principles. Complements self-extend (the why) with the how.",
-      "original_path": "%APPDATA%\\devin\\skills\\writing-skills",
-      "export_hash": "C745C655D5A2DFC01A20DC690A999D06E8D84BB056D820E0E73EA220FF935E15\nB18A02773875F6C7B92F2A260E88550C92A62549B0009DF9D680F7E9541D0ECC\nA51BC9BF75189EA73A27B3FB504A2FDFDB966FB1F7F1CDF03203230A216CCC03\nCCDA971A87BB185F8FEBF81C56B556A20D026FA980C17B35FA3E8824FBB37852\nF442F426CD5B78F01979B2E6C54E751A8AA9AA48E1BF139635074CB48C5BBC62\nB2C1AE007CF103B043BE81F0F5554D3606066927996D348ACF9AAB438D89D504",
-      "exported_at": "2026-08-13T12:29:08.1446517-03:00"
-    },
-    {
-      "name": "vault-organizer",
-      "source": "created:Devin bundle",
-      "purpose": "Diagnose organizational problems in a knowledge base (Obsidian vault, docs folder, wiki), select academically-grounded methodologies that fit the content, and plan or execute a safe refactoring with wikilink validation. Adaptive: judges structure based on what exists, not a fixed template.",
-      "original_path": "%APPDATA%\\devin\\skills\\vault-organizer",
-      "export_hash": "53AF904E11A9ECA1A4DD7E392E15BB39EC9ACFD3DF2B6E6E4B4A0228D9F76952\n01810852C8B85E6661CC369C3C6ECE36BABB4491D5DDFE56E83D3C0833AB6A90\n0C8647AE0DFD4F5CBA7F7CA8D7556C5F57B14E1EE65EB9DAB24EB10058E70E8E\nBCC8A0283EF6619F56B750B7C81BBA5951E380FE735C275E74A79AA2A6396D12\nD9D8B2AB7277AECE89927C46FF9F7A1408CD400F75893E1FD2F91F8A95786F59\nE71E82AB1F7917725F6E3193392FC4E06D18CCB7043256A833F17BD9737A1BAF",
-      "exported_at": "2026-08-13T12:29:08.2875809-03:00"
-    },
-    {
-      "name": "subagent-router",
-      "source": "created:Devin bundle",
-      "purpose": "Routing layer for subagent dispatch. Classifies task complexity (early exit), selects profile by capability + cost, and applies budget presets (economy/standard/strict). Sits above dispatching-parallel-agents and subagent-driven-development.",
-      "original_path": "%APPDATA%\\devin\\skills\\subagent-router",
-      "export_hash": "DDF135C07D654CC86417E5020655ACEEA742E2E43AEA04EC9380AE075CD36856",
-      "exported_at": "2026-08-13T12:29:08.3007582-03:00"
-    },
-    {
-      "name": "jira",
-      "source": "created:Devin bundle",
-      "purpose": "Jira/Atlassian integration via MCP server for issue tracking, sprint management, and ticket operations.",
-      "original_path": "%APPDATA%\\devin\\skills\\jira",
-      "exported_at": "2026-08-15T14:53:00-03:00"
-    },
-    {
-      "name": "observability-quality",
-      "source": "created:Devin bundle",
-      "purpose": "Context-dependent observability decisions: when to add tracing, logging, metrics, lint, architecture tests. Prevents universal tracing (16-180% latency) and tool mixing.",
-      "original_path": "%APPDATA%\\devin\\skills\\observability-quality",
-      "exported_at": "2026-08-15T14:53:00-03:00"
-    },
-    {
-      "name": "context-folding",
+      "name": "a2a-mailbox",
       "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "RLM-style context folding for large contexts. Offload to file, grep/partition, subagent_explore sub-queries (depth=1 only). Adapts arXiv:2512.24601 to Devin CLI runtime.",
-      "original_path": "%APPDATA%\\devin\\skills\\context-folding",
-      "exported_at": "2026-08-15T15:30:00-03:00"
+      "purpose": "Use when subagents need to communicate with each other or with the parent agent across time, when dispatching sequential subagents that need to share state, or when emulating PrimeAgent's persistent subagent A2A messaging within Devin CLI's ephemeral subagent runtime.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\a2a-mailbox",
+      "exported_at": "2026-08-17T11:36:04.014716-03:00",
+      "export_hash": "37FAB736D118B9C634A3AF50DFD929D4FF73C4A361CE3918D017A2209991A654"
     },
     {
-      "name": "refine",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Continual Harness self-improvement. Trajectory review to small evidence-backed edits in skills/rules/agents/hooks. Base prompt immutable. Reward hacking guard (Factorio lesson). Adapts arXiv:2605.09998.",
-      "original_path": "%APPDATA%\\devin\\skills\\refine",
-      "exported_at": "2026-08-15T15:30:00-03:00"
+      "name": "ask-matt",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-matt",
+      "export_hash": "442D2E489D626F866BC6A68BBD505F3FC13E230EDB32AA6198AA55920B76F3E9",
+      "exported_at": "2026-08-17T11:36:04.015366-03:00"
     },
     {
       "name": "autonomous-gates",
       "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Bounded autonomous mode with quality gates. Define gates at planning time, run after each step, final gate before done. Bounded output, idempotent, no-change skip. Adapts PrimeAgent --autonomous-gate.",
+      "purpose": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance criteria that must pass before declaring done.",
       "original_path": "%APPDATA%\\devin\\skills\\autonomous-gates",
-      "exported_at": "2026-08-15T15:30:00-03:00"
+      "exported_at": "2026-08-17T11:36:04.015768-03:00",
+      "export_hash": "25DFF371816CA70EC16ED04DF49F28BF7B4D29A8B3C0BAE6511B3E411E4313CC"
     },
     {
-      "name": "primeagent-reference",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Reference card of verified PrimeAgent/RLM findings. Feature adaptation map (9 features: 6 adapted, 3 runtime-limited), key numbers, source video errors. All claims verified against primary sources.",
-      "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
-      "exported_at": "2026-08-15T15:30:00-03:00"
+      "name": "code-review",
+      "source": "devin-bundle",
+      "purpose": "Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'.",
+      "original_path": "%APPDATA%\\devin\\skills\\code-review",
+      "export_hash": "E1413437A22EB66AA0EBF4EA6F26690BC5B603E406B031A4A0580D99D7F6C235",
+      "exported_at": "2026-08-17T11:36:04.016329-03:00"
     },
     {
-      "name": "a2a-mailbox",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "File-based A2A messaging for subagents. Filesystem as message broker. Sequential A2A via file routing. Emulates PrimeAgent agent_message.send().",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\a2a-mailbox",
-      "exported_at": "2026-08-15T16:00:00-03:00"
+      "name": "codebase-design",
+      "source": "devin-bundle",
+      "purpose": "Use when designing modules, seams, adapters, and the structure of a codebase.",
+      "original_path": "%APPDATA%\\devin\\skills\\codebase-design",
+      "export_hash": "E0E5593263AFB2852B4E1B132927312E9D0CF9D2A8E0DDC3A64FACAB7331D691",
+      "exported_at": "2026-08-17T11:36:04.017000-03:00"
     },
     {
-      "name": "session-checkpoint",
+      "name": "context-folding",
       "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Structured checkpoint for cross-session continuation. Captures todos, decisions, files, verification, next actions. Emulates PrimeAgent daemon-backed reattach.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\session-checkpoint",
-      "exported_at": "2026-08-15T16:00:00-03:00"
+      "purpose": "Use when context is growing large (approaching model window limits), when long documents or transcripts need to be processed, or when compaction is losing critical information. Adapts Recursive Language Model (RLM) techniques to the Devin CLI runtime.",
+      "original_path": "%APPDATA%\\devin\\skills\\context-folding",
+      "exported_at": "2026-08-17T11:36:04.017383-03:00",
+      "export_hash": "CC79AE6F061D8DE3ED384E3C240E59766F21DA5CA9584309008FCEBB241FB988"
+    },
+    {
+      "name": "context7",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks about a library, framework, or component and up-to-date docs would help.",
+      "original_path": "%APPDATA%\\devin\\skills\\context7",
+      "export_hash": "F36EC310EDA19E351290431D127838EA0D8218AABAFFFA335A16D3BE20412E24",
+      "exported_at": "2026-08-17T11:36:04.017761-03:00"
+    },
+    {
+      "name": "debug-ci-failures",
+      "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
+      "purpose": "Use when CI is failing and the cause needs to be found across builds, jobs, or environments.",
+      "original_path": "%APPDATA%\\devin\\skills\\debug-ci-failures",
+      "export_hash": "DCDEA3C52FC6551A4846AC78A97245D412A435D36FC561D29A2B6FC5BDE88610",
+      "exported_at": "2026-08-17T11:36:04.018155-03:00"
+    },
+    {
+      "name": "diagnosing-bugs",
+      "source": "devin-bundle",
+      "purpose": "Use when the user says 'diagnose', 'debug this', or reports something broken, throwing, failing, or slow.",
+      "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs",
+      "export_hash": "8101B89E8DF538991956DC8440EEA4FEBF0E8B7B31C92EC2F556053DE2FC06DE",
+      "exported_at": "2026-08-17T11:36:04.019056-03:00"
+    },
+    {
+      "name": "dispatching-parallel-agents",
+      "source": "devin-bundle",
+      "purpose": "Use when facing two or more independent tasks with no shared state or ordering.",
+      "original_path": "%APPDATA%\\devin\\skills\\dispatching-parallel-agents",
+      "export_hash": "DD9464330C9F95D6E0724E78AD748F62BDC4B06A9449C97945355B87A040300E",
+      "exported_at": "2026-08-17T11:36:04.019477-03:00"
+    },
+    {
+      "name": "domain-modeling",
+      "source": "devin-bundle",
+      "purpose": "Use when building or refining a project's domain model, glossary, or bounded contexts.",
+      "original_path": "%APPDATA%\\devin\\skills\\domain-modeling",
+      "export_hash": "1BAC30004289A6AB1088EE396F249DB5F59082662D4BD01339B827438DB4B450",
+      "exported_at": "2026-08-17T11:36:04.020129-03:00"
+    },
+    {
+      "name": "executing-plans",
+      "source": "devin-bundle",
+      "purpose": "Use when executing a written implementation plan with checkpoints and reviews.",
+      "original_path": "%APPDATA%\\devin\\skills\\executing-plans",
+      "export_hash": "6687C9B19900882B9DC4732864C5A2CAF1A1827C42AA4745C6D9884F256645DB",
+      "exported_at": "2026-08-17T11:36:04.020500-03:00"
+    },
+    {
+      "name": "find-skills",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to discover, install, or evaluate a new skill for Devin CLI.",
+      "original_path": "%APPDATA%\\devin\\skills\\find-skills",
+      "export_hash": "6680EA9EDBB61C69078718F1C2DD4A5E4CC10BBBCD5A3ED401E2CA8318D6C1B3",
+      "exported_at": "2026-08-17T11:36:04.020900-03:00"
+    },
+    {
+      "name": "finishing-a-development-branch",
+      "source": "devin-bundle",
+      "purpose": "Use when the implementation is complete, all tests pass, and the work needs to be integrated.",
+      "original_path": "%APPDATA%\\devin\\skills\\finishing-a-development-branch",
+      "export_hash": "55ACF4C10DFC6978105F99C8029695A028073170DBD0EC8B62D6036C8A6DE6A5",
+      "exported_at": "2026-08-17T11:36:04.021309-03:00"
+    },
+    {
+      "name": "gh",
+      "source": "devin-bundle",
+      "purpose": "Use when interacting with GitHub via the gh CLI from an agent.",
+      "original_path": "%APPDATA%\\devin\\skills\\gh",
+      "export_hash": "ACDBB379DED9435620736B4DA0299403BB13354A9B03DC7BD1EC44F4B0AC6E17",
+      "exported_at": "2026-08-17T11:36:04.021704-03:00"
+    },
+    {
+      "name": "git-helper",
+      "source": "devin-bundle",
+      "purpose": "Use when managing branches, writing commits, or resolving simple git workflow questions.",
+      "original_path": "%APPDATA%\\devin\\skills\\git-helper",
+      "export_hash": "25914B63B483DD444CF8E582887233F83879CE4B11A5D7DA7CA948493FEC8EFB",
+      "exported_at": "2026-08-17T11:36:04.022073-03:00"
+    },
+    {
+      "name": "graphify",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks about a codebase, architecture, file relationships, or project content, especially if graphify-out/ exists.",
+      "original_path": "%APPDATA%\\devin\\skills\\graphify",
+      "export_hash": "12AE94D3F9E87EC34C50F56BEA9DFAF4DA7A0718C64AA8DF6AABA695E718B9A0",
+      "exported_at": "2026-08-17T11:36:04.024004-03:00"
+    },
+    {
+      "name": "grill-me",
+      "source": "devin-bundle",
+      "purpose": "Use when you want a relentless interview to sharpen a plan or design, and you are not working in a working directory. Stateless wrapper around the grilling skill.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\grill-me",
+      "export_hash": "B612932DD2D490F8719A251670B95167145FA1A233B9FDFE02D59D55C91BE32B",
+      "exported_at": "2026-08-17T11:36:04.024416-03:00"
+    },
+    {
+      "name": "grill-with-docs",
+      "source": "devin-bundle",
+      "purpose": "Use when sharpening a plan or design while also producing ADRs and a glossary.",
+      "original_path": "%APPDATA%\\devin\\skills\\grill-with-docs",
+      "export_hash": "0A97B7044A73D39E1D2883C09135DC87F7E1258480F69DB57596E71F4D9E2383",
+      "exported_at": "2026-08-17T11:36:04.024853-03:00"
+    },
+    {
+      "name": "grilling",
+      "source": "devin-bundle",
+      "purpose": "Use when exploring and stress-testing ideas before committing to a design or plan.",
+      "original_path": "%APPDATA%\\devin\\skills\\grilling",
+      "export_hash": "A1D8FA093D4A364BE092B71794A3B3BCA93155BD6784D2016489A8579AEEA15C",
+      "exported_at": "2026-08-17T11:36:04.027271-03:00"
+    },
+    {
+      "name": "handoff",
+      "source": "devin-bundle",
+      "purpose": "Use when the user needs to compact the current conversation into a document for another agent to continue.",
+      "original_path": "%APPDATA%\\devin\\skills\\handoff",
+      "export_hash": "4CB2F154E5EC4CD454314CC18DCF027D9F0D90012E3609C2176A74627F936EF8",
+      "exported_at": "2026-08-17T11:36:04.027682-03:00"
     },
     {
       "name": "heartbeat",
       "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Scheduled re-entry via OS scheduler + heartbeat script. Task Scheduler/cron launches new Devin CLI session with prompt. In-session nudges via PostToolUse hook. Emulates PrimeAgent /heartbeat.",
+      "purpose": "Use when a task needs periodic monitoring or scheduled re-entry, when the user wants the agent to check on something at intervals, or when emulating PrimeAgent's heartbeat and schedule features within Devin CLI's lifecycle-event-driven runtime.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\heartbeat",
-      "exported_at": "2026-08-15T16:00:00-03:00"
+      "exported_at": "2026-08-17T11:36:04.028080-03:00",
+      "export_hash": "FB0A875410F52B222D00E34CDF288F54CAA32BD00D826AA4EBE72D72E90BF007"
+    },
+    {
+      "name": "implement",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to implement a feature or fix from a spec or set of tickets.",
+      "original_path": "%APPDATA%\\devin\\skills\\implement",
+      "export_hash": "F0636CDFF89CED648FBE564EC3BD03C2369A91B40381528FC1A859FCF53994D2",
+      "exported_at": "2026-08-17T11:36:04.028455-03:00"
+    },
+    {
+      "name": "improve-codebase-architecture",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to identify deepening opportunities in a codebase and act on them.",
+      "original_path": "%APPDATA%\\devin\\skills\\improve-codebase-architecture",
+      "export_hash": "21E98B5F46F23195E839000AB0D19FAC6090C52E91FC5DF61EA565215EB5835C",
+      "exported_at": "2026-08-17T11:36:04.029049-03:00"
+    },
+    {
+      "name": "jira",
+      "source": "created:Devin bundle",
+      "purpose": "Use when the user asks to interact with Jira — search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
+      "original_path": "%APPDATA%\\devin\\skills\\jira",
+      "exported_at": "2026-08-17T11:36:04.029472-03:00",
+      "export_hash": "EE8136A1C582414618BADD2E1E888951B17774117DD324496A6A2DCFBBC5E993"
+    },
+    {
+      "name": "memory-bridge",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to compare wiki knowledge by source session or source type and surface cross-session blind spots.",
+      "original_path": "%APPDATA%\\devin\\skills\\memory-bridge",
+      "export_hash": "414EF2EA95446F72C8D0AAD4235B9D28325E4BA40C53AC8A606A7EEE5AE4A281",
+      "exported_at": "2026-08-17T11:36:04.030011-03:00"
+    },
+    {
+      "name": "mutation-testing",
+      "source": "adapted:CircleCI-Public/chunk-cli (chunk-testing-gaps)",
+      "purpose": "Use when the user asks to find testing gaps, mutation test, or identify surviving mutants.",
+      "original_path": "%APPDATA%\\devin\\skills\\mutation-testing",
+      "export_hash": "28705C0BD514A7CA5EBD0A0C0E43DF2C6CBC9EC93E14FDC4382A71756859DAFB",
+      "exported_at": "2026-08-17T11:36:04.030433-03:00"
+    },
+    {
+      "name": "observability-quality",
+      "source": "created:Devin bundle",
+      "purpose": "Use when adding logging, metrics, distributed tracing, error monitoring, linting, architecture testing, or test infrastructure to a project. Covers OpenTelemetry, Sentry/Datadog/Grafana, Biome/ESLint, ArchUnit, commitlint, Knip, Playwright, and coverage strategy.",
+      "original_path": "%APPDATA%\\devin\\skills\\observability-quality",
+      "exported_at": "2026-08-17T11:36:04.030873-03:00",
+      "export_hash": "15EAE0BC3A25A080B69D9ED49F1FF0EA962A4956A0030C42009CDAD9F5A56502"
+    },
+    {
+      "name": "obsidian-project-docs",
+      "source": "created:Devin bundle",
+      "purpose": "Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, and auto-refresh.",
+      "original_path": "%APPDATA%\\devin\\skills\\obsidian-project-docs",
+      "export_hash": "8AF2D5B6ED35337E13FB55B53E6B3149826F146A6C178A6085F085656AFD3B4C",
+      "exported_at": "2026-08-17T11:36:04.033765-03:00"
+    },
+    {
+      "name": "primeagent-reference",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Use when researching agent harness design patterns, when comparing Devin CLI to PrimeAgent/RLM architectures, or when evaluating which PrimeAgent features could be adapted to Devin CLI. Reference card of verified findings and adaptation status.",
+      "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
+      "exported_at": "2026-08-17T11:36:04.034151-03:00",
+      "export_hash": "D0A19AF0DBF6D22AAD88D01722F7751C247B3A9B45AF732197B718B5FB77833C"
+    },
+    {
+      "name": "prototype",
+      "source": "devin-bundle",
+      "purpose": "Use when a throwaway prototype is the fastest way to answer a design question.",
+      "original_path": "%APPDATA%\\devin\\skills\\prototype",
+      "export_hash": "DCD4477DCEFCE2AFEEB73EACBC947C698CCA1FF2B6C1FADE4824552525B52A96",
+      "exported_at": "2026-08-17T11:36:04.034845-03:00"
+    },
+    {
+      "name": "receiving-code-review",
+      "source": "devin-bundle",
+      "purpose": "Use when the user receives code review feedback and needs to decide how to act on it.",
+      "original_path": "%APPDATA%\\devin\\skills\\receiving-code-review",
+      "export_hash": "461DD8F6CFFD9B03A5667BB6F0762420CC47E79C13F8039B46AEE0C745AC45D5",
+      "exported_at": "2026-08-17T11:36:04.035251-03:00"
+    },
+    {
+      "name": "refine",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Use when the agent notices a recurring failure pattern, a reusable tactic that should become a skill, or when the user asks to improve the agent's own harness. Adapts PrimeAgent's Continual Harness `/refine` to Devin CLI.",
+      "original_path": "%APPDATA%\\devin\\skills\\refine",
+      "exported_at": "2026-08-17T11:36:04.035664-03:00",
+      "export_hash": "013590D93BF0A7D640F0D82412AE5EEFA32427C4925750CA4491BD6D9A95E179"
+    },
+    {
+      "name": "research",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks a question that needs investigation against primary sources and citations.",
+      "original_path": "%APPDATA%\\devin\\skills\\research",
+      "export_hash": "709ADDF04C7E68DAD7D6E200C2C53A4D199B1F5A2421315CB0910F8FA6640AFD",
+      "exported_at": "2026-08-17T11:36:04.036031-03:00"
+    },
+    {
+      "name": "resolving-merge-conflicts",
+      "source": "devin-bundle",
+      "purpose": "Use when a merge conflict needs to be resolved and verified.",
+      "original_path": "%APPDATA%\\devin\\skills\\resolving-merge-conflicts",
+      "export_hash": "6292F4CA00FB49148EEAE524CBAB1272E0AA90693707D54003F69ECFB78CEFAE",
+      "exported_at": "2026-08-17T11:36:04.036406-03:00"
+    },
+    {
+      "name": "self-extend",
+      "source": "devin-bundle",
+      "purpose": "Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.",
+      "original_path": "%APPDATA%\\devin\\skills\\self-extend",
+      "export_hash": "20EF339A0E523C44BE26F00A8DCD5B4BAD0E8D65F5F8161186BAF1337038AB6B",
+      "exported_at": "2026-08-17T11:36:04.036794-03:00"
+    },
+    {
+      "name": "session-checkpoint",
+      "source": "created:Devin bundle (PrimeAgent/RLM research)",
+      "purpose": "Use when a session needs to be preserved for later continuation, when the user wants to pause and resume work across CLI exits, or when emulating PrimeAgent's daemon-backed session reattach within Devin CLI's single-process runtime.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\session-checkpoint",
+      "exported_at": "2026-08-17T11:36:04.037178-03:00",
+      "export_hash": "CAD4F97CE449CE814B9E88923CA5A923A9C08F0BB4D892B44CB0E7F00E25D1BE"
+    },
+    {
+      "name": "setup-matt-pocock-skills",
+      "source": "devin-bundle",
+      "purpose": "Use when configuring a repo for the engineering skills — set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\setup-matt-pocock-skills",
+      "export_hash": "4E0F1C19EE93A8CEEBDD7C3EB49E03F2A2191778D7EE97FD1CA3A85909E7D784",
+      "exported_at": "2026-08-17T11:36:04.038237-03:00"
+    },
+    {
+      "name": "setup-pre-commit",
+      "source": "devin-bundle",
+      "purpose": "Use when setting up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Covers adding pre-commit hooks, configuring Husky, lint-staged, or commit-time formatting/typechecking/testing.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\setup-pre-commit",
+      "export_hash": "B96827BFD60915FE132F7071FBD6A777EC37688A933315D26318358003610B21",
+      "exported_at": "2026-08-17T11:36:04.038667-03:00"
+    },
+    {
+      "name": "subagent-driven-development",
+      "source": "devin-bundle",
+      "purpose": "Use when executing a multi-task plan by dispatching a fresh subagent per task.",
+      "original_path": "%APPDATA%\\devin\\skills\\subagent-driven-development",
+      "export_hash": "6CE205CE400251E9AE6B075E632F48949712FFB0B7BEE05DCC9F5C2E6DEE6F7C",
+      "exported_at": "2026-08-17T11:36:04.040712-03:00"
+    },
+    {
+      "name": "subagent-router",
+      "source": "created:Devin bundle",
+      "purpose": "Use when deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run. Classifies task complexity, selects profile by capability + cost, and applies budget presets.",
+      "original_path": "%APPDATA%\\devin\\skills\\subagent-router",
+      "export_hash": "A233220AC2F587318A9BD81C0746D882CE353E3F7A6FFA3D6FF0AC8101B07508",
+      "exported_at": "2026-08-17T11:36:04.041153-03:00"
+    },
+    {
+      "name": "systematic-debugging",
+      "source": "devin-bundle",
+      "purpose": "Use when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
+      "original_path": "%APPDATA%\\devin\\skills\\systematic-debugging",
+      "export_hash": "58105EA1627DB2F7541D1533217187F0F86E4B17D50CA71419E06D2EA9F39F03",
+      "exported_at": "2026-08-17T11:36:04.043708-03:00"
+    },
+    {
+      "name": "tdd",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate.",
+      "original_path": "%APPDATA%\\devin\\skills\\tdd",
+      "export_hash": "2CAAE8729E259A0ED7B9DD7F679D1AE6EC60FBCB599D989B9A1D15922A555133",
+      "exported_at": "2026-08-17T11:36:04.044730-03:00"
+    },
+    {
+      "name": "teach",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to learn a skill or concept through a guided, multi-step session.",
+      "original_path": "%APPDATA%\\devin\\skills\\teach",
+      "export_hash": "6C1761DD2A03B85DF0C048A9B7B3BD4770B08E996DF28FC23CE68F277EED3852",
+      "exported_at": "2026-08-17T11:36:04.045780-03:00"
+    },
+    {
+      "name": "to-questionnaire",
+      "source": "devin-bundle",
+      "purpose": "Use when a decision cannot be fully answered and needs input from another person.",
+      "original_path": "%APPDATA%\\devin\\skills\\to-questionnaire",
+      "export_hash": "B820BEE88FC791A7102E2ADBBBCB7312F9B6C4E74011D03E6E7016358BA9362B",
+      "exported_at": "2026-08-17T11:36:04.046232-03:00"
+    },
+    {
+      "name": "to-spec",
+      "source": "devin-bundle",
+      "purpose": "Use when the conversation already contains enough context to turn into a written spec.",
+      "original_path": "%APPDATA%\\devin\\skills\\to-spec",
+      "export_hash": "D8ACE9433BB4E8E856B9CECEDD30E02AD3F96CA92CA002E6D8981129FA739CAD",
+      "exported_at": "2026-08-17T11:36:04.046627-03:00"
+    },
+    {
+      "name": "to-tickets",
+      "source": "devin-bundle",
+      "purpose": "Use when breaking a plan or spec into independent, traceable tickets for an issue tracker.",
+      "original_path": "%APPDATA%\\devin\\skills\\to-tickets",
+      "export_hash": "FCD7E4BBAC8A98E80BC2AABF3D42F6C1C59928E8945CC7C394A3FBD43F0FF76F",
+      "exported_at": "2026-08-17T11:36:04.047024-03:00"
+    },
+    {
+      "name": "tool-and-skill-discovery",
+      "source": "builtin:devin",
+      "purpose": "Use when the user asks how to do something, needs the right skill or tool, or no skill seems to match the task.",
+      "original_path": "%APPDATA%\\devin\\skills\\tool-and-skill-discovery",
+      "export_hash": "CA94040EEA1A3AB26D6B8E0AE38589BBD7B55076B6DF42D3D923DEC5CADBAF20",
+      "exported_at": "2026-08-17T11:36:04.047406-03:00"
+    },
+    {
+      "name": "triage",
+      "source": "devin-bundle",
+      "purpose": "Use when moving issues and external PRs through a state machine of triage roles — categorise, verify, grill if needed, and write agent-ready briefs.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\triage",
+      "export_hash": "5155C19621588D9BFF6DF36E26ED38B64E3F4F80282248AFC3689C6A8F2E3B2C",
+      "exported_at": "2026-08-17T11:36:04.048092-03:00"
+    },
+    {
+      "name": "using-git-worktrees",
+      "source": "devin-bundle",
+      "purpose": "Use when starting feature work that needs isolation from the current workspace.",
+      "original_path": "%APPDATA%\\devin\\skills\\using-git-worktrees",
+      "export_hash": "D5FC10F0EC5D8317B406EF16DACEC0C5241ABF3E67C389C842B89626E4064FF0",
+      "exported_at": "2026-08-17T11:36:04.048505-03:00"
+    },
+    {
+      "name": "using-skills",
+      "source": "devin-bundle",
+      "purpose": "Use when starting any conversation and before taking any non-trivial action.",
+      "original_path": "%APPDATA%\\devin\\skills\\using-skills",
+      "export_hash": "D026E771CEFCDECABF7394F544F1412A8D81C83DE84A7AC43147F4C2CEAC3B68",
+      "exported_at": "2026-08-17T11:36:04.048886-03:00"
+    },
+    {
+      "name": "vault-organizer",
+      "source": "created:Devin bundle",
+      "purpose": "Use when the user wants to reorganize, refactor, or restructure an Obsidian vault, knowledge base, or documentation folder — diagnosing organizational problems, selecting appropriate methodologies, and planning or executing a safe refactoring.",
+      "original_path": "%APPDATA%\\devin\\skills\\vault-organizer",
+      "export_hash": "34DB1300E3CCDFFDC6E32515C3545F4848CE65B171ECACE74DCB5D72A0DF6AF9",
+      "exported_at": "2026-08-17T11:36:04.050287-03:00"
+    },
+    {
+      "name": "verification-before-completion",
+      "source": "devin-bundle",
+      "purpose": "Use when about to claim work is complete, fixed, or passing.",
+      "original_path": "%APPDATA%\\devin\\skills\\verification-before-completion",
+      "export_hash": "BCA61048D649F4C840F454AF93CB186B0BB4A8F346DEE740C02A01F414605FF6",
+      "exported_at": "2026-08-17T11:36:04.050716-03:00"
+    },
+    {
+      "name": "wait-what",
+      "source": "devin-bundle",
+      "purpose": "Use when the last message did not land and needs to be re-explained or re-pitched.",
+      "original_path": "%APPDATA%\\devin\\skills\\wait-what",
+      "export_hash": "3A8BFCB1806EF752F83683DA83D73BC0CF6F8C9AA85796A5F9431D362921E229",
+      "exported_at": "2026-08-17T11:36:04.051093-03:00"
+    },
+    {
+      "name": "wayfinder",
+      "source": "devin-bundle",
+      "purpose": "Use when planning work too large for one session as a map of decision tickets.",
+      "original_path": "%APPDATA%\\devin\\skills\\wayfinder",
+      "export_hash": "D1D68D5A46EB74D5E6261FE452EA0A78B3C2060E8F28690E03A0E19635B2D733",
+      "exported_at": "2026-08-17T11:36:04.051525-03:00"
+    },
+    {
+      "name": "wizard",
+      "source": "devin-bundle",
+      "purpose": "Use when a human must walk through a manual procedure such as provisioning, credentials, or a one-off cutover.",
+      "original_path": "%APPDATA%\\devin\\skills\\wizard",
+      "export_hash": "B10A42ADFCB62E7F2511083E5E0DD88C6902D137548A5FA8C2A1D438554590DD",
+      "exported_at": "2026-08-17T11:36:04.052347-03:00"
+    },
+    {
+      "name": "writing-for-agents",
+      "source": "devin-bundle",
+      "purpose": "Use when creating or editing skills, AGENTS.md rules, or other docs an agent must read.",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-for-agents",
+      "export_hash": "48B79C72C3A34A5253CCBD79DA67F83AC43CE40DC20457293A62358774F7D8C2",
+      "exported_at": "2026-08-17T11:36:04.052939-03:00"
+    },
+    {
+      "name": "writing-plans",
+      "source": "devin-bundle",
+      "purpose": "Use when turning a spec into a concrete, task-by-task implementation plan.",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-plans",
+      "export_hash": "66DE4822ACDEC2AFF64638856DD3DBAA1516CDC678FC73C833485F1125D8679D",
+      "exported_at": "2026-08-17T11:36:04.053497-03:00"
+    },
+    {
+      "name": "writing-skills",
+      "source": "devin-bundle",
+      "purpose": "Use when creating new skills, editing existing skills, or verifying skills work before deployment.",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-skills",
+      "export_hash": "D3C2F6AAB2C43273122CB16F036897B799EE6980608E9AF8D995D5447ED97473",
+      "exported_at": "2026-08-17T11:36:04.054899-03:00"
     }
   ]
 }
