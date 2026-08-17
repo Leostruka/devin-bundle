@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Validates mermaid diagram blocks in write/edit content.
 
-PreToolUse hook for write and edit tools. Scans content for ```mermaid
-fenced blocks, renders each with @mermaid-js/mermaid-cli (npx mmdc),
+PreToolUse hook for write and edit tools. Scans content for mermaid
+fenced blocks, validates each with mermaid.parse() via Node (no Chromium),
 and blocks the tool call if any block has invalid syntax.
 
 Stdin payload (PreToolUse):
@@ -14,12 +14,15 @@ Stdin payload (PreToolUse):
 Exit codes:
   0 = allow, 2 = block.
 """
-import sys, json, os, re, subprocess, tempfile
+import sys, json, os, re, subprocess
 
 MERMAID_FENCE = re.compile(
     r"```mermaid\s*\n(.*?)```",
     re.DOTALL | re.IGNORECASE,
 )
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARSE_CHECK_JS = os.path.join(SCRIPT_DIR, "mermaid-parse-check.js")
 
 
 def block(reason):
@@ -32,34 +35,20 @@ def extract_mermaid_blocks(content):
 
 
 def validate_block(diagram):
-    """Render a mermaid diagram with mmdc. Returns (ok, error_msg)."""
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".mmd", delete=False, encoding="utf-8"
-    ) as f:
-        f.write(diagram.strip() + "\n")
-        src = f.name
-    dst = src.replace(".mmd", ".svg")
+    """Validate a mermaid diagram with mermaid.parse() via Node. Returns (ok, error_msg)."""
     try:
         result = subprocess.run(
-            ["npx", "-y", "@mermaid-js/mermaid-cli", "-i", src, "-o", dst],
+            ["node", PARSE_CHECK_JS, diagram.strip()],
             capture_output=True,
             text=True,
-            timeout=30,
-            shell=True,
+            timeout=15,
         )
         if result.returncode == 0:
             return True, ""
-        # Extract parse error line for a concise message
-        err = result.stderr + result.stdout
-        return False, err.strip()[:300]
+        err = result.stderr.strip() or result.stdout.strip()
+        return False, err[:300]
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
-        return False, f"mmdc unavailable: {e}"
-    finally:
-        for p in (src, dst):
-            try:
-                os.unlink(p)
-            except OSError:
-                pass
+        return False, f"node/mermaid unavailable: {e}"
 
 
 def main():
@@ -93,7 +82,7 @@ def main():
             block(
                 f"Mermaid block {i} of {len(blocks)} has invalid syntax.\n"
                 f"Diagram:\n{diagram.strip()[:200]}\n\n"
-                f"mmdc error:\n{err}"
+                f"Parse error:\n{err}"
             )
 
     sys.exit(0)
