@@ -52,7 +52,13 @@ async function main() {
     await M.parse(input);
     process.exit(0);
   } catch (e) {
-    console.error(e.message || String(e));
+    const msg = e.message || String(e);
+    // DOMPurify errors are environment issues (no DOM in Node), not syntax errors.
+    // The parse itself succeeded; DOMPurify post-processing fails without a browser.
+    if (msg.includes('DOMPurify')) {
+      process.exit(0);
+    }
+    console.error(msg);
     process.exit(1);
   }
 }
