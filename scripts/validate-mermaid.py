@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+"""Validates mermaid diagram blocks in write/edit content.
+
+PreToolUse hook for write and edit tools. Scans content for ```mermaid
+fenced blocks, renders each with @mermaid-js/mermaid-cli (npx mmdc),
+and blocks the tool call if any block has invalid syntax.
+
+Stdin payload (PreToolUse):
+  {"hook_event_name": "PreToolUse", "tool_name": "write",
+   "tool_input": {"content": "...", "file_path": "..."}}
+  {"hook_event_name": "PreToolUse", "tool_name": "edit",
+   "tool_input": {"new_string": "...", "file_path": "..."}}
+
+Exit codes:
+  0 = allow, 2 = block.
+"""
+import sys, json, os, re, subprocess, tempfile
+
+MERMAID_FENCE = re.compile(
+    r"```mermaid\s*\n(.*?)```",
+    re.DOTALL | re.IGNORECASE,
+)
+
+
+def block(reason):
+    print(json.dumps({"decision": "block", "reason": reason}))
+    sys.exit(2)
+
+
+def extract_mermaid_blocks(content):
+    return MERMAID_FENCE.findall(content)
+
+
+def validate_block(diagram):
+    """Render a mermaid diagram with mmdc. Returns (ok, error_msg)."""
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".mmd", delete=False, encoding="utf-8"
+    ) as f:
+        f.write(diagram.strip() + "\n")
+        src = f.name
+    dst = src.replace(".mmd", ".svg")
+    try:
+        result = subprocess.run(
+            ["npx", "-y", "@mermaid-js/mermaid-cli", "-i", src, "-o", dst],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            shell=True,
+        )
+        if result.returncode == 0:
+            return True, ""
+        # Extract parse error line for a concise message
+        err = result.stderr + result.stdout
+        return False, err.strip()[:300]
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        return False, f"mmdc unavailable: {e}"
+    finally:
+        for p in (src, dst):
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
+
+
+def main():
+    try:
+        data = json.load(sys.stdin)
+    except (json.JSONDecodeError, EOFError, ValueError):
+        sys.exit(0)
+
+    if data.get("hook_event_name") != "PreToolUse":
+        sys.exit(0)
+
+    tool_name = data.get("tool_name", "")
+    if tool_name not in ("write", "edit"):
+        sys.exit(0)
+
+    tool_input = data.get("tool_input") or {}
+    if not isinstance(tool_input, dict):
+        sys.exit(0)
+
+    content = tool_input.get("content") or tool_input.get("new_string") or ""
+    if not content:
+        sys.exit(0)
+
+    blocks = extract_mermaid_blocks(content)
+    if not blocks:
+        sys.exit(0)
+
+    for i, diagram in enumerate(blocks, 1):
+        ok, err = validate_block(diagram)
+        if not ok:
+            block(
+                f"Mermaid block {i} of {len(blocks)} has invalid syntax.\n"
+                f"Diagram:\n{diagram.strip()[:200]}\n\n"
+                f"mmdc error:\n{err}"
+            )
+
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
