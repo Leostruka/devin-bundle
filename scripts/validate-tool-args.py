@@ -186,7 +186,7 @@ def check_kill_shell(ti):
 
 
 def check_skill(ti):
-    cmd = ti.get("command", "")
+    cmd = ti.get("command") or "invoke"
     if cmd not in ("invoke", "list", "search"):
         block("skill command must be 'invoke', 'list', or 'search', got '" + str(cmd) + "'.")
 
