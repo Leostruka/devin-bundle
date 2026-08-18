@@ -152,7 +152,7 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('47 skills', skill_count == 47),
+    ('46 skills', skill_count == 46),
     ('18 rules', len(rules_found) == 18),
     ('5 agents', agent_count == 5),
     ('11 scripts', len(script_files) == 11),
@@ -340,8 +340,8 @@ else:
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-47' in readme:
-    print('  OK  skills badge = 47')
+if 'skills-46' in readme:
+    print('  OK  skills badge = 46')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')

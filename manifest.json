@@ -134,14 +134,6 @@
       "exported_at": "2026-08-17T15:41:48.854805-03:00"
     },
     {
-      "name": "graphify",
-      "source": "devin-bundle",
-      "purpose": "Use when the user asks about a codebase, architecture, file relationships, or project content, especially if graphify-out/ exists.",
-      "original_path": "%APPDATA%\\devin\\skills\\graphify",
-      "export_hash": "12AE94D3F9E87EC34C50F56BEA9DFAF4DA7A0718C64AA8DF6AABA695E718B9A0",
-      "exported_at": "2026-08-17T15:41:48.856877-03:00"
-    },
-    {
       "name": "grilling",
       "source": "devin-bundle",
       "purpose": "Use when exploring and stress-testing ideas before committing to a design or plan.",
@@ -389,7 +381,7 @@
       "hash": "5ddbd4ec92c23e4fa54e38ced1b0b9f01760f13263fa013bb80113bd983296f3"
     }
   ],
-  "skill_count": 47,
+  "skill_count": 46,
   "rule_count": 18,
   "script_count": 11,
   "mcp_count": 1

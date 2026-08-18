@@ -116,7 +116,6 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `teach` | Aprendizado guiado multi-sessão | 2375 | Aprender conceito |
 | `wizard` | Scripts p/ procedimentos manuais | 1000 | Provisioning one-off |
-| `graphify` | Mapeia codebase (a mais cara) | 9659 | `/graphify` explícito |
 | `observability-quality` | Infra de observabilidade c/ evidência | 2285 | Adicionar logging/metrics/tracing |
 
 ## Linha lógica para 200k
@@ -134,7 +133,6 @@ Tarefa → AGENTS.md (4567 tok, fixo) → leia SKILL-TIERS.md (~1700 tok)
 | Evitar | Alternativa |
 |---|---|
 | `skill list` sem necessidade | Leia SKILL-TIERS.md |
-| `graphify` + `obsidian-workflow` juntos (~22000 tok) | Um por sessão |
 | `primeagent-reference` sem motivo de pesquisa | Não invocar — é referência |
 | MCPs sem usar | Só ativar quando preciso |
 | Compact quando precisa do detalhe | `context-folding` |

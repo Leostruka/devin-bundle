@@ -15,7 +15,6 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 3. **Don't use outdated or missing skills** — update wrong skills before use; create skills for recurring patterns; prune dead ones.
 4. **Don't start non-trivial tasks without skill discovery** — invoke matching skills before touching code.
 5. **No push without green** — run local checks before committing; fix failures in the inner loop.
-6. **graphify trigger** — `/graphify` runs first.
 7. **Execute-first, opinion-silent** — don't reframe, suggest alternatives, or critique clear tasks. Push back only on false premises, irreversible actions, or deliverable-changing ambiguity.
 8. **Telegraphic output** — no filler, no preamble, no unsolicited opinions. Short sentences, structured formats. Verbose only for debugging, architecture, or unfamiliar domains.
 9. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
@@ -159,10 +158,6 @@ Update wrong skills in place before use. Create a skill for recurring patterns (
 ### 4. Don't start non-trivial tasks without skill discovery
 
 Invoke `skill tool-and-skill-discovery` or `skill search` + `skill list` before touching code. For faster discovery without loading all 47 descriptions, read `SKILL-TIERS.md` (~1700 tok) — skills categorized by domain of use with token costs. Invoke all matching skills in parallel. If no skill matches, use `tool-and-skill-discovery` (which now includes external search and install). Don't skip discovery on first occurrences each week (first PR, first debug, first CSV edit, first deploy, first MCP integration, etc.). Applies to all integrations (MCP, skills, CLIs, `gh`, `curl`, `python`).
-
-### 6. graphify trigger
-
-When the user types `/graphify`, run the installed graphify skill/instructions before anything else.
 
 ### 8. Telegraphic output
 

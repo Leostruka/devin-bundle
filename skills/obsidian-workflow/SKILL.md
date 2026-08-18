@@ -132,7 +132,7 @@ The helper creates:
 
 #### Step 2 — Fill `wiki-config.json` (steering)
 
-Read the codebase structure first (`ls`, `tree`, `git ls-files`, or `graphify`). Then fill the steering config:
+Read the codebase structure first (`ls`, `tree`, or `git ls-files`). Then fill the steering config:
 
 ```json
 {
@@ -157,7 +157,7 @@ Fields:
 - `mode` (optional): `"comprehensive"` (more pages, nested, high detail) or `"concise"` (fewer pages, flat, medium detail). Defaults to `comprehensive`.
 - `language` (optional): ISO code (`en`, `pt`, `es`, `ja`, `zh`, `ko`, `vi`, `he`). The agent generates the wiki in this language. Defaults to `en`.
 - `repo_notes`: array of `{content, author}`. Max 10,000 chars per note.
-- `pages`: array of page definitions. If omitted, the agent auto-discovers structure via cluster-based planning (use `graphify` or `ls`/`tree` to identify modules and communities).
+- `pages`: array of page definitions. If omitted, the agent auto-discovers structure via cluster-based planning (use `ls`/`tree` to identify modules and communities).
 - Each page: `title` (unique, non-empty), `purpose`, `parent` (or `null` for root), `importance` (`high`/`medium`/`low`), `filePaths` (array of paths/files this page documents — used for retrieval), `page_notes` (array of `{content, author}`).
 
 Validation limits (enforced by `validate_wiki_config.py`):
@@ -188,8 +188,8 @@ This page is the **entry point** — anyone landing in the vault should understa
 
 If the steering config has `repo_notes` but no `pages` array, auto-discover the page structure:
 
-1. Run `graphify <project-dir> --no-viz` or use `ls`/`tree`/`git ls-files` to map the codebase.
-2. Identify communities/clusters of related files (graphify does this; or group by top-level directory).
+1. Use `ls`/`tree`/`git ls-files` to map the codebase.
+2. Identify communities/clusters of related files (group by top-level directory).
 3. Create one page per cluster, with `parent` set to the most logical ancestor.
 4. Assign `importance` based on cluster size and centrality (high for core modules, medium for supporting, low for peripheral).
 5. Assign `filePaths` to each page from the cluster's files.
@@ -404,8 +404,6 @@ Each diagram should:
 - Include a small legend
 - Link back to the relevant note
 
-You may use `graphify` first to extract the code graph and then translate key nodes and edges into the diagrams.
-
 #### Step 14 — Re-index workflow (`refresh.py`)
 
 The scaffold writes a `refresh.py` script into the vault. After code changes, run:
@@ -452,17 +450,6 @@ At the end of each session create or update the daily note:
 3. Append a link to `10-Logbook.md` under the `## Activity log` heading, grouped by week or month.
 
 Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
-
-### Running with graphify
-
-If the project has many files, run `/graphify <project-dir> --no-viz` before documenting. Use the resulting `graphify-out/graph.json` and `GRAPH_REPORT.md` to identify:
-
-- Modules and communities
-- Dependency edges
-- Central vs peripheral nodes
-- Unresolved or ambiguous relationships
-
-Then write the findings into the Obsidian vault using this skill.
 
 ### Deviation / exceptions
 
@@ -656,15 +643,6 @@ Create a summary document (e.g., `REFACTORING-LOG.md` in the vault root) recordi
 - Tag taxonomy applied (if any)
 
 **Completion criterion:** the report exists and accurately reflects what was done.
-
-### Running with graphify
-
-If the vault is large or complex, run `graphify <vault-dir> --no-viz` before Step 1. Use the resulting graph to identify:
-- Clusters of related files
-- Orphaned nodes (files with no incoming links)
-- Hub nodes (files referenced by many others)
-
-This accelerates diagnosis and helps validate the move plan.
 
 ### Deviation and exceptions
 
