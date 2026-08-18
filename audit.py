@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.2.3':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.2.3')
+if ver != '2.4.0':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.4.0')
 
 # 6. AGENTS.md rule count
 print()
@@ -98,10 +98,10 @@ for i in range(1, 20):
     if str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 16:
-    errors.append('Expected 16 rules, found ' + str(len(rules_found)))
+if len(rules_found) != 18:
+    errors.append('Expected 18 rules, found ' + str(len(rules_found)))
 else:
-    print('  OK  16 rules present')
+    print('  OK  18 rules present')
 
 # 7. config.json hooks references valid scripts
 print()
@@ -152,10 +152,10 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('54 skills', skill_count == 54),
-    ('16 rules', len(rules_found) == 16),
+    ('47 skills', skill_count == 47),
+    ('18 rules', len(rules_found) == 18),
     ('5 agents', agent_count == 5),
-    ('9 scripts', len(script_files) == 9),
+    ('11 scripts', len(script_files) == 11),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
@@ -314,7 +314,7 @@ for s in script_files:
 # 16. New skills live vs bundle sync
 print()
 print('[16] New skills live vs bundle sync')
-new_skills = ['context-folding', 'refine', 'autonomous-gates', 'primeagent-reference', 'a2a-mailbox', 'session-checkpoint', 'heartbeat']
+new_skills = ['context-folding', 'autonomous-gates', 'primeagent-reference', 'context-window-hygiene', 'mcp-context-audit', 'grilling', 'diagnosing-bugs', 'tool-and-skill-discovery', 'dispatching-parallel-agents', 'planning-pipeline', 'obsidian-workflow']
 for s in new_skills:
     lp = os.path.join(live_base, 'skills', s, 'SKILL.md')
     bp = os.path.join('skills', s, 'SKILL.md')
@@ -331,27 +331,27 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.2.3' in changelog and ver == '2.2.3':
-    print('  OK  CHANGELOG and manifest both at 2.2.3')
+if '2.4.0' in changelog and ver == '2.4.0':
+    print('  OK  CHANGELOG and manifest both at 2.4.0')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.2.3: ' + str('2.2.3' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.4.0: ' + str('2.4.0' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-54' in readme:
-    print('  OK  skills badge = 54')
+if 'skills-47' in readme:
+    print('  OK  skills badge = 47')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
-if 'rules-16' in readme:
-    print('  OK  rules badge = 16')
+if 'rules-18' in readme:
+    print('  OK  rules badge = 18')
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')
-if 'version-2.2.3' in readme:
-    print('  OK  version badge = 2.2.3')
+if 'version-2.4.0' in readme:
+    print('  OK  version badge = 2.4.0')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')

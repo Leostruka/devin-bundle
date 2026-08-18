@@ -36,7 +36,8 @@ PINNED_CONSTRAINTS = """Pinned governance constraints (re-injected after context
 - Rule 14: These constraints are pinned and survive compaction.
 - Rule 15: Refinement evidence must be reproducible - phantom guardrails occur in 25% of self-improvement runs.
 - Rule 16: Self-improvement loops produce 47-74% illusory gains - validate with held-out tests.
-- Rule 17: Don't deduce - verify with tools. Use read, exec, grep, glob before asserting anything."""
+- Rule 17: Don't deduce - verify with tools. Use read, exec, grep, glob before asserting anything.
+- Rule 18: Keep the context window lean - default to clear over compact, keep rules files small, audit MCP servers before adding, paste large inputs to files not chat. Bigger window != better retrieval."""
 
 PINNED_HASH = hashlib.sha256(PINNED_CONSTRAINTS.encode("utf-8")).hexdigest()[:16]
 
@@ -104,6 +105,7 @@ def summary_retains_constraints(summary):
         "maximum precision",
         "security sandbox",
         "constraint pinning",
+        "context window",
     )
     low = summary.lower()
     survived = sum(1 for p in key_phrases if p in low)

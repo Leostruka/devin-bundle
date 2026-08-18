@@ -1,10 +1,18 @@
 ---
 name: grilling
-description: Use when exploring and stress-testing ideas before committing to a design or plan.
+description: Use when exploring and stress-testing ideas before committing to a design or plan, when the user says "grill me" or "stress-test this", or when sharpening a plan while also producing ADRs and a glossary.
 ---
 # Grilling & Brainstorming (Unified)
 
 Two traditions, one pipeline. This skill merges **collaborative brainstorming** (gentle exploration, one question at a time, visual companion, design doc) with **relentless grilling** (design tree, frontier rounds, numbered questions, recommended answers, sub-agents for facts).
+
+## Modes
+
+| Mode | Trigger | What changes |
+|---|---|---|
+| **Default** | "grill this", "stress-test", "brainstorm" | Full pipeline below |
+| **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation |
+| **With-docs** | "grill and document" / "sharpen plan + ADRs" | Run full pipeline + invoke `domain-modeling` in Phase 3 to produce ADRs and glossary alongside the spec |
 
 ## Decision logic: which mode when
 

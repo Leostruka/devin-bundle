@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "2.2.5",
+  "version": "2.4.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -11,14 +11,6 @@
     }
   },
   "skills": [
-    {
-      "name": "a2a-mailbox",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when subagents need to communicate with each other or with the parent agent across time, when dispatching sequential subagents that need to share state, or when emulating PrimeAgent's persistent subagent A2A messaging within Devin CLI's ephemeral subagent runtime.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\a2a-mailbox",
-      "exported_at": "2026-08-17T15:41:48.846757-03:00",
-      "export_hash": "37FAB736D118B9C634A3AF50DFD929D4FF73C4A361CE3918D017A2209991A654"
-    },
     {
       "name": "ask-matt",
       "source": "devin-bundle",
@@ -68,6 +60,14 @@
       "exported_at": "2026-08-17T15:41:48.850293-03:00"
     },
     {
+      "name": "context-window-hygiene",
+      "source": "created:Devin bundle (context-window research)",
+      "purpose": "Use when a conversation is getting long and the agent seems to be forgetting earlier instructions, before adding MCP servers or rules files, when deciding whether to clear or compact the chat, or when context window budget feels tight. Covers lost-in-the-middle, clear-vs-compact, and lean-context hygiene.",
+      "original_path": "%APPDATA%\\devin\\skills\\context-window-hygiene",
+      "exported_at": "2026-08-18T00:00:00.000000-03:00",
+      "export_hash": "AA486E98A186B9D61404D62582E0BE68EFD3ABC8E7E33F1FF51FA0D43D8083ED"
+    },
+    {
       "name": "debug-ci-failures",
       "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
       "purpose": "Use when CI is failing and the cause needs to be found across builds, jobs, or environments.",
@@ -81,7 +81,8 @@
       "purpose": "Use when the user says 'diagnose', 'debug this', or reports something broken, throwing, failing, or slow.",
       "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs",
       "export_hash": "8101B89E8DF538991956DC8440EEA4FEBF0E8B7B31C92EC2F556053DE2FC06DE",
-      "exported_at": "2026-08-17T15:41:48.851667-03:00"
+      "exported_at": "2026-08-17T15:41:48.851667-03:00",
+      "hash": "0ebc5f0f2e8fb7d20740112fad62857f9b70704296d8526effb700470f259cd7"
     },
     {
       "name": "dispatching-parallel-agents",
@@ -89,7 +90,8 @@
       "purpose": "Use when facing two or more independent tasks with no shared state or ordering.",
       "original_path": "%APPDATA%\\devin\\skills\\dispatching-parallel-agents",
       "export_hash": "DD9464330C9F95D6E0724E78AD748F62BDC4B06A9449C97945355B87A040300E",
-      "exported_at": "2026-08-17T15:41:48.852092-03:00"
+      "exported_at": "2026-08-17T15:41:48.852092-03:00",
+      "hash": "dbb4e51f9c31d60ebdb15f10c0a545366f88716346658dc0564f977b2e100691"
     },
     {
       "name": "domain-modeling",
@@ -106,14 +108,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\executing-plans",
       "export_hash": "6687C9B19900882B9DC4732864C5A2CAF1A1827C42AA4745C6D9884F256645DB",
       "exported_at": "2026-08-17T15:41:48.853167-03:00"
-    },
-    {
-      "name": "find-skills",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants to discover, install, or evaluate a new skill for Devin CLI.",
-      "original_path": "%APPDATA%\\devin\\skills\\find-skills",
-      "export_hash": "6680EA9EDBB61C69078718F1C2DD4A5E4CC10BBBCD5A3ED401E2CA8318D6C1B3",
-      "exported_at": "2026-08-17T15:41:48.853566-03:00"
     },
     {
       "name": "finishing-a-development-branch",
@@ -148,28 +142,13 @@
       "exported_at": "2026-08-17T15:41:48.856877-03:00"
     },
     {
-      "name": "grill-me",
-      "source": "devin-bundle",
-      "purpose": "Use when you want a relentless interview to sharpen a plan or design, and you are not working in a working directory. Stateless wrapper around the grilling skill.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\grill-me",
-      "export_hash": "B612932DD2D490F8719A251670B95167145FA1A233B9FDFE02D59D55C91BE32B",
-      "exported_at": "2026-08-17T15:41:48.857348-03:00"
-    },
-    {
-      "name": "grill-with-docs",
-      "source": "devin-bundle",
-      "purpose": "Use when sharpening a plan or design while also producing ADRs and a glossary.",
-      "original_path": "%APPDATA%\\devin\\skills\\grill-with-docs",
-      "export_hash": "0A97B7044A73D39E1D2883C09135DC87F7E1258480F69DB57596E71F4D9E2383",
-      "exported_at": "2026-08-17T15:41:48.857851-03:00"
-    },
-    {
       "name": "grilling",
       "source": "devin-bundle",
       "purpose": "Use when exploring and stress-testing ideas before committing to a design or plan.",
       "original_path": "%APPDATA%\\devin\\skills\\grilling",
       "export_hash": "A1D8FA093D4A364BE092B71794A3B3BCA93155BD6784D2016489A8579AEEA15C",
-      "exported_at": "2026-08-17T15:41:48.860131-03:00"
+      "exported_at": "2026-08-17T15:41:48.860131-03:00",
+      "hash": "e3d6df2b18d187496d5e57f224cb930ad0f76c9ba858fac905a29b34ba738925"
     },
     {
       "name": "handoff",
@@ -178,14 +157,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\handoff",
       "export_hash": "4CB2F154E5EC4CD454314CC18DCF027D9F0D90012E3609C2176A74627F936EF8",
       "exported_at": "2026-08-17T15:41:48.860571-03:00"
-    },
-    {
-      "name": "heartbeat",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when a task needs periodic monitoring or scheduled re-entry, when the user wants the agent to check on something at intervals, or when emulating PrimeAgent's heartbeat and schedule features within Devin CLI's lifecycle-event-driven runtime.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\heartbeat",
-      "exported_at": "2026-08-17T15:41:48.860975-03:00",
-      "export_hash": "FB0A875410F52B222D00E34CDF288F54CAA32BD00D826AA4EBE72D72E90BF007"
     },
     {
       "name": "implement",
@@ -212,12 +183,12 @@
       "export_hash": "EE8136A1C582414618BADD2E1E888951B17774117DD324496A6A2DCFBBC5E993"
     },
     {
-      "name": "memory-bridge",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants to compare wiki knowledge by source session or source type and surface cross-session blind spots.",
-      "original_path": "%APPDATA%\\devin\\skills\\memory-bridge",
-      "export_hash": "414EF2EA95446F72C8D0AAD4235B9D28325E4BA40C53AC8A606A7EEE5AE4A281",
-      "exported_at": "2026-08-17T15:41:48.862704-03:00"
+      "name": "mcp-context-audit",
+      "source": "created:Devin bundle (context-window research)",
+      "purpose": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mcp_config.json. Estimates per-server tool-definition token cost and flags bloat.",
+      "original_path": "%APPDATA%\\devin\\skills\\mcp-context-audit",
+      "exported_at": "2026-08-18T00:00:00.000000-03:00",
+      "export_hash": "1CA1E67D8A03C084EBDD6EC9F9D4F738832A63C8B22BD2360551FEF3D4BFA549"
     },
     {
       "name": "mutation-testing",
@@ -236,20 +207,13 @@
       "export_hash": "15EAE0BC3A25A080B69D9ED49F1FF0EA962A4956A0030C42009CDAD9F5A56502"
     },
     {
-      "name": "obsidian-project-docs",
-      "source": "created:Devin bundle",
-      "purpose": "Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, and auto-refresh.",
-      "original_path": "%APPDATA%\\devin\\skills\\obsidian-project-docs",
-      "export_hash": "D659C850F70714A76719352B90A39BF9236A9476EAEB305A469C2BBBA2C3B377",
-      "exported_at": "2026-08-17T15:41:48.866667-03:00"
-    },
-    {
       "name": "primeagent-reference",
       "source": "created:Devin bundle (PrimeAgent/RLM research)",
       "purpose": "Use when researching agent harness design patterns, when comparing Devin CLI to PrimeAgent/RLM architectures, or when evaluating which PrimeAgent features could be adapted to Devin CLI. Reference card of verified findings and adaptation status.",
       "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
       "exported_at": "2026-08-17T15:41:48.867142-03:00",
-      "export_hash": "D0A19AF0DBF6D22AAD88D01722F7751C247B3A9B45AF732197B718B5FB77833C"
+      "export_hash": "D0A19AF0DBF6D22AAD88D01722F7751C247B3A9B45AF732197B718B5FB77833C",
+      "hash": "95c67d4d67791e2926a6e4a11790789621c5d2c601aaf23390a10bc3d159486b"
     },
     {
       "name": "prototype",
@@ -266,14 +230,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\receiving-code-review",
       "export_hash": "461DD8F6CFFD9B03A5667BB6F0762420CC47E79C13F8039B46AEE0C745AC45D5",
       "exported_at": "2026-08-17T15:41:48.868250-03:00"
-    },
-    {
-      "name": "refine",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when the agent notices a recurring failure pattern, a reusable tactic that should become a skill, or when the user asks to improve the agent's own harness. Adapts PrimeAgent's Continual Harness `/refine` to Devin CLI.",
-      "original_path": "%APPDATA%\\devin\\skills\\refine",
-      "exported_at": "2026-08-17T15:41:48.868653-03:00",
-      "export_hash": "013590D93BF0A7D640F0D82412AE5EEFA32427C4925750CA4491BD6D9A95E179"
     },
     {
       "name": "research",
@@ -300,14 +256,6 @@
       "exported_at": "2026-08-17T15:41:48.869810-03:00"
     },
     {
-      "name": "session-checkpoint",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when a session needs to be preserved for later continuation, when the user wants to pause and resume work across CLI exits, or when emulating PrimeAgent's daemon-backed session reattach within Devin CLI's single-process runtime.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\session-checkpoint",
-      "exported_at": "2026-08-17T15:41:48.870200-03:00",
-      "export_hash": "CAD4F97CE449CE814B9E88923CA5A923A9C08F0BB4D892B44CB0E7F00E25D1BE"
-    },
-    {
       "name": "setup-matt-pocock-skills",
       "source": "devin-bundle",
       "purpose": "Use when configuring a repo for the engineering skills — set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.",
@@ -322,30 +270,6 @@
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\setup-pre-commit",
       "export_hash": "B96827BFD60915FE132F7071FBD6A777EC37688A933315D26318358003610B21",
       "exported_at": "2026-08-17T15:41:48.871667-03:00"
-    },
-    {
-      "name": "subagent-driven-development",
-      "source": "devin-bundle",
-      "purpose": "Use when executing a multi-task plan by dispatching a fresh subagent per task.",
-      "original_path": "%APPDATA%\\devin\\skills\\subagent-driven-development",
-      "export_hash": "6CE205CE400251E9AE6B075E632F48949712FFB0B7BEE05DCC9F5C2E6DEE6F7C",
-      "exported_at": "2026-08-17T15:41:48.874503-03:00"
-    },
-    {
-      "name": "subagent-router",
-      "source": "created:Devin bundle",
-      "purpose": "Use when deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run. Classifies task complexity, selects profile by capability + cost, and applies budget presets.",
-      "original_path": "%APPDATA%\\devin\\skills\\subagent-router",
-      "export_hash": "A233220AC2F587318A9BD81C0746D882CE353E3F7A6FFA3D6FF0AC8101B07508",
-      "exported_at": "2026-08-17T15:41:48.875075-03:00"
-    },
-    {
-      "name": "systematic-debugging",
-      "source": "devin-bundle",
-      "purpose": "Use when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
-      "original_path": "%APPDATA%\\devin\\skills\\systematic-debugging",
-      "export_hash": "58105EA1627DB2F7541D1533217187F0F86E4B17D50CA71419E06D2EA9F39F03",
-      "exported_at": "2026-08-17T15:41:48.878250-03:00"
     },
     {
       "name": "tdd",
@@ -364,36 +288,13 @@
       "exported_at": "2026-08-17T15:41:48.881952-03:00"
     },
     {
-      "name": "to-questionnaire",
-      "source": "devin-bundle",
-      "purpose": "Use when a decision cannot be fully answered and needs input from another person.",
-      "original_path": "%APPDATA%\\devin\\skills\\to-questionnaire",
-      "export_hash": "B820BEE88FC791A7102E2ADBBBCB7312F9B6C4E74011D03E6E7016358BA9362B",
-      "exported_at": "2026-08-17T15:41:48.882493-03:00"
-    },
-    {
-      "name": "to-spec",
-      "source": "devin-bundle",
-      "purpose": "Use when the conversation already contains enough context to turn into a written spec.",
-      "original_path": "%APPDATA%\\devin\\skills\\to-spec",
-      "export_hash": "D8ACE9433BB4E8E856B9CECEDD30E02AD3F96CA92CA002E6D8981129FA739CAD",
-      "exported_at": "2026-08-17T15:41:48.882966-03:00"
-    },
-    {
-      "name": "to-tickets",
-      "source": "devin-bundle",
-      "purpose": "Use when breaking a plan or spec into independent, traceable tickets for an issue tracker.",
-      "original_path": "%APPDATA%\\devin\\skills\\to-tickets",
-      "export_hash": "FCD7E4BBAC8A98E80BC2AABF3D42F6C1C59928E8945CC7C394A3FBD43F0FF76F",
-      "exported_at": "2026-08-17T15:41:48.883471-03:00"
-    },
-    {
       "name": "tool-and-skill-discovery",
       "source": "builtin:devin",
       "purpose": "Use when the user asks how to do something, needs the right skill or tool, or no skill seems to match the task.",
       "original_path": "%APPDATA%\\devin\\skills\\tool-and-skill-discovery",
       "export_hash": "CA94040EEA1A3AB26D6B8E0AE38589BBD7B55076B6DF42D3D923DEC5CADBAF20",
-      "exported_at": "2026-08-17T15:41:48.884146-03:00"
+      "exported_at": "2026-08-17T15:41:48.884146-03:00",
+      "hash": "3c0f32b233c22b8bf0b11f0ce35e6c6b6875bed809d2c881242c922027c3dd8c"
     },
     {
       "name": "triage",
@@ -420,14 +321,6 @@
       "exported_at": "2026-08-17T15:41:48.886301-03:00"
     },
     {
-      "name": "vault-organizer",
-      "source": "created:Devin bundle",
-      "purpose": "Use when the user wants to reorganize, refactor, or restructure an Obsidian vault, knowledge base, or documentation folder — diagnosing organizational problems, selecting appropriate methodologies, and planning or executing a safe refactoring.",
-      "original_path": "%APPDATA%\\devin\\skills\\vault-organizer",
-      "export_hash": "34DB1300E3CCDFFDC6E32515C3545F4848CE65B171ECACE74DCB5D72A0DF6AF9",
-      "exported_at": "2026-08-17T15:41:48.887735-03:00"
-    },
-    {
       "name": "verification-before-completion",
       "source": "devin-bundle",
       "purpose": "Use when about to claim work is complete, fixed, or passing.",
@@ -450,14 +343,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\wayfinder",
       "export_hash": "D1D68D5A46EB74D5E6261FE452EA0A78B3C2060E8F28690E03A0E19635B2D733",
       "exported_at": "2026-08-17T15:41:48.889122-03:00"
-    },
-    {
-      "name": "wiki-audit",
-      "source": "devin-bundle",
-      "purpose": "Use when auditing, validating, or fixing Obsidian project wikis — checks broken wikilinks, source citation adoption, diagram count, sensitive information, and language consistency across one or more wikis.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\wiki-audit",
-      "export_hash": "762153CF0575611B84729762B9DB928EE0B12E3746882E9EA4C4770F522931F8",
-      "exported_at": "2026-08-17T15:41:48.909154-03:00"
     },
     {
       "name": "wizard",
@@ -490,6 +375,22 @@
       "original_path": "%APPDATA%\\devin\\skills\\writing-skills",
       "export_hash": "D3C2F6AAB2C43273122CB16F036897B799EE6980608E9AF8D995D5447ED97473",
       "exported_at": "2026-08-17T15:41:48.914550-03:00"
+    },
+    {
+      "name": "planning-pipeline",
+      "source": "consolidated from multiple skills (v2.4.0)",
+      "purpose": "merged planning/obsidian pipeline",
+      "hash": "310e9b5c82b420076e7bd9ce347d1531e58c1d05fefc454c1072d18f4e7ca5a9"
+    },
+    {
+      "name": "obsidian-workflow",
+      "source": "consolidated from multiple skills (v2.4.0)",
+      "purpose": "merged planning/obsidian pipeline",
+      "hash": "5ddbd4ec92c23e4fa54e38ced1b0b9f01760f13263fa013bb80113bd983296f3"
     }
-  ]
+  ],
+  "skill_count": 47,
+  "rule_count": 18,
+  "script_count": 11,
+  "mcp_count": 1
 }

@@ -1,14 +1,29 @@
 ---
-name: obsidian-project-docs
-description: Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, and auto-refresh.
+name: obsidian-workflow
+description: Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, and auto-refresh; or reorganize, refactor, or restructure an Obsidian vault, knowledge base, or documentation folder; or audit, validate, or fix Obsidian project wikis (broken wikilinks, source citations, diagrams, sensitive info, language); or compare wiki knowledge by source session or source type to surface cross-session blind spots.
 ---
-# obsidian-project-docs
+# obsidian-workflow
+
+A unified skill covering the full Obsidian knowledge lifecycle: **build** a codebase wiki, **reorganize** a vault, **audit** wiki quality, and **compare** knowledge across sessions to surface blind spots. Each mode is independent — invoke the one matching the user's request.
+
+## Mode selector
+
+| Mode | Trigger | What it does |
+|------|---------|--------------|
+| Build Wiki | "Document this codebase / project", "Build a local wiki for this repo", "Create architecture diagrams with source links", "Map all modules, functions, and dependencies with code references", "Visualize the system with Mermaid diagrams", updating an existing engineering wiki after code changes | Scaffolds and fills a meticulous, SRS/ISO-style local codebase wiki in an Obsidian vault with source-linked documentation, hierarchical pages, Mermaid diagrams, and a re-index workflow |
+| Reorganize Vault | "Reorganize my vault", "This vault is a mess, help me structure it", "Plan a refactoring of my documentation", "My projects are scattered, organize them", "Audit my knowledge base structure", after a merger/acquisition that combined knowledge bases, when a vault has grown organically and needs structural correction | Diagnoses organizational problems in a knowledge base, selects adaptive methodologies that fit the content, plans a safe refactoring, and executes with wikilink validation |
+| Audit Wiki | "Audit my wikis", "Check for broken links in the vault", "Validate source citations across all project wikis", "Find sensitive information in the vault", "Fix template broken links", before committing/syncing the vault, after bulk updates to wiki content | Audits and validates Obsidian project wikis against established standards — broken wikilinks, missing source citations, missing diagrams, sensitive information, language inconsistencies; can fix common template issues |
+| Cross-session Comparison | "Compare wiki knowledge by source session", "Show me what devin_session knows vs manual", "Surface cross-session blind spots", browsing/filtering wiki pages by source provenance | Browses and compares Obsidian wiki knowledge filtered by source provenance, surfacing cross-session blind spots via diff/map views built from `.manifest.json` |
+
+---
+
+## Mode: Build Wiki
 
 Build a **meticulous, SRS/ISO-style local codebase wiki** in an Obsidian vault at the same quality level as a cloud-generated wiki: source-linked documentation, hierarchical pages, architecture diagrams (Mermaid), codebase summaries, and a re-index workflow that keeps everything in sync with the code.
 
 **Scope:** codebase summary, architecture, modules, functions, database schema, dependencies, config files, environment variables, relationships, decisions, diagrams, glossary, daily logbook, re-index.
 
-## When to use
+### When to use
 
 - "Document this codebase / project"
 - "Build a local wiki for this repo"
@@ -17,7 +32,7 @@ Build a **meticulous, SRS/ISO-style local codebase wiki** in an Obsidian vault a
 - "Visualize the system with Mermaid diagrams"
 - Updating an existing engineering wiki after code changes
 
-## Non-negotiable requirements
+### Non-negotiable requirements
 
 Every artifact produced by this skill MUST meet these standards:
 
@@ -41,7 +56,7 @@ Every artifact produced by this skill MUST meet these standards:
     - `subgraph` without matching `end`
 13. **Local Q&A** — `query.py`, `wiki_structure.py`, `wiki_contents.py` scripts provide local equivalents of cloud wiki query tools.
 
-## What is produced
+### What is produced
 
 Inside the target Obsidian vault:
 
@@ -68,7 +83,7 @@ Inside the target Obsidian vault:
 | Wiki query | `query.py` | Local equivalent of `ask_question` — keyword search across the wiki returning pages + snippets + sources |
 | Manifest | `project-manifest.json` | Project metadata, vault metadata, last-indexed timestamp, indexed branch |
 
-## Quick start
+### Quick start
 
 ```bash
 # 1. Scaffold a new vault/project wiki
@@ -91,15 +106,15 @@ python <vault-dir>/query.py --query "authentication flow"     # keyword search
 
 Then invoke the rest of this skill to fill each artifact from code and conversation.
 
-## Workflow
+### Workflow
 
-### Step 0 — Detect or confirm target
+#### Step 0 — Detect or confirm target
 
 1. If the user gave a vault path, use it. Otherwise default to `<project>/docs/obsidian/`.
 2. If the vault/docs folder already contains the artifact files, this is an **update** run. Read them first, then run `refresh.py` to identify stale pages.
 3. If the files do not exist, run the scaffold script in Step 1.
 
-### Step 1 — Scaffold the vault
+#### Step 1 — Scaffold the vault
 
 ```bash
 python <skill-dir>/scaffold.py --project-dir <PROJECT> --vault-dir <VAULT>
@@ -115,7 +130,7 @@ The helper creates:
 - `wiki_structure.py`, `wiki_contents.py`, `query.py` (local Q&A scripts)
 - `project-manifest.json` (with `indexed_branch`)
 
-### Step 2 — Fill `wiki-config.json` (steering)
+#### Step 2 — Fill `wiki-config.json` (steering)
 
 Read the codebase structure first (`ls`, `tree`, `git ls-files`, or `graphify`). Then fill the steering config:
 
@@ -151,7 +166,7 @@ Validation limits (enforced by `validate_wiki_config.py`):
 - Max 10,000 characters per note
 - Page titles must be unique and non-empty
 
-### Step 3 — Build the Overview (`00-Overview.md`)
+#### Step 3 — Build the Overview (`00-Overview.md`)
 
 Read the codebase structure, README, package files, and any existing docs. The Overview page must include:
 
@@ -169,7 +184,7 @@ Link to every other page: `[[02-Architecture]], [[04-Modules]], [[03-Database]],
 
 This page is the **entry point** — anyone landing in the vault should understand the system from this page alone.
 
-#### Cluster-based planning (when `pages` is omitted from `wiki-config.json`)
+##### Cluster-based planning (when `pages` is omitted from `wiki-config.json`)
 
 If the steering config has `repo_notes` but no `pages` array, auto-discover the page structure:
 
@@ -180,7 +195,7 @@ If the steering config has `repo_notes` but no `pages` array, auto-discover the 
 5. Assign `filePaths` to each page from the cluster's files.
 6. Cap at 30 pages (80 for enterprise); merge small clusters into a parent.
 
-### Step 4 — SRS (`01-SRS.md`)
+#### Step 4 — SRS (`01-SRS.md`)
 
 Read any existing README, specs, issues, or conversation context. The SRS page must include:
 
@@ -203,7 +218,7 @@ Use callouts for risk or open questions:
 > The failover strategy is not yet defined.
 ```
 
-### Step 5 — Architecture (`02-Architecture.md`)
+#### Step 5 — Architecture (`02-Architecture.md`)
 
 Use the `codebase-design` vocabulary (module, interface, seam, adapter, depth, leverage, locality). The page must include:
 
@@ -221,7 +236,7 @@ Use the `codebase-design` vocabulary (module, interface, seam, adapter, depth, l
 
 Every architectural claim must cite the source file and line where it is implemented.
 
-### Step 6 — Database (`03-Database.md`)
+#### Step 6 — Database (`03-Database.md`)
 
 For each database / persistence layer. The page must include:
 
@@ -238,7 +253,7 @@ For each database / persistence layer. The page must include:
 4. Embed schema snippets (fenced SQL or model code).
 5. Minimum 5 distinct source files cited.
 
-### Step 7 — Modules and Functions catalog
+#### Step 7 — Modules and Functions catalog
 
 For each module:
 
@@ -276,7 +291,7 @@ For functions:
 4. Minimum 5 distinct source files cited per function note (where the function is complex enough).
 5. **Validation**: after creating function pages, verify that the `Functions/` directory is not empty. If `05-Functions.md` lists N functions, `Functions/` must contain at least N `.md` files. Run `validate_wiki_structure.py` to confirm.
 
-### Step 8 — Dependencies (`06-Dependencies.md`)
+#### Step 8 — Dependencies (`06-Dependencies.md`)
 
 Read package managers and config files (`package.json`, `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, etc.). List:
 
@@ -286,7 +301,7 @@ Read package managers and config files (`package.json`, `requirements.txt`, `Car
 - Optional / runtime dependencies
 - Deprecated or risky dependencies
 
-### Step 9 — Config (`07-Config.md`)
+#### Step 9 — Config (`07-Config.md`)
 
 Collect config artifacts with source links:
 
@@ -295,7 +310,7 @@ Collect config artifacts with source links:
 - Feature flags and defaults
 - Secrets management strategy
 
-### Step 10 — Glossary (`08-Glossary.md`)
+#### Step 10 — Glossary (`08-Glossary.md`)
 
 Use `domain-modeling` discipline. Copy or extend `CONTEXT.md` terms. Add:
 
@@ -304,7 +319,7 @@ Use `domain-modeling` discipline. Copy or extend `CONTEXT.md` terms. Add:
 - Synonyms / aliases
 - Where it appears in code — `source: src/types/Order.ts:5`
 
-### Step 11 — Decisions (`09-Decisions.md` + `Decisions/*.md`)
+#### Step 11 — Decisions (`09-Decisions.md` + `Decisions/*.md`)
 
 For each architectural decision, create an ADR note:
 
@@ -329,17 +344,17 @@ _What was decided._
 _What follows from this decision._
 ```
 
-### Step 12 — Build / update the Project Base (`Project.base`)
+#### Step 12 — Build / update the Project Base (`Project.base`)
 
 The `.base` file ties everything together. Populate it with rows for modules, functions, dependencies, and config. Each row is an Obsidian note linked by `file.path`.
 
 See `references/obsidian-bases-spec.md` for Base syntax.
 
-### Step 13 — Build / update diagrams
+#### Step 13 — Build / update diagrams
 
 Create Mermaid versions of each diagram. Use **modern diagrams** instead of (or alongside) heavy UML. See `references/modern-diagrams.md` for conventions.
 
-#### Mermaid diagrams (`Diagrams/*.md`)
+##### Mermaid diagrams (`Diagrams/*.md`)
 
 Mermaid renders inline in Obsidian and is version-controllable. 14 types (numbered `{NN}-{Name}.md`):
 
@@ -391,7 +406,7 @@ Each diagram should:
 
 You may use `graphify` first to extract the code graph and then translate key nodes and edges into the diagrams.
 
-### Step 14 — Re-index workflow (`refresh.py`)
+#### Step 14 — Re-index workflow (`refresh.py`)
 
 The scaffold writes a `refresh.py` script into the vault. After code changes, run:
 
@@ -409,7 +424,7 @@ It will:
 
 This is the local equivalent of auto-reindexing. Run it before any update pass to know exactly which pages need attention.
 
-#### Auto-refresh trigger (optional)
+##### Auto-refresh trigger (optional)
 
 For automatic re-indexing, set up a git post-commit hook in the project:
 
@@ -420,7 +435,7 @@ python /path/to/vault/refresh.py --project-dir . --branch "$(git rev-parse --abb
 
 Or use a scheduled task / cron to run `refresh.py` periodically (e.g., every 2 hours, matching cloud cadence).
 
-### Step 15 — Maintain the Logbook (`Logbook.md` and `Daily/YYYY-MM-DD.md`)
+#### Step 15 — Maintain the Logbook (`Logbook.md` and `Daily/YYYY-MM-DD.md`)
 
 At the end of each session create or update the daily note:
 
@@ -438,7 +453,7 @@ At the end of each session create or update the daily note:
 
 Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
 
-## Running with graphify
+### Running with graphify
 
 If the project has many files, run `/graphify <project-dir> --no-viz` before documenting. Use the resulting `graphify-out/graph.json` and `GRAPH_REPORT.md` to identify:
 
@@ -449,13 +464,13 @@ If the project has many files, run `/graphify <project-dir> --no-viz` before doc
 
 Then write the findings into the Obsidian vault using this skill.
 
-## Deviation / exceptions
+### Deviation / exceptions
 
 - If the project is not a software project, fall back to `grill-with-docs` or `domain-modeling`.
 - If the user only wants diagrams, use `references/modern-diagrams.md` and skip the SRS.
 - If the user only wants a database schema, use `03-Database.md` and the `Modules/Database/` notes.
 
-## Quality checklist
+### Quality checklist
 
 - [ ] `00-Overview.md` exists and summarizes the system in 1-2 paragraphs with links to all pages.
 - [ ] Every page has a `parent:` field in frontmatter (except `00-Overview.md`).
@@ -484,7 +499,7 @@ Then write the findings into the Obsidian vault using this skill.
 - [ ] All internal references use Obsidian wikilinks `[[...]]`.
 - [ ] Wiki content is in the `language` specified in `wiki-config.json`.
 
-## Templates and references
+### Templates and references (Build Wiki)
 
 - `templates/srs-template.md`
 - `templates/module-template.md`
@@ -496,3 +511,480 @@ Then write the findings into the Obsidian vault using this skill.
 - `templates/adr-template.md`
 - `references/obsidian-bases-spec.md`
 - `references/modern-diagrams.md`
+
+---
+
+## Mode: Reorganize Vault
+
+Diagnose organizational problems in a knowledge base (Obsidian vault, docs folder, wiki), select methodologies that fit the specific content, and plan a safe refactoring — then execute with wikilink validation. The skill is **adaptive**: it judges what structure to recommend based on what actually exists, not a fixed template.
+
+**Scope:** Obsidian vaults, documentation folders, project wikis, any hierarchical knowledge base with files and folders.
+
+### When to use
+
+- "Reorganize my vault"
+- "This vault is a mess, help me structure it"
+- "Plan a refactoring of my documentation"
+- "My projects are scattered, organize them"
+- "Audit my knowledge base structure"
+- After a merger or acquisition that combined multiple knowledge bases
+- When a vault has grown organically and needs structural correction
+
+### Workflow
+
+#### Step 1 — Scan the target
+
+Map the complete structure of the target directory.
+
+1. Run `tree` or `ls -R` (or `Get-ChildItem -Recurse` on Windows) to get the full directory tree.
+2. For each `.md` file, read the first 20 lines to capture frontmatter and H1/H2 headers.
+3. Record: file count, folder depth, frontmatter fields in use, tag taxonomy if any.
+4. Identify what type of content lives here: projects, companies, personal notes, code docs, research, etc.
+5. If the vault is large (> 100 files), consider dispatching a `subagent_explore` to scan in parallel.
+
+**Completion criterion:** you have a complete inventory of every file and folder, with headers and frontmatter captured, and can describe what the vault contains in 2-3 sentences.
+
+#### Step 2 — Diagnose organizational problems
+
+Compare the scanned structure against the diagnosis patterns in `references/diagnosis-patterns.md`. For each pattern, check whether it applies to the current vault.
+
+The patterns detect common organizational smells:
+- **Orphaned content** — files documenting a specific project but located outside that project's folder
+- **Scattered project** — components of one project spread across multiple unrelated directories
+- **Shared resources lost** — infrastructure that serves multiple projects but is isolated in one
+- **Misplaced entity** — a distinct entity nested inside another
+- **Loose notes** — standalone files at the root with no context
+- **Mixed active/archived** — abandoned projects at the same level as active ones
+- **Inconsistent structure** — different areas use different organizational schemes
+- **Missing metadata** — no `title` field, no standard frontmatter, no MOCs
+
+**Completion criterion:** every diagnosis pattern has been checked, and you have a numbered list of confirmed problems with concrete examples from the scan.
+
+#### Step 3 — Select methodologies
+
+Read `references/methodologies.md` — a library of 10 academically-grounded organization methodologies. For each methodology, check its **decision criteria** against what you found in the scan.
+
+The selection is adaptive: different vaults need different combinations. A personal Zettelkasten needs different methods than a multi-company project vault. A research notebook needs different methods than a software documentation folder.
+
+Selection heuristics (full criteria in `references/methodologies.md`):
+- **Multiple distinct entities with different terminology** → DDD Bounded Contexts
+- **Projects scattered across directories** → Every Folder is a Project
+- **Wikilink-based system (Obsidian)** → MOC (Map of Content)
+- **Items belonging to multiple categories** → Polyhierarchical Faceted Tags
+- **Need for strict discipline and memorability** → Johnny.Decimal
+- **Knowledge connections over categories** → Zettelkasten
+- **Archival and preservation needs** → OAIS
+- **Complex multi-dimensional content** → Information Architecture (faceted)
+- **Classification is not neutral / boundary objects** → Bowker and Star (critical lens)
+
+Typically 2-4 methodologies combine, each solving a different class of problem. Document why each was selected and which diagnosed problems it addresses.
+
+**Completion criterion:** you have a recommendation table mapping each selected methodology to its role and the specific problems it solves.
+
+#### Step 4 — Design the target structure
+
+Based on the selected methodologies and diagnosed problems, design the new structure.
+
+1. Draw the proposed folder tree.
+2. For each new folder, state its purpose and which methodology informed it.
+3. Design a tag taxonomy if polyhierarchical tags were selected.
+4. Design MOC hub notes if MOC was selected.
+5. Design frontmatter template for new and updated files (see `templates/frontmatter.md`).
+6. List files and folders that should NOT be moved (e.g., `.obsidian/`, Mermaid diagram notes, config).
+
+Present the design to the user with `ask_user_question` before proceeding to the move plan.
+
+**Completion criterion:** the user has approved the target structure.
+
+#### Step 5 — Plan the refactoring
+
+Generate a move plan mapping every file from old location to new location.
+
+1. For each file, determine its destination in the new structure.
+2. Record the problem each move solves (from Step 2).
+3. Identify files that need new MOC or index notes created.
+4. Identify files that should NOT be moved (explicit "preserve" entries).
+5. Group moves into phases:
+   - Phase 1: Create new folder structure
+   - Phase 2: Move projects (group by entity)
+   - Phase 3: Move shared resources
+   - Phase 4: Create MOCs and index notes
+   - Phase 5: Move loose notes and archived content
+
+Present the plan as a table: `Origin → Destination → Problem solved`.
+
+**Completion criterion:** every file has a planned destination (or explicit "preserve"), and the plan is grouped into phases.
+
+#### Step 6 — Execute the refactoring
+
+Execute the plan phase by phase. Use `ask_user_question` to confirm before starting execution.
+
+1. Create the new folder structure.
+2. Move files using `mv` or `Move-Item`.
+3. Create MOC hub notes from `templates/project-moc.md` and `templates/context-map.md`.
+4. Apply frontmatter updates where needed.
+5. After each phase, verify the moves succeeded (check file counts).
+
+Guardrails:
+- Do NOT delete any files — only move and create.
+- Do NOT rewrite existing file contents — only move and create new index/MOC files.
+- Preserve existing frontmatter fields — only add new ones if the design requires.
+
+**Completion criterion:** all phases executed, all files in their planned destinations, no files lost.
+
+#### Step 7 — Validate wikilinks and references
+
+After all moves:
+
+1. Grep for `[[...]]` wikilinks across all `.md` files.
+2. For each wikilink, check if the target file exists at the expected path.
+3. Report broken links and suggest fixes.
+4. If Obsidian, check that `.obsidian/` config is intact.
+5. Run a final tree to confirm the structure matches the design.
+
+**Completion criterion:** zero broken wikilinks, or all broken links listed with proposed fixes for user confirmation.
+
+#### Step 8 — Generate a refactoring report
+
+Create a summary document (e.g., `REFACTORING-LOG.md` in the vault root) recording:
+- Date of refactoring
+- Methodologies selected and why
+- Problems diagnosed and resolved
+- Move count per phase
+- Files created (MOCs, indexes)
+- Validation results
+- Tag taxonomy applied (if any)
+
+**Completion criterion:** the report exists and accurately reflects what was done.
+
+### Running with graphify
+
+If the vault is large or complex, run `graphify <vault-dir> --no-viz` before Step 1. Use the resulting graph to identify:
+- Clusters of related files
+- Orphaned nodes (files with no incoming links)
+- Hub nodes (files referenced by many others)
+
+This accelerates diagnosis and helps validate the move plan.
+
+### Deviation and exceptions
+
+- If the vault is small (< 20 files), skip the methodology selection and apply common-sense organization directly.
+- If the user only wants a diagnosis (no execution), stop after Step 5 and present the plan.
+- If the vault is not Obsidian (plain docs folder), skip wikilink validation and MOC creation — use `README.md` indexes instead.
+- If the user wants to preserve specific files or folders, exclude them from the move plan explicitly.
+- If the vault uses a non-Markdown format (Notion export, Roam, etc.), adapt the scan and validation steps accordingly.
+
+### Templates and references (Reorganize Vault)
+
+- `references/methodologies.md` — library of 10 organization methodologies with decision criteria
+- `references/diagnosis-patterns.md` — organizational problem patterns and detection heuristics
+- `templates/project-moc.md` — MOC template for individual projects
+- `templates/context-map.md` — context map template for domains and entities
+- `templates/frontmatter.md` — frontmatter template for organized files
+
+---
+
+## Mode: Audit Wiki
+
+Audit and validate Obsidian project wikis against the established standards. Detects broken wikilinks, missing source citations, missing diagrams, sensitive information, and language inconsistencies. Can also fix common template issues.
+
+**Scope:** one or more `_wiki/` directories inside the vault. Read-only by default; fixes require explicit `--fix` flag.
+
+### When to use
+
+- "Audit my wikis"
+- "Check for broken links in the vault"
+- "Validate source citations across all project wikis"
+- "Find sensitive information in the vault"
+- "Fix template broken links"
+- Before committing or syncing the vault
+- After bulk updates to wiki content
+
+### Standards checked
+
+| Check | Target | Description |
+|-------|--------|-------------|
+| Diagram count | 14 | Must have 01-Context through 14-Architecture |
+| Diagram naming | `{NN}-{Name}.md` | Numbered format (not bare `Context.md`) |
+| Mermaid syntax | 0 issues | All diagrams must have valid ` ```mermaid ` blocks with no syntax errors (regex + Node mermaid.parse()) |
+| Frontmatter | 0 issues | All `.md` files must have valid `---` frontmatter (no backslash-escaped quotes, must close with `---`) |
+| Broken wikilinks | 0 | All `[[link]]` must resolve to existing `.md` files |
+| Source format adoption | 96%+ | Files with `## Relevant source files` + `source: path:line` |
+| Language | EN | Content in English, `wiki-config.json` has `"language": "en"` |
+| Sensitive info | 0 | No passwords, API keys, tokens, or credentials in plain text |
+| Template links | 0 broken | Media templates must not have broken placeholder links |
+
+### False positives (not counted as broken)
+
+- `[[byte, byte, ...]]` — JSON arrays in code blocks
+- `[[:space:]]` — regex patterns in code blocks
+- `[[#section]]` — anchor-only links
+- Cross-vault links like `[[Trinity-ERP]]` — valid in Obsidian vault context
+- Escaped pipes in markdown tables: `[[Functions/Foo\|foo]]` — pipe is separator, not part of target
+
+### Mermaid syntax errors checked
+
+The audit checks each diagram's ` ```mermaid ` block for:
+
+| Error | Description | Fix |
+|-------|-------------|-----|
+| `NO_MERMAID` | File has no ` ```mermaid ` block | Add Mermaid diagram code |
+| `MALFORMED_FENCE` | Uses ``mermaid (single/double backtick) instead of ` ```mermaid ` | Use triple backticks |
+| `WRONG_FENCE` | Fence doesn't match ` ``` ` | Use triple backticks on both ends |
+| `SOURCES_INSIDE` | `<!-- Sources: -->` HTML comment is inside the Mermaid block | Move it outside, before the block |
+| `UNCLOSED_GENERIC` | `Items~` (odd number of `~`) — Mermaid generic syntax not closed | Use `Items[]` or `List~Items~` |
+| `BR_TRIPLE_SLASH` | `<br///` (triple slash) instead of `<br/>` | Use `<br/>` |
+| `MISSING_STYLE` | `NODE fill:...` without `style` keyword | Add `style` prefix: `style NODE fill:...` |
+| `SUBGRAPH_END_MISMATCH` | `subgraph` without matching `end` | Add missing `end` |
+| `PARSE_ERROR` | Mermaid `parse()` rejects the diagram | Fix the syntax error reported by mermaid.parse() |
+
+### Frontmatter errors checked
+
+The audit checks each `.md` file's frontmatter for:
+
+| Error | Description | Fix |
+|-------|-------------|-----|
+| `MISSING_CLOSING` | Frontmatter starts with `---` but has no closing `---` | Add closing `---` after frontmatter fields |
+| `BACKSLASH_QUOTE` | `title: \ ... \\`` or `project: \...\\`` (backslashes instead of quotes) | Use double quotes: `title: "..."` |
+
+### Usage
+
+#### Audit a single wiki
+
+```bash
+python .devin/skills/wiki-audit/audit.py --wiki "G:\Meu Drive\vault\Projetos Web\10-Fingertech\projetos\Trinity-ERP\_wiki"
+```
+
+#### Audit all wikis in a section
+
+```bash
+python .devin/skills/wiki-audit/audit.py --base "G:\Meu Drive\vault\Projetos Web\10-Fingertech\projetos"
+```
+
+#### Audit all wikis in the vault
+
+```bash
+python .devin/skills/wiki-audit/audit.py --vault "G:\Meu Drive\vault\Projetos Web"
+```
+
+#### Fix template broken links
+
+```bash
+python .devin/skills/wiki-audit/fix_templates.py --wiki <wiki-dir>
+python .devin/skills/wiki-audit/fix_templates.py --base <projects-dir>
+```
+
+#### Validate wikilinks only
+
+```bash
+python .devin/skills/wiki-audit/validate_links.py --wiki <wiki-dir>
+```
+
+#### Validate Mermaid syntax only
+
+```bash
+python .devin/skills/wiki-audit/validate_mermaid.py --wiki <wiki-dir>
+python .devin/skills/wiki-audit/validate_mermaid.py --base <projects-dir>
+python .devin/skills/wiki-audit/validate_mermaid.py --vault <vault-dir>
+```
+
+#### Scan for sensitive information
+
+```bash
+python .devin/skills/wiki-audit/scan_secrets.py --wiki <wiki-dir>
+python .devin/skills/wiki-audit/scan_secrets.py --vault <vault-dir>
+```
+
+### Output format
+
+Audit produces a table:
+
+```
+| Wiki | Files | Diagrams | 14-Arch | Mermaid | Frontmatter | Broken | Source % | Lang | Secrets | Status |
+|------|-------|----------|---------|---------|-------------|--------|----------|------|---------|--------|
+| Trinity-ERP | 116 | 14 | yes | OK | OK | 0 | 97% | EN | 0 | GOOD |
+| ML_CRM | 105 | 14 | yes | OK | OK | 0 | 98% | EN | 0 | FIXED |
+```
+
+Status values:
+- **GOOD** — meets all standards (96%+ source, 0 broken, 14 diagrams, 0 secrets, 0 mermaid/frontmatter issues)
+- **FIXED** — was below standards, now fixed
+- **CRITICAL** — below 50% source format or 10+ broken links
+- **POOR** — below 80% source format or 1-9 broken links or mermaid/frontmatter issues
+- **MISSING** — wiki directory not found
+
+### Fix capabilities
+
+When `--fix` is passed, the audit can:
+
+1. **Fix template broken links** — replace placeholder links in `Media/` templates:
+   - `[[...]]` → `[[09-Decisions]]`
+   - `[[00-SRS]]` → `[[01-SRS]]`
+   - `[[01-Architecture]]` → `[[02-Architecture]]`
+   - `[[Diagrams/Context]]` → `[[Diagrams/01-Context]]` (all 14 diagrams)
+   - `[[Modules/{{MODULE_NAME}}]]` → `_ExampleModule_` (if Auth module doesn't exist)
+
+2. **Redact secrets** — replace credential values with `(REDACTED — see path:line)`
+
+3. **Rename diagrams** — rename bare diagram files to numbered format
+
+### Rules
+
+- **Read-only by default** — fixes require `--fix` flag
+- **No AI signatures** — audit scripts do not add signatures to files
+- **No sensitive info in output** — secrets are redacted in audit output
+- **Verify before claiming** — all line numbers and file paths are checked against actual files
+
+---
+
+## Mode: Cross-session Comparison
+
+You help the user browse and compare their Obsidian wiki knowledge filtered by its source provenance. The wiki tracks provenance in `.manifest.json` and page `sources:` frontmatter — this skill surfaces that metadata as a navigable view.
+
+### Before You Start
+
+1. **Resolve config** — follow the Config Resolution Protocol in `llm-wiki/SKILL.md` (inline `@name` override → walk up CWD for `.env` → `~/.obsidian-wiki/config` → prompt setup). This gives `OBSIDIAN_VAULT_PATH`.
+2. Read `$OBSIDIAN_VAULT_PATH/.manifest.json` — source-of-truth for what session/type produced what.
+3. Read `$OBSIDIAN_VAULT_PATH/index.md` for page titles and one-line descriptions.
+
+### Commands
+
+Parse the user's invocation to determine mode:
+
+| Invocation | Mode |
+|---|---|
+| `/memory-bridge <source>` | **Browse** — list all wiki pages from `<source>` |
+| `/memory-bridge <source> "<topic>"` | **Search** — pages from `<source>` mentioning `<topic>` |
+| `/memory-bridge diff` | **Diff** — pages unique to each source; overlap; blind spots |
+| `/memory-bridge diff <source-a> <source-b>` | **Diff** — compare two specific sources |
+| `/memory-bridge map` | **Map** — full origin matrix: every page × each source that touched it |
+
+Recognized source types: `devin_session`, `manual` (hand-written), `ingest` (wiki-ingest documents).
+
+### Step 1: Build the Source Map
+
+Read `.manifest.json`. For each source entry, extract:
+
+- `source_type` — maps to source name:
+  - `devin_conversation`, `devin_session`, `devin_audit_log`, `devin_desktop_session` → `devin_session`
+  - `document` → `ingest`
+  - anything else → `manual`
+- `pages_created` and `pages_updated` — the wiki pages produced by this source
+
+Build a map:
+
+```
+tool_pages = {
+  "devin_session": set(pages created/updated by devin sources),
+  "manual": set(pages created/updated manually),
+  "ingest": set(pages created/updated by wiki ingest),
+}
+```
+
+A page can appear in multiple source sets if multiple sources contributed.
+
+### Step 2: Execute the Mode
+
+#### Browse Mode
+
+Filter `tool_pages[<source>]` and present as a grouped list:
+
+```
+## Knowledge from <source> (<N> pages)
+
+### By category
+- concepts/ — N pages
+- entities/ — N pages
+- skills/   — N pages
+...
+
+### Pages
+| Page | Category | Tags | Last updated |
+|------|----------|------|--------------|
+| [[page-name]] | concept | tag1, tag2 | 2026-04-10 |
+...
+```
+
+Read frontmatter for the listed pages (grep for `^(title|category|tags|updated):`) — do not read full page bodies unless the user asks.
+
+#### Search Mode
+
+Within the filtered page set, run:
+
+```
+rg -l "<topic>" <pages in source set>
+```
+
+Then grep section headers (`^##`) around matches to give context without full reads. Present results as a ranked list with the matching excerpt.
+
+#### Diff Mode
+
+Compute:
+
+- `only_in_a` = `tool_pages[a]` − `tool_pages[b]`
+- `only_in_b` = `tool_pages[b]` − `tool_pages[a]`
+- `shared` = `tool_pages[a]` ∩ `tool_pages[b]`
+
+If no specific sources are given, compare all sources pairwise (limit to pairs with >0 overlap or unique pages to keep output concise).
+
+Present:
+
+```
+## Memory Bridge Diff — <source-a> vs <source-b>
+
+### Only in <source-a> (<N> pages)
+These concepts exist in your wiki from <source-a> sessions but <source-b> has never touched them.
+<list with one-line descriptions from index.md>
+
+### Only in <source-b> (<N> pages)
+<list>
+
+### Shared (<N> pages)
+Both sources have contributed to these pages.
+<list — only show if ≤15; otherwise just the count>
+
+### Notable gaps
+<highlight the most interesting asymmetries — e.g. "devin_session has 12 pages on build tooling that manual has never seen">
+```
+
+#### Map Mode
+
+Build a matrix showing every page and which sources have touched it. Cap at 50 rows; sort by number of contributing sources descending (most cross-source pages first — these are the richest nodes).
+
+```
+| Page | devin_session | manual | ingest |
+|------|---------------|--------|--------|
+| [[react-patterns]] | ✓ | ✓ | — |
+| [[rust-ownership]] | — | ✓ | — |
+```
+
+### Step 3: Validate
+
+After generating output, spawn a `subagent_general` or `subagent_explore` subagent to review:
+
+```
+Goal: "Browse/diff wiki knowledge by source and surface cross-session blind spots."
+Artifacts: [the output you just generated]
+Checks:
+- Did you correctly parse source_type from .manifest.json?
+- Are page counts plausible (not 0 unless vault is empty)?
+- Is the diff symmetric (a−b and b−a are disjoint)?
+- Did you avoid reading full page bodies when not needed?
+```
+
+Apply any issues it surfaces before presenting output to the user.
+
+### Step 4: Log
+
+Append to `$OBSIDIAN_VAULT_PATH/log.md`:
+
+```
+- [TIMESTAMP] MEMORY-BRIDGE mode=<browse|search|diff|map> source=<source> pages_shown=N
+```
+
+### Output Conventions
+
+- Always show page counts so the user can calibrate how much knowledge is in each source's silo.
+- Use `[[wikilinks]]` for page references (or standard Markdown links if `OBSIDIAN_LINK_FORMAT=markdown` is set).
+- In diff mode, call out the most *surprising* asymmetry explicitly — that's the insight the user came for.
+- If `.manifest.json` is empty or missing, say so clearly and suggest running `/wiki-history-ingest` first.

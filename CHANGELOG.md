@@ -5,6 +5,91 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-08-18
+
+### Pruned (orphaned/duplicated — no consumers)
+
+- **`post-compaction-reminder.py`** — órfão (0 hooks), duplicado por
+  `constraint-pinning.py` (superior: dinâmico, 9 regras pinned, em 3 hooks).
+- **MCP `arxiv`** — 0 consumidores (grep por `mcp__arxiv` em skills/ vazio).
+  `observability-quality` cita `arxiv.org/abs/...` (URL de paper), não o MCP.
+- **`heartbeat` skill** — emulação PrimeAgent que não fita Devin CLI
+  (single-process, sem daemon). OS scheduler + script launches nova sessão
+  não funciona no runtime atual.
+- **`session-checkpoint` skill** — mesma razão. Emulação daemon-backed
+  reattach não funciona em single-process.
+
+### Consolidated (overlaps merged with mode selectors — content preserved)
+
+- **`grilling`** ← `grill-me` + `grill-with-docs` (wrappers de 5-6 linhas
+  que só redirecionavam). Modos: Default, Stateless, With-docs.
+- **`diagnosing-bugs`** ← `systematic-debugging`. Pipeline unificado de
+  6 fases. Arquivos de suporte (`root-cause-tracing.md`,
+  `defense-in-depth.md`, `condition-based-waiting.md`) movidos para
+  `diagnosing-bugs/`.
+- **`tool-and-skill-discovery`** ← `find-skills`. Discovery + install/evaluate
+  em uma skill.
+- **`dispatching-parallel-agents`** ← `subagent-driven-development`. Dispatch
+  geral + modo plan execution. Scripts e prompts de suporte movidos.
+- **`planning-pipeline`** ← `to-spec` + `to-tickets` + `to-questionnaire`.
+  Modos: Spec, Tickets, Questionnaire.
+- **`obsidian-workflow`** ← `obsidian-project-docs` + `vault-organizer` +
+  `wiki-audit` + `memory-bridge`. Modos: Build, Reorganize, Audit,
+  Cross-session. Templates, references e scripts movidos.
+- **`primeagent-reference`** ← `a2a-mailbox` + `refine` + `subagent-router`.
+  Modos: Reference Card, A2A Messaging, Refine, Subagent Router.
+
+### Changed
+
+- **62 → 47 skills** (-15, 24% redução). Mesma cobertura funcional, menos
+  namespace bloat, menos manutenção.
+- **12 → 11 scripts** (remoção de `post-compaction-reminder.py`).
+- **2 → 1 MCP** (remoção de `arxiv`).
+- **Version 2.3.0 → 2.4.0** (manifest). README badges, counts, skill tables
+  atualizados. SKILL-TIERS.md reescrito com 47 skills.
+- **`audit.py`** — contagens e listas de sync atualizadas para 47 skills,
+  11 scripts, v2.4.0.
+
+## [2.3.0] - 2026-08-18
+
+### Added (context window management — from "Context Windows Explained for Coding Agents", Matt Pocock)
+
+- **Rule 18: Keep the context window lean** — new pinned governance rule.
+  Context window = input + output tokens (hard-capped); lost-in-the-middle
+  deprioritizes the middle of long chats; default to `clear` over `compact`;
+  keep rules files small; audit MCP servers before adding; bigger window ≠
+  better retrieval. Pinned into `constraint-pinning.py` (survives compaction).
+- **`context-window-hygiene` skill** — practical user-facing hygiene: clear vs
+  compact, lean rules, MCP paranoia, subagent context savings, model selection
+  heuristic. Backed by lost-in-the-middle (arXiv:2307.03172).
+- **`mcp-context-audit` skill + `mcp-context-audit.py` script** — estimates
+  per-server tool-definition token cost; flags >15 tools/server (selection
+  accuracy degrades, arXiv:2606.30317) and >5% window share. `--config` static
+  mode + `--tools` measured mode (fed from `mcp_list_tools`).
+- **`context-budget.py` script** — SessionStart hook that reports the AGENTS.md
+  token cost to stderr. Transparency analogous to Claude Code's `/context`,
+  without adding context bloat (stderr only). Warns at ≥10% of a 200k window.
+
+### Changed
+
+- **AGENTS.md enxugado: 25KB → 18KB (~6263 → ~4546 tokens).** Non-pinned rules
+  compressed to terse one-liners referencing skills; pinned rules (2, 5, 7,
+  12-18) keep full detail. Reduces lost-in-the-middle tax on every session.
+- **`constraint-pinning.py`** — Rule 18 added to `PINNED_CONSTRAINTS` and
+  `key_phrases`; pinned set is now Rules 2, 5, 7, 12-18.
+- **`config.json` / `hooks.v1.json`** — `context-budget.py` added to
+  SessionStart alongside `constraint-pinning.py`.
+- **Version 2.2.5 → 2.3.0** (manifest). README badges, counts, rules table,
+  hooks table, and skill listing updated (62 skills, 18 rules, 12 scripts).
+- **`audit.py`** — hardcoded expectations updated to the true counts
+  (62 skills, 18 rules, 12 scripts, version 2.3.0); new skills added to the
+  live-vs-bundle sync list.
+- **`SKILL-TIERS.md`** — novo arquivo de discovery rápido. Skills
+  categorizadas por domínio de uso (núcleo, docs, programação, debug, git,
+  jira, obsidian, planejamento, pesquisa, meta, setup, artefatos de pesquisa,
+  outros) com custo em tokens e quando invocar. ~1500 tok vs ~2094 tok de
+  `skill list`. Referenciado em AGENTS.md Rule 4 e README.
+
 ## [2.2.3] - 2026-08-15
 
 ### Fixed (coverage gaps vs official tool list)

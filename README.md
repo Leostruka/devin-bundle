@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-54-blue.svg)](#skills-54)
-[![Rules](https://img.shields.io/badge/rules-16-green.svg)](#regras-consolidadas-agentsmd)
-[![Version](https://img.shields.io/badge/version-2.2.3-orange.svg)](CHANGELOG.md)
+[![Skills](https://img.shields.io/badge/skills-47-blue.svg)](#skills-47)
+[![Rules](https://img.shields.io/badge/rules-18-green.svg)](#regras-consolidadas-agentsmd)
+[![Version](https://img.shields.io/badge/version-2.4.0-orange.svg)](CHANGELOG.md)
 
 Export + installer for [Devin CLI](https://devin.ai) to synchronize your **entire setup** across machines.
 Bundles skills, consolidated rules, config, hooks, scripts, MCP, and credentials —
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 54 skills, 16 rules, 5 subagent profiles, 6 hook events, 7 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 47 skills, 18 rules, 5 subagent profiles, 6 hook events, 9 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ Done. Devin CLI now has 54 skills, 16 rules, 5 subagent profiles, 6 hook events,
 │                    Devin CLI Runtime                         │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
 │  │ AGENTS.md│  │ skills/  │  │ agents/  │  │  hooks   │    │
-│  │ (16 rules│  │ (54 skills│  │ (5 profiles│  │ (4 events│    │
+│  │ (18 rules│  │ (47 skills│  │ (5 profiles│  │ (4 events│    │
 │  │  always-on)│ │  invoked) │  │  dispatched)│ │  enforced)│    │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
 │       │              │              │              │          │
@@ -70,12 +70,12 @@ Done. Devin CLI now has 54 skills, 16 rules, 5 subagent profiles, 6 hook events,
 
 ```
 devin-bundle/
-├── AGENTS.md            # 13 consolidated rules (negative-constraint framed)
+├── AGENTS.md            # 18 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 54 skills (auto-discover, not limited to manifest)
+├── skills/              # 47 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
-├── scripts/             # 9 hook Python scripts (7 hooks + 2 manual-run)
+├── scripts/             # 11 Python scripts (9 hooks + 2 manual-run)
 ├── mcp_config.json      # MCP server config (tokens MASKED by default)
 ├── credentials.toml     # API keys (ALL values MASKED by default)
 ├── manifest.json        # skill metadata (name, source, purpose)
@@ -95,7 +95,7 @@ devin-bundle/
 
 ## Consolidated rules (AGENTS.md)
 
-16 rules, all framed as negative constraints (evidence: arXiv:2604.11088 — positive directives hurt, only negative constraints help individually):
+18 rules, all framed as negative constraints (evidence: arXiv:2604.11088 — positive directives hurt, only negative constraints help individually):
 
 | # | Rule | Summary |
 |---|---|---|
@@ -115,8 +115,10 @@ devin-bundle/
 | 14 | Constraint Pinning survives compaction | Governance constraints re-injected after compaction (arXiv:2606.22528) |
 | 15 | Refinement evidence must be reproducible | Phantom guardrails occur in 25% of self-improvement runs (arXiv:2607.13083) |
 | 16 | Self-improvement loops produce 47-74% illusory gains | Validate with held-out tests, not agent-chosen tests (ICLR 2026 Workshop) |
+| 17 | Don't deduce — verify with tools | Use read/exec/grep/glob before asserting; guesses fail silently (arXiv:2307.03172 lost-in-the-middle) |
+| 18 | Keep the context window lean | Default to clear over compact; small rules files; audit MCP servers; bigger window ≠ better retrieval |
 
-## Hooks (6 events, 7 hook scripts + 2 manual-run scripts)
+## Hooks (6 events, 9 hook scripts + 2 manual-run scripts)
 
 All hook scripts follow the Devin CLI contract: they read the event payload from
 stdin (`hook_event_name`, `tool_name`, `tool_input`, `tool_response`, ...), block
@@ -135,6 +137,7 @@ supports it. See [Lifecycle Hooks](https://docs.devin.ai/cli/extensibility/hooks
 | PostCompaction | all | `constraint-pinning.py` | Detects dropped constraints, writes re-injection marker (Rule 14) |
 | UserPromptSubmit | all | `constraint-pinning.py` | Re-injects pinned constraints when a marker exists |
 | SessionStart | all | `constraint-pinning.py` | Clears stale markers from prior sessions |
+| SessionStart | all | `context-budget.py` | Reports AGENTS.md token cost to stderr (transparency, no context bloat) (Rule 18) |
 | Stop | all | `check-ai-signature.py` | Scans staged + unstaged changes for AI signatures |
 | Stop | all | `refine-review-prompt.py` | Blocks once for refinement review if `.refine-pending` exists |
 | Manual | — | `validate-refinement-evidence.py` | Checks `refinements.log.jsonl` for phantom guardrails (Rule 15) |
@@ -228,7 +231,7 @@ chmod +x export.sh
 **WARNING:** `-NoMask` exports real secrets. NEVER push to a public repo with `-NoMask`.
 Use `-NoMask` only for local backup or direct transfer between trusted machines.
 
-## Skills (54)
+## Skills (47)
 
 The bundle auto-discovers all skills in `%APPDATA%\devin\skills\`. The `manifest.json` contains metadata (name, source, purpose) for reference, but the exported skill list is determined by the live directory, not the manifest.
 
@@ -247,26 +250,47 @@ The bundle auto-discovers all skills in `%APPDATA%\devin\skills\`. The `manifest
 | `mutation-testing` | `chunk-testing-gaps` (CircleCI) | Local-first with optional CI |
 | `debug-ci-failures` | `debug-ci-failures` (CircleCI) | CI-agnostic: GitHub Actions, CircleCI, GitLab, Jenkins |
 
-### PrimeAgent/RLM-adapted skills (7)
+### PrimeAgent/RLM-adapted skills (3)
 
-Adapted from research verified against primary sources (arXiv:2512.24601, arXiv:2605.09998, arXiv:2603.02615, PrimeAgent blog/GitHub, ARC Prize leaderboard). See `primeagent-reference` skill for the full verification map.
+Adapted from research verified against primary sources (arXiv:2512.24601, arXiv:2605.09998, arXiv:2603.02615, PrimeAgent blog/GitHub, ARC Prize leaderboard). See `primeagent-reference` skill for the full verification map — it now consolidates the former `a2a-mailbox`, `refine`, and `subagent-router` skills into modes.
 
 | Skill | Source | Adaptation |
 |---|---|---|
 | `context-folding` | RLM (arXiv:2512.24601) | Offload to file + grep/partition + subagent_explore (depth=1 only). Depth=2+ causes overthinking (3.6s→344.5s) |
-| `refine` | Continual Harness (arXiv:2605.09998) | Trajectory review → evidence-backed edits. Auto-trigger via Stop hook. Outcome tracking via `refinements.log.jsonl`. Reward hacking guard |
 | `autonomous-gates` | PrimeAgent `--autonomous-gate` | Gates at planning time, after each step, final gate before done |
-| `primeagent-reference` | All verified sources | Reference card: 9/9 features adapted, key numbers, video errors corrected |
-| `a2a-mailbox` | PrimeAgent A2A messaging | Filesystem as message broker. Sequential A2A via file routing |
-| `session-checkpoint` | PrimeAgent daemon-backed reattach | Structured checkpoint for cross-session continuation |
-| `heartbeat` | PrimeAgent `/heartbeat` + `schedule` | OS scheduler + script launches new Devin CLI session |
+| `primeagent-reference` | All verified sources | Reference card + A2A messaging + refine + subagent router (4 modes). 9/9 features adapted, key numbers, video errors corrected |
+
+### Context window skills (2)
+
+Adapted from "Context Windows Explained for Coding Agents" (Matt Pocock, AI Hero). Key lessons: context window = input + output tokens (hard-capped); lost-in-the-middle deprioritizes the middle of long chats; default to `clear` over `compact`; keep rules files small; MCP servers bloat context fast; bigger window ≠ better retrieval.
+
+| Skill | Source | Adaptation |
+|---|---|---|
+| `context-window-hygiene` | Context window video (Matt Pocock) | Practical hygiene: clear-vs-compact, lean rules, MCP paranoia, subagent context savings. Backed by lost-in-the-middle (arXiv:2307.03172) |
+| `mcp-context-audit` | Context window video + arXiv:2606.30317 | Estimates per-server tool-definition token cost; flags >15 tools/server and >5% window share. `--config` static + `--tools` measured modes |
+
+Rule 18 ("Keep the context window lean") pins these lessons into AGENTS.md and survives compaction via `constraint-pinning.py`. `context-budget.py` (SessionStart hook) reports the rules-file token cost to stderr every session.
+
+### Consolidated skills (5)
+
+Skills merged in v2.4.0 to reduce namespace bloat and maintenance overhead. Each preserves all content from its sources via mode selectors:
+
+| Skill | Merged from | Modes |
+|---|---|---|
+| `grilling` | grilling + grill-me + grill-with-docs | Default, Stateless, With-docs |
+| `diagnosing-bugs` | diagnosing-bugs + systematic-debugging | Unified 6-phase debugging pipeline |
+| `tool-and-skill-discovery` | tool-and-skill-discovery + find-skills | Discovery + install/evaluate |
+| `dispatching-parallel-agents` | dispatching-parallel-agents + subagent-driven-development | General dispatch + plan execution |
+| `planning-pipeline` | to-spec + to-tickets + to-questionnaire | Spec, Tickets, Questionnaire |
+| `obsidian-workflow` | obsidian-project-docs + vault-organizer + wiki-audit + memory-bridge | Build, Reorganize, Audit, Cross-session |
 
 ### Adaptation status: 9/9 features
 
 - **3 direct adaptations** (context-folding, autonomous-gates, Rule 13): feature maps cleanly to Devin CLI runtime
-- **3 emulated adaptations** (a2a-mailbox, session-checkpoint, heartbeat): pattern preserved via file-based workarounds, each documents limitations vs PrimeAgent
+- **1 emulated adaptation** (primeagent-reference A2A mode): pattern preserved via file-based workarounds, documents limitations vs PrimeAgent
 - **1 partial** (skills as Python packages): already supported by Devin CLI's `scripts/` directory
-- **2 guardrails** (refine + reward hacking guard): adapted with safety mechanisms
+- **2 guardrails** (refine mode + reward hacking guard): adapted with safety mechanisms
+- **2 pruned** (session-checkpoint, heartbeat): emulations that didn't fit Devin CLI's single-process runtime
 
 ## Sync machines
 
@@ -321,7 +345,8 @@ The installer is idempotent — running again only updates what changed (with `-
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute (skill/rule/hook standards) |
 | [SECURITY.md](SECURITY.md) | Security policy and guardrails |
-| [AGENTS.md](AGENTS.md) | The 16 rules (loaded by Devin CLI every session) |
+| [AGENTS.md](AGENTS.md) | The 18 rules (loaded by Devin CLI every session) |
+| [SKILL-TIERS.md](SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
 | [manifest.json](manifest.json) | Skill metadata (name, source, purpose) |
 
 ## License
