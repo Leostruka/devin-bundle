@@ -22,17 +22,18 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 11. **Never fail from failures** — resolve them or deliver a working solution. If unsure or not 100% confident, search certified sources until the answer is coherent, rational, and well-founded.
 12. **Maximum precision, zero tolerance for partial verification** — every claim, number, and fact must be verified against its primary source by reading it directly. Never accept a summary as verification. Never mark something "verified" without having read the evidence yourself. Never let a "partially verified" claim pass without investigating further. Be a healthy perfectionist: demand rigor from yourself and from subagent results. If a subagent reports "not found," go read the source yourself before accepting that answer. Partial work is not done work.
 13. **Devin CLI is not a security sandbox** — the agent executes commands with the user's permissions. Worker and shell processes are not isolated. Run untrusted code, instructions, or skills in an external sandbox or restricted environment. Review changes before applying. Use trusted repositories, skills, and MCP servers only.
-14. **Constraint Pinning survives compaction** — governance constraints (Rules 2, 5, 7, 12-18) are pinned and re-injected after every context compaction. `constraint-pinning.py` runs on PostCompaction (detects dropped constraints, writes a marker), UserPromptSubmit (re-injects via `additionalContext`), and SessionStart (clears stale markers). Fail-closed: an absent or unreadable summary counts as dropped. Compaction raises violation from 0% to 30% (up to 59%); pinning restores to 0% for ~47 tokens (<0.5% overhead) (arXiv:2606.22528v2).
+14. **Constraint Pinning survives compaction** — governance constraints (Rules 2, 5, 7, 12-19) are pinned and re-injected after every context compaction. `constraint-pinning.py` runs on PostCompaction (detects dropped constraints, writes a marker), UserPromptSubmit (re-injects via `additionalContext`), and SessionStart (clears stale markers). Fail-closed: an absent or unreadable summary counts as dropped. Compaction raises violation from 0% to 30% (up to 59%); pinning restores to 0% for ~47 tokens (<0.5% overhead) (arXiv:2606.22528v2).
 15. **Refinement evidence must be reproducible** — when the `primeagent-reference` skill (Refine mode) identifies a failure pattern, the cited evidence must include a reproducible command or tool call. "Phantom guardrails" (inventing failures that never happened) occur in 25% of self-improvement runs (arXiv:2607.13083). Evidence without reproduction is a phantom, not a pattern. Run `validate-refinement-evidence.py` to check.
 16. **Self-improvement loops produce 47-74% illusory gains** — "Reward Hacking in Self-Improving Code Agents" (ICLR 2026 Workshop) found 73.8% of Kernel-Bench and 46.8% of ALE-Bench optimizations show proxy gains without real gains. Always validate refinements with held-out tests, not just the tests the agent chose. `check-push-green.py` blocks push when validation passes but held-out fails.
 17. **Don't deduce — verify with tools** — never infer the state of the world, a file's contents, a command's output, or a claim's truth from reasoning alone. Use `read`, `exec`, `grep`, `glob` to observe reality before asserting anything. A deduction presented as fact is a guess with confidence. Gueses fail silently; tool output fails loudly. Prefer loud failure.
 18. **Keep the context window lean** — context window = input + output tokens, hard-capped by the provider. Lost-in-the-middle deprioritizes the middle of long chats. Default to `clear` over `compact`; keep rules files small; audit MCP servers before adding (`mcp-context-audit`); paste large inputs to files, not chat (`context-folding`). Watch the budget with `context-budget.py`. Bigger window ≠ better retrieval.
+19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
 
 ---
 
 ## Pinned rules (full detail)
 
-Rules 2, 5, 7, 12-18 are pinned: they survive compaction and carry full
+Rules 2, 5, 7, 12-19 are pinned: they survive compaction and carry full
 detail here. Non-pinned rules follow as terse one-liners referencing skills.
 
 ## 2. No AI signatures in deliverables (pinned)
@@ -132,6 +133,16 @@ The context window is the main constraint on coding-agent performance.
 - Prefer subagents for parallel exploration. Each has its own window; only synthesis returns. 50-100x savings. See `dispatching-parallel-agents`.
 - Watch the budget. `context-budget.py` (SessionStart hook) reports the token cost of AGENTS.md to stderr — transparency without bloat.
 - Bigger window ≠ better retrieval. Evaluate needle-in-haystack quality, not just size (Llama 4 Scout: 10M window, severe lost-in-the-middle). See `context-window-hygiene`.
+
+## 19. Never read secrets or sensitive env vars (pinned)
+
+Never expose secret values. Use them; don't display them.
+
+- Don't `read`, `cat`, `type`, `echo`, `print`, or `grep` the contents of `.env` files, `credentials.toml`, private keys (`id_*`), or any file holding secrets. Reference the file path or variable name, not the value.
+- Don't `echo $VAR`, `printenv`, `Write-Output $env:VAR` for sensitive variables. Pass them to commands directly (`$env:API_KEY`, `$API_KEY`) without printing.
+- Don't include secret values in commit messages, PRs, logs, docs, or chat output.
+- If a key/env var is missing, empty, malformed, or doesn't behave as expected, say so explicitly — name the variable and the symptom, never the value.
+- If a secret was accidentally exposed, warn the user immediately so they can rotate it.
 
 ---
 

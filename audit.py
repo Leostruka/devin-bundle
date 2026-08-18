@@ -95,7 +95,8 @@ with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
 for i in range(1, 20):
-    if str(i) + '. **' in agents:
+    # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
+    if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
 if len(rules_found) != 18:
@@ -153,7 +154,7 @@ readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     ('46 skills', skill_count == 46),
-    ('18 rules', len(rules_found) == 18),
+    ('18 rules', len(rules_found) == 18),  # 1-5,7-19 (Rule 6 removed)
     ('5 agents', agent_count == 5),
     ('11 scripts', len(script_files) == 11),
 ]

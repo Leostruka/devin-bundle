@@ -116,6 +116,7 @@ devin-bundle/
 | 16 | Self-improvement loops produce 47-74% illusory gains | Validate with held-out tests, not agent-chosen tests (ICLR 2026 Workshop) |
 | 17 | Don't deduce — verify with tools | Use read/exec/grep/glob before asserting; guesses fail silently (arXiv:2307.03172 lost-in-the-middle) |
 | 18 | Keep the context window lean | Default to clear over compact; small rules files; audit MCP servers; bigger window ≠ better retrieval |
+| 19 | Never read secrets or sensitive env vars | Use keys/env vars but never display their contents; report missing/empty without exposing value |
 
 ## Hooks (6 events, 9 hook scripts + 2 manual-run scripts)
 
