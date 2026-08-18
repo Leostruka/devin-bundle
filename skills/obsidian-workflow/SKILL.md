@@ -74,7 +74,7 @@ Inside the target Obsidian vault:
 | Decisions | `09-Decisions.md` + `Decisions/*.md` | ADR log with context, decision, consequences |
 | Project base | `Project.base` | Obsidian Base tying modules, functions, dependencies, config into a queryable database |
 | Mermaid diagrams | `Diagrams/*.md` | Mermaid diagrams (Context, Container, Component, Domain, DataModel, Flow, Sequence, Class, State, C4Dynamic, C4Deployment, GitGraph, Mindmap) |
-| Logbook | `Logbook.md` + `Daily/YYYY-MM-DD.md` | Running daily log of work, decisions, rationale |
+| Logbook | `10-Logbook.md` + `Daily/YYYY-MM-DD.md` | Running daily log of work, decisions, rationale |
 | Steering config | `wiki-config.json` | Page definitions, priorities, notes, importance, filePaths, mode, language for steering wiki generation |
 | Re-index script | `refresh.py` | Re-scans codebase, detects changes, flags stale pages, supports `--branch` |
 | Config validator | `validate_wiki_config.py` | Validates `wiki-config.json` against the steering schema (page limits, note limits, unique titles) |
@@ -435,7 +435,7 @@ python /path/to/vault/refresh.py --project-dir . --branch "$(git rev-parse --abb
 
 Or use a scheduled task / cron to run `refresh.py` periodically (e.g., every 2 hours, matching cloud cadence).
 
-#### Step 15 — Maintain the Logbook (`Logbook.md` and `Daily/YYYY-MM-DD.md`)
+#### Step 15 — Maintain the Logbook (`10-Logbook.md` and `Daily/YYYY-MM-DD.md`)
 
 At the end of each session create or update the daily note:
 
@@ -449,7 +449,7 @@ At the end of each session create or update the daily note:
    - **Decisions made** — decision, rationale, consequences, linked ADR
    - **Open questions**
    - **Next** — next actions
-3. Append a link to `Logbook.md` under the `## Activity log` heading, grouped by week or month.
+3. Append a link to `10-Logbook.md` under the `## Activity log` heading, grouped by week or month.
 
 Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
 
@@ -494,7 +494,7 @@ Then write the findings into the Obsidian vault using this skill.
 - [ ] `refresh.py` exists, runs without errors, and supports `--branch`.
 - [ ] `wiki_structure.py`, `wiki_contents.py`, `query.py` exist and run without errors.
 - [ ] `project-manifest.json` records `indexed_branch`.
-- [ ] `Logbook.md` links to every `Daily/YYYY-MM-DD.md` entry.
+- [ ] `10-Logbook.md` links to every `Daily/YYYY-MM-DD.md` entry.
 - [ ] Daily notes capture context, done, tried, worked, failed, decisions, rationale and next actions.
 - [ ] All internal references use Obsidian wikilinks `[[...]]`.
 - [ ] Wiki content is in the `language` specified in `wiki-config.json`.

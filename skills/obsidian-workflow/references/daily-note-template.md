@@ -14,12 +14,16 @@ Example: `Daily/2026-08-11.md`
 ---
 title: "{{PROJECT_NAME}} — {{DATE}}"
 date: "{{DATE}}"
+parent: 10-Logbook
 tags:
   - logbook
   - {{PROJECT_TAG}}
 ---
 
 # {{DATE}}
+
+## Relevant source files
+- `source: path/to/source/file.ext:line`
 
 ## Context
 _What is the current focus of the project / sprint / task?_
@@ -39,7 +43,7 @@ _What is the current focus of the project / sprint / task?_
 ## Decisions made
 | Decision | Rationale | Consequences | ADR / note |
 |----------|-----------|--------------|------------|
-| _Decision text_ | _Why this way_ | _What it locks in or opens up_ | [[...]] |
+| _Decision text_ | _Why this way_ | _What it locks in or opens up_ | [[09-Decisions]] |
 
 ## Open questions
 - _Questions for later_
@@ -48,9 +52,9 @@ _What is the current focus of the project / sprint / task?_
 - _Next action(s) for the next session_
 
 ## Links
-- [[Logbook]]
-- [[00-SRS]]
-- [[01-Architecture]]
+- [[10-Logbook]]
+- [[01-SRS]]
+- [[02-Architecture]]
 ```
 
 ## Capture discipline
@@ -61,9 +65,9 @@ _What is the current focus of the project / sprint / task?_
 - Link to notes, commits, PRs, diagrams. Use wikilinks.
 - Use tags to group log entries: `#decision`, `#blocker`, `#try`, `#success`, `#revert`.
 
-## Aggregating in Logbook.md
+## Aggregating in 10-Logbook.md
 
-The `Logbook.md` note is an index. It does not duplicate entries; it links to each daily note:
+The `10-Logbook.md` note is an index. It does not duplicate entries; it links to each daily note:
 
 ```markdown
 ## Activity log

@@ -3,6 +3,7 @@ title: "{{FUNCTION_NAME}}"
 function: "{{FUNCTION_NAME}}"
 module: "{{MODULE_NAME}}"
 project: "{{PROJECT_NAME}}"
+parent: "05-Functions"
 tags:
   - function
   - {{PROJECT_TAG}}

@@ -32,7 +32,7 @@ _Design choices, internal structure, key algorithms._
 Sources: `source: path/to/module/file.ext:line`
 
 ## Dependencies
-- Internal: _[[Modules/OtherModule]]_
+- Internal: _[[Modules/ExampleModule]]_
 - External: _see [[06-Dependencies]]_
 
 ## Tests

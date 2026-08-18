@@ -29,7 +29,7 @@ Sources: `source: README.md:1`
 - [[07-Config]] — Config
 - [[08-Glossary]] — Glossary
 - [[09-Decisions]] — Decisions (ADRs)
-- [[Logbook]] — Daily log
+- [[10-Logbook]] — Daily log
 
 ## Diagrams
 

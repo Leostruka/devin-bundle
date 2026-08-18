@@ -1,12 +1,16 @@
 ---
 title: "{{PROJECT_NAME}} — {{DATE}}"
 date: "{{DATE}}"
+parent: 10-Logbook
 tags:
   - logbook
   - {{PROJECT_TAG}}
 ---
 
 # {{DATE}}
+
+## Relevant source files
+- `source: path/to/source/file.ext:line`
 
 ## Context
 _What is the current focus of the project / sprint / task?_
@@ -26,7 +30,7 @@ _What is the current focus of the project / sprint / task?_
 ## Decisions made
 | Decision | Rationale | Consequences | ADR / note |
 |----------|-----------|--------------|------------|
-| _Decision text_ | _Why this way_ | _What it locks in or opens up_ | [[...]] |
+| _Decision text_ | _Why this way_ | _What it locks in or opens up_ | [[09-Decisions]] |
 
 ## Open questions
 - _Questions for later_
@@ -35,6 +39,6 @@ _What is the current focus of the project / sprint / task?_
 - _Next action(s) for the next session_
 
 ## Links
-- [[Logbook]]
-- [[00-SRS]]
-- [[01-Architecture]]
+- [[10-Logbook]]
+- [[01-SRS]]
+- [[02-Architecture]]

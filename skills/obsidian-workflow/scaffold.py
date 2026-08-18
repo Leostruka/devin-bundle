@@ -8,7 +8,7 @@ Creates:
     - Overview, SRS, Architecture, Database, Modules index, Functions, Dependencies, Config, Glossary, Decisions
     - Modules/ and Functions/ and Decisions/ subfolders
     - Diagrams/ with Mermaid (.md) shells
-    - Daily/ logbook folder and Logbook.md index
+    - Daily/ logbook folder and 10-Logbook.md index
     - Project.base (Obsidian Base linking modules, functions, dependencies, config)
     - wiki-config.json (steering config)
     - refresh.py (re-index script)
@@ -1036,7 +1036,7 @@ def main():
         )
 
     # Logbook index
-    logbook = vault_dir / "Logbook.md"
+    logbook = vault_dir / "10-Logbook.md"
     if not logbook.exists():
         logbook.write_text(
             f"---\ntitle: \"{project_name} - Logbook\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - logbook\n  - {project_tag}\n---\n\n# Logbook\n\nRunning log of daily work. Each entry is a daily note under `Daily/`.\n\n## Activity log\n\n### [[{date}]]\n- Initial scaffold and project setup\n",

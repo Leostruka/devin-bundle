@@ -63,7 +63,7 @@ def check_required_files(wiki_dir: Path) -> list:
         "00-Overview.md", "01-SRS.md", "02-Architecture.md",
         "03-Database.md", "04-Modules.md", "05-Functions.md",
         "06-Dependencies.md", "07-Config.md", "08-Glossary.md",
-        "09-Decisions.md", "Logbook.md",
+        "09-Decisions.md", "10-Logbook.md",
     ]
     for page in required_pages:
         if not (wiki_dir / page).exists():
