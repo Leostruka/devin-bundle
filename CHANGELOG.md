@@ -7,8 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.4.0] - 2026-08-18
 
+### Added
+
+- **Rule 19: Never read secrets or sensitive env vars** — new pinned
+  governance rule. Never `read`, `cat`, `echo`, `print`, or output API keys,
+  tokens, passwords, private keys, or `.env` secret values. Use them (pass to
+  commands, reference by variable name) but never display their contents. If
+  a key/env var is missing, empty, or doesn't behave as expected, say so
+  without exposing the value. Pinned into `constraint-pinning.py` (survives
+  compaction). Pinned set is now Rules 2, 5, 7, 12-19.
+- **`context-window-hygiene` skill** — clear vs compact, MCP paranoia,
+  lost-in-the-middle (arXiv:2307.03172).
+- **`mcp-context-audit` skill + `mcp-context-audit.py` script** — estimates
+  per-server tool-definition token cost; flags >15 tools/server and >5%
+  window share.
+- **`context-budget.py` script** — SessionStart hook that reports AGENTS.md
+  token cost to stderr. Transparency without context bloat.
+- **`SKILL-TIERS.md`** — skills categorized by domain with token costs
+  (~1700 tok vs ~2094 for `skill list`).
+
 ### Pruned (orphaned/duplicated — no consumers)
 
+- **`graphify` skill** — 9659 tok (a mais cara), sem `graphify-out/` em
+  nenhum projeto ativo. CLI `graphify.exe` instalado mas sem uso pelo agente.
+  Rule 6 (graphify trigger) removida do AGENTS.md. 47 → 46 skills.
 - **`post-compaction-reminder.py`** — órfão (0 hooks), duplicado por
   `constraint-pinning.py` (superior: dinâmico, 9 regras pinned, em 3 hooks).
 - **MCP `arxiv`** — 0 consumidores (grep por `mcp__arxiv` em skills/ vazio).
@@ -39,16 +61,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`primeagent-reference`** ← `a2a-mailbox` + `refine` + `subagent-router`.
   Modos: Reference Card, A2A Messaging, Refine, Subagent Router.
 
+### Fixed
+
+- **`hooks.v1.json` leftover no global** — arquivo user-level com paths
+  `%APPDATA%` literais não expandidos causava `validate-mermaid.py` e outros
+  hooks a falhar com `[Errno 2] No such file or directory`. O Devin CLI lia
+  o arquivo (não deveria — user-level hooks vão em `config.json` desde
+  v2.2.1). Arquivo deletado do global.
+- **`audit.py` rule detector false positive** — `6. **` era detectado como
+  substring de `16. **`, inflando a contagem de regras. Ancorado com `\n`
+  prefix para matching start-of-line.
+
 ### Changed
 
-- **62 → 47 skills** (-15, 24% redução). Mesma cobertura funcional, menos
+- **62 → 46 skills** (-16, 26% redução). Mesma cobertura funcional, menos
   namespace bloat, menos manutenção.
+- **17 → 18 rules** (Rule 6 removida, Rule 19 adicionada). Regras pinned:
+  2, 5, 7, 12-19.
 - **12 → 11 scripts** (remoção de `post-compaction-reminder.py`).
 - **2 → 1 MCP** (remoção de `arxiv`).
+- **AGENTS.md enxugado**: 25KB → 18.5KB (~6263 → ~4614 tok). Non-pinned rules
+  comprimidas para one-liners referenciando skills.
+- **`constraint-pinning.py`** — Rule 19 adicionada ao `PINNED_CONSTRAINTS`
+  e `key_phrases`.
+- **`agents/researcher.md`** — removida referência a `graphify` (query mode).
+- **`obsidian-workflow/SKILL.md`** — 9 referências a `graphify` substituídas
+  por `ls`/`tree`/`git ls-files`.
 - **Version 2.3.0 → 2.4.0** (manifest). README badges, counts, skill tables
-  atualizados. SKILL-TIERS.md reescrito com 47 skills.
-- **`audit.py`** — contagens e listas de sync atualizadas para 47 skills,
-  11 scripts, v2.4.0.
+  atualizados. SKILL-TIERS.md reescrito com 46 skills.
+- **`audit.py`** — contagens e listas de sync atualizadas para 46 skills,
+  11 scripts, 18 rules, v2.4.0.
 
 ## [2.3.0] - 2026-08-18
 
