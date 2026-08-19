@@ -7,6 +7,17 @@ agent: architect
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
+## Why this matters for assistant-era codebases
+
+Coding assistants don't just generate code — they accelerate software entropy. The evidence is now empirical, not anecdotal:
+
+- **Assistant-introduced debt persists.** Liu et al. 2026 (arXiv:2603.28592): across 304,362 assistant-authored commits from 6,275 GitHub repositories, 484,606 distinct issues were identified — 89.1% code smells. **24.2% of assistant-introduced issues still survive** at the latest repository revision. The debt doesn't self-repair.
+- **Volume predicts decay.** Zhu, Tsantalis & Rigby 2026 (arXiv:2605.02741): a "Volume-Quality Inverse Law" — code volume is a near-perfect predictor of architectural degradation in machine-generated code. As models get more capable, they generate increasingly bloated and coupled code. Neither functional correctness nor detailed prompting mitigates this.
+- **The Modular Mirage.** arXiv:2605.02741: agents achieve superficial structural modularity (file separation) but fail to create semantic cohesion. The code looks modular but isn't — exactly the shallow-module pattern this skill targets.
+- **Merge success ≠ quality.** arXiv:2601.20109: 1,210 merged agent-generated bug-fix PRs analyzed — code smells dominate at critical/major severities. A merged PR is not evidence of maintainable code.
+
+This skill is the countermeasure: find the shallow modules and deepen them, before the entropy compounds.
+
 This command is _informed_ by the project's domain model and built on a shared design vocabulary:
 
 - Run the `/codebase-design` skill for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion — don't drift into "component," "service," "API," or "boundary."

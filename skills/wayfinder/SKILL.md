@@ -8,6 +8,16 @@ A loose idea has arrived — too big for one agent session, and wrapped in fog: 
 
 The destination varies per effort, and naming it is the first act of charting — it shapes every ticket. It might be a spec to hand off and iterate on, a decision to lock before planning starts, or a change made in place like a data-structure migration. The map is domain-agnostic — engineering work, course content, whatever fits the shape.
 
+## Academic basis
+
+Multi-session planning isn't a workaround — it's what the evidence demands:
+
+- **Plans don't persist in context.** Mehta & Datta 2026 (arXiv:2606.22953): plan signal decays 4.1× (ALFWorld) to 12.4× (HotpotQA) within a single action-observation step. Plans are "context-time objects" — re-read from the window each step, not held in durable state. Naive plan eviction cuts ALFWorld success by 34.7pp. This is why a plan too big for one session must be **externalized** as tickets, not held in context and hoped to survive.
+- **As-needed decomposition beats monolithic planning.** Prasad et al. 2024 (ADaPT, NAACL Findings): recursively decompose sub-tasks when the executor can't handle them — +28.3% ALFWorld, +27% WebShop, +33% TextCraft over strong baselines. Wayfinder's "resolve one ticket per session, decompose as the frontier advances" is the same principle at the session boundary.
+- **Multi-session agents fail by trusting stale history.** MOMENTO 2026 (arXiv:2606.00832): agents fail "primarily through misestimation of user state, treating prior session history as a reliable proxy for current context rather than stale information requiring re-validation." This is why the map is an **index, not a store** — each session re-loads the low-res map and zooms tickets on demand, rather than trusting a cached plan.
+- **Fog of war is partially observable planning.** HTN planning under partial observability (Ontañón & Buro, PO-AHTNR, WSC 2018; HQCP, Algorithms 2025) uses sensing actions to clear fog — the same structure as wayfinder's frontier (decidable now) vs fog (visible but not yet sharp enough to ticket). The frontier advances as sensing actions (research, prototype, grilling) resolve open questions.
+- **Memory is a contract, not a bucket.** AgenticSTS 2026 (arXiv:2607.02255): "memory is not a place to store text; it is a contract about what each future decision is allowed to see." The map's low-res body is that contract — loaded once per session, it tells the agent what's decided, what's open, and what's out of scope, without dumping every ticket body into context.
+
 ## Plan, don't do
 
 Wayfinder is **planning** by default: each ticket resolves a decision, and the map is done when the way is clear — nothing left to decide before someone goes and does the thing. The pull to just do the work is usually the signal you've reached the edge of the map and it's time to hand off. An effort can override this in its **Notes** — carrying execution into the map itself — but absent that, produce decisions, not deliverables.
