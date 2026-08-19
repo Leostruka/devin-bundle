@@ -64,3 +64,8 @@ _What calls this function? Link with wikilinks._
 _Link to test files with source links._
 
 Sources: `source: tests/function.test.ext:1`
+
+## Links
+- [[05-Functions]] — function registry
+- [[Modules/{{MODULE_NAME}}]] — parent module
+- _Link to related functions (callers, callees) with wikilinks._

@@ -56,7 +56,8 @@ _Replace nodes and edges with the actual components and their dependencies._
 
 ## Decisions
 
-- _Link to any ADRs or decision notes related to this project._
+- _Link to ADRs using the FULL filename stem (with slug), not the short form. Correct: `[[Decisions/ADR-01-use-oauth2-auth|ADR-01: Use OAuth2]]`. Wrong: `[[Decisions/ADR-01]]` (file doesn't exist — actual file is `ADR-01-slug.md`)._
+- _List all ADRs from `Decisions/*.md`._
 
 ## Activity
 

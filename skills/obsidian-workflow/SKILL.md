@@ -10,7 +10,7 @@ A unified skill covering the full Obsidian knowledge lifecycle: **build** a code
 
 | Mode | Trigger | What it does |
 |------|---------|--------------|
-| Build Wiki | "Document this codebase / project", "Build a local wiki for this repo", "Create architecture diagrams with source links", "Map all modules, functions, and dependencies with code references", "Visualize the system with Mermaid diagrams", updating an existing engineering wiki after code changes | Scaffolds and fills a meticulous, SRS/ISO-style local codebase wiki in an Obsidian vault with source-linked documentation, hierarchical pages, Mermaid diagrams, and a re-index workflow |
+| Build Wiki | "Document this codebase / project", "Build a local wiki for this repo", "Create architecture diagrams with source links", "Map all modules, functions, and dependencies with code references", "Visualize the system with Mermaid diagrams", updating an existing engineering wiki after code changes | Scaffolds and fills a meticulous, SRS/ISO-style local codebase wiki in an Obsidian vault with source-linked documentation, hierarchical pages, Mermaid diagrams, a re-index workflow, and a project page + MOC linked into the parent context map |
 | Reorganize Vault | "Reorganize my vault", "This vault is a mess, help me structure it", "Plan a refactoring of my documentation", "My projects are scattered, organize them", "Audit my knowledge base structure", after a merger/acquisition that combined knowledge bases, when a vault has grown organically and needs structural correction | Diagnoses organizational problems in a knowledge base, selects adaptive methodologies that fit the content, plans a safe refactoring, and executes with wikilink validation |
 | Audit Wiki | "Audit my wikis", "Check for broken links in the vault", "Validate source citations across all project wikis", "Find sensitive information in the vault", "Fix template broken links", before committing/syncing the vault, after bulk updates to wiki content | Audits and validates Obsidian project wikis against established standards — broken wikilinks, missing source citations, missing diagrams, sensitive information, language inconsistencies; can fix common template issues |
 | Cross-session Comparison | "Compare wiki knowledge by source session", "Show me what devin_session knows vs manual", "Surface cross-session blind spots", browsing/filtering wiki pages by source provenance | Browses and compares Obsidian wiki knowledge filtered by source provenance, surfacing cross-session blind spots via diff/map views built from `.manifest.json` |
@@ -261,8 +261,16 @@ Use the `codebase-design` vocabulary (module, interface, seam, adapter, depth, l
    - Data flow
    - External integrations
    - ADRs (link to `Decisions/*.md`)
-4. Embed code snippets for key seams/adapters (fenced, with language tag).
-5. Minimum 5 distinct source files cited.
+4. **`## Diagrams` section** — wikilinks to ALL 14 `Diagrams/*.md` files. This is MANDATORY — without it, diagram pages become graph orphans (no inbound links). Format:
+   ```markdown
+   ## Diagrams
+   - [[Diagrams/01-Context|Context]] · [[Diagrams/02-Container|Container]] · [[Diagrams/03-Component|Component]] · [[Diagrams/04-Domain|Domain]]
+   - [[Diagrams/05-DataModel|Data Model]] · [[Diagrams/06-Flow|Flow]] · [[Diagrams/07-Sequence|Sequence]] · [[Diagrams/08-Class|Class]]
+   - [[Diagrams/09-State|State]] · [[Diagrams/10-C4Dynamic|C4 Dynamic]] · [[Diagrams/11-C4Deployment|C4 Deployment]] · [[Diagrams/12-GitGraph|Git Graph]]
+   - [[Diagrams/13-Mindmap|Mindmap]] · [[Diagrams/14-Architecture|Architecture Overview]]
+   ```
+5. Embed code snippets for key seams/adapters (fenced, with language tag).
+6. Minimum 5 distinct source files cited.
 
 Every architectural claim must cite the source file and line where it is implemented.
 
@@ -306,6 +314,14 @@ For functions:
 1. Scan the codebase for exported / public functions.
 2. In `05-Functions.md`, build a registry table with a `Source` column:
    - Function, Module, Signature, Source (`path:line`), Side effects, Calls, Tests
+   - **MANDATORY: The Function column MUST be a wikilink** — `[[Functions/<name>|<name>]]` — not plain text. Without this, function pages become graph orphans (no inbound links). Example:
+     ```markdown
+     | Function | Module | Signature | Source | Side Effects | Callers |
+     |----------|--------|-----------|--------|--------------|---------|
+     | [[Functions/notify\|notify]] | Mlt2mController | `notify(): void` | `source: controllers/Mlt2mController.php:124` | HTTP response, DB write | Router |
+     | [[Functions/getOrder\|getOrder]] | OrderService | `getOrder($id, $user): Order\|false` | `source: services/OrderService.php:62` | ML API call | processOrder() |
+     ```
+   - In markdown tables, escape the pipe in the alias: `[[Functions/notify\|notify]]`
 3. **MANDATORY: Create one .md file per function in `Functions/`** using `templates/function-template.md`. Every function listed in the `05-Functions.md` registry table MUST have a corresponding `Functions/<name>.md` file. No exceptions. The word "critical" does NOT mean "optional" — if a function is listed in the registry, it gets a file. Each function note must include:
    - `## Relevant source files` — where the function is defined and tested.
    - `## Purpose and Scope` — what the function does and why it exists.
@@ -510,11 +526,160 @@ status: active                        # or inactive
 ---
 ```
 
+#### Step 16 — Create project page and MOC
+
+After all wiki pages are built, create the project's entry-point documents outside the `_wiki/` directory. These are the files users see first when browsing the vault.
+
+**1. Project page (`ProjectName.md`)**
+
+Create or update `<project-folder>/ProjectName.md` (sibling of `_wiki/`). This is the project's primary note with quick facts and wiki links.
+
+```markdown
+---
+company: <Company>
+type: web
+subtype: <webapp|webpage|api|...>
+usage: external
+category: <institutional|commercialized|internal|...>
+status: active
+stack: [<Framework>, <Language>, <Database>, ...]
+domain: <domain.com.br>
+hosting: <Hosting provider>
+server: <server hostname>
+path: <server path>
+repo: <org/repo>
+updated: YYYY-MM-DD
+---
+
+# ProjectName
+
+<1-2 paragraph summary of what the project is and does.>
+
+## Quick Facts
+
+| Item | Value |
+|------|-------|
+| **Public URL** | https://... |
+| **GitHub** | org/repo (private/public) |
+| **Hosting** | ... |
+| **Server path** | ... |
+| **Tech stack** | ... |
+| **Database** | ... |
+| **CDN/Proxy** | ... |
+| **Deploy** | ... |
+
+## Core Features
+
+1. **Feature** (public/admin) — route description
+2. ...
+
+## Wiki
+
+- [[00-Overview|Overview]] — ...
+- [[01-SRS|SRS]] — ...
+- [[02-Architecture|Architecture]] — ...
+- [[03-Database|Database]] — ...
+- [[04-Modules|Modules]] — ...
+- [[05-Functions|Functions]] — ...
+- [[06-Dependencies|Dependencies]] — ...
+- [[07-Config|Config]] — ...
+- [[08-Glossary|Glossary]] — ...
+- [[09-Decisions|Decisions]] — ...
+- [[10-Logbook|Logbook]] — ...
+
+## Subdomain of / Parent
+
+- [[ParentProject]]
+
+## Related
+
+- [[RelatedProject1]]
+- [[ParentMOC]]
+```
+
+**2. Project MOC (`ProjectName MOC.md`)**
+
+Create or update `<project-folder>/ProjectName MOC.md` using `templates/project-moc.md` as the base. Adapt the template to the actual project structure:
+
+```markdown
+---
+title: ProjectName MOC
+parent: <ParentContext> MOC
+tags:
+  - moc
+  - <project-tag>
+---
+
+# ProjectName MOC
+
+Context map of **ProjectName** — <1-2 sentence description>.
+
+## Project
+
+- [[ProjectName]] — project page (stack, domain, server path, database)
+
+## Wiki
+
+- [[00-Overview|Overview]] — ...
+- [[01-SRS|SRS]] — ...
+- ... (all root pages)
+
+### Module pages
+
+- [[Modules/ControllerA|ControllerA]] — ...
+- [[Modules/ModelA|ModelA]] — ...
+- ... (grouped by category: Controllers, Models, Mail, Requests, Infrastructure, Views)
+
+### Diagrams
+
+- [[Diagrams/01-Context|Context]] · [[Diagrams/02-Container|Container]] · ...
+- ... (all 14 diagrams)
+
+### Decisions
+
+- [[Decisions/ADR-01-...|ADR-01: ...]] · [[Decisions/ADR-02-...|ADR-02: ...]]
+- ... (all ADRs)
+
+## Wiki infrastructure
+
+- [[10-Logbook]] — work log
+- `Project.base` — Obsidian Base queryable
+- `wiki-config.json` — steering
+- `project-manifest.json` — metadata + last_indexed
+
+## Stack
+
+- **Framework:** ...
+- **Language:** ...
+- **Database:** ...
+- **Domain:** ...
+- **Hosting:** ...
+- **CDN/Proxy:** ...
+
+## Relationships
+
+- [[ParentContext MOC]] — origin context
+- [[RelatedProject]] — ...
+```
+
+**3. Update parent context MOC**
+
+Find the parent context MOC (e.g., `Tech2Move MOC.md`) and update its project list to include the new project with links to its page, MOC, and wiki:
+
+```markdown
+- [[ProjectName]] — <short description> · [[ProjectName MOC|MOC]] · [[00-Overview|wiki]]
+```
+
+If the project already has an entry but without MOC/wiki links, update it. If the parent MOC does not exist, create it using `templates/context-map.md`.
+
+**Completion criterion:** project page exists with quick facts and wiki links, project MOC exists with links to all modules/functions/diagrams/decisions, and parent context MOC links to all three (page, MOC, wiki).
+
 ### Deviation / exceptions
 
 - If the project is not a software project, fall back to `grill-with-docs` or `domain-modeling`.
 - If the user only wants diagrams, use `references/modern-diagrams.md` and skip the SRS.
 - If the user only wants a database schema, use `03-Database.md` and the `Modules/Database/` notes.
+- If there is no parent context MOC (standalone project), skip step 3 of Step 16.
 
 ### Quality checklist
 
@@ -547,6 +712,15 @@ status: active                        # or inactive
 - [ ] **Daily notes have standardized frontmatter**: `title` ("Project - YYYY-MM-DD", hyphen), `date`, `project`, `parent: 10-Logbook`, `tags` (YAML list with logbook + project tag), `status` (active/inactive).
 - [ ] All internal references use Obsidian wikilinks `[[...]]`.
 - [ ] Wiki content is in the `language` specified in `wiki-config.json`.
+- [ ] **Project page (`ProjectName.md`) exists** as a sibling of `_wiki/` with quick facts table, core features list, and wiki links to all root pages.
+- [ ] **Project MOC (`ProjectName MOC.md`) exists** with links to the project page, all root wiki pages, all module pages (grouped by category), all diagrams, and all ADRs. Uses `templates/project-moc.md` as base.
+- [ ] **Parent context MOC updated** to link to this project's page, MOC, and wiki (`[[ProjectName]] — desc · [[ProjectName MOC|MOC]] · [[00-Overview|wiki]]`). If no parent MOC exists, this is skipped (standalone project).
+- [ ] **`02-Architecture.md` has a `## Diagrams` section** with wikilinks to all 14 `Diagrams/*.md` files. Without this, diagrams are graph orphans.
+- [ ] **`05-Functions.md` registry table uses `[[Functions/<name>|<name>]]` wikilinks** in the Function column — not plain text. Without this, function pages are graph orphans.
+- [ ] **Function pages have a `## Links` section** linking back to `[[05-Functions]]` and `[[Modules/<parent>]]`.
+- [ ] **MOC ADR references use full filename stems** (e.g. `[[Decisions/ADR-01-slug|ADR-01: Title]]`), not short forms (`[[Decisions/ADR-01]]` — file doesn't exist).
+- [ ] **`00-Overview.md` links to ALL root pages** (01-SRS through 10-Logbook), not just a subset. Every root page must have at least one inbound link.
+- [ ] **Zero graph orphans** — run `find_orphan_pages.py --wiki <wiki-dir>` and verify 0 orphan pages (no inbound AND no outbound wikilinks).
 
 ### Templates and references (Build Wiki)
 
@@ -558,6 +732,7 @@ status: active                        # or inactive
 - `templates/daily-note-template.md`
 - `templates/overview-template.md`
 - `templates/adr-template.md`
+- `templates/project-moc.md`
 - `references/obsidian-bases-spec.md`
 - `references/modern-diagrams.md`
 
