@@ -69,7 +69,7 @@ Raramente >3 por tarefa (~5000 tok).
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `obsidian-workflow` | Build + Reorganize + Audit + Cross-session (4 modos) | 12220 | Qualquer operação Obsidian |
+| `obsidian-workflow` | Build + Reorganize + Audit + Cross-session (4 modos) | 14674 | Qualquer operação Obsidian |
 
 Custo alto. Invoque só quando for operação Obsidian real.
 
@@ -138,4 +138,4 @@ Tarefa → AGENTS.md (~6300 tok, fixo) → leia SKILL-TIERS.md (~1800 tok)
 | `primeagent-reference` sem motivo de pesquisa | Não invocar — é referência |
 | MCPs sem usar | Só ativar quando preciso |
 | Compact quando precisa do detalhe | `context-folding` |
-| `obsidian-workflow` para edição pontual (~12220 tok) | Só para operações Obsidian reais |
+| `obsidian-workflow` para edição pontual (~14674 tok) | Só para operações Obsidian reais |
