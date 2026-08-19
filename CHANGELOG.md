@@ -5,6 +5,58 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-08-19
+
+### Added
+
+- **Rule 20: Prefer explicit over auto-saved memory** — new non-pinned
+  governance rule. Prefer user-authored preferences (AGENTS.md, skills,
+  repo docs) over agent-auto-saved cross-session memory (MEMORY.md,
+  `.claude/memory`, etc.). Auto-memory permitted only with selective
+  management (add+delete), never naive growth. Backed by arXiv:2605.07313
+  (16-20pp reliability loss from accumulation), arXiv:2605.17830 (temporal
+  contamination), arXiv:2505.16067 (error propagation, +10% with managed),
+  arXiv:2607.02374 (reasoning drift), arXiv:2502.09597 (preference
+  following <10%), arXiv:2404.15269 (CIPHER, user-editable preferences),
+  arXiv:2310.08560 (MemGPT, managed memory helps).
+- **Rule 21: Calibrate effort to task difficulty** — new non-pinned
+  governance rule. Default to lowest reasoning effort that still uses
+  chain-of-thought; raise only when verification fails or the task is
+  genuinely hard. Improve task specification before raising effort —
+  information quality substitutes for reasoning budget. Backed by
+  arXiv:2412.21187 (overthinking: 1,953% more tokens on "2+3=?", 13
+  redundant solutions, 48.6% reduction without accuracy loss),
+  arXiv:2408.03314 (compute-optimal 4× more efficient than best-of-N,
+  ICLR 2025), arXiv:2608.01347 (prompt-induced waste: "multiple
+  approaches" 2.4-7.4× reasoning without success, "max certainty" 18×
+  cost loops), arXiv:2607.13034 (E3: 85% cost / 91% token cut at 100%
+  success), arXiv:2607.02436 (counterpoint: effort High→xHigh lifts
+  perfect runs 28%→89% on hard tasks).
+- **`memory-hygiene` skill** — decision framework (stateless vs managed
+  vs naive), 6 rules, 5 anti-patterns, 8 academic sources. Distilled
+  from "Kill your MEMORY.md" (Matt Pocock), claims verified against
+  primary sources.
+- **`effort-calibration` skill** — effort tier table (Minimum/Medium/
+  High), 7 rules, 7 anti-patterns, 5 academic sources. Distilled from
+  "Your effort level is TOO DAMN HIGH" (Matt Pocock), claims verified
+  against primary sources.
+
+### Changed
+
+- **46 → 48 skills** (+2: memory-hygiene, effort-calibration).
+- **18 → 20 rules** (Rule 20 + Rule 21 added; Rule 6 still removed).
+  Pinned set unchanged: 2, 5, 7, 12-19.
+- **AGENTS.md**: 18.5KB → 25.4KB (~4614 → ~6328 tok, 3.16% of 200k
+  window). Still lean; both new rules are non-pinned one-liners in the
+  summary with detail sections at the bottom.
+- **`manifest.json`**: version 2.4.0 → 2.5.0, skill_count 46 → 48,
+  rule_count 18 → 20.
+- **`README.md`**: badges updated (skills-48, rules-20, version-2.5.0).
+- **`SKILL-TIERS.md`**: 2 skills added to "Meta (gestão de sessão)";
+  AGENTS.md cost updated (~6300 tok).
+- **`audit.py`**: rule range 1→22, expected counts 48 skills / 20 rules,
+  version checks 2.5.0, badge checks skills-48 / rules-20 / version-2.5.0.
+
 ## [2.4.0] - 2026-08-18
 
 ### Added
