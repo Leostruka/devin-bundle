@@ -114,6 +114,36 @@ Then invoke the rest of this skill to fill each artifact from code and conversat
 2. If the vault/docs folder already contains the artifact files, this is an **update** run. Read them first, then run `refresh.py` to identify stale pages.
 3. If the files do not exist, run the scaffold script in Step 1.
 
+#### Step 0.5 — Confirm information sources
+
+Before scaffolding or filling any page, **ask the user** whether the agent has means to acquire the necessary information to document the project. Use `ask_user_question` with the following:
+
+> **Question:** "I have access to the project directory at `<path>`. Can I acquire all the information I need from the codebase and files there, or do you need to provide additional context?"
+>
+> **Options:**
+> 1. **"Codebase is sufficient"** — the agent can read all source files, configs, READMEs, migrations, and tests. No external context needed. Proceed to Step 1.
+> 2. **"I'll provide additional context"** — the user has information not in the codebase (business rules, stakeholder needs, infrastructure details, API contracts, historical decisions). The agent asks follow-up questions (see below).
+> 3. **"Partial — I'll supplement"** — the agent reads what it can from the codebase, then asks the user to fill gaps discovered during exploration.
+
+**If the user chooses option 2 or 3**, ask for the missing information using `ask_user_question` (one question per call, max 4 questions per call). Cover these categories as needed:
+
+| Category | What to ask |
+|----------|-------------|
+| **Business context** | What does the system do from the customer's perspective? Who are the stakeholders and actors? |
+| **Architecture** | Are there external services, integrations, or infrastructure not visible in the code? (DNS, SSL, CI/CD, hosting, DB connections) |
+| **Database** | Is there a schema or ER diagram available? Are there external databases not in the repo? |
+| **API contracts** | Are there external API specs (OpenAPI, Postman, docs) not in the repo? |
+| **Decisions** | Are there architectural decisions (ADRs) the user wants documented that aren't in the code or git history? |
+| **Constraints** | Regulatory, business, or technical constraints not visible in the code? |
+| **Glossary** | Domain terms, acronyms, or business vocabulary the user wants defined? |
+| **Environment** | Production/staging URLs, server specs, deployment process not in the repo? |
+
+**Rules:**
+- Do NOT proceed to Step 1 until the user has confirmed the information sources (option 1) or has answered the follow-up questions (options 2/3).
+- If the user selects option 3 ("Partial"), proceed to Step 1, read the codebase, then come back and ask about gaps discovered during exploration.
+- Save user-provided context in `wiki-config.json` under `repo_notes` (with `author: "user"`) so it persists for future re-index runs.
+- Never guess or fabricate information the user didn't provide. If a page cannot be filled from code or user input, leave it as a stub with a `> [!warning] Needs user input` callout.
+
 #### Step 1 — Scaffold the vault
 
 ```bash
@@ -451,6 +481,35 @@ At the end of each session create or update the daily note:
 
 Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`.
 
+**Daily note frontmatter standard (enforced by `validate_wiki_structure.py`):**
+
+```yaml
+---
+title: "Project Name - YYYY-MM-DD"   # hyphen, not em-dash; quoted
+date: "YYYY-MM-DD"                    # quoted, matches filename
+project: "Project Name"               # quoted, matches 10-Logbook project field
+parent: 10-Logbook                    # filename reference, unquoted
+tags:                                 # YAML list, NOT inline [a, b]
+  - logbook
+  - project-tag
+status: active                        # or inactive, matches project status
+---
+```
+
+**10-Logbook.md frontmatter standard:**
+
+```yaml
+---
+title: "Project Name - Logbook"       # hyphen, not em-dash; quoted
+project: "Project Name"               # quoted
+parent: 00-Overview                   # filename reference
+tags:                                 # YAML list
+  - logbook
+  - project-tag
+status: active                        # or inactive
+---
+```
+
 ### Deviation / exceptions
 
 - If the project is not a software project, fall back to `grill-with-docs` or `domain-modeling`.
@@ -459,6 +518,7 @@ Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`
 
 ### Quality checklist
 
+- [ ] **Information sources confirmed** — the user was asked (Step 0.5) whether the codebase is sufficient or additional context is needed. User-provided context saved in `wiki-config.json` `repo_notes` with `author: "user"`.
 - [ ] `00-Overview.md` exists and summarizes the system in 1-2 paragraphs with links to all pages.
 - [ ] Every page has a `parent:` field in frontmatter (except `00-Overview.md`).
 - [ ] Every page starts with `## Relevant source files` and `## Purpose and Scope`.
@@ -483,6 +543,8 @@ Use tags: `#decision`, `#blocker`, `#try`, `#success`, `#revert`, `#investigate`
 - [ ] `project-manifest.json` records `indexed_branch`.
 - [ ] `10-Logbook.md` links to every `Daily/YYYY-MM-DD.md` entry.
 - [ ] Daily notes capture context, done, tried, worked, failed, decisions, rationale and next actions.
+- [ ] **Root pages (00-09, 10-Logbook) have standardized frontmatter**: `title` ("Project - Page", hyphen not em-dash), `project`, `parent`, `tags` (YAML list), `status` (active/inactive).
+- [ ] **Daily notes have standardized frontmatter**: `title` ("Project - YYYY-MM-DD", hyphen), `date`, `project`, `parent: 10-Logbook`, `tags` (YAML list with logbook + project tag), `status` (active/inactive).
 - [ ] All internal references use Obsidian wikilinks `[[...]]`.
 - [ ] Wiki content is in the `language` specified in `wiki-config.json`.
 

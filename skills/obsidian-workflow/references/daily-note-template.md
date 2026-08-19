@@ -12,12 +12,14 @@ Example: `Daily/2026-08-11.md`
 
 ```markdown
 ---
-title: "{{PROJECT_NAME}} — {{DATE}}"
+title: "{{PROJECT_NAME}} - {{DATE}}"
 date: "{{DATE}}"
+project: "{{PROJECT_NAME}}"
 parent: 10-Logbook
 tags:
   - logbook
   - {{PROJECT_TAG}}
+status: active
 ---
 
 # {{DATE}}

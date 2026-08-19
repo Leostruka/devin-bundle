@@ -5,9 +5,10 @@ parent: null
 tags:
   - overview
   - {{PROJECT_TAG}}
+status: active
 ---
 
-# {{PROJECT_NAME}} — Overview
+# {{PROJECT_NAME}} - Overview
 
 ## Relevant source files
 - `source: README.md:1`

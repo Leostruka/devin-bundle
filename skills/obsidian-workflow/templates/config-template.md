@@ -4,6 +4,7 @@ project: "{{PROJECT_NAME}}"
 tags:
   - config
   - {{PROJECT_TAG}}
+status: active
 ---
 
 # Configuration

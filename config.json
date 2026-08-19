@@ -3,7 +3,7 @@
     "devin":  {
                   "org_id":  "MASKED"
               },
-    "theme_mode":  "dark",
+    "theme_mode":  "nocolor",
     "agent":  {
                   "model":  "glm-5-2"
               },

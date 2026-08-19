@@ -1,14 +1,15 @@
 ---
 title: "{{PROJECT_NAME}} - Software Requirements Specification"
+project: "{{PROJECT_NAME}}"
 version: "0.1.0"
 date: "{{DATE}}"
 tags:
   - srs
   - {{PROJECT_TAG}}
-status: draft
+status: active
 ---
 
-# {{PROJECT_NAME}} — Software Requirements Specification
+# {{PROJECT_NAME}} - Software Requirements Specification
 
 ## 1. Introduction
 

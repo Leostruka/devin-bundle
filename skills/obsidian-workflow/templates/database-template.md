@@ -4,6 +4,7 @@ project: "{{PROJECT_NAME}}"
 tags:
   - database
   - {{PROJECT_TAG}}
+status: active
 ---
 
 # Database

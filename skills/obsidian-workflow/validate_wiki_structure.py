@@ -2,7 +2,7 @@
 """Validate the structural integrity of an obsidian-project-docs wiki.
 
 Checks:
-1. Required root pages exist (00-09, Logbook)
+1. Required root pages exist (00-09, 10-Logbook)
 2. Modules/ directory exists and is not empty
 3. Functions/ directory exists and is not empty
 4. Decisions/ directory exists and is not empty
@@ -13,9 +13,11 @@ Checks:
 9. Every function listed in 05-Functions.md has a corresponding Functions/*.md file
 10. All wikilinks resolve (no broken links)
 11. All pages have required frontmatter (parent, tags)
-12. All pages have ## Relevant source files and ## Purpose and Scope
-13. All Mermaid diagrams have <!-- Sources: --> comments
-14. No sensitive data (passwords, credentials, secrets)
+12. Root pages (00-09, 10-Logbook) have standardized frontmatter (title, project, parent, tags, status)
+13. Daily notes have standardized frontmatter (title, date, project, parent=10-Logbook, tags, status)
+14. All root pages have ## Relevant source files and ## Purpose and Scope
+15. All Mermaid diagrams have <!-- Sources: --> comments
+16. No sensitive data (passwords, credentials, secrets)
 
 Usage:
     python validate_wiki_structure.py [--wiki-dir <path>] [--vault-dir <path>]
@@ -142,6 +144,7 @@ def check_wikilinks(wiki_dir: Path, vault_stems: set) -> list:
 
     Supports both stem-only ([[PageName]]) and path-based ([[Folder/PageName]]) wikilinks.
     Path-based links are resolved relative to the wiki directory and vault root.
+    Handles Obsidian table pipe-escape syntax: [[Target\\|Alias]] → target is 'Target'.
     """
     failures = []
     files = [f for f in wiki_dir.rglob("*.md") if "Media" not in str(f)]
@@ -156,6 +159,8 @@ def check_wikilinks(wiki_dir: Path, vault_stems: set) -> list:
             # Skip anchor-only links ([[#Section]])
             if link.startswith("#"):
                 continue
+            # Strip trailing backslash (Obsidian table pipe-escape: [[Target\|Alias]])
+            link = link.rstrip("\\")
             # Try stem-only resolution first
             if link in vault_stems:
                 continue
@@ -199,10 +204,156 @@ def check_frontmatter(wiki_dir: Path) -> list:
             failures.append(f"FRONTMATTER: {f.relative_to(wiki_dir)} malformed frontmatter")
             continue
         fm = parts[1]
-        if "parent:" not in fm and "00-Overview" not in f.name and "Logbook" not in f.name:
+        if "parent:" not in fm and "00-Overview" not in f.name:
             failures.append(f"FRONTMATTER: {f.relative_to(wiki_dir)} missing 'parent:' field")
         if "tags:" not in fm:
             failures.append(f"FRONTMATTER: {f.relative_to(wiki_dir)} missing 'tags:' field")
+    return failures
+
+
+def check_root_page_frontmatter(wiki_dir: Path) -> list:
+    """Check that root pages (00-09, 10-Logbook) have standardized frontmatter.
+
+    Required fields: title, project, parent, tags (YAML list), status.
+    Title format: "Project Name - Page Name" (hyphen, not em-dash).
+    Status must be 'active' or 'inactive'.
+    """
+    failures = []
+    root_pages = [
+        "00-Overview.md", "01-SRS.md", "02-Architecture.md",
+        "03-Database.md", "04-Modules.md", "05-Functions.md",
+        "06-Dependencies.md", "07-Config.md", "08-Glossary.md",
+        "09-Decisions.md", "10-Logbook.md",
+    ]
+    required_fields = ["title:", "project:", "parent:", "tags:", "status:"]
+    valid_statuses = {"active", "inactive"}
+
+    for page_name in root_pages:
+        p = wiki_dir / page_name
+        if not p.exists():
+            continue  # Already caught by check_required_files
+        content = p.read_text(encoding="utf-8", errors="replace")
+        if not content.startswith("---"):
+            continue  # Already caught
+        parts = content.split("---", 2)
+        if len(parts) < 3:
+            continue
+        fm = parts[1]
+
+        # Check required fields
+        for field in required_fields:
+            if field not in fm:
+                failures.append(f"FRONTMATTER: {page_name} missing '{field}' field")
+
+        # Check status value
+        status_match = re.search(r'^status:\s*(\S+)', fm, re.MULTILINE)
+        if status_match:
+            status_val = status_match.group(1).strip().strip('"').strip("'")
+            if status_val not in valid_statuses:
+                failures.append(
+                    f"FRONTMATTER: {page_name} has invalid status '{status_val}' "
+                    f"(must be 'active' or 'inactive')"
+                )
+
+        # Check title doesn't use em-dash
+        title_match = re.search(r'^title:\s*"([^"]*)"', fm, re.MULTILINE)
+        if title_match:
+            title_val = title_match.group(1)
+            if "\u2014" in title_val or "\u2013" in title_val:
+                failures.append(
+                    f"FRONTMATTER: {page_name} title uses em-dash/en-dash "
+                    f"(should be hyphen): \"{title_val}\""
+                )
+
+        # Check tags is YAML list (not inline)
+        if "tags:" in fm:
+            tags_section = re.search(r'^tags:\s*\[', fm, re.MULTILINE)
+            if tags_section:
+                failures.append(
+                    f"FRONTMATTER: {page_name} uses inline tags format "
+                    f"(should be YAML list with '- tag')"
+                )
+
+    return failures
+
+
+def check_daily_notes(wiki_dir: Path) -> list:
+    """Check that daily notes have standardized frontmatter.
+
+    Required fields: title, date, project, parent (10-Logbook), tags (YAML list), status.
+    Title format: "Project Name - YYYY-MM-DD" (hyphen, not em-dash).
+    Filename: YYYY-MM-DD.md
+    """
+    failures = []
+    daily_dir = wiki_dir / "Daily"
+    if not daily_dir.exists():
+        return failures  # Already caught
+
+    required_fields = ["title:", "date:", "project:", "parent:", "tags:", "status:"]
+    valid_statuses = {"active", "inactive"}
+
+    for p in sorted(daily_dir.glob("*.md")):
+        content = p.read_text(encoding="utf-8", errors="replace")
+        if not content.startswith("---"):
+            failures.append(f"DAILY: {p.name} missing frontmatter")
+            continue
+        parts = content.split("---", 2)
+        if len(parts) < 3:
+            failures.append(f"DAILY: {p.name} malformed frontmatter")
+            continue
+        fm = parts[1]
+
+        # Check required fields
+        for field in required_fields:
+            if field not in fm:
+                failures.append(f"DAILY: {p.name} missing '{field}' field")
+
+        # Check parent is 10-Logbook
+        parent_match = re.search(r'^parent:\s*(\S+)', fm, re.MULTILINE)
+        if parent_match:
+            parent_val = parent_match.group(1).strip().strip('"').strip("'")
+            if parent_val != "10-Logbook":
+                failures.append(
+                    f"DAILY: {p.name} parent should be '10-Logbook' "
+                    f"(got '{parent_val}')"
+                )
+
+        # Check status value
+        status_match = re.search(r'^status:\s*(\S+)', fm, re.MULTILINE)
+        if status_match:
+            status_val = status_match.group(1).strip().strip('"').strip("'")
+            if status_val not in valid_statuses:
+                failures.append(
+                    f"DAILY: {p.name} has invalid status '{status_val}' "
+                    f"(must be 'active' or 'inactive')"
+                )
+
+        # Check title format: "Project Name - YYYY-MM-DD" (hyphen, not em-dash)
+        title_match = re.search(r'^title:\s*"([^"]*)"', fm, re.MULTILINE)
+        if title_match:
+            title_val = title_match.group(1)
+            if "\u2014" in title_val or "\u2013" in title_val:
+                failures.append(
+                    f"DAILY: {p.name} title uses em-dash/en-dash "
+                    f"(should be hyphen): \"{title_val}\""
+                )
+            # Check title ends with the date (filename stem)
+            date_str = p.stem
+            if not title_val.endswith(date_str):
+                failures.append(
+                    f"DAILY: {p.name} title should end with date '{date_str}' "
+                    f"(got \"{title_val}\")"
+                )
+
+        # Check tags is YAML list (not inline)
+        if "tags:" in fm:
+            tags_section = re.search(r'^tags:\s*\[', fm, re.MULTILINE)
+            if tags_section:
+                failures.append(
+                    f"DAILY: {p.name} uses inline tags format "
+                    f"(should be YAML list with '- tag')"
+                )
+
     return failures
 
 
@@ -285,6 +436,8 @@ def main():
         ("Functions/ not empty", lambda: check_functions_not_empty(wiki_dir)),
         ("Page structure (Relevant + Purpose)", lambda: check_page_structure(wiki_dir)),
         ("Frontmatter (parent + tags)", lambda: check_frontmatter(wiki_dir)),
+        ("Root page frontmatter (title+project+status)", lambda: check_root_page_frontmatter(wiki_dir)),
+        ("Daily notes frontmatter", lambda: check_daily_notes(wiki_dir)),
         ("Mermaid Sources comments", lambda: check_mermaid_sources(wiki_dir)),
         ("Sensitive data scan", lambda: check_sensitive_data(wiki_dir)),
     ]

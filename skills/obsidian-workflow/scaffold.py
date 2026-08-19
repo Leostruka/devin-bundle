@@ -970,14 +970,14 @@ def main():
     if not srs.exists():
         srs_text = load_template(skill_dir, "srs-template.md", mapping)
         # Add parent frontmatter
-        srs_text = srs_text.replace('status: draft', 'status: draft\nparent: 00-Overview')
+        srs_text = srs_text.replace('status: active', 'status: active\nparent: 00-Overview', 1)
         srs.write_text(srs_text, encoding="utf-8")
 
     # Architecture
     arch = vault_dir / "02-Architecture.md"
     if not arch.exists():
         arch.write_text(
-            f"---\ntitle: \"{project_name} - Architecture\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - architecture\n  - {project_tag}\n---\n\n# Architecture\n\n_Generated on {date}. Document system overview, layers, seams, adapters, data flow and ADRs. Every claim must have a `source: path/to/file:line` citation._\n",
+            f"---\ntitle: \"{project_name} - Architecture\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - architecture\n  - {project_tag}\nstatus: active\n---\n\n# Architecture\n\n_Generated on {date}. Document system overview, layers, seams, adapters, data flow and ADRs. Every claim must have a `source: path/to/file:line` citation._\n",
             encoding="utf-8",
         )
 
@@ -992,7 +992,7 @@ def main():
     modules_index = vault_dir / "04-Modules.md"
     if not modules_index.exists():
         modules_index.write_text(
-            f"---\ntitle: \"{project_name} - Modules\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - modules\n  - {project_tag}\n---\n\n# Modules\n\n| Module | Purpose | Dependencies | Tests | Source | Status |\n|--------|---------|--------------|-------|--------|--------|\n\n> Create one note per module inside `Modules/`. Each must have `source: path/to/file:line`.\n",
+            f"---\ntitle: \"{project_name} - Modules\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - modules\n  - {project_tag}\nstatus: active\n---\n\n# Modules\n\n| Module | Purpose | Dependencies | Tests | Source | Status |\n|--------|---------|--------------|-------|--------|--------|\n\n> Create one note per module inside `Modules/`. Each must have `source: path/to/file:line`.\n",
             encoding="utf-8",
         )
 
@@ -1000,7 +1000,7 @@ def main():
     functions_index = vault_dir / "05-Functions.md"
     if not functions_index.exists():
         functions_index.write_text(
-            f"---\ntitle: \"{project_name} - Functions\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - functions\n  - {project_tag}\n---\n\n# Functions\n\n| Function | Module | Signature | Source | Side effects | Tests |\n|----------|--------|-----------|--------|--------------|-------|\n",
+            f"---\ntitle: \"{project_name} - Functions\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - functions\n  - {project_tag}\nstatus: active\n---\n\n# Functions\n\n| Function | Module | Signature | Source | Side effects | Tests |\n|----------|--------|-----------|--------|--------------|-------|\n",
             encoding="utf-8",
         )
 
@@ -1008,7 +1008,7 @@ def main():
     deps = vault_dir / "06-Dependencies.md"
     if not deps.exists():
         deps.write_text(
-            f"---\ntitle: \"{project_name} - Dependencies\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - dependencies\n  - {project_tag}\n---\n\n# Dependencies\n\n## Production dependencies\n\n| Name | Version | Purpose | License | Source |\n|------|---------|---------|---------|--------|\n\n## Development dependencies\n\n| Name | Version | Purpose | License | Source |\n|------|---------|---------|---------|--------|\n\n## Internal dependencies\n\n| Module | Depends on | Relationship | Source |\n|--------|------------|--------------|--------|\n",
+            f"---\ntitle: \"{project_name} - Dependencies\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - dependencies\n  - {project_tag}\nstatus: active\n---\n\n# Dependencies\n\n## Production dependencies\n\n| Name | Version | Purpose | License | Source |\n|------|---------|---------|---------|--------|\n\n## Development dependencies\n\n| Name | Version | Purpose | License | Source |\n|------|---------|---------|---------|--------|\n\n## Internal dependencies\n\n| Module | Depends on | Relationship | Source |\n|--------|------------|--------------|--------|\n",
             encoding="utf-8",
         )
 
@@ -1023,7 +1023,7 @@ def main():
     glossary = vault_dir / "08-Glossary.md"
     if not glossary.exists():
         glossary.write_text(
-            f"---\ntitle: \"{project_name} - Glossary\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - glossary\n  - {project_tag}\n---\n\n# Glossary\n\n| Term | Definition | Aliases | Source | Used in |\n|------|------------|---------|--------|---------|\n",
+            f"---\ntitle: \"{project_name} - Glossary\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - glossary\n  - {project_tag}\nstatus: active\n---\n\n# Glossary\n\n| Term | Definition | Aliases | Source | Used in |\n|------|------------|---------|--------|---------|\n",
             encoding="utf-8",
         )
 
@@ -1031,7 +1031,7 @@ def main():
     decisions = vault_dir / "09-Decisions.md"
     if not decisions.exists():
         decisions.write_text(
-            f"---\ntitle: \"{project_name} - Decisions\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - decisions\n  - adr\n  - {project_tag}\n---\n\n# Decisions (ADRs)\n\n| ADR | Title | Status | Date |\n|-----|-------|--------|------|\n\n> Create one note per ADR inside `Decisions/`. Use `templates/adr-template.md`.\n",
+            f"---\ntitle: \"{project_name} - Decisions\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - decisions\n  - adr\n  - {project_tag}\nstatus: active\n---\n\n# Decisions (ADRs)\n\n| ADR | Title | Status | Date |\n|-----|-------|--------|------|\n\n> Create one note per ADR inside `Decisions/`. Use `templates/adr-template.md`.\n",
             encoding="utf-8",
         )
 
@@ -1039,7 +1039,7 @@ def main():
     logbook = vault_dir / "10-Logbook.md"
     if not logbook.exists():
         logbook.write_text(
-            f"---\ntitle: \"{project_name} - Logbook\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - logbook\n  - {project_tag}\n---\n\n# Logbook\n\nRunning log of daily work. Each entry is a daily note under `Daily/`.\n\n## Activity log\n\n### [[{date}]]\n- Initial scaffold and project setup\n",
+            f"---\ntitle: \"{project_name} - Logbook\"\nproject: \"{project_name}\"\nparent: 00-Overview\ntags:\n  - logbook\n  - {project_tag}\nstatus: active\n---\n\n# Logbook\n\nRunning log of daily work. Each entry is a daily note under `Daily/`.\n\n## Activity log\n\n### [[{date}]]\n- Initial scaffold and project setup\n",
             encoding="utf-8",
         )
 
