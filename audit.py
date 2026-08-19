@@ -94,15 +94,15 @@ print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
-for i in range(1, 20):
+for i in range(1, 22):
     # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 18:
-    errors.append('Expected 18 rules, found ' + str(len(rules_found)))
+if len(rules_found) != 20:
+    errors.append('Expected 20 rules, found ' + str(len(rules_found)))
 else:
-    print('  OK  18 rules present')
+    print('  OK  20 rules present')
 
 # 7. config.json hooks references valid scripts
 print()
@@ -153,8 +153,8 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('46 skills', skill_count == 46),
-    ('18 rules', len(rules_found) == 18),  # 1-5,7-19 (Rule 6 removed)
+    ('48 skills', skill_count == 48),
+    ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
     ('5 agents', agent_count == 5),
     ('11 scripts', len(script_files) == 11),
 ]
@@ -341,13 +341,13 @@ else:
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-46' in readme:
-    print('  OK  skills badge = 46')
+if 'skills-48' in readme:
+    print('  OK  skills badge = 48')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
-if 'rules-18' in readme:
-    print('  OK  rules badge = 18')
+if 'rules-20' in readme:
+    print('  OK  rules badge = 20')
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')

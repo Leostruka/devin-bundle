@@ -379,10 +379,26 @@
       "source": "consolidated from multiple skills (v2.4.0)",
       "purpose": "merged planning/obsidian pipeline",
       "hash": "5ddbd4ec92c23e4fa54e38ced1b0b9f01760f13263fa013bb80113bd983296f3"
+    },
+    {
+      "name": "memory-hygiene",
+      "source": "created:Devin bundle (memory-management research)",
+      "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, .claude/memory, auto-memory), when auto-memory seems stale or bloated, when preferences leak across unrelated tasks, or when choosing between stateless and memory-equipped operation. Covers memory accumulation, temporal contamination, reasoning drift, and user-authored vs auto-saved preferences.",
+      "original_path": "%APPDATA%\\devin\\skills\\memory-hygiene",
+      "exported_at": "2026-08-19T13:35:00.000000-03:00",
+      "export_hash": "7DC27D87FE719CCBA5018D6669BC8533321E49DF6BFC4B40A5C1AB63837187DC"
+    },
+    {
+      "name": "effort-calibration",
+      "source": "created:Devin bundle (effort-calibration research)",
+      "purpose": "Use when choosing a reasoning effort level for an LLM coding agent, when a task seems to be over-thinking or spending too many tokens, when deciding whether to raise effort, when writing task specifications that substitute for reasoning budget, or when a simple task is being treated as a codebase audit. Covers overthinking, compute-optimal test-time scaling, prompt-induced waste, and difficulty-matched effort.",
+      "original_path": "%APPDATA%\\devin\\skills\\effort-calibration",
+      "exported_at": "2026-08-19T13:55:00.000000-03:00",
+      "export_hash": "9DE5E77042DA2D7D83AFF877F1E30190323B653A9AD367320D1B8361B9073F6C"
     }
   ],
-  "skill_count": 46,
-  "rule_count": 18,
+  "skill_count": 48,
+  "rule_count": 20,
   "script_count": 11,
   "mcp_count": 1
 }

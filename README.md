@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-46-blue.svg)](SKILL-TIERS.md)
-[![Rules](https://img.shields.io/badge/rules-18-green.svg)](AGENTS.md)
+[![Skills](https://img.shields.io/badge/skills-48-blue.svg)](SKILL-TIERS.md)
+[![Rules](https://img.shields.io/badge/rules-20-green.svg)](AGENTS.md)
 [![Version](https://img.shields.io/badge/version-2.4.0-orange.svg)](CHANGELOG.md)
 
 Export + installer for [Devin CLI](https://devin.ai) to synchronize your **entire setup** across machines.

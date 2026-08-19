@@ -95,6 +95,8 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `handoff` | Compacta p/ outro agente | 375 | Passar trabalho |
 | `wait-what` | Re-explica mensagem | 125 | Reexplicar |
 | `autonomous-gates` | Gates p/ modo autônomo | 4000 | "Run unattended" |
+| `memory-hygiene` | Stateless vs managed vs naive memory | 1600 | Decidir auto-memory / MEMORY.md |
+| `effort-calibration` | Calibrar effort à dificuldade | 2400 | Over-thinking / escolher effort |
 
 ## Setup (one-time)
 
@@ -121,7 +123,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 ## Linha lógica para 200k
 
 ```
-Tarefa → AGENTS.md (4567 tok, fixo) → leia SKILL-TIERS.md (~1700 tok)
+Tarefa → AGENTS.md (~6300 tok, fixo) → leia SKILL-TIERS.md (~1800 tok)
   → identifique domínio → invoque 1-3 skills (~3000-7500 tok)
   → trabalho (50k-150k tok)
   >60% usado? → context-folding (doc) | dispatching-parallel-agents (paralelo) | clear (tarefa mudou)
