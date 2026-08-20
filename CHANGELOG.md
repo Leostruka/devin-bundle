@@ -5,6 +5,98 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2026-08-20
+
+### Fixed
+
+- **SWE-1.7 context window** — corrigido de "200K (user spec) / 256K (Kimi K2.7 base)"
+  para definitivamente 256K. Verificado contra fontes primárias: benchlm.ai,
+  tipjournal.com, awesomeagents.ai, cognition.com/blog/swe-1-7. O user spec
+  de 200K era incorreto — SWE-1.7 herda 256K do Kimi K2.7 base.
+- **Agent model pins** — adicionado `model: swe` em todos os 5 agent profiles
+  (architect, debugger, implementer, researcher, reviewer). Sem pin, o default
+  subagent router da Devin CLI resolve para SWE-1.6 (200K), não SWE-1.7 (256K).
+  Verificado contra docs.devin.ai/cli/subagents: "With the default Subagent
+  router setting it resolves to SWE-1.6." Pin `swe` (short name) resolve para
+  o latest SWE (atualmente 1.7) e auto-updates para SWE-1.8 quando lançado.
+- **Docs atualizados** — MODEL-GUIDE.md, AGENTS.md Rule 20, TOOLS-MAP.md,
+  SKILL-TIERS.md, README.md, CHANGELOG.md agora refletem acuradamente:
+  default subagent router = SWE-1.6; custom agents com `model: swe` = SWE-1.7.
+
+### Verified
+
+- Devin CLI subagents docs (docs.devin.ai/cli/subagents) — primary source
+- Cognition SWE-1.7 blog (cognition.com/blog/swe-1-7) — primary source
+- BenchLM SWE-1.7 specs (benchlm.ai/models/swe-1-7) — primary source
+- GLM-5.2 docs (docs.z.ai/guides/llm/glm-5.2) — primary source, 1M raw context
+  (200K in Devin CLI `glm-5-2` variant, 1M in `glm-5-2-max-1m` variant)
+
+## [2.5.0] - 2026-08-20
+
+### Added
+
+- **Rule 20: Model-aware operation** — GLM-5.2 High (200K, thinking, tool-use
+  during inference, cache $0.26/M) is primary; SWE-1.7 (200K/256K,
+  self-compaction, 1000 TPS) is subagent default. Don't over-specify tool-use
+  (GLM decides natively). Fan-out is cheap. Keep system prompt cache-stable.
+  Non-pinned (model-specific, see MODEL-GUIDE.md). Pinned set unchanged
+  (Rules 2, 5, 7, 12-19).
+- **MODEL-GUIDE.md** — síntese de fontes primárias verificadas para GLM-5.2
+  High + SWE-1.7. Linhagem GLM-4.5→4.6→5.2, specs SWE-1.7, estratégia de
+  model pin em agents/, context budget, verificação de citações.
+- **TOOLS-MAP.md** — mapeamento completo do runtime: 27 ferramentas, 7
+  subagentes, 8 hooks, 11 scripts, configs, modos, modelos disponíveis.
+- **4 validators faltantes** em `validate-tool-args.py`: `ask_user_question`,
+  `browser_preview`, `close_browser_preview`, `todo_write`. + 2
+  modo-dependentes: `apply_patch`, `exit_plan_mode`. Hook matcher atualizado
+  em `config.json` e `hooks.v1.json` (22→28 tools).
+
+### Changed
+
+- **Agent model pins atualizados** — `architect.md`, `debugger.md`,
+  `implementer.md`, `researcher.md`, `reviewer.md` agora têm `model: swe`
+  (resolve para SWE-1.7, latest, 256K, 1000 TPS). Sem pin, o default subagent
+  router da Devin CLI resolve para SWE-1.6 (200K), não SWE-1.7 — pin necessário.
+  `subagent_general` herda GLM-5.2 do parent para trabalho complexo.
+- **SKILL-TIERS.md reescrito** — custos de tokens medidos (bytes÷4 do
+  SKILL.md, 2026-08-20) em vez de estimativas. Tabela de modelos alvo
+  (GLM-5.2 + SWE-1.7). Linha lógica atualizada para 200K/256K. Anti-patterns
+  expandidos (subagent general para pesquisa, model pin em read-only).
+- **`context-budget.py`** — reporta share tanto de 200K (GLM-5.2) quanto de
+  256K (SWE-1.7). JSON output inclui `window_256k_share_pct`.
+- **`audit.py`** — `live_base` auto-detecta path (WSL `~/.config/devin`,
+  Linux, Windows `%APPDATA%`) em vez de path stale `C:\Users\leand\...`.
+  Rule count 18→19. README badge rules-18→rules-19.
+- **`hooks.v1.json`** — `%APPDATA%` → `{{APPDATA}}` (Devin-native, expansível).
+- **`agents/debugger.md`** — referência `systematic-debugging` →
+  `diagnosing-bugs` (consolidado em v2.4.0).
+- **`agents/implementer.md`** — referência `subagent-driven-development` →
+  `dispatching-parallel-agents` (consolidado em v2.4.0).
+- **README.md** — badge `rules-18` → `rules-19`.
+- **manifest.json** — `rule_count` 18→19, adicionado `agent_count: 5`,
+  `tool_count: 27`, `docs: [...]`.
+
+### Verified
+
+- Todas as 7 citações arXiv no AGENTS.md verificadas contra fontes primárias
+  (2026-08-20): arXiv:2307.03172, 2606.22528v2, 2607.13083, 2606.30317,
+  2607.25152, ICLR 2026 Workshop (Reward Hacking), Llama 4 Scout 10M.
+- GLM-5.2 specs verificadas: docs.devin.ai/desktop/models (model_uid,
+  pricing, credit multiplier), docs.z.ai/guides/llm/glm-4.6 (200K context,
+  thinking mode, tool-use during inference).
+- SWE-1.7 specs verificadas: cognition.com/blog/swe-1-7 (Kimi K2.7 base,
+  self-compaction, 1000 TPS, alternating length penalty).
+
+### Not repeated (from git history)
+
+- v2.5.0 anterior (Rule 20 memory-hygiene + Rule 21 effort-calibration) foi
+  REVERTIDO por over-engineering. Esta v2.5.0 é diferente: Rule 20 é
+  model-aware (não memory-hygiene), sem Rule 21, sem skills extras.
+- animation-physics removido (domain-specific) — não adicionar skills
+  domain-specific.
+- graphify removido (caro, sem uso) — não adicionar skills caras sem uso.
+- .claude/ path leak corrigido — não vazar paths non-Devin.
+
 ## [2.4.0] - 2026-08-18
 
 ### Added

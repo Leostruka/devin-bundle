@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.4.0':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.4.0')
+if ver != '2.5.1':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.5.1')
 
 # 6. AGENTS.md rule count
 print()
@@ -94,15 +94,15 @@ print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
-for i in range(1, 20):
+for i in range(1, 21):
     # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 18:
-    errors.append('Expected 18 rules, found ' + str(len(rules_found)))
+if len(rules_found) != 19:
+    errors.append('Expected 19 rules, found ' + str(len(rules_found)))
 else:
-    print('  OK  18 rules present')
+    print('  OK  19 rules present')
 
 # 7. config.json hooks references valid scripts
 print()
@@ -154,7 +154,7 @@ readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     ('46 skills', skill_count == 46),
-    ('18 rules', len(rules_found) == 18),  # 1-5,7-19 (Rule 6 removed)
+    ('19 rules', len(rules_found) == 19),  # 1-5,7-20 (Rule 6 removed, Rule 20 added)
     ('5 agents', agent_count == 5),
     ('11 scripts', len(script_files) == 11),
 ]
@@ -259,7 +259,15 @@ for doc, check in docs:
 # 15. Live vs bundle sync
 print()
 print('[15] Live vs bundle sync')
-live_base = r'C:\Users\leand\AppData\Roaming\devin'
+# Auto-detect live config path: WSL ~/.config/devin, Linux ~/.config/devin, Windows %APPDATA%/devin
+home = os.path.expanduser('~')
+appdata = os.environ.get('APPDATA', '')
+if os.path.isdir(os.path.join(home, '.config', 'devin')):
+    live_base = os.path.join(home, '.config', 'devin')
+elif appdata and os.path.isdir(os.path.join(appdata, 'devin')):
+    live_base = os.path.join(appdata, 'devin')
+else:
+    live_base = ''  # no live install found; sync checks will SKIP
 pairs = [('AGENTS.md', 'AGENTS.md'), ('mcp_config.json', 'mcp_config.json')]
 for live_rel, bundle_rel in pairs:
     lp = os.path.join(live_base, live_rel)
@@ -332,11 +340,11 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.4.0' in changelog and ver == '2.4.0':
-    print('  OK  CHANGELOG and manifest both at 2.4.0')
+if '2.5.1' in changelog and ver == '2.5.1':
+    print('  OK  CHANGELOG and manifest both at 2.5.1')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.4.0: ' + str('2.4.0' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.5.1: ' + str('2.5.1' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
@@ -346,13 +354,13 @@ if 'skills-46' in readme:
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
-if 'rules-18' in readme:
-    print('  OK  rules badge = 18')
+if 'rules-19' in readme:
+    print('  OK  rules badge = 19')
 else:
-    errors.append('README rules badge wrong')
+    errors.append('README rules badge wrong (expected rules-19)')
     print('  FAIL rules badge')
-if 'version-2.4.0' in readme:
-    print('  OK  version badge = 2.4.0')
+if 'version-2.5.1' in readme:
+    print('  OK  version badge = 2.5.1')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')

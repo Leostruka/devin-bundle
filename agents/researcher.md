@@ -1,7 +1,7 @@
 ---
 name: researcher
+model: swe
 description: Use for codebase reconnaissance, external documentation lookup, web research, and primary-source investigation. Read-only, cheap model. Delegate when scope is broad or uncertain, when external docs are needed, or when exploration would flood the main context.
-model: sonnet
 allowed-tools:
   - read
   - grep

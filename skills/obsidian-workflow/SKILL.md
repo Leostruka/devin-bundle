@@ -676,7 +676,7 @@ If the project already has an entry but without MOC/wiki links, update it. If th
 
 ### Deviation / exceptions
 
-- If the project is not a software project, fall back to `grill-with-docs` or `domain-modeling`.
+- If the project is not a software project, fall back to `grilling` (With-docs mode) or `domain-modeling`.
 - If the user only wants diagrams, use `references/modern-diagrams.md` and skip the SRS.
 - If the user only wants a database schema, use `03-Database.md` and the `Modules/Database/` notes.
 - If there is no parent context MOC (standalone project), skip step 3 of Step 16.
@@ -967,47 +967,47 @@ The audit checks each `.md` file's frontmatter for:
 #### Audit a single wiki
 
 ```bash
-python .devin/skills/wiki-audit/audit.py --wiki "G:\Meu Drive\vault\Projetos Web\10-Fingertech\projetos\Trinity-ERP\_wiki"
+python .devin/skills/obsidian-workflow/scripts/audit.py --wiki "G:\Meu Drive\vault\Projetos Web\10-Fingertech\projetos\Trinity-ERP\_wiki"
 ```
 
 #### Audit all wikis in a section
 
 ```bash
-python .devin/skills/wiki-audit/audit.py --base "G:\Meu Drive\vault\Projetos Web\10-Fingertech\projetos"
+python .devin/skills/obsidian-workflow/scripts/audit.py --base "G:\Meu Drive\vault\Projetos Web\10-Fingertech\projetos"
 ```
 
 #### Audit all wikis in the vault
 
 ```bash
-python .devin/skills/wiki-audit/audit.py --vault "G:\Meu Drive\vault\Projetos Web"
+python .devin/skills/obsidian-workflow/scripts/audit.py --vault "G:\Meu Drive\vault\Projetos Web"
 ```
 
 #### Fix template broken links
 
 ```bash
-python .devin/skills/wiki-audit/fix_templates.py --wiki <wiki-dir>
-python .devin/skills/wiki-audit/fix_templates.py --base <projects-dir>
+python .devin/skills/obsidian-workflow/scripts/fix_templates.py --wiki <wiki-dir>
+python .devin/skills/obsidian-workflow/scripts/fix_templates.py --base <projects-dir>
 ```
 
 #### Validate wikilinks only
 
 ```bash
-python .devin/skills/wiki-audit/validate_links.py --wiki <wiki-dir>
+python .devin/skills/obsidian-workflow/scripts/validate_links.py --wiki <wiki-dir>
 ```
 
 #### Validate Mermaid syntax only
 
 ```bash
-python .devin/skills/wiki-audit/validate_mermaid.py --wiki <wiki-dir>
-python .devin/skills/wiki-audit/validate_mermaid.py --base <projects-dir>
-python .devin/skills/wiki-audit/validate_mermaid.py --vault <vault-dir>
+python .devin/skills/obsidian-workflow/scripts/validate_mermaid.py --wiki <wiki-dir>
+python .devin/skills/obsidian-workflow/scripts/validate_mermaid.py --base <projects-dir>
+python .devin/skills/obsidian-workflow/scripts/validate_mermaid.py --vault <vault-dir>
 ```
 
 #### Scan for sensitive information
 
 ```bash
-python .devin/skills/wiki-audit/scan_secrets.py --wiki <wiki-dir>
-python .devin/skills/wiki-audit/scan_secrets.py --vault <vault-dir>
+python .devin/skills/obsidian-workflow/scripts/scan_secrets.py --wiki <wiki-dir>
+python .devin/skills/obsidian-workflow/scripts/scan_secrets.py --vault <vault-dir>
 ```
 
 ### Output format
@@ -1068,11 +1068,11 @@ Parse the user's invocation to determine mode:
 
 | Invocation | Mode |
 |---|---|
-| `/memory-bridge <source>` | **Browse** — list all wiki pages from `<source>` |
-| `/memory-bridge <source> "<topic>"` | **Search** — pages from `<source>` mentioning `<topic>` |
-| `/memory-bridge diff` | **Diff** — pages unique to each source; overlap; blind spots |
-| `/memory-bridge diff <source-a> <source-b>` | **Diff** — compare two specific sources |
-| `/memory-bridge map` | **Map** — full origin matrix: every page × each source that touched it |
+| `/obsidian-workflow memory-bridge <source>` | **Browse** — list all wiki pages from `<source>` |
+| `/obsidian-workflow memory-bridge <source> "<topic>"` | **Search** — pages from `<source>` mentioning `<topic>` |
+| `/obsidian-workflow memory-bridge diff` | **Diff** — pages unique to each source; overlap; blind spots |
+| `/obsidian-workflow memory-bridge diff <source-a> <source-b>` | **Diff** — compare two specific sources |
+| `/obsidian-workflow memory-bridge map` | **Map** — full origin matrix: every page × each source that touched it |
 
 Recognized source types: `devin_session`, `manual` (hand-written), `ingest` (wiki-ingest documents).
 

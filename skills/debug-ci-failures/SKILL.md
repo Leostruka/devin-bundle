@@ -130,7 +130,6 @@ After diagnosis, offer to:
 
 ## Integration with other skills
 
-- **`systematic-debugging`** — use for the root cause tracing methodology when the CI failure is a real bug
-- **`diagnosing-bugs`** — use for the disciplined diagnosis loop (red → minimise → hypothesise → instrument → fix → regression-test)
+- **`diagnosing-bugs`** — use for the root cause tracing methodology and disciplined diagnosis loop (red → minimise → hypothesise → instrument → fix → regression-test) when the CI failure is a real bug
 - **`tdd`** — after fixing, write a regression test that would have caught the CI failure
 - **`mutation-testing`** — after fixing, consider running mutation testing on the affected area to find more gaps

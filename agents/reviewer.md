@@ -1,7 +1,7 @@
 ﻿---
 name: reviewer
+model: swe
 description: Use for code review, spec compliance checking, and verification. Read-only with exec for tests. Runs two-axis review (Standards vs Spec). Delegate after implementation tasks, before merges, or when unbiased assessment is needed.
-model: sonnet
 allowed-tools:
   - read
   - grep

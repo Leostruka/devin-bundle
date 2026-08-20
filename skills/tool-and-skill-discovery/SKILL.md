@@ -89,7 +89,7 @@ skill list --path ~/.config/devin
 | Debugging     | `diagnosing-bugs`, `tdd` |
 | Verification  | `verification-before-completion` |
 | Documentation | `context7`, `web_search`, `webfetch` |
-| Planning      | `writing-plans`, `executing-plans`, `to-spec`, `wayfinder` |
+| Planning      | `writing-plans`, `executing-plans`, `planning-pipeline`, `wayfinder` |
 | Context mgt   | `context-folding`, `context-window-hygiene`, `mcp-context-audit` |
 
 ## Creating or updating a skill
