@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Devin bundle installer (Linux / WSL / macOS).
-# Installs FULL Devin CLI setup: AGENTS.md, agents/, skills/, config.json, hooks.v1.json, scripts/, data/, mcp_config.json, credentials.toml
+# Installs FULL Devin CLI setup: AGENTS.md, agents/, skills/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml
 set -euo pipefail
 
 BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -293,22 +293,6 @@ else
   warn "scripts/ not found in bundle"
 fi
 
-# --- 6.5. Install data/ ---
-step "Install data/"
-data_src="$BUNDLE_DIR/data"
-data_dst="$DEVIN_HOME/data"
-if [[ -d "$data_src" ]]; then
-  if [[ $DRY_RUN -eq 1 ]]; then
-    skip "would install data/ (model-context-windows.json)"
-  else
-    mkdir -p "$data_dst"
-    cp -r "$data_src"/* "$data_dst/"
-    ok "data/ installed (model-context-windows.json)"
-  fi
-else
-  warn "data/ not found in bundle"
-fi
-
 # --- 7. Install mcp_config.json (skip if masked) ---
 step "Install mcp_config.json"
 mcp_src="$BUNDLE_DIR/mcp_config.json"
@@ -376,7 +360,7 @@ step "Summary"
 echo "    Skills installed : $installed_skills"
 echo "    Skills updated   : $updated_skills"
 echo "    Skills unchanged : $skipped_skills"
-echo "    Config: AGENTS.md, agents/, config.json, hooks.v1.json, scripts/, data/, mcp_config.json, credentials.toml"
+echo "    Config: AGENTS.md, agents/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml"
 
 if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"

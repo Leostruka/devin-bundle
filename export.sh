@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Devin bundle exporter (Linux / WSL / macOS).
-# Exports FULL Devin CLI setup: AGENTS.md, agents/, skills/, config.json, hooks.v1.json, scripts/, data/, mcp_config.json, credentials.toml
+# Exports FULL Devin CLI setup: AGENTS.md, agents/, skills/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml
 set -euo pipefail
 
 BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -240,32 +240,6 @@ else
   warn "scripts/ directory not found at $scripts_src"
 fi
 
-# --- 6.5. Export data/ ---
-step "Export data/"
-data_src="$DEVIN_HOME/data"
-data_dst="$BUNDLE_DIR/data"
-if [[ -d "$data_src" ]]; then
-  if [[ ! -d "$data_dst" ]]; then
-    if [[ $DRY_RUN -eq 1 ]]; then skip "would create $data_dst"; else mkdir -p "$data_dst"; fi
-  fi
-  for data_file in "$data_src"/*; do
-    [[ -f "$data_file" ]] || continue
-    name="$(basename "$data_file")"
-    dst_file="$data_dst/$name"
-    src_h="$(file_hash "$data_file")"
-    dst_h=""
-    if [[ -f "$dst_file" ]]; then dst_h="$(file_hash "$dst_file")"; fi
-    if [[ "$src_h" == "$dst_h" ]]; then
-      ok "data/$name (unchanged)"
-    else
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would copy data/$name"
-      else cp "$data_file" "$dst_file"; ok "data/$name exported"; fi
-    fi
-  done
-else
-  warn "data/ directory not found at $data_src (non-critical, bundle-local)"
-fi
-
 # --- 7. Export mcp_config.json (mask secrets) ---
 step "Export mcp_config.json"
 mcp_src="$DEVIN_HOME/mcp_config.json"
@@ -394,7 +368,7 @@ fi
 step "Summary"
 echo "    Skills exported  : $exported_skills"
 echo "    Skills unchanged : $unchanged_skills"
-echo "    Config: AGENTS.md, agents/, config.json, hooks.v1.json, scripts/, data/, mcp_config.json, credentials.toml"
+echo "    Config: AGENTS.md, agents/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml"
 
 # --- 11. Optional git commit + push ---
 if [[ $COMMIT -eq 1 && $DRY_RUN -eq 0 ]]; then

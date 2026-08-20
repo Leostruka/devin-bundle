@@ -3,7 +3,7 @@
     "devin":  {
                   "org_id":  "MASKED"
               },
-    "theme_mode":  "terminal-dark",
+    "theme_mode":  "dark",
     "agent":  {
                   "model":  "glm-5-2"
               },
@@ -67,11 +67,6 @@
                                                             "type":  "command",
                                                             "command":  "python \"{{APPDATA}}/devin/scripts/silent-error-review.py\"",
                                                             "timeout":  10
-                                                        },
-                                                        {
-                                                            "type":  "command",
-                                                            "command":  "python \"{{APPDATA}}/devin/scripts/context-pressure.py\"",
-                                                            "timeout":  5
                                                         }
                                                     ]
                                       }

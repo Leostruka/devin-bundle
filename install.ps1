@@ -11,7 +11,6 @@
     - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
     - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
     - scripts\*          → %APPDATA%\devin\scripts\
-    - data\*             → %APPDATA%\devin\data\ (model-context-windows.json)
     - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
     - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
 
@@ -344,22 +343,6 @@ if (Test-Path $scriptsSrc) {
   }
 } else {
   Write-Skip "scripts/ not in bundle"
-}
-
-# --- 5.5. data/ ---
-Write-Step "Install data/ (model reference)"
-$dataSrc = Join-Path $bundleRoot "data"
-$dataDst = Join-Path $devinHome "data"
-if (Test-Path $dataSrc) {
-  if ($DryRun) {
-    Write-Skip "would install data/ (model-context-windows.json)"
-  } else {
-    New-Item -ItemType Directory -Force -Path $dataDst | Out-Null
-    Copy-Item -Path "$dataSrc\*" -Destination $dataDst -Recurse -Force
-    Write-Ok "data/ installed (model-context-windows.json)"
-  }
-} else {
-  Write-Skip "data/ not in bundle"
 }
 
 # --- 6. mcp_config.json ---

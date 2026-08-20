@@ -49,11 +49,6 @@
           "type": "command",
           "command": "python \"%APPDATA%\\devin\\scripts\\silent-error-review.py\"",
           "timeout": 10
-        },
-        {
-          "type": "command",
-          "command": "python \"%APPDATA%\\devin\\scripts\\context-pressure.py\"",
-          "timeout": 5
         }
       ]
     }

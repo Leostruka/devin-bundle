@@ -7,16 +7,6 @@ agent: architect
 
 Design **deep modules**: a lot of behaviour behind a small interface, placed at a clean seam, testable through that interface. Use this language and these principles wherever code is being designed or restructured. The aim is leverage for callers, locality for maintainers, and testability for everyone.
 
-## Academic basis
-
-These aren't opinions — they're grounded in decades of software engineering research:
-
-- **Deep modules & information hiding.** Ousterhout, *A Philosophy of Software Design* (2018), Stanford: the best modules have interfaces much simpler than their implementations. Builds on Parnas 1972 (information hiding) — each module encapsulates a design decision that doesn't show in its interface.
-- **Modularity improves modifiability.** Blincoe et al. 2023 (ACE): controlled experiment, 40 participants — higher modularity designs led to significantly better task completion success. Understanding trended lower for high-modularity, suggesting modularity needs active teaching support.
-- **Coupling affects modifiability.** Selby & Basili 1984 (J. Systems & Software): experimental investigation — module coupling (global vs parameterized) affects system modifiability, though the type of modification also matters.
-- **Cohesion/coupling for remodularization.** Bavota et al. 2016 (TOSEM): 100 open-source systems + 29-developer survey — analyzed whether cohesion/coupling balance is what developers actually pursue when modularizing. Lessons learned inform remodularization recommenders.
-- **Depth-as-leverage, not depth-as-ratio.** We reject Ousterhout's implementation-lines-to-interface-lines ratio (rewards padding) in favour of depth-as-leverage: behaviour per unit of interface learned. See "Rejected framings" below.
-
 ## Glossary
 
 Use these terms exactly — don't substitute "component," "service," "API," or "boundary." Consistent language is the whole point.

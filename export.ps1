@@ -295,17 +295,6 @@ if ($scriptCount -eq 0 -and -not (Test-Path $scriptsSrc)) {
   Write-Warn "scripts/ not found at $scriptsSrc"
 }
 
-# --- 5.5. data/ (model reference) ---
-Write-Step "Export data/ (model reference)"
-$dataSrc = Join-Path $devinHome "data"
-$dataDst = Join-Path $bundleRoot "data"
-if (Test-Path $dataSrc) {
-  $dataCount = Copy-DirRecursive -src $dataSrc -dst $dataDst -label "data/"
-  if ($dataCount -eq 0) { Write-Skip "data/ empty" }
-} else {
-  Write-Warn "data/ not found at $dataSrc (non-critical, bundle-local)"
-}
-
 # --- 6. mcp_config.json ---
 Write-Step "Export mcp_config.json (MCP servers)"
 if (Test-Path $mcpSrc) {

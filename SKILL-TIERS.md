@@ -14,22 +14,11 @@ Use isto (~1700 tok) em vez de `skill list` (~1600 tok) — categorizado por dom
 | `context-folding` | Doc grande em 200k (offload+grep) | 2500 | Doc/log > 50k tok |
 | `context-window-hygiene` | clear vs compact | 1200 | Contexto apertando |
 | `mcp-context-audit` | Custos de tool defs dos MCPs | 1500 | Antes de adicionar MCP |
-| `mcp-lazy-enablement` | Enable/disable MCP por tarefa | 1400 | MCP ativo mas não usado |
 | `dispatching-parallel-agents` | Subagents têm 200k próprio + plan execution | 9700 | 2+ tarefas independentes |
 | `verification-before-completion` | Não declarar pronto sem verificar | 800 | Antes de "terminei" |
 | `tdd` | Test-first | 2000 | Feature/bugfix |
 
 Raramente >3 por tarefa (~5000 tok).
-
-## Context tools (scripts, não skills — rodam automaticamente)
-
-| Tool | Faz | Quando |
-|---|---|---|
-| `context-budget.py` | Mede tokens de AGENTS.md (SessionStart) | Automático no início |
-| `context-budget.py --full` | Mede AGENTS.md + MCP + skills dir + model-aware thresholds | Manual, auditoria |
-| `context-pressure.py` | Estima crescimento cumulativo de contexto (PostToolUse) | Automático pós-tool |
-| `context-pressure.py --report` | Relatório de pressão atual | Manual, checar contexto |
-| `data/model-context-windows.json` | Tabela de modelos + context windows + thresholds | Referência para scripts |
 
 ## Documentação
 
@@ -80,7 +69,7 @@ Raramente >3 por tarefa (~5000 tok).
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `obsidian-workflow` | Build + Reorganize + Audit + Cross-session (4 modos) | 14674 | Qualquer operação Obsidian |
+| `obsidian-workflow` | Build + Reorganize + Audit + Cross-session (4 modos) | 12220 | Qualquer operação Obsidian |
 
 Custo alto. Invoque só quando for operação Obsidian real.
 
@@ -106,8 +95,6 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `handoff` | Compacta p/ outro agente | 375 | Passar trabalho |
 | `wait-what` | Re-explica mensagem | 125 | Reexplicar |
 | `autonomous-gates` | Gates p/ modo autônomo | 4000 | "Run unattended" |
-| `memory-hygiene` | Stateless vs managed vs naive memory | 1600 | Decidir auto-memory / MEMORY.md |
-| `effort-calibration` | Calibrar effort à dificuldade | 2400 | Over-thinking / escolher effort |
 
 ## Setup (one-time)
 
@@ -134,7 +121,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 ## Linha lógica para 200k
 
 ```
-Tarefa → AGENTS.md (~6300 tok, fixo) → leia SKILL-TIERS.md (~1800 tok)
+Tarefa → AGENTS.md (4567 tok, fixo) → leia SKILL-TIERS.md (~1700 tok)
   → identifique domínio → invoque 1-3 skills (~3000-7500 tok)
   → trabalho (50k-150k tok)
   >60% usado? → context-folding (doc) | dispatching-parallel-agents (paralelo) | clear (tarefa mudou)
@@ -147,7 +134,6 @@ Tarefa → AGENTS.md (~6300 tok, fixo) → leia SKILL-TIERS.md (~1800 tok)
 |---|---|
 | `skill list` sem necessidade | Leia SKILL-TIERS.md |
 | `primeagent-reference` sem motivo de pesquisa | Não invocar — é referência |
-| MCPs sem usar | Só ativar quando preciso (`mcp-lazy-enablement`) |
+| MCPs sem usar | Só ativar quando preciso |
 | Compact quando precisa do detalhe | `context-folding` |
-| `obsidian-workflow` para edição pontual (~14674 tok) | Só para operações Obsidian reais |
-| Ignorar `context-pressure.py` warnings | Clear/compact quando avisar |
+| `obsidian-workflow` para edição pontual (~12220 tok) | Só para operações Obsidian reais |

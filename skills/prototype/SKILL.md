@@ -6,25 +6,6 @@ description: Use when a throwaway prototype is the fastest way to answer a desig
 
 A prototype is **throwaway code that answers a question**. The question decides the shape.
 
-## When to prototype vs discuss vs spec
-
-Design questions live on a **fidelity spectrum**. Match the fidelity to the question:
-
-- **Low fidelity — discuss.** Basic frame, obvious structure ("modal has cancel + confirm"). Resolve in conversation or a grilling session. No code needed.
-- **High fidelity — prototype.** "How should it look?", "How should it behave under condition X?", "Does this state model feel right?" These are hard to reason about on paper — build something concrete to react to.
-- **Mixed fidelity — prototype then spec.** Resolve the basic frame in discussion, then prototype the uncertain parts. The prototype's validated decisions feed back into the spec.
-
-**Rule of thumb:** if the question is about *structure or behavior you can't picture clearly*, prototype. If you can answer it in a sentence, discuss. Spec-only development skips the fidelity jump that catches design errors early — prototyping is the cheapest way to find out you were wrong.
-
-## Academic basis
-
-Prototyping is not a vibe — it's empirically validated against specifying:
-
-- **Less code, less effort, equivalent quality.** Boehm et al. 1984 (IEEE TSE, "Prototyping Versus Specifying"): 7-team experiment, prototyping yielded ~40% less code and 45% less effort with equivalent performance, higher ease of use and ease of learning. Specifying produced more coherent designs and easier integration — so prototype for uncertainty, spec for integration.
-- **Better match with user needs.** Gordon & Bieman 1993 (Software Quality Journal): across reviewed sources, 19 indicate prototyping better matched actual user needs; 16 indicate improved ease of use. "Omissions of function are often difficult for the user to recognize in formal specifications."
-- **Spikes reduce risk.** Al Hashimi & Gravell 2020 (CSCI, IEEE): empirical study — primary role of agile spikes is risk management through investigation to reveal uncertainty in user stories.
-- **Fidelity is multi-dimensional.** Arnason et al. 2023 (Empirical Software Engineering): Prototyping Aspects Model (PAM) from 33 studies + 12 companies — purpose, scope, media, use, exploration strategy. Mixed-fidelity prototyping outperforms single-fidelity (McCurdy et al. 2006, CHI).
-
 ## Pick a branch
 
 Identify which question is being answered — from the user's prompt, the surrounding code, or by asking if the user is around:

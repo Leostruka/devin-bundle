@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.6.0':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.6.0')
+if ver != '2.4.0':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.4.0')
 
 # 6. AGENTS.md rule count
 print()
@@ -94,15 +94,15 @@ print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
-for i in range(1, 22):
+for i in range(1, 20):
     # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 20:
-    errors.append('Expected 20 rules, found ' + str(len(rules_found)))
+if len(rules_found) != 18:
+    errors.append('Expected 18 rules, found ' + str(len(rules_found)))
 else:
-    print('  OK  20 rules present')
+    print('  OK  18 rules present')
 
 # 7. config.json hooks references valid scripts
 print()
@@ -153,10 +153,10 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('49 skills', skill_count == 49),
-    ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
+    ('46 skills', skill_count == 46),
+    ('18 rules', len(rules_found) == 18),  # 1-5,7-19 (Rule 6 removed)
     ('5 agents', agent_count == 5),
-    ('12 scripts', len(script_files) == 12),
+    ('11 scripts', len(script_files) == 11),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
@@ -332,27 +332,27 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.6.0' in changelog and ver == '2.6.0':
-    print('  OK  CHANGELOG and manifest both at 2.6.0')
+if '2.4.0' in changelog and ver == '2.4.0':
+    print('  OK  CHANGELOG and manifest both at 2.4.0')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.6.0: ' + str('2.6.0' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.4.0: ' + str('2.4.0' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-49' in readme:
-    print('  OK  skills badge = 49')
+if 'skills-46' in readme:
+    print('  OK  skills badge = 46')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
-if 'rules-20' in readme:
-    print('  OK  rules badge = 20')
+if 'rules-18' in readme:
+    print('  OK  rules badge = 18')
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')
-if 'version-2.6.0' in readme:
-    print('  OK  version badge = 2.6.0')
+if 'version-2.4.0' in readme:
+    print('  OK  version badge = 2.4.0')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')
