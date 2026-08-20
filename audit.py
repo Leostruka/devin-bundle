@@ -85,8 +85,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.5.0':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.5.0')
+if ver != '2.6.0':
+    warnings.append('Manifest version is ' + str(ver) + ', expected 2.6.0')
 
 # 6. AGENTS.md rule count
 print()
@@ -153,10 +153,10 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('48 skills', skill_count == 48),
+    ('49 skills', skill_count == 49),
     ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
     ('5 agents', agent_count == 5),
-    ('11 scripts', len(script_files) == 11),
+    ('12 scripts', len(script_files) == 12),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
@@ -332,17 +332,17 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.5.0' in changelog and ver == '2.5.0':
-    print('  OK  CHANGELOG and manifest both at 2.5.0')
+if '2.6.0' in changelog and ver == '2.6.0':
+    print('  OK  CHANGELOG and manifest both at 2.6.0')
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.5.0: ' + str('2.5.0' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has 2.6.0: ' + str('2.6.0' in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-48' in readme:
-    print('  OK  skills badge = 48')
+if 'skills-49' in readme:
+    print('  OK  skills badge = 49')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
@@ -351,8 +351,8 @@ if 'rules-20' in readme:
 else:
     errors.append('README rules badge wrong')
     print('  FAIL rules badge')
-if 'version-2.5.0' in readme:
-    print('  OK  version badge = 2.5.0')
+if 'version-2.6.0' in readme:
+    print('  OK  version badge = 2.6.0')
 else:
     warnings.append('README version badge may be wrong')
     print('  WARN version badge')

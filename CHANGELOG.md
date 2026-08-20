@@ -5,6 +5,70 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-08-20
+
+### Added
+
+- **Plugin format support** — `.devin-plugin/plugin.json` manifest added.
+  The bundle is now installable via `devin plugins install Leostruka/devin-bundle`
+  (Devin CLI ≥ 3000.4.x, closed beta). Skills available as
+  `/devin-bundle:<skill>` slash commands. `hooks.json` added for
+  plugin-format hook registration (relative paths to plugin root).
+  Manual installer (`install.sh` / `install.ps1`) remains for all versions.
+- **`data/model-context-windows.json`** — reference table of 15 LLM
+  context windows verified against models.dev and adaptiverecall.com
+  (Aug 2026). Includes retrieval quality ratings, CAPI limit warnings
+  (GitHub Copilot enforces smaller limits than base models), statistics
+  (median 203K, 25% offer 1M+), and threshold definitions (warn 60%,
+  critical 75%, clear 80%). Used by `context-budget.py` and
+  `context-pressure.py` for model-aware thresholds.
+- **`scripts/context-pressure.py`** — PostToolUse hook that estimates
+  cumulative context-window consumption by tracking tool output sizes
+  across a session via a marker file. Warns to stderr at 60%/75%/80%
+  thresholds. Supports `--report` (manual check) and `--reset` (clear
+  marker). Addresses the video's thesis: "you need full transparency of
+  what is happening in your context window at any time" and "I would
+  start getting scared once I had about 50K tokens left."
+- **`mcp-lazy-enablement` skill** — guides selective MCP server
+  enable/disable per task. Classifies servers as always-on, on-demand,
+  rarely-used, never-used. Addresses the video's MCP paranoia: "I tend
+  to be extremely, extremely cautious about adding MCP servers to my
+  setup because I know how important having a lean context window is."
+
+### Changed
+
+- **`context-budget.py` enhanced** — new `--full` mode measures AGENTS.md
+  + MCP overhead + skills directory with model-aware thresholds. New
+  `--model` flag selects context window from `data/model-context-windows.json`
+  for accurate percentage calculations. Default window changed from 200K
+  to 128K (GLM-5.2 default in config.json).
+- **Rule 18 updated** — references `mcp-lazy-enablement`,
+  `context-budget.py --full`, `context-pressure.py`, and
+  `data/model-context-windows.json`.
+- **`hooks.v1.json` + `config.json`** — `context-pressure.py` registered
+  as PostToolUse hook (timeout 5s, runs after every tool call).
+- **`SKILL-TIERS.md`** — added `mcp-lazy-enablement` to Núcleo section,
+  new "Context tools" section for scripts, updated anti-patterns.
+- **`manifest.json`** — version bumped to 2.6.0, skill_count 48→49,
+  script_count 11→12, added `plugin_format`, `plugin_manifest`,
+  `data_files` fields.
+- **README.md** — added plugin install instructions (Option A),
+  updated badges (49 skills, 20 rules, v2.6.0), added
+  `data/model-context-windows.json` to documentation table.
+
+### Source
+
+All additions are based on "Context Windows Explained for Coding Agents"
+(Matt Pocock, AI Hero). Key concepts applied:
+- Context window = input + output tokens, hard-capped by provider
+- Lost-in-the-middle: middle of long chats deprioritized by attention
+- Bigger window ≠ better retrieval (Llama 4 Scout: 10M, poor retrieval)
+- Clear over compact (compact is lossy, use only to preserve task intent)
+- MCP servers bloat context rapidly (audit before adding, enable on demand)
+- Full transparency of context usage at any time (analogous to Claude
+  Code's `/context` command)
+- Don't write very large rules files (self-defeating: degrades retrieval)
+
 ## [2.5.0] - 2026-08-19
 
 ### Added

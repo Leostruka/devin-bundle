@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-48-blue.svg)](SKILL-TIERS.md)
+[![Skills](https://img.shields.io/badge/skills-49-blue.svg)](SKILL-TIERS.md)
 [![Rules](https://img.shields.io/badge/rules-20-green.svg)](AGENTS.md)
-[![Version](https://img.shields.io/badge/version-2.5.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.6.0-orange.svg)](CHANGELOG.md)
 
 Export + installer for [Devin CLI](https://devin.ai) to synchronize your **entire setup** across machines.
 Bundles skills, consolidated rules, config, hooks, scripts, MCP, and credentials —
@@ -17,6 +17,17 @@ navigation layer; for detail, read the source.
 ---
 
 ## Quick start
+
+### Option A: Plugin install (Devin CLI ≥ 3000.4.x, closed beta)
+
+```bash
+devin plugins install Leostruka/devin-bundle
+```
+
+Skills available as `/devin-bundle:<skill>` slash commands. Rules, hooks,
+MCP servers, and subagents load automatically in every session.
+
+### Option B: Manual install (all versions)
 
 ```bash
 git clone https://github.com/Leostruka/devin-bundle.git
@@ -91,11 +102,12 @@ transfer manually, `.\install.ps1 -RestoreSecrets` on target.
 
 | Document | Purpose |
 |---|---|
-| [AGENTS.md](AGENTS.md) | The 18 rules (loaded by Devin CLI every session) |
+| [AGENTS.md](AGENTS.md) | The 20 rules (loaded by Devin CLI every session) |
 | [SKILL-TIERS.md](SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery) |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | [SECURITY.md](SECURITY.md) | Security policy |
+| [data/model-context-windows.json](data/model-context-windows.json) | LLM context window reference table (verified Aug 2026) |
 
 For skill count, hook list, or rule details, read the source files — not this README.
 

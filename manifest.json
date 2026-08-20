@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -181,6 +181,13 @@
       "original_path": "%APPDATA%\\devin\\skills\\mcp-context-audit",
       "exported_at": "2026-08-18T00:00:00.000000-03:00",
       "export_hash": "1CA1E67D8A03C084EBDD6EC9F9D4F738832A63C8B22BD2360551FEF3D4BFA549"
+    },
+    {
+      "name": "mcp-lazy-enablement",
+      "source": "created:Devin bundle (context-window research)",
+      "purpose": "Use when deciding which MCP servers to keep active, when context feels bloated from unused MCP tools, when a task only needs one MCP server temporarily, or when auditing which servers to enable/disable per task. Guides selective MCP enablement to minimize context-window tax.",
+      "original_path": "%APPDATA%\\devin\\skills\\mcp-lazy-enablement",
+      "exported_at": "2026-08-20T00:00:00.000000-03:00"
     },
     {
       "name": "mutation-testing",
@@ -397,8 +404,13 @@
       "export_hash": "9DE5E77042DA2D7D83AFF877F1E30190323B653A9AD367320D1B8361B9073F6C"
     }
   ],
-  "skill_count": 48,
+  "skill_count": 49,
   "rule_count": 20,
-  "script_count": 11,
-  "mcp_count": 1
+  "script_count": 12,
+  "mcp_count": 1,
+  "plugin_format": true,
+  "plugin_manifest": ".devin-plugin/plugin.json",
+  "data_files": [
+    "data/model-context-windows.json"
+  ]
 }
