@@ -19,14 +19,14 @@ if (process.argv[2] && process.argv[2] !== '--stdin') {
 // Find mermaid in global node_modules — portable lookup.
 // 1. Try require.resolve (checks local + NODE_PATH)
 // 2. Try npm root -g (portable across OS/install methods)
-// 3. Fall back to known paths (Windows scoop, Linux global)
+// 3. Fall back to common global paths (Linux, macOS, Windows via env vars)
 const globalModulePaths = [
-  'C:\\Users\\Fingertech\\scoop\\persist\\nodejs\\bin\\node_modules',
-  'C:\\Users\\Fingertech\\scoop\\apps\\nodejs\\current\\lib\\node_modules',
   '/usr/local/lib/node_modules',
   '/usr/lib/node_modules',
   path.join(process.env.HOME || '', '.npm-global/lib/node_modules'),
   path.join(process.env.HOME || '', '.nvm/versions/node', process.version.slice(1), 'lib/node_modules'),
+  path.join(process.env.APPDATA || '', 'npm/node_modules'),
+  path.join(process.env.LOCALAPPDATA || '', 'npm/node_modules'),
 ];
 let mermaidPath = null;
 
