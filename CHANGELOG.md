@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (BOM em agent files — YAML frontmatter parsing bug)
+
+- **agents/architect.md, debugger.md, implementer.md, reviewer.md**: 4 de 5
+  agent files tinham BOM (Byte Order Mark, EF BB BF) no início do arquivo.
+  BOM em YAML frontmatter pode impedir o parser de reconhecer o delimitador
+  `---`, fazendo com que `model: swe-1-7` não seja parseado — o agent cairia
+  para SWE-1.6 (PAGO $0.5/$2.5 MTok) em vez de SWE-1.7 (gratuito, 262K).
+  Isso seria o mesmo bug de custo corrigido na iter 6.7, mas causado por
+  BOM em vez de alias errado. BOM removido dos 4 files no bundle e nos
+  instalados (~/.config/devin/agents/). researcher.md já estava sem BOM.
+- **install.sh, export.sh, install.ps1, export.ps1**: adicionada função
+  `strip_bom` (bash) / `Invoke-StripBom` (PowerShell) que detecta e remove
+  BOM de agent files após install/export. Previne regressão se os files
+  forem editados por editores que adicionam BOM (Notepad, alguns editores
+  Windows). Funciona em dry-run (não remove, apenas reporta). Validado:
+  bash -n OK, PowerShell ScriptBlock::Create OK, teste funcional em /tmp
+  removeu BOM corretamente.
+
+### Added (dedup AGENTS.md case variants — Windows/WSL bug workaround)
+
+- **install.sh, export.sh, install.ps1, export.ps1**: adicionada função
+  `dedup_agents_md` (bash) / `Invoke-DedupAgentsMd` (PowerShell) que
+  detecta e remove duplicatas `agents.md` (lowercase) em filesystems
+  case-sensitive (Linux ext4). Em filesystems case-insensitive
+  (Windows/WSL `/mnt/c`, macOS default), onde `AGENTS.md` e `agents.md`
+  são o mesmo arquivo, emite aviso sobre o bug conhecido do Devin CLI
+  (lista a rule 2x, duplicando ~5463 tok de contexto). A detecção usa
+  um teste de case-sensitivity runtime (cria arquivo lowercase, verifica
+  se uppercase existe). Funciona em dry-run (não remove, apenas reporta).
+  Validado: bash -n OK nos 2 .sh, PowerShell ScriptBlock::Create OK nos
+  2 .ps1, teste funcional em /tmp (ext4 case-sensitive) removeu
+  agents.md duplicado corretamente.
+
+### Fixed (MODEL-GUIDE.md — dados de GLM-4.6 atribuídos a GLM-5.2)
+
+- **GLM-5.2 atributos corrigidos**: Max output era "128K tokens (GLM-4.6
+  docs)" → corrigido para "131,072 tokens (z.ai/blog/glm-5.2)". Input/output
+  cost removidos ($1.4/$4.4 eram de GLM-4.6) — GLM-5.2 High é gratuito,
+  custos não se aplicam. Fontes atualizadas de "docs.z.ai/guides/llm/glm-4.6"
+  para "z.ai/blog/glm-5.2" e "`devin models list`". Thinking mode
+  esclarecido: "Habilitado por padrão (high)" em vez de só "Habilitado".
+
 ### Added (subagent profile cost awareness — evitar subagent_explore)
 
 - **MODEL-GUIDE.md: profiles built-in vs custom agents (custo)** —

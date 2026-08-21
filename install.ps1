@@ -264,6 +264,65 @@ function Test-HasMasked($path) {
   return $content -match "MASKED"
 }
 
+# --- Strip BOM from file (if present) ---
+# BOM (EF BB BF) in YAML frontmatter can prevent parsers from recognizing
+# the `---` delimiter, causing model/name/allowed-tools fields to be ignored.
+function Invoke-StripBom($path) {
+  if (-not (Test-Path $path)) { return }
+  $bytes = [IO.File]::ReadAllBytes($path)
+  if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+    if ($DryRun) {
+      Write-Skip "would strip BOM from $(Split-Path $path -Leaf)"
+    } else {
+      $content = [Text.Encoding]::UTF8.GetString($bytes, 3, $bytes.Length - 3)
+      $utf8NoBom = [Text.UTF8Encoding]::new($false)
+      [IO.File]::WriteAllText($path, $content, $utf8NoBom)
+      Write-Ok "stripped BOM from $(Split-Path $path -Leaf)"
+    }
+  }
+}
+
+# --- Case sensitivity detection ---
+# Returns $true if case-sensitive, $false if case-insensitive.
+function Test-CaseSensitive($path) {
+  $testName = ".__casetest_$(Get-Random)"
+  $testFile = Join-Path $path $testName
+  try {
+    Set-Content -Path $testFile -Value "x" -ErrorAction Stop
+    $upperFile = Join-Path $path $testName.ToUpper()
+    $exists = Test-Path $upperFile
+    Remove-Item $testFile -Force -ErrorAction SilentlyContinue
+    return -not $exists
+  } catch {
+    return $true  # assume case-sensitive on error
+  }
+}
+
+# --- Dedup AGENTS.md case variants ---
+# On case-sensitive FSs: removes agents.md (lowercase) if it exists as a
+# separate file. On case-insensitive FSs (Windows/WSL /mnt/c, macOS default):
+# AGENTS.md and agents.md are the same file — warns about Devin CLI duplicate
+# listing (known bug, not fixable from filesystem level).
+function Invoke-DedupAgentsMd($dir, $label) {
+  $canonical = Join-Path $dir "AGENTS.md"
+  if (-not (Test-Path $canonical)) { return }
+
+  if (Test-CaseSensitive $dir) {
+    $lower = Join-Path $dir "agents.md"
+    if (Test-Path $lower) {
+      Write-Warn "${label}: found agents.md (lowercase) duplicate — removing"
+      if ($DryRun) {
+        Write-Skip "would remove agents.md duplicate"
+      } else {
+        Remove-Item $lower -Force
+        Write-Ok "${label}: removed agents.md duplicate (kept AGENTS.md)"
+      }
+    }
+  } else {
+    Write-Skip "${label}: case-insensitive FS — Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
+  }
+}
+
 # --- Header ---
 
 Write-Host "================================================" -ForegroundColor DarkGray
@@ -296,6 +355,11 @@ if (-not $DryRun) {
 Write-Step "Install AGENTS.md"
 Install-File -src $rulesSrc -dst $rulesDst -label "AGENTS.md"
 
+# --- 1b. Dedup AGENTS.md case variants (Windows/WSL bug workaround) ---
+Write-Step "Dedup AGENTS.md case variants"
+Invoke-DedupAgentsMd $devinHome "target"
+Invoke-DedupAgentsMd $bundleRoot "bundle"
+
 # --- 2. agents/ ---
 Write-Step "Install agent profiles"
 if (Test-Path $agentsSrc) {
@@ -305,6 +369,17 @@ if (Test-Path $agentsSrc) {
   }
 } else {
   Write-Skip "agents/ not in bundle"
+}
+
+# --- 2b. Strip BOM from agent files (YAML frontmatter safety) ---
+Write-Step "Strip BOM from agent files"
+$agentFiles = Get-ChildItem $agentsDst -Filter "*.md" -ErrorAction SilentlyContinue
+if ($agentFiles) {
+  foreach ($af in $agentFiles) {
+    Invoke-StripBom $af.FullName
+  }
+} else {
+  Write-Skip "no agent files to check"
 }
 
 # --- 3. skills/ ---

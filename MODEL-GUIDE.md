@@ -7,14 +7,13 @@ destes dois modelos no Devin CLI.
 
 | Atributo | Valor | Fonte |
 |---|---|---|
-| model_uid | `glm-5-2` | Devin docs desktop/models |
+| model_uid | `glm-5-2` | `devin models list` |
 | Provider | ZAI (Zhipu AI) | Devin docs |
-| Context window | 200K tokens | Linhagem GLM-4.6 (docs.z.ai) |
-| Max output | 128K tokens | docs.z.ai/guides/llm/glm-4.6 |
-| Thinking mode | Habilitado por padrão | docs.z.ai (thinking: {type: "enabled"}) |
-| Tool use | During inference (nativo) | docs.z.ai, cirra.ai analysis |
-| Input cost | $1.4/M tokens | Devin docs |
-| Output cost | $4.4/M tokens | Devin docs |
+| Context window | 200K tokens | `devin models list` |
+| Max output | 131,072 tokens | z.ai/blog/glm-5.2, docs.z.ai |
+| Thinking mode | Habilitado por padrão (high) | z.ai/blog/glm-5.2 |
+| Tool use | During inference (nativo) | z.ai/blog/glm-5.2 |
+| Custo | **Gratuito e ilimitado** | `devin models list` (Free) |
 | Cache read | $0.26/M tokens | Devin docs |
 | Cache write | $0/M | Devin docs |
 | Credit multiplier | 1.5 (High) | Devin docs |
@@ -260,7 +259,7 @@ Total fixo                   ~5463-16463 tok (2.73-8.23%)
 Disponível para trabalho     ~183537-194537 tok (91.77-97.27%)
 ```
 
-> Nota: este arquivo (MODEL-GUIDE.md) custa ~3726 tok (1.86%) se lido.
+> Nota: este arquivo (MODEL-GUIDE.md) custa ~3711 tok (1.86%) se lido.
 > É leitura opcional — não carrega automaticamente.
 
 ## Context budget (262K SWE-1.7 subagent)

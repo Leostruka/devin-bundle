@@ -166,13 +166,13 @@ para a latest version na família.
 System prompt + tool defs    ~???? tok (Devin runtime, não mensurável)
 AGENTS.md                    ~5463 tok (2.73%)
 SKILL-TIERS.md (se lido)     ~1782 tok (0.89%)
-MODEL-GUIDE.md (se lido)     ~3726 tok (1.86%)
+MODEL-GUIDE.md (se lido)     ~3711 tok (1.86%)
 TOOLS-MAP.md (se lido)       ~2478 tok (1.24%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
 MCP tool defs (atlassian)    ~???? tok (medir com mcp-context-audit)
 ─────────────────────────────────────────────
 Total fixo (sem docs opt)    ~5463 tok (2.73%)
-Total c/ docs opt            ~13449 tok (6.72%)
+Total c/ docs opt            ~13434 tok (6.72%)
 Disponível para trabalho     ~186551-194537 tok (93.28-97.27%)
 ```
 
