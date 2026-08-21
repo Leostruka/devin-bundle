@@ -8,14 +8,25 @@ Stdin payload (per /cli/extensibility/hooks/lifecycle-hooks):
 Exit codes (per /cli/extensibility/hooks/overview#exit-codes):
   0 = allow, 2 = block.
 
-Validates the documented Devin CLI tool names:
-  read, write, edit, notebook_read, notebook_edit, grep, glob, exec,
-  webfetch, run_subagent, read_subagent, mcp_call_tool, mcp_read_resource,
-  plus web_search / find_file_by_name when those tools are enabled.
+Scope (ALTK SPARC, arXiv:2603.15473, ACM CAIS 2026):
+  Validates arguments where hallucinated values cause real failures:
+  - Path tools (read/write/edit/notebook_*): absolute path, parent dir exists
+  - Search tools (grep/glob/find_file_by_name): regex validity, path exists
+  - Network tools (webfetch/web_search): URL scheme, stopword-only queries
+  - Delegation tools (run_subagent): profile name against VALID_PROFILES
+  - MCP tools (mcp_call_tool/mcp_read_resource): required fields
+  - Control tools (skill/request_scope): command/scope enum validation
+  - UI tools (ask_user_question/browser_preview/todo_write): required fields,
+    option counts, URL scheme, status enum
 
-Source: ALTK SPARC (arXiv:2603.15473, ACM CAIS 2026)
-  Semantic Pre-execution Analysis for Reliable Calls: validates tool arguments
-  against specifications before execution, preventing hallucinated arguments.
+Excluded (matcher does not fire — tool fails clearly without validation):
+  get_output, write_to_process, kill_shell (shell_id presence is trivial),
+  read_subagent (agent_id presence is trivial),
+  close_browser_preview (preview_id presence is trivial),
+  mcp_list_tools, mcp_list_servers (no required args to validate),
+  apply_patch (args vary; fail-open), exit_plan_mode (no required args).
+  Removing these from the matcher saves Python process spawns with zero
+  loss of real validation value.
 """
 import sys, json, os, re
 
@@ -267,7 +278,6 @@ CHECKS = {
     "read": check_read,
     "write": check_write,
     "edit": check_edit,
-    "apply_patch": check_apply_patch,
     "notebook_read": check_notebook_read,
     "notebook_edit": check_notebook_edit,
     "grep": check_grep,
@@ -276,21 +286,13 @@ CHECKS = {
     "web_search": check_web_search,
     "webfetch": check_webfetch,
     "run_subagent": check_run_subagent,
-    "read_subagent": check_read_subagent,
     "mcp_call_tool": check_mcp_call_tool,
     "mcp_read_resource": check_mcp_read_resource,
-    "get_output": check_get_output,
-    "write_to_process": check_write_to_process,
-    "kill_shell": check_kill_shell,
     "skill": check_skill,
     "request_scope": check_request_scope,
-    "mcp_list_tools": check_mcp_list_tools,
-    "mcp_list_servers": check_mcp_list_servers,
     "ask_user_question": check_ask_user_question,
     "browser_preview": check_browser_preview,
-    "close_browser_preview": check_close_browser_preview,
     "todo_write": check_todo_write,
-    "exit_plan_mode": check_exit_plan_mode,
 }
 
 

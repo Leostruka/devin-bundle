@@ -133,8 +133,8 @@ supports it. See [Lifecycle Hooks](https://docs.devin.ai/cli/extensibility/hooks
 | PreToolUse | `^exec$` | `check-ai-signature.py` | Blocks AI signatures in commit messages (`-m` and `-F`/`--file`) |
 | PreToolUse | `^exec$` | `check-push-green.py` | Blocks push without green tests + held-out gap check (Rule 16) |
 | PreToolUse | `^(write\|edit)$` | `check-ai-signature.py` | Blocks AI signatures in file content |
-| PreToolUse | 28 tool names | `validate-tool-args.py` | Validates paths, regexes, URLs, profiles before execution (ALTK SPARC) |
-| PostToolUse | all | `silent-error-review.py` | Flags `success:true` with error indicators, empty reads, no-match searches |
+| PreToolUse | 19 tool names | `validate-tool-args.py` | Validates paths, regexes, URLs, profiles, UI fields before execution (ALTK SPARC) |
+| PostToolUse | `^(exec\|mcp_call_tool)$` | `silent-error-review.py` | Flags `success:true` with error indicators in verbose/tabular output (ALTK scope) |
 | PostCompaction | all | `constraint-pinning.py` | Detects dropped constraints, writes re-injection marker (Rule 14) |
 | UserPromptSubmit | all | `constraint-pinning.py` | Re-injects pinned constraints when a marker exists |
 | SessionStart | all | `constraint-pinning.py` | Clears stale markers from prior sessions |

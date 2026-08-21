@@ -5,6 +5,40 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **`silent-error-review.py` scope narrowed (noise reduction)** — PostToolUse
+  matcher changed from `""` (all tools) to `^(exec|mcp_call_tool)$`. The ALTK
+  Silent Error Review component is "best suited for tool responses that are
+  verbose and/or based on tabular responses" (arXiv:2603.15473). The previous
+  broad matcher fired on every `read`, `grep`, `glob`, `todo_write`,
+  `ask_user_question`, etc., injecting `additionalContext` noise into the
+  context window on every tool call. Empty-output checks for `read`/`webfetch`
+  and no-match checks for `grep`/`glob`/`find_file_by_name` were removed —
+  those conditions are already visible to the agent and are not in ALTK's
+  scope. The `error` regex now requires a colon (`^\s*error\s*:`) to avoid
+  false positives on "error handling"/"error recovery". The test-failure
+  regex now requires a non-zero count (`[1-9]\d*`). At most one finding is
+  emitted per call. The arXiv:2607.07405 citation is now characterized
+  correctly as the *problem* (78% silent failures); the paper's *intervention*
+  (pre-execution gates) is implemented separately as `destructive-gate.py`.
+  Addresses PR #1 review comment on hook noise.
+- **`validate-tool-args.py` matcher narrowed (latency reduction)** — PreToolUse
+  matcher reduced from 28 to 19 tools. Removed 9 tools where validation is
+  trivial or absent: `get_output`, `write_to_process`, `kill_shell` (only
+  checked `shell_id` presence — the tool itself fails with a clear error),
+  `read_subagent` (only checked `agent_id` presence — same),
+  `close_browser_preview` (only checked `preview_id` presence — same),
+  `mcp_list_tools` and `mcp_list_servers` (checks were literal `pass` no-ops),
+  `apply_patch` (was `pass` fail-open), `exit_plan_mode` (was `pass` no-ops),
+  yet all still spawned a Python process on every call. The 19 remaining
+  tools have real validation value: path tools, search tools, network tools,
+  delegation tools, MCP tools, control tools, and UI tools
+  (`ask_user_question`, `browser_preview`, `todo_write`). Saves ~9 Python
+  process spawns per session with zero loss of real validation.
+
 ## [2.5.1] - 2026-08-20
 
 ### Fixed
