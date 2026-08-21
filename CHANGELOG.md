@@ -7,6 +7,153 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (subagent profile cost awareness — evitar subagent_explore)
+
+- **MODEL-GUIDE.md: profiles built-in vs custom agents (custo)** —
+  adicionada tabela comparando `subagent_general` (gratuito, herda
+  GLM-5.2 High do parent), `subagent_explore` (PAGO, resolve para
+  SWE-1.6 $0.5/$2.5 MTok), e custom agents (gratuito, `model: swe-1-7`).
+  Aviso: **nunca usar `subagent_explore`** — usar custom `researcher`
+  (gratuito, 262K vs 200K). Fonte: docs.devin.ai/cli/subagents.
+- **AGENTS.md Rule 3 item 5**: atualizado para avisar que
+  `subagent_explore` é pago e que `subagent_general` é gratuito (herda
+  parent). Recomenda custom agents com `model: swe-1-7`.
+- **SKILL-TIERS.md**: linha sobre `subagent_general` atualizada para
+  explicitar que é gratuito e que `subagent_explore` deve ser evitado.
+
+### Fixed (CRÍTICO — agents/ usando modelo PAGO em vez de gratuito)
+
+- **BUG CRÍTICO DE CUSTO**: todos os 5 agents/ (architect, debugger,
+  implementer, researcher, reviewer) usavam `model: swe` que é alias para
+  `swe-1.7-lightning` (PAGO, $2.5/$12.5 MTok, 202K context). O modelo
+  gratuito é `swe-1-7` (SWE-1.7 Max, 262K context, Free). Corrigido: todos
+  os agents/ agora usam `model: swe-1-7`. Descoberto via `devin models list`.
+- **Impacto**: cada subagent dispatch estava custando ~$2.5/$12.5 MTok
+  desnecessariamente. O modelo gratuito tem MAIS contexto (262K vs 202K).
+  Correção salva dinheiro E dá mais headroom de contexto.
+- **MODEL-GUIDE.md**: seção SWE-1.7 reescrita com dados reais de
+  `devin models list` (262K, não 256K). Tabela de variantes com preços
+  reais. Aviso crítico sobre alias `swe` ser pago.
+- **AGENTS.md Rule 20**: atualizada com `swe-1-7` (não `swe`), 262K (não
+  256K), e aviso de que `swe` alias é pago.
+- **SKILL-TIERS.md, TOOLS-MAP.md, README.md**: todas as referências a
+  `model: swe` corrigidas para `model: swe-1-7`. 256K → 262K.
+- **context-budget.py**: WINDOW_256K renomeado para WINDOW_262K (262_000).
+- **skills/self-extend/SKILL.md**: exemplo de `model` atualizado para
+  `swe-1-7` [free] em vez de `swe`.
+- **Protocolo de escalada expandido**: 6 níveis (gratuito → GLM-5.2 Max →
+  DeepSeek V4 Flash $0.14/$0.28 → Opus $5/$25 → GPT-5.4 $2.5/$15).
+  DeepSeek V4 Flash adicionado como opção paga mais barata ($0.14/$0.28).
+
+### Added (model cost awareness — gratuitos vs pagos)
+
+- **MODEL-GUIDE.md: modelos pagos como fallback** — adicionada seção
+  "Modelos frontier — fallback para casos extremos (custosos)" com lista
+  explícita de gratuitos (GLM-5.2 High, SWE-1.7) vs pagos (GLM-5.2 Max,
+  No Thinking, Opus, GPT, Sonnet, Codex, Gemini), tabela de quando usar
+  cada modelo pago, e protocolo de escalada de 5 níveis:
+  1. GLM-5.2 High (gratuito) → 2. SWE-1.7 fan-out (gratuito) →
+  3. GLM-5.2 Max (pago) → 4. Opus (pago) → 5. GPT (pago).
+  Regra: nunca usar modelos pagos sem esgotar os gratuitos primeiro.
+- **AGENTS.md Rule 20: somente High e SWE-1.7 são gratuitos** — adicionado
+  bullet point explicitando que todos os demais modelos são pagos (GLM-5.2
+  Max, No Thinking, Opus, GPT, Sonnet, Codex, Gemini). Só usar como
+  fallback após esgotar GLM-5.2 High + SWE-1.7 fan-out (3+ tentativas
+  documentadas). Ver protocolo de escalada em `MODEL-GUIDE.md`.
+- **Reasoning effort table corrigida** — `glm-5-2-max` marcado como
+  **pago** (credit 3), não gratuito. Só `glm-5-2` (High) é gratuito.
+  `glm-5-2-none` (No Thinking) também é pago.
+
+### Added (MODEL-GUIDE.md — reasoning effort + subagent vs compaction)
+
+- **Reasoning effort decision guide** — adicionada seção explicando que
+  `reasoning_effort` no Devin CLI é controlado pelo `model_uid` (não por
+  config separada). Tabela de decisão: quando usar off (glm-5-2-none),
+  high (glm-5-2), max (glm-5-2-max). Mapeamento de valores documentado:
+  `low`/`medium` mapeiam para `high` (não existem níveis intermediários).
+  Fonte: glm52.ai/guides/glm-5-2-reasoning-effort, Z.ai docs, apidog.com.
+- **Subagent vs compaction decision table** — adicionada seção com tabela
+  comparando 3 respostas para context pressure: subagent (fresh window),
+  compaction (summarize), context editing (evict tool results). Regra de
+  composição: subagents para subtasks separáveis, compaction para thread
+  contínua. Recomendações específicas para GLM-5.2 (200K) despachando
+  SWE-1.7 (256K). Fonte: dreaming.press/posts/subagents-vs-compaction.
+
+### Fixed (critical — validate-mermaid.py fail-closed + hooks sync)
+
+- **`validate-mermaid.py` fail-closed on node unavailable (critical bug)** —
+  when Node.js or mermaid was not installed (FileNotFoundError) or the
+  subprocess timed out (TimeoutExpired), the hook returned `(False, ...)`
+  which caused `block()` — blocking ALL writes/edits containing mermaid
+  blocks. This is fail-closed: a validator unavailability blocks the user's
+  workflow. Fixed: now returns `(True, "")` (fail-open) and logs to stderr.
+  All other hooks in this bundle fail open on tool unavailability
+  (destructive-gate, check-ai-signature, constraint-pinning, etc.) — this
+  was the only exception. Verified with simulated FileNotFoundError and
+  TimeoutExpired: both now allow the write.
+- **`hooks.v1.json` missing `validate-mermaid.py`** — config.json had
+  validate-mermaid.py on `^(write|edit)$` with timeout 60, but hooks.v1.json
+  (legacy backup) only had check-ai-signature.py on that matcher. Synced.
+- **`mermaid-parse-check.js` hardcoded paths** — only checked
+  `C:\Users\Fingertech\scoop\...` (machine-specific Windows paths). Added
+  portable lookup: (1) `require.resolve('mermaid')` first, (2) `npm root -g`
+  fallback, (3) known paths including Linux (`/usr/local/lib`, `/usr/lib`,
+  `~/.nvm/versions/node/...`), (4) original Windows scoop paths.
+
+### Fixed (context budget estimates stale)
+
+- **`TOOLS-MAP.md` context budget** — AGENTS.md estimate updated from
+  ~5225 tok (2.61%) to ~5289 tok (2.64%). SKILL-TIERS, MODEL-GUIDE, TOOLS-MAP
+  estimates updated to measured values. Total fixo corrected from ~6905 tok
+  to ~5289 tok (AGENTS.md only); total with optional docs from ~10905 tok
+  to ~11439 tok.
+- **`MODEL-GUIDE.md` context budget** — same updates for 200K and 256K
+  sections. AGENTS.md estimate from ~4900 tok (2.45%) to ~5289 tok (2.64%).
+  256K share from 1.91% to 2.07%.
+
+### Fixed (docs consistency — TOOLS-MAP.md pós iter 6.1-6.2)
+
+- **`TOOLS-MAP.md` ferramentas table desatualizada** — tabela ainda marcava
+  8 ferramentas excluídas (get_output, write_to_process, kill_shell,
+  read_subagent, close_browser_preview, mcp_list_tools, mcp_list_servers,
+  apply_patch, exit_plan_mode) com "✓" no hook matcher e validator, mas
+  essas foram removidas do matcher na iteração 6.2. Atualizado para "—"
+  com explicação. Cobertura corrigida de "27/27" para "19/27".
+- **`TOOLS-MAP.md` hooks table desatualizada** — validate-tool-args.py
+  matcher mostrava "todas 27 tools" em vez de "19 tool names";
+  silent-error-review.py mostrava "todas" em vez de
+  `^(exec|mcp_call_tool)$`. Ambos corrigidos.
+- **`TOOLS-MAP.md` eventos count** — "8 eventos" corrigido para "6 eventos"
+  (PreToolUse, PostToolUse, PostCompaction, UserPromptSubmit, SessionStart,
+  Stop — SessionEnd e PermissionRequest não têm hooks configurados).
+
+### Fixed (critical — constraint pinning + refine hook)
+
+- **`constraint-pinning.py` marker not session-scoped (bug)** — `marker_path()`
+  used a fixed filename (`devin-constraint-reinject.marker`) with no
+  session_id, despite the comment claiming "Session-scoped marker path."
+  Parallel sessions (parent + subagent) would overwrite each other's markers,
+  causing one session's UserPromptSubmit to read the other's marker (or find
+  none). Fixed: marker filename now includes session_id
+  (`devin-constraint-reinject-{session_id}.marker`), sanitized and truncated.
+  SessionStart clears all stale markers via glob (session_id is absent for
+  SessionStart per Devin CLI docs). Verified against
+  docs.devin.ai/cli/extensibility/hooks/lifecycle-hooks: "every stdin payload
+  includes a stable per-session session_id ... absent for events that fire
+  before the first user prompt, e.g. SessionStart."
+- **`constraint-pinning.py` dead code removed** — `inject("PostCompaction")`
+  was called best-effort after writing the marker, but PostCompaction does NOT
+  support `hookSpecificOutput.additionalContext` (per Devin CLI docs: only
+  UserPromptSubmit, SessionStart, and PostToolUse support it). The JSON output
+  was silently ignored by the CLI. Removed the call; the marker-based
+  re-injection at UserPromptSubmit is the correct mechanism.
+- **`refine-review-prompt.py` skill reference fixed** — the REMINDER told the
+  agent to "run the `refine` skill" but no skill named `refine` exists in the
+  bundle. The Refine mode lives inside the `primeagent-reference` skill.
+  Updated to "run the `primeagent-reference` skill in Refine mode." Also
+  updated the cross-reference in `primeagent-reference/SKILL.md` table row 2
+  from "`refine` skill" to "`primeagent-reference` Refine mode."
+
 ### Changed
 
 - **`silent-error-review.py` scope narrowed (noise reduction)** — PostToolUse

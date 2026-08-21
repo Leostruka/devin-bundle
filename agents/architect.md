@@ -1,6 +1,6 @@
 ﻿---
 name: architect
-model: swe
+model: swe-1-7
 description: Use for architectural decisions, system-level trade-offs, deep module design, and high-stakes technical judgment. Read-only. Delegate when major decisions have long-term impact, when trade-offs need evaluation, or when code needs simplification or YAGNI scrutiny.
 allowed-tools:
   - read

@@ -117,7 +117,7 @@ devin-bundle/
 | 17 | Don't deduce — verify with tools | Use read/exec/grep/glob before asserting; guesses fail silently (arXiv:2307.03172 lost-in-the-middle) |
 | 18 | Keep the context window lean | Default to clear over compact; small rules files; audit MCP servers; bigger window ≠ better retrieval |
 | 19 | Never read secrets or sensitive env vars | Use keys/env vars but never display their contents; report missing/empty without exposing value |
-| 20 | Model-aware operation | GLM-5.2 (200K, tool-use, thinking) for main; SWE-1.7 (256K, fast, cheap) for subagents. See MODEL-GUIDE.md |
+| 20 | Model-aware operation | GLM-5.2 (200K, tool-use, thinking) for main; SWE-1.7 Max (262K, fast, **gratuito**) for subagents. See MODEL-GUIDE.md |
 
 ## Hooks (6 events, 9 hook scripts + 2 manual-run scripts)
 

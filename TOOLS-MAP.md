@@ -11,33 +11,36 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 | `read` | File | ✓ | ✓ abs path | Lê arquivo (path absoluto) |
 | `write` | File | ✓ | ✓ abs path + parent dir | Escreve/cria arquivo |
 | `edit` | File | ✓ | ✓ abs path + old≠new | Edita string exata |
-| `apply_patch` | File | ✓ | ✓ (pass-through) | Aplica patch (modo-dependente) |
+| `apply_patch` | File | — | — (args vary) | Aplica patch (modo-dependente) |
 | `notebook_read` | File | ✓ | ✓ abs path | Lê Jupyter notebook |
 | `notebook_edit` | File | ✓ | ✓ abs path | Edita célula Jupyter |
 | `grep` | Search | ✓ | ✓ regex válida | Busca ripgrep |
 | `glob` | Search | ✓ | ✓ pattern | Glob pattern matching |
 | `find_file_by_name` | Search | ✓ | ✓ pattern | Busca por nome de arquivo |
 | `exec` | Shell | ✓ | ✓ non-empty + no null | Executa comando shell |
-| `get_output` | Shell | ✓ | ✓ shell_id | Lê output de shell background |
-| `write_to_process` | Shell | ✓ | ✓ shell_id + input | Escreve em processo interativo |
-| `kill_shell` | Shell | ✓ | ✓ shell_id | Mata shell background |
+| `get_output` | Shell | — | — (trivial: shell_id) | Lê output de shell background |
+| `write_to_process` | Shell | — | — (trivial: shell_id) | Escreve em processo interativo |
+| `kill_shell` | Shell | — | — (trivial: shell_id) | Mata shell background |
 | `web_search` | Web | ✓ | ✓ query não-vazia | Busca web |
 | `webfetch` | Web | ✓ | ✓ http(s) URL | Fetch URL |
 | `run_subagent` | Subagents | ✓ | ✓ task + profile válido | Spawna subagent |
-| `read_subagent` | Subagents | ✓ | ✓ agent_id | Lê output de subagent |
+| `read_subagent` | Subagents | — | — (trivial: agent_id) | Lê output de subagent |
 | `skill` | Skills | ✓ | ✓ invoke/list/search | Invoca/descobre skill |
 | `todo_write` | Planning | ✓ | ✓ todos + status válido | Gerencia todo list |
 | `ask_user_question` | UI | ✓ | ✓ questions + options | Pergunta ao usuário |
 | `browser_preview` | Browser | ✓ | ✓ url + name | Abre preview do browser |
-| `close_browser_preview` | Browser | ✓ | ✓ preview_id | Fecha preview |
+| `close_browser_preview` | Browser | — | — (trivial: preview_id) | Fecha preview |
 | `request_scope` | Permissions | ✓ | ✓ scope + path | Pede acesso a diretório |
 | `mcp_call_tool` | MCP | ✓ | ✓ server + tool | Chama tool MCP |
-| `mcp_list_tools` | MCP | ✓ | ✓ (pass-through) | Lista tools MCP |
-| `mcp_list_servers` | MCP | ✓ | ✓ (pass-through) | Lista servers MCP |
+| `mcp_list_tools` | MCP | — | — (no required args) | Lista tools MCP |
+| `mcp_list_servers` | MCP | — | — (no required args) | Lista servers MCP |
 | `mcp_read_resource` | MCP | ✓ | ✓ server + uri | Lê resource MCP |
-| `exit_plan_mode` | Planning | ✓ | ✓ (pass-through) | Sai do Plan mode (modo-dependente) |
+| `exit_plan_mode` | Planning | — | — (no required args) | Sai do Plan mode (modo-dependente) |
 
-**Cobertura: 27/27 ferramentas documentadas têm validator + hook matcher.**
+**Cobertura: 19/27 ferramentas com validator + hook matcher. 8 excluídas
+(trivial/no-op: get_output, write_to_process, kill_shell, read_subagent,
+close_browser_preview, mcp_list_tools, mcp_list_servers, apply_patch,
+exit_plan_mode) — o tool falha claramente sem validação do hook.**
 
 ## Subagentes (7 perfis)
 
@@ -45,15 +48,15 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 |---|---|---|---|---|
 | `subagent_explore` | Built-in | SWE-1.6 (default router) | Read-only + web_search | — (built-in) |
 | `subagent_general` | Built-in | GLM-5.2 (parent) | Full (fg) / pre-approved (bg) | — (built-in) |
-| `architect` | Custom | SWE-1.7 (`model: swe`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
-| `debugger` | Custom | SWE-1.7 (`model: swe`) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
-| `implementer` | Custom | SWE-1.7 (`model: swe`) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
-| `researcher` | Custom | SWE-1.7 (`model: swe`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
-| `reviewer` | Custom | SWE-1.7 (`model: swe`) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
+| `architect` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
+| `debugger` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
+| `implementer` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
+| `researcher` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
+| `reviewer` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
 
 **Estratégia de modelo:**
 - `subagent_explore` (built-in): SWE-1.6 via default router (Devin CLI docs)
-- Custom agents: `model: swe` pin → SWE-1.7 (latest, 256K, 1000 TPS, barato)
+- Custom agents: `model: swe-1-7` pin → SWE-1.7 Max (262K, 1000 TPS, **gratuito**). NÃO usar `swe` (alias pago)
   - Sem pin, custom agents usariam SWE-1.6 (default router), não SWE-1.7
 - Para trabalho que precisa GLM-5.2: usar `subagent_general` (herda parent) ou
   pin `model: glm-5-2` no agent
@@ -62,7 +65,7 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (8 eventos, 11 scripts)
+## Hooks (6 eventos, 11 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
@@ -71,11 +74,11 @@ subagent_general — todos os 7 perfis validados.
 | PreToolUse | `^exec$` | check-push-green.py | Bloqueia push sem green |
 | PreToolUse | `^(write\|edit)$` | check-ai-signature.py | Bloqueia assinaturas AI em writes |
 | PreToolUse | `^(write\|edit)$` | validate-mermaid.py | Valida Mermaid em writes |
-| PreToolUse | todas 27 tools | validate-tool-args.py | Valida argumentos |
-| PostToolUse | todas | silent-error-review.py | Revisa erros silenciosos |
+| PreToolUse | 19 tool names | validate-tool-args.py | Valida argumentos (ALTK SPARC) |
+| PostToolUse | `^(exec\|mcp_call_tool)$` | silent-error-review.py | Revisa erros silenciosos (ALTK scope) |
 | PostCompaction | — | constraint-pinning.py | Detecta constraints dropadas |
 | UserPromptSubmit | — | constraint-pinning.py | Re-injeta constraints |
-| SessionStart | — | constraint-pinning.py | Limpa marker stale |
+| SessionStart | — | constraint-pinning.py | Limpa markers stale |
 | SessionStart | — | context-budget.py | Reporta token cost |
 | Stop | — | check-ai-signature.py | Verifica assinaturas no fim |
 | Stop | — | refine-review-prompt.py | Prompt de refine review |
@@ -145,7 +148,8 @@ tools com side effects — não é o agente pedindo, é o runtime.
 | `glm-5-2-max-1m` | GLM-5.2 Max 1M | ZAI | 1M | 6 | |
 | `glm-5-2-none` | GLM-5.2 No Thinking | ZAI | 200K | 1 | |
 | `glm-5-2-none-1m` | GLM-5.2 No Thinking 1M | ZAI | 1M | — | |
-| `swe` | SWE (latest = 1.7) | Cognition | 256K | — | Subagent default |
+| `swe-1-7` | SWE-1.7 Max | Cognition | 262K | **Free** | Subagent default (gratuito) |
+| `swe` | SWE-1.7 Lightning | Cognition | 202K | $2.5/$12.5 | **PAGO** — alias, não usar |
 | `adaptive` | Adaptive router | Cognition | — | — | Model router |
 | `opus` | Claude Opus (latest) | Anthropic | — | — | |
 | `sonnet` | Claude Sonnet (latest) | Anthropic | — | — | |
@@ -160,16 +164,16 @@ para a latest version na família.
 
 ```
 System prompt + tool defs    ~???? tok (Devin runtime, não mensurável)
-AGENTS.md                    ~5225 tok (2.61%)
-SKILL-TIERS.md (se lido)     ~1680 tok (0.84%)
-MODEL-GUIDE.md (se lido)     ~1927 tok (0.96%)
-TOOLS-MAP.md (se lido)       ~2100 tok (1.05%)
+AGENTS.md                    ~5463 tok (2.73%)
+SKILL-TIERS.md (se lido)     ~1782 tok (0.89%)
+MODEL-GUIDE.md (se lido)     ~3726 tok (1.86%)
+TOOLS-MAP.md (se lido)       ~2478 tok (1.24%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
 MCP tool defs (atlassian)    ~???? tok (medir com mcp-context-audit)
 ─────────────────────────────────────────────
-Total fixo (sem docs opt)    ~6905 tok (3.45%)
-Total c/ docs opt            ~10905 tok (5.45%)
-Disponível para trabalho     ~189000-193000 tok (94.5-96.5%)
+Total fixo (sem docs opt)    ~5463 tok (2.73%)
+Total c/ docs opt            ~13449 tok (6.72%)
+Disponível para trabalho     ~186551-194537 tok (93.28-97.27%)
 ```
 
 **Nota:** MODEL-GUIDE.md, TOOLS-MAP.md e SKILL-TIERS.md são leituras

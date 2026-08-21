@@ -8,11 +8,11 @@ Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 
 | Modelo | Contexto | Uso | Notas |
 |---|---|---|---|
 | GLM-5.2 High | 200K | Primário (parent) | Thinking mode, tool-use during inference, cache $0.26/M read |
-| SWE-1.7 | 256K | Subagent (`model: swe` pin) | Self-compaction trained, 1000 TPS, Kimi K2.7 base |
+| SWE-1.7 | 262K | Subagent (`model: swe-1-7` pin) | Self-compaction trained, 1000 TPS, **gratuito** |
 | SWE-1.6 | 200K | Default subagent router | Sem pin, Devin CLI resolve para SWE-1.6 (docs.devin.ai/cli/subagents) |
 
-Subagents customizados têm `model: swe` pin → SWE-1.7 (latest, 256K, barato, rápido).
-Sem pin, usariam SWE-1.6 (default router, 200K). `subagent_general` herda GLM-5.2 do parent.
+Subagents customizados têm `model: swe-1-7` pin → SWE-1.7 Max (262K, **gratuito**, rápido). **NÃO usar `swe` (alias para swe-1.7-lightning, PAGO)..
+Sem pin, usariam SWE-1.6 (default router, 200K, **pago** $0.5/$2.5 MTok). `subagent_general` herda GLM-5.2 High do parent (**gratuito**). **Evitar `subagent_explore`** (resolve para SWE-1.6 pago) — usar custom `researcher` (gratuito, 262K).
 
 ## Núcleo (raciocínio lógico, qualquer trabalho)
 
@@ -25,7 +25,7 @@ Sem pin, usariam SWE-1.6 (default router, 200K). `subagent_general` herda GLM-5.
 | `context-folding` | Doc grande em 200k (offload+grep) | 1353 | Doc/log > 50k tok |
 | `context-window-hygiene` | clear vs compact | 1125 | Contexto apertando |
 | `mcp-context-audit` | Custos de tool defs dos MCPs | 884 | Antes de adicionar MCP |
-| `dispatching-parallel-agents` | Subagents têm 256k próprio + plan execution | 9710 | 2+ tarefas independentes |
+| `dispatching-parallel-agents` | Subagents têm 262k próprio + plan execution | 9710 | 2+ tarefas independentes |
 | `verification-before-completion` | Não declarar pronto sem verificar | 1305 | Antes de "terminei" |
 | `tdd` | Test-first | 2186 | Feature/bugfix |
 
@@ -129,12 +129,12 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `wizard` | Scripts p/ procedimentos manuais | 992 | Provisioning one-off |
 | `observability-quality` | Infra de observabilidade c/ evidência | 2338 | Adicionar logging/metrics/tracing |
 
-## Linha lógica para GLM-5.2 (200K) + SWE-1.7 (256K)
+## Linha lógica para GLM-5.2 (200K) + SWE-1.7 (262K)
 
 ```
 Tarefa → AGENTS.md (~4900 tok, fixo, cache-stable) → leia SKILL-TIERS.md (~1700 tok)
   → identifique domínio → invoque 1-3 skills (~1000-9700 tok)
-  → trabalho (50k-150k tok no parent GLM-5.2; 256k por subagent SWE-1.7)
+  → trabalho (50k-150k tok no parent GLM-5.2; 262k por subagent SWE-1.7)
   >60% usado? → context-folding (doc) | dispatching-parallel-agents (paralelo) | clear (tarefa mudou)
   → verification-before-completion antes de pronto
 ```
@@ -152,5 +152,5 @@ GLM-5.2 tem thinking mode (raciocina antes de output) e tool-use during inferenc
 | MCPs sem usar | Só ativar quando preciso |
 | Compact quando precisa do detalhe | `context-folding` |
 | `obsidian-workflow` para edição pontual (~14798 tok) | Só para operações Obsidian reais |
-| Subagent general para pesquisa | Use researcher (SWE-1.7, 256K, barato) |
-| Pin `model: sonnet` em agents read-only | Pin `model: swe` → SWE-1.7 (latest, 256K) |
+| Subagent general para pesquisa | Use researcher (SWE-1.7, 262K, gratuito) |
+| Pin `model: sonnet` em agents read-only | Pin `model: swe-1-7` → SWE-1.7 Max (262K, gratuito) |

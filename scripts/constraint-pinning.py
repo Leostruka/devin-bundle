@@ -24,7 +24,7 @@ Source: "Governance Decay" (arXiv:2606.22528v2, Chen, 27 Jun 2026)
   Decay is 8.3x larger for soft organizational policies than hard safety norms.
   Constraint Pinning restores violation to 0% for ~47 pinned tokens (<0.5%).
 """
-import sys, json, os, hashlib, tempfile
+import sys, json, os, re, hashlib, tempfile
 
 PINNED_CONSTRAINTS = """Pinned governance constraints (re-injected after context compaction):
 
@@ -42,17 +42,25 @@ PINNED_CONSTRAINTS = """Pinned governance constraints (re-injected after context
 
 PINNED_HASH = hashlib.sha256(PINNED_CONSTRAINTS.encode("utf-8")).hexdigest()[:16]
 
-MARKER_NAME = "devin-constraint-reinject.marker"
+MARKER_PREFIX = "devin-constraint-reinject"
+MARKER_SUFFIX = ".marker"
 
 
-def marker_path():
-    """Session-scoped marker path; falls back to a shared name without session id."""
-    return os.path.join(tempfile.gettempdir(), MARKER_NAME)
+def marker_path(session_id=""):
+    """Session-scoped marker path. Uses session_id when available to avoid
+    collision between parallel sessions (e.g. parent + subagent). Falls back
+    to a shared name when session_id is absent (e.g. SessionStart)."""
+    if session_id:
+        safe = re.sub(r"[^a-zA-Z0-9_-]", "", session_id)[:64]
+        name = f"{MARKER_PREFIX}-{safe}{MARKER_SUFFIX}"
+    else:
+        name = f"{MARKER_PREFIX}{MARKER_SUFFIX}"
+    return os.path.join(tempfile.gettempdir(), name)
 
 
 def write_marker(session_id, summary):
     try:
-        with open(marker_path(), "w", encoding="utf-8") as f:
+        with open(marker_path(session_id), "w", encoding="utf-8") as f:
             json.dump(
                 {
                     "session_id": session_id,
@@ -66,19 +74,30 @@ def write_marker(session_id, summary):
         return False
 
 
-def read_marker():
+def read_marker(session_id):
     try:
-        with open(marker_path(), "r", encoding="utf-8") as f:
+        with open(marker_path(session_id), "r", encoding="utf-8") as f:
             return json.load(f)
     except (OSError, IOError, json.JSONDecodeError, ValueError):
         return None
 
 
-def clear_marker():
+def clear_marker(session_id=""):
     try:
-        os.remove(marker_path())
+        os.remove(marker_path(session_id))
     except (OSError, IOError):
         pass
+
+
+def clear_all_markers():
+    """Remove all session-scoped markers (SessionStart cleanup)."""
+    import glob
+    pattern = os.path.join(tempfile.gettempdir(), f"{MARKER_PREFIX}*{MARKER_SUFFIX}")
+    for path in glob.glob(pattern):
+        try:
+            os.remove(path)
+        except (OSError, IOError):
+            pass
 
 
 def inject(event_name):
@@ -123,27 +142,28 @@ def handle_post_compaction(data):
             f"constraint-pinning: constraints survived compaction (hash={PINNED_HASH})",
             file=sys.stderr,
         )
-        clear_marker()
+        clear_marker(session_id)
         sys.exit(0)
 
     # Constraints were dropped (or no summary available). Mark for re-injection
-    # on the next UserPromptSubmit, since PostCompaction cannot inject context.
+    # on the next UserPromptSubmit, since PostCompaction cannot inject context
+    # (per Devin CLI docs: only UserPromptSubmit, SessionStart, and PostToolUse
+    # support hookSpecificOutput.additionalContext).
     wrote = write_marker(session_id, summary)
     print(
         f"constraint-pinning: constraints missing from compacted context; "
         f"marker={'written' if wrote else 'FAILED'} (hash={PINNED_HASH})",
         file=sys.stderr,
     )
-    # Best-effort injection in case PostCompaction gains additionalContext support.
-    inject("PostCompaction")
     sys.exit(0)
 
 
 def handle_user_prompt_submit(data):
-    marker = read_marker()
+    session_id = data.get("session_id", "")
+    marker = read_marker(session_id)
     if not marker:
         sys.exit(0)
-    clear_marker()
+    clear_marker(session_id)
     print(
         f"constraint-pinning: re-injected pinned constraints (hash={PINNED_HASH})",
         file=sys.stderr,
@@ -153,8 +173,10 @@ def handle_user_prompt_submit(data):
 
 
 def handle_session_start(data):
-    # Clear a stale marker so a new session does not inherit one.
-    clear_marker()
+    # Clear stale markers from previous sessions. SessionStart may not have
+    # session_id (per docs: "absent for events that fire before the first user
+    # prompt"), so clear all session-scoped markers.
+    clear_all_markers()
     sys.exit(0)
 
 

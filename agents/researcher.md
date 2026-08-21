@@ -1,6 +1,6 @@
 ---
 name: researcher
-model: swe
+model: swe-1-7
 description: Use for codebase reconnaissance, external documentation lookup, web research, and primary-source investigation. Read-only, cheap model. Delegate when scope is broad or uncertain, when external docs are needed, or when exploration would flood the main context.
 allowed-tools:
   - read
