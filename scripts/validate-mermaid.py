@@ -35,7 +35,13 @@ def extract_mermaid_blocks(content):
 
 
 def validate_block(diagram):
-    """Validate a mermaid diagram with mermaid.parse() via Node. Returns (ok, error_msg)."""
+    """Validate a mermaid diagram with mermaid.parse() via Node. Returns (ok, error_msg).
+
+    Fail-open: if Node or mermaid is unavailable (FileNotFoundError) or the
+    subprocess times out, return (True, "") — allow the write. Blocking a write
+    because the validator can't run is fail-closed and breaks the user's workflow.
+    All other hooks in this bundle fail open on tool unavailability.
+    """
     try:
         result = subprocess.run(
             ["node", PARSE_CHECK_JS, diagram.strip()],
@@ -48,7 +54,12 @@ def validate_block(diagram):
         err = result.stderr.strip() or result.stdout.strip()
         return False, err[:300]
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
-        return False, f"node/mermaid unavailable: {e}"
+        # Fail-open: can't validate, don't block the write.
+        print(
+            f"validate-mermaid: node/mermaid unavailable, skipping validation: {e}",
+            file=sys.stderr,
+        )
+        return True, ""
 
 
 def main():

@@ -10,7 +10,7 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** This skill works best when subagents are available (Devin CLI supports `run_subagent`). If the plan has independent tasks that benefit from fresh contexts, use `/subagent-driven-development` instead of this skill.
+**Note:** This skill works best when subagents are available (Devin CLI supports `run_subagent`). If the plan has independent tasks that benefit from fresh contexts, use `/dispatching-parallel-agents` instead of this skill.
 
 ## The Process
 

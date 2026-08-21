@@ -261,7 +261,7 @@ recipient knows and what the user needs.
 
 3. **Write the questionnaire.** Draft questions aimed at the gap from steps
    1–2, following the Document structure below. Write it to
-   `to-questionnaire-<slug>.md` in the current directory (slug from the
+   `questionnaire-<slug>.md` in the current directory (slug from the
    topic) and report the path. Done when the file exists and every item the
    user named in step 2 is covered by a question.
 

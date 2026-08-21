@@ -11,20 +11,32 @@ Never blocks. Emits findings via hookSpecificOutput.additionalContext, which
 PostToolUse supports (per /cli/extensibility/hooks/overview#output-format), so
 the agent actually sees the warning instead of it being lost on stderr.
 
-Checks:
-  - success=true but output contains error indicators (silent failure)
-  - success=true but error field is populated
-  - read/webfetch: empty output
-  - grep/glob: empty output despite a plausible pattern
+Scope (ALTK, arXiv:2603.15473, ACM CAIS 2026):
+  The ALTK Silent Error Review component is "best suited for tool responses
+  that are verbose and/or based on tabular responses" (ALTK README). The hook
+  matcher is therefore restricted to `^(exec|mcp_call_tool)$` — the tools that
+  produce verbose/tabular output where silent errors actually hide. Empty
+  reads, no-match searches, and short outputs are already visible to the agent
+  and are NOT in ALTK's scope; flagging them is noise.
 
-Source: ALTK Silent Error Review (arXiv:2603.15473, ACM CAIS 2026)
-  Detects subtle semantic errors in tool responses that agents miss.
-  "78% of observed failures are silent wrong-state failures with no tool error"
-  (arXiv:2607.07405, KDD 2026 Workshop).
+Problem citation (arXiv:2607.07405, KDD 2026 Workshop):
+  "78% of observed failures are silent wrong-state failures with no tool
+  error." This hook addresses the *detection* side of that finding. The
+  paper's working *intervention* is pre-execution deterministic gates
+  (implemented separately as `destructive-gate.py`); this hook is a
+  complementary post-tool check, not a replication of the paper's mechanism.
+
+Checks (only when success=true and tool is exec or mcp_call_tool):
+  - error field is populated (silent failure)
+  - output contains high-signal error indicators after noise removal
+
+At most one finding is emitted per call to avoid multi-finding spam.
 """
 import sys, json, re
 
-# High-signal error indicators
+# High-signal error indicators. Tightened to reduce false positives:
+# - "error" requires a colon (avoids "error handling", "error recovery")
+# - test-failure pattern requires a non-zero count (0 failures is noise)
 ERROR_INDICATORS = (
     re.compile(r"\btraceback\b", re.IGNORECASE),
     re.compile(r"\bfatal(?:\s+error)?\b", re.IGNORECASE),
@@ -32,10 +44,10 @@ ERROR_INDICATORS = (
     re.compile(r"\bsegmentation fault\b", re.IGNORECASE),
     re.compile(r"\bcore dumped\b", re.IGNORECASE),
     re.compile(r"\bpanic:", re.IGNORECASE),
-    re.compile(r"^\s*error[:\s]", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^\s*error\s*:", re.IGNORECASE | re.MULTILINE),
     re.compile(r"\b(?:command not found|no such file or directory)\b", re.IGNORECASE),
     re.compile(r"\bpermission denied\b", re.IGNORECASE),
-    re.compile(r"\b\d+ (?:tests? )?fail(?:ed|ures?)\b", re.IGNORECASE),
+    re.compile(r"\b[1-9]\d*\s+(?:tests?\s+)?fail(?:ed|ures?)?\b", re.IGNORECASE),
 )
 
 # Lines to ignore (routine warnings, not failures)
@@ -47,13 +59,9 @@ NOISE_PATTERNS = (
     re.compile(r"\bnotice\b", re.IGNORECASE),
     re.compile(r"\bhint:", re.IGNORECASE),
     re.compile(r"\badvice\b", re.IGNORECASE),
-    re.compile(r"\b0 (?:tests? )?fail(?:ed|ures?)\b", re.IGNORECASE),
+    re.compile(r"\b0\s+(?:tests?\s+)?fail(?:ed|ures?)?\b", re.IGNORECASE),
     re.compile(r"\berrors?\s*[:=]\s*0\b", re.IGNORECASE),
 )
-
-# Tools whose empty output is meaningful
-EMPTY_OUTPUT_TOOLS = {"read", "webfetch", "notebook_read"}
-SEARCH_TOOLS = {"grep", "glob", "find_file_by_name"}
 
 
 def signal_lines(text):
@@ -73,12 +81,10 @@ def has_real_error(text):
 
 
 def emit(findings):
-    """Emit findings as additionalContext so the agent sees them."""
+    """Emit at most one finding as additionalContext so the agent sees it."""
     if not findings:
         sys.exit(0)
-    body = "Silent-error review flagged this tool result:\n" + "\n".join(
-        f"- {f}" for f in findings
-    )
+    body = "Silent-error review flagged this tool result:\n- " + findings[0]
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "PostToolUse",
@@ -124,27 +130,6 @@ def main():
                 f"{tool_name} reported success but the output contains error "
                 f"indicators: {snippet}"
             )
-
-        if tool_name in EMPTY_OUTPUT_TOOLS and output.strip() == "":
-            target = (
-                tool_input.get("file_path")
-                or tool_input.get("url")
-                or tool_input.get("notebook_path")
-                or "the target"
-            )
-            findings.append(
-                f"{tool_name} returned empty content for {target}. "
-                "The resource may be empty, unreadable, or the wrong path."
-            )
-
-        if tool_name in SEARCH_TOOLS and output.strip() == "":
-            pattern = tool_input.get("pattern", "")
-            if isinstance(pattern, str) and len(pattern) > 2:
-                findings.append(
-                    f"{tool_name} returned no matches for pattern '{pattern}'. "
-                    "Verify the pattern and the search path before concluding the "
-                    "target does not contain it."
-                )
 
     emit(findings)
 

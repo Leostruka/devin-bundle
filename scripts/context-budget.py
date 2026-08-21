@@ -27,7 +27,8 @@ Source: "Context Windows Explained for Coding Agents" (Matt Pocock) —
 import sys, os, json, argparse
 
 CHARS_PER_TOKEN = 4
-WINDOW_200K = 200_000
+WINDOW_200K = 200_000    # GLM-5.2 High primary model (free)
+WINDOW_262K = 262_000    # SWE-1.7 Max subagent model (free, `devin models list`)
 
 
 def estimate_tokens(text):
@@ -62,22 +63,25 @@ def report(path, as_json=False):
     chars = len(content)
     tok = estimate_tokens(content)
     lines = content.count("\n") + 1
-    share = 100.0 * tok / WINDOW_200K
+    share_200k = 100.0 * tok / WINDOW_200K
+    share_262k = 100.0 * tok / WINDOW_262K
     if as_json:
         print(json.dumps({
             "file": path,
             "chars": chars,
             "estimated_tokens": tok,
             "lines": lines,
-            "window_200k_share_pct": round(share, 2),
+            "window_200k_share_pct": round(share_200k, 2),
+            "window_262k_share_pct": round(share_262k, 2),
         }))
         return 0
     print(f"context-budget: {path}", file=sys.stderr)
     print(f"  chars:    {chars}", file=sys.stderr)
     print(f"  lines:    {lines}", file=sys.stderr)
     print(f"  tokens:   ~{tok} (chars/4 heuristic)", file=sys.stderr)
-    print(f"  200k share: {share:.2f}%", file=sys.stderr)
-    if share >= 10:
+    print(f"  200k share (GLM-5.2):  {share_200k:.2f}%", file=sys.stderr)
+    print(f"  262k share (SWE-1.7):  {share_262k:.2f}%", file=sys.stderr)
+    if share_200k >= 10:
         print(f"  WARN: rules file is >=10% of a 200k window before the first", file=sys.stderr)
         print(f"        message. Consider compressing/modularizing (context-window-hygiene).", file=sys.stderr)
     return 0

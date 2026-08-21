@@ -16,17 +16,46 @@ if (process.argv[2] && process.argv[2] !== '--stdin') {
   input = fs.readFileSync(0, 'utf-8');
 }
 
-// Find mermaid in global node_modules
-const globalModules = [
-  'C:\\Users\\Fingertech\\scoop\\persist\\nodejs\\bin\\node_modules',
-  'C:\\Users\\Fingertech\\scoop\\apps\\nodejs\\current\\lib\\node_modules',
+// Find mermaid in global node_modules — portable lookup.
+// 1. Try require.resolve (checks local + NODE_PATH)
+// 2. Try npm root -g (portable across OS/install methods)
+// 3. Fall back to common global paths (Linux, macOS, Windows via env vars)
+const globalModulePaths = [
+  '/usr/local/lib/node_modules',
+  '/usr/lib/node_modules',
+  path.join(process.env.HOME || '', '.npm-global/lib/node_modules'),
+  path.join(process.env.HOME || '', '.nvm/versions/node', process.version.slice(1), 'lib/node_modules'),
+  path.join(process.env.APPDATA || '', 'npm/node_modules'),
+  path.join(process.env.LOCALAPPDATA || '', 'npm/node_modules'),
 ];
 let mermaidPath = null;
-for (const p of globalModules) {
-  const candidate = path.join(p, 'mermaid');
-  if (fs.existsSync(candidate)) {
-    mermaidPath = candidate;
-    break;
+
+// 1. Try require.resolve first (checks local + NODE_PATH)
+try {
+  mermaidPath = path.dirname(localRequire.resolve('mermaid'));
+} catch (e) {
+  // Not in local/NODE_PATH, continue to global lookup
+}
+
+// 2. Try npm root -g
+if (!mermaidPath) {
+  try {
+    const { execSync } = require('child_process');
+    const npmRoot = execSync('npm root -g', { encoding: 'utf-8', timeout: 5000 }).trim();
+    if (npmRoot) globalModulePaths.unshift(npmRoot);
+  } catch (e) {
+    // npm not available, continue
+  }
+}
+
+// 3. Fall back to known paths
+if (!mermaidPath) {
+  for (const p of globalModulePaths) {
+    const candidate = path.join(p, 'mermaid');
+    if (fs.existsSync(candidate)) {
+      mermaidPath = candidate;
+      break;
+    }
   }
 }
 

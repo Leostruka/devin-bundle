@@ -49,7 +49,7 @@ the verification.
 | # | PrimeAgent/RLM feature | Adapted to Devin CLI | How |
 |---|---|---|---|
 | 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, subagent_explore sub-queries (depth=1 only) |
-| 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `refine` skill + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
+| 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `primeagent-reference` Refine mode + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
 | 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — `a2a-mailbox` skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. |
 | 4 | Skills as importable Python packages | **Partial** — already supported | Skills can have `scripts/` dirs with Python. `self-extend` skill documents this. |
 | 5 | Daemon-backed sessions with reattach | **Yes (emulated)** — `session-checkpoint` skill | Structured checkpoint file (todos, decisions, files, verification, next actions). New session reads checkpoint and resumes. Not real reattach, but structured cross-session continuation. |
@@ -531,7 +531,7 @@ The routing layer for subagent dispatch. Answers three questions in order:
 3. **How deep?** (budget preset)
 
 This skill does NOT replace `dispatching-parallel-agents` (parallel vs sequential),
-`subagent-driven-development` (per-task workflow), or `tool-and-skill-discovery`
+`dispatching-parallel-agents` (per-task workflow), or `tool-and-skill-discovery`
 (skill selection). It sits ABOVE them — it classifies the task and delegates to
 the right skill for execution.
 
@@ -546,7 +546,7 @@ the right skill for execution.
 
 - Task is obviously simple (typo, single-line fix) — just do it
 - Task is obviously complex with a known workflow (SDD plan execution) — use
-  `subagent-driven-development` directly
+  `dispatching-parallel-agents` directly
 - You already know the profile and preset — skip classification
 
 ### The Routing Decision
@@ -624,7 +624,7 @@ Hand off to the execution skill:
 - **SIMPLE** → handle inline (no skill needed)
 - **MEDIUM** → `run_subagent` with selected profile + brief
 - **COMPLEX** → sequence: `researcher` → `architect` → `implementer` → `reviewer`
-  (use `subagent-driven-development` if you have a multi-task plan)
+  (use `dispatching-parallel-agents` if you have a multi-task plan)
 - **PARALLEL** → use `dispatching-parallel-agents` skill with selected profiles
 
 ### Routing Examples
@@ -645,7 +645,7 @@ Hand off to the execution skill:
   `architect` (design token flow + session management) →
   `implementer` (write code + tests) → `reviewer` (two-axis review)
 - Preset: strict (security change)
-- Use `subagent-driven-development` if you have a multi-task plan
+- Use `dispatching-parallel-agents` if you have a multi-task plan
 
 **Example 4: "Fix 4 failing tests in 3 different test files"**
 - Complexity: PARALLEL (independent failures, no shared state)
@@ -664,7 +664,7 @@ Hand off to the execution skill:
 This skill is the ENTRY POINT for dispatch decisions. It delegates to:
 
 - `dispatching-parallel-agents` — when routing decision is PARALLEL
-- `subagent-driven-development` — when you have a multi-task plan to execute
+- `dispatching-parallel-agents` — when you have a multi-task plan to execute
 - `code-review` — when routing decision includes review (reviewer profile)
 - `verification-before-completion` — when VFs need to be defined (pre-execution gate)
 - `tool-and-skill-discovery` — when no profile fits and you need to find alternatives
@@ -679,7 +679,7 @@ Return a one-line routing decision:
 [complexity] → [profile] (preset: [budget]) → [execution skill]
 ```
 
-Example: `COMPLEX → researcher → architect → implementer → reviewer (preset: strict) → subagent-driven-development`
+Example: `COMPLEX → researcher → architect → implementer → reviewer (preset: strict) → dispatching-parallel-agents`
 
 ### Role Bottleneck Awareness (AgentCARD)
 

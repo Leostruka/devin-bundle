@@ -6,7 +6,7 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 conversation; a large one taxes the context window and worsens
 lost-in-the-middle retrieval (Rule 18). Non-pinned rules below are terse
 one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
-12-18) keep full detail because they must survive compaction.
+12-18) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see MODEL-GUIDE.md).
 
 ## Rule summary
 
@@ -28,6 +28,7 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 17. **Don't deduce — verify with tools** — never infer the state of the world, a file's contents, a command's output, or a claim's truth from reasoning alone. Use `read`, `exec`, `grep`, `glob` to observe reality before asserting anything. A deduction presented as fact is a guess with confidence. Gueses fail silently; tool output fails loudly. Prefer loud failure.
 18. **Keep the context window lean** — context window = input + output tokens, hard-capped by the provider. Lost-in-the-middle deprioritizes the middle of long chats. Default to `clear` over `compact`; keep rules files small; audit MCP servers before adding (`mcp-context-audit`); paste large inputs to files, not chat (`context-folding`). Watch the budget with `context-budget.py`. Bigger window ≠ better retrieval.
 19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
+20. **Model-aware operation** — GLM-5.2 High (200K, thinking, tool-use during inference, cache $0.26/M) is primary; SWE-1.7 Max (262K, self-compaction, 1000 TPS) is pinned via `model: swe-1-7` (NOT `swe` — that alias is PAID `swe-1.7-lightning`) in all custom agent profiles. Don't over-specify tool-use (GLM decides natively). Fan-out is cheap (SWE-1.7 fast, 262K each, gratuito). Keep system prompt cache-stable. See `MODEL-GUIDE.md`.
 
 ---
 
@@ -161,7 +162,7 @@ Update wrong skills in place before use. Create a skill for recurring patterns (
 2. Discovery-friendly — keywords an agent would search; no workflow summary.
 3. Devin-native tools — `exec`, `read`, `edit`, `write`, `grep`, `glob`, `run_subagent`, `web_search`, `mcp_call_tool`, `ask_user_question`. No `Task(...)`, `subagent_type`, non-Devin prefixes.
 4. Devin-native paths — `.devin/`, `~/.config/devin/`, `%APPDATA%\devin\`. No non-Devin runtime paths.
-5. Subagents — `profile: "subagent_general"` or `profile: "subagent_explore"`.
+5. Subagents — `profile: "subagent_general"` (herda parent, **gratuito** com GLM-5.2 High) or custom agent profiles (`researcher`, `architect`, `reviewer`, `debugger`, `implementer` — all `model: swe-1-7`, **gratuito**). **Avoid `subagent_explore`** — resolves to SWE-1.6 (PAID $0.5/$2.5 MTok). Use custom `researcher` instead (gratuito, 262K).
 6. Scripts — Python/Bash/JS as appropriate; prefer Python for cross-platform.
 7. No AI signatures in skills.
 8. No platform leakage — no non-Devin AI tools/runtimes/paths.
@@ -193,3 +194,15 @@ Failures are signals to resolve, not stop conditions. Deliver a working solution
 - Don't declare "can't be done". Find another path. "X is impossible" requires proof.
 - Don't mask failures with workarounds that hide the root cause. Fix the cause.
 - When delivering a fix, show evidence: re-run the exact failing command, show green.
+
+### 20. Model-aware operation (GLM-5.2 High + SWE-1.7)
+
+Primary: GLM-5.2 High (200K, thinking mode, tool-use during inference, prompt cache $0.26/M) — **gratuito e ilimitado** na assinatura. Subagents: SWE-1.7 Max (262K, self-compaction trained, 1000 TPS) — **gratuito e ilimitado**, pinned via `model: swe-1-7` (NOT `swe` — that alias is `swe-1.7-lightning`, PAID $2.5/$12.5 MTok, 202K) in all custom agent profiles. See `MODEL-GUIDE.md` for detail.
+
+- GLM-5.2 natively decides when to invoke tools during inference — don't over-specify tool-use rules; let the model decide. Rule 17 (verify with tools) aligns.
+- GLM-5.2 thinking mode is internal reasoning before output — Rule 8 (telegraphic) applies to output only, not thinking tokens.
+- Subagent fan-out is cheap (SWE-1.7 1000 TPS, 262K each, **gratuito**) — prefer dispatching parallel subagents for independent research/exploration over serial inline work.
+- SWE-1.7 self-compaction is trained (summarize + resume) — constraint-pinning still needed (Governance Decay applies to all models, arXiv:2606.22528v2) but fires less often.
+- Prompt caching is cheap ($0.26/M read) — keep AGENTS.md and system prompt cache-stable (don't change early tokens frequently). Pinned rules at top = cache-friendly.
+- **⚠️ `swe` alias é PAGO** ($2.5/$12.5 MTok, 202K). Usar `swe-1-7` (gratuito, 262K) nos agents/. Dados de `devin models list`.
+- **Todos os demais modelos são pagos** (GLM-5.2 Max $0.7/$2.2, Opus $5/$25, GPT $2.5/$15, etc.). Só usar como fallback após esgotar GLM-5.2 High + SWE-1.7 fan-out (3+ tentativas documentadas). Ver protocolo de escalada em `MODEL-GUIDE.md`.

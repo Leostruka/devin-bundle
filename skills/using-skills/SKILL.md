@@ -20,10 +20,10 @@ Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it h
 
 ## Skill Priority
 
-When multiple skills apply, process skills come first — they set the approach, then implementation skills carry it out. `/grilling` and `/systematic-debugging` are the most common process skills, but the rule holds for any of them.
+When multiple skills apply, process skills come first — they set the approach, then implementation skills carry it out. `/grilling` and `/diagnosing-bugs` are the most common process skills, but the rule holds for any of them.
 
 - "Let's build X" → `/grilling` first, then implementation skills.
-- "Fix this bug" → `/systematic-debugging` first, then domain skills.
+- "Fix this bug" → `/diagnosing-bugs` first, then domain skills.
 
 ## Red Flags
 
@@ -46,7 +46,7 @@ These thoughts mean STOP—you're rationalizing:
 
 ## Platform Adaptation
 
-You are running in Devin CLI. Invoke skills with `/<skill-name>`. If a skill is not installed, use `/find-skills` to locate it, or read `SKILL.md` files from your configured skill directories:
+You are running in Devin CLI. Invoke skills with `/<skill-name>`. If a skill is not installed, use `/tool-and-skill-discovery` to locate it, or read `SKILL.md` files from your configured skill directories:
 
 - Windows: `%APPDATA%\devin\skills\`
 - macOS/Linux: `~/.config/devin/skills/`

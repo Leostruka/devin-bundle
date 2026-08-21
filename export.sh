@@ -67,6 +67,65 @@ convert_to_lf() {
   fi
 }
 
+# --- Strip BOM from file (if present) ---
+# BOM (EF BB BF) in YAML frontmatter can prevent parsers from recognizing
+# the `---` delimiter, causing model/name/allowed-tools fields to be ignored.
+strip_bom() {
+  local file="$1"
+  if [[ ! -f "$file" ]]; then return; fi
+  if head -c 3 "$file" | od -A n -t x1 | grep -q "ef bb bf"; then
+    if [[ $DRY_RUN -eq 1 ]]; then
+      skip "would strip BOM from $(basename "$file")"
+    else
+      sed -i '1s/^\xEF\xBB\xBF//' "$file"
+      ok "stripped BOM from $(basename "$file")"
+    fi
+  fi
+}
+
+# --- Case sensitivity detection ---
+# Returns 0 (true) if case-sensitive, 1 (false) if case-insensitive.
+is_case_sensitive() {
+  local dir="$1"
+  local tmp_lower="$dir/.casetest_$$"
+  touch "$tmp_lower" 2>/dev/null || return 0  # assume sensitive on error
+  if [[ -f "$dir/.CASETEST_$$" ]]; then
+    rm -f "$tmp_lower"
+    return 1  # case-insensitive
+  else
+    rm -f "$tmp_lower"
+    return 0  # case-sensitive
+  fi
+}
+
+# --- Dedup AGENTS.md case variants ---
+# On case-sensitive FSs: removes agents.md (lowercase) if it exists as a
+# separate file. On case-insensitive FSs (Windows/WSL /mnt/c, macOS default):
+# AGENTS.md and agents.md are the same file — warns about Devin CLI duplicate
+# listing (known bug, not fixable from filesystem level).
+dedup_agents_md() {
+  local dir="$1"
+  local label="$2"
+  local canonical="$dir/AGENTS.md"
+  local lower="$dir/agents.md"
+
+  if [[ ! -f "$canonical" ]]; then return; fi
+
+  if is_case_sensitive "$dir"; then
+    if [[ -f "$lower" ]]; then
+      warn "$label: found agents.md (lowercase) duplicate — removing"
+      if [[ $DRY_RUN -eq 1 ]]; then
+        skip "would remove agents.md duplicate"
+      else
+        rm -f "$lower"
+        ok "$label: removed agents.md duplicate (kept AGENTS.md)"
+      fi
+    fi
+  else
+    skip "$label: case-insensitive FS — Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
+  fi
+}
+
 # --- Detect Devin config home ---
 if [[ -n "${DEVIN_HOME:-}" ]]; then
   DEVIN_HOME="$DEVIN_HOME"
@@ -105,6 +164,11 @@ else
   warn "AGENTS.md not found at $agents_md_src"
 fi
 
+# --- 1b. Dedup AGENTS.md case variants (Windows/WSL bug workaround) ---
+step "Dedup AGENTS.md case variants"
+dedup_agents_md "$DEVIN_HOME" "source"
+dedup_agents_md "$BUNDLE_DIR" "bundle"
+
 # --- 2. Export agents/ profiles ---
 step "Export agents/ profiles"
 agents_src="$DEVIN_HOME/agents"
@@ -130,6 +194,13 @@ if [[ -d "$agents_src" ]]; then
 else
   warn "agents/ directory not found at $agents_src"
 fi
+
+# --- 2b. Strip BOM from agent files (YAML frontmatter safety) ---
+step "Strip BOM from agent files"
+for agent_file in "$BUNDLE_DIR"/agents/*.md; do
+  [[ -f "$agent_file" ]] || continue
+  strip_bom "$agent_file"
+done
 
 # --- 3. Export skills/ (auto-discover all) ---
 step "Export skills/"

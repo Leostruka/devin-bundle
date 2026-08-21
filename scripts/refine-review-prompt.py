@@ -23,7 +23,7 @@ MARKER_NAME = ".refine-pending"
 
 REMINDER = (
     "Session was marked as complex ({detail}).\n"
-    "Before stopping, run the `refine` skill:\n"
+    "Before stopping, run the `primeagent-reference` skill in Refine mode:\n"
     "- Review the trajectory for recurring failures, reusable tactics, and "
     "hard-won knowledge.\n"
     "- Refinement evidence must include a reproducible command (AGENTS.md Rule 15); "
