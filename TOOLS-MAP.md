@@ -149,31 +149,36 @@ tools com side effects — não é o agente pedindo, é o runtime.
 | `glm-5-2-none` | GLM-5.2 No Thinking | ZAI | 200K | 1 | |
 | `glm-5-2-none-1m` | GLM-5.2 No Thinking 1M | ZAI | 1M | — | |
 | `swe-1-7` | SWE-1.7 Max | Cognition | 262K | **Free** | Subagent default (gratuito) |
-| `swe` | SWE-1.7 Lightning | Cognition | 202K | $2.5/$12.5 | **PAGO** — alias, não usar |
-| `adaptive` | Adaptive router | Cognition | — | — | Model router |
-| `opus` | Claude Opus (latest) | Anthropic | — | — | |
-| `sonnet` | Claude Sonnet (latest) | Anthropic | — | — | |
-| `gpt` | GPT (latest) | OpenAI | — | — | |
-| `codex` | Codex (latest) | OpenAI | — | — | |
-| `gemini` | Gemini (latest) | Google | — | — | |
+| `swe-1-7-medium` | SWE-1.7 Medium | Cognition | 262K | **Free** | Alternativa mais leve (gratuito) |
+| `swe` | SWE-1.7 Lightning | Cognition | 202K | $2.5/$12.5 | **PAGO** — alias, NUNCA usar |
+| `adaptive` | Adaptive router | Cognition | — | $0.5/$2 | **PAGO** — não usar |
+| `opus` | Claude Opus (latest) | Anthropic | — | $5/$25 | **PAGO** — não usar |
+| `sonnet` | Claude Sonnet (latest) | Anthropic | — | $2/$10 | **PAGO** — não usar |
+| `gpt` | GPT (latest) | OpenAI | — | $0.75/$4.5 | **PAGO** — não usar |
+| `codex` | Codex (latest) | OpenAI | — | $1.75/$14 | **PAGO** — não usar |
+| `gemini` | Gemini (latest) | Google | — | $0.75/$3.75 | **PAGO** — não usar |
 
-Short names (`opus`, `sonnet`, `swe`, `codex`, `gemini`) sempre resolvem
-para a latest version na família.
+**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (default
+`glm-5-2`), NUNCA usar modelos pagos para subagents. Short names (`opus`,
+`sonnet`, `swe`, `codex`, `gemini`) sempre resolvem para a latest version
+na família — todos pagos. Usar apenas `glm-5-2` (parent) e `swe-1-7` /
+`swe-1-7-medium` (subagents). Quando o parent está em modelo PAGO (usuário
+fez `/model opus`, etc.), subagents podem usar modelos pagos.
 
 ## Context budget (200K GLM-5.2)
 
 ```
 System prompt + tool defs    ~???? tok (Devin runtime, não mensurável)
-AGENTS.md                    ~5463 tok (2.73%)
+AGENTS.md                    ~5605 tok (2.80%)
 SKILL-TIERS.md (se lido)     ~1782 tok (0.89%)
 MODEL-GUIDE.md (se lido)     ~3711 tok (1.86%)
 TOOLS-MAP.md (se lido)       ~2478 tok (1.24%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
 MCP tool defs (atlassian)    ~???? tok (medir com mcp-context-audit)
 ─────────────────────────────────────────────
-Total fixo (sem docs opt)    ~5463 tok (2.73%)
-Total c/ docs opt            ~13434 tok (6.72%)
-Disponível para trabalho     ~186551-194537 tok (93.28-97.27%)
+Total fixo (sem docs opt)    ~5605 tok (2.80%)
+Total c/ docs opt            ~13576 tok (6.79%)
+Disponível para trabalho     ~186424-194395 tok (93.21-97.20%)
 ```
 
 **Nota:** MODEL-GUIDE.md, TOOLS-MAP.md e SKILL-TIERS.md são leituras

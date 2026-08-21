@@ -205,4 +205,7 @@ Primary: GLM-5.2 High (200K, thinking mode, tool-use during inference, prompt ca
 - SWE-1.7 self-compaction is trained (summarize + resume) — constraint-pinning still needed (Governance Decay applies to all models, arXiv:2606.22528v2) but fires less often.
 - Prompt caching is cheap ($0.26/M read) — keep AGENTS.md and system prompt cache-stable (don't change early tokens frequently). Pinned rules at top = cache-friendly.
 - **⚠️ `swe` alias é PAGO** ($2.5/$12.5 MTok, 202K). Usar `swe-1-7` (gratuito, 262K) nos agents/. Dados de `devin models list`.
-- **Todos os demais modelos são pagos** (GLM-5.2 Max $0.7/$2.2, Opus $5/$25, GPT $2.5/$15, etc.). Só usar como fallback após esgotar GLM-5.2 High + SWE-1.7 fan-out (3+ tentativas documentadas). Ver protocolo de escalada em `MODEL-GUIDE.md`.
+- **🚫 NUNCA usar `subagent_explore` (built-in) quando parent é FREE.** Ele roda no default subagent model (SWE-1.6, PAGO $0.5/$2.5). Não há override local — apenas enterprise settings podem mudar isso. **Usar o profile customizado `researcher` em vez de `subagent_explore`** — ele pin `model: swe-1-7` (gratuito, 262K) e tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
+- **Política de modelos: CONDICIONAL ao parent.**
+  - **Parent FREE (default `glm-5-2`)**: subagents DEVEM ser FREE (`swe-1-7`/`swe-1-7-medium`). Nunca usar modelos pagos. Se GLM-5.2 High + SWE-1.7 fan-out falharem, **parar e reportar ao usuário**.
+  - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Nesse caso, `subagent_explore` (SWE-1.6) e outros modelos pagos são permitidos. Ver protocolo em `MODEL-GUIDE.md`.

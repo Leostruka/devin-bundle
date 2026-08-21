@@ -48,7 +48,7 @@ the verification.
 
 | # | PrimeAgent/RLM feature | Adapted to Devin CLI | How |
 |---|---|---|---|
-| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, subagent_explore sub-queries (depth=1 only) |
+| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, `researcher` sub-queries (depth=1 only, NOT `subagent_explore` when parent FREE — PAID) |
 | 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `primeagent-reference` Refine mode + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
 | 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — `a2a-mailbox` skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. |
 | 4 | Skills as importable Python packages | **Partial** — already supported | Skills can have `scripts/` dirs with Python. `self-extend` skill documents this. |
@@ -206,7 +206,7 @@ When calling `run_subagent`, include in the task prompt:
 
 ```
 run_subagent:
-  profile: subagent_explore
+  profile: researcher
   task: |
     You are subagent-a. Read your mailbox at .devin/mailboxes/subagent-a/inbox/.
     Process each message. Write results to .devin/mailboxes/parent/inbox/ as JSON.
@@ -586,20 +586,22 @@ PARALLEL → multiple independent subagents in parallel (dispatching-parallel-ag
 
 | Task need | Profile | Model | Cost tier |
 |---|---|---|---|
-| Codebase reconnaissance, doc lookup, web research | `researcher` | SWE-1.6 | $ |
-| Code review, spec compliance, verification | `reviewer` | sonnet | $$ |
-| Bounded implementation from spec | `implementer` | parent | $$$ |
-| Architecture, trade-offs, deep module design | `architect` | sonnet | $$ |
-| Systematic debugging, root cause analysis | `debugger` | parent | $$$ |
-| Read-only exploration (built-in) | `subagent_explore` | SWE-1.6 | $ |
-| General-purpose with full tools (built-in) | `subagent_general` | parent | $$$ |
+| Codebase reconnaissance, doc lookup, web research | `researcher` | SWE-1.7 | free |
+| Code review, spec compliance, verification | `reviewer` | SWE-1.7 | free |
+| Bounded implementation from spec | `implementer` | parent | free |
+| Architecture, trade-offs, deep module design | `architect` | SWE-1.7 | free |
+| Systematic debugging, root cause analysis | `debugger` | parent | free |
+| Read-only exploration | `researcher` (custom) | SWE-1.7 | free |
+| General-purpose with full tools (built-in) | `subagent_general` | parent | free |
 
 **Selection rules:**
 
 1. Match by capability first — what does the task NEED?
 2. When two profiles match, pick the cheaper one
-3. When no custom profile fits, use `subagent_explore` (read-only) or
-   `subagent_general` (full tools)
+3. **When parent is FREE (default): NUNCA usar `subagent_explore` (built-in)**
+   — roda em SWE-1.6 (PAGO). Usar `researcher` (custom, free) para read-only,
+   ou `subagent_general` (parent model, free) para full tools. When parent
+   is PAID, `subagent_explore` is permitted.
 4. When task needs more capability than profile's default model, switch
    parent session model with `/model <model>` before dispatching
 

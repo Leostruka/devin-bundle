@@ -109,10 +109,10 @@ sensitivity:
 
 | Task type | Profile | Why |
 |---|---|---|
-| Codebase research, doc lookup | `researcher` (SWE-1.6) | Read-only, cheap, fast |
-| Code review, spec compliance | `reviewer` (sonnet) | Needs judgment, mid-cost |
+| Codebase research, doc lookup | `researcher` (SWE-1.7) | Read-only, free, fast |
+| Code review, spec compliance | `reviewer` (SWE-1.7) | Needs judgment, free |
 | Bounded implementation | `implementer` (parent) | Needs full tools + reasoning |
-| Architecture, trade-offs | `architect` (sonnet) | Needs judgment, read-only |
+| Architecture, trade-offs | `architect` (SWE-1.7) | Needs judgment, read-only, free |
 | Debugging, root cause | `debugger` (parent) | Needs exec + reasoning |
 
 Don't dispatch `implementer` for a research task — `researcher` is 10x cheaper
@@ -392,15 +392,15 @@ conflicts that only emerge from implementation.
 
 ### Model Selection
 
-In Devin CLI, a `subagent_general` subagent inherits the parent session's model, and `subagent_explore` runs on the default subagent model (SWE-1.6 by default). You cannot name a model directly in a `run_subagent` call; the profile determines the model.
+In Devin CLI, a `subagent_general` subagent inherits the parent session's model (GLM-5.2 High, free by default). The built-in `subagent_explore` runs on the **default subagent model (SWE-1.6, PAID $0.5/$2.5)**. **When parent is FREE (default): NUNCA usar `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, pin `model: swe-1-7`, free, 262K) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin `model: swe-1-7` to ensure the free model is used.
 
 **Use the parent session's model for:**
 - Final whole-branch review — the judgment task that needs the most capability.
 - Architecture and design tasks.
 - Rounds 4-5 fix-loop escalation (choose a more capable model by switching the parent session model before dispatching).
 
-**Use `subagent_explore` for:**
-- Codebase research and fact-finding that should stay cheap and read-only.
+**Use `researcher` (NOT `subagent_explore` when parent is FREE) for:**
+- Codebase research and fact-finding that should stay cheap, read-only, and FREE.
 
 **To run a different model for a subagent:**
 1. Switch the parent session model with `/model <model>` before dispatching (affects all `subagent_general` dispatches from this session).

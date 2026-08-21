@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (iter 7.3 — política de modelos CONDICIONAL)
+
+- **Política alterada de FREE-ONLY para CONDICIONAL**: modelos pagos agora
+  são permitidos para subagents **quando o parent está em modelo pago**
+  (usuário fez `/model opus`, `/model sonnet`, etc.). Quando o parent está
+  em modelo FREE (default `glm-5-2`), subagents DEVEM ser FREE.
+- **Caso 1 (Parent FREE)**: FREE-ONLY mantido. `subagent_explore` (SWE-1.6
+  pago), `swe` alias (SWE-1.7 Lightning pago) e todos os modelos pagos
+  proibidos para subagents.
+- **Caso 2 (Parent PAGO)**: `subagent_explore` (SWE-1.6, $0.5/$2.5) é
+  permitido — mais barato que o parent. `subagent_general` herda o modelo
+  pago do parent. Custom profiles com `model: swe-1-7` continuam FREE
+  (preferir quando possível).
+- **Arquivos atualizados**: `AGENTS.md` Rule 20, `MODEL-GUIDE.md` (novo
+  protocolo condicional com 2 casos), `TOOLS-MAP.md`, e 5 skills
+  (`dispatching-parallel-agents`, `primeagent-reference`, `context-folding`,
+  `obsidian-workflow`, `self-extend`) — todas as annotations "NUNCA usar
+  `subagent_explore`" agora dizem "NUNCA usar quando parent é FREE".
+
+### Fixed (iter 7.1 — `subagent_explore` PAGO bug)
+
+- **BUG CRÍTICO DE CUSTO (iter 7.1)**: o profile built-in `subagent_explore`
+  roda no **default subagent model (SWE-1.6, PAGO $0.5/$2.5 MTok)**. Não há
+  override local — apenas enterprise settings podem mudar isso. O system
+  prompt do Devin CLI recomenda `subagent_explore` para read-only exploration,
+  então qualquer dispatch desse profile incorre em custo.
+- **Solução**: adicionada regra em `AGENTS.md` (Rule 20) e `MODEL-GUIDE.md`
+  proibindo `subagent_explore`. Direcionado para o profile customizado
+  `researcher` (`agents/researcher.md`, pin `model: swe-1-7`, gratuito, 262K)
+  que tem as mesmas capacidades read-only.
+- **Skills corrigidas**: 5 skills (`dispatching-parallel-agents`,
+  `primeagent-reference`, `context-folding`, `obsidian-workflow`,
+  `self-extend`) tinham 10 referências ativas a `subagent_explore` como
+  recomendação de uso. Todas substituídas por `researcher` com annotation
+  "NOT `subagent_explore` — PAID SWE-1.6".
+- **Fonte**: docs.devin.ai/cli/subagents — "subagent_explore: The default
+  subagent model — a fast, cheap model (SWE-1.6 by default)".
+
+### Changed (iter 7.0 — FREE-ONLY policy enforcement)
+
+- **Protocolo de escalada pago REMOVIDO**: `MODEL-GUIDE.md` tinha um
+  protocolo de 6 níveis que recomendava GLM-5.2 Max ($0.7/$2.2),
+  DeepSeek V4 Flash ($0.14/$0.28), Opus ($5/$25) e GPT-5.4 ($2.5/$15)
+  como fallbacks. Substituído por protocolo FREE-ONLY: se GLM-5.2 High +
+  SWE-1.7 fan-out falharem, parar e reportar ao usuário — nunca escalar
+  para pago.
+- **AGENTS.md Rule 20**: "Só usar como fallback após 3+ tentativas
+  documentadas" → "🚫 NUNCA usar modelos pagos. Se falharem, parar e
+  reportar ao usuário."
+- **Skills corrigidas**: `dispatching-parallel-agents`, `primeagent-reference`
+  e `self-extend` recomendavam `sonnet` (pago, $2/$10) e `SWE-1.6` (pago,
+  $0.5/$2.5) para subagent profiles. Corrigido para `SWE-1.7` (gratuito,
+  262K) em todas as referências.
+- **TOOLS-MAP.md**: tabela de aliases agora marca todos os modelos pagos
+  com "**PAGO** — não usar" e adiciona `swe-1-7-medium` (gratuito) como
+  alternativa.
+- **Regra ABSOLUTA adicionada**: "NUNCA usar modelos pagos. Os modelos
+  gratuitos (GLM-5.2 High + SWE-1.7) cobrem 100% dos casos."
+
 ## [2.5.1] - 2026-08-21
 
 GLM-5.2 High + SWE-1.7 optimization. 9 iterations, all changes verified against

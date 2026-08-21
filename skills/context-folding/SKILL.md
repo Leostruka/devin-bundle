@@ -38,7 +38,7 @@ persistent Python REPL, but the same effect is achieved with:
 2. **Peek** — `read` with `offset`/`limit` to sample structure
 3. **Grep** — `grep` with patterns to locate relevant sections
 4. **Partition** — split into chunks mentally or via `exec` (e.g. `split`)
-5. **Sub-query** — dispatch `subagent_explore` subagents over chunks
+5. **Sub-query** — dispatch `researcher` subagents (NOT `subagent_explore` when parent is FREE — that runs on PAID SWE-1.6) over chunks
 6. **Synthesize** — combine sub-agent returns into the final answer
 
 ## Depth Rule (Critical)
@@ -90,14 +90,14 @@ exec: split -l 500 /tmp/context.md /tmp/chunk_
 
 ### Step 5: Sub-query (depth=1)
 
-Dispatch `subagent_explore` subagents over chunks. Each subagent gets:
+Dispatch `researcher` subagents (NOT `subagent_explore` when parent is FREE — that runs on PAID SWE-1.6) over chunks. Each subagent gets:
 - One chunk (or section) to analyze
 - A specific question to answer
 - Instructions to return findings, not spawn further subagents
 
 ```
 run_subagent:
-  profile: subagent_explore
+  profile: researcher
   task: "Read /tmp/chunk_aa. Find all references to X. Return: file path, line number, and a one-sentence summary of each reference. Do NOT spawn subagents."
 ```
 
