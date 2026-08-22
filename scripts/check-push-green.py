@@ -45,6 +45,11 @@ def run_check(cmd, cwd):
 def detect_test_command(cwd):
     """Return (command, is_pytest) for the project's test runner, or (None, False)."""
     if os.path.exists(os.path.join(cwd, "package.json")):
+        # Prefer pnpm/yarn if lockfiles indicate them, else npm
+        if os.path.exists(os.path.join(cwd, "pnpm-lock.yaml")):
+            return "pnpm test", False
+        if os.path.exists(os.path.join(cwd, "yarn.lock")):
+            return "yarn test", False
         return "npm test", False
     for marker in ("pytest.ini", "pyproject.toml", "setup.cfg", "tox.ini"):
         if os.path.exists(os.path.join(cwd, marker)):
@@ -53,6 +58,12 @@ def detect_test_command(cwd):
         return "cargo test", False
     if os.path.exists(os.path.join(cwd, "go.mod")):
         return "go test ./...", False
+    if os.path.exists(os.path.join(cwd, "pom.xml")):
+        return "mvn test", False
+    if os.path.exists(os.path.join(cwd, "build.gradle")) or os.path.exists(os.path.join(cwd, "build.gradle.kts")):
+        return "gradle test", False
+    if os.path.exists(os.path.join(cwd, "Rakefile")) or os.path.exists(os.path.join(cwd, "Gemfile")):
+        return "rake test", False
     try:
         entries = os.listdir(cwd)
     except OSError:

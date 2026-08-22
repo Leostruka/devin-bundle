@@ -12,7 +12,7 @@ If no path given, checks:
   1. .devin/refinements.log.jsonl (project)
   2. ~/.config/devin/refinements.log.jsonl (global)
 
-Source: "Phantom Guardrails" (arXiv:2607.13083, CMU)
+Source: "Phantom Guardrails" (Wang et al., arXiv:2607.13083)
   15/60 runs (25%) of self-improving agents invent failures.
   Phantom guardrails persist in add-only accept loops.
   Evidence without reproduction is a phantom, not a pattern.
@@ -36,6 +36,8 @@ REPRODUCIBLE_PATTERNS = [
     re.compile(r"(Select-String|Get-ChildItem|Get-Content|Add-Content|Set-Content|Invoke-WebRequest|Measure-Object)\s+", re.IGNORECASE),
     # Matched results / returned N matches / lines N, M
     re.compile(r"returned\s+\d+\s+match", re.IGNORECASE),
+    # Devin CLI tool calls (read, grep, glob, find_file_by_name, run_subagent, etc.)
+    re.compile(r"\b(?:read|grep|glob|find_file_by_name|run_subagent|web_search|webfetch|mcp_call_tool)\b.*[:\s]", re.IGNORECASE),
 ]
 
 # Vague evidence patterns (likely phantom)
@@ -152,6 +154,11 @@ def main():
                     continue
 
                 total += 1
+
+                # Skip rolled-back entries — they are no longer active
+                if entry.get("status") == "rolled-back":
+                    continue
+
                 category, issues = validate_entry(entry)
                 ref_id = entry.get("id", "?")
 

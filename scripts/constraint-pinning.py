@@ -127,6 +127,10 @@ def summary_retains_constraints(summary):
         "constraint pinning",
         "context window",
         "secrets",
+        "reproducible",
+        "illusory",
+        "held-out",
+        "deduce",
     )
     low = summary.lower()
     survived = sum(1 for p in key_phrases if p in low)

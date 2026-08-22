@@ -158,11 +158,9 @@ def check_run_subagent(ti):
             f"run_subagent profile '{profile}' is not valid. Must be one of: "
             + ", ".join(sorted(VALID_PROFILES))
         )
-
-
-def check_read_subagent(ti):
-    if not ti.get("agent_id"):
-        block("read_subagent requires an agent_id.")
+    is_bg = ti.get("is_background")
+    if is_bg is not None and not isinstance(is_bg, bool):
+        block("run_subagent is_background must be a boolean if provided.")
 
 
 def check_mcp_call_tool(ti):
@@ -177,23 +175,6 @@ def check_mcp_read_resource(ti):
         block("mcp_read_resource requires server_name.")
     if not ti.get("resource_uri"):
         block("mcp_read_resource requires resource_uri.")
-
-
-def check_get_output(ti):
-    if not ti.get("shell_id"):
-        block("get_output requires a shell_id.")
-
-
-def check_write_to_process(ti):
-    if not ti.get("shell_id"):
-        block("write_to_process requires a shell_id.")
-    if not ti.get("text_input") and not ti.get("bytes_input"):
-        block("write_to_process requires text_input or bytes_input.")
-
-
-def check_kill_shell(ti):
-    if not ti.get("shell_id"):
-        block("kill_shell requires a shell_id.")
 
 
 def check_skill(ti):
@@ -212,17 +193,19 @@ def check_request_scope(ti):
 
 
 def check_mcp_list_tools(ti):
-    pass  # server_name is optional; no required args
+    pass  # server_name is optional; no required args — kept for documentation
 
 
 def check_mcp_list_servers(ti):
-    pass  # no required args
+    pass  # no required args — kept for documentation
 
 
 def check_ask_user_question(ti):
     questions = ti.get("questions")
     if not isinstance(questions, list) or not questions:
         block("ask_user_question requires a non-empty questions array.")
+    if len(questions) > 4:
+        block(f"ask_user_question supports at most 4 questions, got {len(questions)}.")
     for i, q in enumerate(questions):
         if not isinstance(q, dict):
             block(f"ask_user_question questions[{i}] must be an object.")
@@ -233,6 +216,8 @@ def check_ask_user_question(ti):
         opts = q.get("options")
         if not isinstance(opts, list) or len(opts) < 2:
             block(f"ask_user_question questions[{i}] requires at least 2 options.")
+        if len(opts) > 4:
+            block(f"ask_user_question questions[{i}] supports at most 4 options, got {len(opts)}.")
 
 
 def check_browser_preview(ti):
@@ -245,16 +230,12 @@ def check_browser_preview(ti):
         block("browser_preview requires a name.")
 
 
-def check_close_browser_preview(ti):
-    if not ti.get("preview_id"):
-        block("close_browser_preview requires a preview_id.")
-
-
 def check_todo_write(ti):
     todos = ti.get("todos")
     if not isinstance(todos, list):
         block("todo_write requires a todos array.")
     valid_statuses = {"pending", "in_progress", "completed"}
+    in_progress_count = 0
     for i, t in enumerate(todos):
         if not isinstance(t, dict):
             block(f"todo_write todos[{i}] must be an object.")
@@ -263,14 +244,10 @@ def check_todo_write(ti):
         status = t.get("status", "")
         if status not in valid_statuses:
             block(f"todo_write todos[{i}] status must be one of {sorted(valid_statuses)}, got '{status}'.")
-
-
-def check_apply_patch(ti):
-    pass  # apply_patch args vary; fail-open
-
-
-def check_exit_plan_mode(ti):
-    pass  # no required args
+        if status == "in_progress":
+            in_progress_count += 1
+    if in_progress_count > 1:
+        block(f"todo_write must have exactly ONE in_progress item, got {in_progress_count}.")
 
 
 CHECKS = {

@@ -48,6 +48,21 @@ ERROR_INDICATORS = (
     re.compile(r"\b(?:command not found|no such file or directory)\b", re.IGNORECASE),
     re.compile(r"\bpermission denied\b", re.IGNORECASE),
     re.compile(r"\b[1-9]\d*\s+(?:tests?\s+)?fail(?:ed|ures?)?\b", re.IGNORECASE),
+    # Non-zero exit codes (exit code 1, Exit code 255, etc.)
+    re.compile(r"\bexit\s+code\s+[1-9]\d*\b", re.IGNORECASE),
+    re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b", re.IGNORECASE),
+    # Common errno names that indicate real failures
+    re.compile(r"\bEACCES\b|\bECONNREFUSED\b|\bECONNRESET\b|\bETIMEDOUT\b|\bENOENT\b"),
+    # Python exception types (not just "exception" the word)
+    re.compile(r"\b(?:ValueError|TypeError|KeyError|IndexError|AttributeError|RuntimeError|ImportError|ModuleNotFoundError|OSError|IOError|FileNotFoundError|NotImplementedError|ZeroDivisionError)\b"),
+    # PowerShell error patterns
+    re.compile(r"\b(?:ConvertFrom-Json|Invoke-WebRequest|Get-ChildItem)\b.*\berror\b", re.IGNORECASE),
+    re.compile(r"^\s*ConvertFrom-Json\s*:\s*error", re.IGNORECASE | re.MULTILINE),
+    # npm/cargo/go specific failure indicators
+    re.compile(r"\bnpm\s+ERR!", re.IGNORECASE),
+    re.compile(r"\bcargo(?::[a-z]+)*\s+(?:error|FAILED)\b", re.IGNORECASE),
+    re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE),
+    re.compile(r"\bFAIL\s+(?:github\.com|./)", re.IGNORECASE),
 )
 
 # Lines to ignore (routine warnings, not failures)

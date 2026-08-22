@@ -8,6 +8,7 @@ allowed-tools:
   - edit
   - grep
   - glob
+  - find_file_by_name
   - exec
   - get_output
   - write_to_process
@@ -15,6 +16,8 @@ allowed-tools:
   - todo_write
   - notebook_read
   - notebook_edit
+  - web_search
+  - webfetch
   - mcp_call_tool
   - mcp_list_servers
   - mcp_list_tools

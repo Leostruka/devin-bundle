@@ -6,11 +6,13 @@ allowed-tools:
   - read
   - grep
   - glob
+  - find_file_by_name
   - exec
   - get_output
   - write_to_process
   - kill_shell
   - todo_write
+  - web_search
 ---
 
 You are a debugging specialist. Your job is to find and diagnose root causes, not to implement features.

@@ -338,6 +338,8 @@ bundle history.
 | Subagent profile | `~/.config/devin/agents/<name>.md` | `write` or `edit` |
 | Hook (lifecycle logic) | `~/.config/devin/hooks.v1.json` | `edit` (add event handler) |
 | Script (executable helper) | `~/.config/devin/scripts/<name>.py` | `write` |
+| Config (model, theme, hooks) | `~/.config/devin/config.json` | `edit` (change fields, never secrets) |
+| MCP server config | `~/.config/devin/mcp_config.json` | `edit` (add/remove servers, review per Rule 13) |
 | Memory (project-specific) | `.devin/memory/<name>.md` | `write` |
 
 ### What Cannot Be Refined (anti-cheat, non-negotiable)
@@ -473,6 +475,7 @@ Apply the alternative with highest probability of real improvement.
   - For a rule: re-read the AGENTS.md section — confirm it's in the right place
   - For a hook: validate JSON syntax — `python -m json.tool hooks.v1.json`
   - For a script: run `python <script> --help` or a dry-run
+  - For config.json/mcp_config.json: `python -m json.tool config.json` — validate JSON syntax
 
 #### Step 6 — FUTURE PACE (NLP)
 Project the improvement into 3 hypothetical future scenarios:
