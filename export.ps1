@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Devin bundle exporter (Windows / PowerShell).
   Regenerates the FULL Devin CLI setup in the bundle from the live config on this machine.

@@ -57,6 +57,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Pesquisa/Data/Planejamento sections), manifest.json (3 entries +
   skill_count 46->49), audit.py (checks [9] and [18]).
 
+### Fixed (iter 8.2 — self-improvement loop: stale refs + model info + encoding)
+
+- **dispatching-parallel-agents model info**: skill table said
+  implementer/debugger use "parent" model, but `agents/implementer.md`
+  and `agents/debugger.md` pin `model: swe-1-7`. Updated table and
+  Model Selection section to reflect SWE-1.7 (free, 262K) as default
+  for implementers. Source: cognition.com/blog/swe-1-7.
+- **subagent-router stale model info**: 5 agent profiles had stale
+  SWE-1.6/$ cost info. Updated all to SWE-1.7 (262K, FREE), added
+  `subagent_explore` PAID warning, fixed 4 references to pruned
+  `subagent-driven-development` skill.
+- **Agent profiles AgentCARD**: added bottleneck role awareness to
+  all 5 profiles (architect=planner for debugging, reviewer=reviewer
+  for doc analysis, researcher=executor for research). Source:
+  arXiv:2606.20629.
+- **MODEL-GUIDE.md benchmarks**: added SWE-1.7 vs GLM-5.2 comparison
+  table (FrontierCode 42.3% vs 24.5%, Terminal-Bench 81.5% vs 81.0%,
+  SWE-Bench 77.8% vs 74.5%) and 10-task routing matrix. Source:
+  cognition.com/blog/swe-1-7.
+- **render-graphs.js stale ref**: example used `subagent-driven-
+  development` (deleted in iter 8.0). Replaced with `obsidian-
+  workflow` (only skill with Mermaid diagrams).
+- **obsidian-workflow validators rename**: 3 scripts had stale
+  `obsidian-project-docs` in docstrings/argparse (skill renamed to
+  obsidian-workflow in iter 8.0). Fixed to "Obsidian codebase wiki".
+- **primeagent-reference adaptation status**: SKILL.md said "9/9
+  features adapted" but 2 were pruned (session-checkpoint, heartbeat).
+  Fixed to "7/9 adapted, 2 pruned" — consistent with README bullets.
+- **README adaptation status**: 2 stale "9/9 features" references
+  (lines 262, 288) contradicted own bullet list ("2 pruned") and
+  primeagent-reference skill. Fixed to "7/9 adapted (2 pruned)".
+- **install.ps1/export.ps1 encoding**: PowerShell 5.x read UTF-8
+  files without BOM as Windows-1252, causing parser errors on
+  em-dashes. Added UTF-8 BOM (EF BB BF) to both .ps1 files.
+- **CHANGELOG missing iter 8.2**: Unreleased section had iter 8.1
+  and 8.0 but was missing 9 refinements (ref-011 to ref-019) from
+  subsequent sessions. Added iter 8.2 Fixed section.
+- **TOOLS-MAP missing hook entry**: hooks table missing
+  `behavioral-nudge.py` (UserPromptSubmit) — added in commit bfef22b
+  but not documented. Added row.
+- **README hooks table missing 2 entries**: missing `validate-
+  mermaid.py` (PreToolUse write/edit) and `behavioral-nudge.py`
+  (UserPromptSubmit). Added 2 rows to match hooks.v1.json.
+- **SKILL-TIERS stale token counts**: 3 skills updated after
+  2026-08-20 measurement had stale counts: primeagent-reference
+  7876→10091 (28% off), obsidian-workflow 14798→17435 (18% off),
+  dispatching-parallel-agents 9710→10065 (3.7% off). Updated counts
+  + measurement date to 2026-08-22.
+- **manifest.json vague purpose fields**: planning-pipeline and
+  obsidian-workflow both had the identical string "merged planning/
+  obsidian pipeline" as their purpose — two different skills with the
+  same description. Fixed to their real SKILL.md frontmatter
+  descriptions (spec/tickets/questionnaire; Obsidian 4 modes).
+- **SKILL-TIERS 4 more stale token counts**: writing-plans 1746→1704,
+  executing-plans 551→535, wayfinder 2936→2938, playbook 2400→1496
+  (60% off — playbook SKILL.md was rewritten shorter in iter 8.1).
+  Updated 4 counts in the planning/decision domain rows.
+- **Planning flow unification (grilling vs ask-matt)**: grilling
+  SKILL.md mandated writing-plans as its ONLY terminal state ("Do NOT
+  invoke any other implementation skill"), but ask-matt SKILL.md
+  routed grilling → planning-pipeline (Spec) → planning-pipeline
+  (Tickets) → implement without mentioning writing-plans. Unified:
+  grilling now offers both exits (planning-pipeline/Tickets canonical,
+  writing-plans alternative for single-session detailed plans);
+  ask-matt now mentions writing-plans → executing-plans as alternative
+  to Tickets → implement; writing-plans now documents its input
+  sources and positions itself vs Tickets mode. Updated 3 token
+  counts (grilling 2511→2656, writing-plans 1704→1785, ask-matt
+  2893→3037). Synced 3 skills to live.
+
 ### Fixed (iter 8.0 — doc count consistency + hook events accuracy + legacy cleanup)
 
 - **Deleted 3 legacy skill dirs**: obsidian-project-docs (consolidado em

@@ -133,10 +133,12 @@ supports it. See [Lifecycle Hooks](https://docs.devin.ai/cli/extensibility/hooks
 | PreToolUse | `^exec$` | `check-ai-signature.py` | Blocks AI signatures in commit messages (`-m` and `-F`/`--file`) |
 | PreToolUse | `^exec$` | `check-push-green.py` | Blocks push without green tests + held-out gap check (Rule 16) |
 | PreToolUse | `^(write\|edit)$` | `check-ai-signature.py` | Blocks AI signatures in file content |
+| PreToolUse | `^(write\|edit)$` | `validate-mermaid.py` | Validates Mermaid diagram syntax in writes |
 | PreToolUse | 19 tool names | `validate-tool-args.py` | Validates paths, regexes, URLs, profiles, UI fields before execution (ALTK SPARC) |
 | PostToolUse | `^(exec\|mcp_call_tool)$` | `silent-error-review.py` | Flags `success:true` with error indicators in verbose/tabular output (ALTK scope) |
 | PostCompaction | all | `constraint-pinning.py` | Detects dropped constraints, writes re-injection marker (Rule 14) |
 | UserPromptSubmit | all | `constraint-pinning.py` | Re-injects pinned constraints when a marker exists |
+| UserPromptSubmit | all | `behavioral-nudge.py` | Behavioral self-check (Rules 7, 8, 4, 17) before responding |
 | SessionStart | all | `constraint-pinning.py` | Clears stale markers from prior sessions |
 | SessionStart | all | `context-budget.py` | Reports AGENTS.md token cost to stderr (transparency, no context bloat) (Rule 18) |
 | Stop | all | `check-ai-signature.py` | Scans staged + unstaged changes for AI signatures |
@@ -259,7 +261,7 @@ Adapted from research verified against primary sources (arXiv:2512.24601, arXiv:
 |---|---|---|
 | `context-folding` | RLM (arXiv:2512.24601) | Offload to file + grep/partition + subagent_explore (depth=1 only). Depth=2+ causes overthinking (3.6s→344.5s) |
 | `autonomous-gates` | PrimeAgent `--autonomous-gate` | Gates at planning time, after each step, final gate before done |
-| `primeagent-reference` | All verified sources | Reference card + A2A messaging + refine + subagent router (4 modes). 9/9 features adapted, key numbers, video errors corrected |
+| `primeagent-reference` | All verified sources | Reference card + A2A messaging + refine + subagent router (4 modes). 7/9 features adapted (2 pruned), key numbers, video errors corrected |
 
 ### Context window skills (2)
 
@@ -285,7 +287,7 @@ Skills merged in v2.4.0 to reduce namespace bloat and maintenance overhead. Each
 | `planning-pipeline` | to-spec + to-tickets + to-questionnaire | Spec, Tickets, Questionnaire |
 | `obsidian-workflow` | obsidian-project-docs + vault-organizer + wiki-audit + memory-bridge | Build, Reorganize, Audit, Cross-session |
 
-### Adaptation status: 9/9 features
+### Adaptation status: 7/9 features adapted, 2 pruned
 
 - **3 direct adaptations** (context-folding, autonomous-gates, Rule 13): feature maps cleanly to Devin CLI runtime
 - **1 emulated adaptation** (primeagent-reference A2A mode): pattern preserved via file-based workarounds, documents limitations vs PrimeAgent

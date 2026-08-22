@@ -50,48 +50,32 @@ the verification.
 |---|---|---|---|
 | 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, `researcher` sub-queries (depth=1 only, NOT `subagent_explore` when parent FREE — PAID) |
 | 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `primeagent-reference` Refine mode + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
-| 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — `a2a-mailbox` skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. |
+| 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — A2A Messaging mode in this skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. See "Mode: A2A Messaging" below. |
 | 4 | Skills as importable Python packages | **Partial** — already supported | Skills can have `scripts/` dirs with Python. `self-extend` skill documents this. |
-| 5 | Daemon-backed sessions with reattach | **Yes (emulated)** — `session-checkpoint` skill | Structured checkpoint file (todos, decisions, files, verification, next actions). New session reads checkpoint and resumes. Not real reattach, but structured cross-session continuation. |
-| 6 | Heartbeats and schedules | **Yes (emulated)** — `heartbeat` skill | OS scheduler (Task Scheduler/cron) + heartbeat script launches new Devin CLI session with prompt. In-session periodic nudges via PostToolUse hook. Not real re-entry, but scheduled re-launch. |
+| 5 | Daemon-backed sessions with reattach | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `session-checkpoint` skill (structured checkpoint file). Pruned because Devin CLI has no background daemon to reattach to. |
+| 6 | Heartbeats and schedules | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `heartbeat` skill (OS scheduler + script). Pruned because Devin CLI cannot re-enter an existing session. |
 | 7 | Bounded autonomous mode with quality gates | **Yes** — `autonomous-gates` skill | Define gates at planning time, run after each step, final gate before done |
 | 8 | "Not a security sandbox" warning | **Yes** — Rule 13 in AGENTS.md | Explicit rule with guardrails |
-| 9 | Reward hacking guard (Factorio lesson) | **Yes** — in `refine` skill + Rule 13 | Guardrails in refine workflow, explicit reference to Factorio case |
+| 9 | Reward hacking guard (Factorio lesson) | **Yes** — Refine mode in this skill + Rule 13 | Guardrails in refine workflow, explicit reference to Factorio case |
 
-### Adaptation Status: 9/9 features adapted
+### Adaptation Status: 7/9 features adapted, 2 pruned
 
 - **3 direct adaptations** (1, 7, 8): feature maps cleanly to Devin CLI runtime
-- **3 emulated adaptations** (3, 5, 6): feature doesn't map directly, but the pattern is preserved via file-based workarounds. Each emulation documents its limitations vs PrimeAgent.
+- **1 emulated adaptation** (3): A2A Messaging mode in this skill — pattern preserved via file-based workarounds, documents limitations vs PrimeAgent
 - **1 partial** (4): already supported by Devin CLI's `scripts/` directory mechanism
 - **2 guardrails** (2, 9): adapted with safety mechanisms (reward hacking guard, auto-trigger with outcome tracking)
+- **2 pruned** (5, 6): `session-checkpoint` and `heartbeat` emulations didn't fit Devin CLI's single-process runtime — no background daemon, no session re-entry
 
 ### Emulated Features — Limitations vs PrimeAgent
 
-#### 3. A2A Mailbox (emulates persistent subagents)
+#### 3. A2A Messaging (emulates persistent subagents)
 
-| Feature | PrimeAgent | A2A Mailbox |
+| Feature | PrimeAgent | A2A Messaging (this skill) |
 |---|---|---|
 | Real-time messaging | Yes (socket) | No (file polling) |
 | Bidirectional during execution | Yes | No (subagent runs to completion) |
 | Persistent handles | Yes | No (ephemeral subagents) |
 | Multi-agent concurrent chat | Yes | No (sequential only) |
-
-#### 5. Session Checkpoint (emulates daemon-backed reattach)
-
-| Feature | PrimeAgent | Session Checkpoint |
-|---|---|---|
-| Background daemon | Yes (socket server) | No (file-based) |
-| Real-time reattach | Yes (session still running) | No (session ended) |
-| Kernel state recovery | Yes (JSONL + snapshot) | No (only structured state) |
-| Worker recovery | Yes (automatic) | No (manual resume) |
-
-#### 6. Heartbeat (emulates scheduled re-entry)
-
-| Feature | PrimeAgent | Heartbeat |
-|---|---|---|
-| Re-enters existing session | Yes | No (launches new session) |
-| Built-in `/heartbeat` command | Yes | No (OS scheduler + script) |
-| In-session periodic check | Yes | Via PostToolUse hook (nudge, not re-entry) |
 
 ### Key Numbers (All Verified)
 

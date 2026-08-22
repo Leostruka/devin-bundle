@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Find orphan pages in an obsidian-project-docs wiki.
+"""Find orphan pages in an Obsidian codebase wiki.
 
 An orphan page is a .md file that has NO inbound wikilinks AND NO outbound
 wikilinks — it is disconnected from the wiki graph.
@@ -140,7 +140,7 @@ def find_unreferenced(wiki_dir: Path) -> list:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Find orphan pages in an obsidian-project-docs wiki"
+        description="Find orphan pages in an Obsidian codebase wiki"
     )
     parser.add_argument("--wiki", type=str, required=True,
                         help="Path to the _wiki directory")

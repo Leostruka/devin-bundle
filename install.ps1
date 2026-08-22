@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Devin bundle installer (Windows / PowerShell).
   Restores the FULL Devin CLI setup to the correct config locations.

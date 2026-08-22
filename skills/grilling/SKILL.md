@@ -20,11 +20,11 @@ Two traditions, one pipeline. This skill merges **collaborative brainstorming** 
 |---|---|---|
 | Idea is fuzzy, early-stage, need to explore possibilities | **Brainstorm mode** | Gentle, one question at a time. Propose 2-3 approaches with trade-offs. Visual companion for UI/layout questions. |
 | Have a plan/decision that needs stress-testing | **Grill mode** | Relentless interview. Design tree with frontier rounds. Every branch visited, nothing silently assumed. |
-| New feature from scratch | **Both, in sequence** | Brainstorm to explore the idea → Grill to stress-test the resulting design → Write spec → writing-plans. |
+| New feature from scratch | **Both, in sequence** | Brainstorm to explore the idea → Grill to stress-test the resulting design → Write spec → planning-pipeline (Tickets mode) or writing-plans. |
 | Modifying existing behavior | **Brainstorm mode** | Understand current behavior, propose changes, get approval. |
 | User says "grill me" or "stress-test this" | **Grill mode** | Explicit trigger for relentless questioning. |
 | User says "brainstorm" or "I have an idea" | **Brainstorm mode** | Explicit trigger for collaborative exploration. |
-| Design is done, need to write it up | **Brainstorm mode (final phase)** | Write design doc, spec self-review, user review gate, transition to writing-plans. |
+| Design is done, need to write it up | **Brainstorm mode (final phase)** | Write design doc, spec self-review, user review gate, transition to planning-pipeline (Tickets mode) or writing-plans. |
 
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
@@ -120,9 +120,11 @@ You MUST complete these in order:
 7. **Write design doc** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit
 8. **Spec self-review** — quick inline check (see below)
 9. **User reviews written spec** — ask user to review before proceeding
-10. **Transition to implementation** — invoke writing-plans skill
+10. **Transition to implementation** — the spec is done. Pick the execution path:
+    - **planning-pipeline (Tickets mode)** — split into tracer-bullet vertical-slice tickets with blocking edges, then `implement` per ticket (canonical flow, matches `ask-matt` router)
+    - **writing-plans** — turn the spec into a single detailed task-by-task implementation plan, then `executing-plans`
 
-**The terminal state is invoking writing-plans.** Do NOT invoke any other implementation skill. The ONLY skill you invoke after grilling is writing-plans.
+**The terminal state is leaving grilling for one of the two execution paths.** Do NOT start implementing inside grilling — the spec is the deliverable here; execution happens in the next skill.
 
 ### Design doc
 
@@ -184,5 +186,7 @@ Explore context
         -> spec self-review (fix inline)
         -> user reviews spec?
            -> changes: revise, re-review
-           -> approved: invoke writing-plans skill
+           -> approved: pick execution path
+              -> planning-pipeline (Tickets mode) -> implement (canonical)
+              -> writing-plans -> executing-plans (detailed single plan)
 ```

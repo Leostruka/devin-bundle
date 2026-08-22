@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate content rigor of an obsidian-project-docs wiki.
+"""Validate content rigor of an Obsidian codebase wiki.
 
 Complements validate_wiki_structure.py (structural checks) and audit.py
 (diagram/secret/link checks) with CONTENT-level rigor checks that the
@@ -290,7 +290,7 @@ def check_effort_valid(wiki_dir: Path, effort: str) -> list:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Validate content rigor of obsidian-project-docs wiki"
+        description="Validate content rigor of Obsidian codebase wiki"
     )
     parser.add_argument("--wiki-dir", type=str, help="Path to the _wiki directory")
     args = parser.parse_args()

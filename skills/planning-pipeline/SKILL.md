@@ -1,8 +1,7 @@
 ---
 name: planning-pipeline
 description: Use when turning conversation into a written spec, breaking a plan or spec into independent traceable tickets, or when a decision cannot be fully answered and needs input from another person via a questionnaire.
-triggers:
-- user
+triggers: [user, model]
 ---
 # Planning Pipeline
 

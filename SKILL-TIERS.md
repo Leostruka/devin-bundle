@@ -1,6 +1,6 @@
 # Skill Tiers — discovery rápido por domínio
 
-Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-08-20).
+Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-08-22).
 Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 tok).
 
 ## Modelos alvo
@@ -20,12 +20,12 @@ Sem pin, usariam SWE-1.6 (default router, 200K, **pago** $0.5/$2.5 MTok). `subag
 |---|---|---|---|
 | `tool-and-skill-discovery` | Encontra skill certa + instala/avalia externas | 1009 | Início de tarefa |
 | `using-skills` | Guia de uso de skills antes de qualquer ação | 742 | Antes de ação não-trivial |
-| `writing-plans` | Spec → plano task-by-task | 1746 | Antes de implementar complexo |
-| `executing-plans` | Executa c/ checkpoints | 551 | Implementação estruturada |
+| `writing-plans` | Spec → plano task-by-task | 1785 | Antes de implementar complexo |
+| `executing-plans` | Executa c/ checkpoints | 535 | Implementação estruturada |
 | `context-folding` | Doc grande em 200k (offload+grep) | 1353 | Doc/log > 50k tok |
 | `context-window-hygiene` | clear vs compact | 1125 | Contexto apertando |
 | `mcp-context-audit` | Custos de tool defs dos MCPs | 884 | Antes de adicionar MCP |
-| `dispatching-parallel-agents` | Subagents têm 262k próprio + plan execution | 9710 | 2+ tarefas independentes |
+| `dispatching-parallel-agents` | Subagents têm 262k próprio + plan execution | 10065 | 2+ tarefas independentes |
 | `verification-before-completion` | Não declarar pronto sem verificar | 1305 | Antes de "terminei" |
 | `tdd` | Test-first | 2186 | Feature/bugfix |
 
@@ -80,7 +80,7 @@ Raramente >3 por tarefa (~5000 tok).
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `obsidian-workflow` | Build + Reorganize + Audit + Cross-session (4 modos) | 14798 | Qualquer operação Obsidian |
+| `obsidian-workflow` | Build + Reorganize + Audit + Cross-session (4 modos) | 17435 | Qualquer operação Obsidian |
 
 Custo alto. Invoque só quando for operação Obsidian real.
 
@@ -88,9 +88,9 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `wayfinder` | Mapa de decision tickets | 2936 | Trabalho > 1 sessão |
-| `grilling` | Stress-test de ideia (3 modos: default, stateless, with-docs) | 2511 | Design/plan ser desafiado |
-| `playbook` | Playbook reutilizável c/ Procedure/Specs/Advice (replica cloud) | 2400 | Tarefa repetida, "make this reusable" |
+| `wayfinder` | Mapa de decision tickets | 2938 | Trabalho > 1 sessão |
+| `grilling` | Stress-test de ideia (3 modos: default, stateless, with-docs) | 2656 | Design/plan ser desafiado |
+| `playbook` | Playbook reutilizável c/ Procedure/Specs/Advice (replica cloud) | 1496 | Tarefa repetida, "make this reusable" |
 
 ## Pesquisa
 
@@ -110,7 +110,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `ask-matt` | Router idea-to-ship | 2893 | Não sabe qual skill |
+| `ask-matt` | Router idea-to-ship | 3037 | Não sabe qual skill |
 | `handoff` | Compacta p/ outro agente | 219 | Passar trabalho |
 | `wait-what` | Re-explica mensagem | 81 | Reexplicar |
 | `autonomous-gates` | Gates p/ modo autônomo | 1462 | "Run unattended" |
@@ -127,7 +127,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `primeagent-reference` | Reference card + A2A + Refine + Subagent Router (4 modos) | 7876 | Pesquisar PrimeAgent/RLM |
+| `primeagent-reference` | Reference card + A2A + Refine + Subagent Router (4 modos) | 10091 | Pesquisar PrimeAgent/RLM |
 
 ## Outros
 
@@ -159,6 +159,6 @@ GLM-5.2 tem thinking mode (raciocina antes de output) e tool-use during inferenc
 | `primeagent-reference` sem motivo de pesquisa | Não invocar — é referência |
 | MCPs sem usar | Só ativar quando preciso |
 | Compact quando precisa do detalhe | `context-folding` |
-| `obsidian-workflow` para edição pontual (~14798 tok) | Só para operações Obsidian reais |
+| `obsidian-workflow` para edição pontual (~17435 tok) | Só para operações Obsidian reais |
 | Subagent general para pesquisa | Use researcher (SWE-1.7, 262K, gratuito) |
 | Pin `model: sonnet` em agents read-only | Pin `model: swe-1-7` → SWE-1.7 Max (262K, gratuito) |

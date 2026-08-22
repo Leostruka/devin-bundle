@@ -78,6 +78,7 @@ subagent_general — todos os 7 perfis validados.
 | PostToolUse | `^(exec\|mcp_call_tool)$` | silent-error-review.py | Revisa erros silenciosos (ALTK scope) |
 | PostCompaction | — | constraint-pinning.py | Detecta constraints dropadas |
 | UserPromptSubmit | — | constraint-pinning.py | Re-injeta constraints |
+| UserPromptSubmit | — | behavioral-nudge.py | Nudge behavioral self-check (Rules 7,8,4,17) |
 | SessionStart | — | constraint-pinning.py | Limpa markers stale |
 | SessionStart | — | context-budget.py | Reporta token cost |
 | Stop | — | check-ai-signature.py | Verifica assinaturas no fim |

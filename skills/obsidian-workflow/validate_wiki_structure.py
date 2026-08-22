@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the structural integrity of an obsidian-project-docs wiki.
+"""Validate the structural integrity of an Obsidian codebase wiki.
 
 Checks:
 1. Required root pages exist (00-09, 10-Logbook)
@@ -472,7 +472,7 @@ def check_architecture_critique(wiki_dir: Path, effort: str) -> list:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Validate obsidian-project-docs wiki structure")
+    parser = argparse.ArgumentParser(description="Validate Obsidian codebase wiki structure")
     parser.add_argument("--wiki-dir", type=str, help="Path to the _wiki directory")
     parser.add_argument("--vault-dir", type=str, help="Path to the Obsidian vault root (for wikilink resolution)")
     args = parser.parse_args()
@@ -486,7 +486,7 @@ def main():
 
     if not (wiki_dir / "wiki-config.json").exists():
         print(f"ERROR: No wiki-config.json found in {wiki_dir}")
-        print("Is this a valid obsidian-project-docs wiki directory?")
+        print("Is this a valid Obsidian codebase wiki directory?")
         sys.exit(1)
 
     effort = load_effort(wiki_dir)
