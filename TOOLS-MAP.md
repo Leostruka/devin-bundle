@@ -4,7 +4,7 @@ Mapeia TODAS as ferramentas, subagentes, hooks, e configs do Devin CLI
 runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 (2026-08-20, Devin CLI v3000.4.25).
 
-## Ferramentas do runtime (25 ativas + 2 modo-dependentes)
+## Ferramentas do runtime (26 ativas + 2 modo-dependentes)
 
 | Ferramenta | Categoria | Hook matcher | Validator | Descrição |
 |---|---|---|---|---|
@@ -37,7 +37,7 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 | `mcp_read_resource` | MCP | ✓ | ✓ server + uri | Lê resource MCP |
 | `exit_plan_mode` | Planning | — | — (no required args) | Sai do Plan mode (modo-dependente) |
 
-**Cobertura: 19/27 ferramentas com validator + hook matcher. 8 excluídas
+**Cobertura: 19/28 ferramentas com validator + hook matcher. 9 excluídas
 (trivial/no-op: get_output, write_to_process, kill_shell, read_subagent,
 close_browser_preview, mcp_list_tools, mcp_list_servers, apply_patch,
 exit_plan_mode) — o tool falha claramente sem validação do hook.**
@@ -65,7 +65,7 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (6 eventos, 11 scripts)
+## Hooks (8 eventos, 12 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
@@ -83,6 +83,10 @@ subagent_general — todos os 7 perfis validados.
 | Stop | — | check-ai-signature.py | Verifica assinaturas no fim |
 | Stop | — | refine-review-prompt.py | Prompt de refine review |
 
+**Eventos não utilizados pelo bundle (disponíveis no runtime):**
+- `PermissionRequest` — dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
+- `SessionEnd` — dispara quando uma sessão termina. Stdin: `reason`. Útil para cleanup/logging.
+
 **Scripts manuais (não-hooks):**
 - validate-refinement-evidence.py — verifica refinements.log.jsonl
 - validate-skill-format.py — valida formato de skills
@@ -98,7 +102,7 @@ subagent_general — todos os 7 perfis validados.
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 46 skills |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 11 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 12 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia GLM-5.2 + SWE-1.7 |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |

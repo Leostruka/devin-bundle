@@ -32,6 +32,10 @@ REPRODUCIBLE_PATTERNS = [
     re.compile(r"(exit\s+code|return\s+code)\s*[:=]?\s*\d+", re.IGNORECASE),
     re.compile(r"(file|path|line)\s*[:=]\s*\S+", re.IGNORECASE),
     re.compile(r"(arxiv|doi|http|url)\s*[:=]?\s*\S+", re.IGNORECASE),
+    # PowerShell cmdlets (Windows runtime) — Select-String, Get-ChildItem, etc.
+    re.compile(r"(Select-String|Get-ChildItem|Get-Content|Add-Content|Set-Content|Invoke-WebRequest|Measure-Object)\s+", re.IGNORECASE),
+    # Matched results / returned N matches / lines N, M
+    re.compile(r"returned\s+\d+\s+match", re.IGNORECASE),
 ]
 
 # Vague evidence patterns (likely phantom)

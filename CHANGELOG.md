@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (iter 8.0 — doc count consistency + hook events accuracy + legacy cleanup)
+
+- **Deleted 3 legacy skill dirs**: obsidian-project-docs (consolidado em
+  obsidian-workflow), subagent-driven-development (consolidado em
+  dispatching-parallel-agents), systematic-debugging (consolidado em
+  diagnosing-bugs). Reduzido 49→46 skills. README "Merged from" table
+  mantida como histórico de consolidação.
+- **TOOLS-MAP.md stale counts**: "46 skills" → "49 skills" → "46 skills"
+  (legacy cleanup), "11 scripts" → "12 scripts", "6 eventos" → "8 eventos",
+  "25 ativas + 2 modo-dependentes" → "26 ativas + 2 modo-dependentes"
+  (28 total), "19/27" → "19/28", "8 excluídas" → "9 excluídas".
+  Verified against disk and docs.devin.ai/cli/extensibility/hooks/overview
+  (8 events). Bundle uses 6 of 8; PermissionRequest and SessionEnd
+  documented as available but unused.
+- **README.md stale counts**: diagram "46 skills" → "49 skills" →
+  "46 skills", "6 events" → "8 events"; hooks header "6 events" →
+  "8 events"; install summary "6 hook events" → "8 hook events";
+  badge skills-49 → skills-46.
+- **SKILL-TIERS.md**: typo double period `PAGO)..` → `PAGO).`.
+- **manifest.json**: removed 3 legacy skill entries, skill_count 49→46,
+  tool_count 27→28.
+- **audit.py check [24]**: new check verifies TOOLS-MAP.md and README.md
+  counts match disk reality (skills, scripts, hook events, tools, excluded).
+  Prevents future stale-count regressions.
+- **validate-refinement-evidence.py**: added PowerShell cmdlet patterns
+  (Select-String, Get-ChildItem, etc.) to REPRODUCIBLE_PATTERNS — fixes
+  false phantom-guardrail flag on Windows-documented refinements.
+- **Sources**: docs.devin.ai/cli/extensibility/hooks/overview (8 events),
+  docs.devin.ai/cli/extensibility/hooks/lifecycle-hooks (event details),
+  Get-ChildItem skills/scripts (disk counts).
+
 ### Changed (iter 7.3 — política de modelos CONDICIONAL)
 
 - **Política alterada de FREE-ONLY para CONDICIONAL**: modelos pagos agora

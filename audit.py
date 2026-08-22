@@ -153,7 +153,7 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('49 skills', skill_count == 49),
+    ('46 skills', skill_count == 46),
     ('19 rules', len(rules_found) == 19),  # 1-5,7-20 (Rule 6 removed, Rule 20 added)
     ('5 agents', agent_count == 5),
     ('12 scripts', len(script_files) == 12),
@@ -349,8 +349,8 @@ else:
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-49' in readme:
-    print('  OK  skills badge = 49')
+if 'skills-46' in readme:
+    print('  OK  skills badge = 46')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
@@ -425,6 +425,26 @@ if '*.sh' in ga and '*.ps1' in ga:
 else:
     warnings.append('.gitattributes may be incomplete')
     print('  WARN .gitattributes incomplete')
+
+# 24. TOOLS-MAP.md and SKILL-TIERS.md stale counts
+print()
+print('[24] Doc count consistency (TOOLS-MAP.md, SKILL-TIERS.md)')
+toolsmap = open('TOOLS-MAP.md', encoding='utf-8').read()
+doc_checks = [
+    ('TOOLS-MAP.md skills count', str(skill_count) + ' skills', str(skill_count) + ' skills' in toolsmap),
+    ('TOOLS-MAP.md scripts count', str(len(script_files)) + ' scripts', str(len(script_files)) + ' scripts' in toolsmap),
+    ('TOOLS-MAP.md hook events (8)', '8 eventos', '8 eventos' in toolsmap),
+    ('TOOLS-MAP.md tool count (28)', '28 in TOOLS-MAP', ('28 ferramentas' in toolsmap or '19/28' in toolsmap)),
+    ('TOOLS-MAP.md excluded tools (9)', '9 in TOOLS-MAP', '9 excluídas' in toolsmap),
+    ('README.md diagram skills count', str(skill_count) + ' skills', str(skill_count) + ' skills' in readme),
+    ('README.md diagram hook events (8)', '8 events', '8 events' in readme),
+]
+# skill_count is dynamic (from disk), so these checks auto-adjust to 46 after legacy cleanup
+for label, expected, ok in doc_checks:
+    status = 'OK' if ok else 'FAIL'
+    print('  ' + status + ' ' + label + ' (expected: ' + expected + ')')
+    if not ok:
+        errors.append(label + ' stale: expected ' + expected)
 
 print()
 print('=== SUMMARY ===')

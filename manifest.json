@@ -379,31 +379,13 @@
       "source": "consolidated from multiple skills (v2.4.0)",
       "purpose": "merged planning/obsidian pipeline",
       "hash": "5ddbd4ec92c23e4fa54e38ced1b0b9f01760f13263fa013bb80113bd983296f3"
-    },
-    {
-      "name": "obsidian-project-docs",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, and auto-refresh.",
-      "original_path": "%APPDATA%\\devin\\skills\\obsidian-project-docs"
-    },
-    {
-      "name": "subagent-driven-development",
-      "source": "devin-bundle",
-      "purpose": "Use when executing a multi-task plan by dispatching a fresh subagent per task.",
-      "original_path": "%APPDATA%\\devin\\skills\\subagent-driven-development"
-    },
-    {
-      "name": "systematic-debugging",
-      "source": "devin-bundle",
-      "purpose": "Use when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
-      "original_path": "%APPDATA%\\devin\\skills\\systematic-debugging"
     }
   ],
-  "skill_count": 49,
+  "skill_count": 46,
   "rule_count": 19,
   "script_count": 12,
   "mcp_count": 1,
   "agent_count": 5,
-  "tool_count": 27,
+  "tool_count": 28,
   "docs": ["AGENTS.md", "MODEL-GUIDE.md", "SKILL-TIERS.md", "TOOLS-MAP.md", "CHANGELOG.md", "README.md"]
 }

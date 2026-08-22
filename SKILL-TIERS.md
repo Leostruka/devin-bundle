@@ -11,7 +11,7 @@ Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 
 | SWE-1.7 | 262K | Subagent (`model: swe-1-7` pin) | Self-compaction trained, 1000 TPS, **gratuito** |
 | SWE-1.6 | 200K | Default subagent router | Sem pin, Devin CLI resolve para SWE-1.6 (docs.devin.ai/cli/subagents) |
 
-Subagents customizados têm `model: swe-1-7` pin → SWE-1.7 Max (262K, **gratuito**, rápido). **NÃO usar `swe` (alias para swe-1.7-lightning, PAGO)..
+Subagents customizados têm `model: swe-1-7` pin → SWE-1.7 Max (262K, **gratuito**, rápido). **NÃO usar `swe` (alias para swe-1.7-lightning, PAGO).
 Sem pin, usariam SWE-1.6 (default router, 200K, **pago** $0.5/$2.5 MTok). `subagent_general` herda GLM-5.2 High do parent (**gratuito**). **Evitar `subagent_explore`** (resolve para SWE-1.6 pago) — usar custom `researcher` (gratuito, 262K).
 
 ## Núcleo (raciocínio lógico, qualquer trabalho)
