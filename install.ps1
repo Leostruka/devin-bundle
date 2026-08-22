@@ -242,10 +242,12 @@ function Merge-ConfigJson($src, $dst) {
 
   if ($Backup) { Backup-File $dst }
 
-  # Build merged config: start with bundle, override org_id with local
+  # Build merged config: start with bundle, force org_id to MASKED (never inherit bundle's),
+  # then override with local org_id only if local has a real (non-MASKED) value
   $merged = $bundleConfig
+  if (-not $merged.devin) { $merged | Add-Member -NotePropertyName "devin" -NotePropertyValue @{} -Force }
+  $merged.devin.org_id = "MASKED"
   if ($localConfig.devin -and $localConfig.devin.org_id -and $localConfig.devin.org_id -ne "MASKED") {
-    if (-not $merged.devin) { $merged | Add-Member -NotePropertyName "devin" -NotePropertyValue @{} -Force }
     $merged.devin.org_id = $localConfig.devin.org_id
   }
 
