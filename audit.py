@@ -153,7 +153,7 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('46 skills', skill_count == 46),
+    ('49 skills', skill_count == 49),
     ('19 rules', len(rules_found) == 19),  # 1-5,7-20 (Rule 6 removed, Rule 20 added)
     ('5 agents', agent_count == 5),
     ('12 scripts', len(script_files) == 12),
@@ -163,6 +163,33 @@ for label, ok in checks:
     print('  ' + status + ' ' + label)
     if not ok:
         errors.append('README count wrong: ' + label)
+
+# 9b. manifest.json scripts list consistency
+print()
+print('[9b] manifest.json scripts list')
+manifest = json.load(open('manifest.json', encoding='utf-8'))
+manifest_scripts = manifest.get('scripts', [])
+manifest_script_count = manifest.get('script_count', 0)
+# Separate .py scripts (counted in script_count) from other extensions (helpers)
+manifest_py_scripts = [s for s in manifest_scripts if s['name'].endswith('.py')]
+manifest_other_scripts = [s for s in manifest_scripts if not s['name'].endswith('.py')]
+if len(manifest_scripts) == 0:
+    errors.append('manifest.json has script_count but no scripts array')
+    print('  FAIL manifest.json scripts array empty/missing')
+elif len(manifest_py_scripts) != manifest_script_count:
+    errors.append('manifest.json script_count (' + str(manifest_script_count) + ') != .py scripts in array (' + str(len(manifest_py_scripts)) + ')')
+    print('  FAIL manifest.json script_count != .py scripts in array')
+elif len(manifest_py_scripts) != len(script_files):
+    errors.append('manifest.json .py scripts (' + str(len(manifest_py_scripts)) + ') != scripts/ dir .py (' + str(len(script_files)) + ')')
+    print('  FAIL manifest.json .py scripts != scripts/ dir')
+else:
+    # Check each manifest script exists on disk
+    missing = [s['name'] for s in manifest_scripts if not os.path.isfile(os.path.join('scripts', s['name']))]
+    if missing:
+        errors.append('manifest.json lists scripts not on disk: ' + ', '.join(missing))
+        print('  FAIL manifest scripts not on disk: ' + ', '.join(missing))
+    else:
+        print('  OK  manifest.json scripts list consistent (' + str(len(manifest_py_scripts)) + ' .py + ' + str(len(manifest_other_scripts)) + ' other)')
 
 # 10. No unmasked secrets
 print()
@@ -349,8 +376,8 @@ else:
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-46' in readme:
-    print('  OK  skills badge = 46')
+if 'skills-49' in readme:
+    print('  OK  skills badge = 49')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
@@ -462,4 +489,4 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 23 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 24 CHECKS PASSED - NO ERRORS, NO WARNINGS')

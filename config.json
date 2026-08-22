@@ -1,138 +1,138 @@
 {
-    "version": 1,
-    "devin": {
-        "org_id": "MASKED"
-    },
-    "theme_mode": "dark",
-    "agent": {
-        "model": "glm-5-2"
-    },
-    "attribution": false,
-    "shell": {
-        "setup_complete": true
-    },
-    "hooks": {
-        "PreToolUse": [
-            {
-                "matcher": "^exec$",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/destructive-gate.py\"",
-                        "timeout": 10
-                    },
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
-                        "timeout": 10
-                    },
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/check-push-green.py\"",
-                        "timeout": 150
-                    }
-                ]
-            },
-            {
-                "matcher": "^(write|edit)$",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
-                        "timeout": 10
-                    },
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/validate-mermaid.py\"",
-                        "timeout": 60
-                    }
-                ]
-            },
-            {
-                "matcher": "^(exec|read|write|edit|grep|glob|notebook_read|notebook_edit|webfetch|web_search|find_file_by_name|run_subagent|mcp_call_tool|mcp_read_resource|skill|request_scope|ask_user_question|browser_preview|todo_write)$",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/validate-tool-args.py\"",
-                        "timeout": 10
-                    }
-                ]
-            }
-        ],
-        "PostToolUse": [
-            {
-                "matcher": "^(exec|mcp_call_tool)$",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/silent-error-review.py\"",
-                        "timeout": 10
-                    }
-                ]
-            }
-        ],
-        "PostCompaction": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
-                        "timeout": 5
-                    }
-                ]
-            }
-        ],
-        "UserPromptSubmit": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
-                        "timeout": 5
-                    },
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/behavioral-nudge.py\"",
-                        "timeout": 5
-                    }
-                ]
-            }
-        ],
-        "SessionStart": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
-                        "timeout": 5
-                    },
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/context-budget.py\"",
-                        "timeout": 5
-                    }
-                ]
-            }
-        ],
-        "Stop": [
-            {
-                "matcher": "",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
-                        "timeout": 15
-                    },
-                    {
-                        "type": "command",
-                        "command": "python \"{{APPDATA}}/devin/scripts/refine-review-prompt.py\"",
-                        "timeout": 5
-                    }
-                ]
-            }
+  "version": 1,
+  "devin": {
+    "org_id": "MASKED"
+  },
+  "theme_mode": "dark",
+  "agent": {
+    "model": "glm-5-2"
+  },
+  "attribution": false,
+  "shell": {
+    "setup_complete": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^exec$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/destructive-gate.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-push-green.py\"",
+            "timeout": 150
+          }
         ]
-    }
+      },
+      {
+        "matcher": "^(write|edit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/validate-mermaid.py\"",
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "matcher": "^(exec|read|write|edit|grep|glob|notebook_read|notebook_edit|webfetch|web_search|find_file_by_name|run_subagent|mcp_call_tool|mcp_read_resource|skill|request_scope|ask_user_question|browser_preview|todo_write)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/validate-tool-args.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(exec|mcp_call_tool)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/silent-error-review.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostCompaction": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/behavioral-nudge.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/context-budget.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/refine-review-prompt.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
 }

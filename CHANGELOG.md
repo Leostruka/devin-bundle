@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (iter 8.1 — CLI replicas of cloud-only features)
+
+- **deep-mode skill**: replicates Ask Devin's Deep Mode (`!deep` in
+  Slack/Teams) for the CLI. Multi-pass agentic search (broad sweep ->
+  deep read -> cross-file synthesis -> architecture map) with
+  mandatory file:line citations. Sources: docs.devin.ai/work-with-devin/ask-devin,
+  docs.devin.ai/integrations/slack, cognition.ai/blog/new-self-serve-plans-for-devin.
+- **data-analyst skill**: replicates Devin cloud's Data Analyst Agent
+  (DANA) for the CLI. SQL-first exploration via MCP data sources,
+  schema discovery + caching, query formulation, analysis, and
+  matplotlib/seaborn-style visualizations. Read-only by design.
+  Sources: docs.devin.ai/work-with-devin/data-analyst,
+  docs.devin.ai/use-cases/gallery/dana-slack-data-analyst,
+  docs.devin.ai/release-notes/2025.
+- **playbook skill**: replicates Devin cloud's Playbook feature for
+  the CLI. Structured prompt template (Procedure, Specifications,
+  Advice, Forbidden Actions, Required from User), local library
+  (`.devin/playbooks/*.devin.md`), macro approximation, create-from-
+  session workflow. Sources: docs.devin.ai/product-guides/creating-playbooks,
+  docs.devin.ai/product-guides/using-playbooks,
+  docs.devin.ai/work-with-devin/advanced-capabilities.
+- **obsidian-workflow skill enhanced**: 4 new steps (17-20) complementing
+  existing rigor to match DeepWiki cloud. Effort levels (low/medium/high)
+  in `wiki-config.json` controlling depth. Deep Research pass (Step 18)
+  — architecture critique, anti-patterns, optimization opportunities,
+  senior-reviewer-level analysis. TechDebt page (Step 19, `11-TechDebt.md`)
+  — cited issues, numbered (AP-001/OPT-001), categorized. Conversational
+  Q&A (Step 20) — `deep-mode` skill integration for multi-pass search
+  over wiki with double citations (wiki + source). Backward compatible:
+  absent `effort` defaults to `high` (existing behavior). Sources:
+  docs.devin.ai/work-with-devin/deepwiki, cognition.com/blog/deepwiki,
+  marktechpost.com/2025/04/27/devin-ai-introduces-deepwiki.
+- **obsidian-workflow validators**: 2 new scripts + 1 updated.
+  `validate_wiki_content.py` (9 content rigor checks: source path:line
+  format, min 5 sources per page, Sources: footers, overview links to
+  all root pages, function ## Links, source columns in tables, TechDebt
+  content, architecture critique, effort valid). `find_orphan_pages.py`
+  (graph orphan detection — referenced in checklist but did not exist).
+  `validate_wiki_structure.py` updated with 3 new checks (effort valid,
+  TechDebt exists, arch critique section). SKILL.md updated with
+  validation scripts table and content rigor checklist item.
+- **manifest.json scripts list**: added `scripts` array (was missing —
+  `script_count: 12` but no list). 12 .py + 1 .js entry. audit.py check
+  [9b] validates consistency (count match, disk existence). Check count
+  23 -> 24.
+- **Counts updated**: 46 -> 49 skills in README.md (summary, diagram,
+  tree, badge), TOOLS-MAP.md, SKILL-TIERS.md (3 new entries in
+  Pesquisa/Data/Planejamento sections), manifest.json (3 entries +
+  skill_count 46->49), audit.py (checks [9] and [18]).
+
 ### Fixed (iter 8.0 — doc count consistency + hook events accuracy + legacy cleanup)
 
 - **Deleted 3 legacy skill dirs**: obsidian-project-docs (consolidado em

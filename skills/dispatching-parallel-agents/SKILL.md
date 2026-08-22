@@ -111,9 +111,10 @@ sensitivity:
 |---|---|---|
 | Codebase research, doc lookup | `researcher` (SWE-1.7) | Read-only, free, fast |
 | Code review, spec compliance | `reviewer` (SWE-1.7) | Needs judgment, free |
-| Bounded implementation | `implementer` (parent) | Needs full tools + reasoning |
+| Bounded implementation | `implementer` (SWE-1.7) | Needs full tools + coding strength (42.3% vs 24.5% GLM-5.2 on FrontierCode) |
 | Architecture, trade-offs | `architect` (SWE-1.7) | Needs judgment, read-only, free |
-| Debugging, root cause | `debugger` (parent) | Needs exec + reasoning |
+| Debugging, root cause | `debugger` (SWE-1.7) | Needs exec + coding strength |
+| Complex reasoning, context isolation | `subagent_general` (parent GLM-5.2) | Inherits parent model, free, for tasks needing GLM-5.2 reasoning |
 
 Don't dispatch `implementer` for a research task — `researcher` is 10x cheaper
 and read-only. Don't dispatch `architect` for a typo fix — handle inline.
@@ -394,26 +395,38 @@ conflicts that only emerge from implementation.
 
 In Devin CLI, a `subagent_general` subagent inherits the parent session's model (GLM-5.2 High, free by default). The built-in `subagent_explore` runs on the **default subagent model (SWE-1.6, PAID $0.5/$2.5)**. **When parent is FREE (default): NUNCA usar `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, pin `model: swe-1-7`, free, 262K) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin `model: swe-1-7` to ensure the free model is used.
 
-**Use the parent session's model for:**
+**Use `subagent_general` (inherits parent GLM-5.2, free) for:**
 - Final whole-branch review — the judgment task that needs the most capability.
-- Architecture and design tasks.
-- Rounds 4-5 fix-loop escalation (choose a more capable model by switching the parent session model before dispatching).
+- High-stakes architecture that needs GLM-5.2 reasoning (routine architecture → `architect` SWE-1.7).
+- Rounds 4-5 fix-loop escalation (the parent can switch to a more capable model via `/model` before dispatching).
+- Complex reasoning tasks that benefit from context isolation but need GLM-5.2's thinking mode.
 
-**Use `researcher` (NOT `subagent_explore` when parent is FREE) for:**
-- Codebase research and fact-finding that should stay cheap, read-only, and FREE.
+**Use custom profiles (all pin `swe-1-7`, free, 262K) for:**
+- `researcher` — codebase research and fact-finding (read-only, FREE).
+- `implementer` — bounded coding tasks (SWE-1.7 is 72% better than GLM-5.2 at FrontierCode: 42.3% vs 24.5%).
+- `debugger` — root cause analysis and debugging (SWE-1.7 coding strength).
+- `architect` — routine architecture and trade-off analysis (read-only).
+- `reviewer` — code review and spec compliance (read-only + exec for tests).
 
 **To run a different model for a subagent:**
 1. Switch the parent session model with `/model <model>` before dispatching (affects all `subagent_general` dispatches from this session).
 2. Or create a custom subagent profile in `~/.config/devin/agents/` or `%APPDATA%\devin\agents\` with a `model:` field, and pass that profile name as `profile` in `run_subagent`.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes, and cheaper models routinely take 2-3× the
-turns on multi-step work — costing more overall. For reviewers and for implementers working from prose descriptions, a mid-tier parent model is a good floor. When the task's plan text contains the complete code to write, the implementation is transcription plus testing, and a fast parent model is fine. Single-file mechanical fixes also take a fast parent model.
+many turns a subagent takes. SWE-1.7 at 1000 TPS is fast enough that turn
+count rarely causes wall-clock issues. For implementers, SWE-1.7 is the
+default (pinned in `agents/implementer.md`) — it outperforms GLM-5.2 on
+coding benchmarks (42.3% vs 24.5% FrontierCode). When the task's plan text
+contains the complete code to write, the implementation is transcription
+plus testing, and SWE-1.7 is more than sufficient. For rounds 4-5
+escalation, switch to `subagent_general` (inherits parent GLM-5.2) or
+switch parent to a more capable model via `/model`.
 
 **Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → fast parent model
-- Touches multiple files with integration concerns → standard parent model
-- Requires design judgment or broad codebase understanding → most capable parent model
+- Touches 1-2 files with a complete spec → `implementer` (SWE-1.7)
+- Touches multiple files with integration concerns → `implementer` (SWE-1.7)
+- Requires design judgment or broad codebase understanding → `architect` (SWE-1.7) for design, then `implementer` (SWE-1.7) for code
+- Rounds 4-5 fix-loop failure → `subagent_general` (parent GLM-5.2) for fresh eyes + reasoning
 
 ### The Task Loop
 

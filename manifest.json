@@ -379,10 +379,40 @@
       "source": "consolidated from multiple skills (v2.4.0)",
       "purpose": "merged planning/obsidian pipeline",
       "hash": "5ddbd4ec92c23e4fa54e38ced1b0b9f01760f13263fa013bb80113bd983296f3"
+    },
+    {
+      "name": "deep-mode",
+      "source": "devin-bundle (new, replicates cloud Ask Devin Deep Mode)",
+      "purpose": "Use when the user says 'deep', 'deep search', 'deep research', or asks for exhaustive codebase exploration beyond a quick grep. Multi-pass agentic search with citations."
+    },
+    {
+      "name": "data-analyst",
+      "source": "devin-bundle (new, replicates cloud DANA agent)",
+      "purpose": "Use when the user asks to query a database, analyze data, create charts, or asks business questions about data. SQL-first exploration via MCP data sources."
+    },
+    {
+      "name": "playbook",
+      "source": "devin-bundle (new, replicates cloud Playbook feature)",
+      "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks. Structured prompt template with Procedure, Specs, Advice, Forbidden Actions."
     }
   ],
-  "skill_count": 46,
+  "skill_count": 49,
   "rule_count": 19,
+  "scripts": [
+    {"name": "behavioral-nudge.py", "purpose": "PostToolUse hook — injects behavioral reminders"},
+    {"name": "check-ai-signature.py", "purpose": "PreCommit hook — blocks AI signatures in commits"},
+    {"name": "check-push-green.py", "purpose": "PrePush hook — blocks push when held-out tests fail"},
+    {"name": "constraint-pinning.py", "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints"},
+    {"name": "context-budget.py", "purpose": "SessionStart hook — reports AGENTS.md token cost"},
+    {"name": "destructive-gate.py", "purpose": "PreToolUse hook — gates destructive operations"},
+    {"name": "refine-review-prompt.py", "purpose": "Refine mode — generates review prompts for self-improvement"},
+    {"name": "silent-error-review.py", "purpose": "PostToolUse hook — detects silent errors in tool output"},
+    {"name": "validate-mermaid.py", "purpose": "Validator — checks Mermaid syntax in wiki diagrams"},
+    {"name": "validate-refinement-evidence.py", "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails"},
+    {"name": "validate-skill-format.py", "purpose": "Validator — checks SKILL.md frontmatter and format"},
+    {"name": "validate-tool-args.py", "purpose": "Validator — checks tool argument schemas"},
+    {"name": "mermaid-parse-check.js", "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"}
+  ],
   "script_count": 12,
   "mcp_count": 1,
   "agent_count": 5,

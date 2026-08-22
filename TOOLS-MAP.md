@@ -101,7 +101,7 @@ subagent_general — todos os 7 perfis validados.
 | hooks.v1.json | `./hooks.v1.json` | `~/.config/devin/hooks.v1.json` | Hooks legacy (backup) |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 46 skills |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 49 skills |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 12 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia GLM-5.2 + SWE-1.7 |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |

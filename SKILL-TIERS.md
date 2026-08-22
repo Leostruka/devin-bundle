@@ -90,6 +90,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `wayfinder` | Mapa de decision tickets | 2936 | Trabalho > 1 sessão |
 | `grilling` | Stress-test de ideia (3 modos: default, stateless, with-docs) | 2511 | Design/plan ser desafiado |
+| `playbook` | Playbook reutilizável c/ Procedure/Specs/Advice (replica cloud) | 2400 | Tarefa repetida, "make this reusable" |
 
 ## Pesquisa
 
@@ -97,6 +98,13 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `research` | Subagent investiga c/ citações | 171 | Investigação c/ fontes |
 | `context7` | Docs atualizadas de libs | 737 | Pergunta sobre lib |
+| `deep-mode` | Multi-pass agentic search c/ citações (replica Deep Mode cloud) | 1800 | "Deep search", exploração exaustiva |
+
+## Data
+
+| Skill | Faz | Tok | Quando |
+|---|---|---|---|
+| `data-analyst` | SQL-first exploration via MCP, schema-aware, charts (replica DANA cloud) | 2100 | Query DB, análise de dados, charts |
 
 ## Meta (gestão de sessão)
 

@@ -98,6 +98,22 @@ de escalada abaixo).
 | Disponibilidade | Devin Web, Desktop, CLI | cognition.com |
 | Custo | **Gratuito** (swe-1-7, swe-1-7-medium) | `devin models list` |
 
+### Benchmarks SWE-1.7 vs GLM-5.2 (coding)
+
+Fonte: cognition.com/blog/swe-1-7 (verificado 2026-08-22)
+
+| Benchmark | SWE-1.7 | GLM-5.2 | Vantagem SWE-1.7 | Implicação para routing |
+|---|---|---|---|---|
+| FrontierCode 1.1 Main | 42.3% | 24.5% | **+72%** | Implementação: preferir SWE-1.7 sobre GLM-5.2 inline |
+| Terminal-Bench 2.1 | 81.5% | 81.0% | +0.6% | Terminal tasks: equivalente |
+| SWE-Bench Multilingual | 77.8% | 74.5% | +4.4% | Multi-file coding: SWE-1.7 levemente melhor |
+
+**Conclusão para routing:** SWE-1.7 é significativamente superior em coding
+(FrontierCode: 42.3% vs 24.5%). O parent (GLM-5.2 High) deve delegar tarefas
+de coding para SWE-1.7 subagents (implementer, debugger) em vez de implementar
+inline, exceto para fixes triviais (<20 lines, single file). GLM-5.2 mantém
+vantagem em reasoning diverso, arquitetura, e coordenação.
+
 ### Variantes SWE-1.7 (dados reais do sistema — `devin models list`)
 
 | model_uid | Label | Context | Custo | Notas |
@@ -153,6 +169,26 @@ correto (pin só quando necessário).
 
 4. **Conciso por design**: alternating length penalty treina output conciso.
    Não fightar com regras verbose. Rule 8 (telegraphic) alinha.
+
+5. **Coding superiority**: SWE-1.7 é 72% melhor que GLM-5.2 em FrontierCode
+   (42.3% vs 24.5%). Para tarefas de coding (implementação, debugging,
+   refactoring), o parent GLM-5.2 deve delegar para SWE-1.7 subagents
+   em vez de implementar inline. Ver tabela de benchmarks acima.
+
+### Matriz de routing: GLM-5.2 inline vs SWE-1.7 subagent
+
+| Task type | Best model | Como executar | Por quê |
+|---|---|---|---|
+| Implementação de código | SWE-1.7 | `implementer` subagent | 42.3% vs 24.5% FrontierCode |
+| Debugging de código | SWE-1.7 | `debugger` subagent (parent planeja) | Coding strength + AgentCARD: planner é bottleneck |
+| Code review | SWE-1.7 | `reviewer` subagent | Sufficient for routine review |
+| Research/exploração | SWE-1.7 | `researcher` subagent | 262K headroom, 1000 TPS, free |
+| Arquitetura (routine) | SWE-1.7 | `architect` subagent | Sufficient for routine design |
+| Arquitetura (high-stakes) | GLM-5.2 | inline ou `subagent_general` | Needs GLM-5.2 reasoning |
+| Final whole-branch review | GLM-5.2 | inline ou `subagent_general` | Judgment task, max capability |
+| Reasoning diverso | GLM-5.2 | inline | GLM-5.2 é modelo primário para tarefas diversas |
+| Fix-loop escalation (R4-5) | GLM-5.2 | `subagent_general` | Fresh eyes + parent reasoning |
+| Coordenação/orquestração | GLM-5.2 | inline (parent) | Parent role, never delegate |
 
 ### Subagent vs compaction: quando usar cada um
 
