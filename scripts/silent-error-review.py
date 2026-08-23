@@ -85,8 +85,19 @@ NOISE_PATTERNS = (
 
 
 def signal_lines(text):
-    """Strip routine-noise lines, returning the remaining signal."""
-    kept = [ln for ln in text.split("\n") if not any(n.search(ln) for n in NOISE_PATTERNS)]
+    """Strip routine-noise lines, returning the remaining signal.
+
+    A line is only stripped as noise if it does NOT also contain a real error
+    indicator. This prevents false negatives where a warning line also carries
+    a real error (e.g. "Warning: EACCES permission denied", "npm warn: npm ERR!").
+    """
+    kept = []
+    for ln in text.split("\n"):
+        is_noise = any(n.search(ln) for n in NOISE_PATTERNS)
+        has_error = any(p.search(ln) for p in ERROR_INDICATORS)
+        if is_noise and not has_error:
+            continue  # pure noise line, strip it
+        kept.append(ln)
     return "\n".join(kept).strip()
 
 

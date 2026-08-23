@@ -31,9 +31,12 @@ Desktop.ini
 # Temporary files
 *.tmp
 *.log
+*.zip
+ci-logs.zip
 .git/COMMIT_MSG.tmp
 
 # Secrets (safety net — should never be committed)
 *.local.json
+credentials.toml
 .devin/config.local.json
 .devin/mcp_config.local.json

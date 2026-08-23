@@ -347,3 +347,16 @@ primárias em 2026-08-20:
 | GLM-4.6 specs | Verificado | docs.z.ai/guides/llm/glm-4.6 |
 | SWE-1.7 specs | Verificado | cognition.com/blog/swe-1-7 |
 | GLM-5.2 Devin model_uid | Verificado | docs.devin.ai/desktop/models |
+| arXiv:2605.10039 (Instruction Adherence) | Verificado | arxiv.org/abs/2605.10039 |
+| arXiv:2605.21384 (SpecBench) | Verificado | arxiv.org/abs/2605.21384 |
+| arXiv:2603.15473 (ALTK) | Verificado | arxiv.org/abs/2603.15473 |
+| arXiv:2607.07405 (Reason Less, Verify More) | Verificado | arxiv.org/abs/2607.07405 |
+| arXiv:2605.09998 (Continual Harness) | Verificado | arxiv.org/abs/2605.09998 |
+| arXiv:2607.17641 (VRR-Stop) | Verificado | arxiv.org/abs/2607.17641 |
+| arXiv:2607.28802 (Model or Harness?) | Verificado | arxiv.org/abs/2607.28802 |
+| arXiv:2512.24601 (Recursive Language Models) | Verificado | arxiv.org/abs/2512.24601 |
+| arXiv:2602.03786 (AOrchestra) | Verificado | arxiv.org/abs/2602.03786 |
+| arXiv:2603.02615 (RLM depth reproduction) | Verificado | arxiv.org/abs/2603.02615 |
+| arXiv:2606.20629 (AgentCARD) | Verificado | arxiv.org/abs/2606.20629 |
+| arXiv:2608.03535 (CodeAssay) | Verificado | arxiv.org/abs/2608.03535 |
+| arXiv:2605.20251 (ProcCtrlBench) | Verificado | arxiv.org/abs/2605.20251 |

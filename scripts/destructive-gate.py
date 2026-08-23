@@ -46,9 +46,11 @@ RM_DANGEROUS_TARGETS = {
 }
 
 # git push --force without --dry-run.
-# Negative lookahead on -f avoids matching --follow-tags, --force-with-lease is
-# still a force push so it is intentionally included.
-GIT_FORCE_PUSH = re.compile(r"\bgit\s+push\b[^|;&]*?(?:\s-f\b|\s-[a-zA-Z]*f[a-zA-Z]*\b|\s--force\b|\s--force-with-lease\b)")
+# Negative lookahead on -f avoids matching --follow-tags.
+# --force-with-lease is intentionally EXCLUDED: it is the recommended safe
+# alternative to --force (fails if remote has new commits). Blocking it would
+# encourage users to use the more dangerous --force instead.
+GIT_FORCE_PUSH = re.compile(r"\bgit\s+push\b[^|;&]*?(?:\s-f\b|\s-[a-zA-Z]*f[a-zA-Z]*\b|\s--force\b(?!-with-lease))")
 GIT_DRY_RUN = re.compile(r"(?:\s--dry-run(?![\w-])|\s-n(?![\w-]))")
 
 GIT_RESET_HARD = re.compile(r"\bgit\s+reset\s+--hard\b")
@@ -58,21 +60,50 @@ SQL_DESTRUCTIVE = re.compile(
     re.IGNORECASE,
 )
 
+# SQL client binaries — the destructive SQL gate only fires when one of these
+# is in the command, so that echo/grep/cat/git-commit text mentioning the
+# keywords is not falsely blocked.
+SQL_CLIENTS = re.compile(
+    r"\b(?:psql|mysql|sqlite3?|sqlcmd|cockroach(?:-sql)?|db2|sqlplus|"
+    r"pgcli|mycli|litecli|usql|sqlshell|psql)\b",
+    re.IGNORECASE,
+)
+
 CHMOD_DANGEROUS = re.compile(r"\bchmod\s+(?:-[a-zA-Z]*R[a-zA-Z]*\s+)777\s+(?:/|~|\$HOME)(?:\s|$)")
 
 # Windows recursive-delete equivalents: Remove-Item -Recurse -Force, rd /s /q,
 # del /s /q, rmdir /s. These are the Windows counterparts to rm -rf.
+# Pattern 1: flags before target (Remove-Item -Recurse -Force C:\)
 WIN_RM_RE = re.compile(
     r"\b(?:Remove-Item|del|rmdir|rd)\b"
     r"(?:\s+-[a-zA-Z]+)*\s+"
-    r"(?:(?:-[a-zA-Z]*[rR][a-zA-Z]*[fF][a-zA-Z]*|-[a-zA-Z]*[fF][a-zA-Z]*[rR][a-zA-Z]*|--Recurse\s+--Force|--Force\s+--Recurse|/s\s*/q|/s)\s+)"
+    r"(?:(?:-[a-zA-Z]*[rR][a-zA-Z]*[fF][a-zA-Z]*|-[a-zA-Z]*[fF][a-zA-Z]*[rR][a-zA-Z]*|--Recurse\s+--Force|--Force\s+--Recurse|-Recurse\s+-Force|-Force\s+-Recurse|/s\s*/q|/s)\s+)"
     r"(.+)",
+    re.IGNORECASE,
+)
+# Pattern 2: target before flags (Remove-Item C:\ -Recurse -Force) — PowerShell
+# allows parameters in any order. The path must NOT start with '-' (a flag).
+WIN_RM_RE_PATH_FIRST = re.compile(
+    r"\b(?:Remove-Item|del|rmdir|rd)\b"
+    r"(?:\s+(?:-[a-zA-Z]+))*\s+"  # optional leading flags
+    r"([^-]\S*)"  # the target path (must not start with '-')
+    r"(?:\s+(?:-[a-zA-Z]*[rR][a-zA-Z]*[fF][a-zA-Z]*|-[a-zA-Z]*[fF][a-zA-Z]*[rR][a-zA-Z]*|--Recurse\s+--Force|--Force\s+--Recurse|-Recurse\s+-Force|-Force\s+-Recurse|/s\s*/q|/s)\b)",
+    re.IGNORECASE,
+)
+# Pattern 3: recursive-force flags with NO target (malformed, like POSIX rm -rf
+# with no target — treated as dangerous by check_rm_rf).
+WIN_RM_RE_NOTARGET = re.compile(
+    r"\b(?:Remove-Item|del|rmdir|rd)\b"
+    r"(?:\s+-[a-zA-Z]+)*\s+"
+    r"(?:-[a-zA-Z]*[rR][a-zA-Z]*[fF][a-zA-Z]*|-[a-zA-Z]*[fF][a-zA-Z]*[rR][a-zA-Z]*|--Recurse\s+--Force|--Force\s+--Recurse|-Recurse\s+-Force|-Force\s+-Recurse|/s\s*/q|/s)"
+    r"(?:\s+(?:-[a-zA-Z]+))*\s*$",
     re.IGNORECASE,
 )
 
 # git clean -fdx: removes untracked AND ignored files (irreversible, no reflog)
 # Excludes -n (dry-run) — if -n is present, it's a preview, not a destructive op.
-GIT_CLEAN_FORCE = re.compile(r"\bgit\s+clean\s+(?:-[a-zA-Z]*[fF][a-zA-Z]*[dDxX][a-zA-Z]*|-[a-zA-Z]*[dDxX][a-zA-Z]*[fF][a-zA-Z]*|--force\b)")
+# Matches combined flags (-fdx, -xfd) and --force with separate -d/-x flags.
+GIT_CLEAN_FORCE = re.compile(r"\bgit\s+clean\s+(?:-[a-zA-Z]*[fF][a-zA-Z]*[dDxX][a-zA-Z]*|-[a-zA-Z]*[dDxX][a-zA-Z]*[fF][a-zA-Z]*|--force\b(?:\s+-[a-zA-Z]+)*\s+-[a-zA-Z]*[dDxX]|-f\b(?:\s+-[a-zA-Z]+)*\s+-[a-zA-Z]*[dDxX])")
 GIT_CLEAN_DRY_RUN = re.compile(r"\bgit\s+clean\s+(?:-[a-zA-Z]*n[a-zA-Z]*|-[a-zA-Z]*\s+--dry-run\b)")
 
 # git branch -D: force-delete branch (loses unmerged commits)
@@ -115,7 +146,10 @@ def is_whitelisted(target):
 def check_rm_rf(command):
     """Return True when rm -rf (POSIX) or Remove-Item -Recurse -Force (Windows)
     targets a dangerous path."""
-    for regex in (RM_RF_RE, WIN_RM_RE):
+    # Check no-target case first (malformed recursive-force delete)
+    if WIN_RM_RE_NOTARGET.search(command):
+        return True
+    for regex in (RM_RF_RE, WIN_RM_RE, WIN_RM_RE_PATH_FIRST):
         m = regex.search(command)
         if not m:
             continue
@@ -207,9 +241,9 @@ def main():
     except Exception:
         pass
 
-    # Gate 4: SQL destructive operations
+    # Gate 4: SQL destructive operations (only when a SQL client is invoked)
     try:
-        if SQL_DESTRUCTIVE.search(scan_command):
+        if SQL_DESTRUCTIVE.search(scan_command) and SQL_CLIENTS.search(scan_command):
             block(
                 "SQL destructive operation (DROP TABLE/DATABASE/SCHEMA or TRUNCATE) detected. "
                 "Use a reversible migration instead, or run it directly in a DB shell if intentional."

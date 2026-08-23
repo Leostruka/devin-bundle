@@ -60,14 +60,13 @@ def check_text(text):
     if not text or not PATTERN.search(text):
         return False
     # Allow descriptive contexts (e.g. "AI-assisted tooling") that are not
-    # signature claims. Only allow if the ENTIRE text is a descriptive context
-    # with no standalone signature claim elsewhere.
+    # signature claims. Strip ALL allowed contexts at once, then re-check;
+    # if no signature pattern remains, the text is purely descriptive.
+    stripped = text
     for ctx in ALLOWED_CONTEXTS:
-        # Remove the allowed context from the text and re-check; if no
-        # signature pattern remains, it's a descriptive mention.
-        stripped = ctx.sub("", text)
-        if not PATTERN.search(stripped):
-            return False
+        stripped = ctx.sub("", stripped)
+    if not PATTERN.search(stripped):
+        return False
     return True
 
 
@@ -100,8 +99,13 @@ def filter_self_diffs(diff_output, self_files):
     skip = False
     for line in lines:
         if line.startswith("diff --git"):
-            # Check if this file section is a self-file
-            skip = any(sf in line for sf in self_files)
+            # Check if this file section is a self-file.
+            # Match exact filename at end of path (a/.../check-ai-signature.py)
+            # not substring, so .bak/.old variants are NOT skipped.
+            skip = any(
+                re.search(r'[ab]/(?:.*/)?' + re.escape(sf) + r'(?:\s|$)', line)
+                for sf in self_files
+            )
         if not skip:
             filtered.append(line)
     return "\n".join(filtered)

@@ -10,6 +10,9 @@ exactly once per marker so the reminder reaches the agent, then deletes the
 marker so the next stop succeeds. That avoids the documented stop-hook loop
 risk while still surfacing the reminder.
 
+Exit codes (per /cli/extensibility/hooks/overview#exit-codes):
+  0 = allow stop, 2 = block stop (re-prompts the agent).
+
 If `stop_hook_active` is already true, the hook exits immediately - another stop
 hook is mid-flight and blocking again risks a loop.
 

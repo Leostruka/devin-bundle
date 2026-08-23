@@ -57,6 +57,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Pesquisa/Data/Planejamento sections), manifest.json (3 entries +
   skill_count 46->49), audit.py (checks [9] and [18]).
 
+### Fixed (iter 8.3 — self-improvement loop: hook FP/FN fixes + audit hardening)
+
+- **destructive-gate.py commit message parsing**: strip_commit_message()
+  now extracts only the command portion before `-m`/`-F`/`--message`,
+  preventing the gate from blocking descriptive commit messages that
+  mention gate names. (ref-030)
+- **check-ai-signature.py self-detection skip**: write/edit to
+  check-ai-signature.py or validate-skill-format.py was blocked because
+  the detector code contains the signature patterns. Added self-detection
+  skip. Also fixed exec handler to extract `-m` message. (ref-031)
+- **silent-error-review.py false positives**: bare exception-name regex
+  matched past-tense fix descriptions ("the fix resolved the KeyError").
+  Fixed: require colon after exception name or Traceback/raise prefix.
+  (ref-032)
+- **validate-refinement-evidence.py tool-call patterns**: flagged
+  ref-002 as PHANTOM despite evidence containing write/edit/exec. Added
+  write|edit|exec to REPRODUCIBLE_PATTERNS regex. (ref-033)
+- **check-ai-signature.py allowed contexts**: "AI-assisted tooling"
+  blocked descriptive documentation. Added ALLOWED_CONTEXTS denylist for
+  AI-assisted tooling/development/review and AI-generated content/images.
+  (ref-034)
+- **behavioral-nudge.py syntax error**: muted print left multi-line dict
+  literal active, causing SyntaxError. Restored print call. (ref-035)
+- **constraint-pinning.py empty main()**: main() was `pass` with no
+  `__main__` guard — hook never wrote markers or re-injected constraints.
+  Restored full implementation. (ref-036)
+- **check-push-green.py empty main()**: main() was `pass` — hook never
+  blocked any git push. Restored full implementation with stdin parse,
+  PreToolUse/exec/git-push checks, test runner, held-out gap. (ref-037)
+- **check-push-green.py gap check investigation**: empty tests/validation/
+  makes gap check dead code (val_passed=False never blocks). No code
+  change — test infrastructure gap. (ref-038, investigated)
+- **.gitignore .pytest_cache**: added .pytest_cache/ to .gitignore
+  (was not ignored despite internal .gitignore). (ref-039)
+- **audit.py __main__ guard check**: added check [2b] to detect hook
+  scripts missing `if __name__ == "__main__"` guard. Would have caught
+  iters 4-6 bugs. Updated check count 24->25. (ref-040)
+- **check-ai-signature.py multi-context strip**: check_text with two
+  allowed contexts returned True (blocked) because loop stripped one
+  context at a time. Fixed: strip ALL contexts cumulatively, then check.
+  (ref-041)
+- **destructive-gate.py SQL false positives**: SQL_DESTRUCTIVE regex
+  matched echo/grep/cat commands containing keywords. Added SQL_CLIENTS
+  regex — gate now requires both SQL_DESTRUCTIVE and SQL_CLIENTS. (ref-042)
+- **destructive-gate.py WinRM false negatives**: Remove-Item with path
+  before flags, or no target, was not blocked. Added WIN_RM_RE_PATH_FIRST
+  and WIN_RM_RE_NOTARGET patterns. (ref-043)
+- **validate-skill-format.py AI signature false positives**: flagged
+  descriptive contexts inconsistently with check-ai-signature.py. Added
+  AI_ALLOWED_CONTEXTS tuple matching check-ai-signature.py. (ref-044)
+- **destructive-gate.py force-with-lease**: GIT_FORCE_PUSH blocked
+  `--force-with-lease` (safe alternative). Removed from alternation,
+  added negative lookahead. (ref-045)
+- **check-ai-signature.py .bak file filtering**: substring match
+  filtered .bak variants as self-files. Replaced with regex matching
+  exact filename at end of git diff path. (ref-046)
+- **silent-error-review.py warning+error lines**: signal_lines stripped
+  entire lines containing warning keywords, causing false negatives when
+  a line had both warning AND error indicators. Fixed: only strip if
+  noise without error. (ref-047)
+
+### Fixed (iter 8.4 — continuous improvement directive: data integrity + gap check activation)
+
+- **refinements.log.jsonl duplicate IDs**: 48 entries had 30 unique IDs
+  (16 duplicates) — rollback-by-ID was ambiguous. Renumbered all entries
+  sequentially ref-001 to ref-048. (ref-048, LOOP 1)
+- **audit.py refinement ID uniqueness check**: added check [25] to
+  detect duplicate IDs in refinements.log.jsonl. Prevents recurrence.
+  Check count 25->26. (ref-048, LOOP 2)
+- **tests/validation/ populated**: 4 infrastructure smoke tests added
+  (audit passes, skill-format passes, refinement-evidence valid).
+  Activates check-push-green.py gap check (was dead code with empty
+  validation/). Rule 16 reward hacking guard now operational. (ref-048,
+  LOOP 3)
+- **manifest.json stale purposes**: diagnosing-bugs and primeagent-
+  reference had outdated purpose fields vs SKILL.md descriptions. Synced
+  to current frontmatter. (ref-048, LOOP 4)
+- **audit.py manifest/SKILL.md sync check**: added check [26] to detect
+  stale manifest purposes vs SKILL.md descriptions. Prevents recurrence.
+  Check count 26->27. (ref-048, LOOP 4)
+
 ### Fixed (iter 8.2 — self-improvement loop: stale refs + model info + encoding)
 
 - **dispatching-parallel-agents model info**: skill table said

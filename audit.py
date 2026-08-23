@@ -485,6 +485,129 @@ for label, expected, ok in doc_checks:
     if not ok:
         errors.append(label + ' stale: expected ' + expected)
 
+# 25. Refinement log ID uniqueness
+print()
+print('[25] Refinement log ID uniqueness')
+reflog = os.path.join('.devin', 'refinements.log.jsonl')
+if os.path.exists(reflog):
+    ref_ids = []
+    ref_errors = []
+    for line in open(reflog, encoding='utf-8'):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+            ref_ids.append(entry.get('id', ''))
+        except (json.JSONDecodeError, ValueError):
+            ref_errors.append('malformed JSON line')
+    if ref_errors:
+        errors.append('refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
+        print('  FAIL refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
+    else:
+        from collections import Counter
+        dups = {k: v for k, v in Counter(ref_ids).items() if v > 1}
+        if dups:
+            errors.append('refinements.log.jsonl: ' + str(len(dups)) + ' duplicate IDs: ' + ', '.join(sorted(dups.keys())))
+            print('  FAIL refinements.log.jsonl: ' + str(len(dups)) + ' duplicate IDs')
+        else:
+            print('  OK  refinements.log.jsonl: ' + str(len(ref_ids)) + ' unique IDs')
+else:
+    print('  SKIP refinements.log.jsonl not found')
+
+# 26. Manifest purpose vs SKILL.md description sync
+print()
+print('[26] Manifest purpose vs SKILL.md description sync')
+manifest_data = json.load(open('manifest.json', encoding='utf-8-sig'))
+purpose_mismatches = []
+for skill in manifest_data.get('skills', []):
+    sname = skill['name']
+    spurpose = skill.get('purpose', '')
+    skill_md = os.path.join('skills', sname, 'SKILL.md')
+    if not os.path.exists(skill_md):
+        continue
+    sm_content = open(skill_md, encoding='utf-8').read()
+    desc_match = re.search(r'^description:\s*(.+?)(?:\n[a-z]|\n---)', sm_content, re.MULTILINE | re.DOTALL)
+    if desc_match:
+        sm_desc = desc_match.group(1).strip()
+        if spurpose.startswith('Use when') and sm_desc.startswith('Use when'):
+            if spurpose[:60] != sm_desc[:60]:
+                purpose_mismatches.append(sname)
+if purpose_mismatches:
+    errors.append('manifest purpose stale vs SKILL.md: ' + ', '.join(purpose_mismatches))
+    print('  FAIL ' + str(len(purpose_mismatches)) + ' stale purposes: ' + ', '.join(purpose_mismatches))
+else:
+    print('  OK  all manifest purposes match SKILL.md descriptions')
+
+# 27. No tracked temp artifacts (.zip, .tmp, .bak, ci-logs)
+print()
+print('[27] No tracked temp artifacts')
+import subprocess
+artifact_exts = ('.zip', '.tmp', '.bak')
+tracked_artifacts = []
+try:
+    r = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, timeout=10)
+    for line in r.stdout.split('\n'):
+        line = line.strip()
+        if line and line.lower().endswith(artifact_exts):
+            tracked_artifacts.append(line)
+        elif line == 'ci-logs.zip':
+            tracked_artifacts.append(line)
+except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+    print('  SKIP git ls-files unavailable')
+if not tracked_artifacts:
+    print('  OK  no tracked temp artifacts')
+else:
+    errors.append('tracked temp artifacts: ' + ', '.join(tracked_artifacts))
+    print('  FAIL ' + str(len(tracked_artifacts)) + ' tracked artifacts: ' + ', '.join(tracked_artifacts))
+
+# 28. No tracked credential/secret files
+print()
+print('[28] No tracked credential/secret files')
+credential_names = ('credentials.toml', '.env', 'id_rsa', 'id_ed25519', 'id_ecdsa',
+                    'secrets.json', 'credentials.json')
+credential_exts = ('.pem', '.key', '.env', '.pfx', '.p12')
+tracked_creds = []
+try:
+    r2 = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, timeout=10)
+    for line in r2.stdout.split('\n'):
+        line = line.strip()
+        if line in credential_names or line.endswith(credential_exts):
+            tracked_creds.append(line)
+except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+    print('  SKIP git ls-files unavailable')
+if not tracked_creds:
+    print('  OK  no tracked credential files')
+else:
+    errors.append('CRITICAL: tracked credential files: ' + ', '.join(tracked_creds))
+    print('  FAIL ' + str(len(tracked_creds)) + ' tracked credential files: ' + ', '.join(tracked_creds))
+
+# 29. All arXiv refs in scripts/ and tests/ must be in MODEL-GUIDE.md source table
+print()
+print('[29] arXiv refs in scripts/ and tests/ tracked in MODEL-GUIDE.md')
+mg_content = ''
+mg_path = 'MODEL-GUIDE.md'
+if os.path.exists(mg_path):
+    with open(mg_path, encoding='utf-8') as fh:
+        mg_content = fh.read()
+mg_refs = set(re.findall(r'arXiv:(\d{4}\.\d{4,5})', mg_content))
+code_arxiv_refs = set()
+for scan_dir in ('scripts', 'tests'):
+    for root, dirs, files in os.walk(scan_dir):
+        if '.git' in root or '__pycache__' in root:
+            continue
+        for sf in files:
+            if not sf.endswith('.py'):
+                continue
+            with open(os.path.join(root, sf), encoding='utf-8') as fh:
+                code_arxiv_refs.update(re.findall(r'arXiv:(\d{4}\.\d{4,5})', fh.read()))
+unverified = code_arxiv_refs - mg_refs
+if unverified:
+    errors.append('arXiv refs in scripts/tests not in MODEL-GUIDE source table: ' + ', '.join(sorted(unverified)))
+    print('  FAIL ' + str(len(unverified)) + ' unverified refs: ' + ', '.join(sorted(unverified)))
+else:
+    print('  OK  all ' + str(len(code_arxiv_refs)) + ' arXiv refs in scripts/tests are in MODEL-GUIDE source table')
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -501,4 +624,4 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 25 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 30 CHECKS PASSED - NO ERRORS, NO WARNINGS')

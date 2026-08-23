@@ -78,7 +78,7 @@
     {
       "name": "diagnosing-bugs",
       "source": "devin-bundle",
-      "purpose": "Use when the user says 'diagnose', 'debug this', or reports something broken, throwing, failing, or slow.",
+      "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken, throwing, failing, or slow, or when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
       "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs",
       "export_hash": "8101B89E8DF538991956DC8440EEA4FEBF0E8B7B31C92EC2F556053DE2FC06DE",
       "exported_at": "2026-08-17T15:41:48.851667-03:00",
@@ -201,7 +201,7 @@
     {
       "name": "primeagent-reference",
       "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when researching agent harness design patterns, when comparing Devin CLI to PrimeAgent/RLM architectures, or when evaluating which PrimeAgent features could be adapted to Devin CLI. Reference card of verified findings and adaptation status.",
+      "purpose": "Use when (1) researching agent harness design patterns, comparing Devin CLI to PrimeAgent/RLM architectures, or evaluating which PrimeAgent features could be adapted to Devin CLI; (2) emulating A2A messaging between subagents or between subagents and the parent agent across time within Devin CLI's ephemeral subagent runtime; (3) capturing recurring failure patterns or reusable tactics as skills/rules/hooks via the Continual Harness /refine self-improvement loop; or (4) deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run (subagent dispatch profile/budget selection).",
       "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
       "exported_at": "2026-08-17T15:41:48.867142-03:00",
       "export_hash": "D0A19AF0DBF6D22AAD88D01722F7751C247B3A9B45AF732197B718B5FB77833C",
