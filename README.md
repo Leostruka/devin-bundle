@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-49-blue.svg)](#skills-49)
+[![Skills](https://img.shields.io/badge/skills-50-blue.svg)](#skills-49)
 [![Rules](https://img.shields.io/badge/rules-19-green.svg)](#regras-consolidadas-agentsmd)
 [![Version](https://img.shields.io/badge/version-2.5.1-orange.svg)](CHANGELOG.md)
 
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 49 skills, 19 rules, 5 subagent profiles, 8 hook events, 10 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 50 skills, 19 rules, 5 subagent profiles, 8 hook events, 10 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -34,36 +34,25 @@ Done. Devin CLI now has 49 skills, 19 rules, 5 subagent profiles, 8 hook events,
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Devin CLI Runtime                         │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
-│  │ AGENTS.md│  │ skills/  │  │ agents/  │  │  hooks   │    │
-│  │ (19 rules│  │ (49 skills│  │ (5 profiles│  │ (8 events│    │
-│  │  always-on)│ │  invoked) │  │  dispatched)│ │  enforced)│    │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
-│       │              │              │              │          │
-│       └──────────────┴──────┬───────┴──────────────┘          │
-│                             │                                 │
-│                    ┌────────▼────────┐                        │
-│                    │   scripts/ (12) │                        │
-│                    │  Python hooks   │                        │
-│                    └────────┬────────┘                        │
-│                             │                                 │
-│                    ┌────────▼────────┐                        │
-│                    │  MCP + config   │                        │
-│                    └─────────────────┘                        │
-└─────────────────────────────────────────────────────────────┘
-         ▲                                    ▲
-         │ install.ps1 / install.sh           │ export.ps1 / export.sh
-         │ (bundle → live)                    │ (live → bundle)
-         │                                    │
-┌────────┴──────────┐              ┌──────────┴──────────┐
-│   devin-bundle/   │              │   Live config       │
-│   (this repo)     │              │   %APPDATA%\devin\  │
-│                   │              │   ~/.config/devin/  │
-│   Git-tracked     │              │   Used by Devin CLI │
-└───────────────────┘              └─────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Runtime["Devin CLI Runtime"]
+        AGENTS[AGENTS.md<br/>19 rules always-on]
+        SKILLS[skills/<br/>50 skills invoked]
+        AGENTS_PROFILES[agents/<br/>5 profiles dispatched]
+        HOOKS[hooks<br/>8 events enforced]
+        SCRIPTS[scripts/<br/>12 Python hooks]
+        MCP[MCP + config]
+    end
+
+    AGENTS --> SCRIPTS
+    SKILLS --> SCRIPTS
+    AGENTS_PROFILES --> SCRIPTS
+    HOOKS --> SCRIPTS
+    SCRIPTS --> MCP
+
+    BUNDLE[devin-bundle/<br/>Git-tracked] -->|install.ps1 / install.sh| Runtime
+    LIVE[Live config<br/>%APPDATA%\devin\<br/>~/.config/devin/] -->|export.ps1 / export.sh| BUNDLE
 ```
 
 ## What's inside
@@ -72,7 +61,7 @@ Done. Devin CLI now has 49 skills, 19 rules, 5 subagent profiles, 8 hook events,
 devin-bundle/
 ├── AGENTS.md            # 19 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 49 skills (auto-discover, not limited to manifest)
+├── skills/              # 50 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
 ├── scripts/             # 12 Python scripts (10 hooks + 2 manual-run)
@@ -234,7 +223,7 @@ chmod +x export.sh
 **WARNING:** `-NoMask` exports real secrets. NEVER push to a public repo with `-NoMask`.
 Use `-NoMask` only for local backup or direct transfer between trusted machines.
 
-## Skills (49)
+## Skills (50)
 
 The bundle auto-discovers all skills in `%APPDATA%\devin\skills\`. The `manifest.json` contains metadata (name, source, purpose) for reference, but the exported skill list is determined by the live directory, not the manifest.
 
@@ -286,6 +275,12 @@ Skills merged in v2.4.0 to reduce namespace bloat and maintenance overhead. Each
 | `dispatching-parallel-agents` | dispatching-parallel-agents + subagent-driven-development | General dispatch + plan execution |
 | `planning-pipeline` | to-spec + to-tickets + to-questionnaire | Spec, Tickets, Questionnaire |
 | `obsidian-workflow` | obsidian-project-docs + vault-organizer + wiki-audit + memory-bridge | Build, Reorganize, Audit, Cross-session |
+
+### Self-improvement skills (1)
+
+| Skill | Source | Purpose |
+|---|---|---|
+| `continuous-improvement` | Constitutional AI + RISE + Six-Step Reframing + Devin CLI best practices | FASE 0 deep research + 10-step improvement loop with held-out validation |
 
 ### Adaptation status: 7/9 features adapted, 2 pruned
 

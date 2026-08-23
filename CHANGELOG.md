@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (iter 8.5 — continuous improvement + mermaid + cleanup)
+
+- **continuous-improvement skill**: FASE 0 deep research + 10-step self-improvement
+  loop based on Constitutional AI, RISE, Six-Step Reframing, and held-out
+  validation. Enforces the full directive and prevents skipped steps.
+- **PermissionRequest and SessionEnd hook events**: added to `config.json` and
+  `hooks.v1.json` to match all 8 Devin CLI lifecycle events. Audit check [30]
+  prevents future drift.
+- **Mermaid architecture diagram in README.md**: replaced ASCII diagram with
+  a `flowchart TB` Mermaid block, validated by `validate-mermaid.py`.
+
+### Changed
+
+- **README.md and SKILL-TIERS.md**: skill count 49 → 50, added
+  `continuous-improvement` to skill inventory and tier list.
+- **scripts/validate-skill-format.py**: default scan now includes bundle root
+  `skills/` as the source of truth, plus project `.devin/skills/` and global
+  installs.
+- **TOOLS-MAP.md and audit.py**: updated skill count checks 49 → 50.
+
+### Removed
+
+- **ci-logs.zip**, `__pycache__/`, `.pytest_cache/`: cleaned project junk.
+
 ### Added (iter 8.1 — CLI replicas of cloud-only features)
 
 - **deep-mode skill**: replicates Ask Devin's Deep Mode (`!deep` in

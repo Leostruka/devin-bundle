@@ -9,7 +9,7 @@ Usage:
   python validate-skill-format.py --project   # scan .devin/skills/
   python validate-skill-format.py --global    # scan ~/.config/devin/skills/
 
-If no args, scans both project and global skill directories.
+If no args, scans bundle root skills/, project .devin/skills/, and global skill directories.
 
 Checks (from AGENTS.md Rule 3, Skill Quality Standards):
   1. Frontmatter: name (lowercase, hyphens, max 64, matches dir) + description (max 1024)
@@ -192,7 +192,11 @@ def main():
         else:
             dirs_to_scan.append(sys.argv[1])
     else:
-        # Scan both project and global
+        # Scan bundle root, project .devin/skills/, and global installs
+        # Bundle root 'skills/' is the source of truth for the devin-bundle repo.
+        bundle_skills = os.path.join(os.getcwd(), "skills")
+        if os.path.isdir(bundle_skills):
+            dirs_to_scan.append(bundle_skills)
         dirs_to_scan.append(os.path.join(os.getcwd(), ".devin", "skills"))
         home = os.path.expanduser("~")
         dirs_to_scan.append(os.path.join(home, ".config", "devin", "skills"))

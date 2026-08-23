@@ -32,5 +32,5 @@ def test_audit_check_count():
         cwd=os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
         timeout=60,
     )
-    assert "30 CHECKS PASSED" in result.stdout or "Errors:   0" in result.stdout, \
+    assert "31 CHECKS PASSED" in result.stdout or "Errors:   0" in result.stdout, \
         f"audit.py check count mismatch\n{result.stdout[-300:]}"

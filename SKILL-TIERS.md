@@ -128,6 +128,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
 | `primeagent-reference` | Reference card + A2A + Refine + Subagent Router (4 modos) | 10091 | Pesquisar PrimeAgent/RLM |
+| `continuous-improvement` | FASE 0 + 10-step self-improvement loop c/ held-out | ~3500 | Melhoria contínua do bundle |
 
 ## Outros
 

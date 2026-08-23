@@ -394,9 +394,14 @@
       "name": "playbook",
       "source": "devin-bundle (new, replicates cloud Playbook feature)",
       "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks. Structured prompt template with Procedure, Specs, Advice, Forbidden Actions."
+    },
+    {
+      "name": "continuous-improvement",
+      "source": "devin-bundle (new, FASE 0 + 10-step self-improvement loop)",
+      "purpose": "Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests."
     }
   ],
-  "skill_count": 49,
+  "skill_count": 50,
   "rule_count": 19,
   "scripts": [
     {"name": "behavioral-nudge.py", "purpose": "PostToolUse hook — injects behavioral reminders"},

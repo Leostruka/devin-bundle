@@ -133,6 +133,18 @@
           }
         ]
       }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": []
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": []
+      }
     ]
   }
 }

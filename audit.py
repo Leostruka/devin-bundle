@@ -165,7 +165,7 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('49 skills', skill_count == 49),
+    ('50 skills', skill_count == 50),
     ('19 rules', len(rules_found) == 19),  # 1-5,7-20 (Rule 6 removed, Rule 20 added)
     ('5 agents', agent_count == 5),
     ('12 scripts', len(script_files) == 12),
@@ -608,6 +608,30 @@ if unverified:
 else:
     print('  OK  all ' + str(len(code_arxiv_refs)) + ' arXiv refs in scripts/tests are in MODEL-GUIDE source table')
 
+# 30. Hook events match Devin CLI docs in both hooks.v1.json and config.json
+print()
+print('[30] Hook events match Devin CLI lifecycle docs')
+devin_events = {'PreToolUse', 'PostToolUse', 'PermissionRequest', 'UserPromptSubmit',
+                'Stop', 'PostCompaction', 'SessionStart', 'SessionEnd'}
+
+missing_any = False
+for hooks_file in ('hooks.v1.json', 'config.json'):
+    with open(hooks_file, encoding='utf-8-sig') as fh:
+        data = json.load(fh)
+    hooks_data = data if hooks_file == 'hooks.v1.json' else data.get('hooks', {})
+    bundle_events = set(hooks_data.keys())
+    missing = devin_events - bundle_events
+    extra = bundle_events - devin_events
+    if missing:
+        missing_any = True
+        errors.append(hooks_file + ' missing Devin CLI events: ' + ', '.join(sorted(missing)))
+        print('  FAIL ' + hooks_file + ' missing events: ' + ', '.join(sorted(missing)))
+    if extra:
+        warnings.append(hooks_file + ' has unknown events: ' + ', '.join(sorted(extra)))
+        print('  WARN ' + hooks_file + ' unknown events: ' + ', '.join(sorted(extra)))
+    if not missing and not extra:
+        print('  OK  ' + hooks_file + ' has all ' + str(len(bundle_events)) + ' Devin CLI events')
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -624,4 +648,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 30 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 31 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+
