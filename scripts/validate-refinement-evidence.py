@@ -37,7 +37,7 @@ REPRODUCIBLE_PATTERNS = [
     # Matched results / returned N matches / lines N, M
     re.compile(r"returned\s+\d+\s+match", re.IGNORECASE),
     # Devin CLI tool calls (read, grep, glob, find_file_by_name, run_subagent, etc.)
-    re.compile(r"\b(?:read|grep|glob|find_file_by_name|run_subagent|web_search|webfetch|mcp_call_tool)\b.*[:\s]", re.IGNORECASE),
+    re.compile(r"\b(?:read|grep|glob|find_file_by_name|run_subagent|web_search|webfetch|mcp_call_tool|write|edit|exec)\b.*[:\s]", re.IGNORECASE),
 ]
 
 # Vague evidence patterns (likely phantom)

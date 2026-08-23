@@ -39,6 +39,18 @@ for pf in sorted(py_files):
         errors.append('Python ' + pf + ': ' + str(e))
         print('  FAIL ' + pf)
 
+# 2b. Hook scripts must have __main__ guard (detects muted/empty main)
+print()
+print('[2b] Hook script __main__ guard validation')
+hook_scripts = [f for f in py_files if os.path.normpath(f).startswith('scripts') and f.endswith('.py')]
+for hs in sorted(hook_scripts):
+    content = open(hs, encoding='utf-8').read()
+    if '__name__' not in content:
+        errors.append(hs + ': missing if __name__ == "__main__" guard')
+        print('  FAIL ' + hs + ': missing __main__ guard')
+    else:
+        print('  OK  ' + hs)
+
 # 3. All skills have valid frontmatter
 print()
 print('[3] Skill frontmatter validation')
@@ -489,4 +501,4 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 24 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 25 CHECKS PASSED - NO ERRORS, NO WARNINGS')

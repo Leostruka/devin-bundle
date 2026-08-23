@@ -142,6 +142,27 @@ def check_rm_rf(command):
     return False
 
 
+def strip_commit_message(command):
+    """Remove commit message text from git commit commands so gates don't
+    match descriptive text inside -m '...' or -F file references.
+
+    Gates must scan the actual command, not prose in a commit message that
+    happens to mention 'git clean -fdx' or 'mkfs' as a description of what
+    was done. This extracts only the command portion before -m/--message/-F.
+
+    For non-commit commands, returns the original string unchanged.
+    """
+    if "git commit" not in command.lower():
+        return command
+    # Strip everything after -m / --message= / --message / -F
+    stripped = re.split(
+        r"\s+(?:-m\b|--message(?:=|\s)|-F\b|--file(?:=|\s))",
+        command,
+        maxsplit=1,
+    )
+    return stripped[0] if stripped else command
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -156,9 +177,14 @@ def main():
     if not command.strip():
         sys.exit(0)
 
+    # Scan only the actual command, not commit message text.
+    # A commit message that describes "added git clean -fdx gate" is not
+    # a destructive command — it's prose. Gates must match real commands.
+    scan_command = strip_commit_message(command)
+
     # Gate 1: rm -rf dangerous paths
     try:
-        if check_rm_rf(command):
+        if check_rm_rf(scan_command):
             block(
                 "rm -rf targets a dangerous path (/, ~, *, ., parent, or absolute path). "
                 "Use a specific relative subdirectory. Whitelisted prefixes: "
@@ -171,7 +197,7 @@ def main():
 
     # Gate 2: git push --force without --dry-run
     try:
-        if GIT_FORCE_PUSH.search(command) and not GIT_DRY_RUN.search(command):
+        if GIT_FORCE_PUSH.search(scan_command) and not GIT_DRY_RUN.search(scan_command):
             block(
                 "git push --force without --dry-run. Run with --dry-run first to "
                 "verify what will be pushed, then repeat without it."
@@ -183,7 +209,7 @@ def main():
 
     # Gate 4: SQL destructive operations
     try:
-        if SQL_DESTRUCTIVE.search(command):
+        if SQL_DESTRUCTIVE.search(scan_command):
             block(
                 "SQL destructive operation (DROP TABLE/DATABASE/SCHEMA or TRUNCATE) detected. "
                 "Use a reversible migration instead, or run it directly in a DB shell if intentional."
@@ -195,7 +221,7 @@ def main():
 
     # Gate 5: chmod -R 777 on root or home
     try:
-        if CHMOD_DANGEROUS.search(command):
+        if CHMOD_DANGEROUS.search(scan_command):
             block(
                 "chmod -R 777 on root or home directory breaks system security. "
                 "Use a specific path and the minimum required permissions."
@@ -207,7 +233,7 @@ def main():
 
     # Gate 6: git clean -fdx (removes untracked + ignored files, irreversible)
     try:
-        if GIT_CLEAN_FORCE.search(command) and not GIT_CLEAN_DRY_RUN.search(command):
+        if GIT_CLEAN_FORCE.search(scan_command) and not GIT_CLEAN_DRY_RUN.search(scan_command):
             block(
                 "git clean -fdx removes untracked AND ignored files with no "
                 "reflog recovery. Use -n (dry-run) first to review what would "
@@ -220,7 +246,7 @@ def main():
 
     # Gate 7: git branch -D (force delete branch, loses unmerged work)
     try:
-        if GIT_BRANCH_FORCE_DELETE.search(command):
+        if GIT_BRANCH_FORCE_DELETE.search(scan_command):
             block(
                 "git branch -D force-deletes a branch, losing unmerged commits. "
                 "Use -d (safe delete, blocks if unmerged) or merge first."
@@ -232,7 +258,7 @@ def main():
 
     # Gate 8: mkfs / dd to disk devices (filesystem wipe / raw disk write)
     try:
-        if DISK_WIPE.search(command):
+        if DISK_WIPE.search(scan_command):
             block(
                 "mkfs or dd to a disk device wipes the filesystem / writes raw "
                 "data to the device. This is irreversible. Confirm the device "
@@ -245,7 +271,7 @@ def main():
 
     # Gate 3: git reset --hard — warn only (legitimate after rebase)
     try:
-        if GIT_RESET_HARD.search(command):
+        if GIT_RESET_HARD.search(scan_command):
             print(
                 "WARNING: git reset --hard discards all uncommitted changes.",
                 file=sys.stderr,

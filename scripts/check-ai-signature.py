@@ -40,6 +40,15 @@ SIGNATURES = (
 )
 PATTERN = re.compile("|".join(SIGNATURES), re.IGNORECASE)
 
+# Descriptive contexts where "AI-assisted" / "AI-generated" appears as a
+# topic reference, not a signature claim. These are allowlisted to avoid
+# false positives on documentation and commit messages that mention AI
+# tooling without claiming authorship.
+ALLOWED_CONTEXTS = (
+    re.compile(r"\bAI-assisted\s+(?:tooling|tool|tools|development|review|testing|coding|workflow|workflows|approach|process|pipeline)\b", re.IGNORECASE),
+    re.compile(r"\bAI-generated\s+(?:content|images|art|text|code|data|samples|examples|responses|output|outputs)\b", re.IGNORECASE),
+)
+
 
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
@@ -48,7 +57,18 @@ def block(reason):
 
 
 def check_text(text):
-    return bool(text) and bool(PATTERN.search(text))
+    if not text or not PATTERN.search(text):
+        return False
+    # Allow descriptive contexts (e.g. "AI-assisted tooling") that are not
+    # signature claims. Only allow if the ENTIRE text is a descriptive context
+    # with no standalone signature claim elsewhere.
+    for ctx in ALLOWED_CONTEXTS:
+        # Remove the allowed context from the text and re-check; if no
+        # signature pattern remains, it's a descriptive mention.
+        stripped = ctx.sub("", text)
+        if not PATTERN.search(stripped):
+            return False
+    return True
 
 
 def read_commit_file(filepath):
@@ -58,6 +78,33 @@ def read_commit_file(filepath):
             return f.read()
     except (OSError, IOError):
         return ""
+
+
+def filter_self_diffs(diff_output, self_files):
+    """Remove diff hunks from self-files (detector code contains signature patterns).
+
+    git diff output has the structure:
+      diff --git a/path b/path
+      index ...
+      --- a/path
+      +++ b/path
+      @@ ...
+      +line
+      -line
+
+    This function removes entire file sections where the file path matches any
+    self_file, so the detector doesn't flag its own source code.
+    """
+    lines = diff_output.split("\n")
+    filtered = []
+    skip = False
+    for line in lines:
+        if line.startswith("diff --git"):
+            # Check if this file section is a self-file
+            skip = any(sf in line for sf in self_files)
+        if not skip:
+            filtered.append(line)
+    return "\n".join(filtered)
 
 
 def extract_commit_file(command):
@@ -77,6 +124,9 @@ def extract_commit_file(command):
 def handle_stop(_data):
     """Scan staged and unstaged changes for AI signatures."""
     cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+    # Self-detection skip: diffs from these files contain the detector patterns
+    # themselves (SIGNATURES list, ALLOWED_CONTEXTS, comments mentioning AI).
+    self_files = ("check-ai-signature.py", "validate-skill-format.py")
     for args in (
         ["git", "diff", "--cached", "--unified=0"],
         ["git", "diff", "--unified=0"],
@@ -87,7 +137,11 @@ def handle_stop(_data):
             )
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             return  # no git or no repo: allow
-        if result.returncode == 0 and check_text(result.stdout):
+        if result.returncode != 0:
+            continue
+        # Filter out diff hunks from self-files to avoid self-detection
+        filtered = filter_self_diffs(result.stdout, self_files)
+        if check_text(filtered):
             scope = "staged" if "--cached" in args else "unstaged"
             block(
                 f"AI signature detected in {scope} changes. Remove it before "
@@ -105,10 +159,9 @@ def handle_pre_tool_use(data):
         command = tool_input.get("command", "") or ""
         if "git commit" not in command.lower():
             return
-        if check_text(command):
-            block(
-                "AI signature detected in the git commit message (AGENTS.md Rule 2)."
-            )
+        # For -m "message": extract the message portion and check only that.
+        # For -F file: read the file and check its content.
+        # The command portion itself (git commit -m) is not a signature.
         commit_file = extract_commit_file(command)
         if commit_file:
             content = read_commit_file(commit_file)
@@ -117,9 +170,29 @@ def handle_pre_tool_use(data):
                     f"AI signature detected in the commit message file "
                     f"'{commit_file}' (AGENTS.md Rule 2)."
                 )
+            return
+        # Extract -m message: find -m followed by quoted or unquoted text
+        m_match = re.search(r"""-m\s+['"]?(.*?)['"]?\s*(?:&&|;|\||$)""", command)
+        if m_match:
+            msg = m_match.group(1)
+            if check_text(msg):
+                block(
+                    "AI signature detected in the git commit message (AGENTS.md Rule 2)."
+                )
         return
 
     if tool_name in ("write", "edit"):
+        # Skip self-detection: if the file being written IS this detector
+        # script (or validate-skill-format.py which also contains the
+        # patterns), the signature strings are the detector code itself,
+        # not an AI signature in a deliverable.
+        file_path = tool_input.get("file_path", "") or ""
+        self_files = (
+            "check-ai-signature.py",
+            "validate-skill-format.py",
+        )
+        if any(f in file_path for f in self_files):
+            return
         content = tool_input.get("content") or tool_input.get("new_string") or ""
         if check_text(content):
             block(

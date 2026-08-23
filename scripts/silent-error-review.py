@@ -53,8 +53,13 @@ ERROR_INDICATORS = (
     re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b", re.IGNORECASE),
     # Common errno names that indicate real failures
     re.compile(r"\bEACCES\b|\bECONNREFUSED\b|\bECONNRESET\b|\bETIMEDOUT\b|\bENOENT\b"),
-    # Python exception types (not just "exception" the word)
-    re.compile(r"\b(?:ValueError|TypeError|KeyError|IndexError|AttributeError|RuntimeError|ImportError|ModuleNotFoundError|OSError|IOError|FileNotFoundError|NotImplementedError|ZeroDivisionError)\b"),
+    # Python exception types — active error context only:
+    #   - "ValueError: ..." (exception message with colon) = real error
+    #   - "Traceback ... ValueError" / "raise ValueError" = real error
+    #   - "fixed TypeError" / "resolved the KeyError issue" = past-tense fix description, NOT an error
+    # The bare-name pattern caused false positives on log files and documentation.
+    re.compile(r"\b(?:ValueError|TypeError|KeyError|IndexError|AttributeError|RuntimeError|ImportError|ModuleNotFoundError|OSError|IOError|FileNotFoundError|NotImplementedError|ZeroDivisionError)\b\s*:", re.IGNORECASE),
+    re.compile(r"(?:Traceback|raise\s+)\b(?:ValueError|TypeError|KeyError|IndexError|AttributeError|RuntimeError|ImportError|ModuleNotFoundError|OSError|IOError|FileNotFoundError|NotImplementedError|ZeroDivisionError)\b", re.IGNORECASE),
     # PowerShell error patterns
     re.compile(r"\b(?:ConvertFrom-Json|Invoke-WebRequest|Get-ChildItem)\b.*\berror\b", re.IGNORECASE),
     re.compile(r"^\s*ConvertFrom-Json\s*:\s*error", re.IGNORECASE | re.MULTILINE),
