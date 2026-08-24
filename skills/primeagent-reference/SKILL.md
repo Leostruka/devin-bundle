@@ -48,50 +48,34 @@ the verification.
 
 | # | PrimeAgent/RLM feature | Adapted to Devin CLI | How |
 |---|---|---|---|
-| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, subagent_explore sub-queries (depth=1 only) |
+| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, `researcher` sub-queries (depth=1 only, NOT `subagent_explore` when parent FREE — PAID) |
 | 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `primeagent-reference` Refine mode + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
-| 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — `a2a-mailbox` skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. |
+| 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — A2A Messaging mode in this skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. See "Mode: A2A Messaging" below. |
 | 4 | Skills as importable Python packages | **Partial** — already supported | Skills can have `scripts/` dirs with Python. `self-extend` skill documents this. |
-| 5 | Daemon-backed sessions with reattach | **Yes (emulated)** — `session-checkpoint` skill | Structured checkpoint file (todos, decisions, files, verification, next actions). New session reads checkpoint and resumes. Not real reattach, but structured cross-session continuation. |
-| 6 | Heartbeats and schedules | **Yes (emulated)** — `heartbeat` skill | OS scheduler (Task Scheduler/cron) + heartbeat script launches new Devin CLI session with prompt. In-session periodic nudges via PostToolUse hook. Not real re-entry, but scheduled re-launch. |
+| 5 | Daemon-backed sessions with reattach | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `session-checkpoint` skill (structured checkpoint file). Pruned because Devin CLI has no background daemon to reattach to. |
+| 6 | Heartbeats and schedules | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `heartbeat` skill (OS scheduler + script). Pruned because Devin CLI cannot re-enter an existing session. |
 | 7 | Bounded autonomous mode with quality gates | **Yes** — `autonomous-gates` skill | Define gates at planning time, run after each step, final gate before done |
 | 8 | "Not a security sandbox" warning | **Yes** — Rule 13 in AGENTS.md | Explicit rule with guardrails |
-| 9 | Reward hacking guard (Factorio lesson) | **Yes** — in `refine` skill + Rule 13 | Guardrails in refine workflow, explicit reference to Factorio case |
+| 9 | Reward hacking guard (Factorio lesson) | **Yes** — Refine mode in this skill + Rule 13 | Guardrails in refine workflow, explicit reference to Factorio case |
 
-### Adaptation Status: 9/9 features adapted
+### Adaptation Status: 7/9 features adapted, 2 pruned
 
 - **3 direct adaptations** (1, 7, 8): feature maps cleanly to Devin CLI runtime
-- **3 emulated adaptations** (3, 5, 6): feature doesn't map directly, but the pattern is preserved via file-based workarounds. Each emulation documents its limitations vs PrimeAgent.
+- **1 emulated adaptation** (3): A2A Messaging mode in this skill — pattern preserved via file-based workarounds, documents limitations vs PrimeAgent
 - **1 partial** (4): already supported by Devin CLI's `scripts/` directory mechanism
 - **2 guardrails** (2, 9): adapted with safety mechanisms (reward hacking guard, auto-trigger with outcome tracking)
+- **2 pruned** (5, 6): `session-checkpoint` and `heartbeat` emulations didn't fit Devin CLI's single-process runtime — no background daemon, no session re-entry
 
 ### Emulated Features — Limitations vs PrimeAgent
 
-#### 3. A2A Mailbox (emulates persistent subagents)
+#### 3. A2A Messaging (emulates persistent subagents)
 
-| Feature | PrimeAgent | A2A Mailbox |
+| Feature | PrimeAgent | A2A Messaging (this skill) |
 |---|---|---|
 | Real-time messaging | Yes (socket) | No (file polling) |
 | Bidirectional during execution | Yes | No (subagent runs to completion) |
 | Persistent handles | Yes | No (ephemeral subagents) |
 | Multi-agent concurrent chat | Yes | No (sequential only) |
-
-#### 5. Session Checkpoint (emulates daemon-backed reattach)
-
-| Feature | PrimeAgent | Session Checkpoint |
-|---|---|---|
-| Background daemon | Yes (socket server) | No (file-based) |
-| Real-time reattach | Yes (session still running) | No (session ended) |
-| Kernel state recovery | Yes (JSONL + snapshot) | No (only structured state) |
-| Worker recovery | Yes (automatic) | No (manual resume) |
-
-#### 6. Heartbeat (emulates scheduled re-entry)
-
-| Feature | PrimeAgent | Heartbeat |
-|---|---|---|
-| Re-enters existing session | Yes | No (launches new session) |
-| Built-in `/heartbeat` command | Yes | No (OS scheduler + script) |
-| In-session periodic check | Yes | Via PostToolUse hook (nudge, not re-entry) |
 
 ### Key Numbers (All Verified)
 
@@ -206,7 +190,7 @@ When calling `run_subagent`, include in the task prompt:
 
 ```
 run_subagent:
-  profile: subagent_explore
+  profile: researcher
   task: |
     You are subagent-a. Read your mailbox at .devin/mailboxes/subagent-a/inbox/.
     Process each message. Write results to .devin/mailboxes/parent/inbox/ as JSON.
@@ -331,9 +315,19 @@ of the gap to a hand-engineered expert harness" on Pokémon Red and Emerald.
 
 ### Core Principle
 
-**Small, evidence-backed edits.** Not a rewrite. Each refinement is one
-targeted update — a new skill, a rule addition, a memory entry — based on
-what actually happened in the trajectory, not on speculation.
+**Small, evidence-backed edits in a cyclic, falsifiable loop.** Not a rewrite.
+Each refinement is one targeted update — a new skill, a rule addition, a memory
+entry — based on what actually happened in the trajectory, not on speculation.
+Every cited failure must be reproducible; every claimed improvement must be
+validated against held-out evidence, not self-chosen tests.
+
+**Convergence criterion:** reach the optimal operating conjuncture for
+**GLM-5.2 High (200K context)** as primary model and **SWE-1.7 Max/Medium
+(262K context)** as default subagent — per verified sources (docs.devin.ai,
+cognition.com, z.ai, AI labs) and practical experience recorded in the
+bundle history.
+
+**NÃO dar push ou commit.** All changes stay local for user validation.
 
 ### What Can Be Refined
 
@@ -344,33 +338,101 @@ what actually happened in the trajectory, not on speculation.
 | Subagent profile | `~/.config/devin/agents/<name>.md` | `write` or `edit` |
 | Hook (lifecycle logic) | `~/.config/devin/hooks.v1.json` | `edit` (add event handler) |
 | Script (executable helper) | `~/.config/devin/scripts/<name>.py` | `write` |
+| Config (model, theme, hooks) | `~/.config/devin/config.json` | `edit` (change fields, never secrets) |
+| MCP server config | `~/.config/devin/mcp_config.json` | `edit` (add/remove servers, review per Rule 13) |
 | Memory (project-specific) | `.devin/memory/<name>.md` | `write` |
 
-### What Cannot Be Refined
+### What Cannot Be Refined (anti-cheat, non-negotiable)
 
 - **The base system prompt** — Devin CLI's core prompt is immutable. Refine
   only the harness layer around it (skills, rules, agents, hooks).
 - **Repository security policies** — never modify CI configs, branch
   protection, or compliance settings to "fix" a failure.
-- **Credentials** — never store secrets in skills or rules.
+- **Credentials** — never store secrets in skills or rules (Rule 19).
+- **AI signatures in deliverables** — never add, always remove (Rule 2).
+- **`tests/held-out/`** — if it exists, the agent cannot see or write these
+  tests. They are the independent validation set (P-A2).
+- **These anti-cheat principles themselves** — auto-reference is prohibited.
 
-### Workflow
+### Anti-Cheat Principles (non-negotiable)
 
-#### Step 1: Identify the pattern
+| # | Principle | Why | Source |
+|---|-----------|-----|--------|
+| A1 | **Reproducible evidence** — every cited failure must include an exact command or tool-call that reproduces it | 25% of self-improvement runs invent failures that never occurred ("phantom guardrails") | arXiv:2607.13083 |
+| A2 | **Held-out validation** — improvements measured only with tests the agent chose are suspect; validate with `tests/held-out/` | 47-74% of self-improvement gains are illusory | ICLR 2026 Workshop |
+| A3 | **Verify with tools** — never deduce state; use `read`, `exec`, `grep`, `glob` before asserting | Deductions fail silently; tool output fails loudly | Rule 17 |
+| A4 | **No phantom guardrails** — if you cannot reproduce a cited failure with a command, it is not a pattern, it is a guess | — | Rule 15 |
+| A5 | **Real metric, not proxy** — "reduced failures by N", "faster by Xs"; not "felt easier" | Proxies mask stagnation | arXiv:2607.25152 |
 
-Review the current trajectory. Look for:
-- Errors that repeated (same root cause 2+ times)
-- Tactics that worked well and could generalize
-- Knowledge that was hard-won and would be lost on compaction
+### FASE 0 — Deep Research (before the loop, mandatory)
 
-**Phantom Guardrail Check (Rule 15):** The cited failure must include a reproducible
-command or tool call. If the evidence is "I think this failed because X" without
-a command/output, it may be a phantom guardrail — 25% of self-improvement runs
-invent failures that never happened (arXiv:2607.13083, CMU). 15/60 runs hallucinated
-failures vs 0/60 in featureless controls. Flag to user before applying. Run
-`validate-refinement-evidence.py` to check the log.
+Each step produces a concrete output. Do not advance without completing the
+previous.
 
-#### Step 2: Classify the refinement
+#### P0.1 — Research Devin CLI capabilities
+- `web_search` + `webfetch` on docs.devin.ai, github.com/cognition-ai
+- Confirm: hooks, skills, subagents, config.json, lifecycle events
+- Output: list of confirmed capabilities with URLs
+
+#### P0.2 — Confirm against the real bundle structure
+- `exec`, `read`, `grep`, `glob` on the local bundle
+- Verify that what the docs say matches what is installed
+- Output: doc-vs-disk table (match / mismatch)
+
+#### P0.3 — Research verified sources (verify, don't assume)
+- `web_search` for: arXiv papers, official docs (z.ai, cognition.com, anthropic.com)
+- **Ensure they are reliable**: verify domain, authors, publication date
+- Reject: blogs without primary source, Medium posts without citation, LLM-generated content
+- Output: list of sources with URL, author, date, and verified citation
+
+#### P0.4 — Research best practices
+- Topics: prompt engineering for GLM-5.2, context window management (200K/262K),
+  subagent fan-out, cache stability, native tool-use, lost-in-the-middle mitigation
+- Priority sources: arXiv, docs.z.ai, cognition.com/blog, docs.devin.ai
+- Output: list of practices with evidence (paper/doc supporting each)
+
+#### P0.5 — Don't repeat past errors (git history)
+- `git log --oneline -30` + `git log --diff-filter=D` to see what was deleted/reverted
+- Read fix/revert commits to understand past breakages
+- Output: list of past errors with commit hash and lesson
+
+#### P0.6 — Review current state
+- `python audit.py` — capture current errors/warnings
+- `python -m pytest tests/held-out/ -q` — test baseline (if held-out exists)
+- `read` key files (AGENTS.md, MODEL-GUIDE.md, config.json)
+- Output: state snapshot (errors, tests passing, current config)
+
+#### P0.7 — Synthesize
+- Cross P0.1–P0.6: what docs say × what disk has × what practices recommend × what history teaches
+- Output: prioritized list of candidate improvements with evidence
+
+### Cyclic Refinement Loop (10 steps, in order)
+
+Based on Constitutional AI (generate→critique→revise) + RISE (recursive
+introspection) + Six-Step Reframing (NLP) + Deep Research (FASE 0).
+
+#### Step 1 — OBSERVE (verify, don't deduce)
+Identify a **concrete, reproducible** failure using tools.
+- Command/tool-call that reproduces the failure: `___` (mandatory)
+- Observed output: `___`
+- If you cannot reproduce it → **stop**. Not a failure, a deduction (A4).
+
+#### Step 2 — CRITIQUE (Constitutional AI critique)
+Evaluate the failure against AGENTS.md principles.
+- Which rule was violated? `___`
+- NLP reframing key question: **"What is the positive intent behind the
+  current behavior?"** Separate behavior from intent.
+  - Current behavior: `___`
+  - Positive intent: `___`
+  - Why the behavior fails despite the intent: `___`
+
+#### Step 3 — GENERATE ALTERNATIVES (Reframe + Promptbreeder)
+Generate **at least 3** alternative behaviors that:
+- Preserve the positive intent
+- Fix the reproducible failure
+- Introduce no new rule violation
+
+Classify the refinement target (from existing Refine classification):
 
 | Pattern type | Refinement target | Evidence needed |
 |---|---|---|
@@ -380,43 +442,135 @@ failures vs 0/60 in featureless controls. Flag to user before applying. Run
 | "This check should be automatic" | New hook in hooks.v1.json | 1+ case where a manual check caught a critical issue |
 | "This helper is useful" | New script in scripts/ | 1+ case where inline code solved a problem worth keeping |
 
-#### Step 3: Draft the refinement
+| Alt | Description | Risk | Prob. of real improvement |
+|-----|-------------|------|---------------------------|
+| 1   |             |      |                           |
+| 2   |             |      |                           |
+| 3   |             |      |                           |
 
-Write the smallest possible edit:
-- **New skill:** minimal SKILL.md with frontmatter, when-to-use, core steps
-- **New rule:** one negative-constraint bullet, appended to the relevant AGENTS.md section
-- **Profile edit:** one paragraph or bullet, not a rewrite
-- **Hook:** one event handler, not a restructure
+#### Step 4 — REVISE (Revise)
+Apply the alternative with highest probability of real improvement.
+- Draft the smallest possible edit:
+  - **New skill:** minimal SKILL.md with frontmatter, when-to-use, core steps
+  - **New rule:** one negative-constraint bullet, appended to the relevant AGENTS.md section
+  - **Profile edit:** one paragraph or bullet, not a rewrite
+  - **Hook:** one event handler, not a restructure
+- Record evidence in the refinement:
+  ```
+  <!-- Evidence: <session date> — <what happened> — <why this refinement fixes it> -->
+  ```
+  For skills, add an `## Evidence` section at the bottom.
+- Apply with `write` (new file) or `edit` (existing file). For AGENTS.md,
+  use `edit` to append within the correct section — never restructure the file.
+- File(s) changed: `___`
+- Diff summary: `___`
 
-#### Step 4: Record evidence
+#### Step 5 — VALIDATE (Held-out, anti-cheat A2)
+- Agent-chosen test: `___` → result: `___`
+- Held-out test (if `tests/held-out/` exists): `___` → result: `___`
+- If held-out fails → **discard change**, return to Step 3
+- If no held-out exists → mark improvement as "not validated", not "complete"
+- After applying, verify the edit landed:
+  - For a skill: `skill list --path ~/.config/devin` — confirm it appears
+  - For a rule: re-read the AGENTS.md section — confirm it's in the right place
+  - For a hook: validate JSON syntax — `python -m json.tool hooks.v1.json`
+  - For a script: run `python <script> --help` or a dry-run
+  - For config.json/mcp_config.json: `python -m json.tool config.json` — validate JSON syntax
 
-In the refinement itself, include a comment or note:
+#### Step 6 — FUTURE PACE (NLP)
+Project the improvement into 3 hypothetical future scenarios:
+- Scenario 1: `___` → does the improvement help? `___`
+- Scenario 2: `___` → does the improvement help? `___`
+- Scenario 3: `___` → does the improvement help? `___`
+- If <2 scenarios benefit → too specific, reconsider
+
+#### Step 7 — ECOLOGICAL CHECK (NLP)
+Does the improvement cause side effects?
+- In other rules? `___`
+- In other hooks/skills? `___`
+- In the context window budget (Rule 18)? `___`
+- Negative side effect → return to Step 3
+
+#### Step 8 — SIMULATE (Self-evaluation)
+Simulate loading the improvements and evaluate own performance.
+- `install.ps1 -Force` (or equivalent) to load the changes
+- `python audit.py` — confirm 0 errors after loading
+- `python -m pytest tests/held-out/ -q` — confirm 0 regressions (if held-out exists)
+- Self-evaluation: **how does this modify my logic and operating mode in practice?**
+  - What behavior changes when this rule/skill/hook is loaded?
+  - What real scenario would execute differently now?
+  - Is there conflict with behaviors already optimized for GLM-5.2/SWE-1.7?
+- Output: description of expected behavioral impact
+
+#### Step 9 — CLASSIFY (Improved or regressed?)
+Classify the result with a description to define direction.
+- Compare real metric (Step 5) vs baseline (P0.6)
+- Mandatory classification (one option):
+
+| Class | Criterion | Action |
+|-------|-----------|--------|
+| **MELHOROU** | Real metric improved + held-out passed + no side effects | Repeat loop (Step 1) with next candidate improvement |
+| **PIOROU** | Real metric regressed OR held-out failed OR negative side effect | **Revert change** (`git checkout` or manual `edit`), return to Step 3 |
+| **NEUTRO** | Metric unchanged + held-out passed + no side effect | Mark "stagnation" (arXiv:2607.25152), try next candidate |
+| **INCONCLUSIVO** | Could not measure real impact | Do not declare improvement. Reformulate metric or discard |
+
+- Output: class + justification with numbers
+
+#### Step 10 — REPEAT OR CONVERGE
+- If classified **MELHOROU** or **NEUTRO**: return to Step 1 with the next
+  candidate improvement from the synthesis (P0.7)
+- If classified **PIOROU**: reverted in Step 9, return to Step 3 with a
+  different alternative
+- **Stopping criterion (convergence)**: when all candidate improvements from
+  P0.7 have been applied and classified, and no new reproducible failure is
+  found in the current state → conjuncture reached for GLM-5.2 High (200K) +
+  SWE-1.7 (262K)
+- **NÃO dar push ou commit** — changes stay local for user review
+
+### Anti Early-Stop Reflection (DORA)
+
+Reflection does **not** stop at the first iteration without improvement.
+
+- Iteration without improvement → **reformulate the reflection prompt** before stopping
+- Reformulation: change the critique angle (e.g., from "what failed" to
+  "what the agent assumed without verifying")
+- Max 3 reformulations. After 3 without improvement → stop and record stagnation
+- Recorded stagnation is data, not failure (arXiv:2607.25152)
+
+### Final Checklist (before declaring improvement)
+
+- [ ] FASE 0 complete (deep research with verified sources)
+- [ ] Failure reproduced with exact command (A1)
+- [ ] Positive intent separated from behavior (NLP)
+- [ ] 3+ alternatives generated
+- [ ] Held-out validated OR marked "not validated" (A2)
+- [ ] Future pace: ≥2/3 scenarios benefited
+- [ ] Ecological check: no negative side effects
+- [ ] Simulation executed (Step 8): install + audit + held-out + self-evaluation
+- [ ] Classification assigned (Step 9): MELHOROU/PIOROU/NEUTRO/INCONCLUSIVO
+- [ ] Real metric declared (A5), not proxy
+- [ ] No anti-cheat principle violated
+- [ ] No push or commit made
+
+**If any item fails → the improvement is NOT complete.**
+
+### Output Format
+
 ```
-<!-- Evidence: <session date> — <what happened> — <why this refinement fixes it> -->
+MELHORIA: <title>
+FASE0_RESEARCH: <verified sources — URLs + citations>
+FALHA_REPRODUZIDA: <command> → <output>
+REGRA_VIOLADA: <Rule #>
+INTENÇÃO_POSITIVA: <text>
+ALTERNATIVA_APLICADA: <#> of <N>
+HELD_OUT: <passou|falhou|inexistente>
+SIMULAÇÃO: <install OK? audit 0 errors? held-out 0 regressions? behavioral impact>
+MÉTRICA_REAL: <number/observation vs baseline>
+CLASSIFICAÇÃO: <MELHOROU|PIOROU|NEUTRO|INCONCLUSIVO>
+ESTADO: <validada|não_validada|estagnada|revertida>
+ARQUIVOS_ALTERADOS: <list>
+PUSH_COMMIT: <não feito>
 ```
-
-For skills, add an `## Evidence` section at the bottom.
-
-#### Step 5: Apply
-
-Use `write` (new file) or `edit` (existing file) to apply. For AGENTS.md,
-use `edit` to append within the correct section — never restructure the file.
-
-#### Step 6: Verify
-
-After applying:
-- For a skill: `skill list --path ~/.config/devin` — confirm it appears
-- For a rule: re-read the AGENTS.md section — confirm it's in the right place
-- For a hook: validate JSON syntax — `python -m json.tool hooks.v1.json`
-- For a script: run `python <script> --help` or a dry-run
-
-#### Step 7: Report
-
-Tell the user:
-- What was refined (skill/rule/profile/hook/script)
-- Where it was applied (path)
-- What evidence supports it (trajectory events)
-- How to rollback (revert the file, or `git checkout` if in the bundle repo)
 
 ### Rollback
 
@@ -586,20 +740,22 @@ PARALLEL → multiple independent subagents in parallel (dispatching-parallel-ag
 
 | Task need | Profile | Model | Cost tier |
 |---|---|---|---|
-| Codebase reconnaissance, doc lookup, web research | `researcher` | SWE-1.6 | $ |
-| Code review, spec compliance, verification | `reviewer` | sonnet | $$ |
-| Bounded implementation from spec | `implementer` | parent | $$$ |
-| Architecture, trade-offs, deep module design | `architect` | sonnet | $$ |
-| Systematic debugging, root cause analysis | `debugger` | parent | $$$ |
-| Read-only exploration (built-in) | `subagent_explore` | SWE-1.6 | $ |
-| General-purpose with full tools (built-in) | `subagent_general` | parent | $$$ |
+| Codebase reconnaissance, doc lookup, web research | `researcher` | SWE-1.7 (262K) | free |
+| Code review, spec compliance, verification | `reviewer` | SWE-1.7 (262K) | free |
+| Bounded implementation from spec | `implementer` | SWE-1.7 (262K) | free |
+| Architecture, trade-offs, deep module design | `architect` | SWE-1.7 (262K) | free |
+| Systematic debugging, root cause analysis | `debugger` | SWE-1.7 (262K) | free |
+| Read-only exploration | `researcher` (custom) | SWE-1.7 (262K) | free |
+| General-purpose with full tools (built-in) | `subagent_general` | inherits parent (GLM-5.2) | free |
 
 **Selection rules:**
 
 1. Match by capability first — what does the task NEED?
 2. When two profiles match, pick the cheaper one
-3. When no custom profile fits, use `subagent_explore` (read-only) or
-   `subagent_general` (full tools)
+3. **When parent is FREE (default): NUNCA usar `subagent_explore` (built-in)**
+   — roda em SWE-1.6 (PAGO). Usar `researcher` (custom, free) para read-only,
+   ou `subagent_general` (parent model, free) para full tools. When parent
+   is PAID, `subagent_explore` is permitted.
 4. When task needs more capability than profile's default model, switch
    parent session model with `/model <model>` before dispatching
 

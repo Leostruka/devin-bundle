@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the structural integrity of an obsidian-project-docs wiki.
+"""Validate the structural integrity of an Obsidian codebase wiki.
 
 Checks:
 1. Required root pages exist (00-09, 10-Logbook)
@@ -18,6 +18,9 @@ Checks:
 14. All root pages have ## Relevant source files and ## Purpose and Scope
 15. All Mermaid diagrams have <!-- Sources: --> comments
 16. No sensitive data (passwords, credentials, secrets)
+17. 11-TechDebt.md exists when effort is medium or high (Step 19)
+18. wiki-config.json effort field is valid (low/medium/high) — Step 17
+19. 02-Architecture.md has ## Architecture critique section when effort is high (Step 18)
 
 Usage:
     python validate_wiki_structure.py [--wiki-dir <path>] [--vault-dir <path>]
@@ -411,8 +414,65 @@ def check_sensitive_data(wiki_dir: Path) -> list:
     return failures
 
 
+def load_effort(wiki_dir: Path) -> str:
+    """Load effort level from wiki-config.json. Default 'high' if absent."""
+    config_path = wiki_dir / "wiki-config.json"
+    if not config_path.exists():
+        return "high"
+    try:
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        return config.get("effort", "high")
+    except (json.JSONDecodeError, KeyError):
+        return "high"
+
+
+def check_effort_valid(wiki_dir: Path, effort: str) -> list:
+    """Check that effort level in wiki-config.json is valid (Step 17)."""
+    failures = []
+    valid = {"low", "medium", "high"}
+    if effort not in valid:
+        failures.append(
+            f"EFFORT: wiki-config.json has invalid effort='{effort}' "
+            f"(must be one of: {', '.join(sorted(valid))})"
+        )
+    return failures
+
+
+def check_techdebt_exists(wiki_dir: Path, effort: str) -> list:
+    """Check that 11-TechDebt.md exists when effort is medium or high (Step 19)."""
+    failures = []
+    if effort == "low":
+        return failures  # Not required at low effort
+
+    techdebt = wiki_dir / "11-TechDebt.md"
+    if not techdebt.exists():
+        failures.append(
+            f"TECHDEBT: 11-TechDebt.md missing (required at effort='{effort}')"
+        )
+    return failures
+
+
+def check_architecture_critique(wiki_dir: Path, effort: str) -> list:
+    """Check that 02-Architecture.md has critique section at high effort (Step 18)."""
+    failures = []
+    if effort != "high":
+        return failures  # Only required at high effort
+
+    arch = wiki_dir / "02-Architecture.md"
+    if not arch.exists():
+        return failures  # Already caught by check_required_files
+
+    content = arch.read_text(encoding="utf-8", errors="replace")
+    if "## Architecture critique" not in content and "## Architecture Critique" not in content:
+        failures.append(
+            "ARCH_CRITIQUE: 02-Architecture.md missing '## Architecture critique' section "
+            "(required at high effort)"
+        )
+    return failures
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Validate obsidian-project-docs wiki structure")
+    parser = argparse.ArgumentParser(description="Validate Obsidian codebase wiki structure")
     parser.add_argument("--wiki-dir", type=str, help="Path to the _wiki directory")
     parser.add_argument("--vault-dir", type=str, help="Path to the Obsidian vault root (for wikilink resolution)")
     args = parser.parse_args()
@@ -426,8 +486,12 @@ def main():
 
     if not (wiki_dir / "wiki-config.json").exists():
         print(f"ERROR: No wiki-config.json found in {wiki_dir}")
-        print("Is this a valid obsidian-project-docs wiki directory?")
+        print("Is this a valid Obsidian codebase wiki directory?")
         sys.exit(1)
+
+    effort = load_effort(wiki_dir)
+    print(f"Effort level:   {effort}")
+    print()
 
     all_failures = []
     all_checks = [
@@ -440,6 +504,9 @@ def main():
         ("Daily notes frontmatter", lambda: check_daily_notes(wiki_dir)),
         ("Mermaid Sources comments", lambda: check_mermaid_sources(wiki_dir)),
         ("Sensitive data scan", lambda: check_sensitive_data(wiki_dir)),
+        (f"Effort level valid (effort={effort})", lambda: check_effort_valid(wiki_dir, effort)),
+        (f"11-TechDebt.md exists (effort={effort})", lambda: check_techdebt_exists(wiki_dir, effort)),
+        (f"Architecture critique section (effort={effort})", lambda: check_architecture_critique(wiki_dir, effort)),
     ]
 
     # Collect vault stems for wikilink check

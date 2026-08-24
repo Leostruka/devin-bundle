@@ -7,6 +7,321 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added (iter 8.5 — continuous improvement + mermaid + cleanup)
+
+- **continuous-improvement skill**: FASE 0 deep research + 10-step self-improvement
+  loop based on Constitutional AI, RISE, Six-Step Reframing, and held-out
+  validation. Enforces the full directive and prevents skipped steps.
+- **PermissionRequest and SessionEnd hook events**: added to `config.json` and
+  `hooks.v1.json` to match all 8 Devin CLI lifecycle events. Audit check [30]
+  prevents future drift.
+- **Mermaid architecture diagram in README.md**: replaced ASCII diagram with
+  a `flowchart TB` Mermaid block, validated by `validate-mermaid.py`.
+
+### Changed
+
+- **README.md and SKILL-TIERS.md**: skill count 49 → 50, added
+  `continuous-improvement` to skill inventory and tier list.
+- **scripts/validate-skill-format.py**: default scan now includes bundle root
+  `skills/` as the source of truth, plus project `.devin/skills/` and global
+  installs.
+- **TOOLS-MAP.md and audit.py**: updated skill count checks 49 → 50.
+
+### Removed
+
+- **ci-logs.zip**, `__pycache__/`, `.pytest_cache/`: cleaned project junk.
+
+### Added (iter 8.1 — CLI replicas of cloud-only features)
+
+- **deep-mode skill**: replicates Ask Devin's Deep Mode (`!deep` in
+  Slack/Teams) for the CLI. Multi-pass agentic search (broad sweep ->
+  deep read -> cross-file synthesis -> architecture map) with
+  mandatory file:line citations. Sources: docs.devin.ai/work-with-devin/ask-devin,
+  docs.devin.ai/integrations/slack, cognition.ai/blog/new-self-serve-plans-for-devin.
+- **data-analyst skill**: replicates Devin cloud's Data Analyst Agent
+  (DANA) for the CLI. SQL-first exploration via MCP data sources,
+  schema discovery + caching, query formulation, analysis, and
+  matplotlib/seaborn-style visualizations. Read-only by design.
+  Sources: docs.devin.ai/work-with-devin/data-analyst,
+  docs.devin.ai/use-cases/gallery/dana-slack-data-analyst,
+  docs.devin.ai/release-notes/2025.
+- **playbook skill**: replicates Devin cloud's Playbook feature for
+  the CLI. Structured prompt template (Procedure, Specifications,
+  Advice, Forbidden Actions, Required from User), local library
+  (`.devin/playbooks/*.devin.md`), macro approximation, create-from-
+  session workflow. Sources: docs.devin.ai/product-guides/creating-playbooks,
+  docs.devin.ai/product-guides/using-playbooks,
+  docs.devin.ai/work-with-devin/advanced-capabilities.
+- **obsidian-workflow skill enhanced**: 4 new steps (17-20) complementing
+  existing rigor to match DeepWiki cloud. Effort levels (low/medium/high)
+  in `wiki-config.json` controlling depth. Deep Research pass (Step 18)
+  — architecture critique, anti-patterns, optimization opportunities,
+  senior-reviewer-level analysis. TechDebt page (Step 19, `11-TechDebt.md`)
+  — cited issues, numbered (AP-001/OPT-001), categorized. Conversational
+  Q&A (Step 20) — `deep-mode` skill integration for multi-pass search
+  over wiki with double citations (wiki + source). Backward compatible:
+  absent `effort` defaults to `high` (existing behavior). Sources:
+  docs.devin.ai/work-with-devin/deepwiki, cognition.com/blog/deepwiki,
+  marktechpost.com/2025/04/27/devin-ai-introduces-deepwiki.
+- **obsidian-workflow validators**: 2 new scripts + 1 updated.
+  `validate_wiki_content.py` (9 content rigor checks: source path:line
+  format, min 5 sources per page, Sources: footers, overview links to
+  all root pages, function ## Links, source columns in tables, TechDebt
+  content, architecture critique, effort valid). `find_orphan_pages.py`
+  (graph orphan detection — referenced in checklist but did not exist).
+  `validate_wiki_structure.py` updated with 3 new checks (effort valid,
+  TechDebt exists, arch critique section). SKILL.md updated with
+  validation scripts table and content rigor checklist item.
+- **manifest.json scripts list**: added `scripts` array (was missing —
+  `script_count: 12` but no list). 12 .py + 1 .js entry. audit.py check
+  [9b] validates consistency (count match, disk existence). Check count
+  23 -> 24.
+- **Counts updated**: 46 -> 49 skills in README.md (summary, diagram,
+  tree, badge), TOOLS-MAP.md, SKILL-TIERS.md (3 new entries in
+  Pesquisa/Data/Planejamento sections), manifest.json (3 entries +
+  skill_count 46->49), audit.py (checks [9] and [18]).
+
+### Fixed (iter 8.3 — self-improvement loop: hook FP/FN fixes + audit hardening)
+
+- **destructive-gate.py commit message parsing**: strip_commit_message()
+  now extracts only the command portion before `-m`/`-F`/`--message`,
+  preventing the gate from blocking descriptive commit messages that
+  mention gate names. (ref-030)
+- **check-ai-signature.py self-detection skip**: write/edit to
+  check-ai-signature.py or validate-skill-format.py was blocked because
+  the detector code contains the signature patterns. Added self-detection
+  skip. Also fixed exec handler to extract `-m` message. (ref-031)
+- **silent-error-review.py false positives**: bare exception-name regex
+  matched past-tense fix descriptions ("the fix resolved the KeyError").
+  Fixed: require colon after exception name or Traceback/raise prefix.
+  (ref-032)
+- **validate-refinement-evidence.py tool-call patterns**: flagged
+  ref-002 as PHANTOM despite evidence containing write/edit/exec. Added
+  write|edit|exec to REPRODUCIBLE_PATTERNS regex. (ref-033)
+- **check-ai-signature.py allowed contexts**: "AI-assisted tooling"
+  blocked descriptive documentation. Added ALLOWED_CONTEXTS denylist for
+  AI-assisted tooling/development/review and AI-generated content/images.
+  (ref-034)
+- **behavioral-nudge.py syntax error**: muted print left multi-line dict
+  literal active, causing SyntaxError. Restored print call. (ref-035)
+- **constraint-pinning.py empty main()**: main() was `pass` with no
+  `__main__` guard — hook never wrote markers or re-injected constraints.
+  Restored full implementation. (ref-036)
+- **check-push-green.py empty main()**: main() was `pass` — hook never
+  blocked any git push. Restored full implementation with stdin parse,
+  PreToolUse/exec/git-push checks, test runner, held-out gap. (ref-037)
+- **check-push-green.py gap check investigation**: empty tests/validation/
+  makes gap check dead code (val_passed=False never blocks). No code
+  change — test infrastructure gap. (ref-038, investigated)
+- **.gitignore .pytest_cache**: added .pytest_cache/ to .gitignore
+  (was not ignored despite internal .gitignore). (ref-039)
+- **audit.py __main__ guard check**: added check [2b] to detect hook
+  scripts missing `if __name__ == "__main__"` guard. Would have caught
+  iters 4-6 bugs. Updated check count 24->25. (ref-040)
+- **check-ai-signature.py multi-context strip**: check_text with two
+  allowed contexts returned True (blocked) because loop stripped one
+  context at a time. Fixed: strip ALL contexts cumulatively, then check.
+  (ref-041)
+- **destructive-gate.py SQL false positives**: SQL_DESTRUCTIVE regex
+  matched echo/grep/cat commands containing keywords. Added SQL_CLIENTS
+  regex — gate now requires both SQL_DESTRUCTIVE and SQL_CLIENTS. (ref-042)
+- **destructive-gate.py WinRM false negatives**: Remove-Item with path
+  before flags, or no target, was not blocked. Added WIN_RM_RE_PATH_FIRST
+  and WIN_RM_RE_NOTARGET patterns. (ref-043)
+- **validate-skill-format.py AI signature false positives**: flagged
+  descriptive contexts inconsistently with check-ai-signature.py. Added
+  AI_ALLOWED_CONTEXTS tuple matching check-ai-signature.py. (ref-044)
+- **destructive-gate.py force-with-lease**: GIT_FORCE_PUSH blocked
+  `--force-with-lease` (safe alternative). Removed from alternation,
+  added negative lookahead. (ref-045)
+- **check-ai-signature.py .bak file filtering**: substring match
+  filtered .bak variants as self-files. Replaced with regex matching
+  exact filename at end of git diff path. (ref-046)
+- **silent-error-review.py warning+error lines**: signal_lines stripped
+  entire lines containing warning keywords, causing false negatives when
+  a line had both warning AND error indicators. Fixed: only strip if
+  noise without error. (ref-047)
+
+### Fixed (iter 8.4 — continuous improvement directive: data integrity + gap check activation)
+
+- **refinements.log.jsonl duplicate IDs**: 48 entries had 30 unique IDs
+  (16 duplicates) — rollback-by-ID was ambiguous. Renumbered all entries
+  sequentially ref-001 to ref-048. (ref-048, LOOP 1)
+- **audit.py refinement ID uniqueness check**: added check [25] to
+  detect duplicate IDs in refinements.log.jsonl. Prevents recurrence.
+  Check count 25->26. (ref-048, LOOP 2)
+- **tests/validation/ populated**: 4 infrastructure smoke tests added
+  (audit passes, skill-format passes, refinement-evidence valid).
+  Activates check-push-green.py gap check (was dead code with empty
+  validation/). Rule 16 reward hacking guard now operational. (ref-048,
+  LOOP 3)
+- **manifest.json stale purposes**: diagnosing-bugs and primeagent-
+  reference had outdated purpose fields vs SKILL.md descriptions. Synced
+  to current frontmatter. (ref-048, LOOP 4)
+- **audit.py manifest/SKILL.md sync check**: added check [26] to detect
+  stale manifest purposes vs SKILL.md descriptions. Prevents recurrence.
+  Check count 26->27. (ref-048, LOOP 4)
+
+### Fixed (iter 8.2 — self-improvement loop: stale refs + model info + encoding)
+
+- **dispatching-parallel-agents model info**: skill table said
+  implementer/debugger use "parent" model, but `agents/implementer.md`
+  and `agents/debugger.md` pin `model: swe-1-7`. Updated table and
+  Model Selection section to reflect SWE-1.7 (free, 262K) as default
+  for implementers. Source: cognition.com/blog/swe-1-7.
+- **subagent-router stale model info**: 5 agent profiles had stale
+  SWE-1.6/$ cost info. Updated all to SWE-1.7 (262K, FREE), added
+  `subagent_explore` PAID warning, fixed 4 references to pruned
+  `subagent-driven-development` skill.
+- **Agent profiles AgentCARD**: added bottleneck role awareness to
+  all 5 profiles (architect=planner for debugging, reviewer=reviewer
+  for doc analysis, researcher=executor for research). Source:
+  arXiv:2606.20629.
+- **MODEL-GUIDE.md benchmarks**: added SWE-1.7 vs GLM-5.2 comparison
+  table (FrontierCode 42.3% vs 24.5%, Terminal-Bench 81.5% vs 81.0%,
+  SWE-Bench 77.8% vs 74.5%) and 10-task routing matrix. Source:
+  cognition.com/blog/swe-1-7.
+- **render-graphs.js stale ref**: example used `subagent-driven-
+  development` (deleted in iter 8.0). Replaced with `obsidian-
+  workflow` (only skill with Mermaid diagrams).
+- **obsidian-workflow validators rename**: 3 scripts had stale
+  `obsidian-project-docs` in docstrings/argparse (skill renamed to
+  obsidian-workflow in iter 8.0). Fixed to "Obsidian codebase wiki".
+- **primeagent-reference adaptation status**: SKILL.md said "9/9
+  features adapted" but 2 were pruned (session-checkpoint, heartbeat).
+  Fixed to "7/9 adapted, 2 pruned" — consistent with README bullets.
+- **README adaptation status**: 2 stale "9/9 features" references
+  (lines 262, 288) contradicted own bullet list ("2 pruned") and
+  primeagent-reference skill. Fixed to "7/9 adapted (2 pruned)".
+- **install.ps1/export.ps1 encoding**: PowerShell 5.x read UTF-8
+  files without BOM as Windows-1252, causing parser errors on
+  em-dashes. Added UTF-8 BOM (EF BB BF) to both .ps1 files.
+- **CHANGELOG missing iter 8.2**: Unreleased section had iter 8.1
+  and 8.0 but was missing 9 refinements (ref-011 to ref-019) from
+  subsequent sessions. Added iter 8.2 Fixed section.
+- **TOOLS-MAP missing hook entry**: hooks table missing
+  `behavioral-nudge.py` (UserPromptSubmit) — added in commit bfef22b
+  but not documented. Added row.
+- **README hooks table missing 2 entries**: missing `validate-
+  mermaid.py` (PreToolUse write/edit) and `behavioral-nudge.py`
+  (UserPromptSubmit). Added 2 rows to match hooks.v1.json.
+- **SKILL-TIERS stale token counts**: 3 skills updated after
+  2026-08-20 measurement had stale counts: primeagent-reference
+  7876→10091 (28% off), obsidian-workflow 14798→17435 (18% off),
+  dispatching-parallel-agents 9710→10065 (3.7% off). Updated counts
+  + measurement date to 2026-08-22.
+- **manifest.json vague purpose fields**: planning-pipeline and
+  obsidian-workflow both had the identical string "merged planning/
+  obsidian pipeline" as their purpose — two different skills with the
+  same description. Fixed to their real SKILL.md frontmatter
+  descriptions (spec/tickets/questionnaire; Obsidian 4 modes).
+- **SKILL-TIERS 4 more stale token counts**: writing-plans 1746→1704,
+  executing-plans 551→535, wayfinder 2936→2938, playbook 2400→1496
+  (60% off — playbook SKILL.md was rewritten shorter in iter 8.1).
+  Updated 4 counts in the planning/decision domain rows.
+- **Planning flow unification (grilling vs ask-matt)**: grilling
+  SKILL.md mandated writing-plans as its ONLY terminal state ("Do NOT
+  invoke any other implementation skill"), but ask-matt SKILL.md
+  routed grilling → planning-pipeline (Spec) → planning-pipeline
+  (Tickets) → implement without mentioning writing-plans. Unified:
+  grilling now offers both exits (planning-pipeline/Tickets canonical,
+  writing-plans alternative for single-session detailed plans);
+  ask-matt now mentions writing-plans → executing-plans as alternative
+  to Tickets → implement; writing-plans now documents its input
+  sources and positions itself vs Tickets mode. Updated 3 token
+  counts (grilling 2511→2656, writing-plans 1704→1785, ask-matt
+  2893→3037). Synced 3 skills to live.
+
+### Fixed (iter 8.0 — doc count consistency + hook events accuracy + legacy cleanup)
+
+- **Deleted 3 legacy skill dirs**: obsidian-project-docs (consolidado em
+  obsidian-workflow), subagent-driven-development (consolidado em
+  dispatching-parallel-agents), systematic-debugging (consolidado em
+  diagnosing-bugs). Reduzido 49→46 skills. README "Merged from" table
+  mantida como histórico de consolidação.
+- **TOOLS-MAP.md stale counts**: "46 skills" → "49 skills" → "46 skills"
+  (legacy cleanup), "11 scripts" → "12 scripts", "6 eventos" → "8 eventos",
+  "25 ativas + 2 modo-dependentes" → "26 ativas + 2 modo-dependentes"
+  (28 total), "19/27" → "19/28", "8 excluídas" → "9 excluídas".
+  Verified against disk and docs.devin.ai/cli/extensibility/hooks/overview
+  (8 events). Bundle uses 6 of 8; PermissionRequest and SessionEnd
+  documented as available but unused.
+- **README.md stale counts**: diagram "46 skills" → "49 skills" →
+  "46 skills", "6 events" → "8 events"; hooks header "6 events" →
+  "8 events"; install summary "6 hook events" → "8 hook events";
+  badge skills-49 → skills-46.
+- **SKILL-TIERS.md**: typo double period `PAGO)..` → `PAGO).`.
+- **manifest.json**: removed 3 legacy skill entries, skill_count 49→46,
+  tool_count 27→28.
+- **audit.py check [24]**: new check verifies TOOLS-MAP.md and README.md
+  counts match disk reality (skills, scripts, hook events, tools, excluded).
+  Prevents future stale-count regressions.
+- **validate-refinement-evidence.py**: added PowerShell cmdlet patterns
+  (Select-String, Get-ChildItem, etc.) to REPRODUCIBLE_PATTERNS — fixes
+  false phantom-guardrail flag on Windows-documented refinements.
+- **Sources**: docs.devin.ai/cli/extensibility/hooks/overview (8 events),
+  docs.devin.ai/cli/extensibility/hooks/lifecycle-hooks (event details),
+  Get-ChildItem skills/scripts (disk counts).
+
+### Changed (iter 7.3 — política de modelos CONDICIONAL)
+
+- **Política alterada de FREE-ONLY para CONDICIONAL**: modelos pagos agora
+  são permitidos para subagents **quando o parent está em modelo pago**
+  (usuário fez `/model opus`, `/model sonnet`, etc.). Quando o parent está
+  em modelo FREE (default `glm-5-2`), subagents DEVEM ser FREE.
+- **Caso 1 (Parent FREE)**: FREE-ONLY mantido. `subagent_explore` (SWE-1.6
+  pago), `swe` alias (SWE-1.7 Lightning pago) e todos os modelos pagos
+  proibidos para subagents.
+- **Caso 2 (Parent PAGO)**: `subagent_explore` (SWE-1.6, $0.5/$2.5) é
+  permitido — mais barato que o parent. `subagent_general` herda o modelo
+  pago do parent. Custom profiles com `model: swe-1-7` continuam FREE
+  (preferir quando possível).
+- **Arquivos atualizados**: `AGENTS.md` Rule 20, `MODEL-GUIDE.md` (novo
+  protocolo condicional com 2 casos), `TOOLS-MAP.md`, e 5 skills
+  (`dispatching-parallel-agents`, `primeagent-reference`, `context-folding`,
+  `obsidian-workflow`, `self-extend`) — todas as annotations "NUNCA usar
+  `subagent_explore`" agora dizem "NUNCA usar quando parent é FREE".
+
+### Fixed (iter 7.1 — `subagent_explore` PAGO bug)
+
+- **BUG CRÍTICO DE CUSTO (iter 7.1)**: o profile built-in `subagent_explore`
+  roda no **default subagent model (SWE-1.6, PAGO $0.5/$2.5 MTok)**. Não há
+  override local — apenas enterprise settings podem mudar isso. O system
+  prompt do Devin CLI recomenda `subagent_explore` para read-only exploration,
+  então qualquer dispatch desse profile incorre em custo.
+- **Solução**: adicionada regra em `AGENTS.md` (Rule 20) e `MODEL-GUIDE.md`
+  proibindo `subagent_explore`. Direcionado para o profile customizado
+  `researcher` (`agents/researcher.md`, pin `model: swe-1-7`, gratuito, 262K)
+  que tem as mesmas capacidades read-only.
+- **Skills corrigidas**: 5 skills (`dispatching-parallel-agents`,
+  `primeagent-reference`, `context-folding`, `obsidian-workflow`,
+  `self-extend`) tinham 10 referências ativas a `subagent_explore` como
+  recomendação de uso. Todas substituídas por `researcher` com annotation
+  "NOT `subagent_explore` — PAID SWE-1.6".
+- **Fonte**: docs.devin.ai/cli/subagents — "subagent_explore: The default
+  subagent model — a fast, cheap model (SWE-1.6 by default)".
+
+### Changed (iter 7.0 — FREE-ONLY policy enforcement)
+
+- **Protocolo de escalada pago REMOVIDO**: `MODEL-GUIDE.md` tinha um
+  protocolo de 6 níveis que recomendava GLM-5.2 Max ($0.7/$2.2),
+  DeepSeek V4 Flash ($0.14/$0.28), Opus ($5/$25) e GPT-5.4 ($2.5/$15)
+  como fallbacks. Substituído por protocolo FREE-ONLY: se GLM-5.2 High +
+  SWE-1.7 fan-out falharem, parar e reportar ao usuário — nunca escalar
+  para pago.
+- **AGENTS.md Rule 20**: "Só usar como fallback após 3+ tentativas
+  documentadas" → "🚫 NUNCA usar modelos pagos. Se falharem, parar e
+  reportar ao usuário."
+- **Skills corrigidas**: `dispatching-parallel-agents`, `primeagent-reference`
+  e `self-extend` recomendavam `sonnet` (pago, $2/$10) e `SWE-1.6` (pago,
+  $0.5/$2.5) para subagent profiles. Corrigido para `SWE-1.7` (gratuito,
+  262K) em todas as referências.
+- **TOOLS-MAP.md**: tabela de aliases agora marca todos os modelos pagos
+  com "**PAGO** — não usar" e adiciona `swe-1-7-medium` (gratuito) como
+  alternativa.
+- **Regra ABSOLUTA adicionada**: "NUNCA usar modelos pagos. Os modelos
+  gratuitos (GLM-5.2 High + SWE-1.7) cobrem 100% dos casos."
+
 ## [2.5.1] - 2026-08-21
 
 GLM-5.2 High + SWE-1.7 optimization. 9 iterations, all changes verified against

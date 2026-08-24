@@ -127,6 +127,10 @@ def summary_retains_constraints(summary):
         "constraint pinning",
         "context window",
         "secrets",
+        "reproducible",
+        "illusory",
+        "held-out",
+        "deduce",
     )
     low = summary.lower()
     survived = sum(1 for p in key_phrases if p in low)
@@ -193,11 +197,11 @@ def main():
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open
 
-    event = data.get("hook_event_name", "")
-    handler = HANDLERS.get(event)
-    if handler is None:
-        sys.exit(0)
-    handler(data)
+    handler = HANDLERS.get(data.get("hook_event_name", ""))
+    if handler is not None:
+        handler(data)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":

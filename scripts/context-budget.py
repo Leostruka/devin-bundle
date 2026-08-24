@@ -53,6 +53,35 @@ def find_agents_md():
     return None
 
 
+def find_extra_rules(path):
+    """Find additional rules files that load into context: .devin/global_rules.md
+    and .devin/rules/*.md (project) and ~/.config/devin/rules/*.md (global).
+
+    Returns a list of file paths. These are reported alongside AGENTS.md so the
+    user has full transparency of context-window consumption (Rule 18).
+    """
+    extras = []
+    project = os.environ.get("DEVIN_PROJECT_DIR") or os.path.dirname(path)
+    # Project-level .devin/global_rules.md
+    gr = os.path.join(project, ".devin", "global_rules.md")
+    if os.path.isfile(gr):
+        extras.append(gr)
+    # Project-level .devin/rules/*.md
+    rules_dir = os.path.join(project, ".devin", "rules")
+    if os.path.isdir(rules_dir):
+        for f in sorted(os.listdir(rules_dir)):
+            if f.endswith(".md"):
+                extras.append(os.path.join(rules_dir, f))
+    # Global ~/.config/devin/rules/*.md
+    home = os.path.expanduser("~")
+    global_rules = os.path.join(home, ".config", "devin", "rules")
+    if os.path.isdir(global_rules):
+        for f in sorted(os.listdir(global_rules)):
+            if f.endswith(".md"):
+                extras.append(os.path.join(global_rules, f))
+    return extras
+
+
 def report(path, as_json=False):
     try:
         with open(path, encoding="utf-8", errors="replace") as f:
@@ -65,6 +94,25 @@ def report(path, as_json=False):
     lines = content.count("\n") + 1
     share_200k = 100.0 * tok / WINDOW_200K
     share_262k = 100.0 * tok / WINDOW_262K
+
+    # Also scan extra rules files for total context budget
+    extras = find_extra_rules(path)
+    extra_total_tok = 0
+    extra_details = []
+    for ep in extras:
+        try:
+            with open(ep, encoding="utf-8", errors="replace") as f:
+                ec = f.read()
+            et = estimate_tokens(ec)
+            extra_total_tok += et
+            extra_details.append({"file": ep, "tokens": et})
+        except (OSError, IOError):
+            pass
+
+    total_tok = tok + extra_total_tok
+    total_200k = 100.0 * total_tok / WINDOW_200K
+    total_262k = 100.0 * total_tok / WINDOW_262K
+
     if as_json:
         print(json.dumps({
             "file": path,
@@ -73,6 +121,11 @@ def report(path, as_json=False):
             "lines": lines,
             "window_200k_share_pct": round(share_200k, 2),
             "window_262k_share_pct": round(share_262k, 2),
+            "extra_rules_files": extra_details,
+            "extra_rules_tokens": extra_total_tok,
+            "total_rules_tokens": total_tok,
+            "total_200k_share_pct": round(total_200k, 2),
+            "total_262k_share_pct": round(total_262k, 2),
         }))
         return 0
     print(f"context-budget: {path}", file=sys.stderr)
@@ -81,8 +134,15 @@ def report(path, as_json=False):
     print(f"  tokens:   ~{tok} (chars/4 heuristic)", file=sys.stderr)
     print(f"  200k share (GLM-5.2):  {share_200k:.2f}%", file=sys.stderr)
     print(f"  262k share (SWE-1.7):  {share_262k:.2f}%", file=sys.stderr)
-    if share_200k >= 10:
-        print(f"  WARN: rules file is >=10% of a 200k window before the first", file=sys.stderr)
+    if extras:
+        print(f"  extra rules files: {len(extras)} (~{extra_total_tok} tokens)", file=sys.stderr)
+        for ed in extra_details:
+            print(f"    - {ed['file']}: ~{ed['tokens']} tokens", file=sys.stderr)
+        print(f"  TOTAL rules tokens: ~{total_tok}", file=sys.stderr)
+        print(f"  TOTAL 200k share:    {total_200k:.2f}%", file=sys.stderr)
+        print(f"  TOTAL 262k share:    {total_262k:.2f}%", file=sys.stderr)
+    if total_200k >= 10:
+        print(f"  WARN: total rules are >=10% of a 200k window before the first", file=sys.stderr)
         print(f"        message. Consider compressing/modularizing (context-window-hygiene).", file=sys.stderr)
     return 0
 

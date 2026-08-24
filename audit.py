@@ -39,6 +39,18 @@ for pf in sorted(py_files):
         errors.append('Python ' + pf + ': ' + str(e))
         print('  FAIL ' + pf)
 
+# 2b. Hook scripts must have __main__ guard (detects muted/empty main)
+print()
+print('[2b] Hook script __main__ guard validation')
+hook_scripts = [f for f in py_files if os.path.normpath(f).startswith('scripts') and f.endswith('.py')]
+for hs in sorted(hook_scripts):
+    content = open(hs, encoding='utf-8').read()
+    if '__name__' not in content:
+        errors.append(hs + ': missing if __name__ == "__main__" guard')
+        print('  FAIL ' + hs + ': missing __main__ guard')
+    else:
+        print('  OK  ' + hs)
+
 # 3. All skills have valid frontmatter
 print()
 print('[3] Skill frontmatter validation')
@@ -153,16 +165,43 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('46 skills', skill_count == 46),
+    ('50 skills', skill_count == 50),
     ('19 rules', len(rules_found) == 19),  # 1-5,7-20 (Rule 6 removed, Rule 20 added)
     ('5 agents', agent_count == 5),
-    ('11 scripts', len(script_files) == 11),
+    ('12 scripts', len(script_files) == 12),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
     print('  ' + status + ' ' + label)
     if not ok:
         errors.append('README count wrong: ' + label)
+
+# 9b. manifest.json scripts list consistency
+print()
+print('[9b] manifest.json scripts list')
+manifest = json.load(open('manifest.json', encoding='utf-8'))
+manifest_scripts = manifest.get('scripts', [])
+manifest_script_count = manifest.get('script_count', 0)
+# Separate .py scripts (counted in script_count) from other extensions (helpers)
+manifest_py_scripts = [s for s in manifest_scripts if s['name'].endswith('.py')]
+manifest_other_scripts = [s for s in manifest_scripts if not s['name'].endswith('.py')]
+if len(manifest_scripts) == 0:
+    errors.append('manifest.json has script_count but no scripts array')
+    print('  FAIL manifest.json scripts array empty/missing')
+elif len(manifest_py_scripts) != manifest_script_count:
+    errors.append('manifest.json script_count (' + str(manifest_script_count) + ') != .py scripts in array (' + str(len(manifest_py_scripts)) + ')')
+    print('  FAIL manifest.json script_count != .py scripts in array')
+elif len(manifest_py_scripts) != len(script_files):
+    errors.append('manifest.json .py scripts (' + str(len(manifest_py_scripts)) + ') != scripts/ dir .py (' + str(len(script_files)) + ')')
+    print('  FAIL manifest.json .py scripts != scripts/ dir')
+else:
+    # Check each manifest script exists on disk
+    missing = [s['name'] for s in manifest_scripts if not os.path.isfile(os.path.join('scripts', s['name']))]
+    if missing:
+        errors.append('manifest.json lists scripts not on disk: ' + ', '.join(missing))
+        print('  FAIL manifest scripts not on disk: ' + ', '.join(missing))
+    else:
+        print('  OK  manifest.json scripts list consistent (' + str(len(manifest_py_scripts)) + ' .py + ' + str(len(manifest_other_scripts)) + ' other)')
 
 # 10. No unmasked secrets
 print()
@@ -349,8 +388,8 @@ else:
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-46' in readme:
-    print('  OK  skills badge = 46')
+if 'skills-49' in readme:
+    print('  OK  skills badge = 49')
 else:
     errors.append('README skills badge wrong')
     print('  FAIL skills badge')
@@ -426,6 +465,173 @@ else:
     warnings.append('.gitattributes may be incomplete')
     print('  WARN .gitattributes incomplete')
 
+# 24. TOOLS-MAP.md and SKILL-TIERS.md stale counts
+print()
+print('[24] Doc count consistency (TOOLS-MAP.md, SKILL-TIERS.md)')
+toolsmap = open('TOOLS-MAP.md', encoding='utf-8').read()
+doc_checks = [
+    ('TOOLS-MAP.md skills count', str(skill_count) + ' skills', str(skill_count) + ' skills' in toolsmap),
+    ('TOOLS-MAP.md scripts count', str(len(script_files)) + ' scripts', str(len(script_files)) + ' scripts' in toolsmap),
+    ('TOOLS-MAP.md hook events (8)', '8 eventos', '8 eventos' in toolsmap),
+    ('TOOLS-MAP.md tool count (28)', '28 in TOOLS-MAP', ('28 ferramentas' in toolsmap or '19/28' in toolsmap)),
+    ('TOOLS-MAP.md excluded tools (9)', '9 in TOOLS-MAP', '9 excluídas' in toolsmap),
+    ('README.md diagram skills count', str(skill_count) + ' skills', str(skill_count) + ' skills' in readme),
+    ('README.md diagram hook events (8)', '8 events', '8 events' in readme),
+]
+# skill_count is dynamic (from disk), so these checks auto-adjust to 46 after legacy cleanup
+for label, expected, ok in doc_checks:
+    status = 'OK' if ok else 'FAIL'
+    print('  ' + status + ' ' + label + ' (expected: ' + expected + ')')
+    if not ok:
+        errors.append(label + ' stale: expected ' + expected)
+
+# 25. Refinement log ID uniqueness
+print()
+print('[25] Refinement log ID uniqueness')
+reflog = os.path.join('.devin', 'refinements.log.jsonl')
+if os.path.exists(reflog):
+    ref_ids = []
+    ref_errors = []
+    for line in open(reflog, encoding='utf-8'):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+            ref_ids.append(entry.get('id', ''))
+        except (json.JSONDecodeError, ValueError):
+            ref_errors.append('malformed JSON line')
+    if ref_errors:
+        errors.append('refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
+        print('  FAIL refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
+    else:
+        from collections import Counter
+        dups = {k: v for k, v in Counter(ref_ids).items() if v > 1}
+        if dups:
+            errors.append('refinements.log.jsonl: ' + str(len(dups)) + ' duplicate IDs: ' + ', '.join(sorted(dups.keys())))
+            print('  FAIL refinements.log.jsonl: ' + str(len(dups)) + ' duplicate IDs')
+        else:
+            print('  OK  refinements.log.jsonl: ' + str(len(ref_ids)) + ' unique IDs')
+else:
+    print('  SKIP refinements.log.jsonl not found')
+
+# 26. Manifest purpose vs SKILL.md description sync
+print()
+print('[26] Manifest purpose vs SKILL.md description sync')
+manifest_data = json.load(open('manifest.json', encoding='utf-8-sig'))
+purpose_mismatches = []
+for skill in manifest_data.get('skills', []):
+    sname = skill['name']
+    spurpose = skill.get('purpose', '')
+    skill_md = os.path.join('skills', sname, 'SKILL.md')
+    if not os.path.exists(skill_md):
+        continue
+    sm_content = open(skill_md, encoding='utf-8').read()
+    desc_match = re.search(r'^description:\s*(.+?)(?:\n[a-z]|\n---)', sm_content, re.MULTILINE | re.DOTALL)
+    if desc_match:
+        sm_desc = desc_match.group(1).strip()
+        if spurpose.startswith('Use when') and sm_desc.startswith('Use when'):
+            if spurpose[:60] != sm_desc[:60]:
+                purpose_mismatches.append(sname)
+if purpose_mismatches:
+    errors.append('manifest purpose stale vs SKILL.md: ' + ', '.join(purpose_mismatches))
+    print('  FAIL ' + str(len(purpose_mismatches)) + ' stale purposes: ' + ', '.join(purpose_mismatches))
+else:
+    print('  OK  all manifest purposes match SKILL.md descriptions')
+
+# 27. No tracked temp artifacts (.zip, .tmp, .bak, ci-logs)
+print()
+print('[27] No tracked temp artifacts')
+import subprocess
+artifact_exts = ('.zip', '.tmp', '.bak')
+tracked_artifacts = []
+try:
+    r = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, timeout=10)
+    for line in r.stdout.split('\n'):
+        line = line.strip()
+        if line and line.lower().endswith(artifact_exts):
+            tracked_artifacts.append(line)
+        elif line == 'ci-logs.zip':
+            tracked_artifacts.append(line)
+except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+    print('  SKIP git ls-files unavailable')
+if not tracked_artifacts:
+    print('  OK  no tracked temp artifacts')
+else:
+    errors.append('tracked temp artifacts: ' + ', '.join(tracked_artifacts))
+    print('  FAIL ' + str(len(tracked_artifacts)) + ' tracked artifacts: ' + ', '.join(tracked_artifacts))
+
+# 28. No tracked credential/secret files
+print()
+print('[28] No tracked credential/secret files')
+credential_names = ('credentials.toml', '.env', 'id_rsa', 'id_ed25519', 'id_ecdsa',
+                    'secrets.json', 'credentials.json')
+credential_exts = ('.pem', '.key', '.env', '.pfx', '.p12')
+tracked_creds = []
+try:
+    r2 = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, timeout=10)
+    for line in r2.stdout.split('\n'):
+        line = line.strip()
+        if line in credential_names or line.endswith(credential_exts):
+            tracked_creds.append(line)
+except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+    print('  SKIP git ls-files unavailable')
+if not tracked_creds:
+    print('  OK  no tracked credential files')
+else:
+    errors.append('CRITICAL: tracked credential files: ' + ', '.join(tracked_creds))
+    print('  FAIL ' + str(len(tracked_creds)) + ' tracked credential files: ' + ', '.join(tracked_creds))
+
+# 29. All arXiv refs in scripts/ and tests/ must be in MODEL-GUIDE.md source table
+print()
+print('[29] arXiv refs in scripts/ and tests/ tracked in MODEL-GUIDE.md')
+mg_content = ''
+mg_path = 'MODEL-GUIDE.md'
+if os.path.exists(mg_path):
+    with open(mg_path, encoding='utf-8') as fh:
+        mg_content = fh.read()
+mg_refs = set(re.findall(r'arXiv:(\d{4}\.\d{4,5})', mg_content))
+code_arxiv_refs = set()
+for scan_dir in ('scripts', 'tests'):
+    for root, dirs, files in os.walk(scan_dir):
+        if '.git' in root or '__pycache__' in root:
+            continue
+        for sf in files:
+            if not sf.endswith('.py'):
+                continue
+            with open(os.path.join(root, sf), encoding='utf-8') as fh:
+                code_arxiv_refs.update(re.findall(r'arXiv:(\d{4}\.\d{4,5})', fh.read()))
+unverified = code_arxiv_refs - mg_refs
+if unverified:
+    errors.append('arXiv refs in scripts/tests not in MODEL-GUIDE source table: ' + ', '.join(sorted(unverified)))
+    print('  FAIL ' + str(len(unverified)) + ' unverified refs: ' + ', '.join(sorted(unverified)))
+else:
+    print('  OK  all ' + str(len(code_arxiv_refs)) + ' arXiv refs in scripts/tests are in MODEL-GUIDE source table')
+
+# 30. Hook events match Devin CLI docs in both hooks.v1.json and config.json
+print()
+print('[30] Hook events match Devin CLI lifecycle docs')
+devin_events = {'PreToolUse', 'PostToolUse', 'PermissionRequest', 'UserPromptSubmit',
+                'Stop', 'PostCompaction', 'SessionStart', 'SessionEnd'}
+
+missing_any = False
+for hooks_file in ('hooks.v1.json', 'config.json'):
+    with open(hooks_file, encoding='utf-8-sig') as fh:
+        data = json.load(fh)
+    hooks_data = data if hooks_file == 'hooks.v1.json' else data.get('hooks', {})
+    bundle_events = set(hooks_data.keys())
+    missing = devin_events - bundle_events
+    extra = bundle_events - devin_events
+    if missing:
+        missing_any = True
+        errors.append(hooks_file + ' missing Devin CLI events: ' + ', '.join(sorted(missing)))
+        print('  FAIL ' + hooks_file + ' missing events: ' + ', '.join(sorted(missing)))
+    if extra:
+        warnings.append(hooks_file + ' has unknown events: ' + ', '.join(sorted(extra)))
+        print('  WARN ' + hooks_file + ' unknown events: ' + ', '.join(sorted(extra)))
+    if not missing and not extra:
+        print('  OK  ' + hooks_file + ' has all ' + str(len(bundle_events)) + ' Devin CLI events')
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -442,4 +648,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 23 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 31 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+

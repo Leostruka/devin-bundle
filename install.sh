@@ -279,14 +279,15 @@ if [[ -f "$config_src" ]]; then
           local_devin_org_id=$(jq -r '.devin.org_id // empty' "$config_dst" 2>/dev/null || echo "")
           # Copy bundle config
           cp "$config_src" "$config_dst"
-          # Restore org_id if it was not MASKED
+          # Force org_id to MASKED (never inherit bundle's), then override with local if real
+          jq '.org_id = "MASKED" | .devin.org_id = "MASKED"' "$config_dst" > "${config_dst}.tmp" && mv "${config_dst}.tmp" "$config_dst"
           if [[ -n "$local_org_id" && "$local_org_id" != "MASKED" ]]; then
             jq --arg org "$local_org_id" '.org_id = $org' "$config_dst" > "${config_dst}.tmp" && mv "${config_dst}.tmp" "$config_dst"
           fi
           if [[ -n "$local_devin_org_id" && "$local_devin_org_id" != "MASKED" ]]; then
             jq --arg org "$local_devin_org_id" '.devin.org_id = $org' "$config_dst" > "${config_dst}.tmp" && mv "${config_dst}.tmp" "$config_dst"
           fi
-          ok "config.json merged (preserved org_id)"
+          ok "config.json merged (preserved org_id, forced MASKED default)"
         fi
       else
         # Fallback: simple sed-based merge
@@ -295,6 +296,13 @@ if [[ -f "$config_src" ]]; then
           # Extract org_id using sed
           local_org_id=$(grep -o '"org_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_dst" 2>/dev/null | head -1 | cut -d'"' -f4 || echo "")
           cp "$config_src" "$config_dst"
+          # Force org_id to MASKED (never inherit bundle's)
+          if [[ "$(uname)" == "Darwin" ]]; then
+            sed -i '' 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "MASKED"/g' "$config_dst"
+          else
+            sed -i 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "MASKED"/g' "$config_dst"
+          fi
+          # Override with local if real
           if [[ -n "$local_org_id" && "$local_org_id" != "MASKED" ]]; then
             if [[ "$(uname)" == "Darwin" ]]; then
               sed -i '' 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "'"$local_org_id"'"/g' "$config_dst"
@@ -302,7 +310,7 @@ if [[ -f "$config_src" ]]; then
               sed -i 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "'"$local_org_id"'"/g' "$config_dst"
             fi
           fi
-          ok "config.json merged (sed fallback)"
+          ok "config.json merged (sed fallback, forced MASKED default)"
         fi
       fi
     fi

@@ -78,7 +78,7 @@
     {
       "name": "diagnosing-bugs",
       "source": "devin-bundle",
-      "purpose": "Use when the user says 'diagnose', 'debug this', or reports something broken, throwing, failing, or slow.",
+      "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken, throwing, failing, or slow, or when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
       "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs",
       "export_hash": "8101B89E8DF538991956DC8440EEA4FEBF0E8B7B31C92EC2F556053DE2FC06DE",
       "exported_at": "2026-08-17T15:41:48.851667-03:00",
@@ -201,7 +201,7 @@
     {
       "name": "primeagent-reference",
       "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when researching agent harness design patterns, when comparing Devin CLI to PrimeAgent/RLM architectures, or when evaluating which PrimeAgent features could be adapted to Devin CLI. Reference card of verified findings and adaptation status.",
+      "purpose": "Use when (1) researching agent harness design patterns, comparing Devin CLI to PrimeAgent/RLM architectures, or evaluating which PrimeAgent features could be adapted to Devin CLI; (2) emulating A2A messaging between subagents or between subagents and the parent agent across time within Devin CLI's ephemeral subagent runtime; (3) capturing recurring failure patterns or reusable tactics as skills/rules/hooks via the Continual Harness /refine self-improvement loop; or (4) deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run (subagent dispatch profile/budget selection).",
       "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
       "exported_at": "2026-08-17T15:41:48.867142-03:00",
       "export_hash": "D0A19AF0DBF6D22AAD88D01722F7751C247B3A9B45AF732197B718B5FB77833C",
@@ -371,21 +371,56 @@
     {
       "name": "planning-pipeline",
       "source": "consolidated from multiple skills (v2.4.0)",
-      "purpose": "merged planning/obsidian pipeline",
+      "purpose": "Use when turning conversation into a written spec, breaking a plan or spec into independent traceable tickets, or when a decision cannot be fully answered and needs input from another person via a questionnaire.",
       "hash": "310e9b5c82b420076e7bd9ce347d1531e58c1d05fefc454c1072d18f4e7ca5a9"
     },
     {
       "name": "obsidian-workflow",
       "source": "consolidated from multiple skills (v2.4.0)",
-      "purpose": "merged planning/obsidian pipeline",
+      "purpose": "Use when the user wants to build or update a local codebase wiki in Obsidian, reorganize/refactor an Obsidian vault or docs folder, audit/validate Obsidian project wikis, or compare wiki knowledge across sessions. Four modes: Build, Reorganize, Audit, Cross-session.",
       "hash": "5ddbd4ec92c23e4fa54e38ced1b0b9f01760f13263fa013bb80113bd983296f3"
+    },
+    {
+      "name": "deep-mode",
+      "source": "devin-bundle (new, replicates cloud Ask Devin Deep Mode)",
+      "purpose": "Use when the user says 'deep', 'deep search', 'deep research', or asks for exhaustive codebase exploration beyond a quick grep. Multi-pass agentic search with citations."
+    },
+    {
+      "name": "data-analyst",
+      "source": "devin-bundle (new, replicates cloud DANA agent)",
+      "purpose": "Use when the user asks to query a database, analyze data, create charts, or asks business questions about data. SQL-first exploration via MCP data sources."
+    },
+    {
+      "name": "playbook",
+      "source": "devin-bundle (new, replicates cloud Playbook feature)",
+      "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks. Structured prompt template with Procedure, Specs, Advice, Forbidden Actions."
+    },
+    {
+      "name": "continuous-improvement",
+      "source": "devin-bundle (new, FASE 0 + 10-step self-improvement loop)",
+      "purpose": "Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests."
     }
   ],
-  "skill_count": 46,
+  "skill_count": 50,
   "rule_count": 19,
-  "script_count": 11,
+  "scripts": [
+    {"name": "behavioral-nudge.py", "purpose": "PostToolUse hook — injects behavioral reminders"},
+    {"name": "check-ai-signature.py", "purpose": "PreCommit hook — blocks AI signatures in commits"},
+    {"name": "check-push-green.py", "purpose": "PrePush hook — blocks push when held-out tests fail"},
+    {"name": "constraint-pinning.py", "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints"},
+    {"name": "context-budget.py", "purpose": "SessionStart hook — reports AGENTS.md token cost"},
+    {"name": "destructive-gate.py", "purpose": "PreToolUse hook — gates destructive operations"},
+    {"name": "refine-review-prompt.py", "purpose": "Refine mode — generates review prompts for self-improvement"},
+    {"name": "silent-error-review.py", "purpose": "PostToolUse hook — detects silent errors in tool output"},
+    {"name": "validate-mermaid.py", "purpose": "Validator — checks Mermaid syntax in wiki diagrams"},
+    {"name": "validate-refinement-evidence.py", "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails"},
+    {"name": "validate-skill-format.py", "purpose": "Validator — checks SKILL.md frontmatter and format"},
+    {"name": "validate-tool-args.py", "purpose": "Validator — checks tool argument schemas"},
+    {"name": "mermaid-parse-check.js", "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"}
+  ],
+  "script_count": 12,
   "mcp_count": 1,
   "agent_count": 5,
-  "tool_count": 27,
+  "tool_count": 28,
   "docs": ["AGENTS.md", "MODEL-GUIDE.md", "SKILL-TIERS.md", "TOOLS-MAP.md", "CHANGELOG.md", "README.md"]
 }

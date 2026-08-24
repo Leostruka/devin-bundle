@@ -6,6 +6,7 @@ allowed-tools:
   - read
   - grep
   - glob
+  - find_file_by_name
   - web_search
   - webfetch
   - mcp_call_tool

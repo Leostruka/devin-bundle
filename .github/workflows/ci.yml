@@ -94,7 +94,7 @@ jobs:
               'SECURITY.md',
               'README.md',
               'scripts/check-ai-signature.py',
-              'scripts/post-compaction-reminder.py',
+              'scripts/constraint-pinning.py',
               'scripts/validate-skill-format.py',
           }
           errors = []

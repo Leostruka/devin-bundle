@@ -4,7 +4,7 @@ Mapeia TODAS as ferramentas, subagentes, hooks, e configs do Devin CLI
 runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 (2026-08-20, Devin CLI v3000.4.25).
 
-## Ferramentas do runtime (25 ativas + 2 modo-dependentes)
+## Ferramentas do runtime (26 ativas + 2 modo-dependentes)
 
 | Ferramenta | Categoria | Hook matcher | Validator | Descrição |
 |---|---|---|---|---|
@@ -37,7 +37,7 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 | `mcp_read_resource` | MCP | ✓ | ✓ server + uri | Lê resource MCP |
 | `exit_plan_mode` | Planning | — | — (no required args) | Sai do Plan mode (modo-dependente) |
 
-**Cobertura: 19/27 ferramentas com validator + hook matcher. 8 excluídas
+**Cobertura: 19/28 ferramentas com validator + hook matcher. 9 excluídas
 (trivial/no-op: get_output, write_to_process, kill_shell, read_subagent,
 close_browser_preview, mcp_list_tools, mcp_list_servers, apply_patch,
 exit_plan_mode) — o tool falha claramente sem validação do hook.**
@@ -65,7 +65,7 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (6 eventos, 11 scripts)
+## Hooks (8 eventos, 12 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
@@ -78,10 +78,15 @@ subagent_general — todos os 7 perfis validados.
 | PostToolUse | `^(exec\|mcp_call_tool)$` | silent-error-review.py | Revisa erros silenciosos (ALTK scope) |
 | PostCompaction | — | constraint-pinning.py | Detecta constraints dropadas |
 | UserPromptSubmit | — | constraint-pinning.py | Re-injeta constraints |
+| UserPromptSubmit | — | behavioral-nudge.py | Nudge behavioral self-check (Rules 7,8,4,17) |
 | SessionStart | — | constraint-pinning.py | Limpa markers stale |
 | SessionStart | — | context-budget.py | Reporta token cost |
 | Stop | — | check-ai-signature.py | Verifica assinaturas no fim |
 | Stop | — | refine-review-prompt.py | Prompt de refine review |
+
+**Eventos não utilizados pelo bundle (disponíveis no runtime):**
+- `PermissionRequest` — dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
+- `SessionEnd` — dispara quando uma sessão termina. Stdin: `reason`. Útil para cleanup/logging.
 
 **Scripts manuais (não-hooks):**
 - validate-refinement-evidence.py — verifica refinements.log.jsonl
@@ -97,8 +102,8 @@ subagent_general — todos os 7 perfis validados.
 | hooks.v1.json | `./hooks.v1.json` | `~/.config/devin/hooks.v1.json` | Hooks legacy (backup) |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 46 skills |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 11 scripts Python + 1 JS |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 50 skills |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 12 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia GLM-5.2 + SWE-1.7 |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |
@@ -149,31 +154,36 @@ tools com side effects — não é o agente pedindo, é o runtime.
 | `glm-5-2-none` | GLM-5.2 No Thinking | ZAI | 200K | 1 | |
 | `glm-5-2-none-1m` | GLM-5.2 No Thinking 1M | ZAI | 1M | — | |
 | `swe-1-7` | SWE-1.7 Max | Cognition | 262K | **Free** | Subagent default (gratuito) |
-| `swe` | SWE-1.7 Lightning | Cognition | 202K | $2.5/$12.5 | **PAGO** — alias, não usar |
-| `adaptive` | Adaptive router | Cognition | — | — | Model router |
-| `opus` | Claude Opus (latest) | Anthropic | — | — | |
-| `sonnet` | Claude Sonnet (latest) | Anthropic | — | — | |
-| `gpt` | GPT (latest) | OpenAI | — | — | |
-| `codex` | Codex (latest) | OpenAI | — | — | |
-| `gemini` | Gemini (latest) | Google | — | — | |
+| `swe-1-7-medium` | SWE-1.7 Medium | Cognition | 262K | **Free** | Alternativa mais leve (gratuito) |
+| `swe` | SWE-1.7 Lightning | Cognition | 202K | $2.5/$12.5 | **PAGO** — alias, NUNCA usar |
+| `adaptive` | Adaptive router | Cognition | — | $0.5/$2 | **PAGO** — não usar |
+| `opus` | Claude Opus (latest) | Anthropic | — | $5/$25 | **PAGO** — não usar |
+| `sonnet` | Claude Sonnet (latest) | Anthropic | — | $2/$10 | **PAGO** — não usar |
+| `gpt` | GPT (latest) | OpenAI | — | $0.75/$4.5 | **PAGO** — não usar |
+| `codex` | Codex (latest) | OpenAI | — | $1.75/$14 | **PAGO** — não usar |
+| `gemini` | Gemini (latest) | Google | — | $0.75/$3.75 | **PAGO** — não usar |
 
-Short names (`opus`, `sonnet`, `swe`, `codex`, `gemini`) sempre resolvem
-para a latest version na família.
+**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (default
+`glm-5-2`), NUNCA usar modelos pagos para subagents. Short names (`opus`,
+`sonnet`, `swe`, `codex`, `gemini`) sempre resolvem para a latest version
+na família — todos pagos. Usar apenas `glm-5-2` (parent) e `swe-1-7` /
+`swe-1-7-medium` (subagents). Quando o parent está em modelo PAGO (usuário
+fez `/model opus`, etc.), subagents podem usar modelos pagos.
 
 ## Context budget (200K GLM-5.2)
 
 ```
 System prompt + tool defs    ~???? tok (Devin runtime, não mensurável)
-AGENTS.md                    ~5463 tok (2.73%)
+AGENTS.md                    ~5605 tok (2.80%)
 SKILL-TIERS.md (se lido)     ~1782 tok (0.89%)
 MODEL-GUIDE.md (se lido)     ~3711 tok (1.86%)
 TOOLS-MAP.md (se lido)       ~2478 tok (1.24%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
 MCP tool defs (atlassian)    ~???? tok (medir com mcp-context-audit)
 ─────────────────────────────────────────────
-Total fixo (sem docs opt)    ~5463 tok (2.73%)
-Total c/ docs opt            ~13434 tok (6.72%)
-Disponível para trabalho     ~186551-194537 tok (93.28-97.27%)
+Total fixo (sem docs opt)    ~5605 tok (2.80%)
+Total c/ docs opt            ~13576 tok (6.79%)
+Disponível para trabalho     ~186424-194395 tok (93.21-97.20%)
 ```
 
 **Nota:** MODEL-GUIDE.md, TOOLS-MAP.md e SKILL-TIERS.md são leituras

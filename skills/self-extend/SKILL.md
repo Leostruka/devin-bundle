@@ -42,7 +42,7 @@ Skill frontmatter can also set:
 - `allowed-tools`: restrict which tools the skill can use (e.g. `[read, grep, glob, exec]`)
 - `subagent: true`: run the skill as a `subagent_general` subagent
 - `agent: <profile>`: run the skill as a specific custom subagent
-- `model`: override the model for this skill (e.g. `swe-1-7` [free], `sonnet` [paid])
+- `model`: override the model for this skill (e.g. `swe-1-7` [free], `glm-5-2` [free]) — **never use paid models**
 - `permissions`: add permission grants/restrictions (e.g. `allow: [Read(src/**)]`, `deny: [exec]`)
 - `triggers`: who can invoke it (default `[user, model]`)
 
@@ -75,7 +75,7 @@ agent: reviewer
 Or dispatch directly from a skill:
 
 ```
-Run a `subagent_general` or `subagent_explore` subagent with the reviewer profile, passing the diff and the review checklist.
+Run a `subagent_general` or `researcher` subagent (NOT `subagent_explore` when parent is FREE — PAID SWE-1.6) with the reviewer profile, passing the diff and the review checklist.
 ```
 
 ## Adding rules
@@ -162,7 +162,7 @@ If a skill needs executable helpers, keep them in the skill's `scripts/` directo
 
 Any subagent can be described as a 4-tuple: **⟨Instruction, Context, Tools, Model⟩**.
 The 7 fixed profiles (architect, debugger, implementer, researcher, reviewer,
-subagent_explore, subagent_general) are pre-configured 4-tuples. For task-specific
+subagent_explore [PAID — não usar quando parent FREE], subagent_general) are pre-configured 4-tuples. For task-specific
 specialization, override individual tuple elements instead of creating a new profile:
 
 | Element | What it controls | When to override |

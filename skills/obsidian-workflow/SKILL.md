@@ -1,6 +1,6 @@
 ---
 name: obsidian-workflow
-description: Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, and auto-refresh; or reorganize, refactor, or restructure an Obsidian vault, knowledge base, or documentation folder; or audit, validate, or fix Obsidian project wikis (broken wikilinks, source citations, diagrams, sensitive info, language); or compare wiki knowledge by source session or source type to surface cross-session blind spots.
+description: Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, auto-refresh, effort levels (low/medium/high), Deep Research pass (architecture critique, anti-patterns, tech debt), and conversational Q&A via deep-mode; or reorganize, refactor, or restructure an Obsidian vault, knowledge base, or documentation folder; or audit, validate, or fix Obsidian project wikis (broken wikilinks, source citations, diagrams, sensitive info, language); or compare wiki knowledge by source session or source type to surface cross-session blind spots.
 ---
 # obsidian-workflow
 
@@ -82,6 +82,7 @@ Inside the target Obsidian vault:
 | Wiki contents | `wiki_contents.py` | Local equivalent of `read_wiki_contents` — dumps a page's full content |
 | Wiki query | `query.py` | Local equivalent of `ask_question` — keyword search across the wiki returning pages + snippets + sources |
 | Manifest | `project-manifest.json` | Project metadata, vault metadata, last-indexed timestamp, indexed branch |
+| Tech Debt | `11-TechDebt.md` | Anti-patterns, optimization opportunities, dependency risks, missing tests (effort: medium/high only) |
 
 ### Quick start
 
@@ -674,6 +675,193 @@ If the project already has an entry but without MOC/wiki links, update it. If th
 
 **Completion criterion:** project page exists with quick facts and wiki links, project MOC exists with links to all modules/functions/diagrams/decisions, and parent context MOC links to all three (page, MOC, wiki).
 
+#### Step 17 — Effort levels (Depth control)
+
+DeepWiki (cloud) offers three effort levels controlling analysis depth.
+This skill supports the same via the `effort` field in `wiki-config.json`:
+
+| Effort | Depth | Pages | Diagrams | Functions | TechDebt | Time |
+|--------|-------|-------|----------|-----------|----------|------|
+| `low` (default) | Summary + architecture | 5-10 root pages | 4 key diagrams (Context, Container, Component, Flow) | Index only (no per-function pages) | Skip | Fast |
+| `medium` | + modules + database | 10-20 root + module pages | 8 diagrams | Top 10-20 functions get pages | Summary only | Moderate |
+| `high` | Full SRS/ISO rigor | All 30+ pages | All 14 diagrams | All public functions get pages | Full analysis | Slow |
+
+**Behavior by effort level:**
+
+- `low`: Skip Steps 4 (SRS), 10 (Glossary), 11 (Decisions) unless explicitly
+  requested. Produce Overview, Architecture, Database, Modules index, and 4
+  key diagrams only. No per-function pages — just the `05-Functions.md`
+  registry table. Skip Step 18 (Deep Research) and Step 19 (TechDebt).
+- `medium`: All root pages (00-10), all module pages, 8 diagrams, top 10-20
+  functions by complexity/callers get individual pages. Step 18 produces a
+  summary only. Step 19 produces `11-TechDebt.md` with top issues.
+- `high`: Full rigor — all steps, all 14 diagrams, all public functions get
+  pages, full Deep Research pass, full TechDebt analysis. This is the
+  current default behavior (backward compatible — if `effort` is absent,
+  treat as `high`).
+
+Set effort in `wiki-config.json`:
+```json
+{
+  "effort": "medium",
+  "mode": "comprehensive",
+  "language": "en",
+  ...
+}
+```
+
+If `effort` is absent, default to `high` (preserves existing behavior).
+
+#### Step 18 — Deep Research pass (Architecture critique)
+
+DeepWiki's Deep Research Mode "dives deeper into the codebase, identifying
+potential issues, optimization opportunities, and architectural critiques,
+functioning similarly to a senior code reviewer."
+
+This step is **optional** — skipped at `low` effort, summary-only at
+`medium`, full at `high`. It runs AFTER all documentation pages are built,
+so the critique is grounded in the documented architecture.
+
+**Procedure:**
+
+1. Read `02-Architecture.md` and all `Modules/*.md` pages.
+2. For each module, evaluate against `codebase-design` principles:
+   - **Depth**: are there shallow modules that should be deeper?
+   - **Leverage**: does a low-leverage module force changes in many dependents?
+   - **Locality**: are related concerns co-located, or scattered?
+   - **Seams**: are seams clean (testable, swappable) or leaky?
+   - **Adapters**: are external dependencies isolated behind adapters?
+3. Identify anti-patterns:
+   - God modules (high fan-in + high fan-out)
+   - Circular dependencies
+   - Shotgun surgery (one change touches >5 files)
+   - Primitive obsession (everything is strings/ints instead of domain types)
+   - Dead code (modules with no inbound links in the wiki)
+4. Identify optimization opportunities:
+   - Obvious performance bottlenecks (N+1 queries, sync I/O in hot paths)
+   - Missing tests for critical paths (cross-reference `05-Functions.md` Tests column)
+   - Config hardcoding (values that should be env vars)
+   - Dependency risks (outdated, unmaintained, or duplicate packages)
+5. Produce findings as cited claims — every issue MUST cite the source
+   file and line where the anti-pattern or issue is visible.
+
+**Output:** findings are written to `11-TechDebt.md` (Step 19) and
+summarized in the Architecture page's `## Architecture critique` section
+(if `high` effort).
+
+**Rigor note:** this step does NOT modify code. It documents issues only.
+Fixing issues is a separate task that should use `diagnosing-bugs` or
+`code-review` skills.
+
+#### Step 19 — Tech Debt page (`11-TechDebt.md`)
+
+Create a page documenting issues found in Step 18. This is the local
+equivalent of DeepWiki's issue identification.
+
+```markdown
+---
+title: "Project - Tech Debt"
+project: "Project Name"
+parent: 00-Overview
+tags:
+  - tech-debt
+  - architecture
+status: active
+---
+
+# Tech Debt and Improvement Opportunities
+
+## Relevant source files
+- `source: src/` (all modules analyzed)
+- `source: tests/` (coverage analysis)
+
+## Purpose and Scope
+Issues, anti-patterns, and optimization opportunities identified during
+the Deep Research pass. Each item is cited to source.
+
+## Anti-patterns
+
+### AP-001: <anti-pattern name>
+- **Type:** God module | Circular dep | Shotgun surgery | ...
+- **Location:** `source: src/module/file.ts:42`
+- **Impact:** <what breaks if this isn't fixed>
+- **Recommendation:** <suggested approach>
+- **Effort to fix:** Low | Medium | High
+
+## Optimization opportunities
+
+### OPT-001: <opportunity name>
+- **Type:** Performance | Test coverage | Config | Dependency
+- **Location:** `source: src/module/file.ts:88`
+- **Current:** <what it does now>
+- **Recommended:** <what it should do>
+- **Expected gain:** <measurable improvement>
+
+## Dependency risks
+
+| Package | Version | Risk | Source |
+|---------|---------|------|--------|
+| `lodash` | 4.17.20 | Outdated (CVE-2021-23337) | `source: package.json:23` |
+
+## Missing tests
+
+| Function | Criticality | Source | Test file |
+|----------|-------------|--------|-----------|
+| `processPayment` | High | `source: src/payments.ts:45` | (none found) |
+
+Sources: src/, tests/, package.json
+```
+
+**Quality requirements:**
+- Every issue MUST have a `source: path:line` citation (Rule 17 — no
+  deductions about code without reading it)
+- Every anti-pattern MUST be categorized (type, impact, recommendation,
+  effort)
+- Issues are numbered (AP-001, OPT-001) for traceability
+- The page links back to `[[02-Architecture]]` and `[[04-Modules]]`
+
+**Update `00-Overview.md`** to include a wikilink to `[[11-TechDebt]]`.
+**Update the project MOC** to include `[[11-TechDebt|Tech Debt]]` in the
+Wiki section.
+
+#### Step 20 — Conversational Q&A integration
+
+DeepWiki integrates with Ask Devin for conversational Q&A over the wiki.
+The local equivalent chains `query.py` (keyword search) with the
+`deep-mode` skill (multi-pass agentic search with citations).
+
+**For simple lookups:**
+```bash
+python <vault-dir>/query.py --query "authentication flow"
+```
+
+**For deep questions over the wiki** (equivalent to Ask Devin + DeepWiki):
+1. Invoke the `deep-mode` skill with the wiki directory as the search scope
+2. `deep-mode` runs its 4-pass search (broad sweep -> deep read ->
+   cross-file synthesis -> architecture map) over the wiki `.md` files
+3. Every finding cites wiki page + original source file (double citation:
+   wiki page that documents the code, and the code file itself)
+
+**Example:**
+```
+User: "How does the authentication flow work in this project?"
+
+Agent: [invokes deep-mode skill scoped to <vault-dir>/_wiki/]
+  Pass 1: grep for "auth" across _wiki/*.md -> finds 02-Architecture.md,
+          Modules/Auth.md, 05-Functions.md, Diagrams/07-Sequence.md
+  Pass 2: read those wiki pages -> extracts documented auth flow
+  Pass 3: cross-reference with source files cited in the wiki pages
+  Pass 4: produce narrative with citations to both wiki and source
+
+Output:
+  "The auth flow uses OAuth2 with JWT [wiki: Modules/Auth.md:15,
+   source: src/auth/oauth.ts:23]. The middleware checks expiry
+  [wiki: 02-Architecture.md:42, source: src/middleware/auth.ts:58]..."
+```
+
+This gives the CLI a conversational Q&A experience over the wiki that
+approximates DeepWiki + Ask Devin in the cloud.
+
 ### Deviation / exceptions
 
 - If the project is not a software project, fall back to `grilling` (With-docs mode) or `domain-modeling`.
@@ -721,6 +909,12 @@ If the project already has an entry but without MOC/wiki links, update it. If th
 - [ ] **MOC ADR references use full filename stems** (e.g. `[[Decisions/ADR-01-slug|ADR-01: Title]]`), not short forms (`[[Decisions/ADR-01]]` — file doesn't exist).
 - [ ] **`00-Overview.md` links to ALL root pages** (01-SRS through 10-Logbook), not just a subset. Every root page must have at least one inbound link.
 - [ ] **Zero graph orphans** — run `find_orphan_pages.py --wiki <wiki-dir>` and verify 0 orphan pages (no inbound AND no outbound wikilinks).
+- [ ] **Content rigor validated** — run `validate_wiki_content.py --wiki-dir <wiki-dir>` and verify 0 failures (source format, min 5 sources, footers, overview links, function links, source columns, TechDebt content, arch critique, effort valid).
+- [ ] **Effort level respected** — if `wiki-config.json` has `effort: low`, Steps 4/10/11/18/19 are skipped. If `medium`, Step 18 is summary-only. If `high` or absent, all steps run (backward compatible).
+- [ ] **`11-TechDebt.md` exists** (effort: medium/high) — every issue has `source: path:line` citation, every anti-pattern is categorized (type, impact, recommendation, effort), issues are numbered (AP-001, OPT-001).
+- [ ] **`00-Overview.md` links to `[[11-TechDebt]]`** (effort: medium/high) — TechDebt page is not a graph orphan.
+- [ ] **Architecture critique section** (effort: high only) — `02-Architecture.md` has a `## Architecture critique` section summarizing Deep Research findings with source citations.
+- [ ] **Conversational Q&A** — `query.py` works for keyword search; `deep-mode` skill can be invoked scoped to the wiki directory for multi-pass agentic search with double citations (wiki + source).
 
 ### Templates and references (Build Wiki)
 
@@ -735,6 +929,20 @@ If the project already has an entry but without MOC/wiki links, update it. If th
 - `templates/project-moc.md`
 - `references/obsidian-bases-spec.md`
 - `references/modern-diagrams.md`
+
+### Validation scripts (Build Wiki)
+
+| Script | Purpose | When to run |
+|--------|---------|-------------|
+| `scaffold.py` | Create vault structure (pages, diagrams, configs) | Step 1 — initial scaffold |
+| `validate_wiki_structure.py` | Structural checks (16+3 checks: files, dirs, frontmatter, diagrams, links, secrets, effort, TechDebt, arch critique) | After build, before commit |
+| `validate_wiki_content.py` | Content rigor checks (9 checks: source format, min 5 sources, footers, overview links, function links, source columns, TechDebt content, arch critique, effort valid) | After build, before commit |
+| `find_orphan_pages.py` | Graph orphan detection (no inbound AND no outbound wikilinks) | After build, before commit |
+| `scripts/audit.py` | Full audit (diagrams, mermaid syntax, frontmatter, links, sources %, language, secrets) | Periodic / before sync |
+| `scripts/validate_links.py` | Wikilink validation only | Quick link check |
+| `scripts/validate_mermaid.py` | Mermaid syntax validation only | Quick diagram check |
+| `scripts/scan_secrets.py` | Sensitive information scan only | Security audit |
+| `scripts/fix_templates.py` | Fix broken template links | When audit finds template issues |
 
 ---
 
@@ -764,7 +972,7 @@ Map the complete structure of the target directory.
 2. For each `.md` file, read the first 20 lines to capture frontmatter and H1/H2 headers.
 3. Record: file count, folder depth, frontmatter fields in use, tag taxonomy if any.
 4. Identify what type of content lives here: projects, companies, personal notes, code docs, research, etc.
-5. If the vault is large (> 100 files), consider dispatching a `subagent_explore` to scan in parallel.
+5. If the vault is large (> 100 files), consider dispatching a `researcher` subagent (NOT `subagent_explore` when parent is FREE — that runs on PAID SWE-1.6) to scan in parallel.
 
 **Completion criterion:** you have a complete inventory of every file and folder, with headers and frontmatter captured, and can describe what the vault contains in 2-3 sentences.
 
@@ -1175,7 +1383,7 @@ Build a matrix showing every page and which sources have touched it. Cap at 50 r
 
 ### Step 3: Validate
 
-After generating output, spawn a `subagent_general` or `subagent_explore` subagent to review:
+After generating output, spawn a `subagent_general` or `researcher` subagent (NOT `subagent_explore` when parent is FREE — PAID) to review:
 
 ```
 Goal: "Browse/diff wiki knowledge by source and surface cross-session blind spots."

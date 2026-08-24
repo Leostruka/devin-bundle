@@ -48,6 +48,26 @@ ERROR_INDICATORS = (
     re.compile(r"\b(?:command not found|no such file or directory)\b", re.IGNORECASE),
     re.compile(r"\bpermission denied\b", re.IGNORECASE),
     re.compile(r"\b[1-9]\d*\s+(?:tests?\s+)?fail(?:ed|ures?)?\b", re.IGNORECASE),
+    # Non-zero exit codes (exit code 1, Exit code 255, etc.)
+    re.compile(r"\bexit\s+code\s+[1-9]\d*\b", re.IGNORECASE),
+    re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b", re.IGNORECASE),
+    # Common errno names that indicate real failures
+    re.compile(r"\bEACCES\b|\bECONNREFUSED\b|\bECONNRESET\b|\bETIMEDOUT\b|\bENOENT\b"),
+    # Python exception types — active error context only:
+    #   - "ValueError: ..." (exception message with colon) = real error
+    #   - "Traceback ... ValueError" / "raise ValueError" = real error
+    #   - "fixed TypeError" / "resolved the KeyError issue" = past-tense fix description, NOT an error
+    # The bare-name pattern caused false positives on log files and documentation.
+    re.compile(r"\b(?:ValueError|TypeError|KeyError|IndexError|AttributeError|RuntimeError|ImportError|ModuleNotFoundError|OSError|IOError|FileNotFoundError|NotImplementedError|ZeroDivisionError)\b\s*:", re.IGNORECASE),
+    re.compile(r"(?:Traceback|raise\s+)\b(?:ValueError|TypeError|KeyError|IndexError|AttributeError|RuntimeError|ImportError|ModuleNotFoundError|OSError|IOError|FileNotFoundError|NotImplementedError|ZeroDivisionError)\b", re.IGNORECASE),
+    # PowerShell error patterns
+    re.compile(r"\b(?:ConvertFrom-Json|Invoke-WebRequest|Get-ChildItem)\b.*\berror\b", re.IGNORECASE),
+    re.compile(r"^\s*ConvertFrom-Json\s*:\s*error", re.IGNORECASE | re.MULTILINE),
+    # npm/cargo/go specific failure indicators
+    re.compile(r"\bnpm\s+ERR!", re.IGNORECASE),
+    re.compile(r"\bcargo(?::[a-z]+)*\s+(?:error|FAILED)\b", re.IGNORECASE),
+    re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE),
+    re.compile(r"\bFAIL\s+(?:github\.com|./)", re.IGNORECASE),
 )
 
 # Lines to ignore (routine warnings, not failures)
@@ -65,8 +85,19 @@ NOISE_PATTERNS = (
 
 
 def signal_lines(text):
-    """Strip routine-noise lines, returning the remaining signal."""
-    kept = [ln for ln in text.split("\n") if not any(n.search(ln) for n in NOISE_PATTERNS)]
+    """Strip routine-noise lines, returning the remaining signal.
+
+    A line is only stripped as noise if it does NOT also contain a real error
+    indicator. This prevents false negatives where a warning line also carries
+    a real error (e.g. "Warning: EACCES permission denied", "npm warn: npm ERR!").
+    """
+    kept = []
+    for ln in text.split("\n"):
+        is_noise = any(n.search(ln) for n in NOISE_PATTERNS)
+        has_error = any(p.search(ln) for p in ERROR_INDICATORS)
+        if is_noise and not has_error:
+            continue  # pure noise line, strip it
+        kept.append(ln)
     return "\n".join(kept).strip()
 
 

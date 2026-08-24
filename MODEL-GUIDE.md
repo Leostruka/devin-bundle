@@ -98,6 +98,22 @@ de escalada abaixo).
 | Disponibilidade | Devin Web, Desktop, CLI | cognition.com |
 | Custo | **Gratuito** (swe-1-7, swe-1-7-medium) | `devin models list` |
 
+### Benchmarks SWE-1.7 vs GLM-5.2 (coding)
+
+Fonte: cognition.com/blog/swe-1-7 (verificado 2026-08-22)
+
+| Benchmark | SWE-1.7 | GLM-5.2 | Vantagem SWE-1.7 | Implicação para routing |
+|---|---|---|---|---|
+| FrontierCode 1.1 Main | 42.3% | 24.5% | **+72%** | Implementação: preferir SWE-1.7 sobre GLM-5.2 inline |
+| Terminal-Bench 2.1 | 81.5% | 81.0% | +0.6% | Terminal tasks: equivalente |
+| SWE-Bench Multilingual | 77.8% | 74.5% | +4.4% | Multi-file coding: SWE-1.7 levemente melhor |
+
+**Conclusão para routing:** SWE-1.7 é significativamente superior em coding
+(FrontierCode: 42.3% vs 24.5%). O parent (GLM-5.2 High) deve delegar tarefas
+de coding para SWE-1.7 subagents (implementer, debugger) em vez de implementar
+inline, exceto para fixes triviais (<20 lines, single file). GLM-5.2 mantém
+vantagem em reasoning diverso, arquitetura, e coordenação.
+
 ### Variantes SWE-1.7 (dados reais do sistema — `devin models list`)
 
 | model_uid | Label | Context | Custo | Notas |
@@ -112,6 +128,13 @@ de escalada abaixo).
 **⚠️ CRÍTICO**: o alias `swe` aponta para `swe-1.7-lightning` (PAGO, 202K),
 **não** para `swe-1.7` (gratuito, 262K). Os agents/ fazem pin `model: swe-1-7`
 (não `swe`) para usar o modelo gratuito com mais contexto.
+
+**⚠️ CRÍTICO — `subagent_explore` (built-in) é PAGO**: o profile built-in
+`subagent_explore` roda no **default subagent model** (SWE-1.6, $0.5/$2.5 MTok).
+Não há override local — apenas enterprise settings podem mudar isso.
+**NUNCA dispatchar `subagent_explore`.** Usar o profile customizado `researcher`
+(`agents/researcher.md`, pin `model: swe-1-7`, gratuito, 262K) que tem as
+mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
 
 ### Self-compaction (diferencial chave)
 
@@ -146,6 +169,26 @@ correto (pin só quando necessário).
 
 4. **Conciso por design**: alternating length penalty treina output conciso.
    Não fightar com regras verbose. Rule 8 (telegraphic) alinha.
+
+5. **Coding superiority**: SWE-1.7 é 72% melhor que GLM-5.2 em FrontierCode
+   (42.3% vs 24.5%). Para tarefas de coding (implementação, debugging,
+   refactoring), o parent GLM-5.2 deve delegar para SWE-1.7 subagents
+   em vez de implementar inline. Ver tabela de benchmarks acima.
+
+### Matriz de routing: GLM-5.2 inline vs SWE-1.7 subagent
+
+| Task type | Best model | Como executar | Por quê |
+|---|---|---|---|
+| Implementação de código | SWE-1.7 | `implementer` subagent | 42.3% vs 24.5% FrontierCode |
+| Debugging de código | SWE-1.7 | `debugger` subagent (parent planeja) | Coding strength + AgentCARD: planner é bottleneck |
+| Code review | SWE-1.7 | `reviewer` subagent | Sufficient for routine review |
+| Research/exploração | SWE-1.7 | `researcher` subagent | 262K headroom, 1000 TPS, free |
+| Arquitetura (routine) | SWE-1.7 | `architect` subagent | Sufficient for routine design |
+| Arquitetura (high-stakes) | GLM-5.2 | inline ou `subagent_general` | Needs GLM-5.2 reasoning |
+| Final whole-branch review | GLM-5.2 | inline ou `subagent_general` | Judgment task, max capability |
+| Reasoning diverso | GLM-5.2 | inline | GLM-5.2 é modelo primário para tarefas diversas |
+| Fix-loop escalation (R4-5) | GLM-5.2 | `subagent_general` | Fresh eyes + parent reasoning |
+| Coordenação/orquestração | GLM-5.2 | inline (parent) | Parent role, never delegate |
 
 ### Subagent vs compaction: quando usar cada um
 
@@ -205,17 +248,17 @@ quando parent é GLM-5.2 High) ou pin `model: glm-5-2` no agent.
 Os custom agents com `model: swe-1-7` são gratuitos e têm mais contexto
 (262K vs 200K). Fonte: docs.devin.ai/cli/subagents.
 
-## Modelos pagos — fallback para casos extremos
+## Modelos pagos — política CONDICIONAL
 
 **Gratuitos e ilimitados** na assinatura (dados de `devin models list`):
-- `glm-5-2` — GLM-5.2 High (200K) — modelo primário do parent
+- `glm-5-2` — GLM-5.2 High (200K) — modelo primário do parent (default)
 - `swe-1-7` — SWE-1.7 Max (262K) — todos os subagents
 - `swe-1-7-medium` — SWE-1.7 Medium (262K) — alternativa mais leve
 
 **Pagos** (preços reais de `devin models list`, $/MTok In/Out):
 - GLM-5.2 variantes: Max, No Thinking, 1M — $0.7/$2.2
-- SWE-1.7 Lightning (alias `swe`): $2.5/$12.5 — **não usar**
-- SWE-1.6: $0.5/$2.5
+- SWE-1.7 Lightning (alias `swe`): $2.5/$12.5
+- SWE-1.6: $0.5/$2.5 (default subagent router sem pin)
 - Claude Opus 5: $5/$25 (fast: $10/$50)
 - Claude Sonnet 5: $2/$10
 - GPT-5.4: $2.5/$15 (fast: $5/$30)
@@ -223,40 +266,52 @@ Os custom agents com `model: swe-1-7` são gratuitos e têm mais contexto
 - GPT-5.3-Codex (alias `codex`): $1.75/$14 (fast: $3.5/$28)
 - Gemini 3.7 Flash (alias `gemini`): $0.75/$3.75
 - Kimi K3: $3/$15
-- DeepSeek V4 Flash: $0.14/$0.28 (mais barato pago)
+- DeepSeek V4 Flash: $0.14/$0.28
 - Grok 4.6: $2/$6
+- Adaptive: $0.5/$2
 
-| Modelo | model_uid | Quando usar (casos extremos) | Custo $/MTok |
-|---|---|---|---|
-| GLM-5.2 Max | `glm-5-2-max` | GLM-5.2 High falhou em raciocínio complexo | $0.7/$2.2 |
-| DeepSeek V4 Flash | `deepseek-v4-flash-high` | Mais barato pago, 1M context | $0.14/$0.28 |
-| GPT-5.4 Mini | `gpt` | Segunda opinião, 400K context | $0.75/$4.5 |
-| Claude Sonnet 5 | `sonnet` | Raciocínio Anthropic, 1M context | $2/$10 |
-| Claude Opus 5 | `opus` | Máxima capacidade frontier, 1M context | $5/$25 |
-| GPT-5.4 | `gpt-5-4-high` | Knowledge cutoff recente, 272K | $2.5/$15 |
+### Política CONDICIONAL ao modelo do parent
 
-**Protocolo de escalada (esgotar gratuitos antes de pagar):**
+**Caso 1 — Parent FREE (default `glm-5-2`): subagents DEVEM ser FREE.**
+
+Protocolo FREE-ONLY:
 1. GLM-5.2 High (default, **gratuito**) — tentativa inicial
 2. SWE-1.7 fan-out (`swe-1-7`, 262K, 1000 TPS, **gratuito**) — paralelismo
-3. **GLM-5.2 Max** (`/model glm-5-2-max`, $0.7/$2.2) — reasoning depth maior
-4. **DeepSeek V4 Flash** ($0.14/$0.28) — mais barato pago, 1M context
-5. **Opus** (`/model opus`, $5/$25) — frontier, só após 3+ tentativas documentadas
-6. **GPT-5.4** ($2.5/$15) — só se Opus também falhou
+3. SWE-1.7 Medium (`swe-1-7-medium`, 262K, **gratuito**) — alternativa de reasoning
+4. GLM-5.2 High com thinking effort `max` (via `Alt+T`) — mais raciocínio, mesmo modelo gratuito
+5. Repetir com contexto mais limpo (`clear` + recarregar apenas o necessário)
+6. Se todos os gratuitos falharem: **parar e reportar ao usuário** — não escalar para pago
 
-**Regra**: nunca usar modelos pagos para tarefas que GLM-5.2 High e
-SWE-1.7 podem fazer. Os modelos gratuitos cobrem 95%+ dos casos.
+Neste caso: **NUNCA usar `subagent_explore`** (SWE-1.6 pago), **NUNCA usar `swe` alias**
+(SWE-1.7 Lightning pago), **NUNCA usar modelos pagos** para subagents.
+
+**Caso 2 — Parent PAGO (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar pagos.**
+
+O usuário já optou por pagar pelo parent. Neste caso:
+- `subagent_explore` (SWE-1.6, $0.5/$2.5) é permitido — é mais barato que o parent
+- `subagent_general` herda o modelo pago do parent (já está pago)
+- Custom profiles com `model: swe-1-7` continuam FREE — preferir quando possível
+- Para reasoning pesado, pode-se usar o mesmo modelo do parent via `subagent_general`
+
+**Como detectar o caso**: verificar o modelo ativo no parent. Se for `glm-5-2` ou
+`swe-1-7`/`swe-1-7-medium`, é Caso 1 (FREE-ONLY). Qualquer outro modelo é Caso 2.
+
+**Regra**: quando o parent está em modelo FREE (default `glm-5-2`), **NUNCA usar
+modelos pagos** para subagents. Os modelos gratuitos (GLM-5.2 High + SWE-1.7)
+cobrem 100% dos casos. Se ambos falharem, reportar ao usuário. Quando o parent
+está em modelo PAGO (usuário escolheu), subagents podem usar modelos pagos.
 
 ## Context budget (200K GLM-5.2)
 
 ```
 System prompt + tool defs    ~???? tok (Devin runtime, não mensurável aqui)
-AGENTS.md                    ~5367 tok (2.68%)
+AGENTS.md                    ~5605 tok (2.80%)
 SKILL-TIERS.md (se lido)     ~1726 tok (0.86%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
 MCP tool defs (atlassian)    ~???? tok (medir com mcp-context-audit)
 ─────────────────────────────────────────────
-Total fixo                   ~5463-16463 tok (2.73-8.23%)
-Disponível para trabalho     ~183537-194537 tok (91.77-97.27%)
+Total fixo                   ~5605-16601 tok (2.80-8.30%)
+Disponível para trabalho     ~183399-194395 tok (91.70-97.20%)
 ```
 
 > Nota: este arquivo (MODEL-GUIDE.md) custa ~3711 tok (1.86%) se lido.
@@ -266,8 +321,8 @@ Disponível para trabalho     ~183537-194537 tok (91.77-97.27%)
 
 ```
 System prompt + tool defs    ~???? tok (Devin runtime)
-AGENTS.md                    ~5367 tok (2.10%)
-Disponível para trabalho     ~250537 tok (97.90%)
+AGENTS.md                    ~5605 tok (2.14%)
+Disponível para trabalho     ~250299 tok (97.86%)
 ```
 
 Subagents têm significativamente mais headroom (262K vs 200K) e
@@ -292,3 +347,16 @@ primárias em 2026-08-20:
 | GLM-4.6 specs | Verificado | docs.z.ai/guides/llm/glm-4.6 |
 | SWE-1.7 specs | Verificado | cognition.com/blog/swe-1-7 |
 | GLM-5.2 Devin model_uid | Verificado | docs.devin.ai/desktop/models |
+| arXiv:2605.10039 (Instruction Adherence) | Verificado | arxiv.org/abs/2605.10039 |
+| arXiv:2605.21384 (SpecBench) | Verificado | arxiv.org/abs/2605.21384 |
+| arXiv:2603.15473 (ALTK) | Verificado | arxiv.org/abs/2603.15473 |
+| arXiv:2607.07405 (Reason Less, Verify More) | Verificado | arxiv.org/abs/2607.07405 |
+| arXiv:2605.09998 (Continual Harness) | Verificado | arxiv.org/abs/2605.09998 |
+| arXiv:2607.17641 (VRR-Stop) | Verificado | arxiv.org/abs/2607.17641 |
+| arXiv:2607.28802 (Model or Harness?) | Verificado | arxiv.org/abs/2607.28802 |
+| arXiv:2512.24601 (Recursive Language Models) | Verificado | arxiv.org/abs/2512.24601 |
+| arXiv:2602.03786 (AOrchestra) | Verificado | arxiv.org/abs/2602.03786 |
+| arXiv:2603.02615 (RLM depth reproduction) | Verificado | arxiv.org/abs/2603.02615 |
+| arXiv:2606.20629 (AgentCARD) | Verificado | arxiv.org/abs/2606.20629 |
+| arXiv:2608.03535 (CodeAssay) | Verificado | arxiv.org/abs/2608.03535 |
+| arXiv:2605.20251 (ProcCtrlBench) | Verificado | arxiv.org/abs/2605.20251 |
