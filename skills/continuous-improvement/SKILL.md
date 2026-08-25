@@ -51,6 +51,19 @@ Pode alterar **tudo** no bundle para atingir o objetivo:
 
 ---
 
+## Ledger com `unlazy`
+
+Este processo é um alvo natural de preguiça do agente (muitos passos,
+documentação, tendência a declarar feito sem evidência). Invocar o skill
+`unlazy` no início cria `.devin/ledgers/<melhoria>.md` com gates
+(outcome, check, expect, evidence). Não avance de um passo para o
+próximo enquanto o gate atual tiver `EVIDENCE: pending`.
+
+- Gate mínimo por passo: o que deve ser verdade, como verificar, e a
+  evidência produzida.
+- Para a FASE 0: um gate para cada subpasso (0.1 a 0.7).
+- Para o LOOP: um gate para cada Passo 1 a Passo 10, quando aplicável.
+
 ## PRINCÍPIOS ANTI-TRAPAÇA (não negociáveis)
 
 | # | Princípio | Por quê | Fonte |
