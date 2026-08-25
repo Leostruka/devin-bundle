@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 50 skills, 19 rules, 5 subagent profiles, 8 hook events, 10 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 51 skills, 19 rules, 5 subagent profiles, 8 hook events, 10 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ Done. Devin CLI now has 50 skills, 19 rules, 5 subagent profiles, 8 hook events,
 flowchart TB
     subgraph Runtime["Devin CLI Runtime"]
         AGENTS[AGENTS.md<br/>19 rules always-on]
-        SKILLS[skills/<br/>50 skills invoked]
+        SKILLS[skills/<br/>51 skills invoked]
         AGENTS_PROFILES[agents/<br/>5 profiles dispatched]
         HOOKS[hooks<br/>8 events enforced]
         SCRIPTS[scripts/<br/>12 Python hooks]
@@ -61,7 +61,7 @@ flowchart TB
 devin-bundle/
 ├── AGENTS.md            # 19 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 50 skills (auto-discover, not limited to manifest)
+├── skills/              # 51 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
 ├── scripts/             # 12 Python scripts (10 hooks + 2 manual-run)

@@ -11,6 +11,7 @@ __pycache__/
 .devin/heartbeats/
 .devin/mailboxes/
 .devin/checkpoints/
+.devin/ledgers/
 .devin/.refine-pending
 .devin/.resume-pending
 .devin/refinements.log.jsonl

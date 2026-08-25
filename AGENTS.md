@@ -155,7 +155,7 @@ Start with customer experience, then choose tech. Customer = whoever experiences
 
 ### 3. Don't use outdated or missing skills
 
-Update wrong skills in place before use. Create a skill for recurring patterns (`.devin/skills/<name>/SKILL.md` or `~/.config/devin/skills/<name>/SKILL.md`). Prune dead/superseded skills. Distill learned domains into skills so expertise persists.
+Update wrong skills in place before use. Create a skill for recurring patterns (`.devin/skills/<name>/SKILL.md` or `~/.config/devin/skills/<name>/SKILL.md`). Prune dead/superseded skills. Distill learned domains into skills so expertise persists. For tasks prone to agent laziness (large, multi-step, previously half-done, or with acceptance criteria), invoke the `unlazy` skill first and maintain a `.devin/ledgers/<task>.md` with gates.
 
 **Skill quality checklist (before commit):**
 1. Frontmatter — `name:` (lowercase, hyphens, max 64, matches dir) + `description:` (max 1024, under 500 if possible, starts "Use when", describes trigger not workflow). Optional: `allowed-tools`, `permissions`, `subagent`, `agent`, `model`, `triggers`.
@@ -181,7 +181,7 @@ Invoke the skill when adding logging, metrics, tracing, lint, architecture tests
 
 ### 10. Don't execute without planning, don't declare without verifying
 
-Todo list for 3+ step tasks; mark `in_progress`/`completed` immediately, no batching. Verify before claiming done (build/test/lint/typecheck/dry-run); show evidence. Parallelize independent calls. Read before writing. `--dry-run` for destructive/bulk ops; confirm with user before irreversible actions.
+Todo list for 3+ step tasks; mark `in_progress`/`completed` immediately, no batching. Verify before claiming done (build/test/lint/typecheck/dry-run); show evidence. For 3+ step or acceptance-criteria tasks, invoke `unlazy` or `autonomous-gates` and write `.devin/ledgers/<task>.md` with gates (outcome, check, expect, evidence). Do not declare a step or the task done without running its gate and recording evidence. Parallelize independent calls. Read before writing. `--dry-run` for destructive/bulk ops; confirm with user before irreversible actions.
 
 ### 11. Never fail from failures
 

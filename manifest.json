@@ -399,9 +399,17 @@
       "name": "continuous-improvement",
       "source": "devin-bundle (new, FASE 0 + 10-step self-improvement loop)",
       "purpose": "Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests."
+    },
+    {
+      "name": "unlazy",
+      "source": "devin-bundle (adapted from Leonxlnx/unlazy)",
+      "purpose": "Use when a task is at risk of agent laziness (large, multi-step, previously half-done, or with clear acceptance criteria) to force proof of completion through a gates ledger instead of trusting agent reports.",
+      "original_path": "%APPDATA%\\devin\\skills\\unlazy",
+      "export_hash": "",
+      "exported_at": "2026-08-24T00:00:00-03:00"
     }
   ],
-  "skill_count": 50,
+  "skill_count": 51,
   "rule_count": 19,
   "scripts": [
     {"name": "behavioral-nudge.py", "purpose": "PostToolUse hook — injects behavioral reminders"},

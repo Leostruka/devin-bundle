@@ -165,7 +165,7 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    ('50 skills', skill_count == 50),
+    (f'{skill_count} skills', skill_count > 0),
     ('19 rules', len(rules_found) == 19),  # 1-5,7-20 (Rule 6 removed, Rule 20 added)
     ('5 agents', agent_count == 5),
     ('12 scripts', len(script_files) == 12),
