@@ -1,84 +1,48 @@
 ---
 name: context7
 description: Use when the user asks about a library, framework, or component and up-to-date docs would help.
+allowed-tools: [exec, read]
 ---
+
 # Context7
 
 ## Overview
 
-This skill enables retrieval of current documentation for software libraries and components by querying the Context7 API via curl. Use it instead of relying on potentially outdated training data.
+Retrieve current documentation for a software library using the Context7 API.
+There is no built-in `context7` tool; this skill uses the installed helper
+script via `exec`.
 
-## Workflow
+## Helper
 
-### Step 1: Search for the Library
+The skill ships with a Python helper located at
+`skills/context7/scripts/context7.py` in the bundle. After running the bundle
+installer, it is available under the Devin home `skills/context7/scripts/`.
 
-To find the Context7 library ID, query the search endpoint:
+### Windows
 
-```bash
-curl -s "https://context7.com/api/v2/libs/search?libraryName=LIBRARY_NAME&query=TOPIC" | jq '.results[0]'
+```powershell
+python "$env:APPDATA/devin/skills/context7/scripts/context7.py" "<libraryName>" "<query>"
 ```
 
-**Parameters:**
-- `libraryName` (required): The library name to search for (e.g., "react", "nextjs", "fastapi", "axios")
-- `query` (required): A description of the topic for relevance ranking
-
-**Response fields:**
-- `id`: Library identifier for the context endpoint (e.g., `/websites/react_dev_reference`)
-- `title`: Human-readable library name
-- `description`: Brief description of the library
-- `totalSnippets`: Number of documentation snippets available
-
-### Step 2: Fetch Documentation
-
-To retrieve documentation, use the library ID from step 1:
+### Linux / macOS
 
 ```bash
+python ~/.config/devin/skills/context7/scripts/context7.py "<libraryName>" "<query>"
+```
+
+## Output
+
+The helper prints the Context7 documentation text for the requested topic. If
+the library is not found, it writes an error message and exits with code 1.
+
+## Fallback (manual curl)
+
+If the helper is not installed, use `curl` directly:
+
+```bash
+# 1. Find the library ID
+curl -s "https://context7.com/api/v2/libs/search?libraryName=LIBRARY_NAME&query=TOPIC" | jq '.results[0].id'
+
+# 2. Fetch documentation for the topic
 curl -s "https://context7.com/api/v2/context?libraryId=LIBRARY_ID&query=TOPIC&type=txt"
 ```
-
-**Parameters:**
-- `libraryId` (required): The library ID from search results
-- `query` (required): The specific topic to retrieve documentation for
-- `type` (optional): Response format - `json` (default) or `txt` (plain text, more readable)
-
-## Examples
-
-### React hooks documentation
-
-```bash
-# Find React library ID
-curl -s "https://context7.com/api/v2/libs/search?libraryName=react&query=hooks" | jq '.results[0].id'
-# Returns: "/websites/react_dev_reference"
-
-# Fetch useState documentation
-curl -s "https://context7.com/api/v2/context?libraryId=/websites/react_dev_reference&query=useState&type=txt"
-```
-
-### Next.js routing documentation
-
-```bash
-# Find Next.js library ID
-curl -s "https://context7.com/api/v2/libs/search?libraryName=nextjs&query=routing" | jq '.results[0].id'
-
-# Fetch app router documentation
-curl -s "https://context7.com/api/v2/context?libraryId=/vercel/next.js&query=app+router&type=txt"
-```
-
-### FastAPI dependency injection
-
-```bash
-# Find FastAPI library ID
-curl -s "https://context7.com/api/v2/libs/search?libraryName=fastapi&query=dependencies" | jq '.results[0].id'
-
-# Fetch dependency injection documentation
-curl -s "https://context7.com/api/v2/context?libraryId=/fastapi/fastapi&query=dependency+injection&type=txt"
-```
-
-## Tips
-
-- Use `type=txt` for more readable output
-- Use `jq` to filter and format JSON responses
-- Be specific with the `query` parameter to improve relevance ranking
-- If the first search result is not correct, check additional results in the array
-- URL-encode query parameters containing spaces (use `+` or `%20`)
-- No API key is required for basic usage (rate-limited)

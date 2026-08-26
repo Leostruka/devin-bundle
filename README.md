@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-50-blue.svg)](#skills-49)
+[![Skills](https://img.shields.io/badge/skills-54-blue.svg)](#skills-49)
 [![Rules](https://img.shields.io/badge/rules-19-green.svg)](#regras-consolidadas-agentsmd)
-[![Version](https://img.shields.io/badge/version-2.5.1-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.5.2-orange.svg)](CHANGELOG.md)
 
 Export + installer for [Devin CLI](https://devin.ai) to synchronize your **entire setup** across machines.
 Bundles skills, consolidated rules, config, hooks, scripts, MCP, and credentials —
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 50 skills, 19 rules, 5 subagent profiles, 8 hook events, 10 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 54 skills, 19 rules, 5 subagent profiles, 8 hook events, 11 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -38,10 +38,10 @@ Done. Devin CLI now has 50 skills, 19 rules, 5 subagent profiles, 8 hook events,
 flowchart TB
     subgraph Runtime["Devin CLI Runtime"]
         AGENTS[AGENTS.md<br/>19 rules always-on]
-        SKILLS[skills/<br/>50 skills invoked]
+        SKILLS[skills/<br/>54 skills invoked]
         AGENTS_PROFILES[agents/<br/>5 profiles dispatched]
         HOOKS[hooks<br/>8 events enforced]
-        SCRIPTS[scripts/<br/>12 Python hooks]
+        SCRIPTS[scripts/<br/>13 Python hooks]
         MCP[MCP + config]
     end
 
@@ -61,10 +61,10 @@ flowchart TB
 devin-bundle/
 ├── AGENTS.md            # 19 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 50 skills (auto-discover, not limited to manifest)
+├── skills/              # 54 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
-├── scripts/             # 12 Python scripts (10 hooks + 2 manual-run)
+├── scripts/             # 13 Python scripts (11 hooks + 2 manual-run)
 ├── mcp_config.json      # MCP server config (tokens MASKED by default)
 ├── credentials.toml     # API keys (ALL values MASKED by default)
 ├── manifest.json        # skill metadata (name, source, purpose)
@@ -106,7 +106,7 @@ devin-bundle/
 | 17 | Don't deduce — verify with tools | Use read/exec/grep/glob before asserting; guesses fail silently (arXiv:2307.03172 lost-in-the-middle) |
 | 18 | Keep the context window lean | Default to clear over compact; small rules files; audit MCP servers; bigger window ≠ better retrieval |
 | 19 | Never read secrets or sensitive env vars | Use keys/env vars but never display their contents; report missing/empty without exposing value |
-| 20 | Model-aware operation | GLM-5.2 (200K, tool-use, thinking) for main; SWE-1.7 Max (262K, fast, **gratuito**) for subagents. See MODEL-GUIDE.md |
+| 20 | Model-aware operation | GLM-5.2 (200K, tool-use, thinking) for main; SWE-1.7 Max (262K, fast, **gratuito**) for subagents. See docs/MODEL-GUIDE.md |
 
 ## Hooks (8 events, 10 hook scripts + 2 manual-run scripts)
 
@@ -344,9 +344,9 @@ The installer is idempotent — running again only updates what changed (with `-
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute (skill/rule/hook standards) |
 | [SECURITY.md](SECURITY.md) | Security policy and guardrails |
 | [AGENTS.md](AGENTS.md) | The 19 rules (loaded by Devin CLI every session) |
-| [SKILL-TIERS.md](SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
-| [MODEL-GUIDE.md](MODEL-GUIDE.md) | GLM-5.2 and SWE-1.7 model specs, pricing, context windows, best practices |
-| [TOOLS-MAP.md](TOOLS-MAP.md) | Complete map of tools, subagents, hooks, configs, and modes |
+| [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
+| [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md) | GLM-5.2 and SWE-1.7 model specs, pricing, context windows, best practices |
+| [docs/TOOLS-MAP.md](docs/TOOLS-MAP.md) | Complete map of tools, subagents, hooks, configs, and modes |
 | [manifest.json](manifest.json) | Skill metadata (name, source, purpose) |
 
 ## License

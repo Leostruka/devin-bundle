@@ -62,6 +62,7 @@ $configSrc  = Join-Path $bundleRoot "config.json"
 $scriptsSrc = Join-Path $bundleRoot "scripts"
 $mcpSrc     = Join-Path $bundleRoot "mcp_config.json"
 $credsSrc   = Join-Path $bundleRoot "credentials.toml"
+$docsSrc    = Join-Path $bundleRoot "docs"
 
 # Destination paths
 $rulesDst   = Join-Path $devinHome "AGENTS.md"
@@ -71,6 +72,7 @@ $configDst  = Join-Path $devinHome "config.json"
 $scriptsDst = Join-Path $devinHome "scripts"
 $mcpDst     = Join-Path $devinHome "mcp_config.json"
 $credsDst   = Join-Path $devinHome "credentials.toml"
+$docsDst    = Join-Path $devinHome "docs"
 
 $script:Copied = 0
 $script:Skipped = 0
@@ -454,6 +456,22 @@ if (Test-Path $credsSrc) {
   }
 } else {
   Write-Skip "credentials.toml not in bundle"
+}
+
+# --- 7b. docs/ (bundle documentation) ---
+Write-Step "Install docs/ (bundle documentation)"
+if (Test-Path $docsSrc) {
+  $result = Install-SkillDir -src $docsSrc -dst $docsDst -name "docs"
+  switch ($result) {
+    "installed"      { Write-Ok "docs (installed)" }
+    "updated"        { Write-Ok "docs (updated)" }
+    "skip"           { Write-Skip "docs (unchanged)" }
+    "diff"           { Write-Warn "docs — exists and differs (use -Force)" }
+    "would-install"  { Write-Skip "would install docs" }
+    "would-update"   { Write-Skip "would update docs" }
+  }
+} else {
+  Write-Skip "docs/ not in bundle"
 }
 
 # --- Summary ---

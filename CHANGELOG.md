@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.2] - 2026-08-26
+
 ### Added (iter 8.5 — continuous improvement + mermaid + cleanup)
 
 - **continuous-improvement skill**: FASE 0 deep research + 10-step self-improvement

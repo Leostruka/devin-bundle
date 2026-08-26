@@ -3,13 +3,24 @@
   "devin": {
     "org_id": "MASKED"
   },
-  "theme_mode": "dark",
+  "theme_mode": "nocolor",
   "agent": {
-    "model": "glm-5-2"
+    "model": "swe-1-7",
+    "thinking": {}
   },
   "attribution": false,
+  "read_config_from": {
+    "agents_standard": false,
+    "cursor": false,
+    "windsurf": false,
+    "claude": false,
+    "copilot": false,
+    "opencode": false,
+    "zed": false
+  },
   "shell": {
-    "setup_complete": true
+    "setup_complete": true,
+    "startup_messages_remaining": 4
   },
   "hooks": {
     "PreToolUse": [
@@ -66,6 +77,11 @@
           {
             "type": "command",
             "command": "python \"{{APPDATA}}/devin/scripts/silent-error-review.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/context-pressure.py\"",
             "timeout": 10
           }
         ]
@@ -146,5 +162,14 @@
         "hooks": []
       }
     ]
-  }
+  },
+  "show_path": true,
+  "respect_gitignore": true,
+  "unicode_mode": "auto",
+  "skip_workspace_trust": true,
+  "notify": "smart",
+  "mouse_capture": true,
+  "auto_update": true,
+  "pty_for_noninteractive_exec": true,
+  "theme_auto_detect": "never"
 }

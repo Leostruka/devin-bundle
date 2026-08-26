@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -399,9 +399,41 @@
       "name": "continuous-improvement",
       "source": "devin-bundle (new, FASE 0 + 10-step self-improvement loop)",
       "purpose": "Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests."
+    },
+    {
+      "name": "unlazy",
+      "source": "devin-bundle (adapted from Leonxlnx/unlazy)",
+      "purpose": "Use when a task is at risk of agent laziness (large, multi-step, previously half-done, or with clear acceptance criteria) to force proof of completion through a gates ledger instead of trusting agent reports.",
+      "original_path": "%APPDATA%\\devin\\skills\\unlazy",
+      "export_hash": "",
+      "exported_at": "2026-08-24T00:00:00-03:00"
+    },
+    {
+      "name": "effort-calibration",
+      "source": "devin-bundle",
+      "purpose": "Use when choosing a reasoning effort level for an LLM coding agent, when a task seems to be over-thinking or spending too many tokens, when deciding whether to raise effort, when writing task specifications that substitute for reasoning budget, or when a simple task is being treated as a codebase audit. Covers overthinking, compute-optimal test-time scaling, prompt-induced waste, and difficulty-matched effort.",
+      "original_path": "%APPDATA%\\devin\\skills\\effort-calibration",
+      "export_hash": "",
+      "exported_at": "2026-08-25T00:00:00-03:00"
+    },
+    {
+      "name": "mcp-lazy-enablement",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding which MCP servers to keep active, when context feels bloated from unused MCP tools, when a task only needs one MCP server temporarily, or when auditing which servers to enable/disable per task. Guides selective MCP enablement to minimize context-window tax.",
+      "original_path": "%APPDATA%\\devin\\skills\\mcp-lazy-enablement",
+      "export_hash": "",
+      "exported_at": "2026-08-25T00:00:00-03:00"
+    },
+    {
+      "name": "memory-hygiene",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or bloated, when preferences leak across unrelated tasks, or when choosing between stateless and memory-equipped operation. Covers memory accumulation, temporal contamination, reasoning drift, and user-authored vs auto-saved preferences.",
+      "original_path": "%APPDATA%\\devin\\skills\\memory-hygiene",
+      "export_hash": "",
+      "exported_at": "2026-08-25T00:00:00-03:00"
     }
   ],
-  "skill_count": 50,
+  "skill_count": 54,
   "rule_count": 19,
   "scripts": [
     {"name": "behavioral-nudge.py", "purpose": "PostToolUse hook — injects behavioral reminders"},
@@ -416,9 +448,10 @@
     {"name": "validate-refinement-evidence.py", "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails"},
     {"name": "validate-skill-format.py", "purpose": "Validator — checks SKILL.md frontmatter and format"},
     {"name": "validate-tool-args.py", "purpose": "Validator — checks tool argument schemas"},
+    {"name": "context-pressure.py", "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds"},
     {"name": "mermaid-parse-check.js", "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"}
   ],
-  "script_count": 12,
+  "script_count": 13,
   "mcp_count": 1,
   "agent_count": 5,
   "tool_count": 28,
