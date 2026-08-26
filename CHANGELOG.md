@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.3] - 2026-08-26
+
+### Fixed
+
+- `audit.py`: removed hardcoded version and badge checks, using manifest and runtime counts.
+
 ## [2.5.2] - 2026-08-26
 
 ### Added (iter 8.5 — continuous improvement + mermaid + cleanup)
