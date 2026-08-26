@@ -58,28 +58,33 @@ def load_effort(wiki_dir: Path) -> str:
 def check_source_format(wiki_dir: Path) -> list:
     """Check that all `source:` citations use `path:line` format."""
     failures = []
-    # Valid: source: src/file.ts:42, source: path/to/file.py:1
-    # Also valid with spaces/backslashes: source: dir\Service References\file.cs:1
-    valid_pattern = re.compile(r'source:\s*[^\n]+?\.(?:ts|js|py|go|rs|java|rb|php|cs|c|cpp|h|sql|json|yaml|yml|toml|xml|html|css|scss|vue|jsx|tsx|md|sh|bash|ps1|env|cfg|conf|ini|gradle|kt|swift|dart|lua|r|scala|clj|ex|exs|erl|hs|ml|nim|zig|v|d|jl)\s*:\s*\d+')
-    bare_pattern = re.compile(r'source:\s*(?!path:)(?!src/)(?!tests/)(?!migrations/)(?!config/)(?!scripts/)(?!packages?\.json)(?!requirements)(?!Cargo)(?!go\.mod)(?!pom\.xml)(!?[a-zA-Z_])')
+    # Valid: source: src/file.ts:42, source: D:/path/file.sql:1, source: path/to/file.py:1
+    # Also valid: extensionless files (Dockerfile, CNAME, .htaccess), line ranges, and
+    # references wrapped in backticks or followed by descriptions/table separators.
+    # The regex finds the last colon/digits pair in the reference.
+    source_token_pattern = re.compile(r'source:\s*(.+?)\s*:\s*(\d+(?:-\d+)?)(?=\s|$|[^\w\-])')
 
     files = [f for f in wiki_dir.rglob("*.md") if "Media" not in str(f) and "Diagrams" not in str(f)]
     for f in files:
         content = f.read_text(encoding="utf-8", errors="replace")
         # Find all source: references
-        source_refs = re.findall(r'source:\s*\S+[^\n]*', content)
-        for ref in source_refs:
-            # Check if it matches valid path:line format
-            if not valid_pattern.search(ref) and not re.search(r'source:\s*[^\n]+?\.\w+\s*:\s*\d+', ref):
-                # Allow source: followed by a path without extension (e.g., directory refs)
-                if re.match(r'source:\s*[^\n]+/\s*$', ref.strip()):
-                    continue
-                # Flag bare source: without path:line
-                if not re.search(r'source:\s*[^\n]*?\.\w+', ref):
-                    failures.append(
-                        f"SOURCE_FORMAT: {f.relative_to(wiki_dir)} has bare 'source:' "
-                        f"without path:line format: '{ref.strip()[:60]}'"
-                    )
+        for mo in re.finditer(r'source:\s*\S+[^\n]*', content):
+            ref = mo.group(0)
+            start = mo.start()
+            # Skip inline code mentions like `` `source:` ... `` when not a real citation
+            if start > 0 and content[start - 1] == '`' and not re.search(r':\s*\d+(?:-\d+)?\b', ref):
+                continue
+            # Allow source: followed by a directory path, optionally with a description
+            if re.search(r'source:\s*[^\s:]+[/\\\\]\s*(?:—|\||\)|`|$)', ref):
+                continue
+            m = source_token_pattern.search(ref)
+            if m and not re.fullmatch(r'\d+', m.group(1).strip().strip('`').strip()):
+                continue
+            # Flag bare source: without path:line
+            failures.append(
+                f"SOURCE_FORMAT: {f.relative_to(wiki_dir)} has bare 'source:' "
+                f"without path:line format: '{ref.strip()[:60]}'"
+            )
     return failures
 
 
@@ -92,7 +97,7 @@ def check_min_sources_per_page(wiki_dir: Path) -> list:
         "06-Dependencies.md", "07-Config.md", "08-Glossary.md",
         "09-Decisions.md",
     ]
-    source_file_pattern = re.compile(r'source:\s*([^\s:]+\.\w+):\d+')
+    source_file_pattern = re.compile(r'source:\s*(.+?)\s*:\s*\d+(?:-\d+)?')
 
     for page_name in root_pages:
         p = wiki_dir / page_name
@@ -240,7 +245,7 @@ def check_techdebt_page(wiki_dir: Path, effort: str) -> list:
                 )
 
     # Check for source citations in tech debt items
-    source_pattern = re.compile(r'source:\s*\S+\.\w+:\d+')
+    source_pattern = re.compile(r'source:\s*(.+?)\s*:\s*\d+(?:-\d+)?')
     if not source_pattern.search(content):
         failures.append(
             "TECHDEBT: 11-TechDebt.md has no source: citations "
