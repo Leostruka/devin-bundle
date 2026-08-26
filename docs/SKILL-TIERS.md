@@ -130,6 +130,12 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `primeagent-reference` | Reference card + A2A + Refine + Subagent Router (4 modos) | 10091 | Pesquisar PrimeAgent/RLM |
 | `continuous-improvement` | FASE 0 + 10-step self-improvement loop c/ held-out | ~3500 | Melhoria contínua do bundle |
 
+## Design / Frontend
+
+| Skill | Faz | Tok | Quando |
+|---|---|---|---|
+| `impeccable` | Vocabulário de design para interfaces frontend: evita estéticas genéricas, define contexto antes de construir, aplica comandos de design (polish, audit, distill, etc.) | ~1031 | Projetar, refatorar, auditar ou polir UI/UX |
+
 ## Outros
 
 | Skill | Faz | Tok | Quando |

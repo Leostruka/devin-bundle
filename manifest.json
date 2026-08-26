@@ -431,9 +431,15 @@
       "original_path": "%APPDATA%\\devin\\skills\\memory-hygiene",
       "export_hash": "",
       "exported_at": "2026-08-25T00:00:00-03:00"
+    },
+    {
+      "name": "impeccable",
+      "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
+      "purpose": "Use when the user asks to design, redesign, shape, critique, audit, polish, animate, colorize, typeset, adapt, clarify, distill, harden, onboard, optimize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Not for backend-only or non-UI tasks.",
+      "hash": "57B662C2C34BFAA860C906C4BB87452A4B3E206F5C6062CA3599FBFD34829CFE"
     }
   ],
-  "skill_count": 54,
+  "skill_count": 55,
   "rule_count": 19,
   "scripts": [
     {"name": "behavioral-nudge.py", "purpose": "PostToolUse hook — injects behavioral reminders"},
