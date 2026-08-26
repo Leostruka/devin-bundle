@@ -97,8 +97,8 @@ print()
 print('[5] Manifest version')
 ver = manifest.get('version', 'MISSING')
 print('  version: ' + str(ver))
-if ver != '2.5.1':
-    warnings.append('Manifest version is ' + str(ver) + ', expected 2.5.1')
+if ver == 'MISSING':
+    warnings.append('Manifest version is missing')
 
 # 6. AGENTS.md rule count
 print()
@@ -386,29 +386,32 @@ for s in new_skills:
 print()
 print('[17] Version consistency')
 changelog = open('CHANGELOG.md', encoding='utf-8').read()
-if '2.5.1' in changelog and ver == '2.5.1':
-    print('  OK  CHANGELOG and manifest both at 2.5.1')
+if ver != 'MISSING' and ver in changelog:
+    print('  OK  CHANGELOG and manifest both at ' + str(ver))
 else:
     warnings.append('Version mismatch')
-    print('  WARN CHANGELOG has 2.5.1: ' + str('2.5.1' in changelog) + ', manifest: ' + str(ver))
+    print('  WARN CHANGELOG has ' + str(ver) + ': ' + str(ver in changelog) + ', manifest: ' + str(ver))
 
 # 18. README badges
 print()
 print('[18] README badges')
-if 'skills-49' in readme:
-    print('  OK  skills badge = 49')
+expected_skills_badge = 'skills-' + str(skill_count)
+if expected_skills_badge in readme:
+    print('  OK  skills badge = ' + str(skill_count))
 else:
-    errors.append('README skills badge wrong')
+    errors.append('README skills badge wrong (expected ' + expected_skills_badge + ')')
     print('  FAIL skills badge')
-if 'rules-19' in readme:
-    print('  OK  rules badge = 19')
+expected_rules_badge = 'rules-' + str(len(rules_found))
+if expected_rules_badge in readme:
+    print('  OK  rules badge = ' + str(len(rules_found)))
 else:
-    errors.append('README rules badge wrong (expected rules-19)')
+    errors.append('README rules badge wrong (expected ' + expected_rules_badge + ')')
     print('  FAIL rules badge')
-if 'version-2.5.1' in readme:
-    print('  OK  version badge = 2.5.1')
+expected_version_badge = 'version-' + str(ver)
+if expected_version_badge in readme:
+    print('  OK  version badge = ' + str(ver))
 else:
-    warnings.append('README version badge may be wrong')
+    warnings.append('README version badge may be wrong (expected ' + expected_version_badge + ')')
     print('  WARN version badge')
 
 # 19. agents/ profiles
