@@ -106,7 +106,7 @@ devin-bundle/
 | 17 | Don't deduce — verify with tools | Use read/exec/grep/glob before asserting; guesses fail silently (arXiv:2307.03172 lost-in-the-middle) |
 | 18 | Keep the context window lean | Default to clear over compact; small rules files; audit MCP servers; bigger window ≠ better retrieval |
 | 19 | Never read secrets or sensitive env vars | Use keys/env vars but never display their contents; report missing/empty without exposing value |
-| 20 | Model-aware operation | GLM-5.2 (200K, tool-use, thinking) for main; SWE-1.7 Max (262K, fast, **gratuito**) for subagents. See MODEL-GUIDE.md |
+| 20 | Model-aware operation | GLM-5.2 (200K, tool-use, thinking) for main; SWE-1.7 Max (262K, fast, **gratuito**) for subagents. See docs/MODEL-GUIDE.md |
 
 ## Hooks (8 events, 10 hook scripts + 2 manual-run scripts)
 
@@ -344,9 +344,9 @@ The installer is idempotent — running again only updates what changed (with `-
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute (skill/rule/hook standards) |
 | [SECURITY.md](SECURITY.md) | Security policy and guardrails |
 | [AGENTS.md](AGENTS.md) | The 19 rules (loaded by Devin CLI every session) |
-| [SKILL-TIERS.md](SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
-| [MODEL-GUIDE.md](MODEL-GUIDE.md) | GLM-5.2 and SWE-1.7 model specs, pricing, context windows, best practices |
-| [TOOLS-MAP.md](TOOLS-MAP.md) | Complete map of tools, subagents, hooks, configs, and modes |
+| [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
+| [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md) | GLM-5.2 and SWE-1.7 model specs, pricing, context windows, best practices |
+| [docs/TOOLS-MAP.md](docs/TOOLS-MAP.md) | Complete map of tools, subagents, hooks, configs, and modes |
 | [manifest.json](manifest.json) | Skill metadata (name, source, purpose) |
 
 ## License

@@ -6,7 +6,7 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 conversation; a large one taxes the context window and worsens
 lost-in-the-middle retrieval (Rule 18). Non-pinned rules below are terse
 one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
-12-18) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see MODEL-GUIDE.md).
+12-18) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see docs/MODEL-GUIDE.md).
 
 ## Rule summary
 
@@ -28,7 +28,7 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 17. **Don't deduce — verify with tools** — never infer the state of the world, a file's contents, a command's output, or a claim's truth from reasoning alone. Use `read`, `exec`, `grep`, `glob` to observe reality before asserting anything. A deduction presented as fact is a guess with confidence. Guesses fail silently; tool output fails loudly. Prefer loud failure.
 18. **Keep the context window lean** — context window = input + output tokens, hard-capped by the provider. Lost-in-the-middle deprioritizes the middle of long chats. Default to `clear` over `compact`; keep rules files small; audit MCP servers before adding (`mcp-context-audit`); paste large inputs to files, not chat (`context-folding`). Watch the budget with `context-budget.py`. Bigger window ≠ better retrieval.
 19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
-20. **Model-aware operation** — GLM-5.2 High (200K, thinking, tool-use during inference, cache $0.26/M) is primary; SWE-1.7 Max (262K, self-compaction, 1000 TPS) is pinned via `model: swe-1-7` (NOT `swe` — that alias is PAID `swe-1.7-lightning`) in all custom agent profiles. Don't over-specify tool-use (GLM decides natively). Fan-out is cheap (SWE-1.7 fast, 262K each, gratuito). Keep system prompt cache-stable. See `MODEL-GUIDE.md`.
+20. **Model-aware operation** — GLM-5.2 High (200K, thinking, tool-use during inference, cache $0.26/M) is primary; SWE-1.7 Max (262K, self-compaction, 1000 TPS) is pinned via `model: swe-1-7` (NOT `swe` — that alias is PAID `swe-1.7-lightning`) in all custom agent profiles. Don't over-specify tool-use (GLM decides natively). Fan-out is cheap (SWE-1.7 fast, 262K each, gratuito). Keep system prompt cache-stable. See `docs/MODEL-GUIDE.md`.
 
 ---
 
@@ -169,7 +169,7 @@ Update wrong skills in place before use. Create a skill for recurring patterns (
 
 ### 4. Don't start non-trivial tasks without skill discovery
 
-Invoke `skill tool-and-skill-discovery` or `skill search` + `skill list` before touching code. For faster discovery without loading all 47 descriptions, read `SKILL-TIERS.md` (~1700 tok) — skills categorized by domain of use with token costs. Invoke all matching skills in parallel. If no skill matches, use `tool-and-skill-discovery` (which now includes external search and install). Don't skip discovery on first occurrences each week (first PR, first debug, first CSV edit, first deploy, first MCP integration, etc.). Applies to all integrations (MCP, skills, CLIs, `gh`, `curl`, `python`).
+Invoke `skill tool-and-skill-discovery` or `skill search` + `skill list` before touching code. For faster discovery without loading all 47 descriptions, read `docs/SKILL-TIERS.md` (~1700 tok) — skills categorized by domain of use with token costs. Invoke all matching skills in parallel. If no skill matches, use `tool-and-skill-discovery` (which now includes external search and install). Don't skip discovery on first occurrences each week (first PR, first debug, first CSV edit, first deploy, first MCP integration, etc.). Applies to all integrations (MCP, skills, CLIs, `gh`, `curl`, `python`).
 
 ### 8. Telegraphic output
 
@@ -197,7 +197,7 @@ Failures are signals to resolve, not stop conditions. Deliver a working solution
 
 ### 20. Model-aware operation (GLM-5.2 High + SWE-1.7)
 
-Primary: GLM-5.2 High (200K, thinking mode, tool-use during inference, prompt cache $0.26/M) — **gratuito e ilimitado** na assinatura. Subagents: SWE-1.7 Max (262K, self-compaction trained, 1000 TPS) — **gratuito e ilimitado**, pinned via `model: swe-1-7` (NOT `swe` — that alias is `swe-1.7-lightning`, PAID $2.5/$12.5 MTok, 202K) in all custom agent profiles. See `MODEL-GUIDE.md` for detail.
+Primary: GLM-5.2 High (200K, thinking mode, tool-use during inference, prompt cache $0.26/M) — **gratuito e ilimitado** na assinatura. Subagents: SWE-1.7 Max (262K, self-compaction trained, 1000 TPS) — **gratuito e ilimitado**, pinned via `model: swe-1-7` (NOT `swe` — that alias is `swe-1.7-lightning`, PAID $2.5/$12.5 MTok, 202K) in all custom agent profiles. See `docs/MODEL-GUIDE.md` for detail.
 
 - GLM-5.2 natively decides when to invoke tools during inference — don't over-specify tool-use rules; let the model decide. Rule 17 (verify with tools) aligns.
 - GLM-5.2 thinking mode is internal reasoning before output — Rule 8 (telegraphic) applies to output only, not thinking tokens.
@@ -208,4 +208,4 @@ Primary: GLM-5.2 High (200K, thinking mode, tool-use during inference, prompt ca
 - **🚫 NUNCA usar `subagent_explore` (built-in) quando parent é FREE.** Ele roda no default subagent model (SWE-1.6, PAGO $0.5/$2.5). Não há override local — apenas enterprise settings podem mudar isso. **Usar o profile customizado `researcher` em vez de `subagent_explore`** — ele pin `model: swe-1-7` (gratuito, 262K) e tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
 - **Política de modelos: CONDICIONAL ao parent.**
   - **Parent FREE (default `glm-5-2`)**: subagents DEVEM ser FREE (`swe-1-7`/`swe-1-7-medium`). Nunca usar modelos pagos. Se GLM-5.2 High + SWE-1.7 fan-out falharem, **parar e reportar ao usuário**.
-  - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Nesse caso, `subagent_explore` (SWE-1.6) e outros modelos pagos são permitidos. Ver protocolo em `MODEL-GUIDE.md`.
+  - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Nesse caso, `subagent_explore` (SWE-1.6) e outros modelos pagos são permitidos. Ver protocolo em `docs/MODEL-GUIDE.md`.

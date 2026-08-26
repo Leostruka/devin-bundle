@@ -399,7 +399,7 @@ previous.
 #### P0.6 — Review current state
 - `python audit.py` — capture current errors/warnings
 - `python -m pytest tests/held-out/ -q` — test baseline (if held-out exists)
-- `read` key files (AGENTS.md, MODEL-GUIDE.md, config.json)
+- `read` key files (AGENTS.md, docs/MODEL-GUIDE.md, config.json)
 - Output: state snapshot (errors, tests passing, current config)
 
 #### P0.7 — Synthesize

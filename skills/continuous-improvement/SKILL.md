@@ -111,7 +111,7 @@ Cada passo abaixo produz um output concreto; não avançar sem completar o anter
 ### 0.6 — Revisar estado atual
 - `python audit.py` — capturar erros/warnings atuais
 - `python -m pytest tests/held-out/ -q` — baseline de testes
-- `read` nos arquivos-chave (AGENTS.md, MODEL-GUIDE.md, config.json)
+- `read` nos arquivos-chave (AGENTS.md, docs/MODEL-GUIDE.md, config.json)
 - Output: snapshot do estado (erros, testes passando, config atual)
 
 ### 0.7 — Sintetizar
