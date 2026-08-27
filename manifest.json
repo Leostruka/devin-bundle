@@ -437,86 +437,29 @@
       "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
       "purpose": "Use when the user asks to design, redesign, shape, critique, audit, polish, animate, colorize, typeset, adapt, clarify, distill, harden, onboard, optimize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Not for backend-only or non-UI tasks.",
       "hash": "57B662C2C34BFAA860C906C4BB87452A4B3E206F5C6062CA3599FBFD34829CFE"
-    },
-    {
-      "name": "pr-review",
-      "source": "devin-bundle",
-      "purpose": "Use when the user asks to review a Pull Request on GitHub with inline comments and code suggestions via the GitHub API. Enforces a repeatable cycle of check -> comment/suggest -> check next, with a gates ledger for evidence.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\pr-review",
-      "export_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-      "exported_at": "2026-08-27T10:00:48-03:00"
     }
   ],
   "skill_count": 55,
   "rule_count": 19,
   "scripts": [
-    {
-      "name": "behavioral-nudge.py",
-      "purpose": "PostToolUse hook — injects behavioral reminders"
-    },
-    {
-      "name": "check-ai-signature.py",
-      "purpose": "PreCommit hook — blocks AI signatures in commits"
-    },
-    {
-      "name": "check-push-green.py",
-      "purpose": "PrePush hook — blocks push when held-out tests fail"
-    },
-    {
-      "name": "constraint-pinning.py",
-      "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints"
-    },
-    {
-      "name": "context-budget.py",
-      "purpose": "SessionStart hook — reports AGENTS.md token cost"
-    },
-    {
-      "name": "destructive-gate.py",
-      "purpose": "PreToolUse hook — gates destructive operations"
-    },
-    {
-      "name": "refine-review-prompt.py",
-      "purpose": "Refine mode — generates review prompts for self-improvement"
-    },
-    {
-      "name": "silent-error-review.py",
-      "purpose": "PostToolUse hook — detects silent errors in tool output"
-    },
-    {
-      "name": "validate-mermaid.py",
-      "purpose": "Validator — checks Mermaid syntax in wiki diagrams"
-    },
-    {
-      "name": "validate-refinement-evidence.py",
-      "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails"
-    },
-    {
-      "name": "validate-skill-format.py",
-      "purpose": "Validator — checks SKILL.md frontmatter and format"
-    },
-    {
-      "name": "validate-tool-args.py",
-      "purpose": "Validator — checks tool argument schemas"
-    },
-    {
-      "name": "context-pressure.py",
-      "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds"
-    },
-    {
-      "name": "mermaid-parse-check.js",
-      "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"
-    }
+    {"name": "behavioral-nudge.py", "purpose": "PostToolUse hook — injects behavioral reminders"},
+    {"name": "check-ai-signature.py", "purpose": "PreCommit hook — blocks AI signatures in commits"},
+    {"name": "check-push-green.py", "purpose": "PrePush hook — blocks push when held-out tests fail"},
+    {"name": "constraint-pinning.py", "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints"},
+    {"name": "context-budget.py", "purpose": "SessionStart hook — reports AGENTS.md token cost"},
+    {"name": "destructive-gate.py", "purpose": "PreToolUse hook — gates destructive operations"},
+    {"name": "refine-review-prompt.py", "purpose": "Refine mode — generates review prompts for self-improvement"},
+    {"name": "silent-error-review.py", "purpose": "PostToolUse hook — detects silent errors in tool output"},
+    {"name": "validate-mermaid.py", "purpose": "Validator — checks Mermaid syntax in wiki diagrams"},
+    {"name": "validate-refinement-evidence.py", "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails"},
+    {"name": "validate-skill-format.py", "purpose": "Validator — checks SKILL.md frontmatter and format"},
+    {"name": "validate-tool-args.py", "purpose": "Validator — checks tool argument schemas"},
+    {"name": "context-pressure.py", "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds"},
+    {"name": "mermaid-parse-check.js", "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"}
   ],
   "script_count": 13,
   "mcp_count": 1,
   "agent_count": 5,
   "tool_count": 28,
-  "docs": [
-    "AGENTS.md",
-    "MODEL-GUIDE.md",
-    "SKILL-TIERS.md",
-    "TOOLS-MAP.md",
-    "CHANGELOG.md",
-    "README.md"
-  ]
+  "docs": ["AGENTS.md", "MODEL-GUIDE.md", "SKILL-TIERS.md", "TOOLS-MAP.md", "CHANGELOG.md", "README.md"]
 }
