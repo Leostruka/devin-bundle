@@ -193,7 +193,7 @@ function Get-BranchMetadata {
             }
         }
     }
-    catch { }
+    catch { Write-Warning "Falha ao obter metadados das branches: $_" }
     return $meta
 }
 
@@ -218,7 +218,7 @@ function Get-PullRequestMap {
             }
         }
     }
-    catch { }
+    catch { Write-Warning "Falha ao listar PRs: $_" }
     return $map
 }
 
@@ -239,7 +239,7 @@ function Get-ProtectedBranchSet {
         }
         finally { Pop-Location }
     }
-    catch { }
+    catch { Write-Warning "Falha ao obter branches protegidas: $_" }
     return $set
 }
 
@@ -255,7 +255,7 @@ function Get-DefaultBranchName {
             }
             finally { Pop-Location }
         }
-        catch { }
+        catch { Write-Verbose "Falha ao detectar branch default via gh: $_" }
     }
     if (-not $default) {
         try {
@@ -266,7 +266,7 @@ function Get-DefaultBranchName {
             }
             finally { Pop-Location }
         }
-        catch { }
+        catch { Write-Verbose "Falha ao detectar branch default via origin/HEAD: $_" }
     }
     if (-not $default) {
         try {
@@ -278,7 +278,7 @@ function Get-DefaultBranchName {
             }
             finally { Pop-Location }
         }
-        catch { }
+        catch { Write-Verbose "Falha ao detectar branch default via git remote show: $_" }
     }
     return $default
 }
@@ -352,7 +352,7 @@ function Format-BranchStatus {
                 if ($days -gt 30) { $tokens += "stale ${days}d" }
                 else { $tokens += "ativo ${days}d" }
             }
-            catch { }
+            catch { Write-Verbose "Falha ao calcular atividade/stale para '$BranchName': $_" }
         }
     }
 
@@ -388,13 +388,13 @@ function Remove-StaleWorktrees {
                 Push-Location -LiteralPath $RepoPath
                 try { $null = git worktree remove "$p" --force 2>&1 } finally { Pop-Location }
             }
-            catch { }
+            catch { Write-Verbose "Falha ao remover worktree '$p': $_" }
             if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction SilentlyContinue }
         }
         Push-Location -LiteralPath $RepoPath
         try { $null = git worktree prune 2>&1 } finally { Pop-Location }
     }
-    catch { }
+    catch { Write-Warning "Falha ao remover worktrees antigas: $_" }
 }
 
 function Select-BranchTerminal {
@@ -425,30 +425,48 @@ function Select-BranchTerminal {
     return ($Options | Where-Object { $_.Name -eq $selected.Name } | Select-Object -First 1)
 }
 
-$currentPid = $PID
-$hwndMain = [IntPtr]::Zero
-while ($true) {
-    $cimProc = Get-CimInstance Win32_Process -Filter "ProcessId=$currentPid" -ErrorAction SilentlyContinue
-    if (-not $cimProc -or $cimProc.ParentProcessId -eq 0) { break }
+function Get-ConsoleWindowInfo {
+    $currentPid = $PID
+    $hwnd = [IntPtr]::Zero
+    $insideWT = $false
+    while ($true) {
+        $cimProc = Get-CimInstance Win32_Process -Filter "ProcessId=$currentPid" -ErrorAction SilentlyContinue
+        if (-not $cimProc -or $cimProc.ParentProcessId -eq 0) { break }
 
-    $parentProc = Get-Process -Id $cimProc.ParentProcessId -ErrorAction SilentlyContinue
-    if ($parentProc -and $parentProc.Name -eq "WindowsTerminal") {
-        $hwndMain = $parentProc.MainWindowHandle
-        break
+        $parentProc = Get-Process -Id $cimProc.ParentProcessId -ErrorAction SilentlyContinue
+        if ($parentProc -and $parentProc.Name -eq "WindowsTerminal") {
+            $hwnd = $parentProc.MainWindowHandle
+            $insideWT = $true
+            break
+        }
+        $currentPid = $cimProc.ParentProcessId
     }
-    $currentPid = $cimProc.ParentProcessId
+    if ($hwnd -eq [IntPtr]::Zero) {
+        $hwnd = [WindowUtil]::GetConsoleWindow()
+    }
+    return [PSCustomObject]@{ Handle = $hwnd; InsideWT = $insideWT }
 }
 
-if ($hwndMain -eq [IntPtr]::Zero) {
-    $hwndMain = [WindowUtil]::GetConsoleWindow()
-}
+$wtInfo = Get-ConsoleWindowInfo
+$hwndMain = $wtInfo.Handle
+$insideWT = $wtInfo.InsideWT
+$windowUtilAvailable = $false
 
 $rectOriginal = New-Object WindowUtil+RECT
-[WindowUtil]::GetWindowRect($hwndMain, [ref]$rectOriginal) | Out-Null
-$origX = $rectOriginal.Left
-$origY = $rectOriginal.Top
-$origW = $rectOriginal.Right - $rectOriginal.Left
-$origH = $rectOriginal.Bottom - $rectOriginal.Top
+if ($hwndMain -ne [IntPtr]::Zero -and [WindowUtil]::GetWindowRect($hwndMain, [ref]$rectOriginal)) {
+    $origX = $rectOriginal.Left
+    $origY = $rectOriginal.Top
+    $origW = $rectOriginal.Right - $rectOriginal.Left
+    $origH = $rectOriginal.Bottom - $rectOriginal.Top
+    $windowUtilAvailable = $true
+}
+else {
+    Write-Host "Aviso: Nao foi possivel obter as dimensoes da janela. Redimensionamento desabilitado." -ForegroundColor Yellow
+    $origX = 0
+    $origY = 0
+    $origW = 0
+    $origH = 0
+}
 
 # 3. Detecta o monitor atual
 $currentScreen = [System.Windows.Forms.Screen]::FromHandle($hwndMain)
@@ -459,7 +477,7 @@ $OffsetX = $monitor.Left
 $OffsetY = $monitor.Top
 
 # 4. Escolhe quantas instancias iniciar
-$isGitRepo = Test-Path (Join-Path $workspacePath ".git")
+$isGitRepo = Test-Path -LiteralPath (Join-Path $workspacePath ".git")
 if ($isGitRepo) {
     $titulo = "Quantidade de Janelas"
     $mensagem = "Escolha quantas instancias do devin iniciar:"
@@ -493,6 +511,8 @@ $branches = @()
 $createdBranches = @()
 $branchInfos = @()
 $worktreesRoot = $null
+$singleInstanceMode = $false
+$originalBranch = $null
 
 if ($isGitRepo) {
     Write-Host "`n[WORKTREE] Workspace e um repositorio Git." -ForegroundColor Magenta
@@ -587,6 +607,8 @@ if ($isGitRepo) {
     }
 
     if ($numInstancias -eq 1) {
+        $singleInstanceMode = $true
+        $originalBranch = git -C $workspacePath branch --show-current 2>$null
         Write-Host "`n[BRANCH] Selecionando branch para a instancia unica..." -ForegroundColor Magenta
         $info = $selectedBranches[0]
         $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
@@ -618,7 +640,7 @@ if ($isGitRepo) {
         Write-Host "`n[WORKTREE] Criando worktrees isolados..." -ForegroundColor Magenta
 
         $worktreesRoot = Join-Path $workspacePath ".worktrees"
-        if (-not (Test-Path $worktreesRoot)) { New-Item -ItemType Directory -Path $worktreesRoot -Force | Out-Null }
+        if (-not (Test-Path -LiteralPath $worktreesRoot)) { New-Item -ItemType Directory -LiteralPath $worktreesRoot -Force | Out-Null }
 
         $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 
@@ -627,7 +649,7 @@ if ($isGitRepo) {
                 $worktree = Join-Path $worktreesRoot "instancia-$($labels[$i].ToLower())"
 
                 $null = git -C $workspacePath worktree remove "$worktree" --force 2>&1
-                if (Test-Path $worktree) { Remove-Item $worktree -Recurse -Force -ErrorAction SilentlyContinue }
+                if (Test-Path -LiteralPath $worktree) { Remove-Item -LiteralPath $worktree -Recurse -Force -ErrorAction SilentlyContinue }
 
                 $info = $selectedBranches[$i]
                 $branch = $info.Name
@@ -662,7 +684,7 @@ if ($isGitRepo) {
             Write-Host "  Aviso: Falha ao criar worktrees ($($_.Exception.Message)). Removendo o que foi criado e usando mesmo diretorio." -ForegroundColor Yellow
             foreach ($wt in $createdWorktrees) {
                 $null = git -C $workspacePath worktree remove "$wt" --force 2>&1
-                if (Test-Path $wt) { Remove-Item $wt -Recurse -Force -ErrorAction SilentlyContinue }
+                if (Test-Path -LiteralPath $wt) { Remove-Item -LiteralPath $wt -Recurse -Force -ErrorAction SilentlyContinue }
             }
             foreach ($cb in $createdBranches) {
                 $null = git -C $workspacePath branch -D $cb 2>&1
@@ -698,18 +720,6 @@ else { # 4
     $grid += [PSCustomObject]@{X = ($OffsetX + $W / 2); Y = ($OffsetY + $H / 2); W = ($W / 2); H = $H / 2 }
 }
 
-# Verifica se esta rodando dentro do Windows Terminal
-$insideWT = $false
-$pidCheck = $PID
-while ($true) {
-    $cimProc = Get-CimInstance Win32_Process -Filter "ProcessId=$pidCheck" -ErrorAction SilentlyContinue
-    if (-not $cimProc -or $cimProc.ParentProcessId -eq 0) { break }
-
-    $parentProc = Get-Process -Id $cimProc.ParentProcessId -ErrorAction SilentlyContinue
-    if ($parentProc -and $parentProc.Name -eq "WindowsTerminal") { $insideWT = $true; break }
-    $pidCheck = $cimProc.ParentProcessId
-}
-
 # 3. Define tamanho/posicao da janela principal
 if ($numInstancias -eq 1) {
     $mainRect = $grid[0]
@@ -720,7 +730,9 @@ elseif ($insideWT) {
 else {
     $mainRect = $grid[0]
 }
-[WindowUtil]::SetWindowPos($hwndMain, [IntPtr]::Zero, $mainRect.X, $mainRect.Y, $mainRect.W, $mainRect.H, 0x0040) | Out-Null
+if ($windowUtilAvailable) {
+    [WindowUtil]::SetWindowPos($hwndMain, [IntPtr]::Zero, [int]$mainRect.X, [int]$mainRect.Y, [int]$mainRect.W, [int]$mainRect.H, 0x0040) | Out-Null
+}
 
 $processosAdicionais = @()
 
@@ -783,8 +795,8 @@ if ($numInstancias -gt 1) {
                 $timeout++
             }
 
-            if ($hWndFilho -ne [IntPtr]::Zero) {
-                [WindowUtil]::SetWindowPos($hWndFilho, [IntPtr]::Zero, $grid[$i].X, $grid[$i].Y, $grid[$i].W, $grid[$i].H, 0x0040) | Out-Null
+            if ($hWndFilho -ne [IntPtr]::Zero -and $windowUtilAvailable) {
+                [WindowUtil]::SetWindowPos($hWndFilho, [IntPtr]::Zero, [int]$grid[$i].X, [int]$grid[$i].Y, [int]$grid[$i].W, [int]$grid[$i].H, 0x0040) | Out-Null
                 Write-Host "Terminal $($labels[$i]) posicionado com sucesso." -ForegroundColor Green
             }
             else {
@@ -800,15 +812,14 @@ if ($numInstancias -gt 1) {
 Write-Host "Iniciando a instancia principal neste terminal. Feche-a ou encerre-a para continuar o script..." -ForegroundColor Green
 
 # 7. Muda para o worktree A (se houver) e executa o devin
-if ($worktrees.Count -gt 0 -and (Test-Path $worktrees[0])) {
-    Set-Location $worktrees[0]
+if ($worktrees.Count -gt 0 -and (Test-Path -LiteralPath $worktrees[0])) {
+    Set-Location -LiteralPath $worktrees[0]
 }
 
 # Sincroniza a branch da instancia principal com o remoto
 $targetPath = if ($worktrees.Count -gt 0) { $worktrees[0] } else { $workspacePath }
-if ($isGitRepo -and (Test-Path (Join-Path $targetPath ".git"))) {
+if ($isGitRepo -and (Test-Path -LiteralPath (Join-Path $targetPath ".git"))) {
     Write-Host "`nSincronizando branch com remoto..." -ForegroundColor Cyan
-    $null = git -C $targetPath fetch --all --prune 2>&1
     $null = git -C $targetPath diff --quiet 2>&1
     $clean = $?
     if ($clean) {
@@ -842,7 +853,7 @@ else {
 # 5. Limpa worktrees
 if ($createdWorktrees.Count -gt 0 -or $createdBranches.Count -gt 0) {
     Write-Host "`n[WORKTREE] Limpando worktrees..." -ForegroundColor Magenta
-    Push-Location $workspacePath
+    Push-Location -LiteralPath $workspacePath
     foreach ($wt in $createdWorktrees) {
         git worktree remove $wt --force 2>$null
     }
@@ -850,14 +861,23 @@ if ($createdWorktrees.Count -gt 0 -or $createdBranches.Count -gt 0) {
         git branch -D $cb 2>$null
     }
     Pop-Location
-    if ($worktreesRoot -and (Test-Path $worktreesRoot)) { Remove-Item $worktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
+    if ($worktreesRoot -and (Test-Path -LiteralPath $worktreesRoot)) { Remove-Item -LiteralPath $worktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
     Write-Host "  Worktrees removidos. Branches criadas removidas." -ForegroundColor Green
 }
 
+# Restaura a branch original no modo 1 instancia
+if ($singleInstanceMode -and $originalBranch -and $isGitRepo -and (Test-Path -LiteralPath (Join-Path $workspacePath ".git"))) {
+    $null = git -C $workspacePath switch $originalBranch 2>&1
+    if ($?) { Write-Host "  Branch original '$originalBranch' restaurada." -ForegroundColor Green }
+    else { Write-Host "  Aviso: nao foi possivel restaurar a branch '$originalBranch' (ha alteracoes locais)." -ForegroundColor Yellow }
+}
+
 # 8. Restora a janela principal ao tamanho/posicao originais
-[WindowUtil]::SetWindowPos($hwndMain, [IntPtr]::Zero, $origX, $origY, $origW, $origH, 0x0040) | Out-Null
-Write-Host "Terminal restaurado para a posicao e tamanho originais." -ForegroundColor Cyan
+if ($windowUtilAvailable) {
+    [WindowUtil]::SetWindowPos($hwndMain, [IntPtr]::Zero, [int]$origX, [int]$origY, [int]$origW, [int]$origH, 0x0040) | Out-Null
+    Write-Host "Terminal restaurado para a posicao e tamanho originais." -ForegroundColor Cyan
+}
 
 # 2. Retorna ao diretorio original
-Set-Location $diretorioOriginal
+Set-Location -LiteralPath $diretorioOriginal
 Write-Host "`nRetornando ao diretorio original: $($diretorioOriginal.Path)" -ForegroundColor Gray
