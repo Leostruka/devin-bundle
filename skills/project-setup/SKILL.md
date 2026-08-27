@@ -109,6 +109,18 @@ Apply the best-fit alternative for each component. This is the deterministic set
 7. **Create `.devin/skills/setup-matt-pocock-skills/`** link or copy if the user wants the engineering flow available locally.
 8. **Create `.devin/memory/`** directory and seed `MOC.md`.
 
+### Passo 4.5 — POPULAR A BASE DE CONHECIMENTO
+
+The `.devin/` structure is not a solid base until it has content. Run the following setup skills in order, recording everything in `.devin/ledgers/project-setup.md`:
+
+1. **Run `grilling`** to capture the project's big-picture goals, constraints, and stakeholders. Save the approved design (if one emerges) to `.devin/specs/`.
+2. **Run `domain-modeling`** to build `.devin/CONTEXT.md` and `.devin/adr/`. Resolve ambiguous or overloaded terms before they leak into code.
+3. **Run `project-memory`** to capture a first memory entry — stack, conventions, and any decisions the user already shared.
+4. **Run `triage`** once on the existing issue tracker to show the user the triage flow and confirm label mapping.
+5. **Run `planning-pipeline`** on the most urgent item to demonstrate the spec -> tickets flow.
+
+Stop after each step if the user has no content to populate yet. The goal is to leave the project with at least a populated `CONTEXT.md`, one memory entry, and a triaged issue, not to force a full spec.
+
 ### Passo 5 — VALIDAR
 
 Run the project-level validation suite:
@@ -195,6 +207,10 @@ PENDING: <what the user still needs to decide or provide>
 ## Cross-references
 
 - `/setup-matt-pocock-skills` — issue tracker, triage labels, domain docs.
+- `/grilling` — capture the project's goals and produce a design doc.
+- `/domain-modeling` — build `.devin/CONTEXT.md` and `.devin/adr/`.
 - `/project-memory` — capture and retrieve project knowledge.
+- `/triage` — first triage run on the issue tracker.
+- `/planning-pipeline` — demonstrate spec → tickets flow.
 - `/self-extend` — add individual rules, skills, hooks, or MCP servers.
 - `/continuous-improvement` — the 10-step loop this skill adapts.
