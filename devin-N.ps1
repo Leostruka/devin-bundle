@@ -687,7 +687,7 @@ $processosAdicionais = @()
 # 5. Abre as instancias adicionais
 if ($numInstancias -gt 1) {
     $scriptPid = $PID
-    $cmd = "`$null = git pull --ff-only 2>&1; devin; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
+    $cmd = "`$null = git pull --ff-only 2>&1; `$sessions = (devin ls --format json 2>`$null | ConvertFrom-Json); if (`$sessions -and `$sessions.Count -gt 0) { devin ls } else { devin }; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
 
     if ($insideWT) {
         Write-Host "Abrindo paineis divididos (split pane) no Windows Terminal..." -ForegroundColor Cyan
@@ -781,7 +781,16 @@ if ($isGitRepo -and (Test-Path (Join-Path $targetPath ".git"))) {
     }
 }
 
-devin
+# Decide entre retomar sessao existente ou iniciar nova
+$sessions = devin ls --format json 2>$null | ConvertFrom-Json
+if ($sessions -and $sessions.Count -gt 0) {
+    Write-Host "`nSessoes existentes encontradas. Abrindo seletor..." -ForegroundColor Cyan
+    devin ls
+}
+else {
+    Write-Host "`nNenhuma sessao encontrada. Iniciando nova..." -ForegroundColor Cyan
+    devin
+}
 
 # 8. Finaliza as instancias extras (fallback)
 if ($processosAdicionais.Count -gt 0) {
