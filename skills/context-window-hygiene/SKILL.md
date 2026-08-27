@@ -47,7 +47,7 @@ not facts. If dense access to early context is needed, use `context-folding`
 
 1. **Clear chats between unrelated tasks.** Refreshes memory, removes
    lost-in-the-middle noise. A fresh thread outperforms a bloated one.
-2. **Keep rules files small.** AGENTS.md / cursor rules / claude rules are
+2. **Keep rules files small.** `.devin/global_rules.md` / `.devin/rules/*.md` / cursor rules / claude rules are
    loaded into *every* conversation. A 25k-token rules file is 12% of a 200k
    window before you say a word. Compress, modularize into skills, reference
    instead of inlining. See `writing-for-agents`.
@@ -62,7 +62,7 @@ not facts. If dense access to early context is needed, use `context-folding`
    window; only the synthesis returns to the root. 50-100x context savings.
    See `dispatching-parallel-agents`.
 6. **Watch the budget.** Run `context-budget.py` (SessionStart hook) to see
-   the token cost of AGENTS.md + loaded rules before working.
+   the token cost of `.devin/global_rules.md` + loaded rules before working.
 
 ## Anti-Patterns
 

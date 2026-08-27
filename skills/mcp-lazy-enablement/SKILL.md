@@ -39,7 +39,7 @@ the task is done.
 exec: python3 "{{APPDATA}}/devin/scripts/context-budget.py" --full
 ```
 
-This shows the token cost of MCP overhead alongside AGENTS.md and skills.
+This shows the token cost of MCP overhead alongside `.devin/global_rules.md` and skills.
 
 ### Step 2: Classify each server
 

@@ -19,7 +19,7 @@ Cross-session memory for Devin CLI, stored as plain-text, user-auditable notes i
 ## When NOT to use
 
 - Short, self-contained tasks — keep stateless.
-- Preferences that belong in AGENTS.md or skills.
+- Preferences that belong in `.devin/global_rules.md` / `.devin/rules/*.md` or skills.
 - Secrets, credentials, or sensitive values.
 
 ## Core pattern

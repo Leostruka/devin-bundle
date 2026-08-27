@@ -53,4 +53,4 @@ You are running in Devin CLI. Invoke skills with `/<skill-name>`. If a skill is 
 
 ## User Instructions
 
-User instructions (AGENTS.md, AGENTS.md, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+User instructions (`.devin/global_rules.md`, `.devin/rules/*.md`, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.

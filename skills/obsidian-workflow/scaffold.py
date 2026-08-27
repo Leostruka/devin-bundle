@@ -1144,7 +1144,7 @@ views:
             {"title": "Dependencies", "purpose": "Third-party and internal dependencies", "parent": "Overview", "importance": "low", "filePaths": ["package.json", "requirements.txt"]},
             {"title": "Config", "purpose": "Environment variables, config files, feature flags", "parent": "Overview", "importance": "medium", "filePaths": [".env.example", "config/"]},
             {"title": "Glossary", "purpose": "Domain terms with code references", "parent": "Overview", "importance": "low", "filePaths": ["src/types/"]},
-            {"title": "Decisions", "purpose": "ADR log", "parent": "Overview", "importance": "medium", "filePaths": ["docs/adr/"]},
+            {"title": "Decisions", "purpose": "ADR log", "parent": "Overview", "importance": "medium", "filePaths": [".devin/adr/"]},
         ],
     }
     (vault_dir / "wiki-config.json").write_text(

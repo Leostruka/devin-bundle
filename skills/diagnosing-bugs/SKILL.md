@@ -15,8 +15,8 @@ spirit of debugging.**
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ```
 
-When exploring the codebase, read `CONTEXT.md` (if it exists) to get a clear
-mental model of the relevant modules, and check ADRs in the area you're
+When exploring the codebase, read `.devin/CONTEXT.md` (if it exists) to get a clear
+mental model of the relevant modules, and check `.devin/adr/` in the area you're
 touching.
 
 ## Redact
