@@ -10,11 +10,11 @@ Cross-session agent memory is a **contract with the user**, not a black box. Nai
 
 | Mode | When | Evidence |
 |---|---|---|
-| **Stateless** (no cross-session memory) | Default for coding agents. Preferences live in AGENTS.md/skills/repo docs that the user controls. | Most predictable baseline; no drift, no contamination. |
+| **Stateless** (no cross-session memory) | Default for coding agents. Preferences live in `.devin/global_rules.md` / `.devin/rules/*.md` / skills / repo docs that the user controls. | Most predictable baseline; no drift, no contamination. |
 | **Managed memory** (selective add+delete) | Long-horizon tasks where recalling past executions genuinely helps (multi-session chat, long doc analysis). User reviews and prunes periodically. | +10% absolute vs naive growth (arXiv:2505.16067). MemGPT outperforms on multi-session chat (arXiv:2310.08560). |
 | **Naive auto-memory** (append-only, no pruning) | Never. | 16-20pp reliability loss (arXiv:2605.07313). Temporal contamination rises with exposure (arXiv:2605.17830). Reasoning drift even when answers look plausible (arXiv:2607.02374). |
 
-**Rule of thumb:** if a preference matters, the user should write it in AGENTS.md or a skill. If past executions matter, use managed memory with selective addition and deletion — never append-only growth.
+**Rule of thumb:** if a preference matters, the user should write it in `.devin/global_rules.md` or a skill. If past executions matter, use managed memory with selective addition and deletion — never append-only growth.
 
 ## When to use this skill
 
@@ -32,7 +32,7 @@ Cross-session agent memory is a **contract with the user**, not a black box. Nai
 
 ## Rules
 
-1. **Prefer explicit.** User-authored preferences (AGENTS.md, skills, repo docs) over agent-auto-saved memory. The user controls the steering.
+1. **Prefer explicit.** User-authored preferences (`.devin/global_rules.md`, `.devin/rules/*.md`, skills, repo docs) over agent-auto-saved memory. The user controls the steering.
 2. **Never naive growth.** If auto-memory is used, it must have selective addition AND deletion. Append-only is the anti-pattern.
 3. **Audit periodically.** If auto-memory exists, review it manually for stale, large, or drifting entries. Prune aggressively.
 4. **Isolate preferences by task.** A preference about feature X should not influence work on feature Y. Auto-memory that globally injects all preferences into every session causes contamination (arXiv:2605.17830).

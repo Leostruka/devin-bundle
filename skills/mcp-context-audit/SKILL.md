@@ -71,7 +71,7 @@ and flags servers over the 10-15 tool threshold.
 | Server unused in N sessions | Remove from `mcp_config.json` |
 | Tool count > 15 | Prefer a narrower server, or scope tools if the server supports it |
 | Token cost > 5% of window | Justify with concrete usage; else remove |
-| Untrusted server | Review code/permissions first (AGENTS.md Rule 13); run in sandbox |
+| Untrusted server | Review code/permissions first (`.devin/global_rules.md` Rule 13); run in sandbox |
 
 ### Step 4: Verify after removal
 
@@ -91,7 +91,7 @@ Re-run Step 1 to confirm the server is gone and the budget dropped.
 
 - Tool-count accuracy threshold: arXiv:2606.30317 (<10-15 tools/server for
   >90% selection accuracy).
-- MCP architecture patterns / anti-patterns: AGENTS.md Rule 13.
+- MCP architecture patterns / anti-patterns: `.devin/global_rules.md` Rule 13.
 - Context bloat from MCP: "Context Windows Explained for Coding Agents"
   (Matt Pocock) — MCP servers can consume a third of the window before the
   first message.

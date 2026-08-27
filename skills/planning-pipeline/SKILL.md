@@ -176,7 +176,7 @@ Publish the approved tickets. **How** depends on the tracker
 only the shape of the blocking edges changes:
 
 - **Local files** → write one file per ticket under
-  `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in
+  `.devin/scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in
   dependency order (blockers first). Each file's "Blocked by" lists the
   numbers/titles it depends on. Use the per-ticket file template below — one
   ticket per file, never a single combined file.

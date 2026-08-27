@@ -353,7 +353,7 @@
     {
       "name": "writing-for-agents",
       "source": "devin-bundle",
-      "purpose": "Use when creating or editing skills, AGENTS.md rules, or other docs an agent must read.",
+      "purpose": "Use when creating or editing skills, `.devin/global_rules.md` / `.devin/rules/*.md` rules, or other docs an agent must read.",
       "original_path": "%APPDATA%\\devin\\skills\\writing-for-agents",
       "export_hash": "48B79C72C3A34A5253CCBD79DA67F83AC43CE40DC20457293A62358774F7D8C2",
       "exported_at": "2026-08-17T15:41:48.910808-03:00"

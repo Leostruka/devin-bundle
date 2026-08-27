@@ -359,7 +359,7 @@ Collect config artifacts with source links:
 
 #### Step 10 — Glossary (`08-Glossary.md`)
 
-Use `domain-modeling` discipline. Copy or extend `CONTEXT.md` terms. Add:
+Use `domain-modeling` discipline. Copy or extend `.devin/CONTEXT.md` terms. Add:
 
 - Domain term
 - Definition

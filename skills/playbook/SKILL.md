@@ -35,7 +35,7 @@ the playbook format, creation workflow, and a local library structure.
 
 - One-off task — just describe it directly
 - Style guide / project conventions — use Knowledge entries instead
-  (cloud feature; in CLI, put in `AGENTS.md` or a skill)
+  (cloud feature; in CLI, put in `.devin/global_rules.md`, `.devin/rules/*.md`, or a skill)
 - Simple single-step task — a playbook adds overhead without value
 
 ## Playbook format
@@ -152,7 +152,7 @@ system, but you can approximate it:
 1. Name playbook files descriptively: `hotfix-memory-leak.devin.md`
 2. The user references them by name: "use the hotfix-memory-leak
    playbook"
-3. For frequently used playbooks, add a one-line alias in `AGENTS.md`:
+3. For frequently used playbooks, add a one-line alias in `.devin/global_rules.md`:
    `!memleak -> .devin/playbooks/hotfix-memory-leak.devin.md`
 
 ## CLI-specific notes

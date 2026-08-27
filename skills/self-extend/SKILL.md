@@ -14,7 +14,7 @@ Extend Devin CLI's behavior by adding files to the project (`./.devin/`) or to y
 |---|---|---|---|
 | Add a reusable workflow the agent can invoke | Skill | `.devin/skills/<name>/SKILL.md` (project) or `~/.config/devin/skills/<name>/SKILL.md` (global) | next `skill list` / session |
 | Define a specialized worker for a task type | Custom subagent profile | `.devin/agents/<name>.md` or `.devin/agents/<name>/AGENT.md` (project/global `~/.config/devin/agents/`) | next session |
-| Add always-on context for a project or globally | Rules | `AGENTS.md` (project root or `~/.config/devin/AGENTS.md`) or `.devin/global_rules.md` or `.devin/rules/*.md` | session start |
+| Add always-on context for a project or globally | Rules | `.devin/global_rules.md` or `.devin/rules/*.md` (project); `~/.config/devin/AGENTS.md` (global) | session start |
 | Run custom logic at lifecycle events | Hooks | `.devin/hooks.v1.json` or `.devin/hooks.json` | next session |
 | Give the agent new API/database tools | MCP server | `.devin/mcp_config.json` or `~/.config/devin/mcp_config.json` | next session |
 | Bundle skills/rules/hooks/MCP for distribution | Plugin | `.devin-plugin/plugin.json` manifest + skills/rules/hooks/mcp | install/reload |
@@ -80,7 +80,7 @@ Run a `subagent_general` or `researcher` subagent (NOT `subagent_explore` when p
 
 ## Adding rules
 
-`AGENTS.md` at the project root (or `~/.config/devin/AGENTS.md` globally) is always loaded. Keep it small; put detailed guidance in skills.
+`.devin/global_rules.md` and `.devin/rules/*.md` inside the project are loaded by default. Keep them small; put detailed guidance in skills.
 
 `.devin/rules/*.md` files can have `trigger` frontmatter (`always_on`, `manual`, `model_decision`, `agent`, `glob`) to load only when relevant.
 
@@ -139,9 +139,9 @@ For secrets, use `.devin/mcp_config.local.json` (gitignored).
 A plugin is a directory with a `.devin-plugin/plugin.json` manifest. It can ship:
 
 - `skills/<name>/SKILL.md`
-- `AGENTS.md`
-- `rules/*.md`
-- `agents/<name>.md`
+- `.devin/global_rules.md`
+- `.devin/rules/*.md`
+- `.devin/agents/<name>.md`
 - `mcp_config.json`
 - `hooks.json`/`hooks.v1.json`
 
@@ -155,7 +155,7 @@ If a skill needs executable helpers, keep them in the skill's `scripts/` directo
 
 - Do not ask users for secrets; put credentials in `.devin/config.local.json` or env vars.
 - Do not modify repository security policies or CI compliance settings.
-- Keep `AGENTS.md` small; prefer skills for detailed guidance.
+- Keep `.devin/global_rules.md` small; prefer skills for detailed guidance.
 - Prefer standard Devin CLI paths; do not reference non-Devin runtimes.
 
 ## Dynamic Subagent Construction (AOrchestra 4-tuple)
