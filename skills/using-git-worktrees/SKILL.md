@@ -138,6 +138,11 @@ Tests passing (<N> tests, 0 failures)
 Ready to implement <feature-name>
 ```
 
+## Cross-skills
+
+- When the worktree is complete, use `finishing-a-development-branch` to merge, PR, or clean it up.
+- If the work needs to pause and resume in a fresh session, use `handoff` to capture context.
+
 ## Quick Reference
 
 | Situation | Action |

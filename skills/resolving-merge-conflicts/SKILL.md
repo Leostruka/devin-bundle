@@ -11,3 +11,8 @@ description: Use when a merge conflict needs to be resolved and verified.
 4. Discover the project's **automated checks** and run them — typically typecheck, then tests, then format. Fix anything the merge broke.
 
 5. **Finish the merge/rebase.** Stage everything and commit. If rebasing, continue the rebase process until all commits are rebased.
+
+## Cross-skills
+
+- Use `git-helper` for git operations you're unsure about.
+- Use `gh` to read the original PRs/issues that introduced the conflicting changes.

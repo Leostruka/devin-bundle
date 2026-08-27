@@ -162,3 +162,9 @@ Sometimes useful data isn't on the typed commands. Examples:
 - `NO_COLOR`, `CLICOLOR_FORCE`, and `GH_FORCE_TTY` are honored. Set
   `GH_FORCE_TTY=1` if you want TTY-style output (colors, tables, the
   pager, interactivity) inside an agent harness; leave it unset unless needed.
+
+## Cross-skills
+
+- Use `pr-review` when the user wants an inline GitHub review with suggestions.
+- Use `resolving-merge-conflicts` when a `gh pr merge` fails with conflicts.
+- Use `finishing-a-development-branch` after a PR is merged to clean up.

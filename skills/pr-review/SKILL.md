@@ -8,7 +8,7 @@ subagent: reviewer
 
 # PR Review (Inline GitHub)
 
-> **REQUIRED SUB-SKILLS:** `/unlazy`, `/gh`, `/writing-plans`
+> **REQUIRED SUB-SKILLS:** `/unlazy`, `/gh`, `/writing-plans`, `/code-review`
 > **MANDATORY BUDGET:** `standard` or `strict`
 > **Language:** follow the PR / repository language (Portuguese if the codebase is in Portuguese)
 

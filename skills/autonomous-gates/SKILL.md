@@ -144,13 +144,17 @@ Security gate: python scripts/check-ai-signature.py
 - **Don't make gates too broad.** `npm test` as a step gate runs everything — use scoped gates (`--grep`).
 - **Don't ignore a failing gate.** A failing gate means the task is not done. Fix it or escalate.
 
+## Integration with Existing Skills
+
+- **`unlazy`:** for long-horizon tasks, write a `.devin/ledgers/<task>.md` with gates before starting. `autonomous-gates` executes those gates.
+- **`verification-before-completion` skill:** defines per-task VFs; gates execute them
+- **`check-push-green.py` hook:** already enforces the push gate at the hook level
+
 ## Integration with Existing Rules
 
 - **Rule 5 (No push without green):** the final gate IS the green check
 - **Rule 10 (Don't declare without verifying):** gates are the verification mechanism
 - **Rule 11 (Never fail from failures):** a failing gate is a signal to fix, not to stop
-- **`verification-before-completion` skill:** defines per-task VFs; gates execute them
-- **`check-push-green.py` hook:** already enforces the push gate at the hook level
 
 ## Evidence Summary
 

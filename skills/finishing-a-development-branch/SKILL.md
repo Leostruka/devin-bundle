@@ -10,6 +10,10 @@ description: Use when the implementation is complete, all tests pass, and the wo
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
+## Step 0: Pre-flight verification
+
+Before declaring the branch ready, run a `verification-before-completion` gate: re-read the spec, run the checklist, and confirm every acceptance criterion is met.
+
 ## Step 1: Verify Tests
 
 Run the project's full test suite (`npm test` / `cargo test` / `pytest` / `go test ./...`).
@@ -116,6 +120,8 @@ git push -u origin <feature-branch>
 # From a detached HEAD, name the new branch on the remote:
 # git push origin HEAD:refs/heads/<new-branch>
 ```
+
+Before creating the PR, run `code-review` on the diff.
 
 Then create the pull/merge request against <base-branch> with the forge's
 tooling — its CLI if one is available, or the creation URL most forges

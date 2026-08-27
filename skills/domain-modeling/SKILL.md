@@ -7,6 +7,11 @@ agent: architect
 
 Actively build and sharpen the project's domain model as you design. This is the *active* discipline — challenging terms, inventing edge-case scenarios, and writing the glossary and decisions down the moment they crystallise. (Merely *reading* `.devin/CONTEXT.md` for vocabulary is not this skill — that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
 
+## Cross-skills
+
+- If the domain involves an industry-specific term or a concept you're unsure about, invoke `research` to find authoritative definitions before adding it to `.devin/CONTEXT.md`.
+- If the domain model is being built inside a large or unfamiliar codebase, invoke `deep-mode` to map how the code currently uses the terms.
+
 ## File structure
 
 Most repos have a single context:

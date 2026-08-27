@@ -21,6 +21,8 @@ Extend Devin CLI's behavior by adding files to the project (`./.devin/`) or to y
 
 ## Creating skills
 
+Before writing any skill or rule, invoke `writing-for-agents` to ensure the document follows agent-readable conventions (frontmatter, context pointers, completion criteria, pruning).
+
 Project skill (committed to repo):
 
 ```markdown

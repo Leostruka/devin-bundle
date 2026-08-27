@@ -4,6 +4,8 @@ description: Use when about to claim work is complete, fixed, or passing.
 ---
 # Verification Before Completion
 
+For multi-step or long-horizon tasks, use `unlazy` to write a `.devin/ledgers/<task>.md` with explicit gates before you start. Each gate has a check command and expected output; evidence is recorded before completion is claimed.
+
 ## Overview
 
 **Core principle:** Evidence before claims, always.
