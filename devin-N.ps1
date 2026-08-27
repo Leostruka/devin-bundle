@@ -13,6 +13,11 @@ if (Get-Command pwsh -ErrorAction SilentlyContinue) {
 }
 Write-Host "Usando terminal base: $psExecutable" -ForegroundColor DarkGray
 
+# Localiza o Windows Terminal (wt.exe) para abrir paineis/janelas extras
+$wtCmd = Get-Command wt -ErrorAction SilentlyContinue
+$wtPath = if ($wtCmd) { $wtCmd.Source } else { $null }
+if (-not $wtPath) { Write-Host "wt.exe nao encontrado. Novas instancias abrirao em janelas de PowerShell separadas." -ForegroundColor DarkYellow }
+
 # 4. Carrega ConsoleGuiTools e prepara TUI no terminal
 Add-Type -AssemblyName System.Windows.Forms
 Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop
@@ -740,7 +745,7 @@ if ($numInstancias -gt 1) {
     $scriptPid = $PID
     $cmd = "Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop; . '$bundleRoot\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
 
-    if ($insideWT) {
+    if ($insideWT -and $wtPath) {
         Write-Host "Abrindo paineis divididos (split pane) no Windows Terminal..." -ForegroundColor Cyan
 
         $subcommands = @()
@@ -763,18 +768,20 @@ if ($numInstancias -gt 1) {
         }
 
         $argsWT = "-w 0 " + ($subcommands -join " ; ")
-        Start-Process -FilePath "wt.exe" -ArgumentList $argsWT
+        $proc = Start-Process -FilePath $wtPath -ArgumentList $argsWT -PassThru
+        if (-not $proc) { Write-Warning "Nao foi possivel iniciar wt.exe para os paineis extras." }
 
         Write-Host "Paineis extras abertos. Ajuste os divisores com Alt+Shift+setas." -ForegroundColor Green
     }
-    else {
+    elseif ($wtPath) {
         Write-Host "Nao esta no Windows Terminal - abrindo janelas separadas (fallback)." -ForegroundColor DarkYellow
 
         for ($i = 1; $i -lt $numInstancias; $i++) {
             [int[]]$wtBefore = @(Get-Process WindowsTerminal -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
 
             $argsWT = "-w new -d `"$($worktrees[$i])`" $psExecutable -NoExit -Command `"$cmd`""
-            Start-Process -FilePath "wt.exe" -ArgumentList $argsWT
+            $proc = Start-Process -FilePath $wtPath -ArgumentList $argsWT -PassThru
+            if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($labels[$i]) via wt.exe."; continue }
 
             $timeout = 0
             $hWndFilho = [IntPtr]::Zero
@@ -801,6 +808,15 @@ if ($numInstancias -gt 1) {
             else {
                 Write-Host "Aviso: A nova janela $($labels[$i]) demorou muito para responder e nao foi redimensionada." -ForegroundColor Yellow
             }
+        }
+    }
+    else {
+        Write-Host "wt.exe nao encontrado - abrindo janelas de PowerShell separadas." -ForegroundColor DarkYellow
+
+        for ($i = 1; $i -lt $numInstancias; $i++) {
+            $proc = Start-Process -FilePath $psExecutable -ArgumentList "-NoExit -Command `"$cmd`"" -PassThru
+            if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($labels[$i])." }
+            else { $processosAdicionais += $proc }
         }
     }
 
