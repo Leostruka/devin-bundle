@@ -20,6 +20,17 @@ function Show-TerminalList {
         return "$label"
     }
 
+    function Write-MenuLine {
+        param([string]$Text, [string]$Color = 'White')
+        $w = [Console]::WindowWidth
+        if ($w -le 0) { $w = 120 }
+        $line = $Text
+        if ($line.Length -gt $w) { $line = $line.Substring(0, $w) }
+        $line = $line.PadRight($w)
+        Write-Host -NoNewline $line -ForegroundColor $Color
+        Write-Host
+    }
+
     # Se o console nao for interativo (redirecionado), usa filtro + Read-Host numerado.
     if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected) {
         Write-Host $Title -ForegroundColor Cyan
@@ -41,20 +52,13 @@ function Show-TerminalList {
     [Console]::CursorVisible = $false
     $selected = 0
     $filterText = ''
+    $lastTotalLines = 0
+    $firstDraw = $true
 
     try {
         while ($true) {
             $filtered = @($Items | Where-Object { (Get-Label $_).IndexOf($filterText, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
             if ($selected -ge $filtered.Count) { $selected = [Math]::Max(0, $filtered.Count - 1) }
-
-            Clear-Host
-            Write-Host $Title -ForegroundColor Cyan
-            if ($filterText) {
-                Write-Host "(Setas/Enter/Esc | digite para filtrar | Backspace apaga | Delete limpa)`n" -ForegroundColor DarkGray
-            }
-            else {
-                Write-Host "(Setas para navegar, Enter para selecionar, Esc para cancelar | digite para filtrar)`n" -ForegroundColor DarkGray
-            }
 
             $winHeight = [Console]::WindowHeight
             $windowSize = if ($winHeight -gt 6) { $winHeight - 6 } else { 20 }
@@ -66,21 +70,50 @@ function Show-TerminalList {
             }
             $end = [Math]::Min($filtered.Count - 1, $start + $windowSize - 1)
 
+            $listLines = if ($filtered.Count -eq 0) { 1 } else { $end - $start + 1 }
+            $currentTotalLines = 1 + 2 + $listLines + 1 + 1
+
+            if ($firstDraw) {
+                Clear-Host
+                $firstDraw = $false
+            }
+            else {
+                [Console]::SetCursorPosition(0, 0)
+            }
+
+            Write-MenuLine -Text $Title -Color 'Cyan'
+
+            if ($filterText) {
+                Write-MenuLine -Text "(Setas/Enter/Esc | digite para filtrar | Backspace apaga | Delete limpa)" -Color 'DarkGray'
+            }
+            else {
+                Write-MenuLine -Text "(Setas para navegar, Enter para selecionar, Esc para cancelar | digite para filtrar)" -Color 'DarkGray'
+            }
+
+            Write-MenuLine -Text ''
+
             if ($filtered.Count -eq 0) {
-                Write-Host " Nenhum item encontrado." -ForegroundColor Red
+                Write-MenuLine -Text " Nenhum item encontrado." -Color 'Red'
             }
             else {
                 for ($i = $start; $i -le $end; $i++) {
                     $label = Get-Label $filtered[$i]
                     $prefix = if ($i -eq $selected) { '>' } else { ' ' }
                     $color = if ($i -eq $selected) { 'Yellow' } else { 'White' }
-                    Write-Host " $prefix [$($i+1)] $label" -ForegroundColor $color
+                    Write-MenuLine -Text " $prefix [$($i+1)] $label" -Color $color
                 }
             }
 
-            Write-Host "`nFiltro: " -NoNewline -ForegroundColor Cyan
-            Write-Host "$filterText" -NoNewline -ForegroundColor Cyan
-            Write-Host "_" -ForegroundColor Cyan
+            Write-MenuLine -Text ''
+            Write-MenuLine -Text ("Filtro: $filterText" + '_') -Color 'Cyan'
+
+            if ($lastTotalLines -gt $currentTotalLines) {
+                for ($line = $currentTotalLines; $line -lt $lastTotalLines; $line++) {
+                    [Console]::SetCursorPosition(0, $line)
+                    Write-MenuLine -Text ''
+                }
+            }
+            $lastTotalLines = $currentTotalLines
 
             $keyInfo = [Console]::ReadKey($true)
             $key = $keyInfo.Key
