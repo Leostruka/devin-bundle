@@ -13,57 +13,106 @@ function Show-TerminalList {
 
     if ($Items.Count -eq 0) { return $null }
 
-    # Se o console nao for interativo (redirecionado), usa Read-Host numerado.
+    function Get-Label {
+        param($Item)
+        $label = &$ToString $Item
+        if ($null -eq $label) { return '' }
+        return "$label"
+    }
+
+    # Se o console nao for interativo (redirecionado), usa filtro + Read-Host numerado.
     if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected) {
         Write-Host $Title -ForegroundColor Cyan
-        for ($i = 0; $i -lt $Items.Count; $i++) {
-            Write-Host "  [$($i+1)] $((&$ToString $Items[$i]))" -ForegroundColor White
+        $filter = Read-Host "Filtro (Enter para mostrar tudo)"
+        $filtered = @($Items | Where-Object { (Get-Label $_).IndexOf($filter, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
+        if ($filtered.Count -eq 0) { return $null }
+        for ($i = 0; $i -lt $filtered.Count; $i++) {
+            Write-Host "  [$($i+1)] $(Get-Label $filtered[$i])" -ForegroundColor White
         }
         $choice = Read-Host "Digite o numero (Enter para cancelar)"
         if ([string]::IsNullOrWhiteSpace($choice)) { return $null }
         if (-not [int]::TryParse($choice, [ref]$null)) { return $null }
         $idx = [int]$choice - 1
-        if ($idx -lt 0 -or $idx -ge $Items.Count) { return $null }
-        return $Items[$idx]
+        if ($idx -lt 0 -or $idx -ge $filtered.Count) { return $null }
+        return $filtered[$idx]
     }
 
     $cursorWasVisible = [Console]::CursorVisible
     [Console]::CursorVisible = $false
     $selected = 0
+    $filterText = ''
 
     try {
         while ($true) {
+            $filtered = @($Items | Where-Object { (Get-Label $_).IndexOf($filterText, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
+            if ($selected -ge $filtered.Count) { $selected = [Math]::Max(0, $filtered.Count - 1) }
+
             Clear-Host
             Write-Host $Title -ForegroundColor Cyan
-            Write-Host "(Setas para navegar, Enter para selecionar, Esc para cancelar)`n" -ForegroundColor DarkGray
+            if ($filterText) {
+                Write-Host "(Setas/Enter/Esc | digite para filtrar | Backspace apaga | Delete limpa)`n" -ForegroundColor DarkGray
+            }
+            else {
+                Write-Host "(Setas para navegar, Enter para selecionar, Esc para cancelar | digite para filtrar)`n" -ForegroundColor DarkGray
+            }
 
             $winHeight = [Console]::WindowHeight
-            $windowSize = if ($winHeight -gt 5) { $winHeight - 5 } else { 20 }
+            $windowSize = if ($winHeight -gt 6) { $winHeight - 6 } else { 20 }
 
             $start = 0
-            if ($Items.Count -gt $windowSize) {
+            if ($filtered.Count -gt $windowSize) {
                 $half = [Math]::Floor($windowSize / 2)
-                $start = [Math]::Max(0, [Math]::Min($selected - $half, $Items.Count - $windowSize))
+                $start = [Math]::Max(0, [Math]::Min($selected - $half, $filtered.Count - $windowSize))
             }
-            $end = [Math]::Min($Items.Count - 1, $start + $windowSize - 1)
+            $end = [Math]::Min($filtered.Count - 1, $start + $windowSize - 1)
 
-            for ($i = $start; $i -le $end; $i++) {
-                $label = &$ToString $Items[$i]
-                $prefix = if ($i -eq $selected) { '>' } else { ' ' }
-                $color = if ($i -eq $selected) { 'Yellow' } else { 'White' }
-                Write-Host " $prefix [$($i+1)] $label" -ForegroundColor $color
+            if ($filtered.Count -eq 0) {
+                Write-Host " Nenhum item encontrado." -ForegroundColor Red
+            }
+            else {
+                for ($i = $start; $i -le $end; $i++) {
+                    $label = Get-Label $filtered[$i]
+                    $prefix = if ($i -eq $selected) { '>' } else { ' ' }
+                    $color = if ($i -eq $selected) { 'Yellow' } else { 'White' }
+                    Write-Host " $prefix [$($i+1)] $label" -ForegroundColor $color
+                }
             }
 
-            $key = [Console]::ReadKey($true).Key
+            Write-Host "`nFiltro: " -NoNewline -ForegroundColor Cyan
+            Write-Host "$filterText" -NoNewline -ForegroundColor Cyan
+            Write-Host "_" -ForegroundColor Cyan
+
+            $keyInfo = [Console]::ReadKey($true)
+            $key = $keyInfo.Key
+            $char = $keyInfo.KeyChar
+
+            if ($char -ge ' ' -and -not [char]::IsControl($char)) {
+                $filterText += $char
+                $selected = 0
+                continue
+            }
+
             switch ($key) {
                 'UpArrow' { if ($selected -gt 0) { $selected-- } }
-                'DownArrow' { if ($selected -lt ($Items.Count - 1)) { $selected++ } }
+                'DownArrow' { if ($selected -lt ($filtered.Count - 1)) { $selected++ } }
                 'Home' { $selected = 0 }
-                'End' { $selected = $Items.Count - 1 }
+                'End' { $selected = [Math]::Max(0, $filtered.Count - 1) }
                 'PageUp' { $selected = [Math]::Max(0, $selected - $windowSize) }
-                'PageDown' { $selected = [Math]::Min($Items.Count - 1, $selected + $windowSize) }
-                'Enter' { return $Items[$selected] }
-                'Escape' { return $null }
+                'PageDown' { $selected = [Math]::Min($filtered.Count - 1, $selected + $windowSize) }
+                'Backspace' { if ($filterText.Length -gt 0) { $filterText = $filterText.Substring(0, $filterText.Length - 1); $selected = 0 } }
+                'Delete' { $filterText = ''; $selected = 0 }
+                'Enter' {
+                    if ($filtered.Count -gt 0) { return $filtered[$selected] }
+                }
+                'Escape' {
+                    if ($filterText.Length -gt 0) {
+                        $filterText = ''
+                        $selected = 0
+                    }
+                    else {
+                        return $null
+                    }
+                }
             }
         }
     }
