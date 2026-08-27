@@ -530,6 +530,18 @@ if ($isGitRepo) {
 
     $allOptions = @()
 
+    if ($defaultBranch) {
+        $localDefault = [bool](git -C $workspacePath rev-parse --verify --quiet $defaultBranch 2>$null)
+        $remoteDefault = [bool](git -C $workspacePath rev-parse --verify --quiet "origin/$defaultBranch" 2>$null)
+        if ($localDefault -or $remoteDefault) {
+            $allOptions += @{
+                Name = $defaultBranch
+                Type = if ($localDefault) { "local" } else { "remote" }
+                IsCurrent = ($defaultBranch -eq $currentBranch)
+            }
+        }
+    }
+
     if ($localBranches.Count -gt 0) {
         foreach ($b in $localBranches) {
             $allOptions += @{ Name = $b; Type = "local"; IsCurrent = ($b -eq $currentBranch) }
