@@ -69,15 +69,13 @@ $wtCmd = Get-Command wt -ErrorAction SilentlyContinue
 $wtPath = if ($wtCmd) { $wtCmd.Source } else { $null }
 if (-not $wtPath) { Write-Host $M.WtNaoEncontrado -ForegroundColor DarkYellow }
 
-# 4. Carrega ConsoleGuiTools e prepara TUI no terminal
+# 4. Carrega utilitarios e menu full-terminal
 Add-Type -AssemblyName System.Windows.Forms
-Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop
 . (Join-Path $bundleRoot "devin-session-launcher.ps1")
 
 function Select-FolderTerminal {
     param([string]$InitialPath)
 
-    if (-not (Get-Command Out-ConsoleGridView -ErrorAction SilentlyContinue)) { return $InitialPath }
     if (-not (Test-Path -LiteralPath $InitialPath -PathType Container)) { $InitialPath = (Get-Location).Path }
 
     $current = $InitialPath
@@ -98,7 +96,7 @@ function Select-FolderTerminal {
             [void]$items.Add([PSCustomObject]@{ Name = $d.Name; Caminho = $d.FullName; Tipo = 'pasta' })
         }
 
-        $selected = $items | Out-ConsoleGridView -Title "Selecione o workspace" -OutputMode Single
+        $selected = Show-TerminalList -Items $items -Title "Selecione o workspace ($current)" -ToString { param($x) $x.Name }
         if (-not $selected) { return $current }
 
         if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Usar esta pasta]') { return $selected.Caminho }
@@ -112,7 +110,7 @@ function Select-FolderTerminal {
                         Tipo = 'drive'
                     }
                 }
-            $driveSelected = $drives | Out-ConsoleGridView -Title "Selecione o drive" -OutputMode Single
+            $driveSelected = Show-TerminalList -Items $drives -Title "Selecione o drive" -ToString { param($x) $x.Name }
             if ($driveSelected) { $current = $driveSelected.Caminho }
             continue
         }
@@ -463,8 +461,6 @@ function Select-BranchTerminal {
         [string]$Title
     )
 
-    if (-not (Get-Command Out-ConsoleGridView -ErrorAction SilentlyContinue)) { return $null }
-
     $rows = foreach ($opt in $Options) {
         $status = Format-BranchStatus -BranchName $opt.Name -BranchOption $opt -MetaMap $MetaMap -PrMap $PrMap -ProtectedSet $ProtectedSet -DefaultBranch $DefaultBranch
         [PSCustomObject]@{
@@ -475,7 +471,7 @@ function Select-BranchTerminal {
         }
     }
 
-    $selected = $rows | Out-ConsoleGridView -Title $Title -OutputMode Single
+    $selected = Show-TerminalList -Items $rows -Title $Title -ToString { param($x) "[$($x.Tipo)] $($x.Name)$($x.Status)$(if ($x.Atual) { ' (atual)' } else { '' })" }
     if (-not $selected) { return $null }
     return ($Options | Where-Object { $_.Name -eq $selected.Name } | Select-Object -First 1)
 }
@@ -642,7 +638,7 @@ if ($isGitRepo) {
 
     $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
 
-    # Seleciona branches no terminal via ConsoleGuiTools
+    # Seleciona branches no terminal
     $selectedBranches = @()
     for ($i = 0; $i -lt $numInstancias; $i++) {
         $pos = $positions[$i]
@@ -791,7 +787,7 @@ $processosAdicionais = @()
 # 5. Abre as instancias adicionais
 if ($numInstancias -gt 1) {
     $scriptPid = $PID
-    $cmd = "Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop; . '$bundleRoot\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
+    $cmd = ". '$bundleRoot\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
 
     if ($insideWT -and $wtPath) {
         Write-Host $M.PaineisDivididos -ForegroundColor Cyan
