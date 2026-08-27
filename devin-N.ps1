@@ -2,8 +2,6 @@
 # Suporta 1 a 4 instancias com worktrees isoladas.
 # O comando `devin` inicia um REPL interativo no diretorio atual.
 
-Set-StrictMode -Version Latest
-
 # Mensagens centralizadas (templates para futura i18n)
 $M = @{
     UsandoTerminal = 'Usando terminal base: {0}'
@@ -101,7 +99,7 @@ function Select-FolderTerminal {
         }
 
         $selected = $items | Out-ConsoleGridView -Title "Selecione o workspace" -OutputMode Single
-        if (-not $selected) { return $null }
+        if (-not $selected) { return $current }
 
         if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Usar esta pasta]') { return $selected.Caminho }
         if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Trocar de drive]') {
@@ -395,7 +393,7 @@ function Format-BranchStatus {
                     }
                 }
             }
-            $tokens += "PR #$($pr.number) $state | autor:$($pr.author.login) | $review | CI:$ci"
+            $tokens += "PR #$($pr.number) $state | autor:$($pr.author?.login ?? 'n/a') | $review | CI:$ci"
         }
     }
 
@@ -655,10 +653,7 @@ if ($isGitRepo) {
         $available += $newBranchOption
 
         $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
-        if (-not $selected) {
-            Write-Host ($M.SelecaoCancelada -f 'branch') -ForegroundColor Yellow
-            exit
-        }
+        if (-not $selected) { $selected = $newBranchOption }
         $selectedBranches += $selected
         Write-Host ($M.WorktreeInstancia -f $labels[$i], $selected.Name) -ForegroundColor Cyan
     }
