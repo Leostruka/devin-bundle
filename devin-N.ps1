@@ -4,6 +4,23 @@
 
 Set-StrictMode -Version Latest
 
+# Mensagens centralizadas (templates para futura i18n)
+$M = @{
+    UsandoTerminal = 'Usando terminal base: {0}'
+    WtNaoEncontrado = 'wt.exe nao encontrado. Novas instancias abrirao em janelas de PowerShell separadas.'
+    SelecaoCancelada = 'Selecao de {0} cancelada. Encerrando.'
+    ReferenciasAtualizadas = '  Referencias remotas atualizadas.'
+    ReferenciasFalha = '  Nao foi possivel atualizar as referencias remotas (sem acesso ou sem remoto configurado).'
+    BranchAtualizada = '  Branch atualizada (fast-forward).'
+    FastForwardFalha = '  Nao foi possivel fast-forward (sem upstream ou divergencia).'
+    PullIgnorado = '  Pull ignorado: ha alteracoes locais.'
+    WorktreesRemovidos = '  Worktrees removidos. Branches criadas removidas.'
+    BranchOriginalRestaurada = "  Branch original '{0}' restaurada."
+    BranchOriginalFalha = "  Aviso: nao foi possivel restaurar a branch '{0}' (ha alteracoes locais)."
+    TerminalRestaurado = 'Terminal restaurado para a posicao e tamanho originais.'
+    RetornandoDiretorio = "`nRetornando ao diretorio original: {0}"
+}
+
 # 2. Salva o diretorio atual
 $diretorioOriginal = Get-Location
 $bundleRoot = $PSScriptRoot
@@ -13,12 +30,12 @@ $psExecutable = "powershell.exe"
 if (Get-Command pwsh -ErrorAction SilentlyContinue) {
     $psExecutable = "pwsh.exe"
 }
-Write-Host "Usando terminal base: $psExecutable" -ForegroundColor DarkGray
+Write-Host ($M.UsandoTerminal -f $psExecutable) -ForegroundColor DarkGray
 
 # Localiza o Windows Terminal (wt.exe) para abrir paineis/janelas extras
 $wtCmd = Get-Command wt -ErrorAction SilentlyContinue
 $wtPath = if ($wtCmd) { $wtCmd.Source } else { $null }
-if (-not $wtPath) { Write-Host "wt.exe nao encontrado. Novas instancias abrirao em janelas de PowerShell separadas." -ForegroundColor DarkYellow }
+if (-not $wtPath) { Write-Host $M.WtNaoEncontrado -ForegroundColor DarkYellow }
 
 # 4. Carrega ConsoleGuiTools e prepara TUI no terminal
 Add-Type -AssemblyName System.Windows.Forms
@@ -75,7 +92,7 @@ function Select-FolderTerminal {
 Write-Host "`nSelecione o workspace no terminal..." -ForegroundColor Cyan
 $workspacePath = Select-FolderTerminal -InitialPath $diretorioOriginal.Path
 if (-not $workspacePath) {
-    Write-Host "Selecao de workspace cancelada. Encerrando." -ForegroundColor Yellow
+    Write-Host ($M.SelecaoCancelada -f 'workspace') -ForegroundColor Yellow
     exit
 }
 if ($workspacePath -ne $diretorioOriginal.Path) {
@@ -530,10 +547,10 @@ if ($isGitRepo) {
     Write-Host "Sincronizando referencias remotas..." -ForegroundColor DarkGray
     $null = git -C $workspacePath fetch --all --prune 2>&1
     if ($?) {
-        Write-Host "  Referencias remotas atualizadas." -ForegroundColor Green
+        Write-Host $M.ReferenciasAtualizadas -ForegroundColor Green
     }
     else {
-        Write-Host "  Nao foi possivel atualizar as referencias remotas (sem acesso ou sem remoto configurado)." -ForegroundColor Yellow
+        Write-Host $M.ReferenciasFalha -ForegroundColor Yellow
     }
 
     # Obtem metadados das branches e do GitHub
@@ -605,7 +622,7 @@ if ($isGitRepo) {
 
         $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
         if (-not $selected) {
-            Write-Host "Selecao de branch cancelada. Encerrando." -ForegroundColor Yellow
+            Write-Host ($M.SelecaoCancelada -f 'branch') -ForegroundColor Yellow
             exit
         }
         $selectedBranches += $selected
@@ -841,11 +858,11 @@ if ($isGitRepo -and (Test-Path -LiteralPath (Join-Path $targetPath ".git"))) {
     $clean = $?
     if ($clean) {
         $null = git -C $targetPath pull --ff-only 2>&1
-        if ($?) { Write-Host "  Branch atualizada (fast-forward)." -ForegroundColor Green }
-        else { Write-Host "  Nao foi possivel fast-forward (sem upstream ou divergencia)." -ForegroundColor Yellow }
+        if ($?) { Write-Host $M.BranchAtualizada -ForegroundColor Green }
+        else { Write-Host $M.FastForwardFalha -ForegroundColor Yellow }
     }
     else {
-        Write-Host "  Pull ignorado: ha alteracoes locais." -ForegroundColor Yellow
+        Write-Host $M.PullIgnorado -ForegroundColor Yellow
     }
 }
 
@@ -879,22 +896,22 @@ if ($createdWorktrees.Count -gt 0 -or $createdBranches.Count -gt 0) {
     }
     Pop-Location
     if ($worktreesRoot -and (Test-Path -LiteralPath $worktreesRoot)) { Remove-Item -LiteralPath $worktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
-    Write-Host "  Worktrees removidos. Branches criadas removidas." -ForegroundColor Green
+    Write-Host $M.WorktreesRemovidos -ForegroundColor Green
 }
 
 # Restaura a branch original no modo 1 instancia
 if ($singleInstanceMode -and $originalBranch -and $isGitRepo -and (Test-Path -LiteralPath (Join-Path $workspacePath ".git"))) {
     $null = git -C $workspacePath switch $originalBranch 2>&1
-    if ($?) { Write-Host "  Branch original '$originalBranch' restaurada." -ForegroundColor Green }
-    else { Write-Host "  Aviso: nao foi possivel restaurar a branch '$originalBranch' (ha alteracoes locais)." -ForegroundColor Yellow }
+    if ($?) { Write-Host ($M.BranchOriginalRestaurada -f $originalBranch) -ForegroundColor Green }
+    else { Write-Host ($M.BranchOriginalFalha -f $originalBranch) -ForegroundColor Yellow }
 }
 
 # 8. Restora a janela principal ao tamanho/posicao originais
 if ($windowUtilAvailable) {
     [WindowUtil]::SetWindowPos($hwndMain, [IntPtr]::Zero, [int]$origX, [int]$origY, [int]$origW, [int]$origH, 0x0040) | Out-Null
-    Write-Host "Terminal restaurado para a posicao e tamanho originais." -ForegroundColor Cyan
+    Write-Host $M.TerminalRestaurado -ForegroundColor Cyan
 }
 
 # 2. Retorna ao diretorio original
 Set-Location -LiteralPath $diretorioOriginal
-Write-Host "`nRetornando ao diretorio original: $($diretorioOriginal.Path)" -ForegroundColor Gray
+Write-Host ($M.RetornandoDiretorio -f $diretorioOriginal.Path) -ForegroundColor Gray
