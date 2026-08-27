@@ -8,7 +8,8 @@ function Show-TerminalList {
         [Parameter(Mandatory)]
         [array]$Items,
         [string]$Title = 'Selecione',
-        [scriptblock]$ToString = { param($x) $x.ToString() }
+        [scriptblock]$ToString = { param($x) $x.ToString() },
+        [int]$DefaultIndex = 0
     )
 
     if ($Items.Count -eq 0) { return $null }
@@ -18,6 +19,19 @@ function Show-TerminalList {
         $label = &$ToString $Item
         if ($null -eq $label) { return '' }
         return "$label"
+    }
+
+    function Test-FuzzyMatch {
+        param([string]$Text, [string]$Query)
+        if ([string]::IsNullOrEmpty($Query)) { return $true }
+        $t = $Text.ToLowerInvariant()
+        $q = $Query.ToLowerInvariant()
+        $pos = -1
+        foreach ($c in $q.ToCharArray()) {
+            $pos = $t.IndexOf($c, $pos + 1)
+            if ($pos -lt 0) { return $false }
+        }
+        return $true
     }
 
     function Write-MenuLine {
@@ -35,7 +49,7 @@ function Show-TerminalList {
     if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected) {
         Write-Host $Title -ForegroundColor Cyan
         $filter = Read-Host "Filtro (Enter para mostrar tudo)"
-        $filtered = @($Items | Where-Object { (Get-Label $_).IndexOf($filter, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
+        $filtered = @($Items | Where-Object { Test-FuzzyMatch -Text (Get-Label $_) -Query $filter })
         if ($filtered.Count -eq 0) { return $null }
         for ($i = 0; $i -lt $filtered.Count; $i++) {
             Write-Host "  [$($i+1)] $(Get-Label $filtered[$i])" -ForegroundColor White
@@ -49,19 +63,22 @@ function Show-TerminalList {
     }
 
     $cursorWasVisible = [Console]::CursorVisible
+    $oldTreatCtrlC = [Console]::TreatControlCAsInput
     [Console]::CursorVisible = $false
-    $selected = 0
+    [Console]::TreatControlCAsInput = $true
+    $selected = [Math]::Max(0, [Math]::Min($DefaultIndex, $Items.Count - 1))
     $filterText = ''
     $lastTotalLines = 0
     $firstDraw = $true
+    $showHelp = $false
 
     try {
         while ($true) {
-            $filtered = @($Items | Where-Object { (Get-Label $_).IndexOf($filterText, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 })
+            $filtered = @($Items | Where-Object { Test-FuzzyMatch -Text (Get-Label $_) -Query $filterText })
             if ($selected -ge $filtered.Count) { $selected = [Math]::Max(0, $filtered.Count - 1) }
 
             $winHeight = [Console]::WindowHeight
-            $windowSize = if ($winHeight -gt 6) { $winHeight - 6 } else { 20 }
+            $windowSize = if ($winHeight -gt 9) { $winHeight - 9 } else { 20 }
 
             $start = 0
             if ($filtered.Count -gt $windowSize) {
@@ -71,7 +88,13 @@ function Show-TerminalList {
             $end = [Math]::Min($filtered.Count - 1, $start + $windowSize - 1)
 
             $listLines = if ($filtered.Count -eq 0) { 1 } else { $end - $start + 1 }
-            $currentTotalLines = 1 + 2 + $listLines + 1 + 1
+            $helpLines = if ($showHelp) { 1 } else { 0 }
+            $scrollLines = 0
+            if ($filtered.Count -gt $windowSize) {
+                if ($start -gt 0) { $scrollLines++ }
+                if ($end -lt $filtered.Count - 1) { $scrollLines++ }
+            }
+            $currentTotalLines = 1 + 2 + $helpLines + $scrollLines + $listLines + 1 + 1
 
             if ($firstDraw) {
                 Clear-Host
@@ -83,14 +106,20 @@ function Show-TerminalList {
 
             Write-MenuLine -Text $Title -Color 'Cyan'
 
-            if ($filterText) {
-                Write-MenuLine -Text "(Setas/Enter/Esc | digite para filtrar | Backspace apaga | Delete limpa)" -Color 'DarkGray'
-            }
-            else {
-                Write-MenuLine -Text "(Setas para navegar, Enter para selecionar, Esc para cancelar | digite para filtrar)" -Color 'DarkGray'
+            if ($showHelp) {
+                Write-MenuLine -Text " Ajuda: Setas = mover, Enter = selecionar, Esc = cancelar, Backspace/Delete = filtro, ? = alternar ajuda, Ctrl+C = cancelar, 1-9 = atalho (listas curtas)" -Color 'DarkGray'
             }
 
-            Write-MenuLine -Text ''
+            if ($filterText) {
+                Write-MenuLine -Text "(Setas/Enter/Esc | digite para filtrar | Backspace apaga | Delete limpa | ? ajuda)" -Color 'DarkGray'
+            }
+            else {
+                Write-MenuLine -Text "(Setas para navegar, Enter para selecionar, Esc para cancelar | digite para filtrar | ? ajuda)" -Color 'DarkGray'
+            }
+
+            if ($filtered.Count -gt $windowSize) {
+                if ($start -gt 0) { Write-MenuLine -Text "   ^ $($start) anteriores" -Color 'DarkGray' }
+            }
 
             if ($filtered.Count -eq 0) {
                 Write-MenuLine -Text " Nenhum item encontrado." -Color 'Red'
@@ -104,8 +133,12 @@ function Show-TerminalList {
                 }
             }
 
+            if ($filtered.Count -gt $windowSize) {
+                if ($end -lt $filtered.Count - 1) { Write-MenuLine -Text "   v $($filtered.Count - $end - 1) seguintes" -Color 'DarkGray' }
+            }
+
             Write-MenuLine -Text ''
-            Write-MenuLine -Text ("Filtro: $filterText" + '_') -Color 'Cyan'
+            Write-MenuLine -Text "Filtro: $filterText`_ ($($filtered.Count)/$($Items.Count))" -Color 'Cyan'
 
             if ($lastTotalLines -gt $currentTotalLines) {
                 for ($line = $currentTotalLines; $line -lt $lastTotalLines; $line++) {
@@ -118,6 +151,29 @@ function Show-TerminalList {
             $keyInfo = [Console]::ReadKey($true)
             $key = $keyInfo.Key
             $char = $keyInfo.KeyChar
+
+            # Atalho de ajuda
+            if ($char -eq '?' -or $key -in @('Oem2','OemQuestion')) {
+                $showHelp = -not $showHelp
+                continue
+            }
+
+            # Atalhos de digitos 1-9 para listas curtas (sem filtro)
+            if ([string]::IsNullOrEmpty($filterText) -and $Items.Count -le 9 -and $char -ge '1' -and $char -le '9') {
+                $digitIndex = [int]$char.ToString() - 1
+                if ($digitIndex -ge 0 -and $digitIndex -lt $filtered.Count) {
+                    return $filtered[$digitIndex]
+                }
+                if ($char -eq '0') {
+                    if ($filtered.Count -gt 0) { return $filtered[0] }
+                }
+                continue
+            }
+
+            # Digit '0' como selecao do primeiro item em listas curtas
+            if ([string]::IsNullOrEmpty($filterText) -and $Items.Count -le 9 -and $char -eq '0' -and $filtered.Count -gt 0) {
+                return $filtered[0]
+            }
 
             if ($char -ge ' ' -and -not [char]::IsControl($char)) {
                 $filterText += $char
@@ -146,11 +202,17 @@ function Show-TerminalList {
                         return $null
                     }
                 }
+                'C' {
+                    if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control) {
+                        return $null
+                    }
+                }
             }
         }
     }
     finally {
         [Console]::CursorVisible = $cursorWasVisible
+        [Console]::TreatControlCAsInput = $oldTreatCtrlC
     }
 }
 

@@ -339,40 +339,48 @@ function Get-DefaultBranchName {
 
 function Format-BranchStatus {
     param([string]$BranchName, [hashtable]$BranchOption, [hashtable]$MetaMap, [hashtable]$PrMap, [hashtable]$ProtectedSet, [string]$DefaultBranch, [switch]$Short)
-    $tokens = @()
-    if ($BranchOption.IsCurrent) { $tokens += 'atual' }
-    if ($BranchOption.Type -eq 'remote') { $tokens += 'remota' }
 
+    $branchType = $BranchOption.Type
+    $currentMark = if ($BranchOption.IsCurrent) { '*' } else { '' }
+
+    $syncToken = ''
     $meta = $MetaMap[$BranchName]
     if ($meta) {
         if (-not $meta.HasUpstream -and -not $meta.ExistsOnRemote) {
-            $tokens += 'sem remoto'
+            $syncToken = 'sem remoto'
         }
-        else {
-            if ($meta.Ahead -gt 0 -and $meta.Behind -gt 0) {
-                $tokens += "divergiu +$($meta.Ahead)/-$($meta.Behind)"
-            }
-            elseif ($meta.Ahead -gt 0) {
-                $tokens += "ahead +$($meta.Ahead)"
-            }
-            elseif ($meta.Behind -gt 0) {
-                $tokens += "behind -$($meta.Behind)"
-            }
+        elseif ($meta.Ahead -gt 0 -and $meta.Behind -gt 0) {
+            $syncToken = "+$($meta.Ahead)/-$($meta.Behind)"
+        }
+        elseif ($meta.Ahead -gt 0) {
+            $syncToken = "+$($meta.Ahead)"
+        }
+        elseif ($meta.Behind -gt 0) {
+            $syncToken = "-$($meta.Behind)"
         }
     }
 
+    $prNumber = '-'
+    $prState = '-'
+    $author = 'n/a'
+    $review = 'n/a'
+    $ci = 'n/a'
+    $activity = 'n/a'
+
     $pr = $PrMap[$BranchName]
     if ($pr) {
+        $prNumber = "$($pr.number)"
         $state = $pr.state
-        if ($pr.mergedAt) { $state = 'merged' }
-        elseif ($state -eq 'OPEN') { $state = if ($pr.isDraft) { 'rascunho' } else { 'aberto' } }
-        elseif ($state -eq 'CLOSED') { $state = 'fechado' }
-        else { $state = $state.ToString().ToLower() }
-        if ($Short) {
-            $tokens += "PR#$($pr.number) $state"
-        }
-        else {
-            $review = if ($pr.reviewDecision) { $pr.reviewDecision.ToString().ToLower().Replace('_', ' ') } else { 'sem revisao' }
+        if ($pr.mergedAt) { $state = 'MERGED' }
+        elseif ($state -eq 'OPEN') { $state = if ($pr.isDraft) { 'DRAFT' } else { 'OPEN' } }
+        elseif ($state -eq 'CLOSED') { $state = 'CLOSED' }
+        else { $state = $state.ToString().ToUpper() }
+        $prState = $state
+
+        if (-not $Short) {
+            $author = $pr.author?.login ?? 'n/a'
+            $review = if ($pr.reviewDecision) { $pr.reviewDecision.ToString().ToLower().Replace('_', ' ') } else { 'n/a' }
+
             $ci = 'n/a'
             if ($pr.statusCheckRollup) {
                 $rollups = @($pr.statusCheckRollup)
@@ -391,30 +399,64 @@ function Format-BranchStatus {
                     }
                 }
             }
-            $tokens += "PR #$($pr.number) $state | autor:$($pr.author?.login ?? 'n/a') | $review | CI:$ci"
         }
-    }
 
-    if (-not $Short) {
-        $dateValue = $null
-        if ($pr -and $pr.updatedAt) { $dateValue = $pr.updatedAt }
-        elseif ($meta -and $meta.LastCommit) { $dateValue = $meta.LastCommit }
+        $dateValue = $pr.updatedAt
         if ($dateValue) {
             try {
                 $dt = if ($dateValue -is [datetime]) { $dateValue } else { [datetime]::Parse($dateValue, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind) }
                 $days = [int]((Get-Date) - $dt).TotalDays
-                if ($days -gt 30) { $tokens += "stale ${days}d" }
-                else { $tokens += "ativo ${days}d" }
+                if ($days -gt 30) { $activity = "stale ${days}d" }
+                else { $activity = "ativo ${days}d" }
             }
             catch { Write-Verbose "Falha ao calcular atividade/stale para '$BranchName': $_" }
         }
     }
 
-    if ($BranchName -eq $DefaultBranch) { $tokens += 'default' }
-    if ($ProtectedSet[$BranchName]) { $tokens += 'protegida' }
+    if ($activity -eq 'n/a' -and $meta -and $meta.LastCommit) {
+        try {
+            $dt = if ($meta.LastCommit -is [datetime]) { $meta.LastCommit } else { [datetime]::Parse($meta.LastCommit, [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind) }
+            $days = [int]((Get-Date) - $dt).TotalDays
+            if ($days -gt 30) { $activity = "stale ${days}d" }
+            else { $activity = "ativo ${days}d" }
+        }
+        catch { Write-Verbose "Falha ao calcular atividade/stale para '$BranchName': $_" }
+    }
 
-    if ($tokens.Count -eq 0) { return '' }
-    return ' [' + ($tokens -join ' | ') + ']'
+    $flagList = @()
+    if ($BranchName -eq $DefaultBranch) { $flagList += 'default' }
+    if ($ProtectedSet[$BranchName]) { $flagList += 'protegida' }
+    $flags = $flagList -join ' | '
+
+    if ($Short) {
+        return [PSCustomObject]@{
+            Type = $branchType
+            Name = $BranchName
+            CurrentMark = $currentMark
+            Sync = $syncToken
+            PrNumber = $prNumber
+            PrState = $prState
+            Author = $author
+            Review = $review
+            Ci = $ci
+            Activity = $activity
+            Flags = $flags
+        }
+    }
+
+    return [PSCustomObject]@{
+        Type = $branchType
+        Name = $BranchName
+        CurrentMark = $currentMark
+        Sync = $syncToken
+        PrNumber = $prNumber
+        PrState = $prState
+        Author = $author
+        Review = $review
+        Ci = $ci
+        Activity = $activity
+        Flags = $flags
+    }
 }
 
 function Remove-StaleWorktrees {
@@ -462,16 +504,40 @@ function Select-BranchTerminal {
     )
 
     $rows = foreach ($opt in $Options) {
-        $status = Format-BranchStatus -BranchName $opt.Name -BranchOption $opt -MetaMap $MetaMap -PrMap $PrMap -ProtectedSet $ProtectedSet -DefaultBranch $DefaultBranch
-        [PSCustomObject]@{
-            Name = $opt.Name
-            Tipo = $opt.Type
-            Atual = if ($opt.IsCurrent) { 'sim' } else { '' }
-            Status = $status
-        }
+        Format-BranchStatus -BranchName $opt.Name -BranchOption $opt -MetaMap $MetaMap -PrMap $PrMap -ProtectedSet $ProtectedSet -DefaultBranch $DefaultBranch
     }
 
-    $selected = Show-TerminalList -Items $rows -Title $Title -ToString { param($x) "[$($x.Tipo)] $($x.Name)$($x.Status)$(if ($x.Atual) { ' (atual)' } else { '' })" }
+    $wType  = [Math]::Max(4, ($rows | ForEach-Object { $_.Type.Length }  | Measure-Object -Maximum).Maximum)
+    $wName  = [Math]::Max(5, ($rows | ForEach-Object { $_.Name.Length }  | Measure-Object -Maximum).Maximum)
+    $wCur   = [Math]::Max(1, ($rows | ForEach-Object { $_.CurrentMark.Length } | Measure-Object -Maximum).Maximum)
+    $wSync  = [Math]::Max(4, ($rows | ForEach-Object { $_.Sync.Length }    | Measure-Object -Maximum).Maximum)
+    $wPr    = [Math]::Max(3, ($rows | ForEach-Object { $_.PrNumber.Length } | Measure-Object -Maximum).Maximum)
+    $wState = [Math]::Max(5, ($rows | ForEach-Object { $_.PrState.Length }  | Measure-Object -Maximum).Maximum)
+    $wAuth  = [Math]::Max(6, ($rows | ForEach-Object { $_.Author.Length }   | Measure-Object -Maximum).Maximum)
+    $wRev   = [Math]::Max(6, ($rows | ForEach-Object { $_.Review.Length }   | Measure-Object -Maximum).Maximum)
+    $wCi    = [Math]::Max(2, ($rows | ForEach-Object { $_.Ci.Length }       | Measure-Object -Maximum).Maximum)
+    $wAct   = [Math]::Max(3, ($rows | ForEach-Object { $_.Activity.Length } | Measure-Object -Maximum).Maximum)
+
+    $wNameEx = $wName + $wCur + 1
+    $selected = Show-TerminalList -Items $rows -Title $Title -ToString {
+        param($x)
+        $displayName = $x.Name
+        if ($x.CurrentMark) { $displayName += " $($x.CurrentMark)" }
+        $line = "[$($x.Type.PadRight($wType))] $($displayName.PadRight($wNameEx)) "
+        $line += "$($x.Sync.PadRight($wSync)) | "
+        $line += "#$($x.PrNumber.PadRight($wPr)) $($x.PrState.PadRight($wState)) "
+        $line += "autor:$($x.Author.PadRight($wAuth)) "
+        $line += "rev:$($x.Review.PadRight($wRev)) "
+        $line += "CI:$($x.Ci.PadRight($wCi)) "
+        $line += "$($x.Activity.PadRight($wAct))"
+        if ($x.Flags) { $line += " [$($x.Flags)]" }
+        $w = [Console]::WindowWidth
+        if ($w -le 0) { $w = 120 }
+        if ($line.Length -gt $w - 1) {
+            $line = $line.Substring(0, [Math]::Min($line.Length, $w - 1))
+        }
+        $line
+    }
     if (-not $selected) { return $null }
     return ($Options | Where-Object { $_.Name -eq $selected.Name } | Select-Object -First 1)
 }
@@ -531,15 +597,14 @@ $OffsetY = $monitor.Top
 $isGitRepo = Test-Path -LiteralPath (Join-Path $workspacePath ".git")
 if ($isGitRepo) {
     $titulo = "Quantidade de Janelas"
-    $mensagem = "Escolha quantas instancias do devin iniciar:"
-    $opcoes = [System.Management.Automation.Host.ChoiceDescription[]] @(
-        "&1 - Uma instancia (Tela inteira)",
-        "&2 - Duas instancias com Worktree isolado (Lado a Lado)",
-        "&3 - Tres instancias com Worktree isolado",
-        "&4 - Quatro instancias com Worktree isolado (2x2)"
+    $opcoes = @(
+        [PSCustomObject]@{ Numero = 1; Label = '1 - Uma instancia (Tela inteira)' },
+        [PSCustomObject]@{ Numero = 2; Label = '2 - Duas instancias com Worktree isolado (Lado a Lado)' },
+        [PSCustomObject]@{ Numero = 3; Label = '3 - Tres instancias com Worktree isolado' },
+        [PSCustomObject]@{ Numero = 4; Label = '4 - Quatro instancias com Worktree isolado (2x2)' }
     )
-    $escolha = $host.UI.PromptForChoice($titulo, $mensagem, $opcoes, 0)
-    $numInstancias = $escolha + 1
+    $escolha = Show-TerminalList -Items $opcoes -Title $titulo -ToString { param($x) $x.Label } -DefaultIndex 0
+    $numInstancias = if ($escolha) { $escolha.Numero } else { 1 }
 }
 else {
     $numInstancias = 1
