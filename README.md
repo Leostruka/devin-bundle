@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-57-blue.svg)](#skills-57)
+[![Skills](https://img.shields.io/badge/skills-58-blue.svg)](#skills-58)
 [![Rules](https://img.shields.io/badge/rules-20-green.svg)](#regras-consolidadas-agentsmd)
 [![Version](https://img.shields.io/badge/version-2.6.0-orange.svg)](CHANGELOG.md)
 
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 57 skills, 20 rules, 5 subagent profiles, 8 hook events, 15 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 58 skills, 20 rules, 5 subagent profiles, 8 hook events, 15 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ Done. Devin CLI now has 57 skills, 20 rules, 5 subagent profiles, 8 hook events,
 flowchart TB
     subgraph Runtime["Devin CLI Runtime"]
         AGENTS[AGENTS.md<br/>20 rules always-on]
-        SKILLS[skills/<br/>57 skills invoked]
+        SKILLS[skills/<br/>58 skills invoked]
         AGENTS_PROFILES[agents/<br/>5 profiles dispatched]
         HOOKS[hooks<br/>8 events enforced]
         SCRIPTS[scripts/<br/>13 Python hooks]
@@ -61,7 +61,7 @@ flowchart TB
 devin-bundle/
 ├── AGENTS.md            # 19 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 57 skills (auto-discover, not limited to manifest)
+├── skills/              # 58 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
 ├── scripts/             # 17 Python scripts (15 hooks + 2 manual-run)

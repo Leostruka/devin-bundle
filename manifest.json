@@ -12,6 +12,14 @@
   },
   "skills": [
     {
+      "name": "project-setup",
+      "source": "devin-bundle",
+      "purpose": "Use when starting work on a new or existing project that lacks a `.devin/` configuration, or when the user wants to add skills, hooks, rules, and local tools to a project in a systematic, validated way.",
+      "original_path": "%APPDATA%\\devin\\skills\\project-setup",
+      "export_hash": "",
+      "exported_at": "2026-08-27T00:00:00-03:00"
+    },
+    {
       "name": "ask-matt",
       "source": "devin-bundle",
       "purpose": "Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.",
