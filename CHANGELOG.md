@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-08-27
+
+### Added
+
+- **project-memory skill**: captures project-specific knowledge as plain-text
+  Markdown notes under `.devin/memory/`, with user approval, cue-anchored
+  frontmatter, and Obsidian-compatible wikilinks.
+- **Memory helper scripts**: `capture-memory.py`, `query-memory.py`, and
+  `audit-memory.py` for note lifecycle and link/orphan validation.
+- **Cue-anchored memory hooks** (arXiv:2607.20972, arXiv:2608.15008):
+  - `memory-retrieval.py` on `UserPromptSubmit` (keyword cues)
+  - `memory-post-edit.py` on `PostToolUse` `write`/`edit` (path cues)
+  - `memory-post-exec.py` on `PostToolUse` `exec` (symbol/keyword cues)
+  - `memory-stop.py` on `Stop` (session review nudge)
+- **Rule 21**: "Don't think through uncertainty — research or ask".
+
+### Changed
+
+- `manifest.json`, `README.md`, `docs/TOOLS-MAP.md`, `audit.py`: updated
+  script counts to 17, hook script counts to 15.
+- `docs/MODEL-GUIDE.md`: added arXiv:2607.20972 and arXiv:2608.15008 to the
+  source verification table.
+
 ## [2.5.3] - 2026-08-26
 
 ### Fixed
