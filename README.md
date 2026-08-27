@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-55-blue.svg)](#skills-55)
+[![Skills](https://img.shields.io/badge/skills-56-blue.svg)](#skills-56)
 [![Rules](https://img.shields.io/badge/rules-19-green.svg)](#regras-consolidadas-agentsmd)
 [![Version](https://img.shields.io/badge/version-2.5.3-orange.svg)](CHANGELOG.md)
 
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 55 skills, 19 rules, 5 subagent profiles, 8 hook events, 11 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 56 skills, 19 rules, 5 subagent profiles, 8 hook events, 11 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ Done. Devin CLI now has 55 skills, 19 rules, 5 subagent profiles, 8 hook events,
 flowchart TB
     subgraph Runtime["Devin CLI Runtime"]
         AGENTS[AGENTS.md<br/>19 rules always-on]
-        SKILLS[skills/<br/>55 skills invoked]
+        SKILLS[skills/<br/>56 skills invoked]
         AGENTS_PROFILES[agents/<br/>5 profiles dispatched]
         HOOKS[hooks<br/>8 events enforced]
         SCRIPTS[scripts/<br/>13 Python hooks]
@@ -61,7 +61,7 @@ flowchart TB
 devin-bundle/
 ├── AGENTS.md            # 19 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 55 skills (auto-discover, not limited to manifest)
+├── skills/              # 56 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
 ├── scripts/             # 13 Python scripts (11 hooks + 2 manual-run)
@@ -223,7 +223,7 @@ chmod +x export.sh
 **WARNING:** `-NoMask` exports real secrets. NEVER push to a public repo with `-NoMask`.
 Use `-NoMask` only for local backup or direct transfer between trusted machines.
 
-## Skills (55)
+## Skills (56)
 
 The bundle auto-discovers all skills in `%APPDATA%\devin\skills\`. The `manifest.json` contains metadata (name, source, purpose) for reference, but the exported skill list is determined by the live directory, not the manifest.
 
