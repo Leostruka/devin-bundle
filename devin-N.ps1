@@ -4,6 +4,7 @@
 
 # 2. Salva o diretorio atual
 $diretorioOriginal = Get-Location
+$bundleRoot = $PSScriptRoot
 
 # 3. Prefere PowerShell 7 para subprocessos
 $psExecutable = "powershell.exe"
@@ -15,7 +16,7 @@ Write-Host "Usando terminal base: $psExecutable" -ForegroundColor DarkGray
 # 4. Carrega ConsoleGuiTools e prepara TUI no terminal
 Add-Type -AssemblyName System.Windows.Forms
 Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop
-. (Join-Path $PSScriptRoot "devin-session-launcher.ps1")
+. (Join-Path $bundleRoot "devin-session-launcher.ps1")
 
 function Select-FolderTerminal {
     param([string]$InitialPath)
@@ -42,7 +43,7 @@ function Select-FolderTerminal {
         }
 
         $selected = $items | Out-ConsoleGridView -Title "Selecione o workspace" -OutputMode Single
-        if (-not $selected) { return $current }
+        if (-not $selected) { return $null }
 
         if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Usar esta pasta]') { return $selected.Caminho }
         if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Trocar de drive]') {
@@ -66,6 +67,10 @@ function Select-FolderTerminal {
 # 5. Seleciona workspace via terminal
 Write-Host "`nSelecione o workspace no terminal..." -ForegroundColor Cyan
 $workspacePath = Select-FolderTerminal -InitialPath $diretorioOriginal.Path
+if (-not $workspacePath) {
+    Write-Host "Selecao de workspace cancelada. Encerrando." -ForegroundColor Yellow
+    exit
+}
 if ($workspacePath -ne $diretorioOriginal.Path) {
     Set-Location $workspacePath
     Write-Host "Workspace definido para: $workspacePath`n" -ForegroundColor Green
@@ -483,7 +488,9 @@ $positions = switch ($numInstancias) {
 }
 
 $worktrees = @()
+$createdWorktrees = @()
 $branches = @()
+$createdBranches = @()
 $branchInfos = @()
 $worktreesRoot = $null
 
@@ -571,7 +578,10 @@ if ($isGitRepo) {
         $available += $newBranchOption
 
         $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
-        if (-not $selected) { $selected = $newBranchOption }
+        if (-not $selected) {
+            Write-Host "Selecao de branch cancelada. Encerrando." -ForegroundColor Yellow
+            exit
+        }
         $selectedBranches += $selected
         Write-Host "  Instancia $($labels[$i]) -> $($selected.Name)" -ForegroundColor Cyan
     }
@@ -583,8 +593,10 @@ if ($isGitRepo) {
         $targetBranch = if ($info.Type -eq 'new') { "devin-$timestamp-a" } else { $info.Name }
 
         $switchResult = $null
+        $createdThisBranch = $null
         if ($info.Type -eq 'new') {
             $switchResult = git -C $workspacePath switch -c $targetBranch 2>&1
+            if ($?) { $createdThisBranch = $targetBranch }
         }
         elseif ($info.Type -eq 'remote') {
             $switchResult = git -C $workspacePath switch -c $targetBranch "origin/$targetBranch" 2>&1
@@ -594,6 +606,7 @@ if ($isGitRepo) {
         }
 
         if ($?) {
+            if ($createdThisBranch) { $createdBranches += $createdThisBranch }
             $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
             Write-Host "  Branch ativa: $targetBranch$typeLabel" -ForegroundColor Green
         }
@@ -604,15 +617,14 @@ if ($isGitRepo) {
     else {
         Write-Host "`n[WORKTREE] Criando worktrees isolados..." -ForegroundColor Magenta
 
+        $worktreesRoot = Join-Path $workspacePath ".worktrees"
+        if (-not (Test-Path $worktreesRoot)) { New-Item -ItemType Directory -Path $worktreesRoot -Force | Out-Null }
+
+        $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+
         try {
-            $worktreesRoot = Join-Path $workspacePath ".worktrees"
-            if (-not (Test-Path $worktreesRoot)) { New-Item -ItemType Directory -Path $worktreesRoot -Force | Out-Null }
-
-            $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-
             for ($i = 0; $i -lt $numInstancias; $i++) {
                 $worktree = Join-Path $worktreesRoot "instancia-$($labels[$i].ToLower())"
-                $worktrees += $worktree
 
                 $null = git -C $workspacePath worktree remove "$worktree" --force 2>&1
                 if (Test-Path $worktree) { Remove-Item $worktree -Recurse -Force -ErrorAction SilentlyContinue }
@@ -620,8 +632,6 @@ if ($isGitRepo) {
                 $info = $selectedBranches[$i]
                 $branch = $info.Name
                 if ($info.Type -eq "new") { $branch = "devin-$timestamp-$($labels[$i].ToLower())" }
-                $branches += $branch
-                $branchInfos += @{ Name = $branch; Type = $info.Type }
 
                 if ($info.Type -eq "new") {
                     $null = git -C $workspacePath worktree add "$worktree" -b $branch 2>&1
@@ -633,6 +643,14 @@ if ($isGitRepo) {
                     $null = git -C $workspacePath worktree add "$worktree" $branch 2>&1
                 }
 
+                if (-not $?) { throw "git worktree add falhou para '$worktree' (branch '$branch')" }
+
+                $worktrees += $worktree
+                $createdWorktrees += $worktree
+                $branches += $branch
+                if ($info.Type -eq "new") { $createdBranches += $branch }
+                $branchInfos += @{ Name = $branch; Type = $info.Type }
+
                 $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
                 Write-Host "  Instancia $($labels[$i]) -> $worktree" -ForegroundColor DarkCyan
                 Write-Host "    Branch: $branch$typeLabel" -ForegroundColor DarkGray
@@ -641,9 +659,18 @@ if ($isGitRepo) {
             Write-Host "  Cada instancia edita arquivos isoladamente. Merge manual apos tarefa." -ForegroundColor DarkGray
         }
         catch {
-            Write-Host "  Aviso: Falha ao criar worktrees ($($_.Exception.Message)). Usando mesmo diretorio." -ForegroundColor Yellow
+            Write-Host "  Aviso: Falha ao criar worktrees ($($_.Exception.Message)). Removendo o que foi criado e usando mesmo diretorio." -ForegroundColor Yellow
+            foreach ($wt in $createdWorktrees) {
+                $null = git -C $workspacePath worktree remove "$wt" --force 2>&1
+                if (Test-Path $wt) { Remove-Item $wt -Recurse -Force -ErrorAction SilentlyContinue }
+            }
+            foreach ($cb in $createdBranches) {
+                $null = git -C $workspacePath branch -D $cb 2>&1
+            }
             $worktrees = @()
+            $createdWorktrees = @()
             $branches = @()
+            $createdBranches = @()
             $branchInfos = @()
             $numInstancias = 1
         }
@@ -700,7 +727,7 @@ $processosAdicionais = @()
 # 5. Abre as instancias adicionais
 if ($numInstancias -gt 1) {
     $scriptPid = $PID
-    $cmd = "Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop; . ""$workspacePath\devin-session-launcher.ps1""; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
+    $cmd = "Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop; . '$bundleRoot\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
 
     if ($insideWT) {
         Write-Host "Abrindo paineis divididos (split pane) no Windows Terminal..." -ForegroundColor Cyan
@@ -813,18 +840,18 @@ else {
 }
 
 # 5. Limpa worktrees
-if ($worktrees.Count -gt 0) {
+if ($createdWorktrees.Count -gt 0 -or $createdBranches.Count -gt 0) {
     Write-Host "`n[WORKTREE] Limpando worktrees..." -ForegroundColor Magenta
     Push-Location $workspacePath
-    foreach ($wt in $worktrees) {
+    foreach ($wt in $createdWorktrees) {
         git worktree remove $wt --force 2>$null
     }
-    foreach ($b in $branches) {
-        if ($b -match "^devin-") { git branch -D $b 2>$null }
+    foreach ($cb in $createdBranches) {
+        git branch -D $cb 2>$null
     }
     Pop-Location
-    if (Test-Path $worktreesRoot) { Remove-Item $worktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
-    Write-Host "  Worktrees removidos. Branches existentes preservados." -ForegroundColor Green
+    if ($worktreesRoot -and (Test-Path $worktreesRoot)) { Remove-Item $worktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
+    Write-Host "  Worktrees removidos. Branches criadas removidas." -ForegroundColor Green
 }
 
 # 8. Restora a janela principal ao tamanho/posicao originais

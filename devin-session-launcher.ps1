@@ -6,8 +6,15 @@ Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop
 
 function Start-DevinSession {
     $sessionsJson = devin ls --format json 2>$null
+    $devinLsOk = $?
+    if (-not $devinLsOk) {
+        Write-Host "Aviso: nao foi possivel listar sessoes. Iniciando nova sessao..." -ForegroundColor Yellow
+        devin
+        return
+    }
+
     $sessions = $sessionsJson | ConvertFrom-Json -ErrorAction SilentlyContinue
-    if ($LASTEXITCODE -ne 0 -or -not $sessions -or $sessions.Count -eq 0) {
+    if (-not $sessions -or $sessions.Count -eq 0) {
         Write-Host "Nenhuma sessao encontrada. Iniciando nova..." -ForegroundColor Cyan
         devin
         return
@@ -33,7 +40,12 @@ function Start-DevinSession {
     $selected = $choices |
         Out-ConsoleGridView -Title "Sessoes encontradas - escolha uma ou inicie nova" -OutputMode Single
 
-    if (-not $selected -or [string]::IsNullOrWhiteSpace($selected.Id)) {
+    if ($null -eq $selected) {
+        Write-Host "Selecao cancelada. Nenhuma sessao sera iniciada." -ForegroundColor DarkGray
+        return
+    }
+
+    if ([string]::IsNullOrWhiteSpace($selected.Id)) {
         Write-Host "Iniciando nova sessao..." -ForegroundColor Cyan
         devin
     }
