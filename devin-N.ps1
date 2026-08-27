@@ -204,7 +204,7 @@ function Get-PullRequestMap {
     try {
         Push-Location -LiteralPath $RepoPath
         try {
-            $json = gh pr list --state all --json number,headRefName,state,isDraft,reviewDecision,statusCheckRollup,author,updatedAt,createdAt,mergedAt --limit 200 2>&1 | Out-String
+            $json = gh pr list --state all --json number,headRefName,state,isDraft,reviewDecision,statusCheckRollup,author,updatedAt,createdAt,mergedAt --limit 200 2>&1 | Where-Object { $_ -is [string] } | Out-String
         }
         finally { Pop-Location }
         if ($json -and $json.Trim()) {
@@ -229,9 +229,9 @@ function Get-ProtectedBranchSet {
     try {
         Push-Location -LiteralPath $RepoPath
         try {
-            $nameWithOwner = (gh repo view --json nameWithOwner -q .nameWithOwner 2>&1).Trim()
+            $nameWithOwner = (gh repo view --json nameWithOwner -q .nameWithOwner 2>&1 | Where-Object { $_ -is [string] } | Out-String).Trim()
             if ($? -and $nameWithOwner -and $nameWithOwner -notmatch 'error|fatal') {
-                $names = gh api "repos/$nameWithOwner/branches?per_page=100" --paginate --jq '.[] | select(.protected == true) | .name' 2>&1
+                $names = gh api "repos/$nameWithOwner/branches?per_page=100" --paginate --jq '.[] | select(.protected == true) | .name' 2>&1 | Where-Object { $_ -is [string] }
                 if ($?) {
                     foreach ($n in $names) { $set[$n.Trim()] = $true }
                 }
@@ -250,7 +250,7 @@ function Get-DefaultBranchName {
         try {
             Push-Location -LiteralPath $RepoPath
             try {
-                $output = (gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>&1).Trim()
+                $output = (gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>&1 | Where-Object { $_ -is [string] } | Out-String).Trim()
                 if ($? -and $output -and $output -notmatch 'error|fatal') { $default = $output }
             }
             finally { Pop-Location }
@@ -261,7 +261,7 @@ function Get-DefaultBranchName {
         try {
             Push-Location -LiteralPath $RepoPath
             try {
-                $ref = git rev-parse --abbrev-ref refs/remotes/origin/HEAD 2>&1
+                $ref = git rev-parse --abbrev-ref refs/remotes/origin/HEAD 2>&1 | Where-Object { $_ -is [string] } | Select-Object -First 1
                 if ($ref -match '^origin/(.+)$') { $default = $matches[1] }
             }
             finally { Pop-Location }
@@ -272,7 +272,7 @@ function Get-DefaultBranchName {
         try {
             Push-Location -LiteralPath $RepoPath
             try {
-                $info = git remote show origin 2>&1
+                $info = git remote show origin 2>&1 | Where-Object { $_ -is [string] }
                 $m = $info | Select-String -Pattern 'HEAD branch:\s*(.+)$'
                 if ($m) { $default = $m.Matches[0].Groups[1].Value.Trim() }
             }
@@ -404,8 +404,7 @@ function Select-BranchTerminal {
         [hashtable]$PrMap,
         [hashtable]$ProtectedSet,
         [string]$DefaultBranch,
-        [string]$Title,
-        [string]$PreFilter = ''
+        [string]$Title
     )
 
     if (-not (Get-Command Out-ConsoleGridView -ErrorAction SilentlyContinue)) { return $null }
@@ -420,7 +419,7 @@ function Select-BranchTerminal {
         }
     }
 
-    $selected = $rows | Out-ConsoleGridView -Title $Title -OutputMode Single -Filter $PreFilter
+    $selected = $rows | Out-ConsoleGridView -Title $Title -OutputMode Single
     if (-not $selected) { return $null }
     return ($Options | Where-Object { $_.Name -eq $selected.Name } | Select-Object -First 1)
 }

@@ -5,18 +5,28 @@
 Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop
 
 function Start-DevinSession {
-    $sessionsJson = devin ls --format json 2>$null
-    $devinLsOk = $?
+    $devinCmd = Get-Command devin -ErrorAction SilentlyContinue
+    if (-not $devinCmd) {
+        Write-Host "Aviso: comando 'devin' nao encontrado no PATH. Iniciando nova sessao diretamente nao e possivel." -ForegroundColor Red
+        return
+    }
+
+    $allOutput = & $devinCmd ls --format json 2>&1
+    $stderr = $allOutput | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] } | ForEach-Object { $_.ToString() }
+    $sessionsJson = $allOutput | Where-Object { $_ -is [string] } | Out-String
+    $devinLsOk = $LASTEXITCODE -eq 0
+
     if (-not $devinLsOk) {
-        Write-Host "Aviso: nao foi possivel listar sessoes. Iniciando nova sessao..." -ForegroundColor Yellow
-        devin
+        if ($stderr) { Write-Host "Aviso: nao foi possivel listar sessoes: $stderr" -ForegroundColor Yellow }
+        else { Write-Host "Aviso: nao foi possivel listar sessoes. Iniciando nova sessao..." -ForegroundColor Yellow }
+        & $devinCmd
         return
     }
 
     $sessions = $sessionsJson | ConvertFrom-Json -ErrorAction SilentlyContinue
     if (-not $sessions -or $sessions.Count -eq 0) {
         Write-Host "Nenhuma sessao encontrada. Iniciando nova..." -ForegroundColor Cyan
-        devin
+        & $devinCmd
         return
     }
 
@@ -47,10 +57,10 @@ function Start-DevinSession {
 
     if ([string]::IsNullOrWhiteSpace($selected.Id)) {
         Write-Host "Iniciando nova sessao..." -ForegroundColor Cyan
-        devin
+        & $devinCmd
     }
     else {
         Write-Host "Retomando sessao $($selected.Id)..." -ForegroundColor Cyan
-        devin -r $selected.Id
+        & $devinCmd -r $selected.Id
     }
 }
