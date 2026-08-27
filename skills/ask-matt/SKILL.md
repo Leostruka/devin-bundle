@@ -7,6 +7,9 @@ description: Use when deciding which skill or flow fits your situation. A router
 
 You don't remember every skill, so ask.
 
+- If the question is about a specific library or framework, route to **`context7`** first.
+- If the user wants exhaustive codebase exploration, route to **`deep-mode`**.
+
 A **flow** is a path through the skills. Most paths run along one **main flow**, and two **on-ramps** merge onto it. Everything else is standalone, or a vocabulary layer that runs underneath.
 
 ## The main flow: idea → ship

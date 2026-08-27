@@ -86,6 +86,7 @@ This will run through the new pre-commit hooks — a good smoke test that everyt
 
 ## Notes
 
+- Use the `context7` skill for current `husky`, `lint-staged`, or `prettier` docs if the project pins a version other than the latest.
 - Husky v9+ doesn't need shebangs in hook files
 - `prettier --ignore-unknown` skips files Prettier can't parse (images, etc.)
 - The pre-commit runs lint-staged first (fast, staged-only), then full typecheck and tests

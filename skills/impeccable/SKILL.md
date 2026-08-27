@@ -66,6 +66,7 @@ Design vocabulary for production-grade frontend interfaces. Adapted from `https:
 
 - Prefer real data and concrete labels over lorem ipsum.
 - Use `browser_preview` after significant UI changes.
+- If the user names a UI framework (React, Vue, Svelte, Tailwind, shadcn, etc.), invoke `context7` before proposing implementation details.
 - If a local `npx impeccable` CLI is installed and trusted, prefer its detector output for `audit` and `critique`; otherwise apply the principles above.
 - Keep files small and focused; do not let design context leak into backend logic.
 

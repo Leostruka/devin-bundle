@@ -143,6 +143,10 @@ Output: chart file path + inline display + 1-sentence caption.
 <if requested: file path + inline image>
 ```
 
+## Up-to-date docs
+
+If the user asks about a specific pandas, seaborn, matplotlib, SQLAlchemy, or plotting API, invoke `context7` before writing code. This is especially useful for seaborn-style visualizations where API signatures change between versions.
+
 ## CLI-specific notes
 
 - No persistent Database Knowledge: cloud DANA persists schema docs

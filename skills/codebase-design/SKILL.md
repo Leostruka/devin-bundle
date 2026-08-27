@@ -7,6 +7,8 @@ agent: architect
 
 Design **deep modules**: a lot of behaviour behind a small interface, placed at a clean seam, testable through that interface. Use this language and these principles wherever code is being designed or restructured. The aim is leverage for callers, locality for maintainers, and testability for everyone.
 
+If the design question depends on an unfamiliar library or framework, invoke `context7`. If it requires exhaustive understanding of existing code first, invoke `deep-mode`.
+
 ## Glossary
 
 Use these terms exactly — don't substitute "component," "service," "API," or "boundary." Consistent language is the whole point.

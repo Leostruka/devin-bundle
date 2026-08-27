@@ -17,7 +17,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 When exploring the codebase, read `.devin/CONTEXT.md` (if it exists) to get a clear
 mental model of the relevant modules, and check `.devin/adr/` in the area you're
-touching.
+touching. If the bug spans multiple files, modules, or a data flow you cannot trace in one pass, invoke `deep-mode` before Phase 1.
 
 ## Redact
 

@@ -95,3 +95,5 @@ Re-run Step 1 to confirm the server is gone and the budget dropped.
 - Context bloat from MCP: "Context Windows Explained for Coding Agents"
   (Matt Pocock) — MCP servers can consume a third of the window before the
   first message.
+
+If the user asks about a specific MCP server's current tool list, security posture, or configuration, invoke `research` before auditing.

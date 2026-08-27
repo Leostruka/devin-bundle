@@ -195,6 +195,12 @@ Mutation testing is more reliable than coverage but expensive. Use `mutation-tes
 - [ ] Coverage reporting (Codecov/Coveralls) as screen, not gate
 - [ ] ArchUnit/dependency-cruiser if layered architecture
 
+## Up-to-date docs
+
+When the user names a specific library version or asks about current APIs, invoke the `context7` skill before proposing code. Good candidates: `OpenTelemetry`, `Sentry`, `Datadog`, `Grafana`, `Biome`, `ESLint`, `Prettier`, `Knip`, `Playwright`, `ArchUnit`.
+
+If a tool's current documentation contradicts this skill, prefer the Context7 result and note the conflict.
+
 ## Sources
 
 - Microsoft Research: Coverage and post-release defects — https://www.microsoft.com/en-us/research/publication/code-coverage-and-post-release-defects-a-large-scale-study-on-open-source-projects/

@@ -88,3 +88,5 @@ AI Hero). Key claims verified against primary sources:
 - Lost-in-the-middle: Liu et al. (arXiv:2307.03172).
 - Window limits are provider-set and hard: models.dev model cards.
 - Compaction is lossy by design: see `context-folding` comparison table.
+
+If the user asks for current context-window limits or model benchmarks, invoke `research` to fetch the latest model cards and papers.
