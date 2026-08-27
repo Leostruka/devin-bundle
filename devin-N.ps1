@@ -2,6 +2,8 @@
 # Suporta 1 a 4 instancias com worktrees isoladas.
 # O comando `devin` inicia um REPL interativo no diretorio atual.
 
+Set-StrictMode -Version Latest
+
 # 2. Salva o diretorio atual
 $diretorioOriginal = Get-Location
 $bundleRoot = $PSScriptRoot

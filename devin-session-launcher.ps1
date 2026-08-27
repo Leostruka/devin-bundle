@@ -1,8 +1,7 @@
 # devin-session-launcher.ps1
 # Decide entre iniciar uma nova sessao do Devin ou retomar uma existente
 # via Out-ConsoleGridView (mesmo grid usado nas selecoes de pasta/branch).
-
-Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop
+# Requer Microsoft.PowerShell.ConsoleGuiTools ja carregado pelo chamador.
 
 function Start-DevinSession {
     $devinCmd = Get-Command devin -ErrorAction SilentlyContinue
