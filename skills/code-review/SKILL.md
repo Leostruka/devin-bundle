@@ -68,7 +68,7 @@ Look for the originating spec, in this order:
 
 1. Issue references in the commit messages (`#123`, `Closes #45`, etc.)
 2. A path the user passed as an argument.
-3. A spec file under `.devin/scratch/`, `specs/`, or `docs/` matching the branch name or feature.
+3. A spec file under `.devin/scratch/`, `.devin/specs/`, or `specs/` matching the branch name or feature.
 4. If nothing is found, ask the user. If they say there isn't one, the **Spec** sub-agent will skip.
 
 ### 3. Identify the standards sources

@@ -90,8 +90,8 @@ Inside the target Obsidian vault:
 # 1. Scaffold a new vault/project wiki
 python <skill-dir>/scaffold.py --project-dir C:\path\to\project --vault-dir C:\path\to\ObsidianVault\MyProject
 
-# 2. Or into a folder inside the current project (Git-tracked docs)
-python <skill-dir>/scaffold.py --project-dir . --vault-dir ./docs/obsidian
+# 2. Or into a folder inside the current project (Git-tracked under .devin/)
+python <skill-dir>/scaffold.py --project-dir . --vault-dir ./.devin/obsidian
 
 # 3. After code changes, re-index to flag stale pages (optionally for a branch)
 python <vault-dir>/refresh.py --project-dir C:\path\to\project [--branch main]
@@ -111,8 +111,8 @@ Then invoke the rest of this skill to fill each artifact from code and conversat
 
 #### Step 0 — Detect or confirm target
 
-1. If the user gave a vault path, use it. Otherwise default to `<project>/docs/obsidian/`.
-2. If the vault/docs folder already contains the artifact files, this is an **update** run. Read them first, then run `refresh.py` to identify stale pages.
+1. If the user gave a vault path, use it. Otherwise default to `<project>/.devin/obsidian/`. If that does not exist and `<project>/docs/obsidian/` already exists, use the legacy path instead.
+2. If the vault folder already contains the artifact files, this is an **update** run. Read them first, then run `refresh.py` to identify stale pages.
 3. If the files do not exist, run the scaffold script in Step 1.
 
 #### Step 0.5 — Confirm information sources

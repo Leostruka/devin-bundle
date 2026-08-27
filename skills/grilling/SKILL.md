@@ -117,7 +117,7 @@ You MUST complete these in order:
 4. **Propose 2-3 approaches** — with trade-offs and recommendation
 5. **Present design** — in sections, get user approval after each
 6. **Grill the design** — design tree, frontier rounds, stress-test every branch (grill mode)
-7. **Write design doc** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit
+7. **Write design doc** — save to `.devin/specs/YYYY-MM-DD-<topic>-design.md` and commit
 8. **Spec self-review** — quick inline check (see below)
 9. **User reviews written spec** — ask user to review before proceeding
 10. **Transition to implementation** — the spec is done. Pick the execution path:
@@ -128,7 +128,7 @@ You MUST complete these in order:
 
 ### Design doc
 
-Write the validated design (spec) to `docs/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Commit the design document to git.
+Write the validated design (spec) to `.devin/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Commit the design document to git.
 
 ### Spec Self-Review
 

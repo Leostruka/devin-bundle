@@ -686,8 +686,8 @@ Use /finishing-a-development-branch.
 You: I'm using Subagent-Driven Development to execute this plan.
 
 [Setup: worktree verified]
-[Read plan file once: docs/plans/feature-plan.md]
-[Resolve workspace: <skill-dir>/scripts/sdd-workspace.py (or run the equivalent with git/read/write if the skill directory is not accessible) docs/plans/feature-plan.md — no ledger inside, fresh start]
+[Read plan file once: .devin/plans/feature-plan.md]
+[Resolve workspace: <skill-dir>/scripts/sdd-workspace.py (or run the equivalent with git/read/write if the skill directory is not accessible) .devin/plans/feature-plan.md — no ledger inside, fresh start]
 [Create todos for all tasks]
 
 Task 1: Hook installation script
