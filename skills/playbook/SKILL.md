@@ -155,6 +155,11 @@ system, but you can approximate it:
 3. For frequently used playbooks, add a one-line alias in `.devin/global_rules.md`:
    `!memleak -> .devin/playbooks/hotfix-memory-leak.devin.md`
 
+## Cross-skills
+
+- Use `writing-for-agents` to ensure the playbook is written in an agent-readable style.
+- Use `self-extend` when a playbook grows into a reusable skill or rule.
+
 ## CLI-specific notes
 
 - No team/community library: cloud playbooks are shareable across

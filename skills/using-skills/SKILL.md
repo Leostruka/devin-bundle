@@ -46,7 +46,7 @@ These thoughts mean STOP—you're rationalizing:
 
 ## Platform Adaptation
 
-You are running in Devin CLI. Invoke skills with `/<skill-name>`. If a skill is not installed, use `/tool-and-skill-discovery` to locate it, or read `SKILL.md` files from your configured skill directories:
+You are running in Devin CLI. Invoke skills with `/<skill-name>`. If a skill is not installed or you are unsure which skill applies, invoke `/tool-and-skill-discovery` first, or read `SKILL.md` files from your configured skill directories:
 
 - Windows: `%APPDATA%\devin\skills\`
 - macOS/Linux: `~/.config/devin/skills/`

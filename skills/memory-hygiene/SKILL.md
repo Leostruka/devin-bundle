@@ -28,6 +28,7 @@ Cross-session agent memory is a **contract with the user**, not a black box. Nai
 
 - Within-session context window management — use `context-window-hygiene` instead.
 - Offloading large context to files — use `context-folding`.
+- Selective cross-session notes — use `project-memory` for user-approved, plain-text, auditable memory.
 - The task is short and self-contained — stateless is correct, no decision needed.
 
 ## Rules

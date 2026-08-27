@@ -170,6 +170,12 @@ mcp_call_tool(
 - **Confluence-only operations:** the same `atlassian` server exposes Confluence tools, but prefer a dedicated `confluence` skill if one exists.
 - **Bulk exports / reporting:** the MCP is not designed for large dumps; use the REST API directly for those.
 
+## Cross-skills
+
+- Use `triage` when moving issues through a triage state machine.
+- Use `planning-pipeline` to turn Jira issues into specs or tickets.
+- Use `implement` once a Jira ticket is ready for code changes.
+
 ## Troubleshooting
 
 - **`mcp_list_tools` returns empty:** run `devin mcp login atlassian` to refresh the OAuth token.

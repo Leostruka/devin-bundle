@@ -132,6 +132,11 @@ small — only the synthesis enters it, not the raw chunks.
 | When to use | Context is stale, detail not needed | Detail is needed, context is large |
 | Can combine | Yes — fold first, compact the synthesis | Yes |
 
+## Cross-skills
+
+- If the folded context still exceeds the safe window, use `context-window-hygiene` to choose the right model and clearing cadence.
+- If the fold is a precursor to exhaustive exploration, use `deep-mode` for the multi-pass search and write findings to a file.
+
 ## Evidence Summary
 
 | Claim | Source | Status |

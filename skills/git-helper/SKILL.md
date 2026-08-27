@@ -48,6 +48,12 @@ git remote prune origin
 git branch -d branch-name
 ```
 
+## Cross-skills
+
+- Use `resolving-merge-conflicts` when a merge or rebase has conflicts.
+- Use `finishing-a-development-branch` when a feature branch is complete and needs to be integrated.
+- Use `using-git-worktrees` when you need an isolated workspace for a feature.
+
 ## Best Practices
 
 1. Always pull latest changes before creating branches
