@@ -104,6 +104,11 @@ For each survivor, assess overall risk:
 
 Assign a risk level: **Critical**, **High**, **Medium**, or **Low**.
 
+## Cross-skills
+
+- Use `tdd` when adding tests to kill surviving mutants.
+- Use `observability-quality` when production cross-reference needs logs, metrics, or tracing.
+
 Present the final summary table sorted by risk (highest first):
 
 | # | Mutation | File | Line | Branch | Prod Traffic | Risk | Rationale |

@@ -14,6 +14,8 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Input:** A spec (from `grilling` design doc, `planning-pipeline` Spec mode, or any written spec). This is the alternative to `planning-pipeline` (Tickets mode) — use writing-plans when you want a single detailed task-by-task plan for one focused session instead of tracer-bullet tickets for parallel/multi-session work.
 
+**Cross-skills:** Before planning, invoke `deep-mode` if the spec touches unfamiliar code, and `context7` if it depends on a library whose current API you need to verify.
+
 **Context:** If working in an isolated worktree, it should have been created via the `/using-git-worktrees` skill at execution time.
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`

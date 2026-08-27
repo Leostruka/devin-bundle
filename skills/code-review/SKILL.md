@@ -193,4 +193,8 @@ controller reads the diff and decides — never silently drop either.
 - Show code/tests that prove it works
 - Request clarification
 
+## Cross-skills
+
+- Use `verification-before-completion` as a final gate after the review before declaring the work complete.
+
 See template at: [code-reviewer.md](code-reviewer.md)

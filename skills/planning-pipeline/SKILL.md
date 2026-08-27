@@ -17,6 +17,8 @@ idea to implementation. Pick the mode that matches the need.
 The issue tracker and triage label vocabulary should have been provided to
 you — run `tool-and-skill-discovery` if not.
 
+**Cross-skills:** invoke `deep-mode` before Spec mode if the codebase is unfamiliar or large, and `context7` when the spec depends on a specific library's current API.
+
 ---
 
 ## Mode: Spec

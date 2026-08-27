@@ -13,6 +13,8 @@ Scaffold the per-repo configuration that the engineering skills assume:
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
+If the repo has no `.devin/` structure at all, or the user asks for a more complete agent setup (rules, hooks, skills, memory), invoke `project-setup` first and return to this skill afterward.
+
 ## Process
 
 ### 1. Explore

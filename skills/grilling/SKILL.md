@@ -190,3 +190,8 @@ Explore context
               -> planning-pipeline (Tickets mode) -> implement (canonical)
               -> writing-plans -> executing-plans (detailed single plan)
 ```
+
+## Cross-skills
+
+- If the topic depends on a library or framework the user just named, invoke `context7` before the first round so you can ask informed questions.
+- If the topic needs primary-source investigation (current docs, a spec, a paper), invoke `research` first and bring the findings into the grilling session.

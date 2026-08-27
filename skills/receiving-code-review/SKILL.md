@@ -199,6 +199,11 @@ You understand 1,2,3,6. Unclear on 4,5.
 ✅ "Understand 1,2,3,6. Need clarification on 4 and 5 before implementing."
 ```
 
+## Cross-skills
+
+- Use `code-review` to perform a fresh two-axis review of the diff before re-submitting.
+- Use `verification-before-completion` as a gate before declaring the feedback addressed.
+
 ## GitHub Thread Replies
 
 When replying to inline review comments on GitHub, reply in the comment thread (`gh api repos/{owner}/{repo}/pulls/{pr}/comments/{id}/replies`), not as a top-level PR comment.

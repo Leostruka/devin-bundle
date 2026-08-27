@@ -131,5 +131,6 @@ After diagnosis, offer to:
 ## Integration with other skills
 
 - **`diagnosing-bugs`** — use for the root cause tracing methodology and disciplined diagnosis loop (red → minimise → hypothesise → instrument → fix → regression-test) when the CI failure is a real bug
+- **`deep-mode`** — when the failure is intermittent, spans multiple jobs, or you need to correlate patterns across many historical builds
 - **`tdd`** — after fixing, write a regression test that would have caught the CI failure
 - **`mutation-testing`** — after fixing, consider running mutation testing on the affected area to find more gaps
