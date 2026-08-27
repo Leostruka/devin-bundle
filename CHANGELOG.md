@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-08-27
+
+### Added
+
+- **project-setup skill**: FASE 0 deep research + 10-step setup loop for bootstrapping `.devin/` configuration in projects.
+- **Cross-skill wiring**: `context7`, `deep-mode`, and `research` wired into 35+ skills where library docs, unfamiliar code, or primary-source investigation is needed.
+- **Engineering skill integration in `project-setup`**: Passo 4.5 now explicitly runs `grilling`, `domain-modeling`, `project-memory`, `triage`, and `planning-pipeline` to populate the project's knowledge base before work begins.
+
+### Changed
+
+- **Agent-produced artifact paths**: `docs/specs/` → `.devin/specs/`, `docs/plans/` → `.devin/plans/`, `docs/obsidian/` → `.devin/obsidian/` (with legacy fallback) in `grilling`, `writing-plans`, `dispatching-parallel-agents`, `code-review`, and `obsidian-workflow`.
+- **manifest.json**, **README.md**, **audit.py**: version bumped to 2.7.0.
+
 ## [2.6.0] - 2026-08-27
 
 ### Added
