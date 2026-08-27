@@ -8,12 +8,46 @@ Set-StrictMode -Version Latest
 $M = @{
     UsandoTerminal = 'Usando terminal base: {0}'
     WtNaoEncontrado = 'wt.exe nao encontrado. Novas instancias abrirao em janelas de PowerShell separadas.'
+    SelecioneWorkspace = "`nSelecione o workspace no terminal..."
     SelecaoCancelada = 'Selecao de {0} cancelada. Encerrando.'
+    WorkspaceDefinido = "Workspace definido para: {0}`n"
+    NenhumaPastaSelecionada = "Nenhuma pasta selecionada. Mantendo no diretorio atual.`n"
+    DimensaoJanela = 'Aviso: Nao foi possivel obter as dimensoes da janela. Redimensionamento desabilitado.'
+    NaoGitRepo = 'Workspace nao e um repositorio Git. Apenas 1 instancia permitida.'
+    ConfigurandoInstancias = "`nConfigurando {0} instancia(s) no workspace escolhido..."
+    WorktreeWorkspaceGit = "`n[WORKTREE] Workspace e um repositorio Git."
+    SincronizandoReferencias = 'Sincronizando referencias remotas...'
     ReferenciasAtualizadas = '  Referencias remotas atualizadas.'
     ReferenciasFalha = '  Nao foi possivel atualizar as referencias remotas (sem acesso ou sem remoto configurado).'
+    MetadadosBranches = 'Obtendo metadados das branches...'
+    ListandoBranches = 'Listando branches existentes...'
+    NenhumBranch = '  (nenhum branch encontrado)'
+    BranchSelecionando = "`n[BRANCH] Selecionando branch para a instancia unica..."
+    BranchAtiva = '  Branch ativa: {0}{1}'
+    BranchTrocarFalha = "  Aviso: nao foi possivel trocar para '{0}' (ha alteracoes locais ou conflito). Continuando na branch atual."
+    WorktreeCriando = "`n[WORKTREE] Criando worktrees isolados..."
+    WorktreeInstancia = '  Instancia {0} -> {1}'
+    WorktreeBranch = '    Branch: {0}{1}'
+    WorktreeMerge = '  Cada instancia edita arquivos isoladamente. Merge manual apos tarefa.'
+    WorktreeFalha = '  Aviso: Falha ao criar worktrees ({0}). Removendo o que foi criado e usando mesmo diretorio.'
+    PaineisDivididos = 'Abrindo paineis divididos (split pane) no Windows Terminal...'
+    PaineisAbertos = 'Paineis extras abertos. Ajuste os divisores com Alt+Shift+setas.'
+    JanelasSeparadas = 'Nao esta no Windows Terminal - abrindo janelas separadas (fallback).'
+    WtNaoEncontradoJanelas = 'wt.exe nao encontrado - abrindo janelas de PowerShell separadas.'
+    JanelaGeracao = 'Aguardando geracao da janela {0}...'
+    JanelaPosicionada = 'Terminal {0} posicionado com sucesso.'
+    JanelaTimeout = 'Aviso: A nova janela {0} demorou muito para responder e nao foi redimensionada.'
+    EstabilizacaoCpu = 'Aguardando 3 segundos para estabilizacao da CPU...'
+    IniciandoPrincipal = 'Iniciando a instancia principal neste terminal. Feche-a ou encerre-a para continuar o script...'
+    SincronizandoBranch = "`nSincronizando branch com remoto..."
     BranchAtualizada = '  Branch atualizada (fast-forward).'
     FastForwardFalha = '  Nao foi possivel fast-forward (sem upstream ou divergencia).'
     PullIgnorado = '  Pull ignorado: ha alteracoes locais.'
+    PrincipalEncerradaTerminais = "`nInstancia principal encerrada. Finalizando terminais extras..."
+    TerminaisFechados = 'Terminais extras fechados com sucesso.'
+    PrincipalEncerrada = "`nInstancia principal encerrada."
+    PaineisFecham = 'Paineis extras (split pane) fecham automaticamente em instantes...'
+    LimpandoWorktrees = "`n[WORKTREE] Limpando worktrees..."
     WorktreesRemovidos = '  Worktrees removidos. Branches criadas removidas.'
     BranchOriginalRestaurada = "  Branch original '{0}' restaurada."
     BranchOriginalFalha = "  Aviso: nao foi possivel restaurar a branch '{0}' (ha alteracoes locais)."
@@ -89,7 +123,7 @@ function Select-FolderTerminal {
 }
 
 # 5. Seleciona workspace via terminal
-Write-Host "`nSelecione o workspace no terminal..." -ForegroundColor Cyan
+Write-Host $M.SelecioneWorkspace -ForegroundColor Cyan
 $workspacePath = Select-FolderTerminal -InitialPath $diretorioOriginal.Path
 if (-not $workspacePath) {
     Write-Host ($M.SelecaoCancelada -f 'workspace') -ForegroundColor Yellow
@@ -97,10 +131,10 @@ if (-not $workspacePath) {
 }
 if ($workspacePath -ne $diretorioOriginal.Path) {
     Set-Location $workspacePath
-    Write-Host "Workspace definido para: $workspacePath`n" -ForegroundColor Green
+    Write-Host ($M.WorkspaceDefinido -f $workspacePath) -ForegroundColor Green
 }
 else {
-    Write-Host "Nenhuma pasta selecionada. Mantendo no diretorio atual.`n" -ForegroundColor Yellow
+    Write-Host $M.NenhumaPastaSelecionada -ForegroundColor Yellow
 }
 
 # 5. Carrega utilitarios Win32 para redimensionar janelas
@@ -484,7 +518,7 @@ if ($hwndMain -ne [IntPtr]::Zero -and [WindowUtil]::GetWindowRect($hwndMain, [re
     $windowUtilAvailable = $true
 }
 else {
-    Write-Host "Aviso: Nao foi possivel obter as dimensoes da janela. Redimensionamento desabilitado." -ForegroundColor Yellow
+    Write-Host $M.DimensaoJanela -ForegroundColor Yellow
     $origX = 0
     $origY = 0
     $origW = 0
@@ -515,9 +549,9 @@ if ($isGitRepo) {
 }
 else {
     $numInstancias = 1
-    Write-Host "Workspace nao e um repositorio Git. Apenas 1 instancia permitida." -ForegroundColor DarkYellow
+    Write-Host $M.NaoGitRepo -ForegroundColor DarkYellow
 }
-Write-Host "`nConfigurando $numInstancias instancia(s) no workspace escolhido..." -ForegroundColor Cyan
+Write-Host ($M.ConfigurandoInstancias -f $numInstancias) -ForegroundColor Cyan
 
 # 5. Prepara worktrees isoladas
 $labels = @('A','B','C','D')
@@ -538,13 +572,13 @@ $singleInstanceMode = $false
 $originalBranch = $null
 
 if ($isGitRepo) {
-    Write-Host "`n[WORKTREE] Workspace e um repositorio Git." -ForegroundColor Magenta
+    Write-Host $M.WorktreeWorkspaceGit -ForegroundColor Magenta
 
     # Limpa worktrees antigas de execucoes anteriores
     Remove-StaleWorktrees -RepoPath $workspacePath
 
     # Sincroniza referencias remotas antes de apresentar as branches
-    Write-Host "Sincronizando referencias remotas..." -ForegroundColor DarkGray
+    Write-Host $M.SincronizandoReferencias -ForegroundColor DarkGray
     $null = git -C $workspacePath fetch --all --prune 2>&1
     if ($?) {
         Write-Host $M.ReferenciasAtualizadas -ForegroundColor Green
@@ -554,13 +588,13 @@ if ($isGitRepo) {
     }
 
     # Obtem metadados das branches e do GitHub
-    Write-Host "Obtendo metadados das branches..." -ForegroundColor DarkGray
+    Write-Host $M.MetadadosBranches -ForegroundColor DarkGray
     $branchMeta = Get-BranchMetadata -RepoPath $workspacePath
     $prMap = Get-PullRequestMap -RepoPath $workspacePath
     $protectedSet = Get-ProtectedBranchSet -RepoPath $workspacePath
     $defaultBranch = Get-DefaultBranchName -RepoPath $workspacePath
 
-    Write-Host "Listando branches existentes..." -ForegroundColor DarkGray
+    Write-Host $M.ListandoBranches -ForegroundColor DarkGray
 
     $localBranches = @()
     $localBranches += @((git -C $workspacePath branch --format='%(refname:short)' 2>$null) | Where-Object {
@@ -605,7 +639,7 @@ if ($isGitRepo) {
     }
 
     if ($allOptions.Count -eq 0) {
-        Write-Host "  (nenhum branch encontrado)" -ForegroundColor DarkGray
+        Write-Host $M.NenhumBranch -ForegroundColor DarkGray
     }
 
     $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
@@ -626,13 +660,13 @@ if ($isGitRepo) {
             exit
         }
         $selectedBranches += $selected
-        Write-Host "  Instancia $($labels[$i]) -> $($selected.Name)" -ForegroundColor Cyan
+        Write-Host ($M.WorktreeInstancia -f $labels[$i], $selected.Name) -ForegroundColor Cyan
     }
 
     if ($numInstancias -eq 1) {
         $singleInstanceMode = $true
         $originalBranch = git -C $workspacePath branch --show-current 2>$null
-        Write-Host "`n[BRANCH] Selecionando branch para a instancia unica..." -ForegroundColor Magenta
+        Write-Host $M.BranchSelecionando -ForegroundColor Magenta
         $info = $selectedBranches[0]
         $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
         $targetBranch = if ($info.Type -eq 'new') { "devin-$timestamp-a" } else { $info.Name }
@@ -653,14 +687,14 @@ if ($isGitRepo) {
         if ($?) {
             if ($createdThisBranch) { $createdBranches += $createdThisBranch }
             $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
-            Write-Host "  Branch ativa: $targetBranch$typeLabel" -ForegroundColor Green
+            Write-Host ($M.BranchAtiva -f $targetBranch, $typeLabel) -ForegroundColor Green
         }
         else {
-            Write-Host "  Aviso: nao foi possivel trocar para '$targetBranch' (ha alteracoes locais ou conflito). Continuando na branch atual." -ForegroundColor Yellow
+            Write-Host ($M.BranchTrocarFalha -f $targetBranch) -ForegroundColor Yellow
         }
     }
     else {
-        Write-Host "`n[WORKTREE] Criando worktrees isolados..." -ForegroundColor Magenta
+        Write-Host $M.WorktreeCriando -ForegroundColor Magenta
 
         $worktreesRoot = Join-Path $workspacePath ".worktrees"
         if (-not (Test-Path -LiteralPath $worktreesRoot)) { New-Item -ItemType Directory -LiteralPath $worktreesRoot -Force | Out-Null }
@@ -697,14 +731,14 @@ if ($isGitRepo) {
                 $branchInfos += @{ Name = $branch; Type = $info.Type }
 
                 $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
-                Write-Host "  Instancia $($labels[$i]) -> $worktree" -ForegroundColor DarkCyan
-                Write-Host "    Branch: $branch$typeLabel" -ForegroundColor DarkGray
+                Write-Host ($M.WorktreeInstancia -f $labels[$i], $worktree) -ForegroundColor DarkCyan
+                Write-Host ($M.WorktreeBranch -f $branch, $typeLabel) -ForegroundColor DarkGray
             }
 
-            Write-Host "  Cada instancia edita arquivos isoladamente. Merge manual apos tarefa." -ForegroundColor DarkGray
+            Write-Host $M.WorktreeMerge -ForegroundColor DarkGray
         }
         catch {
-            Write-Host "  Aviso: Falha ao criar worktrees ($($_.Exception.Message)). Removendo o que foi criado e usando mesmo diretorio." -ForegroundColor Yellow
+            Write-Host ($M.WorktreeFalha -f $_.Exception.Message) -ForegroundColor Yellow
             foreach ($wt in $createdWorktrees) {
                 $null = git -C $workspacePath worktree remove "$wt" --force 2>&1
                 if (Test-Path -LiteralPath $wt) { Remove-Item -LiteralPath $wt -Recurse -Force -ErrorAction SilentlyContinue }
@@ -765,7 +799,7 @@ if ($numInstancias -gt 1) {
     $cmd = "Import-Module Microsoft.PowerShell.ConsoleGuiTools -ErrorAction Stop; . '$bundleRoot\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
 
     if ($insideWT -and $wtPath) {
-        Write-Host "Abrindo paineis divididos (split pane) no Windows Terminal..." -ForegroundColor Cyan
+        Write-Host $M.PaineisDivididos -ForegroundColor Cyan
 
         $subcommands = @()
         if ($numInstancias -eq 2) {
@@ -790,10 +824,10 @@ if ($numInstancias -gt 1) {
         $proc = Start-Process -FilePath $wtPath -ArgumentList $argsWT -PassThru
         if (-not $proc) { Write-Warning "Nao foi possivel iniciar wt.exe para os paineis extras." }
 
-        Write-Host "Paineis extras abertos. Ajuste os divisores com Alt+Shift+setas." -ForegroundColor Green
+        Write-Host $M.PaineisAbertos -ForegroundColor Green
     }
     elseif ($wtPath) {
-        Write-Host "Nao esta no Windows Terminal - abrindo janelas separadas (fallback)." -ForegroundColor DarkYellow
+        Write-Host $M.JanelasSeparadas -ForegroundColor DarkYellow
 
         for ($i = 1; $i -lt $numInstancias; $i++) {
             [int[]]$wtBefore = @(Get-Process WindowsTerminal -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
@@ -805,7 +839,7 @@ if ($numInstancias -gt 1) {
             $timeout = 0
             $hWndFilho = [IntPtr]::Zero
 
-            Write-Host "Aguardando geracao da janela $($labels[$i])..." -ForegroundColor DarkGray
+            Write-Host ($M.JanelaGeracao -f $labels[$i]) -ForegroundColor DarkGray
             while ($timeout -lt 60) {
                 Start-Sleep -Milliseconds 200
                 $wtAfter = Get-Process WindowsTerminal -ErrorAction SilentlyContinue
@@ -822,15 +856,15 @@ if ($numInstancias -gt 1) {
 
             if ($hWndFilho -ne [IntPtr]::Zero -and $windowUtilAvailable) {
                 [WindowUtil]::SetWindowPos($hWndFilho, [IntPtr]::Zero, [int]$grid[$i].X, [int]$grid[$i].Y, [int]$grid[$i].W, [int]$grid[$i].H, 0x0040) | Out-Null
-                Write-Host "Terminal $($labels[$i]) posicionado com sucesso." -ForegroundColor Green
+                Write-Host ($M.JanelaPosicionada -f $labels[$i]) -ForegroundColor Green
             }
             else {
-                Write-Host "Aviso: A nova janela $($labels[$i]) demorou muito para responder e nao foi redimensionada." -ForegroundColor Yellow
+                Write-Host ($M.JanelaTimeout -f $labels[$i]) -ForegroundColor Yellow
             }
         }
     }
     else {
-        Write-Host "wt.exe nao encontrado - abrindo janelas de PowerShell separadas." -ForegroundColor DarkYellow
+        Write-Host $M.WtNaoEncontradoJanelas -ForegroundColor DarkYellow
 
         for ($i = 1; $i -lt $numInstancias; $i++) {
             $proc = Start-Process -FilePath $psExecutable -ArgumentList "-NoExit -Command `"$cmd`"" -PassThru
@@ -839,11 +873,11 @@ if ($numInstancias -gt 1) {
         }
     }
 
-    Write-Host "Aguardando 3 segundos para estabilizacao da CPU..." -ForegroundColor DarkGray
+    Write-Host $M.EstabilizacaoCpu -ForegroundColor DarkGray
     Start-Sleep -Seconds 3
 }
 
-Write-Host "Iniciando a instancia principal neste terminal. Feche-a ou encerre-a para continuar o script..." -ForegroundColor Green
+Write-Host $M.IniciandoPrincipal -ForegroundColor Green
 
 # 7. Muda para o worktree A (se houver) e executa o devin
 if ($worktrees.Count -gt 0 -and (Test-Path -LiteralPath $worktrees[0])) {
@@ -853,7 +887,7 @@ if ($worktrees.Count -gt 0 -and (Test-Path -LiteralPath $worktrees[0])) {
 # Sincroniza a branch da instancia principal com o remoto
 $targetPath = if ($worktrees.Count -gt 0) { $worktrees[0] } else { $workspacePath }
 if ($isGitRepo -and (Test-Path -LiteralPath (Join-Path $targetPath ".git"))) {
-    Write-Host "`nSincronizando branch com remoto..." -ForegroundColor Cyan
+    Write-Host $M.SincronizandoBranch -ForegroundColor Cyan
     $null = git -C $targetPath diff --quiet 2>&1
     $clean = $?
     if ($clean) {
@@ -871,22 +905,22 @@ Start-DevinSession
 
 # 8. Finaliza as instancias extras (fallback)
 if ($processosAdicionais.Count -gt 0) {
-    Write-Host "`nInstancia principal encerrada. Finalizando terminais extras..." -ForegroundColor Yellow
+    Write-Host $M.PrincipalEncerradaTerminais -ForegroundColor Yellow
     foreach ($p in $processosAdicionais) {
         if (-not $p.HasExited) {
             Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
         }
     }
-    Write-Host "Terminais extras fechados com sucesso." -ForegroundColor Green
+    Write-Host $M.TerminaisFechados -ForegroundColor Green
 }
 else {
-    Write-Host "`nInstancia principal encerrada." -ForegroundColor DarkGray
-    Write-Host "Paineis extras (split pane) fecham automaticamente em instantes..." -ForegroundColor DarkGray
+    Write-Host $M.PrincipalEncerrada -ForegroundColor DarkGray
+    Write-Host $M.PaineisFecham -ForegroundColor DarkGray
 }
 
 # 5. Limpa worktrees
 if ($createdWorktrees.Count -gt 0 -or $createdBranches.Count -gt 0) {
-    Write-Host "`n[WORKTREE] Limpando worktrees..." -ForegroundColor Magenta
+    Write-Host $M.LimpandoWorktrees -ForegroundColor Magenta
     Push-Location -LiteralPath $workspacePath
     foreach ($wt in $createdWorktrees) {
         git worktree remove $wt --force 2>$null
