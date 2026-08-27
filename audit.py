@@ -106,15 +106,15 @@ print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
-for i in range(1, 21):
+for i in range(1, 22):
     # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 19:
-    errors.append('Expected 19 rules, found ' + str(len(rules_found)))
+if len(rules_found) != 20:
+    errors.append('Expected 20 rules, found ' + str(len(rules_found)))
 else:
-    print('  OK  19 rules present')
+    print('  OK  20 rules present')
 
 # 7. config.json hooks references valid scripts
 print()
@@ -166,9 +166,9 @@ readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     (f'{skill_count} skills', skill_count > 0),
-    ('19 rules', len(rules_found) == 19),  # 1-5,7-20 (Rule 6 removed, Rule 20 added)
+    ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
     ('5 agents', agent_count == 5),
-    ('13 scripts', len(script_files) == 13),
+    ('17 scripts', len(script_files) == 17),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'

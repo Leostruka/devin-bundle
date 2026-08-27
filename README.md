@@ -1,9 +1,9 @@
-# devin-bundle
+﻿# devin-bundle
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-56-blue.svg)](#skills-56)
-[![Rules](https://img.shields.io/badge/rules-19-green.svg)](#regras-consolidadas-agentsmd)
+[![Skills](https://img.shields.io/badge/skills-57-blue.svg)](#skills-57)
+[![Rules](https://img.shields.io/badge/rules-20-green.svg)](#regras-consolidadas-agentsmd)
 [![Version](https://img.shields.io/badge/version-2.5.3-orange.svg)](CHANGELOG.md)
 
 Export + installer for [Devin CLI](https://devin.ai) to synchronize your **entire setup** across machines.
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 56 skills, 19 rules, 5 subagent profiles, 8 hook events, 11 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 57 skills, 20 rules, 5 subagent profiles, 8 hook events, 15 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -37,8 +37,8 @@ Done. Devin CLI now has 56 skills, 19 rules, 5 subagent profiles, 8 hook events,
 ```mermaid
 flowchart TB
     subgraph Runtime["Devin CLI Runtime"]
-        AGENTS[AGENTS.md<br/>19 rules always-on]
-        SKILLS[skills/<br/>56 skills invoked]
+        AGENTS[AGENTS.md<br/>20 rules always-on]
+        SKILLS[skills/<br/>57 skills invoked]
         AGENTS_PROFILES[agents/<br/>5 profiles dispatched]
         HOOKS[hooks<br/>8 events enforced]
         SCRIPTS[scripts/<br/>13 Python hooks]
@@ -61,10 +61,10 @@ flowchart TB
 devin-bundle/
 ├── AGENTS.md            # 19 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 56 skills (auto-discover, not limited to manifest)
+├── skills/              # 57 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
-├── scripts/             # 13 Python scripts (11 hooks + 2 manual-run)
+├── scripts/             # 17 Python scripts (15 hooks + 2 manual-run)
 ├── mcp_config.json      # MCP server config (tokens MASKED by default)
 ├── credentials.toml     # API keys (ALL values MASKED by default)
 ├── manifest.json        # skill metadata (name, source, purpose)
@@ -84,7 +84,7 @@ devin-bundle/
 
 ## Consolidated rules (AGENTS.md)
 
-19 rules, all framed as negative constraints (evidence: arXiv:2604.11088 — positive directives hurt, only negative constraints help individually):
+20 rules, all framed as negative constraints (evidence: arXiv:2604.11088 — positive directives hurt, only negative constraints help individually):
 
 | # | Rule | Summary |
 |---|---|---|
@@ -107,8 +107,9 @@ devin-bundle/
 | 18 | Keep the context window lean | Default to clear over compact; small rules files; audit MCP servers; bigger window ≠ better retrieval |
 | 19 | Never read secrets or sensitive env vars | Use keys/env vars but never display their contents; report missing/empty without exposing value |
 | 20 | Model-aware operation | GLM-5.2 (200K, tool-use, thinking) for main; SWE-1.7 Max (262K, fast, **gratuito**) for subagents. See docs/MODEL-GUIDE.md |
+|| 21 | Don't think through uncertainty — research or ask | Stop reasoning when in doubt; research facts first, ask only for user-specific intent/business rules |
 
-## Hooks (8 events, 10 hook scripts + 2 manual-run scripts)
+## Hooks (8 events, 15 hook scripts + 2 manual-run scripts)
 
 All hook scripts follow the Devin CLI contract: they read the event payload from
 stdin (`hook_event_name`, `tool_name`, `tool_input`, `tool_response`, ...), block
@@ -125,13 +126,17 @@ supports it. See [Lifecycle Hooks](https://docs.devin.ai/cli/extensibility/hooks
 | PreToolUse | `^(write\|edit)$` | `validate-mermaid.py` | Validates Mermaid diagram syntax in writes |
 | PreToolUse | 19 tool names | `validate-tool-args.py` | Validates paths, regexes, URLs, profiles, UI fields before execution (ALTK SPARC) |
 | PostToolUse | `^(exec\|mcp_call_tool)$` | `silent-error-review.py` | Flags `success:true` with error indicators in verbose/tabular output (ALTK scope) |
+| PostToolUse | `^exec$` | `memory-post-exec.py` | Injects `.devin/memory/` notes matching exec command/output symbols or keywords |
+| PostToolUse | `^(write\|edit)$` | `memory-post-edit.py` | Injects `.devin/memory/` notes matching the edited file path |
 | PostCompaction | all | `constraint-pinning.py` | Detects dropped constraints, writes re-injection marker (Rule 14) |
 | UserPromptSubmit | all | `constraint-pinning.py` | Re-injects pinned constraints when a marker exists |
 | UserPromptSubmit | all | `behavioral-nudge.py` | Behavioral self-check (Rules 7, 8, 4, 17) before responding |
+| UserPromptSubmit | all | `memory-retrieval.py` | Cue-anchored retrieval from `.devin/memory/` notes |
 | SessionStart | all | `constraint-pinning.py` | Clears stale markers from prior sessions |
 | SessionStart | all | `context-budget.py` | Reports AGENTS.md token cost to stderr (transparency, no context bloat) (Rule 18) |
 | Stop | all | `check-ai-signature.py` | Scans staged + unstaged changes for AI signatures |
 | Stop | all | `refine-review-prompt.py` | Blocks once for refinement review if `.refine-pending` exists |
+| Stop | all | `memory-stop.py` | Logs `.devin/memory/` state and prompts capture review |
 | Manual | — | `validate-refinement-evidence.py` | Checks `refinements.log.jsonl` for phantom guardrails (Rule 15) |
 | Manual | — | `validate-skill-format.py` | Scores SKILL.md files against the 8-point quality checklist |
 
@@ -343,7 +348,7 @@ The installer is idempotent — running again only updates what changed (with `-
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute (skill/rule/hook standards) |
 | [SECURITY.md](SECURITY.md) | Security policy and guardrails |
-| [AGENTS.md](AGENTS.md) | The 19 rules (loaded by Devin CLI every session) |
+| [AGENTS.md](AGENTS.md) | The 20 rules (loaded by Devin CLI every session) |
 | [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
 | [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md) | GLM-5.2 and SWE-1.7 model specs, pricing, context windows, best practices |
 | [docs/TOOLS-MAP.md](docs/TOOLS-MAP.md) | Complete map of tools, subagents, hooks, configs, and modes |

@@ -6,7 +6,7 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 conversation; a large one taxes the context window and worsens
 lost-in-the-middle retrieval (Rule 18). Non-pinned rules below are terse
 one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
-12-18) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see docs/MODEL-GUIDE.md).
+12-19, 21) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see docs/MODEL-GUIDE.md).
 
 ## Rule summary
 
@@ -29,6 +29,7 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 18. **Keep the context window lean** — context window = input + output tokens, hard-capped by the provider. Lost-in-the-middle deprioritizes the middle of long chats. Default to `clear` over `compact`; keep rules files small; audit MCP servers before adding (`mcp-context-audit`); paste large inputs to files, not chat (`context-folding`). Watch the budget with `context-budget.py`. Bigger window ≠ better retrieval.
 19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
 20. **Model-aware operation** — GLM-5.2 High (200K, thinking, tool-use during inference, cache $0.26/M) is primary; SWE-1.7 Max (262K, self-compaction, 1000 TPS) is pinned via `model: swe-1-7` (NOT `swe` — that alias is PAID `swe-1.7-lightning`) in all custom agent profiles. Don't over-specify tool-use (GLM decides natively). Fan-out is cheap (SWE-1.7 fast, 262K each, gratuito). Keep system prompt cache-stable. See `docs/MODEL-GUIDE.md`.
+21. **Don't think through uncertainty — research or ask** — when you don't know something or are in doubt, stop reasoning and either research it (facts, libraries, state of the world) or ask the user (intent, business rules, case-of-use).
 
 ---
 
@@ -144,6 +145,14 @@ Never expose secret values. Use them; don't display them.
 - Don't include secret values in commit messages, PRs, logs, docs, or chat output.
 - If a key/env var is missing, empty, malformed, or doesn't behave as expected, say so explicitly — name the variable and the symptom, never the value.
 - If a secret was accidentally exposed, warn the user immediately so they can rotate it.
+
+## 21. Don't think through uncertainty — research or ask (pinned)
+
+When you don't know something or are in doubt, stop reasoning and do one of two things. Research is the default; ask only when the answer cannot be found externally.
+
+- **Research first.** If the question is about facts, libraries, versions, state of the world, or anything with an external source, use `web_search`, `webfetch`, skill discovery (`skill list`/`skill search`), `grep`, `glob`, `exec`, or `run_subagent`. Do not spend reasoning tokens to guess.
+- **Ask only when the answer is user-specific.** If the question is about user intent, business rules, project-specific conventions, or a case-of-use detail that only the user can answer, use `ask_user_question`. Don't ask about facts you can look up.
+- **Red flag — thinking to avoid action.** If you catch yourself reasoning more than one step to resolve a doubt, you are deducing (Rule 17). Stop and call a tool or ask.
 
 ---
 

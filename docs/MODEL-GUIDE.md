@@ -360,3 +360,5 @@ primárias em 2026-08-20:
 | arXiv:2606.20629 (AgentCARD) | Verificado | arxiv.org/abs/2606.20629 |
 | arXiv:2608.03535 (CodeAssay) | Verificado | arxiv.org/abs/2608.03535 |
 | arXiv:2605.20251 (ProcCtrlBench) | Verificado | arxiv.org/abs/2605.20251 |
+| arXiv:2607.20972 (Delivery, Not Storage) | Verificado | arxiv.org/abs/2607.20972 |
+| arXiv:2608.15008 (Harness the Memory) | Verificado | arxiv.org/abs/2608.15008 |

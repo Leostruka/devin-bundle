@@ -83,6 +83,21 @@
             "type": "command",
             "command": "python \"{{APPDATA}}/devin/scripts/context-pressure.py\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/memory-post-exec.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "^(write|edit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/memory-post-edit.py\"",
+            "timeout": 10
           }
         ]
       }
@@ -112,6 +127,11 @@
             "type": "command",
             "command": "python \"{{APPDATA}}/devin/scripts/behavioral-nudge.py\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/memory-retrieval.py\"",
+            "timeout": 10
           }
         ]
       }
@@ -145,6 +165,11 @@
           {
             "type": "command",
             "command": "python \"{{APPDATA}}/devin/scripts/refine-review-prompt.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python \"{{APPDATA}}/devin/scripts/memory-stop.py\"",
             "timeout": 5
           }
         ]

@@ -65,7 +65,7 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (8 eventos, 13 scripts)
+## Hooks (8 eventos, 17 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
@@ -76,13 +76,17 @@ subagent_general — todos os 7 perfis validados.
 | PreToolUse | `^(write\|edit)$` | validate-mermaid.py | Valida Mermaid em writes |
 | PreToolUse | 19 tool names | validate-tool-args.py | Valida argumentos (ALTK SPARC) |
 | PostToolUse | `^(exec\|mcp_call_tool)$` | silent-error-review.py | Revisa erros silenciosos (ALTK scope) |
+| PostToolUse | `^exec$` | memory-post-exec.py | Injeta memórias por symbol/keyword após exec |
+| PostToolUse | `^(write\|edit)$` | memory-post-edit.py | Injeta memórias por path após write/edit |
 | PostCompaction | — | constraint-pinning.py | Detecta constraints dropadas |
 | UserPromptSubmit | — | constraint-pinning.py | Re-injeta constraints |
 | UserPromptSubmit | — | behavioral-nudge.py | Nudge behavioral self-check (Rules 7,8,4,17) |
+| UserPromptSubmit | — | memory-retrieval.py | Recupera memórias de `.devin/memory/` por cues |
 | SessionStart | — | constraint-pinning.py | Limpa markers stale |
 | SessionStart | — | context-budget.py | Reporta token cost |
 | Stop | — | check-ai-signature.py | Verifica assinaturas no fim |
 | Stop | — | refine-review-prompt.py | Prompt de refine review |
+| Stop | — | memory-stop.py | Log do estado de `.devin/memory/` |
 
 **Eventos não utilizados pelo bundle (disponíveis no runtime):**
 - `PermissionRequest` — dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
@@ -102,8 +106,8 @@ subagent_general — todos os 7 perfis validados.
 | hooks.v1.json | `./hooks.v1.json` | `~/.config/devin/hooks.v1.json` | Hooks legacy (backup) |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 56 skills |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 13 scripts Python + 1 JS |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 57 skills |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 17 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia GLM-5.2 + SWE-1.7 |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |

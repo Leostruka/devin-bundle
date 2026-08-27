@@ -208,6 +208,12 @@
       "hash": "95c67d4d67791e2926a6e4a11790789621c5d2c601aaf23390a10bc3d159486b"
     },
     {
+      "name": "project-memory",
+      "source": "devin-bundle",
+      "purpose": "Use when the session produces knowledge worth remembering across sessions, such as answered user questions, business rules, project conventions, failed approaches, reusable solutions, or decisions. Captures it with user approval and stores it as plain-text notes inside .devin/ for future retrieval.",
+      "original_path": "%APPDATA%\\devin\\skills\\project-memory"
+    },
+    {
       "name": "prototype",
       "source": "devin-bundle",
       "purpose": "Use when a throwaway prototype is the fastest way to answer a design question.",
@@ -503,11 +509,27 @@
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds"
     },
     {
+      "name": "memory-retrieval.py",
+      "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes"
+    },
+    {
+      "name": "memory-post-edit.py",
+      "purpose": "PostToolUse hook — injects .devin/memory/ notes after write/edit based on cues.path"
+    },
+    {
+      "name": "memory-stop.py",
+      "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review"
+    },
+    {
+      "name": "memory-post-exec.py",
+      "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword"
+    },
+    {
       "name": "mermaid-parse-check.js",
       "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"
     }
   ],
-  "script_count": 13,
+  "script_count": 17,
   "mcp_count": 1,
   "agent_count": 5,
   "tool_count": 28,
