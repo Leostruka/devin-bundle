@@ -108,6 +108,7 @@ Assign a risk level: **Critical**, **High**, **Medium**, or **Low**.
 
 - Use `tdd` when adding tests to kill surviving mutants.
 - Use `observability-quality` when production cross-reference needs logs, metrics, or tracing.
+- Use `continuous-improvement` to run a 10-step loop when the same test gaps keep appearing.
 
 Present the final summary table sorted by risk (highest first):
 

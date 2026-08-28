@@ -68,3 +68,8 @@ Side effects happen inline as decisions crystallize — run the `/domain-modelin
 - **Sharpening a fuzzy term during the conversation?** Update `.devin/CONTEXT.md` right there.
 - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones.
 - **Want to explore alternative interfaces for the deepened module?** Run the `/codebase-design` skill and use its design-it-twice parallel sub-agent pattern.
+
+## Cross-skills
+
+- If the improvement is part of a recurring pattern, invoke `continuous-improvement` to run the 10-step loop with held-out validation.
+- Use `ai-coding-dictionary` to align architecture terms before proposing a new module.

@@ -25,8 +25,11 @@ Sem pin, usariam SWE-1.6 (default router, 200K, **pago** $0.5/$2.5 MTok). `subag
 | `context-folding` | Doc grande em 200k (offload+grep) | 1353 | Doc/log > 50k tok |
 | `context-window-hygiene` | clear vs compact | 1125 | Contexto apertando |
 | `mcp-context-audit` | Custos de tool defs dos MCPs | 884 | Antes de adicionar MCP |
+| `mcp-lazy-enablement` | Decide quais MCPs manter ativos | 1163 | Depois de `mcp-context-audit` ou com muitos MCPs |
 | `dispatching-parallel-agents` | Subagents têm 262k próprio + plan execution | 10065 | 2+ tarefas independentes |
 | `verification-before-completion` | Não declarar pronto sem verificar | 1305 | Antes de "terminei" |
+| `unlazy` | Força prova de conclusão, evita "done" vazio | 1048 | Antes de declarar pronto |
+| `effort-calibration` | Escolhe nível de raciocínio por dificuldade da tarefa | 2435 | Tarefa parece simples demais ou difícil demais |
 | `tdd` | Test-first | 2186 | Feature/bugfix |
 
 Raramente >3 por tarefa (~5000 tok).
@@ -46,6 +49,7 @@ Raramente >3 por tarefa (~5000 tok).
 |---|---|---|---|
 | `implement` | Implementa de spec/tickets | 109 | Spec existe |
 | `code-review` | Review 2-eixos | 2558 | Antes de merge |
+| `pr-review` | Review no GitHub via `gh` c/ comentários/sugestões | 1576 | Revisar PR no GitHub |
 | `receiving-code-review` | Avalia feedback sem acordo performático | 1564 | Recebeu review |
 | `codebase-design` | Módulos profundos, seams | 1579 | Designar arquitetura |
 | `improve-codebase-architecture` | Deepening p/ AI-nav | 1489 | Refatorar navegabilidade |
@@ -113,6 +117,8 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
 | `ask-matt` | Router idea-to-ship | 3037 | Não sabe qual skill |
+| `project-memory` | Captura memória do projeto entre sessões | 1042 | Nota importante que deve persistir |
+| `memory-hygiene` | Quando e como usar memória cross-session | 1736 | Cross-session memory, context window |
 | `handoff` | Compacta p/ outro agente | 219 | Passar trabalho |
 | `wait-what` | Re-explica mensagem | 81 | Reexplicar |
 | `autonomous-gates` | Gates p/ modo autônomo | 1462 | "Run unattended" |
@@ -122,6 +128,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
 | `setup-matt-pocock-skills` | Configura repo p/ skills eng | 1754 | Setup inicial |
+| `project-setup` | Onboarding geral do projeto Devin | 2622 | Primeira configuração `.devin/` |
 | `setup-pre-commit` | Husky + lint-staged | 585 | Pre-commit hooks |
 | `self-extend` | Adiciona skill/hook/MCP/regra | 1755 | Evoluir Devin CLI |
 

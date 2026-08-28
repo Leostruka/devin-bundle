@@ -147,6 +147,8 @@ Security gate: python scripts/check-ai-signature.py
 ## Integration with Existing Skills
 
 - **`unlazy`:** for long-horizon tasks, write a `.devin/ledgers/<task>.md` with gates before starting. `autonomous-gates` executes those gates.
+- **`review-cadence`:** decide how many planning and review checkpoints the task needs before building the gate list.
+- **`handoff`:** if work spans sessions, capture the current gate state before ending.
 - **`verification-before-completion` skill:** defines per-task VFs; gates execute them
 - **`check-push-green.py` hook:** already enforces the push gate at the hook level
 

@@ -180,3 +180,8 @@ Otherwise → not TDD
 ```
 
 No exceptions without your human partner's permission.
+
+## Cross-skills
+
+- Invoke `review-cadence` before choosing seams if you're unsure how much upfront design this task needs.
+- Invoke `effort-calibration` if the task is trivial or unusually hard, so you don't over- or under-think the TDD loop.

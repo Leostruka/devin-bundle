@@ -205,6 +205,11 @@ After agents return:
 3. **Run full suite** - Verify all fixes work together
 4. **Spot check** - Agents can make systematic errors
 
+## Cross-skills
+
+- If fanning out many subagents, invoke `context-window-hygiene` to keep the parent context lean.
+- If work spans sessions, invoke `handoff` to capture state before ending.
+
 ## Plan execution mode
 
 The sections above cover dispatching parallel agents for independent problems.

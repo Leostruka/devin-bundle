@@ -197,5 +197,6 @@ controller reads the diff and decides — never silently drop either.
 
 - Use `verification-before-completion` as a final gate after the review before declaring the work complete.
 - Use `review-cadence` before starting work to decide whether this change needs deep review or just a final diff check.
+- Use `effort-calibration` to match review depth to task difficulty and avoid overthinking simple renames.
 
 See template at: [code-reviewer.md](code-reviewer.md)

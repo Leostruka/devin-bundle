@@ -175,6 +175,7 @@ mcp_call_tool(
 - Use `triage` when moving issues through a triage state machine.
 - Use `planning-pipeline` to turn Jira issues into specs or tickets.
 - Use `implement` once a Jira ticket is ready for code changes.
+- If you only need the Atlassian MCP for this task, use `mcp-lazy-enablement` to avoid leaving it active.
 
 ## Troubleshooting
 

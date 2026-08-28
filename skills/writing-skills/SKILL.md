@@ -281,6 +281,7 @@ wc -w skills/path/SKILL.md
 Use skill name only, with explicit requirement markers:
 - ✅ Good: `**REQUIRED SUB-SKILL:** Use /tdd`
 - ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand /diagnosing-bugs`
+- ✅ Good: `**REQUIRED BACKGROUND:** Align terms with /ai-coding-dictionary`
 - ❌ Bad: `See skills/testing/test-driven-development` (unclear if required)
 - ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (force-loads, burns context)
 

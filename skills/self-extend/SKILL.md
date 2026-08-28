@@ -181,3 +181,8 @@ constraints in the `task` text. The 7 profiles remain as backward-compatible def
 **Source:** AOrchestra (ICML 2026, arXiv:2602.03786). "Sub-agents should be treated
 as recipes created at runtime, not fixed roles." Training-free mode: 16.28% relative
 improvement over baselines. SFT mode: +11.51% pass@1 on GAIA (requires 2K trajectories).
+
+## Cross-skills
+
+- Use `ai-coding-dictionary` to align terms like subagent, harness, and context engineering before writing new skills or rules.
+- Use `continuous-improvement` to validate that the new skill or rule actually improves the bundle, not just adds it.
