@@ -24,6 +24,7 @@ When multiple skills apply, process skills come first — they set the approach,
 
 - "Let's build X" → `/grilling` first, then implementation skills.
 - "Fix this bug" → `/diagnosing-bugs` first, then domain skills.
+- "Just change a button color" or "rename this" → `/review-cadence` first to decide whether to skip grilling and review at the end.
 
 ## Red Flags
 

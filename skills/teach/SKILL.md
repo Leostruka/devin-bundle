@@ -136,3 +136,8 @@ Glossaries, in particular, are an essential reference. Once one is created, it s
 ## `NOTES.md`
 
 The user will sometimes express preferences of how they want to be taught, or things you should keep in mind. This is the place to record those preferences, so you can refer back to them when designing lessons or working with the user.
+
+## Cross-skills
+
+- If the user asks about AI-coding jargon or a term is being used loosely, invoke `ai-coding-dictionary` to ground the lesson vocabulary.
+- If the user wants to decide how deeply to plan a small example before coding it, invoke `review-cadence`.
