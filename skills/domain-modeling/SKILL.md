@@ -11,6 +11,7 @@ Actively build and sharpen the project's domain model as you design. This is the
 
 - If the domain involves an industry-specific term or a concept you're unsure about, invoke `research` to find authoritative definitions before adding it to `.devin/CONTEXT.md`.
 - If the domain model is being built inside a large or unfamiliar codebase, invoke `deep-mode` to map how the code currently uses the terms.
+- If the term is AI-coding jargon (context engineering, harness engineering, etc.), invoke `ai-coding-dictionary` to keep the project glossary aligned with the bundle's canonical vocabulary.
 
 ## File structure
 

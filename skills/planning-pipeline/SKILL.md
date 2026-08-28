@@ -17,7 +17,7 @@ idea to implementation. Pick the mode that matches the need.
 The issue tracker and triage label vocabulary should have been provided to
 you — run `tool-and-skill-discovery` if not.
 
-**Cross-skills:** invoke `deep-mode` before Spec mode if the codebase is unfamiliar or large, and `context7` when the spec depends on a specific library's current API.
+**Cross-skills:** invoke `deep-mode` before Spec mode if the codebase is unfamiliar or large, and `context7` when the spec depends on a specific library's current API. Invoke `review-cadence` first if you don't know whether the request needs full planning or can move straight to implementation.
 
 ---
 

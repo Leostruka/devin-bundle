@@ -11,14 +11,14 @@ Two traditions, one pipeline. This skill merges **collaborative brainstorming** 
 | Mode | Trigger | What changes |
 |---|---|---|
 | **Default** | "grill this", "stress-test", "brainstorm" | Full pipeline below |
-| **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation |
+| **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation. Use frontier rounds: ask all currently-unblocked questions at once, never one at a time. |
 | **With-docs** | "grill and document" / "sharpen plan + ADRs" | Run full pipeline + invoke `domain-modeling` in Phase 3 to produce ADRs and glossary alongside the spec |
 
 ## Decision logic: which mode when
 
 | Situation | Use | Why |
 |---|---|---|
-| Idea is fuzzy, early-stage, need to explore possibilities | **Brainstorm mode** | Gentle, one question at a time. Propose 2-3 approaches with trade-offs. Visual companion for UI/layout questions. |
+| Idea is fuzzy, early-stage, need to explore possibilities | **Brainstorm mode** | Gentle, batched independent questions. Propose 2-3 approaches with trade-offs. Visual companion for UI/layout questions. |
 | Have a plan/decision that needs stress-testing | **Grill mode** | Relentless interview. Design tree with frontier rounds. Every branch visited, nothing silently assumed. |
 | New feature from scratch | **Both, in sequence** | Brainstorm to explore the idea → Grill to stress-test the resulting design → Write spec → planning-pipeline (Tickets mode) or writing-plans. |
 | Modifying existing behavior | **Brainstorm mode** | Understand current behavior, propose changes, get approval. |
@@ -52,10 +52,11 @@ NOT upfront. The first time a question would genuinely be clearer shown than des
 
 ### 3. Ask clarifying questions
 
-- One at a time
-- Prefer multiple choice when possible, but open-ended is fine
-- Focus on understanding: purpose, constraints, success criteria
-- For appropriately-scoped projects, refine the idea through dialogue
+- Ask one at a time only when the next question depends on the previous answer.
+- When questions are independent, batch them in one round so the user can answer all at once.
+- Prefer multiple choice when possible, but open-ended is fine.
+- Focus on understanding: purpose, constraints, success criteria.
+- For appropriately-scoped projects, refine the idea through dialogue.
 
 ### 4. Propose 2-3 approaches
 
@@ -99,6 +100,10 @@ When a frontier question needs a fact from the environment (filesystem, tools, d
 
 The **decisions** are the user's — put each to them and wait.
 
+### Anti-Pattern: "Yes-tail" (one question at a time near the end)
+
+A common failure mode is to reach the end of a grilling session and ask a series of yes/no confirmation questions one at a time. This wastes turns: the user can answer a batch of independent yes/no questions at once, especially with dictation or when the questions are obvious. The frontier-round rule already prevents this: gather every currently-unblocked question, number them, and ask them in a single round. Only split into more rounds when a question's answer changes what the next question should be.
+
 ### When grilling is done
 
 The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.
@@ -113,7 +118,7 @@ You MUST complete these in order:
 
 1. **Explore project context** — check files, docs, recent commits
 2. **Offer visual companion just-in-time** — only when a visual question arises
-3. **Ask clarifying questions** — one at a time (brainstorm mode)
+3. **Ask clarifying questions** — one at a time only when dependent; otherwise batch independent questions in one round (brainstorm mode)
 4. **Propose 2-3 approaches** — with trade-offs and recommendation
 5. **Present design** — in sections, get user approval after each
 6. **Grill the design** — design tree, frontier rounds, stress-test every branch (grill mode)
@@ -176,7 +181,7 @@ If they agree to the companion, read [visual-companion.md](visual-companion.md) 
 
 ```
 Explore context
-  -> Ask clarifying questions (brainstorm, one at a time)
+  -> Ask clarifying questions (brainstorm, one at a time only if dependent; otherwise batch)
   -> Propose 2-3 approaches with trade-offs
   -> Present design sections, get approval per section
   -> Grill the design (design tree, frontier rounds)
@@ -195,3 +200,5 @@ Explore context
 
 - If the topic depends on a library or framework the user just named, invoke `context7` before the first round so you can ask informed questions.
 - If the topic needs primary-source investigation (current docs, a spec, a paper), invoke `research` first and bring the findings into the grilling session.
+- If the request might be too small for a full grilling session, invoke `review-cadence` before entering grill mode.
+- If the user uses AI-coding jargon loosely, invoke `ai-coding-dictionary` to align terms before the first round.

@@ -24,6 +24,7 @@ When multiple skills apply, process skills come first — they set the approach,
 
 - "Let's build X" → `/grilling` first, then implementation skills.
 - "Fix this bug" → `/diagnosing-bugs` first, then domain skills.
+- "Just change a button color" or "rename this" → `/review-cadence` first to decide whether to skip grilling and review at the end.
 
 ## Red Flags
 
@@ -54,3 +55,10 @@ You are running in Devin CLI. Invoke skills with `/<skill-name>`. If a skill is 
 ## User Instructions
 
 User instructions (`.devin/global_rules.md`, `.devin/rules/*.md`, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+
+## Cross-skills
+
+- If the user uses AI-coding jargon loosely, invoke `ai-coding-dictionary` before routing to another skill.
+- If the conversation is long or context is tight, invoke `context-window-hygiene`.
+- If the task seems trivial or unusually hard, invoke `effort-calibration` to choose the right reasoning level.
+- If there are many MCP servers or tool definitions, invoke `mcp-context-audit` then `mcp-lazy-enablement`.

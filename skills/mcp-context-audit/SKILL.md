@@ -92,6 +92,10 @@ Re-run Step 1 to confirm the server is gone and the budget dropped.
 - Tool-count accuracy threshold: arXiv:2606.30317 (<10-15 tools/server for
   >90% selection accuracy).
 - MCP architecture patterns / anti-patterns: `.devin/global_rules.md` Rule 13.
+
+## Cross-skills
+
+- After auditing, invoke `mcp-lazy-enablement` to decide which servers to keep active or disable.
 - Context bloat from MCP: "Context Windows Explained for Coding Agents"
   (Matt Pocock) — MCP servers can consume a third of the window before the
   first message.

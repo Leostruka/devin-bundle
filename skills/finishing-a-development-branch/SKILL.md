@@ -12,7 +12,7 @@ description: Use when the implementation is complete, all tests pass, and the wo
 
 ## Step 0: Pre-flight verification
 
-Before declaring the branch ready, run a `verification-before-completion` gate: re-read the spec, run the checklist, and confirm every acceptance criterion is met.
+Before declaring the branch ready, run a `verification-before-completion` gate: re-read the spec, run the checklist, and confirm every acceptance criterion is met. Invoke `review-cadence` first if you are unsure whether the final review should be deep or light.
 
 ## Step 1: Verify Tests
 
@@ -162,6 +162,8 @@ git branch -D <feature-branch>
 ```
 
 ## Step 6: Cleanup Workspace
+
+- If the work may continue in another session (Option 2 or 3), invoke `handoff` before cleanup to capture remaining context.
 
 **Runs for Option 1 and confirmed discards.** Options 2 and 3 always
 preserve the worktree. Both callers have already changed directory to the

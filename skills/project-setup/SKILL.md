@@ -208,6 +208,7 @@ PENDING: <what the user still needs to decide or provide>
 
 - `/setup-matt-pocock-skills` — issue tracker, triage labels, domain docs.
 - `/grilling` — capture the project's goals and produce a design doc.
+- `/ai-coding-dictionary` — align any AI-coding jargon before it enters the project glossary.
 - `/domain-modeling` — build `.devin/CONTEXT.md` and `.devin/adr/`.
 - `/project-memory` — capture and retrieve project knowledge.
 - `/triage` — first triage run on the issue tracker.

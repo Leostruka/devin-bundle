@@ -113,3 +113,7 @@ For "other" issue trackers, write `.devin/agents/issue-tracker.md` from scratch 
 ### 5. Done
 
 Tell the user the setup is complete and which engineering skills will now read from these files. Mention they can edit `.devin/agents/*.md` directly later — re-running this skill is only necessary if they want to switch issue trackers or restart from scratch.
+
+## Cross-skills
+
+- Use `continuous-improvement` to iterate the setup based on observed friction after the first projects use it.
