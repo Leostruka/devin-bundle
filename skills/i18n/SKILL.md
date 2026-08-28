@@ -24,6 +24,11 @@ Internationalization and localization for multi-language apps.
 5. **Format locale-aware.** Dates, numbers, currencies, relative time.
 6. **Verify.** Switch locales and confirm layout for LTR/RTL.
 
+## See also
+
+- `a11y-audit` — accessibility, including RTL layout.
+- `i18n` — multi-language, pluralization, and locale formatting.
+
 ## Output rule
 
 - After changes, show a sample in 2+ locales and run the app tests.

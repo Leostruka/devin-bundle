@@ -24,6 +24,11 @@ End-to-end tests for critical user journeys.
 5. **Run and debug.** Headed for debugging, headless in CI.
 6. **Report flakes.** Isolate timing issues and retries.
 
+## See also
+
+- `observability-quality` — test infrastructure, logging, and coverage strategy.
+- `e2e-testing` — writing and running end-to-end user journeys.
+
 ## Output rule
 
 - One test file per journey.

@@ -24,6 +24,11 @@ Container build, run, and compose workflows.
 5. **Scan image.** Check for known CVEs if a scanner is available.
 6. **Compose stack.** Bring up services and run integration tests.
 
+## See also
+
+- `deploy` — release and rollback orchestration.
+- `docker` — container build, run, and compose.
+
 ## Output rule
 
 - After changes, run `docker build` and `docker compose up` (or `docker run`) and report status.

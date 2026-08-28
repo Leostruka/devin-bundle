@@ -24,6 +24,11 @@ Reduce token, compute, and infrastructure spend.
 5. **Shorten prompts.** Remove unused context, prefer file snippets over full reads.
 6. **Re-measure.** Compare cost before and after.
 
+## See also
+
+- `mcp-context-audit` — MCP server context-window cost.
+- `cost-optimization` — general token, compute, and infrastructure spend.
+
 ## Output rule
 
 - Report tokens/cost before and after, and the commands used to measure.

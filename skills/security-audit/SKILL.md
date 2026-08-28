@@ -24,6 +24,11 @@ Defensive security analysis of code, dependencies, and configuration.
 5. **Review auth and input.** Verify auth checks, input validation, output encoding, and least privilege.
 6. **Document findings.** Rank by severity; do not exploit, only detect.
 
+## See also
+
+- `code-review` — general code review before merge.
+- `security-audit` — defensive security-specific review.
+
 ## Output rule
 
 - Produce a findings list: severity, file, issue, recommendation, and verification command.

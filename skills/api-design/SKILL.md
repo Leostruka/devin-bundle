@@ -24,6 +24,11 @@ Design and review HTTP/gRPC/GraphQL APIs with contracts and tests.
 5. **Add tests.** Contract, serialization, and happy/unhappy paths.
 6. **Document.** Keep spec and docs in sync.
 
+## See also
+
+- `codebase-design` — module and seam architecture.
+- `api-design` — contract-first HTTP/gRPC/GraphQL API design.
+
 ## Output rule
 
 - Deliver a spec file, examples, and a test command.

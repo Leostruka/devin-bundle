@@ -24,6 +24,11 @@ Modernize legacy code without big-bang rewrites.
 5. **Verify at each step.** Run tests and, if possible, a diff-check.
 6. **Document decisions.** ADRs for architecture changes and deprecated paths.
 
+## See also
+
+- `improve-codebase-architecture` — deepening and navigation improvements.
+- `legacy-refactor` — incremental modernization of legacy code.
+
 ## Output rule
 
 - Each commit must leave the system testable and no worse than before.

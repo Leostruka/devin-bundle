@@ -24,6 +24,11 @@ Database design, migrations, and query optimization.
 5. **Validate data.** Seed, constraints, and referential integrity.
 6. **Document.** Update migration log and schema docs.
 
+## See also
+
+- `data-analyst` — SQL-first data exploration and charts.
+- `database` — schema design, migrations, and query optimization.
+
 ## Output rule
 
 - After schema changes, run migration tests and a sample query plan.

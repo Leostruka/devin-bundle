@@ -24,6 +24,11 @@ Deploy, release, and verify code in target environments.
 5. **Run smoke tests.** Hit health endpoints, run critical e2e checks.
 6. **Verify and report.** Confirm success or trigger rollback.
 
+## See also
+
+- `docker` — container build, run, and compose.
+- `deploy` — release orchestration, rollback, and smoke tests.
+
 ## Output rule
 
 - After deploy, run smoke tests and report: URL, version, status, rollback command.

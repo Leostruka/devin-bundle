@@ -24,6 +24,11 @@ Measure, profile, and optimize speed, throughput, and resource usage.
 5. **Re-measure.** Confirm improvement with the same workload.
 6. **Set guardrails.** Add budgets, alerts, or regression tests.
 
+## See also
+
+- `diagnosing-bugs` — failure and root-cause analysis.
+- `performance` — speed, throughput, and resource optimization.
+
 ## Output rule
 
 - Report metric, before, after, and the tool/command used.

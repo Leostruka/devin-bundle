@@ -24,6 +24,11 @@ Accessibility review for web and mobile interfaces.
 5. **Resize and motion.** Test 200% zoom, reduced motion preference.
 6. **Document issues.** List impact, WCAG criterion, and fix.
 
+## See also
+
+- `impeccable` — visual design and frontend aesthetics.
+- `a11y-audit` — accessibility compliance and assistive-tech verification.
+
 ## Output rule
 
 - Output findings with severity and WCAG criterion.
