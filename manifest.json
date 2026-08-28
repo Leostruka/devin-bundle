@@ -459,9 +459,19 @@
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\pr-review",
       "export_hash": "0000000000000000000000000000000000000000000000000000000000000000",
       "exported_at": "2026-08-27T10:00:48-03:00"
+    },
+    {
+      "name": "ai-coding-dictionary",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term definition before continuing a technical discussion."
+    },
+    {
+      "name": "review-cadence",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding how much human review and upfront planning a task needs based on its size, risk, and blast radius, or when the user asks whether a change can skip grilling and go straight to implementation."
     }
   ],
-  "skill_count": 55,
+  "skill_count": 57,
   "rule_count": 19,
   "scripts": [
     {
@@ -547,6 +557,7 @@
     "SKILL-TIERS.md",
     "TOOLS-MAP.md",
     "CHANGELOG.md",
-    "README.md"
+    "README.md",
+    "AI-CODING-DICTIONARY.md"
   ]
 }
