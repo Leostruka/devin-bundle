@@ -1,5 +1,6 @@
 ---
-description: "Design vocabulary and frontend improvement loop for production-grade interfaces. Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template."
+name: impeccable
+description: "Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template."
 triggers: [user, model]
 ---
 
