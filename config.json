@@ -5,7 +5,7 @@
   },
   "theme_mode": "nocolor",
   "agent": {
-    "model": "swe-1-7",
+    "model": "adaptive",
     "thinking": {}
   },
   "attribution": false,

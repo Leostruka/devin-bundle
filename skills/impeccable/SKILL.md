@@ -1,12 +1,11 @@
 ---
-name: impeccable
-description: Use when the user asks to design, redesign, shape, critique, audit, polish, animate, colorize, typeset, adapt, clarify, distill, harden, onboard, optimize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Not for backend-only or non-UI tasks.
-model: swe-1-7
+description: "Design vocabulary and frontend improvement loop for production-grade interfaces. Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template."
+triggers: [user, model]
 ---
 
 # Impeccable
 
-Design vocabulary for production-grade frontend interfaces. Adapted from `https://impeccable.style/` by Paul Bakaus (Apache 2.0). Helps avoid generic agent-default aesthetics by establishing design context before building and applying targeted design commands.
+Design vocabulary for production-grade frontend interfaces. Adapted from `https://impeccable.style/` by Paul Bakaus (Apache 2.0).
 
 ## When to use
 
@@ -61,6 +60,47 @@ Design vocabulary for production-grade frontend interfaces. Adapted from `https:
 | `document` | Generate `DESIGN.md` from existing code. |
 | `live` | Iterate UI in the browser with variants. |
 | `init` | One-time setup of `PRODUCT.md` and `DESIGN.md`. |
+
+## Frontend loop
+
+Use this loop when the user says something like "fix the design" without naming a specific command. Run the passes in order. Stop when the result is good enough; otherwise write a short plan, fix, then move to the next pass.
+
+1. **`audit`** — Technical quality check.
+   - Run the page in `browser_preview`.
+   - Check for: accessibility labels, focus rings, color contrast, motion preference, no-JS fallbacks, layout overflow, and component misuse.
+   - Output: findings list in `.devin/plans/impeccable-<surface>-audit.md`.
+
+2. **`critique`** — Design review.
+   - Look for slop and score the page. List the top 3 issues.
+   - Output: `.devin/plans/impeccable-<surface>-critique.md`.
+
+3. **`distill`** (optional) — Strip non-essential elements that do not support the task.
+
+4. **`layout`** — Fix spacing, rhythm, alignment, and responsive breakpoints.
+
+5. **`typeset`** — Check hierarchy, line-height, font weights, and label casing.
+
+6. **`colorize`** — Verify all color uses map to the project theme tokens (`primary`, `on-primary`, `surface`, etc.). Fix mismatched tokens like `bg-primary-container text-on-primary`.
+
+7. **`harden`** — Test reduced motion, keyboard navigation, screen-reader labels, error states, long text, small viewports, and dark mode.
+
+8. **`polish`** — Final pass on shadows, transitions, border radius consistency, and icon sizing.
+
+## Output rule
+
+After each pass that produces code changes:
+- Run `php artisan test` if PHP/Blade changed.
+- Run `npm run build` if CSS/JS changed.
+- Commit with a focused message.
+
+## Verification checklist
+
+- [ ] No generic template aesthetics.
+- [ ] Color tokens are correct for each surface.
+- [ ] Focus states are visible.
+- [ ] Motion respects `prefers-reduced-motion`.
+- [ ] No-JS fallback works where applicable.
+- [ ] Tests and build pass.
 
 ## Implementation notes
 
