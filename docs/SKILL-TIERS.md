@@ -91,6 +91,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `wayfinder` | Mapa de decision tickets | 2938 | Trabalho > 1 sessão |
 | `grilling` | Stress-test de ideia (3 modos: default, stateless, with-docs) | 2656 | Design/plan ser desafiado |
 | `playbook` | Playbook reutilizável c/ Procedure/Specs/Advice (replica cloud) | 1496 | Tarefa repetida, "make this reusable" |
+| `review-cadence` | Decide onde colocar checkpoints de review/planning (shift left/right) | 1217 | Decidir se tarefa pequena pode pular grilling |
 
 ## Pesquisa
 
@@ -99,6 +100,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `research` | Subagent investiga c/ citações | 171 | Investigação c/ fontes |
 | `context7` | Docs atualizadas de libs | 737 | Pergunta sobre lib |
 | `deep-mode` | Multi-pass agentic search c/ citações (replica Deep Mode cloud) | 1800 | "Deep search", exploração exaustiva |
+| `ai-coding-dictionary` | Definições canônicas para jargão de AI coding | 315 | Alinhar termos como harness engineering, context engineering |
 
 ## Data
 

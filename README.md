@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-58-blue.svg)](#skills-58)
+[![Skills](https://img.shields.io/badge/skills-60-blue.svg)](#skills-60)
 [![Rules](https://img.shields.io/badge/rules-20-green.svg)](#regras-consolidadas-agentsmd)
 [![Version](https://img.shields.io/badge/version-2.7.0-orange.svg)](CHANGELOG.md)
 
@@ -21,7 +21,7 @@ cd devin-bundle
 .\install.ps1 -Force          # Windows (PowerShell)
 ```
 
-Done. Devin CLI now has 58 skills, 20 rules, 5 subagent profiles, 8 hook events, 15 hook scripts, and 2 manual-run scripts configured.
+Done. Devin CLI now has 60 skills, 20 rules, 5 subagent profiles, 8 hook events, 15 hook scripts, and 2 manual-run scripts configured.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ Done. Devin CLI now has 58 skills, 20 rules, 5 subagent profiles, 8 hook events,
 flowchart TB
     subgraph Runtime["Devin CLI Runtime"]
         AGENTS[AGENTS.md<br/>20 rules always-on]
-        SKILLS[skills/<br/>58 skills invoked]
+        SKILLS[skills/<br/>60 skills invoked]
         AGENTS_PROFILES[agents/<br/>5 profiles dispatched]
         HOOKS[hooks<br/>8 events enforced]
         SCRIPTS[scripts/<br/>13 Python hooks]
@@ -61,7 +61,7 @@ flowchart TB
 devin-bundle/
 ├── AGENTS.md            # 19 consolidated rules (negative-constraint framed)
 ├── agents/              # 5 subagent profiles (architect, debugger, implementer, researcher, reviewer)
-├── skills/              # 58 skills (auto-discover, not limited to manifest)
+├── skills/              # 60 skills (auto-discover, not limited to manifest)
 ├── config.json          # model, theme, attribution, hooks (org_id MASKED by default)
 ├── hooks.v1.json        # project-level hooks template (.devin/hooks.v1.json)
 ├── scripts/             # 17 Python scripts (15 hooks + 2 manual-run)
@@ -228,7 +228,7 @@ chmod +x export.sh
 **WARNING:** `-NoMask` exports real secrets. NEVER push to a public repo with `-NoMask`.
 Use `-NoMask` only for local backup or direct transfer between trusted machines.
 
-## Skills (56)
+## Skills (60)
 
 The bundle auto-discovers all skills in `%APPDATA%\devin\skills\`. The `manifest.json` contains metadata (name, source, purpose) for reference, but the exported skill list is determined by the live directory, not the manifest.
 
@@ -286,6 +286,13 @@ Skills merged in v2.4.0 to reduce namespace bloat and maintenance overhead. Each
 | Skill | Source | Purpose |
 |---|---|---|
 | `continuous-improvement` | Constitutional AI + RISE + Six-Step Reframing + Devin CLI best practices | FASE 0 deep research + 10-step improvement loop with held-out validation |
+
+### Vocabulary & cadence skills (2)
+
+| Skill | Source | Purpose |
+|---|---|---|
+| `ai-coding-dictionary` | AI Coding Dictionary (Matt Pocock) | Canonical definitions for overloaded AI-coding terms (harness engineering, context engineering, prompt engineering, etc.) |
+| `review-cadence` | Do you even need human review? (Matt Pocock) | Decide when to shift planning/review left (big work) vs right (small safe changes) |
 
 ### Adaptation status: 7/9 features adapted, 2 pruned
 
@@ -350,6 +357,7 @@ The installer is idempotent — running again only updates what changed (with `-
 | [SECURITY.md](SECURITY.md) | Security policy and guardrails |
 | [AGENTS.md](AGENTS.md) | The 20 rules (loaded by Devin CLI every session) |
 | [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
+| [docs/AI-CODING-DICTIONARY.md](docs/AI-CODING-DICTIONARY.md) | Canonical definitions for AI-coding jargon (harness engineering, context engineering, prompt engineering, etc.) |
 | [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md) | GLM-5.2 and SWE-1.7 model specs, pricing, context windows, best practices |
 | [docs/TOOLS-MAP.md](docs/TOOLS-MAP.md) | Complete map of tools, subagents, hooks, configs, and modes |
 | [manifest.json](manifest.json) | Skill metadata (name, source, purpose) |
