@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -469,6 +469,94 @@
       "name": "review-cadence",
       "source": "devin-bundle",
       "purpose": "Use when deciding how much human review and upfront planning a task needs based on its size, risk, and blast radius, or when the user asks whether a change can skip grilling and go straight to implementation."
+    },
+    {
+      "name": "deploy",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to release, deploy, rollback, or verify a deployment pipeline. Covers CI/CD gates, environment checks, canary/blue-green, and post-deploy smoke tests.",
+      "original_path": "%APPDATA%\\devin\\skills\\deploy",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "security-audit",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to audit code, dependencies, or infrastructure for security issues. Covers SAST, dependency scanning, secret leak detection, and OWASP-style checks.",
+      "original_path": "%APPDATA%\\devin\\skills\\security-audit",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "performance",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure.",
+      "original_path": "%APPDATA%\\devin\\skills\\performance",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "a11y-audit",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment.",
+      "original_path": "%APPDATA%\\devin\\skills\\a11y-audit",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "api-design",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication.",
+      "original_path": "%APPDATA%\\devin\\skills\\api-design",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "database",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to design, migrate, query, or optimize a database. Covers schema design, migrations, query review, indexing, and data integrity.",
+      "original_path": "%APPDATA%\\devin\\skills\\database",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "e2e-testing",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to add, run, or debug end-to-end tests. Covers Playwright, Selenium, Cypress, happy paths, critical user journeys, and CI integration.",
+      "original_path": "%APPDATA%\\devin\\skills\\e2e-testing",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "cost-optimization",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to reduce token, compute, or infrastructure costs. Covers context window budget, MCP selection, caching, model routing, and query optimization.",
+      "original_path": "%APPDATA%\\devin\\skills\\cost-optimization",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "docker",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to build, run, compose, or deploy containers. Covers Dockerfiles, docker compose, images, volumes, networks, and basic Kubernetes manifests.",
+      "original_path": "%APPDATA%\\devin\\skills\\docker",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "i18n",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to add or review internationalization and localization. Covers locale files, translation keys, pluralization, RTL, and date/number formatting.",
+      "original_path": "%APPDATA%\\devin\\skills\\i18n",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
+    },
+    {
+      "name": "legacy-refactor",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to modernize legacy code incrementally. Covers strangler-fig, seams, characterization tests, safe extraction, and risk reduction.",
+      "original_path": "%APPDATA%\\devin\\skills\\legacy-refactor",
+      "export_hash": "",
+      "exported_at": "2026-08-28T17:10:06-03:00"
     }
   ],
   "skill_count": 57,
