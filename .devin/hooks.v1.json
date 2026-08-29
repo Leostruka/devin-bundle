@@ -1,0 +1,97 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "^exec$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/destructive-gate.py",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python scripts/check-ai-signature.py",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python scripts/check-push-green.py",
+          "timeout": 150
+        }
+      ]
+    },
+    {
+      "matcher": "^(write|edit)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/check-ai-signature.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/behavioral-nudge.py",
+          "timeout": 5
+        },
+        {
+          "type": "command",
+          "command": "python scripts/memory-retrieval.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "^exec$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/memory-post-exec.py",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "^(write|edit)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/memory-post-edit.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/context-budget.py",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/memory-stop.py",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}
