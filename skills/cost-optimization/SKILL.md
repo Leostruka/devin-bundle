@@ -19,7 +19,7 @@ Reduce token, compute, and infrastructure spend.
 
 1. **Measure current cost.** Tokens per request, model tier, cache hit rate.
 2. **Audit context usage.** Use `mcp-context-audit` to find heavy MCP tool definitions.
-3. **Right-size models.** Use `swe-1-7` for subagents, `adaptive` for parent.
+3. **Right-size models.** Use `swe-1-7` for subagents and `glm-5-2` for the free primary model; use paid models only when explicitly approved.
 4. **Add caching.** Reuse previous tool outputs and summaries where safe.
 5. **Shorten prompts.** Remove unused context, prefer file snippets over full reads.
 6. **Re-measure.** Compare cost before and after.

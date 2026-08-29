@@ -359,6 +359,7 @@ The installer is idempotent — running again only updates what changed (with `-
 | [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) | Skills by domain of use + token costs (fast discovery, ~1500 tok vs ~2094 for `skill list`) |
 | [docs/AI-CODING-DICTIONARY.md](docs/AI-CODING-DICTIONARY.md) | Canonical definitions for AI-coding jargon (harness engineering, context engineering, prompt engineering, etc.) |
 | [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md) | GLM-5.2 and SWE-1.7 model specs, pricing, context windows, best practices |
+| [docs/DEVIN-CLI-COMPATIBILITY.md](docs/DEVIN-CLI-COMPATIBILITY.md) | Validated CLI release, hook payloads, model policy, plugins, and installer checks |
 | [docs/TOOLS-MAP.md](docs/TOOLS-MAP.md) | Complete map of tools, subagents, hooks, configs, and modes |
 | [manifest.json](manifest.json) | Skill metadata (name, source, purpose) |
 

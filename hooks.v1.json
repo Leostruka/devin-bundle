@@ -135,7 +135,13 @@
   "SessionEnd": [
     {
       "matcher": "",
-      "hooks": []
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python \"{{APPDATA}}/devin/scripts/memory-stop.py\"",
+          "timeout": 5
+        }
+      ]
     }
   ]
 }

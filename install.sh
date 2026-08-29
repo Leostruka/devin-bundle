@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Devin bundle installer (Linux / WSL / macOS).
-# Installs FULL Devin CLI setup: AGENTS.md, agents/, skills/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml
+# Installs global Devin CLI setup: AGENTS.md, agents/, skills/, config.json, scripts/, mcp_config.json, credentials.toml
 set -euo pipefail
 
 BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -322,28 +322,9 @@ else
   warn "config.json not found in bundle"
 fi
 
-# --- 5. Install hooks.v1.json ---
-step "Install hooks.v1.json"
-hooks_src="$BUNDLE_DIR/hooks.v1.json"
-hooks_dst="$DEVIN_HOME/hooks.v1.json"
-if [[ -f "$hooks_src" ]]; then
-  if [[ -f "$hooks_dst" ]]; then
-    if diff -q "$hooks_src" "$hooks_dst" >/dev/null 2>&1; then
-      ok "hooks.v1.json already up-to-date"
-    elif [[ $FORCE -eq 1 ]]; then
-      if [[ $BACKUP -eq 1 ]]; then backup_file "$hooks_dst"; fi
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite hooks.v1.json"
-      else cp "$hooks_src" "$hooks_dst"; ok "hooks.v1.json installed"; fi
-    else
-      warn "hooks.v1.json exists and differs. Use --force to overwrite."
-    fi
-  else
-    if [[ $DRY_RUN -eq 1 ]]; then skip "would install hooks.v1.json"
-    else cp "$hooks_src" "$hooks_dst"; ok "hooks.v1.json installed"; fi
-  fi
-else
-  warn "hooks.v1.json not found in bundle"
-fi
+# --- 5. Project hooks template ---
+step "Project hooks template"
+skip "hooks.v1.json is project-level; copy it into .devin/ when needed"
 
 # --- 6. Install scripts/ ---
 step "Install scripts/"
@@ -440,7 +421,7 @@ step "Summary"
 echo "    Skills installed : $installed_skills"
 echo "    Skills updated   : $updated_skills"
 echo "    Skills unchanged : $skipped_skills"
-echo "    Config: AGENTS.md, agents/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml"
+echo "    Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml"
 
 if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"

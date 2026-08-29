@@ -8,8 +8,7 @@
     - AGENTS.md (consolidated rules)
     - agents/ (custom subagent profiles)
     - skills/ (auto-discovers ALL skill directories, not just manifest-listed)
-    - config.json (model, theme, attribution — org_id MASKED by default)
-    - hooks.v1.json (PreToolUse, PostCompaction, Stop hooks)
+    - config.json (model, theme, attribution, hooks — org_id MASKED by default)
     - scripts/ (hook Python scripts: check-ai-signature, check-push-green, post-compaction-reminder)
     - mcp_config.json (MCP server config — tokens MASKED by default)
     - credentials.toml (API keys — ALL values MASKED by default, use -NoMask for real)
@@ -499,7 +498,7 @@ if ($Commit -or $Push) {
 export: refresh devin bundle ($date)
 
 Skills: $skillCount total
-Config: AGENTS.md, agents/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml, docs/
+Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml, docs/
 Masked: $(-not $NoMask)
 "@
         git commit -m $commitMsg 2>&1 | Out-Null

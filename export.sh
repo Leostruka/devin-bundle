@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Devin bundle exporter (Linux / WSL / macOS).
-# Exports FULL Devin CLI setup: AGENTS.md, agents/, skills/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml
+# Exports global Devin CLI setup: AGENTS.md, agents/, skills/, config.json, scripts/, mcp_config.json, credentials.toml
 set -euo pipefail
 
 BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -267,23 +267,9 @@ else
   warn "config.json not found at $config_src"
 fi
 
-# --- 5. Export hooks.v1.json ---
-step "Export hooks.v1.json"
-hooks_src="$DEVIN_HOME/hooks.v1.json"
-hooks_dst="$BUNDLE_DIR/hooks.v1.json"
-if [[ -f "$hooks_src" ]]; then
-  src_h="$(file_hash "$hooks_src")"
-  dst_h=""
-  if [[ -f "$hooks_dst" ]]; then dst_h="$(file_hash "$hooks_dst")"; fi
-  if [[ "$src_h" == "$dst_h" ]]; then
-    ok "hooks.v1.json (unchanged)"
-  else
-    if [[ $DRY_RUN -eq 1 ]]; then skip "would copy hooks.v1.json"
-    else cp "$hooks_src" "$hooks_dst"; convert_to_lf "$hooks_dst"; ok "hooks.v1.json exported"; fi
-  fi
-else
-  warn "hooks.v1.json not found at $hooks_src"
-fi
+# --- 5. Project hooks template ---
+step "Project hooks template"
+skip "hooks.v1.json is project-level and is maintained in the repository"
 
 # --- 6. Export scripts/ ---
 step "Export scripts/"
@@ -439,7 +425,7 @@ fi
 step "Summary"
 echo "    Skills exported  : $exported_skills"
 echo "    Skills unchanged : $unchanged_skills"
-echo "    Config: AGENTS.md, agents/, config.json, hooks.v1.json, scripts/, mcp_config.json, credentials.toml"
+echo "    Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml"
 
 # --- 11. Optional git commit + push ---
 if [[ $COMMIT -eq 1 && $DRY_RUN -eq 0 ]]; then
@@ -451,7 +437,7 @@ if [[ $COMMIT -eq 1 && $DRY_RUN -eq 0 ]]; then
     git commit -m "export: refresh devin bundle ($date_str)
 
 Skills: $exported_skills exported, $unchanged_skills unchanged
-Config: AGENTS.md, config.json, hooks.v1.json, mcp_config.json, credentials.toml, scripts/, agents/" 2>/dev/null
+Config: AGENTS.md, config.json, mcp_config.json, credentials.toml, scripts/, agents/" 2>/dev/null
     ok "committed"
     if [[ $PUSH -eq 1 ]]; then
       git push 2>&1 | sed 's/^/    /'
