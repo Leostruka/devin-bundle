@@ -11,7 +11,7 @@ Two traditions, one pipeline. This skill merges **collaborative brainstorming** 
 | Mode | Trigger | What changes |
 |---|---|---|
 | **Default** | "grill this", "stress-test", "brainstorm" | Full pipeline below |
-| **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation. Use frontier rounds: ask all currently-unblocked questions at once, never one at a time. |
+| **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation. Use frontier rounds: ask all currently-unblocked questions at once, never one at a time. If there are more than 4, split into multiple `ask_user_question` calls in the same round, each with at most 4 questions and 4 options. |
 | **With-docs** | "grill and document" / "sharpen plan + ADRs" | Run full pipeline + invoke `domain-modeling` in Phase 3 to produce ADRs and glossary alongside the spec |
 
 ## Decision logic: which mode when
@@ -54,6 +54,7 @@ NOT upfront. The first time a question would genuinely be clearer shown than des
 
 - Ask one at a time only when the next question depends on the previous answer.
 - When questions are independent, batch them in one round so the user can answer all at once.
+- Respect the `ask_user_question` tool limit: 1-4 questions per call and 2-4 options per multiple-choice question. If more than 4 questions are unblocked, ask up to 4, wait for the answers, incorporate them, recompute the frontier, then continue.
 - Prefer multiple choice when possible, but open-ended is fine.
 - Focus on understanding: purpose, constraints, success criteria.
 - For appropriately-scoped projects, refine the idea through dialogue.
@@ -79,7 +80,7 @@ NOT upfront. The first time a question would genuinely be clearer shown than des
 
 Map the design as a **design tree**: every decision branches into the decisions that hang off it.
 
-Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask now without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
+Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask now without guessing at answers you haven't heard yet. Ask up to 4 frontier questions per `ask_user_question` call, each with 2-4 options when multiple choice. Wait for the answers, incorporate them, and recompute the frontier before the next call. A conceptual frontier may therefore require multiple user interactions.
 
 ### Question format
 
@@ -90,9 +91,10 @@ Q1 - <question title>: <question body, might be multiple paragraphs, including m
 
 ### Frontier rules
 
-- Each round the user answers reshapes the tree — settled decisions push the frontier outward and unblock questions that depended on them.
-- Recompute the frontier and ask the next round.
-- A question whose answer depends on another question still open in this round belongs to a later round, not this one.
+- Every answer reshapes the tree — settled decisions push the frontier outward and unblock questions that depended on them.
+- After each `ask_user_question` call, incorporate all answers and recompute the frontier before selecting the next call.
+- Never include a question in the same call as an unanswered prerequisite.
+- Use 1-4 questions per call and 2-4 options per multiple-choice question.
 
 ### Finding facts is your job, never the user's
 
@@ -102,7 +104,7 @@ The **decisions** are the user's — put each to them and wait.
 
 ### Anti-Pattern: "Yes-tail" (one question at a time near the end)
 
-A common failure mode is to reach the end of a grilling session and ask a series of yes/no confirmation questions one at a time. This wastes turns: the user can answer a batch of independent yes/no questions at once, especially with dictation or when the questions are obvious. The frontier-round rule already prevents this: gather every currently-unblocked question, number them, and ask them in a single round. Only split into more rounds when a question's answer changes what the next question should be.
+A common failure mode is to reach the end of a grilling session and ask a series of independent yes/no confirmations one at a time. Batch up to 4 currently-unblocked questions per call. After each response, recompute dependencies before selecting the next call.
 
 ### When grilling is done
 
@@ -118,7 +120,7 @@ You MUST complete these in order:
 
 1. **Explore project context** — check files, docs, recent commits
 2. **Offer visual companion just-in-time** — only when a visual question arises
-3. **Ask clarifying questions** — one at a time only when dependent; otherwise batch independent questions in one round (brainstorm mode)
+3. **Ask clarifying questions** — one at a time only when dependent; otherwise batch independent questions in one round (brainstorm mode), splitting into multiple `ask_user_question` calls as needed to stay within the 4-question/4-option limit.
 4. **Propose 2-3 approaches** — with trade-offs and recommendation
 5. **Present design** — in sections, get user approval after each
 6. **Grill the design** — design tree, frontier rounds, stress-test every branch (grill mode)
@@ -181,7 +183,7 @@ If they agree to the companion, read [visual-companion.md](visual-companion.md) 
 
 ```
 Explore context
-  -> Ask clarifying questions (brainstorm, one at a time only if dependent; otherwise batch)
+  -> Ask clarifying questions (brainstorm, one at a time only if dependent; otherwise batch, split if >4 questions)
   -> Propose 2-3 approaches with trade-offs
   -> Present design sections, get approval per section
   -> Grill the design (design tree, frontier rounds)
