@@ -11,8 +11,10 @@ __pycache__/
 .devin/heartbeats/
 .devin/mailboxes/
 .devin/checkpoints/
+.devin/scratch/*-install/
 .devin/ledgers/*
 !.devin/ledgers/bitter-lesson.md
+!.devin/ledgers/grilling-frontier.md
 .devin/.refine-pending
 .devin/.resume-pending
 .devin/refinements.log.jsonl
