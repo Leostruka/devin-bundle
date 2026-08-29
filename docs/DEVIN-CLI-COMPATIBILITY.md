@@ -61,7 +61,7 @@ The isolated fixture at `tests/fixtures/devin-plugin-prototype/.devin-plugin/plu
 
 ## Installer verification
 
-Run installers only against redirected temporary homes during automated compatibility checks. A valid simulation installs all 73 skills and leaves the real user configuration untouched.
+Run installers only against redirected temporary homes during automated compatibility checks. A valid simulation installs all 74 skills and leaves the real user configuration untouched.
 
 Windows uses a process-local temporary `APPDATA`. Unix uses a process-local temporary `XDG_CONFIG_HOME` or `HOME`, according to the installer contract.
 

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`youtube-fetcher` skill** — Devin-native, stdlib-first, network-free adapter for turning a YouTube URL and provider/fixture caption/metadata JSON into raw, timestamped transcript + metadata Markdown under `.devin/notes/youtube/`. Strict host allowlist for URL validation, input/output size limits, symlink containment, duplicate preservation, and handoff to `structured-knowledge-extraction`. Conceptually adapted from JimmySadek/youtube-fetcher-to-markdown (MIT); no code copied.
+
+### Changed
+
+- **manifest.json**: skill count 73 → 74, added `youtube-fetcher` entry.
+- **README.md**: skills badge and summary updated to 74 skills.
+- **docs/TOOLS-MAP.md**, **docs/DEVIN-CLI-COMPATIBILITY.md**: skills count 73 → 74.
+
 ## [2.8.0] - 2026-08-28
 
 ### Added
