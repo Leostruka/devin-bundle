@@ -559,8 +559,8 @@
       "exported_at": "2026-08-28T17:10:06-03:00"
     }
   ],
-  "skill_count": 57,
-  "rule_count": 19,
+  "skill_count": 71,
+  "rule_count": 20,
   "scripts": [
     {
       "name": "behavioral-nudge.py",
