@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-08-28
+
+### Added
+
+- **11 new skills for modern agent coverage**:
+  - `deploy` — deploy, release, rollback, and smoke-test workflows.
+  - `security-audit` — defensive SAST, dependency CVE, and secret-leak scanning.
+  - `performance` — profiling, benchmarking, and bottleneck optimization.
+  - `a11y-audit` — WCAG, keyboard, screen-reader, and contrast checks.
+  - `api-design` — REST/OpenAPI design and contract testing.
+  - `database` — schema design, migrations, query review, and indexing.
+  - `e2e-testing` — Playwright/Selenium/Cypress critical-journey tests.
+  - `cost-optimization` — token, cache, model routing, and MCP cost reduction.
+  - `docker` — container build, run, compose, and image scanning.
+  - `i18n` — internationalization, pluralization, LTR/RTL, and formatting.
+  - `legacy-refactor` — strangler-fig, seams, and incremental modernization.
+
+### Changed
+
+- **manifest.json**: version 2.7.0 → 2.8.0, 71 skill entries.
+- **README.md**: skills badge 60 → 71, version badge 2.7.0 → 2.8.0, summary and Mermaid diagram updated.
+- **docs/TOOLS-MAP.md**: skills count 60 → 71.
+- **docs/SKILL-TIERS.md**: new "Infra / Quality / Release" tier with the 11 new skills.
+
 ## [2.7.0] - 2026-08-27
 
 ### Added

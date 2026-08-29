@@ -145,6 +145,22 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `impeccable` | Vocabulário de design para interfaces frontend: evita estéticas genéricas, define contexto antes de construir, aplica comandos de design (polish, audit, distill, etc.) | ~1031 | Projetar, refatorar, auditar ou polir UI/UX |
 
+## Infra / Quality / Release
+
+| Skill | Faz | Tok | Quando |
+|---|---|---|---|
+| `deploy` | Deploy, release, rollback e smoke tests | ~400 | Publicar ou promover versão |
+| `security-audit` | SAST, dependências, vazamento de segredos | ~450 | Auditar segurança |
+| `performance` | Profile, benchmark e otimização | ~400 | Lentidão ou gargalo |
+| `a11y-audit` | WCAG, keyboard, screen-reader, contraste | ~450 | Verificar acessibilidade |
+| `api-design` | REST/OpenAPI/contract tests | ~500 | Design ou review de API |
+| `database` | Schema, migrations, queries, índices | ~450 | Modelagem ou otimização DB |
+| `e2e-testing` | Playwright/Selenium/Cypress journeys | ~500 | Testes de jornada crítica |
+| `cost-optimization` | Tokens, cache, model routing, MCPs | ~450 | Reduzir custo de inferência |
+| `docker` | Build, run, compose, scan de imagens | ~400 | Containers e stacks |
+| `i18n` | Traduções, plural, LTR/RTL, formatos | ~450 | Multi-idioma |
+| `legacy-refactor` | Strangler-fig, seams, modernization | ~500 | Modernizar código legado |
+
 ## Outros
 
 | Skill | Faz | Tok | Quando |
