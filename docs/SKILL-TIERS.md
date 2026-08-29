@@ -118,6 +118,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `ask-matt` | Router idea-to-ship | 3037 | Não sabe qual skill |
 | `project-memory` | Captura memória do projeto entre sessões | 1042 | Nota importante que deve persistir |
+| `devin-manager` | Audita `.devin/` com scan/explain/diff/doctor/plan | ~974 | Quando `.devin/` precisa de auditoria determinística |
 | `memory-hygiene` | Quando e como usar memória cross-session | 1736 | Cross-session memory, context window |
 | `handoff` | Compacta p/ outro agente | 219 | Passar trabalho |
 | `wait-what` | Re-explica mensagem | 81 | Reexplicar |
