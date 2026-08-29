@@ -1,6 +1,6 @@
 ---
 name: performance
-description: "Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure."
+description: Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure.
 triggers: [user, model]
 ---
 

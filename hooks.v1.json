@@ -5,17 +5,17 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/destructive-gate.py\"",
+          "command": "python scripts/destructive-gate.py",
           "timeout": 10
         },
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
+          "command": "python scripts/check-ai-signature.py",
           "timeout": 10
         },
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/check-push-green.py\"",
+          "command": "python scripts/check-push-green.py",
           "timeout": 150
         }
       ]
@@ -25,12 +25,12 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
+          "command": "python scripts/check-ai-signature.py",
           "timeout": 10
         },
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/validate-mermaid.py\"",
+          "command": "python scripts/validate-mermaid.py",
           "timeout": 60
         }
       ]
@@ -40,7 +40,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/validate-tool-args.py\"",
+          "command": "python scripts/validate-tool-args.py",
           "timeout": 10
         }
       ]
@@ -52,12 +52,27 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/silent-error-review.py\"",
+          "command": "python scripts/silent-error-review.py",
           "timeout": 10
         },
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/context-pressure.py\"",
+          "command": "python scripts/context-pressure.py",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python scripts/memory-post-exec.py",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "^(write|edit)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/memory-post-edit.py",
           "timeout": 10
         }
       ]
@@ -69,7 +84,7 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
+          "command": "python scripts/constraint-pinning.py",
           "timeout": 5
         }
       ]
@@ -81,13 +96,18 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
+          "command": "python scripts/constraint-pinning.py",
           "timeout": 5
         },
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/behavioral-nudge.py\"",
+          "command": "python scripts/behavioral-nudge.py",
           "timeout": 5
+        },
+        {
+          "type": "command",
+          "command": "python scripts/memory-retrieval.py",
+          "timeout": 10
         }
       ]
     }
@@ -98,12 +118,12 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/constraint-pinning.py\"",
+          "command": "python scripts/constraint-pinning.py",
           "timeout": 5
         },
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/context-budget.py\"",
+          "command": "python scripts/context-budget.py",
           "timeout": 5
         }
       ]
@@ -115,12 +135,29 @@
       "hooks": [
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/check-ai-signature.py\"",
+          "command": "python scripts/check-ai-signature.py",
           "timeout": 15
         },
         {
           "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/refine-review-prompt.py\"",
+          "command": "python scripts/refine-review-prompt.py",
+          "timeout": 5
+        },
+        {
+          "type": "command",
+          "command": "python scripts/memory-stop.py",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "SessionEnd": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/memory-stop.py",
           "timeout": 5
         }
       ]
@@ -130,18 +167,6 @@
     {
       "matcher": "",
       "hooks": []
-    }
-  ],
-  "SessionEnd": [
-    {
-      "matcher": "",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python \"{{APPDATA}}/devin/scripts/memory-stop.py\"",
-          "timeout": 5
-        }
-      ]
     }
   ]
 }

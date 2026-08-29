@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: "Use when the user wants to release, deploy, rollback, or verify a deployment pipeline. Covers CI/CD gates, environment checks, canary/blue-green, and post-deploy smoke tests."
+description: Use when the user wants to release, deploy, rollback, or verify a deployment pipeline. Covers CI/CD gates, environment checks, canary/blue-green, and post-deploy smoke tests.
 triggers: [user, model]
 ---
 

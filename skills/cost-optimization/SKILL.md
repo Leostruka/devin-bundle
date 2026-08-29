@@ -1,6 +1,6 @@
 ---
 name: cost-optimization
-description: "Use when the user wants to reduce token, compute, or infrastructure costs. Covers context window budget, MCP selection, caching, model routing, and query optimization."
+description: Use when the user wants to reduce token, compute, or infrastructure costs. Covers context window budget, MCP selection, caching, model routing, and query optimization.
 triggers: [user, model]
 ---
 

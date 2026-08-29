@@ -58,7 +58,7 @@ Rules in `AGENTS.md` must be:
 
 Hooks in `hooks.v1.json` must:
 - Have a corresponding Python script in `scripts/`
-- Use `exit 0` for allow, `exit 1` for block
+- Use `exit 0` for allow, `exit 2` for block
 - Handle malformed input gracefully (exit 0 on parse error)
 - Have a timeout set
 - Be idempotent

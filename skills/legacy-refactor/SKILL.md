@@ -1,6 +1,6 @@
 ---
 name: legacy-refactor
-description: "Use when the user wants to modernize legacy code incrementally. Covers strangler-fig, seams, characterization tests, safe extraction, and risk reduction."
+description: Use when the user wants to modernize legacy code incrementally. Covers strangler-fig, seams, characterization tests, safe extraction, and risk reduction.
 triggers: [user, model]
 ---
 

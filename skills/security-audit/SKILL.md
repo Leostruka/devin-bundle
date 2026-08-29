@@ -1,6 +1,6 @@
 ---
 name: security-audit
-description: "Use when the user wants to audit code, dependencies, or infrastructure for security issues. Covers SAST, dependency scanning, secret leak detection, and OWASP-style checks."
+description: Use when the user wants to audit code, dependencies, or infrastructure for security issues. Covers SAST, dependency scanning, secret leak detection, and OWASP-style checks.
 triggers: [user, model]
 ---
 

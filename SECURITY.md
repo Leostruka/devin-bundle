@@ -22,9 +22,9 @@ scripts, or config that could be exploited):
 |---|---|---|
 | AI signature blocking | `check-ai-signature.py` hook | PreToolUse (exec/write/edit) + Stop |
 | Push-without-green blocking | `check-push-green.py` hook | PreToolUse (exec) |
-| Post-compaction re-priming | `post-compaction-reminder.py` hook | PostCompaction |
+| Post-compaction re-priming | `constraint-pinning.py` hook | PostCompaction |
 | Refinement review prompt | `refine-review-prompt.py` hook | Stop |
-| Reward hacking guard | `refine` skill guardrails | Self-improvement loops |
+| Reward hacking guard | `primeagent-reference` Refine mode guardrails | Self-improvement loops |
 | Untrusted code warning | Rule 13 in AGENTS.md | All sessions |
 
 ## What This Bundle Does NOT Protect Against

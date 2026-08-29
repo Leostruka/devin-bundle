@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.1] - 2026-08-29
+
+### Fixed
+
+- **README.md**: corrected rule count (19 → 20), script count in Mermaid (13 → 17), added `context-pressure.py` and `SessionEnd`/`memory-stop.py` rows, clarified `credentials.toml` as generated.
+- **docs/TOOLS-MAP.md**: added `context-pressure.py` (PostToolUse) and `SessionEnd`/`memory-stop.py` rows; updated rule count (19 → 20); corrected claim that `SessionEnd` was unused.
+- **docs/SKILL-TIERS.md**: added `youtube-fetcher` to Data tier.
+- **CONTRIBUTING.md**: corrected hook exit code (1 → 2) for block.
+- **SECURITY.md**: updated `post-compaction-reminder.py` → `constraint-pinning.py` and `refine` skill → `primeagent-reference` Refine mode.
+- **hooks.v1.json** (root + `.devin/`): synchronized with `config.json` hooks; uses `python scripts/*.py` paths and lists all 8 lifecycle events.
+- **manifest.json**: synchronized `impeccable` purpose with `SKILL.md` description.
+
+### Changed
+
+- **12 skills**: removed YAML quote wrapping from `description` frontmatter so `validate-skill-format.py` scores 100 (`a11y-audit`, `api-design`, `cost-optimization`, `database`, `deploy`, `docker`, `e2e-testing`, `i18n`, `impeccable`, `legacy-refactor`, `performance`, `security-audit`).
+
 ## [Unreleased]
 
 ### Added

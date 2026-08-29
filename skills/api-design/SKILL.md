@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+description: Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication.
 triggers: [user, model]
 ---
 

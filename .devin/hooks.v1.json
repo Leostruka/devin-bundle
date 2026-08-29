@@ -27,22 +27,20 @@
           "type": "command",
           "command": "python scripts/check-ai-signature.py",
           "timeout": 10
-        }
-      ]
-    }
-  ],
-  "UserPromptSubmit": [
-    {
-      "matcher": "",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python scripts/behavioral-nudge.py",
-          "timeout": 5
         },
         {
           "type": "command",
-          "command": "python scripts/memory-retrieval.py",
+          "command": "python scripts/validate-mermaid.py",
+          "timeout": 60
+        }
+      ]
+    },
+    {
+      "matcher": "^(exec|read|write|edit|grep|glob|notebook_read|notebook_edit|webfetch|web_search|find_file_by_name|run_subagent|mcp_call_tool|mcp_read_resource|skill|request_scope|ask_user_question|browser_preview|todo_write)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/validate-tool-args.py",
           "timeout": 10
         }
       ]
@@ -50,8 +48,18 @@
   ],
   "PostToolUse": [
     {
-      "matcher": "^exec$",
+      "matcher": "^(exec|mcp_call_tool)$",
       "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/silent-error-review.py",
+          "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python scripts/context-pressure.py",
+          "timeout": 10
+        },
         {
           "type": "command",
           "command": "python scripts/memory-post-exec.py",
@@ -70,10 +78,49 @@
       ]
     }
   ],
+  "PostCompaction": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/constraint-pinning.py",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/constraint-pinning.py",
+          "timeout": 5
+        },
+        {
+          "type": "command",
+          "command": "python scripts/behavioral-nudge.py",
+          "timeout": 5
+        },
+        {
+          "type": "command",
+          "command": "python scripts/memory-retrieval.py",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
   "SessionStart": [
     {
       "matcher": "",
       "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/constraint-pinning.py",
+          "timeout": 5
+        },
         {
           "type": "command",
           "command": "python scripts/context-budget.py",
@@ -86,6 +133,16 @@
     {
       "matcher": "",
       "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/check-ai-signature.py",
+          "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "python scripts/refine-review-prompt.py",
+          "timeout": 5
+        },
         {
           "type": "command",
           "command": "python scripts/memory-stop.py",
@@ -104,6 +161,12 @@
           "timeout": 5
         }
       ]
+    }
+  ],
+  "PermissionRequest": [
+    {
+      "matcher": "",
+      "hooks": []
     }
   ]
 }

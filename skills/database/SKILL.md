@@ -1,6 +1,6 @@
 ---
 name: database
-description: "Use when the user wants to design, migrate, query, or optimize a database. Covers schema design, migrations, query review, indexing, and data integrity."
+description: Use when the user wants to design, migrate, query, or optimize a database. Covers schema design, migrations, query review, indexing, and data integrity.
 triggers: [user, model]
 ---
 

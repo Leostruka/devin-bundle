@@ -1,6 +1,6 @@
 ---
 name: docker
-description: "Use when the user wants to build, run, compose, or deploy containers. Covers Dockerfiles, docker compose, images, volumes, networks, and basic Kubernetes manifests."
+description: Use when the user wants to build, run, compose, or deploy containers. Covers Dockerfiles, docker compose, images, volumes, networks, and basic Kubernetes manifests.
 triggers: [user, model]
 ---
 

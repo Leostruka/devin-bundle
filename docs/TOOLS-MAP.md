@@ -76,6 +76,7 @@ subagent_general — todos os 7 perfis validados.
 | PreToolUse | `^(write\|edit)$` | validate-mermaid.py | Valida Mermaid em writes |
 | PreToolUse | 19 tool names | validate-tool-args.py | Valida argumentos (ALTK SPARC) |
 | PostToolUse | `^(exec\|mcp_call_tool)$` | silent-error-review.py | Revisa erros silenciosos (ALTK scope) |
+| PostToolUse | `^(exec\|mcp_call_tool)$` | context-pressure.py | Reporta context pressure e padrões de tools caras (Rule 18) |
 | PostToolUse | `^exec$` | memory-post-exec.py | Injeta memórias por symbol/keyword após exec |
 | PostToolUse | `^(write\|edit)$` | memory-post-edit.py | Injeta memórias por path após write/edit |
 | PostCompaction | — | constraint-pinning.py | Detecta constraints dropadas |
@@ -84,13 +85,13 @@ subagent_general — todos os 7 perfis validados.
 | UserPromptSubmit | — | memory-retrieval.py | Recupera memórias de `.devin/memory/` por cues |
 | SessionStart | — | constraint-pinning.py | Limpa markers stale |
 | SessionStart | — | context-budget.py | Reporta token cost |
+| SessionEnd | — | memory-stop.py | Log do estado de `.devin/memory/` no fim de sessão |
 | Stop | — | check-ai-signature.py | Verifica assinaturas no fim |
 | Stop | — | refine-review-prompt.py | Prompt de refine review |
 | Stop | — | memory-stop.py | Log do estado de `.devin/memory/` |
 
-**Eventos não utilizados pelo bundle (disponíveis no runtime):**
+**Evento disponível no runtime mas não utilizado pelo bundle:**
 - `PermissionRequest` — dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
-- `SessionEnd` — dispara quando uma sessão termina. Stdin: `reason`. Útil para cleanup/logging.
 
 **Scripts manuais (não-hooks):**
 - validate-refinement-evidence.py — verifica refinements.log.jsonl
@@ -100,7 +101,7 @@ subagent_general — todos os 7 perfis validados.
 
 | Config | Local (bundle) | Local (live WSL) | Função |
 |---|---|---|---|
-| AGENTS.md | `./AGENTS.md` | `~/.config/devin/AGENTS.md` | Regras globais (19 regras) |
+| AGENTS.md | `./AGENTS.md` | `~/.config/devin/AGENTS.md` | Regras globais (20 regras) |
 | config.json | `./config.json` | `~/.config/devin/config.json` | Modelo, hooks, theme |
 | mcp_config.json | `./mcp_config.json` | `~/.config/devin/mcp_config.json` | MCP servers |
 | hooks.v1.json | `./hooks.v1.json` | `~/.config/devin/hooks.v1.json` | Hooks legacy (backup) |

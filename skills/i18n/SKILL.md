@@ -1,6 +1,6 @@
 ---
 name: i18n
-description: "Use when the user wants to add or review internationalization and localization. Covers locale files, translation keys, pluralization, RTL, and date/number formatting."
+description: Use when the user wants to add or review internationalization and localization. Covers locale files, translation keys, pluralization, RTL, and date/number formatting.
 triggers: [user, model]
 ---
 

@@ -112,6 +112,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
 | `data-analyst` | SQL-first exploration via MCP, schema-aware, charts (replica DANA cloud) | 2100 | Query DB, análise de dados, charts |
+|| youtube-fetcher | YouTube URL + caption JSON → raw transcript + metadata em .devin/notes/youtube/ | ~800 | Quando precisa de transcript de vídeo fornecido pelo usuário |
 
 ## Meta (gestão de sessão)
 

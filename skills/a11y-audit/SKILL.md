@@ -1,6 +1,6 @@
 ---
 name: a11y-audit
-description: "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment."
+description: Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment.
 triggers: [user, model]
 ---
 

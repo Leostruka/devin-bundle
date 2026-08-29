@@ -1,6 +1,6 @@
 ---
 name: e2e-testing
-description: "Use when the user wants to add, run, or debug end-to-end tests. Covers Playwright, Selenium, Cypress, happy paths, critical user journeys, and CI integration."
+description: Use when the user wants to add, run, or debug end-to-end tests. Covers Playwright, Selenium, Cypress, happy paths, critical user journeys, and CI integration.
 triggers: [user, model]
 ---
 
