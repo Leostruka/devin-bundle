@@ -31,8 +31,9 @@ Excluded (matcher does not fire — tool fails clearly without validation):
 import sys, json, os, re
 
 VALID_PROFILES = frozenset({
-    "architect", "debugger", "implementer", "researcher",
-    "reviewer", "subagent_explore", "subagent_general",
+    "architect", "debugger", "domain", "implementer", "issue-tracker",
+    "researcher", "reviewer", "subagent_explore", "subagent_general",
+    "triage-labels",
 })
 
 # A query made up only of stopwords carries no search signal.

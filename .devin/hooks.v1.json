@@ -93,5 +93,17 @@
         }
       ]
     }
+  ],
+  "SessionEnd": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/memory-stop.py",
+          "timeout": 5
+        }
+      ]
+    }
   ]
 }

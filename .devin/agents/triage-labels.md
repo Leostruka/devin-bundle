@@ -1,3 +1,14 @@
+---
+name: triage-labels
+model: swe-1-7
+description: Use when mapping canonical triage roles to local issue status values.
+allowed-tools:
+  - read
+  - grep
+  - glob
+  - find_file_by_name
+---
+
 # Triage labels
 
 | Canonical role | Local status | Meaning |

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Stop hook: notifies the user about .devin/memory/ state and prompts capture.
+"""Stop and SessionEnd hook for reporting .devin/memory/ state.
 
-Stop does not support hookSpecificOutput.additionalContext, but it supports
-stderr logging and a top-level decision. This hook only logs (never blocks).
+The hook only writes lifecycle and memory summaries to stderr; it never blocks.
 """
-import json, os, sys, glob
+import json, os, sys
 from datetime import date
 
 BASE = '.devin/memory'
@@ -29,8 +28,11 @@ def main():
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
 
-    if data.get('hookEventName') != 'Stop' and data.get('hook_event_name') != 'Stop':
+    event = data.get('hookEventName') or data.get('hook_event_name')
+    if event not in ('Stop', 'SessionEnd'):
         sys.exit(0)
+    if event == 'SessionEnd':
+        log(f"session ended: {data.get('reason', 'unknown')}")
 
     if not os.path.isdir(BASE):
         sys.exit(0)

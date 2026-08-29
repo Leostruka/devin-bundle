@@ -1,3 +1,14 @@
+---
+name: domain
+model: swe-1-7
+description: Use when interpreting the repository domain context, vocabulary, boundaries, or architecture decisions.
+allowed-tools:
+  - read
+  - grep
+  - glob
+  - find_file_by_name
+---
+
 # Domain docs
 
 ## Required reading

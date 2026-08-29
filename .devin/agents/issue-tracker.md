@@ -1,3 +1,16 @@
+---
+name: issue-tracker
+model: swe-1-7
+description: Use when reading, creating, claiming, or resolving local Markdown issues for this repository.
+allowed-tools:
+  - read
+  - write
+  - edit
+  - grep
+  - glob
+  - find_file_by_name
+---
+
 # Issue tracker: Local Markdown
 
 Issues and specs for this repository live under `.devin/scratch/`.
