@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "python scripts/validate-tool-args.py"
+          },
+          {
+            "command": "python scripts/missing.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [],
+    "PermissionRequest": [],
+    "UserPromptSubmit": [],
+    "SessionStart": [],
+    "SessionEnd": []
+  }
+}
