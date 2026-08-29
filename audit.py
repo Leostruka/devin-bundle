@@ -91,6 +91,12 @@ if manifest_names != disk_names:
     print('  FAIL disk_only=' + str(disk_names - manifest_names))
 else:
     print('  OK  ' + str(len(manifest_names)) + ' skills = ' + str(len(disk_names)) + ' on disk')
+declared_skill_count = manifest.get('skill_count')
+if declared_skill_count != skill_count:
+    errors.append('manifest skill_count mismatch')
+    print('  FAIL skill_count declared=' + str(declared_skill_count) + ' actual=' + str(skill_count))
+else:
+    print('  OK  skill_count = ' + str(skill_count))
 
 # 5. Manifest version
 print()
@@ -115,6 +121,12 @@ if len(rules_found) != 20:
     errors.append('Expected 20 rules, found ' + str(len(rules_found)))
 else:
     print('  OK  20 rules present')
+declared_rule_count = manifest.get('rule_count')
+if declared_rule_count != len(rules_found):
+    errors.append('manifest rule_count mismatch')
+    print('  FAIL rule_count declared=' + str(declared_rule_count) + ' actual=' + str(len(rules_found)))
+else:
+    print('  OK  rule_count = ' + str(len(rules_found)))
 
 # 7. config.json hooks references valid scripts
 print()

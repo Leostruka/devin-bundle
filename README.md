@@ -228,7 +228,7 @@ chmod +x export.sh
 **WARNING:** `-NoMask` exports real secrets. NEVER push to a public repo with `-NoMask`.
 Use `-NoMask` only for local backup or direct transfer between trusted machines.
 
-## Skills (60)
+## Skills (71)
 
 The bundle auto-discovers all skills in `%APPDATA%\devin\skills\`. The `manifest.json` contains metadata (name, source, purpose) for reference, but the exported skill list is determined by the live directory, not the manifest.
 
