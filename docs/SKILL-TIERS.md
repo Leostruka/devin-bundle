@@ -104,6 +104,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `research` | Subagent investiga c/ citações | 171 | Investigação c/ fontes |
 | `context7` | Docs atualizadas de libs | 737 | Pergunta sobre lib |
 | `deep-mode` | Multi-pass agentic search c/ citações (replica Deep Mode cloud) | 1800 | "Deep search", exploração exaustiva |
+| `structured-knowledge-extraction` | Extrai entidades, relações, evidências e proveniência de Markdown/texto para JSON/Markdown versionado sem dependências | ~1124 | Quando estruturar conhecimento de documentos |
 | `ai-coding-dictionary` | Definições canônicas para jargão de AI coding | 315 | Alinhar termos como harness engineering, context engineering |
 
 ## Data

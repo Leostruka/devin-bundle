@@ -565,9 +565,17 @@
       "original_path": "%APPDATA%\\devin\\skills\\devin-manager",
       "export_hash": "",
       "exported_at": "2026-08-29T00:00:00-03:00"
+    },
+    {
+      "name": "structured-knowledge-extraction",
+      "source": "created:Devin bundle (Hyper-Extract concept, Apache-2.0)",
+      "purpose": "Use when extracting entities, relations, evidence, and provenance from Markdown or plain text into a typed, versioned knowledge graph under `.devin/`.",
+      "original_path": "%APPDATA%\\devin\\skills\\structured-knowledge-extraction",
+      "export_hash": "",
+      "exported_at": "2026-08-29T15:00:00-03:00"
     }
   ],
-  "skill_count": 72,
+  "skill_count": 73,
   "rule_count": 20,
   "scripts": [
     {
