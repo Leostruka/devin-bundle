@@ -25,14 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **playbooks support** — `playbooks/` directory with `.devin.md` prompt templates, synchronized by `install.ps1`/`install.sh` and `export.ps1`/`export.sh` between the bundle and `%APPDATA%\devin\playbooks/` / `~/.config/devin/playbooks/`. Includes `start.devin.md` playbook.
 - **`youtube-fetcher` skill** — Devin-native, stdlib-first, network-free adapter for turning a YouTube URL and provider/fixture caption/metadata JSON into raw, timestamped transcript + metadata Markdown under `.devin/notes/youtube/`. Strict host allowlist for URL validation, input/output size limits, symlink containment, duplicate preservation, and handoff to `structured-knowledge-extraction`. Conceptually adapted from JimmySadek/youtube-fetcher-to-markdown (MIT); no code copied.
+
+### Added
+
+- **`leo` skill** — `/leo` session-start skill that injects bundle operating rules, skill discovery, tool verification, telegraphic output, subagent/model routing, and a clear priority hierarchy. Replaces the playbook experiment.
 
 ### Changed
 
-- **manifest.json**: skill count 73 → 74, added `youtube-fetcher` entry.
-- **README.md**: skills badge and summary updated to 74 skills.
-- **docs/TOOLS-MAP.md**, **docs/DEVIN-CLI-COMPATIBILITY.md**: skills count 73 → 74.
+- **manifest.json**: skill count 74 → 75, added `leo` entry.
+- **README.md**: skills badge and summary updated to 75 skills.
+- **docs/TOOLS-MAP.md**, **docs/DEVIN-CLI-COMPATIBILITY.md**: skills count 74 → 75.
 
 ## [2.8.0] - 2026-08-28
 

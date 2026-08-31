@@ -64,7 +64,6 @@ $scriptsDst    = Join-Path $bundleRoot "scripts"
 $mcpDst        = Join-Path $bundleRoot "mcp_config.json"
 $credsDst      = Join-Path $bundleRoot "credentials.toml"
 $docsDst       = Join-Path $bundleRoot "docs"
-$playbooksDst  = Join-Path $bundleRoot "playbooks"
 
 # Source paths
 $rulesSrc      = Join-Path $devinHome "AGENTS.md"
@@ -75,7 +74,6 @@ $scriptsSrc    = Join-Path $devinHome "scripts"
 $mcpSrc        = Join-Path $devinHome "mcp_config.json"
 $credsSrc      = Join-Path $devinHome "credentials.toml"
 $docsSrc       = Join-Path $devinHome "docs"
-$playbooksSrc  = Join-Path $devinHome "playbooks"
 
 $script:Warnings = @()
 
@@ -414,20 +412,13 @@ if ($docsCount -eq 0 -and -not (Test-Path $docsSrc)) {
   Write-Warn "docs/ not found at $docsSrc"
 }
 
-# --- 7c. playbooks/ ---
-Write-Step "Export playbooks/"
-$playbooksCount = Copy-DirRecursive -src $playbooksSrc -dst $playbooksDst -label "playbooks/"
-if ($playbooksCount -eq 0 -and -not (Test-Path $playbooksSrc)) {
-  Write-Warn "playbooks/ not found at $playbooksSrc"
-}
-
 # --- 8. Summary ---
 Write-Step "Summary"
 $componentCount = 0
-foreach ($p in @($rulesDst, $agentsDst, $skillsDst, $configDst, $scriptsDst, $mcpDst, $credsDst, $docsDst, $playbooksDst)) {
+foreach ($p in @($rulesDst, $agentsDst, $skillsDst, $configDst, $scriptsDst, $mcpDst, $credsDst, $docsDst)) {
   if (Test-Path $p) { $componentCount++ }
 }
-Write-Host "    Components in bundle: $componentCount / 9"
+Write-Host "    Components in bundle: $componentCount / 8"
 
 if ($script:Warnings.Count -gt 0) {
   Write-Host "    Warnings: $($script:Warnings.Count)" -ForegroundColor Yellow
@@ -507,7 +498,7 @@ if ($Commit -or $Push) {
 export: refresh devin bundle ($date)
 
 Skills: $skillCount total
-Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml, docs/, playbooks/
+Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml, docs/
 Masked: $(-not $NoMask)
 "@
         git commit -m $commitMsg 2>&1 | Out-Null

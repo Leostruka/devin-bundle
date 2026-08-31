@@ -373,33 +373,7 @@ else
   warn "credentials.toml not found at $creds_src"
 fi
 
-# --- 9. Export playbooks/ ---
-step "Export playbooks/"
-playbooks_src="$DEVIN_HOME/playbooks"
-playbooks_dst="$BUNDLE_DIR/playbooks"
-if [[ -d "$playbooks_src" ]]; then
-  if [[ ! -d "$playbooks_dst" ]]; then
-    if [[ $DRY_RUN -eq 1 ]]; then skip "would create $playbooks_dst"; else mkdir -p "$playbooks_dst"; fi
-  fi
-  for playbook_file in "$playbooks_src"/*.devin.md; do
-    [[ -f "$playbook_file" ]] || continue
-    name="$(basename "$playbook_file")"
-    dst_file="$playbooks_dst/$name"
-    src_h="$(file_hash "$playbook_file")"
-    dst_h=""
-    if [[ -f "$dst_file" ]]; then dst_h="$(file_hash "$dst_file")"; fi
-    if [[ "$src_h" == "$dst_h" ]]; then
-      ok "playbooks/$name (unchanged)"
-    else
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would copy playbooks/$name"
-      else cp "$playbook_file" "$dst_file"; convert_to_lf "$dst_file"; ok "playbooks/$name exported"; fi
-    fi
-  done
-else
-  warn "playbooks/ directory not found at $playbooks_src"
-fi
-
-# --- 10. Pre-push validation ---
+# --- 9. Pre-push validation ---
 if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   step "Pre-push validation"
   validation_failed=0
@@ -447,13 +421,13 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   fi
 fi
 
-# --- 11. Summary ---
+# --- 10. Summary ---
 step "Summary"
 echo "    Skills exported  : $exported_skills"
 echo "    Skills unchanged : $unchanged_skills"
-echo "    Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml, playbooks/"
+echo "    Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml"
 
-# --- 12. Optional git commit + push ---
+# --- 11. Optional git commit + push ---
 if [[ $COMMIT -eq 1 && $DRY_RUN -eq 0 ]]; then
   step "Git commit"
   cd "$BUNDLE_ROOT"
@@ -463,7 +437,7 @@ if [[ $COMMIT -eq 1 && $DRY_RUN -eq 0 ]]; then
     git commit -m "export: refresh devin bundle ($date_str)
 
 Skills: $exported_skills exported, $unchanged_skills unchanged
-Config: AGENTS.md, config.json, mcp_config.json, credentials.toml, scripts/, agents/, playbooks/" 2>/dev/null
+Config: AGENTS.md, config.json, mcp_config.json, credentials.toml, scripts/, agents/" 2>/dev/null
     ok "committed"
     if [[ $PUSH -eq 1 ]]; then
       git push 2>&1 | sed 's/^/    /'

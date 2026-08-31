@@ -158,7 +158,7 @@ if [[ $DRY_RUN -eq 1 ]]; then
   skip "would create $DEVIN_HOME/skills (if missing)"
   skip "would create $DEVIN_HOME/scripts (if missing)"
 else
-  mkdir -p "$DEVIN_HOME" "$DEVIN_HOME/agents" "$DEVIN_HOME/skills" "$DEVIN_HOME/scripts" "$DEVIN_HOME/playbooks"
+  mkdir -p "$DEVIN_HOME" "$DEVIN_HOME/agents" "$DEVIN_HOME/skills" "$DEVIN_HOME/scripts"
   ok "created target directories"
 fi
 
@@ -416,40 +416,12 @@ else
   warn "credentials.toml not found in bundle"
 fi
 
-# --- 9. Install playbooks/ ---
-step "Install playbooks/"
-playbooks_src="$BUNDLE_DIR/playbooks"
-playbooks_dst="$DEVIN_HOME/playbooks"
-if [[ -d "$playbooks_src" ]]; then
-  for playbook_file in "$playbooks_src"/*.devin.md; do
-    [[ -f "$playbook_file" ]] || continue
-    name="$(basename "$playbook_file")"
-    dst_file="$playbooks_dst/$name"
-    if [[ -f "$dst_file" ]]; then
-      if diff -q "$playbook_file" "$dst_file" >/dev/null 2>&1; then
-        ok "playbooks/$name already up-to-date"
-      elif [[ $FORCE -eq 1 ]]; then
-        if [[ $BACKUP -eq 1 ]]; then backup_file "$dst_file"; fi
-        if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite playbooks/$name"
-        else cp "$playbook_file" "$dst_file"; ok "playbooks/$name installed"; fi
-      else
-        warn "playbooks/$name exists and differs. Use --force to overwrite."
-      fi
-    else
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would install playbooks/$name"
-      else cp "$playbook_file" "$dst_file"; ok "playbooks/$name installed"; fi
-    fi
-  done
-else
-  warn "playbooks/ not found in bundle"
-fi
-
-# --- 10. Summary ---
+# --- 9. Summary ---
 step "Summary"
 echo "    Skills installed : $installed_skills"
 echo "    Skills updated   : $updated_skills"
 echo "    Skills unchanged : $skipped_skills"
-echo "    Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml, playbooks/"
+echo "    Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml"
 
 if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"
