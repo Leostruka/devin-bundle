@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **playbooks support** — `playbooks/` directory with `.devin.md` prompt templates, synchronized by `install.ps1`/`install.sh` and `export.ps1`/`export.sh` between the bundle and `%APPDATA%\devin\playbooks/` / `~/.config/devin/playbooks/`. Includes `start.devin.md` playbook.
 - **`youtube-fetcher` skill** — Devin-native, stdlib-first, network-free adapter for turning a YouTube URL and provider/fixture caption/metadata JSON into raw, timestamped transcript + metadata Markdown under `.devin/notes/youtube/`. Strict host allowlist for URL validation, input/output size limits, symlink containment, duplicate preservation, and handoff to `structured-knowledge-extraction`. Conceptually adapted from JimmySadek/youtube-fetcher-to-markdown (MIT); no code copied.
 
 ### Changed

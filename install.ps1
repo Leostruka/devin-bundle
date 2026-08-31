@@ -55,24 +55,26 @@ $devinHome  = Join-Path $env:APPDATA "devin"
 $backupDir  = Join-Path $env:USERPROFILE ".devin-import-backup-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 
 # Bundle source paths
-$rulesSrc   = Join-Path $bundleRoot "AGENTS.md"
-$agentsSrc  = Join-Path $bundleRoot "agents"
-$skillsSrc  = Join-Path $bundleRoot "skills"
-$configSrc  = Join-Path $bundleRoot "config.json"
-$scriptsSrc = Join-Path $bundleRoot "scripts"
-$mcpSrc     = Join-Path $bundleRoot "mcp_config.json"
-$credsSrc   = Join-Path $bundleRoot "credentials.toml"
-$docsSrc    = Join-Path $bundleRoot "docs"
+$rulesSrc     = Join-Path $bundleRoot "AGENTS.md"
+$agentsSrc    = Join-Path $bundleRoot "agents"
+$skillsSrc    = Join-Path $bundleRoot "skills"
+$configSrc    = Join-Path $bundleRoot "config.json"
+$scriptsSrc   = Join-Path $bundleRoot "scripts"
+$mcpSrc       = Join-Path $bundleRoot "mcp_config.json"
+$credsSrc     = Join-Path $bundleRoot "credentials.toml"
+$docsSrc      = Join-Path $bundleRoot "docs"
+$playbooksSrc = Join-Path $bundleRoot "playbooks"
 
 # Destination paths
-$rulesDst   = Join-Path $devinHome "AGENTS.md"
-$agentsDst  = Join-Path $devinHome "agents"
-$skillsDst  = Join-Path $devinHome "skills"
-$configDst  = Join-Path $devinHome "config.json"
-$scriptsDst = Join-Path $devinHome "scripts"
-$mcpDst     = Join-Path $devinHome "mcp_config.json"
-$credsDst   = Join-Path $devinHome "credentials.toml"
-$docsDst    = Join-Path $devinHome "docs"
+$rulesDst     = Join-Path $devinHome "AGENTS.md"
+$agentsDst    = Join-Path $devinHome "agents"
+$skillsDst    = Join-Path $devinHome "skills"
+$configDst    = Join-Path $devinHome "config.json"
+$scriptsDst   = Join-Path $devinHome "scripts"
+$mcpDst       = Join-Path $devinHome "mcp_config.json"
+$credsDst     = Join-Path $devinHome "credentials.toml"
+$docsDst      = Join-Path $devinHome "docs"
+$playbooksDst = Join-Path $devinHome "playbooks"
 
 $script:Copied = 0
 $script:Skipped = 0
@@ -350,6 +352,7 @@ if (-not $DryRun) {
   New-Item -ItemType Directory -Force -Path $skillsDst | Out-Null
   New-Item -ItemType Directory -Force -Path $agentsDst | Out-Null
   New-Item -ItemType Directory -Force -Path $scriptsDst | Out-Null
+  New-Item -ItemType Directory -Force -Path $playbooksDst | Out-Null
   Write-Ok "$devinHome"
 } else {
   Write-Skip "would create target dirs"
@@ -472,6 +475,22 @@ if (Test-Path $docsSrc) {
   }
 } else {
   Write-Skip "docs/ not in bundle"
+}
+
+# --- 8. playbooks/ ---
+Write-Step "Install playbooks/"
+if (Test-Path $playbooksSrc) {
+  $result = Install-SkillDir -src $playbooksSrc -dst $playbooksDst -name "playbooks"
+  switch ($result) {
+    "installed"      { Write-Ok "playbooks (installed)" }
+    "updated"        { Write-Ok "playbooks (updated)" }
+    "skip"           { Write-Skip "playbooks (unchanged)" }
+    "diff"           { Write-Warn "playbooks — exists and differs (use -Force)" }
+    "would-install"  { Write-Skip "would install playbooks" }
+    "would-update"   { Write-Skip "would update playbooks" }
+  }
+} else {
+  Write-Skip "playbooks/ not in bundle"
 }
 
 # --- Summary ---

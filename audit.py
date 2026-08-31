@@ -171,6 +171,19 @@ for s in script_files:
     elif s in manual_scripts:
         print('  OK  ' + s + ' (manual-run, not a hook)')
 
+# 8b. playbooks/ directory
+print()
+print('[8b] Playbooks directory')
+if os.path.isdir('playbooks'):
+    playbook_files = [f for f in os.listdir('playbooks') if f.endswith('.devin.md')]
+    print('  Playbooks: ' + str(playbook_files))
+    if not playbook_files:
+        warnings.append('playbooks/ directory exists but contains no .devin.md files')
+        print('  WARN playbooks/ has no .devin.md files')
+else:
+    warnings.append('playbooks/ directory not found in bundle')
+    print('  WARN playbooks/ directory not found')
+
 # 9. README counts match reality
 print()
 print('[9] README counts vs reality')
