@@ -385,14 +385,20 @@ function Format-BranchStatus {
             if ($pr.statusCheckRollup) {
                 $rollups = @($pr.statusCheckRollup)
                 if ($rollups.Count -gt 0) {
-                    $anyPending = $rollups | Where-Object { ($_.status -and $_.status -ne 'COMPLETED') -or ($_.state -and $_.state -eq 'PENDING') }
+                    $anyPending = $rollups | Where-Object {
+                        $s = $_.PSObject.Properties['status']?.Value
+                        $st = $_.PSObject.Properties['state']?.Value
+                        ($s -and $s -ne 'COMPLETED') -or ($st -and $st -eq 'PENDING')
+                    }
                     if ($anyPending) {
                         $ci = 'PENDING'
                     }
                     else {
                         $failures = $rollups | Where-Object {
-                            ($_.conclusion -and $_.conclusion -notin @('SUCCESS','NEUTRAL','SKIPPED','null')) -or
-                            ($_.state -and $_.state -notin @('SUCCESS','NEUTRAL','SKIPPED','null'))
+                            $c = $_.PSObject.Properties['conclusion']?.Value
+                            $st = $_.PSObject.Properties['state']?.Value
+                            ($c -and $c -notin @('SUCCESS','NEUTRAL','SKIPPED','null')) -or
+                            ($st -and $st -notin @('SUCCESS','NEUTRAL','SKIPPED','null'))
                         }
                         if ($failures) { $ci = 'FAILURE' }
                         else { $ci = 'SUCCESS' }
