@@ -88,8 +88,8 @@
   EXPECT: MELHOROU / NEUTRO / PIOROU / INCONCLUSIVO.
   EVIDENCE: **MELHOROU**. Baseline: skills e planos não tinham PRD destination, módulos propostos, fatias verticais explícitas nem distinção de ativos descartáveis. Final: `writing-plans` e `planning-pipeline` agora forçam esses elementos; exemplo demonstra o formato; `audit.py` 0 erros / 31 checks OK; `pytest tests/held-out/` 135 passed; nenhum plano antigo foi alterado.
 
-- [ ] 10. Commit e PR
+- [x] 10. Commit e PR
   OUTCOME: Commit no branch.
   CHECK: git log --oneline -3
   EXPECT: Commit sem AI signature.
-  EVIDENCE: pending
+  EVIDENCE: `git log --oneline -3` → `2831281 feat(skills): strengthen planning-pipeline and writing-plans for PRD destination and vertical slices`. Mensagem neutra, sem assinatura de IA.
