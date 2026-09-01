@@ -4,27 +4,27 @@ description: Use when exploring and stress-testing ideas before committing to a 
 ---
 # Grilling & Brainstorming (Unified)
 
-Two traditions, one pipeline. This skill merges **collaborative brainstorming** (gentle exploration, one question at a time, visual companion, design doc) with **relentless grilling** (design tree, frontier rounds, numbered questions, recommended answers, sub-agents for facts).
+Two traditions, one pipeline. This skill merges **collaborative brainstorming** (focused exploration, one question at a time, visual companion, design concept) with **relentless grilling** (design tree, frontier rounds, assertive questions, a recommendation alongside every question, sub-agents for facts). The output is a **shared design concept** — the conversation itself becomes a reusable asset.
 
 ## Modes
 
 | Mode | Trigger | What changes |
 |---|---|---|
 | **Default** | "grill this", "stress-test", "brainstorm" | Full pipeline below |
-| **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation. Use frontier rounds: ask all currently-unblocked questions at once, never one at a time. If there are more than 4, split into multiple `ask_user_question` calls in the same round, each with at most 4 questions and 4 options. |
+| **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation. Use frontier rounds: ask all currently-unblocked questions at once, never one at a time. If there are more than 4, split into multiple `ask_user_question` calls in the same round, each with at most 4 questions and 4 options. Every question includes a recommended answer. |
 | **With-docs** | "grill and document" / "sharpen plan + ADRs" | Run full pipeline + invoke `domain-modeling` in Phase 3 to produce ADRs and glossary alongside the spec |
 
 ## Decision logic: which mode when
 
 | Situation | Use | Why |
 |---|---|---|
-| Idea is fuzzy, early-stage, need to explore possibilities | **Brainstorm mode** | Gentle, batched independent questions. Propose 2-3 approaches with trade-offs. Visual companion for UI/layout questions. |
-| Have a plan/decision that needs stress-testing | **Grill mode** | Relentless interview. Design tree with frontier rounds. Every branch visited, nothing silently assumed. |
+| Idea is fuzzy, early-stage, need to explore possibilities | **Brainstorm mode** | Assertive, batched independent questions. Propose 2-3 approaches with trade-offs. Visual companion for UI/layout questions. |
+| Have a plan/decision that needs stress-testing | **Grill mode** | Relentless, assertive interview. Design tree with frontier rounds. Every question includes a recommended answer. Every branch visited, nothing silently assumed. |
 | New feature from scratch | **Both, in sequence** | Brainstorm to explore the idea → Grill to stress-test the resulting design → Write spec → planning-pipeline (Tickets mode) or writing-plans. |
 | Modifying existing behavior | **Brainstorm mode** | Understand current behavior, propose changes, get approval. |
 | User says "grill me" or "stress-test this" | **Grill mode** | Explicit trigger for relentless questioning. |
 | User says "brainstorm" or "I have an idea" | **Brainstorm mode** | Explicit trigger for collaborative exploration. |
-| Design is done, need to write it up | **Brainstorm mode (final phase)** | Write design doc, spec self-review, user review gate, transition to planning-pipeline (Tickets mode) or writing-plans. |
+| Design is done, need to write it up | **Brainstorm mode (final phase)** | Write design concept, spec self-review, user review gate, transition to planning-pipeline (Tickets mode) or writing-plans. |
 
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
@@ -52,9 +52,11 @@ NOT upfront. The first time a question would genuinely be clearer shown than des
 
 ### 3. Ask clarifying questions
 
+- Ask assertively: frame each question as a concrete proposal with your recommendation, then let the user confirm or override.
 - Ask one at a time only when the next question depends on the previous answer.
 - When questions are independent, batch them in one round so the user can answer all at once.
 - Respect the `ask_user_question` tool limit: 1-4 questions per call and 2-4 options per multiple-choice question. If more than 4 questions are unblocked, ask up to 4, wait for the answers, incorporate them, recompute the frontier, then continue.
+- Every question MUST include a recommended answer or default stance. The user can accept, amend, or reject it in one line.
 - Prefer multiple choice when possible, but open-ended is fine.
 - Focus on understanding: purpose, constraints, success criteria.
 - For appropriately-scoped projects, refine the idea through dialogue.
@@ -85,7 +87,7 @@ Work the tree in **rounds**. The **frontier** is every decision whose prerequisi
 ### Question format
 
 ```
-Q1 - <question title>: <question body, might be multiple paragraphs, including multiple choices>
+Q1 - <question title>: <assertive question body; state your recommendation inside the question when possible>
 > <your recommended answer>
 ```
 
@@ -108,7 +110,7 @@ A common failure mode is to reach the end of a grilling session and ask a series
 
 ### When grilling is done
 
-The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.
+The session is done when the frontier is empty and you have a **shared design concept**: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms the design concept.
 
 ---
 
@@ -120,11 +122,11 @@ You MUST complete these in order:
 
 1. **Explore project context** — check files, docs, recent commits
 2. **Offer visual companion just-in-time** — only when a visual question arises
-3. **Ask clarifying questions** — one at a time only when dependent; otherwise batch independent questions in one round (brainstorm mode), splitting into multiple `ask_user_question` calls as needed to stay within the 4-question/4-option limit.
+3. **Ask clarifying questions** — assertively, with a recommendation; one at a time only when dependent; otherwise batch independent questions in one round (brainstorm mode), splitting into multiple `ask_user_question` calls as needed to stay within the 4-question/4-option limit.
 4. **Propose 2-3 approaches** — with trade-offs and recommendation
 5. **Present design** — in sections, get user approval after each
 6. **Grill the design** — design tree, frontier rounds, stress-test every branch (grill mode)
-7. **Write design doc** — save to `.devin/specs/YYYY-MM-DD-<topic>-design.md` and commit
+7. **Write design concept** — save to `.devin/specs/YYYY-MM-DD-<topic>-design.md` as the conversation asset and commit
 8. **Spec self-review** — quick inline check (see below)
 9. **User reviews written spec** — ask user to review before proceeding
 10. **Transition to implementation** — the spec is done. Pick the execution path:
@@ -133,9 +135,20 @@ You MUST complete these in order:
 
 **The terminal state is leaving grilling for one of the two execution paths.** Do NOT start implementing inside grilling — the spec is the deliverable here; execution happens in the next skill.
 
-### Design doc
+### Design concept
 
-Write the validated design (spec) to `.devin/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Commit the design document to git.
+Write the validated design — the conversation asset — to `.devin/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Treat this as a **design concept**, not a transcript dump: it distills the grilled decisions into a reusable handoff for `writing-plans` or `planning-pipeline`.
+
+Use this PRD structure:
+
+- **Problem Statement**
+- **Solution**
+- **User Stories** (numbered, in "As a <actor>, I want <feature>, so that <benefit>")
+- **Implementation Decisions** (modules, interfaces, schema, contracts)
+- **Testing Decisions** (what makes a good test, which modules to test)
+- **Out of Scope**
+
+Commit the design concept to git.
 
 ### Spec Self-Review
 
@@ -183,13 +196,13 @@ If they agree to the companion, read [visual-companion.md](visual-companion.md) 
 
 ```
 Explore context
-  -> Ask clarifying questions (brainstorm, one at a time only if dependent; otherwise batch, split if >4 questions)
+  -> Ask clarifying questions (assertive, with recommendation; batch if >4 questions)
   -> Propose 2-3 approaches with trade-offs
   -> Present design sections, get approval per section
-  -> Grill the design (design tree, frontier rounds)
-  -> User confirms shared understanding?
+  -> Grill the design (design tree, frontier rounds, every question with recommendation)
+  -> User confirms shared design concept?
      -> no: revise, re-grill
-     -> yes: write design doc
+     -> yes: write design concept
         -> spec self-review (fix inline)
         -> user reviews spec?
            -> changes: revise, re-review

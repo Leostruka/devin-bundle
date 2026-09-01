@@ -23,6 +23,20 @@ WHEN receiving code review feedback:
 6. IMPLEMENT: One item at a time, test each
 ```
 
+## Categorize Feedback by Direction
+
+Every review item is either **pushed** to you by the reviewer or **pulled** by you from a source you should have already consulted.
+
+- **Pushed feedback:** the reviewer hands you a concrete violation of a standard, spec, or baseline smell.
+  - Verify the claim against the source they cited.
+  - Fix it and test it; the criterion was already in the review context.
+- **Pulled feedback:** the reviewer points you to a skill, convention, or gate you should have used before asking for review ("use `tdd`", "read `CODING_STANDARDS.md`", "run the type checker").
+  - Stop and pull that source before implementing.
+  - Apply the source, then verify the result before re-submitting.
+  - If the same pulled pattern is repeatedly missing, add it to your pre-review checklist.
+
+Use this classification to decide whether to **fix and test** (pushed) or **read, then fix and test** (pulled).
+
 ## Forbidden Responses
 
 **NEVER:**

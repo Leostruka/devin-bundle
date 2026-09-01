@@ -321,6 +321,10 @@ entry — based on what actually happened in the trajectory, not on speculation.
 Every cited failure must be reproducible; every claimed improvement must be
 validated against held-out evidence, not self-chosen tests.
 
+> **Cross-skill:** For the full FASE 0 deep-research + 10-step improvement loop
+> with held-out validation and unlazy gates, invoke `/continuous-improvement`.
+> This mode reuses its anti-cheat principles (A1-A5) and convergence criterion.
+
 **Convergence criterion:** reach the optimal operating conjuncture for
 **GLM-5.2 High (200K context)** as primary model and **SWE-1.7 Max/Medium
 (262K context)** as default subagent — per verified sources (docs.devin.ai,

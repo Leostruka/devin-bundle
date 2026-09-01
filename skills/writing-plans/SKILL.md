@@ -6,7 +6,9 @@ description: Use when turning a spec into a concrete, task-by-task implementatio
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans as destination PRDs — the single source of truth for the feature. Assume the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as vertical-slice, bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+
+A plan is a living destination document, not a throwaway. Cut tasks as vertical slices (tracer bullets), not horizontal phases (schema → API → UI). Before the first task, declare the proposed modules and interfaces affected. Distinguish disposable prototype assets (scratch files, throwaway scripts) from living assets that ship with the feature.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -32,6 +34,9 @@ Before defining tasks, map out which files will be created or modified and what 
 - Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
 - You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
 - Files that change together should live together. Split by responsibility, not by technical layer.
+- Mark the lifespan of each file:
+  - **Living** — code, tests, or docs that remain in the repo after the feature is complete.
+  - **Prototype / disposable** — scratch files, one-off scripts, or sample data used to learn or demonstrate a decision, then deleted before merge. Prefix them with `tmp_` or `prototype_`, list them in the step that creates them, and include a step that deletes them.
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
@@ -44,6 +49,12 @@ configuration, scaffolding, and documentation steps into the task whose
 deliverable needs them; split only where a reviewer could meaningfully
 reject one task while approving its neighbor. Each task ends with an
 independently testable deliverable.
+
+Prefer vertical slices (tracer bullets) over horizontal layers. A task that
+delivers a complete, end-to-end behavior — however narrow — gives feedback
+earlier and keeps the plan demoable. Avoid tasks that are purely "schema",
+"API", or "UI" unless they are a pure refactor with no vertical path. Wide
+refactors are the exception; sequence them as expand–contract, not as a slice.
 
 ## Bite-Sized Task Granularity
 
@@ -76,16 +87,26 @@ naming and copy rules, platform requirements — one line each, with exact
 values copied verbatim from the spec. Every task's requirements implicitly
 include this section.]
 
+## Proposed Modules and Interfaces (optional for small plans)
+
+[Modules, files, and interfaces the work touches — function names,
+signatures, data contracts, API endpoints. This is the contract surface a
+reviewer checks before any task. Small plans may reference the spec or keep
+this to one line.]
+
 ---
 ```
 
 ## Task Structure
 
+Title the task by the end-to-end behavior it makes work, not by the layer it touches. A task called "Build the import API" is horizontal; a task called "User can preview an import before confirming" is a vertical slice.
+
 ````markdown
-### Task N: [Component Name]
+### Task N: [End-to-end vertical slice]
 
 **Files:**
-- Create: `exact/path/to/file.py`
+- Create (living): `exact/path/to/file.py`
+- Create (prototype / disposable): `tmp_prototype.py` (delete in Step X)
 - Modify: `exact/path/to/existing.py:123-145`
 - Test: `tests/exact/path/to/test.py`
 
@@ -94,6 +115,12 @@ include this section.]
 - Produces: [what later tasks rely on — exact function names, parameter
   and return types. A task's implementer sees only their own task; this
   block is how they learn the names and types neighboring tasks use.]
+
+**Assets:**
+- Living: files that ship with the feature.
+- Prototype / disposable: `tmp_*` or `prototype_*` files used to learn or
+  demonstrate a decision and deleted before merge. Omit this section if
+  every file is living.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -137,6 +164,7 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
+- Prototype / disposable files with no step that deletes them before merge
 
 ## Self-Review
 
@@ -147,6 +175,10 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 **2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+
+**4. Vertical-slice scan:** Are the tasks ordered by end-to-end user-facing behavior, not by technical layer? If a task is "write the schema" or "add the API" with no user-facing test, it is probably a horizontal slice.
+
+**5. Asset-lifespan scan:** Every `tmp_*` or `prototype_*` file has a matching deletion step; no disposable asset survives in the final commit.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 

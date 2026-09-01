@@ -30,6 +30,28 @@ Two traditions, one review. This skill merges the **subagent-dispatch workflow**
 - Before refactoring (baseline check)
 - After fixing complex bug
 
+## Push vs Pull of Patterns and Criteria
+
+Every review moves information in one of two directions:
+
+- **Push (to reviewer):** context the reviewer must have in front of them to judge the diff. These are non-negotiable inputs that the controller pushes into the review prompt.
+  - The spec: issue, ticket, PRD, or requirement list.
+  - The standards sources: `CODING_STANDARDS.md`, `CONTRIBUTING.md`, `.devin/global_rules.md`, etc.
+  - The smell baseline (see below).
+  - Security, privacy, or compliance constraints.
+  - The fixed point and diff command.
+- **Pull (by implementer):** patterns the implementer is expected to consult on their own before asking for review. If the reviewer has to say "you should have read X first", that pattern belongs here.
+  - The skill that governs the work (e.g., `tdd`, `verification-before-completion`, `impeccable`).
+  - The repo's documented conventions and the smell baseline.
+  - The verification gate commands (`python audit.py`, `pytest`, type checker, linter) and their results.
+  - The red-green-refactor cycle output when applicable.
+
+**Rule of thumb:** push what the reviewer cannot verify without; pull what the implementer should have already used.
+
+### Sand Castle as a reference pattern
+
+Matt Pocock's Sand Castle (`mattpocock/sandcastle`) orchestrates agents as a **planner**, **implementers**, and a **merger**: the planner pushes the plan, each implementer pulls its own skills inside a sandbox, and the merger reviews and integrates the branches. The bundle does not add a Docker dependency or the Sand Castle library. The same shape is expressed with `dispatching-parallel-agents` (planner = controller, implementers = subagents, merger = final reviewer) and `using-git-worktrees` for isolation. Use Sand Castle only as a mental model when deciding what to push and what to pull.
+
 ## Budget Presets
 
 The review depth scales with risk. Choose a preset before dispatching:
@@ -111,12 +133,12 @@ Spawn both sub-agents in parallel so they don't pollute each other's context:
 **Standards sub-agent prompt** — include:
 - The full diff command and commit list.
 - The list of standards-source files, plus the smell baseline pasted in full.
-- The brief: "Report — per file/hunk — (a) every place the diff violates a documented standard: cite the standard; and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls. Skip anything tooling enforces. Under 400 words."
+- The brief: "These standards and the smell baseline are **pushed** to you as the reviewer's context. The implementer should have already **pulled** repo skills and verification gates before requesting review. Report — per file/hunk — (a) every place the diff violates a documented standard: cite the standard; and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls. Skip anything tooling enforces. Under 400 words."
 
 **Spec sub-agent prompt** — include:
 - The diff command and commit list.
 - The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but wrong. Quote the spec line for each finding. Under 400 words."
+- The brief: "The spec is **pushed** to you; the implementer should have **pulled** any skills it references before requesting review. Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but wrong. Quote the spec line for each finding. Under 400 words."
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 

@@ -134,6 +134,19 @@ def validate_skill(skill_path):
             issues.append(f"model '{model}' is a paid alias — use 'swe-1-7' (free) or 'glm-5-2' (free) per Rule 20")
             score -= 10
 
+    # Check 3c: subagent field must be boolean, not a profile string (docs.devin.ai creating-skills)
+    # Profile selection uses `agent: <profile>`. A string `subagent: implementer`
+    # silently breaks skill loading (skill absent from available_skills).
+    subagent = fm.get("subagent", "")
+    if subagent:
+        if subagent not in ("true", "false"):
+            issues.append(
+                f"subagent '{subagent}' must be boolean (true/false), not a profile name. "
+                f"Use `agent: <profile>` for profile selection. "
+                f"A string value silently breaks skill loading."
+            )
+            score -= 45
+
     # Check 4: No non-Devin tool names
     if NON_DEVIN_TOOLS.search(content):
         matches = NON_DEVIN_TOOLS.findall(content)

@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`youtube-fetcher` skill** — Devin-native, stdlib-first, network-free adapter for turning a YouTube URL and provider/fixture caption/metadata JSON into raw, timestamped transcript + metadata Markdown under `.devin/notes/youtube/`. Strict host allowlist for URL validation, input/output size limits, symlink containment, duplicate preservation, and handoff to `structured-knowledge-extraction`. Conceptually adapted from JimmySadek/youtube-fetcher-to-markdown (MIT); no code copied.
+- **`afk-loop` skill** — Prompt/workflow for an unattended agent that consumes local Markdown issue files under `.devin/scratch/<feature>/issues/*.md`, uses TDD in an isolated git worktree, and picks the next ready issue autonomously from a DAG of blocking relationships. Stops when no ready issues remain or on blockers; does not commit/push to `main` without human confirmation and does not require Docker.
 
 ### Added
 
