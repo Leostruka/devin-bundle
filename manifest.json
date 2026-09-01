@@ -169,7 +169,7 @@
     {
       "name": "improve-codebase-architecture",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants to identify deepening opportunities in a codebase and act on them.",
+      "purpose": "Use when the user wants to evaluate module depth, identify deepening opportunities in a codebase, and act on them.",
       "original_path": "%APPDATA%\\devin\\skills\\improve-codebase-architecture",
       "export_hash": "21E98B5F46F23195E839000AB0D19FAC6090C52E91FC5DF61EA565215EB5835C",
       "exported_at": "2026-08-17T15:41:48.861908-03:00"

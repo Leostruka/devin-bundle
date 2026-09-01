@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-architecture
-description: Use when the user wants to identify deepening opportunities in a codebase and act on them.
+description: Use when the user wants to evaluate module depth, identify deepening opportunities in a codebase, and act on them.
 agent: architect
 ---
 # Improve Codebase Architecture
@@ -11,6 +11,34 @@ This command is _informed_ by the project's domain model and built on a shared d
 
 - Run the `/codebase-design` skill for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion — don't drift into "component," "service," "API," or "boundary."
 - The domain language in `.devin/CONTEXT.md` gives names to good seams; ADRs in `.devin/adr/` record decisions this command should not re-litigate.
+
+## Deep vs shallow modules
+
+This skill evaluates modules through the lens John Ousterhout uses in *A Philosophy of Software Design*: a module is **deep** when a small interface hides a large amount of functionality, and **shallow** when its interface is almost as large as the functionality it provides. The goal is not to maximize internal size for its own sake — it is to maximize **leverage** for callers and **locality** for maintainers. Use the `/codebase-design` vocabulary for the precise definitions of module, interface, seam, adapter, leverage, and locality.
+
+### Heuristics for spotting shallow modules
+
+When walking the codebase, treat these as symptoms of shallowness. They are not mechanical rules — they are questions to ask the sub-agent:
+
+- **Wide interface, thin implementation.** The module exposes many methods or parameters, but each one does little more than delegate or pass through. The interface does not hide much.
+- **Long chains of tiny modules.** Understanding one concept requires reading three or more modules in sequence. The knowledge is sliced too thin.
+- **Test explosion with low signal.** There are many unit tests, most of them setup-heavy, because the real behaviour is scattered across many small units and none of them is deep enough to test meaningfully through its interface.
+- **Dependency fan-out.** A small module imports or calls many others, so callers must assemble a wide graph of objects just to use it.
+- **Repeated caller setup.** Callers duplicate the same five or more parameters, imports, or configuration objects to reach the module's behaviour.
+
+If several of these appear together, the cluster is a strong deepening candidate.
+
+### Refactoring moves that reduce shallow dependencies
+
+Pick the move that matches the dependencies at the seam. See `codebase-design/DEEPENING.md` for the dependency categories (in-process, local-substitutable, ports & adapters, true external) and testing strategy.
+
+1. **Collapse pass-through wrappers.** If deleting a module would just move the same calls to its callers, the module was shallow. Merge it with the module it delegates to and let the interface shrink.
+2. **Co-locate decisions.** Move branching, validation, or orchestration that is currently split across modules into one module with a single decision point. The interface becomes the place where the decision is exercised.
+3. **Hide parameter clusters.** Replace a multi-parameter method with an object drawn from a small set of well-named constructors or factories. The interface stays small; the object carries the context.
+4. **Push I/O to the seam.** Let the deep module hold the decision logic; let an **adapter** handle file, network, or UI calls. Two adapters (production + test) justify the seam.
+5. **Delete tests on deleted shallow modules.** Once the deepened module has tests at its interface, the old unit tests on the collapsed wrappers become waste. Do not layer them.
+
+Apply these alongside the existing deletion test and the `codebase-design` principles: the interface is the test surface, and one adapter means a hypothetical seam while two mean a real one.
 
 ## Process
 
@@ -23,10 +51,11 @@ This command is _informed_ by the project's domain model and built on a shared d
 
 Read the project's domain glossary (`.devin/CONTEXT.md`) and any ADRs in the area you're touching first. If the architecture question is broad or the codebase is large and unfamiliar, invoke `deep-mode` before spawning the sub-agent.
 
-Then spawn a sub-agent to walk the codebase. Don't follow rigid heuristics — explore organically and note where you experience friction:
+Then spawn a sub-agent to walk the codebase. Don't follow rigid heuristics — explore organically and note where you experience friction. Use the heuristics in **Deep vs shallow modules** as probes:
 
 - Where does understanding one concept require bouncing between many small modules?
 - Where are modules **shallow** — interface nearly as complex as the implementation?
+- Where do small modules fan out into many dependencies?
 - Where have pure functions been extracted just for testability, but the real bugs hide in how they're called (no **locality**)?
 - Where do tightly-coupled modules leak across their seams?
 - Which parts of the codebase are untested, or hard to test through their current interface?
