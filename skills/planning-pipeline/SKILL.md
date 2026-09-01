@@ -24,8 +24,8 @@ you — run `tool-and-skill-discovery` if not.
 ## Mode: Spec
 
 Takes the current conversation context and codebase understanding and
-produces a spec. Do NOT interview the user — just synthesize what you already
-know.
+produces a PRD (Product Requirements Document) — a destination document, not a
+throwaway. Do NOT interview the user — just synthesize what you already know.
 
 ### Process
 
@@ -68,15 +68,23 @@ This list of user stories should be extremely extensive and cover all aspects of
 
 ## Implementation Decisions
 
-A list of implementation decisions that were made. This can include:
+Declare the proposed modules and interfaces affected before any
+implementation work. This is the contract surface a reviewer checks against the
+spec and the source for tickets or `writing-plans` tasks.
+
+A list of implementation decisions that was made. This can include:
 
 - The modules that will be built/modified
-- The interfaces of those modules that will be modified
+- The interfaces of those modules that will be modified — function names,
+  signatures, data contracts, and API endpoints
 - Technical clarifications from the developer
 - Architectural decisions
 - Schema changes
 - API contracts
 - Specific interactions
+- Which assets are **living** (ship with the feature) and which are
+  **prototype/disposable** (temporary scripts or sample data that must be
+deleted before the feature is considered done)
 
 Do NOT include specific file paths or code snippets. They may end up being outdated very quickly.
 
@@ -125,13 +133,22 @@ touching.
 Look for opportunities to prefactor the code to make the implementation
 easier. "Make the change easy, then make the easy change."
 
-#### 3. Draft vertical slices
+#### 3. Declare proposed modules and interfaces
 
-Break the work into **tracer bullet** tickets.
+Before cutting tickets, list the modules and interfaces the work touches.
+This surfaces contract changes and prevents horizontal decomposition. Keep it
+short: module/area names, the functions or endpoints affected, and the data
+contracts that change. For tiny features, a single line is enough.
+
+#### 4. Draft vertical slices
+
+Break the work into **tracer bullet** tickets — vertical, end-to-end slices,
+not horizontal phases.
 
 <vertical-slice-rules>
 
-- Each slice cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests) — vertical, NOT a horizontal slice of one layer
+- Each slice cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests) — vertical, NOT a horizontal slice of one layer or phase
+- Title and order slices by user-facing end-to-end behavior, not by layer. Example: "User can save a draft" not "Design the schema"
 - A completed slice is demoable or verifiable on its own
 - Each slice is sized to fit in a single fresh context window
 - Any prefactoring should be done first
@@ -155,7 +172,7 @@ batch. When even the batches can't stay green alone, keep the sequence but
 let them share an integration branch that all block a final
 integrate-and-verify ticket — green is promised only there.
 
-#### 4. Quiz the user
+#### 5. Quiz the user
 
 Present the proposed breakdown as a numbered list. For each ticket, show:
 
@@ -165,13 +182,15 @@ Present the proposed breakdown as a numbered list. For each ticket, show:
 
 Ask the user:
 
+- Does each ticket feel like a tracer bullet — a complete, end-to-end vertical slice — rather than a horizontal phase like "schema" or "API"?
 - Does the granularity feel right? (too coarse / too fine)
 - Are the blocking edges correct — does each ticket only depend on tickets that genuinely gate it?
 - Should any tickets be merged or split further?
+- Are any proposed assets prototype/disposable (e.g., `tmp_*` scripts)? If so, which ticket deletes them?
 
 Iterate until the user approves the breakdown.
 
-#### 5. Publish the tickets to the configured tracker
+#### 6. Publish the tickets to the configured tracker
 
 Publish the approved tickets. **How** depends on the tracker
 `tool-and-skill-discovery` configured — the tickets are the same either way,
@@ -200,6 +219,8 @@ Do NOT close or modify any parent issue.
 
 **What to build:** the end-to-end behaviour this ticket makes work, from the user's perspective — not a layer-by-layer implementation list.
 
+**Proposed modules / interfaces affected:** module/area names and the contracts this slice touches. Omit for tiny slices.
+
 **Blocked by:** the numbers/titles of the tickets that gate this one, or "None — can start immediately".
 
 **Status:** ready-for-agent
@@ -218,6 +239,10 @@ A reference to the parent issue on the tracker (if the source was an existing is
 ## What to build
 
 The end-to-end behaviour this ticket makes work, from the user's perspective — not layer-by-layer implementation.
+
+## Proposed modules / interfaces affected
+
+Module/area names and the contracts this slice touches. Omit for tiny slices.
 
 ## Acceptance criteria
 
