@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0] - 2026-09-01
+
+### Added
+
+- **7 Matt Pocock AI Coding workshop plans**: skills, plans and ledgers for context-workflow, grill-me, prd-to-issues, afk-loop, tdd-feedback, deep-modules, and push-pull-review.
+  - `context-window-hygiene` + `scripts/context-budget.py`: added `SMART_ZONE_TOKENS` (100k), `--simulate`, and explicit `clear` over `compact` nudge.
+  - `grilling`: assertive questions, one recommendation alongside every question, and `shared design concept` PRD export.
+  - `planning-pipeline` and `writing-plans`: PRD as destination document, declared modules and interfaces, tracer-bullet vertical slices, and prototype/disposable asset lifecycle.
+  - `afk-loop`: new skill for unattended TDD over local Markdown issues in isolated worktrees.
+  - `tdd`: RED→verify RED→GREEN→verify GREEN→REFLECT→REFACTOR contract, anti-cheat reflection, and `Feedback Loops Are the Quality Ceiling`.
+  - `improve-codebase-architecture`: Ousterhout deep vs shallow module heuristics and five deepening refactor moves.
+  - `code-review`, `receiving-code-review`, `impeccable`: push/pull pattern distinction with Sand Castle as mental model, no Docker dependency.
+- **`afk-loop` skill** — Prompt/workflow for an unattended agent that consumes local Markdown issue files under `.devin/scratch/<feature>/issues/*.md`, uses TDD in an isolated git worktree, and picks the next ready issue autonomously from a DAG of blocking relationships. Stops when no ready issues remain or on blockers; does not commit/push to `main` without human confirmation and does not require Docker.
+- **`youtube-fetcher` skill** — Devin-native, stdlib-first, network-free adapter for turning a YouTube URL and provider/fixture caption/metadata JSON into raw, timestamped transcript + metadata Markdown under `.devin/notes/youtube/`. Strict host allowlist for URL validation, input/output size limits, symlink containment, duplicate preservation, and handoff to `structured-knowledge-extraction`. Conceptually adapted from JimmySadek/youtube-fetcher-to-markdown (MIT); no code copied.
+- **`leo` skill** — `/leo` session-start skill that injects bundle operating rules, skill discovery, tool verification, telegraphic output, subagent/model routing, and a clear priority hierarchy. Replaces the playbook experiment.
+
+### Changed
+
+- **README.md**: complete rewrite explaining the full ecosystem (rules, skills, agents, tools, hooks, context, memory) and operational flows (idea → ship, AFK loop, deep modules, push/pull review). Updated counts and badges.
+- **manifest.json**: version `2.8.1` → `2.9.0`, skill count `75` → `76` with `afk-loop`.
+- **docs/TOOLS-MAP.md**, **docs/DEVIN-CLI-COMPATIBILITY.md**: skill count updated to `76`.
+
 ## [2.8.1] - 2026-08-29
 
 ### Fixed
@@ -20,23 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **12 skills**: removed YAML quote wrapping from `description` frontmatter so `validate-skill-format.py` scores 100 (`a11y-audit`, `api-design`, `cost-optimization`, `database`, `deploy`, `docker`, `e2e-testing`, `i18n`, `impeccable`, `legacy-refactor`, `performance`, `security-audit`).
-
-## [Unreleased]
-
-### Added
-
-- **`youtube-fetcher` skill** — Devin-native, stdlib-first, network-free adapter for turning a YouTube URL and provider/fixture caption/metadata JSON into raw, timestamped transcript + metadata Markdown under `.devin/notes/youtube/`. Strict host allowlist for URL validation, input/output size limits, symlink containment, duplicate preservation, and handoff to `structured-knowledge-extraction`. Conceptually adapted from JimmySadek/youtube-fetcher-to-markdown (MIT); no code copied.
-- **`afk-loop` skill** — Prompt/workflow for an unattended agent that consumes local Markdown issue files under `.devin/scratch/<feature>/issues/*.md`, uses TDD in an isolated git worktree, and picks the next ready issue autonomously from a DAG of blocking relationships. Stops when no ready issues remain or on blockers; does not commit/push to `main` without human confirmation and does not require Docker.
-
-### Added
-
-- **`leo` skill** — `/leo` session-start skill that injects bundle operating rules, skill discovery, tool verification, telegraphic output, subagent/model routing, and a clear priority hierarchy. Replaces the playbook experiment.
-
-### Changed
-
-- **manifest.json**: skill count 74 → 75, added `leo` entry.
-- **README.md**: skills badge and summary updated to 75 skills.
-- **docs/TOOLS-MAP.md**, **docs/DEVIN-CLI-COMPATIBILITY.md**: skills count 74 → 75.
 
 ## [2.8.0] - 2026-08-28
 
