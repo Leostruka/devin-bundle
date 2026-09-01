@@ -88,8 +88,8 @@
   EXPECT: MELHOROU / NEUTRO / PIOROU / INCONCLUSIVO.
   EVIDENCE: MELHOROU — baseline e pós-edição passam em audit (0 errors/31 checks) e held-out (135 passed); skill agora força RED antes de GREEN, exige reflexão anti-cheat e inclui o feedback loop do projeto como teto de qualidade.
 
-- [ ] 10. Commit e PR
+- [x] 10. Commit e PR
   OUTCOME: Commit no branch.
   CHECK: git log --oneline -3
   EXPECT: Commit sem AI signature.
-  EVIDENCE: pending
+  EVIDENCE: SHA 4fea10f — `git log --oneline -3` confirma commit "strengthen tdd skill with red-green-refactor contract and anti-cheat reflection" sem assinatura de IA.
