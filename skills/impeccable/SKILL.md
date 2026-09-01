@@ -35,6 +35,11 @@ Design vocabulary for production-grade frontend interfaces. Adapted from `https:
    - Vague headlines like "Unlock your potential".
    - Equal visual weight on unrelated metrics.
 
+## Push vs Pull for Design Patterns
+
+- **Push (to critique/audit):** the reviewer or audit pass receives the design context — `PRODUCT.md`, `DESIGN.md` or `.impeccable.md`, anti-references, brand tone, surface type, and the slop checklist. Push these constraints before the critique so the reviewer can verify the surface against them.
+- **Pull (by implementer):** the implementer reaches for the right `impeccable` command (`shape`, `layout`, `harden`, etc.) and the slop checklist before writing UI, instead of waiting for the critique to catch generic design. Pull the relevant command for the pass you are about to run, then push the resulting constraints into the next review.
+
 ## Command vocabulary
 
 | Command | Use when |
