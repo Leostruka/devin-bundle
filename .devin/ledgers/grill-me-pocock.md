@@ -105,7 +105,8 @@
   EXPECT: Commit sem AI signature.
   EVIDENCE: `git log --oneline -3`:
   ```
+  45fcebc fix(grilling): include recommendation in checklist item
+  c3812c6 docs(ledgers): record commit SHA in grill-me-pocock ledger
   fd0ef8b feat(grilling): assertive questions, recommendation per question, design concept export
-  ...
   ```
-  Commit SHA: **fd0ef8b**. Mensagem neutra, sem assinatura de IA.
+  Commits: **fd0ef8b..45fcebc** (3 commits). Mensagens neutras, sem assinatura de IA.
