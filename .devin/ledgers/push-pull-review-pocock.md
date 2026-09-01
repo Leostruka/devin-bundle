@@ -88,8 +88,8 @@
   EXPECT: MELHOROU / NEUTRO / PIOROU / INCONCLUSIVO.
   EVIDENCE: Baseline: 0 erros, 135 passed. Pós-mudança: 0 erros, 135 passed, skill format 100. Skills agora declaram push/pull e referenciam Sand Castle sem Docker. Classificação: **MELHOROU**.
 
-- [ ] 10. Commit e PR
+- [x] 10. Commit e PR
   OUTCOME: Commit no branch.
   CHECK: git log --oneline -3
   EXPECT: Commit sem AI signature.
-  EVIDENCE: pending
+  EVIDENCE: `git log --oneline -3` -> `135b888 Add push/pull pattern distinction to code-review, receiving-code-review, and impeccable; reference Sand Castle without Docker`; `git rev-parse HEAD` -> `135b888b4d96ed36cef331a82c8f8bbcf521245f`. Mensagem neutra, sem assinatura de AI.
