@@ -3,7 +3,8 @@ name: continuous-improvement
 description: Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests.
 version: 1.0.0
 model: swe-1-7
-subagent: implementer
+subagent: true
+agent: implementer
 ---
 
 # Directiva de Melhoria Contínua
