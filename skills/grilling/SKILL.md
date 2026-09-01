@@ -122,7 +122,7 @@ You MUST complete these in order:
 
 1. **Explore project context** — check files, docs, recent commits
 2. **Offer visual companion just-in-time** — only when a visual question arises
-3. **Ask clarifying questions** — one at a time only when dependent; otherwise batch independent questions in one round (brainstorm mode), splitting into multiple `ask_user_question` calls as needed to stay within the 4-question/4-option limit.
+3. **Ask clarifying questions** — assertively, with a recommendation; one at a time only when dependent; otherwise batch independent questions in one round (brainstorm mode), splitting into multiple `ask_user_question` calls as needed to stay within the 4-question/4-option limit.
 4. **Propose 2-3 approaches** — with trade-offs and recommendation
 5. **Present design** — in sections, get user approval after each
 6. **Grill the design** — design tree, frontier rounds, stress-test every branch (grill mode)
