@@ -99,8 +99,13 @@
 
   CLASSIFICAÇÃO: **MELHOROU**
 
-- [ ] 10. Commit e PR
+- [x] 10. Commit e PR
   OUTCOME: Commit no branch.
   CHECK: git log --oneline -3
   EXPECT: Commit sem AI signature.
-  EVIDENCE: pending
+  EVIDENCE: `git log --oneline -3`:
+  ```
+  fd0ef8b feat(grilling): assertive questions, recommendation per question, design concept export
+  ...
+  ```
+  Commit SHA: **fd0ef8b**. Mensagem neutra, sem assinatura de IA.
