@@ -169,7 +169,7 @@
     {
       "name": "improve-codebase-architecture",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants to identify deepening opportunities in a codebase and act on them.",
+      "purpose": "Use when the user wants to evaluate module depth, identify deepening opportunities in a codebase, and act on them.",
       "original_path": "%APPDATA%\\devin\\skills\\improve-codebase-architecture",
       "export_hash": "21E98B5F46F23195E839000AB0D19FAC6090C52E91FC5DF61EA565215EB5835C",
       "exported_at": "2026-08-17T15:41:48.861908-03:00"
@@ -589,9 +589,17 @@
       "original_path": "%APPDATA%\\devin\\skills\\leo",
       "export_hash": "",
       "exported_at": "2026-08-31T17:00:00-03:00"
+    },
+    {
+      "name": "afk-loop",
+      "source": "created:Devin bundle",
+      "purpose": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships.",
+      "original_path": "%APPDATA%\\devin\\skills\\afk-loop",
+      "export_hash": "",
+      "exported_at": "2026-08-31T22:00:00-03:00"
     }
   ],
-  "skill_count": 75,
+  "skill_count": 76,
   "rule_count": 20,
   "scripts": [
     {

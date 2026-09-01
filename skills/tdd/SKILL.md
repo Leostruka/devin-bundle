@@ -6,6 +6,26 @@ description: Use when implementing any feature or bugfix and a test-driven appro
 
 Two traditions, one loop. This skill merges the **iron-law discipline** (tests-first, no exceptions, watch them fail) with the **seams-first operational approach** (agree on test boundaries, vertical slices, avoid anti-patterns).
 
+## The Red-Green-Refactor Contract
+
+The only acceptable order is:
+
+```
+RED      → verify RED
+GREEN    → verify GREEN
+REFLECT  → can this test be cheated?
+REFACTOR → while green
+```
+
+1. **RED**: write one failing test before any production code.
+2. **Verify RED**: run it. It must fail for the expected reason (feature missing, not a typo).
+3. **GREEN**: write the minimal code that makes the test pass.
+4. **Verify GREEN**: run it. It must pass; other tests must still pass.
+5. **REFLECT**: ask if a wrong implementation could pass the test. If yes, the test is too weak — rewrite it before the next cycle.
+6. **REFACTOR**: clean up once the test is honest. Keep tests green.
+
+Skipping a step, writing code first, or letting a test pass immediately means the cycle is broken. Delete the code and start over.
+
 ## Decision logic: which approach when
 
 | Situation | Use | Why |
@@ -84,6 +104,18 @@ Confirm:
 **Test fails?** Fix code, not test.
 **Other tests fail?** Fix now.
 
+### ANTI-CHEAT — Reflect on the Test
+
+Before refactoring, stop. Could a deliberately wrong implementation pass this test? If yes, the test is a cheater — it will greenlight bugs.
+
+Check:
+- Is the expected value derived independently (spec, literal, worked example) and not copied from the implementation?
+- If you replaced the implementation with the simplest plausible wrong version, would the test fail?
+- Are you testing through the public seam, not a private side channel?
+- Does the test fail for the *right* reason when the feature is missing, not because of setup or typo?
+
+**A test that any wrong implementation can pass is worse than no test.** Rewrite it and watch it fail again before moving on.
+
 ### REFACTOR — Clean Up (separate from the loop)
 
 After green only:
@@ -140,6 +172,8 @@ See [writing-good-tests.md](writing-good-tests.md) for the full rules that keep 
 - Rationalizing "just this once"
 - "Keep as reference" or "adapt existing code"
 - "This is different because..."
+- Test can be passed by a trivially wrong implementation
+- Feedback loop not run before moving on
 
 **All of these mean: Delete code. Start over with TDD.**
 
@@ -155,6 +189,8 @@ Before marking work complete:
 - [ ] Output pristine (no errors, warnings)
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
+- [ ] Test would fail if a nearby wrong implementation existed
+- [ ] Project feedback loop was used in each cycle
 - [ ] Seams were agreed with user before testing
 
 Can't check all boxes? You skipped TDD. Start over.
@@ -181,7 +217,19 @@ Otherwise → not TDD
 
 No exceptions without your human partner's permission.
 
+## Feedback Loops Are the Quality Ceiling
+
+The fastest, most reliable feedback loop in the project (typecheck, lint, test, audit, review) sets the upper bound on code quality. AI cannot write better code than the loops that catch its mistakes.
+
+Before you start a TDD cycle:
+- Identify the project's primary feedback loop (e.g. `npm test`, `pytest`, `cargo test`, `mix test`, `go test ./...`).
+- Run it on the failing test after RED and after GREEN. A failing typecheck or lint is red feedback — fix it before the next test.
+- If the project has no fast feedback loop, add one before committing.
+
+If a test cannot be run in the project's feedback loop, it is not a real test. If the loop is too slow, make the next slice smaller.
+
 ## Cross-skills
 
 - Invoke `review-cadence` before choosing seams if you're unsure how much upfront design this task needs.
 - Invoke `effort-calibration` if the task is trivial or unusually hard, so you don't over- or under-think the TDD loop.
+- Invoke `verification-before-completion` to prove each RED/GREEN step with fresh command output before claiming the cycle is complete.
