@@ -88,8 +88,8 @@
   EXPECT: MELHOROU / NEUTRO / PIOROU / INCONCLUSIVO justificado.
   EVIDENCE: MELHOROU. context-budget.py agora avisa quando regras carregadas cruzam ~100k tokens e recomenda `/clear`; SKILL.md explica smart/dumb zone e sedimentação do compact. Sem regressões.
 
-- [ ] 10. Commit e PR
+- [x] 10. Commit e PR
   OUTCOME: Commit no branch video/matt-pocock-ai-coding-plans.
   CHECK: git log --oneline -3
   EXPECT: Commit presente sem AI signature.
-  EVIDENCE: pending
+  EVIDENCE: 7d9555d feat(context-workflow): smart-zone nudge and clear vs compact guidance — sem AI signature.
