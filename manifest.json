@@ -585,10 +585,10 @@
     {
       "name": "leo",
       "source": "created:Devin bundle",
-      "purpose": "Use when starting a Devin CLI session and you want the agent to follow the bundle's rules, invoke skills before acting, verify with tools, and produce telegraphic output.",
+      "purpose": "Use when starting a Devin CLI session in this bundle and the next skill or workflow is not obvious, or when the user needs a quick entry point to seed local AFK issues.",
       "original_path": "%APPDATA%\\devin\\skills\\leo",
-      "export_hash": "",
-      "exported_at": "2026-08-31T17:00:00-03:00"
+      "export_hash": "7B4FF83C54227E3867FBBCFBD61F8787B0844F5626AB00D2F688AFD486911A2A",
+      "exported_at": "2026-09-01T12:53:39.426126-03:00"
     },
     {
       "name": "afk-loop",
