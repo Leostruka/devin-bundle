@@ -25,7 +25,7 @@ Run at the start of a session to load the bundle's rules, run the behavioral sel
    - Verify: use `read`/`exec`/`grep`/`glob`/`run_subagent` before asserting.
    - Opinion-silent: don't critique, reframe, or suggest unless asked.
    - If the objective is clear, route to the matching flow in the situation router.
-   - If the objective is unclear or the user just says "leo" / "start", ask the quick-start menu with `ask_user_question` before routing.
+   - If the objective is unclear or the user just says "leo" / "start", ask the quick-start menu (see **Quick-start menu** below) with `ask_user_question` before routing.
 
 2. **Skill discovery**
    - Before any non-trivial action, invoke all matching skills.
@@ -74,11 +74,21 @@ Pick the entry skill from the user's situation. If the situation is not in this 
 | Need input from another person | `planning-pipeline` Questionnaire | → `grilling` or Spec |
 | Git merge / rebase conflict | `resolving-merge-conflicts` | |
 | Improve architecture / find deep modules | `improve-codebase-architecture` | → `grilling` if it generates an idea |
+| Improve / evolve a skill, rule, hook, or MCP | `continuous-improvement` | → `writing-skills` if editing one skill, `self-extend` if adding a new capability |
 | Set up this repo for Devin | `project-setup` or `setup-matt-pocock-skills` | |
 | Not sure which skill / flow fits | `ask-matt` | full map |
 | No skill matches | `tool-and-skill-discovery` | evaluate / install |
 
 For the main flow details (idea → ship, on-ramps, phase boundaries), see `ask-matt`.
+
+## Quick-start menu
+
+When the user says "leo", "start", or the objective is unclear, ask a focused `ask_user_question` with 2–4 options. The tool adds an "Other" option automatically; route "Other" to `ask-matt` or a follow-up question.
+
+- **Build or change something in the repo** → `grilling` (With-docs) if decisions remain, or `review-cadence` if trivial
+- **Improve / add a skill, rule, hook, or MCP** → `continuous-improvement`
+- **Debug, fix, or research a problem** → `diagnosing-bugs` for bugs, `research` / `deep-mode` for exploration
+- **Set up this repo for Devin or run AFK work** → `project-setup` / `setup-matt-pocock-skills` for setup, `afk-loop` if issues already exist
 
 ## Quick AFK issue creation
 

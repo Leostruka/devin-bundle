@@ -67,6 +67,26 @@ convert_to_lf() {
   fi
 }
 
+# --- Normalize Devin home paths back to bundle placeholder ---
+# When config.json is exported, the absolute DEVIN_HOME path that install.sh
+# expanded from {{APPDATA}}/devin must be collapsed back to the portable
+# placeholder so the bundle remains shareable across machines/users.
+normalize_config_paths() {
+  local file="$1"
+  if [[ $DRY_RUN -eq 1 ]] || [[ ! -f "$file" ]]; then
+    return
+  fi
+  local py
+  if command -v python3 &>/dev/null; then
+    py=python3
+  elif command -v python &>/dev/null; then
+    py=python
+  else
+    return
+  fi
+  DEVIN_HOME="$DEVIN_HOME" "$py" -c 'import os,sys; h=os.environ["DEVIN_HOME"]; sys.stdout.write(sys.stdin.read().replace(h, "{{APPDATA}}/devin"))' < "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+}
+
 # --- Strip BOM from file (if present) ---
 # BOM (EF BB BF) in YAML frontmatter can prevent parsers from recognizing
 # the `---` delimiter, causing model/name/allowed-tools fields to be ignored.
@@ -238,7 +258,7 @@ config_dst="$BUNDLE_DIR/config.json"
 if [[ -f "$config_src" ]]; then
   if [[ $NO_MASK -eq 1 ]]; then
     if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (no mask)"
-    else cp "$config_src" "$config_dst"; convert_to_lf "$config_dst"; ok "config.json exported (no mask)"; fi
+    else cp "$config_src" "$config_dst"; convert_to_lf "$config_dst"; normalize_config_paths "$config_dst"; ok "config.json exported (no mask)"; fi
   else
     if command -v python3 &>/dev/null; then
       if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (masked)"
@@ -255,12 +275,13 @@ with open('$config_dst', 'w') as f:
     json.dump(data, f, indent=2)
 "
         convert_to_lf "$config_dst"
+        normalize_config_paths "$config_dst"
         ok "config.json exported (masked)"
       fi
     else
       warn "python3 not found, copying config.json without masking"
       if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (unmasked - no python3)"
-      else cp "$config_src" "$config_dst"; convert_to_lf "$config_dst"; ok "config.json exported (unmasked)"; fi
+      else cp "$config_src" "$config_dst"; convert_to_lf "$config_dst"; normalize_config_paths "$config_dst"; ok "config.json exported (unmasked)"; fi
     fi
   fi
 else

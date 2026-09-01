@@ -24,7 +24,7 @@ cd devin-bundle
 ./install.sh --force
 ```
 
-> Estado atual: o instalador Unix copia `config.json` sem converter o placeholder Windows `{{APPDATA}}` usado pelos hooks globais. Skills, agents e demais arquivos são instalados, mas os hooks globais exigem correção manual dos comandos para `${XDG_CONFIG_HOME:-$HOME/.config}/devin/scripts/` ou uso do template de projeto `.devin/hooks.v1.json` até o instalador ser corrigido.
+> O instalador Unix agora expande o placeholder `{{APPDATA}}/devin` do `config.json` para o `$DEVIN_HOME` real; os hooks globais apontam automaticamente para o diretório `scripts/` instalado.
 
 Depois da instalação, abra o Devin CLI no repositório em que deseja trabalhar. O runtime carregará as regras globais, descobrirá as skills conforme a tarefa e executará os hooks automaticamente.
 

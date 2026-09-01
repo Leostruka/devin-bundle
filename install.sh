@@ -73,6 +73,28 @@ contains_masked() {
   grep -q "MASKED" "$file" 2>/dev/null
 }
 
+# --- Expand {{APPDATA}}/devin placeholder in config.json ---
+# The bundle's config.json uses a portable placeholder for the Devin home.
+# At install time, replace the literal "{{APPDATA}}/devin" with the actual
+# $DEVIN_HOME so hook commands resolve to the installed scripts directory.
+# This works for both the default ~/.config/devin and custom DEVIN_HOME values.
+expand_devin_home_in_config() {
+  local file="$1"
+  if [[ $DRY_RUN -eq 1 ]] || [[ ! -f "$file" ]]; then
+    return
+  fi
+  local py
+  if command -v python3 &>/dev/null; then
+    py=python3
+  elif command -v python &>/dev/null; then
+    py=python
+  else
+    warn "python not found; config.json may keep {{APPDATA}}/devin placeholder"
+    return
+  fi
+  DEVIN_HOME="$DEVIN_HOME" "$py" -c 'import os,sys; h=os.environ["DEVIN_HOME"]; sys.stdout.write(sys.stdin.read().replace("{{APPDATA}}/devin", h))' < "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+}
+
 # --- Strip BOM from file (if present) ---
 # BOM (EF BB BF) in YAML frontmatter can prevent parsers from recognizing
 # the `---` delimiter, causing model/name/allowed-tools fields to be ignored.
@@ -268,7 +290,7 @@ if [[ -f "$config_src" ]]; then
     if [[ $FORCE -eq 1 ]]; then
       if [[ $BACKUP -eq 1 ]]; then backup_file "$config_dst"; fi
       if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite config.json"
-      else cp "$config_src" "$config_dst"; ok "config.json installed (force)"; fi
+      else cp "$config_src" "$config_dst"; expand_devin_home_in_config "$config_dst"; ok "config.json installed (force)"; fi
     else
       # Merge: preserve local org_id and devin.org_id
       if command -v jq &>/dev/null; then
@@ -287,6 +309,7 @@ if [[ -f "$config_src" ]]; then
           if [[ -n "$local_devin_org_id" && "$local_devin_org_id" != "MASKED" ]]; then
             jq --arg org "$local_devin_org_id" '.devin.org_id = $org' "$config_dst" > "${config_dst}.tmp" && mv "${config_dst}.tmp" "$config_dst"
           fi
+          expand_devin_home_in_config "$config_dst"
           ok "config.json merged (preserved org_id, forced MASKED default)"
         fi
       else
@@ -310,13 +333,14 @@ if [[ -f "$config_src" ]]; then
               sed -i 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "'"$local_org_id"'"/g' "$config_dst"
             fi
           fi
+          expand_devin_home_in_config "$config_dst"
           ok "config.json merged (sed fallback, forced MASKED default)"
         fi
       fi
     fi
   else
     if [[ $DRY_RUN -eq 1 ]]; then skip "would install config.json"
-    else cp "$config_src" "$config_dst"; ok "config.json installed"; fi
+    else cp "$config_src" "$config_dst"; expand_devin_home_in_config "$config_dst"; ok "config.json installed"; fi
   fi
 else
   warn "config.json not found in bundle"
