@@ -12,6 +12,10 @@ description: Use when a conversation is getting long and the agent seems to be f
   counts against a hard limit set by the model provider.
 - **Hard limit.** Each model has a fixed token ceiling (e.g. 200k, 2M). Hit it
   and the provider errors, or output stops mid-generation.
+- **Smart zone vs dumb zone.** Per Matt Pocock's "Full Walkthrough: Workflow
+  for AI Coding", output quality drops once the active context passes roughly
+  ~100k tokens, regardless of the model's total window. Stay in the smart zone
+  by sizing tasks so the working context stays well below that marker.
 - **Bigger window ≠ better retrieval.** A 10M-token window that cannot find
   the needle is worse than a 200k window that can. Evaluate retrieval quality,
   not just size. (Llama 4 Scout: 10M window, severe lost-in-the-middle.)
@@ -42,6 +46,11 @@ description: Use when a conversation is getting long and the agent seems to be f
 losing the thread would hurt. Compaction drops detail — it preserves intent,
 not facts. If dense access to early context is needed, use `context-folding`
 (offload to file, grep/read on demand) instead of compacting.
+
+Pocock's critique of compaction: summaries leave "sediment" (lossy residue
+that still occupies attention) and are a worse default than a clean `/clear`
+once the session enters the dumb zone. Treat `/compact` as an escape hatch,
+not a hygiene default.
 
 ## Lean Context Rules
 
@@ -83,8 +92,13 @@ not facts. If dense access to early context is needed, use `context-folding`
 
 ## Source
 
-Distilled from "Context Windows Explained for Coding Agents" (Matt Pocock,
-AI Hero). Key claims verified against primary sources:
+Distilled from:
+- "Context Windows Explained for Coding Agents" (Matt Pocock, AI Hero).
+- "Full Walkthrough: Workflow for AI Coding" (Matt Pocock, AI Engineer,
+  youtube.com/watch?v=-QFHIoCo-Ko) — smart/dumb zone ~100k marker and
+  preference for `/clear` over `/compact`.
+
+Key claims verified against primary sources:
 - Lost-in-the-middle: Liu et al. (arXiv:2307.03172).
 - Window limits are provider-set and hard: models.dev model cards.
 - Compaction is lossy by design: see `context-folding` comparison table.

@@ -15,6 +15,13 @@ __pycache__/
 .devin/ledgers/*
 !.devin/ledgers/bitter-lesson.md
 !.devin/ledgers/grilling-frontier.md
+!.devin/ledgers/context-workflow-pocock.md
+!.devin/ledgers/grill-me-pocock.md
+!.devin/ledgers/prd-to-issues-pocock.md
+!.devin/ledgers/afk-loop-pocock.md
+!.devin/ledgers/tdd-feedback-pocock.md
+!.devin/ledgers/deep-modules-pocock.md
+!.devin/ledgers/push-pull-review-pocock.md
 .devin/.refine-pending
 .devin/.resume-pending
 .devin/refinements.log.jsonl
