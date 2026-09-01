@@ -88,8 +88,8 @@
   EXPECT: MELHOROU / NEUTRO / PIOROU / INCONCLUSIVO.
   EVIDENCE: Baseline: skill mencionava deep/shallow informalmente, sem Ousterhout, sem heurísticas, sem recomendações explícitas de refactoring. Após a mudança: citação primária adicionada, cinco heurísticas de módulos rasos, cinco movimentos de refactoring, integração com `codebase-design` e `DEEPENING.md`. `python audit.py` e `pytest tests/held-out/` continuam 0 erros / 135 passed. Classificação: **MELHOROU**.
 
-- [ ] 10. Commit e PR
+- [x] 10. Commit e PR
   OUTCOME: Commit no branch.
   CHECK: git log --oneline -3
   EXPECT: Commit sem AI signature.
-  EVIDENCE: pending
+  EVIDENCE: `git log --oneline -3` → `143411c feat(improve-codebase-architecture): add Ousterhout deep vs shallow heuristics`. Commit SHA: `143411c`. Sem AI signature.
