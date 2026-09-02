@@ -58,6 +58,10 @@ $M = @{
     BranchBaseSelecione = "`n[BRANCH] Selecione a branch base para a nova branch no projeto '{0}'..."
     BranchJaEscolhida = ' (ja escolhida neste projeto)'
     AvisoBranchIgual = 'Aviso: a branch `{0}` ja foi escolhida para outra instancia deste projeto. Escolha outra.'
+    BranchNomePersonalizado = 'Digite o nome da nova branch (Enter para `{0}`):'
+    BranchNomeInvalido = 'Nome de branch invalido. Tente outro.'
+    BranchNomeExiste = 'A branch `{0}` ja existe neste projeto. Escolha outro nome.'
+    BranchNomeReservado = 'O nome `{0}` esta reservado para outra instancia deste projeto. Escolha outro.'
 }
 
 # 2. Salva o diretorio atual
@@ -753,6 +757,7 @@ foreach ($proj in $projetos) {
         $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
 
         $selectedBranches = @()
+        $selectedBranchNames = @()
         $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 
         for ($i = 0; $i -lt $count; $i++) {
@@ -789,8 +794,44 @@ foreach ($proj in $projetos) {
                 else {
                     $baseBranch = $currentBranch
                 }
-                $branch = "devin-$timestamp-$($labels[$labelIdx].ToLower())"
+
+                $defaultBranchName = "devin-$timestamp-$($labels[$labelIdx].ToLower())"
+                $initialProjectLabelIdx = $labelIdx - $i
+                $reservedAutoNames = @()
+                for ($k = 0; $k -lt $count; $k++) {
+                    $reservedAutoNames += "devin-$timestamp-$($labels[$initialProjectLabelIdx + $k].ToLower())"
+                }
+
+                while ($true) {
+                    $customName = Read-Host ($M.BranchNomePersonalizado -f $defaultBranchName)
+                    if ([string]::IsNullOrWhiteSpace($customName)) { $customName = $defaultBranchName }
+                    $customName = $customName.Trim()
+
+                    $null = git -C $projectPath check-ref-format --branch $customName 2>&1
+                    $gitValid = $?
+
+                    $localExists = [bool](git -C $projectPath rev-parse --verify --quiet $customName 2>$null)
+                    $remoteExists = [bool](git -C $projectPath rev-parse --verify --quiet "origin/$customName" 2>$null)
+                    $alreadySelected = $customName -in $selectedBranchNames
+                    $reservedAuto = $customName -ne $defaultBranchName -and $customName -in $reservedAutoNames
+
+                    if (-not $gitValid) {
+                        Write-Host $M.BranchNomeInvalido -ForegroundColor Red
+                    }
+                    elseif ($localExists -or $remoteExists -or $alreadySelected) {
+                        Write-Host ($M.BranchNomeExiste -f $customName) -ForegroundColor Red
+                    }
+                    elseif ($reservedAuto) {
+                        Write-Host ($M.BranchNomeReservado -f $customName) -ForegroundColor Red
+                    }
+                    else {
+                        $branch = $customName
+                        break
+                    }
+                }
             }
+
+            $selectedBranchNames += $branch
 
             $instancias += [PSCustomObject]@{
                 Label = $labels[$labelIdx]
