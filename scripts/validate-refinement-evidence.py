@@ -23,6 +23,22 @@ Also: "Reward Hacking in Self-Improving Code Agents" (ICLR 2026 Workshop)
 """
 import sys, json, os, re
 
+
+def devin_home():
+    """Return the Devin user config home.
+
+    Windows: %APPDATA%\\devin
+    Unix: $XDG_CONFIG_HOME/devin or ~/.config/devin
+    """
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    if xdg:
+        return os.path.join(xdg, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
 # Patterns that indicate reproducible evidence
 REPRODUCIBLE_PATTERNS = [
     re.compile(r"(exec|run|command|cmd)\s*[:=]\s*", re.IGNORECASE),
@@ -62,18 +78,10 @@ def find_log_path():
     if os.path.exists(project):
         return project
 
-    # Check global
-    home = os.path.expanduser("~")
-    global_path = os.path.join(home, ".config", "devin", "refinements.log.jsonl")
+    # Check Devin user home
+    global_path = os.path.join(devin_home(), "refinements.log.jsonl")
     if os.path.exists(global_path):
         return global_path
-
-    # Windows AppData
-    appdata = os.environ.get("APPDATA", "")
-    if appdata:
-        win_path = os.path.join(appdata, "devin", "refinements.log.jsonl")
-        if os.path.exists(win_path):
-            return win_path
 
     return None
 

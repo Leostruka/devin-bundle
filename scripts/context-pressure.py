@@ -32,6 +32,22 @@ Token estimate: chars/4 heuristic. This is an estimate, not exact.
 """
 import sys, os, json, argparse, glob
 
+
+def devin_home():
+    """Return the Devin user config home.
+
+    Windows: %APPDATA%\\devin
+    Unix: $XDG_CONFIG_HOME/devin or ~/.config/devin
+    """
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    if xdg:
+        return os.path.join(xdg, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
 CHARS_PER_TOKEN = 4
 DEFAULT_WINDOW = 128_000  # GLM-5.2 default; override with --model or data file
 
@@ -40,7 +56,7 @@ WARN_PCT = 60
 CRITICAL_PCT = 75
 CLEAR_PCT = 80
 
-MARKER_DIR = os.path.join(os.path.expanduser("~"), ".config", "devin")
+MARKER_DIR = devin_home()
 MARKER_FILE = os.path.join(MARKER_DIR, "context-pressure.json")
 MODEL_DATA = None  # loaded lazily
 
@@ -58,8 +74,7 @@ def find_bundle_root():
     if env:
         candidates.append(env)
     candidates.append(os.getcwd())
-    home = os.path.expanduser("~")
-    candidates.append(os.path.join(home, ".config", "devin"))
+    candidates.append(devin_home())
     for c in candidates:
         data = os.path.join(c, "data", "model-context-windows.json")
         if os.path.isfile(data):
@@ -129,7 +144,7 @@ def estimate_rules_cost():
     paths_to_check = []
     if root:
         paths_to_check.append(os.path.join(root, "AGENTS.md"))
-    paths_to_check.append(os.path.join(os.path.expanduser("~"), ".config", "devin", "AGENTS.md"))
+    paths_to_check.append(os.path.join(devin_home(), "AGENTS.md"))
     for p in paths_to_check:
         if os.path.isfile(p):
             try:

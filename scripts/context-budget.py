@@ -33,6 +33,22 @@ that still consumes attention. See `skills/context-window-hygiene/SKILL.md`.
 """
 import sys, os, json, argparse
 
+
+def devin_home():
+    """Return the Devin user config home.
+
+    Windows: %APPDATA%\\devin
+    Unix: $XDG_CONFIG_HOME/devin or ~/.config/devin
+    """
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    if xdg:
+        return os.path.join(xdg, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
 CHARS_PER_TOKEN = 4
 WINDOW_200K = 200_000    # GLM-5.2 High primary model (free)
 WINDOW_262K = 262_000    # SWE-1.7 Max subagent model (free, `devin models list`)
@@ -46,15 +62,11 @@ def estimate_tokens(text):
 
 
 def find_agents_md():
-    """Locate AGENTS.md: project dir, then DEVIN_HOME, then ~/.config/devin."""
+    """Locate AGENTS.md: project dir, then the Devin user home."""
     candidates = []
     project = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
     candidates.append(os.path.join(project, "AGENTS.md"))
-    home = os.path.expanduser("~")
-    candidates.append(os.path.join(home, ".config", "devin", "AGENTS.md"))
-    appdata = os.environ.get("APPDATA", "")
-    if appdata:
-        candidates.append(os.path.join(appdata, "devin", "AGENTS.md"))
+    candidates.append(os.path.join(devin_home(), "AGENTS.md"))
     for c in candidates:
         if os.path.isfile(c):
             return c
@@ -80,9 +92,8 @@ def find_extra_rules(path):
         for f in sorted(os.listdir(rules_dir)):
             if f.endswith(".md"):
                 extras.append(os.path.join(rules_dir, f))
-    # Global ~/.config/devin/rules/*.md
-    home = os.path.expanduser("~")
-    global_rules = os.path.join(home, ".config", "devin", "rules")
+    # Global rules from the Devin user home
+    global_rules = os.path.join(devin_home(), "rules")
     if os.path.isdir(global_rules):
         for f in sorted(os.listdir(global_rules)):
             if f.endswith(".md"):

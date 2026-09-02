@@ -22,6 +22,22 @@ on exit are gone.
 """
 import sys, json, os
 
+
+def devin_home():
+    """Return the Devin user config home.
+
+    Windows: %APPDATA%\\devin
+    Unix: $XDG_CONFIG_HOME/devin or ~/.config/devin
+    """
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    if xdg:
+        return os.path.join(xdg, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
 MARKER_NAME = ".refine-pending"
 
 REMINDER = (
@@ -40,11 +56,8 @@ def marker_paths():
     project_dir = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
     paths = [
         os.path.join(project_dir, ".devin", MARKER_NAME),
-        os.path.join(os.path.expanduser("~"), ".config", "devin", MARKER_NAME),
+        os.path.join(devin_home(), MARKER_NAME),
     ]
-    appdata = os.environ.get("APPDATA", "")
-    if appdata:
-        paths.append(os.path.join(appdata, "devin", MARKER_NAME))
     return paths
 
 

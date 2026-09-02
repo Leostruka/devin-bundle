@@ -24,6 +24,22 @@ Source: AGENTS.md Rule 3, Skill Quality Standards.
 """
 import sys, os, re
 
+
+def devin_home():
+    """Return the Devin user config home.
+
+    Windows: %APPDATA%\\devin
+    Unix: $XDG_CONFIG_HOME/devin or ~/.config/devin
+    """
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    xdg = os.environ.get("XDG_CONFIG_HOME", "")
+    if xdg:
+        return os.path.join(xdg, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
 # Frontmatter pattern
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 
@@ -197,11 +213,7 @@ def main():
         if sys.argv[1] == "--project":
             dirs_to_scan.append(os.path.join(os.getcwd(), ".devin", "skills"))
         elif sys.argv[1] == "--global":
-            home = os.path.expanduser("~")
-            dirs_to_scan.append(os.path.join(home, ".config", "devin", "skills"))
-            appdata = os.environ.get("APPDATA", "")
-            if appdata:
-                dirs_to_scan.append(os.path.join(appdata, "devin", "skills"))
+            dirs_to_scan.append(os.path.join(devin_home(), "skills"))
         else:
             dirs_to_scan.append(sys.argv[1])
     else:
@@ -211,11 +223,7 @@ def main():
         if os.path.isdir(bundle_skills):
             dirs_to_scan.append(bundle_skills)
         dirs_to_scan.append(os.path.join(os.getcwd(), ".devin", "skills"))
-        home = os.path.expanduser("~")
-        dirs_to_scan.append(os.path.join(home, ".config", "devin", "skills"))
-        appdata = os.environ.get("APPDATA", "")
-        if appdata:
-            dirs_to_scan.append(os.path.join(appdata, "devin", "skills"))
+        dirs_to_scan.append(os.path.join(devin_home(), "skills"))
 
     total = 0
     passing = 0

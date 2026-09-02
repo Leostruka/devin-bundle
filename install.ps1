@@ -52,6 +52,7 @@ param(
 $ErrorActionPreference = "Stop"
 $bundleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $devinHome  = Join-Path $env:APPDATA "devin"
+$legacyConfigHome = Join-Path $env:USERPROFILE ".config\devin"
 $backupDir  = Join-Path $env:USERPROFILE ".devin-import-backup-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 
 # Bundle source paths
@@ -108,6 +109,19 @@ function Backup-File($path) {
     Write-Skip "backup: $path → $bPath"
   } else {
     Copy-Item $path $bPath -Force
+  }
+  $script:Backed++
+}
+
+function Backup-Dir($path) {
+  if (-not (Test-Path $path)) { return }
+  $rel = $path.Replace($env:USERPROFILE, "").TrimStart('\', '/')
+  $bPath = if ($rel) { Join-Path $backupDir $rel } else { $backupDir }
+  New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force | Out-Null
+  if ($DryRun) {
+    Write-Skip "backup: $path → $bPath"
+  } else {
+    Copy-Item $path $bPath -Recurse -Force
   }
   $script:Backed++
 }
@@ -181,6 +195,44 @@ function Install-SkillDir($src, $dst, $name) {
   }
 }
 
+function ConvertTo-Hashtable($obj) {
+  if ($obj -is [System.Collections.IDictionary]) {
+    $h = [ordered]@{};
+    foreach ($k in $obj.Keys) { $h[$k] = ConvertTo-Hashtable $obj[$k] }
+    return $h
+  }
+  if ($obj -is [array] -or ($obj -is [System.Collections.IEnumerable] -and -not ($obj -is [string]))) {
+    return @($obj | ForEach-Object { ConvertTo-Hashtable $_ })
+  }
+  if ($obj -is [System.Management.Automation.PSCustomObject]) {
+    $h = [ordered]@{};
+    foreach ($p in $obj.PSObject.Properties) { $h[$p.Name] = ConvertTo-Hashtable $p.Value }
+    return $h
+  }
+  return $obj
+}
+
+function Merge-Hashtables($base, $override) {
+  $result = [ordered]@{};
+  # Start with all base keys
+  foreach ($k in $base.Keys) { $result[$k] = $base[$k] }
+  # Apply override recursively
+  foreach ($k in $override.Keys) {
+    if ($result.Contains($k)) {
+      $b = $result[$k]
+      $o = $override[$k]
+      if ($b -is [System.Collections.IDictionary] -and $o -is [System.Collections.IDictionary]) {
+        $result[$k] = Merge-Hashtables $b $o
+      } else {
+        $result[$k] = $o
+      }
+    } else {
+      $result[$k] = $override[$k]
+    }
+  }
+  return $result
+}
+
 function Merge-ConfigJson($src, $dst) {
   # Merge bundle config into local config, preserving local org_id
   try {
@@ -235,30 +287,26 @@ function Merge-ConfigJson($src, $dst) {
     return
   }
 
-  # Merge: preserve local org_id, apply bundle settings
+  # Merge: bundle as defaults, local settings win (e.g. theme, legacy_terminal).
+  # The bundle always ships org_id as MASKED, so a real local org_id is kept.
   if ($DryRun) {
-    Write-Skip "would merge config.json (preserve local org_id)"
+    Write-Skip "would merge config.json (preserve local settings)"
     $script:Merged++
     return
   }
 
   if ($Backup) { Backup-File $dst }
 
-  # Build merged config: start with bundle, force org_id to MASKED (never inherit bundle's),
-  # then override with local org_id only if local has a real (non-MASKED) value
-  $merged = $bundleConfig
-  if (-not $merged.devin) { $merged | Add-Member -NotePropertyName "devin" -NotePropertyValue @{} -Force }
-  $merged.devin.org_id = "MASKED"
-  if ($localConfig.devin -and $localConfig.devin.org_id -and $localConfig.devin.org_id -ne "MASKED") {
-    $merged.devin.org_id = $localConfig.devin.org_id
-  }
+  $bundleHt = ConvertTo-Hashtable $bundleConfig
+  $localHt = ConvertTo-Hashtable $localConfig
+  $merged = Merge-Hashtables $bundleHt $localHt
 
   $json = ($merged | ConvertTo-Json -Depth 10) -replace "`r`n", "`n"
   # Expand {{APPDATA}} placeholder to the real path (forward slashes)
   $json = $json -replace '\{\{APPDATA\}\}', ($env:APPDATA -replace '\\', '/')
   $utf8NoBom = [Text.UTF8Encoding]::new($false)
   [IO.File]::WriteAllText($dst, $json, $utf8NoBom)
-  Write-Ok "merged config.json (preserved local org_id, {{APPDATA}} expanded)"
+  Write-Ok "merged config.json (preserved local settings, {{APPDATA}} expanded)"
   $script:Merged++
 }
 
@@ -327,6 +375,29 @@ function Invoke-DedupAgentsMd($dir, $label) {
   }
 }
 
+# --- Remove legacy ~/.config/devin on Windows ---
+# The Devin CLI on Windows uses %APPDATA%\devin as the user config home.
+# A stale ~/.config/devin directory from older installs or other tools causes
+# confusion, so the installer removes it when -Force is used.
+function Remove-LegacyConfig() {
+  if (-not (Test-Path $legacyConfigHome)) { return }
+
+  Write-Warn "legacy config directory found at $legacyConfigHome"
+  if (-not $Force) {
+    Write-Warn "use -Force to remove it and use %APPDATA%\devin instead"
+    return
+  }
+
+  if ($Backup) { Backup-Dir $legacyConfigHome }
+
+  if ($DryRun) {
+    Write-Skip "would remove legacy config directory $legacyConfigHome"
+  } else {
+    Remove-Item $legacyConfigHome -Recurse -Force
+    Write-Ok "removed legacy config directory $legacyConfigHome"
+  }
+}
+
 # --- Header ---
 
 Write-Host "================================================" -ForegroundColor DarkGray
@@ -354,6 +425,10 @@ if (-not $DryRun) {
 } else {
   Write-Skip "would create target dirs"
 }
+
+# --- Remove legacy ~/.config/devin (Windows) ---
+Write-Step "Remove legacy ~/.config/devin (requires -Force)"
+Remove-LegacyConfig
 
 # --- 1. AGENTS.md ---
 Write-Step "Install AGENTS.md"
