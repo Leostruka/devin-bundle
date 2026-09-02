@@ -1,26 +1,26 @@
 # devin-N.ps1 — Launcher do Devin com as funcoes 2,3,4,5,7,8
-# Suporta 1 a 4 instancias com worktrees isoladas.
+# Suporta ate 4 instancias em 1 a 4 projetos; worktrees apenas se 2+ instancias no mesmo projeto.
 # O comando `devin` inicia um REPL interativo no diretorio atual.
 
 # Mensagens centralizadas (templates para futura i18n)
 $M = @{
     UsandoTerminal = 'Usando terminal base: {0}'
     WtNaoEncontrado = 'wt.exe nao encontrado. Novas instancias abrirao em janelas de PowerShell separadas.'
-    SelecioneWorkspace = "`nSelecione o workspace no terminal..."
+    SelecioneWorkspace = "`nSelecione os projetos no terminal (ate 4 instancias)..."
     SelecaoCancelada = 'Selecao de {0} cancelada. Encerrando.'
     WorkspaceDefinido = "Workspace definido para: {0}`n"
     NenhumaPastaSelecionada = "Nenhuma pasta selecionada. Mantendo no diretorio atual.`n"
     DimensaoJanela = 'Aviso: Nao foi possivel obter as dimensoes da janela. Redimensionamento desabilitado.'
-    NaoGitRepo = 'Workspace nao e um repositorio Git. Apenas 1 instancia permitida.'
-    ConfigurandoInstancias = "`nConfigurando {0} instancia(s) no workspace escolhido..."
-    WorktreeWorkspaceGit = "`n[WORKTREE] Workspace e um repositorio Git."
+    NaoGitRepo = 'O projeto nao e um repositorio Git. Apenas 1 instancia e permitida.'
+    ConfigurandoInstancias = "`nConfigurando {0} instancia(s) em {1} projeto(s)..."
+    WorktreeWorkspaceGit = "`n[WORKTREE] Projeto e um repositorio Git."
     SincronizandoReferencias = 'Sincronizando referencias remotas...'
     ReferenciasAtualizadas = '  Referencias remotas atualizadas.'
     ReferenciasFalha = '  Nao foi possivel atualizar as referencias remotas (sem acesso ou sem remoto configurado).'
     MetadadosBranches = 'Obtendo metadados das branches...'
     ListandoBranches = 'Listando branches existentes...'
     NenhumBranch = '  (nenhum branch encontrado)'
-    BranchSelecionando = "`n[BRANCH] Selecionando branch para a instancia unica..."
+    BranchSelecionando = "`n[BRANCH] Selecionando branch para a instancia {0}..."
     BranchAtiva = '  Branch ativa: {0}{1}'
     BranchTrocarFalha = "  Aviso: nao foi possivel trocar para '{0}' (ha alteracoes locais ou conflito). Continuando na branch atual."
     WorktreeCriando = "`n[WORKTREE] Criando worktrees isolados..."
@@ -51,6 +51,13 @@ $M = @{
     BranchOriginalFalha = "  Aviso: nao foi possivel restaurar a branch '{0}' (ha alteracoes locais)."
     TerminalRestaurado = 'Terminal restaurado para a posicao e tamanho originais.'
     RetornandoDiretorio = "`nRetornando ao diretorio original: {0}"
+    ProjetoJaSelecionado = 'Projeto ja selecionado. Escolha outro ou cancele.'
+    TotalInstancias = 'Total de instancias: {0}'
+    AdicionarProjeto = 'Adicionar outro projeto?'
+    QuantasInstancias = 'Quantas instancias em `{0}`?'
+    BranchBaseSelecione = "`n[BRANCH] Selecione a branch base para a nova branch no projeto '{0}'..."
+    BranchJaEscolhida = ' (ja escolhida neste projeto)'
+    AvisoBranchIgual = 'Aviso: a branch `{0}` ja foi escolhida para outra instancia deste projeto. Escolha outra.'
 }
 
 # 2. Salva o diretorio atual
@@ -74,7 +81,10 @@ Add-Type -AssemblyName System.Windows.Forms
 . (Join-Path $bundleRoot "devin-session-launcher.ps1")
 
 function Select-FolderTerminal {
-    param([string]$InitialPath)
+    param(
+        [string]$InitialPath,
+        [switch]$AllowCancel
+    )
 
     if (-not (Test-Path -LiteralPath $InitialPath -PathType Container)) { $InitialPath = (Get-Location).Path }
 
@@ -97,7 +107,10 @@ function Select-FolderTerminal {
         }
 
         $selected = Show-TerminalList -Items $items -Title "Selecione o workspace ($current)" -ToString { param($x) $x.Name }
-        if (-not $selected) { return $current }
+        if (-not $selected) {
+            if ($AllowCancel) { return $null }
+            return $current
+        }
 
         if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Usar esta pasta]') { return $selected.Caminho }
         if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Trocar de drive]') {
@@ -116,48 +129,6 @@ function Select-FolderTerminal {
         }
         $current = $selected.Caminho
     }
-}
-
-# 5. Seleciona workspace via terminal
-Write-Host $M.SelecioneWorkspace -ForegroundColor Cyan
-$workspacePath = Select-FolderTerminal -InitialPath $diretorioOriginal.Path
-if (-not $workspacePath) {
-    Write-Host ($M.SelecaoCancelada -f 'workspace') -ForegroundColor Yellow
-    exit
-}
-if ($workspacePath -ne $diretorioOriginal.Path) {
-    Set-Location $workspacePath
-    Write-Host ($M.WorkspaceDefinido -f $workspacePath) -ForegroundColor Green
-}
-else {
-    Write-Host $M.NenhumaPastaSelecionada -ForegroundColor Yellow
-}
-
-# 5. Carrega utilitarios Win32 para redimensionar janelas
-if (-not ("WindowUtil" -as [type])) {
-    Add-Type @"
-    using System;
-    using System.Runtime.InteropServices;
-
-    public class WindowUtil {
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
-
-        [DllImport("user32.dll")]
-        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr GetConsoleWindow();
-
-        [DllImport("user32.dll")]
-        public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
-    }
-"@
 }
 
 # ============================================================
@@ -570,6 +541,33 @@ function Get-ConsoleWindowInfo {
     return [PSCustomObject]@{ Handle = $hwnd; InsideWT = $insideWT }
 }
 
+# 5. Carrega utilitarios Win32 para redimensionar janelas
+if (-not ("WindowUtil" -as [type])) {
+    Add-Type @"
+    using System;
+    using System.Runtime.InteropServices;
+
+    public class WindowUtil {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+    }
+"@
+}
+
 $wtInfo = Get-ConsoleWindowInfo
 $hwndMain = $wtInfo.Handle
 $insideWT = $wtInfo.InsideWT
@@ -599,222 +597,306 @@ $H = $monitor.Height
 $OffsetX = $monitor.Left
 $OffsetY = $monitor.Top
 
-# 4. Escolhe quantas instancias iniciar
-$isGitRepo = Test-Path -LiteralPath (Join-Path $workspacePath ".git")
-if ($isGitRepo) {
-    $titulo = "Quantidade de Janelas"
-    $opcoes = @(
-        [PSCustomObject]@{ Numero = 1; Label = '1 - Uma instancia (Tela inteira)' },
-        [PSCustomObject]@{ Numero = 2; Label = '2 - Duas instancias com Worktree isolado (Lado a Lado)' },
-        [PSCustomObject]@{ Numero = 3; Label = '3 - Tres instancias com Worktree isolado' },
-        [PSCustomObject]@{ Numero = 4; Label = '4 - Quatro instancias com Worktree isolado (2x2)' }
-    )
-    $escolha = Show-TerminalList -Items $opcoes -Title $titulo -ToString { param($x) $x.Label } -DefaultIndex 0
-    $numInstancias = if ($escolha) { $escolha.Numero } else { 1 }
-}
-else {
-    $numInstancias = 1
-    Write-Host $M.NaoGitRepo -ForegroundColor DarkYellow
-}
-Write-Host ($M.ConfigurandoInstancias -f $numInstancias) -ForegroundColor Cyan
-
-# 5. Prepara worktrees isoladas
+# 4. Escolhe projetos e quantidade de instancias
 $labels = @('A','B','C','D')
-$positions = switch ($numInstancias) {
+$projetos = @()
+$instancias = @()
+$totalInstancias = 0
+
+Write-Host $M.SelecioneWorkspace -ForegroundColor Cyan
+
+while ($totalInstancias -lt 4) {
+    $vagas = 4 - $totalInstancias
+    $title = if ($projetos.Count -eq 0) {
+        "Selecione o projeto 1 ($vagas vagas)"
+    } else {
+        "Selecione outro projeto ou cancele ($vagas vagas)"
+    }
+    $initial = if ($projetos.Count -gt 0) { $projetos[-1].Path } else { $diretorioOriginal.Path }
+
+    $projectPath = Select-FolderTerminal -InitialPath $initial -AllowCancel
+    if (-not $projectPath) { break }
+
+    $already = $projetos | Where-Object { $_.Path -eq $projectPath } | Select-Object -First 1
+    if ($already) {
+        Write-Host $M.ProjetoJaSelecionado -ForegroundColor Yellow
+        continue
+    }
+
+    $isGitRepo = Test-Path -LiteralPath (Join-Path $projectPath ".git")
+    $maxForProject = if ($isGitRepo) { $vagas } else { 1 }
+
+    if (-not $isGitRepo) {
+        Write-Host ($M.NaoGitRepo -f $projectPath) -ForegroundColor DarkYellow
+    }
+
+    $opcoesQuantidade = @()
+    for ($i = 1; $i -le $maxForProject; $i++) {
+        $opcoesQuantidade += [PSCustomObject]@{ Numero = $i; Label = "$i instancia(s)" }
+    }
+
+    $escolhaQuantidade = Show-TerminalList -Items $opcoesQuantidade -Title ($M.QuantasInstancias -f $projectPath) -ToString { param($x) $x.Label } -DefaultIndex 0
+    $projectCount = if ($escolhaQuantidade) { $escolhaQuantidade.Numero } else { 1 }
+
+    $projetos += [PSCustomObject]@{
+        Path = $projectPath
+        Count = $projectCount
+        IsGitRepo = $isGitRepo
+        WorktreesRoot = $null
+        CreatedWorktrees = @()
+        CreatedBranches = @()
+        OriginalBranch = $null
+        CurrentBranch = $null
+    }
+
+    $totalInstancias += $projectCount
+    Write-Host ($M.TotalInstancias -f $totalInstancias) -ForegroundColor DarkGray
+
+    if ($totalInstancias -ge 4) { break }
+
+    $simNao = @(
+        [PSCustomObject]@{ Resposta = $true; Label = 'Sim, adicionar outro projeto' },
+        [PSCustomObject]@{ Resposta = $false; Label = 'Nao, concluir selecao' }
+    )
+    $continuar = Show-TerminalList -Items $simNao -Title ($M.AdicionarProjeto + " (total: $totalInstancias)") -ToString { param($x) $x.Label } -DefaultIndex 1
+    if (-not $continuar -or -not $continuar.Resposta) { break }
+}
+
+if ($projetos.Count -eq 0) {
+    Write-Host ($M.SelecaoCancelada -f 'projetos') -ForegroundColor Yellow
+    exit
+}
+
+Write-Host ($M.ConfigurandoInstancias -f $totalInstancias, $projetos.Count) -ForegroundColor Cyan
+
+# 5. Prepara instancias e worktrees
+$positions = switch ($totalInstancias) {
     2 { @('esquerda','direita','','') }
     3 { @('esquerda','superior-direita','inferior-direita','') }
     4 { @('superior-esquerda','superior-direita','inferior-esquerda','inferior-direita') }
     default { @('','','','') }
 }
 
-$worktrees = @()
-$createdWorktrees = @()
-$branches = @()
-$createdBranches = @()
-$branchInfos = @()
-$worktreesRoot = $null
-$singleInstanceMode = $false
-$originalBranch = $null
+$labelIdx = 0
 
-if ($isGitRepo) {
-    Write-Host $M.WorktreeWorkspaceGit -ForegroundColor Magenta
+foreach ($proj in $projetos) {
+    $projectPath = $proj.Path
+    $count = $proj.Count
 
-    # Limpa worktrees antigas de execucoes anteriores
-    Remove-StaleWorktrees -RepoPath $workspacePath
+    if ($proj.IsGitRepo) {
+        Write-Host $M.WorktreeWorkspaceGit -ForegroundColor Magenta
 
-    # Sincroniza referencias remotas antes de apresentar as branches
-    Write-Host $M.SincronizandoReferencias -ForegroundColor DarkGray
-    $null = git -C $workspacePath fetch --all --prune 2>&1
-    if ($?) {
-        Write-Host $M.ReferenciasAtualizadas -ForegroundColor Green
-    }
-    else {
-        Write-Host $M.ReferenciasFalha -ForegroundColor Yellow
-    }
+        Remove-StaleWorktrees -RepoPath $projectPath
 
-    # Obtem metadados das branches e do GitHub
-    Write-Host $M.MetadadosBranches -ForegroundColor DarkGray
-    $branchMeta = Get-BranchMetadata -RepoPath $workspacePath
-    $prMap = Get-PullRequestMap -RepoPath $workspacePath
-    $protectedSet = Get-ProtectedBranchSet -RepoPath $workspacePath
-    $defaultBranch = Get-DefaultBranchName -RepoPath $workspacePath
+        Write-Host $M.SincronizandoReferencias -ForegroundColor DarkGray
+        $null = git -C $projectPath fetch --all --prune 2>&1
+        if ($?) {
+            Write-Host $M.ReferenciasAtualizadas -ForegroundColor Green
+        }
+        else {
+            Write-Host $M.ReferenciasFalha -ForegroundColor Yellow
+        }
 
-    Write-Host $M.ListandoBranches -ForegroundColor DarkGray
+        Write-Host $M.MetadadosBranches -ForegroundColor DarkGray
+        $branchMeta = Get-BranchMetadata -RepoPath $projectPath
+        $prMap = Get-PullRequestMap -RepoPath $projectPath
+        $protectedSet = Get-ProtectedBranchSet -RepoPath $projectPath
+        $defaultBranch = Get-DefaultBranchName -RepoPath $projectPath
 
-    $localBranches = @()
-    $localBranches += @((git -C $workspacePath branch --format='%(refname:short)' 2>$null) | Where-Object {
-        $_ -ne "" -and $_ -notmatch "^(main|master|develop|HEAD)$"
-    })
+        Write-Host $M.ListandoBranches -ForegroundColor DarkGray
 
-    $remoteBranches = @()
-    $remoteBranches += @((git -C $workspacePath branch -r --format='%(refname:short)' 2>$null) | Where-Object {
-        $_ -ne "" -and $_ -notmatch "HEAD" -and $_ -notmatch "(main|master|develop)$" -and $_ -ne "origin"
-    } | ForEach-Object {
-        $clean = $_ -replace '^origin/', ''
-        if ($clean -and $clean -ne 'HEAD') { $clean }
-    })
+        $localBranches = @()
+        $localBranches += @((git -C $projectPath branch --format='%(refname:short)' 2>$null) | Where-Object {
+            $_ -ne "" -and $_ -notmatch "^(main|master|develop|HEAD)$"
+        })
 
-    $remoteOnly = @($remoteBranches | Where-Object { $_ -notin $localBranches })
-    $currentBranch = git -C $workspacePath branch --show-current 2>$null
+        $remoteBranches = @()
+        $remoteBranches += @((git -C $projectPath branch -r --format='%(refname:short)' 2>$null) | Where-Object {
+            $_ -ne "" -and $_ -notmatch "HEAD" -and $_ -notmatch "(main|master|develop)$" -and $_ -ne "origin"
+        } | ForEach-Object {
+            $clean = $_ -replace '^origin/', ''
+            if ($clean -and $clean -ne 'HEAD') { $clean }
+        })
 
-    $allOptions = @()
+        $remoteOnly = @($remoteBranches | Where-Object { $_ -notin $localBranches })
+        $currentBranch = git -C $projectPath branch --show-current 2>$null
 
-    if ($defaultBranch) {
-        $localDefault = [bool](git -C $workspacePath rev-parse --verify --quiet $defaultBranch 2>$null)
-        $remoteDefault = [bool](git -C $workspacePath rev-parse --verify --quiet "origin/$defaultBranch" 2>$null)
-        if ($localDefault -or $remoteDefault) {
-            $allOptions += @{
-                Name = $defaultBranch
-                Type = if ($localDefault) { "local" } else { "remote" }
-                IsCurrent = ($defaultBranch -eq $currentBranch)
+        $allOptions = @()
+        if ($defaultBranch) {
+            $localDefault = [bool](git -C $projectPath rev-parse --verify --quiet $defaultBranch 2>$null)
+            $remoteDefault = [bool](git -C $projectPath rev-parse --verify --quiet "origin/$defaultBranch" 2>$null)
+            if ($localDefault -or $remoteDefault) {
+                $allOptions += @{
+                    Name = $defaultBranch
+                    Type = if ($localDefault) { "local" } else { "remote" }
+                    IsCurrent = ($defaultBranch -eq $currentBranch)
+                }
             }
         }
-    }
 
-    if ($localBranches.Count -gt 0) {
-        foreach ($b in $localBranches) {
-            $allOptions += @{ Name = $b; Type = "local"; IsCurrent = ($b -eq $currentBranch) }
-        }
-    }
-
-    if ($remoteOnly.Count -gt 0) {
-        foreach ($b in $remoteOnly) {
-            $allOptions += @{ Name = $b; Type = "remote"; IsCurrent = $false }
-        }
-    }
-
-    if ($allOptions.Count -eq 0) {
-        Write-Host $M.NenhumBranch -ForegroundColor DarkGray
-    }
-
-    $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
-
-    # Seleciona branches no terminal
-    $selectedBranches = @()
-    for ($i = 0; $i -lt $numInstancias; $i++) {
-        $pos = $positions[$i]
-        $titulo = if ($pos) { "Selecione a branch - Instancia $($labels[$i]) ($pos)" } else { "Selecione a branch - Instancia $($labels[$i])" }
-
-        $selectedNames = @($selectedBranches | ForEach-Object { $_.Name })
-        $available = @($allOptions | Where-Object { $_.Name -notin $selectedNames })
-        $available += $newBranchOption
-
-        $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
-        if (-not $selected) { $selected = $newBranchOption }
-        $selectedBranches += $selected
-        Write-Host ($M.WorktreeInstancia -f $labels[$i], $selected.Name) -ForegroundColor Cyan
-    }
-
-    if ($numInstancias -eq 1) {
-        $singleInstanceMode = $true
-        $originalBranch = git -C $workspacePath branch --show-current 2>$null
-        Write-Host $M.BranchSelecionando -ForegroundColor Magenta
-        $info = $selectedBranches[0]
-        $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-        $targetBranch = if ($info.Type -eq 'new') { "devin-$timestamp-a" } else { $info.Name }
-
-        $switchResult = $null
-        $createdThisBranch = $null
-        if ($info.Type -eq 'new') {
-            $switchResult = git -C $workspacePath switch -c $targetBranch 2>&1
-            if ($?) { $createdThisBranch = $targetBranch }
-        }
-        elseif ($info.Type -eq 'remote') {
-            $switchResult = git -C $workspacePath switch -c $targetBranch "origin/$targetBranch" 2>&1
-        }
-        else {
-            $switchResult = git -C $workspacePath switch $targetBranch 2>&1
+        if ($localBranches.Count -gt 0) {
+            foreach ($b in $localBranches) {
+                $allOptions += @{ Name = $b; Type = "local"; IsCurrent = ($b -eq $currentBranch) }
+            }
         }
 
-        if ($?) {
-            if ($createdThisBranch) { $createdBranches += $createdThisBranch }
-            $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
-            Write-Host ($M.BranchAtiva -f $targetBranch, $typeLabel) -ForegroundColor Green
+        if ($remoteOnly.Count -gt 0) {
+            foreach ($b in $remoteOnly) {
+                $allOptions += @{ Name = $b; Type = "remote"; IsCurrent = $false }
+            }
         }
-        else {
-            Write-Host ($M.BranchTrocarFalha -f $targetBranch) -ForegroundColor Yellow
+
+        if ($allOptions.Count -eq 0) {
+            Write-Host $M.NenhumBranch -ForegroundColor DarkGray
         }
-    }
-    else {
-        Write-Host $M.WorktreeCriando -ForegroundColor Magenta
 
-        $worktreesRoot = Join-Path $workspacePath ".worktrees"
-        if (-not (Test-Path -LiteralPath $worktreesRoot)) { New-Item -ItemType Directory -LiteralPath $worktreesRoot -Force | Out-Null }
+        $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
 
+        $selectedBranches = @()
         $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 
-        try {
-            for ($i = 0; $i -lt $numInstancias; $i++) {
-                $worktree = Join-Path $worktreesRoot "instancia-$($labels[$i].ToLower())"
+        for ($i = 0; $i -lt $count; $i++) {
+            $pos = $positions[$labelIdx]
+            $titulo = if ($pos) { "Selecione a branch - Instancia $($labels[$labelIdx]) ($pos)" } else { "Selecione a branch - Instancia $($labels[$labelIdx])" }
 
-                $null = git -C $workspacePath worktree remove "$worktree" --force 2>&1
-                if (Test-Path -LiteralPath $worktree) { Remove-Item -LiteralPath $worktree -Recurse -Force -ErrorAction SilentlyContinue }
+            $selectedNames = @($selectedBranches | ForEach-Object { $_.Name })
+            $available = @($allOptions | Where-Object { $_.Name -notin $selectedNames })
+            $available += $newBranchOption
 
-                $info = $selectedBranches[$i]
-                $branch = $info.Name
-                if ($info.Type -eq "new") { $branch = "devin-$timestamp-$($labels[$i].ToLower())" }
+            $selected = $null
+            while (-not $selected) {
+                $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
+                if (-not $selected) { $selected = $newBranchOption }
 
-                if ($info.Type -eq "new") {
-                    $null = git -C $workspacePath worktree add "$worktree" -b $branch 2>&1
+                if ($selected.Name -ne 'devin-new' -and $selected.Name -in $selectedNames) {
+                    Write-Host ($M.AvisoBranchIgual -f $selected.Name) -ForegroundColor Red
+                    $selected = $null
                 }
-                elseif ($info.Type -eq "remote") {
-                    $null = git -C $workspacePath worktree add "$worktree" -b $branch "origin/$branch" 2>&1
+            }
+
+            $selectedBranches += $selected
+
+            $branch = $selected.Name
+            $baseBranch = $null
+            if ($selected.Type -eq 'new') {
+                if ($allOptions.Count -gt 0) {
+                    $baseOptions = $allOptions + @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true }
+                    $baseOptions = $baseOptions | Sort-Object Name -Unique
+                    $baseSelected = Select-BranchTerminal -Options $baseOptions -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title ($M.BranchBaseSelecione -f $projectPath)
+                    if (-not $baseSelected) { $baseSelected = @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true } }
+                    $baseBranch = $baseSelected.Name
                 }
                 else {
-                    $null = git -C $workspacePath worktree add "$worktree" $branch 2>&1
+                    $baseBranch = $currentBranch
                 }
-
-                if (-not $?) { throw "git worktree add falhou para '$worktree' (branch '$branch')" }
-
-                $worktrees += $worktree
-                $createdWorktrees += $worktree
-                $branches += $branch
-                if ($info.Type -eq "new") { $createdBranches += $branch }
-                $branchInfos += @{ Name = $branch; Type = $info.Type }
-
-                $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
-                Write-Host ($M.WorktreeInstancia -f $labels[$i], $worktree) -ForegroundColor DarkCyan
-                Write-Host ($M.WorktreeBranch -f $branch, $typeLabel) -ForegroundColor DarkGray
+                $branch = "devin-$timestamp-$($labels[$labelIdx].ToLower())"
             }
 
-            Write-Host $M.WorktreeMerge -ForegroundColor DarkGray
+            $instancias += [PSCustomObject]@{
+                Label = $labels[$labelIdx]
+                Project = $proj
+                ProjectPath = $projectPath
+                BranchInfo = $selected
+                Branch = $branch
+                BaseBranch = $baseBranch
+                WorktreePath = $null
+                Position = $pos
+                IsMain = ($labelIdx -eq 0)
+            }
+
+            $labelIdx++
         }
-        catch {
-            Write-Host ($M.WorktreeFalha -f $_.Exception.Message) -ForegroundColor Yellow
-            foreach ($wt in $createdWorktrees) {
-                $null = git -C $workspacePath worktree remove "$wt" --force 2>&1
-                if (Test-Path -LiteralPath $wt) { Remove-Item -LiteralPath $wt -Recurse -Force -ErrorAction SilentlyContinue }
-            }
-            foreach ($cb in $createdBranches) {
-                $null = git -C $workspacePath branch -D $cb 2>&1
-            }
-            $worktrees = @()
-            $createdWorktrees = @()
-            $branches = @()
-            $createdBranches = @()
-            $branchInfos = @()
-            $numInstancias = 1
+
+        $proj.OriginalBranch = $currentBranch
+        $proj.CurrentBranch = $currentBranch
+    }
+    else {
+        # Nao-Git: apenas 1 instancia, sem branch
+        $instancias += [PSCustomObject]@{
+            Label = $labels[$labelIdx]
+            Project = $proj
+            ProjectPath = $projectPath
+            BranchInfo = $null
+            Branch = $null
+            BaseBranch = $null
+            WorktreePath = $null
+            Position = $positions[$labelIdx]
+            IsMain = ($labelIdx -eq 0)
         }
+        $labelIdx++
+    }
+}
+
+# Cria worktrees por projeto conforme necessario
+$numInstancias = $totalInstancias
+$singleInstanceMode = ($numInstancias -eq 1 -and $projetos[0].IsGitRepo)
+
+foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 }) {
+    Write-Host $M.WorktreeCriando -ForegroundColor Magenta
+    $projectPath = $proj.Path
+    $worktreesRoot = Join-Path $projectPath ".worktrees"
+    if (-not (Test-Path -LiteralPath $worktreesRoot)) { New-Item -ItemType Directory -LiteralPath $worktreesRoot -Force | Out-Null }
+    $proj.WorktreesRoot = $worktreesRoot
+
+    try {
+        $projInstances = @($instancias | Where-Object { $_.Project -eq $proj })
+        foreach ($inst in $projInstances) {
+            $worktree = Join-Path $worktreesRoot "instancia-$($inst.Label.ToLower())"
+
+            $null = git -C $projectPath worktree remove "$worktree" --force 2>&1
+            if (Test-Path -LiteralPath $worktree) { Remove-Item -LiteralPath $worktree -Recurse -Force -ErrorAction SilentlyContinue }
+
+            $info = $inst.BranchInfo
+            $branch = $inst.Branch
+
+            if ($info.Type -eq "new") {
+                $base = if ($inst.BaseBranch) { $inst.BaseBranch } else { $proj.CurrentBranch }
+                $null = git -C $projectPath worktree add "$worktree" -b $branch $base 2>&1
+            }
+            elseif ($info.Type -eq "remote") {
+                $null = git -C $projectPath worktree add "$worktree" -b $branch "origin/$branch" 2>&1
+            }
+            else {
+                $null = git -C $projectPath worktree add "$worktree" $branch 2>&1
+            }
+
+            if (-not $?) { throw "git worktree add falhou para '$worktree' (branch '$branch')" }
+
+            $inst.WorktreePath = $worktree
+            $proj.CreatedWorktrees += $worktree
+            if ($info.Type -eq "new") {
+                $proj.CreatedBranches += $branch
+            }
+
+            $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
+            Write-Host ($M.WorktreeInstancia -f $inst.Label, $worktree) -ForegroundColor DarkCyan
+            Write-Host ($M.WorktreeBranch -f $branch, $typeLabel) -ForegroundColor DarkGray
+        }
+
+        Write-Host $M.WorktreeMerge -ForegroundColor DarkGray
+    }
+    catch {
+        Write-Host ($M.WorktreeFalha -f $_.Exception.Message) -ForegroundColor Yellow
+        foreach ($wt in $proj.CreatedWorktrees) {
+            $null = git -C $projectPath worktree remove "$wt" --force 2>&1
+            if (Test-Path -LiteralPath $wt) { Remove-Item -LiteralPath $wt -Recurse -Force -ErrorAction SilentlyContinue }
+        }
+        foreach ($cb in $proj.CreatedBranches) {
+            $null = git -C $projectPath branch -D $cb 2>&1
+        }
+        $proj.CreatedWorktrees = @()
+        $proj.CreatedBranches = @()
+        throw "Falha ao preparar instancias do projeto '$projectPath'. Encerrando."
+    }
+}
+
+# Preenche WorkingDirectory para cada instancia
+foreach ($inst in $instancias) {
+    if ($inst.WorktreePath -and (Test-Path -LiteralPath $inst.WorktreePath)) {
+        $inst | Add-Member -NotePropertyName WorkingDirectory -NotePropertyValue $inst.WorktreePath -Force
+    }
+    else {
+        $inst | Add-Member -NotePropertyName WorkingDirectory -NotePropertyValue $inst.ProjectPath -Force
     }
 }
 
@@ -855,29 +937,54 @@ if ($windowUtilAvailable) {
 
 $processosAdicionais = @()
 
+function Get-InstanceCommand {
+    param([PSCustomObject]$Inst)
+    $workingDir = $Inst.WorkingDirectory
+    $branch = $Inst.Branch
+    $baseBranch = $Inst.BaseBranch
+    $isGitRepo = $Inst.Project.IsGitRepo
+    $branchInfo = $Inst.BranchInfo
+    $bundlePath = $bundleRoot.Replace("'", "''")
+
+    $preCommands = @()
+    $preCommands += "Set-Location -LiteralPath '$workingDir'"
+
+    if ($isGitRepo -and $branch) {
+        if ($branchInfo.Type -eq 'new') {
+            $base = if ($baseBranch) { $baseBranch } else { $Inst.Project.CurrentBranch }
+            $preCommands += "git -C '$workingDir' switch -c '$branch' '$base' 2>`$null"
+        }
+        elseif (-not $Inst.WorktreePath) {
+            $preCommands += "git -C '$workingDir' switch '$branch' 2>`$null"
+        }
+    }
+
+    $preCommands += ". '$bundlePath\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
+    return ($preCommands -join "; ")
+}
+
 # 5. Abre as instancias adicionais
 if ($numInstancias -gt 1) {
     $scriptPid = $PID
-    $cmd = ". '$bundleRoot\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
 
     if ($insideWT -and $wtPath) {
         Write-Host $M.PaineisDivididos -ForegroundColor Cyan
 
         $subcommands = @()
         if ($numInstancias -eq 2) {
-            $subcommands += "split-pane -V -d `"$($worktrees[1])`" $psExecutable -NoExit -Command `"$cmd`""
+            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[1])`""
             $subcommands += "move-focus left"
         }
         elseif ($numInstancias -eq 3) {
-            $subcommands += "split-pane -V -d `"$($worktrees[1])`" $psExecutable -NoExit -Command `"$cmd`""
-            $subcommands += "split-pane -H -d `"$($worktrees[2])`" $psExecutable -NoExit -Command `"$cmd`""
+            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[1])`""
+            $subcommands += "split-pane -H -d `"$($instancias[2].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[2])`""
             $subcommands += "move-focus left"
         }
         elseif ($numInstancias -eq 4) {
-            $subcommands += "split-pane -H -d `"$($worktrees[2])`" $psExecutable -NoExit -Command `"$cmd`""
+            $subcommands += "split-pane -H -d `"$($instancias[2].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[2])`""
             $subcommands += "move-focus up"
-            $subcommands += "split-pane -V -d `"$($worktrees[1])`" $psExecutable -NoExit -Command `"$cmd`""
-            $subcommands += "split-pane -H -d `"$($worktrees[3])`" $psExecutable -NoExit -Command `"$cmd`""
+            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[1])`""
+            $subcommands += "split-pane -H -d `"$($instancias[3].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[3])`""
             $subcommands += "move-focus left"
             $subcommands += "move-focus up"
         }
@@ -894,14 +1001,17 @@ if ($numInstancias -gt 1) {
         for ($i = 1; $i -lt $numInstancias; $i++) {
             [int[]]$wtBefore = @(Get-Process WindowsTerminal -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
 
-            $argsWT = "-w new -d `"$($worktrees[$i])`" $psExecutable -NoExit -Command `"$cmd`""
+            $inst = $instancias[$i]
+            $cmd = Get-InstanceCommand -Inst $inst
+
+            $argsWT = "-w new -d `"$($inst.WorkingDirectory)`" $psExecutable -NoExit -Command `"$cmd`""
             $proc = Start-Process -FilePath $wtPath -ArgumentList $argsWT -PassThru
-            if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($labels[$i]) via wt.exe."; continue }
+            if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($inst.Label) via wt.exe."; continue }
 
             $timeout = 0
             $hWndFilho = [IntPtr]::Zero
 
-            Write-Host ($M.JanelaGeracao -f $labels[$i]) -ForegroundColor DarkGray
+            Write-Host ($M.JanelaGeracao -f $inst.Label) -ForegroundColor DarkGray
             while ($timeout -lt 60) {
                 Start-Sleep -Milliseconds 200
                 $wtAfter = Get-Process WindowsTerminal -ErrorAction SilentlyContinue
@@ -918,10 +1028,10 @@ if ($numInstancias -gt 1) {
 
             if ($hWndFilho -ne [IntPtr]::Zero -and $windowUtilAvailable) {
                 [WindowUtil]::SetWindowPos($hWndFilho, [IntPtr]::Zero, [int]$grid[$i].X, [int]$grid[$i].Y, [int]$grid[$i].W, [int]$grid[$i].H, 0x0040) | Out-Null
-                Write-Host ($M.JanelaPosicionada -f $labels[$i]) -ForegroundColor Green
+                Write-Host ($M.JanelaPosicionada -f $inst.Label) -ForegroundColor Green
             }
             else {
-                Write-Host ($M.JanelaTimeout -f $labels[$i]) -ForegroundColor Yellow
+                Write-Host ($M.JanelaTimeout -f $inst.Label) -ForegroundColor Yellow
             }
         }
     }
@@ -929,8 +1039,11 @@ if ($numInstancias -gt 1) {
         Write-Host $M.WtNaoEncontradoJanelas -ForegroundColor DarkYellow
 
         for ($i = 1; $i -lt $numInstancias; $i++) {
+            $inst = $instancias[$i]
+            $cmd = Get-InstanceCommand -Inst $inst
+
             $proc = Start-Process -FilePath $psExecutable -ArgumentList "-NoExit -Command `"$cmd`"" -PassThru
-            if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($labels[$i])." }
+            if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($inst.Label)." }
             else { $processosAdicionais += $proc }
         }
     }
@@ -941,24 +1054,50 @@ if ($numInstancias -gt 1) {
 
 Write-Host $M.IniciandoPrincipal -ForegroundColor Green
 
-# 7. Muda para o worktree A (se houver) e executa o devin
-if ($worktrees.Count -gt 0 -and (Test-Path -LiteralPath $worktrees[0])) {
-    Set-Location -LiteralPath $worktrees[0]
+# 7. Muda para o worktree/projeto da instancia principal e executa o devin
+$mainInst = $instancias[0]
+$mainPath = $mainInst.WorkingDirectory
+if (Test-Path -LiteralPath $mainPath) {
+    Set-Location -LiteralPath $mainPath
 }
 
-# Sincroniza a branch da instancia principal com o remoto
-$targetPath = if ($worktrees.Count -gt 0) { $worktrees[0] } else { $workspacePath }
-if ($isGitRepo -and (Test-Path -LiteralPath (Join-Path $targetPath ".git"))) {
-    Write-Host $M.SincronizandoBranch -ForegroundColor Cyan
-    $null = git -C $targetPath diff --quiet 2>&1
-    $clean = $?
-    if ($clean) {
-        $null = git -C $targetPath pull --ff-only 2>&1
-        if ($?) { Write-Host $M.BranchAtualizada -ForegroundColor Green }
-        else { Write-Host $M.FastForwardFalha -ForegroundColor Yellow }
+if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPath ".git"))) {
+    $targetBranch = $mainInst.Branch
+    if ($targetBranch) {
+        if ($mainInst.BranchInfo.Type -eq 'new') {
+            $base = if ($mainInst.BaseBranch) { $mainInst.BaseBranch } else { $mainInst.Project.CurrentBranch }
+            $null = git -C $mainPath switch -c $targetBranch $base 2>&1
+            if ($?) {
+                Write-Host ($M.BranchAtiva -f $targetBranch, " (nova)") -ForegroundColor Green
+            }
+            else {
+                Write-Host ($M.BranchTrocarFalha -f $targetBranch) -ForegroundColor Yellow
+            }
+        }
+        elseif (-not $mainInst.WorktreePath) {
+            $switchResult = git -C $mainPath switch $targetBranch 2>&1
+            if ($?) {
+                Write-Host ($M.BranchAtiva -f $targetBranch, "") -ForegroundColor Green
+            }
+            else {
+                Write-Host ($M.BranchTrocarFalha -f $targetBranch) -ForegroundColor Yellow
+            }
+        }
     }
-    else {
-        Write-Host $M.PullIgnorado -ForegroundColor Yellow
+
+    # Sincroniza a branch da instancia principal com o remoto
+    if ($mainInst.BranchInfo -and $mainInst.BranchInfo.Type -ne 'new') {
+        Write-Host $M.SincronizandoBranch -ForegroundColor Cyan
+        $null = git -C $mainPath diff --quiet 2>&1
+        $clean = $?
+        if ($clean) {
+            $null = git -C $mainPath pull --ff-only 2>&1
+            if ($?) { Write-Host $M.BranchAtualizada -ForegroundColor Green }
+            else { Write-Host $M.FastForwardFalha -ForegroundColor Yellow }
+        }
+        else {
+            Write-Host $M.PullIgnorado -ForegroundColor Yellow
+        }
     }
 }
 
@@ -980,26 +1119,27 @@ else {
     Write-Host $M.PaineisFecham -ForegroundColor DarkGray
 }
 
-# 5. Limpa worktrees
-if ($createdWorktrees.Count -gt 0 -or $createdBranches.Count -gt 0) {
-    Write-Host $M.LimpandoWorktrees -ForegroundColor Magenta
-    Push-Location -LiteralPath $workspacePath
-    foreach ($wt in $createdWorktrees) {
+# 5. Limpa worktrees por projeto
+foreach ($proj in $projetos | Where-Object { $_.CreatedWorktrees.Count -gt 0 -or $_.CreatedBranches.Count -gt 0 }) {
+    Write-Host ($M.LimpandoWorktrees + " (" + $proj.Path + ")") -ForegroundColor Magenta
+    Push-Location -LiteralPath $proj.Path
+    foreach ($wt in $proj.CreatedWorktrees) {
         git worktree remove $wt --force 2>$null
     }
-    foreach ($cb in $createdBranches) {
+    foreach ($cb in $proj.CreatedBranches) {
         git branch -D $cb 2>$null
     }
     Pop-Location
-    if ($worktreesRoot -and (Test-Path -LiteralPath $worktreesRoot)) { Remove-Item -LiteralPath $worktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
+    if ($proj.WorktreesRoot -and (Test-Path -LiteralPath $proj.WorktreesRoot)) { Remove-Item -LiteralPath $proj.WorktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
     Write-Host $M.WorktreesRemovidos -ForegroundColor Green
 }
 
 # Restaura a branch original no modo 1 instancia
-if ($singleInstanceMode -and $originalBranch -and $isGitRepo -and (Test-Path -LiteralPath (Join-Path $workspacePath ".git"))) {
-    $null = git -C $workspacePath switch $originalBranch 2>&1
-    if ($?) { Write-Host ($M.BranchOriginalRestaurada -f $originalBranch) -ForegroundColor Green }
-    else { Write-Host ($M.BranchOriginalFalha -f $originalBranch) -ForegroundColor Yellow }
+$mainProj = $mainInst.Project
+if ($singleInstanceMode -and $mainProj.OriginalBranch -and $mainProj.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainProj.Path ".git"))) {
+    $null = git -C $mainProj.Path switch $mainProj.OriginalBranch 2>&1
+    if ($?) { Write-Host ($M.BranchOriginalRestaurada -f $mainProj.OriginalBranch) -ForegroundColor Green }
+    else { Write-Host ($M.BranchOriginalFalha -f $mainProj.OriginalBranch) -ForegroundColor Yellow }
 }
 
 # 8. Restora a janela principal ao tamanho/posicao originais
