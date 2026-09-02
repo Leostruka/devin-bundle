@@ -64,6 +64,40 @@ $M = @{
     BranchNomeReservado = 'O nome `{0}` esta reservado para outra instancia deste projeto. Escolha outro.'
 }
 
+function Find-WorkingWt {
+    $candidates = @()
+    try {
+        $candidates = (& where.exe 'wt' 2>$null) -split '\r?\n' |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ }
+    } catch {}
+
+    foreach ($candidate in $candidates) {
+        if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { continue }
+
+        $shimFile = "$candidate.shim"
+        if (Test-Path -LiteralPath $shimFile) {
+            $content = Get-Content -LiteralPath $shimFile -Raw
+            $m = [regex]::Match(
+                $content,
+                '^\s*path\s*=\s*"(.+?)"\s*$',
+                [System.Text.RegularExpressions.RegexOptions]::Multiline
+            )
+            if ($m.Success) {
+                $target = $m.Groups[1].Value
+                if (Test-Path -LiteralPath $target -PathType Leaf) {
+                    return $candidate
+                }
+            }
+            continue
+        }
+
+        return $candidate
+    }
+
+    return $null
+}
+
 # 2. Salva o diretorio atual
 $diretorioOriginal = Get-Location
 $bundleRoot = $PSScriptRoot
@@ -76,8 +110,7 @@ if (Get-Command pwsh -ErrorAction SilentlyContinue) {
 Write-Host ($M.UsandoTerminal -f $psExecutable) -ForegroundColor DarkGray
 
 # Localiza o Windows Terminal (wt.exe) para abrir paineis/janelas extras
-$wtCmd = Get-Command wt -ErrorAction SilentlyContinue
-$wtPath = if ($wtCmd) { $wtCmd.Source } else { $null }
+$wtPath = Find-WorkingWt
 if (-not $wtPath) { Write-Host $M.WtNaoEncontrado -ForegroundColor DarkYellow }
 
 # 4. Carrega utilitarios e menu full-terminal
