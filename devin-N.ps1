@@ -1033,32 +1033,40 @@ function Get-InstanceCommand {
         }
     }
 
-    $preCommands += ". '$bundlePath\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while (Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) { Start-Sleep 2 }; exit"
+    $preCommands += ". '$bundlePath\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while ((Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) -and -not (Test-Path -LiteralPath '$doneFlag')) { Start-Sleep 2 }; exit"
     return ($preCommands -join "; ")
+}
+
+function ConvertTo-EncodedCommand {
+    param([string]$Script)
+    $bytes = [System.Text.Encoding]::Unicode.GetBytes($Script)
+    return [Convert]::ToBase64String($bytes)
 }
 
 # 5. Abre as instancias adicionais
 if ($numInstancias -gt 1) {
     $scriptPid = $PID
+    $doneFlag = Join-Path $env:TEMP "devin-N-$scriptPid.done"
+    Remove-Item -LiteralPath $doneFlag -Force -ErrorAction SilentlyContinue
 
     if ($insideWT -and $wtPath) {
         Write-Host $M.PaineisDivididos -ForegroundColor Cyan
 
         $subcommands = @()
         if ($numInstancias -eq 2) {
-            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[1])`""
+            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand (Get-InstanceCommand -Inst $instancias[1]))"
             $subcommands += "move-focus left"
         }
         elseif ($numInstancias -eq 3) {
-            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[1])`""
-            $subcommands += "split-pane -H -d `"$($instancias[2].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[2])`""
+            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand (Get-InstanceCommand -Inst $instancias[1]))"
+            $subcommands += "split-pane -H -d `"$($instancias[2].WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand (Get-InstanceCommand -Inst $instancias[2]))"
             $subcommands += "move-focus left"
         }
         elseif ($numInstancias -eq 4) {
-            $subcommands += "split-pane -H -d `"$($instancias[2].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[2])`""
+            $subcommands += "split-pane -H -d `"$($instancias[2].WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand (Get-InstanceCommand -Inst $instancias[2]))"
             $subcommands += "move-focus up"
-            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[1])`""
-            $subcommands += "split-pane -H -d `"$($instancias[3].WorkingDirectory)`" $psExecutable -NoExit -Command `"$(Get-InstanceCommand -Inst $instancias[3])`""
+            $subcommands += "split-pane -V -d `"$($instancias[1].WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand (Get-InstanceCommand -Inst $instancias[1]))"
+            $subcommands += "split-pane -H -d `"$($instancias[3].WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand (Get-InstanceCommand -Inst $instancias[3]))"
             $subcommands += "move-focus left"
             $subcommands += "move-focus up"
         }
@@ -1078,7 +1086,7 @@ if ($numInstancias -gt 1) {
             $inst = $instancias[$i]
             $cmd = Get-InstanceCommand -Inst $inst
 
-            $argsWT = "-w new -d `"$($inst.WorkingDirectory)`" $psExecutable -NoExit -Command `"$cmd`""
+            $argsWT = "-w new -d `"$($inst.WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand $cmd)"
             $proc = Start-Process -FilePath $wtPath -ArgumentList $argsWT -PassThru
             if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($inst.Label) via wt.exe."; continue }
 
@@ -1225,3 +1233,8 @@ if ($windowUtilAvailable) {
 # 2. Retorna ao diretorio original
 Set-Location -LiteralPath $diretorioOriginal
 Write-Host ($M.RetornandoDiretorio -f $diretorioOriginal.Path) -ForegroundColor Gray
+
+# 9. Sinaliza conclusao para os paineis extras (libera o loop de espera)
+if ($numInstancias -gt 1 -and $doneFlag) {
+    New-Item -ItemType File -Path $doneFlag -Force | Out-Null
+}
