@@ -50,7 +50,7 @@ Run at the start of a session to load the bundle's rules, run the behavioral sel
 
 Keep this in mind for every session:
 
-- Devin CLI validated release: `3000.6.7` (see `docs/DEVIN-CLI-COMPATIBILITY.md`).
+- Devin CLI validated release: `3000.6.14` (see `docs/DEVIN-CLI-COMPATIBILITY.md`).
 - Models: parent `glm-5-2`; custom subagents `swe-1-7` (free). Never use `swe`, `opus`, `sonnet`, `gpt`, etc. when the parent is free.
 - Issue tracker: local Markdown under `.devin/scratch/<feature-slug>/`, conventions in `.devin/agents/issue-tracker.md` and `.devin/agents/triage-labels.md`.
 - Skills: 76 in the bundle; discovery via `docs/SKILL-TIERS.md`.

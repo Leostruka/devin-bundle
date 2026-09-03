@@ -37,7 +37,7 @@ Depois da instalação, abra o Devin CLI no repositório em que deseja trabalhar
 | Git | Versionamento, branches e worktrees | `git --version` |
 | Windows, Linux, macOS ou WSL | Ambiente suportado | — |
 
-A versão validada do Devin CLI é `3000.6.7`. Consulte [docs/DEVIN-CLI-COMPATIBILITY.md](docs/DEVIN-CLI-COMPATIBILITY.md).
+A versão validada do Devin CLI é `3000.6.14`. Consulte [docs/DEVIN-CLI-COMPATIBILITY.md](docs/DEVIN-CLI-COMPATIBILITY.md).
 
 ## Como o ecossistema funciona
 
