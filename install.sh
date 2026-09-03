@@ -378,6 +378,34 @@ else
   warn "scripts/ not found in bundle"
 fi
 
+# --- 6a. Install data/ (model context windows, thresholds) ---
+step "Install data/ (model context windows)"
+data_src="$BUNDLE_DIR/data"
+data_dst="$DEVIN_HOME/data"
+if [[ -d "$data_src" ]]; then
+  for data_file in "$data_src"/*; do
+    [[ -f "$data_file" ]] || continue
+    name="$(basename "$data_file")"
+    dst_file="$data_dst/$name"
+    if [[ -f "$dst_file" ]]; then
+      if diff -q "$data_file" "$dst_file" >/dev/null 2>&1; then
+        ok "data/$name already up-to-date"
+      elif [[ $FORCE -eq 1 ]]; then
+        if [[ $BACKUP -eq 1 ]]; then backup_file "$dst_file"; fi
+        if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite data/$name"
+        else cp "$data_file" "$dst_file"; ok "data/$name installed"; fi
+      else
+        warn "data/$name exists and differs. Use --force to overwrite."
+      fi
+    else
+      if [[ $DRY_RUN -eq 1 ]]; then skip "would install data/$name"
+      else cp "$data_file" "$dst_file"; ok "data/$name installed"; fi
+    fi
+  done
+else
+  warn "data/ not found in bundle"
+fi
+
 # --- 7. Install mcp_config.json (skip if masked) ---
 step "Install mcp_config.json"
 mcp_src="$BUNDLE_DIR/mcp_config.json"
@@ -445,7 +473,7 @@ step "Summary"
 echo "    Skills installed : $installed_skills"
 echo "    Skills updated   : $updated_skills"
 echo "    Skills unchanged : $skipped_skills"
-echo "    Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml"
+echo "    Config: AGENTS.md, agents/, config.json, scripts/, data/, mcp_config.json, credentials.toml"
 
 if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"
