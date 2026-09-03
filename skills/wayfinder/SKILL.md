@@ -5,6 +5,8 @@ triggers: [user, model]
 ---
 A loose idea has arrived — too big for one agent session, and wrapped in fog: the way from here to the **destination** isn't visible yet. Wayfinding is about finding that way, not charging at the destination. This skill charts the way as a **shared map** on the repo's issue tracker, then works its **decision tickets** — questions whose resolution is a decision, not slices of a build to execute — one at a time until the route is clear.
 
+**Modular atomic action mode.** Each ticket is one atomic decision, worked and verified before the next is claimed. Never resolve more than one ticket per session (research tickets excepted). Each ticket declares its own gate (`gate:` / `expect:` / `evidence:`); a ticket without a gate is not ready to claim. Mark `in_progress` on claim, `completed` only after the resolution is recorded and, where the ticket produces a verifiable artifact, the `qa-ci` subagent independently re-runs the gate and returns `PASS`. No batching of tickets, no "we'll verify at the end."
+
 The destination varies per effort, and naming it is the first act of charting — it shapes every ticket. It might be a spec to hand off and iterate on, a decision to lock before planning starts, or a change made in place like a data-structure migration. The map is domain-agnostic — engineering work, course content, whatever fits the shape.
 
 ## Plan, don't do
@@ -59,6 +61,14 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
 ## Question
 
 <the decision or investigation this ticket resolves>
+
+## Gate
+
+<the exact command that proves this ticket's resolution is grounded, e.g. `python -m pytest tests/held-out/ -q` for a research ticket that produced a patch, or "N/A — decision recorded in resolution comment" for a pure grilling ticket>
+
+## Expect
+
+<the output or exit code that constitutes pass, or "N/A">
 ```
 
 Each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
@@ -121,7 +131,7 @@ User invokes with a map (URL or number). A ticket is **optional** — without on
 1. Load the **map** — the low-res view, not every ticket body.
 2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
 3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
-4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
+4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far. Where the ticket produced a verifiable artifact, dispatch the `qa-ci` subagent to re-run the ticket's gate independently before closing; only close on `Verdict: PASS` (or `N/A` declared in the gate). Never close on self-report.
 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
 
 The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
