@@ -17,6 +17,14 @@ idea to implementation. Pick the mode that matches the need.
 The issue tracker and triage label vocabulary should have been provided to
 you — run `tool-and-skill-discovery` if not.
 
+**Modular atomic action mode.** Every step this skill produces is a small,
+independent, verifiable atom — never a bundled phase. Tickets are sized to
+fit one fresh context window, declare their own gate (`gate:` / `expect:` /
+`evidence:`), and are worked one at a time: `in_progress` → run gate →
+`qa-ci` independent verification → `completed`, then the next. No batching,
+no "we'll verify at the end." A ticket without a defined gate is not
+ready-for-agent — define the gate first.
+
 **Cross-skills:** invoke `deep-mode` before Spec mode if the codebase is unfamiliar or large, and `context7` when the spec depends on a specific library's current API. Invoke `review-cadence` first if you don't know whether the request needs full planning or can move straight to implementation.
 
 ---
@@ -163,6 +171,7 @@ not horizontal phases.
 - Title and order slices by user-facing end-to-end behavior, not by layer. Example: "User can save a draft" not "Design the schema"
 - A completed slice is demoable or verifiable on its own
 - Each slice is sized to fit in a single fresh context window
+- Each slice declares its own gate (`gate:` command, `expect:` output/exit code, `evidence:` ledger/file) — a slice without a gate is not ready-for-agent
 - Any prefactoring should be done first
 
 </vertical-slice-rules>
@@ -235,6 +244,12 @@ Do NOT close or modify any parent issue.
 
 **Blocked by:** the numbers/titles of the tickets that gate this one, or "None — can start immediately".
 
+**Gate:** the exact command that proves this ticket done (e.g. `npm run test -- --grep "<slice>"`).
+
+**Expect:** the output or exit code that constitutes pass (e.g. `exit 0`, `N passing, 0 failing`).
+
+**Evidence:** where the raw output is recorded (ledger line or file path).
+
 **Status:** ready-for-agent
 
 - [ ] Acceptance criterion 1
@@ -255,6 +270,18 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 ## Proposed modules / interfaces affected
 
 Module/area names and the contracts this slice touches. Omit for tiny slices.
+
+## Gate
+
+The exact command that proves this ticket done (e.g. `npm run test -- --grep "<slice>"`).
+
+## Expect
+
+The output or exit code that constitutes pass (e.g. `exit 0`, `N passing, 0 failing`).
+
+## Evidence
+
+Where the raw output is recorded (ledger line or file path).
 
 ## Acceptance criteria
 

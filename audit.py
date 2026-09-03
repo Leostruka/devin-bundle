@@ -179,7 +179,7 @@ agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     (f'{skill_count} skills', skill_count > 0),
     ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
-    ('5 agents', agent_count == 5),
+    ('6 agents', agent_count == 6),
     ('17 scripts', len(script_files) == 17),
 ]
 for label, ok in checks:
@@ -429,7 +429,7 @@ else:
 # 19. agents/ profiles
 print()
 print('[19] Subagent profiles')
-expected_agents = ['architect.md', 'debugger.md', 'implementer.md', 'researcher.md', 'reviewer.md']
+expected_agents = ['architect.md', 'debugger.md', 'implementer.md', 'qa-ci.md', 'researcher.md', 'reviewer.md']
 actual_agents = sorted(os.listdir('agents'))
 print('  Found: ' + str(actual_agents))
 for a in expected_agents:

@@ -164,7 +164,7 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 
 Com o parent gratuito em `glm-5-2`, prefira o perfil customizado `researcher`: `subagent_explore` resolve para SWE-1.6 pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
 
-Os cinco perfis customizados estão em `agents/` e usam `swe-1-7`. O parent usa `glm-5-2`. Consulte [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md).
+Os seis perfis customizados estão em `agents/` e usam `swe-1-7`. O parent usa `glm-5-2`. Consulte [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md).
 
 ### 4. Ferramentas e MCP
 
@@ -397,7 +397,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 ```text
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
-├── agents/                    # 5 perfis customizados
+├── agents/                    # 6 perfis customizados
 ├── skills/                    # 76 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── .devin/                    # configuração e conhecimento deste projeto

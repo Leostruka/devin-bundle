@@ -40,10 +40,27 @@ Run at the start of a session to load the bundle's rules, run the behavioral sel
    - Mark `in_progress` when starting, `completed` when done — no batching.
    - For explicit acceptance criteria, use `unlazy` or `autonomous-gates`.
 
-4. **Execution and verification**
+4. **Execution and verification (modular atomic action mode)**
    - Never deduce. Use tools to observe reality first.
-   - For each step: state what must be true, how to verify, and the expected evidence.
-   - Before claiming done, run local checks (build/test/lint/typecheck/dry-run).
+   - Each step is atomic: one verifiable action, completed and verified before the next starts.
+   - For each step, define a **Verification Function (VF)** before executing it:
+     - `gate:` the exact command that proves the step done (build/test/lint/typecheck/dry-run).
+     - `expect:` the output or exit code that constitutes pass.
+     - `evidence:` where the raw output will be recorded (ledger line or file path).
+   - Mark `in_progress` when starting a step, `completed` only after verification passes — no batching.
+   - **Independent QA/CI verification (anti-gaming, mandatory for non-trivial steps):**
+     - After a step claims done, dispatch the `qa-ci` subagent (`swe-1-7`, no write tools) to re-run every gate independently.
+     - The QA/CI subagent sees only the diff and the spec — never the implementer's report.
+     - It re-executes each gate on a clean checkout (fresh worktree when feasible), runs `tests/held-out/` if present, and audits the diff for overfitting (hard-coded constants, mocked gates, skipped tests, phantom guardrails).
+     - A step is `completed` only when the QA/CI subagent returns `Verdict: PASS` with fresh command output + exit code as evidence.
+     - If QA/CI returns `FAIL`, the step stays `in_progress`; feed the failure back and re-execute the fix loop. Never override a QA/CI FAIL with self-report.
+   - Techniques that make verification gaming-resistant:
+     - **Held-out tests** (`tests/held-out/`): the implementer cannot see or edit them; QA/CI runs them. Passing visible tests while held-out fails = FAIL.
+     - **Independent verifier**: the QA/CI subagent has no `write`/`edit` tools, so it cannot alter the proof.
+     - **Clean-room re-execution**: gates run on a fresh checkout, never on the implementer's polluted workspace.
+     - **Evidence-based completion**: every "done" requires a fresh command + output + exit code from QA/CI, not self-report.
+     - **CI as external immutable gate**: GitHub Actions / hooks run `audit.py`, AI-signature check, and push-green check independently of the agent.
+   - Before claiming the session done, run `python audit.py` and `python -m pytest` and attach output.
    - After routing, verify the target skill is loaded and its first step is started.
 
 ## Bundle context
@@ -135,6 +152,8 @@ When the user wants unattended work but there are no local tickets yet:
 
 - Deduce state, file content, or command output without using tools.
 - Start non-trivial work without skill discovery.
+- Mark a step `completed` without an independent `qa-ci` PASS for non-trivial steps.
+- Override a `qa-ci` FAIL with self-report, "should work", or confidence.
 - Push or commit with failing local checks (Rule 5).
 - Sign commits, files, PRs, or docs as AI (Rule 2).
 - Display secret values (Rule 19).
@@ -142,6 +161,8 @@ When the user wants unattended work but there are no local tickets yet:
 - Use `subagent_explore` or paid models when the parent is free.
 - Compact when `clear` is sufficient; let context grow unchecked.
 - Start `afk-loop` without local issues in `ready-for-agent` state.
+- Edit or read `tests/held-out/` from the implementer context; only `qa-ci` may run them.
+- Reuse the implementer's shell, caches, or installed deps for QA/CI verification without re-installing from pinned manifests.
 
 ## Required from User
 
