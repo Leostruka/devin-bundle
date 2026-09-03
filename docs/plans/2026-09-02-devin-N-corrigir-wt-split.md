@@ -59,7 +59,7 @@ function Find-WorkingWt {
     foreach ($candidate in $candidates) {
         if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { continue }
 
-        $shimFile = "$candidate.shim"
+        $shimFile = [System.IO.Path]::ChangeExtension($candidate, '.shim')
         if (Test-Path -LiteralPath $shimFile) {
             $content = Get-Content -LiteralPath $shimFile -Raw
             $m = [regex]::Match(
@@ -129,7 +129,7 @@ function Find-WorkingWt {
     } catch {}
     foreach ($candidate in $candidates) {
         if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { continue }
-        $shimFile = "$candidate.shim"
+        $shimFile = [System.IO.Path]::ChangeExtension($candidate, '.shim')
         if (Test-Path -LiteralPath $shimFile) {
             $content = Get-Content -LiteralPath $shimFile -Raw
             $m = [regex]::Match($content, '^\s*path\s*=\s*"(.+?)"\s*$', [System.Text.RegularExpressions.RegexOptions]::Multiline)
