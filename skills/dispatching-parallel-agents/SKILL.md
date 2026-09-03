@@ -31,6 +31,35 @@ for a 10-line fix costs more in coordination overhead than it saves in context
 preservation. Reserve subagent dispatch for tasks where context isolation or
 parallelism genuinely helps.
 
+## Default stance — single agent beats orchestration for most coding
+
+Parallel and multi-agent dispatch is for **genuinely independent** work only.
+For the common coding task — where steps depend on each other and share state
+— a single capable agent with tests and review beats a committee of
+subagents. The plan-execution loop below (5-round fix loops, task reviewers,
+re-reviews, breakers, ledgers) is heavy machinery; reach for it only when a
+plan is already written, its tasks are mostly independent, and the cost of
+context pollution across tasks is real.
+
+Verified evidence (primary sources):
+
+- Cognition, "Don't Build Multi-Agents" (2025-06-12): every action carries
+  implicit decisions the other agents cannot see; subagents diverge even with
+  shared context. <https://cognition.com/blog/dont-build-multi-agents>
+- Anthropic multi-agent research (2025-06-13): multi-agent uses ~15x more
+  tokens than chat; "most coding tasks involve fewer truly parallelizable
+  tasks than research."
+  <https://www.anthropic.com/engineering/multi-agent-research-system>
+- MAP study (arXiv:2512.04123, ICML 2026 oral): 68% of 86 production agents
+  across 26 domains execute at most 10 steps before human intervention —
+  simple supervised loops, not orchestrated constellations.
+  <https://arxiv.org/abs/2512.04123>
+
+If the failures are related, or agents would edit the same files, or the task
+is a single cohesive build — stay inline. The plan-execution mode earns its
+cost only on a plan of mostly-independent tasks where each task's context
+would otherwise pollute the next.
+
 ## When to Use
 
 ```dot

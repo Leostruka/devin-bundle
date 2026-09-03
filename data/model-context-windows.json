@@ -1,0 +1,18 @@
+{
+  "models": [
+    {"id": "glm-5-2", "name": "GLM-5.2 High", "context_window": 200000},
+    {"id": "glm-5-2-none", "name": "GLM-5.2 No Thinking", "context_window": 200000},
+    {"id": "glm-5-2-max", "name": "GLM-5.2 Max", "context_window": 200000},
+    {"id": "glm-5-2-max-1m", "name": "GLM-5.2 Max 1M", "context_window": 1000000},
+    {"id": "glm-5-2-none-1m", "name": "GLM-5.2 No Thinking 1M", "context_window": 1000000},
+    {"id": "swe-1-7", "name": "SWE-1.7 Max", "context_window": 262000},
+    {"id": "swe-1-7-medium", "name": "SWE-1.7 Medium", "context_window": 262000},
+    {"id": "swe-1-7-lightning", "name": "SWE-1.7 Lightning", "context_window": 202000},
+    {"id": "swe-1-6", "name": "SWE-1.6", "context_window": 200000}
+  ],
+  "thresholds": {
+    "warn_pct": 60,
+    "critical_pct": 75,
+    "clear_recommended_pct": 80
+  }
+}

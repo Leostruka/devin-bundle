@@ -43,6 +43,38 @@ A versão validada do Devin CLI é `3000.6.14`. Consulte [docs/DEVIN-CLI-COMPATI
 
 O repositório é a **fonte versionada e distribuível**. A instalação copia ou mescla seus recursos na **configuração viva** do Devin CLI. Durante uma sessão, cada camada tem uma responsabilidade diferente:
 
+### Postura padrão: engenharia de software, não taxonomia
+
+O bundle oferece orquestração multi-agente, loops de refinamento, folding de
+contexto e spec-driven development — mas esses são **ferramentas para nichos
+específicos**, não o caminho padrão. O caminho padrão é um agente capaz com
+testes, revisão e memória de projeto. A orquestração pesada só se paga em
+trabalho genuinamente paralelo e independente; a spec pesada só se paga em
+times grandes e assíncronos; o folding só se paga quando o contexto realmente
+excede a janela.
+
+Esta postura é alinhada com a tese de Fabio Akita ("Hot take: Harness, Loop
+Engineering, Graph Engineering são Bullshit", 2026-08-18,
+<https://akitaonrails.github.io/2026/08/18/hot-take-harness-loop-engineering-graph-engineering-sao-bullshit/>)
+e verificada contra fontes primárias:
+
+| Alegação | Fonte primária | Status |
+|---|---|---|
+| Cadeia de 10 agentes a 90% cada acerta ~35% (0.9^10) | Matemática | 0.3487 |
+| "Actions carry implicit decisions"; não construir multi-agentes | Cognition, 2025-06-12 | Verificado |
+| Multi-agentente usa ~15x mais tokens; 80% da variância vem de tokens; coding é domínio ruim | Anthropic, 2025-06-13 | Verificado |
+| 68% de 86 agentes em produção executam ≤10 passos antes de intervenção humana | arXiv:2512.04123 (ICML 2026 oral) | Verificado |
+| SDD no anel "Assess"; "relearning a bitter lesson — handcrafting detailed rules for AI doesn't scale" | Thoughtworks Radar, Nov 2025 | Verificado |
+| 40% dos projetos de AI agêntica cancelados até 2027; "agent washing"; ~130 de milhares de vendors reais | Gartner, 2025-06-25 | Verificado |
+
+Os números de benchmark próprios do Akita (MiniMax M3 24→91, Fable 5 96 pts,
+Grok 4.6 5x mais barato) são autorrelatados e não independentemente
+verificáveis — registrados como tal.
+
+As skills de orquestração (`primeagent-reference`, `dispatching-parallel-agents`),
+folding (`context-folding`) e spec (`planning-pipeline`) trazem caveats
+explícitos dessa postura em seus respectivos `SKILL.md`.
+
 ```mermaid
 flowchart TD
     U[Pedido do usuário] --> R[AGENTS.md<br/>regras sempre ativas]

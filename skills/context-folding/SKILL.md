@@ -18,6 +18,12 @@ description: Use when context is growing large (approaching model window limits)
 - Task is simple retrieval (one needle, one haystack) — grep is cheaper
 - Context is already compacted and the original is gone
 
+**Default stance:** folding is a technique for contexts that genuinely exceed
+the usable window. With GLM-5.2 (200K) and SWE-1.7 (262K) the bar is high —
+most session contexts fit and should be used directly. Don't fold
+preemptively; the sub-query fan-out adds latency and coordination cost that
+only pays off when dense access to a very large artifact is actually needed.
+
 ## Source
 
 Adapted from Recursive Language Models (Zhang, Kraska, Khattab — MIT CSAIL,

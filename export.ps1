@@ -10,6 +10,7 @@
     - skills/ (auto-discovers ALL skill directories, not just manifest-listed)
     - config.json (model, theme, attribution, hooks — org_id MASKED by default)
     - scripts/ (hook Python scripts: check-ai-signature, check-push-green, post-compaction-reminder)
+    - data/ (model context windows and thresholds)
     - mcp_config.json (MCP server config — tokens MASKED by default)
     - credentials.toml (API keys — ALL values MASKED by default, use -NoMask for real)
 
@@ -61,6 +62,7 @@ $agentsDst     = Join-Path $bundleRoot "agents"
 $skillsDst     = Join-Path $bundleRoot "skills"
 $configDst     = Join-Path $bundleRoot "config.json"
 $scriptsDst    = Join-Path $bundleRoot "scripts"
+$dataDst       = Join-Path $bundleRoot "data"
 $mcpDst        = Join-Path $bundleRoot "mcp_config.json"
 $credsDst      = Join-Path $bundleRoot "credentials.toml"
 $docsDst       = Join-Path $bundleRoot "docs"
@@ -71,6 +73,7 @@ $agentsSrc     = Join-Path $devinHome "agents"
 $skillsSrc     = Join-Path $devinHome "skills"
 $configSrc     = Join-Path $devinHome "config.json"
 $scriptsSrc    = Join-Path $devinHome "scripts"
+$dataSrc       = Join-Path $devinHome "data"
 $mcpSrc        = Join-Path $devinHome "mcp_config.json"
 $credsSrc      = Join-Path $devinHome "credentials.toml"
 $docsSrc       = Join-Path $devinHome "docs"
@@ -371,6 +374,13 @@ if ($scriptCount -eq 0 -and -not (Test-Path $scriptsSrc)) {
   Write-Warn "scripts/ not found at $scriptsSrc"
 }
 
+# --- 5a. data/ (model context windows and thresholds) ---
+Write-Step "Export data/ (model context windows)"
+$dataCount = Copy-DirRecursive -src $dataSrc -dst $dataDst -label "data/"
+if ($dataCount -eq 0 -and -not (Test-Path $dataSrc)) {
+  Write-Warn "data/ not found at $dataSrc"
+}
+
 # --- 6. mcp_config.json ---
 Write-Step "Export mcp_config.json (MCP servers)"
 if (Test-Path $mcpSrc) {
@@ -498,7 +508,7 @@ if ($Commit -or $Push) {
 export: refresh devin bundle ($date)
 
 Skills: $skillCount total
-Config: AGENTS.md, agents/, config.json, scripts/, mcp_config.json, credentials.toml, docs/
+Config: AGENTS.md, agents/, config.json, scripts/, data/, mcp_config.json, credentials.toml, docs/
 Masked: $(-not $NoMask)
 "@
         git commit -m $commitMsg 2>&1 | Out-Null

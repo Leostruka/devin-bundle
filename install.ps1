@@ -61,6 +61,7 @@ $agentsSrc  = Join-Path $bundleRoot "agents"
 $skillsSrc  = Join-Path $bundleRoot "skills"
 $configSrc  = Join-Path $bundleRoot "config.json"
 $scriptsSrc = Join-Path $bundleRoot "scripts"
+$dataSrc    = Join-Path $bundleRoot "data"
 $mcpSrc     = Join-Path $bundleRoot "mcp_config.json"
 $credsSrc   = Join-Path $bundleRoot "credentials.toml"
 $docsSrc    = Join-Path $bundleRoot "docs"
@@ -71,6 +72,7 @@ $agentsDst  = Join-Path $devinHome "agents"
 $skillsDst  = Join-Path $devinHome "skills"
 $configDst  = Join-Path $devinHome "config.json"
 $scriptsDst = Join-Path $devinHome "scripts"
+$dataDst    = Join-Path $devinHome "data"
 $mcpDst     = Join-Path $devinHome "mcp_config.json"
 $credsDst   = Join-Path $devinHome "credentials.toml"
 $docsDst    = Join-Path $devinHome "docs"
@@ -497,6 +499,17 @@ if (Test-Path $scriptsSrc) {
   }
 } else {
   Write-Skip "scripts/ not in bundle"
+}
+
+# --- 5a. data/ (model context windows, thresholds) ---
+Write-Step "Install data/ (model context windows)"
+if (Test-Path $dataSrc) {
+  $dataFiles = Get-ChildItem $dataSrc -File
+  foreach ($df in $dataFiles) {
+    Install-File -src $df.FullName -dst (Join-Path $dataDst $df.Name) -label "data/$($df.Name)"
+  }
+} else {
+  Write-Skip "data/ not in bundle"
 }
 
 # --- 6. mcp_config.json ---
