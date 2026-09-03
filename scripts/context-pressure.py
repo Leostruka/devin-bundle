@@ -48,8 +48,28 @@ def devin_home():
     return os.path.join(os.path.expanduser("~"), ".config", "devin")
 
 
+def get_parent_model():
+    """Read the active parent model from the Devin CLI config, if available.
+
+    The bundle pins `agent.model` to `glm-5-2` by default, but the user may
+    have switched to a different model. Use this as the fallback window when
+    the hook payload does not provide a model and no data file is present.
+    """
+    cfg_path = os.path.join(devin_home(), "config.json")
+    try:
+        with open(cfg_path, encoding="utf-8", errors="replace") as f:
+            cfg = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return ""
+    agent = cfg.get("agent", {})
+    if isinstance(agent, dict):
+        return agent.get("model", "")
+    return ""
+
+
 CHARS_PER_TOKEN = 4
-DEFAULT_WINDOW = 128_000  # GLM-5.2 default; override with --model or data file
+DEFAULT_WINDOW = 200_000  # GLM-5.2 High default; override with --model or data file
+SELECTED_MODEL = None  # set by --model in report mode
 
 # Thresholds from data/model-context-windows.json
 WARN_PCT = 60
@@ -99,13 +119,23 @@ def load_model_data():
 
 
 def get_model_window(model_id=None):
-    """Get context window size for a model."""
+    """Get context window size for a model.
+
+    If no model is provided, infer the active parent model from the Devin CLI
+    config so the estimate matches the real primary model (GLM-5.2 200K by
+    default, or the user-selected model).
+    """
     data = load_model_data()
-    if not data or not model_id:
+    if not model_id:
+        model_id = get_parent_model()
+    if not model_id:
         return DEFAULT_WINDOW
-    for m in data.get("models", []):
-        if model_id.lower() in m.get("id", "").lower() or model_id.lower() in m.get("name", "").lower():
-            return m.get("context_window", DEFAULT_WINDOW)
+    if data:
+        for m in data.get("models", []):
+            mid = m.get("id", "").lower()
+            name = m.get("name", "").lower()
+            if model_id.lower() in mid or model_id.lower() in name:
+                return m.get("context_window", DEFAULT_WINDOW)
     return DEFAULT_WINDOW
 
 
@@ -213,7 +243,7 @@ def process_hook(payload_str):
     conv_overhead = marker["calls"] * 200
     total_est = rules_tokens + mcp_tokens + marker["tool_output_tokens"] + conv_overhead
 
-    # Get model window
+    # Get model window (hook payload may provide model; otherwise infer from config)
     model_id = payload.get("model", "")
     window = get_model_window(model_id)
     warn_pct, critical_pct, clear_pct = get_thresholds()
@@ -244,7 +274,7 @@ def report():
     mcp_tokens = estimate_mcp_overhead()
     conv_overhead = marker.get("calls", 0) * 200
     total_est = rules_tokens + mcp_tokens + marker.get("tool_output_tokens", 0) + conv_overhead
-    window = get_model_window()
+    window = get_model_window(SELECTED_MODEL)
     warn_pct, critical_pct, clear_pct = get_thresholds()
     pct = 100.0 * total_est / window if window > 0 else 0
 
@@ -278,7 +308,7 @@ def reset():
 
 
 def main():
-    global DEFAULT_WINDOW
+    global DEFAULT_WINDOW, SELECTED_MODEL
     ap = argparse.ArgumentParser(description="Context pressure estimator")
     ap.add_argument("--reset", action="store_true", help="clear session marker")
     ap.add_argument("--report", action="store_true", help="show current estimate")
@@ -286,6 +316,7 @@ def main():
     args = ap.parse_args()
 
     if args.model:
+        SELECTED_MODEL = args.model
         DEFAULT_WINDOW = get_model_window(args.model)
 
     if args.reset:

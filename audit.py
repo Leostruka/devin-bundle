@@ -654,6 +654,42 @@ for hooks_file in ('hooks.v1.json', 'config.json'):
     if not missing and not extra:
         print('  OK  ' + hooks_file + ' has all ' + str(len(bundle_events)) + ' Devin CLI events')
 
+# 31. Model context-window data file exists and matches bundle model policy
+print()
+print('[31] Model context windows data file')
+model_data_path = 'data/model-context-windows.json'
+required_models = {
+    'glm-5-2': 200000,
+    'swe-1-7': 262000,
+    'swe-1-7-medium': 262000,
+}
+if os.path.isfile(model_data_path):
+    try:
+        with open(model_data_path, encoding='utf-8-sig') as fh:
+            model_data = json.load(fh)
+        found_models = {m.get('id', ''): m.get('context_window', 0) for m in model_data.get('models', [])}
+        missing = []
+        wrong_window = []
+        for mid, expected in required_models.items():
+            if mid not in found_models:
+                missing.append(mid)
+            elif found_models[mid] != expected:
+                wrong_window.append(f"{mid} expected {expected} got {found_models[mid]}")
+        if missing:
+            errors.append('data/model-context-windows.json missing models: ' + ', '.join(missing))
+            print('  FAIL missing models: ' + ', '.join(missing))
+        if wrong_window:
+            errors.append('data/model-context-windows.json wrong context_window: ' + '; '.join(wrong_window))
+            print('  FAIL wrong context_window: ' + '; '.join(wrong_window))
+        if not missing and not wrong_window:
+            print('  OK  data/model-context-windows.json has required GLM-5.2 (200K) and SWE-1.7 (262K) entries')
+    except (OSError, json.JSONDecodeError) as e:
+        errors.append('data/model-context-windows.json is invalid: ' + str(e))
+        print('  FAIL invalid data/model-context-windows.json: ' + str(e))
+else:
+    errors.append('data/model-context-windows.json not found')
+    print('  FAIL data/model-context-windows.json not found')
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -670,5 +706,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 31 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 32 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

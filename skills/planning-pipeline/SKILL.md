@@ -27,6 +27,18 @@ Takes the current conversation context and codebase understanding and
 produces a PRD (Product Requirements Document) — a destination document, not a
 throwaway. Do NOT interview the user — just synthesize what you already know.
 
+**Spec is a starting point, not a source of truth.** A spec begins to rot on
+the first hotfix: a bug is fixed directly in code and the spec becomes a lie.
+This is the same law that killed UML/MDA — the model was never the reality,
+the code was. Treat the PRD as a destination document that captures intent at
+decision time, then let `project-memory` and the emerging code record what
+actually got built. Thoughtworks Technology Radar (Nov 2025) places
+spec-driven development in the "Assess" ring and warns "we may be relearning a
+bitter lesson — that handcrafting detailed rules for AI ultimately doesn't
+scale" (<https://www.thoughtworks.com/radar/techniques/spec-driven-development>).
+Write the spec, use it to align and to cut tickets, then trust tests and
+memory over the document as the work proceeds.
+
 ### Process
 
 1. Explore the repo to understand the current state of the codebase, if you
