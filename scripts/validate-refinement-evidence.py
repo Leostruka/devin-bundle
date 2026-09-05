@@ -138,10 +138,67 @@ def validate_entry(entry):
     return ("phantom" if phantom else "suspect"), issues
 
 
+# --- Temporal regression gate ---
+
+def _mean(values):
+    return sum(values) / len(values) if values else 0.0
+
+
+def evaluate_batch_against_retained(current_batch, retained_batches, min_trials=3, degradation_margin=0.0):
+    """Evaluate whether a refinement is non-regressing across retained batches.
+
+    current_batch: list of numeric scores (higher is better).
+    retained_batches: dict mapping batch name to list of numeric scores.
+    min_trials: minimum number of repeated trials required for a batch.
+    degradation_margin: tolerance for considering a retained batch degraded.
+
+    Returns a dict with keys: verdict, reason, current_mean, retained_means.
+    Verdict is one of: accepted, rejected, inconclusive.
+    """
+    if len(current_batch) < min_trials:
+        return {
+            "verdict": "inconclusive",
+            "reason": f"current batch underpowered ({len(current_batch)} < {min_trials} trials)",
+            "current_mean": _mean(current_batch),
+            "retained_means": {name: _mean(scores) for name, scores in retained_batches.items()},
+        }
+
+    current_mean = _mean(current_batch)
+    retained_means = {}
+    for name, scores in retained_batches.items():
+        if len(scores) < min_trials:
+            return {
+                "verdict": "inconclusive",
+                "reason": f"retained batch '{name}' underpowered ({len(scores)} < {min_trials} trials)",
+                "current_mean": current_mean,
+                "retained_means": retained_means,
+            }
+        retained_means[name] = _mean(scores)
+
+    # Reject if any retained batch is degraded beyond the margin.
+    for name, mean in retained_means.items():
+        if mean > current_mean + degradation_margin:
+            return {
+                "verdict": "rejected",
+                "reason": f"retained batch '{name}' degraded (mean {mean:.3f} vs current {current_mean:.3f})",
+                "current_mean": current_mean,
+                "retained_means": retained_means,
+            }
+
+    return {
+        "verdict": "accepted",
+        "reason": "current batch improved without degrading retained batches",
+        "current_mean": current_mean,
+        "retained_means": retained_means,
+    }
+
+
 def main():
     log_path = find_log_path()
     if not log_path:
         print("No refinements.log.jsonl found. Nothing to validate.", file=sys.stderr)
+        print("\nRefinement Evidence Validation Summary:", file=sys.stderr)
+        print("  Total: 0  Valid: 0  Phantom suspects: 0  Other suspects: 0", file=sys.stderr)
         sys.exit(0)
 
     total = 0

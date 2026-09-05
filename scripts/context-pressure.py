@@ -329,5 +329,91 @@ def main():
     sys.exit(process_hook(payload))
 
 
+# --- Prompt bloat / refinement cost-benefit gate ---
+
+def measure_permanent_context(root=None):
+    """Estimate always-loaded tokens from rules, skills, profiles, and hooks.
+
+    Always-loaded context is the text that is present in every session:
+    AGENTS.md (rules), agent profiles, skill SKILL.md files, and hook configs.
+    On-demand context (individual tool outputs, user prompt, retrieved memory)
+    is not counted here.
+    """
+    root = root or find_bundle_root() or os.getcwd()
+    total_chars = 0
+    paths = []
+    # Global rules
+    agents_md = os.path.join(root, "AGENTS.md")
+    if os.path.isfile(agents_md):
+        paths.append(agents_md)
+    # Agent profiles
+    agents_dir = os.path.join(root, "agents")
+    if os.path.isdir(agents_dir):
+        paths.extend(os.path.join(agents_dir, f) for f in os.listdir(agents_dir) if f.endswith(".md"))
+    # Skills
+    skills_dir = os.path.join(root, "skills")
+    if os.path.isdir(skills_dir):
+        for skill in os.listdir(skills_dir):
+            skill_md = os.path.join(skills_dir, skill, "SKILL.md")
+            if os.path.isfile(skill_md):
+                paths.append(skill_md)
+    # Hook configs
+    for cfg in ("hooks.v1.json", "config.json"):
+        p = os.path.join(root, cfg)
+        if os.path.isfile(p):
+            paths.append(p)
+    for p in paths:
+        try:
+            with open(p, encoding="utf-8", errors="replace") as f:
+                total_chars += len(f.read())
+        except OSError:
+            pass
+    return total_chars // CHARS_PER_TOKEN
+
+
+def evaluate_refinement_cost_benefit(before_tokens, after_tokens, benefit_score,
+                                    max_cost_benefit_ratio=1.0, min_benefit=0.05):
+    """Decide whether a refinement's permanent context growth is justified.
+
+    benefit_score is a normalized improvement (e.g. 0.1 = 10% better).
+    Cost is the token increase. A refinement is rejected when the ratio of
+    cost growth to context-window size exceeds the benefit by
+    max_cost_benefit_ratio, or when the benefit is below min_benefit.
+
+    Returns a dict with verdict and reason.
+    """
+    delta = after_tokens - before_tokens
+    if delta <= 0:
+        return {
+            "verdict": "accepted",
+            "reason": "no permanent context growth",
+            "delta_tokens": delta,
+            "benefit_score": benefit_score,
+        }
+    if benefit_score < min_benefit:
+        return {
+            "verdict": "rejected",
+            "reason": f"benefit {benefit_score:.3f} below minimum {min_benefit}",
+            "delta_tokens": delta,
+            "benefit_score": benefit_score,
+        }
+    # Normalize cost by a reference window so the ratio is interpretable.
+    reference_window = DEFAULT_WINDOW
+    normalized_cost = delta / reference_window
+    if normalized_cost > benefit_score * max_cost_benefit_ratio:
+        return {
+            "verdict": "rejected",
+            "reason": f"context cost {normalized_cost:.4f} exceeds benefit {benefit_score:.4f} * {max_cost_benefit_ratio}",
+            "delta_tokens": delta,
+            "benefit_score": benefit_score,
+        }
+    return {
+        "verdict": "accepted",
+        "reason": "context growth justified by measured benefit",
+        "delta_tokens": delta,
+        "benefit_score": benefit_score,
+    }
+
+
 if __name__ == "__main__":
     main()
