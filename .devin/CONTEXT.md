@@ -87,10 +87,12 @@ The bundle does not own:
 | `.github/workflows/ci.yml` | CI validation source. |
 | `docs/plans/` | Approved implementation roadmaps and sub-plans. |
 
-## Vocabulary constraints
+## Branch policy
 
-- Use **bundle** for repository-distributed resources.
-- Use **live configuration** for the installed user-level Devin CLI state.
-- Use **export** for live-to-repository synchronization.
-- Use **install** for repository-to-live synchronization.
-- Do not use **manifest** as a synonym for the complete on-disk skill set; it is metadata that must remain synchronized with disk.
+The repository uses two tracks: **direct** and **experimental**.
+
+- **Direct track:** short-lived branches target `main`. Use this for verified maintenance fixes and approved production work. Open a PR to `main`; do not push or merge without explicit human authorization.
+- **Experimental track:** short-lived branches target `experimental`. Use this for unvalidated agent-harness ideas, prototypes, and speculative improvements. `experimental` must always contain everything from `main`.
+- **Synchronization:** before starting experimental work and after every relevant `main` update, synchronize `main` into `experimental` (`git merge-base --is-ancestor main experimental` must exit 0).
+- **Promotion:** experimental behavior reaches `main` only through a separate promotion issue backed by reproducible evidence, held-out tests, no regression, and acceptable context cost. Promotions create their own short-lived branches from current `main`.
+- **No direct commits or pushes to `main` or `master`:** all changes land through PRs with explicit authorization.
