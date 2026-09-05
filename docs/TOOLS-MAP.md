@@ -65,7 +65,7 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (8 eventos, 17 scripts)
+## Hooks (8 eventos, 18 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
@@ -108,7 +108,7 @@ subagent_general — todos os 7 perfis validados.
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 76 skills |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 17 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 18 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia GLM-5.2 + SWE-1.7 |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |
