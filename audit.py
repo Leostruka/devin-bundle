@@ -1,4 +1,5 @@
-import os, re, json, hashlib, sys, py_compile
+import os, re, json, hashlib, sys, py_compile, shutil
+import scripts.model_catalog
 
 errors = []
 warnings = []
@@ -163,7 +164,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'model_catalog.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in config.json hooks')
@@ -180,7 +181,7 @@ checks = [
     (f'{skill_count} skills', skill_count > 0),
     ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
     ('6 agents', agent_count == 6),
-    ('17 scripts', len(script_files) == 17),
+    ('18 scripts', len(script_files) == 18),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
@@ -695,6 +696,33 @@ else:
     errors.append('data/model-context-windows.json not found')
     print('  FAIL data/model-context-windows.json not found')
 
+# 32. Model catalog drift against `devin models list`
+print()
+print('[32] Model catalog drift against devin models list')
+if not shutil.which('devin'):
+    warnings.append('devin CLI not found; skipping model catalog drift check')
+    print('  WARN devin CLI not found; skipping drift check')
+else:
+    try:
+        drift_errors, drift_warnings = scripts.model_catalog.run_drift_check(strict=False)
+        if drift_errors:
+            errors.extend(drift_errors)
+            for e in drift_errors:
+                print('  FAIL ' + e)
+        elif drift_warnings:
+            summary = f"{len(drift_warnings)} model catalog drift entries; first: {drift_warnings[0]}"
+            warnings.append(summary)
+            print(f'  WARN {len(drift_warnings)} model catalog drift(s) detected')
+            for w in drift_warnings[:5]:
+                print('    - ' + w)
+            if len(drift_warnings) > 5:
+                print(f'    ... and {len(drift_warnings) - 5} more')
+        else:
+            print('  OK  model catalog synchronized with devin models list')
+    except Exception as e:
+        warnings.append('model catalog drift check failed: ' + str(e))
+        print('  WARN model catalog drift check failed: ' + str(e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -711,5 +739,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 32 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 33 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

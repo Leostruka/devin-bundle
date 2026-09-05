@@ -1,0 +1,8 @@
+Available models (46 families)
+
+GLM-5.2 (glm-5.2)
+  glm-5-2                                GLM-5.2 High  [200K context, $0.5 / 1M Input · $0.2 / 1M Cached input · $2.5 / 1M Output]
+  glm-5-2-max                            GLM-5.2 Max  [1M context, $0.5 / 1M Input · $0.2 / 1M Cached input · $2.5 / 1M Output]
+
+SWE-1.7 (swe-1.7)
+  swe-1-7                                SWE-1.7 Max  [262K context, $0.5 / 1M Input · $0.2 / 1M Cached input · $2.5 / 1M Output]

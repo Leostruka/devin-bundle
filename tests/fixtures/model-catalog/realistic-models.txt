@@ -1,0 +1,13 @@
+Available models (46 families)
+
+GPT-5.2 (gpt-5.2)
+  MODEL_GPT_5_2_LOW                      GPT-5.2 Low Thinking  [384K context, $1.75 / 1M Input · $0.17 / 1M Cached input · $14 / 1M Output]
+  MODEL_GPT_5_2_MEDIUM                   GPT-5.2 Medium Thinking  [384K context, $1.75 / 1M Input · $0.17 / 1M Cached input · $14 / 1M Output]
+
+Claude Opus 5 (claude-opus-5)
+  aliases: opus
+  claude-opus-5-medium                   Claude Opus 5 Medium  [1M context, $5 / 1M Input · $0.5 / 1M Cached input · $25 / 1M Output]
+
+SWE-1.7 (swe-1.7)
+  swe-1-7                                SWE-1.7 Max  [262K context, $0.5 / 1M Input · $0.2 / 1M Cached input · $2.5 / 1M Output]
+  swe-1-7-medium                         SWE-1.7 Medium  [262K context, $0.5 / 1M Input · $0.2 / 1M Cached input · $2.5 / 1M Output]
