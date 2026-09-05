@@ -30,7 +30,7 @@ Manual:
 
 Token estimate: chars/4 heuristic. This is an estimate, not exact.
 """
-import sys, os, json, argparse, glob
+import sys, os, re, json, argparse, glob
 
 
 def devin_home():
@@ -412,6 +412,126 @@ def evaluate_refinement_cost_benefit(before_tokens, after_tokens, benefit_score,
         "reason": "context growth justified by measured benefit",
         "delta_tokens": delta,
         "benefit_score": benefit_score,
+    }
+
+
+# --- Task-adaptive harness recipes ---
+
+RECIPES = {
+    "audit": {
+        "name": "audit",
+        "instruction_signals": {"audit", "lint", "validate", "check"},
+        "preferred_model": "glm-5-2",
+        "tools": ["read", "grep", "exec", "find_file_by_name"],
+        "sidekick_profile": "qa-ci",
+        "main_responsible_for": ["plan", "final_review"],
+    },
+    "refine": {
+        "name": "refine",
+        "instruction_signals": {"refine", "improve", "rewrite", "polish"},
+        "preferred_model": "claude-sonnet-4-6",
+        "tools": ["read", "edit", "write"],
+        "sidekick_profile": "reviewer",
+        "main_responsible_for": ["ambiguity_resolution", "final_review"],
+    },
+    "implement": {
+        "name": "implement",
+        "instruction_signals": {"implement", "add", "feature", "fix"},
+        "preferred_model": "swe-1-7",
+        "tools": ["read", "edit", "write", "exec"],
+        "sidekick_profile": "implementer",
+        "main_responsible_for": ["plan", "ambiguity_resolution", "final_review"],
+    },
+    "research": {
+        "name": "research",
+        "instruction_signals": {"research", "find", "compare", "source"},
+        "preferred_model": "gemini-3-7-flash",
+        "tools": ["web_search", "webfetch", "mcp_call_tool", "read"],
+        "sidekick_profile": "researcher",
+        "main_responsible_for": ["final_review"],
+    },
+    "explore": {
+        "name": "explore",
+        "instruction_signals": {"explore", "understand", "map"},
+        "preferred_model": "glm-5-2",
+        "tools": ["glob", "find_file_by_name", "read", "grep"],
+        "sidekick_profile": "subagent_explore",
+        "main_responsible_for": ["plan", "final_review"],
+    },
+}
+
+
+def score_recipe(recipe, instruction, tools, model, confidence_threshold=0.25):
+    """Score how well a recipe matches task evidence."""
+    instruction = (instruction or "").lower()
+    tokens = set(re.findall(r"\w+", instruction))
+    overlap = len(tokens & recipe["instruction_signals"])
+    instruction_score = min(1.0, overlap / max(1, len(recipe["instruction_signals"])))
+
+    tool_score = 0.0
+    if tools:
+        available = set(t.lower() for t in tools)
+        needed = set(t.lower() for t in recipe["tools"])
+        tool_score = len(available & needed) / max(1, len(needed))
+
+    model_score = 1.0 if not model or model.lower() in recipe["preferred_model"].lower() else 0.0
+
+    score = 0.5 * instruction_score + 0.3 * tool_score + 0.2 * model_score
+    return {
+        "recipe": recipe["name"],
+        "score": score,
+        "instruction_score": instruction_score,
+        "tool_score": tool_score,
+        "model_score": model_score,
+    }
+
+
+def select_recipe(instruction, tools=None, model=None, recipes=None, confidence_threshold=0.25):
+    """Select the best recipe or fall back to the default when uncertain.
+
+    Routing changes are allowed at cache-miss (no confident recipe) or
+    compaction boundaries. We do not assume recipes transfer between runtime
+    models; the model score is permissive, not mandatory.
+    """
+    recipes = recipes or RECIPES
+    scored = [score_recipe(r, instruction, tools, model) for r in recipes.values()]
+    scored.sort(key=lambda x: x["score"], reverse=True)
+
+    best = scored[0] if scored else None
+    if best and best["score"] >= confidence_threshold:
+        return {
+            "verdict": "routed",
+            "recipe": best["recipe"],
+            "confidence": best["score"],
+            "ranking": scored,
+        }
+    return {
+        "verdict": "fallback",
+        "recipe": "default",
+        "confidence": best["score"] if best else 0.0,
+        "reason": "no recipe met the confidence threshold",
+        "ranking": scored,
+    }
+
+
+def evaluate_recipe_against_baseline(recipe_name, task_score, baseline_score, context_budget_tokens, estimated_tokens):
+    """Return whether a selected recipe is worth using over the static baseline."""
+    if estimated_tokens > context_budget_tokens:
+        return {
+            "verdict": "rejected",
+            "reason": "estimated context exceeds budget",
+            "delta_tokens": estimated_tokens - context_budget_tokens,
+        }
+    if task_score < baseline_score:
+        return {
+            "verdict": "rejected",
+            "reason": "recipe underperforms static baseline",
+            "delta_score": task_score - baseline_score,
+        }
+    return {
+        "verdict": "accepted",
+        "reason": "recipe matches or beats baseline within budget",
+        "delta_score": task_score - baseline_score,
     }
 
 
