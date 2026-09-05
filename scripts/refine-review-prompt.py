@@ -20,7 +20,15 @@ Evidence: instruction compliance decays 5.6% per generation step
 (arXiv:2605.10039). Lessons extracted before session end persist; lessons lost
 on exit are gone.
 """
-import sys, json, os
+import sys, json, os, re
+
+
+STOPWORDS = frozenset({
+    "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+    "to", "of", "in", "on", "at", "by", "for", "with", "from", "and", "or",
+    "but", "not", "no", "yes", "do", "did", "does", "it", "this", "that",
+    "if", "else", "return", "def", "pass", "import", "from",
+})
 
 
 def devin_home():
@@ -106,6 +114,106 @@ def main():
         "reason": REMINDER.format(detail=detail or "3+ todos completed"),
     }))
     sys.exit(2)
+
+
+# --- Bidirectional patch verification ---
+
+
+def reconstruct_problem_from_patch(patch_text):
+    """Blind backward reconstruction: infer the problem from a diff alone.
+
+    Does not see the original issue. Returns a dict with affected paths,
+    detected intent, and a reconstructed problem phrase.
+    """
+    if not patch_text:
+        return {
+            "affected_paths": [],
+            "intent_terms": [],
+            "reconstructed_problem": "no patch provided",
+        }
+    paths = set()
+    terms = set()
+    for line in patch_text.splitlines():
+        if line.startswith("--- ") or line.startswith("+++ "):
+            parts = line.split(None, 2)
+            if len(parts) >= 2:
+                path = parts[1]
+                if path != "/dev/null":
+                    paths.add(path)
+                    # Extract filename stem as an intent term.
+                    filename = os.path.basename(path)
+                    stem = os.path.splitext(filename)[0]
+                    if stem and stem not in ("a", "b"):
+                        terms.add(stem)
+        if line.startswith("+") and not line.startswith("+++"):
+            # Look for keyword hints and meaningful words in added lines.
+            lowered = line.lower()
+            for keyword in ("fix", "bug", "error", "handle", "validate", "guard", "reject", "accept"):
+                if keyword in lowered:
+                    terms.add(keyword)
+            for token in re.findall(r"\b[a-z]{3,}\b", lowered):
+                if token in STOPWORDS:
+                    continue
+                terms.add(token)
+    return {
+        "affected_paths": sorted(paths),
+        "intent_terms": sorted(terms),
+        "reconstructed_problem": " ".join(sorted(terms)),
+    }
+
+
+def compare_problems(requested, reconstructed):
+    """Return overlap metrics between requested and reconstructed problem strings."""
+    requested_tokens = set(re.findall(r"\b\w+\b", requested.lower()))
+    reconstructed_tokens = set(re.findall(r"\b\w+\b", reconstructed.lower()))
+    if not requested_tokens:
+        return {"overlap": 0.0, "missing": [], "extra": sorted(reconstructed_tokens)}
+    intersection = requested_tokens & reconstructed_tokens
+    overlap = len(intersection) / len(requested_tokens)
+    missing = sorted(requested_tokens - reconstructed_tokens)
+    extra = sorted(reconstructed_tokens - requested_tokens)
+    return {"overlap": overlap, "missing": missing, "extra": extra}
+
+
+def verify_patch_alignment(requested_problem, patch_text, symptom_only_terms=None, min_overlap=0.3):
+    """Reconcile the requested problem with the patch's blind reconstruction.
+
+    Verdict:
+      aligned  — reconstruction covers enough of the requested problem.
+      symptom_only — patch only touches surface terms, missing root cause.
+      unrelated — reconstruction does not match the requested problem.
+    """
+    symptom_only_terms = set(t.lower() for t in (symptom_only_terms or []))
+    recon = reconstruct_problem_from_patch(patch_text)
+    metrics = compare_problems(requested_problem, recon["reconstructed_problem"])
+    overlap = metrics["overlap"]
+    missing_root = any(t in symptom_only_terms for t in metrics["missing"])
+
+    if overlap < 0.05:
+        return {
+            "verdict": "unrelated",
+            "reason": "patch reconstruction does not match the requested problem",
+            "overlap": overlap,
+            "reconstruction": recon,
+            "metrics": metrics,
+            "revision_guidance": "revise patch to address: " + ", ".join(metrics["missing"][:10]),
+        }
+    if overlap < min_overlap or missing_root:
+        return {
+            "verdict": "symptom_only",
+            "reason": "patch addresses visible terms but misses root-cause concepts",
+            "overlap": overlap,
+            "reconstruction": recon,
+            "metrics": metrics,
+            "revision_guidance": "include root-cause work for: " + ", ".join(metrics["missing"][:10]),
+        }
+    return {
+        "verdict": "aligned",
+        "reason": "patch reconstruction matches the requested problem",
+        "overlap": overlap,
+        "reconstruction": recon,
+        "metrics": metrics,
+    }
 
 
 if __name__ == "__main__":
