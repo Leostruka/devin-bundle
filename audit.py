@@ -163,7 +163,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'afk_containment.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in config.json hooks')
@@ -180,7 +180,7 @@ checks = [
     (f'{skill_count} skills', skill_count > 0),
     ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
     ('6 agents', agent_count == 6),
-    ('17 scripts', len(script_files) == 17),
+    ('18 scripts', len(script_files) == 18),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'

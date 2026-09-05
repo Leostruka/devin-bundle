@@ -671,11 +671,15 @@
       "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword"
     },
     {
+      "name": "afk_containment.py",
+      "purpose": "Validator — AFK containment preflight before unattended execution"
+    },
+    {
       "name": "mermaid-parse-check.js",
       "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"
     }
   ],
-  "script_count": 17,
+  "script_count": 18,
   "mcp_count": 1,
   "agent_count": 5,
   "tool_count": 28,

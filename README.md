@@ -187,7 +187,7 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 15 scripts usados por hooks, 2 validadores manuais e 1 helper JavaScript para Mermaid em `scripts/`.
+Há 15 scripts usados por hooks, 3 validadores manuais e 1 helper JavaScript para Mermaid em `scripts/`.
 
 ### 6. Configuração e distribuição
 

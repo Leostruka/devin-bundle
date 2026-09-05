@@ -142,6 +142,8 @@ def main():
     log_path = find_log_path()
     if not log_path:
         print("No refinements.log.jsonl found. Nothing to validate.", file=sys.stderr)
+        print("\nRefinement Evidence Validation Summary:", file=sys.stderr)
+        print("  Total: 0  Valid: 0  Phantom suspects: 0  Other suspects: 0", file=sys.stderr)
         sys.exit(0)
 
     total = 0
