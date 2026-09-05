@@ -415,5 +415,77 @@ def evaluate_refinement_cost_benefit(before_tokens, after_tokens, benefit_score,
     }
 
 
+# --- Durable session event log prototype ---
+
+
+def log_event(event_type, payload, log_path=None, session_id=None):
+    """Append an idempotent event to the durable session log.
+
+    Keeps recoverable session history outside the active model context.
+    Events are append-only; replay is deterministic and skips duplicates by
+    idempotency_key.
+    """
+    if log_path is None:
+        log_path = os.path.join(devin_home(), "session-events.jsonl")
+    entry = {
+        "session_id": session_id or "unknown",
+        "event_type": event_type,
+        "payload": payload or {},
+        "idempotency_key": payload.get("idempotency_key") if isinstance(payload, dict) else None,
+    }
+    try:
+        os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+    except OSError:
+        pass
+    return entry
+
+
+def replay_events(log_path=None):
+    """Replay the durable event log and return a list of events."""
+    if log_path is None:
+        log_path = os.path.join(devin_home(), "session-events.jsonl")
+    events = []
+    try:
+        with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    events.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        pass
+    return events
+
+
+def resume_state(log_path=None):
+    """Resume session state from the durable event log.
+
+    Returns a dict of completed action keys and a list of constraints that have
+    been declared. Duplicate idempotency keys are collapsed.
+    """
+    events = replay_events(log_path)
+    completed = {}
+    constraints = set()
+    for ev in events:
+        key = ev.get("idempotency_key") or str(hash(json.dumps(ev, sort_keys=True, default=str)))
+        if key in completed:
+            continue
+        completed[key] = ev
+        payload = ev.get("payload", {})
+        if isinstance(payload, dict):
+            for c in payload.get("constraints", []):
+                constraints.add(c)
+    return {
+        "events": list(completed.values()),
+        "completed_keys": set(completed.keys()),
+        "constraints": sorted(constraints),
+    }
+
+
 if __name__ == "__main__":
     main()
