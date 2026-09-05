@@ -442,7 +442,12 @@ for a in expected_agents:
 # 20. No temp files left
 print()
 print('[20] Temp files check')
-temp_files = [f for f in os.listdir('.git') if f.endswith('.tmp')]
+import subprocess
+_git_dir = subprocess.run(['git', 'rev-parse', '--git-dir'], capture_output=True, text=True).stdout.strip()
+if _git_dir and os.path.isdir(_git_dir):
+    temp_files = [f for f in os.listdir(_git_dir) if f.endswith('.tmp')]
+else:
+    temp_files = []
 if temp_files:
     warnings.append('Temp files in .git: ' + str(temp_files))
     print('  WARN temp files in .git: ' + str(temp_files))
