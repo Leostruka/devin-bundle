@@ -1,13 +1,13 @@
 ---
 name: leo
-description: Use when starting a Devin CLI session in this bundle and the next skill or workflow is not obvious, or when the user needs a quick entry point to seed local AFK issues.
+description: Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.
 ---
 
-# /leo — Bundle-aware session start and router
+# /leo — Universal bundle orchestrator
 
 ## Goal
 
-Run at the start of a session to load the bundle's rules, run the behavioral self-check, and route to the right workflow or skill. Preserves the existing operating discipline and adds a quick map for common flows and AFK setup.
+Provide one entry point for the bundle's universal orchestration: classify the objective, invoke specialist skills directly, compose multi-skill flows, and retain control through verified completion. `ask-matt` is the full routing reference, not a mandatory hop; `wayfinder` and every other clear specialist route are first-class entry paths.
 
 ## When to use
 
@@ -15,6 +15,7 @@ Run at the start of a session to load the bundle's rules, run the behavioral sel
 - The user needs help choosing the first skill or flow.
 - The user wants to prepare local AFK issues for unattended implementation.
 - At any session start when the next action is non-trivial.
+- The user wants Leo to coordinate an objective across one or more specialist skills.
 
 ## Procedure
 
@@ -27,12 +28,13 @@ Run at the start of a session to load the bundle's rules, run the behavioral sel
    - If the objective is clear, route to the matching flow in the situation router.
    - If the objective is unclear or the user just says "leo" / "start", ask the quick-start menu (see **Quick-start menu** below) with `ask_user_question` before routing.
 
-2. **Skill discovery**
-   - Before any non-trivial action, invoke all matching skills.
+2. **Direct routing and composition**
+   - Classify the objective from the user's words and observed repository state.
+   - Route directly to every clearly matching specialist skill; invoke multiple skills when their responsibilities compose.
    - Start with `using-skills` to reinforce the skill-first rule.
-   - If uncertain, use `tool-and-skill-discovery` or `skill search`/`skill list`.
-   - For fast decisions, read `docs/SKILL-TIERS.md`.
-   - For the full idea-to-ship map, invoke `ask-matt`.
+   - Use `ask-matt` only when the idea-to-ship path or phase boundary is unclear; it is a routing reference, not Leo's sole downstream router.
+   - If no bundled skill matches, use `tool-and-skill-discovery` or `skill search`/`skill list`.
+   - For fast domain lookup, read `docs/SKILL-TIERS.md`.
 
 3. **Planning**
    - For 3+ step tasks, create a `todo_write` immediately.
@@ -63,6 +65,11 @@ Run at the start of a session to load the bundle's rules, run the behavioral sel
    - Before claiming the session done, run `python audit.py` and `python -m pytest` and attach output.
    - After routing, verify the target skill is loaded and its first step is started.
 
+5. **Return to Leo**
+   - After each specialist finishes, compare its verified result with the original objective and current todo state.
+   - Route the next unmet responsibility to the appropriate specialist; preserve artifacts and decisions across handoffs.
+   - Stop only at verified completion, an explicit user decision boundary, or a reported blocker. Leo owns orchestration; specialists own domain procedure.
+
 ## Bundle context
 
 Keep this in mind for every session:
@@ -92,6 +99,15 @@ Pick the entry skill from the user's situation. If the situation is not in this 
 | Git merge / rebase conflict | `resolving-merge-conflicts` | |
 | Improve architecture / find deep modules | `improve-codebase-architecture` | → `grilling` if it generates an idea |
 | Improve / evolve a skill, rule, hook, or MCP | `continuous-improvement` | → `writing-skills` if editing one skill, `self-extend` if adding a new capability |
+| Release / deploy / rollback | `deploy` | → `gh` for GitHub operations, then smoke tests |
+| Security assessment | `security-audit` | → `implement` for approved remediations |
+| Data query / analysis / charts | `data-analyst` | |
+| UI / UX design or polish | `impeccable` | → `a11y-audit` / `e2e-testing` when applicable |
+| Logging / metrics / tracing / quality infrastructure | `observability-quality` | |
+| API or database design | `api-design` or `database` | → `implement` after contract/schema decisions |
+| Performance or cost optimization | `performance` or `cost-optimization` | |
+| Human-only procedure / provisioning | `wizard` | |
+| Guided learning | `teach` | |
 | Set up this repo for Devin | `project-setup` or `setup-matt-pocock-skills` | |
 | Not sure which skill / flow fits | `ask-matt` | full map |
 | No skill matches | `tool-and-skill-discovery` | evaluate / install |

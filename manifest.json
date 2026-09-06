@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "2.9.0",
+  "version": "3.1.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -585,7 +585,7 @@
     {
       "name": "leo",
       "source": "created:Devin bundle",
-      "purpose": "Use when starting a Devin CLI session in this bundle and the next skill or workflow is not obvious, or when the user needs a quick entry point to seed local AFK issues.",
+      "purpose": "Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.",
       "original_path": "%APPDATA%\\devin\\skills\\leo",
       "export_hash": "7B4FF83C54227E3867FBBCFBD61F8787B0844F5626AB00D2F688AFD486911A2A",
       "exported_at": "2026-09-01T12:53:39.426126-03:00"

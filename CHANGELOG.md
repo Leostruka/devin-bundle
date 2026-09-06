@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-09-06
+
+### Added
+
+- Validated task-adaptive harness recipes, durable session logging, MCP code-mode routing, model-interface preflight, bidirectional patch verification, temporal regression checks, and prompt-bloat quality gates.
+- Validation coverage for Leo's orchestration contract.
+
+### Changed
+
+- **`leo` skill**: promoted from session-start router to the bundle's universal orchestrator, with direct routing to `wayfinder` and specialist domains, multi-skill composition, and control returning to Leo until verified completion.
+- Live bundle installation and audit now validate all 32 checks with no warnings.
+
 ## [2.9.0] - 2026-09-01
 
 ### Added
