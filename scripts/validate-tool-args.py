@@ -300,5 +300,58 @@ def main():
     sys.exit(0)
 
 
+# --- Model-interface preflight ---
+
+
+def preflight_tool_call(emitted_call, adapter_valid=True, executor_valid=True, observer_valid=True):
+    """Probe the full model-interface funnel and attribute failure exactly.
+
+    Stages: emitted (model output), parsed (adapter/template validation),
+    executed (tool ran), observed (result returned to model).
+    A silently censored or rejected call is never attributed to the model
+    unless the model emitted nothing at all.
+    """
+    if not emitted_call or not isinstance(emitted_call, dict):
+        return {"verdict": "fail", "stage": "emitted", "reason": "model emitted no call"}
+
+    tool_name = emitted_call.get("tool_name", "")
+    tool_input = emitted_call.get("tool_input") or {}
+
+    # Stage 1: emitted — model must have produced a recognizable tool call.
+    if not tool_name:
+        return {"verdict": "fail", "stage": "emitted", "reason": "model call missing tool_name"}
+
+    # Stage 2: parsed — adapter/template validation.
+    check = CHECKS.get(tool_name)
+    if not adapter_valid:
+        return {"verdict": "fail", "stage": "parsed", "reason": f"adapter rejected {tool_name}"}
+    if check is not None:
+        try:
+            # Run validation; SystemExit from block() means the adapter rejected.
+            check(tool_input)
+        except SystemExit:
+            return {"verdict": "fail", "stage": "parsed", "reason": f"adapter validation failed for {tool_name}"}
+
+    # Stage 3: executed — tool ran (simulated).
+    if not executor_valid:
+        return {"verdict": "fail", "stage": "executed", "reason": f"executor failed for {tool_name}"}
+
+    # Stage 4: observed — result returned to model.
+    if not observer_valid:
+        return {"verdict": "fail", "stage": "observed", "reason": f"observer did not return for {tool_name}"}
+
+    return {"verdict": "pass", "stage": "observed", "reason": f"{tool_name} completed full funnel"}
+
+
+def classify_interface_failure(result):
+    """Return a short label for the failed stage, keeping model blame separate."""
+    if result["verdict"] == "pass":
+        return "ok"
+    stage = result["stage"]
+    if stage == "emitted":
+        return "model-emission"
+    return stage
+
+
 if __name__ == "__main__":
     main()
