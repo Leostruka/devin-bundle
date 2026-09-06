@@ -30,7 +30,7 @@ Manual:
 
 Token estimate: chars/4 heuristic. This is an estimate, not exact.
 """
-import sys, os, json, argparse, glob
+import sys, os, re, json, argparse, glob
 
 
 def devin_home():
@@ -327,6 +327,284 @@ def main():
     # Hook mode: read stdin
     payload = read_stdin()
     sys.exit(process_hook(payload))
+
+
+# --- Prompt bloat / refinement cost-benefit gate ---
+
+def measure_permanent_context(root=None):
+    """Estimate always-loaded tokens from rules, skills, profiles, and hooks.
+
+    Always-loaded context is the text that is present in every session:
+    AGENTS.md (rules), agent profiles, skill SKILL.md files, and hook configs.
+    On-demand context (individual tool outputs, user prompt, retrieved memory)
+    is not counted here.
+    """
+    root = root or find_bundle_root() or os.getcwd()
+    total_chars = 0
+    paths = []
+    # Global rules
+    agents_md = os.path.join(root, "AGENTS.md")
+    if os.path.isfile(agents_md):
+        paths.append(agents_md)
+    # Agent profiles
+    agents_dir = os.path.join(root, "agents")
+    if os.path.isdir(agents_dir):
+        paths.extend(os.path.join(agents_dir, f) for f in os.listdir(agents_dir) if f.endswith(".md"))
+    # Skills
+    skills_dir = os.path.join(root, "skills")
+    if os.path.isdir(skills_dir):
+        for skill in os.listdir(skills_dir):
+            skill_md = os.path.join(skills_dir, skill, "SKILL.md")
+            if os.path.isfile(skill_md):
+                paths.append(skill_md)
+    # Hook configs
+    for cfg in ("hooks.v1.json", "config.json"):
+        p = os.path.join(root, cfg)
+        if os.path.isfile(p):
+            paths.append(p)
+    for p in paths:
+        try:
+            with open(p, encoding="utf-8", errors="replace") as f:
+                total_chars += len(f.read())
+        except OSError:
+            pass
+    return total_chars // CHARS_PER_TOKEN
+
+
+def evaluate_refinement_cost_benefit(before_tokens, after_tokens, benefit_score,
+                                    max_cost_benefit_ratio=1.0, min_benefit=0.05):
+    """Decide whether a refinement's permanent context growth is justified.
+
+    benefit_score is a normalized improvement (e.g. 0.1 = 10% better).
+    Cost is the token increase. A refinement is rejected when the ratio of
+    cost growth to context-window size exceeds the benefit by
+    max_cost_benefit_ratio, or when the benefit is below min_benefit.
+
+    Returns a dict with verdict and reason.
+    """
+    delta = after_tokens - before_tokens
+    if delta <= 0:
+        return {
+            "verdict": "accepted",
+            "reason": "no permanent context growth",
+            "delta_tokens": delta,
+            "benefit_score": benefit_score,
+        }
+    if benefit_score < min_benefit:
+        return {
+            "verdict": "rejected",
+            "reason": f"benefit {benefit_score:.3f} below minimum {min_benefit}",
+            "delta_tokens": delta,
+            "benefit_score": benefit_score,
+        }
+    # Normalize cost by a reference window so the ratio is interpretable.
+    reference_window = DEFAULT_WINDOW
+    normalized_cost = delta / reference_window
+    if normalized_cost > benefit_score * max_cost_benefit_ratio:
+        return {
+            "verdict": "rejected",
+            "reason": f"context cost {normalized_cost:.4f} exceeds benefit {benefit_score:.4f} * {max_cost_benefit_ratio}",
+            "delta_tokens": delta,
+            "benefit_score": benefit_score,
+        }
+    return {
+        "verdict": "accepted",
+        "reason": "context growth justified by measured benefit",
+        "delta_tokens": delta,
+        "benefit_score": benefit_score,
+    }
+
+
+# --- Durable session event log prototype ---
+
+
+def log_event(event_type, payload, log_path=None, session_id=None):
+    """Append an idempotent event to the durable session log.
+
+    Keeps recoverable session history outside the active model context.
+    Events are append-only; replay is deterministic and skips duplicates by
+    idempotency_key.
+    """
+    if log_path is None:
+        log_path = os.path.join(devin_home(), "session-events.jsonl")
+    entry = {
+        "session_id": session_id or "unknown",
+        "event_type": event_type,
+        "payload": payload or {},
+        "idempotency_key": payload.get("idempotency_key") if isinstance(payload, dict) else None,
+    }
+    try:
+        os.makedirs(os.path.dirname(log_path) or ".", exist_ok=True)
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+    except OSError:
+        pass
+    return entry
+
+
+def replay_events(log_path=None):
+    """Replay the durable event log and return a list of events."""
+    if log_path is None:
+        log_path = os.path.join(devin_home(), "session-events.jsonl")
+    events = []
+    try:
+        with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    events.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except OSError:
+        pass
+    return events
+
+
+def resume_state(log_path=None):
+    """Resume session state from the durable event log.
+
+    Returns a dict of completed action keys and a list of constraints that have
+    been declared. Duplicate idempotency keys are collapsed.
+    """
+    events = replay_events(log_path)
+    completed = {}
+    constraints = set()
+    for ev in events:
+        key = ev.get("idempotency_key") or str(hash(json.dumps(ev, sort_keys=True, default=str)))
+        if key in completed:
+            continue
+        completed[key] = ev
+        payload = ev.get("payload", {})
+        if isinstance(payload, dict):
+            for c in payload.get("constraints", []):
+                constraints.add(c)
+    return {
+        "events": list(completed.values()),
+        "completed_keys": set(completed.keys()),
+        "constraints": sorted(constraints),
+    }
+
+
+# --- Task-adaptive harness recipes ---
+
+RECIPES = {
+    "audit": {
+        "name": "audit",
+        "instruction_signals": {"audit", "lint", "validate", "check"},
+        "preferred_model": "glm-5-2",
+        "tools": ["read", "grep", "exec", "find_file_by_name"],
+        "sidekick_profile": "qa-ci",
+        "main_responsible_for": ["plan", "final_review"],
+    },
+    "refine": {
+        "name": "refine",
+        "instruction_signals": {"refine", "improve", "rewrite", "polish"},
+        "preferred_model": "claude-sonnet-4-6",
+        "tools": ["read", "edit", "write"],
+        "sidekick_profile": "reviewer",
+        "main_responsible_for": ["ambiguity_resolution", "final_review"],
+    },
+    "implement": {
+        "name": "implement",
+        "instruction_signals": {"implement", "add", "feature", "fix"},
+        "preferred_model": "swe-1-7",
+        "tools": ["read", "edit", "write", "exec"],
+        "sidekick_profile": "implementer",
+        "main_responsible_for": ["plan", "ambiguity_resolution", "final_review"],
+    },
+    "research": {
+        "name": "research",
+        "instruction_signals": {"research", "find", "compare", "source"},
+        "preferred_model": "gemini-3-7-flash",
+        "tools": ["web_search", "webfetch", "mcp_call_tool", "read"],
+        "sidekick_profile": "researcher",
+        "main_responsible_for": ["final_review"],
+    },
+    "explore": {
+        "name": "explore",
+        "instruction_signals": {"explore", "understand", "map"},
+        "preferred_model": "glm-5-2",
+        "tools": ["glob", "find_file_by_name", "read", "grep"],
+        "sidekick_profile": "subagent_explore",
+        "main_responsible_for": ["plan", "final_review"],
+    },
+}
+
+
+def score_recipe(recipe, instruction, tools, model, confidence_threshold=0.25):
+    """Score how well a recipe matches task evidence."""
+    instruction = (instruction or "").lower()
+    tokens = set(re.findall(r"\w+", instruction))
+    overlap = len(tokens & recipe["instruction_signals"])
+    instruction_score = min(1.0, overlap / max(1, len(recipe["instruction_signals"])))
+
+    tool_score = 0.0
+    if tools:
+        available = set(t.lower() for t in tools)
+        needed = set(t.lower() for t in recipe["tools"])
+        tool_score = len(available & needed) / max(1, len(needed))
+
+    model_score = 1.0 if not model or model.lower() in recipe["preferred_model"].lower() else 0.0
+
+    score = 0.5 * instruction_score + 0.3 * tool_score + 0.2 * model_score
+    return {
+        "recipe": recipe["name"],
+        "score": score,
+        "instruction_score": instruction_score,
+        "tool_score": tool_score,
+        "model_score": model_score,
+    }
+
+
+def select_recipe(instruction, tools=None, model=None, recipes=None, confidence_threshold=0.25):
+    """Select the best recipe or fall back to the default when uncertain.
+
+    Routing changes are allowed at cache-miss (no confident recipe) or
+    compaction boundaries. We do not assume recipes transfer between runtime
+    models; the model score is permissive, not mandatory.
+    """
+    recipes = recipes or RECIPES
+    scored = [score_recipe(r, instruction, tools, model) for r in recipes.values()]
+    scored.sort(key=lambda x: x["score"], reverse=True)
+
+    best = scored[0] if scored else None
+    if best and best["score"] >= confidence_threshold:
+        return {
+            "verdict": "routed",
+            "recipe": best["recipe"],
+            "confidence": best["score"],
+            "ranking": scored,
+        }
+    return {
+        "verdict": "fallback",
+        "recipe": "default",
+        "confidence": best["score"] if best else 0.0,
+        "reason": "no recipe met the confidence threshold",
+        "ranking": scored,
+    }
+
+
+def evaluate_recipe_against_baseline(recipe_name, task_score, baseline_score, context_budget_tokens, estimated_tokens):
+    """Return whether a selected recipe is worth using over the static baseline."""
+    if estimated_tokens > context_budget_tokens:
+        return {
+            "verdict": "rejected",
+            "reason": "estimated context exceeds budget",
+            "delta_tokens": estimated_tokens - context_budget_tokens,
+        }
+    if task_score < baseline_score:
+        return {
+            "verdict": "rejected",
+            "reason": "recipe underperforms static baseline",
+            "delta_score": task_score - baseline_score,
+        }
+    return {
+        "verdict": "accepted",
+        "reason": "recipe matches or beats baseline within budget",
+        "delta_score": task_score - baseline_score,
+    }
 
 
 if __name__ == "__main__":
