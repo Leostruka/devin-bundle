@@ -30,6 +30,12 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
 20. **Model-aware operation** — GLM-5.2 High (200K, thinking, tool-use during inference, cache $0.26/M) is primary; SWE-1.7 Max (262K, self-compaction, 1000 TPS) is pinned via `model: swe-1-7` (NOT `swe` — that alias is PAID `swe-1.7-lightning`) in all custom agent profiles. Don't over-specify tool-use (GLM decides natively). Fan-out is cheap (SWE-1.7 fast, 262K each, gratuito). Keep system prompt cache-stable. See `docs/MODEL-GUIDE.md`.
 21. **Don't think through uncertainty — research or ask** — when you don't know something or are in doubt, stop reasoning and either research it (facts, libraries, state of the world) or ask the user (intent, business rules, case-of-use).
+22. **Minimum code, no token maxing** — prefer the smallest code/solution that solves the problem. Reject overengineering, over-prompting, and token maxing. Complexity is attack surface (Rule 13). When in doubt, simplify.
+23. **Sanitize inputs and outputs** — treat every user input as untrusted; validate and sanitize before use. Don't log or output secrets, credentials, tokens, or sensitive data. Endpoints and S3 buckets must default to private; any public endpoint or URL requires documented justification.
+24. **No secrets in VCS; rotate if leaked** — never commit secrets, passwords, API keys, tokens, or private keys to the repository. If a secret is found in code, history, or output, warn the user immediately and ask for rotation. Use `.env.example` and secret managers in production.
+25. **No test deletion without approval** — don't delete, disable, skip, or remove tests without explicit user approval. Tests verify intent; preserving them is a hard constraint. If a test must be removed, get approval and record the reason.
+26. **Secure by default** — use secure defaults: hidden passwords with opt-in reveal, confirmation for destructive actions, multi-factor auth for accounts, least privilege for services and DB access. Public endpoints, unauthenticated services, and public S3 URLs require written justification.
+27. **Declare intent and impact before coding** — before writing code, state the intent, the intended user-visible impact, and the boundaries (inputs/outputs, scope, non-goals). Ask until mutual understanding is reached; don't guess intent.
 
 ---
 
@@ -218,3 +224,27 @@ Primary: GLM-5.2 High (200K, thinking mode, tool-use during inference, prompt ca
 - **Política de modelos: CONDICIONAL ao parent.**
   - **Parent FREE (default `glm-5-2`)**: subagents DEVEM ser FREE (`swe-1-7`/`swe-1-7-medium`). Nunca usar modelos pagos. Se GLM-5.2 High + SWE-1.7 fan-out falharem, **parar e reportar ao usuário**.
   - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Nesse caso, `subagent_explore` (SWE-1.6) e outros modelos pagos são permitidos. Ver protocolo em `docs/MODEL-GUIDE.md`.
+
+### 22. Minimum code, no token maxing
+
+Prefer the smallest code/solution that solves the problem. Reject overengineering, over-prompting, and token maxing. Complexity is attack surface (Rule 13). When in doubt, simplify. Don't add infrastructure, abstractions, or dependencies that don't carry their weight.
+
+### 23. Sanitize inputs and outputs
+
+Treat every user input as untrusted; validate and sanitize before use. Don't log or output secrets, credentials, tokens, or sensitive data. Endpoints and S3 buckets must default to private; any public endpoint or URL requires documented justification. If you must handle a secret, use it without displaying it (Rule 19).
+
+### 24. No secrets in VCS; rotate if leaked
+
+Never commit secrets, passwords, API keys, tokens, or private keys to the repository. If a secret is found in code, history, or output, warn the user immediately and ask for rotation. Use `.env.example` and secret managers in production. Never hardcode credentials in source.
+
+### 25. No test deletion without approval
+
+Don't delete, disable, skip, or remove tests without explicit user approval. Tests verify intent; preserving them is a hard constraint. If a test must be removed, get approval and record the reason in the ledger/commit. Don't "fix" a failing test by removing it.
+
+### 26. Secure by default
+
+Use secure defaults: hidden passwords with opt-in reveal, confirmation for destructive actions, multi-factor auth for accounts, least privilege for services and DB access. Public endpoints, unauthenticated services, and public S3 URLs require written justification. Assume everything is private until proven otherwise.
+
+### 27. Declare intent and impact before coding
+
+Before writing code, state the intent, the intended user-visible impact, and the boundaries (inputs/outputs, scope, non-goals). Ask until mutual understanding is reached; don't guess intent. Use `grilling` for non-trivial tasks. Intent reduces wrong paths.

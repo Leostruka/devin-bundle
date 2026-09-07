@@ -600,7 +600,7 @@
     }
   ],
   "skill_count": 76,
-  "rule_count": 20,
+  "rule_count": 26,
   "scripts": [
     {
       "name": "behavioral-nudge.py",

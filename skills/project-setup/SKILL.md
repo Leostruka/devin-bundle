@@ -93,6 +93,7 @@ Apply the best-fit alternative for each component. This is the deterministic set
 
 1. **Run `setup-matt-pocock-skills`** to configure issue tracker, triage labels, and domain docs (all inside `.devin/`).
 2. **Create `.devin/global_rules.md`** with a short `## Agent skills` block and the repo-specific rules from `setup-matt-pocock-skills`.
+2.5. **Create `.devin/rules/agents.md` from the project template** — copy `skills/project-setup/templates/agents.md` into `.devin/rules/agents.md` and replace the stack-specific placeholder with the project's concrete rules (e.g., TypeScript without `any`, linter commands, naming conventions). This is the project's per-stack agent rules file; keep it short and action-oriented.
 3. **Create `.devin/rules/*.md`** for optional, trigger-scoped rules.
 4. **Create `.devin/hooks.v1.json`** with the essential hooks from the bundle:
    - `behavioral-nudge.py` on `UserPromptSubmit`

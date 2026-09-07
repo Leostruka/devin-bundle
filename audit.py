@@ -112,15 +112,15 @@ print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
-for i in range(1, 22):
+for i in range(1, 28):
     # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 20:
-    errors.append('Expected 20 rules, found ' + str(len(rules_found)))
+if len(rules_found) != 26:
+    errors.append('Expected 26 rules, found ' + str(len(rules_found)))
 else:
-    print('  OK  20 rules present')
+    print('  OK  26 rules present')
 declared_rule_count = manifest.get('rule_count')
 if declared_rule_count != len(rules_found):
     errors.append('manifest rule_count mismatch')
@@ -178,7 +178,7 @@ readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     (f'{skill_count} skills', skill_count > 0),
-    ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
+    ('26 rules', len(rules_found) == 26),  # 1-5,7-27 (Rule 6 removed)
     ('6 agents', agent_count == 6),
     ('17 scripts', len(script_files) == 17),
 ]
