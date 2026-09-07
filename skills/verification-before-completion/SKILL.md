@@ -44,8 +44,9 @@ Gate 1 (PRE): Define VFs before dispatching implementer
   → Implementer must run every VF and show output before claiming DONE
 
 Gate 2 (POST): Fresh verification evidence before accepting DONE claim
-  → Controller re-runs VFs independently (or dispatches reviewer to do so)
-  → If any VF fails, implementer re-enters fix loop
+  → Controller re-runs VFs independently; dispatch `reviewer`/`qa-ci` only
+    when the user authorizes delegation
+  → If any VF fails, re-enter the fix loop
 ```
 
 VFs are not extra work — they are the spec made executable. If you cannot

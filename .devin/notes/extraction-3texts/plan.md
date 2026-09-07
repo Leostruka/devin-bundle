@@ -34,34 +34,47 @@ Transformar as propostas do `.devin/notes/extraction-3texts/improvements.md` em 
 
 **Lacunas conhecidas / suspeitas:**
 - A skill pede `unlazy` "no início", mas não exige que **cada** Passo 1-10 tenha um gate ledger com `EVIDENCE: pending` antes de avançar.
-- A skill não exige explicitamente um subagente `qa-ci` independente por passo; embora tenha `subagent: true`, o agente é `implementer`, não `qa-ci`.
+- `subagent: true` + `agent: implementer` executava a skill fora do histórico principal; itens e fontes fornecidos na conversa podiam desaparecer.
 - A FASE 0 exige fontes, mas não diz como verificar se uma fonte é confiável além de "verificar domínio, autores, data".
 - O formato de saída é extenso; em contextos longos, o meio pode ser perdido (lost-in-the-middle).
+- Não há registro obrigatório de inputs, fontes, VFs, escopo e estados finais.
+- Não há proteção explícita para dry-run/instalação, reversão de patch próprio, assinaturas, secrets e mudanças não relacionadas.
 - Não há referência explícita a `verification-before-completion` como gate final.
+- A execução precisa respeitar `DELEGATION=disabled` quando o usuário não autorizar subagentes; `qa-ci` só pode ser usado com autorização explícita.
 
 **Entregável:**
 - Documento `.devin/notes/extraction-3texts/continuous-improvement-review.md` com lacunas e propostas de correção.
 
 **Gate:**
 - `python audit.py` passa sem erros após as mudanças na skill.
-- `python -m pytest -q` 260/260.
+- `python -m pytest tests/held-out/ -q` passa.
+- `python -m pytest -q` 264/264 com o teste de contrato incluído.
 
-### Tarefa 0.2 — Endurecer `skills/continuous-improvement/SKILL.md`
+### Tarefa 0.2 — Endurecer `continuous-improvement`, `unlazy` e verificação
 
 **O que fazer:**
-1. Adicionar a cada passo do loop a exigência de gate `unlazy` (`gate:` / `expect:` / `evidence:`).
-2. Trocar/expandir o subagente para `qa-ci` em passos não-triviais (verificação independente, sem ferramentas de escrita).
-3. Exigir `verification-before-completion` antes de declarar a melhoria pronta.
-4. Exigir que toda fonte citada tenha URL, autor, data e citação verificada; rejeitar blogs sem fonte primária.
-5. Resumir o formato de saída e apontar para `.devin/ledgers/<melhoria>.md` para detalhes, evitando bloat no chat.
+1. Remover o despacho automático da `continuous-improvement`; executar inline por padrão.
+2. Registrar `DELEGATION`, `INPUT_REGISTER`, `SOURCE_REGISTER`, `VFS`, `CHANGE_CLASS` e `SCOPE` antes de editar.
+3. Adicionar gates `OUTCOME`/`CHECK`/`EXPECT`/`EVIDENCE` a cada subpasso e passo.
+4. Exigir leitura direta das fontes e proveniência por claim.
+5. Exigir `verification-before-completion`, held-out e classificação com métrica real.
+6. Proteger dry-run/instalação, reversão de patch próprio, assinaturas, secrets e mudanças não relacionadas.
+7. Permitir `qa-ci` somente quando o usuário autorizar subagentes; nesta execução, validar diretamente.
+8. Manter o formato curto e apontar para o ledger/review completos.
 
 **Arquivos:**
 - `skills/continuous-improvement/SKILL.md`
-- `.devin/ledgers/continuous-improvement-fix.md` (ledger `unlazy`)
+- `skills/unlazy/SKILL.md`
+- `skills/verification-before-completion/SKILL.md`
+- `tests/validation/test_continuous_improvement_contract.py`
+- `.devin/notes/extraction-3texts/continuous-improvement-review.md`
+- `ledgers/extraction-3texts-phase0.md` (convenção rastreada do bundle)
 
 **Gate:**
-- `python -m pytest tests/validation/test_skill_format_passes.py tests/validation/test_audit_passes.py -v` passa.
-- Revisar diff com `git diff` e confirmar que não há AI signatures.
+- `python -m pytest tests/validation/test_skill_format_passes.py tests/validation/test_audit_passes.py tests/validation/test_continuous_improvement_contract.py -q` passa.
+- `python -m pytest tests/held-out/ -q` passa.
+- `python -m pytest -q` passa.
+- Revisar diff com `git diff`, `git diff --check` e `check-ai-signature.py`.
 
 ---
 
