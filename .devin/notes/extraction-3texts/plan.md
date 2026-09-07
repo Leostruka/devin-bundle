@@ -9,7 +9,7 @@ Transformar as propostas do `.devin/notes/extraction-3texts/improvements.md` em 
 - Revisar e endurecer `skills/continuous-improvement/SKILL.md` para que siga o workflow exigente (evidência, fontes, `qa-ci`, `unlazy`, held-out).
 - Atualizar `skills/leo/SKILL.md` para refletir os novos gates (segurança, intenção, tamanho, TDD, MCP, dev container, validação ontológica).
 - Atualizar `AGENTS.md` / `global_rules.md` e o template `agents.md` de projeto.
-- Fortalecer skills existentes (`security-audit`, `tdd`, `setup-pre-commit`, `planning-pipeline`, `api-design`, `cost-optimization`, `context-window-hygiene`, `docker`, `mcp-context-audit`, `verification-before-completion`, `using-skills`, `implement`, `code-review`).
+- Fortalecer skills existentes (`security-audit`, `tdd`, `setup-pre-commit`, `planning-pipeline`, `grilling`, `api-design`, `cost-optimization`, `context-window-hygiene`, `docker`, `mcp-context-audit`, `verification-before-completion`, `using-skills`, `implement`, `code-review`, `project-memory`, `effort-calibration`, `model-interface-preflight`).
 - Criar novas skills/gates (`ontology-validator`, `task-sizer`, `secure-defaults-check`, `agent-cost-guard`, `intention-capture`, `api-context-spec`).
 - Melhorar `structured-knowledge-extraction` com camada semântica/ontológica mínima.
 
@@ -258,6 +258,58 @@ Incluir checks: SAST, WAF/Dependabot, secret scan, lint, testes de intenção, v
 
 **Gate:**
 - `python -m pytest tests/held-out/trajectory/test_invokes_skill_before_action.py -v` passa.
+
+### Tarefa 3.9 — `grilling` (intenção e PRD)
+
+**O que fazer:**
+1. Reforçar `grilling` para capturar intenção e gerar PRD antes de implementação.
+2. Usar o padrão "entreviste-me incansavelmente até entendimento mútuo".
+3. Garantir que `leo` acione `grilling` para tarefas não-triviais.
+
+**Arquivos:**
+- `skills/grilling/SKILL.md`
+
+**Gate:**
+- `python -m pytest tests/validation/test_grilling_frontier_rounds.py -v` passa.
+
+### Tarefa 3.10 — `code-review` (Code Rabbit)
+
+**O que fazer:**
+1. Documentar integração com Code Rabbit para revisão automática.
+2. Automatizar o loop: Code Rabbit sugere -> implementador aplica -> retorna ao código.
+3. Revisão humana somente após o loop automático estabilizar.
+
+**Arquivos:**
+- `skills/code-review/SKILL.md`
+
+**Gate:**
+- `python audit.py` sem erros.
+
+### Tarefa 3.11 — `project-memory`
+
+**O que fazer:**
+1. Capturar referências, regras de projeto e convenções aprovadas.
+2. Integrar `project-memory` com `agents.md` para manter regras vivas.
+
+**Arquivos:**
+- `skills/project-memory/SKILL.md`
+
+**Gate:**
+- `python audit.py` sem erros.
+
+### Tarefa 3.12 — `effort-calibration` e `model-interface-preflight`
+
+**O que fazer:**
+1. `effort-calibration`: alertar sobre mito do one-shot, over-prompting e overengineering; ajustar esforço à dificuldade real.
+2. `model-interface-preflight`: sugerir Codex para tarefas baratas de código e Cloud Code quando interação IDE justifica; considerar custo no roteamento `leo`.
+
+**Arquivos:**
+- `skills/effort-calibration/SKILL.md`
+- `skills/model-interface-preflight/SKILL.md`
+- `skills/leo/SKILL.md`
+
+**Gate:**
+- `python -m pytest tests/validation/test_model_interface_preflight.py -v` passa.
 
 ---
 
