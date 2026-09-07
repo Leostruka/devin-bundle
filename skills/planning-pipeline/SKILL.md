@@ -66,6 +66,10 @@ memory over the document as the work proceeds.
 
 <spec-template>
 
+## Intent
+
+The final goal, where the feature lands, and how the user is affected. Capture this before any implementation detail. If intent is unclear, stop and use `grilling`.
+
 ## Problem Statement
 
 The problem that the user is facing, from the user's perspective.
@@ -85,6 +89,14 @@ A LONG, numbered list of user stories. Each user story should be in the format o
 </user-story-example>
 
 This list of user stories should be extremely extensive and cover all aspects of the feature.
+
+## Estimated size (lines)
+
+Rough estimate of the PR size. If it exceeds ~500 lines, note that it must be split into smaller tickets in Tickets mode.
+
+## Input / Output boundaries
+
+The inputs the feature consumes and the outputs it produces. For APIs, specify request/response shape; for services, specify contracts and data ownership.
 
 ## Implementation Decisions
 
@@ -238,9 +250,15 @@ Do NOT close or modify any parent issue.
 
 # <NN> — <Ticket title>
 
+**Intent:** why this ticket exists and the user-visible impact it delivers.
+
 **What to build:** the end-to-end behaviour this ticket makes work, from the user's perspective — not a layer-by-layer implementation list.
 
 **Proposed modules / interfaces affected:** module/area names and the contracts this slice touches. Omit for tiny slices.
+
+**Estimated size (lines):** rough estimate. If >500, split further before starting.
+
+**Input / Output:** the data and contracts this ticket consumes and produces.
 
 **Blocked by:** the numbers/titles of the tickets that gate this one, or "None — can start immediately".
 
@@ -259,6 +277,10 @@ Do NOT close or modify any parent issue.
 
 <issue-template>
 
+## Intent
+
+Why this ticket exists and the user-visible impact it delivers.
+
 ## Parent
 
 A reference to the parent issue on the tracker (if the source was an existing issue, otherwise omit this section).
@@ -270,6 +292,14 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 ## Proposed modules / interfaces affected
 
 Module/area names and the contracts this slice touches. Omit for tiny slices.
+
+## Estimated size (lines)
+
+Rough estimate. If >500, split further before starting.
+
+## Input / Output
+
+The data and contracts this ticket consumes and produces.
 
 ## Gate
 

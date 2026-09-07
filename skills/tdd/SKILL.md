@@ -54,6 +54,12 @@ Implement fresh from tests. Period.
 
 **Violating the letter of the rules is violating the spirit of the rules.**
 
+### Tests are permanent artifacts
+
+- Don't delete, disable, or skip tests without explicit user approval.
+- A failing test is a signal, not an obstacle. Fix the code or the expectation — never remove the test to make the failure go away.
+- Tests verify intent, not just behavior. Preserve them as the contract between code and requirement.
+
 ## Seams — where tests go
 
 A **seam** is the public boundary you test at: the interface where you observe behavior without reaching inside. Tests live at seams, never against internals.
@@ -192,6 +198,8 @@ Before marking work complete:
 - [ ] Test would fail if a nearby wrong implementation existed
 - [ ] Project feedback loop was used in each cycle
 - [ ] Seams were agreed with user before testing
+- [ ] Tests run before commit (pre-commit hook or explicit command)
+- [ ] No test was deleted, disabled, or skipped without approval
 
 Can't check all boxes? You skipped TDD. Start over.
 

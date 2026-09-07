@@ -12,6 +12,8 @@ description: Use when setting up Husky pre-commit hooks with lint-staged (Pretti
 - **Prettier** config (if missing)
 - **typecheck** and **test** scripts in the pre-commit hook
 
+This is a required step for any project set up by `project-setup` and for any build/change flow routed by `leo`. It ensures lint, typecheck, and tests run before every commit.
+
 ## Steps
 
 ### 1. Detect package manager
