@@ -58,6 +58,10 @@ This shows the token cost of MCP overhead alongside `.devin/global_rules.md` and
 2. Restart the session — the server's tools no longer load
 3. When the task needs it, move it back and restart
 
+**Disable tools, not just servers.** If a server exposes many tools but the
+task uses only a few, prefer a narrower server or disable the unused tools if
+the server supports scoping. The goal is to minimize the context tax per tool.
+
 **For plugin-format installs:** use `devin plugins info <name>` to see
 which MCP servers a plugin provides. If a plugin's MCP servers are too
 expensive for the current task, consider whether the plugin is needed.

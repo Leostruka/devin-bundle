@@ -29,6 +29,10 @@ tool more often than not.
 - No MCP servers configured — nothing to audit.
 - You already know the cost and have decided to keep the server.
 
+## Audit by tool
+
+Measure the cost of each tool definition, not just the server total. If a server exposes many tools but the task uses only a few, prefer a narrower server or disable the unused tools if the server supports scoping.
+
 ## Workflow
 
 ### Step 1: List configured servers
