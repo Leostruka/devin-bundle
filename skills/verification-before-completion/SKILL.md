@@ -145,6 +145,16 @@ Skip any step = lying, not verifying
 ❌ Trust agent report
 ```
 
+## Security checks
+
+Before claiming completion on work that touches API, DB, secrets, endpoints, or infrastructure, run a security pass:
+
+- No secrets or credentials in the diff.
+- No new unauthenticated endpoints or public storage URLs.
+- No new overly broad permissions or IAM policies.
+- No plaintext passwords or non-standard crypto.
+- If any of these are present, run `security-audit` before claiming done.
+
 ## When To Apply
 
 **ALWAYS before:**
