@@ -31,7 +31,7 @@
 | S4 | code-review skill atual | `skills/code-review/SKILL.md` | a ser lido | accepted |
 | S5 | project-memory skill atual | `skills/project-memory/SKILL.md` | a ser lido | accepted |
 | S6 | effort-calibration skill atual | `skills/effort-calibration/SKILL.md` | a ser lido | accepted |
-| S7 | model-interface-preflight skill atual | `skills/model-interface-preflight/SKILL.md` | a ser lido | accepted |
+| S7 | model-interface-preflight skill atual | `skills/model-interface-preflight/SKILL.md` | não existe | rejected — `scripts/validate-tool-args.py` já cobre a funcionalidade |
 
 ## SCOPE
 

@@ -165,7 +165,11 @@ def check_run_subagent(ti):
     # Limit parallel subagents to 3 (cost/context guard).
     # If the caller intends more, it must split into sequential batches.
     max_parallel = ti.get("max_parallel", 3)
-    if isinstance(max_parallel, int) and max_parallel > 3:
+    if not isinstance(max_parallel, int):
+        block(
+            f"run_subagent max_parallel must be an integer, got {type(max_parallel).__name__}."
+        )
+    if max_parallel > 3:
         block(
             f"run_subagent max_parallel is {max_parallel}; limit is 3. "
             "Split into sequential batches or ask the user for approval."

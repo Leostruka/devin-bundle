@@ -60,4 +60,26 @@ Arquivos autorizados para alteração nesta fase:
 - [x] G6: `git diff --check` e `check-ai-signature.py` passam
 - [x] G7: `git status` limpo
 - [x] G8: `CHANGELOG.md` atualizado se necessário
-- [ ] G9: commit realizado (se autorizado) e working tree limpo
+- [x] G9: commit realizado (se autorizado) e working tree limpo
+
+## Resultado
+
+- Commit: `1b79a8e chore: final verification and review for extraction-3texts`
+- Working tree: limpa
+- Audit: 32/32 checks, 0 erros, 0 warnings
+- Tests: 264 passed (full), 135 passed (held-out)
+- Diff check: limpo
+- AI signature: nenhuma detectada
+- `CHANGELOG.md`: versão 3.1.0 presente
+- `manifest.json`: skill_count = 82
+- Install sync: todas as fases sincronizadas
+
+## Revisão (code-review)
+
+- **Standards:** PASS — 4 Minor findings; worst: `max_parallel` type hole.
+- **Spec:** FAIL — 1 Important + 2 Minor; worst: silently dropped `model-interface-preflight` task.
+- **Correções aplicadas:**
+  1. `ledgers/extraction-3texts-phase3-block4.md`: registrado `rejected` para `model-interface-preflight` (coberto por `scripts/validate-tool-args.py`).
+  2. `scripts/validate-tool-args.py`: corrigido `max_parallel` type hole (agora valida tipo antes de comparar).
+  3. `skills/security-audit/SKILL.md`: adicionada referência a `scan_secrets.py` para reutilização.
+- **Codex cost routing:** não implementado; `agent-cost-guard` já cobre controle de custo de agentes.

@@ -39,7 +39,8 @@ Apply this checklist to every audit. Each item comes from the `sec-needs` source
 ## See also
 
 - `code-review` — general code review before merge.
-- `security-audit` — defensive security-specific review.
+- `secure-defaults-check` — pre-commit checklist for secure defaults.
+- `scan_secrets.py` — existing script at `skills/obsidian-workflow/scripts/scan_secrets.py` for scanning Markdown files for secrets.
 
 ## Output rule
 
