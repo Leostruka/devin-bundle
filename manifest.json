@@ -335,6 +335,27 @@
       "exported_at": "2026-08-17T15:41:48.888186-03:00"
     },
     {
+      "name": "ontology-validator",
+      "source": "created:Devin bundle (ontologies-keep-honest)",
+      "purpose": "Use when validating tool outputs or data against a domain ontology or structured knowledge base. Ensures entities, types, and relations are consistent before side effects.",
+      "original_path": "%APPDATA%\\devin\\skills\\ontology-validator",
+      "exported_at": "2026-09-07T00:00:00-03:00"
+    },
+    {
+      "name": "task-sizer",
+      "source": "created:Devin bundle (good-practis)",
+      "purpose": "Use when estimating the size of a task or PR and deciding whether to split it into smaller tickets before implementation.",
+      "original_path": "%APPDATA%\\devin\\skills\\task-sizer",
+      "exported_at": "2026-09-07T00:00:00-03:00"
+    },
+    {
+      "name": "secure-defaults-check",
+      "source": "created:Devin bundle (sec-needs)",
+      "purpose": "Use when checking that a project or change follows secure defaults before committing or deploying.",
+      "original_path": "%APPDATA%\\devin\\skills\\secure-defaults-check",
+      "exported_at": "2026-09-07T00:00:00-03:00"
+    },
+    {
       "name": "wait-what",
       "source": "devin-bundle",
       "purpose": "Use when the last message did not land and needs to be re-explained or re-pitched.",
@@ -599,7 +620,7 @@
       "exported_at": "2026-08-31T22:00:00-03:00"
     }
   ],
-  "skill_count": 76,
+  "skill_count": 79,
   "rule_count": 26,
   "scripts": [
     {

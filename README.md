@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-76-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-79-blue.svg)](#2-skills)
 [![Rules](https://img.shields.io/badge/rules-26-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.1.0-orange.svg)](CHANGELOG.md)
 
@@ -122,7 +122,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 76 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 79 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 

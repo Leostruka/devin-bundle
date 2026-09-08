@@ -154,6 +154,9 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `deploy` | Deploy, release, rollback e smoke tests | ~400 | Publicar ou promover versão |
 | `security-audit` | SAST, dependências, vazamento de segredos | ~450 | Auditar segurança |
+| `secure-defaults-check` | Checklist `.env`, `.gitignore`, endpoints, confirmação destrutiva | ~400 | Antes de commit/deploy |
+| `ontology-validator` | Valida outputs de ferramentas contra ontologia/knowledge.json | ~400 | Antes de side effects |
+| `task-sizer` | Estima tamanho de PR e sugere quebra >500 linhas | ~400 | Antes de implementar |
 | `performance` | Profile, benchmark e otimização | ~400 | Lentidão ou gargalo |
 | `a11y-audit` | WCAG, keyboard, screen-reader, contraste | ~450 | Verificar acessibilidade |
 | `api-design` | REST/OpenAPI/contract tests | ~500 | Design ou review de API |
