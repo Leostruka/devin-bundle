@@ -6,6 +6,16 @@ description: Use when exploring and stress-testing ideas before committing to a 
 
 Two traditions, one pipeline. This skill merges **collaborative brainstorming** (focused exploration, one question at a time, visual companion, design concept) with **relentless grilling** (design tree, frontier rounds, assertive questions, a recommendation alongside every question, sub-agents for facts). The output is a **shared design concept** — the conversation itself becomes a reusable asset.
 
+## Intent capture
+
+Before exploring or asking questions, capture the **intent**:
+
+1. **Objective**: what the user wants to achieve.
+2. **Where it lands**: which project, module, or feature.
+3. **User impact**: how the change affects the user or the product.
+
+If intent is unclear, ask for it before proceeding. The captured intent feeds into `planning-pipeline` (Spec mode) as the PRD's `Intent` section.
+
 ## Modes
 
 | Mode | Trigger | What changes |

@@ -215,6 +215,14 @@ controller reads the diff and decides — never silently drop either.
 - Show code/tests that prove it works
 - Request clarification
 
+## Automation: Code Rabbit
+
+When the repository has a `.coderabbit.yaml` (or Code Rabbit is enabled), the automated review runs in CI. This skill complements it, not replaces it:
+
+- Let Code Rabbit catch mechanical issues (style, obvious bugs, security patterns).
+- Use this skill for the two-axis review (Standards vs Spec) and for decisions Code Rabbit cannot make (architecture, intent, scope creep).
+- If Code Rabbit flags something you already verified, note it in the review summary — do not re-litigate it.
+
 ## Cross-skills
 
 - Use `verification-before-completion` as a final gate after the review before declaring the work complete.

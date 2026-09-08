@@ -14,6 +14,7 @@ Cross-session memory for Devin CLI, stored as plain-text, user-auditable notes i
 - A decision is made and needs rationale preserved.
 - A fix or approach failed and should not be retried.
 - A reusable pattern or workaround is found.
+- After an implementation finishes, to capture intent, state, and lessons before `clear`/`compact`.
 - Ending a session and summarizing what matters for the next one.
 
 ## When NOT to use
@@ -29,6 +30,15 @@ Cross-session memory for Devin CLI, stored as plain-text, user-auditable notes i
 3. **Write**. On approval, save a Markdown note under `.devin/memory/`.
 4. **Link**. Update `.devin/memory/MOC.md` and the relevant daily/logbook entry.
 5. **Retrieve**. Use `python .devin/memory/scripts/query-memory.py "<query>"` or `/deep-mode` scoped to `.devin/memory/`.
+
+## Post-implementation capture
+
+After a feature or fix lands and before the session is `clear`ed or `compact`ed:
+
+1. **Capture intent.** Why the change was made (the PRD's `Intent` section or the user's original goal).
+2. **Capture state.** What was actually implemented, which decisions were taken, and any deviations from the spec.
+3. **Capture lessons.** What worked, what failed, and what the next session should know.
+4. **Ask for approval** before writing the note.
 
 ## Quick reference
 

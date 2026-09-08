@@ -66,4 +66,14 @@ Arquivos autorizados para alteração nesta fase:
 - [x] G8: `python -m pytest -q` passa
 - [x] G9: `python -m pytest tests/held-out/ -q` passa
 - [x] G10: `git diff --check` e `check-ai-signature.py` passam
-- [ ] G11: commit realizado (se autorizado) e working tree limpo
+- [x] G11: commit realizado (se autorizado) e working tree limpo
+
+## Resultado
+
+- Commit: `df95639 feat: add security checks and surgical-change limits to verification, using-skills, implement`
+- Working tree: limpa
+- Audit: 32/32 checks, 0 erros, 0 warnings
+- Tests: 264 passed (full), 135 passed (held-out)
+- Diff check: limpo
+- AI signature: nenhuma detectada
+- Install sync: `implement`, `using-skills`, `verification-before-completion` atualizados
