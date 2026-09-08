@@ -60,4 +60,14 @@ Arquivos autorizados para alteração nesta fase:
 - [x] G6: `python -m pytest -q` passa
 - [x] G7: `python -m pytest tests/held-out/ -q` passa
 - [x] G8: `git diff --check` e `check-ai-signature.py` passam
-- [ ] G9: commit realizado (se autorizado) e working tree limpo
+- [x] G9: commit realizado (se autorizado) e working tree limpo
+
+## Resultado
+
+- Commit: `d182434 feat: document limitations of structured-knowledge-extraction and add ontology-validator cross-reference`
+- Working tree: limpa
+- Audit: 32/32 checks, 0 erros, 0 warnings
+- Tests: 264 passed (full), 135 passed (held-out), 24 passed (structured-knowledge-extraction)
+- Diff check: limpo
+- AI signature: nenhuma detectada
+- Install sync: `structured-knowledge-extraction` atualizado
