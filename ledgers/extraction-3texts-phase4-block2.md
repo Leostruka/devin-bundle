@@ -70,4 +70,14 @@ Arquivos autorizados para alteração nesta fase:
 - [x] G9: `python -m pytest -q` passa
 - [x] G10: `python -m pytest tests/held-out/ -q` passa
 - [x] G11: `git diff --check` e `check-ai-signature.py` passam
-- [ ] G12: commit realizado (se autorizado) e working tree limpo
+- [x] G12: commit realizado (se autorizado) e working tree limpo
+
+## Resultado
+
+- Commit: `eea34e9 feat: add agent-cost-guard, intention-capture, and api-context-spec skills`
+- Working tree: limpa
+- Audit: 32/32 checks, 0 erros, 0 warnings
+- Tests: 264 passed (full), 135 passed (held-out)
+- Diff check: limpo
+- AI signature: nenhuma detectada
+- Install sync: `agent-cost-guard`, `intention-capture`, `api-context-spec` instalados; `manifest.json`, `README.md`, `docs/TOOLS-MAP.md`, `docs/SKILL-TIERS.md` atualizados

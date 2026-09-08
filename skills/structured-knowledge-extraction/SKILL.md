@@ -67,8 +67,15 @@ After installation the helper is available at `~/.config/devin/skills/structured
 - pyproject: https://github.com/yifanfeng97/Hyper-Extract/blob/main/pyproject.toml
 - License: https://github.com/yifanfeng97/Hyper-Extract/blob/main/LICENSE
 
+## Limitations
+
+- **Lexical, not semantic.** This skill extracts entities and relations from Markdown structure (headings, links, citations, code). It does not extract abstract concepts, infer intent, or perform semantic reasoning. For domain-level validation of extracted knowledge, use `ontology-validator`.
+- **No automatic conflict resolution.** Conflicts are reported but require explicit human or agent action.
+- **No vector search.** The `search` operation is lexical; semantic search requires embeddings or an external index.
+
 ## Cross-references
 
 - `/devin-manager` — audit `.devin/` health before writing.
 - `/mcp-context-audit` — measure MCP tool-definition cost before enabling an integration.
 - `/research` — verify primary-source claims before adding external integrations.
+- `/ontology-validator` — validate extracted entities and relations against domain rules before side effects.
