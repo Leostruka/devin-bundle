@@ -356,6 +356,27 @@
       "exported_at": "2026-09-07T00:00:00-03:00"
     },
     {
+      "name": "agent-cost-guard",
+      "source": "created:Devin bundle (good-practis)",
+      "purpose": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure.",
+      "original_path": "%APPDATA%\\devin\\skills\\agent-cost-guard",
+      "exported_at": "2026-09-07T00:00:00-03:00"
+    },
+    {
+      "name": "intention-capture",
+      "source": "created:Devin bundle (good-practis)",
+      "purpose": "Use when capturing and validating the \"intent\" field in tickets, specs, or PRDs before implementation. Ensures every task has a clear objective, landing zone, and user impact.",
+      "original_path": "%APPDATA%\\devin\\skills\\intention-capture",
+      "exported_at": "2026-09-07T00:00:00-03:00"
+    },
+    {
+      "name": "api-context-spec",
+      "source": "created:Devin bundle (good-practis)",
+      "purpose": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable.",
+      "original_path": "%APPDATA%\\devin\\skills\\api-context-spec",
+      "exported_at": "2026-09-07T00:00:00-03:00"
+    },
+    {
       "name": "wait-what",
       "source": "devin-bundle",
       "purpose": "Use when the last message did not land and needs to be re-explained or re-pitched.",
@@ -620,7 +641,7 @@
       "exported_at": "2026-08-31T22:00:00-03:00"
     }
   ],
-  "skill_count": 79,
+  "skill_count": 82,
   "rule_count": 26,
   "scripts": [
     {

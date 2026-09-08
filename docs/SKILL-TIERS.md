@@ -163,6 +163,9 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `database` | Schema, migrations, queries, índices | ~450 | Modelagem ou otimização DB |
 | `e2e-testing` | Playwright/Selenium/Cypress journeys | ~500 | Testes de jornada crítica |
 | `cost-optimization` | Tokens, cache, model routing, MCPs | ~450 | Reduzir custo de inferência |
+| `agent-cost-guard` | Limita subagentes e loops, alerta token maxing | ~400 | Controle de custo de agentes |
+| `intention-capture` | Captura e valida campo "intenção" em tickets/specs | ~400 | Antes de implementar |
+| `api-context-spec` | Gera/manipula OpenAPI specs como contexto para IA | ~400 | Design ou review de API |
 | `docker` | Build, run, compose, scan de imagens | ~400 | Containers e stacks |
 | `i18n` | Traduções, plural, LTR/RTL, formatos | ~450 | Multi-idioma |
 | `legacy-refactor` | Strangler-fig, seams, modernization | ~500 | Modernizar código legado |
