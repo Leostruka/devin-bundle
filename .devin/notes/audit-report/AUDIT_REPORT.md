@@ -18,6 +18,11 @@
 - `6.3.1` RESOLVIDO: `AGENTS.md` foi condensado (~24K chars / ~6K tokens); regras pinned 14-19 foram reduzidas mantendo a essência. Adicionado check no `audit.py` para budget de tokens.
 - `8.3.1` RESOLVIDO: `audit.py` agora valida estrutura de `install.ps1`, `install.sh`, `export.ps1`, `export.sh` (parâmetros, placeholders, shebangs).
 - `8.3.2` RESOLVIDO: `audit.py` agora detecta números de regras duplicados e valida contra `manifest.rule_count`; gaps intencionais são permitidos desde que a contagem bata.
+- `5.3.3` RESOLVIDO: `audit.py` agora valida `mcp_config.json` (schema, transporte, URL).
+- `7.3.2` RESOLVIDO: `audit.py` agora valida `config.json` (schema, hooks, eventos).
+- `8.3.3` RESOLVIDO: adicionado `tests/validation/test_config_schema.py` para `config.json` e `hooks.v1.json`.
+- `10.3.2` RESOLVIDO: `README.md` agora menciona o agente `qa-ci`.
+- `10.3.3` RESOLVIDO: `CHANGELOG.md` v3.1.0 agora lista as 6 novas skills (`ontology-validator`, `task-sizer`, `secure-defaults-check`, `agent-cost-guard`, `intention-capture`, `api-context-spec`).
 
 ## Checklist de Componentes
 
@@ -192,7 +197,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 |---|------|-----------|-----------|-----------|
 | 5.3.1 | ~~`atlassian` MCP usa transporte HTTP sem TLS explícito~~ | `mcp_config.json:5` | ~~Important~~ **Corrigido** | Campo `transport` alterado para `https`, consistente com a URL. |
 | 5.3.2 | Não há documentação do número de tools do `atlassian` no bundle | `docs/TOOLS-MAP.md` | Minor | TOOLS-MAP.md menciona `atlassian` mas não lista a contagem real de tools. |
-| 5.3.3 | `mcp_config.json` não é validado por `audit.py` | `audit.py` | Minor | Audit valida JSON mas não a estrutura MCP (server, transport, tool count). |
+| 5.3.3 | ~~`mcp_config.json` não é validado por `audit.py`~~ | `audit.py:328-352` | ~~Minor~~ **Corrigido** | `audit.py` valida `mcpServers`, URL https e transporte https/stdio. |
 | 5.3.4 | Não há mecanismo de fallback se `atlassian` não estiver autenticado | `mcp_config.json` | Minor | Configuração contém URL mas não indica se requer autenticação prévia. |
 
 ### 5.4 Recomendações
@@ -253,7 +258,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 7.3.2 | `config.json` não é validado por schema | `audit.py` | Minor | JSON é validado, mas não há schema check de hooks/eventos/sintaxe. |
+| 7.3.2 | ~~`config.json` não é validado por schema~~ | `audit.py:187-229` | ~~Minor~~ **Corrigido** | `audit.py` valida `version`, top-level keys, `attribution`, eventos e estrutura de hooks. |
 | 7.3.3 | `manifest.json` não versiona scripts nem agentes por hash | `manifest.json` | Minor | Scripts e agentes não têm hash/export_hash; só skills têm. Isso dificulta detectar drift. |
 | 7.3.4 | `config.json` atribui `attribution: false` sem explicar o impacto | `config.json:11` | Minor | `attribution` desligado pode afetar logs de uso/custo; deveria ser documentado. |
 
@@ -284,7 +289,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 |---|------|-----------|-----------|-----------|
 | 8.3.1 | ~~`audit.py` não valida `install.ps1`/`install.sh`/`export.ps1`/`export.sh`~~ | `audit.py:499-548` | ~~Important~~ **Corrigido** | `audit.py` agora valida parâmetros, placeholders, shebangs e estrutura dos scripts. |
 | 8.3.2 | ~~`audit.py` não valida conteúdo de `AGENTS.md` contra número de regras~~ | `audit.py:109-143` | ~~Important~~ **Corrigido** | `audit.py` valida contagem contra `manifest.rule_count` e detecta duplicatas; gaps intencionais são permitidos. |
-| 8.3.3 | Não há testes para `config.json` schema ou hooks | `tests/validation/` | Minor | Testes não cobrem validação do schema de `config.json` ou `hooks.v1.json`. |
+| 8.3.3 | ~~Não há testes para `config.json` schema ou hooks~~ | `tests/validation/test_config_schema.py` | ~~Minor~~ **Corrigido** | Testes cobrem schema de `config.json` e eventos de `hooks.v1.json`. |
 | 8.3.4 | `tests/` não cobrem todos os 82 skills | `tests/validation/test_skill_format_passes.py` | Minor | Apenas formato de frontmatter é testado, não conteúdo/qualidade das skills. |
 | 8.3.5 | `audit.py` emite warnings repetidos sobre "unable to find all commit-graph files" | `git status`, `git log` | Minor | Warning não impede funcionamento, mas indica configuração de git incompleta. |
 
@@ -352,8 +357,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 10.3.2 | `README.md` não menciona `qa-ci` agent | `README.md:151-167` | Minor | Perfil `qa-ci` existe mas não é documentado. |
-| 10.3.3 | `CHANGELOG.md` não menciona as 6 novas skills da Fase 4/5 | `CHANGELOG.md:1-15` | Minor | Versão 3.1.0 lista melhorias gerais, mas não detalha as novas skills. |
+| 10.3.2 | ~~`README.md` não menciona `qa-ci` agent~~ | `README.md:162` | ~~Minor~~ **Corrigido** | Tabela de perfis inclui `qa-ci`. |
+| 10.3.3 | ~~`CHANGELOG.md` não menciona as 6 novas skills da Fase 4/5~~ | `CHANGELOG.md:12-18` | ~~Minor~~ **Corrigido** | v3.1.0 lista `ontology-validator`, `task-sizer`, `secure-defaults-check`, `agent-cost-guard`, `intention-capture`, `api-context-spec`. |
 | 10.3.4 | `docs/TOOLS-MAP.md` não atualiza tool count do MCP `atlassian` | `docs/TOOLS-MAP.md:127-135` | Minor | Documentação menciona verificação, mas não fornece contagem. |
 | 10.3.5 | `CONTRIBUTING.md` e `SECURITY.md` não são citados no audit | `audit.py` | Minor | Audit valida existência, mas não conteúdo. |
 

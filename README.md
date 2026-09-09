@@ -159,6 +159,7 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 | `debugger` | Reprodução e análise sistemática de falhas | Execução controlada |
 | `implementer` | Código, testes e verificação de uma tarefa delimitada | Sim |
 | `reviewer` | Revisão independente de Standards e Spec | Não |
+| `qa-ci` | Verificacao independente de testes, build e lint | Execucao controlada |
 | `subagent_explore` | Exploração built-in | Não |
 | `subagent_general` | Trabalho geral built-in | Sim |
 

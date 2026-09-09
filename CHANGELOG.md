@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **6 new skills** for governance, security, and cost control:
+  - `ontology-validator` — validate structured knowledge and ontology integrity.
+  - `task-sizer` — estimate and calibrate task scope before dispatching.
+  - `secure-defaults-check` — pre-commit/pre-push security defaults verification.
+  - `agent-cost-guard` — guardrails for token and parallel-tool cost.
+  - `intention-capture` — capture and pin user intent before implementation.
+  - `api-context-spec` — design and validate API context contracts.
 - Validated task-adaptive harness recipes, durable session logging, MCP code-mode routing, model-interface preflight, bidirectional patch verification, temporal regression checks, and prompt-bloat quality gates.
 - Validation coverage for Leo's orchestration contract.
 

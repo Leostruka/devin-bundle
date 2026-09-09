@@ -184,6 +184,50 @@ for s in sorted(scripts_referenced):
         errors.append('Hook references ' + s + ' but file missing')
         print('  FAIL ' + s + ' missing')
 
+# 7b. config.json schema validation
+print()
+print('[7b] config.json schema validation')
+HOOK_EVENTS = ['PreToolUse', 'PostToolUse', 'PreCompact', 'PostCompaction', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop', 'PermissionRequest']
+config_errors = []
+if not isinstance(config.get('version'), int):
+    config_errors.append('version must be an integer')
+for key in ['devin', 'agent', 'read_config_from', 'shell']:
+    if not isinstance(config.get(key), dict):
+        config_errors.append('missing or invalid top-level key: ' + key)
+if 'attribution' not in config or not isinstance(config['attribution'], bool):
+    config_errors.append('attribution must be a boolean')
+if not isinstance(hooks, dict):
+    config_errors.append('hooks must be an object')
+else:
+    for event in hooks:
+        if event not in HOOK_EVENTS:
+            config_errors.append('unknown hook event: ' + event)
+        if not isinstance(hooks[event], list):
+            config_errors.append('hooks[' + event + '] must be a list')
+        else:
+            for entry in hooks[event]:
+                if not isinstance(entry, dict):
+                    config_errors.append('hook entry must be an object')
+                    continue
+                if 'matcher' not in entry:
+                    config_errors.append('hook entry missing matcher')
+                if 'hooks' not in entry or not isinstance(entry.get('hooks'), list):
+                    config_errors.append('hook entry missing hooks list')
+                else:
+                    for h in entry.get('hooks', []):
+                        if h.get('type') != 'command':
+                            config_errors.append('hook type must be "command"')
+                        if not h.get('command'):
+                            config_errors.append('hook command missing')
+                        if 'timeout' in h and not isinstance(h.get('timeout'), int):
+                            config_errors.append('hook timeout must be an integer')
+if config_errors:
+    for e in config_errors:
+        errors.append('config.json schema: ' + e)
+        print('  FAIL ' + e)
+else:
+    print('  OK  config.json schema valid')
+
 # 8. All scripts in scripts/ dir
 print()
 print('[8] Scripts directory')
@@ -280,6 +324,32 @@ if mcp_has_secrets:
     warnings.append('mcp_config.json has unmasked secret-like fields')
 else:
     print('  OK  mcp_config.json no secret-like fields')
+
+# 10b. mcp_config.json schema validation
+print()
+print('[10b] mcp_config.json schema validation')
+mcp_schema_errors = []
+if not isinstance(mcp.get('mcpServers'), dict):
+    mcp_schema_errors.append('mcpServers must be an object')
+else:
+    for sname, scfg in mcp_servers.items():
+        if not isinstance(scfg, dict):
+            mcp_schema_errors.append(sname + ' config must be an object')
+            continue
+        url = scfg.get('url', '')
+        transport = scfg.get('transport', '')
+        if not url.startswith('https://'):
+            mcp_schema_errors.append(sname + ' url must use https')
+        if transport not in ('https', 'stdio'):
+            mcp_schema_errors.append(sname + ' transport must be https or stdio')
+        if url.startswith('https://') and transport == 'http':
+            mcp_schema_errors.append(sname + ' transport http does not match https url')
+if mcp_schema_errors:
+    for e in mcp_schema_errors:
+        errors.append('mcp_config.json: ' + e)
+        print('  FAIL ' + e)
+else:
+    print('  OK  mcp_config.json schema valid')
 
 # 11. .gitignore coverage
 print()
