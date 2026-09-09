@@ -21,7 +21,7 @@ Sources:
 """
 import sys, json, subprocess, os
 
-TEST_TIMEOUT = 60
+TEST_TIMEOUT = 120
 
 
 def block(reason):

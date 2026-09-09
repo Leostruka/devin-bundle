@@ -29,6 +29,10 @@
 - `7.3.4` RESOLVIDO: `README.md` documenta `attribution: false` na seção de instalação.
 - `10.3.4` RESOLVIDO: `docs/TOOLS-MAP.md` atualizado com nota sobre tool count.
 - `10.3.5` RESOLVIDO: `audit.py` agora verifica se `CONTRIBUTING.md` e `SECURITY.md` têm conteúdo mínimo (não apenas existem).
+- `4.3.1` RESOLVIDO: `check-push-green.py` timeout aumentado de 60s para 120s.
+- `4.3.3` RESOLVIDO: adicionado `tests/validation/test_context_pressure.py` com testes de unidade.
+- `6.3.2`/`9.3.1` RESOLVIDO: adicionado `.devin/rules/README.md` explicando uso intencionalmente vazio.
+- `6.3.3`/`9.3.2` RESOLVIDO: adicionados ADRs `001` e `002` documentando decisões arquiteturais.
 
 ## Checklist de Componentes
 
@@ -167,9 +171,9 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 4.3.1 | `check-push-green.py` timeout de 60s pode ser curto para suites grandes | `scripts/check-push-green.py:24` | Minor | Suites de teste maiores podem estourar 60s, fazendo o hook "fails open" e permitindo push com testes lentos. |
+| 4.3.1 | ~~`check-push-green.py` timeout de 60s pode ser curto~~ | `scripts/check-push-green.py:24` | ~~Minor~~ **Corrigido** | Timeout aumentado para 120s. |
 | 4.3.2 | `silent-error-review.py` pode gerar falsos positivos | `tests/held-out/mutation/test_silent_error_new_indicators.py` | Minor | Testes de mutação mostram histórico de ajustes; o regex ainda pode confundir warning+error. |
-| 4.3.3 | `context-pressure.py` não tem teste de unidade | `scripts/context-pressure.py` | Minor | Script mede pressão de contexto mas não há teste automatizado direto. |
+| 4.3.3 | ~~`context-pressure.py` não tem teste de unidade~~ | `tests/validation/test_context_pressure.py` | ~~Minor~~ **Corrigido** | Testes de unidade adicionados para funções utilitárias. |
 | 4.3.4 | `validate-tool-args.py` não bloqueia `max_parallel` não-inteiro (corrigido em `c86342d`) | `scripts/validate-tool-args.py` | Minor | Correção recente valida tipo, mas não há teste específico para string/ float. |
 | 4.3.5 | `PermissionRequest` não tem handler ativo | `config.json`, `hooks.v1.json` | Minor | Evento é suportado mas sem hook; isso é aceitável, mas documentar como intencional. |
 | 4.3.6 | `SessionEnd` e `Stop` compartilham `memory-stop.py`; `Stop` também chama `refine-review-prompt.py` | `config.json`, `hooks.v1.json` | Minor | Duplicação leve; `memory-stop.py` em dois eventos pode gerar logs duplicados. |
@@ -234,8 +238,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
 | 6.3.1 | ~~`AGENTS.md` é longo~~ | `AGENTS.md`, `audit.py:133-144` | ~~Important~~ **Corrigido** | Regras pinned 14-19 foram condensadas; `audit.py` monitora budget de tokens. |
-| 6.3.2 | `.devin/rules/` está vazio | `Get-ChildItem .devin/rules` | Minor | O bundle não usa regras específicas por domínio em `.devin/rules/`, apesar da convenção existir. |
-| 6.3.3 | `.devin/adr/` contém apenas `README.md` | `find .devin/adr` | Minor | Não há ADRs reais documentando decisões arquiteturais do bundle (ex: por que placeholder `{{APPDATA}}/devin`, por que 82 skills, por que SWE-1.7). |
+| 6.3.2 | ~~`.devin/rules/` está vazio~~ | `.devin/rules/README.md` | ~~Minor~~ **Corrigido** | README explica que regras específicas do projeto devem ser criadas pelo consumidor. |
+| 6.3.3 | ~~`.devin/adr/` contém apenas `README.md`~~ | `.devin/adr/001-*.md`, `.devin/adr/002-*.md` | ~~Minor~~ **Corrigido** | ADRs 001 e 002 documentam placeholder e modelo de subagente. |
 | 6.3.4 | Regra 18 fala em manter regras pequenas, mas regras pinned 14-19 são extensas | `AGENTS.md:97-154` | Minor | As regras mais importantes são as mais longas, aumentando o contexto fixo. |
 
 ### 6.4 Recomendações
@@ -328,8 +332,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 9.3.1 | `.devin/rules/` está vazio | `Get-ChildItem .devin/rules` | Minor | O bundle não usa regras específicas do projeto além de `global_rules.md`. |
-| 9.3.2 | `.devin/adr/` só tem `README.md` | `find .devin/adr` | Minor | Faltam ADRs documentando decisões do bundle. |
+| 9.3.1 | ~~`.devin/rules/` está vazio~~ | `.devin/rules/README.md` | ~~Minor~~ **Corrigido** | README explica uso intencionalmente vazio. |
+| 9.3.2 | ~~`.devin/adr/` só tem `README.md`~~ | `.devin/adr/001-*.md`, `.devin/adr/002-*.md` | ~~Minor~~ **Corrigido** | ADRs adicionados. |
 | 9.3.3 | `refinements.log.jsonl` não tem verificação de conteúdo além de ID único | `audit.py` | Minor | Audit valida unicidade de IDs, mas não valida se cada entrada tem reprodução/evidência (Rule 15). |
 | 9.3.4 | `scratch/` contém esforços antigos sem status claro | `.devin/scratch/` | Minor | Alguns diretórios podem estar abandonados; não há mecanismo de arquivamento. |
 | 9.3.5 | `__pycache__` existe em `.devin/` | `.devin/__pycache__/` | Minor | Cache Python não deveria ser rastreado; `.gitignore` cobre, mas a presença indica execução de scripts no diretório. |
