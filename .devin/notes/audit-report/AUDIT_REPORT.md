@@ -103,10 +103,10 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 2.3.1 | `qa-ci` tem `exec`/`get_output` mas a descrição diz "Read-only with exec for real test/build/lint runs" | `agents/qa-ci.md` | Minor | Uso de `exec` é adequado para verificação, mas o risco de poluição entre "verificar" e "modificar" precisa ser claro. O perfil não tem `write`/`edit`, o que é correto. |
-| 2.3.2 | `reviewer` tem `allowed-tools` incluindo `exec` e `get_output` | `agents/reviewer.md` | Minor | Revisores podem executar testes para verificar, mas idealmente não deveriam escrever. `exec` é aceitável para testes, mas `write`/`edit` deveriam estar ausentes. |
-| 2.3.3 | `qa-ci` não é usado no mapeamento de fluxos do README | `README.md:151-167` | Minor | O perfil existe mas não é mencionado na documentação de fluxos. Risco de descoberta baixa. |
-| 2.3.4 | `.devin/agents/` mistura domínio, issue tracker e triagem, mas não há agente de `reviewer` de projeto | `.devin/agents/` | Minor | Projetos consumidores podem precisar de reviewer local, mas só há agentes de domínio/issue/triagem. |
+| 2.3.1 | ~~`qa-ci` tem `exec`/`get_output`~~ | `agents/qa-ci.md:10-11` | ~~Minor~~ **Corrigido** | Comentários em `allowed-tools` reforçam exec read-only para testes/build/lint. |
+| 2.3.2 | ~~`reviewer` tem `allowed-tools` incluindo `exec` e `get_output`~~ | `agents/reviewer.md:10-13` | ~~Minor~~ **Corrigido** | Comentários reforçam exec para verificação e ausência intencional de write/edit. |
+| 2.3.3 | ~~`qa-ci` não é usado no mapeamento de fluxos do README~~ | `README.md:162` | ~~Minor~~ **Corrigido** | Tabela de perfis inclui `qa-ci`. |
+| 2.3.4 | ~~`.devin/agents/` sem agente `reviewer` de projeto~~ | `.devin/agents/reviewer.md` | ~~Minor~~ **Corrigido** | Agent de reviewer adicionado para review local two-axis. |
 
 ### 2.4 Recomendações
 
@@ -138,7 +138,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 3.3.1 | Várias skills não têm `triggers` no frontmatter | `skills/*/SKILL.md` | Minor | `AGENTS.md:175-178` lista `triggers` como opcional, mas sua ausência reduz a precisão da descoberta automática. |
 | 3.3.2 | `leo` skill mistura orquestração com descrições extensas | `skills/leo/SKILL.md` | Minor | Skill orquestradora é crítica e carregada frequentemente; poderia ser mais concisa ou dividida em módulos. |
 | 3.3.3 | Habilidades similares (`cost-optimization`, `agent-cost-guard`, `effort-calibration`) podem confundir o usuário sobre qual invocar | `docs/SKILL-TIERS.md` | Minor | Há sobreposição de responsabilidades; não há skill de roteamento claro além de `ask-matt`. |
-| 3.3.4 | `ontology-validator`, `task-sizer`, `secure-defaults-check` foram criadas mas não têm scripts de automação | `skills/*` | Minor | Skills são documentação-only; o audit não verifica se têm implementação executável. |
+| 3.3.4 | ~~`ontology-validator`, `task-sizer`, `secure-defaults-check` sem scripts~~ | `skills/ontology-validator/scripts/validate.py`, `skills/task-sizer/scripts/estimate.py`, `skills/secure-defaults-check/scripts/check.py` | ~~Minor~~ **Corrigido** | Cada skill recebeu um script executável mínimo. |
 | 3.3.5 | ~~`agent-cost-guard` não integra com `scripts/validate-tool-args.py`~~ | `skills/agent-cost-guard/SKILL.md:28` | ~~Minor~~ **Corrigido** | SKILL.md menciona `validate-tool-args.py` e limites de `max_parallel`. |
 
 ### 3.4 Recomendações
