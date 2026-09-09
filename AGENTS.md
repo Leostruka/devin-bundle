@@ -94,7 +94,7 @@ The agent runs with the user's full permissions. No isolation layer.
 - Don't ignore the Factorio lesson. PrimeAgent's `/refine` found a cheating exploit and optimized cheating skills. The `primeagent-reference` skill (Refine mode) has guardrails — follow them.
 - Do review changes before applying. Use `--dry-run`. Confirm before destructive operations.
 
-## 14. Constraint Pinning survives compaction (pinned)
+## 14. Constraint Pinning survives compaction (pinned) — keep governance rules after compaction
 
 `constraint-pinning.py` detects dropped governance constraints after compaction and re-injects them on `UserPromptSubmit`/`SessionStart`.
 
@@ -102,25 +102,25 @@ The agent runs with the user's full permissions. No isolation layer.
 - Update `PINNED_CONSTRAINTS` when adding a governance rule.
 - Verify the hook is loaded and constraints reappear after compaction.
 
-## 15. Refinement evidence must be reproducible (pinned)
+## 15. Refinement evidence must be reproducible (pinned) — every refinement needs a reproducible command
 
 - Don't accept "I think this failed" as evidence; phantom guardrails are common in self-improvement runs.
 - Every refinement must cite a reproducible command, tool call, or file path.
 - Run `validate-refinement-evidence.py` on `refinements.log.jsonl`.
 - Validate with held-out tests, not just the tests the agent chose.
 
-## 16. Self-improvement loops produce illusory gains (pinned)
+## 16. Self-improvement loops produce illusory gains (pinned) — validate with held-out tests, not chosen tests
 
 - Don't measure improvement with the same tests the agent chose.
 - Don't push when validation passes but held-out fails. `check-push-green.py` enforces this gap check.
 - Maintain both `tests/validation/` and `tests/held-out/`.
 - Declare "helped" only with real metrics, not feelings.
 
-## 17. Don't deduce — verify with tools (pinned)
+## 17. Don't deduce — verify with tools (pinned) — use tools before claiming state
 
 Never infer state from reasoning alone. Use `read`, `exec`, `grep`, `glob`, `web_search`, `webfetch` to observe reality before claiming anything. A deduction is a guess with confidence; tool output fails loudly.
 
-## 18. Keep the context window lean (pinned)
+## 18. Keep the context window lean (pinned) — short context retrieves better
 
 - Context is the main constraint. Shorter, focused context retrieves better.
 - Default to `clear` over `compact`.
@@ -130,7 +130,7 @@ Never infer state from reasoning alone. Use `read`, `exec`, `grep`, `glob`, `web
 - Prefer subagents for parallel exploration.
 - Watch the budget with `context-budget.py`.
 
-## 19. Never read secrets or sensitive env vars (pinned)
+## 19. Never read secrets or sensitive env vars (pinned) — never expose secret values
 
 Never expose secret values.
 

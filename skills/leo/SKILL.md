@@ -6,6 +6,16 @@ triggers: [user, model]
 
 # /leo — Universal bundle orchestrator
 
+## TL;DR
+
+1. Self-check (scope, skills, verify, no opinion).
+2. Classify objective; route directly to matching skill(s).
+3. Start with `using-skills`; use `ask-matt` only if unclear.
+4. For 3+ steps, write `todo_write`; mark `in_progress` then `completed`.
+5. Define Verification Function (gate/expect/evidence) per step.
+6. Dispatch `qa-ci` to re-run every gate on clean checkout.
+7. Run `python audit.py` and `python -m pytest` before claiming done.
+
 ## Goal
 
 Provide one entry point for the bundle's universal orchestration: classify the objective, invoke specialist skills directly, compose multi-skill flows, and retain control through verified completion. `ask-matt` is the full routing reference, not a mandatory hop; `wayfinder` and every other clear specialist route are first-class entry paths.

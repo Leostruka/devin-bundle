@@ -136,7 +136,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
 | 3.3.1 | ~~Várias skills não têm `triggers` no frontmatter~~ | `skills/*/SKILL.md` | ~~Minor~~ **Corrigido** | `triggers: [user, model]` adicionado a skills sem triggers. |
-| 3.3.2 | `leo` skill mistura orquestração com descrições extensas | `skills/leo/SKILL.md` | Minor | Skill orquestradora é crítica e carregada frequentemente; poderia ser mais concisa ou dividida em módulos. |
+| 3.3.2 | ~~`leo` skill mistura orquestração com descrições extensas~~ | `skills/leo/SKILL.md:7-17` | ~~Minor~~ **Corrigido** | TL;DR no topo resume os 7 passos; conteúdo completo preservado. |
 | 3.3.3 | ~~Habilidades similares podem confundir o usuário~~ | `docs/SKILL-TIERS.md` | ~~Minor~~ **Corrigido** | Nota adicionada diferenciando as três skills de custo. |
 | 3.3.4 | ~~`ontology-validator`, `task-sizer`, `secure-defaults-check` sem scripts~~ | `skills/ontology-validator/scripts/validate.py`, `skills/task-sizer/scripts/estimate.py`, `skills/secure-defaults-check/scripts/check.py` | ~~Minor~~ **Corrigido** | Cada skill recebeu um script executável mínimo. |
 | 3.3.5 | ~~`agent-cost-guard` não integra com `scripts/validate-tool-args.py`~~ | `skills/agent-cost-guard/SKILL.md:28` | ~~Minor~~ **Corrigido** | SKILL.md menciona `validate-tool-args.py` e limites de `max_parallel`. |
@@ -172,7 +172,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
 | 4.3.1 | ~~`check-push-green.py` timeout de 60s pode ser curto~~ | `scripts/check-push-green.py:24` | ~~Minor~~ **Corrigido** | Timeout aumentado para 120s. |
-| 4.3.2 | `silent-error-review.py` pode gerar falsos positivos | `tests/held-out/mutation/test_silent_error_new_indicators.py` | Minor | Testes de mutação mostram histórico de ajustes; o regex ainda pode confundir warning+error. |
+| 4.3.2 | ~~`silent-error-review.py` pode gerar falsos positivos~~ | `scripts/silent-error-review.py:87-117` | ~~Minor~~ **Corrigido** | `signal_lines()` exige indicador de erro forte quando a linha também é noise/warning. |
 | 4.3.3 | ~~`context-pressure.py` não tem teste de unidade~~ | `tests/validation/test_context_pressure.py` | ~~Minor~~ **Corrigido** | Testes de unidade adicionados para funções utilitárias. |
 | 4.3.4 | ~~`validate-tool-args.py` não bloqueia `max_parallel` não-inteiro~~ | `tests/held-out/mutation/test_validate_tool_args_new.py:107-128` | ~~Minor~~ **Corrigido** | Testes cobrem string, float e > 3. |
 | 4.3.5 | ~~`PermissionRequest` não tem handler ativo~~ | `README.md:189`, `docs/TOOLS-MAP.md:94` | ~~Minor~~ **Corrigido** | Documentado como intencional nos eventos de hook. |
@@ -240,7 +240,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 6.3.1 | ~~`AGENTS.md` é longo~~ | `AGENTS.md`, `audit.py:133-144` | ~~Important~~ **Corrigido** | Regras pinned 14-19 foram condensadas; `audit.py` monitora budget de tokens. |
 | 6.3.2 | ~~`.devin/rules/` está vazio~~ | `.devin/rules/README.md` | ~~Minor~~ **Corrigido** | README explica que regras específicas do projeto devem ser criadas pelo consumidor. |
 | 6.3.3 | ~~`.devin/adr/` contém apenas `README.md`~~ | `.devin/adr/001-*.md`, `.devin/adr/002-*.md` | ~~Minor~~ **Corrigido** | ADRs 001 e 002 documentam placeholder e modelo de subagente. |
-| 6.3.4 | Regra 18 fala em manter regras pequenas, mas regras pinned 14-19 são extensas | `AGENTS.md:97-154` | Minor | As regras mais importantes são as mais longas, aumentando o contexto fixo. |
+| 6.3.4 | ~~Regras pinned 14-19 são extensas~~ | `AGENTS.md:97-133` | ~~Minor~~ **Corrigido** | Cada regra pinned 14-19 ganhou subtítulo resumo mantendo o corpo. |
 
 ### 6.4 Recomendações
 
@@ -335,7 +335,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 9.3.1 | ~~`.devin/rules/` está vazio~~ | `.devin/rules/README.md` | ~~Minor~~ **Corrigido** | README explica uso intencionalmente vazio. |
 | 9.3.2 | ~~`.devin/adr/` só tem `README.md`~~ | `.devin/adr/001-*.md`, `.devin/adr/002-*.md` | ~~Minor~~ **Corrigido** | ADRs adicionados. |
 | 9.3.3 | ~~`refinements.log.jsonl` não tem verificação de conteúdo~~ | `audit.py:720-756` | ~~Minor~~ **Corrigido** | `audit.py` valida campos `repro_command`, `expected`, `actual`, `verdict`. |
-| 9.3.4 | `scratch/` contém esforços antigos sem status claro | `.devin/scratch/` | Minor | Alguns diretórios podem estar abandonados; não há mecanismo de arquivamento. |
+| 9.3.4 | ~~`scratch/` contém esforços antigos sem status claro~~ | `.devin/scratch/README.md` | ~~Minor~~ **Corrigido** | README geral lista stubs e cada stub tem README com status ARCHIVED. |
 | 9.3.5 | ~~`__pycache__` existe em `.devin/`~~ | `.gitignore`, `audit.py:407-418` | ~~Minor~~ **Corrigido** | `__pycache__` é gerado por execução Python e está coberto por `.gitignore`; audit verifica presença. |
 
 ### 9.4 Recomendações
