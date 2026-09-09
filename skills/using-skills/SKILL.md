@@ -1,6 +1,7 @@
 ---
 name: using-skills
 description: Use when starting any conversation and before taking any non-trivial action.
+triggers: [user, model]
 ---
 **If you were dispatched as a subagent to execute a specific task, ignore this skill.**
 

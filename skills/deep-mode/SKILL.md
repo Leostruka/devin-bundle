@@ -1,6 +1,7 @@
 ---
 name: deep-mode
 description: Use when the user says 'deep', 'deep search', 'deep research', 'research this thoroughly', or asks for exhaustive codebase exploration beyond a quick grep. Replicates Ask Devin's Deep Mode (!deep in Slack/Teams) for the CLI — multi-pass agentic search with citations, cross-file synthesis, and architecture mapping.
+triggers: [user, model]
 ---
 
 # Deep Mode (CLI replica of Ask Devin Deep Mode)

@@ -404,6 +404,18 @@ for pattern in required_ignores:
     else:
         warnings.append('.gitignore missing ' + pattern)
         print('  WARN .gitignore missing ' + pattern)
+# Also check for tracked __pycache__ directories
+pycache_dirs = []
+for root, dirs, files in os.walk('.'):
+    if '.git' in root:
+        continue
+    if '__pycache__' in dirs:
+        pycache_dirs.append(root)
+if pycache_dirs:
+    warnings.append('__pycache__ directories found: ' + ', '.join(pycache_dirs))
+    print('  WARN __pycache__ directories found: ' + ', '.join(pycache_dirs))
+else:
+    print('  OK  no __pycache__ directories')
 
 # 12. CI workflow
 print()
@@ -712,6 +724,8 @@ reflog = os.path.join('.devin', 'refinements.log.jsonl')
 if os.path.exists(reflog):
     ref_ids = []
     ref_errors = []
+    required_ref_keys = ['id', 'timestamp', 'repro_command', 'expected', 'actual', 'verdict']
+    missing_evidence = []
     for line in open(reflog, encoding='utf-8'):
         line = line.strip()
         if not line:
@@ -719,11 +733,17 @@ if os.path.exists(reflog):
         try:
             entry = json.loads(line)
             ref_ids.append(entry.get('id', ''))
+            missing = [k for k in required_ref_keys if k not in entry or not entry[k]]
+            if missing:
+                missing_evidence.append(str(entry.get('id', '?')) + ' missing ' + ', '.join(missing))
         except (json.JSONDecodeError, ValueError):
             ref_errors.append('malformed JSON line')
     if ref_errors:
         errors.append('refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
         print('  FAIL refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
+    elif missing_evidence:
+        warnings.append('refinements.log.jsonl entries missing evidence: ' + '; '.join(missing_evidence[:5]))
+        print('  WARN refinements.log.jsonl entries missing evidence: ' + str(len(missing_evidence)))
     else:
         from collections import Counter
         dups = {k: v for k, v in Counter(ref_ids).items() if v > 1}

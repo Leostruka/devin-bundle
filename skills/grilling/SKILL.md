@@ -1,6 +1,7 @@
 ---
 name: grilling
 description: Use when exploring and stress-testing ideas before committing to a design or plan, when the user says "grill me" or "stress-test this", or when sharpening a plan while also producing ADRs and a glossary.
+triggers: [user, model]
 ---
 # Grilling & Brainstorming (Unified)
 

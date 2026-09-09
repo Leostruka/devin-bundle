@@ -1,6 +1,7 @@
 ---
 name: context-window-hygiene
 description: Use when a conversation is getting long and the agent seems to be forgetting earlier instructions, before adding MCP servers or rules files, when deciding whether to clear or compact the chat, or when context window budget feels tight. Covers lost-in-the-middle, clear-vs-compact, and lean-context hygiene.
+triggers: [user, model]
 ---
 
 # Context Window Hygiene

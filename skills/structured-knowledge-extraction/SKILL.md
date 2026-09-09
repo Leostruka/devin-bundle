@@ -2,6 +2,7 @@
 name: structured-knowledge-extraction
 description: Use when extracting entities, relations, evidence, and provenance from Markdown or plain text into a typed, versioned knowledge graph under `.devin/`.
 version: 1.0.0
+triggers: [user, model]
 ---
 
 # structured-knowledge-extraction

@@ -2,6 +2,7 @@
 name: devin-manager
 description: Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only persist under `.devin/` after explicit approval.
 version: 1.0.0
+triggers: [user, model]
 ---
 
 # devin-manager

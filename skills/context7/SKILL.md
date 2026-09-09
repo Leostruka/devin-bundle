@@ -2,6 +2,7 @@
 name: context7
 description: Use when the user asks about a library, framework, or component and up-to-date docs would help.
 allowed-tools: [exec, read]
+triggers: [user, model]
 ---
 
 # Context7

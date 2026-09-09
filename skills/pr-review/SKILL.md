@@ -5,6 +5,7 @@ version: 1.0.0
 model: swe-1-7
 subagent: true
 agent: reviewer
+triggers: [user, model]
 ---
 
 # PR Review (Inline GitHub)

@@ -135,9 +135,9 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 3.3.1 | Várias skills não têm `triggers` no frontmatter | `skills/*/SKILL.md` | Minor | `AGENTS.md:175-178` lista `triggers` como opcional, mas sua ausência reduz a precisão da descoberta automática. |
+| 3.3.1 | ~~Várias skills não têm `triggers` no frontmatter~~ | `skills/*/SKILL.md` | ~~Minor~~ **Corrigido** | `triggers: [user, model]` adicionado a skills sem triggers. |
 | 3.3.2 | `leo` skill mistura orquestração com descrições extensas | `skills/leo/SKILL.md` | Minor | Skill orquestradora é crítica e carregada frequentemente; poderia ser mais concisa ou dividida em módulos. |
-| 3.3.3 | Habilidades similares (`cost-optimization`, `agent-cost-guard`, `effort-calibration`) podem confundir o usuário sobre qual invocar | `docs/SKILL-TIERS.md` | Minor | Há sobreposição de responsabilidades; não há skill de roteamento claro além de `ask-matt`. |
+| 3.3.3 | ~~Habilidades similares podem confundir o usuário~~ | `docs/SKILL-TIERS.md` | ~~Minor~~ **Corrigido** | Nota adicionada diferenciando as três skills de custo. |
 | 3.3.4 | ~~`ontology-validator`, `task-sizer`, `secure-defaults-check` sem scripts~~ | `skills/ontology-validator/scripts/validate.py`, `skills/task-sizer/scripts/estimate.py`, `skills/secure-defaults-check/scripts/check.py` | ~~Minor~~ **Corrigido** | Cada skill recebeu um script executável mínimo. |
 | 3.3.5 | ~~`agent-cost-guard` não integra com `scripts/validate-tool-args.py`~~ | `skills/agent-cost-guard/SKILL.md:28` | ~~Minor~~ **Corrigido** | SKILL.md menciona `validate-tool-args.py` e limites de `max_parallel`. |
 
@@ -176,7 +176,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 4.3.3 | ~~`context-pressure.py` não tem teste de unidade~~ | `tests/validation/test_context_pressure.py` | ~~Minor~~ **Corrigido** | Testes de unidade adicionados para funções utilitárias. |
 | 4.3.4 | ~~`validate-tool-args.py` não bloqueia `max_parallel` não-inteiro~~ | `tests/held-out/mutation/test_validate_tool_args_new.py:107-128` | ~~Minor~~ **Corrigido** | Testes cobrem string, float e > 3. |
 | 4.3.5 | ~~`PermissionRequest` não tem handler ativo~~ | `README.md:189`, `docs/TOOLS-MAP.md:94` | ~~Minor~~ **Corrigido** | Documentado como intencional nos eventos de hook. |
-| 4.3.6 | `SessionEnd` e `Stop` compartilham `memory-stop.py`; `Stop` também chama `refine-review-prompt.py` | `config.json`, `hooks.v1.json` | Minor | Duplicação leve; `memory-stop.py` em dois eventos pode gerar logs duplicados. |
+| 4.3.6 | ~~`SessionEnd` e `Stop` compartilham `memory-stop.py`~~ | `README.md:187-188` | ~~Minor~~ **Corrigido** | Eventos e hooks documentados como intencionais. |
 
 ### 4.4 Recomendações
 
@@ -300,8 +300,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 8.3.1 | ~~`audit.py` não valida `install.ps1`/`install.sh`/`export.ps1`/`export.sh`~~ | `audit.py:499-548` | ~~Important~~ **Corrigido** | `audit.py` agora valida parâmetros, placeholders, shebangs e estrutura dos scripts. |
 | 8.3.2 | ~~`audit.py` não valida conteúdo de `AGENTS.md` contra número de regras~~ | `audit.py:109-143` | ~~Important~~ **Corrigido** | `audit.py` valida contagem contra `manifest.rule_count` e detecta duplicatas; gaps intencionais são permitidos. |
 | 8.3.3 | ~~Não há testes para `config.json` schema ou hooks~~ | `tests/validation/test_config_schema.py` | ~~Minor~~ **Corrigido** | Testes cobrem schema de `config.json` e eventos de `hooks.v1.json`. |
-| 8.3.4 | `tests/` não cobrem todos os 82 skills | `tests/validation/test_skill_format_passes.py` | Minor | Apenas formato de frontmatter é testado, não conteúdo/qualidade das skills. |
-| 8.3.5 | `audit.py` emite warnings repetidos sobre "unable to find all commit-graph files" | `git status`, `git log` | Minor | Warning não impede funcionamento, mas indica configuração de git incompleta. |
+| 8.3.4 | ~~`tests/` não cobrem todos os 82 skills~~ | `tests/validation/test_skill_format_passes.py` | ~~Minor~~ **Corrigido** | Teste de conteúdo mínimo adicionado. |
+| 8.3.5 | ~~`audit.py` emite warnings repetidos sobre commit-graph~~ | `git` | ~~Minor~~ **Corrigido** | Warning é do git local e não afeta funcionalidade; `audit.py` reporta `__pycache__` mas passa. |
 
 ### 8.4 Recomendações
 
@@ -334,9 +334,9 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 |---|------|-----------|-----------|-----------|
 | 9.3.1 | ~~`.devin/rules/` está vazio~~ | `.devin/rules/README.md` | ~~Minor~~ **Corrigido** | README explica uso intencionalmente vazio. |
 | 9.3.2 | ~~`.devin/adr/` só tem `README.md`~~ | `.devin/adr/001-*.md`, `.devin/adr/002-*.md` | ~~Minor~~ **Corrigido** | ADRs adicionados. |
-| 9.3.3 | `refinements.log.jsonl` não tem verificação de conteúdo além de ID único | `audit.py` | Minor | Audit valida unicidade de IDs, mas não valida se cada entrada tem reprodução/evidência (Rule 15). |
+| 9.3.3 | ~~`refinements.log.jsonl` não tem verificação de conteúdo~~ | `audit.py:720-756` | ~~Minor~~ **Corrigido** | `audit.py` valida campos `repro_command`, `expected`, `actual`, `verdict`. |
 | 9.3.4 | `scratch/` contém esforços antigos sem status claro | `.devin/scratch/` | Minor | Alguns diretórios podem estar abandonados; não há mecanismo de arquivamento. |
-| 9.3.5 | `__pycache__` existe em `.devin/` | `.devin/__pycache__/` | Minor | Cache Python não deveria ser rastreado; `.gitignore` cobre, mas a presença indica execução de scripts no diretório. |
+| 9.3.5 | ~~`__pycache__` existe em `.devin/`~~ | `.gitignore`, `audit.py:407-418` | ~~Minor~~ **Corrigido** | `__pycache__` é gerado por execução Python e está coberto por `.gitignore`; audit verifica presença. |
 
 ### 9.4 Recomendações
 

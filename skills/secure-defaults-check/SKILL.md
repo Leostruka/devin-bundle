@@ -1,6 +1,7 @@
 ---
 name: secure-defaults-check
 description: Use when checking that a project or change follows secure defaults before committing or deploying.
+triggers: [user, model]
 ---
 
 # Secure Defaults Check

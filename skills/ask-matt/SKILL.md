@@ -1,6 +1,7 @@
 ---
 name: ask-matt
 description: Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.
+triggers: [user, model]
 ---
 
 # Ask Matt

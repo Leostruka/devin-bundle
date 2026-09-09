@@ -1,6 +1,7 @@
 ---
 name: review-cadence
 description: Use when deciding how much human review and upfront planning a task needs based on its size, risk, and blast radius, or when the user asks whether a change can skip grilling and go straight to implementation.
+triggers: [user, model]
 ---
 # Review Cadence
 

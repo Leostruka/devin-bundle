@@ -1,6 +1,7 @@
 ---
 name: intention-capture
 description: Use when capturing and validating the "intent" field in tickets, specs, or PRDs before implementation. Ensures every task has a clear objective, landing zone, and user impact.
+triggers: [user, model]
 ---
 
 # Intention Capture

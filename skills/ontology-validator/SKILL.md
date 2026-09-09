@@ -1,6 +1,7 @@
 ---
 name: ontology-validator
 description: Use when validating tool outputs or data against a domain ontology or structured knowledge base. Ensures entities, types, and relations are consistent before side effects.
+triggers: [user, model]
 ---
 
 # Ontology Validator

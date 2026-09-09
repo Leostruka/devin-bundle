@@ -1,6 +1,7 @@
 ---
 name: unlazy
 description: Use when a task is at risk of agent laziness (large, multi-step, previously half-done, or with clear acceptance criteria) to force proof of completion through a gates ledger instead of trusting agent reports.
+triggers: [user, model]
 ---
 
 # Unlazy

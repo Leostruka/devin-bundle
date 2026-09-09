@@ -1,6 +1,7 @@
 ---
 name: tool-and-skill-discovery
 description: Use when the user asks how to do something, needs the right skill or tool, no skill seems to match the task, or wants to discover, install, or evaluate a new skill for Devin CLI.
+triggers: [user, model]
 ---
 # Tool and Skill Discovery
 

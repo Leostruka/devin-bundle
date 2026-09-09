@@ -1,6 +1,7 @@
 ---
 name: setup-pre-commit
 description: Use when setting up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Covers adding pre-commit hooks, configuring Husky, lint-staged, or commit-time formatting/typechecking/testing.
+triggers: [user, model]
 ---
 
 # Setup Pre-Commit Hooks

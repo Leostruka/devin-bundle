@@ -2,6 +2,7 @@
 name: code-review
 description: Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'.
 agent: reviewer
+triggers: [user, model]
 ---
 # Code Review (Unified)
 

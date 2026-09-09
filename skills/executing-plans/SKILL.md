@@ -1,6 +1,7 @@
 ---
 name: executing-plans
 description: Use when executing a written implementation plan with checkpoints and reviews.
+triggers: [user, model]
 ---
 # Executing Plans
 

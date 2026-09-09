@@ -1,6 +1,7 @@
 ---
 name: gh
 description: Use when interacting with GitHub via the gh CLI from an agent.
+triggers: [user, model]
 ---
 # Reference
 

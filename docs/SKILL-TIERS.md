@@ -170,6 +170,8 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `i18n` | Traduções, plural, LTR/RTL, formatos | ~450 | Multi-idioma |
 | `legacy-refactor` | Strangler-fig, seams, modernization | ~500 | Modernizar código legado |
 
+**Nota sobre skills de custo:** `cost-optimization` foca em reduzir tokens/cache/MCPs do parent; `agent-cost-guard` limita subagentes e loops; `effort-calibration` escolhe o nível de raciocínio. Use `ask-matt` se estiver em dúvida.
+
 ## Outros
 
 | Skill | Faz | Tok | Quando |

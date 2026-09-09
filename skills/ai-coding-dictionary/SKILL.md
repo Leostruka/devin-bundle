@@ -1,6 +1,7 @@
 ---
 name: ai-coding-dictionary
 description: Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term definition before continuing a technical discussion.
+triggers: [user, model]
 ---
 # AI Coding Dictionary
 

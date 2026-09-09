@@ -1,6 +1,7 @@
 ---
 name: task-sizer
 description: Use when estimating the size of a task or PR and deciding whether to split it into smaller tickets before implementation.
+triggers: [user, model]
 ---
 
 # Task Sizer

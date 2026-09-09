@@ -1,6 +1,7 @@
 ---
 name: api-context-spec
 description: Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable.
+triggers: [user, model]
 ---
 
 # API Context Spec

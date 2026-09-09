@@ -2,6 +2,7 @@
 name: domain-modeling
 description: Use when building or refining a project's domain model, glossary, or bounded contexts.
 agent: architect
+triggers: [user, model]
 ---
 # Domain Modeling
 

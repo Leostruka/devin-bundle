@@ -1,6 +1,7 @@
 ---
 name: finishing-a-development-branch
 description: Use when the implementation is complete, all tests pass, and the work needs to be integrated.
+triggers: [user, model]
 ---
 # Finishing a Development Branch
 

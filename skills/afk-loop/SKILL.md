@@ -1,6 +1,7 @@
 ---
 name: afk-loop
 description: Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships.
+triggers: [user, model]
 ---
 
 # AFK Loop

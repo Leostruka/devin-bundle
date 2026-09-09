@@ -1,6 +1,7 @@
 ---
 name: effort-calibration
 description: Use when choosing a reasoning effort level for an LLM coding agent, when a task seems to be over-thinking or spending too many tokens, when deciding whether to raise effort, when writing task specifications that substitute for reasoning budget, or when a simple task is being treated as a codebase audit. Covers overthinking, compute-optimal test-time scaling, prompt-induced waste, and difficulty-matched effort.
+triggers: [user, model]
 ---
 # Effort Calibration
 

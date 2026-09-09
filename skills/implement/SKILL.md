@@ -1,6 +1,7 @@
 ---
 name: implement
 description: Use when the user wants to implement a feature or fix from a spec or set of tickets.
+triggers: [user, model]
 ---
 Implement the work described by the user in the spec or tickets.
 

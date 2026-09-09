@@ -1,6 +1,7 @@
 ---
 name: project-memory
 description: Use when the session produces knowledge worth remembering across sessions, such as answered user questions, business rules, project conventions, failed approaches, reusable solutions, or decisions. Captures it with user approval and stores it as plain-text notes inside .devin/ for future retrieval.
+triggers: [user, model]
 ---
 
 # Project Memory

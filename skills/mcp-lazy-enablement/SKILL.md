@@ -1,6 +1,7 @@
 ---
 name: mcp-lazy-enablement
 description: Use when deciding which MCP servers to keep active, when context feels bloated from unused MCP tools, when a task only needs one MCP server temporarily, or when auditing which servers to enable/disable per task. Guides selective MCP enablement to minimize context-window tax.
+triggers: [user, model]
 ---
 
 # MCP Lazy Enablement

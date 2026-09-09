@@ -2,6 +2,7 @@
 name: project-setup
 description: Use when starting work on a new or existing project that lacks a `.devin/` configuration, or when the user wants to add skills, hooks, rules, and local tools to a project in a systematic, validated way.
 version: 1.0.0
+triggers: [user, model]
 ---
 
 # Project Setup

@@ -1,6 +1,7 @@
 ---
 name: agent-cost-guard
 description: Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure.
+triggers: [user, model]
 ---
 
 # Agent Cost Guard

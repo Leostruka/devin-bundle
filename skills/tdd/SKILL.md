@@ -1,6 +1,7 @@
 ---
 name: tdd
 description: Use when implementing any feature or bugfix and a test-driven approach is appropriate.
+triggers: [user, model]
 ---
 # Test-Driven Development (Unified)
 
