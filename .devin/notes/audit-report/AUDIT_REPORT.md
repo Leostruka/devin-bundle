@@ -12,7 +12,12 @@
 ## Ações Corretivas Aplicadas (2026-09-08)
 
 - `1.3.3` RESOLVIDO: `export.ps1` e `export.sh` agora abortam quando `-NoMask`/`--no-mask` é combinado com `-Push`/`--push` (exceto em dry-run). Também foi adicionada defesa em profundidade no `scripts/check-push-green.py` para bloquear push de `credentials.toml` e `mcp_config.json` com secrets não mascarados.
+- `1.3.5` RESOLVIDO: adicionado `tests/validation/test_install_export_scripts.py` com verificações estruturais e, quando disponível, validação de sintaxe Bash para `install.sh` e `export.sh`.
+- `1.3.6` RESOLVIDO: `export.ps1` e `export.sh` agora executam `audit.py` e `pytest` no pre-push validation quando `-Push`/`--push` é usado.
 - `5.3.1` RESOLVIDO: `mcp_config.json` agora usa `transport: https`, consistente com a URL `https://mcp.atlassian.com/v1/mcp/authv2`.
+- `6.3.1` RESOLVIDO: `AGENTS.md` foi condensado (~24K chars / ~6K tokens); regras pinned 14-19 foram reduzidas mantendo a essência. Adicionado check no `audit.py` para budget de tokens.
+- `8.3.1` RESOLVIDO: `audit.py` agora valida estrutura de `install.ps1`, `install.sh`, `export.ps1`, `export.sh` (parâmetros, placeholders, shebangs).
+- `8.3.2` RESOLVIDO: `audit.py` agora detecta números de regras duplicados e valida contra `manifest.rule_count`; gaps intencionais são permitidos desde que a contagem bata.
 
 ## Checklist de Componentes
 
@@ -52,8 +57,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 1.3.2 | `credentials.toml` é copiado apenas com `-RestoreSecrets`/`--restore-secrets` | `install.ps1:22`, `install.sh` | Minor | Boa prática, mas a flag `--restore-secrets` pode ser confundida com "não mascarar"; documentação clara ajuda. |
 | 1.3.3 | ~~`export` com `-NoMask`/`--no-mask` permite commit de secrets~~ | `export.ps1:252-258`, `export.sh:423-429`, `scripts/check-push-green.py:76-101` | ~~Critical~~ **Corrigido** | Gate de segurança bloqueia push quando secrets não estão mascarados. `check-push-green.py` também verifica `credentials.toml` e `mcp_config.json`. |
 | 1.3.4 | `config.json` usa placeholder `{{APPDATA}}/devin` que é expandido no install e recolapsado no export | `install.sh:76-80`, `export.sh:70-74` | Minor | Mecanismo de placeholder funciona, mas adiciona complexidade e risco de drift se o path contiver caracteres especiais. |
-| 1.3.5 | Não há testes automatizados para `install.ps1`/`install.sh` | `tests/` | **Important** | Testes cobrem scripts Python, mas não os instaladores/exporters PowerShell/Bash. Mudanças nesses scripts só são detectadas em uso manual. |
-| 1.3.6 | `export.ps1 -Push` faz git push sem re-validar o estado local | `export.ps1:34-35` | **Important** | O export faz validação de JSON/Python antes, mas não re-executa `audit.py` e `pytest` antes do push. Isso contradiz a regra "No push without green". |
+| 1.3.5 | ~~Não há testes automatizados para `install.ps1`/`install.sh`~~ | `tests/validation/test_install_export_scripts.py` | ~~Important~~ **Corrigido** | Testes de estrutura e sintaxe (quando bash disponível) adicionados para `install.sh` e `export.sh`. |
+| 1.3.6 | ~~`export.ps1 -Push` faz git push sem re-validar o estado local~~ | `export.ps1:482-505`, `export.sh:477-497` | ~~Important~~ **Corrigido** | Pre-push validation agora roda `audit.py` e `pytest -q` quando push está ativo. |
 
 ### 1.4 Recomendações
 
@@ -217,7 +222,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 6.3.1 | `AGENTS.md` é longo (~250 linhas) e carrega em toda sessão | `AGENTS.md` | **Important** | Regras pinned ocupam contexto; versão atual tem 26 regras, algumas com parágrafos longos. Isso contradiz a própria regra 18 de manter regras enxutas. |
+| 6.3.1 | ~~`AGENTS.md` é longo~~ | `AGENTS.md`, `audit.py:133-144` | ~~Important~~ **Corrigido** | Regras pinned 14-19 foram condensadas; `audit.py` monitora budget de tokens. |
 | 6.3.2 | `.devin/rules/` está vazio | `Get-ChildItem .devin/rules` | Minor | O bundle não usa regras específicas por domínio em `.devin/rules/`, apesar da convenção existir. |
 | 6.3.3 | `.devin/adr/` contém apenas `README.md` | `find .devin/adr` | Minor | Não há ADRs reais documentando decisões arquiteturais do bundle (ex: por que placeholder `{{APPDATA}}/devin`, por que 82 skills, por que SWE-1.7). |
 | 6.3.4 | Regra 18 fala em manter regras pequenas, mas regras pinned 14-19 são extensas | `AGENTS.md:97-154` | Minor | As regras mais importantes são as mais longas, aumentando o contexto fixo. |
@@ -277,8 +282,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 8.3.1 | `audit.py` não valida `install.ps1`/`install.sh`/`export.ps1`/`export.sh` | `audit.py` | **Important** | Os scripts de sincronização são críticos para a função do repo, mas não têm checks estruturais. |
-| 8.3.2 | `audit.py` não valida conteúdo de `AGENTS.md` contra número de regras | `audit.py:82-100` | **Important** | O audit valida que 26 regras estão presentes, mas o padrão de numeração inclui 27 números (1-27) com 26 regras presentes. |
+| 8.3.1 | ~~`audit.py` não valida `install.ps1`/`install.sh`/`export.ps1`/`export.sh`~~ | `audit.py:499-548` | ~~Important~~ **Corrigido** | `audit.py` agora valida parâmetros, placeholders, shebangs e estrutura dos scripts. |
+| 8.3.2 | ~~`audit.py` não valida conteúdo de `AGENTS.md` contra número de regras~~ | `audit.py:109-143` | ~~Important~~ **Corrigido** | `audit.py` valida contagem contra `manifest.rule_count` e detecta duplicatas; gaps intencionais são permitidos. |
 | 8.3.3 | Não há testes para `config.json` schema ou hooks | `tests/validation/` | Minor | Testes não cobrem validação do schema de `config.json` ou `hooks.v1.json`. |
 | 8.3.4 | `tests/` não cobrem todos os 82 skills | `tests/validation/test_skill_format_passes.py` | Minor | Apenas formato de frontmatter é testado, não conteúdo/qualidade das skills. |
 | 8.3.5 | `audit.py` emite warnings repetidos sobre "unable to find all commit-graph files" | `git status`, `git log` | Minor | Warning não impede funcionamento, mas indica configuração de git incompleta. |

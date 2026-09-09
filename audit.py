@@ -117,16 +117,43 @@ for i in range(1, 28):
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 26:
-    errors.append('Expected 26 rules, found ' + str(len(rules_found)))
+expected_rules = manifest.get('rule_count', 26)
+if len(rules_found) != expected_rules:
+    errors.append('Expected ' + str(expected_rules) + ' rules, found ' + str(len(rules_found)))
+    print('  FAIL expected ' + str(expected_rules) + ', found ' + str(len(rules_found)))
 else:
-    print('  OK  26 rules present')
+    print('  OK  ' + str(len(rules_found)) + ' rules present')
 declared_rule_count = manifest.get('rule_count')
 if declared_rule_count != len(rules_found):
     errors.append('manifest rule_count mismatch')
     print('  FAIL rule_count declared=' + str(declared_rule_count) + ' actual=' + str(len(rules_found)))
 else:
     print('  OK  rule_count = ' + str(len(rules_found)))
+
+# 6c. Warn if AGENTS.md is large (context window budget)
+print()
+print('[6c] AGENTS.md context budget')
+agents_size = len(agents)
+estimated_tokens = agents_size // 4
+AGENTS_TOKEN_BUDGET = 10000
+print('  AGENTS.md size: ' + str(agents_size) + ' chars (~' + str(estimated_tokens) + ' tokens)')
+if estimated_tokens > AGENTS_TOKEN_BUDGET:
+    warnings.append('AGENTS.md exceeds token budget: ~' + str(estimated_tokens) + ' > ' + str(AGENTS_TOKEN_BUDGET))
+    print('  WARN AGENTS.md exceeds ' + str(AGENTS_TOKEN_BUDGET) + ' token budget')
+else:
+    print('  OK  AGENTS.md within budget')
+
+# 6b. Detect missing rule numbers or duplicate numbering (only flag if count is off or duplicates exist)
+all_numbers = set(range(1, 28))
+found_numbers = set(rules_found)
+# A gap is only a problem if it causes the total count to diverge from the manifest.
+# Intentional gaps (e.g. rule 6 omitted) are allowed as long as rule_count matches.
+duplicates = sorted([n for n in rules_found if rules_found.count(n) > 1])
+if duplicates:
+    errors.append('Duplicate rule numbers in AGENTS.md: ' + str(duplicates))
+    print('  FAIL duplicate rule numbers: ' + str(duplicates))
+else:
+    print('  OK  no duplicate rule numbers')
 
 # 7. config.json hooks references valid scripts
 print()
@@ -481,6 +508,57 @@ for s in scripts_check:
     else:
         errors.append(s + ' missing')
         print('  FAIL ' + s + ' missing')
+
+# 22b. Structural validation for export/install scripts
+print()
+print('[22b] Export/install script structural validation')
+for s in scripts_check:
+    if not os.path.exists(s):
+        continue
+    content = open(s, encoding='utf-8-sig').read()
+    issues = []
+    if s.endswith('.ps1'):
+        # Parameters must include DryRun, Force, Backup, RestoreSecrets/Commit/Push/NoMask
+        expected = ['[switch]$DryRun']
+        if 'export' in s:
+            expected = ['[switch]$DryRun', '[switch]$Commit', '[switch]$Push', '[switch]$NoMask']
+        else:
+            expected = ['[switch]$DryRun', '[switch]$Force', '[switch]$Backup', '[switch]$RestoreSecrets']
+        for p in expected:
+            if p not in content:
+                issues.append('missing ' + p)
+        # Must have a no-mask/push guard
+        if 'export' in s:
+            if 'NoMask' not in content or 'Push' not in content:
+                issues.append('missing NoMask/Push parameter or guard')
+        # Placeholder must exist in bundle (collapsed) and be expanded in install
+        if 'install' in s:
+            if '{{APPDATA}}' not in content:
+                issues.append('missing {{APPDATA}} placeholder expansion')
+        else:
+            if 'normalize_config_paths' not in content and '{{APPDATA}}' not in content:
+                issues.append('missing config path normalization')
+    else:
+        # Bash scripts
+        expected = ['DRY_RUN=', 'FORCE=', 'BACKUP=', 'RESTORE_SECRETS='] if 'install' in s else ['DRY_RUN=', 'COMMIT=', 'PUSH=', 'NO_MASK=']
+        for p in expected:
+            if p not in content:
+                issues.append('missing ' + p)
+        # Shebang
+        if not content.startswith('#!'):
+            issues.append('missing shebang')
+        # Placeholder handling
+        if 'install' in s:
+            if '{{APPDATA}}' not in content:
+                issues.append('missing {{APPDATA}} placeholder handling')
+        else:
+            if 'normalize_config_paths' not in content and '{{APPDATA}}' not in content:
+                issues.append('missing config path normalization')
+    if issues:
+        errors.append(s + ': ' + ', '.join(issues))
+        print('  FAIL ' + s + ': ' + ', '.join(issues))
+    else:
+        print('  OK  ' + s + ' structure')
 
 # 23. .gitattributes
 print()

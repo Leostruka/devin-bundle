@@ -479,6 +479,31 @@ function Invoke-Validation {
     Write-Ok "AGENTS.md — present and non-empty"
   }
 
+  # Run full repo audit and test suite before push (Rule 5: no push without green)
+  if ($Push) {
+    $auditCmd = "python `"$bundleRoot\audit.py`""
+    Write-Step "Running audit.py"
+    $auditResult = Invoke-Expression $auditCmd
+    $auditExit = $LASTEXITCODE
+    if ($auditExit -ne 0) {
+      Write-Err "audit.py failed (exit $auditExit)"
+      $errors += "audit.py failed"
+    } else {
+      Write-Ok "audit.py passed"
+    }
+
+    $pytestCmd = "python -m pytest -q `"$bundleRoot`""
+    Write-Step "Running pytest"
+    $pytestResult = Invoke-Expression $pytestCmd
+    $pytestExit = $LASTEXITCODE
+    if ($pytestExit -ne 0) {
+      Write-Err "pytest failed (exit $pytestExit)"
+      $errors += "pytest failed"
+    } else {
+      Write-Ok "pytest passed"
+    }
+  }
+
   if ($errors.Count -gt 0) {
     Write-Err "Validation FAILED with $($errors.Count) error(s). Aborting commit/push."
     foreach ($e in $errors) { Write-Host "      - $e" -ForegroundColor Red }

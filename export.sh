@@ -473,6 +473,28 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
     err "Validation failed, aborting push"
     exit 1
   fi
+
+  # Run full repo audit and test suite before push (Rule 5: no push without green)
+  step "Running audit.py"
+  if python "$BUNDLE_DIR/audit.py"; then
+    ok "audit.py passed"
+  else
+    err "audit.py failed"
+    validation_failed=1
+  fi
+
+  step "Running pytest"
+  if python -m pytest -q "$BUNDLE_DIR"; then
+    ok "pytest passed"
+  else
+    err "pytest failed"
+    validation_failed=1
+  fi
+
+  if [[ $validation_failed -eq 1 ]]; then
+    err "Pre-push validation failed, aborting push"
+    exit 1
+  fi
 fi
 
 # --- 10. Summary ---
