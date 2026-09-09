@@ -1,6 +1,7 @@
 ---
 name: unlazy
 description: Use when a task is at risk of agent laziness (large, multi-step, previously half-done, or with clear acceptance criteria) to force proof of completion through a gates ledger instead of trusting agent reports.
+triggers: [user, model]
 ---
 
 # Unlazy
@@ -35,15 +36,18 @@ Agent laziness shows up in two ways:
 The `unlazy` pattern forces the agent to **prove** completion instead of
 declaring it. It does this with three mechanisms:
 
-1. **Gates ledger:** A `.devin/ledgers/<task>.md` file where every subtask
-   has one gate with:
+1. **Gates ledger:** A project-tracked ledger (prefer
+   `.devin/ledgers/<task>.md`; if ignored or unavailable, use the repository's
+   tracked `ledgers/<task>.md` convention and record the path decision) where
+   every subtask has one gate with:
    - **Outcome:** what must be true
    - **Check:** the exact command that proves it
    - **Expect:** the string or exit code that proves it
    - **Evidence:** empty until the checker fills it
 
 2. **Independent verification:** After the agent claims a step is done, the
-   agent itself (or a `reviewer` subagent) re-runs the check. The result must
+   agent re-runs the check in a fresh tool call. A `reviewer`/`qa-ci` subagent
+   may do the same only when the user authorizes delegation. The result must
    match the expected output. A ticked gate with `EVIDENCE: pending` is worse
    than an empty gate; it means the agent is still only telling you it is done.
 
@@ -85,7 +89,9 @@ Rules for runnable gates:
    - Each subtask should be a coherent deliverable that can be verified.
 
 2. **Write the ledger first:**
-   - Create `.devin/ledgers/<task>.md` before doing the work.
+   - Resolve a project-tracked ledger path before doing the work.
+   - Create `.devin/ledgers/<task>.md` when tracked; otherwise use the tracked
+     repository ledger convention and record why.
    - Every subtask gets at least one gate.
 
 3. **Work each subtask:**

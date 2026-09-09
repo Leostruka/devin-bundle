@@ -249,6 +249,14 @@ if ($Commit) { Write-Host "  Commit : YES" -ForegroundColor DarkGray }
 if ($Push)   { Write-Host "  Push   : YES (with validation)" -ForegroundColor DarkGray }
 Write-Host "================================================" -ForegroundColor DarkGray
 
+# --- Security gate: no unmasked push ---
+if ($Push -and $NoMask -and -not $DryRun) {
+  Write-Err "FATAL: -Push with -NoMask would export real secrets and push them to the repository."
+  Write-Err "       This is a security risk. Aborting."
+  Write-Err "       If you must back up unmasked credentials, use -NoMask -Commit (no push) and review the diff manually."
+  exit 1
+}
+
 # --- 1. AGENTS.md ---
 Write-Step "Export AGENTS.md (consolidated rules)"
 if (Test-Path $rulesSrc) {
@@ -469,6 +477,31 @@ function Invoke-Validation {
     $errors += "AGENTS.md missing or empty"
   } else {
     Write-Ok "AGENTS.md — present and non-empty"
+  }
+
+  # Run full repo audit and test suite before push (Rule 5: no push without green)
+  if ($Push) {
+    $auditCmd = "python `"$bundleRoot\audit.py`""
+    Write-Step "Running audit.py"
+    $auditResult = Invoke-Expression $auditCmd
+    $auditExit = $LASTEXITCODE
+    if ($auditExit -ne 0) {
+      Write-Err "audit.py failed (exit $auditExit)"
+      $errors += "audit.py failed"
+    } else {
+      Write-Ok "audit.py passed"
+    }
+
+    $pytestCmd = "python -m pytest -q `"$bundleRoot`""
+    Write-Step "Running pytest"
+    $pytestResult = Invoke-Expression $pytestCmd
+    $pytestExit = $LASTEXITCODE
+    if ($pytestExit -ne 0) {
+      Write-Err "pytest failed (exit $pytestExit)"
+      $errors += "pytest failed"
+    } else {
+      Write-Ok "pytest passed"
+    }
   }
 
   if ($errors.Count -gt 0) {

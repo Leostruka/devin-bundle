@@ -30,6 +30,12 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
 20. **Model-aware operation** — GLM-5.2 High (200K, thinking, tool-use during inference, cache $0.26/M) is primary; SWE-1.7 Max (262K, self-compaction, 1000 TPS) is pinned via `model: swe-1-7` (NOT `swe` — that alias is PAID `swe-1.7-lightning`) in all custom agent profiles. Don't over-specify tool-use (GLM decides natively). Fan-out is cheap (SWE-1.7 fast, 262K each, gratuito). Keep system prompt cache-stable. See `docs/MODEL-GUIDE.md`.
 21. **Don't think through uncertainty — research or ask** — when you don't know something or are in doubt, stop reasoning and either research it (facts, libraries, state of the world) or ask the user (intent, business rules, case-of-use).
+22. **Minimum code, no token maxing** — prefer the smallest code/solution that solves the problem. Reject overengineering, over-prompting, and token maxing. Complexity is attack surface (Rule 13). When in doubt, simplify.
+23. **Sanitize inputs and outputs** — treat every user input as untrusted; validate and sanitize before use. Don't log or output secrets, credentials, tokens, or sensitive data. Endpoints and S3 buckets must default to private; any public endpoint or URL requires documented justification.
+24. **No secrets in VCS; rotate if leaked** — never commit secrets, passwords, API keys, tokens, or private keys to the repository. If a secret is found in code, history, or output, warn the user immediately and ask for rotation. Use `.env.example` and secret managers in production.
+25. **No test deletion without approval** — don't delete, disable, skip, or remove tests without explicit user approval. Tests verify intent; preserving them is a hard constraint. If a test must be removed, get approval and record the reason.
+26. **Secure by default** — use secure defaults: hidden passwords with opt-in reveal, confirmation for destructive actions, multi-factor auth for accounts, least privilege for services and DB access. Public endpoints, unauthenticated services, and public S3 URLs require written justification.
+27. **Declare intent and impact before coding** — before writing code, state the intent, the intended user-visible impact, and the boundaries (inputs/outputs, scope, non-goals). Ask until mutual understanding is reached; don't guess intent.
 
 ---
 
@@ -88,63 +94,51 @@ The agent runs with the user's full permissions. No isolation layer.
 - Don't ignore the Factorio lesson. PrimeAgent's `/refine` found a cheating exploit and optimized cheating skills. The `primeagent-reference` skill (Refine mode) has guardrails — follow them.
 - Do review changes before applying. Use `--dry-run`. Confirm before destructive operations.
 
-## 14. Constraint Pinning survives compaction (pinned)
+## 14. Constraint Pinning survives compaction (pinned) — keep governance rules after compaction
 
-Compaction silently erases governance constraints. `constraint-pinning.py` detects the loss and re-injects.
+`constraint-pinning.py` detects dropped governance constraints after compaction and re-injects them on `UserPromptSubmit`/`SessionStart`.
 
-- Don't assume constraints survive compaction. Violation rises 0%→30% (up to 59%) when a constraint is dropped (arXiv:2606.22528v2).
-- PostCompaction cannot inject context in Devin CLI — only `UserPromptSubmit`, `SessionStart`, `PostToolUse` support `hookSpecificOutput.additionalContext`. The hook writes a marker on PostCompaction and re-injects on the next UserPromptSubmit.
-- Don't add a governance constraint without pinning it. Update `PINNED_CONSTRAINTS` in `constraint-pinning.py`.
-- Do verify pinning works. Use `/hooks` to confirm the hook is loaded; after compaction, check constraints are still in context.
+- Don't assume constraints survive compaction.
+- Update `PINNED_CONSTRAINTS` when adding a governance rule.
+- Verify the hook is loaded and constraints reappear after compaction.
 
-## 15. Refinement evidence must be reproducible (pinned)
+## 15. Refinement evidence must be reproducible (pinned) — every refinement needs a reproducible command
 
-- Don't accept "I think this failed" as evidence. Phantom guardrails occur in 25% of self-improvement runs (arXiv:2607.13083). 15/60 runs hallucinated failures vs 0/60 controls.
-- Don't refine without a reproducible command. Every refinement cites a specific command/tool call/file path that reproduces the failure.
-- Do run `validate-refinement-evidence.py` periodically. It flags vague/non-reproducible evidence in `refinements.log.jsonl`.
-- Don't trust self-reported improvement without held-out validation. 47-74% of self-improvement gains are illusory (ICLR 2026 Workshop).
+- Don't accept "I think this failed" as evidence; phantom guardrails are common in self-improvement runs.
+- Every refinement must cite a reproducible command, tool call, or file path.
+- Run `validate-refinement-evidence.py` on `refinements.log.jsonl`.
+- Validate with held-out tests, not just the tests the agent chose.
 
-## 16. Self-improvement loops produce 47-74% illusory gains (pinned)
+## 16. Self-improvement loops produce illusory gains (pinned) — validate with held-out tests, not chosen tests
 
-- Don't measure improvement with the same tests the agent chose. 73.8% Kernel-Bench, 46.8% ALE-Bench optimizations show proxy gains without real gains (ICLR 2026 Workshop).
-- Don't push when validation passes but held-out fails. `check-push-green.py` checks `tests/validation/` and `tests/held-out/` if both exist; a gap blocks push.
-- Do maintain held-out tests. Without both dirs, no gap check runs (fail-open).
-- Don't declare a refinement "helped" without a real metric. "Felt easier" is a proxy. "Reduced failures by N", "faster by Xs", "fewer prod errors" are real. Mark proxy-only as "stagnation" (arXiv:2607.25152).
+- Don't measure improvement with the same tests the agent chose.
+- Don't push when validation passes but held-out fails. `check-push-green.py` enforces this gap check.
+- Maintain both `tests/validation/` and `tests/held-out/`.
+- Declare "helped" only with real metrics, not feelings.
 
-## 17. Don't deduce — verify with tools (pinned)
+## 17. Don't deduce — verify with tools (pinned) — use tools before claiming state
 
-Never infer state from reasoning alone. Use tools to observe reality first.
+Never infer state from reasoning alone. Use `read`, `exec`, `grep`, `glob`, `web_search`, `webfetch` to observe reality before claiming anything. A deduction is a guess with confidence; tool output fails loudly.
 
-- Don't deduce file contents. `read` before quoting/editing/claiming. Memory of a prior read is stale the moment any tool writes.
-- Don't deduce command output. `exec` and read actual stdout. "This should return X" is a guess.
-- Don't deduce codebase structure. `grep`, `glob`, `find_file_by_name`. "There's probably a function X" is a guess.
-- Don't deduce a claim's truth from plausibility. `web_search`, `webfetch`, or read the primary source first.
-- Don't deduce state after side effects. Re-verify with a read-only command after any `exec` with side effects.
-- A deduction presented as fact is a guess with confidence. Guesses fail silently; tool output fails loudly. Prefer loud failure.
+## 18. Keep the context window lean (pinned) — short context retrieves better
 
-## 18. Keep the context window lean (pinned)
+- Context is the main constraint. Shorter, focused context retrieves better.
+- Default to `clear` over `compact`.
+- Keep rules files small; modularize into skills and reference. See `writing-for-agents`.
+- Audit MCP servers before adding (`mcp-context-audit`); keep tool count per server under 10-15.
+- Paste large inputs to files, then `read` with offset/limit.
+- Prefer subagents for parallel exploration.
+- Watch the budget with `context-budget.py`.
 
-The context window is the main constraint on coding-agent performance.
+## 19. Never read secrets or sensitive env vars (pinned) — never expose secret values
 
-- Context window = input + output tokens the model sees at once. Hard-capped by the provider. Hit it → error or truncated output.
-- Lost-in-the-middle: in long contexts, attention deprioritizes the *middle*. Primacy (start) and recency (end) dominate. Shorter, focused context retrieves better — like humans.
-- Default to `clear` over `compact`. `clear` = blank slate (use between unrelated tasks). `compact` = lossy summary (use only to preserve the current task's intent). Compaction drops detail; if dense access to early context is needed, use `context-folding` instead.
-- Keep rules files small. This file loads into every conversation. Compress, modularize into skills, reference instead of inlining. See `writing-for-agents`.
-- Be paranoid about MCP servers. Each server injects every tool definition into the system prompt. Two servers can eat a third of the window before the first message. Audit before adding (`mcp-context-audit`); keep tool count per server under 10-15.
-- Don't paste huge documents into chat. `write` to a file, then `read` with offset/limit or `grep`. See `context-folding`.
-- Prefer subagents for parallel exploration. Each has its own window; only synthesis returns. 50-100x savings. See `dispatching-parallel-agents`.
-- Watch the budget. `context-budget.py` (SessionStart hook) reports the token cost of AGENTS.md to stderr — transparency without bloat.
-- Bigger window ≠ better retrieval. Evaluate needle-in-haystack quality, not just size (Llama 4 Scout: 10M window, severe lost-in-the-middle). See `context-window-hygiene`.
+Never expose secret values.
 
-## 19. Never read secrets or sensitive env vars (pinned)
-
-Never expose secret values. Use them; don't display them.
-
-- Don't `read`, `cat`, `type`, `echo`, `print`, or `grep` the contents of `.env` files, `credentials.toml`, private keys (`id_*`), or any file holding secrets. Reference the file path or variable name, not the value.
-- Don't `echo $VAR`, `printenv`, `Write-Output $env:VAR` for sensitive variables. Pass them to commands directly (`$env:API_KEY`, `$API_KEY`) without printing.
-- Don't include secret values in commit messages, PRs, logs, docs, or chat output.
-- If a key/env var is missing, empty, malformed, or doesn't behave as expected, say so explicitly — name the variable and the symptom, never the value.
-- If a secret was accidentally exposed, warn the user immediately so they can rotate it.
+- Don't `read`, `cat`, `echo`, `print`, or `grep` `.env`, `credentials.toml`, private keys, or any file holding secrets. Reference the name, not the value.
+- Don't print sensitive env vars. Pass them directly to commands.
+- Don't include secrets in commits, PRs, logs, docs, or chat.
+- If a key is missing or wrong, name the variable and symptom, never the value.
+- If a secret is exposed, warn the user immediately.
 
 ## 21. Don't think through uncertainty — research or ask (pinned)
 
@@ -218,3 +212,27 @@ Primary: GLM-5.2 High (200K, thinking mode, tool-use during inference, prompt ca
 - **Política de modelos: CONDICIONAL ao parent.**
   - **Parent FREE (default `glm-5-2`)**: subagents DEVEM ser FREE (`swe-1-7`/`swe-1-7-medium`). Nunca usar modelos pagos. Se GLM-5.2 High + SWE-1.7 fan-out falharem, **parar e reportar ao usuário**.
   - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Nesse caso, `subagent_explore` (SWE-1.6) e outros modelos pagos são permitidos. Ver protocolo em `docs/MODEL-GUIDE.md`.
+
+### 22. Minimum code, no token maxing
+
+Prefer the smallest code/solution that solves the problem. Reject overengineering, over-prompting, and token maxing. Complexity is attack surface (Rule 13). When in doubt, simplify. Don't add infrastructure, abstractions, or dependencies that don't carry their weight.
+
+### 23. Sanitize inputs and outputs
+
+Treat every user input as untrusted; validate and sanitize before use. Don't log or output secrets, credentials, tokens, or sensitive data. Endpoints and S3 buckets must default to private; any public endpoint or URL requires documented justification. If you must handle a secret, use it without displaying it (Rule 19).
+
+### 24. No secrets in VCS; rotate if leaked
+
+Never commit secrets, passwords, API keys, tokens, or private keys to the repository. If a secret is found in code, history, or output, warn the user immediately and ask for rotation. Use `.env.example` and secret managers in production. Never hardcode credentials in source.
+
+### 25. No test deletion without approval
+
+Don't delete, disable, skip, or remove tests without explicit user approval. Tests verify intent; preserving them is a hard constraint. If a test must be removed, get approval and record the reason in the ledger/commit. Don't "fix" a failing test by removing it.
+
+### 26. Secure by default
+
+Use secure defaults: hidden passwords with opt-in reveal, confirmation for destructive actions, multi-factor auth for accounts, least privilege for services and DB access. Public endpoints, unauthenticated services, and public S3 URLs require written justification. Assume everything is private until proven otherwise.
+
+### 27. Declare intent and impact before coding
+
+Before writing code, state the intent, the intended user-visible impact, and the boundaries (inputs/outputs, scope, non-goals). Ask until mutual understanding is reached; don't guess intent. Use `grilling` for non-trivial tasks. Intent reduces wrong paths.

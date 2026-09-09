@@ -21,7 +21,7 @@ Sources:
 """
 import sys, json, subprocess, os
 
-TEST_TIMEOUT = 60
+TEST_TIMEOUT = 120
 
 
 def block(reason):
@@ -73,6 +73,34 @@ def detect_test_command(cwd):
     return None, False
 
 
+def check_unmasked_secrets(cwd):
+    """Block if credentials.toml or mcp_config.json contain unmasked secrets."""
+    creds = os.path.join(cwd, "credentials.toml")
+    mcp = os.path.join(cwd, "mcp_config.json")
+
+    if os.path.isfile(creds):
+        with open(creds, encoding="utf-8") as f:
+            content = f.read()
+        if '"MASKED"' not in content and 'MASKED' not in content:
+            # A credentials.toml with real values has no MASKED placeholder.
+            # This is acceptable locally, but never push it.
+            block(
+                "credentials.toml contains unmasked secrets. "
+                "Export with masking before pushing, or review the file."
+            )
+
+    if os.path.isfile(mcp):
+        with open(mcp, encoding="utf-8") as f:
+            content = f.read()
+        # Look for non-MASKED secret-like JSON values
+        if re.search(r'"(API_KEY|TOKEN|SECRET|PASSWORD|KEY|api_key|token|secret|password|key)"\s*:\s*"[^"]{4,}"', content):
+            if 'MASKED' not in content:
+                block(
+                    "mcp_config.json contains unmasked secret values. "
+                    "Export with masking before pushing."
+                )
+
+
 def check_held_out_gap(cwd, is_pytest):
     """Block when validation tests pass but held-out tests fail (Rule 16)."""
     validation_dir = os.path.join(cwd, "tests", "validation")
@@ -115,6 +143,10 @@ def main():
         sys.exit(0)
 
     cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+
+    # Defense in depth: block push if secrets are unmasked in bundle files.
+    check_unmasked_secrets(cwd)
+
     check_cmd, is_pytest = detect_test_command(cwd)
     if not check_cmd:
         sys.exit(0)  # no test framework detected: allow

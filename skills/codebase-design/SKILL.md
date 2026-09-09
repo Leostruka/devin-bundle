@@ -2,6 +2,7 @@
 name: codebase-design
 description: Use when designing modules, seams, adapters, and the structure of a codebase.
 agent: architect
+triggers: [user, model]
 ---
 # Codebase Design
 

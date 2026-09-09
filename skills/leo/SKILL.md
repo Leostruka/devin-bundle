@@ -1,9 +1,20 @@
 ---
 name: leo
 description: Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.
+triggers: [user, model]
 ---
 
 # /leo — Universal bundle orchestrator
+
+## TL;DR
+
+1. Self-check (scope, skills, verify, no opinion).
+2. Classify objective; route directly to matching skill(s).
+3. Start with `using-skills`; use `ask-matt` only if unclear.
+4. For 3+ steps, write `todo_write`; mark `in_progress` then `completed`.
+5. Define Verification Function (gate/expect/evidence) per step.
+6. Dispatch `qa-ci` to re-run every gate on clean checkout.
+7. Run `python audit.py` and `python -m pytest` before claiming done.
 
 ## Goal
 
@@ -87,7 +98,7 @@ Pick the entry skill from the user's situation. If the situation is not in this 
 
 | Situation | Entry skill | Next |
 |---|---|---|
-| Build / change / implement something | `grilling` (With-docs) if decisions remain, or `review-cadence` if trivial | → `planning-pipeline` Spec → Tickets → `implement` + `tdd` → `code-review` → `verification-before-completion` → `finishing-a-development-branch` |
+| Build / change / implement something | `grilling` (With-docs) to capture intent and user impact, or `review-cadence` if trivial | → `planning-pipeline` Spec → Tickets (estimate PR size; split >500 lines) → `implement` + `tdd` → `security-audit` (if API, DB, secrets, endpoints, or infra) → `code-review` → `verification-before-completion` → `finishing-a-development-branch` |
 | Run AFK / unattended on a feature | `afk-loop` only if issues exist and are `ready-for-agent`; otherwise use **Quick AFK issue creation** below | `afk-loop` |
 | Hard / intermittent / unclear bug | `diagnosing-bugs` | → `tdd` regression → `improve-codebase-architecture` if no seam |
 | CI is failing | `debug-ci-failures` | |
@@ -113,6 +124,28 @@ Pick the entry skill from the user's situation. If the situation is not in this 
 | No skill matches | `tool-and-skill-discovery` | evaluate / install |
 
 For the main flow details (idea → ship, on-ramps, phase boundaries), see `ask-matt`.
+
+### Build/change flow gates
+
+The default build/change flow is: `grilling` (intent and user impact) → `planning-pipeline` (spec + tickets) → `implement` + `tdd` → `security-audit` (when the change touches API, DB, secrets, endpoints, or infrastructure) → `code-review` → `verification-before-completion` → `finishing-a-development-branch`.
+
+Gates applied inside that flow:
+
+- **Intent and impact**: `grilling` captures the final goal, where the feature lands, and how the user is affected. Implementation does not start until intent is clear.
+- **Size and boundaries**: `planning-pipeline` estimates the PR size. If the estimate exceeds ~500 lines, split the task into smaller tickets with clear input/output boundaries. Target PR size is ~300 lines.
+- **TDD**: `tdd` is a default step, not optional. Tests verify intent; don't delete or skip them without explicit approval.
+- **Pre-commit**: `setup-pre-commit` runs lint-staged and tests before commit when the project is set up by `project-setup` or `implement` touches pre-commit hooks.
+- **Security audit**: `security-audit` is a gate, not optional, whenever the change touches API, DB, secrets, endpoints, or infrastructure.
+- **Destructive work**: `docker` or a dev container is recommended for tasks that could be destructive (file system, DB, network, credentials).
+- **Parallelism**: limit concurrent subagents to 1-3. If a task suggests more than 3 parallel agents, alert the user and ask for approval.
+
+### Tool-output validation
+
+After executing critical tools (API calls, DB writes, file-system changes, network calls), validate the output before allowing side effects or reporting success:
+
+- **Type/schema check**: validate tool arguments and responses with Pydantic or an equivalent schema check before using them.
+- **Ontology/reasonableness check**: check the result against the domain ontology or business rules (e.g., status values must be `paid`, `shipped`, or `refunded`; entities must be the expected type). If the result is not reasonable, go back to the LLM or ask the human — do not apply side effects.
+- **No side effects until validated**: don't let a tool output drive destructive or state-changing actions before it passes the checks.
 
 ## Quick-start menu
 

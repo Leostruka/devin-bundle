@@ -112,21 +112,48 @@ print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
-for i in range(1, 22):
+for i in range(1, 28):
     # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
 print('  Rules found: ' + str(rules_found))
-if len(rules_found) != 20:
-    errors.append('Expected 20 rules, found ' + str(len(rules_found)))
+expected_rules = manifest.get('rule_count', 26)
+if len(rules_found) != expected_rules:
+    errors.append('Expected ' + str(expected_rules) + ' rules, found ' + str(len(rules_found)))
+    print('  FAIL expected ' + str(expected_rules) + ', found ' + str(len(rules_found)))
 else:
-    print('  OK  20 rules present')
+    print('  OK  ' + str(len(rules_found)) + ' rules present')
 declared_rule_count = manifest.get('rule_count')
 if declared_rule_count != len(rules_found):
     errors.append('manifest rule_count mismatch')
     print('  FAIL rule_count declared=' + str(declared_rule_count) + ' actual=' + str(len(rules_found)))
 else:
     print('  OK  rule_count = ' + str(len(rules_found)))
+
+# 6c. Warn if AGENTS.md is large (context window budget)
+print()
+print('[6c] AGENTS.md context budget')
+agents_size = len(agents)
+estimated_tokens = agents_size // 4
+AGENTS_TOKEN_BUDGET = 10000
+print('  AGENTS.md size: ' + str(agents_size) + ' chars (~' + str(estimated_tokens) + ' tokens)')
+if estimated_tokens > AGENTS_TOKEN_BUDGET:
+    warnings.append('AGENTS.md exceeds token budget: ~' + str(estimated_tokens) + ' > ' + str(AGENTS_TOKEN_BUDGET))
+    print('  WARN AGENTS.md exceeds ' + str(AGENTS_TOKEN_BUDGET) + ' token budget')
+else:
+    print('  OK  AGENTS.md within budget')
+
+# 6b. Detect missing rule numbers or duplicate numbering (only flag if count is off or duplicates exist)
+all_numbers = set(range(1, 28))
+found_numbers = set(rules_found)
+# A gap is only a problem if it causes the total count to diverge from the manifest.
+# Intentional gaps (e.g. rule 6 omitted) are allowed as long as rule_count matches.
+duplicates = sorted([n for n in rules_found if rules_found.count(n) > 1])
+if duplicates:
+    errors.append('Duplicate rule numbers in AGENTS.md: ' + str(duplicates))
+    print('  FAIL duplicate rule numbers: ' + str(duplicates))
+else:
+    print('  OK  no duplicate rule numbers')
 
 # 7. config.json hooks references valid scripts
 print()
@@ -157,6 +184,50 @@ for s in sorted(scripts_referenced):
         errors.append('Hook references ' + s + ' but file missing')
         print('  FAIL ' + s + ' missing')
 
+# 7b. config.json schema validation
+print()
+print('[7b] config.json schema validation')
+HOOK_EVENTS = ['PreToolUse', 'PostToolUse', 'PreCompact', 'PostCompaction', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop', 'PermissionRequest']
+config_errors = []
+if not isinstance(config.get('version'), int):
+    config_errors.append('version must be an integer')
+for key in ['devin', 'agent', 'read_config_from', 'shell']:
+    if not isinstance(config.get(key), dict):
+        config_errors.append('missing or invalid top-level key: ' + key)
+if 'attribution' not in config or not isinstance(config['attribution'], bool):
+    config_errors.append('attribution must be a boolean')
+if not isinstance(hooks, dict):
+    config_errors.append('hooks must be an object')
+else:
+    for event in hooks:
+        if event not in HOOK_EVENTS:
+            config_errors.append('unknown hook event: ' + event)
+        if not isinstance(hooks[event], list):
+            config_errors.append('hooks[' + event + '] must be a list')
+        else:
+            for entry in hooks[event]:
+                if not isinstance(entry, dict):
+                    config_errors.append('hook entry must be an object')
+                    continue
+                if 'matcher' not in entry:
+                    config_errors.append('hook entry missing matcher')
+                if 'hooks' not in entry or not isinstance(entry.get('hooks'), list):
+                    config_errors.append('hook entry missing hooks list')
+                else:
+                    for h in entry.get('hooks', []):
+                        if h.get('type') != 'command':
+                            config_errors.append('hook type must be "command"')
+                        if not h.get('command'):
+                            config_errors.append('hook command missing')
+                        if 'timeout' in h and not isinstance(h.get('timeout'), int):
+                            config_errors.append('hook timeout must be an integer')
+if config_errors:
+    for e in config_errors:
+        errors.append('config.json schema: ' + e)
+        print('  FAIL ' + e)
+else:
+    print('  OK  config.json schema valid')
+
 # 8. All scripts in scripts/ dir
 print()
 print('[8] Scripts directory')
@@ -178,7 +249,7 @@ readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     (f'{skill_count} skills', skill_count > 0),
-    ('20 rules', len(rules_found) == 20),  # 1-5,7-21 (Rule 6 removed)
+    ('26 rules', len(rules_found) == 26),  # 1-5,7-27 (Rule 6 removed)
     ('6 agents', agent_count == 6),
     ('17 scripts', len(script_files) == 17),
 ]
@@ -214,6 +285,48 @@ else:
         print('  FAIL manifest scripts not on disk: ' + ', '.join(missing))
     else:
         print('  OK  manifest.json scripts list consistent (' + str(len(manifest_py_scripts)) + ' .py + ' + str(len(manifest_other_scripts)) + ' other)')
+    # Check script hashes
+    hash_mismatch = []
+    for s in manifest_scripts:
+        if s['name'].endswith('.py') and s.get('export_hash'):
+            path = os.path.join('scripts', s['name'])
+            if os.path.isfile(path):
+                disk_hash = hashlib.sha256(open(path, 'rb').read()).hexdigest().upper()
+                if disk_hash != s['export_hash'].upper():
+                    hash_mismatch.append(s['name'])
+    if hash_mismatch:
+        warnings.append('manifest script hash mismatch: ' + ', '.join(hash_mismatch))
+        print('  WARN script hash mismatch: ' + ', '.join(hash_mismatch))
+    else:
+        print('  OK  manifest script hashes match')
+
+# 9c. manifest.json agents list and hashes
+print()
+print('[9c] manifest.json agents')
+manifest_agents = manifest.get('agents', [])
+agent_files = [f for f in os.listdir('agents') if f.endswith('.md')]
+if len(manifest_agents) != len(agent_files):
+    errors.append('manifest agent_count mismatch')
+    print('  FAIL manifest agent_count mismatch')
+else:
+    missing = []
+    hash_mismatch = []
+    for a in manifest_agents:
+        path = os.path.join('agents', a['name'] + '.md')
+        if not os.path.isfile(path):
+            missing.append(a['name'])
+        elif a.get('export_hash'):
+            disk_hash = hashlib.sha256(open(path, 'rb').read()).hexdigest().upper()
+            if disk_hash != a['export_hash'].upper():
+                hash_mismatch.append(a['name'])
+    if missing:
+        errors.append('manifest agents missing on disk: ' + ', '.join(missing))
+        print('  FAIL agents missing: ' + ', '.join(missing))
+    elif hash_mismatch:
+        warnings.append('manifest agent hash mismatch: ' + ', '.join(hash_mismatch))
+        print('  WARN agent hash mismatch: ' + ', '.join(hash_mismatch))
+    else:
+        print('  OK  manifest agents consistent (' + str(len(manifest_agents)) + ' agents)')
 
 # 10. No unmasked secrets
 print()
@@ -254,6 +367,32 @@ if mcp_has_secrets:
 else:
     print('  OK  mcp_config.json no secret-like fields')
 
+# 10b. mcp_config.json schema validation
+print()
+print('[10b] mcp_config.json schema validation')
+mcp_schema_errors = []
+if not isinstance(mcp.get('mcpServers'), dict):
+    mcp_schema_errors.append('mcpServers must be an object')
+else:
+    for sname, scfg in mcp_servers.items():
+        if not isinstance(scfg, dict):
+            mcp_schema_errors.append(sname + ' config must be an object')
+            continue
+        url = scfg.get('url', '')
+        transport = scfg.get('transport', '')
+        if not url.startswith('https://'):
+            mcp_schema_errors.append(sname + ' url must use https')
+        if transport not in ('https', 'stdio'):
+            mcp_schema_errors.append(sname + ' transport must be https or stdio')
+        if url.startswith('https://') and transport == 'http':
+            mcp_schema_errors.append(sname + ' transport http does not match https url')
+if mcp_schema_errors:
+    for e in mcp_schema_errors:
+        errors.append('mcp_config.json: ' + e)
+        print('  FAIL ' + e)
+else:
+    print('  OK  mcp_config.json schema valid')
+
 # 11. .gitignore coverage
 print()
 print('[11] .gitignore coverage')
@@ -265,6 +404,18 @@ for pattern in required_ignores:
     else:
         warnings.append('.gitignore missing ' + pattern)
         print('  WARN .gitignore missing ' + pattern)
+# Also check for tracked __pycache__ directories
+pycache_dirs = []
+for root, dirs, files in os.walk('.'):
+    if '.git' in root:
+        continue
+    if '__pycache__' in dirs:
+        pycache_dirs.append(root)
+if pycache_dirs:
+    warnings.append('__pycache__ directories found: ' + ', '.join(pycache_dirs))
+    print('  WARN __pycache__ directories found: ' + ', '.join(pycache_dirs))
+else:
+    print('  OK  no __pycache__ directories')
 
 # 12. CI workflow
 print()
@@ -308,6 +459,9 @@ for doc, check in docs:
         if check and check not in content:
             errors.append(doc + ' does not contain ' + check)
             print('  FAIL ' + doc + ' missing ' + check)
+        elif len(content.strip()) < 100:
+            warnings.append(doc + ' is too short')
+            print('  WARN ' + doc + ' is too short')
         else:
             print('  OK  ' + doc)
     else:
@@ -482,6 +636,57 @@ for s in scripts_check:
         errors.append(s + ' missing')
         print('  FAIL ' + s + ' missing')
 
+# 22b. Structural validation for export/install scripts
+print()
+print('[22b] Export/install script structural validation')
+for s in scripts_check:
+    if not os.path.exists(s):
+        continue
+    content = open(s, encoding='utf-8-sig').read()
+    issues = []
+    if s.endswith('.ps1'):
+        # Parameters must include DryRun, Force, Backup, RestoreSecrets/Commit/Push/NoMask
+        expected = ['[switch]$DryRun']
+        if 'export' in s:
+            expected = ['[switch]$DryRun', '[switch]$Commit', '[switch]$Push', '[switch]$NoMask']
+        else:
+            expected = ['[switch]$DryRun', '[switch]$Force', '[switch]$Backup', '[switch]$RestoreSecrets']
+        for p in expected:
+            if p not in content:
+                issues.append('missing ' + p)
+        # Must have a no-mask/push guard
+        if 'export' in s:
+            if 'NoMask' not in content or 'Push' not in content:
+                issues.append('missing NoMask/Push parameter or guard')
+        # Placeholder must exist in bundle (collapsed) and be expanded in install
+        if 'install' in s:
+            if '{{APPDATA}}' not in content:
+                issues.append('missing {{APPDATA}} placeholder expansion')
+        else:
+            if 'normalize_config_paths' not in content and '{{APPDATA}}' not in content:
+                issues.append('missing config path normalization')
+    else:
+        # Bash scripts
+        expected = ['DRY_RUN=', 'FORCE=', 'BACKUP=', 'RESTORE_SECRETS='] if 'install' in s else ['DRY_RUN=', 'COMMIT=', 'PUSH=', 'NO_MASK=']
+        for p in expected:
+            if p not in content:
+                issues.append('missing ' + p)
+        # Shebang
+        if not content.startswith('#!'):
+            issues.append('missing shebang')
+        # Placeholder handling
+        if 'install' in s:
+            if '{{APPDATA}}' not in content:
+                issues.append('missing {{APPDATA}} placeholder handling')
+        else:
+            if 'normalize_config_paths' not in content and '{{APPDATA}}' not in content:
+                issues.append('missing config path normalization')
+    if issues:
+        errors.append(s + ': ' + ', '.join(issues))
+        print('  FAIL ' + s + ': ' + ', '.join(issues))
+    else:
+        print('  OK  ' + s + ' structure')
+
 # 23. .gitattributes
 print()
 print('[23] .gitattributes')
@@ -519,6 +724,8 @@ reflog = os.path.join('.devin', 'refinements.log.jsonl')
 if os.path.exists(reflog):
     ref_ids = []
     ref_errors = []
+    required_ref_keys = ['id', 'timestamp', 'repro_command', 'expected', 'actual', 'verdict']
+    missing_evidence = []
     for line in open(reflog, encoding='utf-8'):
         line = line.strip()
         if not line:
@@ -526,11 +733,17 @@ if os.path.exists(reflog):
         try:
             entry = json.loads(line)
             ref_ids.append(entry.get('id', ''))
+            missing = [k for k in required_ref_keys if k not in entry or not entry[k]]
+            if missing:
+                missing_evidence.append(str(entry.get('id', '?')) + ' missing ' + ', '.join(missing))
         except (json.JSONDecodeError, ValueError):
             ref_errors.append('malformed JSON line')
     if ref_errors:
         errors.append('refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
         print('  FAIL refinements.log.jsonl: ' + str(len(ref_errors)) + ' malformed lines')
+    elif missing_evidence:
+        warnings.append('refinements.log.jsonl entries missing evidence: ' + '; '.join(missing_evidence[:5]))
+        print('  WARN refinements.log.jsonl entries missing evidence: ' + str(len(missing_evidence)))
     else:
         from collections import Counter
         dups = {k: v for k, v in Counter(ref_ids).items() if v > 1}

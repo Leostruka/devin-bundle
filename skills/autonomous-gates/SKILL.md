@@ -1,6 +1,7 @@
 ---
 name: autonomous-gates
 description: Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for "autonomous mode" or "run unattended", or when a task has explicit acceptance criteria that must pass before declaring done.
+triggers: [user, model]
 ---
 
 # Autonomous Gates

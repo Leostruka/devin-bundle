@@ -1,6 +1,7 @@
 ---
 name: playbook
 description: Use when the user wants to create, refine, or use a reusable playbook for repeated tasks — a structured prompt template with Procedure, Specifications, Advice, Forbidden Actions, and Required-from-User sections. Replicates Devin cloud's Playbook feature (.devin.md files, macros, team/community library) for the CLI.
+triggers: [user, model]
 ---
 
 # Playbook (CLI replica of Devin cloud Playbooks)

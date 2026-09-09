@@ -2,6 +2,7 @@
 name: debug-ci-failures
 description: Use when CI is failing and the cause needs to be found across builds, jobs, or environments.
 agent: debugger
+triggers: [user, model]
 ---
 # Debug CI Failures
 

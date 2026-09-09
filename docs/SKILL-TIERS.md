@@ -154,15 +154,23 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `deploy` | Deploy, release, rollback e smoke tests | ~400 | Publicar ou promover versão |
 | `security-audit` | SAST, dependências, vazamento de segredos | ~450 | Auditar segurança |
+| `secure-defaults-check` | Checklist `.env`, `.gitignore`, endpoints, confirmação destrutiva | ~400 | Antes de commit/deploy |
+| `ontology-validator` | Valida outputs de ferramentas contra ontologia/knowledge.json | ~400 | Antes de side effects |
+| `task-sizer` | Estima tamanho de PR e sugere quebra >500 linhas | ~400 | Antes de implementar |
 | `performance` | Profile, benchmark e otimização | ~400 | Lentidão ou gargalo |
 | `a11y-audit` | WCAG, keyboard, screen-reader, contraste | ~450 | Verificar acessibilidade |
 | `api-design` | REST/OpenAPI/contract tests | ~500 | Design ou review de API |
 | `database` | Schema, migrations, queries, índices | ~450 | Modelagem ou otimização DB |
 | `e2e-testing` | Playwright/Selenium/Cypress journeys | ~500 | Testes de jornada crítica |
 | `cost-optimization` | Tokens, cache, model routing, MCPs | ~450 | Reduzir custo de inferência |
+| `agent-cost-guard` | Limita subagentes e loops, alerta token maxing | ~400 | Controle de custo de agentes |
+| `intention-capture` | Captura e valida campo "intenção" em tickets/specs | ~400 | Antes de implementar |
+| `api-context-spec` | Gera/manipula OpenAPI specs como contexto para IA | ~400 | Design ou review de API |
 | `docker` | Build, run, compose, scan de imagens | ~400 | Containers e stacks |
 | `i18n` | Traduções, plural, LTR/RTL, formatos | ~450 | Multi-idioma |
 | `legacy-refactor` | Strangler-fig, seams, modernization | ~500 | Modernizar código legado |
+
+**Nota sobre skills de custo:** `cost-optimization` foca em reduzir tokens/cache/MCPs do parent; `agent-cost-guard` limita subagentes e loops; `effort-calibration` escolhe o nível de raciocínio. Use `ask-matt` se estiver em dúvida.
 
 ## Outros
 

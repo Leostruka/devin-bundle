@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-76-blue.svg)](#2-skills)
-[![Rules](https://img.shields.io/badge/rules-20-green.svg)](#1-regras-globais)
+[![Skills](https://img.shields.io/badge/skills-82-blue.svg)](#2-skills)
+[![Rules](https://img.shields.io/badge/rules-26-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.1.0-orange.svg)](CHANGELOG.md)
 
 Ecossistema versionado para o Devin CLI. O bundle sincroniza entre máquinas as regras, skills, perfis de subagentes, hooks, scripts, configuração e metadados que governam todo o ciclo de trabalho: da ideia ao planejamento, implementação, revisão, memória e entrega.
@@ -122,7 +122,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 76 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 82 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 
@@ -159,6 +159,7 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 | `debugger` | Reprodução e análise sistemática de falhas | Execução controlada |
 | `implementer` | Código, testes e verificação de uma tarefa delimitada | Sim |
 | `reviewer` | Revisão independente de Standards e Spec | Não |
+| `qa-ci` | Verificacao independente de testes, build e lint | Execucao controlada |
 | `subagent_explore` | Exploração built-in | Não |
 | `subagent_general` | Trabalho geral built-in | Sim |
 
@@ -451,7 +452,7 @@ O instalador:
 2. instala `AGENTS.md`;
 3. instala os perfis de `agents/`;
 4. instala as skills descobertas;
-5. mescla `config.json` por padrão, preservando `org_id` local;
+5. mescla `config.json` por padrão, preservando `org_id` local e `attribution: false` (desliga atribuicao publica; nao afeta funcionalidade);
 6. instala scripts e hooks;
 7. ignora MCP mascarado; no Windows, `Force` pode instalar sua estrutura mascarada, enquanto o instalador Unix sempre a ignora;
 8. restaura credenciais somente com flag explícita;

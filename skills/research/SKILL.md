@@ -2,6 +2,7 @@
 name: research
 description: Use when the user asks a question that needs investigation against primary sources and citations.
 agent: researcher
+triggers: [user, model]
 ---
 Spin up a **background agent** to do the research, so you keep working while it reads.
 

@@ -20,16 +20,13 @@ Design and review HTTP/gRPC/GraphQL APIs with contracts and tests.
 1. **Collect constraints.** Consumers, auth, rate limits, error handling, versioning.
 2. **Choose style.** REST, gRPC, GraphQL, or hybrid based on use case.
 3. **Design endpoints.** Nouns as resources, consistent paths, status codes, error model.
-4. **Write the contract.** OpenAPI or proto file; validate with tools.
-5. **Add tests.** Contract, serialization, and happy/unhappy paths.
-6. **Document.** Keep spec and docs in sync.
-
-## See also
-
-- `codebase-design` — module and seam architecture.
-- `api-design` — contract-first HTTP/gRPC/GraphQL API design.
+4. **Specify input/output/behavior.** Every endpoint or operation must declare its input schema, output schema, and observable behavior. A spec that lacks input/output is incomplete.
+5. **Write the contract.** Produce an OpenAPI spec (or proto file) and validate it with tools. The spec is the primary context for the agent; keep it in sync with the code.
+6. **Add tests.** Contract, serialization, and happy/unhappy paths.
+7. **Document.** Keep spec and docs in sync.
 
 ## Output rule
 
 - Deliver a spec file, examples, and a test command.
 - Verify spec is valid with `swagger-codegen` or similar if available.
+- Include the OpenAPI spec (or equivalent) as context for implementation; the agent works from the spec, not from memory.

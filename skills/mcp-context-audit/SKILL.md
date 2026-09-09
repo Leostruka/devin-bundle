@@ -1,6 +1,7 @@
 ---
 name: mcp-context-audit
 description: Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mcp_config.json. Estimates per-server tool-definition token cost and flags bloat.
+triggers: [user, model]
 ---
 
 # MCP Context Audit
@@ -28,6 +29,10 @@ tool more often than not.
 
 - No MCP servers configured — nothing to audit.
 - You already know the cost and have decided to keep the server.
+
+## Audit by tool
+
+Measure the cost of each tool definition, not just the server total. If a server exposes many tools but the task uses only a few, prefer a narrower server or disable the unused tools if the server supports scoping.
 
 ## Workflow
 

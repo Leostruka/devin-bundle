@@ -1,6 +1,7 @@
 ---
 name: effort-calibration
 description: Use when choosing a reasoning effort level for an LLM coding agent, when a task seems to be over-thinking or spending too many tokens, when deciding whether to raise effort, when writing task specifications that substitute for reasoning budget, or when a simple task is being treated as a codebase audit. Covers overthinking, compute-optimal test-time scaling, prompt-induced waste, and difficulty-matched effort.
+triggers: [user, model]
 ---
 # Effort Calibration
 
@@ -40,6 +41,12 @@ Reasoning effort (thinking-token budget) is a **scarce resource to match to task
 5. **Raise effort when verification fails OR the task is genuinely hard.** Effort helps on hard tasks: High→xHigh lifted perfect runs 28%→89% and cut corrective prompts ~5× (arXiv:2607.02436). The signal to raise is a failed verification at the current tier, not a feeling.
 6. **Compute-optimal is difficulty-dependent, not maximal.** Uniform max effort is 4× less efficient than difficulty-matched allocation (arXiv:2408.03314). The optimal budget for an easy prompt is small; for a hard prompt, large.
 7. **Some chain-of-thought is always needed.** Zero reasoning is suboptimal — CoT enhances the ability to tackle intricate reasoning tasks (arXiv:2412.21187); test-time compute improves outputs on challenging prompts (arXiv:2408.03314). The goal is right-sized CoT, not no CoT.
+
+## Parallelism and size guards
+
+- **Parallelism:** limit concurrent subagents to 1-3. If a task suggests more than 3, alert the user and ask for approval. Each parallel agent multiplies token cost and context pressure.
+- **PR size:** target ~300 lines; if the change exceeds ~500 lines, split it into smaller tickets before implementing. Larger diffs increase review cost and regression risk.
+- **Context guard:** use `tokens-limit` or equivalent when available; if the active context approaches the threshold, stop, `clear` or `compact`, and restart with a leaner context.
 
 ## Anti-patterns
 

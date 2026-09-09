@@ -1,6 +1,7 @@
 ---
 name: obsidian-workflow
 description: Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, auto-refresh, effort levels (low/medium/high), Deep Research pass (architecture critique, anti-patterns, tech debt), and conversational Q&A via deep-mode; or reorganize, refactor, or restructure an Obsidian vault, knowledge base, or documentation folder; or audit, validate, or fix Obsidian project wikis (broken wikilinks, source citations, diagrams, sensitive info, language); or compare wiki knowledge by source session or source type to surface cross-session blind spots.
+triggers: [user, model]
 ---
 # obsidian-workflow
 

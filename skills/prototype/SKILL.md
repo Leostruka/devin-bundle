@@ -1,6 +1,7 @@
 ---
 name: prototype
 description: Use when a throwaway prototype is the fastest way to answer a design question.
+triggers: [user, model]
 ---
 # Prototype
 

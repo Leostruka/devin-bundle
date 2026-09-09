@@ -1,6 +1,7 @@
 ---
 name: verification-before-completion
 description: Use when about to claim work is complete, fixed, or passing.
+triggers: [user, model]
 ---
 # Verification Before Completion
 
@@ -44,8 +45,9 @@ Gate 1 (PRE): Define VFs before dispatching implementer
   → Implementer must run every VF and show output before claiming DONE
 
 Gate 2 (POST): Fresh verification evidence before accepting DONE claim
-  → Controller re-runs VFs independently (or dispatches reviewer to do so)
-  → If any VF fails, implementer re-enters fix loop
+  → Controller re-runs VFs independently; dispatch `reviewer`/`qa-ci` only
+    when the user authorizes delegation
+  → If any VF fails, re-enter the fix loop
 ```
 
 VFs are not extra work — they are the spec made executable. If you cannot
@@ -143,6 +145,16 @@ Skip any step = lying, not verifying
 ✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
 ❌ Trust agent report
 ```
+
+## Security checks
+
+Before claiming completion on work that touches API, DB, secrets, endpoints, or infrastructure, run a security pass:
+
+- No secrets or credentials in the diff.
+- No new unauthenticated endpoints or public storage URLs.
+- No new overly broad permissions or IAM policies.
+- No plaintext passwords or non-standard crypto.
+- If any of these are present, run `security-audit` before claiming done.
 
 ## When To Apply
 

@@ -1,6 +1,7 @@
 ---
 name: context-window-hygiene
 description: Use when a conversation is getting long and the agent seems to be forgetting earlier instructions, before adding MCP servers or rules files, when deciding whether to clear or compact the chat, or when context window budget feels tight. Covers lost-in-the-middle, clear-vs-compact, and lean-context hygiene.
+triggers: [user, model]
 ---
 
 # Context Window Hygiene
@@ -72,6 +73,10 @@ not a hygiene default.
    See `dispatching-parallel-agents`.
 6. **Watch the budget.** Run `context-budget.py` (SessionStart hook) to see
    the token cost of `.devin/global_rules.md` + loaded rules before working.
+7. **Guard against context overflow.** If a `tokens-limit` or equivalent
+   guard is available, use it. If the active context approaches the threshold,
+   stop the current task, `clear` or `compact`, and restart with a leaner
+   context. Loops without a bound are a cost and correctness risk.
 
 ## Anti-Patterns
 
@@ -81,6 +86,8 @@ not a hygiene default.
   of everything else in context.
 - **Pasting a 500k log into chat.** Use a file + grep.
 - **Compacting when you need the original detail.** Compaction is lossy.
+- **Running unbounded loops.** Every iteration burns tokens; cap retries and
+  stop when the context threshold is reached.
 
 ## Model Selection Heuristic
 

@@ -1,6 +1,7 @@
 ---
 name: git-helper
 description: Use when managing branches, writing commits, or resolving simple git workflow questions.
+triggers: [user, model]
 ---
 # Git Helper
 

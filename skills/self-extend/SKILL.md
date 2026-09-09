@@ -1,6 +1,7 @@
 ---
 name: self-extend
 description: Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.
+triggers: [user, model]
 ---
 # Self-Extension
 

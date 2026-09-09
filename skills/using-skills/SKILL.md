@@ -1,6 +1,7 @@
 ---
 name: using-skills
 description: Use when starting any conversation and before taking any non-trivial action.
+triggers: [user, model]
 ---
 **If you were dispatched as a subagent to execute a specific task, ignore this skill.**
 
@@ -62,3 +63,9 @@ User instructions (`.devin/global_rules.md`, `.devin/rules/*.md`, direct request
 - If the conversation is long or context is tight, invoke `context-window-hygiene`.
 - If the task seems trivial or unusually hard, invoke `effort-calibration` to choose the right reasoning level.
 - If there are many MCP servers or tool definitions, invoke `mcp-context-audit` then `mcp-lazy-enablement`.
+- If the task touches API, DB, secrets, endpoints, or infrastructure, invoke `security-audit`.
+- If the task involves implementation or bugfix, invoke `tdd`.
+- If the project lacks pre-commit hooks, invoke `setup-pre-commit` via `project-setup` or the build flow.
+- If the task risks high token cost or long context, invoke `cost-optimization` or `context-window-hygiene`.
+- If the task could be destructive, invoke `docker` or run inside a dev container.
+- If MCP servers are present or being added, invoke `mcp-context-audit` and `mcp-lazy-enablement`.

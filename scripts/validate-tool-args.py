@@ -162,6 +162,18 @@ def check_run_subagent(ti):
     is_bg = ti.get("is_background")
     if is_bg is not None and not isinstance(is_bg, bool):
         block("run_subagent is_background must be a boolean if provided.")
+    # Limit parallel subagents to 3 (cost/context guard).
+    # If the caller intends more, it must split into sequential batches.
+    max_parallel = ti.get("max_parallel", 3)
+    if not isinstance(max_parallel, int):
+        block(
+            f"run_subagent max_parallel must be an integer, got {type(max_parallel).__name__}."
+        )
+    if max_parallel > 3:
+        block(
+            f"run_subagent max_parallel is {max_parallel}; limit is 3. "
+            "Split into sequential batches or ask the user for approval."
+        )
 
 
 def check_mcp_call_tool(ti):

@@ -2,6 +2,7 @@
 name: code-review
 description: Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'.
 agent: reviewer
+triggers: [user, model]
 ---
 # Code Review (Unified)
 
@@ -214,6 +215,14 @@ controller reads the diff and decides — never silently drop either.
 - Push back with technical reasoning
 - Show code/tests that prove it works
 - Request clarification
+
+## Automation: Code Rabbit
+
+When the repository has a `.coderabbit.yaml` (or Code Rabbit is enabled), the automated review runs in CI. This skill complements it, not replaces it:
+
+- Let Code Rabbit catch mechanical issues (style, obvious bugs, security patterns).
+- Use this skill for the two-axis review (Standards vs Spec) and for decisions Code Rabbit cannot make (architecture, intent, scope creep).
+- If Code Rabbit flags something you already verified, note it in the review summary — do not re-litigate it.
 
 ## Cross-skills
 

@@ -1,6 +1,7 @@
 ---
 name: mutation-testing
 description: Use when the user asks to find testing gaps, mutation test, or identify surviving mutants.
+triggers: [user, model]
 ---
 # Mutation Testing
 

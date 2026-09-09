@@ -1,6 +1,7 @@
 ---
 name: dispatching-parallel-agents
 description: Use when facing two or more independent tasks with no shared state or ordering, OR when executing a multi-task plan by dispatching a fresh subagent per task.
+triggers: [user, model]
 ---
 # Dispatching Parallel Agents
 

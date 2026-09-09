@@ -421,6 +421,13 @@ else
 fi
 
 # --- 9. Pre-push validation ---
+if [[ $PUSH -eq 1 && $NO_MASK -eq 1 && $DRY_RUN -eq 0 ]]; then
+  err "FATAL: --push with --no-mask would export real secrets and push them to the repository."
+  err "       This is a security risk. Aborting."
+  err "       If you must back up unmasked credentials, use --no-mask --commit (no push) and review the diff manually."
+  exit 1
+fi
+
 if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   step "Pre-push validation"
   validation_failed=0
@@ -464,6 +471,28 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
 
   if [[ $validation_failed -eq 1 ]]; then
     err "Validation failed, aborting push"
+    exit 1
+  fi
+
+  # Run full repo audit and test suite before push (Rule 5: no push without green)
+  step "Running audit.py"
+  if python "$BUNDLE_DIR/audit.py"; then
+    ok "audit.py passed"
+  else
+    err "audit.py failed"
+    validation_failed=1
+  fi
+
+  step "Running pytest"
+  if python -m pytest -q "$BUNDLE_DIR"; then
+    ok "pytest passed"
+  else
+    err "pytest failed"
+    validation_failed=1
+  fi
+
+  if [[ $validation_failed -eq 1 ]]; then
+    err "Pre-push validation failed, aborting push"
     exit 1
   fi
 fi

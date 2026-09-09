@@ -2,6 +2,7 @@
 name: diagnosing-bugs
 description: Use when the user says 'diagnose', 'debug this', reports something broken, throwing, failing, or slow, or when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.
 agent: debugger
+triggers: [user, model]
 ---
 # Diagnosing Bugs (Unified)
 

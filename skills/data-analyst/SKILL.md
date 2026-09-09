@@ -1,6 +1,7 @@
 ---
 name: data-analyst
 description: Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA) for the CLI — SQL-first exploration, schema-aware querying, and seaborn-style visualizations via MCP data sources.
+triggers: [user, model]
 ---
 
 # Data Analyst (CLI replica of DANA — Data ANAlyst Agent)

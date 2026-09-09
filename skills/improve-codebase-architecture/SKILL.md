@@ -2,6 +2,7 @@
 name: improve-codebase-architecture
 description: Use when the user wants to evaluate module depth, identify deepening opportunities in a codebase, and act on them.
 agent: architect
+triggers: [user, model]
 ---
 # Improve Codebase Architecture
 

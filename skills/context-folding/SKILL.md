@@ -1,6 +1,7 @@
 ---
 name: context-folding
 description: Use when context is growing large (approaching model window limits), when long documents or transcripts need to be processed, or when compaction is losing critical information. Adapts Recursive Language Model (RLM) techniques to the Devin CLI runtime.
+triggers: [user, model]
 ---
 
 # Context Folding (RLM-style)

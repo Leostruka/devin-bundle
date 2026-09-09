@@ -2,6 +2,7 @@
 name: handoff
 description: Use when the user needs to compact the current conversation into a document for another agent to continue.
 argument-hint: What will the next session be used for?
+triggers: [user, model]
 ---
 Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to the temporary directory of the user's OS - not the current workspace.
 

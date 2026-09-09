@@ -21,3 +21,16 @@ def test_skill_format_all_pass():
     output = (result.stdout or "") + (result.stderr or "")
     assert "Failing: 0" in output, \
         f"Skills failing format validation\n{output[-500:]}"
+
+
+def test_skills_have_minimal_content():
+    """Every SKILL.md must have frontmatter and at least one section after it."""
+    skills_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'skills')
+    for skill in os.listdir(skills_dir):
+        path = os.path.join(skills_dir, skill, 'SKILL.md')
+        if not os.path.exists(path):
+            continue
+        text = open(path, encoding='utf-8').read()
+        assert text.startswith('---'), f"{skill} missing frontmatter"
+        assert text.count('---') >= 2, f"{skill} frontmatter not closed"
+        assert len(text.split('---')[-1].strip()) > 100, f"{skill} has too little content"

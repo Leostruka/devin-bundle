@@ -92,9 +92,25 @@ def signal_lines(text):
     a real error (e.g. "Warning: EACCES permission denied", "npm warn: npm ERR!").
     """
     kept = []
+    strong_errors = {re.compile(r"\btraceback\b", re.IGNORECASE),
+                     re.compile(r"\bfatal(?:\s+error)?\b", re.IGNORECASE),
+                     re.compile(r"\bunhandled exception\b", re.IGNORECASE),
+                     re.compile(r"\bsegmentation fault\b", re.IGNORECASE),
+                     re.compile(r"\bcore dumped\b", re.IGNORECASE),
+                     re.compile(r"\bpanic:", re.IGNORECASE),
+                     re.compile(r"\bEACCES\b|\bECONNREFUSED\b|\bECONNRESET\b|\bETIMEDOUT\b|\bENOENT\b"),
+                     re.compile(r"\b(?:ValueError|TypeError|KeyError|IndexError|AttributeError|RuntimeError|ImportError|ModuleNotFoundError|OSError|IOError|FileNotFoundError|NotImplementedError|ZeroDivisionError)\b\s*:", re.IGNORECASE),
+                     re.compile(r"\b(?:command not found|no such file or directory)\b", re.IGNORECASE),
+                     re.compile(r"\bpermission denied\b", re.IGNORECASE),
+                     re.compile(r"\bnpm\s+ERR!", re.IGNORECASE),
+                     re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE)}
     for ln in text.split("\n"):
         is_noise = any(n.search(ln) for n in NOISE_PATTERNS)
         has_error = any(p.search(ln) for p in ERROR_INDICATORS)
+        # If a line is mostly a warning, 'error:' alone is too weak; require a
+        # strong error indicator to avoid false positives from 'warning: error'.
+        if is_noise and has_error and not any(p.search(ln) for p in strong_errors):
+            continue
         if is_noise and not has_error:
             continue  # pure noise line, strip it
         kept.append(ln)
