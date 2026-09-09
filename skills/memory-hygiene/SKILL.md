@@ -46,7 +46,7 @@ Cross-session agent memory is a **contract with the user**, not a black box. Nai
 - **Append-only MEMORY.md.** Grows forever, never pruned. Maximizes contamination and drift.
 - **Auto-saving every preference.** "The user said they like tabs → save to memory → inject into every future session." Causes a preference about one feature to leak everywhere.
 - **Trusting auto-inferred preferences.** Preference following accuracy is <10% at 10 turns zero-shot (arXiv:2502.09597). Auto-inferred preferences are unreliable.
-- **"Kill all memory."** The opposite extreme. Managed memory helps (+10% vs naive, arXiv:2505.16067; MemGPT, arXiv:2310.08560). The problem is naive accumulation, not memory itself.
+- **"Delete all memory."** The opposite extreme. Managed memory helps (+10% vs naive, arXiv:2505.16067; MemGPT, arXiv:2310.08560). The problem is naive accumulation, not memory itself.
 - **Opaque memory.** Auto-memory the user cannot inspect or edit violates the contract.
 
 ## Academic basis
@@ -62,4 +62,4 @@ Cross-session agent memory is a **contract with the user**, not a black box. Nai
 
 ## Source
 
-Distilled from "Kill your MEMORY.md" (Matt Pocock, YouTube). Claims verified against primary sources — the video's thesis (A: accumulation pollutes, B: stateless is predictable, C: user-authored > auto-saved) is supported; its conclusion (D: kill all memory) is refuted by MemGPT and managed-memory evidence. The correct prescription is "prefer explicit, allow managed, ban naive."
+Distilled from AI-coding workflow guidance on memory hygiene. Claims verified against primary sources — the thesis (A: accumulation pollutes, B: stateless is predictable, C: user-authored > auto-saved) is supported; the conclusion (D: delete all memory) is refuted by MemGPT and managed-memory evidence. The correct prescription is "prefer explicit, allow managed, ban naive."

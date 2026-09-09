@@ -87,7 +87,7 @@ the verification.
 
 | # | PrimeAgent/RLM feature | Adapted to Devin CLI | How |
 |---|---|---|---|
-| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, `researcher` sub-queries (depth=1 only, NOT `subagent_explore` when parent FREE — PAID) |
+| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, `researcher` sub-queries (depth=1 only; do NOT use `subagent_explore` when the parent is free — check `cost_tier` in `data/bundle-models.json`) |
 | 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `primeagent-reference` Refine mode + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
 | 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — A2A Messaging mode in this skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. See "Mode: A2A Messaging" below. |
 | 4 | Skills as importable Python packages | **Partial** — already supported | Skills can have `scripts/` dirs with Python. `self-extend` skill documents this. |
@@ -132,7 +132,7 @@ the verification.
 | Schema ARC-AGI-3 | 99% (Opus 4.8 + Fable 5) | schema-harness.github.io |
 | PrimeAgent GitHub | 16.2k stars, 1.7k forks, MIT | GitHub |
 | PrimeIntellect funding | $130M Series A, $1B valuation, 6k customers | TechCrunch |
-| PrimeAgent 9-eval table | Opus 5 beats Claude Code 6/9, GPT-5.6 beats Codex 6/9, GLM-5.2 beats Pi-mono 8/9 | PrimeAgent blog |
+| PrimeAgent 9-eval table | Opus 5 beats Claude Code 6/9, GPT-5.6 beats Codex 6/9, bundle parent model (per `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`) beats Pi-mono 8/9 | PrimeAgent blog |
 | Context rot models tested | 18 (5 Anthropic, 7 OpenAI, 3 Google, 3 Alibaba) | Chroma report |
 
 ### Errors in the Source Video (Corrected)
@@ -364,11 +364,12 @@ validated against held-out evidence, not self-chosen tests.
 > with held-out validation and unlazy gates, invoke `/continuous-improvement`.
 > This mode reuses its anti-cheat principles (A1-A5) and convergence criterion.
 
-**Convergence criterion:** reach the optimal operating conjuncture for
-**GLM-5.2 High (200K context)** as primary model and **SWE-1.7 Max/Medium
-(262K context)** as default subagent — per verified sources (docs.devin.ai,
-cognition.com, z.ai, AI labs) and practical experience recorded in the
-bundle history.
+**Convergence criterion:** reach the optimal operating conjuncture for the
+bundle's primary model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`,
+`default_parent_model`) and the max/medium subagent models (`BUNDLE_MAX_MODEL` /
+`BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`, `max_role_model` /
+`medium_role_model`) — per verified sources (docs.devin.ai, cognition.com,
+z.ai, AI labs) and practical experience recorded in the bundle history.
 
 **NÃO dar push ou commit.** All changes stay local for user validation.
 
@@ -429,7 +430,8 @@ previous.
 - Output: list of sources with URL, author, date, and verified citation
 
 #### P0.4 — Research best practices
-- Topics: prompt engineering for GLM-5.2, context window management (200K/262K),
+- Topics: prompt engineering for the bundle primary model (`BUNDLE_DEFAULT_MODEL` /
+  `data/bundle-models.json`), context window management (per `data/bundle-models.json`),
   subagent fan-out, cache stability, native tool-use, lost-in-the-middle mitigation
 - Priority sources: arXiv, docs.z.ai, cognition.com/blog, docs.devin.ai
 - Output: list of practices with evidence (paper/doc supporting each)
@@ -542,7 +544,7 @@ Simulate loading the improvements and evaluate own performance.
 - Self-evaluation: **how does this modify my logic and operating mode in practice?**
   - What behavior changes when this rule/skill/hook is loaded?
   - What real scenario would execute differently now?
-  - Is there conflict with behaviors already optimized for GLM-5.2/SWE-1.7?
+  - Is there conflict with behaviors already optimized for the configured bundle models (`BUNDLE_*_MODEL` / `data/bundle-models.json`)?
 - Output: description of expected behavioral impact
 
 #### Step 9 — CLASSIFY (Improved or regressed?)
@@ -566,8 +568,8 @@ Classify the result with a description to define direction.
   different alternative
 - **Stopping criterion (convergence)**: when all candidate improvements from
   P0.7 have been applied and classified, and no new reproducible failure is
-  found in the current state → conjuncture reached for GLM-5.2 High (200K) +
-  SWE-1.7 (262K)
+  found in the current state → conjuncture reached for the configured bundle
+  primary and max subagent models (per `BUNDLE_*_MODEL` / `data/bundle-models.json`)
 - **NÃO dar push ou commit** — changes stay local for user review
 
 ### Anti Early-Stop Reflection (DORA)
@@ -783,22 +785,23 @@ PARALLEL → multiple independent subagents in parallel (dispatching-parallel-ag
 
 | Task need | Profile | Model | Cost tier |
 |---|---|---|---|
-| Codebase reconnaissance, doc lookup, web research | `researcher` | SWE-1.7 (262K) | free |
-| Code review, spec compliance, verification | `reviewer` | SWE-1.7 (262K) | free |
-| Bounded implementation from spec | `implementer` | SWE-1.7 (262K) | free |
-| Architecture, trade-offs, deep module design | `architect` | SWE-1.7 (262K) | free |
-| Systematic debugging, root cause analysis | `debugger` | SWE-1.7 (262K) | free |
-| Read-only exploration | `researcher` (custom) | SWE-1.7 (262K) | free |
-| General-purpose with full tools (built-in) | `subagent_general` | inherits parent (GLM-5.2) | free |
+| Codebase reconnaissance, doc lookup, web research | `researcher` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| Code review, spec compliance, verification | `reviewer` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| Bounded implementation from spec | `implementer` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| Architecture, trade-offs, deep module design | `architect` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| Systematic debugging, root cause analysis | `debugger` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| Read-only exploration | `researcher` (custom) | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| General-purpose with full tools (built-in) | `subagent_general` | inherits parent (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`) | free |
 
 **Selection rules:**
 
 1. Match by capability first — what does the task NEED?
 2. When two profiles match, pick the cheaper one
-3. **When parent is FREE (default): NUNCA usar `subagent_explore` (built-in)**
-   — roda em SWE-1.6 (PAGO). Usar `researcher` (custom, free) para read-only,
-   ou `subagent_general` (parent model, free) para full tools. When parent
-   is PAID, `subagent_explore` is permitted.
+3. **When parent is FREE (default): never use `subagent_explore` (built-in)**
+   — it resolves to a paid model by default in `data/bundle-models.json`.
+   Use `researcher` (custom, free) for read-only, or `subagent_general`
+   (parent model, free) for full tools. When parent is PAID, `subagent_explore`
+   is permitted.
 4. When task needs more capability than profile's default model, switch
    parent session model with `/model <model>` before dispatching
 

@@ -1,0 +1,9 @@
+{
+  "bundle_name": "{{BUNDLE_NAME}}",
+  "owner": "{{BUNDLE_OWNER}}",
+  "repo": "{{BUNDLE_REPO}}",
+  "source_url": "https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}",
+  "license_holder": "{{BUNDLE_OWNER}}",
+  "license_year": "{{LICENSE_YEAR}}",
+  "validated_cli_version": "3000.6.14"
+}

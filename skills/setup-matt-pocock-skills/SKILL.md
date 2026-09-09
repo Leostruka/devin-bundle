@@ -4,7 +4,7 @@ description: Use when configuring a repo for the engineering skills — set up i
 triggers: [user, model]
 ---
 
-# Setup Matt Pocock's Skills
+# Setup Engineering Skills
 
 Scaffold the per-repo configuration that the engineering skills assume:
 

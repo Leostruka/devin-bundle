@@ -14,7 +14,7 @@ triggers: [user, model]
 4. For 3+ steps, write `todo_write`; mark `in_progress` then `completed`.
 5. Define Verification Function (gate/expect/evidence) per step.
 6. Dispatch `qa-ci` to re-run every gate on clean checkout.
-7. Run `python audit.py` and `python -m pytest` before claiming done.
+7. Run the project's verification commands (e.g., `python audit.py` and `python -m pytest` when present) before claiming done.
 
 ## Goal
 
@@ -62,7 +62,7 @@ Provide one entry point for the bundle's universal orchestration: classify the o
      - `evidence:` where the raw output will be recorded (ledger line or file path).
    - Mark `in_progress` when starting a step, `completed` only after verification passes — no batching.
    - **Independent QA/CI verification (anti-gaming, mandatory for non-trivial steps):**
-     - After a step claims done, dispatch the `qa-ci` subagent (`swe-1-7`, no write tools) to re-run every gate independently.
+     - After a step claims done, dispatch the `qa-ci` subagent (max-role model via `BUNDLE_MAX_MODEL` / `data/bundle-models.json`, no write tools) to re-run every gate independently.
      - The QA/CI subagent sees only the diff and the spec — never the implementer's report.
      - It re-executes each gate on a clean checkout (fresh worktree when feasible), runs `tests/held-out/` if present, and audits the diff for overfitting (hard-coded constants, mocked gates, skipped tests, phantom guardrails).
      - A step is `completed` only when the QA/CI subagent returns `Verdict: PASS` with fresh command output + exit code as evidence.
@@ -85,12 +85,12 @@ Provide one entry point for the bundle's universal orchestration: classify the o
 
 Keep this in mind for every session:
 
-- Devin CLI validated release: `3000.6.14` (see `docs/DEVIN-CLI-COMPATIBILITY.md`).
-- Models: parent `glm-5-2`; custom subagents `swe-1-7` (free). Never use `swe`, `opus`, `sonnet`, `gpt`, etc. when the parent is free.
+- Devin CLI validated release: `{{VALIDATED_CLI_VERSION}}` from `data/bundle-identity.json` (see `docs/DEVIN-CLI-COMPATIBILITY.md`).
+- Models: parent from `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`); custom subagents from `BUNDLE_MAX_MODEL` / `data/bundle-models.json` (`max_role_model`, free by default). Never use paid or non-bundle aliases (`swe`, `opus`, `sonnet`, `gpt`, etc.) when the parent is free.
 - Issue tracker: local Markdown under `.devin/scratch/<feature-slug>/`, conventions in `.devin/agents/issue-tracker.md` and `.devin/agents/triage-labels.md`.
-- Skills: 76 in the bundle; discovery via `docs/SKILL-TIERS.md`.
+- Skills: discover via `tool-and-skill-discovery` or `docs/SKILL-TIERS.md`.
 - Hooks: 8 lifecycle events (see `docs/TOOLS-MAP.md` and `config.json`).
-- Verification baseline: `python audit.py` and `python -m pytest`.
+- Verification baseline: run the project's own verification commands; common defaults are `python audit.py` and `python -m pytest` when they exist.
 
 ## Situation router
 
@@ -119,7 +119,7 @@ Pick the entry skill from the user's situation. If the situation is not in this 
 | Performance or cost optimization | `performance` or `cost-optimization` | |
 | Human-only procedure / provisioning | `wizard` | |
 | Guided learning | `teach` | |
-| Set up this repo for Devin | `project-setup` or `setup-matt-pocock-skills` | |
+| Set up this repo for Devin | `project-setup` or the engineering-skills setup | |
 | Not sure which skill / flow fits | `ask-matt` | full map |
 | No skill matches | `tool-and-skill-discovery` | evaluate / install |
 
@@ -154,7 +154,7 @@ When the user says "leo", "start", or the objective is unclear, ask a focused `a
 - **Build or change something in the repo** → `grilling` (With-docs) if decisions remain, or `review-cadence` if trivial
 - **Improve / add a skill, rule, hook, or MCP** → `continuous-improvement`
 - **Debug, fix, or research a problem** → `diagnosing-bugs` for bugs, `research` / `deep-mode` for exploration
-- **Set up this repo for Devin or run AFK work** → `project-setup` / `setup-matt-pocock-skills` for setup, `afk-loop` if issues already exist
+- **Set up this repo for Devin or run AFK work** → `project-setup` / the engineering-skills setup for setup, `afk-loop` if issues already exist
 
 ## Quick AFK issue creation
 
@@ -188,9 +188,9 @@ When the user wants unattended work but there are no local tickets yet:
 
 ## Advice
 
-- Subagents: use `swe-1-7` profiles (free). Never use `subagent_explore` (paid).
-- Deep search: use the `researcher` subagent profile (`swe-1-7`).
-- Models: parent is `glm-5-2`; subagents are `swe-1-7`. Don't use the `swe` alias (paid).
+- Subagents: use max-role subagent profiles (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`, free by default). Never use `subagent_explore` or other paid aliases when the parent is free.
+- Deep search: use the `researcher` subagent profile (max-role model).
+- Models: parent is `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`); subagents are `BUNDLE_MAX_MODEL` / `data/bundle-models.json` (`max_role_model`). Don't use paid aliases unless the parent is paid.
 - Context: prefer `clear` between unrelated tasks; don't paste large documents into chat.
 - Secrets: never display `.env`/`credentials.toml` values; name the variable and symptom only.
 - Fact doubt → research (`web_search`, `webfetch`, `grep`, `exec`).

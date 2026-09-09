@@ -697,7 +697,7 @@
     {
       "name": "context-budget.py",
       "purpose": "SessionStart hook — reports AGENTS.md token cost",
-      "export_hash": "C4C8B6FDB62CF4BB6CE4E74BFA06501A96F10F2C6E2973BA44F8169C38CC331C",
+      "export_hash": "29738002CC4D38149755ECE45875616D6BC326AE42A9DAA1CD2AFCBF0D7CE2BF",
       "exported_at": "2026-09-08T21:39:22.430527"
     },
     {
@@ -745,31 +745,31 @@
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "1E3D8FF3CC71248B0ED734B0B863B53FFB0227CDCB6A27EF18EE3A75871768F4",
+      "export_hash": "4317CA29D68E9BEF85FFA35EA537F8124AD4DF9541BAF97FFC7DF8552B95B437",
       "exported_at": "2026-09-08T21:39:22.431219"
     },
     {
       "name": "memory-retrieval.py",
       "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes",
-      "export_hash": "EAE3DFA6D6BE2104B5F9AF12A18CDE36C34320634F9D2BFF4FC8DD45AC7FC547",
+      "export_hash": "3B9C84228C9CE0A4FD4BE4990D55FD9B2F2C9B187C25E504A40E7BEDE036BD7D",
       "exported_at": "2026-09-08T21:39:22.431296"
     },
     {
       "name": "memory-post-edit.py",
       "purpose": "PostToolUse hook — injects .devin/memory/ notes after write/edit based on cues.path",
-      "export_hash": "39C5DB439BCBABA0FBFA191727C201C979F158E7AF14E603878A87BC2C7CB1EF",
+      "export_hash": "07BAF5C0E85625E9C0C5D1A91D4DC18EB10BE550EB16D75A6BF4D81D5BB8ECB4",
       "exported_at": "2026-09-08T21:39:22.431370"
     },
     {
       "name": "memory-stop.py",
       "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review",
-      "export_hash": "8B31C967F637C164A5D6287AF61AC100E2FE4624EB3F1EFFB552C1534CE8619C",
+      "export_hash": "4A659CE5C4A36E095134F690F73AD6147F705FEBD62A688754640268540D1E85",
       "exported_at": "2026-09-08T21:39:22.431441"
     },
     {
       "name": "memory-post-exec.py",
       "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword",
-      "export_hash": "9EE9F26752AFB2A81C38C76F82A5228F46B429863857F8789FBB220D37147C86",
+      "export_hash": "AFDEA2F48F405BD7DE4F09A08DE59CE18EE0BC605EAB91FEBBF0D6FA074C2145",
       "exported_at": "2026-09-08T21:39:22.431511"
     },
     {
@@ -804,21 +804,21 @@
       "name": "debugger",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\debugger.md",
-      "export_hash": "FCA820C56D302C5434C5121CB8C5341F893E7937BCA0F0ED162532119EFE4F04",
+      "export_hash": "A354BA0627A58C991475C8EDB91459670D12F8D4A7C399D55246064F49D34AE4",
       "exported_at": "2026-09-08T21:39:22.431753"
     },
     {
       "name": "implementer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\implementer.md",
-      "export_hash": "D368C40CF7538706E55D2CB477550569212F462B6724EA88C7DF3AFFCEBCCB43",
+      "export_hash": "1E7A678061038380F64C3D4B673DF7D0C5E7F0207AECEF36AB0666E8F8D5D20A",
       "exported_at": "2026-09-08T21:39:22.431827"
     },
     {
       "name": "qa-ci",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\qa-ci.md",
-      "export_hash": "5334A2EE073C443EDB35CE0431E7535F8B3CA9B0346AE82D1A15B03D63A33784",
+      "export_hash": "46FDF54262B20B2DC84966E2B3AA0D5E1B2892A16A56690362D21468D998DF2F",
       "exported_at": "2026-09-08T21:39:22.431900"
     },
     {

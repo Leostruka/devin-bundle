@@ -42,7 +42,7 @@ triggers: [user, model]
 ### 6. If no skill matches — search externally and evaluate
 
 **Search known skill repositories:**
-- `github:Leostruka/devin-bundle` — this bundle
+- `github:{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}` — this bundle (read `data/bundle-identity.json` for owner/repo)
 - `gh search repos <keyword> skills` or `web_search` for more
 
 **Evaluate before recommending:**

@@ -8,6 +8,11 @@ library. The skill never calls the network and never installs `youtube-
 transcript-api`, `requests`, `yt-dlp`, or Whisper. Captions and metadata must
 be supplied by a provider or fixture JSON.
 
+Allowed hosts and output directory are read from `data/bundle-integrations.json`
+(`youtube_fetcher.allowed_hosts` and `youtube_fetcher.output_dir`) and can be
+overridden by `BUNDLE_YOUTUBE_HOSTS` (comma-separated) and
+`BUNDLE_YOUTUBE_OUTPUT_DIR` environment variables.
+
 Usage:
     python fetch.py validate <url-or-id>
     python fetch.py render <source.json> [project] [--write] [--approve] [--overwrite]
@@ -24,12 +29,12 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 SCHEMA_VERSION = "1.0.0"
-NOTE_SUBDIR = Path("notes/youtube")
+DEFAULT_NOTE_SUBDIR = Path("notes/youtube")
 MAX_INPUT_BYTES = 50 * 1024 * 1024
 MAX_OUTPUT_BYTES = 100 * 1024 * 1024
 MAX_CAPTIONS = 100_000
 MAX_URL_LENGTH = 2048
-ALLOWED_HOSTS = {
+DEFAULT_ALLOWED_HOSTS = {
     "www.youtube.com",
     "youtube.com",
     "youtu.be",
@@ -38,6 +43,72 @@ ALLOWED_HOSTS = {
     "music.youtube.com",
 }
 VIDEO_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
+
+
+def _find_bundle_integrations(project_root=None):
+    """Return the path to data/bundle-integrations.json if it can be located."""
+    candidates = []
+    if os.environ.get("BUNDLE_ROOT"):
+        candidates.append(Path(os.environ["BUNDLE_ROOT"]) / "data" / "bundle-integrations.json")
+    if os.environ.get("DEVIN_HOME"):
+        candidates.append(Path(os.environ["DEVIN_HOME"]) / "data" / "bundle-integrations.json")
+    if project_root is not None:
+        candidates.append(project_root / "data" / "bundle-integrations.json")
+    # Relative to this script (bundle repo layout: skills/<name>/scripts/*.py)
+    script_dir = Path(__file__).resolve().parent
+    for rel in (Path("."), Path(".."), Path("../.."), Path("../../..")):
+        candidates.append((script_dir / rel / "data" / "bundle-integrations.json").resolve())
+    # Common install locations
+    candidates.append(Path.home() / ".config" / "devin" / "data" / "bundle-integrations.json")
+    candidates.append(Path.home() / ".devin" / "data" / "bundle-integrations.json")
+    for path in candidates:
+        if path.is_file():
+            return path
+    return None
+
+
+def _load_youtube_config(project_root=None):
+    """Load allowed hosts and output subdir from env or bundle-integrations.json."""
+    allowed = None
+    out_dir = None
+
+    env_hosts = os.environ.get("BUNDLE_YOUTUBE_HOSTS")
+    if env_hosts is not None:
+        allowed = {h.strip().lower() for h in env_hosts.split(",") if h.strip()}
+
+    env_out = os.environ.get("BUNDLE_YOUTUBE_OUTPUT_DIR")
+    if env_out is not None:
+        out_dir = Path(env_out)
+
+    if allowed is None or out_dir is None:
+        path = _find_bundle_integrations(project_root)
+        if path is not None:
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                cfg = data.get("youtube_fetcher", {})
+                if allowed is None:
+                    hosts = cfg.get("allowed_hosts")
+                    if hosts:
+                        allowed = {h.strip().lower() for h in hosts if isinstance(h, str) and h.strip()}
+                if out_dir is None:
+                    out_dir = cfg.get("output_dir")
+                    if out_dir:
+                        out_dir = Path(out_dir)
+            except (OSError, json.JSONDecodeError, TypeError):
+                pass
+
+    if allowed is None:
+        allowed = set(DEFAULT_ALLOWED_HOSTS)
+    if out_dir is None:
+        out_dir = Path(DEFAULT_NOTE_SUBDIR)
+
+    # If the configured output_dir starts with `.devin/`, treat it as relative to
+    # the project root and strip the `.devin` prefix so it can be resolved under
+    # the `.devin` directory.
+    if out_dir.parts and out_dir.parts[0] == ".devin":
+        out_dir = Path(*out_dir.parts[1:])
+
+    return {"allowed_hosts": allowed, "output_dir": out_dir}
 
 
 def err(msg):
@@ -87,12 +158,14 @@ def _normalize_netloc(netloc):
     return netloc.lower()
 
 
-def _is_allowed_host(netloc):
-    return _normalize_netloc(netloc) in ALLOWED_HOSTS
+def _is_allowed_host(netloc, allowed_hosts):
+    return _normalize_netloc(netloc) in allowed_hosts
 
 
-def extract_video_id(url_or_id):
+def extract_video_id(url_or_id, allowed_hosts=None):
     """Validate a YouTube URL or bare ID and return a canonical 11-char ID."""
+    if allowed_hosts is None:
+        allowed_hosts = _load_youtube_config()["allowed_hosts"]
     text = (url_or_id or "").strip()
     if not text:
         raise ValueError("empty URL or ID")
@@ -106,7 +179,7 @@ def extract_video_id(url_or_id):
     parsed = urlparse(text)
     if parsed.scheme not in ("http", "https"):
         raise ValueError(f"unsupported URL scheme: {parsed.scheme}")
-    if not _is_allowed_host(parsed.netloc):
+    if not _is_allowed_host(parsed.netloc, allowed_hosts):
         raise ValueError(f"unsupported host: {parsed.netloc}")
 
     # youtu.be/<id>
@@ -162,8 +235,10 @@ def project_label(project):
     return project.resolve().name
 
 
-def _safe_note_path(devin, video_id, suffix):
-    out = (devin / NOTE_SUBDIR).resolve()
+def _safe_note_path(devin, video_id, suffix, note_subdir=None):
+    if note_subdir is None:
+        note_subdir = _load_youtube_config()["output_dir"]
+    out = (devin / note_subdir).resolve()
     try:
         out.relative_to(devin.resolve())
     except ValueError:
@@ -387,7 +462,8 @@ def _atomic_write(path, text, overwrite, devin):
 
 def cmd_validate(args):
     try:
-        video_id = extract_video_id(args.url_or_id)
+        cfg = _load_youtube_config()
+        video_id = extract_video_id(args.url_or_id, allowed_hosts=cfg["allowed_hosts"])
         emit_json({"valid": True, "video_id": video_id, "url": canonical_url(video_id)})
         return 0
     except ValueError as e:
@@ -403,12 +479,13 @@ def cmd_render(args):
         data, sha = _read_json_source(args.source)
         data = _validate_source(data)
         project = Path(args.project).expanduser().resolve()
+        cfg = _load_youtube_config(project_root=project)
         project_root, devin = locate_devin(project)
         project_str = project_label(project_root)
         md = _render_markdown(data, project_str, sha)
 
         if args.write:
-            md_path = _safe_note_path(devin, data["video_id"], ".md")
+            md_path = _safe_note_path(devin, data["video_id"], ".md", note_subdir=cfg["output_dir"])
             _atomic_write(md_path, md, overwrite=args.overwrite, devin=devin)
         emit_text(md)
         return 0
@@ -419,7 +496,7 @@ def cmd_render(args):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="YouTube transcript/metadata fetcher for .devin/notes/youtube/"
+        description="YouTube transcript/metadata fetcher (output dir configurable via bundle-integrations.json or BUNDLE_YOUTUBE_OUTPUT_DIR)"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

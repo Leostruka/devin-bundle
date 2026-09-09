@@ -139,12 +139,12 @@ sensitivity:
 
 | Task type | Profile | Why |
 |---|---|---|
-| Codebase research, doc lookup | `researcher` (SWE-1.7) | Read-only, free, fast |
-| Code review, spec compliance | `reviewer` (SWE-1.7) | Needs judgment, free |
-| Bounded implementation | `implementer` (SWE-1.7) | Needs full tools + coding strength (42.3% vs 24.5% GLM-5.2 on FrontierCode) |
-| Architecture, trade-offs | `architect` (SWE-1.7) | Needs judgment, read-only, free |
-| Debugging, root cause | `debugger` (SWE-1.7) | Needs exec + coding strength |
-| Complex reasoning, context isolation | `subagent_general` (parent GLM-5.2) | Inherits parent model, free, for tasks needing GLM-5.2 reasoning |
+| Codebase research, doc lookup | `researcher` (max-role model) | Read-only, free, fast |
+| Code review, spec compliance | `reviewer` (max-role model) | Needs judgment, free |
+| Bounded implementation | `implementer` (max-role model) | Needs full tools + coding strength (coding benchmarks favor the max-role model over the parent model; check `data/bundle-models.json`) |
+| Architecture, trade-offs | `architect` (max-role model) | Needs judgment, read-only, free |
+| Debugging, root cause | `debugger` (max-role model) | Needs exec + coding strength |
+| Complex reasoning, context isolation | `subagent_general` (parent model) | Inherits parent model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`), free, for tasks needing the parent model's reasoning mode |
 
 Don't dispatch `implementer` for a research task — `researcher` is 10x cheaper
 and read-only. Don't dispatch `architect` for a typo fix — handle inline.
@@ -428,18 +428,18 @@ conflicts that only emerge from implementation.
 
 ### Model Selection
 
-In Devin CLI, a `subagent_general` subagent inherits the parent session's model (GLM-5.2 High, free by default). The built-in `subagent_explore` runs on the **default subagent model (SWE-1.6, PAID $0.5/$2.5)**. **When parent is FREE (default): NUNCA usar `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, pin `model: swe-1-7`, free, 262K) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin `model: swe-1-7` to ensure the free model is used.
+In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the model configured as the `subagent_explore` alias in `data/bundle-models.json` (paid by default). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: max-role model`, free, context per `data/bundle-models.json`) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` should use the bundle role model (max by default) to stay within the bundle's free tier.
 
-**Use `subagent_general` (inherits parent GLM-5.2, free) for:**
+**Use `subagent_general` (inherits parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free) for:**
 - Final whole-branch review — the judgment task that needs the most capability.
-- High-stakes architecture that needs GLM-5.2 reasoning (routine architecture → `architect` SWE-1.7).
+- High-stakes architecture that needs the parent model's reasoning (routine architecture → `architect` with max-role model).
 - Rounds 4-5 fix-loop escalation (the parent can switch to a more capable model via `/model` before dispatching).
-- Complex reasoning tasks that benefit from context isolation but need GLM-5.2's thinking mode.
+- Complex reasoning tasks that benefit from context isolation but need the parent model's thinking mode.
 
-**Use custom profiles (all pin `swe-1-7`, free, 262K) for:**
+**Use custom profiles (all pin the max-role model, free, context per `data/bundle-models.json`) for:**
 - `researcher` — codebase research and fact-finding (read-only, FREE).
-- `implementer` — bounded coding tasks (SWE-1.7 is 72% better than GLM-5.2 at FrontierCode: 42.3% vs 24.5%).
-- `debugger` — root cause analysis and debugging (SWE-1.7 coding strength).
+- `implementer` — bounded coding tasks (the max-role model is 72% better than the parent model at FrontierCode: 42.3% vs 24.5%; check `data/bundle-models.json`).
+- `debugger` — root cause analysis and debugging (max-role model coding strength).
 - `architect` — routine architecture and trade-off analysis (read-only).
 - `reviewer` — code review and spec compliance (read-only + exec for tests).
 
@@ -448,20 +448,21 @@ In Devin CLI, a `subagent_general` subagent inherits the parent session's model 
 2. Or create a custom subagent profile in `~/.config/devin/agents/` or `%APPDATA%\devin\agents\` with a `model:` field, and pass that profile name as `profile` in `run_subagent`.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes. SWE-1.7 at 1000 TPS is fast enough that turn
-count rarely causes wall-clock issues. For implementers, SWE-1.7 is the
-default (pinned in `agents/implementer.md`) — it outperforms GLM-5.2 on
-coding benchmarks (42.3% vs 24.5% FrontierCode). When the task's plan text
-contains the complete code to write, the implementation is transcription
-plus testing, and SWE-1.7 is more than sufficient. For rounds 4-5
-escalation, switch to `subagent_general` (inherits parent GLM-5.2) or
-switch parent to a more capable model via `/model`.
+many turns a subagent takes. The max-role model is fast enough that turn
+count rarely causes wall-clock issues. For implementers, the max-role model is the
+default (pinned in `agents/implementer.md` to the bundle max role) — it outperforms
+the parent model on coding benchmarks (42.3% vs 24.5% FrontierCode; check
+`data/bundle-models.json`). When the task's plan text contains the complete code to
+write, the implementation is transcription plus testing, and the max-role model is
+more than sufficient. For rounds 4-5 escalation, switch to `subagent_general`
+(inherits the parent model from `BUNDLE_DEFAULT_MODEL`) or switch the parent to a
+more capable model via `/model`.
 
 **Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → `implementer` (SWE-1.7)
-- Touches multiple files with integration concerns → `implementer` (SWE-1.7)
-- Requires design judgment or broad codebase understanding → `architect` (SWE-1.7) for design, then `implementer` (SWE-1.7) for code
-- Rounds 4-5 fix-loop failure → `subagent_general` (parent GLM-5.2) for fresh eyes + reasoning
+- Touches 1-2 files with a complete spec → `implementer` (max-role model)
+- Touches multiple files with integration concerns → `implementer` (max-role model)
+- Requires design judgment or broad codebase understanding → `architect` (max-role model) for design, then `implementer` (max-role model) for code
+- Rounds 4-5 fix-loop failure → `subagent_general` (parent `BUNDLE_DEFAULT_MODEL`) for fresh eyes + reasoning
 
 ### The Task Loop
 

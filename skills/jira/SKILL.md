@@ -18,14 +18,15 @@ This skill routes Jira interactions through the **Atlassian Rovo MCP server** (`
 - OAuth completed (`devin mcp login atlassian` if expired).
 - Jira Cloud only (the official Rovo MCP does not support Server/Data Center).
 
-## Known site (this user)
+## Known site
 
-- **cloudId:** `38e12517-1995-4445-8efd-27a717f131dc`
-- **site:** `guilhermerissi04112006.atlassian.net`
-- **project:** `PW` — "Fingertech" (software, next-gen), id `10033`
-- **issue types:** Subtarefa(10039), Epic(10040), Tarefa(10041), História(10042), Função(10043), Bug(10044), Test(10045), Refactor(10046), Security(10047)
+Read site values from `data/bundle-integrations.json` (`jira.site`, `jira.cloud_id`) or the environment variables `JIRA_SITE` and `JIRA_CLOUD_ID`. Set a default project in `data/bundle-integrations.json` (`jira.project`) or via `JIRA_PROJECT`.
 
-Pass `cloudId: "38e12517-1995-4445-8efd-27a717f131dc"` to every Jira tool call. If a new site is added, run `getAccessibleAtlassianResources` and update this section.
+- **cloudId:** `${JIRA_CLOUD_ID}` (fallback: `data/bundle-integrations.json` `jira.cloud_id`)
+- **site:** `${JIRA_SITE}` (fallback: `data/bundle-integrations.json` `jira.site`)
+- **project:** `${JIRA_PROJECT}` (fallback: `data/bundle-integrations.json` `jira.project`)
+
+Pass `cloudId` and `site` to every Jira tool call. If a new site is added, run `getAccessibleAtlassianResources` and update the integration config.
 
 ## Tool namespace
 

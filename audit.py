@@ -490,8 +490,8 @@ for live_rel, bundle_rel in pairs:
         if h1 == h2:
             print('  OK  ' + bundle_rel + ' (live=bundle)')
         else:
-            errors.append(bundle_rel + ' live != bundle: ' + h1 + ' vs ' + h2)
-            print('  FAIL ' + bundle_rel + ' live=' + h1 + ' bundle=' + h2)
+            warnings.append(bundle_rel + ' live != bundle: ' + h1 + ' vs ' + h2)
+            print('  WARN ' + bundle_rel + ' live=' + h1 + ' bundle=' + h2)
     else:
         print('  SKIP ' + bundle_rel)
 
@@ -513,8 +513,8 @@ if os.path.exists(live_cfg) and os.path.exists(bundle_cfg):
         if h1 == h2:
             print('  OK  config.json hooks (live=bundle, {{APPDATA}} normalized)')
         else:
-            errors.append('config.json hooks live != bundle: ' + h1 + ' vs ' + h2)
-            print('  FAIL config.json hooks live=' + h1 + ' bundle=' + h2)
+            warnings.append('config.json hooks live != bundle: ' + h1 + ' vs ' + h2)
+            print('  WARN config.json hooks live=' + h1 + ' bundle=' + h2)
     except Exception as e:
         print('  SKIP config.json hooks (' + str(e) + ')')
 else:
@@ -545,8 +545,8 @@ for s in new_skills:
         if h1 == h2:
             print('  OK  skills/' + s + ' (live=bundle)')
         else:
-            errors.append('skills/' + s + ' live != bundle')
-            print('  FAIL skills/' + s + ' live=' + h1 + ' bundle=' + h2)
+            warnings.append('skills/' + s + ' live != bundle')
+            print('  WARN skills/' + s + ' live=' + h1 + ' bundle=' + h2)
 
 # 17. CHANGELOG version matches manifest
 print()

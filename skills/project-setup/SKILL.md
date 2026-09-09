@@ -92,8 +92,8 @@ For each missing component, generate at least two alternatives and record trade-
 
 Apply the best-fit alternative for each component. This is the deterministic setup order:
 
-1. **Run `setup-matt-pocock-skills`** to configure issue tracker, triage labels, and domain docs (all inside `.devin/`).
-2. **Create `.devin/global_rules.md`** with a short `## Agent skills` block and the repo-specific rules from `setup-matt-pocock-skills`.
+1. **Run the engineering-skills setup** to configure issue tracker, triage labels, and domain docs (all inside `.devin/`).
+2. **Create `.devin/global_rules.md`** with a short `## Agent skills` block and the repo-specific rules from the engineering-skills setup.
 2.5. **Create `.devin/rules/agents.md` from the project template** — copy `skills/project-setup/templates/agents.md` into `.devin/rules/agents.md` and replace the stack-specific placeholder with the project's concrete rules (e.g., TypeScript without `any`, linter commands, naming conventions). This is the project's per-stack agent rules file; keep it short and action-oriented.
 3. **Create `.devin/rules/*.md`** for optional, trigger-scoped rules.
 4. **Create `.devin/hooks.v1.json`** with the essential hooks from the bundle:
@@ -108,7 +108,7 @@ Apply the best-fit alternative for each component. This is the deterministic set
    - `memory-stop.py` on `Stop`
 5. **Create `.devin/mcp_config.json`** as an empty scaffold if the project has no MCP servers; otherwise ask the user which servers to add.
 6. **Create `.devin/skills/project-memory/`** if it does not exist, copying `note.md`, `capture-memory.py`, `query-memory.py`, and `audit-memory.py` from the bundle. Use `/project-memory` to walk the user through the first capture.
-7. **Create `.devin/skills/setup-matt-pocock-skills/`** link or copy if the user wants the engineering flow available locally.
+7. **Create a local copy of the engineering-skills setup** if the user wants the engineering flow available locally.
 8. **Create `.devin/memory/`** directory and seed `MOC.md`.
 
 ### Passo 4.5 — POPULAR A BASE DE CONHECIMENTO
@@ -196,7 +196,7 @@ PENDING: <what the user still needs to decide or provide>
 
 - The user asks to write files outside `.devin/`.
 - A requested hook conflicts with the project's CI or security policy.
-- The user wants to skip `setup-matt-pocock-skills` but still use `triage`, `planning-pipeline`, or `wayfinder`.
+- The user wants to skip the engineering-skills setup but still use `triage`, `planning-pipeline`, or `wayfinder`.
 - A proposed MCP server requires a secret that the user has not provided.
 
 ## Common mistakes
@@ -208,7 +208,7 @@ PENDING: <what the user still needs to decide or provide>
 
 ## Cross-references
 
-- `/setup-matt-pocock-skills` — issue tracker, triage labels, domain docs.
+- The engineering-skills setup — issue tracker, triage labels, domain docs.
 - `/grilling` — capture the project's goals and produce a design doc.
 - `/ai-coding-dictionary` — align any AI-coding jargon before it enters the project glossary.
 - `/domain-modeling` — build `.devin/CONTEXT.md` and `.devin/adr/`.

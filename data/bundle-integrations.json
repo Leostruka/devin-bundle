@@ -1,0 +1,28 @@
+{
+  "comment": "Integration settings. Sensitive values should be injected via environment variables or a secrets manager; do not commit real tokens.",
+  "mcp": {
+    "atlassian": {
+      "server_name": "atlassian",
+      "url": "https://mcp.atlassian.com/v1/mcp/authv2",
+      "transport": "https",
+      "enabled": false,
+      "note": "Enable only when authenticated. WSL may need Windows-side credentials."
+    }
+  },
+  "jira": {
+    "site": "YOUR-JIRA-SITE.atlassian.net",
+    "cloud_id": null,
+    "note": "Override via JIRA_SITE and JIRA_CLOUD_ID environment variables."
+  },
+  "youtube_fetcher": {
+    "output_dir": ".devin/notes/youtube",
+    "allowed_hosts": [
+      "youtube.com",
+      "www.youtube.com",
+      "m.youtube.com",
+      "music.youtube.com",
+      "youtu.be"
+    ],
+    "note": "Video-transcript adapter. Override hosts via BUNDLE_YOUTUBE_HOSTS."
+  }
+}

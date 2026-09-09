@@ -1,0 +1,50 @@
+{
+  "comment": "Task-adaptive harness recipes. preferred_model can be a role (parent, max, medium, subagent) resolved via bundle-models.json, or an explicit model id. Override per-recipe via env vars BUNDLE_RECIPE_<NAME>_MODEL.",
+  "recipes": {
+    "audit": {
+      "name": "audit",
+      "instruction_signals": ["audit", "lint", "validate", "check"],
+      "preferred_model_role": "parent",
+      "preferred_model": null,
+      "tools": ["read", "grep", "exec", "find_file_by_name"],
+      "sidekick_profile": "qa-ci",
+      "main_responsible_for": ["plan", "final_review"]
+    },
+    "refine": {
+      "name": "refine",
+      "instruction_signals": ["refine", "improve", "rewrite", "polish"],
+      "preferred_model_role": "max",
+      "preferred_model": null,
+      "tools": ["read", "edit", "write"],
+      "sidekick_profile": "reviewer",
+      "main_responsible_for": ["ambiguity_resolution", "final_review"]
+    },
+    "implement": {
+      "name": "implement",
+      "instruction_signals": ["implement", "add", "feature", "fix"],
+      "preferred_model_role": "medium",
+      "preferred_model": null,
+      "tools": ["read", "edit", "write", "exec"],
+      "sidekick_profile": "implementer",
+      "main_responsible_for": ["plan", "ambiguity_resolution", "final_review"]
+    },
+    "research": {
+      "name": "research",
+      "instruction_signals": ["research", "find", "compare", "source"],
+      "preferred_model_role": "parent",
+      "preferred_model": null,
+      "tools": ["web_search", "webfetch", "mcp_call_tool", "read"],
+      "sidekick_profile": "researcher",
+      "main_responsible_for": ["final_review"]
+    },
+    "explore": {
+      "name": "explore",
+      "instruction_signals": ["explore", "understand", "map"],
+      "preferred_model_role": "parent",
+      "preferred_model": null,
+      "tools": ["glob", "find_file_by_name", "read", "grep"],
+      "sidekick_profile": "subagent_explore",
+      "main_responsible_for": ["plan", "final_review"]
+    }
+  }
+}

@@ -48,10 +48,11 @@ skill, script ou prompt — sem trapacear para demonstrar melhoria.**
 independentes (held-out), não por testes escolhidos pelo próprio agente.
 
 **Critério de convergência**: atingir a conjuntura ótima de operação para
-**GLM-5.2 High (200K context window)** como modelo primário e **SWE-1.7
-Max/Medium (262K context window)** como subagent default — segundo fontes
-verificadas (docs.devin.ai, cognition.com, z.ai, laboratórios de AI) e
-experiência prática registrada no histórico do bundle.
+o modelo primário do bundle (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`,
+`default_parent_model`) e o subagent padrão (`BUNDLE_MAX_MODEL` /
+`BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`, `max_role_model` /
+`medium_role_model`) — segundo fontes verificadas (docs.devin.ai, cognition.com,
+z.ai, laboratórios de AI) e experiência prática registrada no histórico do bundle.
 
 **NÃO dar push ou commit.** Todas as mudanças ficam locais para validação.
 
@@ -148,8 +149,10 @@ exit code. Um output narrativo sem comando, fonte ou artefato não fecha o gate.
 - Output/gate: `SOURCE_REGISTER` com decisão por claim.
 
 ### 0.4 — Pesquisar melhores práticas
-- Tópicos: prompt engineering para GLM-5.2, context window management (200K/262K),
-  subagent fan-out, cache stability, tool-use nativo, lost-in-the-middle mitigation
+- Tópicos: prompt engineering para o modelo primário (`BUNDLE_DEFAULT_MODEL` /
+  `data/bundle-models.json`), context window management (janelas em
+  `data/bundle-models.json`), subagent fan-out, cache stability, tool-use nativo,
+  lost-in-the-middle mitigation
 - Fontes prioritárias: arXiv, docs.z.ai, cognition.com/blog, docs.devin.ai
 - Mapear cada prática para um claim, fonte primária e proposta; não acumular
   recomendações sem decidir `applied`, `deferred` ou `rejected`.
@@ -288,7 +291,7 @@ Simular o carregamento das melhorias e avaliar o próprio desempenho.
 - Auto-avaliação: **como isso modifica minha lógica e meu modo operante na prática?**
   - Que comportamento muda quando esta regra/skill/hook é carregada?
   - Que cenário real executaria de forma diferente agora?
-  - Há conflito com comportamentos já otimizados para GLM-5.2/SWE-1.7?
+  - Há conflito com comportamentos já otimizados para os modelos configurados (`BUNDLE_*_MODEL` / `data/bundle-models.json`)?
 - `EVIDENCE`: impacto observado, não apenas previsto, no ledger.
 
 ### Passo 9 — CLASSIFICAR (Melhorou ou piorou?)

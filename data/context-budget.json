@@ -1,0 +1,9 @@
+{
+  "smart_zone_tokens": 100000,
+  "dumb_zone_tokens": 150000,
+  "thresholds": {
+    "warn_pct": 60,
+    "critical_pct": 75,
+    "clear_recommended_pct": 80
+  }
+}

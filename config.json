@@ -3,7 +3,7 @@
   "devin": {
     "org_id": "MASKED"
   },
-  "theme_mode": "nocolor",
+  "theme_mode": "dark",
   "agent": {
     "model": "glm-5-2",
     "thinking": {}
@@ -195,7 +195,7 @@
     ]
   },
   "show_path": true,
-  "respect_gitignore": true,
+  "respect_gitignore": false,
   "unicode_mode": "auto",
   "skip_workspace_trust": true,
   "notify": "smart",

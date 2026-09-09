@@ -1,6 +1,6 @@
 ---
 name: qa-ci
-model: swe-1-7
+model: swe-1-7-medium
 description: Use for independent step-level verification that resists agent gaming. Read-only with exec for real test/build/lint runs. Dispatched by leo (or any orchestrator) to verify each atomic step before it is marked completed. Never edits code, never trusts self-report, re-executes every gate on a clean checkout.
 allowed-tools:
   - read

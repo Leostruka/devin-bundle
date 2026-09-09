@@ -6,7 +6,15 @@ The hook only writes lifecycle and memory summaries to stderr; it never blocks.
 import json, os, sys
 from datetime import date
 
-BASE = '.devin/memory'
+
+def get_memory_dir():
+    """Resolve memory directory from env, falling back to project .devin/memory."""
+    return os.environ.get('BUNDLE_MEMORY_DIR') or os.environ.get('DEVIN_MEMORY_DIR') or os.path.join(
+        os.environ.get('DEVIN_PROJECT_DIR') or os.getcwd(), '.devin', 'memory'
+    )
+
+
+BASE = get_memory_dir()
 
 
 def count_md(path):

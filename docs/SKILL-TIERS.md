@@ -7,12 +7,12 @@ Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 
 
 | Modelo | Contexto | Uso | Notas |
 |---|---|---|---|
-| GLM-5.2 High | 200K | Primário (parent) | Thinking mode, tool-use during inference, cache $0.26/M read |
-| SWE-1.7 | 262K | Subagent (`model: swe-1-7` pin) | Self-compaction trained, 1000 TPS, **gratuito** |
-| SWE-1.6 | 200K | Default subagent router | Sem pin, Devin CLI resolve para SWE-1.6 (docs.devin.ai/cli/subagents) |
+| `{{BUNDLE_DEFAULT_MODEL}}` | veja `data/bundle-models.json` | Primário (parent) | Thinking mode, tool-use during inference, cache $0.26/M read |
+| `{{BUNDLE_MAX_MODEL}}` | veja `data/bundle-models.json` | Subagent Max (`model: {{BUNDLE_MAX_MODEL}}` pin) | Self-compaction trained, 1000 TPS, **gratuito** |
+| `{{BUNDLE_MEDIUM_MODEL}}` | veja `data/bundle-models.json` | Subagent Medium (`model: {{BUNDLE_MEDIUM_MODEL}}` pin) | Alternativa mais leve, mesmo contexto |
 
-Subagents customizados têm `model: swe-1-7` pin → SWE-1.7 Max (262K, **gratuito**, rápido). **NÃO usar `swe` (alias para swe-1.7-lightning, PAGO).
-Sem pin, usariam SWE-1.6 (default router, 200K, **pago** $0.5/$2.5 MTok). `subagent_general` herda GLM-5.2 High do parent (**gratuito**). **Evitar `subagent_explore`** (resolve para SWE-1.6 pago) — usar custom `researcher` (gratuito, 262K).
+Subagents customizados usam `model: {{BUNDLE_MAX_MODEL}}` (Max) ou `{{BUNDLE_MEDIUM_MODEL}}` (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. **NÃO usar aliases pagos não verificados** — eles podem apontar para um modelo pago.
+Sem pin, os custom agents usam o default router do CLI (possivelmente pago). `subagent_general` herda o parent (`{{BUNDLE_DEFAULT_MODEL}}`) quando esse for gratuito. **Evitar `subagent_explore`** — pode resolver para um modelo pago; usar o custom `researcher` (gratuito, veja `data/bundle-models.json`).
 
 ## Núcleo (raciocínio lógico, qualquer trabalho)
 
@@ -73,11 +73,11 @@ Raramente >3 por tarefa (~5000 tok).
 | `using-git-worktrees` | Worktree isolado | 1715 | Isolar feature |
 | `resolving-merge-conflicts` | Resolve conflito traçando intent | 230 | Merge/rebase conflict |
 
-## Jira
+## Issue tracker
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `jira` | Jira via MCP atlassian | 1639 | Interagir c/ Jira (requer MCP) |
+| `jira` | Issue tracker via MCP configurado (exemplo em `mcp_config.json.example` e `data/bundle-integrations.json`) | 1639 | Interagir c/ issue tracker (requer MCP) |
 | `triage` | State machine de triagem | 1672 | Triar issues/PRs |
 
 ## Obsidian e organização de arquivos
@@ -118,7 +118,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `ask-matt` | Router idea-to-ship | 3037 | Não sabe qual skill |
+| `ask-bundle` | Router idea-to-ship | 3037 | Não sabe qual skill |
 | `project-memory` | Captura memória do projeto entre sessões | 1042 | Nota importante que deve persistir |
 | `devin-manager` | Audita `.devin/` com scan/explain/diff/doctor/plan | ~974 | Quando `.devin/` precisa de auditoria determinística |
 | `memory-hygiene` | Quando e como usar memória cross-session | 1736 | Cross-session memory, context window |
@@ -130,7 +130,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `setup-matt-pocock-skills` | Configura repo p/ skills eng | 1754 | Setup inicial |
+| `setup-engineering-skills` | Configura repo p/ skills eng | 1754 | Setup inicial |
 | `project-setup` | Onboarding geral do projeto Devin | 2622 | Primeira configuração `.devin/` |
 | `setup-pre-commit` | Husky + lint-staged | 585 | Pre-commit hooks |
 | `self-extend` | Adiciona skill/hook/MCP/regra | 1755 | Evoluir Devin CLI |
@@ -170,7 +170,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `i18n` | Traduções, plural, LTR/RTL, formatos | ~450 | Multi-idioma |
 | `legacy-refactor` | Strangler-fig, seams, modernization | ~500 | Modernizar código legado |
 
-**Nota sobre skills de custo:** `cost-optimization` foca em reduzir tokens/cache/MCPs do parent; `agent-cost-guard` limita subagentes e loops; `effort-calibration` escolhe o nível de raciocínio. Use `ask-matt` se estiver em dúvida.
+**Nota sobre skills de custo:** `cost-optimization` foca em reduzir tokens/cache/MCPs do parent; `agent-cost-guard` limita subagentes e loops; `effort-calibration` escolhe o nível de raciocínio. Use `ask-bundle` se estiver em dúvida.
 
 ## Outros
 
@@ -180,19 +180,19 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `wizard` | Scripts p/ procedimentos manuais | 992 | Provisioning one-off |
 | `observability-quality` | Infra de observabilidade c/ evidência | 2338 | Adicionar logging/metrics/tracing |
 
-## Linha lógica para GLM-5.2 (200K) + SWE-1.7 (262K)
+## Linha lógica para parent + subagent
 
 ```
 Tarefa → AGENTS.md (~4900 tok, fixo, cache-stable) → leia SKILL-TIERS.md (~1700 tok)
   → identifique domínio → invoque 1-3 skills (~1000-9700 tok)
-  → trabalho (50k-150k tok no parent GLM-5.2; 262k por subagent SWE-1.7)
+  → trabalho (50k-150k tok no parent `{{BUNDLE_DEFAULT_MODEL}}`; por subagent `{{BUNDLE_MAX_MODEL}}`)
   >60% usado? → context-folding (doc) | dispatching-parallel-agents (paralelo) | clear (tarefa mudou)
   → verification-before-completion antes de pronto
 ```
 
-GLM-5.2 tem thinking mode (raciocina antes de output) e tool-use during inference
-(decide quando usar ferramentas nativamente). SWE-1.7 tem self-compaction treinada
-(resume + continua do summary) e 1000 TPS (fan-out barato em wall-clock).
+O parent (`{{BUNDLE_DEFAULT_MODEL}}`) tem thinking mode (raciocina antes de output) e tool-use during inference
+(decide quando usar ferramentas nativamente). O subagent (`{{BUNDLE_MAX_MODEL}}`) tem self-compaction treinada
+(resume + continua do summary) e alto TPS (fan-out barato em wall-clock). Veja `data/bundle-models.json` para janelas e custos.
 
 ## Anti-patterns
 
@@ -203,5 +203,5 @@ GLM-5.2 tem thinking mode (raciocina antes de output) e tool-use during inferenc
 | MCPs sem usar | Só ativar quando preciso |
 | Compact quando precisa do detalhe | `context-folding` |
 | `obsidian-workflow` para edição pontual (~17435 tok) | Só para operações Obsidian reais |
-| Subagent general para pesquisa | Use researcher (SWE-1.7, 262K, gratuito) |
-| Pin `model: sonnet` em agents read-only | Pin `model: swe-1-7` → SWE-1.7 Max (262K, gratuito) |
+| Subagent general para pesquisa | Use researcher (`{{BUNDLE_MAX_MODEL}}`, gratuito, veja `data/bundle-models.json`) |
+| Pin `model: pago` em agents read-only | Pin `model: {{BUNDLE_MAX_MODEL}}` → subagent Max gratuito (veja `data/bundle-models.json`) |

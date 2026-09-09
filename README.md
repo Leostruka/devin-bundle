@@ -1,6 +1,6 @@
-# devin-bundle
+# {{BUNDLE_NAME}}
 
-[![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
+[![CI](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Skills](https://img.shields.io/badge/skills-82-blue.svg)](#2-skills)
 [![Rules](https://img.shields.io/badge/rules-26-green.svg)](#1-regras-globais)
@@ -11,16 +11,16 @@ Ecossistema versionado para o Devin CLI. O bundle sincroniza entre máquinas as 
 ## Início rápido
 
 ```powershell
-git clone https://github.com/Leostruka/devin-bundle.git
-cd devin-bundle
+git clone https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}.git
+cd {{BUNDLE_REPO}}
 .\install.ps1 -Force
 ```
 
 Linux, macOS ou WSL:
 
 ```bash
-git clone https://github.com/Leostruka/devin-bundle.git
-cd devin-bundle
+git clone https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}.git
+cd {{BUNDLE_REPO}}
 ./install.sh --force
 ```
 
@@ -396,7 +396,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 ## Estrutura do repositório
 
 ```text
-devin-bundle/
+{{BUNDLE_REPO}}/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 6 perfis customizados
 ├── skills/                    # 76 workflows invocáveis
@@ -558,4 +558,4 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 
 ## Licença
 
-[MIT](LICENSE) — 2026 Leostruka
+[MIT](LICENSE) — {{LICENSE_HOLDER}}

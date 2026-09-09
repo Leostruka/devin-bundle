@@ -12,21 +12,18 @@ based on:
   2. Cumulative tool output sizes (tracked via marker file)
   3. MCP tool-definition overhead (estimated from mcp_config.json)
 
-The video "Context Windows Explained for Coding Agents" (Matt Pocock)
-emphasizes: "you really do need full transparency, full understanding of
-what is happening in your context window at any time" and "I would
-definitely start getting scared once I had about 50K tokens left."
-
 Since Devin CLI does not expose live token counts, this script estimates
 from observable signals (tool output sizes, rules file size, MCP config).
+Thresholds and model windows are read from data/bundle-models.json and
+data/context-budget.json.
 
 Stdin (hook mode):
   {"hook_event_name": "PostToolUse", "tool_name": "exec", "tool_input": {...}, "tool_output": "..."}
 
 Manual:
-  python3 context-pressure.py --reset         # clear session marker
-  python3 context-pressure.py --report        # show current estimate
-  python3 context-pressure.py --model glm-5.2 # use specific model's window
+  python3 context-pressure.py --reset              # clear session marker
+  python3 context-pressure.py --report             # show current estimate
+  python3 context-pressure.py --model <MODEL_ID>   # use specific model's window
 
 Token estimate: chars/4 heuristic. This is an estimate, not exact.
 """
@@ -51,9 +48,9 @@ def devin_home():
 def get_parent_model():
     """Read the active parent model from the Devin CLI config, if available.
 
-    The bundle pins `agent.model` to `glm-5-2` by default, but the user may
-    have switched to a different model. Use this as the fallback window when
-    the hook payload does not provide a model and no data file is present.
+    Falls back to BUNDLE_DEFAULT_MODEL env var or bundle-models.json if config
+    is not present. Use this as the fallback window when the hook payload does
+    not provide a model and no data file is present.
     """
     cfg_path = os.path.join(devin_home(), "config.json")
     try:
@@ -68,10 +65,9 @@ def get_parent_model():
 
 
 CHARS_PER_TOKEN = 4
-DEFAULT_WINDOW = 200_000  # GLM-5.2 High default; override with --model or data file
 SELECTED_MODEL = None  # set by --model in report mode
 
-# Thresholds from data/model-context-windows.json
+# Fallback thresholds; overridden by data/context-budget.json
 WARN_PCT = 60
 CRITICAL_PCT = 75
 CLEAR_PCT = 80
@@ -96,55 +92,91 @@ def find_bundle_root():
     candidates.append(os.getcwd())
     candidates.append(devin_home())
     for c in candidates:
-        data = os.path.join(c, "data", "model-context-windows.json")
-        if os.path.isfile(data):
+        if os.path.isfile(os.path.join(c, "data", "bundle-models.json")):
             return c
     return None
+
+
+def load_bundle_file(name):
+    root = find_bundle_root()
+    if not root:
+        return None
+    path = os.path.join(root, "data", name)
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
 
 
 def load_model_data():
     global MODEL_DATA
     if MODEL_DATA is not None:
         return MODEL_DATA
-    root = find_bundle_root()
-    if not root:
-        return None
-    path = os.path.join(root, "data", "model-context-windows.json")
-    try:
-        with open(path, encoding="utf-8", errors="replace") as f:
-            MODEL_DATA = json.load(f)
-            return MODEL_DATA
-    except (OSError, json.JSONDecodeError):
-        return None
+    # Prefer bundle-models.json; fall back to legacy model-context-windows.json
+    MODEL_DATA = load_bundle_file("bundle-models.json") or load_bundle_file("model-context-windows.json")
+    return MODEL_DATA
+
+
+def get_default_window():
+    """Return the default parent model window from bundle-models.json."""
+    data = load_model_data()
+    if data:
+        for m in data.get("models", []):
+            if m.get("is_default_parent"):
+                return m.get("context_window", 200_000)
+        # Legacy model-context-windows.json does not have is_default_parent
+        first = data.get("models", [{}])[0]
+        return first.get("context_window", 200_000)
+    return 200_000
+
+
+def resolve_model_id(model_id=None):
+    """Resolve a model id, falling back to env/config/bundle default."""
+    if model_id:
+        return model_id
+    model_id = os.environ.get("BUNDLE_DEFAULT_MODEL")
+    if model_id:
+        return model_id
+    model_id = get_parent_model()
+    if model_id:
+        return model_id
+    data = load_model_data()
+    if data:
+        return data.get("default_parent_model", "")
+    return ""
 
 
 def get_model_window(model_id=None):
     """Get context window size for a model.
 
-    If no model is provided, infer the active parent model from the Devin CLI
-    config so the estimate matches the real primary model (GLM-5.2 200K by
-    default, or the user-selected model).
+    If no model is provided, infer the active parent model from env, Devin CLI
+    config, or bundle-models.json.
     """
     data = load_model_data()
+    model_id = resolve_model_id(model_id)
     if not model_id:
-        model_id = get_parent_model()
-    if not model_id:
-        return DEFAULT_WINDOW
+        return get_default_window()
     if data:
         for m in data.get("models", []):
             mid = m.get("id", "").lower()
             name = m.get("name", "").lower()
             if model_id.lower() in mid or model_id.lower() in name:
-                return m.get("context_window", DEFAULT_WINDOW)
-    return DEFAULT_WINDOW
+                return m.get("context_window", get_default_window())
+    return get_default_window()
 
 
 def get_thresholds():
+    # Prefer dedicated context-budget file; fall back to bundle-models or constants
+    budget = load_bundle_file("context-budget.json")
+    if budget:
+        t = budget.get("thresholds", {})
+        return t.get("warn_pct", WARN_PCT), t.get("critical_pct", CRITICAL_PCT), t.get("clear_recommended_pct", CLEAR_PCT)
     data = load_model_data()
-    if not data:
-        return WARN_PCT, CRITICAL_PCT, CLEAR_PCT
-    t = data.get("thresholds", {})
-    return t.get("warn_pct", WARN_PCT), t.get("critical_pct", CRITICAL_PCT), t.get("clear_recommended_pct", CLEAR_PCT)
+    if data:
+        t = data.get("thresholds", {})
+        return t.get("warn_pct", WARN_PCT), t.get("critical_pct", CRITICAL_PCT), t.get("clear_recommended_pct", CLEAR_PCT)
+    return WARN_PCT, CRITICAL_PCT, CLEAR_PCT
 
 
 def estimate_mcp_overhead():
@@ -308,16 +340,15 @@ def reset():
 
 
 def main():
-    global DEFAULT_WINDOW, SELECTED_MODEL
+    global SELECTED_MODEL
     ap = argparse.ArgumentParser(description="Context pressure estimator")
     ap.add_argument("--reset", action="store_true", help="clear session marker")
     ap.add_argument("--report", action="store_true", help="show current estimate")
-    ap.add_argument("--model", help="model ID for window size (e.g. glm-5.2, claude-haiku-4.5)")
+    ap.add_argument("--model", help="model ID for window size (e.g. glm-5-2, swe-1-7)")
     args = ap.parse_args()
 
     if args.model:
         SELECTED_MODEL = args.model
-        DEFAULT_WINDOW = get_model_window(args.model)
 
     if args.reset:
         sys.exit(reset())
@@ -398,7 +429,7 @@ def evaluate_refinement_cost_benefit(before_tokens, after_tokens, benefit_score,
             "benefit_score": benefit_score,
         }
     # Normalize cost by a reference window so the ratio is interpretable.
-    reference_window = DEFAULT_WINDOW
+    reference_window = get_default_window()
     normalized_cost = delta / reference_window
     if normalized_cost > benefit_score * max_cost_benefit_ratio:
         return {
@@ -489,56 +520,60 @@ def resume_state(log_path=None):
 
 # --- Task-adaptive harness recipes ---
 
-RECIPES = {
-    "audit": {
-        "name": "audit",
-        "instruction_signals": {"audit", "lint", "validate", "check"},
-        "preferred_model": "glm-5-2",
-        "tools": ["read", "grep", "exec", "find_file_by_name"],
-        "sidekick_profile": "qa-ci",
-        "main_responsible_for": ["plan", "final_review"],
-    },
-    "refine": {
-        "name": "refine",
-        "instruction_signals": {"refine", "improve", "rewrite", "polish"},
-        "preferred_model": "claude-sonnet-4-6",
-        "tools": ["read", "edit", "write"],
-        "sidekick_profile": "reviewer",
-        "main_responsible_for": ["ambiguity_resolution", "final_review"],
-    },
-    "implement": {
-        "name": "implement",
-        "instruction_signals": {"implement", "add", "feature", "fix"},
-        "preferred_model": "swe-1-7",
-        "tools": ["read", "edit", "write", "exec"],
-        "sidekick_profile": "implementer",
-        "main_responsible_for": ["plan", "ambiguity_resolution", "final_review"],
-    },
-    "research": {
-        "name": "research",
-        "instruction_signals": {"research", "find", "compare", "source"},
-        "preferred_model": "gemini-3-7-flash",
-        "tools": ["web_search", "webfetch", "mcp_call_tool", "read"],
-        "sidekick_profile": "researcher",
-        "main_responsible_for": ["final_review"],
-    },
-    "explore": {
-        "name": "explore",
-        "instruction_signals": {"explore", "understand", "map"},
-        "preferred_model": "glm-5-2",
-        "tools": ["glob", "find_file_by_name", "read", "grep"],
-        "sidekick_profile": "subagent_explore",
-        "main_responsible_for": ["plan", "final_review"],
-    },
-}
+RECIPES = None
+RECIPES_DATA = None  # loaded lazily
+
+
+def load_recipes():
+    """Load task recipes from data/recipes.json; fall back to a minimal default."""
+    global RECIPES_DATA
+    if RECIPES_DATA is not None:
+        return RECIPES_DATA
+    data = load_bundle_file("recipes.json")
+    if data and "recipes" in data:
+        RECIPES_DATA = data["recipes"]
+    else:
+        RECIPES_DATA = {}
+    return RECIPES_DATA
+
+
+def resolve_preferred_model(recipe):
+    """Resolve a recipe's preferred_model, using role mapping from bundle-models."""
+    env_override = os.environ.get(f"BUNDLE_RECIPE_{recipe['name'].upper()}_MODEL")
+    if env_override:
+        return env_override
+    if recipe.get("preferred_model"):
+        return recipe["preferred_model"]
+    role = recipe.get("preferred_model_role")
+    if role:
+        data = load_model_data()
+        if data:
+            if role == "parent":
+                return data.get("default_parent_model", get_parent_model() or "")
+            if role == "max":
+                return data.get("max_role_model", data.get("default_subagent_model", ""))
+            if role == "medium":
+                return data.get("medium_role_model", "")
+            if role == "subagent":
+                return data.get("default_subagent_model", "")
+            for m in data.get("models", []):
+                if m.get("role") == role and m.get("is_default_parent"):
+                    return m.get("id", "")
+            for m in data.get("models", []):
+                if m.get("role") == role:
+                    return m.get("id", "")
+    return ""
 
 
 def score_recipe(recipe, instruction, tools, model, confidence_threshold=0.25):
     """Score how well a recipe matches task evidence."""
     instruction = (instruction or "").lower()
     tokens = set(re.findall(r"\w+", instruction))
-    overlap = len(tokens & recipe["instruction_signals"])
-    instruction_score = min(1.0, overlap / max(1, len(recipe["instruction_signals"])))
+    signals = recipe["instruction_signals"]
+    if not isinstance(signals, set):
+        signals = set(signals)
+    overlap = len(tokens & signals)
+    instruction_score = min(1.0, overlap / max(1, len(signals)))
 
     tool_score = 0.0
     if tools:
@@ -546,7 +581,8 @@ def score_recipe(recipe, instruction, tools, model, confidence_threshold=0.25):
         needed = set(t.lower() for t in recipe["tools"])
         tool_score = len(available & needed) / max(1, len(needed))
 
-    model_score = 1.0 if not model or model.lower() in recipe["preferred_model"].lower() else 0.0
+    preferred = resolve_preferred_model(recipe)
+    model_score = 1.0 if not model or not preferred or model.lower() in preferred.lower() else 0.0
 
     score = 0.5 * instruction_score + 0.3 * tool_score + 0.2 * model_score
     return {
@@ -565,7 +601,7 @@ def select_recipe(instruction, tools=None, model=None, recipes=None, confidence_
     compaction boundaries. We do not assume recipes transfer between runtime
     models; the model score is permissive, not mandatory.
     """
-    recipes = recipes or RECIPES
+    recipes = recipes or load_recipes()
     scored = [score_recipe(r, instruction, tools, model) for r in recipes.values()]
     scored.sort(key=lambda x: x["score"], reverse=True)
 

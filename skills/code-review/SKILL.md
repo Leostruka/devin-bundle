@@ -51,7 +51,7 @@ Every review moves information in one of two directions:
 
 ### Sand Castle as a reference pattern
 
-Matt Pocock's Sand Castle (`mattpocock/sandcastle`) orchestrates agents as a **planner**, **implementers**, and a **merger**: the planner pushes the plan, each implementer pulls its own skills inside a sandbox, and the merger reviews and integrates the branches. The bundle does not add a Docker dependency or the Sand Castle library. The same shape is expressed with `dispatching-parallel-agents` (planner = controller, implementers = subagents, merger = final reviewer) and `using-git-worktrees` for isolation. Use Sand Castle only as a mental model when deciding what to push and what to pull.
+The Sand Castle pattern (a planner, implementers, and a merger) orchestrates agents as a **planner**, **implementers**, and a **merger**: the planner pushes the plan, each implementer pulls its own skills inside a sandbox, and the merger reviews and integrates the branches. The bundle does not add a Docker dependency or the upstream Sand Castle library. The same shape is expressed with `dispatching-parallel-agents` (planner = controller, implementers = subagents, merger = final reviewer) and `using-git-worktrees` for isolation. Use Sand Castle only as a mental model when deciding what to push and what to pull.
 
 ## Budget Presets
 

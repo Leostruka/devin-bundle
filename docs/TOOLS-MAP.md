@@ -2,7 +2,7 @@
 
 Mapeia TODAS as ferramentas, subagentes, hooks, e configs do Devin CLI
 runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
-(2026-08-20, Devin CLI v3000.4.25).
+(versão validada: `{{VALIDATED_CLI_VERSION}}` em `data/bundle-identity.json`).
 
 ## Ferramentas do runtime (26 ativas + 2 modo-dependentes)
 
@@ -46,20 +46,19 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 
 | Perfil | Tipo | Modelo | Tools | Bundle agent file |
 |---|---|---|---|---|
-| `subagent_explore` | Built-in | SWE-1.6 (default router) | Read-only + web_search | — (built-in) |
-| `subagent_general` | Built-in | GLM-5.2 (parent) | Full (fg) / pre-approved (bg) | — (built-in) |
-| `architect` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
-| `debugger` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
-| `implementer` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
-| `researcher` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
-| `reviewer` | Custom | SWE-1.7 (`model: swe-1-7`, gratuito) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
+| `subagent_explore` | Built-in | Default router (veja `data/bundle-models.json` aliases) | Read-only + web_search | — (built-in) |
+| `subagent_general` | Built-in | Herda parent (`{{BUNDLE_DEFAULT_MODEL}}`) | Full (fg) / pre-approved (bg) | — (built-in) |
+| `architect` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
+| `debugger` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
+| `implementer` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
+| `researcher` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
+| `reviewer` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
 
 **Estratégia de modelo:**
-- `subagent_explore` (built-in): SWE-1.6 via default router (Devin CLI docs)
-- Custom agents: `model: swe-1-7` pin → SWE-1.7 Max (262K, 1000 TPS, **gratuito**). NÃO usar `swe` (alias pago)
-  - Sem pin, custom agents usariam SWE-1.6 (default router), não SWE-1.7
-- Para trabalho que precisa GLM-5.2: usar `subagent_general` (herda parent) ou
-  pin `model: glm-5-2` no agent
+- `subagent_explore` (built-in): default router do CLI — verifique `data/bundle-models.json` aliases; evite em modo free.
+- Custom agents: pin `{{BUNDLE_MAX_MODEL}}` (Max) ou `{{BUNDLE_MEDIUM_MODEL}}` (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. NÃO usar aliases pagos não verificados (veja `data/bundle-models.json`).
+  - Sem pin, custom agents usam o default router do CLI (possivelmente pago).
+- Para trabalho que precisa do parent: usar `subagent_general` (herda parent) ou pin `model: {{BUNDLE_DEFAULT_MODEL}}` no agent.
 
 **VALID_PROFILES no validate-tool-args.py:**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
@@ -99,7 +98,7 @@ subagent_general — todos os 7 perfis validados.
 
 ## Configs do runtime
 
-| Config | Local (bundle) | Local (live WSL) | Função |
+| Config | Local (bundle) | Local (Devin home) | Função |
 |---|---|---|---|
 | AGENTS.md | `./AGENTS.md` | `~/.config/devin/AGENTS.md` | Regras globais (20 regras) |
 | config.json | `./config.json` | `~/.config/devin/config.json` | Modelo, hooks, theme |
@@ -109,7 +108,7 @@ subagent_general — todos os 7 perfis validados.
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 82 skills |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 17 scripts Python + 1 JS |
-| MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia GLM-5.2 + SWE-1.7 |
+| MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |
 | manifest.json | `./manifest.json` | — | Manifesto de export |
@@ -124,14 +123,12 @@ subagent_general — todos os 7 perfis validados.
 
 ## MCP Servers
 
-| Server | Bundle mcp_config.json | Tools | Notas |
-|---|---|---|---|
-| atlassian | ✓ | Rovo MCP (Jira/Confluence) | Requer login — não funciona no WSL sem credenciais Windows |
+O bundle carrega servidores MCP a partir de `mcp_config.json` no Devin home do usuário. O arquivo `mcp_config.json.example` contém um exemplo de integração de issue tracker; parâmetros de integração (site, cloud ID, enablement) estão em `data/bundle-integrations.json`. Autentique antes de habilitar; credenciais e notas específicas de integração local devem ficar no troubleshooting local, não no bundle global.
 
 **Auditoria MCP (arXiv:2606.30317):**
 - Tool count por server < 10-15 para >90% accuracy (Claude Haiku)
 - 20-30 tools para Sonnet 4
-- Atlassian: verificar tool count com `mcp_list_tools` quando logado
+- Verifique tool count com `mcp_list_tools` quando o servidor MCP estiver logado
 - Se >15 tools, considerar `mcp-context-audit` skill
 
 ## Modos do Devin CLI
@@ -149,33 +146,28 @@ subagent_general — todos os 7 perfis validados.
 não escolhe o modo. Em `normal` (default), o runtime pede aprovação para
 tools com side effects — não é o agente pedindo, é o runtime.
 
-## Modelos disponíveis (Devin CLI v3000.4.25)
+## Modelos disponíveis (Devin CLI `{{VALIDATED_CLI_VERSION}}`)
 
 | model_uid | Label | Provider | Context | Credit mult | Recomendado |
 |---|---|---|---|---|---|
-| `glm-5-2` | GLM-5.2 High | ZAI | 200K | 1.5 | ✓ (config.json) |
-| `glm-5-2-max` | GLM-5.2 Max | ZAI | 200K | 3 | |
-| `glm-5-2-max-1m` | GLM-5.2 Max 1M | ZAI | 1M | 6 | |
-| `glm-5-2-none` | GLM-5.2 No Thinking | ZAI | 200K | 1 | |
-| `glm-5-2-none-1m` | GLM-5.2 No Thinking 1M | ZAI | 1M | — | |
-| `swe-1-7` | SWE-1.7 Max | Cognition | 262K | **Free** | Subagent default (gratuito) |
-| `swe-1-7-medium` | SWE-1.7 Medium | Cognition | 262K | **Free** | Alternativa mais leve (gratuito) |
-| `swe` | SWE-1.7 Lightning | Cognition | 202K | $2.5/$12.5 | **PAGO** — alias, NUNCA usar |
-| `adaptive` | Adaptive router | Cognition | — | $0.5/$2 | **PAGO** — não usar |
-| `opus` | Claude Opus (latest) | Anthropic | — | $5/$25 | **PAGO** — não usar |
-| `sonnet` | Claude Sonnet (latest) | Anthropic | — | $2/$10 | **PAGO** — não usar |
-| `gpt` | GPT (latest) | OpenAI | — | $0.75/$4.5 | **PAGO** — não usar |
-| `codex` | Codex (latest) | OpenAI | — | $1.75/$14 | **PAGO** — não usar |
-| `gemini` | Gemini (latest) | Google | — | $0.75/$3.75 | **PAGO** — não usar |
+| `{{BUNDLE_DEFAULT_MODEL}}` | (parent, see `data/bundle-models.json`) | `data/bundle-models.json` | see registry | see registry | ✓ (config.json) |
+| `{{BUNDLE_DEFAULT_MODEL}}-max` | Parent Max variant | ZAI | see registry | see registry | see `data/bundle-models.json` |
+| `{{BUNDLE_DEFAULT_MODEL}}-max-1m` | Parent Max 1M variant | ZAI | see registry | see registry | see `data/bundle-models.json` |
+| `{{BUNDLE_DEFAULT_MODEL}}-none` | No Thinking variant | ZAI | see registry | 1 | see `data/bundle-models.json` |
+| `{{BUNDLE_DEFAULT_MODEL}}-none-1m` | No Thinking 1M variant | ZAI | see registry | — | see `data/bundle-models.json` |
+| `{{BUNDLE_MAX_MODEL}}` | Subagent Max | see registry | see registry | **Free** | see `data/bundle-models.json` |
+| `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium | see registry | see registry | **Free** | see `data/bundle-models.json` |
+| `paid_model_alias` | Paid alias | see registry | see registry | see registry | NUNCA usar sem confirmar `data/bundle-models.json` |
+| `adaptive` | Paid router | see registry | — | see registry | Não usar em modo free |
+| `opus` | Paid model | Anthropic | — | see registry | Não usar em modo free |
+| `sonnet` | Paid model | Anthropic | — | see registry | Não usar em modo free |
+| `gpt` | Paid model | OpenAI | — | see registry | Não usar em modo free |
+| `codex` | Paid model | OpenAI | — | see registry | Não usar em modo free |
+| `gemini` | Paid model | Google | — | see registry | Não usar em modo free |
 
-**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (default
-`glm-5-2`), NUNCA usar modelos pagos para subagents. Short names (`opus`,
-`sonnet`, `swe`, `codex`, `gemini`) sempre resolvem para a latest version
-na família — todos pagos. Usar apenas `glm-5-2` (parent) e `swe-1-7` /
-`swe-1-7-medium` (subagents). Quando o parent está em modelo PAGO (usuário
-fez `/model opus`, etc.), subagents podem usar modelos pagos.
+**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (lido de `data/bundle-models.json` com `cost_tier: free`), NUNCA usar modelos pagos para subagents. Short names/aliases (`opus`, `sonnet`, `codex`, `gemini` etc.) podem resolver para entradas pagas — verifique `data/bundle-models.json` antes de usar. Use o parent (`{{BUNDLE_DEFAULT_MODEL}}`) e os subagent models (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`) do registro. Quando o parent é pago, subagents podem usar pagos.
 
-## Context budget (200K GLM-5.2)
+## Context budget (parent model)
 
 ```
 System prompt + tool defs    ~???? tok (Devin runtime, não mensurável)
@@ -184,11 +176,11 @@ SKILL-TIERS.md (se lido)     ~1782 tok (0.89%)
 MODEL-GUIDE.md (se lido)     ~3711 tok (1.86%)
 TOOLS-MAP.md (se lido)       ~2478 tok (1.24%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
-MCP tool defs (atlassian)    ~???? tok (medir com mcp-context-audit)
+MCP tool defs (configured)   ~???? tok (medir com mcp-context-audit)
 ─────────────────────────────────────────────
 Total fixo (sem docs opt)    ~5605 tok (2.80%)
 Total c/ docs opt            ~13576 tok (6.79%)
-Disponível para trabalho     ~186424-194395 tok (93.21-97.20%)
+Disponível para trabalho     consulte `context_window` em `data/bundle-models.json`
 ```
 
 **Nota:** MODEL-GUIDE.md, TOOLS-MAP.md e SKILL-TIERS.md são leituras

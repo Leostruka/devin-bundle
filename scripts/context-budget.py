@@ -19,17 +19,6 @@ Stdin (hook mode):
 
 Token estimate uses the chars/4 heuristic. This is an estimate, not an exact
 count — exact counts require the model provider's tokenizer.
-
-Source: "Context Windows Explained for Coding Agents" (Matt Pocock) —
-  you need full transparency of what is consuming your context window at any
-  time. A 25k-token rules file is 12% of a 200k window before the first word.
-
-Smart zone / dumb zone: per Matt Pocock's "Full Walkthrough: Workflow for AI
-Coding" (-QFHIoCo-Ko), LLM output quality degrades after ~100k tokens of
-context regardless of the total window size. When the loaded rules alone push
-a session near or past this threshold, prefer `/clear` (fresh thread) over
-`/compact`; compaction preserves only a lossy summary and leaves "sediment"
-that still consumes attention. See `skills/context-window-hygiene/SKILL.md`.
 """
 import sys, os, json, argparse
 
@@ -49,10 +38,50 @@ def devin_home():
     return os.path.join(os.path.expanduser("~"), ".config", "devin")
 
 
+def find_bundle_root():
+    """Find the devin-bundle root for data files."""
+    candidates = []
+    env = os.environ.get("DEVIN_PROJECT_DIR")
+    if env:
+        candidates.append(env)
+    candidates.append(os.getcwd())
+    candidates.append(devin_home())
+    for c in candidates:
+        if os.path.isfile(os.path.join(c, "data", "bundle-models.json")):
+            return c
+    return None
+
+
+def load_bundle_data(root=None):
+    """Load bundle configuration files."""
+    root = root or find_bundle_root() or os.getcwd()
+    bundle_models = {}
+    context_budget = {}
+    try:
+        with open(os.path.join(root, "data", "bundle-models.json"), encoding="utf-8", errors="replace") as f:
+            bundle_models = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        pass
+    try:
+        with open(os.path.join(root, "data", "context-budget.json"), encoding="utf-8", errors="replace") as f:
+            context_budget = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        pass
+    return bundle_models, context_budget
+
+
+def get_default_models(bundle_models):
+    """Return the default parent and subagent models from bundle-models.json."""
+    parent, subagent = None, None
+    for m in bundle_models.get("models", []):
+        if m.get("is_default_parent"):
+            parent = m
+        if m.get("is_default_subagent"):
+            subagent = m
+    return parent, subagent
+
+
 CHARS_PER_TOKEN = 4
-WINDOW_200K = 200_000    # GLM-5.2 High primary model (free)
-WINDOW_262K = 262_000    # SWE-1.7 Max subagent model (free, `devin models list`)
-SMART_ZONE_TOKENS = 100_000  # Pocock marker: quality degrades above ~100k
 
 
 def estimate_tokens(text):
@@ -102,9 +131,13 @@ def find_extra_rules(path):
 
 
 def report(path, as_json=False, simulated_tokens=None):
+    bundle_models, context_budget = load_bundle_data()
+    parent, subagent = get_default_models(bundle_models)
+    smart_zone_tokens = context_budget.get("smart_zone_tokens", 100_000)
+
     if simulated_tokens is not None:
         # Generate deterministic padding to test the smart-zone nudge without
-        # needing a real 100k-token rules file.
+        # needing a real rules file of that size.
         content = "x" * (simulated_tokens * CHARS_PER_TOKEN)
         extras = []
     else:
@@ -118,8 +151,6 @@ def report(path, as_json=False, simulated_tokens=None):
     chars = len(content)
     tok = estimate_tokens(content)
     lines = content.count("\n") + 1
-    share_200k = 100.0 * tok / WINDOW_200K
-    share_262k = 100.0 * tok / WINDOW_262K
 
     # Also scan extra rules files for total context budget
     extra_total_tok = 0
@@ -135,9 +166,15 @@ def report(path, as_json=False, simulated_tokens=None):
             pass
 
     total_tok = tok + extra_total_tok
-    total_200k = 100.0 * total_tok / WINDOW_200K
-    total_262k = 100.0 * total_tok / WINDOW_262K
-    smart_zone_share = 100.0 * total_tok / SMART_ZONE_TOKENS
+    smart_zone_share = 100.0 * total_tok / smart_zone_tokens
+
+    share_rows = []
+    if parent:
+        share = 100.0 * total_tok / parent["context_window"]
+        share_rows.append({"model_id": parent["id"], "name": parent["name"], "share_pct": round(share, 2)})
+    if subagent:
+        share = 100.0 * total_tok / subagent["context_window"]
+        share_rows.append({"model_id": subagent["id"], "name": subagent["name"], "share_pct": round(share, 2)})
 
     if as_json:
         print(json.dumps({
@@ -145,37 +182,35 @@ def report(path, as_json=False, simulated_tokens=None):
             "chars": chars,
             "estimated_tokens": tok,
             "lines": lines,
-            "window_200k_share_pct": round(share_200k, 2),
-            "window_262k_share_pct": round(share_262k, 2),
+            "window_shares": share_rows,
             "extra_rules_files": extra_details,
             "extra_rules_tokens": extra_total_tok,
             "total_rules_tokens": total_tok,
-            "total_200k_share_pct": round(total_200k, 2),
-            "total_262k_share_pct": round(total_262k, 2),
-            "smart_zone_tokens": SMART_ZONE_TOKENS,
+            "smart_zone_tokens": smart_zone_tokens,
             "smart_zone_share_pct": round(smart_zone_share, 2),
         }))
         return 0
+
     print(f"context-budget: {path}", file=sys.stderr)
     print(f"  chars:    {chars}", file=sys.stderr)
     print(f"  lines:    {lines}", file=sys.stderr)
     print(f"  tokens:   ~{tok} (chars/4 heuristic)", file=sys.stderr)
-    print(f"  200k share (GLM-5.2):  {share_200k:.2f}%", file=sys.stderr)
-    print(f"  262k share (SWE-1.7):  {share_262k:.2f}%", file=sys.stderr)
+    for row in share_rows:
+        print(f"  {row['model_id']} share ({row['name']}): {row['share_pct']:.2f}%", file=sys.stderr)
     if extras:
         print(f"  extra rules files: {len(extras)} (~{extra_total_tok} tokens)", file=sys.stderr)
         for ed in extra_details:
             print(f"    - {ed['file']}: ~{ed['tokens']} tokens", file=sys.stderr)
         print(f"  TOTAL rules tokens: ~{total_tok}", file=sys.stderr)
-        print(f"  TOTAL 200k share:    {total_200k:.2f}%", file=sys.stderr)
-        print(f"  TOTAL 262k share:    {total_262k:.2f}%", file=sys.stderr)
-    print(f"  smart-zone share (~100k): {smart_zone_share:.2f}%", file=sys.stderr)
-    if total_tok >= SMART_ZONE_TOKENS:
-        print(f"  SMART ZONE NUDGE: loaded rules are at or above ~{SMART_ZONE_TOKENS:,} tokens.", file=sys.stderr)
+        for row in share_rows:
+            print(f"  TOTAL {row['model_id']} share: {row['share_pct']:.2f}%", file=sys.stderr)
+    print(f"  smart-zone share (~{smart_zone_tokens:,}): {smart_zone_share:.2f}%", file=sys.stderr)
+    if total_tok >= smart_zone_tokens:
+        print(f"  SMART ZONE NUDGE: loaded rules are at or above ~{smart_zone_tokens:,} tokens.", file=sys.stderr)
         print(f"    Prefer `/clear` (fresh thread) over `/compact`; compaction keeps lossy", file=sys.stderr)
         print(f"    sediment and still consumes attention. See `context-window-hygiene`.", file=sys.stderr)
-    elif total_200k >= 10:
-        print(f"  WARN: total rules are >=10% of a 200k window before the first", file=sys.stderr)
+    elif share_rows and share_rows[0]["share_pct"] >= 10:
+        print(f"  WARN: total rules are >=10% of a {share_rows[0]['model_id']} window before the first", file=sys.stderr)
         print(f"        message. Consider compressing/modularizing (context-window-hygiene).", file=sys.stderr)
     return 0
 
