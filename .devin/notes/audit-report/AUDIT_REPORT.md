@@ -23,6 +23,12 @@
 - `8.3.3` RESOLVIDO: adicionado `tests/validation/test_config_schema.py` para `config.json` e `hooks.v1.json`.
 - `10.3.2` RESOLVIDO: `README.md` agora menciona o agente `qa-ci`.
 - `10.3.3` RESOLVIDO: `CHANGELOG.md` v3.1.0 agora lista as 6 novas skills (`ontology-validator`, `task-sizer`, `secure-defaults-check`, `agent-cost-guard`, `intention-capture`, `api-context-spec`).
+- `5.3.2` RESOLVIDO: `docs/TOOLS-MAP.md` atualizado com nota sobre tool count do `atlassian` (depende de permissões do tenant; usar `mcp-context-audit`).
+- `5.3.4` RESOLVIDO (documentado): `mcp_config.json` mantém apenas URL de autenticação; autenticação prévia é responsabilidade do usuário e está notada no `TOOLS-MAP.md`.
+- `7.3.3` RESOLVIDO: `manifest.json` agora inclui `export_hash` e `exported_at` para scripts e agentes; `audit.py` verifica hashes.
+- `7.3.4` RESOLVIDO: `README.md` documenta `attribution: false` na seção de instalação.
+- `10.3.4` RESOLVIDO: `docs/TOOLS-MAP.md` atualizado com nota sobre tool count.
+- `10.3.5` RESOLVIDO: `audit.py` agora verifica se `CONTRIBUTING.md` e `SECURITY.md` têm conteúdo mínimo (não apenas existem).
 
 ## Checklist de Componentes
 
@@ -196,9 +202,9 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
 | 5.3.1 | ~~`atlassian` MCP usa transporte HTTP sem TLS explícito~~ | `mcp_config.json:5` | ~~Important~~ **Corrigido** | Campo `transport` alterado para `https`, consistente com a URL. |
-| 5.3.2 | Não há documentação do número de tools do `atlassian` no bundle | `docs/TOOLS-MAP.md` | Minor | TOOLS-MAP.md menciona `atlassian` mas não lista a contagem real de tools. |
+| 5.3.2 | ~~Não há documentação do número de tools do `atlassian`~~ | `docs/TOOLS-MAP.md:129` | ~~Minor~~ **Corrigido** | `TOOLS-MAP.md` documenta que o tool count depende do tenant e recomenda `mcp-context-audit`. |
 | 5.3.3 | ~~`mcp_config.json` não é validado por `audit.py`~~ | `audit.py:328-352` | ~~Minor~~ **Corrigido** | `audit.py` valida `mcpServers`, URL https e transporte https/stdio. |
-| 5.3.4 | Não há mecanismo de fallback se `atlassian` não estiver autenticado | `mcp_config.json` | Minor | Configuração contém URL mas não indica se requer autenticação prévia. |
+| 5.3.4 | ~~Não há mecanismo de fallback se `atlassian` não estiver autenticado~~ | `docs/TOOLS-MAP.md:129` | ~~Minor~~ **Corrigido** | `TOOLS-MAP.md` documenta que requer login e não funciona sem credenciais. |
 
 ### 5.4 Recomendações
 
@@ -259,8 +265,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
 | 7.3.2 | ~~`config.json` não é validado por schema~~ | `audit.py:187-229` | ~~Minor~~ **Corrigido** | `audit.py` valida `version`, top-level keys, `attribution`, eventos e estrutura de hooks. |
-| 7.3.3 | `manifest.json` não versiona scripts nem agentes por hash | `manifest.json` | Minor | Scripts e agentes não têm hash/export_hash; só skills têm. Isso dificulta detectar drift. |
-| 7.3.4 | `config.json` atribui `attribution: false` sem explicar o impacto | `config.json:11` | Minor | `attribution` desligado pode afetar logs de uso/custo; deveria ser documentado. |
+| 7.3.3 | ~~`manifest.json` não versiona scripts nem agentes por hash~~ | `manifest.json`, `audit.py:288-329` | ~~Minor~~ **Corrigido** | `manifest.json` agora inclui `export_hash` e `exported_at` para scripts e agentes; `audit.py` valida. |
+| 7.3.4 | ~~`config.json` atribui `attribution: false` sem explicar o impacto~~ | `README.md:455` | ~~Minor~~ **Corrigido** | `README.md` documenta que `attribution: false` desliga atribuição pública sem afetar funcionalidade. |
 
 ### 7.4 Recomendações
 
@@ -359,8 +365,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 |---|------|-----------|-----------|-----------|
 | 10.3.2 | ~~`README.md` não menciona `qa-ci` agent~~ | `README.md:162` | ~~Minor~~ **Corrigido** | Tabela de perfis inclui `qa-ci`. |
 | 10.3.3 | ~~`CHANGELOG.md` não menciona as 6 novas skills da Fase 4/5~~ | `CHANGELOG.md:12-18` | ~~Minor~~ **Corrigido** | v3.1.0 lista `ontology-validator`, `task-sizer`, `secure-defaults-check`, `agent-cost-guard`, `intention-capture`, `api-context-spec`. |
-| 10.3.4 | `docs/TOOLS-MAP.md` não atualiza tool count do MCP `atlassian` | `docs/TOOLS-MAP.md:127-135` | Minor | Documentação menciona verificação, mas não fornece contagem. |
-| 10.3.5 | `CONTRIBUTING.md` e `SECURITY.md` não são citados no audit | `audit.py` | Minor | Audit valida existência, mas não conteúdo. |
+| 10.3.4 | ~~`docs/TOOLS-MAP.md` não atualiza tool count do MCP `atlassian`~~ | `docs/TOOLS-MAP.md:129` | ~~Minor~~ **Corrigido** | Nota sobre tool count dependente de tenant adicionada. |
+| 10.3.5 | ~~`CONTRIBUTING.md` e `SECURITY.md` não são citados no audit~~ | `audit.py:443-457` | ~~Minor~~ **Corrigido** | `audit.py` verifica existência e conteúdo mínimo. |
 
 ### 10.4 Recomendações
 

@@ -285,6 +285,48 @@ else:
         print('  FAIL manifest scripts not on disk: ' + ', '.join(missing))
     else:
         print('  OK  manifest.json scripts list consistent (' + str(len(manifest_py_scripts)) + ' .py + ' + str(len(manifest_other_scripts)) + ' other)')
+    # Check script hashes
+    hash_mismatch = []
+    for s in manifest_scripts:
+        if s['name'].endswith('.py') and s.get('export_hash'):
+            path = os.path.join('scripts', s['name'])
+            if os.path.isfile(path):
+                disk_hash = hashlib.sha256(open(path, 'rb').read()).hexdigest().upper()
+                if disk_hash != s['export_hash'].upper():
+                    hash_mismatch.append(s['name'])
+    if hash_mismatch:
+        warnings.append('manifest script hash mismatch: ' + ', '.join(hash_mismatch))
+        print('  WARN script hash mismatch: ' + ', '.join(hash_mismatch))
+    else:
+        print('  OK  manifest script hashes match')
+
+# 9c. manifest.json agents list and hashes
+print()
+print('[9c] manifest.json agents')
+manifest_agents = manifest.get('agents', [])
+agent_files = [f for f in os.listdir('agents') if f.endswith('.md')]
+if len(manifest_agents) != len(agent_files):
+    errors.append('manifest agent_count mismatch')
+    print('  FAIL manifest agent_count mismatch')
+else:
+    missing = []
+    hash_mismatch = []
+    for a in manifest_agents:
+        path = os.path.join('agents', a['name'] + '.md')
+        if not os.path.isfile(path):
+            missing.append(a['name'])
+        elif a.get('export_hash'):
+            disk_hash = hashlib.sha256(open(path, 'rb').read()).hexdigest().upper()
+            if disk_hash != a['export_hash'].upper():
+                hash_mismatch.append(a['name'])
+    if missing:
+        errors.append('manifest agents missing on disk: ' + ', '.join(missing))
+        print('  FAIL agents missing: ' + ', '.join(missing))
+    elif hash_mismatch:
+        warnings.append('manifest agent hash mismatch: ' + ', '.join(hash_mismatch))
+        print('  WARN agent hash mismatch: ' + ', '.join(hash_mismatch))
+    else:
+        print('  OK  manifest agents consistent (' + str(len(manifest_agents)) + ' agents)')
 
 # 10. No unmasked secrets
 print()
@@ -405,6 +447,9 @@ for doc, check in docs:
         if check and check not in content:
             errors.append(doc + ' does not contain ' + check)
             print('  FAIL ' + doc + ' missing ' + check)
+        elif len(content.strip()) < 100:
+            warnings.append(doc + ' is too short')
+            print('  WARN ' + doc + ' is too short')
         else:
             print('  OK  ' + doc)
     else:

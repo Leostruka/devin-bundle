@@ -452,7 +452,7 @@ O instalador:
 2. instala `AGENTS.md`;
 3. instala os perfis de `agents/`;
 4. instala as skills descobertas;
-5. mescla `config.json` por padrão, preservando `org_id` local;
+5. mescla `config.json` por padrão, preservando `org_id` local e `attribution: false` (desliga atribuicao publica; nao afeta funcionalidade);
 6. instala scripts e hooks;
 7. ignora MCP mascarado; no Windows, `Force` pode instalar sua estrutura mascarada, enquanto o instalador Unix sempre a ignora;
 8. restaura credenciais somente com flag explícita;

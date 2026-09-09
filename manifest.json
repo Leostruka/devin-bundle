@@ -646,80 +646,116 @@
   "scripts": [
     {
       "name": "behavioral-nudge.py",
-      "purpose": "PostToolUse hook — injects behavioral reminders"
+      "purpose": "PostToolUse hook — injects behavioral reminders",
+      "export_hash": "19676F613847D0B7FE80E14E5C1CD21ED539BBA747A4AD0E96A02BE72C763A6F",
+      "exported_at": "2026-09-08T21:15:21.756043"
     },
     {
       "name": "check-ai-signature.py",
-      "purpose": "PreCommit hook — blocks AI signatures in commits"
+      "purpose": "PreCommit hook — blocks AI signatures in commits",
+      "export_hash": "A16B9FF3ACB14529207ABA177AFD550A084EE9EDD1D5478F818097771641CA04",
+      "exported_at": "2026-09-08T21:15:21.756178"
     },
     {
       "name": "check-push-green.py",
-      "purpose": "PrePush hook — blocks push when held-out tests fail"
+      "purpose": "PrePush hook — blocks push when held-out tests fail",
+      "export_hash": "4FCCB5F8E646243406824FB5F451F66F6F9FD91ADC748CC2A02F92082FB1B5A9",
+      "exported_at": "2026-09-08T21:15:21.756261"
     },
     {
       "name": "constraint-pinning.py",
-      "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints"
+      "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints",
+      "export_hash": "00B869D843010EE4061220C6D0B8B5E66ACC958FFE2D5ACB085C320A4DE610A2",
+      "exported_at": "2026-09-08T21:15:21.756337"
     },
     {
       "name": "context-budget.py",
-      "purpose": "SessionStart hook — reports AGENTS.md token cost"
+      "purpose": "SessionStart hook — reports AGENTS.md token cost",
+      "export_hash": "C4C8B6FDB62CF4BB6CE4E74BFA06501A96F10F2C6E2973BA44F8169C38CC331C",
+      "exported_at": "2026-09-08T21:15:21.756417"
     },
     {
       "name": "destructive-gate.py",
-      "purpose": "PreToolUse hook — gates destructive operations"
+      "purpose": "PreToolUse hook — gates destructive operations",
+      "export_hash": "E6D9F30D4001243E3162EC0FBC0F6AB7E1096E27EF2E4ECFBCFFE6EE219E6B59",
+      "exported_at": "2026-09-08T21:15:21.756510"
     },
     {
       "name": "refine-review-prompt.py",
-      "purpose": "Refine mode — generates review prompts for self-improvement"
+      "purpose": "Refine mode — generates review prompts for self-improvement",
+      "export_hash": "1B2D421233235BCB5135AA682F34FFD687D10865D9E3532E7B58D03D1224536B",
+      "exported_at": "2026-09-08T21:15:21.756586"
     },
     {
       "name": "silent-error-review.py",
-      "purpose": "PostToolUse hook — detects silent errors in tool output"
+      "purpose": "PostToolUse hook — detects silent errors in tool output",
+      "export_hash": "5CECBE2A4BFC0C992D9B65841BE504B5B29159A2D87182330B05A4523C0BCAE7",
+      "exported_at": "2026-09-08T21:15:21.756661"
     },
     {
       "name": "validate-mermaid.py",
-      "purpose": "Validator — checks Mermaid syntax in wiki diagrams"
+      "purpose": "Validator — checks Mermaid syntax in wiki diagrams",
+      "export_hash": "8623655B53E7BE095C26CB065AA0774C7340C2A846995BA019862B894173D1E7",
+      "exported_at": "2026-09-08T21:15:21.756732"
     },
     {
       "name": "validate-refinement-evidence.py",
-      "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails"
+      "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails",
+      "export_hash": "E3A7DDCBB23359226CFB565513711FC115E93A6974BADB5144805C5DF910B9E5",
+      "exported_at": "2026-09-08T21:15:21.756807"
     },
     {
       "name": "validate-skill-format.py",
-      "purpose": "Validator — checks SKILL.md frontmatter and format"
+      "purpose": "Validator — checks SKILL.md frontmatter and format",
+      "export_hash": "C68EA0A1B567432870A74B22FA371D12037392D0748E8788F787FFF74466F367",
+      "exported_at": "2026-09-08T21:15:21.756882"
     },
     {
       "name": "validate-tool-args.py",
-      "purpose": "Validator — checks tool argument schemas"
+      "purpose": "Validator — checks tool argument schemas",
+      "export_hash": "948AAAED1F34AD4DEBCCF1DCC0401429189113D80ED35099E43AB15062B2E14B",
+      "exported_at": "2026-09-08T21:15:21.756957"
     },
     {
       "name": "context-pressure.py",
-      "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds"
+      "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
+      "export_hash": "1E3D8FF3CC71248B0ED734B0B863B53FFB0227CDCB6A27EF18EE3A75871768F4",
+      "exported_at": "2026-09-08T21:15:21.757050"
     },
     {
       "name": "memory-retrieval.py",
-      "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes"
+      "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes",
+      "export_hash": "EAE3DFA6D6BE2104B5F9AF12A18CDE36C34320634F9D2BFF4FC8DD45AC7FC547",
+      "exported_at": "2026-09-08T21:15:21.757129"
     },
     {
       "name": "memory-post-edit.py",
-      "purpose": "PostToolUse hook — injects .devin/memory/ notes after write/edit based on cues.path"
+      "purpose": "PostToolUse hook — injects .devin/memory/ notes after write/edit based on cues.path",
+      "export_hash": "39C5DB439BCBABA0FBFA191727C201C979F158E7AF14E603878A87BC2C7CB1EF",
+      "exported_at": "2026-09-08T21:15:21.757199"
     },
     {
       "name": "memory-stop.py",
-      "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review"
+      "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review",
+      "export_hash": "8B31C967F637C164A5D6287AF61AC100E2FE4624EB3F1EFFB552C1534CE8619C",
+      "exported_at": "2026-09-08T21:15:21.757268"
     },
     {
       "name": "memory-post-exec.py",
-      "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword"
+      "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword",
+      "export_hash": "9EE9F26752AFB2A81C38C76F82A5228F46B429863857F8789FBB220D37147C86",
+      "exported_at": "2026-09-08T21:15:21.757336"
     },
     {
       "name": "mermaid-parse-check.js",
-      "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)"
+      "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)",
+      "export_hash": "5D566D752F74BBC5713A953C21C10AD45F570EA0619E1F58B071EC164A7D4E56",
+      "exported_at": "2026-09-08T21:15:21.757415"
     }
   ],
   "script_count": 17,
   "mcp_count": 1,
-  "agent_count": 5,
+  "agent_count": 6,
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
@@ -729,5 +765,49 @@
     "CHANGELOG.md",
     "README.md",
     "AI-CODING-DICTIONARY.md"
+  ],
+  "agents": [
+    {
+      "name": "architect",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\architect.md",
+      "export_hash": "1E36D32111DAD762FB37649A61B7DCFBF3B32FE840877EEEDAAC23641403B8E6",
+      "exported_at": "2026-09-08T21:15:21.757749"
+    },
+    {
+      "name": "debugger",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\debugger.md",
+      "export_hash": "FCA820C56D302C5434C5121CB8C5341F893E7937BCA0F0ED162532119EFE4F04",
+      "exported_at": "2026-09-08T21:15:21.757809"
+    },
+    {
+      "name": "implementer",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\implementer.md",
+      "export_hash": "D368C40CF7538706E55D2CB477550569212F462B6724EA88C7DF3AFFCEBCCB43",
+      "exported_at": "2026-09-08T21:15:21.757862"
+    },
+    {
+      "name": "qa-ci",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\qa-ci.md",
+      "export_hash": "D71B0564D531F2B24B0C9F33D6C79DEB2F73BDC98C8BC2B08843E98003E66821",
+      "exported_at": "2026-09-08T21:15:21.757913"
+    },
+    {
+      "name": "researcher",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\researcher.md",
+      "export_hash": "A869419266564CB98A2732C5503EF767169681951DC2C56F0228C3CE33B2AE1B",
+      "exported_at": "2026-09-08T21:15:21.757968"
+    },
+    {
+      "name": "reviewer",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\reviewer.md",
+      "export_hash": "11F5AC6DC4E01BD5552F27C48F6574148578FEFF4646CB09CEE4E542B4170E24",
+      "exported_at": "2026-09-08T21:15:21.758015"
+    }
   ]
 }
