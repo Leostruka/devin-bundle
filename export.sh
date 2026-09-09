@@ -421,6 +421,13 @@ else
 fi
 
 # --- 9. Pre-push validation ---
+if [[ $PUSH -eq 1 && $NO_MASK -eq 1 && $DRY_RUN -eq 0 ]]; then
+  err "FATAL: --push with --no-mask would export real secrets and push them to the repository."
+  err "       This is a security risk. Aborting."
+  err "       If you must back up unmasked credentials, use --no-mask --commit (no push) and review the diff manually."
+  exit 1
+fi
+
 if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   step "Pre-push validation"
   validation_failed=0

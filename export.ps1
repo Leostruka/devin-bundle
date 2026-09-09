@@ -249,6 +249,14 @@ if ($Commit) { Write-Host "  Commit : YES" -ForegroundColor DarkGray }
 if ($Push)   { Write-Host "  Push   : YES (with validation)" -ForegroundColor DarkGray }
 Write-Host "================================================" -ForegroundColor DarkGray
 
+# --- Security gate: no unmasked push ---
+if ($Push -and $NoMask -and -not $DryRun) {
+  Write-Err "FATAL: -Push with -NoMask would export real secrets and push them to the repository."
+  Write-Err "       This is a security risk. Aborting."
+  Write-Err "       If you must back up unmasked credentials, use -NoMask -Commit (no push) and review the diff manually."
+  exit 1
+}
+
 # --- 1. AGENTS.md ---
 Write-Step "Export AGENTS.md (consolidated rules)"
 if (Test-Path $rulesSrc) {
