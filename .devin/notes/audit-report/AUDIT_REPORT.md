@@ -68,10 +68,10 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 
 | # | Item | Evidência | Gravidade | Descrição |
 |---|------|-----------|-----------|-----------|
-| 1.3.1 | `install.ps1` e `install.sh` não validam checksum/hash dos arquivos copiados | `install.ps1:58-78`, `install.sh` | Minor | Não há verificação de integridade além de comparação byte-a-byte. Não impede tampering, apenas detecta diferenças. |
-| 1.3.2 | `credentials.toml` é copiado apenas com `-RestoreSecrets`/`--restore-secrets` | `install.ps1:22`, `install.sh` | Minor | Boa prática, mas a flag `--restore-secrets` pode ser confundida com "não mascarar"; documentação clara ajuda. |
+| 1.3.1 | ~~`install.ps1` e `install.sh` não validam checksum/hash~~ | `install.ps1:92-104`, `install.sh:50-56` | ~~Minor~~ **Corrigido** | Ambos usam SHA-256 para arquivos e diretórios. |
+| 1.3.2 | ~~`credentials.toml` é copiado apenas com `-RestoreSecrets`/`--restore-secrets`~~ | `install.ps1:34-36`, `install.sh:25`, `README.md:433-501` | ~~Minor~~ **Corrigido** | Helptext e README documentam que a flag restaura secrets reais e requer ambiente confiável. |
 | 1.3.3 | ~~`export` com `-NoMask`/`--no-mask` permite commit de secrets~~ | `export.ps1:252-258`, `export.sh:423-429`, `scripts/check-push-green.py:76-101` | ~~Critical~~ **Corrigido** | Gate de segurança bloqueia push quando secrets não estão mascarados. `check-push-green.py` também verifica `credentials.toml` e `mcp_config.json`. |
-| 1.3.4 | `config.json` usa placeholder `{{APPDATA}}/devin` que é expandido no install e recolapsado no export | `install.sh:76-80`, `export.sh:70-74` | Minor | Mecanismo de placeholder funciona, mas adiciona complexidade e risco de drift se o path contiver caracteres especiais. |
+| 1.3.4 | ~~`config.json` usa placeholder `{{APPDATA}}/devin`~~ | `.devin/adr/001-apdata-placeholder.md`, `install.ps1`, `export.ps1` | ~~Minor~~ **Corrigido** | ADR documenta a decisão; scripts fazem normalização bidirecional. |
 | 1.3.5 | ~~Não há testes automatizados para `install.ps1`/`install.sh`~~ | `tests/validation/test_install_export_scripts.py` | ~~Important~~ **Corrigido** | Testes de estrutura e sintaxe (quando bash disponível) adicionados para `install.sh` e `export.sh`. |
 | 1.3.6 | ~~`export.ps1 -Push` faz git push sem re-validar o estado local~~ | `export.ps1:482-505`, `export.sh:477-497` | ~~Important~~ **Corrigido** | Pre-push validation agora roda `audit.py` e `pytest -q` quando push está ativo. |
 
@@ -139,7 +139,7 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 3.3.2 | `leo` skill mistura orquestração com descrições extensas | `skills/leo/SKILL.md` | Minor | Skill orquestradora é crítica e carregada frequentemente; poderia ser mais concisa ou dividida em módulos. |
 | 3.3.3 | Habilidades similares (`cost-optimization`, `agent-cost-guard`, `effort-calibration`) podem confundir o usuário sobre qual invocar | `docs/SKILL-TIERS.md` | Minor | Há sobreposição de responsabilidades; não há skill de roteamento claro além de `ask-matt`. |
 | 3.3.4 | `ontology-validator`, `task-sizer`, `secure-defaults-check` foram criadas mas não têm scripts de automação | `skills/*` | Minor | Skills são documentação-only; o audit não verifica se têm implementação executável. |
-| 3.3.5 | `agent-cost-guard` não integra com `scripts/validate-tool-args.py` de forma explícita | `skills/agent-cost-guard/SKILL.md`, `scripts/validate-tool-args.py` | Minor | A validação de `max_parallel` está no script, mas a skill não menciona o script como mecanismo de enforcement. |
+| 3.3.5 | ~~`agent-cost-guard` não integra com `scripts/validate-tool-args.py`~~ | `skills/agent-cost-guard/SKILL.md:28` | ~~Minor~~ **Corrigido** | SKILL.md menciona `validate-tool-args.py` e limites de `max_parallel`. |
 
 ### 3.4 Recomendações
 
@@ -174,8 +174,8 @@ A arquitetura é baseada em arquivos simples (Markdown, JSON, Python) sem depend
 | 4.3.1 | ~~`check-push-green.py` timeout de 60s pode ser curto~~ | `scripts/check-push-green.py:24` | ~~Minor~~ **Corrigido** | Timeout aumentado para 120s. |
 | 4.3.2 | `silent-error-review.py` pode gerar falsos positivos | `tests/held-out/mutation/test_silent_error_new_indicators.py` | Minor | Testes de mutação mostram histórico de ajustes; o regex ainda pode confundir warning+error. |
 | 4.3.3 | ~~`context-pressure.py` não tem teste de unidade~~ | `tests/validation/test_context_pressure.py` | ~~Minor~~ **Corrigido** | Testes de unidade adicionados para funções utilitárias. |
-| 4.3.4 | `validate-tool-args.py` não bloqueia `max_parallel` não-inteiro (corrigido em `c86342d`) | `scripts/validate-tool-args.py` | Minor | Correção recente valida tipo, mas não há teste específico para string/ float. |
-| 4.3.5 | `PermissionRequest` não tem handler ativo | `config.json`, `hooks.v1.json` | Minor | Evento é suportado mas sem hook; isso é aceitável, mas documentar como intencional. |
+| 4.3.4 | ~~`validate-tool-args.py` não bloqueia `max_parallel` não-inteiro~~ | `tests/held-out/mutation/test_validate_tool_args_new.py:107-128` | ~~Minor~~ **Corrigido** | Testes cobrem string, float e > 3. |
+| 4.3.5 | ~~`PermissionRequest` não tem handler ativo~~ | `README.md:189`, `docs/TOOLS-MAP.md:94` | ~~Minor~~ **Corrigido** | Documentado como intencional nos eventos de hook. |
 | 4.3.6 | `SessionEnd` e `Stop` compartilham `memory-stop.py`; `Stop` também chama `refine-review-prompt.py` | `config.json`, `hooks.v1.json` | Minor | Duplicação leve; `memory-stop.py` em dois eventos pode gerar logs duplicados. |
 
 ### 4.4 Recomendações

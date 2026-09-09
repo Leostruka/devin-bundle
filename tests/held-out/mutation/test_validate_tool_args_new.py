@@ -104,6 +104,30 @@ def test_run_subagent_is_background_omitted_allowed():
     assert code == 0, f"Omitted is_background should be allowed, got exit {code}"
 
 
+def test_run_subagent_max_parallel_string_blocked():
+    """run_subagent with max_parallel='3' (string) must be blocked."""
+    code, out = run_validate("run_subagent", {"task": "do something", "profile": "researcher", "max_parallel": "3"})
+    assert code == 2, f"Expected block for string max_parallel, got {code}: {out}"
+
+
+def test_run_subagent_max_parallel_float_blocked():
+    """run_subagent with max_parallel=3.5 (float) must be blocked."""
+    code, out = run_validate("run_subagent", {"task": "do something", "profile": "researcher", "max_parallel": 3.5})
+    assert code == 2, f"Expected block for float max_parallel, got {code}: {out}"
+
+
+def test_run_subagent_max_parallel_too_large_blocked():
+    """run_subagent with max_parallel=5 must be blocked."""
+    code, out = run_validate("run_subagent", {"task": "do something", "profile": "researcher", "max_parallel": 5})
+    assert code == 2, f"Expected block for max_parallel > 3, got {code}: {out}"
+
+
+def test_run_subagent_max_parallel_int_allowed():
+    """run_subagent with max_parallel=3 (int) must be allowed."""
+    code, _ = run_validate("run_subagent", {"task": "do something", "profile": "researcher", "max_parallel": 3})
+    assert code == 0, f"max_parallel=3 should be allowed, got exit {code}"
+
+
 def test_fail_open_on_invalid_json():
     """The hook must fail-open (exit 0) on invalid JSON."""
     result = subprocess.run(

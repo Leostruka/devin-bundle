@@ -25,7 +25,7 @@ Monitors token cost and agent parallelism to prevent runaway spending. Enforces 
 
 ## What to check
 
-1. **Subagent count.** Are more than 3 subagents being dispatched at once?
+1. **Subagent count.** Are more than 3 subagents being dispatched at once? The PreToolUse hook `scripts/validate-tool-args.py` enforces `run_subagent` `max_parallel <= 3` and requires `max_parallel` to be an integer.
 2. **Loop bounds.** Are retries, polling, or verification loops bounded?
 3. **Token cost.** Is the effort level appropriate for the task difficulty?
 4. **Context pressure.** Is the active context approaching the threshold?
