@@ -444,44 +444,41 @@ function Read-EditableLine {
             }
         }
 
-        $cursorLeft = [Math]::Min($startLeft + $pos, $w - 1)
+        $lastSep = $text.LastIndexOf('\')
+        if ($lastSep -lt 0) { $lastSep = $text.LastIndexOf('/') }
+        $listLeft = $startLeft
+        if ($lastSep -ge 0) { $listLeft = $startLeft + $lastSep + 1 }
 
         for ($i = 1; $i -le $maxLines; $i++) {
             $top = $startTop + $i
             if ($top -ge $h) { break }
-            [Console]::SetCursorPosition($startLeft, $top)
-            [Console]::Write(' ' * ($w - $startLeft))
+            [Console]::SetCursorPosition($listLeft, $top)
+            [Console]::Write(' ' * ($w - $listLeft))
         }
 
         if ($PathCompletion) {
             $suggestions = @($suggestions)
-            $prefix = ''
-            if ($text -match '^(.*[\\/:])([^\\/:]*)$') { $prefix = $Matches[2] } else { $prefix = $text }
             $oldFg = [Console]::ForegroundColor
             [Console]::ForegroundColor = [ConsoleColor]::DarkGray
             for ($i = 0; $i -lt [Math]::Min($suggestions.Count, $maxLines); $i++) {
                 $top = $startTop + 1 + $i
                 if ($top -ge $h) { break }
-                [Console]::SetCursorPosition($cursorLeft, $top)
+                [Console]::SetCursorPosition($listLeft, $top)
                 $sug = $suggestions[$i]
                 $name = $sug
                 try { $name = Split-Path -Leaf -Path $sug } catch {}
                 if ([string]::IsNullOrEmpty($name)) { $name = [string]$sug }
-                $display = $name
-                if ($prefix.Length -gt 0 -and $prefix.Length -lt $name.Length -and $name -like "$prefix*") {
-                    $display = $name.Substring($prefix.Length)
-                }
-                if ($display.Length -gt ($w - $cursorLeft)) { $display = $display.Substring(0, $w - $cursorLeft) }
-                [Console]::Write($display)
-                $pad = $w - $cursorLeft - $display.Length
+                if ($name.Length -gt ($w - $listLeft)) { $name = $name.Substring(0, $w - $listLeft) }
+                [Console]::Write($name)
+                $pad = $w - $listLeft - $name.Length
                 if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
             }
             if ($suggestions.Count -gt $maxLines) {
                 $top = $startTop + $maxLines
                 if ($top -lt $h) {
-                    [Console]::SetCursorPosition($cursorLeft, $top)
+                    [Console]::SetCursorPosition($listLeft, $top)
                     [Console]::Write('...')
-                    $pad = $w - $cursorLeft - 3
+                    $pad = $w - $listLeft - 3
                     if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
                 }
             }
@@ -489,14 +486,14 @@ function Read-EditableLine {
                 $top = $startTop + 1 + $i
                 for (; $i -le $maxLines; $i++) {
                     if ($top -ge $h) { break }
-                    [Console]::SetCursorPosition($startLeft, $top)
-                    [Console]::Write(' ' * ($w - $startLeft))
+                    [Console]::SetCursorPosition($listLeft, $top)
+                    [Console]::Write(' ' * ($w - $listLeft))
                     $top++
                 }
                 $top = $startTop + $maxLines + 1
                 if ($top -lt $h) {
-                    [Console]::SetCursorPosition($startLeft, $top)
-                    [Console]::Write(' ' * ($w - $startLeft))
+                    [Console]::SetCursorPosition($listLeft, $top)
+                    [Console]::Write(' ' * ($w - $listLeft))
                 }
             }
             [Console]::ForegroundColor = $oldFg
