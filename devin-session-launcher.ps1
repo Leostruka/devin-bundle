@@ -79,7 +79,9 @@ function Show-TerminalList {
             $inner = $w - 4
 
             $winHeight = [Console]::WindowHeight
-            $reserved = 10 + (if ($Subtitle) { 1 } else { 0 }) + (if ($showHelp) { 1 } else { 0 })
+            $reserved = 10
+            if ($Subtitle) { $reserved++ }
+            if ($showHelp) { $reserved++ }
             $windowSize = if ($winHeight -gt $reserved) { $winHeight - $reserved } else { 10 }
 
             $start = 0
@@ -96,7 +98,9 @@ function Show-TerminalList {
                 if ($end -lt $filtered.Count - 1) { $scrollLines++ }
             }
 
-            $totalLines = 1 + 1 + (if ($Subtitle) { 1 } else { 0 }) + 1 + (if ($showHelp) { 1 } else { 0 }) + $scrollLines + $listLines + 1 + 1 + 1
+            $totalLines = 1 + 1 + 1 + $scrollLines + $listLines + 1 + 1 + 1
+            if ($Subtitle) { $totalLines++ }
+            if ($showHelp) { $totalLines++ }
             # topo, titulo, subtitulo?, separador, ajuda?, scrolls, lista, separador, rodape, base
 
             if ($firstDraw) {
