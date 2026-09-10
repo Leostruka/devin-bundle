@@ -444,31 +444,35 @@ function Read-EditableLine {
             }
         }
 
+        $cursorLeft = [Math]::Min($startLeft + $pos, $w - 1)
+
         for ($i = 1; $i -le $maxLines; $i++) {
             $top = $startTop + $i
             if ($top -ge $h) { break }
-            [Console]::SetCursorPosition($startLeft, $top)
-            [Console]::Write(' ' * ($w - $startLeft))
+            [Console]::SetCursorPosition($cursorLeft, $top)
+            [Console]::Write(' ' * ($w - $cursorLeft))
         }
 
         if ($PathCompletion) {
+            $oldFg = [Console]::ForegroundColor
+            [Console]::ForegroundColor = [ConsoleColor]::DarkGray
             for ($i = 0; $i -lt [Math]::Min($suggestions.Count, $maxLines); $i++) {
                 $top = $startTop + 1 + $i
                 if ($top -ge $h) { break }
-                [Console]::SetCursorPosition($startLeft, $top)
+                [Console]::SetCursorPosition($cursorLeft, $top)
                 $name = $suggestions[$i]
                 try { $name = Split-Path -Leaf -Path $suggestions[$i] } catch {}
-                $line = '  ' + $name
-                if ($line.Length -gt ($w - $startLeft)) { $line = $line.Substring(0, $w - $startLeft) }
-                [Console]::Write($line)
+                if ($name.Length -gt ($w - $cursorLeft)) { $name = $name.Substring(0, $w - $cursorLeft) }
+                [Console]::Write($name)
             }
             if ($suggestions.Count -gt $maxLines) {
                 $top = $startTop + $maxLines
                 if ($top -lt $h) {
-                    [Console]::SetCursorPosition($startLeft, $top)
-                    [Console]::Write('  ...')
+                    [Console]::SetCursorPosition($cursorLeft, $top)
+                    [Console]::Write('...')
                 }
             }
+            [Console]::ForegroundColor = $oldFg
         }
 
         [Console]::SetCursorPosition($startLeft + $pos, $startTop)
@@ -484,11 +488,12 @@ function Read-EditableLine {
         $w = [Console]::WindowWidth
         $h = [Console]::WindowHeight
         $maxLines = Get-MaxSuggestionLines
+        $cursorLeft = [Math]::Min($startLeft + $pos, $w - 1)
         for ($i = 1; $i -le $maxLines; $i++) {
             $top = $startTop + $i
             if ($top -ge $h) { break }
-            [Console]::SetCursorPosition($startLeft, $top)
-            [Console]::Write(' ' * ($w - $startLeft))
+            [Console]::SetCursorPosition($cursorLeft, $top)
+            [Console]::Write(' ' * ($w - $cursorLeft))
         }
     }
 
