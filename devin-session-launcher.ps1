@@ -449,11 +449,11 @@ function Read-EditableLine {
         $listLeft = $startLeft
         if ($lastSep -ge 0) { $listLeft = $startLeft + $lastSep + 1 }
 
-        for ($i = 1; $i -le $maxLines; $i++) {
+        for ($i = 1; $i -le $maxLines + 1; $i++) {
             $top = $startTop + $i
             if ($top -ge $h) { break }
-            [Console]::SetCursorPosition($listLeft, $top)
-            [Console]::Write(' ' * ($w - $listLeft))
+            [Console]::SetCursorPosition($startLeft, $top)
+            [Console]::Write(' ' * ($w - $startLeft))
         }
 
         if ($PathCompletion) {
@@ -484,16 +484,11 @@ function Read-EditableLine {
             }
             else {
                 $top = $startTop + 1 + $i
-                for (; $i -le $maxLines; $i++) {
+                for (; $i -le $maxLines + 1; $i++) {
                     if ($top -ge $h) { break }
-                    [Console]::SetCursorPosition($listLeft, $top)
-                    [Console]::Write(' ' * ($w - $listLeft))
+                    [Console]::SetCursorPosition($startLeft, $top)
+                    [Console]::Write(' ' * ($w - $startLeft))
                     $top++
-                }
-                $top = $startTop + $maxLines + 1
-                if ($top -lt $h) {
-                    [Console]::SetCursorPosition($listLeft, $top)
-                    [Console]::Write(' ' * ($w - $listLeft))
                 }
             }
             [Console]::ForegroundColor = $oldFg
