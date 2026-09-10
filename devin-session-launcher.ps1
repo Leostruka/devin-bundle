@@ -328,9 +328,76 @@ function Show-TerminalList {
 }
 
 
+function Get-PathSuggestions {
+    [CmdletBinding()]
+    param([string]$Text)
+
+    $result = @{
+        Suggestions = @()
+        Ghost = ''
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Text)) { return $result }
+
+    $dir = ''
+    $prefix = ''
+    if ($Text -match '^(.*[\\/:])([^\\/:]*)$') {
+        $dir = $Matches[1]
+        $prefix = $Matches[2]
+    }
+    else {
+        $dir = '.'
+        $prefix = $Text
+    }
+
+    $resolved = $null
+    if ($dir -eq '.') {
+        if ($prefix -match '^[a-zA-Z]:?$') {
+            $drives = [System.IO.DriveInfo]::GetDrives() | Where-Object { $_.Name -like "$prefix*" }
+            $result.Suggestions = @($drives | ForEach-Object { $_.Name })
+            return $result
+        }
+    }
+
+    try { $resolved = Resolve-Path -LiteralPath $dir -ErrorAction SilentlyContinue } catch {}
+    if (-not $resolved) { return $result }
+
+    $items = Get-ChildItem -LiteralPath $resolved.ProviderPath -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "$prefix*" } |
+        Sort-Object { $_.PSIsContainer -eq $false }, { $_.Name }
+
+    if ($items) {
+        $result.Suggestions = @($items | ForEach-Object { $_.FullName })
+        $names = @($items | ForEach-Object { $_.Name })
+
+        $commonName = ''
+        $first = $names[0]
+        for ($i = 0; $i -lt $first.Length; $i++) {
+            $c = $first[$i]
+            $allMatch = $true
+            foreach ($n in $names) {
+                if ($i -ge $n.Length -or $n[$i] -ne $c) { $allMatch = $false; break }
+            }
+            if ($allMatch) { $commonName += $c } else { break }
+        }
+
+        if ($commonName.Length -gt $prefix.Length) {
+            $result.Ghost = $commonName.Substring($prefix.Length)
+        }
+        elseif ($items.Count -eq 1 -and $items[0].PSIsContainer) {
+            $result.Ghost = '\\'
+        }
+    }
+
+    return $result
+}
+
 function Read-EditableLine {
     [CmdletBinding()]
-    param([string]$Initial = '')
+    param(
+        [string]$Initial = '',
+        [switch]$PathCompletion
+    )
 
     if ([Console]::IsInputRedirected) { return $null }
 
@@ -340,59 +407,131 @@ function Read-EditableLine {
     $startTop = [Console]::CursorTop
     $sb = [System.Text.StringBuilder]::new($Initial)
     $pos = $Initial.Length
-    [Console]::Write($Initial)
+
+    $suggestions = @()
+    $ghost = ''
+    $w = [Console]::WindowWidth
+    $maxSuggestionLines = [Math]::Max(1, [Console]::WindowHeight - $startTop - 3)
+
+    function Update-Display {
+        $text = $sb.ToString()
+
+        [Console]::SetCursorPosition($startLeft, $startTop)
+        [Console]::Write($text)
+        $pad = $w - $startLeft - $text.Length
+        if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
+
+        if ($PathCompletion -and $pos -eq $text.Length -and $ghost) {
+            [Console]::SetCursorPosition($startLeft + $pos, $startTop)
+            $oldFg = [Console]::ForegroundColor
+            [Console]::ForegroundColor = [ConsoleColor]::DarkGray
+            [Console]::Write($ghost)
+            [Console]::ForegroundColor = $oldFg
+            $pad = $w - $startLeft - $text.Length - $ghost.Length
+            if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
+        }
+
+        for ($i = 1; $i -le $maxSuggestionLines; $i++) {
+            [Console]::SetCursorPosition($startLeft, $startTop + $i)
+            [Console]::Write(' ' * ($w - $startLeft))
+        }
+
+        if ($PathCompletion) {
+            for ($i = 0; $i -lt [Math]::Min($suggestions.Count, $maxSuggestionLines); $i++) {
+                [Console]::SetCursorPosition($startLeft, $startTop + 1 + $i)
+                $name = $suggestions[$i]
+                try { $name = Split-Path -Leaf -Path $suggestions[$i] } catch {}
+                $line = '  ' + $name
+                if ($line.Length -gt ($w - $startLeft)) { $line = $line.Substring(0, $w - $startLeft) }
+                [Console]::Write($line)
+            }
+            if ($suggestions.Count -gt $maxSuggestionLines) {
+                [Console]::SetCursorPosition($startLeft, $startTop + 1 + $maxSuggestionLines - 1)
+                [Console]::Write('  ...')
+            }
+        }
+
+        [Console]::SetCursorPosition($startLeft + $pos, $startTop)
+    }
+
+    function Get-CurrentState {
+        $info = Get-PathSuggestions -Text ($sb.ToString())
+        $suggestions = $info.Suggestions
+        $ghost = $info.Ghost
+        Set-Variable -Name 'suggestions' -Value $suggestions -Scope 1
+        Set-Variable -Name 'ghost' -Value $ghost -Scope 1
+    }
+
+    function Clear-Suggestions {
+        for ($i = 1; $i -le $maxSuggestionLines; $i++) {
+            [Console]::SetCursorPosition($startLeft, $startTop + $i)
+            [Console]::Write(' ' * ($w - $startLeft))
+        }
+    }
+
+    if ($PathCompletion) { Get-CurrentState }
+    Update-Display
 
     try {
         while ($true) {
-            [Console]::SetCursorPosition($startLeft + $pos, $startTop)
+            $text = $sb.ToString()
             $key = [Console]::ReadKey($true)
 
             switch ($key.Key) {
-                'Enter' { return $sb.ToString() }
-                'Escape' { return $null }
+                'Enter' {
+                    Clear-Suggestions
+                    return $sb.ToString()
+                }
+                'Escape' {
+                    Clear-Suggestions
+                    return $null
+                }
                 'Backspace' {
                     if ($pos -gt 0) {
                         $sb.Remove($pos - 1, 1) | Out-Null
                         $pos--
-                        [Console]::SetCursorPosition($startLeft, $startTop)
-                        [Console]::Write($sb.ToString())
-                        $pad = [Console]::WindowWidth - $startLeft - $sb.Length
-                        if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
-                        [Console]::SetCursorPosition($startLeft + $pos, $startTop)
                     }
                 }
                 'Delete' {
                     if ($pos -lt $sb.Length) {
                         $sb.Remove($pos, 1) | Out-Null
-                        [Console]::SetCursorPosition($startLeft, $startTop)
-                        [Console]::Write($sb.ToString())
-                        $pad = [Console]::WindowWidth - $startLeft - $sb.Length
-                        if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
-                        [Console]::SetCursorPosition($startLeft + $pos, $startTop)
                     }
                 }
                 'LeftArrow' { if ($pos -gt 0) { $pos-- } }
-                'RightArrow' { if ($pos -lt $sb.Length) { $pos++ } }
+                'RightArrow' {
+                    if ($PathCompletion -and $pos -eq $text.Length -and $ghost) {
+                        $sb.Insert($pos, $ghost) | Out-Null
+                        $pos += $ghost.Length
+                    }
+                    elseif ($pos -lt $sb.Length) {
+                        $pos++
+                    }
+                }
                 'Home' { $pos = 0 }
                 'End' { $pos = $sb.Length }
+                'Tab' {
+                    if ($PathCompletion -and $pos -eq $text.Length -and $ghost) {
+                        $sb.Insert($pos, $ghost) | Out-Null
+                        $pos += $ghost.Length
+                    }
+                }
                 default {
                     if ($key.KeyChar -ge ' ' -and -not [char]::IsControl($key.KeyChar)) {
                         $sb.Insert($pos, $key.KeyChar) | Out-Null
                         $pos++
-                        [Console]::SetCursorPosition($startLeft, $startTop)
-                        [Console]::Write($sb.ToString())
-                        $pad = [Console]::WindowWidth - $startLeft - $sb.Length
-                        if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
-                        [Console]::SetCursorPosition($startLeft + $pos, $startTop)
                     }
                 }
             }
+
+            if ($PathCompletion) { Get-CurrentState }
+            Update-Display
         }
     }
     finally {
         [Console]::CursorVisible = $old
     }
 }
+
 
 function Invoke-WithSpinner {
     [CmdletBinding()]

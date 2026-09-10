@@ -152,7 +152,7 @@ function Select-FolderTerminal {
             Clear-Host
             Write-Host "Editar caminho (Enter confirma, Esc cancela)" -ForegroundColor Cyan
             Write-Host -NoNewline "Caminho: " -ForegroundColor DarkGray
-            $newPath = Read-EditableLine -Initial $current
+            $newPath = Read-EditableLine -Initial $current -PathCompletion
             if ($null -eq $newPath) {
                 # Esc: volta a navegacao
             }
