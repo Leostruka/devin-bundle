@@ -68,7 +68,10 @@ function Show-TerminalList {
     $filterText = ''
     $showHelp = $false
     $firstDraw = $true
+    $needsRedraw = $true
     $lastTotalLines = 0
+    $lastW = [Console]::WindowWidth
+    $lastH = [Console]::WindowHeight
 
     try {
         while ($true) {
@@ -76,9 +79,101 @@ function Show-TerminalList {
             if ($selected -ge $filtered.Count) { $selected = [Math]::Max(0, $filtered.Count - 1) }
 
             $w = Get-TuiWidth
+            $winHeight = [Console]::WindowHeight
+            if ($w -ne $lastW -or $winHeight -ne $lastH) {
+                $lastW = $w
+                $lastH = $winHeight
+                $firstDraw = $true
+                $needsRedraw = $true
+            }
+
+            if (-not $needsRedraw) {
+                if ([Console]::KeyAvailable) {
+                    $keyInfo = [Console]::ReadKey($true)
+                    $key = $keyInfo.Key
+                    $char = $keyInfo.KeyChar
+                }
+                else {
+                    [System.Threading.Thread]::Sleep(50)
+                    continue
+                }
+            }
+            else {
+                $key = $null
+                $char = $null
+            }
+
+            if ($null -ne $key) {
+                if ($char -eq '?' -or $key -in @('Oem2','OemQuestion')) {
+                    $showHelp = -not $showHelp
+                    $needsRedraw = $true
+                    continue
+                }
+
+                if ([string]::IsNullOrEmpty($filterText) -and $Items.Count -le 9 -and $char -ge '1' -and $char -le '9') {
+                    $digitIndex = [int]$char.ToString() - 1
+                    if ($digitIndex -ge 0 -and $digitIndex -lt $filtered.Count) {
+                        return $filtered[$digitIndex]
+                    }
+                    if ($char -eq '0') {
+                        if ($filtered.Count -gt 0) { return $filtered[0] }
+                    }
+                    $needsRedraw = $true
+                    continue
+                }
+
+                if ([string]::IsNullOrEmpty($filterText) -and $Items.Count -le 9 -and $char -eq '0' -and $filtered.Count -gt 0) {
+                    return $filtered[0]
+                }
+
+                if ($char -ge ' ' -and -not [char]::IsControl($char)) {
+                    $filterText += $char
+                    $selected = 0
+                    $needsRedraw = $true
+                    continue
+                }
+
+                switch ($key) {
+                    'UpArrow' { if ($selected -gt 0) { $selected-- } }
+                    'DownArrow' { if ($selected -lt ($filtered.Count - 1)) { $selected++ } }
+                    'Home' { $selected = 0 }
+                    'End' { $selected = [Math]::Max(0, $filtered.Count - 1) }
+                    'PageUp' { $selected = [Math]::Max(0, $selected - $windowSize) }
+                    'PageDown' { $selected = [Math]::Min($filtered.Count - 1, $selected + $windowSize) }
+                    'Backspace' { if ($filterText.Length -gt 0) { $filterText = $filterText.Substring(0, $filterText.Length - 1); $selected = 0 } }
+                    'Delete' { $filterText = ''; $selected = 0 }
+                    'Enter' {
+                        if ($filtered.Count -gt 0) { return $filtered[$selected] }
+                    }
+                    'Escape' {
+                        if ($filterText.Length -gt 0) {
+                            $filterText = ''
+                            $selected = 0
+                        }
+                        else {
+                            return $null
+                        }
+                    }
+                    'L' {
+                        if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control -and $OnCtrlL) {
+                            $result = &$OnCtrlL
+                            if ($null -ne $result) { return $result }
+                        }
+                    }
+                    'C' {
+                        if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control) {
+                            return $null
+                        }
+                    }
+                }
+                $needsRedraw = $true
+                continue
+            }
+
+            $needsRedraw = $false
+
             $inner = $w - 4
 
-            $winHeight = [Console]::WindowHeight
             $reserved = 10
             if ($Subtitle) { $reserved++ }
             if ($showHelp) { $reserved++ }
@@ -224,70 +319,6 @@ function Show-TerminalList {
                 [Console]::SetCursorPosition(0, 0)
             }
             $lastTotalLines = $totalLines
-
-            $keyInfo = [Console]::ReadKey($true)
-            $key = $keyInfo.Key
-            $char = $keyInfo.KeyChar
-
-            if ($char -eq '?' -or $key -in @('Oem2','OemQuestion')) {
-                $showHelp = -not $showHelp
-                continue
-            }
-
-            if ([string]::IsNullOrEmpty($filterText) -and $Items.Count -le 9 -and $char -ge '1' -and $char -le '9') {
-                $digitIndex = [int]$char.ToString() - 1
-                if ($digitIndex -ge 0 -and $digitIndex -lt $filtered.Count) {
-                    return $filtered[$digitIndex]
-                }
-                if ($char -eq '0') {
-                    if ($filtered.Count -gt 0) { return $filtered[0] }
-                }
-                continue
-            }
-
-            if ([string]::IsNullOrEmpty($filterText) -and $Items.Count -le 9 -and $char -eq '0' -and $filtered.Count -gt 0) {
-                return $filtered[0]
-            }
-
-            if ($char -ge ' ' -and -not [char]::IsControl($char)) {
-                $filterText += $char
-                $selected = 0
-                continue
-            }
-
-            switch ($key) {
-                'UpArrow' { if ($selected -gt 0) { $selected-- } }
-                'DownArrow' { if ($selected -lt ($filtered.Count - 1)) { $selected++ } }
-                'Home' { $selected = 0 }
-                'End' { $selected = [Math]::Max(0, $filtered.Count - 1) }
-                'PageUp' { $selected = [Math]::Max(0, $selected - $windowSize) }
-                'PageDown' { $selected = [Math]::Min($filtered.Count - 1, $selected + $windowSize) }
-                'Backspace' { if ($filterText.Length -gt 0) { $filterText = $filterText.Substring(0, $filterText.Length - 1); $selected = 0 } }
-                'Delete' { $filterText = ''; $selected = 0 }
-                'Enter' {
-                    if ($filtered.Count -gt 0) { return $filtered[$selected] }
-                }
-                'Escape' {
-                    if ($filterText.Length -gt 0) {
-                        $filterText = ''
-                        $selected = 0
-                    }
-                    else {
-                        return $null
-                    }
-                }
-                'L' {
-                    if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control -and $OnCtrlL) {
-                        $result = &$OnCtrlL
-                        if ($null -ne $result) { return $result }
-                    }
-                }
-                'C' {
-                    if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control) {
-                        return $null
-                    }
-                }
-            }
         }
     }
     finally {
@@ -295,6 +326,7 @@ function Show-TerminalList {
         [Console]::TreatControlCAsInput = $oldTreatCtrlC
     }
 }
+
 
 function Read-EditableLine {
     [CmdletBinding()]
@@ -416,113 +448,130 @@ function Show-Summary {
         return $true
     }
 
-    $w = Get-TuiWidth
-    $inner = $w - 4
-    $border = 'Cyan'
-
-    $rows = $Instances | ForEach-Object {
-        $proj = $_.Project.Path
-        $maxProj = [Math]::Max(10, $w - 70)
-        if ($proj.Length -gt $maxProj) { $proj = '...' + $proj.Substring($proj.Length - ($maxProj - 3)) }
-        [PSCustomObject]@{
-            Label = $_.Label
-            Projeto = $proj
-            Branch = if ($_.Branch) { $_.Branch } else { '-' }
-            Tipo = if ($_.BranchInfo -and $_.BranchInfo.Type) { $_.BranchInfo.Type } else { '-' }
-            Posicao = if ($_.Position) { $_.Position } else { '-' }
-        }
-    }
-
-    $col = @(
-        @{ Name='Ins'; W=[Math]::Max(3,($rows.Label | Measure-Object -Maximum Length).Maximum) }
-        @{ Name='Projeto'; W=[Math]::Max(7,($rows.Projeto | Measure-Object -Maximum Length).Maximum) }
-        @{ Name='Branch'; W=[Math]::Max(6,($rows.Branch | Measure-Object -Maximum Length).Maximum) }
-        @{ Name='Tipo'; W=[Math]::Max(4,($rows.Tipo | Measure-Object -Maximum Length).Maximum) }
-        @{ Name='Posicao'; W=[Math]::Max(7,($rows.Posicao | Measure-Object -Maximum Length).Maximum) }
-    )
-
-    function Cell($text, $width) { ' ' + $text.PadRight($width) + ' ' }
-    function SepLine($left, $mid, $right) {
-        $parts = foreach ($c in $col) { '─' * ($c.W + 2) }
-        $left + ($parts -join $mid) + $right
-    }
-
-    $tableTop = SepLine '┌' '┬' '┐'
-    $tableSep = SepLine '├' '┼' '┤'
-    $tableBottom = SepLine '└' '┴' '┘'
-    $tableWidth = $tableTop.Length
-
-    $header = foreach ($c in $col) { Cell $c.Name $c.W }
-    $headerLine = '│' + ($header -join '│') + '│'
-
-    Clear-Host
-
-    # Moldura externa
-    Write-Host ('┌' + ('─' * ($w - 2)) + '┐') -ForegroundColor $border
-    $title = 'Resumo da configuracao — Enter inicia · Esc reconfigurar'
-    if ($title.Length -gt $inner) { $title = $title.Substring(0, $inner) }
-    $title = $title.PadRight($inner)
-    Write-Host -NoNewline '│ ' -ForegroundColor $border
-    Write-Host -NoNewline $title -ForegroundColor 'Cyan'
-    Write-Host ' │' -ForegroundColor $border
-
-    Write-Host '├' + ('─' * ($w - 2)) + '┤' -ForegroundColor $border
-
-    # Tabela
-    Write-Host -NoNewline '│ ' -ForegroundColor $border
-    Write-Host -NoNewline $tableTop -ForegroundColor $border
-    Write-Host ' │' -ForegroundColor $border
-
-    Write-Host -NoNewline '│ ' -ForegroundColor $border
-    Write-Host -NoNewline $headerLine -ForegroundColor 'White'
-    Write-Host ' │' -ForegroundColor $border
-
-    Write-Host -NoNewline '│ ' -ForegroundColor $border
-    Write-Host -NoNewline $tableSep -ForegroundColor $border
-    Write-Host ' │' -ForegroundColor $border
-
-    foreach ($r in $rows) {
-        $cells = @(
-            Cell $r.Label $col[0].W
-            Cell $r.Projeto $col[1].W
-            Cell $r.Branch $col[2].W
-            Cell $r.Tipo $col[3].W
-            Cell $r.Posicao $col[4].W
-        )
-        $rowLine = '│' + ($cells -join '│') + '│'
-        Write-Host -NoNewline '│ ' -ForegroundColor $border
-        Write-Host -NoNewline $rowLine -ForegroundColor 'White'
-        Write-Host ' │' -ForegroundColor $border
-    }
-
-    Write-Host -NoNewline '│ ' -ForegroundColor $border
-    Write-Host -NoNewline $tableBottom -ForegroundColor $border
-    Write-Host ' │' -ForegroundColor $border
-
-    # Rodape
-    $projetosUnicos = @($rows | Select-Object -Property Projeto -Unique).Count
-    $footer = "Total: $($Instances.Count) instancia(s) em $projetosUnicos projeto(s)"
-    if ($footer.Length -gt $inner) { $footer = $footer.Substring(0, $inner) }
-    $footer = $footer.PadRight($inner)
-    Write-Host '├' + ('─' * ($w - 2)) + '┤' -ForegroundColor $border
-    Write-Host -NoNewline '│ ' -ForegroundColor $border
-    Write-Host -NoNewline $footer -ForegroundColor 'Cyan'
-    Write-Host ' │' -ForegroundColor $border
-    Write-Host '└' + ('─' * ($w - 2)) + '┘' -ForegroundColor $border
-
     $old = [Console]::CursorVisible
     [Console]::CursorVisible = $false
+    $lastW = [Console]::WindowWidth
+    $lastH = [Console]::WindowHeight
+    $needsRedraw = $true
+
     try {
         while ($true) {
-            $key = [Console]::ReadKey($true)
-            if ($key.Key -eq 'Enter') { return $true }
-            if ($key.Key -eq 'Escape') { return $false }
+            $w = Get-TuiWidth
+            $winHeight = [Console]::WindowHeight
+            if ($w -ne $lastW -or $winHeight -ne $lastH) {
+                $lastW = $w
+                $lastH = $winHeight
+                $needsRedraw = $true
+            }
+
+            if ($needsRedraw) {
+                $needsRedraw = $false
+                $inner = $w - 4
+                $border = 'Cyan'
+
+                $rows = $Instances | ForEach-Object {
+                    $proj = $_.Project.Path
+                    $maxProj = [Math]::Max(10, $w - 70)
+                    if ($proj.Length -gt $maxProj) { $proj = '...' + $proj.Substring($proj.Length - ($maxProj - 3)) }
+                    [PSCustomObject]@{
+                        Label = $_.Label
+                        Projeto = $proj
+                        Branch = if ($_.Branch) { $_.Branch } else { '-' }
+                        Tipo = if ($_.BranchInfo -and $_.BranchInfo.Type) { $_.BranchInfo.Type } else { '-' }
+                        Posicao = if ($_.Position) { $_.Position } else { '-' }
+                    }
+                }
+
+                $col = @(
+                    @{ Name='Ins'; W=[Math]::Max(3,($rows.Label | Measure-Object -Maximum Length).Maximum) }
+                    @{ Name='Projeto'; W=[Math]::Max(7,($rows.Projeto | Measure-Object -Maximum Length).Maximum) }
+                    @{ Name='Branch'; W=[Math]::Max(6,($rows.Branch | Measure-Object -Maximum Length).Maximum) }
+                    @{ Name='Tipo'; W=[Math]::Max(4,($rows.Tipo | Measure-Object -Maximum Length).Maximum) }
+                    @{ Name='Posicao'; W=[Math]::Max(7,($rows.Posicao | Measure-Object -Maximum Length).Maximum) }
+                )
+
+                function Cell($text, $width) { ' ' + $text.PadRight($width) + ' ' }
+                function SepLine($left, $mid, $right) {
+                    $parts = foreach ($c in $col) { '─' * ($c.W + 2) }
+                    $left + ($parts -join $mid) + $right
+                }
+
+                $tableTop = SepLine '┌' '┬' '┐'
+                $tableSep = SepLine '├' '┼' '┤'
+                $tableBottom = SepLine '└' '┴' '┘'
+                $tableWidth = $tableTop.Length
+
+                $header = foreach ($c in $col) { Cell $c.Name $c.W }
+                $headerLine = '│' + ($header -join '│') + '│'
+
+                Clear-Host
+
+                Write-Host ('┌' + ('─' * ($w - 2)) + '┐') -ForegroundColor $border
+                $title = 'Resumo da configuracao — Enter inicia · Esc reconfigurar'
+                if ($title.Length -gt $inner) { $title = $title.Substring(0, $inner) }
+                $title = $title.PadRight($inner)
+                Write-Host -NoNewline '│ ' -ForegroundColor $border
+                Write-Host -NoNewline $title -ForegroundColor 'Cyan'
+                Write-Host ' │' -ForegroundColor $border
+
+                Write-Host '├' + ('─' * ($w - 2)) + '┤' -ForegroundColor $border
+
+                Write-Host -NoNewline '│ ' -ForegroundColor $border
+                Write-Host -NoNewline $tableTop -ForegroundColor $border
+                Write-Host ' │' -ForegroundColor $border
+
+                Write-Host -NoNewline '│ ' -ForegroundColor $border
+                Write-Host -NoNewline $headerLine -ForegroundColor 'White'
+                Write-Host ' │' -ForegroundColor $border
+
+                Write-Host -NoNewline '│ ' -ForegroundColor $border
+                Write-Host -NoNewline $tableSep -ForegroundColor $border
+                Write-Host ' │' -ForegroundColor $border
+
+                foreach ($r in $rows) {
+                    $cells = @(
+                        Cell $r.Label $col[0].W
+                        Cell $r.Projeto $col[1].W
+                        Cell $r.Branch $col[2].W
+                        Cell $r.Tipo $col[3].W
+                        Cell $r.Posicao $col[4].W
+                    )
+                    $rowLine = '│' + ($cells -join '│') + '│'
+                    Write-Host -NoNewline '│ ' -ForegroundColor $border
+                    Write-Host -NoNewline $rowLine -ForegroundColor 'White'
+                    Write-Host ' │' -ForegroundColor $border
+                }
+
+                Write-Host -NoNewline '│ ' -ForegroundColor $border
+                Write-Host -NoNewline $tableBottom -ForegroundColor $border
+                Write-Host ' │' -ForegroundColor $border
+
+                $projetosUnicos = @($rows | Select-Object -Property Projeto -Unique).Count
+                $footer = "Total: $($Instances.Count) instancia(s) em $projetosUnicos projeto(s)"
+                if ($footer.Length -gt $inner) { $footer = $footer.Substring(0, $inner) }
+                $footer = $footer.PadRight($inner)
+                Write-Host '├' + ('─' * ($w - 2)) + '┤' -ForegroundColor $border
+                Write-Host -NoNewline '│ ' -ForegroundColor $border
+                Write-Host -NoNewline $footer -ForegroundColor 'Cyan'
+                Write-Host ' │' -ForegroundColor $border
+                Write-Host '└' + ('─' * ($w - 2)) + '┘' -ForegroundColor $border
+            }
+
+            if ([Console]::KeyAvailable) {
+                $key = [Console]::ReadKey($true)
+                if ($key.Key -eq 'Enter') { return $true }
+                if ($key.Key -eq 'Escape') { return $false }
+            }
+            else {
+                [System.Threading.Thread]::Sleep(50)
+            }
         }
     }
     finally {
         [Console]::CursorVisible = $old
     }
 }
+
 
 function Start-DevinSession {
     $devinCmd = Get-Command devin -ErrorAction SilentlyContinue
