@@ -455,6 +455,8 @@ function Read-EditableLine {
 
         if ($PathCompletion) {
             $suggestions = @($suggestions)
+            $prefix = ''
+            if ($text -match '^(.*[\\/:])([^\\/:]*)$') { $prefix = $Matches[2] } else { $prefix = $text }
             $oldFg = [Console]::ForegroundColor
             [Console]::ForegroundColor = [ConsoleColor]::DarkGray
             for ($i = 0; $i -lt [Math]::Min($suggestions.Count, $maxLines); $i++) {
@@ -465,9 +467,13 @@ function Read-EditableLine {
                 $name = $sug
                 try { $name = Split-Path -Leaf -Path $sug } catch {}
                 if ([string]::IsNullOrEmpty($name)) { $name = [string]$sug }
-                if ($name.Length -gt ($w - $cursorLeft)) { $name = $name.Substring(0, $w - $cursorLeft) }
-                [Console]::Write($name)
-                $pad = $w - $cursorLeft - $name.Length
+                $display = $name
+                if ($prefix.Length -gt 0 -and $prefix.Length -lt $name.Length -and $name -like "$prefix*") {
+                    $display = $name.Substring($prefix.Length)
+                }
+                if ($display.Length -gt ($w - $cursorLeft)) { $display = $display.Substring(0, $w - $cursorLeft) }
+                [Console]::Write($display)
+                $pad = $w - $cursorLeft - $display.Length
                 if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
             }
             if ($suggestions.Count -gt $maxLines) {
