@@ -1,4 +1,4 @@
-# devin-N.ps1 — Launcher do Devin com as funcoes 2,3,4,5,7,8
+﻿# devin-N.ps1 — Launcher do Devin com as funcoes 2,3,4,5,7,8
 # Suporta ate 4 instancias em 1 a 4 projetos; worktrees apenas se 2+ instancias no mesmo projeto.
 # O comando `devin` inicia um REPL interativo no diretorio atual.
 
@@ -128,34 +128,65 @@ function Select-FolderTerminal {
     $current = $InitialPath
     while ($true) {
         $items = [System.Collections.ArrayList]::new()
-        [void]$items.Add([PSCustomObject]@{ Name = '[Usar esta pasta]'; Caminho = $current; Tipo = 'acao' })
+        [void]$items.Add([PSCustomObject]@{ Name = '[>] Usar esta pasta'; Caminho = $current; Tipo = 'acao' })
 
         $parent = Split-Path -Parent -Path $current
         if ($parent -and $parent -ne $current) {
-            [void]$items.Add([PSCustomObject]@{ Name = '[Voltar]'; Caminho = $parent; Tipo = 'acao' })
+            [void]$items.Add([PSCustomObject]@{ Name = '[..] Voltar'; Caminho = $parent; Tipo = 'acao' })
         }
         else {
-            [void]$items.Add([PSCustomObject]@{ Name = '[Trocar de drive]'; Caminho = ''; Tipo = 'acao' })
+            [void]$items.Add([PSCustomObject]@{ Name = '[D] Trocar de drive'; Caminho = ''; Tipo = 'acao' })
         }
 
         $subdirs = Get-ChildItem -Path $current -Directory -ErrorAction SilentlyContinue | Sort-Object Name
         foreach ($d in $subdirs) {
-            [void]$items.Add([PSCustomObject]@{ Name = $d.Name; Caminho = $d.FullName; Tipo = 'pasta' })
+            [void]$items.Add([PSCustomObject]@{ Name = "[+] $($d.Name)"; Caminho = $d.FullName; Tipo = 'pasta' })
         }
 
-        $selected = Show-TerminalList -Items $items -Title "Selecione o workspace ($current)" -ToString { param($x) $x.Name }
+        $breadcrumbs = ($current -split '\\' | Where-Object { $_ }) -join ' > '
+        if ([string]::IsNullOrWhiteSpace($breadcrumbs)) { $breadcrumbs = $current }
+
+        $selected = Show-TerminalList -Items $items -Title "Selecione o workspace" -Subtitle $breadcrumbs -ToString { param($x) $x.Name } -OnCtrlL { return [PSCustomObject]@{ __CtrlL = $true } }
+
+        if ($selected -and $selected.__CtrlL) {
+            Clear-Host
+            Write-Host "Editar caminho (Enter confirma, Esc cancela)" -ForegroundColor Cyan
+            Write-Host -NoNewline "Caminho: " -ForegroundColor DarkGray
+            $newPath = Read-EditableLine -Initial $current
+            if ($null -eq $newPath) {
+                # Esc: volta a navegacao
+            }
+            elseif (Test-Path -LiteralPath $newPath -PathType Container) {
+                $current = (Resolve-Path -LiteralPath $newPath).Path
+            }
+            elseif ($newPath) {
+                Write-Host "`nCaminho invalido. Pressione qualquer tecla." -ForegroundColor Red
+                $null = [Console]::ReadKey($true)
+            }
+            continue
+        }
+
         if (-not $selected) {
+            # Esc sobe um nivel; se estiver na raiz, cancela ou mantem
+            if ($parent -and $parent -ne $current) {
+                $current = $parent
+                continue
+            }
             if ($AllowCancel) { return $null }
             return $current
         }
 
-        if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Usar esta pasta]') { return $selected.Caminho }
-        if ($selected.Tipo -eq 'acao' -and $selected.Name -eq '[Trocar de drive]') {
+        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\\[>\\]') { return $selected.Caminho }
+        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\\[\\.\\.\\]') {
+            $current = $parent
+            continue
+        }
+        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\\[D\\]') {
             $drives = [System.IO.DriveInfo]::GetDrives() |
                 Where-Object { $_.DriveType -in @('Fixed', 'Network') } |
                 ForEach-Object {
                     [PSCustomObject]@{
-                        Name = "Drive $($_.Name) ($($_.VolumeLabel))"
+                        Name = "[D] $($_.Name) ($($_.VolumeLabel))"
                         Caminho = $_.Name
                         Tipo = 'drive'
                     }
@@ -578,6 +609,366 @@ function Get-ConsoleWindowInfo {
     return [PSCustomObject]@{ Handle = $hwnd; InsideWT = $insideWT }
 }
 
+function Select-BranchesForProject {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Project,
+        [Parameter(Mandatory)]
+        [array]$Positions,
+        [int]$StartLabelIndex = 0,
+        [array]$AllLabels = @('A','B','C','D')
+    )
+
+    $projectPath = $Project.Path
+    $count = $Project.Count
+    $instances = @()
+    $selectedBranches = @()
+    $selectedBranchNames = @()
+    $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+
+    Write-Host $M.WorktreeWorkspaceGit -ForegroundColor Magenta
+    Remove-StaleWorktrees -RepoPath $projectPath
+
+    $fetchResult = Invoke-WithSpinner -Message $M.SincronizandoReferencias -ScriptBlock {
+        $output = git -C $using:projectPath fetch --all --prune 2>&1
+        [PSCustomObject]@{ Ok = $?; Output = $output }
+    }
+    if ($fetchResult -and $fetchResult.Ok) {
+        Write-Host $M.ReferenciasAtualizadas -ForegroundColor Green
+    }
+    else {
+        Write-Host $M.ReferenciasFalha -ForegroundColor Yellow
+    }
+
+    $getBranchMetadataDef = (Get-Command Get-BranchMetadata).ScriptBlock.ToString()
+    $branchMeta = Invoke-WithSpinner -Message $M.MetadadosBranches -ScriptBlock {
+        $def = $using:getBranchMetadataDef
+        New-Item -Path 'function:global:Get-BranchMetadata' -Value ([scriptblock]::Create($def)) -Force | Out-Null
+        Get-BranchMetadata -RepoPath $using:projectPath
+    }
+
+    $prMap = Get-PullRequestMap -RepoPath $projectPath
+    $protectedSet = Get-ProtectedBranchSet -RepoPath $projectPath
+    $defaultBranch = Get-DefaultBranchName -RepoPath $projectPath
+
+    Write-Host $M.ListandoBranches -ForegroundColor DarkGray
+
+    $localBranches = @()
+    $localBranches += @((git -C $projectPath branch --format='%(refname:short)' 2>$null) | Where-Object {
+        $_ -ne "" -and $_ -notmatch "^(main|master|develop|HEAD)$"
+    })
+
+    $remoteBranches = @()
+    $remoteBranches += @((git -C $projectPath branch -r --format='%(refname:short)' 2>$null) | Where-Object {
+        $_ -ne "" -and $_ -notmatch "HEAD" -and $_ -notmatch "(main|master|develop)$" -and $_ -ne "origin"
+    } | ForEach-Object {
+        $clean = $_ -replace '^origin/', ''
+        if ($clean -and $clean -ne 'HEAD') { $clean }
+    })
+
+    $remoteOnly = @($remoteBranches | Where-Object { $_ -notin $localBranches })
+    $currentBranch = git -C $projectPath branch --show-current 2>$null
+
+    $allOptions = @()
+    if ($defaultBranch) {
+        $localDefault = [bool](git -C $projectPath rev-parse --verify --quiet $defaultBranch 2>$null)
+        $remoteDefault = [bool](git -C $projectPath rev-parse --verify --quiet "origin/$defaultBranch" 2>$null)
+        if ($localDefault -or $remoteDefault) {
+            $allOptions += @{
+                Name = $defaultBranch
+                Type = if ($localDefault) { "local" } else { "remote" }
+                IsCurrent = ($defaultBranch -eq $currentBranch)
+            }
+        }
+    }
+
+    if ($localBranches.Count -gt 0) {
+        foreach ($b in $localBranches) {
+            $allOptions += @{ Name = $b; Type = "local"; IsCurrent = ($b -eq $currentBranch) }
+        }
+    }
+
+    if ($remoteOnly.Count -gt 0) {
+        foreach ($b in $remoteOnly) {
+            $allOptions += @{ Name = $b; Type = "remote"; IsCurrent = $false }
+        }
+    }
+
+    if ($allOptions.Count -eq 0) {
+        Write-Host $M.NenhumBranch -ForegroundColor DarkGray
+    }
+
+    $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
+
+    for ($i = 0; $i -lt $count; $i++) {
+        $labelIndex = $StartLabelIndex + $i
+        $pos = $Positions[$labelIndex]
+        $titulo = if ($pos) { "Selecione a branch - Instancia $($AllLabels[$labelIndex]) ($pos)" } else { "Selecione a branch - Instancia $($AllLabels[$labelIndex])" }
+
+        $selected = $null
+        while (-not $selected) {
+            $selectedNames = @($selectedBranches | ForEach-Object { $_.Name })
+            $available = @($allOptions | Where-Object { $_.Name -notin $selectedNames })
+            $available += $newBranchOption
+
+            $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
+            if (-not $selected) {
+                return [PSCustomObject]@{ Success = $false; Instances = @(); Project = $Project }
+            }
+
+            if ($selected.Name -ne 'devin-new' -and $selected.Name -in $selectedBranchNames) {
+                Write-Host ($M.AvisoBranchIgual -f $selected.Name) -ForegroundColor Red
+                $selected = $null
+            }
+        }
+
+        $selectedBranches += $selected
+
+        $branch = $selected.Name
+        $baseBranch = $null
+        if ($selected.Type -eq 'new') {
+            if ($allOptions.Count -gt 0) {
+                $baseOptions = $allOptions + @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true }
+                $baseOptions = $baseOptions | Sort-Object Name -Unique
+                $baseSelected = Select-BranchTerminal -Options $baseOptions -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title ($M.BranchBaseSelecione -f $projectPath)
+                if (-not $baseSelected) { $baseSelected = @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true } }
+                $baseBranch = $baseSelected.Name
+            }
+            else {
+                $baseBranch = $currentBranch
+            }
+
+            $defaultBranchName = "devin-$timestamp-$($AllLabels[$labelIndex].ToLower())"
+            $initialProjectLabelIdx = $labelIndex - $i
+            $reservedAutoNames = @()
+            for ($k = 0; $k -lt $count; $k++) {
+                $reservedAutoNames += "devin-$timestamp-$($AllLabels[$initialProjectLabelIdx + $k].ToLower())"
+            }
+
+            while ($true) {
+                $customName = Read-Host ($M.BranchNomePersonalizado -f $defaultBranchName)
+                if ([string]::IsNullOrWhiteSpace($customName)) { $customName = $defaultBranchName }
+                $customName = $customName.Trim()
+
+                $null = git -C $projectPath check-ref-format --branch $customName 2>&1
+                $gitValid = $?
+
+                $localExists = [bool](git -C $projectPath rev-parse --verify --quiet $customName 2>$null)
+                $remoteExists = [bool](git -C $projectPath rev-parse --verify --quiet "origin/$customName" 2>$null)
+                $alreadySelected = $customName -in $selectedBranchNames
+                $reservedAuto = $customName -ne $defaultBranchName -and $customName -in $reservedAutoNames
+
+                if (-not $gitValid) {
+                    Write-Host $M.BranchNomeInvalido -ForegroundColor Red
+                }
+                elseif ($localExists -or $remoteExists -or $alreadySelected) {
+                    Write-Host ($M.BranchNomeExiste -f $customName) -ForegroundColor Red
+                }
+                elseif ($reservedAuto) {
+                    Write-Host ($M.BranchNomeReservado -f $customName) -ForegroundColor Red
+                }
+                else {
+                    $branch = $customName
+                    break
+                }
+            }
+        }
+
+        $selectedBranchNames += $branch
+
+        $instances += [PSCustomObject]@{
+            Label = $AllLabels[$labelIndex]
+            Project = $Project
+            ProjectPath = $projectPath
+            BranchInfo = $selected
+            Branch = $branch
+            BaseBranch = $baseBranch
+            WorktreePath = $null
+            Position = $pos
+            IsMain = ($labelIndex -eq 0)
+        }
+    }
+
+    $Project.OriginalBranch = $currentBranch
+    $Project.CurrentBranch = $currentBranch
+
+    return [PSCustomObject]@{ Success = $true; Instances = $instances; Project = $Project }
+}
+
+function Start-Wizard {
+    $projetos = @()
+    $instancias = @()
+    $labels = @('A','B','C','D')
+    $state = 'PROJECT'
+    $currentProjectIndex = 0
+    $instancesMode = 'new'
+
+    while ($state -ne 'EXECUTE' -and $state -ne 'CANCEL') {
+        switch ($state) {
+            'PROJECT' {
+                $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
+                $vagas = 4 - $total
+                if ($vagas -le 0) { $state = 'BRANCH_PREP'; continue }
+
+                $title = if ($projetos.Count -eq 0) {
+                    "Selecione o projeto 1 ($vagas vagas)"
+                } else {
+                    "Selecione outro projeto ou cancele ($vagas vagas)"
+                }
+                $initial = if ($projetos.Count -gt 0) { $projetos[-1].Path } else { $diretorioOriginal.Path }
+
+                $projectPath = Select-FolderTerminal -InitialPath $initial -AllowCancel
+                if (-not $projectPath) {
+                    if ($projetos.Count -eq 0) { $state = 'CANCEL'; continue }
+                    $state = 'BRANCH_PREP'; continue
+                }
+
+                $already = $projetos | Where-Object { $_.Path -eq $projectPath } | Select-Object -First 1
+                if ($already) {
+                    Write-Host $M.ProjetoJaSelecionado -ForegroundColor Yellow
+                    continue
+                }
+
+                $isGitRepo = Test-Path -LiteralPath (Join-Path $projectPath ".git")
+                if (-not $isGitRepo) {
+                    Write-Host ($M.NaoGitRepo -f $projectPath) -ForegroundColor DarkYellow
+                }
+
+                $projetos += [PSCustomObject]@{
+                    Path = $projectPath
+                    Count = 1
+                    IsGitRepo = $isGitRepo
+                    WorktreesRoot = $null
+                    CreatedWorktrees = @()
+                    CreatedBranches = @()
+                    OriginalBranch = $null
+                    CurrentBranch = $null
+                }
+
+                $currentProjectIndex = $projetos.Count - 1
+                $instancesMode = 'new'
+                $state = 'INSTANCES'
+                continue
+            }
+
+            'INSTANCES' {
+                $proj = $projetos[$currentProjectIndex]
+                $otherTotal = [int]($projetos | Where-Object { $_.Path -ne $proj.Path } | Measure-Object -Property Count -Sum).Sum
+                $vagas = 4 - $otherTotal
+                $maxForProject = if ($proj.IsGitRepo) { $vagas } else { 1 }
+
+                $opcoesQuantidade = @()
+                for ($i = 1; $i -le $maxForProject; $i++) {
+                    $opcoesQuantidade += [PSCustomObject]@{ Numero = $i; Label = "$i instancia(s)" }
+                }
+
+                $defaultIdx = [Math]::Max(0, [Math]::Min($proj.Count - 1, $maxForProject - 1))
+                $escolhaQuantidade = Show-TerminalList -Items $opcoesQuantidade -Title ($M.QuantasInstancias -f $proj.Path) -ToString { param($x) $x.Label } -DefaultIndex $defaultIdx
+                if (-not $escolhaQuantidade) {
+                    if ($instancesMode -eq 'new') {
+                        $projetos = @($projetos | Where-Object { $_.Path -ne $proj.Path })
+                        if ($projetos.Count -eq 0) { $state = 'CANCEL'; continue }
+                        $state = 'PROJECT'; continue
+                    }
+                    else {
+                        $state = 'BRANCH_PREP'; continue
+                    }
+                }
+
+                $proj.Count = $escolhaQuantidade.Numero
+                if ($instancesMode -eq 'new') { $state = 'MORE' }
+                else { $state = 'BRANCH_PREP' }
+                continue
+            }
+
+            'MORE' {
+                $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
+                if ($total -ge 4) { $state = 'BRANCH_PREP'; continue }
+
+                $simNao = @(
+                    [PSCustomObject]@{ Resposta = $true; Label = 'Sim, adicionar outro projeto' },
+                    [PSCustomObject]@{ Resposta = $false; Label = 'Nao, concluir selecao' }
+                )
+                $continuar = Show-TerminalList -Items $simNao -Title ($M.AdicionarProjeto + " (total: $total)") -ToString { param($x) $x.Label } -DefaultIndex 1
+                if (-not $continuar -or -not $continuar.Resposta) { $state = 'BRANCH_PREP'; continue }
+                $state = 'PROJECT'
+                continue
+            }
+
+            'BRANCH_PREP' {
+                $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
+                if ($total -eq 0) { $state = 'CANCEL'; continue }
+
+                $positions = switch ($total) {
+                    2 { @('esquerda','direita','','') }
+                    3 { @('esquerda','superior-direita','inferior-direita','') }
+                    4 { @('superior-esquerda','superior-direita','inferior-esquerda','inferior-direita') }
+                    default { @('','','','') }
+                }
+
+                for ($i = 0; $i -lt $instancias.Count; $i++) {
+                    $instancias[$i].Position = $positions[$i]
+                    $instancias[$i].IsMain = ($i -eq 0)
+                }
+
+                $currentProjectIndex = 0
+                $state = 'BRANCH'
+                continue
+            }
+
+            'BRANCH' {
+                $proj = $projetos[$currentProjectIndex]
+                $startLabelIndex = [int]($projetos | Select-Object -First $currentProjectIndex | Measure-Object -Property Count -Sum).Sum
+
+                if (-not $proj.IsGitRepo) {
+                    $instancias += [PSCustomObject]@{
+                        Label = $labels[$startLabelIndex]
+                        Project = $proj
+                        ProjectPath = $proj.Path
+                        BranchInfo = $null
+                        Branch = $null
+                        BaseBranch = $null
+                        WorktreePath = $null
+                        Position = $positions[$startLabelIndex]
+                        IsMain = ($startLabelIndex -eq 0)
+                    }
+                }
+                else {
+                    $result = Select-BranchesForProject -Project $proj -Positions $positions -StartLabelIndex $startLabelIndex -AllLabels $labels
+                    if (-not $result.Success) {
+                        $instancias = @($instancias | Where-Object { $_.Project -ne $proj })
+                        $instancesMode = 'edit'
+                        $state = 'INSTANCES'
+                        continue
+                    }
+                    $instancias += $result.Instances
+                }
+
+                $currentProjectIndex++
+                if ($currentProjectIndex -ge $projetos.Count) { $state = 'SUMMARY'; continue }
+                continue
+            }
+
+            'SUMMARY' {
+                $confirm = Show-Summary -Instances $instancias
+                if ($confirm) { $state = 'EXECUTE'; continue }
+
+                # Esc: reconfigurar o ultimo projeto
+                $lastProject = $instancias[-1].Project
+                $instancias = @($instancias | Where-Object { $_.Project -ne $lastProject })
+                $currentProjectIndex = [array]::IndexOf($projetos, $lastProject)
+                $instancesMode = 'edit'
+                $state = 'INSTANCES'
+                continue
+            }
+        }
+    }
+
+    if ($state -eq 'CANCEL') { return $null }
+    return [PSCustomObject]@{ Projetos = $projetos; Instances = $instancias }
+}
+
 # 5. Carrega utilitarios Win32 para redimensionar janelas
 if (-not ("WindowUtil" -as [type])) {
     Add-Type @"
@@ -634,276 +1025,22 @@ $H = $monitor.Height
 $OffsetX = $monitor.Left
 $OffsetY = $monitor.Top
 
-# 4. Escolhe projetos e quantidade de instancias
-$labels = @('A','B','C','D')
-$projetos = @()
-$instancias = @()
-$totalInstancias = 0
-
-Write-Host $M.SelecioneWorkspace -ForegroundColor Cyan
-
-while ($totalInstancias -lt 4) {
-    $vagas = 4 - $totalInstancias
-    $title = if ($projetos.Count -eq 0) {
-        "Selecione o projeto 1 ($vagas vagas)"
-    } else {
-        "Selecione outro projeto ou cancele ($vagas vagas)"
-    }
-    $initial = if ($projetos.Count -gt 0) { $projetos[-1].Path } else { $diretorioOriginal.Path }
-
-    $projectPath = Select-FolderTerminal -InitialPath $initial -AllowCancel
-    if (-not $projectPath) { break }
-
-    $already = $projetos | Where-Object { $_.Path -eq $projectPath } | Select-Object -First 1
-    if ($already) {
-        Write-Host $M.ProjetoJaSelecionado -ForegroundColor Yellow
-        continue
-    }
-
-    $isGitRepo = Test-Path -LiteralPath (Join-Path $projectPath ".git")
-    $maxForProject = if ($isGitRepo) { $vagas } else { 1 }
-
-    if (-not $isGitRepo) {
-        Write-Host ($M.NaoGitRepo -f $projectPath) -ForegroundColor DarkYellow
-    }
-
-    $opcoesQuantidade = @()
-    for ($i = 1; $i -le $maxForProject; $i++) {
-        $opcoesQuantidade += [PSCustomObject]@{ Numero = $i; Label = "$i instancia(s)" }
-    }
-
-    $escolhaQuantidade = Show-TerminalList -Items $opcoesQuantidade -Title ($M.QuantasInstancias -f $projectPath) -ToString { param($x) $x.Label } -DefaultIndex 0
-    $projectCount = if ($escolhaQuantidade) { $escolhaQuantidade.Numero } else { 1 }
-
-    $projetos += [PSCustomObject]@{
-        Path = $projectPath
-        Count = $projectCount
-        IsGitRepo = $isGitRepo
-        WorktreesRoot = $null
-        CreatedWorktrees = @()
-        CreatedBranches = @()
-        OriginalBranch = $null
-        CurrentBranch = $null
-    }
-
-    $totalInstancias += $projectCount
-    Write-Host ($M.TotalInstancias -f $totalInstancias) -ForegroundColor DarkGray
-
-    if ($totalInstancias -ge 4) { break }
-
-    $simNao = @(
-        [PSCustomObject]@{ Resposta = $true; Label = 'Sim, adicionar outro projeto' },
-        [PSCustomObject]@{ Resposta = $false; Label = 'Nao, concluir selecao' }
-    )
-    $continuar = Show-TerminalList -Items $simNao -Title ($M.AdicionarProjeto + " (total: $totalInstancias)") -ToString { param($x) $x.Label } -DefaultIndex 1
-    if (-not $continuar -or -not $continuar.Resposta) { break }
-}
-
-if ($projetos.Count -eq 0) {
+# 4. Wizard de escolha de projetos/instancias/branches
+$wizardResult = Start-Wizard
+if (-not $wizardResult) {
     Write-Host ($M.SelecaoCancelada -f 'projetos') -ForegroundColor Yellow
     exit
 }
+$projetos = $wizardResult.Projetos
+$instancias = $wizardResult.Instances
+$totalInstancias = $instancias.Count
 
 Write-Host ($M.ConfigurandoInstancias -f $totalInstancias, $projetos.Count) -ForegroundColor Cyan
 
-# 5. Prepara instancias e worktrees
-$positions = switch ($totalInstancias) {
-    2 { @('esquerda','direita','','') }
-    3 { @('esquerda','superior-direita','inferior-direita','') }
-    4 { @('superior-esquerda','superior-direita','inferior-esquerda','inferior-direita') }
-    default { @('','','','') }
-}
-
-$labelIdx = 0
-
-foreach ($proj in $projetos) {
-    $projectPath = $proj.Path
-    $count = $proj.Count
-
-    if ($proj.IsGitRepo) {
-        Write-Host $M.WorktreeWorkspaceGit -ForegroundColor Magenta
-
-        Remove-StaleWorktrees -RepoPath $projectPath
-
-        Write-Host $M.SincronizandoReferencias -ForegroundColor DarkGray
-        $null = git -C $projectPath fetch --all --prune 2>&1
-        if ($?) {
-            Write-Host $M.ReferenciasAtualizadas -ForegroundColor Green
-        }
-        else {
-            Write-Host $M.ReferenciasFalha -ForegroundColor Yellow
-        }
-
-        Write-Host $M.MetadadosBranches -ForegroundColor DarkGray
-        $branchMeta = Get-BranchMetadata -RepoPath $projectPath
-        $prMap = Get-PullRequestMap -RepoPath $projectPath
-        $protectedSet = Get-ProtectedBranchSet -RepoPath $projectPath
-        $defaultBranch = Get-DefaultBranchName -RepoPath $projectPath
-
-        Write-Host $M.ListandoBranches -ForegroundColor DarkGray
-
-        $localBranches = @()
-        $localBranches += @((git -C $projectPath branch --format='%(refname:short)' 2>$null) | Where-Object {
-            $_ -ne "" -and $_ -notmatch "^(main|master|develop|HEAD)$"
-        })
-
-        $remoteBranches = @()
-        $remoteBranches += @((git -C $projectPath branch -r --format='%(refname:short)' 2>$null) | Where-Object {
-            $_ -ne "" -and $_ -notmatch "HEAD" -and $_ -notmatch "(main|master|develop)$" -and $_ -ne "origin"
-        } | ForEach-Object {
-            $clean = $_ -replace '^origin/', ''
-            if ($clean -and $clean -ne 'HEAD') { $clean }
-        })
-
-        $remoteOnly = @($remoteBranches | Where-Object { $_ -notin $localBranches })
-        $currentBranch = git -C $projectPath branch --show-current 2>$null
-
-        $allOptions = @()
-        if ($defaultBranch) {
-            $localDefault = [bool](git -C $projectPath rev-parse --verify --quiet $defaultBranch 2>$null)
-            $remoteDefault = [bool](git -C $projectPath rev-parse --verify --quiet "origin/$defaultBranch" 2>$null)
-            if ($localDefault -or $remoteDefault) {
-                $allOptions += @{
-                    Name = $defaultBranch
-                    Type = if ($localDefault) { "local" } else { "remote" }
-                    IsCurrent = ($defaultBranch -eq $currentBranch)
-                }
-            }
-        }
-
-        if ($localBranches.Count -gt 0) {
-            foreach ($b in $localBranches) {
-                $allOptions += @{ Name = $b; Type = "local"; IsCurrent = ($b -eq $currentBranch) }
-            }
-        }
-
-        if ($remoteOnly.Count -gt 0) {
-            foreach ($b in $remoteOnly) {
-                $allOptions += @{ Name = $b; Type = "remote"; IsCurrent = $false }
-            }
-        }
-
-        if ($allOptions.Count -eq 0) {
-            Write-Host $M.NenhumBranch -ForegroundColor DarkGray
-        }
-
-        $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
-
-        $selectedBranches = @()
-        $selectedBranchNames = @()
-        $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-
-        for ($i = 0; $i -lt $count; $i++) {
-            $pos = $positions[$labelIdx]
-            $titulo = if ($pos) { "Selecione a branch - Instancia $($labels[$labelIdx]) ($pos)" } else { "Selecione a branch - Instancia $($labels[$labelIdx])" }
-
-            $selectedNames = @($selectedBranches | ForEach-Object { $_.Name })
-            $available = @($allOptions | Where-Object { $_.Name -notin $selectedNames })
-            $available += $newBranchOption
-
-            $selected = $null
-            while (-not $selected) {
-                $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
-                if (-not $selected) { $selected = $newBranchOption }
-
-                if ($selected.Name -ne 'devin-new' -and $selected.Name -in $selectedNames) {
-                    Write-Host ($M.AvisoBranchIgual -f $selected.Name) -ForegroundColor Red
-                    $selected = $null
-                }
-            }
-
-            $selectedBranches += $selected
-
-            $branch = $selected.Name
-            $baseBranch = $null
-            if ($selected.Type -eq 'new') {
-                if ($allOptions.Count -gt 0) {
-                    $baseOptions = $allOptions + @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true }
-                    $baseOptions = $baseOptions | Sort-Object Name -Unique
-                    $baseSelected = Select-BranchTerminal -Options $baseOptions -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title ($M.BranchBaseSelecione -f $projectPath)
-                    if (-not $baseSelected) { $baseSelected = @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true } }
-                    $baseBranch = $baseSelected.Name
-                }
-                else {
-                    $baseBranch = $currentBranch
-                }
-
-                $defaultBranchName = "devin-$timestamp-$($labels[$labelIdx].ToLower())"
-                $initialProjectLabelIdx = $labelIdx - $i
-                $reservedAutoNames = @()
-                for ($k = 0; $k -lt $count; $k++) {
-                    $reservedAutoNames += "devin-$timestamp-$($labels[$initialProjectLabelIdx + $k].ToLower())"
-                }
-
-                while ($true) {
-                    $customName = Read-Host ($M.BranchNomePersonalizado -f $defaultBranchName)
-                    if ([string]::IsNullOrWhiteSpace($customName)) { $customName = $defaultBranchName }
-                    $customName = $customName.Trim()
-
-                    $null = git -C $projectPath check-ref-format --branch $customName 2>&1
-                    $gitValid = $?
-
-                    $localExists = [bool](git -C $projectPath rev-parse --verify --quiet $customName 2>$null)
-                    $remoteExists = [bool](git -C $projectPath rev-parse --verify --quiet "origin/$customName" 2>$null)
-                    $alreadySelected = $customName -in $selectedBranchNames
-                    $reservedAuto = $customName -ne $defaultBranchName -and $customName -in $reservedAutoNames
-
-                    if (-not $gitValid) {
-                        Write-Host $M.BranchNomeInvalido -ForegroundColor Red
-                    }
-                    elseif ($localExists -or $remoteExists -or $alreadySelected) {
-                        Write-Host ($M.BranchNomeExiste -f $customName) -ForegroundColor Red
-                    }
-                    elseif ($reservedAuto) {
-                        Write-Host ($M.BranchNomeReservado -f $customName) -ForegroundColor Red
-                    }
-                    else {
-                        $branch = $customName
-                        break
-                    }
-                }
-            }
-
-            $selectedBranchNames += $branch
-
-            $instancias += [PSCustomObject]@{
-                Label = $labels[$labelIdx]
-                Project = $proj
-                ProjectPath = $projectPath
-                BranchInfo = $selected
-                Branch = $branch
-                BaseBranch = $baseBranch
-                WorktreePath = $null
-                Position = $pos
-                IsMain = ($labelIdx -eq 0)
-            }
-
-            $labelIdx++
-        }
-
-        $proj.OriginalBranch = $currentBranch
-        $proj.CurrentBranch = $currentBranch
-    }
-    else {
-        # Nao-Git: apenas 1 instancia, sem branch
-        $instancias += [PSCustomObject]@{
-            Label = $labels[$labelIdx]
-            Project = $proj
-            ProjectPath = $projectPath
-            BranchInfo = $null
-            Branch = $null
-            BaseBranch = $null
-            WorktreePath = $null
-            Position = $positions[$labelIdx]
-            IsMain = ($labelIdx -eq 0)
-        }
-        $labelIdx++
-    }
-}
-
-# Cria worktrees por projeto conforme necessario
+# 5. Prepara variaveis de execucao
 $numInstancias = $totalInstancias
 $singleInstanceMode = ($numInstancias -eq 1 -and $projetos[0].IsGitRepo)
+# Cria worktrees por projeto conforme necessario
 
 foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 }) {
     Write-Host $M.WorktreeCriando -ForegroundColor Magenta
@@ -923,18 +1060,32 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
             $info = $inst.BranchInfo
             $branch = $inst.Branch
 
+            $spinnerMessage = ($M.WorktreeInstancia -f $inst.Label, $worktree)
+            $worktreeAddOk = $true
             if ($info.Type -eq "new") {
                 $base = if ($inst.BaseBranch) { $inst.BaseBranch } else { $proj.CurrentBranch }
-                $null = git -C $projectPath worktree add "$worktree" -b $branch $base 2>&1
+                $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
+                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch $using:base 2>&1
+                    [PSCustomObject]@{ Ok = $?; Output = $output }
+                }
+                $worktreeAddOk = $result -and $result.Ok
             }
             elseif ($info.Type -eq "remote") {
-                $null = git -C $projectPath worktree add "$worktree" -b $branch "origin/$branch" 2>&1
+                $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
+                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch "origin/$using:branch" 2>&1
+                    [PSCustomObject]@{ Ok = $?; Output = $output }
+                }
+                $worktreeAddOk = $result -and $result.Ok
             }
             else {
-                $null = git -C $projectPath worktree add "$worktree" $branch 2>&1
+                $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
+                    $output = git -C $using:projectPath worktree add "$using:worktree" $using:branch 2>&1
+                    [PSCustomObject]@{ Ok = $?; Output = $output }
+                }
+                $worktreeAddOk = $result -and $result.Ok
             }
 
-            if (-not $?) { throw "git worktree add falhou para '$worktree' (branch '$branch')" }
+            if (-not $worktreeAddOk) { throw "git worktree add falhou para '$worktree' (branch '$branch')" }
 
             $inst.WorktreePath = $worktree
             $proj.CreatedWorktrees += $worktree
@@ -1148,8 +1299,11 @@ if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPat
     if ($targetBranch) {
         if ($mainInst.BranchInfo.Type -eq 'new') {
             $base = if ($mainInst.BaseBranch) { $mainInst.BaseBranch } else { $mainInst.Project.CurrentBranch }
-            $null = git -C $mainPath switch -c $targetBranch $base 2>&1
-            if ($?) {
+            $switchResult = Invoke-WithSpinner -Message "Criando e ativando branch $targetBranch..." -ScriptBlock {
+                $output = git -C $using:mainPath switch -c $using:targetBranch $using:base 2>&1
+                [PSCustomObject]@{ Ok = $?; Output = $output }
+            }
+            if ($switchResult -and $switchResult.Ok) {
                 Write-Host ($M.BranchAtiva -f $targetBranch, " (nova)") -ForegroundColor Green
             }
             else {
@@ -1157,8 +1311,11 @@ if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPat
             }
         }
         elseif (-not $mainInst.WorktreePath) {
-            $switchResult = git -C $mainPath switch $targetBranch 2>&1
-            if ($?) {
+            $switchResult = Invoke-WithSpinner -Message "Ativando branch $targetBranch..." -ScriptBlock {
+                $output = git -C $using:mainPath switch $using:targetBranch 2>&1
+                [PSCustomObject]@{ Ok = $?; Output = $output }
+            }
+            if ($switchResult -and $switchResult.Ok) {
                 Write-Host ($M.BranchAtiva -f $targetBranch, "") -ForegroundColor Green
             }
             else {
@@ -1170,11 +1327,17 @@ if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPat
     # Sincroniza a branch da instancia principal com o remoto
     if ($mainInst.BranchInfo -and $mainInst.BranchInfo.Type -ne 'new') {
         Write-Host $M.SincronizandoBranch -ForegroundColor Cyan
-        $null = git -C $mainPath diff --quiet 2>&1
-        $clean = $?
+        $diffResult = Invoke-WithSpinner -Message "Verificando estado da working tree..." -ScriptBlock {
+            $output = git -C $using:mainPath diff --quiet 2>&1
+            [PSCustomObject]@{ Ok = $?; Output = $output }
+        }
+        $clean = $diffResult -and $diffResult.Ok
         if ($clean) {
-            $null = git -C $mainPath pull --ff-only 2>&1
-            if ($?) { Write-Host $M.BranchAtualizada -ForegroundColor Green }
+            $pullResult = Invoke-WithSpinner -Message $M.SincronizandoBranch -ScriptBlock {
+                $output = git -C $using:mainPath pull --ff-only 2>&1
+                [PSCustomObject]@{ Ok = $?; Output = $output }
+            }
+            if ($pullResult -and $pullResult.Ok) { Write-Host $M.BranchAtualizada -ForegroundColor Green }
             else { Write-Host $M.FastForwardFalha -ForegroundColor Yellow }
         }
         else {
