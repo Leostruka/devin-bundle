@@ -449,27 +449,48 @@ function Read-EditableLine {
         for ($i = 1; $i -le $maxLines; $i++) {
             $top = $startTop + $i
             if ($top -ge $h) { break }
-            [Console]::SetCursorPosition($cursorLeft, $top)
-            [Console]::Write(' ' * ($w - $cursorLeft))
+            [Console]::SetCursorPosition($startLeft, $top)
+            [Console]::Write(' ' * ($w - $startLeft))
         }
 
         if ($PathCompletion) {
+            $suggestions = @($suggestions)
             $oldFg = [Console]::ForegroundColor
             [Console]::ForegroundColor = [ConsoleColor]::DarkGray
             for ($i = 0; $i -lt [Math]::Min($suggestions.Count, $maxLines); $i++) {
                 $top = $startTop + 1 + $i
                 if ($top -ge $h) { break }
                 [Console]::SetCursorPosition($cursorLeft, $top)
-                $name = $suggestions[$i]
-                try { $name = Split-Path -Leaf -Path $suggestions[$i] } catch {}
+                $sug = $suggestions[$i]
+                $name = $sug
+                try { $name = Split-Path -Leaf -Path $sug } catch {}
+                if ([string]::IsNullOrEmpty($name)) { $name = [string]$sug }
                 if ($name.Length -gt ($w - $cursorLeft)) { $name = $name.Substring(0, $w - $cursorLeft) }
                 [Console]::Write($name)
+                $pad = $w - $cursorLeft - $name.Length
+                if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
             }
             if ($suggestions.Count -gt $maxLines) {
                 $top = $startTop + $maxLines
                 if ($top -lt $h) {
                     [Console]::SetCursorPosition($cursorLeft, $top)
                     [Console]::Write('...')
+                    $pad = $w - $cursorLeft - 3
+                    if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
+                }
+            }
+            else {
+                $top = $startTop + 1 + $i
+                for (; $i -le $maxLines; $i++) {
+                    if ($top -ge $h) { break }
+                    [Console]::SetCursorPosition($startLeft, $top)
+                    [Console]::Write(' ' * ($w - $startLeft))
+                    $top++
+                }
+                $top = $startTop + $maxLines + 1
+                if ($top -lt $h) {
+                    [Console]::SetCursorPosition($startLeft, $top)
+                    [Console]::Write(' ' * ($w - $startLeft))
                 }
             }
             [Console]::ForegroundColor = $oldFg
@@ -480,20 +501,19 @@ function Read-EditableLine {
 
     function Get-CurrentState {
         $info = Get-PathSuggestions -Text ($sb.ToString())
-        Set-Variable -Name 'suggestions' -Value $info.Suggestions -Scope 1
-        Set-Variable -Name 'ghost' -Value $info.Ghost -Scope 1
+        Set-Variable -Name 'suggestions' -Value ([array]$info.Suggestions) -Scope 1
+        Set-Variable -Name 'ghost' -Value ([string]$info.Ghost) -Scope 1
     }
 
     function Clear-Suggestions {
         $w = [Console]::WindowWidth
         $h = [Console]::WindowHeight
         $maxLines = Get-MaxSuggestionLines
-        $cursorLeft = [Math]::Min($startLeft + $pos, $w - 1)
-        for ($i = 1; $i -le $maxLines; $i++) {
+        for ($i = 1; $i -le $maxLines + 1; $i++) {
             $top = $startTop + $i
             if ($top -ge $h) { break }
-            [Console]::SetCursorPosition($cursorLeft, $top)
-            [Console]::Write(' ' * ($w - $cursorLeft))
+            [Console]::SetCursorPosition($startLeft, $top)
+            [Console]::Write(' ' * ($w - $startLeft))
         }
     }
 
