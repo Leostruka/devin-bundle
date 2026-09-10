@@ -411,6 +411,7 @@ function Read-EditableLine {
 
     $suggestions = @()
     $ghost = ''
+    $selectedIndex = -1
     $maxSuggestionLines = [Math]::Max(1, [Console]::WindowHeight - $startTop - 3)
 
     function Get-MaxSuggestionLines {
@@ -459,17 +460,22 @@ function Read-EditableLine {
         if ($PathCompletion) {
             $suggestions = @($suggestions)
             $oldFg = [Console]::ForegroundColor
-            [Console]::ForegroundColor = [ConsoleColor]::DarkGray
             for ($i = 0; $i -lt [Math]::Min($suggestions.Count, $maxLines); $i++) {
                 $top = $startTop + 1 + $i
                 if ($top -ge $h) { break }
                 [Console]::SetCursorPosition($listLeft, $top)
+                if ($i -eq $selectedIndex) {
+                    [Console]::ForegroundColor = [ConsoleColor]::White
+                } else {
+                    [Console]::ForegroundColor = [ConsoleColor]::DarkGray
+                }
                 $sug = $suggestions[$i]
                 $name = $sug
                 try { $name = Split-Path -Leaf -Path $sug } catch {}
                 if ([string]::IsNullOrEmpty($name)) { $name = [string]$sug }
                 if ($name.Length -gt ($w - $listLeft)) { $name = $name.Substring(0, $w - $listLeft) }
                 [Console]::Write($name)
+                [Console]::ForegroundColor = $oldFg
                 $pad = $w - $listLeft - $name.Length
                 if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
             }
@@ -477,7 +483,13 @@ function Read-EditableLine {
                 $top = $startTop + $maxLines
                 if ($top -lt $h) {
                     [Console]::SetCursorPosition($listLeft, $top)
+                    if ($selectedIndex -ge $maxLines) {
+                        [Console]::ForegroundColor = [ConsoleColor]::White
+                    } else {
+                        [Console]::ForegroundColor = [ConsoleColor]::DarkGray
+                    }
                     [Console]::Write('...')
+                    [Console]::ForegroundColor = $oldFg
                     $pad = $w - $listLeft - 3
                     if ($pad -gt 0) { [Console]::Write(' ' * $pad) }
                 }
@@ -526,6 +538,9 @@ function Read-EditableLine {
             switch ($key.Key) {
                 'Enter' {
                     Clear-Suggestions
+                    if ($selectedIndex -ge 0 -and $suggestions.Count -gt $selectedIndex) {
+                        return $suggestions[$selectedIndex]
+                    }
                     return $sb.ToString()
                 }
                 'Escape' {
@@ -537,11 +552,13 @@ function Read-EditableLine {
                         $sb.Remove($pos - 1, 1) | Out-Null
                         $pos--
                     }
+                    $selectedIndex = -1
                 }
                 'Delete' {
                     if ($pos -lt $sb.Length) {
                         $sb.Remove($pos, 1) | Out-Null
                     }
+                    $selectedIndex = -1
                 }
                 'LeftArrow' { if ($pos -gt 0) { $pos-- } }
                 'RightArrow' {
@@ -552,6 +569,25 @@ function Read-EditableLine {
                     elseif ($pos -lt $sb.Length) {
                         $pos++
                     }
+                    $selectedIndex = -1
+                }
+                'UpArrow' {
+                    if ($selectedIndex -gt 0) {
+                        $selectedIndex--
+                    } elseif ($selectedIndex -eq 0) {
+                        $selectedIndex = -1
+                    } else {
+                        $suggestions = @($suggestions)
+                        $selectedIndex = $suggestions.Count - 1
+                    }
+                }
+                'DownArrow' {
+                    $suggestions = @($suggestions)
+                    if ($selectedIndex -lt ($suggestions.Count - 1)) {
+                        $selectedIndex++
+                    } else {
+                        $selectedIndex = -1
+                    }
                 }
                 'Home' { $pos = 0 }
                 'End' { $pos = $sb.Length }
@@ -560,12 +596,14 @@ function Read-EditableLine {
                         $sb.Insert($pos, $ghost) | Out-Null
                         $pos += $ghost.Length
                     }
+                    $selectedIndex = -1
                 }
                 default {
                     if ($key.KeyChar -ge ' ' -and -not [char]::IsControl($key.KeyChar)) {
                         $sb.Insert($pos, $key.KeyChar) | Out-Null
                         $pos++
                     }
+                    $selectedIndex = -1
                 }
             }
 
