@@ -1,4 +1,4 @@
-﻿# devin-N.ps1 — Launcher do Devin com as funcoes 2,3,4,5,7,8
+# devin-N.ps1 — Launcher do Devin com as funcoes 2,3,4,5,7,8
 # Suporta ate 4 instancias em 1 a 4 projetos; worktrees apenas se 2+ instancias no mesmo projeto.
 # O comando `devin` inicia um REPL interativo no diretorio atual.
 
