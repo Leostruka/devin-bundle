@@ -66,6 +66,8 @@ function Show-TerminalList {
     [Console]::TreatControlCAsInput = $true
     $selected = [Math]::Max(0, [Math]::Min($DefaultIndex, $Items.Count - 1))
     $filterText = ''
+    $lastFilterText = $null
+    $filtered = $null
     $showHelp = $false
     $firstDraw = $true
     $needsRedraw = $true
@@ -75,8 +77,11 @@ function Show-TerminalList {
 
     try {
         while ($true) {
-            $filtered = @($Items | Where-Object { Test-FuzzyMatch -Text (Get-Label $_) -Query $filterText })
-            if ($selected -ge $filtered.Count) { $selected = [Math]::Max(0, $filtered.Count - 1) }
+            if ($null -eq $filtered -or $filterText -ne $lastFilterText) {
+                $filtered = @($Items | Where-Object { Test-FuzzyMatch -Text (Get-Label $_) -Query $filterText })
+                $lastFilterText = $filterText
+                if ($selected -ge $filtered.Count) { $selected = [Math]::Max(0, $filtered.Count - 1) }
+            }
 
             $w = Get-TuiWidth
             $winHeight = [Console]::WindowHeight
@@ -133,18 +138,58 @@ function Show-TerminalList {
                     continue
                 }
 
-                switch ($key) {
-                    'UpArrow' { if ($selected -gt 0) { $selected-- } }
-                    'DownArrow' { if ($selected -lt ($filtered.Count - 1)) { $selected++ } }
+                # Drena e agrega eventos de navegacao repetidos no buffer
+                $navDelta = 0
+                $jumpHome = $false
+                $jumpEnd = $false
+                $drainKey = $key
+                $drainChar = $char
+                $lastKeyInfo = $keyInfo
+                $drain = $true
+                while ($drain) {
+                    switch ($drainKey) {
+                        'UpArrow' { $navDelta-- }
+                        'DownArrow' { $navDelta++ }
+                        'PageUp' { $navDelta -= $windowSize }
+                        'PageDown' { $navDelta += $windowSize }
+                        'Home' { $jumpHome = $true; $jumpEnd = $false; $navDelta = 0 }
+                        'End' { $jumpEnd = $true; $jumpHome = $false; $navDelta = 0 }
+                        default { $drain = $false }
+                    }
+                    if ($drain -and [Console]::KeyAvailable) {
+                        $nextInfo = [Console]::ReadKey($true)
+                        $drainKey = $nextInfo.Key
+                        $drainChar = $nextInfo.KeyChar
+                        $lastKeyInfo = $nextInfo
+                    }
+                    else {
+                        $drain = $false
+                    }
+                }
+
+                if ($jumpHome) {
+                    $selected = 0
+                }
+                elseif ($jumpEnd) {
+                    $selected = [Math]::Max(0, $filtered.Count - 1)
+                }
+                elseif ($navDelta -ne 0) {
+                    $selected = [Math]::Max(0, [Math]::Min($filtered.Count - 1, $selected + $navDelta))
+                }
+
+                if ($drainChar -ge ' ' -and -not [char]::IsControl($drainChar)) {
+                    $filterText += $drainChar
+                    $selected = 0
+                    $needsRedraw = $true
+                    continue
+                }
+
+                switch ($drainKey) {
                     'Home' { $selected = 0 }
                     'End' { $selected = [Math]::Max(0, $filtered.Count - 1) }
-                    'PageUp' { $selected = [Math]::Max(0, $selected - $windowSize) }
-                    'PageDown' { $selected = [Math]::Min($filtered.Count - 1, $selected + $windowSize) }
                     'Backspace' { if ($filterText.Length -gt 0) { $filterText = $filterText.Substring(0, $filterText.Length - 1); $selected = 0 } }
                     'Delete' { $filterText = ''; $selected = 0 }
-                    'Enter' {
-                        if ($filtered.Count -gt 0) { return $filtered[$selected] }
-                    }
+                    'Enter' { if ($filtered.Count -gt 0) { return $filtered[$selected] } }
                     'Escape' {
                         if ($filterText.Length -gt 0) {
                             $filterText = ''
@@ -155,13 +200,13 @@ function Show-TerminalList {
                         }
                     }
                     'L' {
-                        if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control -and $OnCtrlL) {
+                        if ($lastKeyInfo.Modifiers -band [ConsoleModifiers]::Control -and $OnCtrlL) {
                             $result = &$OnCtrlL
                             if ($null -ne $result) { return $result }
                         }
                     }
                     'C' {
-                        if ($keyInfo.Modifiers -band [ConsoleModifiers]::Control) {
+                        if ($lastKeyInfo.Modifiers -band [ConsoleModifiers]::Control) {
                             return $null
                         }
                     }
