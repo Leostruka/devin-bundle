@@ -176,12 +176,12 @@ function Select-FolderTerminal {
             return $current
         }
 
-        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\\[>\\]') { return $selected.Caminho }
-        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\\[\\.\\.\\]') {
+        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\[>\]') { return $selected.Caminho }
+        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\[\.\.\]') {
             $current = $parent
             continue
         }
-        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\\[D\\]') {
+        if ($selected.Tipo -eq 'acao' -and $selected.Name -match '^\[D\]') {
             $drives = [System.IO.DriveInfo]::GetDrives() |
                 Where-Object { $_.DriveType -in @('Fixed', 'Network') } |
                 ForEach-Object {
