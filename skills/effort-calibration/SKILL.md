@@ -5,17 +5,17 @@ triggers: [user, model]
 ---
 # Effort Calibration
 
-Reasoning effort (thinking-token budget) is a **scarce resource to match to task difficulty**, not a dial to maximize. Overthinking spends tokens without accuracy gain; under-thinking fails hard tasks. The default is **lowest effort that still uses chain-of-thought**, raised only when verification fails or the task is genuinely hard.
+Reasoning effort is a **scarce resource to match to task difficulty**, not a dial to maximize. Overthinking spends tokens without accuracy gain; under-thinking fails hard tasks. In this bundle, effort maps to the SWE-2 variants in `data/bundle-models.json` (`swe-2-medium` / `swe-2-high` / `swe-2-max`). The default is the lowest tier that fits the task shape, raised only when verification fails or the task is genuinely hard.
 
-## Decision framework: effort tier by task type
+## Decision framework: effort level by task type
 
-| Tier | When | Evidence |
-|---|---|---|
-| **Minimum (CoT on, no exploration)** | Default for locate-and-replace, one-line edits, known-pattern changes, mechanical refactors. Spec is clear; success is verifiable by a single test/build. | E3 matches 100% success at 85% cost cut on simple edits (arXiv:2607.13034). Overthinking: 1,953% more tokens on "2+3=?" with no accuracy gain (arXiv:2412.21187). |
-| **Medium (CoT + targeted exploration)** | Tasks with ambiguity in scope, multi-file changes with clear dependencies, bugs needing reproduction. Spec is good but not exhaustive. | Compute-optimal allocates per-prompt by difficulty, 4× more efficient than uniform best-of-N (arXiv:2408.03314). |
-| **High (deep reasoning + broad exploration)** | Architecture decisions, novel debugging (unfamiliar domain), multi-constraint refactors, tasks that failed at lower effort. | Effort High→xHigh lifted first-try perfect runs 28%→89% on a hard real-time app (arXiv:2607.02436). Use when verification fails at lower tiers. |
+| Level | model_uid | When | Evidence |
+|---|---|---|---|
+| **Medium** | `swe-2-medium` | Simple tasks, spot fixes, isolated scripts, one-line edits, mechanical refactors. Spec is clear; success is verifiable by a single test/build. | E3 matches 100% success at 85% cost cut on simple edits (arXiv:2607.13034). Overthinking: 1,953% more tokens on "2+3=?" with no accuracy gain (arXiv:2412.21187). |
+| **High** | `swe-2-high` | Tasks spanning multiple files with clear dependencies, bugs needing reproduction, decisions with several constraints. Default for general work. | Compute-optimal allocates per-prompt by difficulty, 4× more efficient than uniform best-of-N (arXiv:2408.03314). |
+| **Max** | `swe-2-max` | Open-ended tasks, global refactors, long-horizon coding, architecture decisions, novel debugging, tasks that failed at lower effort. | Higher effort lifted first-try perfect runs 28%→89% on a hard real-time app (arXiv:2607.02436). Use when verification fails at lower tiers. |
 
-**Rule of thumb:** start at minimum, raise one tier only when (a) verification fails, or (b) the task matches the High-tier description. Never start at High for a task you haven't tried at Minimum.
+**Rule of thumb:** start at Medium, raise one level only when (a) verification fails, or (b) the task matches the Max description. Never start at Max for a task you haven't tried at Medium.
 
 ## When to use this skill
 
@@ -30,17 +30,17 @@ Reasoning effort (thinking-token budget) is a **scarce resource to match to task
 
 - Within-session context window management — use `context-window-hygiene` instead.
 - Deciding whether to use cross-session memory — use `memory-hygiene`.
-- Choosing a model — this skill assumes the model is fixed; only effort varies.
+- Choosing a model family — this skill assumes SWE-2 is fixed; only the effort level varies.
 
 ## Rules
 
-1. **Improve the spec before raising effort.** Information quality substitutes for reasoning budget. A clearer spec at Minimum effort beats a vague spec at High effort (arXiv:2608.01347: bounded-efficiency instruction preserves diagnosis+validation while avoiding waste).
+1. **Improve the spec before raising effort.** Information quality substitutes for reasoning budget. A clearer spec at Medium effort beats a vague spec at Max effort (arXiv:2608.01347: bounded-efficiency instruction preserves diagnosis+validation while avoiding waste).
 2. **Start minimal, expand on failure.** E3 (Estimate, Execute, Expand): estimate the task's needs, execute the minimum viable path, expand scope only when verification fails (arXiv:2607.13034). This is the academic form of "start low, crank up."
 3. **Never request "multiple approaches" when only one is the deliverable.** Asking the agent to develop and compare approaches multiplies reasoning 2.4-7.4× without improving success — it produces ~3 elaborated-but-discarded branches and exactly 1 implemented approach (arXiv:2608.01347).
 4. **Replace certainty language with an executable stop rule.** "Make sure it's correct" / "be thorough" creates verification loops costing up to 18× the clean-run median with no success gradient (arXiv:2608.01347). Instead: "run `npm test` and stop when green" — a verifiable condition, not an open-ended injunction.
-5. **Raise effort when verification fails OR the task is genuinely hard.** Effort helps on hard tasks: High→xHigh lifted perfect runs 28%→89% and cut corrective prompts ~5× (arXiv:2607.02436). The signal to raise is a failed verification at the current tier, not a feeling.
+5. **Raise effort when verification fails OR the task is genuinely hard.** Effort helps on hard tasks: a higher level lifted perfect runs 28%→89% and cut corrective prompts ~5× (arXiv:2607.02436). The signal to raise is a failed verification at the current level, not a feeling.
 6. **Compute-optimal is difficulty-dependent, not maximal.** Uniform max effort is 4× less efficient than difficulty-matched allocation (arXiv:2408.03314). The optimal budget for an easy prompt is small; for a hard prompt, large.
-7. **Some chain-of-thought is always needed.** Zero reasoning is suboptimal — CoT enhances the ability to tackle intricate reasoning tasks (arXiv:2412.21187); test-time compute improves outputs on challenging prompts (arXiv:2408.03314). The goal is right-sized CoT, not no CoT.
+7. **Reasoning is native, not prompted.** SWE-2 plans and reasons without chain-of-thought instructions. Write specs that state WHAT plus acceptance criteria; don't prescribe HOW the model should think. The goal is right-sized effort, not scripted reasoning.
 
 ## Parallelism and size guards
 
@@ -55,8 +55,8 @@ Reasoning effort (thinking-token budget) is a **scarce resource to match to task
 - **Certainty loops.** "Be absolutely sure this is correct" with no stop rule. Produces repeated tests, extra turns, 18× cost, no success gradient (arXiv:2608.01347).
 - **Maximum-context-first.** Re-reading files and dependencies already seen, turning a one-line edit into a codebase audit. E3 cuts this: 92% fewer inspected files at equal success (arXiv:2607.13034).
 - **Overthinking simple problems.** o1-like models generate 13 solutions for "2+3=?" — 1,953% more tokens, no accuracy gain (arXiv:2412.21187).
-- **Universal minimum.** The opposite extreme. Hard tasks need high effort (28%→89% perfect runs, arXiv:2607.02436). The prescription is difficulty-matched, not minimum-universal.
-- **Raising effort to compensate for a bad spec.** A vague spec at High effort costs more and succeeds less than a clear spec at Minimum. Fix the spec first (Rule 1).
+- **Universal minimum.** The opposite extreme. Hard tasks need Max effort (28%→89% perfect runs, arXiv:2607.02436). The prescription is difficulty-matched, not minimum-universal.
+- **Raising effort to compensate for a bad spec.** A vague spec at Max effort costs more and succeeds less than a clear spec at Medium. Fix the spec first (Rule 1).
 
 ## Academic basis
 

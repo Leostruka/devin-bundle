@@ -50,12 +50,12 @@ MARKER_NAME = ".refine-pending"
 
 REMINDER = (
     "Session was marked as complex ({detail}).\n"
-    "Before stopping, run the `primeagent-reference` skill in Refine mode:\n"
-    "- Review the trajectory for recurring failures, reusable tactics, and "
-    "hard-won knowledge.\n"
-    "- Refinement evidence must include a reproducible command (AGENTS.md Rule 15); "
+    "Before stopping, run the `primeagent-reference` skill in Refine mode.\n"
+    "Acceptance criteria:\n"
+    "- Recurring failures, reusable tactics, and hard-won knowledge are captured.\n"
+    "- Every refinement cites a reproducible command (AGENTS.md Rule 15); "
     "vague evidence is a phantom guardrail.\n"
-    "- Log each refinement to .devin/refinements.log.jsonl.\n"
+    "- Each refinement is logged to .devin/refinements.log.jsonl.\n"
     "The pending marker has been cleared, so stopping again will succeed."
 )
 

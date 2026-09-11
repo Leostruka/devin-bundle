@@ -6,7 +6,7 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 conversation; a large one taxes the context window and worsens
 lost-in-the-middle retrieval (Rule 18). Non-pinned rules below are terse
 one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
-12-19, 21) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see docs/MODEL-GUIDE.md).
+12-19, 21) keep full detail because they must survive compaction. Rule 20 is non-pinned (effort-aware, see docs/MODEL-GUIDE.md).
 
 ## Rule summary
 
@@ -28,7 +28,7 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 17. **Don't deduce — verify with tools** — never infer the state of the world, a file's contents, a command's output, or a claim's truth from reasoning alone. Use `read`, `exec`, `grep`, `glob` to observe reality before asserting anything. A deduction presented as fact is a guess with confidence. Guesses fail silently; tool output fails loudly. Prefer loud failure.
 18. **Keep the context window lean** — context window = input + output tokens, hard-capped by the provider. Lost-in-the-middle deprioritizes the middle of long chats. Default to `clear` over `compact`; keep rules files small; audit MCP servers before adding (`mcp-context-audit`); paste large inputs to files, not chat (`context-folding`). Watch the budget with `context-budget.py`. Bigger window ≠ better retrieval.
 19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
-20. **Model-aware operation** — model selection is driven by `data/bundle-models.json`. Use `default_parent_model` for the parent, `max_role_model` for planning/architecture agents (`architect`, `researcher`, `reviewer`), and `medium_role_model` for execution agents (`debugger`, `implementer`, `qa-ci`). The `swe` alias resolves to paid `swe-1.7-lightning`; do not use it when free models are available. Don't over-specify tool-use (the parent model decides natively). Fan-out is cheap with free models. Keep system prompt cache-stable. See `docs/MODEL-GUIDE.md`.
+20. **Effort-aware operation** — routing is by effort level (Medium/High/Max), not model size, via `data/bundle-models.json`: `default_parent_model` for the parent, `max_role_model` for planning/architecture agents (`architect`, `researcher`, `reviewer`), `medium_role_model` for execution agents (`debugger`, `implementer`, `qa-ci`). Medium: simple tasks, spot fixes, isolated scripts. High: multi-file work (default). Max: open-ended tasks, global refactors, long-horizon coding. Prompts state WHAT + acceptance criteria — no forced chain-of-thought. Verify aliases against the registry before use. See `docs/MODEL-GUIDE.md`.
 21. **Don't think through uncertainty — research or ask** — when you don't know something or are in doubt, stop reasoning and either research it (facts, libraries, state of the world) or ask the user (intent, business rules, case-of-use).
 22. **Minimum code, no token maxing** — prefer the smallest code/solution that solves the problem. Reject overengineering, over-prompting, and token maxing. Complexity is attack surface (Rule 13). When in doubt, simplify.
 23. **Sanitize inputs and outputs** — treat every user input as untrusted; validate and sanitize before use. Don't log or output secrets, credentials, tokens, or sensitive data. Endpoints and S3 buckets must default to private; any public endpoint or URL requires documented justification.
@@ -165,7 +165,7 @@ Update wrong skills in place before use. Create a skill for recurring patterns (
 2. Discovery-friendly — keywords an agent would search; no workflow summary.
 3. Devin-native tools — `exec`, `read`, `edit`, `write`, `grep`, `glob`, `run_subagent`, `web_search`, `mcp_call_tool`, `ask_user_question`. No `Task(...)`, `subagent_type`, non-Devin prefixes.
 4. Devin-native paths — `.devin/`, `~/.config/devin/`, `%APPDATA%\devin\`. No non-Devin runtime paths.
-5. Subagents — `profile: "subagent_general"` (herda parent, **gratuito** com default parent model) or custom agent profiles. `architect`, `researcher`, `reviewer` use `model: swe-1-7` (Max, **gratuito**). `debugger`, `implementer`, `qa-ci` use `model: swe-1-7-medium` (Medium, **gratuito**). **Avoid `subagent_explore`** — resolves to SWE-1.6 (PAID $0.5/$2.5 MTok). Use custom `researcher` instead. Model data is in `data/bundle-models.json`.
+5. Subagents — `profile: "subagent_general"` (inherits parent, **free** with default parent model) or custom agent profiles. `architect`, `researcher`, `reviewer` use `model: swe-2-max` (Max effort, **free**). `debugger`, `implementer`, `qa-ci` use `model: swe-2-medium` (Medium effort, **free**). **Avoid `subagent_explore`** — runs on the CLI default router (possibly PAID). Use custom `researcher` instead. Model data is in `data/bundle-models.json`.
 6. Scripts — Python/Bash/JS as appropriate; prefer Python for cross-platform.
 7. No AI signatures in skills.
 8. No platform leakage — no non-Devin AI tools/runtimes/paths.
@@ -198,20 +198,22 @@ Failures are signals to resolve, not stop conditions. Deliver a working solution
 - Don't mask failures with workarounds that hide the root cause. Fix the cause.
 - When delivering a fix, show evidence: re-run the exact failing command, show green.
 
-### 20. Model-aware operation (bundle-models.json)
+### 20. Effort-aware operation (bundle-models.json)
 
-Model selection is driven by `data/bundle-models.json`. The canonical free defaults are `default_parent_model` (GLM-5.2 High, 200K) for the parent, `max_role_model` (`swe-1-7`, SWE-1.7 Max, 262K) for planning/architecture agents (`architect`, `researcher`, `reviewer`), and `medium_role_model` (`swe-1-7-medium`, SWE-1.7 Medium, 262K) for execution agents (`debugger`, `implementer`, `qa-ci`). See `docs/MODEL-GUIDE.md` for detail and override via `BUNDLE_*` env vars.
+Routing is by effort level, not model size. `data/bundle-models.json` maps roles to SWE-2 variants: `default_parent_model` (`swe-2-high`) for the parent, `max_role_model` (`swe-2-max`) for planning/architecture agents (`architect`, `researcher`, `reviewer`), and `medium_role_model` (`swe-2-medium`) for execution agents (`debugger`, `implementer`, `qa-ci`). See `docs/MODEL-GUIDE.md` for detail and override via `BUNDLE_*` env vars.
 
-- The parent model natively decides when to invoke tools during inference — don't over-specify tool-use rules; let the model decide. Rule 17 (verify with tools) aligns.
-- Thinking mode is internal reasoning before output — Rule 8 (telegraphic) applies to output only, not thinking tokens.
+- Choose effort by task shape: **Medium** for simple tasks, spot fixes, isolated scripts; **High** for multi-file work (default); **Max** for open-ended tasks, global refactors, and long-horizon coding.
+- SWE-2 plans natively — never add forced chain-of-thought ("think step by step", "plan before acting") to prompts, skills, or agent profiles. State WHAT must be done plus acceptance criteria; leave HOW to the model.
+- The model natively decides when to invoke tools during inference — don't over-specify tool-use rules. Rule 17 (verify with tools) aligns.
+- Rule 8 (telegraphic) applies to output only.
 - Subagent fan-out is cheap with free 262K models — prefer dispatching parallel subagents for independent research/exploration over serial inline work.
-- SWE-1.7 self-compaction is trained (summarize + resume) — constraint-pinning still needed (Governance Decay applies to all models, arXiv:2606.22528v2) but fires less often.
-- Prompt caching is cheap ($0.26/M read) — keep AGENTS.md and system prompt cache-stable (don't change early tokens frequently). Pinned rules at top = cache-friendly.
-- **⚠️ `swe` alias é PAGO** ($2.5/$12.5 MTok, 202K). Use `swe-1-7` (Max, free, 262K) or `swe-1-7-medium` (Medium, free, 262K) in `agents/`. Data from `devin models list` and `data/bundle-models.json`.
-- **🚫 NUNCA usar `subagent_explore` (built-in) quando parent é FREE.** Ele roda no default subagent model (SWE-1.6, PAGO $0.5/$2.5). Não há override local — apenas enterprise settings podem mudar isso. **Usar o profile customizado `researcher` em vez de `subagent_explore`** — ele pin `model: swe-1-7` (gratuito, 262K) e tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
+- SWE-2 self-compaction is trained (summarize + resume) — constraint-pinning still needed (Governance Decay applies to all models, arXiv:2606.22528v2) but fires less often.
+- Keep AGENTS.md and system prompt cache-stable (don't change early tokens frequently). Pinned rules at top = cache-friendly.
+- **`swe` alias resolves to the free SWE-2 family.** Verify `data/bundle-models.json` before using any non-canonical model id — unverified aliases may resolve to paid models.
+- **🚫 NUNCA usar `subagent_explore` (built-in) quando parent é FREE.** Ele roda no default router do CLI, que pode cobrar por token. Não há override local — apenas enterprise settings podem mudar isso. **Usar o profile customizado `researcher` em vez de `subagent_explore`** — ele pin `model: swe-2-max` (gratuito, 262K) e tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
 - **Política de modelos: CONDICIONAL ao parent.**
-  - **Parent FREE (default `glm-5-2`)**: subagents DEVEM ser FREE (`swe-1-7`/`swe-1-7-medium`). Nunca usar modelos pagos. Se o parent + fan-out de subagents free falharem, **parar e reportar ao usuário**.
-  - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Nesse caso, `subagent_explore` (SWE-1.6) e outros modelos pagos são permitidos. Ver protocolo em `docs/MODEL-GUIDE.md`.
+  - **Parent FREE (default `swe-2-high`)**: subagents DEVEM ser FREE (`swe-2-max`/`swe-2-medium`). Nunca usar modelos pagos. Se o parent + fan-out de subagents free falharem, **parar e reportar ao usuário**.
+  - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Ver protocolo em `docs/MODEL-GUIDE.md`.
 
 ### 22. Minimum code, no token maxing
 

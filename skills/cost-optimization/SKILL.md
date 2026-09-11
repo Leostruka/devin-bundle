@@ -19,14 +19,14 @@ Reduce token, compute, and infrastructure spend.
 
 1. **Measure current cost.** Tokens per request, model tier, cache hit rate.
 2. **Audit context usage.** Use `mcp-context-audit` to find heavy MCP tool definitions.
-3. **Right-size models.** Use `swe-1-7` for subagents and `glm-5-2` for the free primary model; use paid models only when explicitly approved.
+3. **Right-size effort.** Use `swe-2-max`/`swe-2-medium` for subagents and `swe-2-high` for the free primary model; use paid models only when explicitly approved.
 4. **Add caching.** Reuse previous tool outputs and summaries where safe.
 5. **Shorten prompts.** Remove unused context, prefer file snippets over full reads.
 6. **Re-measure.** Compare cost before and after.
 
 ## Context and loop cost controls
 
-- **Subagents first.** Delegate heavy exploration to `swe-1-7` subagents; keep the main context lean.
+- **Subagents first.** Delegate heavy exploration to `swe-2-max` subagents; keep the main context lean.
 - **Token limit.** Use `tokens-limit` or equivalent budget guard when available; stop if the threshold is exceeded.
 - **Clear vs compact.** Default to `clear` between unrelated tasks; `compact` only when continuity is required. Compaction is lossy.
 - **Parallelism.** Limit concurrent subagents to 1-3. If a task suggests more than 3, alert the user and ask for approval.

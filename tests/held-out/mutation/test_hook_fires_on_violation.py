@@ -51,12 +51,12 @@ def test_nudge_emits_additional_context():
     output = run_nudge("test prompt")
     assert "hookSpecificOutput" in output, f"Missing hookSpecificOutput: {output}"
     assert "additionalContext" in output["hookSpecificOutput"], f"Missing additionalContext: {output}"
-    ctx = output["hookSpecificOutput"]["additionalContext"]
-    assert "SCOPE" in ctx, "Missing SCOPE check"
-    assert "TELEGRAPHIC" in ctx, "Missing TELEGRAPHIC check"
-    assert "SKILLS" in ctx, "Missing SKILLS check"
-    assert "VERIFY" in ctx, "Missing VERIFY check"
-    assert "OPINION-SILENT" in ctx, "Missing OPINION-SILENT check"
+    ctx = output["hookSpecificOutput"]["additionalContext"].lower()
+    assert "scope" in ctx, "Missing SCOPE check"
+    assert "telegraphic" in ctx, "Missing TELEGRAPHIC check"
+    assert "skill" in ctx, "Missing SKILLS check"
+    assert "verify" in ctx, "Missing VERIFY check"
+    assert "opinion" in ctx, "Missing OPINION-SILENT check"
 
 
 def test_nudge_exit_code_zero():

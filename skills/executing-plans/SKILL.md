@@ -32,7 +32,7 @@ For each task:
 3. Follow each step exactly (plan has bite-sized steps)
 4. Run the task's gate yourself and capture output + exit code
 5. If the task touches unfamiliar code or a library, invoke `deep-mode` or `context7` first
-6. **Independent QA/CI verification (anti-gaming):** dispatch the `qa-ci` subagent (`swe-1-7`, no write tools) to re-run the gate on a clean checkout, run `tests/held-out/` if present, and audit the diff for overfitting (hard-coded constants, mocked gates, skipped tests, phantom guardrails). The QA/CI subagent sees only the diff and the spec — never your report.
+6. **Independent QA/CI verification (anti-gaming):** dispatch the `qa-ci` subagent (`swe-2-medium`, no write tools) to re-run the gate on a clean checkout, run `tests/held-out/` if present, and audit the diff for overfitting (hard-coded constants, mocked gates, skipped tests, phantom guardrails). The QA/CI subagent sees only the diff and the spec — never your report.
 7. Mark as `completed` only when the `qa-ci` subagent returns `Verdict: PASS` with fresh command output + exit code as evidence. If QA/CI returns `FAIL`, keep the task `in_progress`, feed the failure back, and re-enter the fix loop. Never override a QA/CI FAIL with self-report.
 
 ### Step 3: Complete Development

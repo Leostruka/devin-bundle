@@ -144,10 +144,11 @@ def validate_skill(skill_path):
     # Check 3b: model field must not use paid aliases (Rule 20)
     model = fm.get("model", "")
     if model:
-        # "swe" alias is PAID ($2.5/$12.5 MTok) — must use "swe-1-7" (free)
-        paid_aliases = {"swe", "opus", "sonnet", "haiku", "gpt-4", "gpt-4o", "gpt-5"}
+        # Canonical free ids are swe-2-medium / swe-2-high / swe-2-max.
+        # Vendor short names resolve to paid models.
+        paid_aliases = {"opus", "sonnet", "haiku", "gpt-4", "gpt-4o", "gpt-5", "codex", "gemini"}
         if model in paid_aliases:
-            issues.append(f"model '{model}' is a paid alias — use 'swe-1-7' (free) or 'glm-5-2' (free) per Rule 20")
+            issues.append(f"model '{model}' is a paid alias — use 'swe-2-max' or 'swe-2-medium' (free) per Rule 20")
             score -= 10
 
     # Check 3c: subagent field must be boolean, not a profile string (docs.devin.ai creating-skills)

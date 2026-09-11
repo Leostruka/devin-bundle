@@ -45,7 +45,7 @@ Skill frontmatter can also set:
 - `allowed-tools`: restrict which tools the skill can use (e.g. `[read, grep, glob, exec]`)
 - `subagent: true`: run the skill as a `subagent_general` subagent
 - `agent: <profile>`: run the skill as a specific custom subagent
-- `model`: override the model for this skill (e.g. `swe-1-7` [free], `glm-5-2` [free]) — **never use paid models**
+- `model`: override the model for this skill (e.g. `swe-2-max` [free], `swe-2-medium` [free]) — **never use paid models**
 - `permissions`: add permission grants/restrictions (e.g. `allow: [Read(src/**)]`, `deny: [exec]`)
 - `triggers`: who can invoke it (default `[user, model]`)
 
@@ -78,7 +78,7 @@ agent: reviewer
 Or dispatch directly from a skill:
 
 ```
-Run a `subagent_general` or `researcher` subagent (NOT `subagent_explore` when parent is FREE — PAID SWE-1.6) with the reviewer profile, passing the diff and the review checklist.
+Run a `subagent_general` or `researcher` subagent (NOT `subagent_explore` when parent is FREE — runs on the CLI default router, possibly PAID) with the reviewer profile, passing the diff and the review checklist.
 ```
 
 ## Adding rules

@@ -12,19 +12,19 @@ _spec.loader.exec_module(cp)
 
 
 def test_select_implement_recipe_from_instruction():
-    result = cp.select_recipe("Implement a new feature", tools=["read", "edit", "write", "exec"], model="swe-1-7")
+    result = cp.select_recipe("Implement a new feature", tools=["read", "edit", "write", "exec"], model="swe-2-medium")
     assert result["verdict"] == "routed"
     assert result["recipe"] == "implement"
 
 
 def test_select_research_recipe_with_web_tools():
-    result = cp.select_recipe("Research the latest Python release", tools=["web_search", "webfetch"], model="gemini-3-7-flash")
+    result = cp.select_recipe("Research the latest Python release", tools=["web_search", "webfetch"], model="swe-2-max")
     assert result["verdict"] == "routed"
     assert result["recipe"] == "research"
 
 
 def test_fallback_when_no_confident_recipe():
-    result = cp.select_recipe("Do something random", tools=["read"], model="glm-5-2", confidence_threshold=0.9)
+    result = cp.select_recipe("Do something random", tools=["read"], model="swe-2-high", confidence_threshold=0.9)
     assert result["verdict"] == "fallback"
     assert result["recipe"] == "default"
 

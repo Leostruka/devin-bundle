@@ -163,9 +163,9 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 | `subagent_explore` | Exploração built-in | Não |
 | `subagent_general` | Trabalho geral built-in | Sim |
 
-Com o parent gratuito em `glm-5-2`, prefira o perfil customizado `researcher`: `subagent_explore` resolve para SWE-1.6 pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
+Com o parent gratuito em `swe-2-high`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
 
-Os seis perfis customizados estão em `agents/` e usam `swe-1-7`. O parent usa `glm-5-2`. Consulte [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md).
+O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os seis perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md).
 
 ### 4. Ferramentas e MCP
 

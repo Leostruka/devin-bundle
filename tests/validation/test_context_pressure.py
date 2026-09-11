@@ -15,8 +15,8 @@ def test_estimate_tokens_is_reasonable():
 
 
 def test_get_model_window_known_models():
-    assert context_pressure.get_model_window('glm-5-2') == 200000
-    assert context_pressure.get_model_window('swe-1.7') == 262000
+    assert context_pressure.get_model_window('swe-2-high') == 262144
+    assert context_pressure.get_model_window('swe-2-max') == 262144
 
 
 def test_get_model_window_fallback():

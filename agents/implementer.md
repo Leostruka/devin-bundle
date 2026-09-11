@@ -1,6 +1,6 @@
 ---
 name: implementer
-model: swe-1-7-medium
+model: swe-2-medium
 description: Use for bounded implementation tasks — writing code, tests, and verifying changes. Full tool access. Delegate when requirements are clear and scoped, when parallel implementation across independent folders is possible, or when the controller should stay free for coordination.
 allowed-tools:
   - read

@@ -139,11 +139,11 @@ sensitivity:
 
 | Task type | Profile | Why |
 |---|---|---|
-| Codebase research, doc lookup | `researcher` (max-role model) | Read-only, free, fast |
-| Code review, spec compliance | `reviewer` (max-role model) | Needs judgment, free |
-| Bounded implementation | `implementer` (max-role model) | Needs full tools + coding strength (coding benchmarks favor the max-role model over the parent model; check `data/bundle-models.json`) |
-| Architecture, trade-offs | `architect` (max-role model) | Needs judgment, read-only, free |
-| Debugging, root cause | `debugger` (max-role model) | Needs exec + coding strength |
+| Codebase research, doc lookup | `researcher` (`swe-2-max`) | Read-only, free, fast |
+| Code review, spec compliance | `reviewer` (`swe-2-max`) | Needs judgment, free |
+| Bounded implementation | `implementer` (`swe-2-medium`) | Needs full tools + coding strength; Medium effort suffices for spec'd work |
+| Architecture, trade-offs | `architect` (`swe-2-max`) | Needs judgment, read-only, free |
+| Debugging, root cause | `debugger` (`swe-2-medium`) | Needs exec + iterative hypothesis testing |
 | Complex reasoning, context isolation | `subagent_general` (parent model) | Inherits parent model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`), free, for tasks needing the parent model's reasoning mode |
 
 Don't dispatch `implementer` for a research task — `researcher` is 10x cheaper
@@ -428,40 +428,39 @@ conflicts that only emerge from implementation.
 
 ### Model Selection
 
-In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the model configured as the `subagent_explore` alias in `data/bundle-models.json` (paid by default). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: max-role model`, free, context per `data/bundle-models.json`) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` should use the bundle role model (max by default) to stay within the bundle's free tier.
+In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the CLI default router (possibly paid). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: swe-2-max`, free) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin SWE-2 effort variants to stay within the bundle's free tier.
+
+**Effort-level routing:** pick the effort level that matches the task shape (see `effort-calibration`): **Medium** (`swe-2-medium`) for simple/bounded execution, **High** (`swe-2-high`) for multi-file work, **Max** (`swe-2-max`) for open-ended or judgment-heavy work.
 
 **Use `subagent_general` (inherits parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free) for:**
 - Final whole-branch review — the judgment task that needs the most capability.
-- High-stakes architecture that needs the parent model's reasoning (routine architecture → `architect` with max-role model).
-- Rounds 4-5 fix-loop escalation (the parent can switch to a more capable model via `/model` before dispatching).
-- Complex reasoning tasks that benefit from context isolation but need the parent model's thinking mode.
+- High-stakes architecture that needs the parent model's reasoning (routine architecture → `architect` at Max effort).
+- Rounds 4-5 fix-loop escalation (the parent can switch effort via `/model` before dispatching).
+- Complex reasoning tasks that benefit from context isolation but need the parent model's effort level.
 
-**Use custom profiles (all pin the max-role model, free, context per `data/bundle-models.json`) for:**
-- `researcher` — codebase research and fact-finding (read-only, FREE).
-- `implementer` — bounded coding tasks (the max-role model is 72% better than the parent model at FrontierCode: 42.3% vs 24.5%; check `data/bundle-models.json`).
-- `debugger` — root cause analysis and debugging (max-role model coding strength).
-- `architect` — routine architecture and trade-off analysis (read-only).
-- `reviewer` — code review and spec compliance (read-only + exec for tests).
+**Use custom profiles (free, context per `data/bundle-models.json`) for:**
+- `researcher` — codebase research and fact-finding (read-only, `swe-2-max`).
+- `implementer` — bounded coding tasks (`swe-2-medium`).
+- `debugger` — root cause analysis and debugging (`swe-2-medium`).
+- `architect` — routine architecture and trade-off analysis (read-only, `swe-2-max`).
+- `reviewer` — code review and spec compliance (read-only + exec for tests, `swe-2-max`).
 
 **To run a different model for a subagent:**
 1. Switch the parent session model with `/model <model>` before dispatching (affects all `subagent_general` dispatches from this session).
 2. Or create a custom subagent profile in `~/.config/devin/agents/` or `%APPDATA%\devin\agents\` with a `model:` field, and pass that profile name as `profile` in `run_subagent`.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes. The max-role model is fast enough that turn
-count rarely causes wall-clock issues. For implementers, the max-role model is the
-default (pinned in `agents/implementer.md` to the bundle max role) — it outperforms
-the parent model on coding benchmarks (42.3% vs 24.5% FrontierCode; check
-`data/bundle-models.json`). When the task's plan text contains the complete code to
-write, the implementation is transcription plus testing, and the max-role model is
-more than sufficient. For rounds 4-5 escalation, switch to `subagent_general`
-(inherits the parent model from `BUNDLE_DEFAULT_MODEL`) or switch the parent to a
-more capable model via `/model`.
+many turns a subagent takes. SWE-2 variants are fast enough that turn
+count rarely causes wall-clock issues. When the task's plan text contains the complete code to
+write, the implementation is transcription plus testing, and Medium effort is
+sufficient. For rounds 4-5 escalation, switch to `subagent_general`
+(inherits the parent model from `BUNDLE_DEFAULT_MODEL`) or raise the parent's
+effort via `/model`.
 
 **Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → `implementer` (max-role model)
-- Touches multiple files with integration concerns → `implementer` (max-role model)
-- Requires design judgment or broad codebase understanding → `architect` (max-role model) for design, then `implementer` (max-role model) for code
+- Touches 1-2 files with a complete spec → `implementer` (Medium effort)
+- Touches multiple files with integration concerns → `implementer` (Medium effort)
+- Requires design judgment or broad codebase understanding → `architect` (Max effort) for design, then `implementer` (Medium effort) for code
 - Rounds 4-5 fix-loop failure → `subagent_general` (parent `BUNDLE_DEFAULT_MODEL`) for fresh eyes + reasoning
 
 ### The Task Loop

@@ -1,6 +1,6 @@
 ---
 name: reviewer
-model: swe-1-7
+model: swe-2-max
 description: Project-local reviewer. Use for independent two-axis review (Standards vs Spec) of changes in this repository. Read-only with exec for verification commands only. Never edits code.
 allowed-tools:
   - read

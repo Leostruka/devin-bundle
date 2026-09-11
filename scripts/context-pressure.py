@@ -344,7 +344,7 @@ def main():
     ap = argparse.ArgumentParser(description="Context pressure estimator")
     ap.add_argument("--reset", action="store_true", help="clear session marker")
     ap.add_argument("--report", action="store_true", help="show current estimate")
-    ap.add_argument("--model", help="model ID for window size (e.g. glm-5-2, swe-1-7)")
+    ap.add_argument("--model", help="model ID for window size (e.g. swe-2-high, swe-2-max)")
     args = ap.parse_args()
 
     if args.model:
