@@ -922,8 +922,6 @@ function Start-Wizard {
                 $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
                 if ($total -eq 0) { $state = 'CANCEL'; continue }
 
-                $instancias = @()
-
                 $positions = switch ($total) {
                     2 { @('esquerda','direita','','') }
                     3 { @('esquerda','superior-direita','inferior-direita','') }
@@ -931,9 +929,19 @@ function Start-Wizard {
                     default { @('','','','') }
                 }
 
-                for ($i = 0; $i -lt $instancias.Count; $i++) {
-                    $instancias[$i].Position = $positions[$i]
-                    $instancias[$i].IsMain = ($i -eq 0)
+                $instancias = @($instancias | Where-Object {
+                    $p = $_.Project
+                    ($projetos -contains $p) -and (@($instancias | Where-Object { $_.Project -eq $p }).Count -eq $p.Count)
+                })
+
+                $labelIdx = 0
+                foreach ($p in $projetos) {
+                    foreach ($inst in @($instancias | Where-Object { $_.Project -eq $p })) {
+                        $inst.Label = $labels[$labelIdx]
+                        $inst.Position = $positions[$labelIdx]
+                        $inst.IsMain = ($labelIdx -eq 0)
+                        $labelIdx++
+                    }
                 }
 
                 $currentProjectIndex = 0
@@ -944,6 +952,12 @@ function Start-Wizard {
             'BRANCH' {
                 $proj = $projetos[$currentProjectIndex]
                 $startLabelIndex = [int]($projetos | Select-Object -First $currentProjectIndex | Measure-Object -Property Count -Sum).Sum
+
+                if (@($instancias | Where-Object { $_.Project -eq $proj }).Count -gt 0) {
+                    $currentProjectIndex++
+                    if ($currentProjectIndex -ge $projetos.Count) { $state = 'SUMMARY'; continue }
+                    continue
+                }
 
                 if (-not $proj.IsGitRepo) {
                     $instancias += [PSCustomObject]@{
