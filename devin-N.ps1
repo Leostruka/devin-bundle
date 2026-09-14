@@ -872,7 +872,11 @@ function Start-Wizard {
                         $state = 'PROJECT'; continue
                     }
                     else {
-                        $state = 'BRANCH_PREP'; continue
+                        $projetos = @($projetos | Where-Object { $_.Path -ne $proj.Path })
+                        $instancias = @($instancias | Where-Object { $_.Project -ne $proj })
+                        $instancesMode = 'new'
+                        if ($projetos.Count -eq 0) { $state = 'CANCEL'; continue }
+                        $state = 'PROJECT'; continue
                     }
                 }
 
@@ -899,6 +903,8 @@ function Start-Wizard {
             'BRANCH_PREP' {
                 $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
                 if ($total -eq 0) { $state = 'CANCEL'; continue }
+
+                $instancias = @()
 
                 $positions = switch ($total) {
                     2 { @('esquerda','direita','','') }
