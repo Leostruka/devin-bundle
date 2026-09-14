@@ -815,6 +815,7 @@ function Start-Wizard {
     $state = 'PROJECT'
     $currentProjectIndex = 0
     $instancesMode = 'new'
+    $instancesReturn = 'BRANCH_PREP'
 
     while ($state -ne 'EXECUTE' -and $state -ne 'CANCEL') {
         switch ($state) {
@@ -894,7 +895,7 @@ function Start-Wizard {
 
                 $proj.Count = $escolhaQuantidade.Numero
                 if ($instancesMode -eq 'new') { $state = 'MORE' }
-                else { $state = 'BRANCH_PREP' }
+                else { $state = $instancesReturn }
                 continue
             }
 
@@ -910,6 +911,7 @@ function Start-Wizard {
                 if (-not $continuar) {
                     $currentProjectIndex = $projetos.Count - 1
                     $instancesMode = 'edit'
+                    $instancesReturn = 'MORE'
                     $state = 'INSTANCES'
                     continue
                 }
@@ -977,6 +979,7 @@ function Start-Wizard {
                     if (-not $result.Success) {
                         $instancias = @($instancias | Where-Object { $_.Project -ne $proj })
                         $instancesMode = 'edit'
+                        $instancesReturn = 'BRANCH_PREP'
                         $state = 'INSTANCES'
                         continue
                     }
@@ -997,6 +1000,7 @@ function Start-Wizard {
                 $instancias = @($instancias | Where-Object { $_.Project -ne $lastProject })
                 $currentProjectIndex = [array]::IndexOf($projetos, $lastProject)
                 $instancesMode = 'edit'
+                $instancesReturn = 'BRANCH_PREP'
                 $state = 'INSTANCES'
                 continue
             }
