@@ -735,7 +735,6 @@ function Show-Summary {
 
             if ($needsRedraw) {
                 $needsRedraw = $false
-                $inner = $w - 4
                 $border = 'Cyan'
 
                 $rows = $Instances | ForEach-Object {
@@ -769,13 +768,15 @@ function Show-Summary {
                 $tableSep = SepLine '├' '┼' '┤'
                 $tableBottom = SepLine '└' '┴' '┘'
                 $tableWidth = $tableTop.Length
+                $boxW = [Math]::Max(20, [Math]::Min($w, $tableWidth + 4))
+                $inner = $boxW - 4
 
                 $header = foreach ($c in $col) { Cell $c.Name $c.W }
                 $headerLine = '│' + ($header -join '│') + '│'
 
                 Clear-Host
 
-                Write-Host ('┌' + ('─' * ($w - 2)) + '┐') -ForegroundColor $border
+                Write-Host ('┌' + ('─' * ($boxW - 2)) + '┐') -ForegroundColor $border
                 $title = 'Resumo da configuracao — Enter inicia · Esc reconfigurar'
                 if ($title.Length -gt $inner) { $title = $title.Substring(0, $inner) }
                 $title = $title.PadRight($inner)
@@ -783,7 +784,7 @@ function Show-Summary {
                 Write-Host -NoNewline $title -ForegroundColor 'Cyan'
                 Write-Host ' │' -ForegroundColor $border
 
-                Write-Host '├' + ('─' * ($w - 2)) + '┤' -ForegroundColor $border
+                Write-Host ('├' + ('─' * ($boxW - 2)) + '┤') -ForegroundColor $border
 
                 Write-Host -NoNewline '│ ' -ForegroundColor $border
                 Write-Host -NoNewline $tableTop -ForegroundColor $border
@@ -819,11 +820,11 @@ function Show-Summary {
                 $footer = "Total: $($Instances.Count) instancia(s) em $projetosUnicos projeto(s)"
                 if ($footer.Length -gt $inner) { $footer = $footer.Substring(0, $inner) }
                 $footer = $footer.PadRight($inner)
-                Write-Host '├' + ('─' * ($w - 2)) + '┤' -ForegroundColor $border
+                Write-Host ('├' + ('─' * ($boxW - 2)) + '┤') -ForegroundColor $border
                 Write-Host -NoNewline '│ ' -ForegroundColor $border
                 Write-Host -NoNewline $footer -ForegroundColor 'Cyan'
                 Write-Host ' │' -ForegroundColor $border
-                Write-Host '└' + ('─' * ($w - 2)) + '┘' -ForegroundColor $border
+                Write-Host ('└' + ('─' * ($boxW - 2)) + '┘') -ForegroundColor $border
             }
 
             if ([Console]::KeyAvailable) {

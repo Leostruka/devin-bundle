@@ -732,7 +732,11 @@ function Select-BranchesForProject {
                 $baseOptions = $allOptions + @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true }
                 $baseOptions = $baseOptions | Sort-Object Name -Unique
                 $baseSelected = Select-BranchTerminal -Options $baseOptions -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title ($M.BranchBaseSelecione -f $projectPath)
-                if (-not $baseSelected) { $baseSelected = @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true } }
+                if (-not $baseSelected) {
+                    $selectedBranches = @($selectedBranches | Where-Object { $_ -ne $selected })
+                    $i--
+                    continue
+                }
                 $baseBranch = $baseSelected.Name
             }
             else {
@@ -746,8 +750,11 @@ function Select-BranchesForProject {
                 $reservedAutoNames += "devin-$timestamp-$($AllLabels[$initialProjectLabelIdx + $k].ToLower())"
             }
 
+            $nameCancelled = $false
             while ($true) {
-                $customName = Read-Host ($M.BranchNomePersonalizado -f $defaultBranchName)
+                Write-Host ($M.BranchNomePersonalizado -f $defaultBranchName) -ForegroundColor Cyan
+                $customName = Read-EditableLine -Initial $defaultBranchName
+                if ($null -eq $customName) { $nameCancelled = $true; break }
                 if ([string]::IsNullOrWhiteSpace($customName)) { $customName = $defaultBranchName }
                 $customName = $customName.Trim()
 
@@ -772,6 +779,11 @@ function Select-BranchesForProject {
                     $branch = $customName
                     break
                 }
+            }
+            if ($nameCancelled) {
+                $selectedBranches = @($selectedBranches | Where-Object { $_ -ne $selected })
+                $i--
+                continue
             }
         }
 
@@ -872,7 +884,11 @@ function Start-Wizard {
                         $state = 'PROJECT'; continue
                     }
                     else {
-                        $state = 'BRANCH_PREP'; continue
+                        $projetos = @($projetos | Where-Object { $_.Path -ne $proj.Path })
+                        $instancias = @($instancias | Where-Object { $_.Project -ne $proj })
+                        $instancesMode = 'new'
+                        if ($projetos.Count -eq 0) { $state = 'CANCEL'; continue }
+                        $state = 'PROJECT'; continue
                     }
                 }
 
@@ -891,7 +907,13 @@ function Start-Wizard {
                     [PSCustomObject]@{ Resposta = $false; Label = 'Nao, concluir selecao' }
                 )
                 $continuar = Show-TerminalList -Items $simNao -Title ($M.AdicionarProjeto + " (total: $total)") -ToString { param($x) $x.Label } -DefaultIndex 1
-                if (-not $continuar -or -not $continuar.Resposta) { $state = 'BRANCH_PREP'; continue }
+                if (-not $continuar) {
+                    $currentProjectIndex = $projetos.Count - 1
+                    $instancesMode = 'edit'
+                    $state = 'INSTANCES'
+                    continue
+                }
+                if (-not $continuar.Resposta) { $state = 'BRANCH_PREP'; continue }
                 $state = 'PROJECT'
                 continue
             }
@@ -899,6 +921,8 @@ function Start-Wizard {
             'BRANCH_PREP' {
                 $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
                 if ($total -eq 0) { $state = 'CANCEL'; continue }
+
+                $instancias = @()
 
                 $positions = switch ($total) {
                     2 { @('esquerda','direita','','') }
