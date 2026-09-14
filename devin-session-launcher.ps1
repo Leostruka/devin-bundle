@@ -672,6 +672,7 @@ function Invoke-WithSpinner {
         [scriptblock]$ScriptBlock
     )
 
+    $Message = ($Message -replace '[\r\n]+', ' ').Trim()
     $frames = @('⢿','⣻','⣽','⣾','⣷','⣯','⣟','⡿')
     $job = $null
     try {
