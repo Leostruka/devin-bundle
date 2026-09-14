@@ -714,7 +714,7 @@ function Show-Summary {
 
     if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected) {
         Write-Host 'Resumo da configuracao (modo nao interativo):' -ForegroundColor Cyan
-        $Instances | Select-Object Label, @{N='Projeto';E={$_.Project.Path}}, Branch, @{N='Tipo';E={if ($_.BranchInfo -and $_.BranchInfo.Type) { $_.BranchInfo.Type } else { '-' }}}, @{N='Posicao';E={if ($_.Position) { $_.Position } else { '-' }}} | Format-Table -AutoSize | Out-String | Write-Host
+        $Instances | Select-Object Label, @{N='Projeto';E={$_.Project.Path}}, Branch, @{N='Tipo';E={if (-not $_.Project.IsGitRepo) { 'sem git' } elseif ($_.BranchInfo -and $_.BranchInfo.Type) { $_.BranchInfo.Type } else { '-' }}}, @{N='Posicao';E={if ($_.Position) { $_.Position } else { '-' }}} | Format-Table -AutoSize | Out-String | Write-Host
         return $true
     }
 
@@ -746,7 +746,7 @@ function Show-Summary {
                         Label = $_.Label
                         Projeto = $proj
                         Branch = if ($_.Branch) { $_.Branch } else { '-' }
-                        Tipo = if ($_.BranchInfo -and $_.BranchInfo.Type) { $_.BranchInfo.Type } else { '-' }
+                        Tipo = if (-not $_.Project.IsGitRepo) { 'sem git' } elseif ($_.BranchInfo -and $_.BranchInfo.Type) { $_.BranchInfo.Type } else { '-' }
                         Posicao = if ($_.Position) { $_.Position } else { '-' }
                     }
                 }

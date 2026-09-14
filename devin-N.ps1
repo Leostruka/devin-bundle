@@ -11,7 +11,7 @@ $M = @{
     WorkspaceDefinido = "Workspace definido para: {0}`n"
     NenhumaPastaSelecionada = "Nenhuma pasta selecionada. Mantendo no diretorio atual.`n"
     DimensaoJanela = 'Aviso: Nao foi possivel obter as dimensoes da janela. Redimensionamento desabilitado.'
-    NaoGitRepo = 'O projeto nao e um repositorio Git. Apenas 1 instancia e permitida.'
+    NaoGitRepo = 'O projeto nao e um repositorio Git. Apenas 1 instancia e permitida e nao havera selecao de branch.'
     ConfigurandoInstancias = "`nConfigurando {0} instancia(s) em {1} projeto(s)..."
     WorktreeWorkspaceGit = "`n[WORKTREE] Projeto e um repositorio Git."
     SincronizandoReferencias = 'Sincronizando referencias remotas...'
@@ -730,7 +730,7 @@ function Select-BranchesForProject {
         if ($selected.Type -eq 'new') {
             if ($allOptions.Count -gt 0) {
                 $baseOptions = $allOptions + @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true }
-                $baseOptions = $baseOptions | Sort-Object Name -Unique
+                $baseOptions = @($baseOptions | Where-Object { $_.Name } | Sort-Object Name -Unique)
                 $baseSelected = Select-BranchTerminal -Options $baseOptions -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title ($M.BranchBaseSelecione -f $projectPath)
                 if (-not $baseSelected) {
                     $selectedBranches = @($selectedBranches | Where-Object { $_ -ne $selected })
