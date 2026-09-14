@@ -5,5 +5,5 @@
   "source_url": "https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}",
   "license_holder": "{{BUNDLE_OWNER}}",
   "license_year": "{{LICENSE_YEAR}}",
-  "validated_cli_version": "3000.6.14"
+  "validated_cli_version": "3000.10.21"
 }

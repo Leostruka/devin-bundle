@@ -6,6 +6,28 @@ The bundle is validated against Devin CLI `{{VALIDATED_CLI_VERSION}}` (see `data
 
 Release notes for the validated version and intermediate CLI versions are tracked in `data/bundle-identity.json` and the Devin CLI changelog.
 
+## 3000.10.x capabilities (verified 2026-09-14)
+
+Capabilities added since 3000.6.x that interact with bundle surfaces, with the bundle's adoption decision:
+
+| Capability | Decision | Rationale |
+|---|---|---|
+| `disabled_tools` (user `config.json`) | not adopted | Every tool in the surface is referenced by bundle skills/scripts (verified 2026-09-14: `notebook_*`, `browser_preview`, `write_to_process`, `kill_shell`, `get_output`, `ask_user_question`, `request_scope`, `mcp_*`, `read_subagent` all have refs). Disabling any would remove a documented capability. Revisit if a tool becomes provably unused. |
+| `agent.compaction_threshold_tokens` (user config) | not adopted | No primary-source basis for a non-default value; the CLI default is context-window-based, and earlier compaction would only increase constraint-drop events that `constraint-pinning.py` must repair. |
+| `PreToolUse` `tool_provenance` payload | adopted (passive) | Payload field, no config needed; hook scripts may consume it. Existing hook payloads remain compatible. |
+| `web_search` in `permissions.allow/deny/ask` | not adopted | `allow` adds nothing (search was already auto-approved before 3000.10.x), `ask` adds friction, `deny` breaks research skills. |
+| `/code`, `/smart`, `/bypass` mode commands | adopted (documented) | User-facing commands; nothing to configure. |
+| Skills re-discovery after compaction; `.cursor/skills/` auto-load | adopted (passive) | CLI behavior; `.cursor/skills/` stays off because `read_config_from.cursor` ships `false`. |
+| `agent.codex_tools` | not adopted | GPT-specific tool set; irrelevant under the SWE-2 model policy. |
+| `shell.exec_shell` (beta) | not adopted | Bundle hook scripts are `python` invocations, shell-agnostic. |
+| `DEVIN_REFUSAL_FALLBACK` env var | not adopted | Env var, not a `config.json` key; cannot be shipped via the config template. |
+
+## `read_config_from` policy
+
+`config.json` imports no foreign tool config (`cursor`, `windsurf`, `claude`, `copilot`, `opencode`, `zed` are all `false`): imported skills, hooks, and MCP servers from other agents are not part of the bundle's validated surface.
+
+`agents_standard` is the exception: it gates only the standard rule files (`AGENTS.md`, `AGENTS.local.md`, `AGENT.md`, `.windsurfrules`), which are Devin CLI's native rules mechanism — the same mechanism the bundle's own `AGENTS.md` uses at the global level. Setting it `false` would silently disable every project-level `AGENTS.md` in repos the bundle is installed into, so the bundle ships `agents_standard: true`.
+
 Primary verification commands:
 
 ```powershell
