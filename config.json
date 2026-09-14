@@ -10,7 +10,7 @@
   },
   "attribution": false,
   "read_config_from": {
-    "agents_standard": false,
+    "agents_standard": true,
     "cursor": false,
     "windsurf": false,
     "claude": false,

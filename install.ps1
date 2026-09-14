@@ -91,14 +91,17 @@ function Write-Err($msg)  { Write-Host "    [x] $msg" -ForegroundColor Red }
 
 function Get-FileHash256($path) {
   if (-not (Test-Path $path)) { return $null }
-  return (Get-FileHash $path -Algorithm SHA256).Hash
+  $sha = [Security.Cryptography.SHA256]::Create()
+  try {
+    return ([BitConverter]::ToString($sha.ComputeHash([IO.File]::ReadAllBytes($path))) -replace '-','')
+  } finally { $sha.Dispose() }
 }
 
 function Get-FolderHash($path) {
   if (-not (Test-Path $path)) { return $null }
   $files = Get-ChildItem $path -Recurse -File | Sort-Object FullName
   if ($files.Count -eq 0) { return "" }
-  $hashes = $files | ForEach-Object { (Get-FileHash $_.FullName -Algorithm SHA256).Hash }
+  $hashes = $files | ForEach-Object { Get-FileHash256 $_.FullName }
   return ($hashes -join "`n")
 }
 

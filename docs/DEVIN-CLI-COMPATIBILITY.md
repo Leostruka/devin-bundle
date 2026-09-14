@@ -16,6 +16,27 @@ python audit.py
 python -m pytest
 ```
 
+## 3000.10.x capabilities (verified 2026-09-14)
+
+Decisions for configuration keys introduced between `3000.6.14` and `3000.10.21`:
+
+| Capability | Decision | Rationale |
+|---|---|---|
+| `disabled_tools` | Not adopted | Bundle skills/scripts reference all relevant tools; disabling would remove documented capability without a measured gain. |
+| `agent.compaction_threshold_tokens` | Not adopted | No evidence-backed non-default value; earlier compaction only increases constraint-drop events (pinning hook already covers them). |
+| `PreToolUse` `tool_provenance` | Adopted passively | Field is additive in hook payloads; existing hook scripts ignore unknown keys. No config change needed. |
+| `web_search` permission rules | Not adopted | `allow` adds nothing, `ask` adds friction, `deny` breaks research skills. |
+| `/code`, `/smart`, `/bypass` modes | Adopted (docs) | Documented here; no config keys required. |
+| Skill rediscovery after compaction | Adopted passively | CLI behavior; no bundle change. |
+| `read_config_from.cursor` → `.cursor/skills/` | Not adopted | `cursor` stays `false`; bundle is Devin-native only (Rule: no platform leakage). |
+| `agent.codex_tools` | Not adopted | Bundle uses SWE effort routing, not Codex tooling. |
+| `shell.exec_shell` | Not adopted | Bundle hook commands are shell-agnostic `python` invocations. |
+| `DEVIN_REFUSAL_FALLBACK` | Not adopted | Environment variable, not a config-template key. |
+
+## `read_config_from` policy
+
+`config.json` sets `read_config_from.agents_standard: true` and every other foreign import to `false`. `agents_standard` is the Devin-native mechanism for project `AGENTS.md`/`AGENTS.local.md`/`AGENT.md`/`.windsurfrules` files — the same mechanism the bundle itself relies on for its global rules. Disabling it silently dropped project-level rules in every installed repository, contradicting the bundle's AGENTS-centric operating model. Other tool formats (`cursor`, `windsurf`, `claude`, `copilot`, `opencode`, `zed`) remain disabled: the bundle ships Devin-native skills/rules only, and importing foreign formats would be platform leakage.
+
 ## Model policy
 
 `config.json` reads the primary model from `BUNDLE_DEFAULT_MODEL` (with `data/bundle-models.json` as the canonical registry). `devin models list` for the validated CLI reports the current free and paid models; the bundle's free-primary policy is enforced by choosing a `cost_tier: free` entry as the parent and matching subagent models from `data/bundle-models.json`.

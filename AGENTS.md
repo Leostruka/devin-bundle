@@ -8,34 +8,34 @@ lost-in-the-middle retrieval (Rule 18). Non-pinned rules below are terse
 one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 12-19, 21) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see docs/MODEL-GUIDE.md).
 
-## Rule summary
+## Rule index
 
-1. **Don't start with technology** — start with customer experience, then choose tech. Reject features without clear customer benefit.
-2. **No AI signatures in deliverables** — never sign commits, files, PRs, releases, or docs with an AI tool.
-3. **Don't use outdated or missing skills** — update wrong skills before use; create skills for recurring patterns; prune dead ones.
-4. **Don't start non-trivial tasks without skill discovery** — invoke matching skills before touching code.
-5. **No push without green** — run local checks before committing; fix failures in the inner loop.
-7. **Execute-first, opinion-silent** — don't reframe, suggest alternatives, or critique clear tasks. Push back only on false premises, irreversible actions, or deliverable-changing ambiguity.
-8. **Telegraphic output** — no filler, no preamble, no unsolicited opinions. Short sentences, structured formats. Verbose only for debugging, architecture, or unfamiliar domains.
-9. **Don't add observability infrastructure without `observability-quality` skill** — context-dependent, not universal.
-10. **Don't execute without planning, don't declare without verifying** — todo list for 3+ step tasks; verify before claiming done; parallelize independent work; read before writing.
-11. **Never fail from failures** — resolve them or deliver a working solution. If unsure or not 100% confident, search certified sources until the answer is coherent, rational, and well-founded.
-12. **Maximum precision, zero tolerance for partial verification** — every claim, number, and fact must be verified against its primary source by reading it directly. Never accept a summary as verification. Never mark something "verified" without having read the evidence yourself. Never let a "partially verified" claim pass without investigating further. Be a healthy perfectionist: demand rigor from yourself and from subagent results. If a subagent reports "not found," go read the source yourself before accepting that answer. Partial work is not done work.
-13. **Devin CLI is not a security sandbox** — the agent executes commands with the user's permissions. Worker and shell processes are not isolated. Run untrusted code, instructions, or skills in an external sandbox or restricted environment. Review changes before applying. Use trusted repositories, skills, and MCP servers only.
-14. **Constraint Pinning survives compaction** — governance constraints (Rules 2, 5, 7, 12-19) are pinned and re-injected after every context compaction. `constraint-pinning.py` runs on PostCompaction (detects dropped constraints, writes a marker), UserPromptSubmit (re-injects via `additionalContext`), and SessionStart (clears stale markers). Fail-closed: an absent or unreadable summary counts as dropped. Compaction raises violation from 0% to 30% (up to 59%); pinning restores to 0% for ~47 tokens (<0.5% overhead) (arXiv:2606.22528v2).
-15. **Refinement evidence must be reproducible** — when the `primeagent-reference` skill (Refine mode) identifies a failure pattern, the cited evidence must include a reproducible command or tool call. "Phantom guardrails" (inventing failures that never happened) occur in 25% of self-improvement runs (arXiv:2607.13083). Evidence without reproduction is a phantom, not a pattern. Run `validate-refinement-evidence.py` to check.
-16. **Self-improvement loops produce 47-74% illusory gains** — "Reward Hacking in Self-Improving Code Agents" (ICLR 2026 Workshop) found 73.8% of Kernel-Bench and 46.8% of ALE-Bench optimizations show proxy gains without real gains. Always validate refinements with held-out tests, not just the tests the agent chose. `check-push-green.py` blocks push when validation passes but held-out fails.
-17. **Don't deduce — verify with tools** — never infer the state of the world, a file's contents, a command's output, or a claim's truth from reasoning alone. Use `read`, `exec`, `grep`, `glob` to observe reality before asserting anything. A deduction presented as fact is a guess with confidence. Guesses fail silently; tool output fails loudly. Prefer loud failure.
-18. **Keep the context window lean** — context window = input + output tokens, hard-capped by the provider. Lost-in-the-middle deprioritizes the middle of long chats. Default to `clear` over `compact`; keep rules files small; audit MCP servers before adding (`mcp-context-audit`); paste large inputs to files, not chat (`context-folding`). Watch the budget with `context-budget.py`. Bigger window ≠ better retrieval.
-19. **Never read secrets or sensitive env vars** — never `read`, `cat`, `echo`, `print`, or otherwise output API keys, tokens, passwords, private keys, or `.env` secret values. Use them (pass to commands, reference by variable name) but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value.
-20. **Model-aware operation** — model selection is driven by `data/bundle-models.json`. Use `default_parent_model` for the parent, `max_role_model` for planning/architecture agents (`architect`, `researcher`, `reviewer`), and `medium_role_model` for execution agents (`debugger`, `implementer`, `qa-ci`). The `swe` alias resolves to paid `swe-1.7-lightning`; do not use it when free models are available. Don't over-specify tool-use (the parent model decides natively). Fan-out is cheap with free models. Keep system prompt cache-stable. See `docs/MODEL-GUIDE.md`.
-21. **Don't think through uncertainty — research or ask** — when you don't know something or are in doubt, stop reasoning and either research it (facts, libraries, state of the world) or ask the user (intent, business rules, case-of-use).
-22. **Minimum code, no token maxing** — prefer the smallest code/solution that solves the problem. Reject overengineering, over-prompting, and token maxing. Complexity is attack surface (Rule 13). When in doubt, simplify.
-23. **Sanitize inputs and outputs** — treat every user input as untrusted; validate and sanitize before use. Don't log or output secrets, credentials, tokens, or sensitive data. Endpoints and S3 buckets must default to private; any public endpoint or URL requires documented justification.
-24. **No secrets in VCS; rotate if leaked** — never commit secrets, passwords, API keys, tokens, or private keys to the repository. If a secret is found in code, history, or output, warn the user immediately and ask for rotation. Use `.env.example` and secret managers in production.
-25. **No test deletion without approval** — don't delete, disable, skip, or remove tests without explicit user approval. Tests verify intent; preserving them is a hard constraint. If a test must be removed, get approval and record the reason.
-26. **Secure by default** — use secure defaults: hidden passwords with opt-in reveal, confirmation for destructive actions, multi-factor auth for accounts, least privilege for services and DB access. Public endpoints, unauthenticated services, and public S3 URLs require written justification.
-27. **Declare intent and impact before coding** — before writing code, state the intent, the intended user-visible impact, and the boundaries (inputs/outputs, scope, non-goals). Ask until mutual understanding is reached; don't guess intent.
+1. **Don't start with technology** — customer experience first, then tech.
+2. **No AI signatures in deliverables** (pinned)
+3. **Don't use outdated or missing skills** — update, create for patterns, prune dead ones.
+4. **Don't start non-trivial tasks without skill discovery**
+5. **No push without green** (pinned)
+7. **Execute-first, opinion-silent** (pinned)
+8. **Telegraphic output**
+9. **No observability infrastructure without `observability-quality`**
+10. **Plan before executing; verify before declaring**
+11. **Never fail from failures**
+12. **Maximum precision, zero partial verification** (pinned)
+13. **Devin CLI is not a security sandbox** (pinned)
+14. **Constraint Pinning survives compaction** (pinned)
+15. **Refinement evidence must be reproducible** (pinned)
+16. **Self-improvement loops need held-out validation** (pinned)
+17. **Don't deduce — verify with tools** (pinned)
+18. **Keep the context window lean** (pinned)
+19. **Never read secrets or sensitive env vars** (pinned)
+20. **Model-aware operation** (see `docs/MODEL-GUIDE.md`)
+21. **Don't think through uncertainty — research or ask** (pinned)
+22. **Minimum code, no token maxing**
+23. **Sanitize inputs and outputs**
+24. **No secrets in VCS; rotate if leaked**
+25. **No test deletion without approval**
+26. **Secure by default**
+27. **Declare intent and impact before coding**
 
 ---
 
@@ -160,15 +160,7 @@ Start with customer experience, then choose tech. Customer = whoever experiences
 
 Update wrong skills in place before use. Create a skill for recurring patterns (`.devin/skills/<name>/SKILL.md` or `~/.config/devin/skills/<name>/SKILL.md`). Prune dead/superseded skills. Distill learned domains into skills so expertise persists. For tasks prone to agent laziness (large, multi-step, previously half-done, or with acceptance criteria), invoke the `unlazy` skill first and maintain a `.devin/ledgers/<task>.md` with gates.
 
-**Skill quality checklist (before commit):**
-1. Frontmatter — `name:` (lowercase, hyphens, max 64, matches dir) + `description:` (max 1024, under 500 if possible, starts "Use when", describes trigger not workflow). Optional: `allowed-tools`, `permissions`, `subagent`, `agent`, `model`, `triggers`.
-2. Discovery-friendly — keywords an agent would search; no workflow summary.
-3. Devin-native tools — `exec`, `read`, `edit`, `write`, `grep`, `glob`, `run_subagent`, `web_search`, `mcp_call_tool`, `ask_user_question`. No `Task(...)`, `subagent_type`, non-Devin prefixes.
-4. Devin-native paths — `.devin/`, `~/.config/devin/`, `%APPDATA%\devin\`. No non-Devin runtime paths.
-5. Subagents — `profile: "subagent_general"` (herda parent, **gratuito** com default parent model) or custom agent profiles. `architect`, `researcher`, `reviewer` use `model: swe-1-7` (Max, **gratuito**). `debugger`, `implementer`, `qa-ci` use `model: swe-1-7-medium` (Medium, **gratuito**). **Avoid `subagent_explore`** — resolves to SWE-1.6 (PAID $0.5/$2.5 MTok). Use custom `researcher` instead. Model data is in `data/bundle-models.json`.
-6. Scripts — Python/Bash/JS as appropriate; prefer Python for cross-platform.
-7. No AI signatures in skills.
-8. No platform leakage — no non-Devin AI tools/runtimes/paths.
+**Skill quality checklist (before commit):** `name`/`description` frontmatter per spec; discovery keywords, not workflow summaries; Devin-native tools and paths only; subagent profiles pinned per Rule 20 (`researcher`, never `subagent_explore`); prefer Python for cross-platform scripts; no AI signatures; no non-Devin platform leakage. Full checklist: `writing-skills` skill.
 
 ### 4. Don't start non-trivial tasks without skill discovery
 
@@ -200,18 +192,12 @@ Failures are signals to resolve, not stop conditions. Deliver a working solution
 
 ### 20. Model-aware operation (bundle-models.json)
 
-Model selection is driven by `data/bundle-models.json`. The canonical free defaults are `default_parent_model` (GLM-5.2 High, 200K) for the parent, `max_role_model` (`swe-1-7`, SWE-1.7 Max, 262K) for planning/architecture agents (`architect`, `researcher`, `reviewer`), and `medium_role_model` (`swe-1-7-medium`, SWE-1.7 Medium, 262K) for execution agents (`debugger`, `implementer`, `qa-ci`). See `docs/MODEL-GUIDE.md` for detail and override via `BUNDLE_*` env vars.
+Routing is driven by `data/bundle-models.json` — `default_parent_model` (parent), `max_role_model` (`architect`, `researcher`, `reviewer`), `medium_role_model` (`debugger`, `implementer`, `qa-ci`). Full protocol: `docs/MODEL-GUIDE.md`; overrides via `BUNDLE_*` env vars.
 
-- The parent model natively decides when to invoke tools during inference — don't over-specify tool-use rules; let the model decide. Rule 17 (verify with tools) aligns.
-- Thinking mode is internal reasoning before output — Rule 8 (telegraphic) applies to output only, not thinking tokens.
-- Subagent fan-out is cheap with free 262K models — prefer dispatching parallel subagents for independent research/exploration over serial inline work.
-- SWE-1.7 self-compaction is trained (summarize + resume) — constraint-pinning still needed (Governance Decay applies to all models, arXiv:2606.22528v2) but fires less often.
-- Prompt caching is cheap ($0.26/M read) — keep AGENTS.md and system prompt cache-stable (don't change early tokens frequently). Pinned rules at top = cache-friendly.
-- **⚠️ `swe` alias é PAGO** ($2.5/$12.5 MTok, 202K). Use `swe-1-7` (Max, free, 262K) or `swe-1-7-medium` (Medium, free, 262K) in `agents/`. Data from `devin models list` and `data/bundle-models.json`.
-- **🚫 NUNCA usar `subagent_explore` (built-in) quando parent é FREE.** Ele roda no default subagent model (SWE-1.6, PAGO $0.5/$2.5). Não há override local — apenas enterprise settings podem mudar isso. **Usar o profile customizado `researcher` em vez de `subagent_explore`** — ele pin `model: swe-1-7` (gratuito, 262K) e tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
-- **Política de modelos: CONDICIONAL ao parent.**
-  - **Parent FREE (default `glm-5-2`)**: subagents DEVEM ser FREE (`swe-1-7`/`swe-1-7-medium`). Nunca usar modelos pagos. Se o parent + fan-out de subagents free falharem, **parar e reportar ao usuário**.
-  - **Parent PAGO** (usuário fez `/model opus`, `/model sonnet`, etc.): subagents podem usar modelos pagos — o usuário já optou por pagar. Nesse caso, `subagent_explore` (SWE-1.6) e outros modelos pagos são permitidos. Ver protocolo em `docs/MODEL-GUIDE.md`.
+- **⚠️ `swe` alias resolves to paid `swe-1.7-lightning`** ($2.5/$12.5 MTok) — never use it when free models exist.
+- **Never dispatch `subagent_explore`** — it runs on the CLI default router (possibly paid). Use the custom `researcher` profile (free) instead.
+- **Model policy is conditional on the parent.** Parent free (default `glm-5-2`) → subagents must be free (`swe-1-7`/`swe-1-7-medium`); if they can't do the job, stop and report. Parent paid (user picked `/model opus` etc.) → paid subagents allowed; protocol in `docs/MODEL-GUIDE.md`.
+- Keep AGENTS.md and system-prompt prefixes cache-stable.
 
 ### 22. Minimum code, no token maxing
 
