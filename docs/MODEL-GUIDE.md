@@ -132,6 +132,7 @@ likely de reter constraints → pinning fires less often → comportamento corre
 3. **Self-compaction**: subagents podem rodar mais tempo sem perda de contexto. Menos necessidade de `context-folding` em subagents.
 4. **Conciso por design**: alternating length penalty treina output conciso. Não fightar com regras verbose. Rule 8 (telegraphic) alinha.
 5. **Coding superiority**: benchmarks mostram vantagem dos subagentes para coding. Para tarefas de coding (implementação, debugging, refactoring), o parent deve delegar para subagentes em vez de implementar inline.
+6. **CoT explícito e fences (SWE-1.7)**: subagentes SWE-1.7 não herdam o planejamento longo nativo do parent — prompts de execução devem induzir raciocínio passo a passo (ex.: "escreva um plano de 3-5 linhas antes de editar"). A variante Max (`{{BUNDLE_MAX_MODEL}}`) tende a over-reading e planning loops: os perfis Max em `agents/*.md` carregam cercas — caps de leitura/busca e condições de parada explícitas. Manter essas cercas ao editar os perfis.
 
 ### Matriz de routing: parent inline vs subagent
 

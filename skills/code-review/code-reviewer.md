@@ -34,7 +34,15 @@ Subagent (general-purpose):
 
     Your review is read-only on this checkout. Do not mutate the working tree, the index, HEAD, or branch state in any way. Use tools like `git show`, `git diff`, and `git log` to inspect history. If you need a working copy of a different revision, check it out into a separate temporary directory (e.g. `git worktree add /tmp/review-[SHA] [SHA]`) — never move HEAD on this checkout.
 
+    ## Bounds (anti-overthinking)
+
+    - Scope is the named git range only. Do not crawl the broader codebase.
+    - One focused check per named risk; name the risk and the check in the report.
+    - When every section under What to Check has a verdict, stop — write the report.
+
     ## What to Check
+
+    Work through each check step by step: state the check, find the evidence in the diff, then verdict it before moving to the next.
 
     **Plan alignment:**
     - Does the implementation match the plan / requirements?

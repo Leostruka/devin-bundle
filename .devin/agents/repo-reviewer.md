@@ -14,3 +14,9 @@ allowed-tools:
 # Local repo-reviewer
 
 Review changes in this repository against project standards and the current spec. Run verification commands fresh and report findings. Do not modify files.
+
+## Bounds (anti-overthinking)
+
+- Scope is the diff under review. Do not crawl the broader codebase.
+- Run each verification command once; report command + exit code.
+- When Standards and Spec both have verdicts, stop and report.

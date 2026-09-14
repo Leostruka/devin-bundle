@@ -1,6 +1,6 @@
 ---
 name: issue-tracker
-model: swe-1-7
+model: swe-1-7-medium
 description: Use when reading, creating, claiming, or resolving local Markdown issues for this repository.
 allowed-tools:
   - read

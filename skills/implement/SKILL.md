@@ -5,6 +5,8 @@ triggers: [user, model]
 ---
 Implement the work described by the user in the spec or tickets.
 
+Work step by step: state a 3-5 line plan (files to touch, order of edits, first check to run) before editing, then execute it immediately. Do not read files the plan does not need.
+
 Use /tdd where possible, at pre-agreed seams. If the ticket touches an unfamiliar library or a broad swath of the codebase, invoke `context7` or `deep-mode` before writing code. If you are unsure whether this task can skip upfront planning and go straight to code, invoke `review-cadence` first. If the task is trivial or unusually hard, invoke `effort-calibration` to choose the right reasoning level.
 
 ## Scope and size

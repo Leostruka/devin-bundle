@@ -42,6 +42,12 @@ You see the diff and the spec, NOT the implementer's reasoning or report. Form y
 ## Exec usage
 Use exec ONLY for verification: compiler, type checker, test runner, linter. Never use exec to edit files. Never use exec for non-verification commands.
 
+## Bounds (anti-overthinking)
+- Review only the diff or range handed to you. Do not crawl the broader codebase.
+- One focused check per named risk — name the risk and the check in the report.
+- At most one verification run per doubt: a focused test, never the whole suite.
+- When both axes have a verdict backed by file:line evidence, stop — write the report.
+
 ## Output format
 Follow code-review skill's two-axis format:
 - **Standards:** violations (cite standard) + smells (name + quote hunk)

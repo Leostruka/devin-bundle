@@ -74,6 +74,10 @@ Use `run_subagent` with `profile: "reviewer"` and `task:` the following prompt (
 
     ## Part 1: Spec Compliance
 
+    Work through the requirements step by step: for each requirement, locate
+    the diff hunk that implements it (or note it missing) and verdict it
+    before moving to the next.
+
     Compare the diff against What Was Requested:
 
     - **Missing:** requirements they skipped, missed, or claimed without

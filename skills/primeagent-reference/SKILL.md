@@ -787,11 +787,19 @@ PARALLEL → multiple independent subagents in parallel (dispatching-parallel-ag
 |---|---|---|---|
 | Codebase reconnaissance, doc lookup, web research | `researcher` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
 | Code review, spec compliance, verification | `reviewer` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
-| Bounded implementation from spec | `implementer` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| Bounded implementation from spec | `implementer` | medium-role model (`BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`) | free |
 | Architecture, trade-offs, deep module design | `architect` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
-| Systematic debugging, root cause analysis | `debugger` | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
+| Systematic debugging, root cause analysis | `debugger` | medium-role model (`BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`) | free |
+| Independent gate verification | `qa-ci` | medium-role model (`BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`) | free |
 | Read-only exploration | `researcher` (custom) | max-role model (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
 | General-purpose with full tools (built-in) | `subagent_general` | inherits parent (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`) | free |
+
+Role rule for SWE-1.7: medium-role is the default for code manipulation and
+script execution (implementer, debugger, qa-ci) — SWE-1.7 Medium executes
+bounded tasks directly, avoiding the Max variant's overthinking loops.
+Max-role is reserved for judgment/read-only profiles (architect, researcher,
+reviewer), whose prompts carry anti-overthinking fences (read/lookup caps and
+explicit stop rules).
 
 **Selection rules:**
 

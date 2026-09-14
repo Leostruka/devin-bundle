@@ -197,6 +197,7 @@ Routing is driven by `data/bundle-models.json` — `default_parent_model` (paren
 - **⚠️ `swe` alias resolves to paid `swe-1.7-lightning`** ($2.5/$12.5 MTok) — never use it when free models exist.
 - **Never dispatch `subagent_explore`** — it runs on the CLI default router (possibly paid). Use the custom `researcher` profile (free) instead.
 - **Model policy is conditional on the parent.** Parent free (default `glm-5-2`) → subagents must be free (`swe-1-7`/`swe-1-7-medium`); if they can't do the job, stop and report. Parent paid (user picked `/model opus` etc.) → paid subagents allowed; protocol in `docs/MODEL-GUIDE.md`.
+- **SWE-1.7 effort split.** Max roles (`architect`, `researcher`, `reviewer`) carry anti-overthinking fences (read/lookup caps + explicit stop rules) in `agents/*.md` — SWE-1.7 Max over-reads without them. Medium roles (`debugger`, `implementer`, `qa-ci`) are the default for code manipulation and script execution; dispatch them with explicit step-by-step (CoT) instructions — SWE-1.7 lacks the parent's native long planning.
 - Keep AGENTS.md and system-prompt prefixes cache-stable.
 
 ### 22. Minimum code, no token maxing

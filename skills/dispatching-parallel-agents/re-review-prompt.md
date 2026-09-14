@@ -42,6 +42,10 @@ Use `run_subagent` with `profile: "reviewer"` and `task:` the following prompt (
 
     ## Scope
 
+    Work through the findings step by step: for each finding, locate the code
+    it names in the fix diff, compare against the required change, then verdict
+    it before moving to the next.
+
     Your scope is the findings list and the fix diff. Verdict every finding.
     Inspect the fix diff for new problems the fix itself introduced. Do NOT
     re-review code the fix did not touch: if you notice an issue entirely

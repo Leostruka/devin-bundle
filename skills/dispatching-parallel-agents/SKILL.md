@@ -141,10 +141,16 @@ sensitivity:
 |---|---|---|
 | Codebase research, doc lookup | `researcher` (max-role model) | Read-only, free, fast |
 | Code review, spec compliance | `reviewer` (max-role model) | Needs judgment, free |
-| Bounded implementation | `implementer` (max-role model) | Needs full tools + coding strength (coding benchmarks favor the max-role model over the parent model; check `data/bundle-models.json`) |
+| Bounded implementation | `implementer` (medium-role model) | Full tools + coding strength; Medium executes bounded tasks without overthinking loops |
 | Architecture, trade-offs | `architect` (max-role model) | Needs judgment, read-only, free |
-| Debugging, root cause | `debugger` (max-role model) | Needs exec + coding strength |
+| Debugging, root cause | `debugger` (medium-role model) | Needs exec + iterative strength; bounded hypothesis loop |
 | Complex reasoning, context isolation | `subagent_general` (parent model) | Inherits parent model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`), free, for tasks needing the parent model's reasoning mode |
+
+Role rule: max-role for judgment/read-only profiles (`architect`, `researcher`,
+`reviewer`); medium-role for code manipulation and script execution
+(`implementer`, `debugger`, `qa-ci`). Max-role profiles carry anti-overthinking
+fences (read/lookup caps, explicit stop rules) in `agents/*.md` — SWE-1.7 Max
+over-reads and over-plans without them.
 
 Don't dispatch `implementer` for a research task — `researcher` is 10x cheaper
 and read-only. Don't dispatch `architect` for a typo fix — handle inline.
@@ -428,7 +434,7 @@ conflicts that only emerge from implementation.
 
 ### Model Selection
 
-In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the model configured as the `subagent_explore` alias in `data/bundle-models.json` (paid by default). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: max-role model`, free, context per `data/bundle-models.json`) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` should use the bundle role model (max by default) to stay within the bundle's free tier.
+In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the model configured as the `subagent_explore` alias in `data/bundle-models.json` (paid by default). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: max-role model`, free, context per `data/bundle-models.json`) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin the bundle role model matching the task type — max-role for judgment/read-only roles, medium-role for code/execution roles — to stay within the bundle's free tier.
 
 **Use `subagent_general` (inherits parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free) for:**
 - Final whole-branch review — the judgment task that needs the most capability.
@@ -436,32 +442,32 @@ In Devin CLI, a `subagent_general` subagent inherits the parent session's model 
 - Rounds 4-5 fix-loop escalation (the parent can switch to a more capable model via `/model` before dispatching).
 - Complex reasoning tasks that benefit from context isolation but need the parent model's thinking mode.
 
-**Use custom profiles (all pin the max-role model, free, context per `data/bundle-models.json`) for:**
-- `researcher` — codebase research and fact-finding (read-only, FREE).
-- `implementer` — bounded coding tasks (the max-role model is 72% better than the parent model at FrontierCode: 42.3% vs 24.5%; check `data/bundle-models.json`).
-- `debugger` — root cause analysis and debugging (max-role model coding strength).
-- `architect` — routine architecture and trade-off analysis (read-only).
-- `reviewer` — code review and spec compliance (read-only + exec for tests).
+**Use custom profiles (free, pinned per role in `agents/*.md`, context per `data/bundle-models.json`) for:**
+- `researcher` — codebase research and fact-finding (max-role, read-only, FREE, fenced).
+- `implementer` — bounded coding tasks (medium-role; bounded execution avoids the Max variant's overthinking loops, and subagent coding still beats the parent model — check `data/bundle-models.json`).
+- `debugger` — root cause analysis and debugging (medium-role; exec-driven iteration).
+- `architect` — routine architecture and trade-off analysis (max-role, read-only, fenced).
+- `reviewer` — code review and spec compliance (max-role, read-only + exec for tests, fenced).
+- `qa-ci` — independent gate verification (medium-role, read-only + exec).
 
 **To run a different model for a subagent:**
 1. Switch the parent session model with `/model <model>` before dispatching (affects all `subagent_general` dispatches from this session).
 2. Or create a custom subagent profile in `~/.config/devin/agents/` or `%APPDATA%\devin\agents\` with a `model:` field, and pass that profile name as `profile` in `run_subagent`.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes. The max-role model is fast enough that turn
-count rarely causes wall-clock issues. For implementers, the max-role model is the
-default (pinned in `agents/implementer.md` to the bundle max role) — it outperforms
-the parent model on coding benchmarks (42.3% vs 24.5% FrontierCode; check
-`data/bundle-models.json`). When the task's plan text contains the complete code to
-write, the implementation is transcription plus testing, and the max-role model is
-more than sufficient. For rounds 4-5 escalation, switch to `subagent_general`
-(inherits the parent model from `BUNDLE_DEFAULT_MODEL`) or switch the parent to a
-more capable model via `/model`.
+many turns a subagent takes. For implementers, the medium-role model is the
+default (pinned in `agents/implementer.md` to the bundle medium role) — bounded
+implementation is execution, and SWE-1.7 Medium runs it directly without the
+Max variant's overthinking loops. When the task's plan text contains the
+complete code to write, the implementation is transcription plus testing —
+Medium is more than sufficient. For rounds 4-5 escalation, switch to
+`subagent_general` (inherits the parent model from `BUNDLE_DEFAULT_MODEL`) or
+switch the parent to a more capable model via `/model`.
 
 **Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → `implementer` (max-role model)
-- Touches multiple files with integration concerns → `implementer` (max-role model)
-- Requires design judgment or broad codebase understanding → `architect` (max-role model) for design, then `implementer` (max-role model) for code
+- Touches 1-2 files with a complete spec → `implementer` (medium-role model)
+- Touches multiple files with integration concerns → `implementer` (medium-role model)
+- Requires design judgment or broad codebase understanding → `architect` (max-role model) for design, then `implementer` (medium-role model) for code
 - Rounds 4-5 fix-loop failure → `subagent_general` (parent `BUNDLE_DEFAULT_MODEL`) for fresh eyes + reasoning
 
 ### The Task Loop

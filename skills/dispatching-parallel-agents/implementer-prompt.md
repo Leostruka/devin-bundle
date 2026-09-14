@@ -38,6 +38,15 @@ Use `run_subagent` with `profile: "implementer"` and `task:` the following promp
 
     Work from: [directory]
 
+    ## Plan Before Acting (explicit reasoning)
+
+    Think step by step. Before editing anything, write a 3-5 line plan:
+    1. Files you will touch, and why each one
+    2. The order of edits
+    3. The first test or command that proves the change works
+    Then execute that plan immediately. Do not read more files than the plan
+    needs — if the plan requires a file you cannot see, ask.
+
     **While you work:** If you encounter something unexpected or unclear, **ask questions**.
     It's always OK to pause and clarify. Don't guess or make assumptions.
 

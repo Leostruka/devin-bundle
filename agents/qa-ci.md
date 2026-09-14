@@ -59,6 +59,17 @@ You see the diff and the spec, NOT the implementer's reasoning, report, or claim
 6. **No self-report acceptance.** "The implementer said it passes" is not evidence. "I ran the command and saw exit 0 with N passing" is evidence.
 7. **Phantom guardrail check.** If a gate command does not exist, references a missing script, or exits 0 without producing test output, FAIL with `Reason: phantom gate`. Run `python scripts/validate-refinement-evidence.py` when available.
 
+## Procedure
+
+Work step by step, in order:
+1. Read the diff and the spec.
+2. Run each gate fresh — capture command + exit code.
+3. Run `tests/held-out/` if present.
+4. Audit the diff for gaming (overfit, mocks, skips, phantom gates).
+5. Write the verdict.
+
+Run each gate once. Never re-run to "make sure" — one fresh run is the evidence.
+
 ## Exec usage
 
 Use exec ONLY for verification: build, test runner, linter, type checker, held-out suite, anti-gaming audit scripts. Never use exec to edit files, install persistent state, or modify the repo. Worktree creation for clean checkout is allowed.
