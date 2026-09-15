@@ -545,7 +545,8 @@ function Select-BranchTerminal {
         [hashtable]$PrMap,
         [hashtable]$ProtectedSet,
         [string]$DefaultBranch,
-        [string]$Title
+        [string]$Title,
+        [string]$Subtitle = ''
     )
 
     $rows = foreach ($opt in $Options) {
@@ -564,7 +565,7 @@ function Select-BranchTerminal {
     $wAct   = [Math]::Max(3, ($rows | ForEach-Object { $_.Activity.Length } | Measure-Object -Maximum).Maximum)
 
     $wNameEx = $wName + $wCur + 1
-    $selected = Show-TerminalList -Items $rows -Title $Title -ToString {
+    $selected = Show-TerminalList -Items $rows -Title $Title -Subtitle $Subtitle -ToString {
         param($x)
         $displayName = $x.Name
         if ($x.CurrentMark) { $displayName += " $($x.CurrentMark)" }
@@ -655,43 +656,45 @@ function Select-BranchesForProject {
     Write-Host $M.ListandoBranches -ForegroundColor DarkGray
 
     $localBranches = @()
-    $localBranches += @((git -C $projectPath branch --format='%(refname:short)' 2>$null) | Where-Object {
-        $_ -ne "" -and $_ -notmatch "^(main|master|develop|HEAD)$"
-    })
+    $localBranches += @((git -C $projectPath for-each-ref 'refs/heads' --format='%(refname:short)' 2>$null) | Where-Object { $_ })
 
-    $remoteBranches = @()
-    $remoteBranches += @((git -C $projectPath branch -r --format='%(refname:short)' 2>$null) | Where-Object {
-        $_ -ne "" -and $_ -notmatch "HEAD" -and $_ -notmatch "(main|master|develop)$" -and $_ -ne "origin"
-    } | ForEach-Object {
-        $clean = $_ -replace '^origin/', ''
-        if ($clean -and $clean -ne 'HEAD') { $clean }
-    })
+    $remoteRefs = [ordered]@{}
+    foreach ($line in @(git -C $projectPath for-each-ref 'refs/remotes' --format='%(refname:lstrip=2)|%(refname:lstrip=3)' 2>$null)) {
+        $parts = $line -split '\|', 2
+        if ($parts.Count -lt 2) { continue }
+        $remoteRef = $parts[0]
+        $branchName = $parts[1]
+        if (-not $branchName -or $branchName -eq 'HEAD') { continue }
+        if (-not $remoteRefs.Contains($branchName)) { $remoteRefs[$branchName] = $remoteRef }
+    }
 
-    $remoteOnly = @($remoteBranches | Where-Object { $_ -notin $localBranches })
+    $remoteOnly = @($remoteRefs.Keys | Where-Object { $_ -notin $localBranches -and $_ -ne $defaultBranch })
     $currentBranch = git -C $projectPath branch --show-current 2>$null
 
     $allOptions = @()
     if ($defaultBranch) {
         $localDefault = [bool](git -C $projectPath rev-parse --verify --quiet $defaultBranch 2>$null)
-        $remoteDefault = [bool](git -C $projectPath rev-parse --verify --quiet "origin/$defaultBranch" 2>$null)
-        if ($localDefault -or $remoteDefault) {
+        $remoteDefaultRef = $remoteRefs[$defaultBranch]
+        if ($localDefault -or $remoteDefaultRef) {
             $allOptions += @{
                 Name = $defaultBranch
                 Type = if ($localDefault) { "local" } else { "remote" }
                 IsCurrent = ($defaultBranch -eq $currentBranch)
+                RemoteRef = $remoteDefaultRef
             }
         }
     }
 
     if ($localBranches.Count -gt 0) {
         foreach ($b in $localBranches) {
+            if ($b -eq $defaultBranch) { continue }
             $allOptions += @{ Name = $b; Type = "local"; IsCurrent = ($b -eq $currentBranch) }
         }
     }
 
     if ($remoteOnly.Count -gt 0) {
         foreach ($b in $remoteOnly) {
-            $allOptions += @{ Name = $b; Type = "remote"; IsCurrent = $false }
+            $allOptions += @{ Name = $b; Type = "remote"; IsCurrent = $false; RemoteRef = $remoteRefs[$b] }
         }
     }
 
@@ -712,7 +715,7 @@ function Select-BranchesForProject {
             $available = @($allOptions | Where-Object { $_.Name -notin $selectedNames })
             $available += $newBranchOption
 
-            $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo
+            $selected = Select-BranchTerminal -Options $available -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title $titulo -Subtitle $projectPath
             if (-not $selected) {
                 return [PSCustomObject]@{ Success = $false; Instances = @(); Project = $Project }
             }
@@ -731,7 +734,7 @@ function Select-BranchesForProject {
             if ($allOptions.Count -gt 0) {
                 $baseOptions = $allOptions + @{ Name = $currentBranch; Type = 'local'; IsCurrent = $true }
                 $baseOptions = @($baseOptions | Where-Object { $_.Name } | Sort-Object Name -Unique)
-                $baseSelected = Select-BranchTerminal -Options $baseOptions -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title ($M.BranchBaseSelecione -f $projectPath)
+                $baseSelected = Select-BranchTerminal -Options $baseOptions -MetaMap $branchMeta -PrMap $prMap -ProtectedSet $protectedSet -DefaultBranch $defaultBranch -Title ($M.BranchBaseSelecione -f $projectPath) -Subtitle $projectPath
                 if (-not $baseSelected) {
                     $selectedBranches = @($selectedBranches | Where-Object { $_ -ne $selected })
                     $i--
@@ -1113,8 +1116,9 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
                 $worktreeAddOk = $result -and $result.Ok
             }
             elseif ($info.Type -eq "remote") {
+                $remoteRef = if ($info.RemoteRef) { $info.RemoteRef } else { "origin/$($inst.Branch)" }
                 $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
-                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch "origin/$using:branch" 2>&1
+                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch $using:remoteRef 2>&1
                     [PSCustomObject]@{ Ok = $?; Output = $output }
                 }
                 $worktreeAddOk = $result -and $result.Ok
