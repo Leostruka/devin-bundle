@@ -6,12 +6,13 @@ The bundle is validated against Devin CLI `{{VALIDATED_CLI_VERSION}}` (see `data
 
 Release notes for the validated version and intermediate CLI versions are tracked in `data/bundle-identity.json` and the Devin CLI changelog.
 
-## 3000.10.x capabilities (verified 2026-09-14)
+## 3000.10.x capabilities (verified 2026-09-15, CLI 3000.10.27)
 
 Capabilities added since 3000.6.x that interact with bundle surfaces, with the bundle's adoption decision:
 
 | Capability | Decision | Rationale |
 |---|---|---|
+| GPT-6 Astra turn batching (3000.10.27) | not applicable | Provider-side model behavior (fewer turns, targeted commands); no config surface. Bundle policy is SWE-2-only. |
 | `disabled_tools` (user `config.json`) | not adopted | Every tool in the surface is referenced by bundle skills/scripts (verified 2026-09-14: `notebook_*`, `browser_preview`, `write_to_process`, `kill_shell`, `get_output`, `ask_user_question`, `request_scope`, `mcp_*`, `read_subagent` all have refs). Disabling any would remove a documented capability. Revisit if a tool becomes provably unused. |
 | `agent.compaction_threshold_tokens` (user config) | not adopted | No primary-source basis for a non-default value; the CLI default is context-window-based, and earlier compaction would only increase constraint-drop events that `constraint-pinning.py` must repair. |
 | `PreToolUse` `tool_provenance` payload | adopted (passive) | Payload field, no config needed; hook scripts may consume it. Existing hook payloads remain compatible. |
