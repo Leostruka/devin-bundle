@@ -16,9 +16,9 @@ python audit.py
 python -m pytest
 ```
 
-## 3000.10.x capabilities (verified 2026-09-14)
+## 3000.10.x capabilities (verified 2026-09-15, CLI 3000.10.27)
 
-Decisions for configuration keys introduced between `3000.6.14` and `3000.10.21`:
+Decisions for configuration keys introduced between `3000.6.14` and `3000.10.27`:
 
 | Capability | Decision | Rationale |
 |---|---|---|
@@ -32,6 +32,7 @@ Decisions for configuration keys introduced between `3000.6.14` and `3000.10.21`
 | `agent.codex_tools` | Not adopted | Bundle uses SWE effort routing, not Codex tooling. |
 | `shell.exec_shell` | Not adopted | Bundle hook commands are shell-agnostic `python` invocations. |
 | `DEVIN_REFUSAL_FALLBACK` | Not adopted | Environment variable, not a config-template key. |
+| GPT-6 Astra turn batching (3000.10.27) | Not applicable | Provider-side model behavior (fewer turns, targeted commands); no config surface. Bundle policy is SWE-2-only. |
 
 ## `read_config_from` policy
 
