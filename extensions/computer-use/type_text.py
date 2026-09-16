@@ -2,12 +2,19 @@
 """Keyboard control: type literal text, press a key, or fire a hotkey chord.
 Prints JSON to stdout.
 
+Action profiles (see profile.py / cu_motion.py): fast (instant, default),
+smooth (fixed 35ms/char), human (stochastic per-char delays ~90ms ±30ms,
+double-letter speedup, rare thinking pauses). An explicit --delay always wins.
+
 Requires pynput (installed via requirements.txt into the extension's .venv).
 """
 import argparse
 import json
+import random
 import sys
 import time
+
+import cu_motion as cm
 
 
 def set_dpi_awareness():
@@ -52,19 +59,23 @@ def resolve_key(name, Key, KeyCode):
 
 
 def main():
-    p = argparse.ArgumentParser(description="Keyboard control via pynput")
+    p = cm.JsonParser(description="Keyboard control via pynput")
     p.add_argument("text", nargs="?", default=None, help="Literal text to type")
     p.add_argument("--key", default=None, help="Single key name (e.g. enter, tab, f5)")
     p.add_argument("--keys", default=None,
                    help="Hotkey chord, '+'-separated (e.g. 'ctrl+c', 'ctrl+shift+s')")
     p.add_argument("--delay", type=float, default=0.0,
-                   help="Delay between keystrokes in seconds (default: 0)")
+                   help="Fixed delay between keystrokes in seconds (overrides profile)")
     p.add_argument("--enter", action="store_true",
                    help="Press Enter after typing the literal text")
+    p.add_argument("--profile", choices=cm.PROFILES, default=None,
+                   help="action profile override for this call")
+    p.add_argument("--dry-run", action="store_true",
+                   help="compute timing plan but dispatch no input")
     args = p.parse_args()
 
     if not any([args.text, args.key, args.keys]):
-        p.error("provide text, --key, or --keys")
+        fail("provide text, --key, or --keys", 2)
 
     set_dpi_awareness()
     try:
@@ -72,33 +83,62 @@ def main():
     except ImportError:
         fail("pynput not installed — run: <venv-python> -m pip install -r requirements.txt", 2)
 
+    profile = cm.get_profile(args.profile)
     kb = Controller()
     try:
         if args.keys:
             keys = [resolve_key(k, Key, KeyCode) for k in args.keys.split("+")]
-            for k in keys:
-                kb.press(k)
-            for k in reversed(keys):
-                kb.release(k)
-            print(json.dumps({"ok": True, "keys": args.keys}))
+            if not args.dry_run:
+                for k in keys:
+                    kb.press(k)
+                    g = cm.key_gap(profile)
+                    if g:
+                        time.sleep(g)
+                for k in reversed(keys):
+                    kb.release(k)
+            out = {"ok": True, "keys": args.keys, "profile": profile}
+            if args.dry_run:
+                out["dry_run"] = True
+            print(json.dumps(out))
             return
         if args.key:
             k = resolve_key(args.key, Key, KeyCode)
-            kb.press(k)
-            kb.release(k)
-            print(json.dumps({"ok": True, "key": args.key}))
+            if not args.dry_run:
+                kb.press(k)
+                g = cm.key_gap(profile)
+                if g:
+                    time.sleep(g)
+                kb.release(k)
+            out = {"ok": True, "key": args.key, "profile": profile}
+            if args.dry_run:
+                out["dry_run"] = True
+            print(json.dumps(out))
             return
         if args.text is not None:
-            if args.delay > 0:
-                for ch in args.text:
-                    kb.type(ch)
-                    time.sleep(args.delay)
-            else:
-                kb.type(args.text)
-            if args.enter:
-                kb.press(Key.enter)
-                kb.release(Key.enter)
-            print(json.dumps({"ok": True, "typed": len(args.text)}))
+            delays = cm.type_delays(args.text, profile,
+                                    args.delay if args.delay > 0 else None)
+            if not args.dry_run:
+                if delays is None:
+                    kb.type(args.text)
+                else:
+                    for ch, d in zip(args.text, delays):
+                        kb.type(ch)
+                        time.sleep(d)
+                if args.enter:
+                    if profile == "human":
+                        time.sleep(max(0.02, random.gauss(0.15, 0.05)))
+                    kb.press(Key.enter)
+                    kb.release(Key.enter)
+            out = {"ok": True, "typed": len(args.text), "profile": profile,
+                   "delay_mode": ("instant" if delays is None else
+                                  "fixed" if args.delay > 0 else profile)}
+            if delays:
+                out["secs"] = round(sum(delays), 3)
+            if args.dry_run:
+                out["dry_run"] = True
+            print(json.dumps(out))
+    except SystemExit:
+        raise
     except Exception as e:
         fail(f"{type(e).__name__}: {e}")
 

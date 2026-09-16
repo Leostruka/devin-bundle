@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Capture the screen to a PNG file. Prints a JSON result to stdout.
 
-Requires mss (installed via requirements.txt into the extension's .venv).
+Overlays:
+  --grid [PX]   coordinate grid with physical-pixel labels (legacy fallback)
+  --hints       Vimium-style letter badges over real interactive elements
+                (Windows UI Automation; falls back to --grid 100 on failure)
+
+Requires mss (+ pillow for overlays; uiautomation for --hints on Windows).
 """
 import argparse
 import json
@@ -9,6 +14,9 @@ import os
 import sys
 import tempfile
 import time
+
+import cu_hints
+import cu_motion as cm
 
 
 def set_dpi_awareness():
@@ -28,21 +36,35 @@ def fail(msg, code=1):
     sys.exit(code)
 
 
-def _save_with_grid(img, spacing, out):
+def _load_pil():
     try:
         from PIL import Image, ImageDraw, ImageFont
+        return Image, ImageDraw, ImageFont
     except ImportError:
-        fail("pillow required for --grid — run: "
+        fail("pillow required for overlays — run: "
              "<venv-python> -m pip install -r requirements.txt", 2)
+
+
+def _font(ImageFont, size):
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:
+        return ImageFont.load_default()
+
+
+def _to_image(img):
+    from PIL import Image
+    return Image.frombytes("RGB", (img.width, img.height), img.rgb).convert("RGBA")
+
+
+def _save_with_grid(img, spacing, out):
+    Image, ImageDraw, ImageFont = _load_pil()
     if spacing < 20:
         fail("--grid spacing must be >= 20 px", 2)
-    im = Image.frombytes("RGB", (img.width, img.height), img.rgb).convert("RGBA")
+    im = _to_image(img)
     ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(ov)
-    try:
-        font = ImageFont.load_default(size=18)
-    except TypeError:
-        font = ImageFont.load_default()
+    font = _font(ImageFont, 18)
     line = (255, 255, 0, 110)
     for x in range(0, img.width, spacing):
         d.line([(x, 0), (x, img.height)], fill=line)
@@ -55,8 +77,35 @@ def _save_with_grid(img, spacing, out):
     Image.alpha_composite(im, ov).convert("RGB").save(out, "PNG")
 
 
+def _save_with_hints(img, elements, out, ox, oy):
+    """Draw Vimium-style badges. elements carry screen-px rects; (ox, oy) is
+    the captured image's top-left corner in screen space."""
+    Image, ImageDraw, ImageFont = _load_pil()
+    im = _to_image(img)
+    ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(ov)
+    font = _font(ImageFont, 15)
+    els_in = [e for e in elements
+              if 0 <= e["x"] - ox < img.width and 0 <= e["y"] - oy < img.height]
+    hints = []
+    for el, hid in zip(els_in, cu_hints.hint_ids(len(els_in))):
+        bx = min(max(el["rx"] - ox, 0), img.width - 30)
+        by = min(max(el["ry"] - oy, 0), img.height - 18)
+        label = hid.upper()
+        tb = d.textbbox((0, 0), label, font=font)
+        pw, ph = tb[2] - tb[0] + 10, tb[3] - tb[1] + 7
+        d.rounded_rectangle([bx, by, bx + pw, by + ph], radius=4,
+                            fill=(255, 223, 0, 235), outline=(20, 20, 20, 255),
+                            width=1)
+        d.text((bx + 5, by + 3), label, font=font, fill=(15, 15, 15, 255))
+        hints.append({"id": hid, "x": el["x"], "y": el["y"],
+                      "name": el["name"], "type": el["type"]})
+    Image.alpha_composite(im, ov).convert("RGB").save(out, "PNG")
+    return hints
+
+
 def main():
-    p = argparse.ArgumentParser(description="Capture screen to PNG")
+    p = cm.JsonParser(description="Capture screen to PNG")
     p.add_argument("--out", default=None,
                    help="Output PNG path (default: screenshot-<ts>.png in the "
                         "system temp dir; use a .devin/ path to keep it as "
@@ -65,11 +114,18 @@ def main():
                    help="Monitor index: 0 = all monitors combined (default), 1..N = specific")
     p.add_argument("--region", default=None,
                    help="Crop region as 'x,y,w,h' (pixels)")
-    p.add_argument("--grid", type=int, nargs="?", const=100, default=None,
-                   metavar="PX",
-                   help="Overlay a coordinate grid with physical-pixel labels "
-                        "every PX px (default 100). Use when picking click "
-                        "targets — the labels survive image rescaling.")
+    ov = p.add_mutually_exclusive_group()
+    ov.add_argument("--grid", type=int, nargs="?", const=100, default=None,
+                    metavar="PX",
+                    help="Overlay a coordinate grid with physical-pixel labels "
+                         "every PX px (default 100). Use when picking click "
+                         "targets — the labels survive image rescaling.")
+    ov.add_argument("--hints", action="store_true",
+                    help="Vimium-style letter badges on interactive elements "
+                         "(UIA). stdout lists {id,x,y,name,type}; click via "
+                         "mouse.py click --hint <id>. Falls back to --grid 100.")
+    p.add_argument("--window", choices=["focused", "all"], default="focused",
+                   help="--hints scope: focused window (default) or all windows")
     args = p.parse_args()
 
     set_dpi_awareness()
@@ -95,15 +151,32 @@ def main():
                     fail(f"monitor {args.monitor} out of range (0..{len(sct.monitors)-1})", 2)
                 bbox = sct.monitors[args.monitor]
             img = sct.grab(bbox)
-            if args.grid:
+            result = {"ok": True, "path": out, "width": img.width,
+                      "height": img.height, "monitor": args.monitor}
+            if args.hints:
+                els = cu_hints.enum_clickables(scope=args.window)
+                if els:
+                    hints = _save_with_hints(img, els, out,
+                                             bbox["left"], bbox["top"])
+                    if hints:
+                        cu_hints.write_sidecar(hints)
+                        result["hints"] = hints
+                        result["note"] = ("hint labels over real elements — "
+                                          "click via mouse.py click --hint <id> "
+                                          "or click the x,y coords")
+                    else:
+                        _save_with_grid(img, 100, out)
+                        result.update(hints=None, fallback="grid", grid_px=100)
+                else:
+                    _save_with_grid(img, 100, out)
+                    result.update(hints=None, fallback="grid", grid_px=100)
+            elif args.grid:
                 _save_with_grid(img, args.grid, out)
+                result["grid_px"] = args.grid
+                result["note"] = ("grid labels are physical pixels — "
+                                  "read click coords directly")
             else:
                 mss.tools.to_png(img.rgb, img.size, output=out)
-        result = {"ok": True, "path": out, "width": img.width,
-                  "height": img.height, "monitor": args.monitor}
-        if args.grid:
-            result["grid_px"] = args.grid
-            result["note"] = "grid labels are physical pixels — read click coords directly"
         print(json.dumps(result))
     except Exception as e:
         fail(f"{type(e).__name__}: {e}")
