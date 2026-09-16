@@ -94,3 +94,42 @@ Pure PowerShell execution logic (`devin-N.ps1`, `devin-session-launcher.ps1`), `
 - Residual grep for `glm-5-2`, `swe-1-7`, `swe-1-6`, `chain of thought`, `step by step` in active surfaces — clean (remaining hits are anti-pattern descriptions or literal procedures)
 - `manifest.json` `export_hash` values regenerated for all modified scripts/agents
 - `git status` on `bundle-swe2` — 41 modified + `.devin/SWE2_MIGRATION_LOG.md` (this file); no root-level log
+
+## Post-merge: integration into `main` (2026-09-16)
+
+`bundle-swe2` merged into `main` (merge commit amended once). `main` had carried a parallel SWE-1.7 port (15 divergent commits: same computer-use/TUI/CLI-bump work plus `feat(bundle): optimize agent routing and prompts for SWE-1.7`).
+
+### Merge conflict resolution
+
+9 conflicted paths resolved to the `bundle-swe2` side (`--theirs`): `.devin/agents/issue-tracker.md`, `.devin/agents/repo-reviewer.md` (rename from `reviewer.md` kept), `.devin/agents/triage-labels.md`, `AGENTS.md`, `docs/MODEL-GUIDE.md`, `skills/dispatching-parallel-agents/SKILL.md`, `skills/executing-plans/SKILL.md`, `skills/leo/SKILL.md`, `skills/primeagent-reference/SKILL.md`. HEAD-side content was exclusively the SWE-1.7 line (model pins, fences, role rules).
+
+### Silent union reverted
+
+Textual auto-merge re-introduced SWE-1.7 anti-overthinking fences and forced-CoT lines into 14 non-conflicted files. All restored to the `bundle-swe2` version: `agents/{architect,debugger,implementer,qa-ci,researcher,reviewer}.md`, `.devin/agents/domain.md`, `skills/afk-loop/SKILL.md`, `skills/autonomous-gates/SKILL.md`, `skills/implement/SKILL.md`, `skills/code-review/code-reviewer.md`, `skills/dispatching-parallel-agents/{implementer-prompt,re-review-prompt,task-reviewer-prompt}.md`, `config.json` (trailing newline).
+
+### Kept from the `main` line
+
+| File | Reason |
+|---|---|
+| `docs/DEVIN-CLI-COMPATIBILITY.md` (+22 lines) | Verified 3000.10.x capability decisions table; states "Bundle policy is SWE-2-only" |
+| `.devin/SWE17_OPTIMIZATION_LOG.md` | Initially kept as dated history, then removed in the SWE-2-only pass below |
+
+### SWE-2-only cleanup (user decision)
+
+| File | Change | Paradigm removed |
+|---|---|---|
+| `data/model-context-windows.json` | Removed `kimi-k3-*` and `glm-5-3-*` reference entries | Non-SWE-2 model data; file now lists only `swe-2-medium`/`swe-2-high`/`swe-2-max` (262144) |
+| `.devin/SWE17_OPTIMIZATION_LOG.md` | Deleted | Documented the reverted SWE-1.7 fence/CoT policy; content preserved in git history |
+
+### Branch cleanup
+
+- `bundle-swe2` (local) deleted — fully merged.
+- `bundle-glm5` (local) deleted; commits preserved under tag `archive-bundle-glm5`. Remote branches deleted by user.
+- Local `main` is the single line; worktree = `bundle-swe2` tree + the kept `main` additions above.
+
+### Post-merge verification
+
+- `python audit.py` — 0 errors, 1 warning (`__pycache__` dirs, pre-existing)
+- `python -m pytest` — 289 passed
+- `git diff bundle-swe2 HEAD` — only the two kept `main` additions differ
+- `git grep` for forced-CoT/`swe-1-7` in active surfaces — clean (remaining hits are historical logs, ADRs, or anti-pattern documentation)

@@ -2,13 +2,7 @@
   "models": [
     {"id": "swe-2-medium", "name": "SWE-2 Medium", "context_window": 262144},
     {"id": "swe-2-high", "name": "SWE-2 High", "context_window": 262144},
-    {"id": "swe-2-max", "name": "SWE-2 Max", "context_window": 262144},
-    {"id": "kimi-k3-low", "name": "Kimi K3 Low", "context_window": 1048576},
-    {"id": "kimi-k3-high", "name": "Kimi K3 High", "context_window": 1048576},
-    {"id": "kimi-k3-max", "name": "Kimi K3 Max", "context_window": 1048576},
-    {"id": "glm-5-3-low", "name": "GLM-5.3 Low", "context_window": 1048576},
-    {"id": "glm-5-3-high", "name": "GLM-5.3 High", "context_window": 1048576},
-    {"id": "glm-5-3-max", "name": "GLM-5.3 Max", "context_window": 1048576}
+    {"id": "swe-2-max", "name": "SWE-2 Max", "context_window": 262144}
   ],
   "thresholds": {
     "warn_pct": 60,
