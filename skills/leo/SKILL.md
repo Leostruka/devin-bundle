@@ -10,7 +10,7 @@ triggers: [user, model]
 
 1. Self-check (scope, skills, verify, no opinion).
 2. Classify objective; route directly to matching skill(s).
-3. Start with `using-skills`; use `ask-matt` only if unclear.
+3. Start with `using-skills`; use `ask-bundle` only if unclear.
 4. For 3+ steps, write `todo_write`; mark `in_progress` then `completed`.
 5. Define Verification Function (gate/expect/evidence) per step.
 6. Dispatch `qa-ci` to re-run every gate on clean checkout.
@@ -18,7 +18,7 @@ triggers: [user, model]
 
 ## Goal
 
-Provide one entry point for the bundle's universal orchestration: classify the objective, invoke specialist skills directly, compose multi-skill flows, and retain control through verified completion. `ask-matt` is the full routing reference, not a mandatory hop; `wayfinder` and every other clear specialist route are first-class entry paths.
+Provide one entry point for the bundle's universal orchestration: classify the objective, invoke specialist skills directly, compose multi-skill flows, and retain control through verified completion. `ask-bundle` is the full routing reference, not a mandatory hop; `wayfinder` and every other clear specialist route are first-class entry paths.
 
 ## When to use
 
@@ -43,7 +43,7 @@ Provide one entry point for the bundle's universal orchestration: classify the o
    - Classify the objective from the user's words and observed repository state.
    - Route directly to every clearly matching specialist skill; invoke multiple skills when their responsibilities compose.
    - Start with `using-skills` to reinforce the skill-first rule.
-   - Use `ask-matt` only when the idea-to-ship path or phase boundary is unclear; it is a routing reference, not Leo's sole downstream router.
+   - Use `ask-bundle` only when the idea-to-ship path or phase boundary is unclear; it is a routing reference, not Leo's sole downstream router.
    - If no bundled skill matches, use `tool-and-skill-discovery` or `skill search`/`skill list`.
    - For fast domain lookup, read `docs/SKILL-TIERS.md`.
 
@@ -94,7 +94,7 @@ Keep this in mind for every session:
 
 ## Situation router
 
-Pick the entry skill from the user's situation. If the situation is not in this table, route to `ask-matt` for the full map or `tool-and-skill-discovery` for an external skill.
+Pick the entry skill from the user's situation. If the situation is not in this table, route to `ask-bundle` for the full map or `tool-and-skill-discovery` for an external skill.
 
 | Situation | Entry skill | Next |
 |---|---|---|
@@ -120,10 +120,10 @@ Pick the entry skill from the user's situation. If the situation is not in this 
 | Human-only procedure / provisioning | `wizard` | |
 | Guided learning | `teach` | |
 | Set up this repo for Devin | `project-setup` or the engineering-skills setup | |
-| Not sure which skill / flow fits | `ask-matt` | full map |
+| Not sure which skill / flow fits | `ask-bundle` | full map |
 | No skill matches | `tool-and-skill-discovery` | evaluate / install |
 
-For the main flow details (idea → ship, on-ramps, phase boundaries), see `ask-matt`.
+For the main flow details (idea → ship, on-ramps, phase boundaries), see `ask-bundle`.
 
 ### Build/change flow gates
 
@@ -149,7 +149,7 @@ After executing critical tools (API calls, DB writes, file-system changes, netwo
 
 ## Quick-start menu
 
-When the user says "leo", "start", or the objective is unclear, ask a focused `ask_user_question` with 2–4 options. The tool adds an "Other" option automatically; route "Other" to `ask-matt` or a follow-up question.
+When the user says "leo", "start", or the objective is unclear, ask a focused `ask_user_question` with 2–4 options. The tool adds an "Other" option automatically; route "Other" to `ask-bundle` or a follow-up question.
 
 - **Build or change something in the repo** → `grilling` (With-docs) if decisions remain, or `review-cadence` if trivial
 - **Improve / add a skill, rule, hook, or MCP** → `continuous-improvement`
@@ -195,7 +195,7 @@ When the user wants unattended work but there are no local tickets yet:
 - Secrets: never display `.env`/`credentials.toml` values; name the variable and symptom only.
 - Fact doubt → research (`web_search`, `webfetch`, `grep`, `exec`).
 - Intent doubt → ask (`ask_user_question`).
-- Cross-skill: `leo` is the session-start wrapper. Use `using-skills` to reinforce skill-first behavior. Use `ask-matt` for the full flow map when the quick router is not enough. Use `tool-and-skill-discovery` for external or missing skills.
+- Cross-skill: `leo` is the session-start wrapper. Use `using-skills` to reinforce skill-first behavior. Use `ask-bundle` for the full flow map when the quick router is not enough. Use `tool-and-skill-discovery` for external or missing skills.
 
 ## Forbidden Actions
 

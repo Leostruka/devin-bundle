@@ -11,6 +11,7 @@
     - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
     - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
     - scripts\*          → %APPDATA%\devin\scripts\
+    - extensions\*       → %APPDATA%\devin\extensions\ (+ computer-use .venv)
     - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
     - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
 
@@ -65,6 +66,7 @@ $dataSrc    = Join-Path $bundleRoot "data"
 $mcpSrc     = Join-Path $bundleRoot "mcp_config.json"
 $credsSrc   = Join-Path $bundleRoot "credentials.toml"
 $docsSrc    = Join-Path $bundleRoot "docs"
+$extSrc     = Join-Path $bundleRoot "extensions"
 
 # Destination paths
 $rulesDst   = Join-Path $devinHome "AGENTS.md"
@@ -76,6 +78,7 @@ $dataDst    = Join-Path $devinHome "data"
 $mcpDst     = Join-Path $devinHome "mcp_config.json"
 $credsDst   = Join-Path $devinHome "credentials.toml"
 $docsDst    = Join-Path $devinHome "docs"
+$extDst     = Join-Path $devinHome "extensions"
 
 $script:Copied = 0
 $script:Skipped = 0
@@ -97,9 +100,10 @@ function Get-FileHash256($path) {
   } finally { $sha.Dispose() }
 }
 
-function Get-FolderHash($path) {
+function Get-FolderHash($path, $exclude = $null) {
   if (-not (Test-Path $path)) { return $null }
   $files = Get-ChildItem $path -Recurse -File | Sort-Object FullName
+  if ($exclude) { $files = $files | Where-Object { $_.FullName -notmatch $exclude } }
   if ($files.Count -eq 0) { return "" }
   $hashes = $files | ForEach-Object { Get-FileHash256 $_.FullName }
   return ($hashes -join "`n")
@@ -170,10 +174,10 @@ function Install-File($src, $dst, $label) {
   }
 }
 
-function Install-SkillDir($src, $dst, $name) {
+function Install-SkillDir($src, $dst, $name, $exclude = $null) {
   if (Test-Path $dst) {
-    $srcHash = Get-FolderHash $src
-    $dstHash = Get-FolderHash $dst
+    $srcHash = Get-FolderHash $src $exclude
+    $dstHash = Get-FolderHash $dst $exclude
     if ($srcHash -eq $dstHash) {
       $script:Skipped++
       return "skip"
@@ -563,6 +567,51 @@ if (Test-Path $docsSrc) {
   }
 } else {
   Write-Skip "docs/ not in bundle"
+}
+
+# --- 8. extensions/ (local tools, e.g. computer-use) ---
+Write-Step "Install extensions/ (local tools)"
+if (Test-Path $extSrc) {
+  $extDirs = Get-ChildItem $extSrc -Directory
+  foreach ($ext in $extDirs) {
+    $result = Install-SkillDir -src $ext.FullName -dst (Join-Path $extDst $ext.Name) -name $ext.Name -exclude '\.venv\\'
+    switch ($result) {
+      "installed"      { Write-Ok "extensions/$($ext.Name) (installed)" }
+      "updated"        { Write-Ok "extensions/$($ext.Name) (updated)" }
+      "skip"           { Write-Skip "extensions/$($ext.Name) (unchanged)" }
+      "diff"           { Write-Warn "extensions/$($ext.Name) — differs (use -Force)" }
+      "would-install"  { Write-Skip "would install extensions/$($ext.Name)" }
+      "would-update"   { Write-Skip "would update extensions/$($ext.Name)" }
+    }
+  }
+
+  # --- 8a. computer-use Python deps (isolated venv, no system/user-site) ---
+  $cuDir = Join-Path $extDst "computer-use"
+  $cuReq = Join-Path $cuDir "requirements.txt"
+  if (Test-Path $cuReq) {
+    $pyCmd = $null
+    foreach ($cand in @("python", "python3", "py")) {
+      if (Get-Command $cand -ErrorAction SilentlyContinue) { $pyCmd = $cand; break }
+    }
+    if (-not $pyCmd) {
+      Write-Warn "python not found — skipping computer-use venv (scripts need mss+pynput)"
+    } elseif ($DryRun) {
+      Write-Skip "would create venv at $cuDir\.venv and pip install -r requirements.txt"
+    } else {
+      $venvPy = Join-Path $cuDir ".venv\Scripts\python.exe"
+      if (-not (Test-Path $venvPy)) {
+        & $pyCmd -m venv (Join-Path $cuDir ".venv")
+      }
+      & $venvPy -m pip install --quiet --disable-pip-version-check -r $cuReq
+      if ($LASTEXITCODE -eq 0) {
+        Write-Ok "computer-use deps installed in $cuDir\.venv"
+      } else {
+        Write-Warn "computer-use pip install failed (exit $LASTEXITCODE)"
+      }
+    }
+  }
+} else {
+  Write-Skip "extensions/ not in bundle"
 }
 
 # --- Summary ---
