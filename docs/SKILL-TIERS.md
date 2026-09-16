@@ -176,11 +176,11 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 ## Extensões locais (tools, não-skills)
 
-Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: `%APPDATA%\devin\extensions\`). Sem SKILL.md — o mapa carrega só o ponteiro; documentação completa vive no `USAGE.md` de cada extensão.
+Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: `%APPDATA%\devin\extensions\`). Documentação completa vive no `USAGE.md` de cada extensão. Uma extensão pode ter um skill wrapper em `skills/<nome>/` só para auto-descoberta (o SKILL.md aponta de volta para o `USAGE.md`).
 
 | Extensão | Faz | Quando | Docs completas |
 |---|---|---|---|
-| `computer-use` | Screenshot da tela, clique/movimento de mouse em (X,Y), digitação de texto e atalhos — replica Computer Use do Devin Cloud no CLI | Automatizar GUI desktop, validar app visualmente, interagir com app sem API | `extensions/computer-use/USAGE.md` |
+| `computer-use` | Screenshot da tela, clique/movimento de mouse em (X,Y), digitação de texto e atalhos — replica Computer Use do Devin Cloud no CLI. Skill wrapper: `skills/computer-use/` | Automatizar GUI desktop, validar app visualmente, interagir com app sem API | `extensions/computer-use/USAGE.md` |
 
 ## Outros
 

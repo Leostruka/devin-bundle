@@ -665,9 +665,17 @@
       "original_path": "%APPDATA%\\devin\\skills\\afk-loop",
       "export_hash": "A6486AE9532C4846A1A542B2BF4E3C42E6E7A9F8E79C398AE059F93C2A6D52CF",
       "exported_at": "2026-09-08T21:39:22.462610"
+    },
+    {
+      "name": "computer-use",
+      "source": "devin-bundle",
+      "purpose": "Use when you need to see or control the local screen — screenshots, mouse clicks/movement, typing text and hotkeys. GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
+      "original_path": "%APPDATA%\\devin\\skills\\computer-use",
+      "export_hash": "D723482F24F5A375D2B6208A80385BCD382FEC5DC1E9A34C0DCE32F30AA0AF7A",
+      "exported_at": "2026-09-15T23:29:25.416194"
     }
   ],
-  "skill_count": 82,
+  "skill_count": 83,
   "rule_count": 26,
   "scripts": [
     {

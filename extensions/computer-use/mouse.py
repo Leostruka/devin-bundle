@@ -39,6 +39,9 @@ def main():
                             choices=["left", "right", "middle"])
             sp.add_argument("--clicks", type=int, default=1,
                             help="1=single, 2=double (default: 1)")
+            sp.add_argument("--hold", type=int, default=50,
+                            help="ms between press and release (default: 50; "
+                                 "raise for UIs that ignore instant clicks)")
         if name == "scroll":
             sp.add_argument("--dx", type=int, default=0, help="horizontal steps")
             sp.add_argument("--dy", type=int, default=0, help="vertical steps (+ down)")
@@ -67,7 +70,13 @@ def main():
         elif args.cmd == "click":
             mouse.position = (args.x, args.y)
             time.sleep(0.05)
-            mouse.click(getattr(Button, args.button), args.clicks)
+            btn = getattr(Button, args.button)
+            for i in range(args.clicks):
+                mouse.press(btn)
+                time.sleep(max(args.hold, 0) / 1000)
+                mouse.release(btn)
+                if i < args.clicks - 1:
+                    time.sleep(0.08)
         elif args.cmd == "scroll":
             mouse.position = (args.x, args.y)
             time.sleep(0.05)
