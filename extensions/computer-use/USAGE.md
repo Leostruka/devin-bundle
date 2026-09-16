@@ -38,19 +38,21 @@ python3 -m venv <ext-dir>/.venv
 - Exit codes: `0` success, `1` runtime failure, `2` usage/dependency error.
 - Coordinates are physical pixels, origin at the top-left of the primary monitor. On multi-monitor setups, monitor 0 = the combined virtual screen; negative coordinates are valid for secondary monitors.
 - On Windows the scripts set per-monitor DPI awareness so screenshot pixels and mouse coordinates agree on scaled displays.
-- Default `--out` goes to the OS temp dir (`%TEMP%`/`/tmp`) — screenshots are disposable. To keep one as project documentation/evidence, pass an explicit path under `.devin/` (e.g. `--out .devin/screenshots/login.png`), the conventional home for agent working artifacts.
+- Default `--out` goes to the OS temp dir (`%TEMP%`/`/tmp`) — screenshots are disposable. **Do not pass `--out` at all during normal work**; let shots land in temp. Only write elsewhere when the user explicitly asks to keep a shot (documentation/evidence), to the path they choose.
+- **Cleanup:** temp shots are the agent's working files — delete the ones you created when the task ends (`screenshot-<ts>.png` etc.). Never leave them in the project root or `.devin/`.
 
 ## Commands
 
 ```bash
 PY=~/.config/devin/extensions/computer-use/.venv/bin/python   # Windows: %APPDATA%\devin\extensions\computer-use\.venv\Scripts\python.exe
 
-# --- screenshot.py ---
-$PY screenshot.py --out shot.png                  # all monitors combined
-$PY screenshot.py --grid --out shot.png           # + coordinate grid (labels = physical px)
-$PY screenshot.py --grid 200 --out shot.png       # grid every 200 px
-$PY screenshot.py --monitor 1 --out mon1.png      # specific monitor (1..N)
-$PY screenshot.py --region 100,200,640,480 --out crop.png   # x,y,w,h crop
+# --- screenshot.py --- (all write to the OS temp dir unless --out is given)
+$PY screenshot.py                                 # all monitors combined → temp
+$PY screenshot.py --grid                          # + coordinate grid (labels = physical px)
+$PY screenshot.py --grid 200                      # grid every 200 px
+$PY screenshot.py --monitor 1                     # specific monitor (1..N)
+$PY screenshot.py --region 100,200,640,480        # x,y,w,h crop
+$PY screenshot.py --grid --out /keep/here.png     # only when asked to keep the shot
 
 # --- mouse.py ---
 $PY mouse.py position                    # {"ok":true,"x":...,"y":...}
