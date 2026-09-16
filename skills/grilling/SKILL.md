@@ -141,7 +141,7 @@ You MUST complete these in order:
 8. **Spec self-review** — quick inline check (see below)
 9. **User reviews written spec** — ask user to review before proceeding
 10. **Transition to implementation** — the spec is done. Pick the execution path:
-    - **planning-pipeline (Tickets mode)** — split into tracer-bullet vertical-slice tickets with blocking edges, then `implement` per ticket (canonical flow, matches `ask-matt` router)
+    - **planning-pipeline (Tickets mode)** — split into tracer-bullet vertical-slice tickets with blocking edges, then `implement` per ticket (canonical flow, matches `ask-bundle` router)
     - **writing-plans** — turn the spec into a single detailed task-by-task implementation plan, then `executing-plans`
 
 **The terminal state is leaving grilling for one of the two execution paths.** Do NOT start implementing inside grilling — the spec is the deliverable here; execution happens in the next skill.

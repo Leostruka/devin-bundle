@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Devin bundle installer (Linux / WSL / macOS).
-# Installs global Devin CLI setup: AGENTS.md, agents/, skills/, config.json, scripts/, mcp_config.json, credentials.toml
+# Installs global Devin CLI setup: AGENTS.md, agents/, skills/, config.json, scripts/, extensions/, mcp_config.json, credentials.toml
 set -euo pipefail
 
 BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -53,6 +53,11 @@ file_hash() {
 
 dir_hash() {
   ( cd "$1" 2>/dev/null && find . -type f | sort | xargs sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 )
+}
+
+# Same as dir_hash but skips .venv/ trees (extensions carry isolated venvs).
+dir_hash_ext() {
+  ( cd "$1" 2>/dev/null && find . -type f -not -path '*/.venv/*' | sort | xargs sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 )
 }
 
 backup_file() {
@@ -468,12 +473,63 @@ else
   warn "credentials.toml not found in bundle"
 fi
 
+# --- 8b. Install extensions/ (local tools, e.g. computer-use) ---
+step "Install extensions/ (local tools)"
+ext_src="$BUNDLE_DIR/extensions"
+ext_dst="$DEVIN_HOME/extensions"
+if [[ -d "$ext_src" ]]; then
+  for ext_dir in "$ext_src"/*/; do
+    [[ -d "$ext_dir" ]] || continue
+    name="$(basename "$ext_dir")"
+    dst_dir="$ext_dst/$name"
+    if [[ -d "$dst_dir" ]]; then
+      src_h="$(dir_hash_ext "$ext_dir")"
+      dst_h="$(dir_hash_ext "$dst_dir")"
+      if [[ "$src_h" == "$dst_h" ]]; then
+        ok "extensions/$name (unchanged)"
+      elif [[ $FORCE -eq 1 ]]; then
+        if [[ $BACKUP -eq 1 ]]; then backup_file "$dst_dir"; fi
+        if [[ $DRY_RUN -eq 1 ]]; then skip "would update extensions/$name"
+        else rm -rf "$dst_dir"; mkdir -p "$ext_dst"; cp -r "$ext_dir" "$dst_dir"; ok "extensions/$name updated"; fi
+      else
+        warn "extensions/$name exists and differs. Use --force to update."
+      fi
+    else
+      if [[ $DRY_RUN -eq 1 ]]; then skip "would install extensions/$name"
+      else mkdir -p "$ext_dst"; cp -r "$ext_dir" "$dst_dir"; ok "extensions/$name installed"; fi
+    fi
+  done
+
+  # --- 8c. computer-use Python deps (isolated venv, no system/user-site) ---
+  cu_dir="$ext_dst/computer-use"
+  if [[ -f "$cu_dir/requirements.txt" ]]; then
+    py=""
+    for cand in python3 python; do
+      if command -v "$cand" &>/dev/null; then py="$cand"; break; fi
+    done
+    if [[ -z "$py" ]]; then
+      warn "python not found — skipping computer-use venv (scripts need mss+pynput)"
+    elif [[ $DRY_RUN -eq 1 ]]; then
+      skip "would create venv at $cu_dir/.venv and pip install -r requirements.txt"
+    else
+      [[ -x "$cu_dir/.venv/bin/python" ]] || "$py" -m venv "$cu_dir/.venv"
+      if "$cu_dir/.venv/bin/python" -m pip install --quiet --disable-pip-version-check -r "$cu_dir/requirements.txt"; then
+        ok "computer-use deps installed in $cu_dir/.venv"
+      else
+        warn "computer-use pip install failed"
+      fi
+    fi
+  fi
+else
+  warn "extensions/ not found in bundle"
+fi
+
 # --- 9. Summary ---
 step "Summary"
 echo "    Skills installed : $installed_skills"
 echo "    Skills updated   : $updated_skills"
 echo "    Skills unchanged : $skipped_skills"
-echo "    Config: AGENTS.md, agents/, config.json, scripts/, data/, mcp_config.json, credentials.toml"
+echo "    Config: AGENTS.md, agents/, config.json, scripts/, data/, extensions/, mcp_config.json, credentials.toml"
 
 if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"

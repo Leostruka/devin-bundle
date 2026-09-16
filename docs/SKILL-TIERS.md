@@ -105,6 +105,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `context7` | Docs atualizadas de libs | 737 | Pergunta sobre lib |
 | `deep-mode` | Multi-pass agentic search c/ citações (replica Deep Mode cloud) | 1800 | "Deep search", exploração exaustiva |
 | `structured-knowledge-extraction` | Extrai entidades, relações, evidências e proveniência de Markdown/texto para JSON/Markdown versionado sem dependências | ~1124 | Quando estruturar conhecimento de documentos |
+| `youtube-fetcher` | YouTube URL + caption JSON → transcript raw + metadata em `.devin/notes/youtube/` | ~1350 | Ingerir transcript de vídeo fornecido pelo usuário |
 | `ai-coding-dictionary` | Definições canônicas para jargão de AI coding | 315 | Alinhar termos como harness engineering, context engineering |
 
 ## Data
@@ -112,13 +113,14 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
 | `data-analyst` | SQL-first exploration via MCP, schema-aware, charts (replica DANA cloud) | 2100 | Query DB, análise de dados, charts |
-|| youtube-fetcher | YouTube URL + caption JSON → raw transcript + metadata em .devin/notes/youtube/ | ~800 | Quando precisa de transcript de vídeo fornecido pelo usuário |
 
 ## Meta (gestão de sessão)
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `ask-bundle` | Router idea-to-ship | 3037 | Não sabe qual skill |
+| `leo` | Orquestrador universal do bundle — classifica objetivo, roteia skills/flows | ~4200 | Início de sessão, objetivo vago, orquestração multi-skill |
+| `ask-bundle` | Router idea-to-ship | ~3216 | Não sabe qual skill |
+| `afk-loop` | Loop autônomo sobre issues Markdown locais (DAG de blockers) | ~976 | Trabalho unattended em issues `ready-for-agent` |
 | `project-memory` | Captura memória do projeto entre sessões | 1042 | Nota importante que deve persistir |
 | `devin-manager` | Audita `.devin/` com scan/explain/diff/doctor/plan | ~974 | Quando `.devin/` precisa de auditoria determinística |
 | `memory-hygiene` | Quando e como usar memória cross-session | 1736 | Cross-session memory, context window |
@@ -130,7 +132,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `setup-engineering-skills` | Configura repo p/ skills eng | 1754 | Setup inicial |
+| `setup-matt-pocock-skills` | Configura repo p/ skills eng (issue tracker, labels, domain docs) | ~1836 | Setup inicial |
 | `project-setup` | Onboarding geral do projeto Devin | 2622 | Primeira configuração `.devin/` |
 | `setup-pre-commit` | Husky + lint-staged | 585 | Pre-commit hooks |
 | `self-extend` | Adiciona skill/hook/MCP/regra | 1755 | Evoluir Devin CLI |
@@ -171,6 +173,14 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `legacy-refactor` | Strangler-fig, seams, modernization | ~500 | Modernizar código legado |
 
 **Nota sobre skills de custo:** `cost-optimization` foca em reduzir tokens/cache/MCPs do parent; `agent-cost-guard` limita subagentes e loops; `effort-calibration` escolhe o nível de raciocínio. Use `ask-bundle` se estiver em dúvida.
+
+## Extensões locais (tools, não-skills)
+
+Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: `%APPDATA%\devin\extensions\`). Sem SKILL.md — o mapa carrega só o ponteiro; documentação completa vive no `USAGE.md` de cada extensão.
+
+| Extensão | Faz | Quando | Docs completas |
+|---|---|---|---|
+| `computer-use` | Screenshot da tela, clique/movimento de mouse em (X,Y), digitação de texto e atalhos — replica Computer Use do Devin Cloud no CLI | Automatizar GUI desktop, validar app visualmente, interagir com app sem API | `extensions/computer-use/USAGE.md` |
 
 ## Outros
 

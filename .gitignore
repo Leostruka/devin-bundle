@@ -5,6 +5,7 @@ __pycache__/
 *.pyd
 .Python
 .pytest_cache/
+extensions/*/.venv/
 
 # Devin bundle scratch directories
 .worktrees/

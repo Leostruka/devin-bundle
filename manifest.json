@@ -20,10 +20,10 @@
       "exported_at": "2026-09-08T21:39:22.432746"
     },
     {
-      "name": "ask-matt",
+      "name": "ask-bundle",
       "source": "devin-bundle",
       "purpose": "Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-matt",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-bundle",
       "export_hash": "8F25FBA82F65C95F5F4DEF246DA6BBF03548C6742DB4B98B3E8368417B9AED06",
       "exported_at": "2026-09-08T21:39:22.433086"
     },

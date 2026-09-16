@@ -17,10 +17,10 @@ def test_leo_is_universal_orchestrator():
     assert "verified completion" in text
 
 
-def test_leo_routes_wayfinder_without_ask_matt_detour():
+def test_leo_routes_wayfinder_without_ask_bundle_detour():
     text = leo_text()
     assert "Large, foggy, multi-session effort | `wayfinder`" in text
-    assert "Use `ask-matt` only" in text
+    assert "Use `ask-bundle` only" in text
 
 
 def test_leo_covers_specialist_domains():

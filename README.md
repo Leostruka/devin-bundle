@@ -127,7 +127,7 @@ As 82 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 
 1. invocar `using-skills` no início;
-2. usar `ask-matt` quando o fluxo completo estiver incerto;
+2. usar `ask-bundle` quando o fluxo completo estiver incerto;
 3. usar `tool-and-skill-discovery` quando nenhuma skill conhecida corresponder;
 4. consultar [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) para descoberta por domínio e custo de contexto;
 5. carregar apenas as 1–3 skills necessárias para a tarefa.
@@ -348,7 +348,7 @@ Uso recomendado:
 
 A janela contém prompt do sistema, ferramentas, regras, skills invocadas, conversa, leituras e respostas. Mais contexto não significa melhor recuperação: informação no meio pode perder prioridade.
 
-- **Smart zone:** região em que o modelo ainda raciocina com boa precisão. O hook `context-budget.py` usa 100 mil tokens como limiar operacional conservador e o fluxo `ask-matt` trata aproximadamente 150 mil como limite superior conceitual para modelos modernos.
+- **Smart zone:** região em que o modelo ainda raciocina com boa precisão. O hook `context-budget.py` usa 100 mil tokens como limiar operacional conservador e o fluxo `ask-bundle` trata aproximadamente 150 mil como limite superior conceitual para modelos modernos.
 - **Continue:** preferível quando a fase ainda depende das fontes já carregadas.
 - **Clear:** padrão quando a tarefa ou fase mudou e o contexto anterior não é necessário.
 - **Compact:** usar somente quando a continuidade é necessária e não existe um artefato melhor; compactações repetidas acumulam perda e “sedimentação”.
