@@ -132,7 +132,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `setup-matt-pocock-skills` | Configura repo p/ skills eng (issue tracker, labels, domain docs) | ~1836 | Setup inicial |
+| `setup-engineering-skills` | Configura repo p/ skills eng (issue tracker, labels, domain docs) | ~1836 | Setup inicial |
 | `project-setup` | Onboarding geral do projeto Devin | 2622 | Primeira configuração `.devin/` |
 | `setup-pre-commit` | Husky + lint-staged | 585 | Pre-commit hooks |
 | `self-extend` | Adiciona skill/hook/MCP/regra | 1755 | Evoluir Devin CLI |
