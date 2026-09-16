@@ -524,12 +524,37 @@ else
   warn "extensions/ not found in bundle"
 fi
 
+# --- 8d. Install docs/ (bundle docs incl. SKILL-TIERS router map) ---
+step "Install docs/"
+docs_src="$BUNDLE_DIR/docs"
+docs_dst="$DEVIN_HOME/docs"
+if [[ -d "$docs_src" ]]; then
+  if [[ -d "$docs_dst" ]]; then
+    src_h="$(dir_hash "$docs_src")"
+    dst_h="$(dir_hash "$docs_dst")"
+    if [[ "$src_h" == "$dst_h" ]]; then
+      ok "docs (unchanged)"
+    elif [[ $FORCE -eq 1 ]]; then
+      if [[ $BACKUP -eq 1 ]]; then backup_file "$docs_dst"; fi
+      if [[ $DRY_RUN -eq 1 ]]; then skip "would update docs"
+      else rm -rf "$docs_dst"; cp -r "$docs_src" "$docs_dst"; ok "docs updated"; fi
+    else
+      warn "docs exists and differs. Use --force to update."
+    fi
+  else
+    if [[ $DRY_RUN -eq 1 ]]; then skip "would install docs"
+    else cp -r "$docs_src" "$docs_dst"; ok "docs installed"; fi
+  fi
+else
+  warn "docs/ not found in bundle"
+fi
+
 # --- 9. Summary ---
 step "Summary"
 echo "    Skills installed : $installed_skills"
 echo "    Skills updated   : $updated_skills"
 echo "    Skills unchanged : $skipped_skills"
-echo "    Config: AGENTS.md, agents/, config.json, scripts/, data/, extensions/, mcp_config.json, credentials.toml"
+echo "    Config: AGENTS.md, agents/, config.json, scripts/, data/, docs/, extensions/, mcp_config.json, credentials.toml"
 
 if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"

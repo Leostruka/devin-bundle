@@ -164,7 +164,7 @@ Update wrong skills in place before use. Create a skill for recurring patterns (
 
 ### 4. Don't start non-trivial tasks without skill discovery
 
-Invoke `skill tool-and-skill-discovery` or `skill search` + `skill list` before touching code. For faster discovery without loading all 82 descriptions, read `docs/SKILL-TIERS.md` (~1700 tok) — skills categorized by domain of use with token costs. Invoke all matching skills in parallel. If no skill matches, use `tool-and-skill-discovery` (which now includes external search and install). Don't skip discovery on first occurrences each week (first PR, first debug, first CSV edit, first deploy, first MCP integration, etc.). Applies to all integrations (MCP, skills, CLIs, `gh`, `curl`, `python`).
+Invoke `skill tool-and-skill-discovery` or `skill search` + `skill list` before touching code. For faster discovery without loading all 83 descriptions, read `docs/SKILL-TIERS.md` (~1700 tok) — outside this repo, use the installed copy at `%APPDATA%\devin\docs\SKILL-TIERS.md` (POSIX `~/.config/devin/docs/SKILL-TIERS.md`) — skills categorized by domain of use with token costs. Invoke all matching skills in parallel. If no skill matches, use `tool-and-skill-discovery` (which now includes external search and install). Don't skip discovery on first occurrences each week (first PR, first debug, first CSV edit, first deploy, first MCP integration, etc.). Applies to all integrations (MCP, skills, CLIs, `gh`, `curl`, `python`).
 
 ### 8. Telegraphic output
 
