@@ -24,7 +24,7 @@ Always invoke via the extension's isolated venv Python:
 - POSIX: `~/.config/devin/extensions/computer-use/.venv/bin/python`
 
 ```bash
-PY screenshot.py --grid --out shot.png   # capture + coordinate grid
+PY screenshot.py --grid                  # capture → PNG lands in OS temp dir
 PY mouse.py click X Y                    # click physical pixel (X,Y)
 PY type_text.py "text" | --keys ctrl+c   # type / hotkey
 ```
@@ -32,6 +32,10 @@ PY type_text.py "text" | --keys ctrl+c   # type / hotkey
 Workflow: `screenshot.py --grid` → `read` the PNG → pick (X,Y) from the grid
 labels (they are physical pixels — do NOT estimate from image proportions) →
 act → re-screenshot to verify.
+
+Screenshots are disposable: keep the default temp path, and delete the shots
+you created when the task ends. Only write `--out` elsewhere if the user asks
+to keep one.
 
 If the venv is missing, run the bundle installer (`install.ps1`/`install.sh`)
 or create it per `USAGE.md`.
