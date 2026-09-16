@@ -2,9 +2,8 @@
 
 This file is included in the agent's context for this project. Keep it concise; only rules that change the agent's behavior belong here. Generic rules live in the global bundle.
 
-## 1. Think before you code
+## 1. Intent and boundaries before code
 
-- State your assumptions explicitly.
 - If uncertain, ask — don't guess.
 - Declare the intent, user-visible impact, and boundaries (inputs/outputs, scope, non-goals) before writing code.
 - Use the smallest solution that solves the problem. Reject overengineering.

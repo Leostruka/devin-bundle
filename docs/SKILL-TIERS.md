@@ -3,13 +3,13 @@
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-08-22).
 Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 tok).
 
-## Modelos alvo
+## Modelos alvo (SWE-2, roteamento por nível de esforço)
 
-| Modelo | Contexto | Uso | Notas |
-|---|---|---|---|
-| `{{BUNDLE_DEFAULT_MODEL}}` | veja `data/bundle-models.json` | Primário (parent) | Thinking mode, tool-use during inference, cache $0.26/M read |
-| `{{BUNDLE_MAX_MODEL}}` | veja `data/bundle-models.json` | Subagent Max (`model: {{BUNDLE_MAX_MODEL}}` pin) | Self-compaction trained, 1000 TPS, **gratuito** |
-| `{{BUNDLE_MEDIUM_MODEL}}` | veja `data/bundle-models.json` | Subagent Medium (`model: {{BUNDLE_MEDIUM_MODEL}}` pin) | Alternativa mais leve, mesmo contexto |
+| model_uid | Effort | Contexto | Uso | Notas |
+|---|---|---|---|---|
+| `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | 262K | Tarefas simples, ajustes pontuais, scripts isolados | **gratuito** |
+| `{{BUNDLE_DEFAULT_MODEL}}` (`swe-2-high`) | High | 262K | Primário (parent); multi-arquivo | **gratuito**, default geral |
+| `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | 262K | Subagent Max (`model:` pin); aberto/long-horizon | **gratuito** |
 
 Subagents customizados usam `model: {{BUNDLE_MAX_MODEL}}` (Max) ou `{{BUNDLE_MEDIUM_MODEL}}` (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. **NÃO usar aliases pagos não verificados** — eles podem apontar para um modelo pago.
 Sem pin, os custom agents usam o default router do CLI (possivelmente pago). `subagent_general` herda o parent (`{{BUNDLE_DEFAULT_MODEL}}`) quando esse for gratuito. **Evitar `subagent_explore`** — pode resolver para um modelo pago; usar o custom `researcher` (gratuito, veja `data/bundle-models.json`).

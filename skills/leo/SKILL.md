@@ -62,7 +62,7 @@ Provide one entry point for the bundle's universal orchestration: classify the o
      - `evidence:` where the raw output will be recorded (ledger line or file path).
    - Mark `in_progress` when starting a step, `completed` only after verification passes — no batching.
    - **Independent QA/CI verification (anti-gaming, mandatory for non-trivial steps):**
-     - After a step claims done, dispatch the `qa-ci` subagent (medium-role model via `BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`, no write tools) to re-run every gate independently.
+     - After a step claims done, dispatch the `qa-ci` subagent (Medium effort via `BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`, no write tools) to re-run every gate independently.
      - The QA/CI subagent sees only the diff and the spec — never the implementer's report.
      - It re-executes each gate on a clean checkout (fresh worktree when feasible), runs `tests/held-out/` if present, and audits the diff for overfitting (hard-coded constants, mocked gates, skipped tests, phantom guardrails).
      - A step is `completed` only when the QA/CI subagent returns `Verdict: PASS` with fresh command output + exit code as evidence.
@@ -86,7 +86,7 @@ Provide one entry point for the bundle's universal orchestration: classify the o
 Keep this in mind for every session:
 
 - Devin CLI validated release: `{{VALIDATED_CLI_VERSION}}` from `data/bundle-identity.json` (see `docs/DEVIN-CLI-COMPATIBILITY.md`).
-- Models: parent from `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`); custom subagents pin `BUNDLE_MAX_MODEL` (`max_role_model`: architect, researcher, reviewer — judgment/read-only, fenced against overthinking) or `BUNDLE_MEDIUM_MODEL` (`medium_role_model`: debugger, implementer, qa-ci — code/script execution), all free by default. Never use paid or non-bundle aliases (`swe`, `opus`, `sonnet`, `gpt`, etc.) when the parent is free.
+- Models: SWE-2 routes by effort level — parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`, High); custom subagents `BUNDLE_MAX_MODEL` (`max_role_model`, Max) or `BUNDLE_MEDIUM_MODEL` (`medium_role_model`, Medium), all free. Never use non-bundle aliases (`opus`, `sonnet`, `gpt`, etc.) when the parent is free.
 - Issue tracker: local Markdown under `.devin/scratch/<feature-slug>/`, conventions in `.devin/agents/issue-tracker.md` and `.devin/agents/triage-labels.md`.
 - Skills: discover via `tool-and-skill-discovery` or `docs/SKILL-TIERS.md`.
 - Hooks: 8 lifecycle events (see `docs/TOOLS-MAP.md` and `config.json`).
@@ -188,9 +188,9 @@ When the user wants unattended work but there are no local tickets yet:
 
 ## Advice
 
-- Subagents: split by role — `BUNDLE_MAX_MODEL` for judgment/read-only profiles (architect, researcher, reviewer; their prompts carry anti-overthinking fences), `BUNDLE_MEDIUM_MODEL` for code manipulation and script execution (debugger, implementer, qa-ci). All free by default. Never use `subagent_explore` or other paid aliases when the parent is free.
-- Deep search: use the `researcher` subagent profile (max-role model, fenced).
-- Models: parent is `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`); subagents are `BUNDLE_MAX_MODEL` or `BUNDLE_MEDIUM_MODEL` per role. Don't use paid aliases unless the parent is paid.
+- Subagents: use custom profiles pinned to bundle effort variants (`swe-2-max` / `swe-2-medium`, free). Never use `subagent_explore` or other paid aliases when the parent is free.
+- Deep search: use the `researcher` subagent profile (`swe-2-max`).
+- Models: parent is `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`); subagents are `BUNDLE_MAX_MODEL` (`max_role_model`) or `BUNDLE_MEDIUM_MODEL` (`medium_role_model`). Don't use paid aliases unless the parent is paid.
 - Context: prefer `clear` between unrelated tasks; don't paste large documents into chat.
 - Secrets: never display `.env`/`credentials.toml` values; name the variable and symptom only.
 - Fact doubt → research (`web_search`, `webfetch`, `grep`, `exec`).

@@ -20,7 +20,7 @@ triggers: [user, model]
 - Context is already compacted and the original is gone
 
 **Default stance:** folding is a technique for contexts that genuinely exceed
-the usable window. With GLM-5.2 (200K) and SWE-1.7 (262K) the bar is high —
+the usable window. With SWE-2 (262K) the bar is high —
 most session contexts fit and should be used directly. Don't fold
 preemptively; the sub-query fan-out adds latency and coordination cost that
 only pays off when dense access to a very large artifact is actually needed.
@@ -45,7 +45,7 @@ persistent Python REPL, but the same effect is achieved with:
 2. **Peek** — `read` with `offset`/`limit` to sample structure
 3. **Grep** — `grep` with patterns to locate relevant sections
 4. **Partition** — split into chunks mentally or via `exec` (e.g. `split`)
-5. **Sub-query** — dispatch `researcher` subagents (NOT `subagent_explore` when parent is FREE — that runs on PAID SWE-1.6) over chunks
+5. **Sub-query** — dispatch `researcher` subagents (NOT `subagent_explore` when parent is FREE — it runs on the CLI default router, possibly PAID) over chunks
 6. **Synthesize** — combine sub-agent returns into the final answer
 
 ## Depth Rule (Critical)
@@ -97,7 +97,7 @@ exec: split -l 500 /tmp/context.md /tmp/chunk_
 
 ### Step 5: Sub-query (depth=1)
 
-Dispatch `researcher` subagents (NOT `subagent_explore` when parent is FREE — that runs on PAID SWE-1.6) over chunks. Each subagent gets:
+Dispatch `researcher` subagents (NOT `subagent_explore` when parent is FREE — it runs on the CLI default router, possibly PAID) over chunks. Each subagent gets:
 - One chunk (or section) to analyze
 - A specific question to answer
 - Instructions to return findings, not spawn further subagents

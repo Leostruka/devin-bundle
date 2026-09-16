@@ -5,8 +5,7 @@
   },
   "theme_mode": "dark",
   "agent": {
-    "model": "glm-5-2",
-    "thinking": {}
+    "model": "swe-2-high"
   },
   "attribution": false,
   "read_config_from": {

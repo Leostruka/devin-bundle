@@ -681,7 +681,7 @@
     {
       "name": "behavioral-nudge.py",
       "purpose": "PostToolUse hook — injects behavioral reminders",
-      "export_hash": "19676F613847D0B7FE80E14E5C1CD21ED539BBA747A4AD0E96A02BE72C763A6F",
+      "export_hash": "0179F74EF1005CF56D6775C0B2D5D5CEB1345270A2EBF27439D4818A4D7F249D",
       "exported_at": "2026-09-08T21:39:22.430127"
     },
     {
@@ -717,7 +717,7 @@
     {
       "name": "refine-review-prompt.py",
       "purpose": "Refine mode — generates review prompts for self-improvement",
-      "export_hash": "1B2D421233235BCB5135AA682F34FFD687D10865D9E3532E7B58D03D1224536B",
+      "export_hash": "1360431BC8C25608BDEE7B9183E3A8E205AF6D712A2FEA3BEC057F6843CF73B5",
       "exported_at": "2026-09-08T21:39:22.430695"
     },
     {
@@ -741,7 +741,7 @@
     {
       "name": "validate-skill-format.py",
       "purpose": "Validator — checks SKILL.md frontmatter and format",
-      "export_hash": "C68EA0A1B567432870A74B22FA371D12037392D0748E8788F787FFF74466F367",
+      "export_hash": "10EA11EA662CBCE5A2873D9BBCA749C7EFD1D3B5A8B3AB1FB0C74CB1C51E96D7",
       "exported_at": "2026-09-08T21:39:22.431052"
     },
     {
@@ -753,7 +753,7 @@
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "4317CA29D68E9BEF85FFA35EA537F8124AD4DF9541BAF97FFC7DF8552B95B437",
+      "export_hash": "513F69F45B7A93828EE5D9917E62C6104A5E7FF20CA2F414C9B6F73D7A34D003",
       "exported_at": "2026-09-08T21:39:22.431219"
     },
     {
@@ -805,42 +805,42 @@
       "name": "architect",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\architect.md",
-      "export_hash": "1E36D32111DAD762FB37649A61B7DCFBF3B32FE840877EEEDAAC23641403B8E6",
+      "export_hash": "B145BABDBAE502E715A6923028B92288198E6500A7AD162750FD36E13BA3CBEF",
       "exported_at": "2026-09-08T21:39:22.431676"
     },
     {
       "name": "debugger",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\debugger.md",
-      "export_hash": "A354BA0627A58C991475C8EDB91459670D12F8D4A7C399D55246064F49D34AE4",
+      "export_hash": "BCF357F511F7E48805380EBA263C509017F35BBD62D3AB288D21DC347B1F3699",
       "exported_at": "2026-09-08T21:39:22.431753"
     },
     {
       "name": "implementer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\implementer.md",
-      "export_hash": "1E7A678061038380F64C3D4B673DF7D0C5E7F0207AECEF36AB0666E8F8D5D20A",
+      "export_hash": "05757102E51E6DC5FDC8FB4E497081330410B9B2637612CEB1F5F6CD533C73BD",
       "exported_at": "2026-09-08T21:39:22.431827"
     },
     {
       "name": "qa-ci",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\qa-ci.md",
-      "export_hash": "46FDF54262B20B2DC84966E2B3AA0D5E1B2892A16A56690362D21468D998DF2F",
+      "export_hash": "21090BE5A44C9672A7932497F7FCAD200EDB874F89125F19906A51D6B6C3926E",
       "exported_at": "2026-09-08T21:39:22.431900"
     },
     {
       "name": "researcher",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\researcher.md",
-      "export_hash": "A869419266564CB98A2732C5503EF767169681951DC2C56F0228C3CE33B2AE1B",
+      "export_hash": "92CFAD5AA52A1EBFCBE7C47F09E4C655B7494183607A49BF1C0044744031C634",
       "exported_at": "2026-09-08T21:39:22.431990"
     },
     {
       "name": "reviewer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\reviewer.md",
-      "export_hash": "4D566EA657955BC8FAC9A584D749F602E6B1D0F6B3FAEB7F1076E0BE7BDD326D",
+      "export_hash": "6781CBDECC7017113181A1E0FF990798A57078B9D7CF12595B92249B6DC754F2",
       "exported_at": "2026-09-08T21:39:22.432096"
     }
   ]

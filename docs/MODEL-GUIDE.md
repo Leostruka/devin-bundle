@@ -1,65 +1,43 @@
 # Model Guide
 
-Síntese da política de modelos do bundle. Valores concretos estão em `data/bundle-models.json`; as variáveis de ambiente `BUNDLE_DEFAULT_MODEL`, `BUNDLE_MAX_MODEL` e `BUNDLE_MEDIUM_MODEL` podem sobrescrever os padrões. A versão validada do CLI está em `data/bundle-identity.json`.
+Política de modelos do bundle, nativa SWE-2. O roteamento é por **nível de esforço** (Medium/High/Max), não por tamanho de modelo. Valores concretos estão em `data/bundle-models.json`; as variáveis de ambiente `BUNDLE_DEFAULT_MODEL`, `BUNDLE_MAX_MODEL` e `BUNDLE_MEDIUM_MODEL` podem sobrescrever os padrões. A versão validada do CLI está em `data/bundle-identity.json`.
+
+## Effort levels (SWE-2)
+
+No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é um campo separado na config — a variante escolhida define o esforço. A UI oferece `Alt+T` para alternar.
+
+| Nível | model_uid | Quando usar | Custo |
+|---|---|---|---|
+| **Medium** | `swe-2-medium` | Tarefas simples, ajustes pontuais, scripts isolados, edições mecânicas. Spec claro; sucesso verificável por um teste/build. | **Free** |
+| **High** | `swe-2-high` | Tarefas que atravessam múltiplos arquivos, debugging bounded, decisões com várias constraints. **Default geral.** | **Free** |
+| **Max** | `swe-2-max` | Tarefas abertas, refatorações globais, long-horizon coding, decisão custosa/irreversível. | **Free** |
+
+**Regra prática:** comece no nível que corresponde à forma da tarefa. Suba um nível quando a verificação falhar, não antes. Ver `effort-calibration` para a base empírica.
 
 ## Primary model (parent)
 
-O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bundle-models.json.default_parent_model`).
+O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bundle-models.json.default_parent_model`). Default do bundle: **`swe-2-high`** (High effort, 262K, free).
 
 | Atributo | Valor | Fonte |
 |---|---|---|
 | model_uid | `{{BUNDLE_DEFAULT_MODEL}}` | `data/bundle-models.json` / `devin models list` |
-| Provider | veja `data/bundle-models.json` | Devin docs / provider docs |
 | Context window | `context_window` do registro | `data/bundle-models.json` |
-| Max output | veja registro | provider docs |
-| Thinking mode | configurável pelo `model_uid` | Devin docs |
+| Effort | definido pelo sufixo do `model_uid` | esta tabela |
 | Tool use | nativo durante inferência | Devin docs |
 | Custo | `cost_tier: free` para o default | `data/bundle-models.json` / `devin models list` |
-| Cache read | veja registro | Devin docs |
-| Credit multiplier | veja registro | Devin docs |
-
-### Variantes do parent
-
-As variantes do parent (e.g., Max, No Thinking, 1M context) estão em `data/bundle-models.json`. Escolha o `model_uid` que define o `reasoning_effort` desejado. O default do bundle é o modelo gratuito com thinking mode alto.
-
-### Reasoning effort (controlado pelo model_uid)
-
-No Devin CLI, `reasoning_effort` não é um campo separado na config — é
-determinado pelo `model_uid` escolhido. A UI oferece `Alt+T` para alternar.
-
-| Exemplo de variante | reasoning_effort | Quando usar | Custo |
-|---|---|---|---|
-| `no-thinking` | off | Extração, reescrita, classificação, transform determinística. Poucas constraints interagindo. Check barato. | veja `data/bundle-models.json` |
-| default parent (`{{BUNDLE_DEFAULT_MODEL}}`) | high | Debugging bounded, multi-file edit, tool selection, decisão com várias constraints. Tests + review. | **Gratuito** no bundle default |
-| `max` variant | max | Long-horizon planning, arquitetura ambígua, root-cause difícil, decisão custosa/irreversível. | veja `data/bundle-models.json` |
-
-**Mapeamento de valores**: `none`/`minimal` → off; `low`/`medium`/`high` → high;
-`xhigh`/`max` → max. Não existem níveis intermediários — só 3 paths: off,
-high, max.
-
-**Recomendação geral**: `max` para coding tasks. A variante `max` pode ser paga —
-o default do bundle é o modelo gratuito com thinking mode alto. Troque para `max`
-apenas quando o default não resolver e o custo for justificado (verifique `cost_tier`
-em `data/bundle-models.json`).
-
-### Linhagem
-
-A linhagem do primary model está documentada nos tech reports do provider. Consulte
-`data/bundle-models.json` e o site do provider para detalhes de capacidade, contexto
-e variantes.
 
 ### Implicações para o harness
 
-1. **Tool-use nativo**: o primary model decide quando invocar ferramentas durante
+1. **Raciocínio nativo**: SWE-2 planeja e raciocina sem instruções de
+   chain-of-thought. Prompts, skills e profiles declaram O QUE deve ser feito
+   e os critérios de aceitação — nunca COMO raciocinar ("pense passo a passo",
+   "planeje antes de agir" são anti-padrões).
+
+2. **Tool-use nativo**: o modelo decide quando invocar ferramentas durante
    inferência. O harness não deve over-specificar regras de tool-use —
-   Rule 17 (verify with tools) alinha naturalmente. Não adicionar regras
-   como "sempre use read antes de editar" — o modelo decide.
+   Rule 17 (verify with tools) alinha naturalmente.
 
-2. **Thinking mode**: raciocínio interno antes do output. Tokens de thinking
-   não são output — Rule 8 (telegraphic) aplica só ao output. Não há
-   necessidade de instruir o modelo a "pensar passo a passo" — já faz.
-
-3. **Prompt caching**: manter AGENTS.md e system prompt cache-stable. Regras pinned no topo = prefixo estável = cache hit. Não reordenar regras pinned frequentemente. Mudanças no final do AGENTS.md (non-pinned) não invalidam o cache do prefixo.
+3. **Prompt caching**: manter AGENTS.md e system prompt cache-stable. Regras pinned no topo = prefixo estável = cache hit. Não reordenar regras pinned frequentemente.
 
 4. **Lost-in-the-middle (arXiv:2307.03172)**: curva U-shaped confirmada.
    Constraints críticas no início (pinned rules), contexto recente no fim,
@@ -72,34 +50,16 @@ e variantes.
 
 ## Subagent models
 
-O subagent default é definido por `BUNDLE_MAX_MODEL` (ou `data/bundle-models.json.default_subagent_model`). A alternativa mais leve é `BUNDLE_MEDIUM_MODEL` (ou `data/bundle-models.json.medium_role_model`).
+Subagents usam os mesmos variantes SWE-2, escolhidos por nível de esforço:
 
-| Atributo | Valor | Fonte |
-|---|---|---|
-| Base model | veja `data/bundle-models.json` | provider docs / Devin docs |
-| Context window | `context_window` do registro | `data/bundle-models.json` |
-| Inference speed | veja registro | provider docs |
-| Self-compaction | Treinada (summarize + resume) | provider docs |
-| Disponibilidade | Devin Web, Desktop, CLI | Devin docs |
-| Custo | **Gratuito** para os defaults do bundle | `data/bundle-models.json` |
-
-### Routing e benchmarks
-
-Benchmarks de subagentes vs parent variam por provider e versão. Consulte `data/bundle-models.json` e os tech reports dos modelos para os números mais atuais.
-
-A regra geral: tarefas de coding são delegadas para subagentes (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`); reasoning diverso, arquitetura e coordenação ficam no parent (`{{BUNDLE_DEFAULT_MODEL}}`).
-
-### Variantes de subagent
-
-| Campo | Descrição | Contexto | Custo | Notas |
+| Campo | Descrição | Effort | Custo | Notas |
 |---|---|---|---|---|
-| `{{BUNDLE_MAX_MODEL}}` | Subagent Max | veja `data/bundle-models.json` | **Free** | Usado em agents/ de planejamento/review |
-| `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium | veja `data/bundle-models.json` | **Free** | Alternativa mais leve para execução |
-| `paid_model_alias` | Paid alias | veja `data/bundle-models.json` | veja registro | **NÃO usar** sem verificar `data/bundle-models.json` |
-| default router | CLI fallback | veja `data/bundle-models.json` | possivelmente pago | Use pin para evitar custos inesperados |
+| `{{BUNDLE_MAX_MODEL}}` | Subagent Max (`swe-2-max`) | max | **Free** | Agents de planejamento/julgamento/review |
+| `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium (`swe-2-medium`) | medium | **Free** | Agents de execução bounded |
+| `{{BUNDLE_DEFAULT_MODEL}}` | Parent (`swe-2-high`) | high | **Free** | Orquestração, raciocínio diverso |
 
 **⚠️ CRÍTICO**: aliases não canônicos podem apontar para um modelo pago — **não use** sem verificar `data/bundle-models.json`.
- Os agents/ devem fazer pin com os modelos canônicos (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`) do bundle.
+Os agents/ devem fazer pin com os variantes canônicos (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`) do bundle.
 
 **⚠️ CRÍTICO — `subagent_explore` (built-in) pode ser pago**: o profile built-in
 `subagent_explore` roda no default router do CLI, que pode cobrar por token.
@@ -114,8 +74,6 @@ Os subagentes do bundle são treinados para:
 1. Escrever summaries informativos e concisos do estado de trabalho.
 2. Resumir a partir desses summaries eficientemente.
 
-Técnica: alternating length penalty — incentiva output conciso sem sacrificar correção.
-
 Isso significa que os subagentes preservam constraints melhor que modelos genéricos
 durante compaction. Mas Governance Decay (arXiv:2606.22528v2) mostra que compaction
 dropa constraints em TODOS os modelos testados — constraint-pinning ainda é necessário.
@@ -127,22 +85,20 @@ likely de reter constraints → pinning fires less often → comportamento corre
 
 ### Implicações para subagent dispatch
 
-1. **Context window**: a janela do subagent está em `data/bundle-models.json`. Subagents podem fazer mais trabalho antes de precisar compaction. Fan-out econômico.
-2. **Alto TPS**: subagentes são rápidos. Fan-out de 5-10 subagents paralelos é viável sem espera longa.
-3. **Self-compaction**: subagents podem rodar mais tempo sem perda de contexto. Menos necessidade de `context-folding` em subagents.
-4. **Conciso por design**: alternating length penalty treina output conciso. Não fightar com regras verbose. Rule 8 (telegraphic) alinha.
-5. **Coding superiority**: benchmarks mostram vantagem dos subagentes para coding. Para tarefas de coding (implementação, debugging, refactoring), o parent deve delegar para subagentes em vez de implementar inline.
-6. **CoT explícito e fences (SWE-1.7)**: subagentes SWE-1.7 não herdam o planejamento longo nativo do parent — prompts de execução devem induzir raciocínio passo a passo (ex.: "escreva um plano de 3-5 linhas antes de editar"). A variante Max (`{{BUNDLE_MAX_MODEL}}`) tende a over-reading e planning loops: os perfis Max em `agents/*.md` carregam cercas — caps de leitura/busca e condições de parada explícitas. Manter essas cercas ao editar os perfis.
+1. **Context window**: a janela do subagent está em `data/bundle-models.json` (262K). Subagents podem fazer mais trabalho antes de precisar compaction. Fan-out econômico.
+2. **Self-compaction**: subagents podem rodar mais tempo sem perda de contexto. Menos necessidade de `context-folding` em subagents.
+3. **Conciso por design**: SWE-2 é treinado para output conciso. Não fightar com regras verbose. Rule 8 (telegraphic) alinha.
+4. **Coding strength**: para tarefas de coding (implementação, debugging, refactoring), o parent deve delegar para subagentes em vez de implementar inline.
 
 ### Matriz de routing: parent inline vs subagent
 
 | Task type | Best function | Como executar | Por quê |
 |---|---|---|---|
-| Implementação de código | Subagent Medium | `implementer` subagent | Coding strength |
-| Debugging de código | Subagent Medium | `debugger` subagent (parent planeja) | Coding strength + AgentCARD: planner é bottleneck |
-| Code review | Subagent Medium/Max | `reviewer` subagent | Sufficient for routine review |
-| Research/exploração | Subagent Max | `researcher` subagent | Alto contexto, TPS, free |
-| Arquitetura (routine) | Subagent Max | `architect` subagent | Sufficient for routine design |
+| Implementação de código | Subagent Medium | `implementer` subagent | Spec'd work, execução bounded |
+| Debugging de código | Subagent Medium | `debugger` subagent (parent planeja) | Iteração de hipóteses |
+| Code review | Subagent Max | `reviewer` subagent | Julgamento independente |
+| Research/exploração | Subagent Max | `researcher` subagent | Alto contexto, free |
+| Arquitetura (routine) | Subagent Max | `architect` subagent | Trade-off analysis |
 | Arquitetura (high-stakes) | Parent model | inline ou `subagent_general` | Needs parent reasoning |
 | Final whole-branch review | Parent model | inline ou `subagent_general` | Judgment task, max capability |
 | Reasoning diverso | Parent model | inline | Primary model for diverse reasoning |
@@ -164,24 +120,25 @@ mantém cada loop long-lived sob seu cap. Use subagents para evitar que
 trabalho bulk entre no parent window; use compaction quando o trabalho
 já está no parent e precisa continuar coerente.
 
-Para o parent (`{{BUNDLE_DEFAULT_MODEL}}`) despachando subagents (`{{BUNDLE_MAX_MODEL}}`):
-- Pesquisa/exploração extensa → subagent (alto headroom, TPS alto, gratuito quando `cost_tier: free`, retorna só síntese)
-- Implementação bounded → subagent implementer (model: `{{BUNDLE_MEDIUM_MODEL}}`, gratuito)
+Para o parent (`{{BUNDLE_DEFAULT_MODEL}}`) despachando subagents:
+- Pesquisa/exploração extensa → `researcher` (Max, gratuito, retorna só síntese)
+- Implementação bounded → `implementer` (Medium, gratuito)
 - Debugging iterativo que precisa de contexto acumulado → inline + compaction
-- Arquitetura/decisão que precisa ver tudo → inline (parent, gratuito quando `cost_tier: free`)
+- Arquitetura/decisão que precisa ver tudo → inline (parent, High)
 
 ## Estratégia de model pin em agents/
 
-| Agent | model: pin | Modelo usado | Racional |
+| Agent | model: pin | Effort | Racional |
 |---|---|---|---|
-| researcher | `{{BUNDLE_MAX_MODEL}}` | Subagent Max (veja `data/bundle-models.json`) | Read-only, gratuito, alto contexto, alto TPS |
-| architect | `{{BUNDLE_MAX_MODEL}}` | Subagent Max | Read-only, gratuito, contexto extra |
-| reviewer | `{{BUNDLE_MAX_MODEL}}` | Subagent Max | Read-only + exec, gratuito |
-| debugger | `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium | Iteração rápida, gratuito |
-| implementer | `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium | Bounded tasks, gratuito |
+| researcher | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Read-only, gratuito, alto contexto |
+| architect | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Trade-off analysis, gratuito |
+| reviewer | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Julgamento independente, gratuito |
+| debugger | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Iteração rápida, gratuito |
+| implementer | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Bounded tasks, gratuito |
+| qa-ci | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Gate re-execution, gratuito |
 
 **Por que pin e não alias?** Aliases não canônicos podem apontar para um modelo pago.
-Use os modelos canônicos do bundle (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`)
+Use os variantes canônicos do bundle (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`)
 que são gratuitos e têm a maior `context_window`. Sem pin, o router pode
 resolver para um modelo pago. Quando novas versões saírem, atualize os agents/
 para os novos modelos listados em `data/bundle-models.json`.
@@ -204,10 +161,10 @@ Fonte: docs.devin.ai/cli/subagents.
 
 ## Modelos pagos — política CONDICIONAL
 
-**Gratuitos e ilimitados** na assinatura são definidos em `data/bundle-models.json`
+**Gratuitos** na assinatura são definidos em `data/bundle-models.json`
 com `cost_tier: free`:
 
-- `{{BUNDLE_DEFAULT_MODEL}}` — parent (default)
+- `{{BUNDLE_DEFAULT_MODEL}}` — parent (default, High)
 - `{{BUNDLE_MAX_MODEL}}` — subagent Max
 - `{{BUNDLE_MEDIUM_MODEL}}` — subagent Medium
 
@@ -220,12 +177,11 @@ modelo não-canônico.
 **Caso 1 — Parent FREE (`cost_tier: free`): subagents DEVEM ser FREE.**
 
 Protocolo FREE-ONLY:
-1. Parent (`{{BUNDLE_DEFAULT_MODEL}}`) — tentativa inicial
-2. Subagent Max fan-out (`{{BUNDLE_MAX_MODEL}}`) — paralelismo
-3. Subagent Medium (`{{BUNDLE_MEDIUM_MODEL}}`) — alternativa de reasoning
-4. Parent com thinking effort `max` (via `Alt+T`) — mais raciocínio, mesmo modelo gratuito
-5. Repetir com contexto mais limpo (`clear` + recarregar apenas o necessário)
-6. Se todos os gratuitos falharem: **parar e reportar ao usuário** — não escalar para pago
+1. Parent (`{{BUNDLE_DEFAULT_MODEL}}`, High) — tentativa inicial
+2. Subagent fan-out (`{{BUNDLE_MAX_MODEL}}` Max / `{{BUNDLE_MEDIUM_MODEL}}` Medium) — paralelismo
+3. Parent com esforço `max` (via `Alt+T` ou `/model swe-2-max`) — mais raciocínio, mesmo modelo gratuito
+4. Repetir com contexto mais limpo (`clear` + recarregar apenas o necessário)
+5. Se todos os gratuitos falharem: **parar e reportar ao usuário** — não escalar para pago
 
 Neste caso: **NUNCA usar `subagent_explore`**, **NUNCA usar aliases pagos não verificados**
 sem verificar `data/bundle-models.json`, **NUNCA usar modelos pagos** para subagents.
@@ -249,32 +205,19 @@ Se ambos falharem, reportar ao usuário. Quando o parent está em modelo PAGO
 
 ```
 System prompt + tool defs    ~???? tok (Devin runtime, não mensurável aqui)
-AGENTS.md                    ~5605 tok (2.80%)
-SKILL-TIERS.md (se lido)     ~1726 tok (0.86%)
-Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
+AGENTS.md                    ~???? tok (medir com context-budget.py)
+SKILL-TIERS.md (se lido)     ~???? tok
+Skills invocadas (1-3)       ~1000-9700 tok
 MCP tool defs (configured)   ~???? tok (medir com mcp-context-audit)
 ─────────────────────────────────────────────
-Total fixo                   ~5605-16601 tok (2.80-8.30%)
 Disponível para trabalho     consulte `context_window` em `data/bundle-models.json`
 ```
 
 > Nota: este arquivo (MODEL-GUIDE.md) é leitura opcional — não carrega automaticamente.
 
-## Context budget (subagent model)
-
-```
-System prompt + tool defs    ~???? tok (Devin runtime)
-AGENTS.md                    ~5605 tok (2.14%)
-Disponível para trabalho     consulte `context_window` em `data/bundle-models.json`
-```
-
-Subagents têm significativamente mais headroom e self-compaction treinada.
-Preferir fan-out para pesquisa/exploração extensiva que excederia o budget do parent.
-
 ## Verificação de fontes (Rule 12)
 
-Todas as citações arXiv no AGENTS.md foram verificadas contra fontes
-primárias. Especificações de modelos devem ser verificadas contra
+Especificações de modelos devem ser verificadas contra
 `data/bundle-models.json`, `devin models list` e os sites dos providers.
 
 | Citação | Status | URL primária |
@@ -285,11 +228,6 @@ primárias. Especificações de modelos devem ser verificadas contra
 | arXiv:2606.30317 (MCP Patterns) | Verificado | arxiv.org/html/2606.30317 |
 | arXiv:2607.25152 (Progress Mirage) | Verificado | arxiv.org/abs/2607.25152v1 |
 | ICLR 2026 Workshop (Reward Hacking) | Verificado | iclr.cc/virtual/2026/10018648 |
-| Llama 4 Scout 10M | Verificado | tokenmix.ai blog (secundário, Meta primário) |
-| Primary model tech report | Verificado | arxiv.org/abs/2508.06471v1 |
-| Primary model specs | Verificado | provider docs |
-| Subagent model specs | Verificado | provider docs |
-| Primary model Devin model_uid | Verificado | docs.devin.ai/desktop/models |
 | arXiv:2605.10039 (Instruction Adherence) | Verificado | arxiv.org/abs/2605.10039 |
 | arXiv:2605.21384 (SpecBench) | Verificado | arxiv.org/abs/2605.21384 |
 | arXiv:2603.15473 (ALTK) | Verificado | arxiv.org/abs/2603.15473 |
@@ -305,3 +243,4 @@ primárias. Especificações de modelos devem ser verificadas contra
 | arXiv:2605.20251 (ProcCtrlBench) | Verificado | arxiv.org/abs/2605.20251 |
 | arXiv:2607.20972 (Delivery, Not Storage) | Verificado | arxiv.org/abs/2607.20972 |
 | arXiv:2608.15008 (Harness the Memory) | Verificado | arxiv.org/abs/2608.15008 |
+| `swe-2-*` variantes e custo | Verificado | `devin models list` (262K, Free) |

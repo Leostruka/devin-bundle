@@ -51,7 +51,7 @@ For the chosen issue:
 
 1. Set `Status: claimed` and save the file.
 2. Read the issue body and the spec.
-3. Run the TDD cycle inline or dispatch an `implementer` subagent with the issue as the spec. Reason step by step first: write a 3-5 line plan (failing test first, files to touch, minimal change) before editing. Constraints:
+3. Run the TDD cycle inline or dispatch an `implementer` subagent with the issue as the spec. Constraints:
    - Start with a failing test.
    - Write minimal production code.
    - Refactor only after green.

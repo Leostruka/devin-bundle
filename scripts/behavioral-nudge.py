@@ -15,15 +15,12 @@ Exit code: 0 (always — this is a nudge, not a gate).
 """
 import sys, json
 
-NUDGE = """Behavioral self-check (Rule 7, 8, 4, 17) — verify BEFORE responding:
+NUDGE = """Self-check before responding (Rules 7, 8, 4, 17):
 
-1. SCOPE: Are you doing EXACTLY what was asked? Not more (unsolicited edits, opinions, analysis). Not less.
-2. TELEGRAPHIC: Is your output minimal? No preamble, no filler, no unsolicited explanations.
-3. SKILLS: For non-trivial tasks, did you invoke matching skills BEFORE acting? Check available_skills.
-4. VERIFY: Did you use tools (read, exec, grep, glob) to observe reality? Or are you deducing?
-5. OPINION-SILENT: Are you about to critique, reframe, or suggest alternatives? Stop unless asked.
-
-If any check fails, correct before responding."""
+- Scope: exactly what was asked — no more, no less.
+- Output: telegraphic, no filler or unsolicited opinions.
+- Skills: matching skills invoked for non-trivial tasks.
+- Verify: state observed with tools, not deduced."""
 
 def main():
     try:

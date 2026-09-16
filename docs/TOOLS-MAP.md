@@ -149,16 +149,12 @@ tools com side effects — não é o agente pedindo, é o runtime.
 
 ## Modelos disponíveis (Devin CLI `{{VALIDATED_CLI_VERSION}}`)
 
-| model_uid | Label | Provider | Context | Credit mult | Recomendado |
+| model_uid | Label | Effort | Context | Custo | Recomendado |
 |---|---|---|---|---|---|
-| `{{BUNDLE_DEFAULT_MODEL}}` | (parent, see `data/bundle-models.json`) | `data/bundle-models.json` | see registry | see registry | ✓ (config.json) |
-| `{{BUNDLE_DEFAULT_MODEL}}-max` | Parent Max variant | ZAI | see registry | see registry | see `data/bundle-models.json` |
-| `{{BUNDLE_DEFAULT_MODEL}}-max-1m` | Parent Max 1M variant | ZAI | see registry | see registry | see `data/bundle-models.json` |
-| `{{BUNDLE_DEFAULT_MODEL}}-none` | No Thinking variant | ZAI | see registry | 1 | see `data/bundle-models.json` |
-| `{{BUNDLE_DEFAULT_MODEL}}-none-1m` | No Thinking 1M variant | ZAI | see registry | — | see `data/bundle-models.json` |
-| `{{BUNDLE_MAX_MODEL}}` | Subagent Max | see registry | see registry | **Free** | see `data/bundle-models.json` |
-| `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium | see registry | see registry | **Free** | see `data/bundle-models.json` |
-| `paid_model_alias` | Paid alias | see registry | see registry | see registry | NUNCA usar sem confirmar `data/bundle-models.json` |
+| `{{BUNDLE_DEFAULT_MODEL}}` | SWE-2 High (parent) | high | 262K | **Free** | ✓ (config.json) |
+| `{{BUNDLE_MEDIUM_MODEL}}` | SWE-2 Medium | medium | 262K | **Free** | Tarefas simples, ajustes pontuais, scripts isolados |
+| `{{BUNDLE_MAX_MODEL}}` | SWE-2 Max | max | 262K | **Free** | Tarefas abertas, refactors globais, long-horizon |
+| `paid_model_alias` | Paid alias | — | see registry | see registry | NUNCA usar sem confirmar `data/bundle-models.json` |
 | `adaptive` | Paid router | see registry | — | see registry | Não usar em modo free |
 | `opus` | Paid model | Anthropic | — | see registry | Não usar em modo free |
 | `sonnet` | Paid model | Anthropic | — | see registry | Não usar em modo free |

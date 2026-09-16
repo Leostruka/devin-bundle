@@ -4,15 +4,15 @@ This file is the source of truth for how the agent must behave. It is loaded bef
 
 **This file is kept lean on purpose.** A rules file loads into every
 conversation; a large one taxes the context window and worsens
-lost-in-the-middle retrieval (Rule 18). Non-pinned rules below are terse
-one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
-12-19, 21) keep full detail because they must survive compaction. Rule 20 is non-pinned (model-aware, see docs/MODEL-GUIDE.md).
+lost-in-the-middle retrieval (Rule 18). The index below is a pointer table —
+full detail lives in the sections under it. Pinned rules (2, 5, 7, 12-19, 21)
+keep full detail because they must survive compaction.
 
 ## Rule index
 
 1. **Don't start with technology** — customer experience first, then tech.
 2. **No AI signatures in deliverables** (pinned)
-3. **Don't use outdated or missing skills** — update, create for patterns, prune dead ones.
+3. **Don't use outdated or missing skills**
 4. **Don't start non-trivial tasks without skill discovery**
 5. **No push without green** (pinned)
 7. **Execute-first, opinion-silent** (pinned)
@@ -28,7 +28,7 @@ one-liners; their depth lives in referenced skills. Pinned rules (2, 5, 7,
 17. **Don't deduce — verify with tools** (pinned)
 18. **Keep the context window lean** (pinned)
 19. **Never read secrets or sensitive env vars** (pinned)
-20. **Model-aware operation** (see `docs/MODEL-GUIDE.md`)
+20. **Effort-aware operation** (see `docs/MODEL-GUIDE.md`)
 21. **Don't think through uncertainty — research or ask** (pinned)
 22. **Minimum code, no token maxing**
 23. **Sanitize inputs and outputs**
@@ -190,14 +190,14 @@ Failures are signals to resolve, not stop conditions. Deliver a working solution
 - Don't mask failures with workarounds that hide the root cause. Fix the cause.
 - When delivering a fix, show evidence: re-run the exact failing command, show green.
 
-### 20. Model-aware operation (bundle-models.json)
+### 20. Effort-aware operation (bundle-models.json)
 
-Routing is driven by `data/bundle-models.json` — `default_parent_model` (parent), `max_role_model` (`architect`, `researcher`, `reviewer`), `medium_role_model` (`debugger`, `implementer`, `qa-ci`). Full protocol: `docs/MODEL-GUIDE.md`; overrides via `BUNDLE_*` env vars.
+Routing is by effort level, not model size — `data/bundle-models.json` maps roles to SWE-2 variants. Full protocol: `docs/MODEL-GUIDE.md`; overrides via `BUNDLE_*` env vars.
 
-- **⚠️ `swe` alias resolves to paid `swe-1.7-lightning`** ($2.5/$12.5 MTok) — never use it when free models exist.
-- **Never dispatch `subagent_explore`** — it runs on the CLI default router (possibly paid). Use the custom `researcher` profile (free) instead.
-- **Model policy is conditional on the parent.** Parent free (default `glm-5-2`) → subagents must be free (`swe-1-7`/`swe-1-7-medium`); if they can't do the job, stop and report. Parent paid (user picked `/model opus` etc.) → paid subagents allowed; protocol in `docs/MODEL-GUIDE.md`.
-- **SWE-1.7 effort split.** Max roles (`architect`, `researcher`, `reviewer`) carry anti-overthinking fences (read/lookup caps + explicit stop rules) in `agents/*.md` — SWE-1.7 Max over-reads without them. Medium roles (`debugger`, `implementer`, `qa-ci`) are the default for code manipulation and script execution; dispatch them with explicit step-by-step (CoT) instructions — SWE-1.7 lacks the parent's native long planning.
+- Effort by task shape: **Medium** = simple/spot fixes; **High** = multi-file (default); **Max** = open-ended/long-horizon.
+- SWE-2 plans natively — no forced chain-of-thought in prompts, skills, or profiles. State WHAT + acceptance criteria; leave HOW to the model.
+- **Never dispatch `subagent_explore`** — it runs on the CLI default router (possibly paid). Use the custom `researcher` profile (`model: swe-2-max`, free) instead.
+- **Model policy is conditional on the parent.** Parent free (default `swe-2-high`) → subagents must be free (`swe-2-max`/`swe-2-medium`); if they can't do the job, stop and report. Parent paid (user picked `/model opus` etc.) → paid subagents allowed; protocol in `docs/MODEL-GUIDE.md`.
 - Keep AGENTS.md and system-prompt prefixes cache-stable.
 
 ### 22. Minimum code, no token maxing

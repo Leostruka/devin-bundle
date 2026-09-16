@@ -877,9 +877,9 @@ print()
 print('[31] Model context windows data file')
 model_data_path = 'data/model-context-windows.json'
 required_models = {
-    'glm-5-2': 200000,
-    'swe-1-7': 262000,
-    'swe-1-7-medium': 262000,
+    'swe-2-medium': 262144,
+    'swe-2-high': 262144,
+    'swe-2-max': 262144,
 }
 if os.path.isfile(model_data_path):
     try:
@@ -900,7 +900,7 @@ if os.path.isfile(model_data_path):
             errors.append('data/model-context-windows.json wrong context_window: ' + '; '.join(wrong_window))
             print('  FAIL wrong context_window: ' + '; '.join(wrong_window))
         if not missing and not wrong_window:
-            print('  OK  data/model-context-windows.json has required GLM-5.2 (200K) and SWE-1.7 (262K) entries')
+            print('  OK  data/model-context-windows.json has required SWE-2 (262K) entries')
     except (OSError, json.JSONDecodeError) as e:
         errors.append('data/model-context-windows.json is invalid: ' + str(e))
         print('  FAIL invalid data/model-context-windows.json: ' + str(e))

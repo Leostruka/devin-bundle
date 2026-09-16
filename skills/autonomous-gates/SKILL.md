@@ -62,8 +62,6 @@ gate: "npm run test -- --grep auth"
 
 ### Step 2: Run gate after each step
 
-Reason step by step: before running, state the expected result; after running, compare observed vs expected, then act on the difference.
-
 After completing a step, run its gate:
 
 ```

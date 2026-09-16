@@ -1,6 +1,6 @@
 ---
 name: domain
-model: swe-1-7
+model: swe-2-max
 description: Use when interpreting the repository domain context, vocabulary, boundaries, or architecture decisions.
 allowed-tools:
   - read
@@ -17,11 +17,6 @@ Before changing the repository, read:
 
 - `.devin/CONTEXT.md` for project vocabulary, boundaries, flows, and invariants.
 - Relevant records under `.devin/adr/` for accepted decisions.
-
-## Bounds (anti-overthinking)
-
-Answer only from `.devin/CONTEXT.md` and `.devin/adr/` records. If the answer
-is not there, say so — do not survey the codebase.
 
 ## Layout
 

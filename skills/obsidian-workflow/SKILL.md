@@ -973,7 +973,7 @@ Map the complete structure of the target directory.
 2. For each `.md` file, read the first 20 lines to capture frontmatter and H1/H2 headers.
 3. Record: file count, folder depth, frontmatter fields in use, tag taxonomy if any.
 4. Identify what type of content lives here: projects, companies, personal notes, code docs, research, etc.
-5. If the vault is large (> 100 files), consider dispatching a `researcher` subagent (NOT `subagent_explore` when parent is FREE — that runs on PAID SWE-1.6) to scan in parallel.
+5. If the vault is large (> 100 files), consider dispatching a `researcher` subagent (NOT `subagent_explore` when parent is FREE — it runs on the CLI default router, possibly PAID) to scan in parallel.
 
 **Completion criterion:** you have a complete inventory of every file and folder, with headers and frontmatter captured, and can describe what the vault contains in 2-3 sentences.
 

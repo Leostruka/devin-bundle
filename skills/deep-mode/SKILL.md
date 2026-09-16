@@ -138,5 +138,5 @@ say "not found in codebase" and search again or report the gap.
   `context-folding` if the output exceeds ~50k tokens — write findings
   to a file (`deep-search-<topic>.md`) and summarize in chat.
 - Parallelism: use `dispatching-parallel-agents` to run Pass 1 sweeps
-  across different directories concurrently (SWE-1.7 subagents, 262K
+  across different directories concurrently (SWE-2 subagents, 262K
   each, gratuito).

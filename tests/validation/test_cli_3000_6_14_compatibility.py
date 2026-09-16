@@ -19,7 +19,7 @@ def run_memory_hook(payload):
 
 def test_config_uses_available_free_primary_model():
     config = json.loads((ROOT / "config.json").read_text(encoding="utf-8-sig"))
-    assert config["agent"]["model"] == "glm-5-2"
+    assert config["agent"]["model"] == "swe-2-high"
 
 
 def test_stop_accepts_last_assistant_message():
