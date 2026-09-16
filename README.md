@@ -210,7 +210,7 @@ Há 15 scripts usados por hooks, 2 validadores manuais e 1 helper JavaScript par
 Em um projeto ainda não preparado:
 
 1. abra o Devin CLI na raiz;
-2. peça para executar `project-setup` para a configuração geral ou `setup-matt-pocock-skills` para o fluxo de engenharia baseado em spec, tickets e triagem;
+2. peça para executar `project-setup` para a configuração geral ou `setup-engineering-skills` para o fluxo de engenharia baseado em spec, tickets e triagem;
 3. revise os arquivos criados em `.devin/`;
 4. execute os checks de baseline do projeto;
 5. versione apenas configuração não sensível.
