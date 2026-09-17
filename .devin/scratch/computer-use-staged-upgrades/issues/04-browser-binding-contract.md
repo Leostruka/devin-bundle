@@ -39,3 +39,13 @@ stays a seam until a driver is approved.
 GetWindowThreadProcessId, session+TTL like hints, `_cdp_client()` returns
 None until a driver is approved, explicit CSS->desktop px conversion.
 Evidence: `test_cu_browser_contract.py` 12/12.
+
+### Live verdict (post-dep approval)
+
+`websocket-client==1.8.0` approved+pinned. `_cdp_client()` now returns a real
+`BrowserClient` (CDP for Chromium, WebDriver BiDi for Gecko/Zen) when a
+browser is bound. Live gate: Chrome — bind/eval/navigate/screenshot all pass;
+Zen — bind/eval/navigate pass. Screenshot initially returned 0x0: fresh
+profiles expose stale 0x0 top-level contexts; _connect_bidi now probes
+innerWidth and picks a painted context (fallback: last). Re-test: Zen
+screenshot 7KB on attempt 0. Contract tests still 12/12.
