@@ -148,6 +148,9 @@ through it and **reject** — with zero input dispatched — when the hint is
 unknown, expired (default TTL 120 s, `$CU_HINT_TTL`), from another session,
 or its window no longer exists. A grid fallback invalidates the sidecar, so
 stale hints can never resolve.
+Hint ids alone are ambiguous across observations — pass `--gen <generation>`
+(from the same `--hints` output) to pin the observation: after a newer
+snapshot, the old hint rejects as `stale_generation`.
 Hints are **targeting only** — they do not identify images, canvas content or
 any non-UIA surface; use plain `screenshot.py` for visual checks.
 
@@ -156,6 +159,18 @@ UIA `Invoke`/`Value` pattern when supported, falling back to physical input;
 `--via physical` skips UIA; `--via uia` rejects instead of falling back.
 Semantic actions act on the element itself — they do not exercise the same
 handlers as a physical click; keep `physical` when testing real input paths.
+
+`--via browser` (click/type) requires the element's window to be an
+**explicitly bound** browser (`cu_browser.bind`); unbound or foreign-pid
+windows reject as `browser_no_binding`/`browser_foreign_process` with zero
+dispatch. DOM dispatch is gated by an actionability probe
+(`elementsFromPoint` stack): covered targets wait briefly then reject as
+`browser_actionable_covered`; disabled/zero-size/canvas reject immediately
+(`browser_actionable_*`). In `auto` mode a canvas hit declares
+`dispatch.dom_fallback` and continues through UIA/physical — DOM never
+pretends to click canvas pixels. CDP speaks to Chromium; Gecko (Firefox/Zen)
+goes over WebDriver BiDi — nested-context eval is BiDi-only, CDP rejects
+foreign contexts rather than evaluating in the wrong frame.
 
 If UIA is unavailable, times out (>6 s), or finds no elements (non-Windows,
 unusual apps), `--hints` falls back to the `--grid 100` overlay and reports

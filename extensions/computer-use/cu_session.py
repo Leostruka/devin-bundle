@@ -17,11 +17,113 @@ generation and rotates the session tag so stale envelopes reject.
     w.close()
 """
 import json
+import os
 import queue
 import subprocess
+import sys
+import tempfile
 import threading
 import time
 import uuid
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+DAEMON_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-daemon.json")
+DAEMON_IDLE_S = float(os.environ.get("CU_DAEMON_IDLE", "600"))
+
+
+def _run_op(cmd):
+    """Execute one op in-process with hot imports. Returns response dict
+    carrying the script's own JSON stdout verbatim."""
+    import io
+    import importlib
+    from contextlib import redirect_stdout
+    name, argv = cmd.get("script"), cmd.get("argv") or []
+    if name == "_echo":
+        return {"ok": True, "output": json.dumps({"echo": argv})}
+    if name not in ("mouse", "type_text", "screenshot", "profile"):
+        return {"ok": False, "error": f"unknown script {name!r}"}
+    if HERE not in sys.path:
+        sys.path.insert(0, HERE)
+    buf = io.StringIO()
+    try:
+        mod = importlib.import_module(name)
+        old = sys.argv
+        sys.argv = [f"{name}.py"] + [str(a) for a in argv]
+        try:
+            with redirect_stdout(buf):
+                mod.main()
+        except SystemExit:
+            pass
+        finally:
+            sys.argv = old
+        return {"ok": True, "output": buf.getvalue().strip()}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+
+def worker_main():
+    """stdin/stdout JSON-line worker (parent-managed lifetime)."""
+    os.environ.pop("CU_SESSION", None)  # ops must not re-route
+    for line in sys.stdin:
+        try:
+            env = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        print(json.dumps(_run_op(env.get("cmd") or {})), flush=True)
+
+
+def _daemon_write_pidfile(port, session):
+    data = {"pid": os.getpid(), "port": port, "session": session,
+            "started": time.time()}
+    tmp = DAEMON_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    os.replace(tmp, DAEMON_PATH)
+
+
+def daemon_main():
+    """Loopback-only daemon: one JSON line per connection. Idle TTL exit.
+    127.0.0.1 is not a public surface — no remote connections accepted."""
+    import socket
+    os.environ.pop("CU_SESSION", None)  # ops must not re-route
+    srv = socket.socket()
+    srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(4)
+    srv.settimeout(1.0)
+    session = uuid.uuid4().hex[:12]
+    _daemon_write_pidfile(srv.getsockname()[1], session)
+    last = time.time()
+    try:
+        while time.time() - last < DAEMON_IDLE_S:
+            try:
+                conn, _ = srv.accept()
+            except socket.timeout:
+                continue
+            with conn:
+                try:
+                    conn.settimeout(30)
+                    data = b""
+                    while not data.endswith(b"\n"):
+                        chunk = conn.recv(65536)
+                        if not chunk:
+                            break
+                        data += chunk
+                    env = json.loads(data.decode("utf-8"))
+                    if env.get("session") not in (None, session):
+                        resp = {"ok": False, "error": "stale session"}
+                    else:
+                        resp = _run_op(env.get("cmd") or {})
+                    conn.sendall(json.dumps(resp).encode() + b"\n")
+                    last = time.time()
+                except Exception:
+                    pass
+    finally:
+        srv.close()
+        try:
+            os.remove(DAEMON_PATH)
+        except OSError:
+            pass
 
 
 class Worker:
@@ -140,3 +242,10 @@ class Worker:
         n = len(self._pending)
         self._pending.clear()
         return n
+
+
+if __name__ == "__main__":
+    if "--daemon" in sys.argv:
+        daemon_main()
+    elif "--worker" in sys.argv:
+        worker_main()

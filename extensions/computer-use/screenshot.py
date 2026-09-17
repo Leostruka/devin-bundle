@@ -110,6 +110,10 @@ def _save_with_hints(img, elements, out, ox, oy):
 
 
 def main():
+    if os.environ.get("CU_SESSION") == "1":
+        import cu_session_dispatch
+        cu_session_dispatch.run_via_daemon("screenshot", sys.argv[1:])
+        return
     p = cm.JsonParser(description="Capture screen to PNG")
     p.add_argument("--out", default=None,
                    help="Output PNG path (default: screenshot-<ts>.png in the "

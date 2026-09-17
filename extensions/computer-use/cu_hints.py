@@ -31,6 +31,7 @@ HINT_CHARS = "sadfjklewcmpgh"  # vimium-style home-row alphabet
 MAX_HINTS = len(HINT_CHARS) ** 2  # 196
 HINT_TTL_S = float(os.environ.get("CU_HINT_TTL", "120"))
 SCHEMA_VERSION = 2
+_SIDECAR_LOCK = threading.Lock()
 
 # UIA ControlType id -> short label
 CLICKABLE = {50000: "Button", 50002: "CheckBox", 50003: "ComboBox",
@@ -93,14 +94,17 @@ def _enum_elements(core, target):
     reads); falls back to FindAll + live property reads."""
     cond = _clickable_cond(core)
     arr, cached = None, False
-    try:
-        req = core.CreateCacheRequest()
-        for pid in (_PID_NAME, _PID_CONTROL_TYPE, _PID_BOUNDS,
-                    _PID_ENABLED, _PID_IS_OFFSCREEN, _PID_HWND):
-            req.AddProperty(pid)
-        arr = target.FindAllBuildCache(_SCOPE_DESCENDANTS, cond, req)
-        cached = True
-    except Exception:
+    if not os.environ.get("CU_HINT_NOCACHE"):
+        try:
+            req = core.CreateCacheRequest()
+            for pid in (_PID_NAME, _PID_CONTROL_TYPE, _PID_BOUNDS,
+                        _PID_ENABLED, _PID_IS_OFFSCREEN, _PID_HWND):
+                req.AddProperty(pid)
+            arr = target.FindAllBuildCache(_SCOPE_DESCENDANTS, cond, req)
+            cached = True
+        except Exception:
+            pass
+    if arr is None:
         arr = target.FindAll(_SCOPE_DESCENDANTS, cond)
     out = []
     for i in range(arr.Length):
@@ -319,7 +323,14 @@ def _read_sidecar():
 
 
 def write_sidecar(hints, window=None, capture=None):
-    """Atomic sidecar write; returns the observation dict written."""
+    """Atomic sidecar write; returns the observation dict written.
+    Serialized by _SIDECAR_LOCK: concurrent writers get monotonic
+    generations and never share the tmp file."""
+    with _SIDECAR_LOCK:
+        return _write_sidecar_locked(hints, window, capture)
+
+
+def _write_sidecar_locked(hints, window, capture):
     prev = _read_sidecar()
     generation = (prev or {}).get("generation", 0) + 1
     data = {"schema_version": SCHEMA_VERSION,
@@ -355,10 +366,12 @@ def _window_alive(hwnd):
     return bool(ctypes.windll.user32.IsWindow(hwnd))
 
 
-def resolve_hint(hint_id, session=None):
+def resolve_hint(hint_id, session=None, generation=None):
     """Return (entry, reason). entry has x, y, name, type, bounds, hwnd,
     enabled; reason is None on success, else a typed staleness code —
-    callers must NOT dispatch input when reason is set."""
+    callers must NOT dispatch input when reason is set. Pass `generation`
+    (the observation's generation) to reject hints minted before a newer
+    re-observation — plain ids alone are ambiguous across snapshots."""
     data = _read_sidecar()
     if data is None:
         return None, "no_sidecar"
@@ -366,6 +379,8 @@ def resolve_hint(hint_id, session=None):
         return None, "schema"
     if session is not None and data.get("session_id") != session:
         return None, "session"
+    if generation is not None and data.get("generation") != generation:
+        return None, "stale_generation"
     if time.time() - data.get("created_at", 0) > HINT_TTL_S:
         return None, "expired"
     e = data.get("hints", {}).get(str(hint_id).lower())

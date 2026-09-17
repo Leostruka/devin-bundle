@@ -9,11 +9,13 @@ Requires pynput (installed via requirements.txt into the extension's .venv).
 """
 import argparse
 import json
+import os
 import random
 import sys
 import time
 
 import cu_actions
+import cu_browser
 import cu_motion as cm
 import cu_hints
 
@@ -59,7 +61,8 @@ def _resolve_xy(args):
     Returns (x, y, entry|None). Stale/invalid hints are rejected BEFORE any
     controller call — never click coordinates from an outdated observation."""
     if getattr(args, "hint", None):
-        entry, reason = cu_hints.resolve_hint(args.hint)
+        entry, reason = cu_hints.resolve_hint(
+            args.hint, generation=getattr(args, "gen", None))
         if not entry:
             fail(f"hint {args.hint!r} rejected: {reason} — "
                  "rerun screenshot.py --hints")
@@ -70,6 +73,10 @@ def _resolve_xy(args):
 
 
 def main():
+    if os.environ.get("CU_SESSION") == "1":
+        import cu_session_dispatch
+        cu_session_dispatch.run_via_daemon("mouse", sys.argv[1:])
+        return
     p = cm.JsonParser(description="Mouse control via pynput")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -90,6 +97,10 @@ def main():
             sp.add_argument("--hint", default=None,
                             help="hint id from screenshot.py --hints "
                                  "(resolves to element center)")
+            sp.add_argument("--gen", type=int, default=None,
+                            help="generation from the same --hints output; "
+                                 "pins the observation so a newer snapshot "
+                                 "rejects the hint as stale_generation")
         else:
             sp.add_argument("x", type=int)
             sp.add_argument("y", type=int)
@@ -104,11 +115,13 @@ def main():
             sp.add_argument("--target-w", type=float, default=30.0,
                             help="target width px for Fitts timing (human)")
             sp.add_argument("--via", default="auto",
-                            choices=["auto", "physical", "uia"],
+                            choices=["auto", "physical", "uia", "browser"],
                             help="with --hint: auto re-locates the element and "
                                  "uses its UIA Invoke pattern when available, "
                                  "falling back to a physical click; 'uia' "
-                                 "rejects instead of falling back")
+                                 "rejects instead of falling back; 'browser' "
+                                 "requires the element's window to be an "
+                                 "explicitly bound browser (DOM click)")
             sp.add_argument("--verify", action="store_true",
                             help="with --hint: re-locate the element after "
                                  "dispatch and report postcondition.target_present")
@@ -122,6 +135,15 @@ def main():
     spos = sub.add_parser("position", help="Print current cursor position")
 
     args = p.parse_args()
+    if getattr(args, "via", None) == "browser" and \
+            not getattr(args, "hint", None):
+        fail("--via browser requires --hint (needs element hwnd)", 2)
+    if getattr(args, "hint", None):
+        e, r = cu_hints.resolve_hint(
+            args.hint, generation=getattr(args, "gen", None))
+        if not e:
+            fail(f"hint {args.hint!r} rejected: {r} — "
+                 "rerun screenshot.py --hints")
     set_dpi_awareness()
 
     try:
@@ -160,8 +182,36 @@ def main():
             out = cu_actions.result("dispatched", "physical", cmd="click",
                                     profile=profile)
             invoked = False
-            if entry is not None and args.via != "physical" \
+            if entry is not None and args.via == "browser":
+                if args.dry_run:
+                    out["dry_run"] = True
+                else:
+                    res, reason = cu_browser.dom_action(
+                        entry.get("hwnd"), x, y, "click",
+                        enabled=entry.get("enabled", True))
+                    if res:
+                        invoked = True
+                        out["dispatch"]["backend"] = "dom"
+                        out["dispatch"]["dialect"] = res.get("dialect")
+                        out["dispatch"]["css"] = res.get("css")
+                    else:
+                        fail(f"browser click rejected: {reason}")
+            elif entry is not None and args.via in ("auto",) \
                     and not args.dry_run:
+                # auto prefers DOM when the element's window is a bound browser
+                ok, _ = cu_browser.check(entry.get("hwnd"))
+                if ok:
+                    res, reason = cu_browser.dom_action(
+                        entry.get("hwnd"), x, y, "click",
+                        enabled=entry.get("enabled", True))
+                    if res:
+                        invoked = True
+                        out["dispatch"]["backend"] = "dom"
+                        out["dispatch"]["dialect"] = res.get("dialect")
+                    elif reason and reason.startswith("browser_actionable_"):
+                        out["dispatch"]["dom_fallback"] = reason
+            if entry is not None and args.via in ("auto", "uia") \
+                    and not invoked and not args.dry_run:
                 res, reason = cu_hints.uia_perform(entry, "invoke")
                 if res:
                     invoked = True

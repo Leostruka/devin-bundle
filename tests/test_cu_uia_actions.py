@@ -187,3 +187,54 @@ def test_no_hwnd_rejected(fake_uia):
     fake_uia["core"] = FakeCore(FakeTarget([_button()]))
     res, reason = cu_hints.uia_perform(_entry(hwnd=None), "invoke")
     assert res is None and reason == "no_hwnd"
+
+
+def test_nocache_forces_per_element_roundtrips(fake_uia, monkeypatch):
+    """Ticket 17: CU_HINT_NOCACHE bypasses FindAllBuildCache -> every
+    element pays live property reads. Cache path pays zero."""
+    reads = {"n": 0}
+
+    class Counting(FakeElement):
+        @property
+        def CurrentBoundingRectangle(self):
+            reads["n"] += 1
+            return self.CachedBoundingRectangle
+
+        @property
+        def CurrentControlType(self):
+            reads["n"] += 1
+            return self.CachedControlType
+
+        @property
+        def CurrentName(self):
+            reads["n"] += 1
+            return self.CachedName
+
+        @property
+        def CurrentIsEnabled(self):
+            reads["n"] += 1
+            return self.CachedIsEnabled
+
+        @property
+        def CurrentNativeWindowHandle(self):
+            reads["n"] += 1
+            return self.CachedNativeWindowHandle
+
+    els = [Counting(50000, f"b{i}", FakeRect(10 * i, 10 * i, 10 * i + 30,
+                                             10 * i + 20), hwnd=100 + i)
+           for i in range(4)]
+    target = FakeTarget(els)
+    fake_uia["core"] = FakeCore(target)
+
+    monkeypatch.setenv("CU_HINT_NOCACHE", "1")
+    out = cu_hints._enum_elements(fake_uia["core"], target)
+    assert len(out) == 4
+    assert reads["n"] == 4 * 5  # 5 live props per element, zero cache
+    assert target.used_cache is False
+
+    reads["n"] = 0
+    monkeypatch.delenv("CU_HINT_NOCACHE")
+    out = cu_hints._enum_elements(fake_uia["core"], target)
+    assert len(out) == 4
+    assert reads["n"] == 0      # cached path: no live property reads
+    assert target.used_cache is True

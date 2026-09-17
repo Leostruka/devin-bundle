@@ -154,7 +154,9 @@ def test_stale_hint_dispatches_nothing(fake_pynput, sidecar, monkeypatch,
     out = _run_mouse(monkeypatch, capsys,
                      ["mouse.py", "click", "--hint", "as"])
     assert out["ok"] is False and "rejected" in out["error"]
-    assert fake_pynput.instances[0].calls == []
+    # rejection precedes even controller construction — zero calls OR
+    # zero instances both satisfy "dispatches nothing"
+    assert all(c.calls == [] for c in fake_pynput.instances)
 
 
 def test_fresh_hint_physical_click_dispatches(fake_pynput, sidecar,
@@ -176,3 +178,41 @@ def test_click_dry_run_status_contract(fake_pynput, monkeypatch, capsys):
     assert out["ok"] is True and out["status"] == "dispatched"
     assert out["dry_run"] is True and out["dispatch"]["backend"] == "physical"
     assert fake_pynput.instances[0].calls == []
+
+
+def test_concurrent_sidecar_writes_never_torn(sidecar):
+    """Ticket 16: writers racing write_sidecar must leave a parseable
+    file; the winner's generation is the max."""
+    import threading
+    results = []
+    lock = threading.Lock()
+
+    def w(tag):
+        d = cu_hints.write_sidecar(
+            [{"id": "a", "x": 1, "y": 1, "name": tag, "type": "Button",
+              "bounds": [0, 0, 9, 9], "hwnd": 1, "enabled": True}])
+        with lock:
+            results.append(d["generation"])
+    threads = [threading.Thread(target=w, args=(f"t{i}",))
+               for i in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    data = cu_hints._read_sidecar()
+    assert data is not None  # always parses
+    assert data["generation"] == max(results)  # a writer's gen won
+
+
+def test_interrupted_write_preserves_previous(sidecar):
+    """Ticket 16: a tmp file abandoned mid-write must not corrupt or
+    shadow the last committed sidecar."""
+    committed = cu_hints.write_sidecar(
+        [{"id": "a", "x": 5, "y": 5, "name": "ok", "type": "Button",
+          "bounds": [0, 0, 9, 9], "hwnd": 1, "enabled": True}])
+    # simulate crash between tmp write and os.replace
+    with open(cu_hints.sidecar_path() + ".tmp", "w", encoding="utf-8") as f:
+        f.write('{"schema_version": 2, "partial": tru')  # torn JSON
+    data = cu_hints._read_sidecar()
+    assert data["generation"] == committed["generation"]
+    assert data["hints"]["a"]["name"] == "ok"

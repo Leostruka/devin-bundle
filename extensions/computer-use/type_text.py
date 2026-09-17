@@ -11,11 +11,13 @@ Requires pynput (installed via requirements.txt into the extension's .venv).
 """
 import argparse
 import json
+import os
 import random
 import sys
 import time
 
 import cu_actions
+import cu_browser
 import cu_motion as cm
 import cu_hints
 
@@ -62,6 +64,10 @@ def resolve_key(name, Key, KeyCode):
 
 
 def main():
+    if os.environ.get("CU_SESSION") == "1":
+        import cu_session_dispatch
+        cu_session_dispatch.run_via_daemon("type_text", sys.argv[1:])
+        return
     p = cm.JsonParser(description="Keyboard control via pynput")
     p.add_argument("text", nargs="?", default=None, help="Literal text to type")
     p.add_argument("--key", default=None, help="Single key name (e.g. enter, tab, f5)")
@@ -74,11 +80,16 @@ def main():
     p.add_argument("--hint", default=None,
                    help="hint id from screenshot.py --hints; targets the "
                         "element instead of the focused window")
+    p.add_argument("--gen", type=int, default=None,
+                   help="generation from the same --hints output; pins the "
+                        "observation so a newer snapshot rejects the hint")
     p.add_argument("--via", default="auto",
-                   choices=["auto", "physical", "uia"],
+                   choices=["auto", "physical", "uia", "browser"],
                    help="with --hint: auto uses the element's UIA Value "
                         "pattern when available, falling back to physical "
-                        "typing; 'uia' rejects instead of falling back")
+                        "typing; 'uia' rejects instead of falling back; "
+                        "'browser' requires a bound browser window (DOM "
+                        "focus+insert, no physical fallback)")
     p.add_argument("--seed", type=int, default=None,
                    help="seed the human-typing RNG (or set $CU_SEED) for a "
                         "reproducible cadence")
@@ -90,6 +101,14 @@ def main():
 
     if not any([args.text, args.key, args.keys]):
         fail("provide text, --key, or --keys", 2)
+    if getattr(args, "via", None) == "browser" and \
+            not getattr(args, "hint", None):
+        fail("--via browser requires --hint (needs element hwnd)", 2)
+    if getattr(args, "hint", None):
+        e, r = cu_hints.resolve_hint(args.hint, generation=args.gen)
+        if not e:
+            fail(f"hint {args.hint!r} rejected: {r} — "
+                 "rerun screenshot.py --hints")
 
     set_dpi_awareness()
     try:
@@ -141,15 +160,41 @@ def main():
         if args.text is not None:
             entry = None
             if args.hint:
-                entry, reason = cu_hints.resolve_hint(args.hint)
+                entry, reason = cu_hints.resolve_hint(args.hint,
+                                                      generation=args.gen)
                 if not entry:
                     fail(f"hint {args.hint!r} rejected: {reason} — "
                          "rerun screenshot.py --hints")
             t0 = cu_actions.now_ms()
             backend = "physical"
             uia_note = None
-            if entry is not None and args.via != "physical" \
+            if entry is not None and args.via == "browser":
+                if args.dry_run:
+                    backend = "dom"
+                else:
+                    res, reason = cu_browser.dom_action(
+                        entry.get("hwnd"), entry["x"], entry["y"],
+                        "type", text=args.text,
+                        enabled=entry.get("enabled", True))
+                    if res:
+                        backend = "dom"
+                    else:
+                        fail(f"browser type rejected: {reason}")
+            elif entry is not None and args.via == "auto" \
                     and not args.dry_run:
+                ok, _ = cu_browser.check(entry.get("hwnd"))
+                if ok:
+                    res, dom_reason = cu_browser.dom_action(
+                        entry.get("hwnd"), entry["x"], entry["y"],
+                        "type", text=args.text,
+                        enabled=entry.get("enabled", True))
+                    if res:
+                        backend = "dom"
+                    elif dom_reason and dom_reason.startswith(
+                            "browser_actionable_"):
+                        uia_note = dom_reason  # declared fallback cause
+            if entry is not None and args.via in ("auto", "uia") \
+                    and backend == "physical" and not args.dry_run:
                 res, reason = cu_hints.uia_perform(entry, "set_value",
                                                    args.text)
                 if res:
@@ -177,7 +222,7 @@ def main():
             out = cu_actions.result(
                 "dispatched", backend, typed=len(args.text),
                 profile=profile,
-                delay_mode=("uia" if backend == "uia" else
+                delay_mode=(backend if backend in ("uia", "dom") else
                             "instant" if delays is None else
                             "fixed" if args.delay > 0 else profile),
                 timings_ms={"move": None, "dispatch": None,

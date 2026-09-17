@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import cu_load  # noqa: E402
 
 hints = cu_load.load("cu_hints")
@@ -138,3 +138,33 @@ def test_action_accepted_without_visible_effect_is_dispatch_only():
     r = _try_click(m, "a", session=obs["session_id"])
     assert r["status"] == "dispatched"  # sent, not proven
     assert "verified" != r["status"]
+
+
+# --- Ticket 15: remaining adversarial cases ------------------------------------
+
+def test_reobserve_stales_prior_hint_ids():
+    """Resize/DPI/re-layout analogue: a new observation bumps generation;
+    a caller resolving with the OLD generation is rejected as stale."""
+    obs1 = _observe()
+    obs2 = _observe()  # layout changed -> new snapshot
+    m = FakeMouse()
+    e, reason = hints.resolve_hint("a", session=obs1["session_id"],
+                                   generation=obs1["generation"])
+    assert reason == "stale_generation" and e is None
+    assert m.dispatched == []
+    # caller tracking the current generation resolves fine
+    e, reason = hints.resolve_hint("a", session=obs2["session_id"],
+                                   generation=obs2["generation"])
+    assert reason is None and e["x"] == 100
+
+
+def test_disabled_element_hint_resolves_but_semantic_rejects():
+    """Disabled control: hint resolves (coordinates valid) but semantic
+    dispatch must refuse — clicks on disabled elements are blind."""
+    els = [{"id": "d", "x": 50, "y": 50, "name": "Off", "type": "Button",
+            "bounds": [40, 40, 60, 60], "hwnd": 500, "enabled": False}]
+    obs = hints.write_sidecar(els, window={"hwnd": 500})
+    e, reason = hints.resolve_hint("d", session=obs["session_id"])
+    assert reason is None and e["enabled"] is False
+    # dom/uia callers gate on entry["enabled"] -> physical caller decides;
+    # semantic path rejection is covered in test_cu_browser_routing.

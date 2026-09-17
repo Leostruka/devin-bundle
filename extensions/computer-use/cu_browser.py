@@ -216,6 +216,90 @@ class BrowserClient:
         return self._ws.call("browsingContext.captureScreenshot",
                              {"context": self.target}).get("data")
 
+    def evaluate_in(self, expression, context=None):
+        """evaluate scoped to a browsing context (BiDi). CDP evaluates on
+        the attached page target only — nested frames need their own
+        session; callers get an explicit error rather than silent bleed."""
+        if context and context != self.target:
+            if self.dialect == "cdp":
+                raise RuntimeError(
+                    "cdp_context: frame-scoped eval needs a frame session")
+            r = self._ws.call("script.evaluate", {
+                "expression": expression,
+                "target": {"context": context},
+                "awaitPromise": False})
+            return _bidi_value((r or {}).get("result"))
+        return self.evaluate(expression)
+
+    def contexts(self):
+        """Top-level + nested browsing contexts (BiDi). CDP: just the page."""
+        if self.dialect == "cdp":
+            return [self.target]
+        tree = self._ws.call("browsingContext.getTree", {})
+        return [c["context"] for c in (tree or {}).get("contexts", [])]
+
+    def actionable_at(self, cx, cy, bounds_css=None):
+        """Is a DOM element the real hit target at CSS point (cx,cy)?
+        Returns dict ok/reason. bounds_css [l,t,w,h] = expected element
+        rect — when given, a returned element not intersecting it means the
+        target is COVERED."""
+        # elementsFromPoint gives the full hit-test stack: when expected
+        # bounds are known, the target is the first element whose rect
+        # matches them; if anything sits above it in the stack -> covered.
+        stack_js = ("const st=document.elementsFromPoint(%f,%f);"
+                    "if(!st.length)return{ok:false,reason:'no_element'};"
+                    "const el=st[0];" % (cx, cy))
+        covered = ""
+        if bounds_css:
+            l, t, w, h = bounds_css
+            stack_js += (
+                "const B=[%f,%f,%f,%f];let ti=st.findIndex(e=>{"
+                "const q=e.getBoundingClientRect();"
+                "return q.right>B[0]+1&&q.left<B[0]+B[2]-1&&"
+                "q.bottom>B[1]+1&&q.top<B[1]+B[3]-1&&"
+                "q.width<=B[2]*1.6&&q.height<=B[3]*1.6});"
+                "if(ti<0)return{ok:false,reason:'no_element'};"
+                "if(ti>0)return{ok:false,reason:'covered'};"
+                % (l, t, w, h))
+        r = self.evaluate(
+            "(()=>{%s"
+            "const r=el.getBoundingClientRect();"
+            "if(r.width<1||r.height<1)return{ok:false,reason:'zero_size'};"
+            "if(el.disabled||el.getAttribute('aria-disabled')==='true')"
+            "return{ok:false,reason:'disabled'};"
+            "if(el.tagName==='CANVAS'||el.tagName==='VIDEO')"
+            "return{ok:false,reason:'canvas',tag:el.tagName};"
+            "return{ok:true,tag:el.tagName}})()" % stack_js)
+        return r or {"ok": False, "reason": "no_element"}
+
+    def wait_actionable(self, cx, cy, bounds_css=None, timeout=3.0,
+                        interval=0.15):
+        """Poll actionable_at until ok or deadline — returns the last
+        result (callers read .ok/.reason)."""
+        import time as _t
+        deadline = _t.monotonic() + timeout
+        last = {"ok": False, "reason": "timeout"}
+        while _t.monotonic() < deadline:
+            last = self.actionable_at(cx, cy, bounds_css)
+            if last.get("ok") or last.get("reason") in (
+                    "disabled", "canvas", "zero_size"):
+                return last
+            _t.sleep(interval)
+        return last
+
+    def insert_text(self, text):
+        """Insert text at the focused element (CDP) or send per-char key
+        events (BiDi — no insertText equivalent)."""
+        if self.dialect == "cdp":
+            return self._ws.call("Input.insertText", {"text": text})
+        actions = []
+        for ch in text:
+            actions.append({"type": "keyDown", "value": ch})
+            actions.append({"type": "keyUp", "value": ch})
+        return self._ws.call("input.performActions", {
+            "context": self.target,
+            "actions": [{"type": "key", "id": "kb", "actions": actions}]})
+
     def close(self):
         self._ws.close()
 
@@ -293,3 +377,58 @@ def viewport_to_desktop(css_x, css_y, viewport_origin, dpr=1.0):
     spaces without conversion is the bug this signature exists to prevent."""
     ox, oy = viewport_origin
     return round(css_x * dpr + ox), round(css_y * dpr + oy)
+
+
+def _client_origin(hwnd):
+    """Desktop px of hwnd's client-area (viewport) top-left corner."""
+    if os.name != "nt" or not hwnd:
+        return (0, 0)
+    import ctypes
+    import ctypes.wintypes
+    pt = ctypes.wintypes.POINT(0, 0)
+    ctypes.windll.user32.ClientToScreen(hwnd, ctypes.byref(pt))
+    return pt.x, pt.y
+
+
+def desktop_to_viewport(dx, dy, hwnd, dpr=1.0):
+    """Desktop physical px -> CSS px for the bound browser's viewport."""
+    ox, oy = _client_origin(hwnd)
+    return (dx - ox) / dpr, (dy - oy) / dpr
+
+
+def dom_action(hwnd, x, y, op, text=None, timeout=10.0, enabled=True,
+               wait=2.0):
+    """Route a semantic browser action for the element at desktop (x, y)
+    inside window hwnd. Returns (result, reason); reason None on success —
+    callers must NOT fall back to physical input on browser_* rejections.
+    Actionability gate: the element under the point must exist, be visible,
+    enabled and uncovered; covered/no_element get a `wait` window."""
+    ok, reason = check(hwnd)
+    if not ok:
+        return None, f"browser_{reason}"
+    if not enabled:
+        return None, "browser_disabled"
+    cli = _cdp_client(timeout=timeout)
+    if cli is None:
+        return None, "browser_unavailable"
+    try:
+        dpr = cli.evaluate("devicePixelRatio") or 1.0
+        cx, cy = desktop_to_viewport(x, y, hwnd, dpr)
+        a = cli.wait_actionable(cx, cy, timeout=wait)
+        if not a.get("ok"):
+            return None, "browser_actionable_" + (a.get("reason") or
+                                                  "unknown")
+        if op == "click":
+            cli.click(cx, cy)
+            return {"backend": "dom", "dialect": cli.dialect,
+                    "css": [round(cx, 1), round(cy, 1)]}, None
+        if op == "type":
+            cli.click(cx, cy)  # focus the field first
+            cli.insert_text(text or "")
+            return {"backend": "dom", "dialect": cli.dialect,
+                    "typed": len(text or "")}, None
+        return None, f"unknown_op:{op}"
+    except Exception as e:
+        return None, f"dom_{type(e).__name__}: {e}"
+    finally:
+        cli.close()
