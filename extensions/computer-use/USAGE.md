@@ -8,12 +8,13 @@ has no API/CLI.
 
 | File | Purpose |
 |---|---|
-| `screenshot.py` | Capture screen/region/monitor to PNG, `--grid` overlay, `--hints` Vimium-style element badges |
-| `mouse.py` | move, click (incl. `--hint`), scroll, drag, position — profile-driven motion |
-| `type_text.py` | type literal text, single keys, hotkey chords — profile-driven cadence |
+| `screenshot.py` | Capture screen/region/monitor to PNG, `--grid` overlay, `--hints` Vimium-style element badges + observation contract |
+| `mouse.py` | move, click (incl. `--hint`, `--via`, `--verify`), scroll, drag, position — profile-driven motion |
+| `type_text.py` | type literal text, single keys, hotkey chords — profile-driven cadence, `--hint`/`--via uia` set-value |
 | `profile.py` | get/set the session action profile (`--set`, `--show`, interactive menu) |
-| `cu_motion.py` | shared: profile state + bezier/Fitts path + timing generators |
-| `cu_hints.py` | shared: UIA element extraction + hint sidecar |
+| `cu_motion.py` | shared: profile state + bezier/minimum-jerk path + timing generators |
+| `cu_hints.py` | shared: UIA element extraction (cached queries) + versioned hint sidecar + live re-location/Invoke/SetValue |
+| `cu_actions.py` | shared: result contract (`status`, `dispatch.backend`, `timings_ms`) + `OwnedInputs` cleanup |
 | `requirements.txt` | `mss` + `pynput` + `pillow` + `uiautomation`/`comtypes` (Windows) |
 
 ## Action profiles
@@ -26,7 +27,13 @@ Three profiles control how input is physically performed. Resolve order:
 |---|---|---|
 | `fast` | teleport, zero delay (legacy default) | single instant `kb.type` |
 | `smooth` | cinematic cubic-bezier arc, easeInOutCubic, ~90 fps | fixed 35 ms/char |
-| `human` | multi-knot bezier + gaussian jitter + occasional overshoot, Fitts-law duration `MT = 0.08 + 0.16·log2(D/W+1)` | `gauss(90ms,30ms)`/char, double-letter speedup, ~3% thinking pauses, jittered click hold |
+| `human` | multi-knot bezier + gaussian jitter + occasional overshoot, Fitts-law duration `MT = 0.08 + 0.16·log2(D/W+1)` | lognormal digram/trigram-context cadence — repeated letters faster, punctuation pauses, jittered click hold |
+
+Motion generator: `--motion bezier` (default per profile) or `--motion minjerk`
+(Flash–Hogan minimum-jerk path — straight, no jitter, no overshoot) on
+`move`/`click`/`scroll`/`drag`. Paths and typing plans are reproducible with
+`--seed N` (typing also honors `$CU_SEED`). Path playback uses absolute
+deadlines — per-step sleep drift cannot accumulate.
 
 Agents: at session start, ask the user which profile to use, then run
 `profile.py --set <name>`. Humans in a real terminal can run `profile.py`
@@ -54,6 +61,10 @@ python3 -m venv <ext-dir>/.venv
 ## Contract
 
 - Every script prints exactly one JSON object to stdout: `{"ok": true, ...}` or `{"ok": false, "error": "..."}`.
+- Action results carry `"status"` — `dispatched` (input sent, effect NOT verified), `verified`, `rejected` (pre-condition failed, zero input sent), `timeout`, `unknown`, `cancelled`. `ok:true` never means task success.
+- `dispatch.backend` records the transport used: `physical` (pynput) or `uia` (semantic pattern). `dispatch.uia_fallback` names the typed reason when a `uia` attempt fell back (`stale`, `no_pattern`, `readonly`, `timeout`…).
+- `timings_ms` reports measured wall-clock ms (`move`, `dispatch`, `total`); `secs` is the *planned* path/cadence duration — they are different things.
+- `screenshot.py` output includes `origin_px` (image top-left in desktop space) and `captured_at`; with `--hints` also `session_id`, `observation_id`, `generation`, `window`, `truncated`.
 - Exit codes: `0` success, `1` runtime failure, `2` usage/dependency error.
 - Coordinates are physical pixels, origin at the top-left of the primary monitor. On multi-monitor setups, monitor 0 = the combined virtual screen; negative coordinates are valid for secondary monitors.
 - On Windows the scripts set per-monitor DPI awareness so screenshot pixels and mouse coordinates agree on scaled displays.
@@ -85,6 +96,9 @@ $PY mouse.py position                    # {"ok":true,"x":...,"y":...}
 $PY mouse.py move 500 300
 $PY mouse.py click 500 300               # left click at (500,300)
 $PY mouse.py click --hint as             # click element from screenshot --hints
+$PY mouse.py click --hint as --via uia   # semantic Invoke only (reject, no fallback)
+$PY mouse.py click --hint as --verify    # report postcondition.target_present
+$PY mouse.py click 500 300 --motion minjerk   # minimum-jerk path
 $PY mouse.py click 500 300 --button right
 $PY mouse.py click 500 300 --clicks 2    # double-click
 $PY mouse.py click 500 300 --hold 150    # explicit hold wins over profile jitter
@@ -100,6 +114,9 @@ $PY type_text.py --key enter             # single named key
 $PY type_text.py --keys ctrl+c           # chord (modifiers + key)
 $PY type_text.py --keys ctrl+shift+s
 $PY type_text.py "slow" --delay 0.05     # fixed 50 ms/char (overrides profile)
+$PY type_text.py "text" --hint as        # target element; UIA SetValue when available
+$PY type_text.py "text" --hint as --via uia    # SetValue only, reject on failure
+$PY type_text.py "x" --profile human --seed 7  # reproducible cadence
 $PY type_text.py "x" --profile human --dry-run   # timing plan, no input
 ```
 
@@ -118,11 +135,23 @@ single character.
 3. `screenshot.py` again to verify the result before continuing.
 
 `--hints` enumerates real interactive elements via Windows UI Automation
-(buttons, edits, links, checkboxes, menu/tab/list items…) and draws
-Vimium-style letter badges at each element's corner. A sidecar file
-(`<temp>/devin-cu-hints.json`) maps hint → exact center for `click --hint`.
+(buttons, edits, links, checkboxes, menu/tab/list items…, cached one-shot
+query) and draws Vimium-style letter badges at each element's corner. A
+versioned sidecar (`<temp>/devin-cu-hints.json`) maps hint →
+`{x, y, name, type, bounds, hwnd, enabled}` plus `session_id`, `generation`,
+`window` binding and `created_at`. `click --hint` / `--hint` typing resolve
+through it and **reject** — with zero input dispatched — when the hint is
+unknown, expired (default TTL 120 s, `$CU_HINT_TTL`), from another session,
+or its window no longer exists. A grid fallback invalidates the sidecar, so
+stale hints can never resolve.
 Hints are **targeting only** — they do not identify images, canvas content or
 any non-UIA surface; use plain `screenshot.py` for visual checks.
+
+With `--hint`, `--via auto` (default) re-locates the element live and uses its
+UIA `Invoke`/`Value` pattern when supported, falling back to physical input;
+`--via physical` skips UIA; `--via uia` rejects instead of falling back.
+Semantic actions act on the element itself — they do not exercise the same
+handlers as a physical click; keep `physical` when testing real input paths.
 
 If UIA is unavailable, times out (>6 s), or finds no elements (non-Windows,
 unusual apps), `--hints` falls back to the `--grid 100` overlay and reports
@@ -144,8 +173,8 @@ regardless of how the image is displayed.
   capture, Accessibility for input). Grant them to the terminal app, then re-run.
 - **Focused-window dependency:** typing and clicks go to whatever has focus —
   take a screenshot first if unsure which window is active.
-- **"ok:true" but nothing happened:** the input was dispatched to the OS — the
-  contract does not mean the UI changed. Check, in order: (a) aim — retake
+- **"status: dispatched" but nothing happened:** the input was dispatched to
+  the OS — the contract does not mean the UI changed. Check, in order: (a) aim — retake
   `screenshot.py --grid` and confirm the coordinate sits on the element;
   (b) focus — a click on a background window may only focus it, click again;
   (c) debounce — retry with `--hold 150`; (d) overlay — a transparent window or
@@ -154,7 +183,9 @@ regardless of how the image is displayed.
   from the perceived (rescaled) screenshot miss the target — use `--hints` or
   `--grid`.
 - **Stale hints:** hint ids refer to the last `--hints` capture only — re-run
-  `screenshot.py --hints` after any UI change before `click --hint`.
+  `screenshot.py --hints` after any UI change before `click --hint`. Stale or
+  expired hints are rejected before any input is dispatched (`"rejected:
+  expired|window_gone|session|schema"`); a grid fallback deletes the sidecar.
 - **Headless sessions** (SSH, CI): no display → scripts return `ok:false`.
   Do not retry.
 

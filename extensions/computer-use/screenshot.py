@@ -57,7 +57,9 @@ def _to_image(img):
     return Image.frombytes("RGB", (img.width, img.height), img.rgb).convert("RGBA")
 
 
-def _save_with_grid(img, spacing, out):
+def _save_with_grid(img, spacing, out, ox=0, oy=0):
+    """Grid labels are GLOBAL physical pixels (ox/oy = image top-left in
+    desktop space) so they read true on secondary/negative-origin monitors."""
     Image, ImageDraw, ImageFont = _load_pil()
     if spacing < 20:
         fail("--grid spacing must be >= 20 px", 2)
@@ -68,17 +70,17 @@ def _save_with_grid(img, spacing, out):
     line = (255, 255, 0, 110)
     for x in range(0, img.width, spacing):
         d.line([(x, 0), (x, img.height)], fill=line)
-        d.text((x + 2, 2), str(x), font=font, fill=(255, 255, 0, 255),
+        d.text((x + 2, 2), str(ox + x), font=font, fill=(255, 255, 0, 255),
                stroke_width=2, stroke_fill=(0, 0, 0, 255))
     for y in range(0, img.height, spacing):
         d.line([(0, y), (img.width, y)], fill=line)
-        d.text((2, y + 2), str(y), font=font, fill=(255, 255, 0, 255),
+        d.text((2, y + 2), str(oy + y), font=font, fill=(255, 255, 0, 255),
                stroke_width=2, stroke_fill=(0, 0, 0, 255))
     Image.alpha_composite(im, ov).convert("RGB").save(out, "PNG")
 
 
 def _save_with_hints(img, elements, out, ox, oy):
-    """Draw Vimium-style badges. elements carry screen-px rects; (ox, oy) is
+    """Draw Vimium-style badges. elements carry screen-px bounds; (ox, oy) is
     the captured image's top-left corner in screen space."""
     Image, ImageDraw, ImageFont = _load_pil()
     im = _to_image(img)
@@ -89,8 +91,8 @@ def _save_with_hints(img, elements, out, ox, oy):
               if 0 <= e["x"] - ox < img.width and 0 <= e["y"] - oy < img.height]
     hints = []
     for el, hid in zip(els_in, cu_hints.hint_ids(len(els_in))):
-        bx = min(max(el["rx"] - ox, 0), img.width - 30)
-        by = min(max(el["ry"] - oy, 0), img.height - 18)
+        bx = min(max(el["bounds"][0] - ox, 0), img.width - 30)
+        by = min(max(el["bounds"][1] - oy, 0), img.height - 18)
         label = hid.upper()
         tb = d.textbbox((0, 0), label, font=font)
         pw, ph = tb[2] - tb[0] + 10, tb[3] - tb[1] + 7
@@ -99,7 +101,9 @@ def _save_with_hints(img, elements, out, ox, oy):
                             width=1)
         d.text((bx + 5, by + 3), label, font=font, fill=(15, 15, 15, 255))
         hints.append({"id": hid, "x": el["x"], "y": el["y"],
-                      "name": el["name"], "type": el["type"]})
+                      "name": el["name"], "type": el["type"],
+                      "bounds": el["bounds"], "hwnd": el.get("hwnd"),
+                      "enabled": el.get("enabled", True)})
     Image.alpha_composite(im, ov).convert("RGB").save(out, "PNG")
     return hints
 
@@ -151,27 +155,42 @@ def main():
                     fail(f"monitor {args.monitor} out of range (0..{len(sct.monitors)-1})", 2)
                 bbox = sct.monitors[args.monitor]
             img = sct.grab(bbox)
+            origin = [bbox["left"], bbox["top"]]
             result = {"ok": True, "path": out, "width": img.width,
-                      "height": img.height, "monitor": args.monitor}
+                      "height": img.height, "monitor": args.monitor,
+                      "origin_px": origin,
+                      "captured_at": round(time.time(), 3)}
             if args.hints:
-                els = cu_hints.enum_clickables(scope=args.window)
+                obs = cu_hints.enum_clickables(scope=args.window)
+                els = obs["elements"] if obs else None
                 if els:
-                    hints = _save_with_hints(img, els, out,
-                                             bbox["left"], bbox["top"])
+                    hints = _save_with_hints(img, els, out, *origin)
                     if hints:
-                        cu_hints.write_sidecar(hints)
-                        result["hints"] = hints
-                        result["note"] = ("hint labels over real elements — "
-                                          "click via mouse.py click --hint <id> "
-                                          "or click the x,y coords")
+                        data = cu_hints.write_sidecar(
+                            hints, window=obs["window"],
+                            capture={"origin_px": origin,
+                                     "size_px": [img.width, img.height]})
+                        result.update(
+                            hints=hints, truncated=obs["truncated"],
+                            session_id=data["session_id"],
+                            observation_id=data["observation_id"],
+                            generation=data["generation"],
+                            window=obs["window"],
+                            note=("hint labels over real elements — click via "
+                                  "mouse.py click --hint <id> or click the "
+                                  "x,y coords"))
                     else:
-                        _save_with_grid(img, 100, out)
-                        result.update(hints=None, fallback="grid", grid_px=100)
+                        cu_hints.invalidate_sidecar()
+                        _save_with_grid(img, 100, out, *origin)
+                        result.update(hints=None, fallback="grid",
+                                      grid_px=100, truncated=False)
                 else:
-                    _save_with_grid(img, 100, out)
-                    result.update(hints=None, fallback="grid", grid_px=100)
+                    cu_hints.invalidate_sidecar()
+                    _save_with_grid(img, 100, out, *origin)
+                    result.update(hints=None, fallback="grid",
+                                  grid_px=100, truncated=False)
             elif args.grid:
-                _save_with_grid(img, args.grid, out)
+                _save_with_grid(img, args.grid, out, *origin)
                 result["grid_px"] = args.grid
                 result["note"] = ("grid labels are physical pixels — "
                                   "read click coords directly")
