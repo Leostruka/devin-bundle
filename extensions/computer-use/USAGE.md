@@ -15,6 +15,10 @@ has no API/CLI.
 | `cu_motion.py` | shared: profile state + bezier/minimum-jerk path + timing generators |
 | `cu_hints.py` | shared: UIA element extraction (cached queries) + versioned hint sidecar + live re-location/Invoke/SetValue |
 | `cu_actions.py` | shared: result contract (`status`, `dispatch.backend`, `timings_ms`) + `OwnedInputs` cleanup |
+| `cu_capture.py` | shared: capture backend seam (`grab`, `monitors`, `apply_delta`) — `$CU_CAPTURE` selects backend (default `mss`) |
+| `cu_browser.py` | shared: authorized-browser binding (loopback+pid, session+TTL) — CDP client seam stays None until a driver is approved |
+| `cu_session.py` | shared: opt-in persistent worker over stdio pipes — recyclable, generation+session rotation, queue cancel |
+| `cu_bench.py` | per-boundary latency harness (protocol 4.4) — `--runs N --out FILE`, JSON to stdout |
 | `requirements.txt` | `mss` + `pynput` + `pillow` + `uiautomation`/`comtypes` (Windows) |
 
 ## Action profiles

@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 
+import cu_capture
 import cu_hints
 import cu_motion as cm
 
@@ -137,65 +138,64 @@ def main():
                                    f"screenshot-{int(time.time())}.png")
 
     try:
-        import mss
         import mss.tools
     except ImportError:
         fail("mss not installed — run: <venv-python> -m pip install -r requirements.txt", 2)
 
     try:
-        with mss.MSS() as sct:
-            if args.region:
-                try:
-                    x, y, w, h = [int(v) for v in args.region.split(",")]
-                except ValueError:
-                    fail("--region must be 'x,y,w,h' integers", 2)
-                bbox = {"left": x, "top": y, "width": w, "height": h}
-            else:
-                if args.monitor < 0 or args.monitor >= len(sct.monitors):
-                    fail(f"monitor {args.monitor} out of range (0..{len(sct.monitors)-1})", 2)
-                bbox = sct.monitors[args.monitor]
-            img = sct.grab(bbox)
-            origin = [bbox["left"], bbox["top"]]
-            result = {"ok": True, "path": out, "width": img.width,
-                      "height": img.height, "monitor": args.monitor,
-                      "origin_px": origin,
-                      "captured_at": round(time.time(), 3)}
-            if args.hints:
-                obs = cu_hints.enum_clickables(scope=args.window)
-                els = obs["elements"] if obs else None
-                if els:
-                    hints = _save_with_hints(img, els, out, *origin)
-                    if hints:
-                        data = cu_hints.write_sidecar(
-                            hints, window=obs["window"],
-                            capture={"origin_px": origin,
-                                     "size_px": [img.width, img.height]})
-                        result.update(
-                            hints=hints, truncated=obs["truncated"],
-                            session_id=data["session_id"],
-                            observation_id=data["observation_id"],
-                            generation=data["generation"],
-                            window=obs["window"],
-                            note=("hint labels over real elements — click via "
-                                  "mouse.py click --hint <id> or click the "
-                                  "x,y coords"))
-                    else:
-                        cu_hints.invalidate_sidecar()
-                        _save_with_grid(img, 100, out, *origin)
-                        result.update(hints=None, fallback="grid",
-                                      grid_px=100, truncated=False)
+        mons = cu_capture.monitors()
+        if args.region:
+            try:
+                x, y, w, h = [int(v) for v in args.region.split(",")]
+            except ValueError:
+                fail("--region must be 'x,y,w,h' integers", 2)
+            bbox = {"left": x, "top": y, "width": w, "height": h}
+        else:
+            if args.monitor < 0 or args.monitor >= len(mons):
+                fail(f"monitor {args.monitor} out of range (0..{len(mons)-1})", 2)
+            bbox = mons[args.monitor]
+        img, _meta = cu_capture.grab(bbox)
+        origin = [bbox["left"], bbox["top"]]
+        result = {"ok": True, "path": out, "width": img.width,
+                  "height": img.height, "monitor": args.monitor,
+                  "origin_px": origin,
+                  "captured_at": round(time.time(), 3)}
+        if args.hints:
+            obs = cu_hints.enum_clickables(scope=args.window)
+            els = obs["elements"] if obs else None
+            if els:
+                hints = _save_with_hints(img, els, out, *origin)
+                if hints:
+                    data = cu_hints.write_sidecar(
+                        hints, window=obs["window"],
+                        capture={"origin_px": origin,
+                                 "size_px": [img.width, img.height]})
+                    result.update(
+                        hints=hints, truncated=obs["truncated"],
+                        session_id=data["session_id"],
+                        observation_id=data["observation_id"],
+                        generation=data["generation"],
+                        window=obs["window"],
+                        note=("hint labels over real elements — click via "
+                              "mouse.py click --hint <id> or click the "
+                              "x,y coords"))
                 else:
                     cu_hints.invalidate_sidecar()
                     _save_with_grid(img, 100, out, *origin)
                     result.update(hints=None, fallback="grid",
                                   grid_px=100, truncated=False)
-            elif args.grid:
-                _save_with_grid(img, args.grid, out, *origin)
-                result["grid_px"] = args.grid
-                result["note"] = ("grid labels are physical pixels — "
-                                  "read click coords directly")
             else:
-                mss.tools.to_png(img.rgb, img.size, output=out)
+                cu_hints.invalidate_sidecar()
+                _save_with_grid(img, 100, out, *origin)
+                result.update(hints=None, fallback="grid",
+                              grid_px=100, truncated=False)
+        elif args.grid:
+            _save_with_grid(img, args.grid, out, *origin)
+            result["grid_px"] = args.grid
+            result["note"] = ("grid labels are physical pixels — "
+                              "read click coords directly")
+        else:
+            mss.tools.to_png(img.rgb, img.size, output=out)
         print(json.dumps(result))
     except Exception as e:
         fail(f"{type(e).__name__}: {e}")
