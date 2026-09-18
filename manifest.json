@@ -134,17 +134,9 @@
       "exported_at": "2026-09-08T21:39:22.451685"
     },
     {
-      "name": "writing-for-agents",
-      "source": "devin-bundle",
-      "purpose": "Use when creating or editing skills, `.devin/global_rules.md` / `.devin/rules/*.md` rules, or other docs an agent must read.",
-      "original_path": "%APPDATA%\\devin\\skills\\writing-for-agents",
-      "export_hash": "75268D9260113373A2C8C1A1A3DE361D6D046B04BBA8E104576E0ED614DFE4A4",
-      "exported_at": "2026-09-08T21:39:22.451927"
-    },
-    {
       "name": "writing-skills",
       "source": "devin-bundle",
-      "purpose": "Use when creating new skills, editing existing skills, or verifying skills work before deployment.",
+      "purpose": "Use when creating new skills, editing existing skills, verifying skills work before deployment, or when creating/editing any document an agent must read (`.devin/global_rules.md`, `.devin/rules/*.md`, docs reached by pointer).",
       "original_path": "%APPDATA%\\devin\\skills\\writing-skills",
       "export_hash": "1DE86DAD997891536EE3A8181605F5E542C98A9A1B706F9902508C840A0E488F",
       "exported_at": "2026-09-08T21:39:22.452693"
@@ -357,7 +349,7 @@
       "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI."
     }
   ],
-  "skill_count": 50,
+  "skill_count": 49,
   "rule_count": 28,
   "scripts": [
     {

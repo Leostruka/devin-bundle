@@ -1,8 +1,5 @@
----
-name: writing-for-agents
-description: Use when creating or editing skills, `.devin/global_rules.md` / `.devin/rules/*.md` rules, or other docs an agent must read.
-triggers: [user, model]
----
+# Writing for agents (doc principles)
+
 Reference for writing any document an agent consumes — a skill, a `.devin/global_rules.md` / `.devin/rules/*.md` rule, a doc reached by a pointer. The packaging differs; the writing does not: the same levers make each one predictable — the agent taking the same _process_ every run, not producing the same output.
 
 When the document you're writing is a skill, read [`SKILL-MECHANICS.md`](SKILL-MECHANICS.md) for frontmatter, invocation choice, and router skills.
