@@ -1,8 +1,5 @@
----
-name: receiving-code-review
-description: Use when the user receives code review feedback and needs to decide how to act on it.
-triggers: [user, model]
----
+# Mode: Receiving review feedback
+
 # Code Review Reception
 
 ## Overview

@@ -176,14 +176,6 @@
       "exported_at": "2026-09-08T21:39:22.444266"
     },
     {
-      "name": "receiving-code-review",
-      "source": "devin-bundle",
-      "purpose": "Use when the user receives code review feedback and needs to decide how to act on it.",
-      "original_path": "%APPDATA%\\devin\\skills\\receiving-code-review",
-      "export_hash": "F0F010ABE92D3D1D46D624C61515BBA42EA53B03E0D2ED26B90B623F370026DB",
-      "exported_at": "2026-09-08T21:39:22.444438"
-    },
-    {
       "name": "research",
       "source": "devin-bundle",
       "purpose": "Use when the user asks a question that needs investigation against primary sources and citations.",
@@ -365,14 +357,6 @@
       "exported_at": "2026-09-08T21:39:22.458310"
     },
     {
-      "name": "pr-review",
-      "source": "devin-bundle",
-      "purpose": "Use when the user asks to review a Pull Request on GitHub with inline comments and code suggestions via the GitHub API. Enforces a repeatable cycle of check -> comment/suggest -> check next, with a gates ledger for evidence.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\pr-review",
-      "export_hash": "9BF8901E7FDE298F54F19707DC48DDC21B69A892C309646ECBCA8EF037DF2C98",
-      "exported_at": "2026-09-08T21:39:22.458447"
-    },
-    {
       "name": "ai-coding-dictionary",
       "source": "devin-bundle",
       "purpose": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term definition before continuing a technical discussion.",
@@ -535,7 +519,7 @@
       "purpose": "Use when about to claim work is complete/fixed/passing, when a task risks agent laziness (large, multi-step, previously half-done, or with acceptance criteria), or when running long-horizon/unattended work where quality must be verified before proceeding. Covers verification-before-completion, gates ledgers, and autonomous gate semantics."
     }
   ],
-  "skill_count": 68,
+  "skill_count": 66,
   "rule_count": 28,
   "scripts": [
     {
