@@ -200,14 +200,6 @@
       "hash": "95c67d4d67791e2926a6e4a11790789621c5d2c601aaf23390a10bc3d159486b"
     },
     {
-      "name": "project-memory",
-      "source": "devin-bundle",
-      "purpose": "Use when the session produces knowledge worth remembering across sessions, such as answered user questions, business rules, project conventions, failed approaches, reusable solutions, or decisions. Captures it with user approval and stores it as plain-text notes inside .devin/ for future retrieval.",
-      "original_path": "%APPDATA%\\devin\\skills\\project-memory",
-      "export_hash": "AD8DD599367EEF45C505FDEE83211C35660FC7AF64CAA9E59D1CC45F8C111F7F",
-      "exported_at": "2026-09-08T21:39:22.443903"
-    },
-    {
       "name": "prototype",
       "source": "devin-bundle",
       "purpose": "Use when a throwaway prototype is the fastest way to answer a design question.",
@@ -469,14 +461,6 @@
       "exported_at": "2026-09-08T21:39:22.458035"
     },
     {
-      "name": "memory-hygiene",
-      "source": "devin-bundle",
-      "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or bloated, when preferences leak across unrelated tasks, or when choosing between stateless and memory-equipped operation. Covers memory accumulation, temporal contamination, reasoning drift, and user-authored vs auto-saved preferences.",
-      "original_path": "%APPDATA%\\devin\\skills\\memory-hygiene",
-      "export_hash": "2E0102149A30A626A8309FF9723D71C719C1975CC30E7A139ADDC113C3D53667",
-      "exported_at": "2026-09-08T21:39:22.458171"
-    },
-    {
       "name": "impeccable",
       "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
       "purpose": "Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template.",
@@ -638,9 +622,14 @@
       "name": "context-hygiene",
       "source": "devin-bundle",
       "purpose": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent fan-out, when choosing a reasoning effort level, or when reducing token/compute/MCP costs. Covers lost-in-the-middle, context folding (RLM), cost guards, and difficulty-matched effort."
+    },
+    {
+      "name": "memory-management",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or when the session produces knowledge worth remembering (answered questions, business rules, conventions, failed approaches, decisions). Covers memory hygiene (stateless vs managed vs naive) and capturing plain-text notes under .devin/ with user approval."
     }
   ],
-  "skill_count": 79,
+  "skill_count": 78,
   "rule_count": 28,
   "scripts": [
     {
