@@ -88,6 +88,38 @@ def test_matrix_rain_deterministic():
     assert np.array_equal(a, b) and not np.array_equal(a, c)
 
 
+def test_matrix_rain_time_descends():
+    a = np.asarray(fx.apply("matrixRain", _src(), {"seed": 9, "time": 0.0}))
+    b = np.asarray(fx.apply("matrixRain", _src(), {"seed": 9, "time": 0.5}))
+    assert not np.array_equal(a, b)  # heads moved
+
+
+def test_vhs_time_moves_bar():
+    # flat source: only effect noise contributes; bar rows carry ~2x std
+    flat = Image.new("RGB", (96, 64), (128, 128, 128))
+    kw = {"distortion": 0, "colorBleed": 0, "scanlines": 0,
+          "trackingError": 0, "noise": 1.0, "seed": 0}
+    def bar_row(t):
+        out = np.asarray(fx.apply("vhs", flat, {**kw, "time": t}))
+        return int(out.std(axis=(1, 2)).argmax())
+    r0, r1 = bar_row(0.0), bar_row(1.0)
+    # bar sweeps fract(t*0.3)*h -> t=0 near row 0, t=1 near row .3*64≈19
+    assert r0 <= 2 and abs(r1 - 19) <= 3
+
+
+def test_noise_field_time_drifts():
+    a = np.asarray(fx.apply("noiseField", _src(), {"seed": 0, "time": 0.0}))
+    b = np.asarray(fx.apply("noiseField", _src(), {"seed": 0, "time": 0.1}))
+    c = np.asarray(fx.apply("noiseField", _src(), {"seed": 0, "time": 1.0}))
+    assert not np.array_equal(a, b) and not np.array_equal(b, c)
+
+
+def test_wave_lines_time_phase():
+    a = np.asarray(fx.apply("waveLines", _src(), {"time": 0.0}))
+    b = np.asarray(fx.apply("waveLines", _src(), {"time": 0.4}))
+    assert not np.array_equal(np.asarray(a), np.asarray(b))
+
+
 def test_vhs_artifacts():
     src = _src()
     out = np.asarray(fx.apply("vhs", src, {"seed": 2}))

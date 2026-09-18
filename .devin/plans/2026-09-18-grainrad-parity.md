@@ -169,3 +169,19 @@ Real-time preview UI, WebGPU backend, PWA install, browser webcam live feed, the
 - Pitch bug fixed in Task 0 before new render code lands.
 - matrixRain `speed`, noiseField `speed`, grain `speed` only matter for animation → Task 10.
 - Site ASCII is single-layer selectable-charset; ascii_mancer's dual-layer screen-blend is kept as `--dual` extension (superset, not loss).
+
+## Execution status (all tasks complete)
+
+All 12 tasks implemented + green (71 tests). Deviations from plan:
+
+- `imageio`/`moviepy` skipped — used Pillow (gif) + cv2 (mp4), already installed.
+- GLB: no trimesh/pyrender — custom zero-dep GLB/glTF parser (`glb_input.py`).
+- Animated effects use a coherent `time` param (seconds), not frame index —
+  rain falls, VHS bar sweeps (fract(t*0.3)), noise drifts; `speed` scales, `animate=false` freezes.
+- `.gltf` (JSON + external/data-URI .bin) also supported.
+
+### Deferred / ignored (annotated, not implemented)
+
+- **Structural, out of scope**: real-time WebGPU render, UI shell (theme/fullscreen/drag-drop).
+- **Webcam**: `webcam.py` implemented (cv2.VideoCapture) — untested, no hardware in this env. Deferred per user.
+- **Phosphor/crtCurve**: implemented (post stages) — retro-crt/classic-terminal presets use them.

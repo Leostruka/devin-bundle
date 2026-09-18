@@ -20,7 +20,9 @@ def _hex_rgb(c):
 def apply(img, characterSet="custom", customChars=KATAKANA, density=1.0,
           cellSize=12, spacing=0, speed=1.0, trailLength=15,
           rainColor="#00ff00", bgOpacity=0.3, glowIntensity=1.0,
-          direction="down", threshold=0.0, seed=0, **_):
+          direction="down", threshold=0.0, time=0.0, seed=0, **_):
+    """time: seconds — heads fall coherently (site's `speed` uniform scales it);
+    chars flicker ~10Hz independent of fall. Column layout stable per `seed`."""
     src = img.convert("RGB")
     w, h = src.size
     cell = max(4, min(32, int(cellSize)))
@@ -43,10 +45,15 @@ def apply(img, characterSet="custom", customChars=KATAKANA, density=1.0,
     else:
         cols = range(0, h, pitch)
         span = w
+    span_cells = max(1, span // pitch)
+    cycle = span_cells + trail
     cols = [c for c in cols if rng.random() < min(1.0, density)]
     for c in cols:
-        head = rng.integers(0, max(1, span // pitch))
         col_rng = np.random.default_rng(seed + c)
+        phase = col_rng.random() * cycle
+        head = int((phase + float(time) * float(speed) * 8) % cycle)
+        # per-frame char flicker (~10Hz), independent of column phase
+        flick = np.random.default_rng(seed + c + int(float(time) * 10) * 7919)
         for t in range(trail):
             pos = head - t if direction in ("down", "left") else head + t
             px = pos * pitch
@@ -55,7 +62,7 @@ def apply(img, characterSet="custom", customChars=KATAKANA, density=1.0,
             fade = (1 - t / trail) ** 1.5
             g = min(1.0, fade * float(glowIntensity) + (0.35 if t == 0 else 0))
             col = tuple(int(v) for v in rc * g)
-            ch = chars[col_rng.integers(0, len(chars))]
+            ch = chars[flick.integers(0, len(chars))]
             if direction in ("down", "up"):
                 draw.text((c, px), ch, fill=col, font=font)
             else:

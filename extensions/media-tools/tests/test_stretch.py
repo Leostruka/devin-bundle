@@ -52,6 +52,39 @@ def test_glb_load_renders_triangle(tmp_path):
     assert red.sum() > 50  # shaded red triangle present
 
 
+def _make_gltf(path):
+    """JSON .gltf + external tri.bin — same red triangle as _make_glb."""
+    pos = np.array([[-1, -1, 0], [1, -1, 0], [0, 1, 0]], np.float32)
+    idx = np.array([0, 1, 2], np.uint16)
+    (path.parent / "tri.bin").write_bytes(pos.tobytes() + idx.tobytes())
+    gltf = {
+        "asset": {"version": "2.0"},
+        "accessors": [
+            {"bufferView": 0, "componentType": 5126, "count": 3, "type": "VEC3"},
+            {"bufferView": 1, "componentType": 5123, "count": 3, "type": "SCALAR"},
+        ],
+        "bufferViews": [
+            {"buffer": 0, "byteOffset": 0, "byteLength": 36},
+            {"buffer": 0, "byteOffset": 36, "byteLength": 6},
+        ],
+        "buffers": [{"byteLength": 42, "uri": "tri.bin"}],
+        "materials": [{"pbrMetallicRoughness": {"baseColorFactor": [1, 0, 0, 1]}}],
+        "meshes": [{"primitives": [{"attributes": {"POSITION": 0},
+                                    "indices": 1, "material": 0}]}],
+        "nodes": [{"mesh": 0}], "scenes": [{"nodes": [0]}], "scene": 0,
+    }
+    path.write_text(json.dumps(gltf), encoding="utf-8")
+
+
+def test_gltf_external_bin(tmp_path):
+    p = tmp_path / "tri.gltf"
+    _make_gltf(p)
+    out = glb_input.load_glb(p, 100, 80)
+    arr = np.asarray(out)
+    red = (arr[..., 0] > 100) & (arr[..., 1] < 100)
+    assert red.sum() > 50
+
+
 def test_glb_rejects_non_glb(tmp_path):
     p = tmp_path / "bad.glb"
     p.write_bytes(b"not a glb")

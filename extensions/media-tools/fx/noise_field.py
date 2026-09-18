@@ -49,10 +49,15 @@ def field(h, w, noise_type="perlin", scale=50, octaves=4, seed=0):
 
 
 def apply(img, noiseType="perlin", scale=50, intensity=1.0, octaves=4,
-          speed=1.0, distortOnly=False, seed=0, **_):
+          speed=1.0, distortOnly=False, time=0.0, seed=0, **_):
+    """time: seconds — field drifts coherently (speed scales drift rate)."""
     src = img.convert("RGB")
     h, w = src.height, src.width
     n = field(h, w, noiseType, int(scale), int(octaves), seed)
+    if time:
+        # translate field — coherent drift, not flicker
+        d = int(float(time) * float(speed) * int(scale))
+        n = np.roll(n, (d, d // 2), axis=(0, 1))
     # displace pixels along the noise gradient; intensity scales displacement
     gy, gx = np.gradient(n)
     disp = float(intensity) * 8

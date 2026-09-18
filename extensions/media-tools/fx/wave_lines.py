@@ -15,7 +15,8 @@ def _hex_rgb(c):
 
 def apply(img, lineCount=50, amplitude=20, frequency=1.0, lineThickness=0.4,
           direction="horizontal", colorMode="original", fgColor="#ffffff",
-          bgColor="#000000", **_):
+          bgColor="#000000", time=0.0, **_):
+    """time: seconds — wave phase advances (site `animate` flag gates it)."""
     src = img.convert("RGB")
     arr = np.asarray(src, dtype=np.float32)
     lum = np.asarray(src.convert("L"), dtype=np.float32) / 255.0
@@ -33,14 +34,16 @@ def apply(img, lineCount=50, amplitude=20, frequency=1.0, lineThickness=0.4,
             pts = []
             for y in range(0, h, 2):
                 lx = min(w - 1, max(0, int(base)))
-                disp = lum[y, lx] * amplitude * math.sin(y * frequency * math.pi / h * 4)
+                disp = lum[y, lx] * amplitude * math.sin(
+                    y * frequency * math.pi / h * 4 + float(time) * 3)
                 pts.append((base + disp, y))
         else:
             base = (i + 0.5) * h / n
             pts = []
             for x in range(0, w, 2):
                 ly = min(h - 1, max(0, int(base)))
-                disp = lum[ly, x] * amplitude * math.sin(x * frequency * math.pi / w * 4)
+                disp = lum[ly, x] * amplitude * math.sin(
+                    x * frequency * math.pi / w * 4 + float(time) * 3)
                 pts.append((x, base + disp))
         if colorMode == "mono":
             col = tuple(int(v) for v in lc)

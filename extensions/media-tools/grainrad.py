@@ -129,7 +129,7 @@ def main():
                 import webcam as wc
                 dev = int(inp.split(":")[1]) if ":" in inp else 0
                 img = wc.capture(dev)
-            elif inp.lower().endswith(".glb"):
+            elif inp.lower().endswith((".glb", ".gltf")):
                 import glb_input
                 img = glb_input.load_glb(inp)
             elif inp:
@@ -160,10 +160,14 @@ def main():
                 src_frames = (media_io.load_frames(args.input, args.frames)
                               if media_io.is_animated(args.input or "")
                               else [(img, 100)] * (args.frames or 20))
+                t = 0.0
+                anim_on = eff_params.get("animate", True) is not False
                 for i, (fr, dur) in enumerate(src_frames):
-                    params = {**eff_params, "seed": i}
+                    params = {**eff_params, "seed": eff_params.get("seed", 0),
+                              "time": t if anim_on else 0.0}
                     frames.append(run(fr, args.effect, params, adj, proc, post))
                     durs.append(dur)
+                    t += dur / 1000.0
                 if Path(out).suffix.lower() == ".mp4":
                     media_io.save_mp4(frames, out, fps=args.fps)
                 else:
