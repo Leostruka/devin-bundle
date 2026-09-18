@@ -10,6 +10,7 @@ An explicit --delay always wins.
 Requires pynput (installed via requirements.txt into the extension's .venv).
 """
 import argparse
+import atexit
 import json
 import os
 import random
@@ -105,16 +106,19 @@ def main():
             not getattr(args, "hint", None):
         fail("--via browser requires --hint (needs element hwnd)", 2)
     if getattr(args, "hint", None):
-        e, r = cu_hints.resolve_hint(args.hint, generation=args.gen)
+        e, r = cu_hints.resolve_hint(args.hint, session=cu_hints.session_id(),
+                             generation=args.gen)
         if not e:
             fail(f"hint {args.hint!r} rejected: {r} — "
                  "rerun screenshot.py --hints")
+        args._hint_entry = e  # freeze: single resolution per invocation
 
     set_dpi_awareness()
     try:
         from pynput.keyboard import Controller, Key, KeyCode
     except ImportError:
         fail("pynput not installed — run: <venv-python> -m pip install -r requirements.txt", 2)
+    atexit.register(cu_actions.emergency_release)
 
     profile = cm.get_profile(args.profile)
     kb = Controller()
@@ -126,7 +130,7 @@ def main():
                 with cu_actions.OwnedInputs() as owned:
                     for k in keys:
                         owned.press(kb, k)
-                        g = cm.key_gap(profile)
+                        g = cm.key_gap(profile, seed=args.seed)
                         if g:
                             time.sleep(g)
                     for k in reversed(keys):
@@ -145,7 +149,7 @@ def main():
             if not args.dry_run:
                 with cu_actions.OwnedInputs() as owned:
                     owned.press(kb, k)
-                    g = cm.key_gap(profile)
+                    g = cm.key_gap(profile, seed=args.seed)
                     if g:
                         time.sleep(g)
                     owned.release(kb, k)
@@ -158,10 +162,11 @@ def main():
             print(json.dumps(out))
             return
         if args.text is not None:
-            entry = None
-            if args.hint:
-                entry, reason = cu_hints.resolve_hint(args.hint,
-                                                      generation=args.gen)
+            entry = getattr(args, "_hint_entry", None)
+            if args.hint and entry is None:
+                entry, reason = cu_hints.resolve_hint(
+                    args.hint, session=cu_hints.session_id(),
+                    generation=args.gen)
                 if not entry:
                     fail(f"hint {args.hint!r} rejected: {reason} — "
                          "rerun screenshot.py --hints")
@@ -175,7 +180,8 @@ def main():
                     res, reason = cu_browser.dom_action(
                         entry.get("hwnd"), entry["x"], entry["y"],
                         "type", text=args.text,
-                        enabled=entry.get("enabled", True))
+                        enabled=entry.get("enabled", True),
+                        bounds_px=entry.get("bounds"))
                     if res:
                         backend = "dom"
                     else:
@@ -187,7 +193,8 @@ def main():
                     res, dom_reason = cu_browser.dom_action(
                         entry.get("hwnd"), entry["x"], entry["y"],
                         "type", text=args.text,
-                        enabled=entry.get("enabled", True))
+                        enabled=entry.get("enabled", True),
+                        bounds_px=entry.get("bounds"))
                     if res:
                         backend = "dom"
                     elif dom_reason and dom_reason.startswith(
@@ -197,7 +204,7 @@ def main():
                     and backend == "physical" and not args.dry_run:
                 res, reason = cu_hints.uia_perform(entry, "set_value",
                                                    args.text)
-                if res:
+                if res is not None and reason is None:
                     backend = "uia"
                 elif args.via == "uia":
                     fail(f"uia set_value rejected: {reason}")
@@ -206,16 +213,28 @@ def main():
             delays = cm.type_delays(
                 args.text, profile,
                 args.delay if args.delay > 0 else None, seed=args.seed)
+            plan = cm.typing_plan(
+                args.text, profile,
+                args.delay if args.delay > 0 else None, seed=args.seed)
             if not args.dry_run and backend == "physical":
-                if delays is None:
+                if entry is not None and not cu_hints.window_foreground(
+                        entry.get("hwnd")):
+                    fail("hint window is not foreground — refusing to type "
+                         "into another window's focus")
+                if plan is None:
                     kb.type(args.text)
                 else:
-                    for ch, d in zip(args.text, delays):
-                        kb.type(ch)
+                    for op, ch, d in plan:
+                        if op == "backspace":
+                            kb.press(Key.backspace)
+                            kb.release(Key.backspace)
+                        else:
+                            kb.type(ch)
                         time.sleep(d)
                 if args.enter:
                     if profile == "human":
-                        time.sleep(max(0.02, random.gauss(0.15, 0.05)))
+                        time.sleep(max(0.02, cm.gauss(
+                            args.seed, 0.15, 0.05)))
                     with cu_actions.OwnedInputs() as owned:
                         owned.press(kb, Key.enter)
                         owned.release(kb, Key.enter)

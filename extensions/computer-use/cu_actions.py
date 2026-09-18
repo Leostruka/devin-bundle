@@ -66,6 +66,42 @@ class OwnedInputs:
         return False
 
 
+def emergency_release():
+    """Release the standard modifier set + mouse buttons unconditionally.
+
+    Input state is OS-global — ANY process can keyUp a key another process
+    left held. Registered via atexit in the frontends (covers abnormal
+    non-exception exits) and invoked by the session daemon after killing a
+    worker mid-gesture (the dead worker cannot clean itself). Releasing a
+    modifier the user is physically holding is a no-op semantically — the
+    OS still reports it held while the user's finger is down; we only send
+    release events, never presses.
+    """
+    try:
+        from pynput import keyboard, mouse
+    except ImportError:
+        return
+    kb = keyboard.Controller()
+    for k in (keyboard.Key.shift, keyboard.Key.shift_l, keyboard.Key.shift_r,
+              keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r,
+              keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r,
+              getattr(keyboard.Key, "cmd", None),
+              getattr(keyboard.Key, "cmd_l", None),
+              getattr(keyboard.Key, "cmd_r", None)):
+        if k is None:
+            continue
+        try:
+            kb.release(k)
+        except Exception:
+            pass
+    ms = mouse.Controller()
+    for b in (mouse.Button.left, mouse.Button.right, mouse.Button.middle):
+        try:
+            ms.release(b)
+        except Exception:
+            pass
+
+
 def result(status, backend, extra=None, **kw):
     """Result object per the action contract. `ok` keeps CLI compatibility;
     `status` carries the evidence level — never report "verified" without

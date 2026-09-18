@@ -8,6 +8,7 @@ smooth (cinematic arc), human (bezier + jitter + Fitts timing). Resolve order:
 Requires pynput (installed via requirements.txt into the extension's .venv).
 """
 import argparse
+import atexit
 import json
 import os
 import random
@@ -61,11 +62,17 @@ def _resolve_xy(args):
     Returns (x, y, entry|None). Stale/invalid hints are rejected BEFORE any
     controller call — never click coordinates from an outdated observation."""
     if getattr(args, "hint", None):
-        entry, reason = cu_hints.resolve_hint(
-            args.hint, generation=getattr(args, "gen", None))
-        if not entry:
-            fail(f"hint {args.hint!r} rejected: {reason} — "
-                 "rerun screenshot.py --hints")
+        # resolved once at parse time (see main) — reuse that entry so the
+        # coordinates are frozen at the moment of validation, not re-read
+        # from a possibly newer observation
+        entry = getattr(args, "_hint_entry", None)
+        if entry is None:
+            entry, reason = cu_hints.resolve_hint(
+                args.hint, session=cu_hints.session_id(),
+                generation=getattr(args, "gen", None))
+            if not entry:
+                fail(f"hint {args.hint!r} rejected: {reason} — "
+                     "rerun screenshot.py --hints")
         return entry["x"], entry["y"], entry
     if args.x is None or args.y is None:
         fail("x and y are required unless --hint is given", 2)
@@ -140,16 +147,19 @@ def main():
         fail("--via browser requires --hint (needs element hwnd)", 2)
     if getattr(args, "hint", None):
         e, r = cu_hints.resolve_hint(
-            args.hint, generation=getattr(args, "gen", None))
+            args.hint, session=cu_hints.session_id(),
+            generation=getattr(args, "gen", None))
         if not e:
             fail(f"hint {args.hint!r} rejected: {r} — "
                  "rerun screenshot.py --hints")
+        args._hint_entry = e  # freeze: single resolution per invocation
     set_dpi_awareness()
 
     try:
         from pynput.mouse import Button, Controller
     except ImportError:
         fail("pynput not installed — run: <venv-python> -m pip install -r requirements.txt", 2)
+    atexit.register(cu_actions.emergency_release)
 
     profile = cm.get_profile(getattr(args, "profile", None))
     mouse = Controller()
@@ -188,7 +198,8 @@ def main():
                 else:
                     res, reason = cu_browser.dom_action(
                         entry.get("hwnd"), x, y, "click",
-                        enabled=entry.get("enabled", True))
+                        enabled=entry.get("enabled", True),
+                        bounds_px=entry.get("bounds"))
                     if res:
                         invoked = True
                         out["dispatch"]["backend"] = "dom"
@@ -203,7 +214,8 @@ def main():
                 if ok:
                     res, reason = cu_browser.dom_action(
                         entry.get("hwnd"), x, y, "click",
-                        enabled=entry.get("enabled", True))
+                        enabled=entry.get("enabled", True),
+                        bounds_px=entry.get("bounds"))
                     if res:
                         invoked = True
                         out["dispatch"]["backend"] = "dom"
@@ -213,7 +225,7 @@ def main():
             if entry is not None and args.via in ("auto", "uia") \
                     and not invoked and not args.dry_run:
                 res, reason = cu_hints.uia_perform(entry, "invoke")
-                if res:
+                if res is not None and reason is None:
                     invoked = True
                     x, y = res["x"], res["y"]
                     out["dispatch"]["backend"] = "uia"
@@ -233,9 +245,11 @@ def main():
                 out["secs"] = round(dur, 3)  # planned path duration
                 td = cu_actions.now_ms()
                 if not args.dry_run:
-                    hold = cm.click_hold(profile, args.hold)
+                    hold = cm.click_hold(profile, args.hold, seed=args.seed)
                     with cu_actions.OwnedInputs() as owned:
-                        time.sleep(cm.pre_click_delay(profile))
+                        time.sleep(cm.pre_click_delay(
+                            profile, n_choices=cu_hints.hint_count(),
+                            seed=args.seed))
                         btn = getattr(Button, args.button)
                         for i in range(args.clicks):
                             owned.press(mouse, btn)
@@ -244,7 +258,8 @@ def main():
                             if i < args.clicks - 1:
                                 time.sleep(
                                     0.08 if profile == "fast"
-                                    else max(0.03, random.gauss(0.11, 0.03)))
+                                    else max(0.03, cm.gauss(
+                                        args.seed, 0.11, 0.03)))
                     t_disp = cu_actions.now_ms() - td
             fx, fy = (x, y) if invoked or args.dry_run else mouse.position
             out["x"], out["y"] = fx, fy
@@ -274,7 +289,7 @@ def main():
                 if not args.dry_run:
                     seq = ([(1 if args.dx > 0 else -1, 0)] * abs(args.dx)
                            + [(0, 1 if args.dy > 0 else -1)] * abs(args.dy))
-                    for (sx, sy), gap in zip(seq, cm.scroll_gaps(profile, len(seq))):
+                    for (sx, sy), gap in zip(seq, cm.scroll_gaps(profile, len(seq), seed=args.seed)):
                         mouse.scroll(sx, sy)
                         time.sleep(gap)
             fx, fy = mouse.position
@@ -307,7 +322,7 @@ def main():
                         owned.release(mouse, Button.left)
                     else:
                         mouse.position = (args.from_x, args.from_y)
-                        time.sleep(cm.pre_click_delay(profile))
+                        time.sleep(cm.pre_click_delay(profile, seed=args.seed))
                         owned.press(mouse, Button.left)
                         pts, _ = cm.gen_path(profile, args.from_x, args.from_y,
                                              args.x, args.y,

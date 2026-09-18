@@ -110,7 +110,7 @@ def daemon_main():
                             break
                         data += chunk
                     env = json.loads(data.decode("utf-8"))
-                    if env.get("session") not in (None, session):
+                    if env.get("session") != session:
                         resp = {"ok": False, "error": "stale session"}
                     else:
                         resp = _run_op(env.get("cmd") or {})
@@ -183,6 +183,13 @@ class Worker:
             except Exception:
                 pass
             self._proc = None
+            # a killed worker can't run its own finally — modifiers/buttons
+            # it left held are OS-global, so release them from HERE
+            try:
+                import cu_actions
+                cu_actions.emergency_release()
+            except Exception:
+                pass
         if not kill_only:
             self._pending.clear()
 

@@ -20,6 +20,7 @@ class FakeWS:
 
     def __init__(self):
         self.calls = []
+        self.hit = {"ok": True, "tag": "BUTTON"}
 
     def call(self, method, params=None):
         self.calls.append(method)
@@ -130,8 +131,8 @@ def test_mouse_via_browser_stale_hint_zero_dispatch():
 def _bound_fake(monkeypatch, hit):
     _hint()
     br.bind("http://127.0.0.1:9222", 4321)
-    FakeWS.hit = hit
     cli = FakeClient()
+    cli._ws.hit = hit  # per-instance — no cross-test class mutation
     monkeypatch.setattr(br, "_cdp_client", lambda timeout=10.0: cli)
     return cli
 
@@ -183,3 +184,20 @@ def test_canvas_hit_rejects_dom(monkeypatch):
                               "tag": "CANVAS"})
     res, reason = br.dom_action(4321, 500, 300, "click", wait=0.05)
     assert res is None and reason == "browser_actionable_canvas"
+
+
+def test_bounds_px_reaches_actionable_gate(monkeypatch):
+    """bounds_css must actually be wired — covered verdict only exists when
+    the element's expected bounds are passed through."""
+    cli = _bound_fake(monkeypatch, {"ok": False, "reason": "covered"})
+    seen = {}
+
+    def spy(cx, cy, bounds_css=None, timeout=3.0, interval=0.15):
+        seen["bounds"] = bounds_css
+        return {"ok": False, "reason": "covered"}
+
+    monkeypatch.setattr(cli, "wait_actionable", spy)
+    res, reason = br.dom_action(4321, 500, 300, "click", wait=0.01,
+                                bounds_px=[490, 290, 40, 30])
+    assert reason == "browser_actionable_covered"
+    assert seen["bounds"] == [390.0, 240.0, 40.0, 30.0]  # origin (100,50), dpr 1

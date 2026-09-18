@@ -243,33 +243,42 @@ class BrowserClient:
         Returns dict ok/reason. bounds_css [l,t,w,h] = expected element
         rect — when given, a returned element not intersecting it means the
         target is COVERED."""
-        # elementsFromPoint gives the full hit-test stack: when expected
-        # bounds are known, the target is the first element whose rect
-        # matches them; if anything sits above it in the stack -> covered.
-        stack_js = ("const st=document.elementsFromPoint(%f,%f);"
-                    "if(!st.length)return{ok:false,reason:'no_element'};"
-                    "const el=st[0];" % (cx, cy))
-        covered = ""
+        # Deep hit-test: elementFromPoint then pierce same-origin iframes
+        # (coords re-based to the frame viewport) and OPEN shadow roots —
+        # closed roots stay opaque by design. When expected bounds are
+        # known, the effective (deepest) hit must match them: a mismatch
+        # means the target is covered.
+        js = ("(()=>{let el=document.elementFromPoint(%f,%f);"
+              "if(!el)return{ok:false,reason:'no_element'};"
+              "let g=0;"
+              "while(el.tagName==='IFRAME'&&el.contentDocument&&g++<8){"
+              "const fr=el.getBoundingClientRect();"
+              "el=el.contentDocument.elementFromPoint(%f-fr.left,%f-fr.top);"
+              "if(!el)return{ok:false,reason:'no_element'}}"
+              "g=0;"
+              "while(el.shadowRoot&&g++<10){"
+              "const n=el.shadowRoot.elementFromPoint(%f,%f);"
+              "if(!n)break;el=n}"
+              % (cx, cy, cx, cy, cx, cy))
         if bounds_css:
             l, t, w, h = bounds_css
-            stack_js += (
-                "const B=[%f,%f,%f,%f];let ti=st.findIndex(e=>{"
-                "const q=e.getBoundingClientRect();"
-                "return q.right>B[0]+1&&q.left<B[0]+B[2]-1&&"
-                "q.bottom>B[1]+1&&q.top<B[1]+B[3]-1&&"
-                "q.width<=B[2]*1.6&&q.height<=B[3]*1.6});"
-                "if(ti<0)return{ok:false,reason:'no_element'};"
-                "if(ti>0)return{ok:false,reason:'covered'};"
+            js += (
+                "const B=[%f,%f,%f,%f];"
+                "const r0=el.getBoundingClientRect();"
+                "if(!(r0.right>B[0]+1&&r0.left<B[0]+B[2]-1&&"
+                "r0.bottom>B[1]+1&&r0.top<B[1]+B[3]-1&&"
+                "r0.width<=B[2]*1.6&&r0.height<=B[3]*1.6))"
+                "return{ok:false,reason:'covered'};"
                 % (l, t, w, h))
-        r = self.evaluate(
-            "(()=>{%s"
+        js += (
             "const r=el.getBoundingClientRect();"
             "if(r.width<1||r.height<1)return{ok:false,reason:'zero_size'};"
             "if(el.disabled||el.getAttribute('aria-disabled')==='true')"
             "return{ok:false,reason:'disabled'};"
             "if(el.tagName==='CANVAS'||el.tagName==='VIDEO')"
             "return{ok:false,reason:'canvas',tag:el.tagName};"
-            "return{ok:true,tag:el.tagName}})()" % stack_js)
+            "return{ok:true,tag:el.tagName}})()")
+        r = self.evaluate(js)
         return r or {"ok": False, "reason": "no_element"}
 
     def wait_actionable(self, cx, cy, bounds_css=None, timeout=3.0,
@@ -397,7 +406,7 @@ def desktop_to_viewport(dx, dy, hwnd, dpr=1.0):
 
 
 def dom_action(hwnd, x, y, op, text=None, timeout=10.0, enabled=True,
-               wait=2.0):
+               wait=2.0, bounds_px=None):
     """Route a semantic browser action for the element at desktop (x, y)
     inside window hwnd. Returns (result, reason); reason None on success —
     callers must NOT fall back to physical input on browser_* rejections.
@@ -414,7 +423,11 @@ def dom_action(hwnd, x, y, op, text=None, timeout=10.0, enabled=True,
     try:
         dpr = cli.evaluate("devicePixelRatio") or 1.0
         cx, cy = desktop_to_viewport(x, y, hwnd, dpr)
-        a = cli.wait_actionable(cx, cy, timeout=wait)
+        bcss = None
+        if bounds_px:  # sidecar bounds are [l, t, w, h] in desktop px
+            l, t = desktop_to_viewport(bounds_px[0], bounds_px[1], hwnd, dpr)
+            bcss = [l, t, bounds_px[2] / dpr, bounds_px[3] / dpr]
+        a = cli.wait_actionable(cx, cy, bounds_css=bcss, timeout=wait)
         if not a.get("ok"):
             return None, "browser_actionable_" + (a.get("reason") or
                                                   "unknown")

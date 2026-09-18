@@ -213,11 +213,23 @@ def _put(q, scope):
 # --- live re-location + semantic actions -------------------------------------
 
 def _nearest(els, entry):
+    """Re-locate the recorded element among current candidates. Binding:
+    same control type AND (when recorded) same name, within a distance
+    tolerance proportional to the element's size — a same-type element at
+    an unrelated position is NOT the same control."""
+    b = entry.get("bounds") or [0, 0, 0, 0]  # [l, t, w, h]
+    diag = (b[2] ** 2 + b[3] ** 2) ** 0.5
+    tol2 = max(64.0, diag * 1.5) ** 2
+    name = (entry.get("name") or "").strip()
     best, bd = None, None
     for e in els:
         if e["type"] != entry.get("type"):
             continue
+        if name and (e.get("name") or "").strip() != name:
+            continue
         d = (e["x"] - entry["x"]) ** 2 + (e["y"] - entry["y"]) ** 2
+        if d > tol2:
+            continue
         if bd is None or d < bd:
             best, bd = e, d
     return best
@@ -259,7 +271,11 @@ def _perform_impl(entry, action, text):
 def uia_perform(entry, action, text=None, timeout=4.0):
     """Re-locate a sidecar element live and run a UIA pattern on it.
     Returns (result_dict, reason). result_dict has the element's CURRENT
-    center — re-resolution, not the recorded coordinates."""
+    center — re-resolution, not the recorded coordinates. NOTE: result may
+    be non-None alongside a failure reason (coordinates for diagnostics) —
+    callers must check `reason is None`, not truthiness."""
+    if entry.get("enabled") is False:
+        return None, "disabled"
     if os.environ.get("CU_NO_UIA") or os.name != "nt":
         return None, "no_uia"
     q = queue.Queue(maxsize=1)
@@ -322,17 +338,65 @@ def _read_sidecar():
         return None
 
 
+def _next_generation():
+    """Monotonic generation counter persisted in the session file —
+    survives sidecar invalidation (the file is deleted, the session is
+    not), so a stale --gen pin can never resolve a later observation."""
+    try:
+        with open(session_path(), encoding="utf-8") as f:
+            d = json.load(f)
+    except Exception:
+        d = {}
+    gen = int(d.get("next_generation", 0)) + 1
+    d["session_id"] = d.get("session_id") or session_id()
+    d["next_generation"] = gen
+    tmp = session_path() + f".{os.getpid()}.tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(d, f)
+        os.replace(tmp, session_path())
+    except Exception:
+        pass
+    return gen
+
+
+def _fs_lock():
+    """Cross-process byte lock on a sibling .lock file (msvcrt on Windows;
+    thread-lock only elsewhere — real snapshots are separate processes)."""
+    if os.name != "nt":
+        return None
+    import msvcrt
+    f = open(sidecar_path() + ".lock", "a+b")
+    f.seek(0)
+    msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+    return f
+
+
+def _fs_unlock(f):
+    if f is None:
+        return
+    import msvcrt
+    f.seek(0)
+    try:
+        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+    finally:
+        f.close()
+
+
 def write_sidecar(hints, window=None, capture=None):
     """Atomic sidecar write; returns the observation dict written.
-    Serialized by _SIDECAR_LOCK: concurrent writers get monotonic
-    generations and never share the tmp file."""
+    Serialized by _SIDECAR_LOCK (threads) + a file byte-lock (processes):
+    concurrent writers get monotonic generations and never share tmp."""
     with _SIDECAR_LOCK:
-        return _write_sidecar_locked(hints, window, capture)
+        f = _fs_lock()
+        try:
+            return _write_sidecar_locked(hints, window, capture)
+        finally:
+            _fs_unlock(f)
 
 
 def _write_sidecar_locked(hints, window, capture):
-    prev = _read_sidecar()
-    generation = (prev or {}).get("generation", 0) + 1
+    generation = _next_generation()
     data = {"schema_version": SCHEMA_VERSION,
             "session_id": session_id(),
             "observation_id": f"obs-{generation}",
@@ -344,11 +408,18 @@ def _write_sidecar_locked(hints, window, capture):
                                 ("x", "y", "name", "type", "bounds",
                                  "hwnd", "enabled") if k in h}
                       for h in hints}}
-    tmp = sidecar_path() + ".tmp"
+    tmp = sidecar_path() + f".{os.getpid()}.tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)
     os.replace(tmp, sidecar_path())
     return data
+
+
+def hint_count():
+    """Number of hints in the current sidecar — the choice count Hick–Hyman
+    pre-click delay scales on. None when no observation exists."""
+    d = _read_sidecar()
+    return len(d["hints"]) if d and d.get("hints") else None
 
 
 def invalidate_sidecar():
@@ -364,6 +435,15 @@ def _window_alive(hwnd):
         return True
     import ctypes
     return bool(ctypes.windll.user32.IsWindow(hwnd))
+
+
+def window_foreground(hwnd):
+    """Is hwnd the foreground window? Physical keystrokes land on whatever
+    has focus — callers targeting a specific window must gate on this."""
+    if not hwnd or os.name != "nt":
+        return True
+    import ctypes
+    return ctypes.windll.user32.GetForegroundWindow() == hwnd
 
 
 def resolve_hint(hint_id, session=None, generation=None):

@@ -186,34 +186,54 @@ def play_path(mouse, pts, dur, cancel=None):
             time.sleep(rem)
 
 
-def pre_click_delay(profile):
+def _rng(seed):
+    return random.Random(seed) if seed is not None else random
+
+
+def gauss(seed, mu, sigma):
+    """Seeded Gaussian draw — deterministic under --seed/$CU_SEED."""
+    return _rng(seed).gauss(mu, sigma)
+
+
+def pre_click_delay(profile, n_choices=None, seed=None):
+    """Pre-click dwell. human = Hick–Hyman: RT = a + b·log2(n+1) — the
+    decision cost grows with the number of on-screen candidates. n_choices
+    is the observation's hint count when known."""
+    rng = _rng(seed)
     if profile == "human":
-        return max(0.03, random.gauss(0.12, 0.04))
+        n = max(int(n_choices or 1), 1)
+        rt = 0.05 + 0.08 * math.log2(n + 1)
+        return max(0.03, rt * rng.gauss(1.0, 0.15))
     if profile == "smooth":
         return 0.08
     return 0.05
 
 
-def click_hold(profile, hold_ms=None):
+def click_hold(profile, hold_ms=None, seed=None):
     if hold_ms is not None:
         return max(hold_ms, 0) / 1000
     if profile == "human":
-        return min(max(random.gauss(0.07, 0.015), 0.02), 0.2)
+        return min(max(_rng(seed).gauss(0.07, 0.015), 0.02), 0.2)
     return 0.05
 
 
-def scroll_gaps(profile, n):
+def scroll_gaps(profile, n, seed=None):
+    """Per-step gaps. smooth = inertial flick: steps start tight (fast
+    wheel ticks) then decelerate exponentially — the velocity curve of a
+    physical flick, not a constant crawl."""
+    rng = _rng(seed)
     if profile == "human":
-        return [max(0.01, random.gauss(0.07, 0.02)) for _ in range(n)]
+        return [max(0.01, rng.gauss(0.07, 0.02)) for _ in range(n)]
     if profile == "smooth":
-        return [0.03] * n
+        tau = max(n / 3.0, 1.0)
+        return [min(0.01 * math.exp(i / tau), 0.15) for i in range(n)]
     return [0.0] * n
 
 
-def key_gap(profile):
+def key_gap(profile, seed=None):
     """Press→release gap for --key/--keys in non-fast profiles."""
     if profile == "human":
-        return max(0.01, random.gauss(0.04, 0.012))
+        return max(0.01, _rng(seed).gauss(0.04, 0.012))
     if profile == "smooth":
         return 0.02
     return 0.0
@@ -247,6 +267,30 @@ def typing_intervals(text, medians, fallback, sigma, bounds, seed):
         delay = rng.lognormvariate(math.log(median), sigma)
         out.append(min(high, max(low, delay)))
     return out
+
+
+def typing_plan(text, profile, fixed=None, seed=None, error_rate=0.015):
+    """Action plan [(op, char, delay)]; op: "type"|"backspace". human
+    injects rare typos (~1.5% of alpha chars): wrong key -> notice pause ->
+    backspace -> intended key — deterministic under seed. None = instant
+    (fast profile types the whole string at once)."""
+    delays = type_delays(text, profile, fixed, seed)
+    if delays is None:
+        return None
+    rng = _rng(seed)
+    plan = []
+    for ch, d in zip(text, delays):
+        if profile == "human" and ch.isalpha() \
+                and rng.random() < error_rate:
+            wrong = rng.choice("abcdefghijklmnopqrstuvwxyz")
+            if wrong != ch:
+                plan.append(("type", wrong, d))
+                plan.append(("backspace", None,
+                             max(0.05, rng.gauss(0.12, 0.04))))
+                plan.append(("type", ch, max(0.02, rng.gauss(0.08, 0.03))))
+                continue
+        plan.append(("type", ch, d))
+    return plan
 
 
 def type_delays(text, profile, fixed=None, seed=None):

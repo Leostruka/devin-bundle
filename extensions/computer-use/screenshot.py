@@ -58,7 +58,16 @@ def _to_image(img):
     return Image.frombytes("RGB", (img.width, img.height), img.rgb).convert("RGBA")
 
 
-def _save_with_grid(img, spacing, out, ox=0, oy=0):
+def _save_image(im, out, fmt="png", quality=80):
+    """Format-aware save. JPEG ~5x cheaper to encode than PNG — the fast
+    profile's pixel path when pixels are still required."""
+    if fmt == "jpeg":
+        im.convert("RGB").save(out, "JPEG", quality=int(quality))
+    else:
+        im.convert("RGB").save(out, "PNG")
+
+
+def _save_with_grid(img, spacing, out, ox=0, oy=0, fmt="png", quality=80):
     """Grid labels are GLOBAL physical pixels (ox/oy = image top-left in
     desktop space) so they read true on secondary/negative-origin monitors."""
     Image, ImageDraw, ImageFont = _load_pil()
@@ -77,10 +86,10 @@ def _save_with_grid(img, spacing, out, ox=0, oy=0):
         d.line([(0, y), (img.width, y)], fill=line)
         d.text((2, y + 2), str(oy + y), font=font, fill=(255, 255, 0, 255),
                stroke_width=2, stroke_fill=(0, 0, 0, 255))
-    Image.alpha_composite(im, ov).convert("RGB").save(out, "PNG")
+    _save_image(Image.alpha_composite(im, ov), out, fmt, quality)
 
 
-def _save_with_hints(img, elements, out, ox, oy):
+def _save_with_hints(img, elements, out, ox, oy, fmt="png", quality=80):
     """Draw Vimium-style badges. elements carry screen-px bounds; (ox, oy) is
     the captured image's top-left corner in screen space."""
     Image, ImageDraw, ImageFont = _load_pil()
@@ -105,7 +114,7 @@ def _save_with_hints(img, elements, out, ox, oy):
                       "name": el["name"], "type": el["type"],
                       "bounds": el["bounds"], "hwnd": el.get("hwnd"),
                       "enabled": el.get("enabled", True)})
-    Image.alpha_composite(im, ov).convert("RGB").save(out, "PNG")
+    _save_image(Image.alpha_composite(im, ov), out, fmt, quality)
     return hints
 
 
@@ -135,11 +144,52 @@ def main():
                          "mouse.py click --hint <id>. Falls back to --grid 100.")
     p.add_argument("--window", choices=["focused", "all"], default="focused",
                    help="--hints scope: focused window (default) or all windows")
+    p.add_argument("--format", choices=["png", "jpeg"], default=None,
+                   help="image encoding (jpeg ~5x faster; default: profile "
+                        "fast -> jpeg, others -> png)")
+    p.add_argument("--quality", type=int, default=80,
+                   help="jpeg quality (default 80)")
+    p.add_argument("--no-image", action="store_true",
+                   help="with --hints: enumerate + sidecar only, skip pixel "
+                        "capture entirely (visual bypass)")
+    p.add_argument("--image", action="store_true",
+                   help="with --hints under profile fast: still capture "
+                        "pixels (fast skips them by default)")
     args = p.parse_args()
 
     set_dpi_awareness()
+    profile = cm.get_profile()
+    fmt = args.format or ("jpeg" if profile == "fast" else "png")
+    ext = "jpg" if fmt == "jpeg" else "png"
     out = args.out or os.path.join(tempfile.gettempdir(),
-                                   f"screenshot-{int(time.time())}.png")
+                                   f"screenshot-{int(time.time())}.{ext}")
+
+    # Visual bypass: --hints under fast (or --no-image) needs element
+    # targets, not pixels — skip grab+encode entirely (~120ms saved).
+    if args.hints and (args.no_image or (profile == "fast" and not args.image)):
+        obs = cu_hints.enum_clickables(scope=args.window)
+        els = obs["elements"] if obs else None
+        if not els:
+            cu_hints.invalidate_sidecar()
+            fail("no elements enumerated and pixels skipped — "
+                 "rerun with --image for a visual capture")
+        hints = [{"id": hid, "x": e["x"], "y": e["y"], "name": e["name"],
+                  "type": e["type"], "bounds": e["bounds"],
+                  "hwnd": e.get("hwnd"), "enabled": e.get("enabled", True)}
+                 for e, hid in zip(els, cu_hints.hint_ids(len(els)))]
+        data = cu_hints.write_sidecar(
+            hints, window=obs["window"], capture={"skipped": True})
+        print(json.dumps(
+            {"ok": True, "path": None, "capture": "skipped",
+             "profile": profile, "hints": hints,
+             "truncated": obs["truncated"],
+             "session_id": data["session_id"],
+             "observation_id": data["observation_id"],
+             "generation": data["generation"],
+             "window": obs["window"],
+             "note": "visual bypass — no image; click via "
+                     "mouse.py click --hint <id>"}))
+        return
 
     try:
         import mss.tools
@@ -168,7 +218,8 @@ def main():
             obs = cu_hints.enum_clickables(scope=args.window)
             els = obs["elements"] if obs else None
             if els:
-                hints = _save_with_hints(img, els, out, *origin)
+                hints = _save_with_hints(img, els, out, *origin,
+                                          fmt=fmt, quality=args.quality)
                 if hints:
                     data = cu_hints.write_sidecar(
                         hints, window=obs["window"],
@@ -185,21 +236,27 @@ def main():
                               "x,y coords"))
                 else:
                     cu_hints.invalidate_sidecar()
-                    _save_with_grid(img, 100, out, *origin)
+                    _save_with_grid(img, 100, out, *origin,
+                                  fmt=fmt, quality=args.quality)
                     result.update(hints=None, fallback="grid",
                                   grid_px=100, truncated=False)
             else:
                 cu_hints.invalidate_sidecar()
-                _save_with_grid(img, 100, out, *origin)
+                _save_with_grid(img, 100, out, *origin,
+                                  fmt=fmt, quality=args.quality)
                 result.update(hints=None, fallback="grid",
                               grid_px=100, truncated=False)
         elif args.grid:
-            _save_with_grid(img, args.grid, out, *origin)
+            _save_with_grid(img, args.grid, out, *origin,
+                                  fmt=fmt, quality=args.quality)
             result["grid_px"] = args.grid
             result["note"] = ("grid labels are physical pixels — "
                               "read click coords directly")
         else:
-            mss.tools.to_png(img.rgb, img.size, output=out)
+            if fmt == "jpeg":
+                _save_image(_to_image(img), out, "jpeg", args.quality)
+            else:
+                mss.tools.to_png(img.rgb, img.size, output=out)
         print(json.dumps(result))
     except Exception as e:
         fail(f"{type(e).__name__}: {e}")

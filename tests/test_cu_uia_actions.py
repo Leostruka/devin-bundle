@@ -173,9 +173,9 @@ def test_set_value_and_readonly(fake_uia):
 
 
 def test_nearest_same_type_wins(fake_uia):
-    far = _button({10000: FakePattern()}, name="longe",
-                  rect=FakeRect(500, 500, 520, 520))
-    near = _button({10000: FakePattern()}, name="perto")
+    far = _button({10000: FakePattern()}, name="Salvar",
+                  rect=FakeRect(150, 60, 170, 80))
+    near = _button({10000: FakePattern()}, name="Salvar")
     fake_uia["core"] = FakeCore(FakeTarget([far, near]))
     res, reason = cu_hints.uia_perform(_entry(), "invoke")
     assert reason is None
@@ -238,3 +238,48 @@ def test_nocache_forces_per_element_roundtrips(fake_uia, monkeypatch):
     assert len(out) == 4
     assert reads["n"] == 0      # cached path: no live property reads
     assert target.used_cache is True
+
+
+def test_nearest_rejects_same_type_wrong_name(fake_uia):
+    """Re-resolution must not invoke a different control: same type, other
+    name/position -> stale, not nearest."""
+    els = [FakeElement(50000, "Cancel", FakeRect(490, 490, 530, 515),
+                       hwnd=100)]
+    target = FakeTarget(els)
+    fake_uia["core"] = FakeCore(target)
+    entry = {"x": 55, "y": 55, "name": "Delete", "type": "Button",
+             "bounds": [40, 40, 30, 25], "hwnd": 100, "enabled": True}
+    res, reason = cu_hints.uia_perform(entry, "invoke")
+    assert res is None and reason == "stale"
+
+
+def test_nearest_accepts_moved_same_element(fake_uia):
+    """Same name+type slightly displaced (re-layout) still resolves."""
+    el = FakeElement(50000, "Save", FakeRect(60, 60, 100, 80), hwnd=100)
+    el.patterns = {10000: FakePattern()}
+    els = [el]
+    target = FakeTarget(els)
+    fake_uia["core"] = FakeCore(target)
+    entry = {"x": 55, "y": 55, "name": "Save", "type": "Button",
+             "bounds": [40, 40, 30, 25], "hwnd": 100, "enabled": True}
+    res, reason = cu_hints.uia_perform(entry, "invoke")
+    assert reason is None and res["pattern"] == "Invoke"
+
+
+def test_uia_perform_disabled_hint_rejects(fake_uia):
+    entry = {"x": 10, "y": 10, "name": "Off", "type": "Button",
+             "bounds": [0, 0, 20, 20], "hwnd": 100, "enabled": False}
+    res, reason = cu_hints.uia_perform(entry, "invoke")
+    assert res is None and reason == "disabled"
+
+
+def test_generation_survives_invalidate(fake_uia, tmp_path):
+    import cu_hints as H
+    H.invalidate_sidecar()
+    o1 = H.write_sidecar([{"id": "a", "x": 1, "y": 1}])
+    H.invalidate_sidecar()
+    o2 = H.write_sidecar([{"id": "a", "x": 9, "y": 9}])
+    assert o2["generation"] == o1["generation"] + 1
+    # stale --gen pin must not resolve the new element
+    e, reason = H.resolve_hint("a", generation=o1["generation"])
+    assert reason == "stale_generation" and e is None

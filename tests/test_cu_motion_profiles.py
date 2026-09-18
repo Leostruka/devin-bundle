@@ -102,3 +102,37 @@ def test_type_delays_fast_fixed_smooth_unchanged():
     assert cm.type_delays("abc", "fast") is None
     assert cm.type_delays("abc", "smooth") == [0.035] * 3
     assert cm.type_delays("abc", "human", fixed=0.02) == [0.02] * 3
+
+
+def test_hick_hyman_scales_with_choice_count():
+    d1 = cm.pre_click_delay("human", n_choices=2, seed=7)
+    d2 = cm.pre_click_delay("human", n_choices=32, seed=7)
+    assert d2 > d1  # more on-screen choices -> longer decision dwell
+    assert cm.pre_click_delay("fast", n_choices=32) == 0.05
+
+
+def test_smooth_scroll_inertial_deceleration():
+    gaps = cm.scroll_gaps("smooth", 9, seed=1)
+    assert gaps[0] < gaps[-1]               # decelerating
+    assert all(gaps[i] <= gaps[i + 1] + 1e-9 for i in range(8))
+    assert cm.scroll_gaps("smooth", 9, seed=1) == gaps  # seeded replay
+
+
+def test_typing_plan_typo_and_backspace():
+    plan = cm.typing_plan("a" * 400, "human", seed=3, error_rate=0.05)
+    ops = [op for op, _, _ in plan]
+    assert "backspace" in ops  # rare typos injected + corrected
+    # deterministic replay
+    assert plan == cm.typing_plan("a" * 400, "human", seed=3,
+                                  error_rate=0.05)
+    # every intended char still present in order (net text preserved)
+    typed = [c for op, c, _ in plan if op == "type"]
+    # wrong keys precede their backspaces; final typed sequence covers all
+    # intended chars (each intended char appears exactly once as a "type"
+    # after any correction)
+    assert typed.count("a") >= 400
+
+
+def test_seeded_gauss_replay():
+    assert cm.gauss(42, 0.1, 0.02) == cm.gauss(42, 0.1, 0.02)
+    assert cm.gauss(42, 0.1, 0.02) != cm.gauss(43, 0.1, 0.02)
