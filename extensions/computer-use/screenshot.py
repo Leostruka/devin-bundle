@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 
+import cu_actions
 import cu_capture
 import cu_hints
 import cu_motion as cm
@@ -269,4 +270,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cu_actions.run_cli(main)

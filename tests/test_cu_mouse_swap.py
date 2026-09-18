@@ -80,3 +80,42 @@ def test_click_dispatches_swapped_button(monkeypatch, capsys):
     mouse.main()
     assert sent == [("press", "R"), ("release", "R")]
     assert json.loads(capsys.readouterr().out)["ok"] is True
+
+
+def test_run_cli_emits_json_on_crash(capsys):
+    def boom():
+        raise RuntimeError("uia exploded")
+    with pytest.raises(SystemExit):
+        cu_actions.run_cli(boom)
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is False and "uia exploded" in out["error"]
+
+
+def test_run_cli_reraises_system_exit(capsys):
+    """fail()/usage exits must pass through untouched — single JSON."""
+    def exits():
+        print(json.dumps({"ok": False, "error": "usage: bad flag"}))
+        sys.exit(2)
+    with pytest.raises(SystemExit) as ei:
+        cu_actions.run_cli(exits)
+    assert ei.value.code == 2
+    out = capsys.readouterr().out
+    assert json.loads(out)["ok"] is False
+
+
+def test_hints_crash_path_prints_json(monkeypatch, capsys):
+    """Reproduces the reported failure: enum_clickables raising inside
+    screenshot.main()'s unguarded --hints block still yields one JSON."""
+    screenshot = load("screenshot")
+    monkeypatch.delenv("CU_SESSION", raising=False)
+
+    def boom(scope="focused"):
+        raise RuntimeError("uia provider died")
+    monkeypatch.setattr(screenshot.cu_hints, "enum_clickables", boom)
+    monkeypatch.setattr(
+        sys, "argv",
+        ["screenshot.py", "--hints", "--no-image", "--window", "all"])
+    with pytest.raises(SystemExit):
+        cu_actions.run_cli(screenshot.main)
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is False and "uia provider died" in out["error"]
