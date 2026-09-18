@@ -36,23 +36,6 @@
       "exported_at": "2026-09-08T21:39:22.434676"
     },
     {
-      "name": "debug-ci-failures",
-      "source": "adapted:CircleCI-Public/chunk-cli (debug-ci-failures)",
-      "purpose": "Use when CI is failing and the cause needs to be found across builds, jobs, or environments.",
-      "original_path": "%APPDATA%\\devin\\skills\\debug-ci-failures",
-      "export_hash": "10D31BD675546DD91183EF31FE8D5977556797D71E2355814AFEAD1EDA70BB9B",
-      "exported_at": "2026-09-08T21:39:22.435042"
-    },
-    {
-      "name": "diagnosing-bugs",
-      "source": "devin-bundle",
-      "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken, throwing, failing, or slow, or when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
-      "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs",
-      "export_hash": "43581C227BA617A319D48EBFFEFFCD73CBF40B6F017124F08941BA7BEB1F84AC",
-      "exported_at": "2026-09-08T21:39:22.436243",
-      "hash": "0ebc5f0f2e8fb7d20740112fad62857f9b70704296d8526effb700470f259cd7"
-    },
-    {
       "name": "dispatching-parallel-agents",
       "source": "devin-bundle",
       "purpose": "Use when facing two or more independent tasks with no shared state or ordering.",
@@ -442,9 +425,14 @@
       "name": "devin-config",
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval."
+    },
+    {
+      "name": "debugging",
+      "source": "devin-bundle",
+      "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken/throwing/failing/slow, when encountering a bug/test failure/unexpected behavior and a fix is not yet obvious, or when CI is failing and the cause needs to be found across builds, jobs, or environments."
     }
   ],
-  "skill_count": 58,
+  "skill_count": 57,
   "rule_count": 28,
   "scripts": [
     {
