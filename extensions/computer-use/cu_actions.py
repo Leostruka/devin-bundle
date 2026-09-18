@@ -98,7 +98,17 @@ def emergency_release():
         except Exception:
             pass
     ms = mouse.Controller()
-    for b in (mouse.Button.left, mouse.Button.right, mouse.Button.middle):
+    buttons = (mouse.Button.left, mouse.Button.right, mouse.Button.middle)
+    # A stray button-UP fires WM_CONTEXTMENU even with no prior DOWN —
+    # release only buttons the OS reports held. Unqueryable state falls
+    # back to unconditional release (dead-worker cleanup must still work).
+    vks = (0x01, 0x02, 0x04)
+    if buttons_swapped():
+        vks = (0x02, 0x01, 0x04)
+    held = [_async_key_down(vk) for vk in vks]
+    if None not in held:
+        buttons = tuple(b for b, h in zip(buttons, held) if h)
+    for b in buttons:
         try:
             ms.release(b)
         except Exception:
@@ -154,6 +164,19 @@ def resolve_button(Button, name):
     if buttons_swapped() and name in ("left", "right"):
         name = "right" if name == "left" else "left"
     return getattr(Button, name)
+
+
+def _async_key_down(vk):
+    """GetAsyncKeyState high bit for vk; None off-Windows or on failure.
+    VK_LBUTTON/VK_RBUTTON are logical (post-swap), so physical button
+    state surfaces under the swapped VK on swapped hosts."""
+    if os.name != "nt":
+        return None
+    try:
+        import ctypes
+        return bool(ctypes.windll.user32.GetAsyncKeyState(vk) & 0x8000)
+    except Exception:
+        return None
 
 
 def run_cli(main):

@@ -82,6 +82,72 @@ def test_click_dispatches_swapped_button(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out)["ok"] is True
 
 
+@pytest.fixture
+def fake_pynput(monkeypatch):
+    """Records pynput mouse press/release calls; minimal keyboard stub."""
+    sent = []
+
+    class Ctrl:
+        def press(self, b):
+            sent.append(("press", b))
+
+        def release(self, b):
+            sent.append(("release", b))
+
+    class FakeKey:
+        def __getattr__(self, name):
+            return name
+
+    kb_mod = types.ModuleType("pynput.keyboard")
+    kb_mod.Key = FakeKey()
+    kb_mod.KeyCode = FakeKey()
+    kb_mod.Controller = lambda: type(
+        "K", (), {"release": lambda s, k: None})()
+    ms_mod = types.ModuleType("pynput.mouse")
+    ms_mod.Button = FakeButton
+    ctrl = Ctrl()
+    ms_mod.Controller = lambda: ctrl
+    pkg = types.ModuleType("pynput")
+    pkg.mouse = ms_mod
+    pkg.keyboard = kb_mod
+    monkeypatch.setitem(sys.modules, "pynput", pkg)
+    monkeypatch.setitem(sys.modules, "pynput.mouse", ms_mod)
+    monkeypatch.setitem(sys.modules, "pynput.keyboard", kb_mod)
+    return sent
+
+
+def test_emergency_release_skips_unheld_buttons(monkeypatch, fake_pynput):
+    """A stray WM_RBUTTONUP fires WM_CONTEXTMENU even with no prior DOWN —
+    no phantom releases when the OS reports nothing held."""
+    monkeypatch.setattr(cu_actions, "_async_key_down", lambda vk: False)
+    cu_actions.emergency_release()
+    assert fake_pynput == []
+
+
+def test_emergency_release_releases_only_held(monkeypatch, fake_pynput):
+    state = {0x01: False, 0x02: True, 0x04: False}
+    monkeypatch.setattr(cu_actions, "_async_key_down", state.get)
+    cu_actions.emergency_release()
+    assert fake_pynput == [("release", "R")]
+
+
+def test_emergency_release_unqueryable_releases_all(monkeypatch, fake_pynput):
+    """Dead-worker cleanup must still work when state can't be read."""
+    monkeypatch.setattr(cu_actions, "_async_key_down", lambda vk: None)
+    cu_actions.emergency_release()
+    assert fake_pynput == [("release", "L"), ("release", "R"),
+                           ("release", "M")]
+
+
+def test_emergency_release_swap_maps_physical_vks(monkeypatch, fake_pynput):
+    """On swapped hosts physical-left-held surfaces under VK_RBUTTON."""
+    monkeypatch.setattr(cu_actions, "_swap_state", True)
+    state = {0x01: False, 0x02: True, 0x04: False}
+    monkeypatch.setattr(cu_actions, "_async_key_down", state.get)
+    cu_actions.emergency_release()
+    assert fake_pynput == [("release", "L")]
+
+
 def test_run_cli_emits_json_on_crash(capsys):
     def boom():
         raise RuntimeError("uia exploded")
