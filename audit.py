@@ -157,12 +157,12 @@ else:
 
 # 7. config.json hooks references valid scripts
 print()
-print('[7] config.json hooks script references')
+print('[7] hooks.v1.json script references')
 config = json.load(open('config.json', encoding='utf-8-sig'))
-hooks = config.get('hooks', {})
+hooks = json.load(open('hooks.v1.json', encoding='utf-8-sig'))
 if not hooks:
-    errors.append('No "hooks" key in config.json')
-    print('  FAIL no hooks key in config.json')
+    errors.append('hooks.v1.json is empty')
+    print('  FAIL hooks.v1.json empty')
 scripts_referenced = set()
 for event in hooks:
     for entry in hooks[event]:
@@ -184,43 +184,42 @@ for s in sorted(scripts_referenced):
         errors.append('Hook references ' + s + ' but file missing')
         print('  FAIL ' + s + ' missing')
 
-# 7b. config.json schema validation
+# 7b. config.json + hooks.v1.json schema validation
 print()
-print('[7b] config.json schema validation')
+print('[7b] config.json / hooks.v1.json schema validation')
 HOOK_EVENTS = ['PreToolUse', 'PostToolUse', 'PreCompact', 'PostCompaction', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop', 'PermissionRequest']
 config_errors = []
 if not isinstance(config.get('version'), int):
     config_errors.append('version must be an integer')
-for key in ['devin', 'agent', 'read_config_from', 'shell']:
+for key in ['devin', 'agent', 'read_config_from', 'shell', 'hooks']:
     if not isinstance(config.get(key), dict):
         config_errors.append('missing or invalid top-level key: ' + key)
 if 'attribution' not in config or not isinstance(config['attribution'], bool):
     config_errors.append('attribution must be a boolean')
-if not isinstance(hooks, dict):
-    config_errors.append('hooks must be an object')
-else:
-    for event in hooks:
-        if event not in HOOK_EVENTS:
-            config_errors.append('unknown hook event: ' + event)
-        if not isinstance(hooks[event], list):
-            config_errors.append('hooks[' + event + '] must be a list')
-        else:
-            for entry in hooks[event]:
-                if not isinstance(entry, dict):
-                    config_errors.append('hook entry must be an object')
-                    continue
-                if 'matcher' not in entry:
-                    config_errors.append('hook entry missing matcher')
-                if 'hooks' not in entry or not isinstance(entry.get('hooks'), list):
-                    config_errors.append('hook entry missing hooks list')
-                else:
-                    for h in entry.get('hooks', []):
-                        if h.get('type') != 'command':
-                            config_errors.append('hook type must be "command"')
-                        if not h.get('command'):
-                            config_errors.append('hook command missing')
-                        if 'timeout' in h and not isinstance(h.get('timeout'), int):
-                            config_errors.append('hook timeout must be an integer')
+for event in hooks:
+    if event not in HOOK_EVENTS:
+        config_errors.append('unknown hook event: ' + event)
+    if not isinstance(hooks[event], list):
+        config_errors.append('hooks[' + event + '] must be a list')
+    else:
+        for entry in hooks[event]:
+            if not isinstance(entry, dict):
+                config_errors.append('hook entry must be an object')
+                continue
+            if 'matcher' not in entry:
+                config_errors.append('hook entry missing matcher')
+            if 'hooks' not in entry or not isinstance(entry.get('hooks'), list):
+                config_errors.append('hook entry missing hooks list')
+            else:
+                for h in entry.get('hooks', []):
+                    if h.get('type') not in ('command', 'prompt'):
+                        config_errors.append('hook type must be "command" or "prompt"')
+                    if h.get('type') == 'command' and not h.get('command'):
+                        config_errors.append('hook command missing')
+                    if h.get('type') == 'prompt' and not h.get('prompt'):
+                        config_errors.append('hook prompt missing')
+                    if 'timeout' in h and not isinstance(h.get('timeout'), int):
+                        config_errors.append('hook timeout must be an integer')
 if config_errors:
     for e in config_errors:
         errors.append('config.json schema: ' + e)
@@ -234,10 +233,10 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
-        warnings.append(s + ' not referenced in config.json hooks')
+        warnings.append(s + ' not referenced in hooks.v1.json')
         print('  WARN ' + s + ' not referenced in hooks')
     elif s in manual_scripts:
         print('  OK  ' + s + ' (manual-run, not a hook)')
@@ -251,7 +250,7 @@ checks = [
     (f'{skill_count} skills', skill_count > 0),
     ('28 rules', len(rules_found) == 28),  # 1-5,7-29 (Rule 6 removed)
     ('6 agents', agent_count == 6),
-    ('18 scripts', len(script_files) == 18),
+    ('19 scripts', len(script_files) == 19),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
@@ -496,25 +495,30 @@ for live_rel, bundle_rel in pairs:
         print('  SKIP ' + bundle_rel)
 
 # config.json: compare hooks section only (org_id differs by design)
+# hooks.v1.json is the single authored source; live hooks must equal the render.
 live_cfg = os.path.join(live_base, 'config.json')
-bundle_cfg = os.path.join('.', 'config.json')
-if os.path.exists(live_cfg) and os.path.exists(bundle_cfg):
+bundle_hooks_src = 'hooks.v1.json'
+if os.path.exists(live_cfg) and os.path.exists(bundle_hooks_src):
     try:
         live_hooks = json.load(open(live_cfg, encoding='utf-8-sig')).get('hooks', {})
-        bundle_hooks = json.load(open(bundle_cfg, encoding='utf-8-sig')).get('hooks', {})
-        # Normalize: replace {{APPDATA}} in bundle with real APPDATA path (forward slashes)
-        appdata = os.environ.get('APPDATA', '').replace('\\', '/')
-        def normalize(obj):
+        bundle_hooks = json.load(open(bundle_hooks_src, encoding='utf-8-sig'))
+        # Normalize: strip the devin-home prefix (live) and quote wrappers so both
+        # sides compare as `python /scripts/x.py` — equivalent to render-user-hooks.py output.
+        def render_norm(obj, home):
             s = json.dumps(obj, sort_keys=True)
-            s = s.replace('{{APPDATA}}', appdata)
+            if home:
+                s = s.replace(home.replace('\\', '/').rstrip('/'), '')
+            s = s.replace('python scripts/', 'python /scripts/')
+            s = s.replace('\\"', '').replace('"', '')
             return s
-        h1 = hashlib.sha256(normalize(live_hooks).encode()).hexdigest()[:16]
-        h2 = hashlib.sha256(normalize(bundle_hooks).encode()).hexdigest()[:16]
+        live_home = live_base
+        h1 = hashlib.sha256(render_norm(live_hooks, live_home).encode()).hexdigest()[:16]
+        h2 = hashlib.sha256(render_norm(bundle_hooks, '').encode()).hexdigest()[:16]
         if h1 == h2:
-            print('  OK  config.json hooks (live=bundle, {{APPDATA}} normalized)')
+            print('  OK  config.json hooks (live=render of hooks.v1.json)')
         else:
-            warnings.append('config.json hooks live != bundle: ' + h1 + ' vs ' + h2)
-            print('  WARN config.json hooks live=' + h1 + ' bundle=' + h2)
+            warnings.append('config.json hooks live != hooks.v1.json render: ' + h1 + ' vs ' + h2)
+            print('  WARN config.json hooks live=' + h1 + ' rendered=' + h2)
     except Exception as e:
         print('  SKIP config.json hooks (' + str(e) + ')')
 else:
@@ -855,22 +859,37 @@ devin_events = {'PreToolUse', 'PostToolUse', 'PermissionRequest', 'UserPromptSub
                 'Stop', 'PostCompaction', 'SessionStart', 'SessionEnd'}
 
 missing_any = False
-for hooks_file in ('hooks.v1.json', 'config.json'):
-    with open(hooks_file, encoding='utf-8-sig') as fh:
-        data = json.load(fh)
-    hooks_data = data if hooks_file == 'hooks.v1.json' else data.get('hooks', {})
-    bundle_events = set(hooks_data.keys())
-    missing = devin_events - bundle_events
-    extra = bundle_events - devin_events
-    if missing:
-        missing_any = True
-        errors.append(hooks_file + ' missing Devin CLI events: ' + ', '.join(sorted(missing)))
-        print('  FAIL ' + hooks_file + ' missing events: ' + ', '.join(sorted(missing)))
-    if extra:
-        warnings.append(hooks_file + ' has unknown events: ' + ', '.join(sorted(extra)))
-        print('  WARN ' + hooks_file + ' unknown events: ' + ', '.join(sorted(extra)))
-    if not missing and not extra:
-        print('  OK  ' + hooks_file + ' has all ' + str(len(bundle_events)) + ' Devin CLI events')
+with open('hooks.v1.json', encoding='utf-8-sig') as fh:
+    hooks_data = json.load(fh)
+bundle_events = set(hooks_data.keys())
+missing = devin_events - bundle_events
+extra = bundle_events - devin_events
+if missing:
+    missing_any = True
+    errors.append('hooks.v1.json missing Devin CLI events: ' + ', '.join(sorted(missing)))
+    print('  FAIL hooks.v1.json missing events: ' + ', '.join(sorted(missing)))
+if extra:
+    warnings.append('hooks.v1.json has unknown events: ' + ', '.join(sorted(extra)))
+    print('  WARN hooks.v1.json unknown events: ' + ', '.join(sorted(extra)))
+if not missing and not extra:
+    print('  OK  hooks.v1.json has all ' + str(len(bundle_events)) + ' Devin CLI events')
+
+# Single-source invariant: user-level hooks are rendered from hooks.v1.json at
+# install time (render-user-hooks.py); config.json must not carry a second copy.
+with open('config.json', encoding='utf-8-sig') as fh:
+    cfg_hooks = json.load(fh).get('hooks', {})
+if cfg_hooks:
+    errors.append('config.json.hooks must be {} — hooks.v1.json is the single source (rendered at install)')
+    print('  FAIL config.json.hooks non-empty (duplicate hook surface)')
+else:
+    print('  OK  config.json.hooks empty (single source: hooks.v1.json)')
+
+# Stale project copy: .devin/hooks.v1.json double-fires with user-level hooks.
+if os.path.exists(os.path.join('.devin', 'hooks.v1.json')):
+    errors.append('.devin/hooks.v1.json exists — stale duplicate of hooks.v1.json (delete it)')
+    print('  FAIL .devin/hooks.v1.json present')
+else:
+    print('  OK  no .devin/hooks.v1.json duplicate')
 
 # 31. Model context-window data file exists and matches bundle model policy
 print()

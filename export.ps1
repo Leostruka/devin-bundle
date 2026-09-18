@@ -8,7 +8,7 @@
     - AGENTS.md (consolidated rules)
     - agents/ (custom subagent profiles)
     - skills/ (auto-discovers ALL skill directories, not just manifest-listed)
-    - config.json (model, theme, attribution, hooks — org_id MASKED by default)
+    - config.json (model, theme, attribution — org_id MASKED by default; hooks stripped, source is hooks.v1.json)
     - scripts/ (hook Python scripts: check-ai-signature, check-push-green, post-compaction-reminder)
     - data/ (model context windows and thresholds)
     - mcp_config.json (MCP server config — tokens MASKED by default)
@@ -356,7 +356,7 @@ if (Test-Path $skillsSrc) {
 }
 
 # --- 4. config.json ---
-Write-Step "Export config.json (model, theme, attribution, hooks)"
+Write-Step "Export config.json (model, theme, attribution — hooks stripped, source is hooks.v1.json)"
 if (Test-Path $configSrc) {
   if ($DryRun) { Write-Skip "would copy config.json (mask=$(-not $NoMask))" }
   else {
@@ -367,6 +367,17 @@ if (Test-Path $configSrc) {
     $appdataBack = $env:APPDATA
     $masked = $masked -replace [regex]::Escape($appdataNorm), '{{APPDATA}}'
     $masked = $masked -replace [regex]::Escape($appdataBack), '{{APPDATA}}'
+    # hooks.v1.json is the single authored source; live config hooks are a
+    # rendered artifact and must not round-trip back into the bundle.
+    try {
+      $cfgObj = $masked | ConvertFrom-Json
+      if ($null -ne $cfgObj.hooks) {
+        $cfgObj.hooks = [PSCustomObject]@{}
+        $masked = ($cfgObj | ConvertTo-Json -Depth 10) -replace "`r`n", "`n"
+      }
+    } catch {
+      Write-Warn "config.json hook strip skipped (unparseable JSON)"
+    }
     Write-FileLF $configDst $masked
     if ($masked -ne $content) { Write-Ok "config.json exported (org_id MASKED, paths normalized to {{APPDATA}})" }
     else { Write-Ok "config.json exported" }

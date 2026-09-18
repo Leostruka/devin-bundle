@@ -22,7 +22,7 @@
     {
       "name": "ask-bundle",
       "source": "devin-bundle",
-      "purpose": "Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.",
+      "purpose": "Use when deciding which skill or flow fits your situation. A router over the skills in this repo \u2014 maps idea-to-ship flows, on-ramps, and standalone tools.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-bundle",
       "export_hash": "8F25FBA82F65C95F5F4DEF246DA6BBF03548C6742DB4B98B3E8368417B9AED06",
       "exported_at": "2026-09-08T21:39:22.433086"
@@ -177,7 +177,7 @@
     {
       "name": "jira",
       "source": "created:Devin bundle",
-      "purpose": "Use when the user asks to interact with Jira — search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
+      "purpose": "Use when the user asks to interact with Jira \u2014 search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
       "original_path": "%APPDATA%\\devin\\skills\\jira",
       "exported_at": "2026-09-08T21:39:22.441245",
       "export_hash": "387624AEC9FC9CB1CB4876ACB4E6BF58EDC916F6CDD71176418BAD51CA4BD0CF"
@@ -266,7 +266,7 @@
     {
       "name": "setup-engineering-skills",
       "source": "devin-bundle",
-      "purpose": "Use when configuring a repo for the engineering skills — set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.",
+      "purpose": "Use when configuring a repo for the engineering skills \u2014 set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\setup-engineering-skills",
       "export_hash": "9BB8772694767CE263003AD10FE7699BB93AF57A223A9102D03F3E1944AE969E",
       "exported_at": "2026-09-08T21:39:22.445478"
@@ -307,7 +307,7 @@
     {
       "name": "triage",
       "source": "devin-bundle",
-      "purpose": "Use when moving issues and external PRs through a state machine of triage roles — categorise, verify, grill if needed, and write agent-ready briefs.",
+      "purpose": "Use when moving issues and external PRs through a state machine of triage roles \u2014 categorise, verify, grill if needed, and write agent-ready briefs.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\triage",
       "export_hash": "00680180B50B1FF69A40F027590DB01329166AE55AA37FBAC6FCCEDB942EB22A",
       "exported_at": "2026-09-08T21:39:22.446857"
@@ -669,7 +669,7 @@
     {
       "name": "computer-use",
       "source": "devin-bundle",
-      "purpose": "Use when you need to see or control the local screen — screenshots, mouse clicks/movement, typing text and hotkeys. GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
+      "purpose": "Use when you need to see or control the local screen \u2014 screenshots, mouse clicks/movement, typing text and hotkeys. GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
       "original_path": "%APPDATA%\\devin\\skills\\computer-use",
       "export_hash": "D723482F24F5A375D2B6208A80385BCD382FEC5DC1E9A34C0DCE32F30AA0AF7A",
       "exported_at": "2026-09-15T23:29:25.416194"
@@ -679,121 +679,127 @@
   "rule_count": 28,
   "scripts": [
     {
+      "name": "architecture-gate.py",
+      "purpose": "PreToolUse hook \u2014 blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
+      "export_hash": "AE256D109707B79645D6A4A7098CFFEBBDA71786D6327762CF1B8B1ECC421720",
+      "exported_at": "2026-09-18T17:04:48.012971"
+    },
+    {
       "name": "behavioral-nudge.py",
-      "purpose": "PostToolUse hook — injects behavioral reminders",
+      "purpose": "PostToolUse hook \u2014 injects behavioral reminders",
       "export_hash": "0179F74EF1005CF56D6775C0B2D5D5CEB1345270A2EBF27439D4818A4D7F249D",
       "exported_at": "2026-09-08T21:39:22.430127"
     },
     {
       "name": "check-ai-signature.py",
-      "purpose": "PreCommit hook — blocks AI signatures in commits",
+      "purpose": "PreCommit hook \u2014 blocks AI signatures in commits",
       "export_hash": "A16B9FF3ACB14529207ABA177AFD550A084EE9EDD1D5478F818097771641CA04",
       "exported_at": "2026-09-08T21:39:22.430276"
     },
     {
       "name": "check-push-green.py",
-      "purpose": "PrePush hook — blocks push when held-out tests fail",
+      "purpose": "PrePush hook \u2014 blocks push when held-out tests fail",
       "export_hash": "EB1CB1893194C046C837FC523BA315DA2E26B0FFE4E72C1690808D8B1DDE9B90",
       "exported_at": "2026-09-08T21:39:22.430364"
     },
     {
       "name": "constraint-pinning.py",
-      "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints",
+      "purpose": "PostCompaction/UserPromptSubmit hook \u2014 re-injects pinned constraints",
       "export_hash": "00B869D843010EE4061220C6D0B8B5E66ACC958FFE2D5ACB085C320A4DE610A2",
       "exported_at": "2026-09-08T21:39:22.430444"
     },
     {
       "name": "context-budget.py",
-      "purpose": "SessionStart hook — reports AGENTS.md token cost",
+      "purpose": "SessionStart hook \u2014 reports AGENTS.md token cost",
       "export_hash": "29738002CC4D38149755ECE45875616D6BC326AE42A9DAA1CD2AFCBF0D7CE2BF",
       "exported_at": "2026-09-08T21:39:22.430527"
     },
     {
+      "name": "context-pressure.py",
+      "purpose": "PostToolUse hook \u2014 estimates cumulative context-window pressure and warns at thresholds",
+      "export_hash": "513F69F45B7A93828EE5D9917E62C6104A5E7FF20CA2F414C9B6F73D7A34D003",
+      "exported_at": "2026-09-08T21:39:22.431219"
+    },
+    {
       "name": "destructive-gate.py",
-      "purpose": "PreToolUse hook — gates destructive operations",
+      "purpose": "PreToolUse hook \u2014 gates destructive operations",
       "export_hash": "E6D9F30D4001243E3162EC0FBC0F6AB7E1096E27EF2E4ECFBCFFE6EE219E6B59",
       "exported_at": "2026-09-08T21:39:22.430612"
     },
     {
-      "name": "architecture-gate.py",
-      "purpose": "PreToolUse hook — blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
-      "export_hash": "AE256D109707B79645D6A4A7098CFFEBBDA71786D6327762CF1B8B1ECC421720",
-      "exported_at": "2026-09-18T17:04:48.012971"
+      "name": "memory-post-edit.py",
+      "purpose": "PostToolUse hook \u2014 injects .devin/memory/ notes after write/edit based on cues.path",
+      "export_hash": "07BAF5C0E85625E9C0C5D1A91D4DC18EB10BE550EB16D75A6BF4D81D5BB8ECB4",
+      "exported_at": "2026-09-08T21:39:22.431370"
+    },
+    {
+      "name": "memory-post-exec.py",
+      "purpose": "PostToolUse hook \u2014 injects .devin/memory/ notes after exec based on cues.symbol/keyword",
+      "export_hash": "AFDEA2F48F405BD7DE4F09A08DE59CE18EE0BC605EAB91FEBBF0D6FA074C2145",
+      "exported_at": "2026-09-08T21:39:22.431511"
+    },
+    {
+      "name": "memory-retrieval.py",
+      "purpose": "UserPromptSubmit hook \u2014 cue-anchored retrieval from .devin/memory/ notes",
+      "export_hash": "3B9C84228C9CE0A4FD4BE4990D55FD9B2F2C9B187C25E504A40E7BEDE036BD7D",
+      "exported_at": "2026-09-08T21:39:22.431296"
+    },
+    {
+      "name": "memory-stop.py",
+      "purpose": "Stop hook \u2014 logs .devin/memory/ state and prompts session capture review",
+      "export_hash": "4A659CE5C4A36E095134F690F73AD6147F705FEBD62A688754640268540D1E85",
+      "exported_at": "2026-09-08T21:39:22.431441"
+    },
+    {
+      "name": "mermaid-parse-check.js",
+      "purpose": "Validator \u2014 Node.js Mermaid parser for syntax validation (helper, not counted in script_count)",
+      "export_hash": "5D566D752F74BBC5713A953C21C10AD45F570EA0619E1F58B071EC164A7D4E56",
+      "exported_at": "2026-09-08T21:39:22.431582"
     },
     {
       "name": "refine-review-prompt.py",
-      "purpose": "Refine mode — generates review prompts for self-improvement",
+      "purpose": "Refine mode \u2014 generates review prompts for self-improvement",
       "export_hash": "1360431BC8C25608BDEE7B9183E3A8E205AF6D712A2FEA3BEC057F6843CF73B5",
       "exported_at": "2026-09-08T21:39:22.430695"
     },
     {
+      "name": "render-user-hooks.py",
+      "purpose": "Install-time renderer \u2014 expands hooks.v1.json into user-level config.json hooks",
+      "export_hash": "B50BE7CCA40FECBB26E5B3714544ED599930473AC74B43E4517542EED0B88BFC",
+      "exported_at": "2026-09-18T20:02:25.613042"
+    },
+    {
       "name": "silent-error-review.py",
-      "purpose": "PostToolUse hook — detects silent errors in tool output",
+      "purpose": "PostToolUse hook \u2014 detects silent errors in tool output",
       "export_hash": "6A94D887D76AD33C72B7257EED3A8A630D60BBCCCC16FA61546D6B11EF12688E",
       "exported_at": "2026-09-08T21:39:22.430789"
     },
     {
       "name": "validate-mermaid.py",
-      "purpose": "Validator — checks Mermaid syntax in wiki diagrams",
+      "purpose": "Validator \u2014 checks Mermaid syntax in wiki diagrams",
       "export_hash": "8623655B53E7BE095C26CB065AA0774C7340C2A846995BA019862B894173D1E7",
       "exported_at": "2026-09-08T21:39:22.430865"
     },
     {
       "name": "validate-refinement-evidence.py",
-      "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails",
+      "purpose": "Validator \u2014 checks refinements.log.jsonl for phantom guardrails",
       "export_hash": "E3A7DDCBB23359226CFB565513711FC115E93A6974BADB5144805C5DF910B9E5",
       "exported_at": "2026-09-08T21:39:22.430943"
     },
     {
       "name": "validate-skill-format.py",
-      "purpose": "Validator — checks SKILL.md frontmatter and format",
+      "purpose": "Validator \u2014 checks SKILL.md frontmatter and format",
       "export_hash": "10EA11EA662CBCE5A2873D9BBCA749C7EFD1D3B5A8B3AB1FB0C74CB1C51E96D7",
       "exported_at": "2026-09-08T21:39:22.431052"
     },
     {
       "name": "validate-tool-args.py",
-      "purpose": "Validator — checks tool argument schemas",
+      "purpose": "Validator \u2014 checks tool argument schemas",
       "export_hash": "948AAAED1F34AD4DEBCCF1DCC0401429189113D80ED35099E43AB15062B2E14B",
       "exported_at": "2026-09-08T21:39:22.431131"
-    },
-    {
-      "name": "context-pressure.py",
-      "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "513F69F45B7A93828EE5D9917E62C6104A5E7FF20CA2F414C9B6F73D7A34D003",
-      "exported_at": "2026-09-08T21:39:22.431219"
-    },
-    {
-      "name": "memory-retrieval.py",
-      "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes",
-      "export_hash": "3B9C84228C9CE0A4FD4BE4990D55FD9B2F2C9B187C25E504A40E7BEDE036BD7D",
-      "exported_at": "2026-09-08T21:39:22.431296"
-    },
-    {
-      "name": "memory-post-edit.py",
-      "purpose": "PostToolUse hook — injects .devin/memory/ notes after write/edit based on cues.path",
-      "export_hash": "07BAF5C0E85625E9C0C5D1A91D4DC18EB10BE550EB16D75A6BF4D81D5BB8ECB4",
-      "exported_at": "2026-09-08T21:39:22.431370"
-    },
-    {
-      "name": "memory-stop.py",
-      "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review",
-      "export_hash": "4A659CE5C4A36E095134F690F73AD6147F705FEBD62A688754640268540D1E85",
-      "exported_at": "2026-09-08T21:39:22.431441"
-    },
-    {
-      "name": "memory-post-exec.py",
-      "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword",
-      "export_hash": "AFDEA2F48F405BD7DE4F09A08DE59CE18EE0BC605EAB91FEBBF0D6FA074C2145",
-      "exported_at": "2026-09-08T21:39:22.431511"
-    },
-    {
-      "name": "mermaid-parse-check.js",
-      "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)",
-      "export_hash": "5D566D752F74BBC5713A953C21C10AD45F570EA0619E1F58B071EC164A7D4E56",
-      "exported_at": "2026-09-08T21:39:22.431582"
     }
   ],
-  "script_count": 18,
+  "script_count": 19,
   "mcp_count": 1,
   "agent_count": 6,
   "tool_count": 28,

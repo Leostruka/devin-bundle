@@ -24,7 +24,7 @@ cd {{BUNDLE_REPO}}
 ./install.sh --force
 ```
 
-> O instalador Unix agora expande o placeholder `{{APPDATA}}/devin` do `config.json` para o `$DEVIN_HOME` real; os hooks globais apontam automaticamente para o diretório `scripts/` instalado.
+> O instalador renderiza os hooks globais a partir de `hooks.v1.json` (fonte única) para o `$DEVIN_HOME` real via `scripts/render-user-hooks.py`; os hooks apontam automaticamente para o diretório `scripts/` instalado.
 
 Depois da instalação, abra o Devin CLI no repositório em que deseja trabalhar. O runtime carregará as regras globais, descobrirá as skills conforme a tarefa e executará os hooks automaticamente.
 
@@ -188,14 +188,14 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 16 scripts usados por hooks, 2 validadores manuais e 1 helper JavaScript para Mermaid em `scripts/`.
+Há 16 scripts usados por hooks, 2 validadores manuais, 1 renderer de install (`render-user-hooks.py`) e 1 helper JavaScript para Mermaid em `scripts/`.
 
 ### 6. Configuração e distribuição
 
 | Artefato | Responsabilidade |
 |---|---|
-| `config.json` | Modelo, UI, comportamento do shell e hooks globais |
-| `.devin/hooks.v1.json` | Template de hooks para uso no escopo do projeto |
+| `config.json` | Modelo, UI, comportamento do shell; hooks globais são renderizados no install |
+| `hooks.v1.json` | Fonte única de hooks; também template para `.devin/` no escopo do projeto |
 | `mcp_config.json` | Servidores MCP distribuíveis |
 | `credentials.toml` | Arquivo local opcional gerado pelo export; mascarado por padrão e não versionado |
 | `manifest.json` | Inventário e metadados das skills |
@@ -399,17 +399,17 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 {{BUNDLE_REPO}}/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 6 perfis customizados
-├── skills/                    # 76 workflows invocáveis
+├── skills/                    # 83 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── .devin/                    # configuração e conhecimento deste projeto
 │   ├── global_rules.md
-│   ├── hooks.v1.json
 │   ├── CONTEXT.md
 │   ├── adr/
 │   ├── memory/
 │   ├── ledgers/
 │   └── scratch/
-├── config.json                # configuração global mascarada
+├── config.json                # configuração global mascarada (hooks renderizados no install)
+├── hooks.v1.json              # fonte única de hooks (template .devin/ + render user-level)
 ├── mcp_config.json            # MCP mascarado
 ├── credentials.toml           # opcional/local, gerado pelo export e gitignored
 ├── manifest.json              # inventário das skills

@@ -513,6 +513,26 @@ if (Test-Path $configSrc) {
   Write-Skip "config.json not in bundle"
 }
 
+# --- 4a. user hooks rendered from hooks.v1.json (single source) ---
+# hooks.v1.json is authored with project-relative `python scripts/...` commands;
+# user-level hooks need absolute paths — render and inject into config.json.hooks.
+$hooksV1 = Join-Path $bundleRoot "hooks.v1.json"
+$renderHooks = Join-Path $bundleRoot "scripts\render-user-hooks.py"
+if ((Test-Path $hooksV1) -and (Test-Path $renderHooks) -and (Test-Path $configDst)) {
+  if ($DryRun) {
+    Write-Skip "would render config.json hooks from hooks.v1.json"
+  } elseif (Get-Command python -ErrorAction SilentlyContinue) {
+    & python $renderHooks $devinHome --merge $configDst | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+      Write-Ok "config.json hooks rendered from hooks.v1.json"
+    } else {
+      Write-Warn "render-user-hooks.py failed — hooks not updated"
+    }
+  } else {
+    Write-Warn "python not found — config.json hooks not rendered"
+  }
+}
+
 # --- 5. scripts/ ---
 Write-Step "Install scripts/ (hook scripts)"
 if (Test-Path $scriptsSrc) {

@@ -352,6 +352,24 @@ else
   warn "config.json not found in bundle"
 fi
 
+# --- 4a. User hooks rendered from hooks.v1.json (single source) ---
+# hooks.v1.json is authored with project-relative `python scripts/...` commands;
+# user-level hooks need absolute paths — render and inject into config.json.hooks.
+step "Render config.json hooks from hooks.v1.json"
+if [[ -f "$BUNDLE_DIR/hooks.v1.json" && -f "$config_dst" ]]; then
+  if [[ $DRY_RUN -eq 1 ]]; then
+    skip "would render config.json hooks from hooks.v1.json"
+  elif command -v python &>/dev/null; then
+    if python "$BUNDLE_DIR/scripts/render-user-hooks.py" "$DEVIN_HOME" --merge "$config_dst"; then
+      ok "config.json hooks rendered from hooks.v1.json"
+    else
+      warn "render-user-hooks.py failed — hooks not updated"
+    fi
+  else
+    warn "python not found — config.json hooks not rendered"
+  fi
+fi
+
 # --- 5. Project hooks template ---
 step "Project hooks template"
 skip "hooks.v1.json is project-level; copy it into .devin/ when needed"

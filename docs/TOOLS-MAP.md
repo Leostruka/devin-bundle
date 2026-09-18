@@ -105,12 +105,13 @@ subagent_general — todos os 7 perfis validados.
 | AGENTS.md | `./AGENTS.md` | `~/.config/devin/AGENTS.md` | Regras globais (20 regras) |
 | config.json | `./config.json` | `~/.config/devin/config.json` | Modelo, hooks, theme |
 | mcp_config.json | `./mcp_config.json` | `~/.config/devin/mcp_config.json` | MCP servers |
-| hooks.v1.json | `./hooks.v1.json` | `~/.config/devin/hooks.v1.json` | Hooks legacy (backup) |
+| hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks; também template `.devin/` |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
-| agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
+| agents/ | `./agents/` | `~/.config/devin/agents/` | 6 perfis user-level |
+| .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 83 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 18 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 19 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |

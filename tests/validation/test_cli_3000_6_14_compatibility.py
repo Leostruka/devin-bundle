@@ -37,11 +37,14 @@ def test_session_end_consumes_reason():
     assert "session ended: logout" in result.stderr
 
 
-def test_session_end_hook_is_registered_in_all_configs():
-    for path in (ROOT / "config.json", ROOT / "hooks.v1.json", ROOT / ".devin/hooks.v1.json"):
-        config = json.loads(path.read_text(encoding="utf-8-sig"))
-        hooks = config.get("hooks", config)["SessionEnd"][0]["hooks"]
-        assert any("memory-stop.py" in hook["command"] for hook in hooks)
+def test_session_end_hook_is_registered():
+    # hooks.v1.json is the single authored source; user-level config.json.hooks
+    # is rendered from it at install time by scripts/render-user-hooks.py.
+    hooks = json.loads((ROOT / "hooks.v1.json").read_text(encoding="utf-8-sig"))
+    entries = hooks["SessionEnd"][0]["hooks"]
+    assert any("memory-stop.py" in hook["command"] for hook in entries)
+    config = json.loads((ROOT / "config.json").read_text(encoding="utf-8-sig"))
+    assert config["hooks"] == {}
 
 
 def test_native_plugin_prototype_is_isolated_and_minimal():

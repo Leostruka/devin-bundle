@@ -8,10 +8,10 @@ Branch: `chore/bundle-slim` (from `feat/hybrid-rust-extensions`).
   EXPECT: baseline json existe; audit 0 errors; pytest sem failures
   EVIDENCE: hook-bench-baseline.json N=10 (exec ~486ms, write ~271ms, prompt ~178ms); audit 0 errors/4 warn pré-existentes; pytest 432 passed/1 skipped. Sentinel: `.devin/hooks.v1.json` não dispara mid-session + nudge aparece 1×/prompt → project file não carregado ou deduplicado; docs confirmam user-level só lê config.json.hooks.
 
-- [ ] G1: superfícies duplicadas eliminadas (sentinel decide fonte única de hooks)
+- [x] G1: superfícies duplicadas eliminadas (sentinel decide fonte única de hooks)
   CHECK: test ! -f .devin/hooks.v1.json && python audit.py && python -m pytest tests/ -q
   EXPECT: cópia stale removida; hooks com fonte única documentada; verde
-  EVIDENCE: pending
+  EVIDENCE: `.devin/hooks.v1.json` removido; `config.json.hooks={}` + `render-user-hooks.py` (install injeta, export stripa); audit 0 errors (4 warn pré-existentes); pytest 433 passed. `global_rules.md` mantido (consumidores existem); agents/ divisão documentada em `.devin/agents/README.md`.
 
 - [ ] G2: hooks consolidados; latência exec-hook medida cai
   CHECK: python .devin/notes/hook-bench-post.py 2>/dev/null || true; python audit.py && python -m pytest tests/ -q
