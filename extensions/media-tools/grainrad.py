@@ -69,6 +69,9 @@ def main():
     p.add_argument("--effect", default="ascii")
     p.add_argument("--format", default=None, choices=["png", "jpeg", "svg", "txt"])
     p.add_argument("--preset")
+    p.add_argument("--save-preset", metavar="NAME",
+                   help="save current --param set as a custom preset")
+    p.add_argument("--delete-preset", metavar="NAME")
     p.add_argument("--param", action="append", default=[])
     p.add_argument("--self-test", action="store_true")
     p.add_argument("--list-effects", action="store_true")
@@ -83,9 +86,26 @@ def main():
             print(json.dumps({"ok": True, "presets": list_presets()}))
             return 0
         eff_params, adj, proc, post = _parse_params(args.param)
+        if args.delete_preset:
+            from presets import delete_preset
+            print(json.dumps({"ok": delete_preset(args.delete_preset)}))
+            return 0
+        if args.save_preset:
+            from presets import save_preset
+            save_preset(args.save_preset, {
+                "effect": args.effect, "params": eff_params,
+                "adjust": adj, "process": proc, "post": post})
+            print(json.dumps({"ok": True, "preset": args.save_preset}))
+            return 0
         if args.preset:
             from presets import get_preset
-            eff_params = {**get_preset(args.preset), **eff_params}
+            spec = get_preset(args.preset)
+            eff_params = {**spec["params"], **eff_params}
+            adj = {**spec["adjust"], **adj}
+            proc = {**spec["process"], **proc}
+            post = {**spec["post"], **post}
+            if not args.effect or args.effect == "ascii":
+                args.effect = spec.get("effect", args.effect)
         if args.self_test:
             import numpy as np
             y, x = np.mgrid[0:480, 0:640]
