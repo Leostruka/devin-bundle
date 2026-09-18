@@ -1,8 +1,5 @@
----
-name: wayfinder
-description: Use when planning work too large for one session as a map of decision tickets.
-triggers: [user, model]
----
+# Mode: Wayfinder (decision-ticket map)
+
 A loose idea has arrived — too big for one agent session, and wrapped in fog: the way from here to the **destination** isn't visible yet. Wayfinding is about finding that way, not charging at the destination. This skill charts the way as a **shared map** on the repo's issue tracker, then works its **decision tickets** — questions whose resolution is a decision, not slices of a build to execute — one at a time until the route is clear.
 
 **Modular atomic action mode.** Each ticket is one atomic decision, worked and verified before the next is claimed. Never resolve more than one ticket per session (research tickets excepted). Each ticket declares its own gate (`gate:` / `expect:` / `evidence:`); a ticket without a gate is not ready to claim. Mark `in_progress` on claim, `completed` only after the resolution is recorded and, where the ticket produces a verifiable artifact, the `qa-ci` subagent independently re-runs the gate and returns `PASS`. No batching of tickets, no "we'll verify at the end."

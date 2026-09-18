@@ -1,8 +1,5 @@
----
-name: writing-plans
-description: Use when turning a spec into a concrete, task-by-task implementation plan.
-triggers: [user, model]
----
+# Mode: Plan document (task-by-task)
+
 # Writing Plans
 
 ## Overview
