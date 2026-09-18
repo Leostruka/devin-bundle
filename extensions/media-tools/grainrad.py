@@ -67,6 +67,7 @@ def main():
     p.add_argument("--input")
     p.add_argument("--output")
     p.add_argument("--effect", default="ascii")
+    p.add_argument("--format", default=None, choices=["png", "jpeg", "svg", "txt"])
     p.add_argument("--preset")
     p.add_argument("--param", action="append", default=[])
     p.add_argument("--self-test", action="store_true")
@@ -98,8 +99,19 @@ def main():
                 return 2
             img = Image.open(args.input)
             out = args.output
-        result = run(img, args.effect, eff_params, adj, proc, post)
-        result.save(out)
+        if args.format in ("svg", "txt"):
+            if args.effect != "ascii":
+                print(json.dumps({"ok": False, "error": f"--format {args.format} requires --effect ascii"}))
+                return 2
+            from fx.ascii_fx import grid, to_svg, to_text
+            gk = {k: eff_params[k] for k in ("scale", "spacing", "out_width", "charset", "custom_chars") if k in eff_params}
+            g = grid(img.convert("RGB"), **gk)
+            Path(out).write_text(
+                to_svg(g, **{k: eff_params[k] for k in ("mode", "fg", "bg") if k in eff_params})
+                if args.format == "svg" else to_text(g), encoding="utf-8")
+        else:
+            result = run(img, args.effect, eff_params, adj, proc, post)
+            result.save(out)
         print(json.dumps({"ok": True, "path": out}))
         return 0
     except Exception as e:
