@@ -506,6 +506,20 @@ function Format-BranchStatus {
     }
 }
 
+function Remove-DirRobust {
+    # Remove-Item nao deleta arquivos com nomes reservados (nul, con, aux) —
+    # cmd rd com prefixo \\?\ lida com eles.
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return }
+    try {
+        Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+    }
+    catch {
+        $abs = [System.IO.Path]::GetFullPath($Path)
+        cmd /c rd /s /q "\\?\$abs" 2>$null
+    }
+}
+
 function Remove-StaleWorktrees {
     param([string]$RepoPath)
     try {
@@ -532,10 +546,17 @@ function Remove-StaleWorktrees {
                 try { $null = git worktree remove "$p" --force 2>&1 } finally { Pop-Location }
             }
             catch { Write-Verbose "Falha ao remover worktree '$p': $_" }
-            if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction SilentlyContinue }
+            if (Test-Path -LiteralPath $p) { Remove-DirRobust $p }
         }
         Push-Location -LiteralPath $RepoPath
         try { $null = git worktree prune 2>&1 } finally { Pop-Location }
+        # dirs orfaos: worktree remove falhou antes ou o dir foi recriado sem
+        # registro (ex.: checkout abortado) — git worktree list nao os ve
+        $orphanRoot = Join-Path $RepoPath ".worktrees"
+        if (Test-Path -LiteralPath $orphanRoot) {
+            Get-ChildItem -LiteralPath $orphanRoot -Directory -Filter "instancia-*" -ErrorAction SilentlyContinue |
+                ForEach-Object { Remove-DirRobust $_.FullName }
+        }
     }
     catch { Write-Warning "Falha ao remover worktrees antigas: $_" }
 }
@@ -1109,7 +1130,7 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
             $worktree = Join-Path $worktreesRoot "instancia-$($inst.Label.ToLower())"
 
             $null = git -C $projectPath worktree remove "$worktree" --force 2>&1
-            if (Test-Path -LiteralPath $worktree) { Remove-Item -LiteralPath $worktree -Recurse -Force -ErrorAction SilentlyContinue }
+            Remove-DirRobust $worktree
 
             $info = $inst.BranchInfo
             $branch = $inst.Branch
@@ -1150,7 +1171,10 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
                 $worktreeAddOk = $result -and $result.Ok
             }
 
-            if (-not $worktreeAddOk) { throw "git worktree add falhou para '$worktree' (branch '$branch')" }
+            if (-not $worktreeAddOk) {
+                $gitErr = ($result.Output | Out-String).Trim()
+                throw "git worktree add falhou para '$worktree' (branch '$branch'): $gitErr"
+            }
 
             $inst.WorktreePath = $worktree
             $proj.CreatedWorktrees += $worktree
@@ -1169,7 +1193,7 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
         Write-Host ($M.WorktreeFalha -f $_.Exception.Message) -ForegroundColor Yellow
         foreach ($wt in $proj.CreatedWorktrees) {
             $null = git -C $projectPath worktree remove "$wt" --force 2>&1
-            if (Test-Path -LiteralPath $wt) { Remove-Item -LiteralPath $wt -Recurse -Force -ErrorAction SilentlyContinue }
+            Remove-DirRobust $wt
         }
         foreach ($cb in $proj.CreatedBranches) {
             $null = git -C $projectPath branch -D $cb 2>&1
@@ -1446,7 +1470,7 @@ foreach ($proj in $projetos | Where-Object { $_.CreatedWorktrees.Count -gt 0 -or
         }
     }
     Pop-Location
-    if ($proj.WorktreesRoot -and (Test-Path -LiteralPath $proj.WorktreesRoot)) { Remove-Item -LiteralPath $proj.WorktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
+    if ($proj.WorktreesRoot -and (Test-Path -LiteralPath $proj.WorktreesRoot)) { Remove-DirRobust $proj.WorktreesRoot }
     Write-Host $M.WorktreesRemovidos -ForegroundColor Green
 }
 
