@@ -167,14 +167,6 @@
       "export_hash": "387624AEC9FC9CB1CB4876ACB4E6BF58EDC916F6CDD71176418BAD51CA4BD0CF"
     },
     {
-      "name": "mcp-context-audit",
-      "source": "created:Devin bundle (context-window research)",
-      "purpose": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mcp_config.json. Estimates per-server tool-definition token cost and flags bloat.",
-      "original_path": "%APPDATA%\\devin\\skills\\mcp-context-audit",
-      "exported_at": "2026-09-08T21:39:22.441927",
-      "export_hash": "E56589F88DDC9C1B77C8B3FE915A242C2857571E9737D4C74BB8F93390A5C823"
-    },
-    {
       "name": "mutation-testing",
       "source": "adapted:CircleCI-Public/chunk-cli (chunk-testing-gaps)",
       "purpose": "Use when the user asks to find testing gaps, mutation test, or identify surviving mutants.",
@@ -453,14 +445,6 @@
       "exported_at": "2026-09-08T21:39:22.457731"
     },
     {
-      "name": "mcp-lazy-enablement",
-      "source": "devin-bundle",
-      "purpose": "Use when deciding which MCP servers to keep active, when context feels bloated from unused MCP tools, when a task only needs one MCP server temporarily, or when auditing which servers to enable/disable per task. Guides selective MCP enablement to minimize context-window tax.",
-      "original_path": "%APPDATA%\\devin\\skills\\mcp-lazy-enablement",
-      "export_hash": "58829CD90AC521385BF8C035D6869D0C5843CF5FF4F5A44939F2BDC6350670E3",
-      "exported_at": "2026-09-08T21:39:22.458035"
-    },
-    {
       "name": "impeccable",
       "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
       "purpose": "Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template.",
@@ -627,9 +611,14 @@
       "name": "memory-management",
       "source": "devin-bundle",
       "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or when the session produces knowledge worth remembering (answered questions, business rules, conventions, failed approaches, decisions). Covers memory hygiene (stateless vs managed vs naive) and capturing plain-text notes under .devin/ with user approval."
+    },
+    {
+      "name": "mcp-governance",
+      "source": "devin-bundle",
+      "purpose": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which servers consume the most context budget, before committing mcp_config.json changes, or when deciding which servers to keep active per task. Estimates per-server tool-definition token cost and guides lazy enablement."
     }
   ],
-  "skill_count": 78,
+  "skill_count": 77,
   "rule_count": 28,
   "scripts": [
     {
