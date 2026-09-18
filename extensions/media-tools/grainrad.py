@@ -72,6 +72,9 @@ def main():
     p.add_argument("--save-preset", metavar="NAME",
                    help="save current --param set as a custom preset")
     p.add_argument("--delete-preset", metavar="NAME")
+    p.add_argument("--frames", type=int, default=None,
+                   help="max frames for animated input / frame count for still→gif")
+    p.add_argument("--fps", type=int, default=10, help="mp4/gif output fps")
     p.add_argument("--param", action="append", default=[])
     p.add_argument("--self-test", action="store_true")
     p.add_argument("--list-effects", action="store_true")
@@ -130,8 +133,25 @@ def main():
                 to_svg(g, **{k: eff_params[k] for k in ("mode", "fg", "bg") if k in eff_params})
                 if args.format == "svg" else to_text(g), encoding="utf-8")
         else:
-            result = run(img, args.effect, eff_params, adj, proc, post)
-            result.save(out)
+            import media_io
+            animated = (media_io.is_animated(args.input or "") or
+                        Path(out).suffix.lower() in media_io.ANIM_OUTPUT)
+            if animated:
+                frames, durs = [], []
+                src_frames = (media_io.load_frames(args.input, args.frames)
+                              if media_io.is_animated(args.input or "")
+                              else [(img, 100)] * (args.frames or 20))
+                for i, (fr, dur) in enumerate(src_frames):
+                    params = {**eff_params, "seed": i}
+                    frames.append(run(fr, args.effect, params, adj, proc, post))
+                    durs.append(dur)
+                if Path(out).suffix.lower() == ".mp4":
+                    media_io.save_mp4(frames, out, fps=args.fps)
+                else:
+                    media_io.save_gif(frames, out, durs)
+            else:
+                result = run(img, args.effect, eff_params, adj, proc, post)
+                result.save(out)
         print(json.dumps({"ok": True, "path": out}))
         return 0
     except Exception as e:
