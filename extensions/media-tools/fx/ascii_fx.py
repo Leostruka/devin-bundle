@@ -95,3 +95,96 @@ def to_svg(g, mode="original", fg="#ffffff", bg="#000000"):
                              f'textLength="{len(run) * g["cell_w"]}" lengthAdjust="spacingAndGlyphs">{esc}</text>')
     parts.append("</g></svg>")
     return "".join(parts)
+
+
+_THREEJS_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASCII Art 3D Scene</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: %(bg)s; font-family: monospace; }
+    #ascii-scene { width: 100vw; height: 100vh; }
+    #info { position: absolute; top: 10px; left: 10px; color: #666;
+            font-size: 12px; pointer-events: none; }
+  </style>
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+  </script>
+</head>
+<body>
+<div id="ascii-scene"></div>
+<div id="info">ASCII 3D — drag to orbit, scroll to zoom</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const GRID = %(grid_json)s;
+const CELL = %(cell)s, DEPTH = %(depth)s;
+const container = document.getElementById('ascii-scene');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('%(bg)s');
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, .1, 5000);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+scene.add(new THREE.AmbientLight(0xffffff, .6));
+const dl = new THREE.DirectionalLight(0xffffff, 1);
+dl.position.set(1,1,2); scene.add(dl);
+
+const group = new THREE.Group();
+const W = GRID.cols*CELL, H = GRID.rows*CELL;
+for (let r = 0; r < GRID.rows; r++) {
+  for (let c = 0; c < GRID.cols; c++) {
+    const ch = GRID.chars[r][c];
+    if (ch === ' ') continue;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = CELL;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#' + GRID.colors[r][c].toString(16).padStart(6,'0');
+    ctx.font = CELL + 'px Consolas,monospace';
+    ctx.textBaseline = 'top';
+    ctx.fillText(ch, 0, 0);
+    const tex = new THREE.CanvasTexture(cv);
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(CELL,CELL),
+      new THREE.MeshBasicMaterial({map:tex, transparent:true}));
+    mesh.position.set(c*CELL - W/2, H/2 - r*CELL, GRID.lum[r][c]*DEPTH);
+    group.add(mesh);
+  }
+}
+scene.add(group);
+camera.position.set(0, 0, Math.max(W,H)*1.1);
+controls.update();
+(function animate(){ requestAnimationFrame(animate);
+  controls.update(); renderer.render(scene, camera); })();
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); });
+</script>
+</body>
+</html>"""
+
+
+def _hex_int(rgb):
+    r, g_, b = (int(v) for v in rgb)
+    return (r << 16) | (g_ << 8) | b
+
+
+def to_threejs(g, bg="#000000", depth_style="layered"):
+    """Standalone Three.js HTML — site parity (depthStyle flat|layered|extreme)."""
+    import json
+    depth = {"flat": 0, "layered": 1, "extreme": 3}.get(depth_style, 1)
+    lum = np.asarray(g["colors"], dtype=np.float32).mean(axis=2) / 255.0
+    data = {"cols": g["cols"], "rows": g["rows"], "chars": g["chars"],
+            "colors": [[_hex_int(g["colors"][r, c]) for c in range(g["cols"])]
+                       for r in range(g["rows"])],
+            "lum": np.round(lum, 3).tolist()}
+    return _THREEJS_TEMPLATE % {"bg": bg, "cell": g["cell"],
+                                "depth": depth * g["cell"] * 2,
+                                "grid_json": json.dumps(data)}

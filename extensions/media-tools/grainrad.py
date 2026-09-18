@@ -64,10 +64,12 @@ def run(img, effect, eff_params, adj_params, proc_params, post_params, fmt=None)
 
 def main():
     p = argparse.ArgumentParser(description="grainrad effects CLI")
-    p.add_argument("--input")
+    p.add_argument("--input", help="image/gif/mp4/webm/glb path, or 'webcam[:N]'")
+    p.add_argument("--webcam", action="store_true", help="capture frame from webcam 0")
     p.add_argument("--output")
     p.add_argument("--effect", default="ascii")
-    p.add_argument("--format", default=None, choices=["png", "jpeg", "svg", "txt"])
+    p.add_argument("--format", default=None,
+                   choices=["png", "jpeg", "svg", "txt", "threejs"])
     p.add_argument("--preset")
     p.add_argument("--save-preset", metavar="NAME",
                    help="save current --param set as a custom preset")
@@ -117,21 +119,37 @@ def main():
             img = Image.fromarray((arr * 255).astype(np.uint8)).convert("RGB")
             out = args.output or "grainrad_selftest.png"
         else:
-            if not args.input or not args.output:
-                print(json.dumps({"ok": False, "error": "missing --input/--output (or --self-test)"}))
+            if not args.output:
+                print(json.dumps({"ok": False, "error": "missing --output (or --self-test)"}))
                 return 2
-            img = Image.open(args.input)
             out = args.output
-        if args.format in ("svg", "txt"):
+            inp = args.input or ""
+            if args.webcam or inp.startswith("webcam"):
+                import webcam as wc
+                dev = int(inp.split(":")[1]) if ":" in inp else 0
+                img = wc.capture(dev)
+            elif inp.lower().endswith(".glb"):
+                import glb_input
+                img = glb_input.load_glb(inp)
+            elif inp:
+                img = Image.open(inp)
+            else:
+                print(json.dumps({"ok": False, "error": "missing --input (or --self-test)"}))
+                return 2
+        if args.format in ("svg", "txt", "threejs"):
             if args.effect != "ascii":
                 print(json.dumps({"ok": False, "error": f"--format {args.format} requires --effect ascii"}))
                 return 2
-            from fx.ascii_fx import grid, to_svg, to_text
+            from fx.ascii_fx import grid, to_svg, to_text, to_threejs
             gk = {k: eff_params[k] for k in ("scale", "spacing", "out_width", "charset", "custom_chars") if k in eff_params}
             g = grid(img.convert("RGB"), **gk)
-            Path(out).write_text(
-                to_svg(g, **{k: eff_params[k] for k in ("mode", "fg", "bg") if k in eff_params})
-                if args.format == "svg" else to_text(g), encoding="utf-8")
+            if args.format == "threejs":
+                Path(out).write_text(to_threejs(
+                    g, bg=eff_params.get("bg", "#000000")), encoding="utf-8")
+            else:
+                Path(out).write_text(
+                    to_svg(g, **{k: eff_params[k] for k in ("mode", "fg", "bg") if k in eff_params})
+                    if args.format == "svg" else to_text(g), encoding="utf-8")
         else:
             import media_io
             animated = (media_io.is_animated(args.input or "") or
