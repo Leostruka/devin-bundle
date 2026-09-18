@@ -273,14 +273,6 @@
       "hash": "3c0f32b233c22b8bf0b11f0ce35e6c6b6875bed809d2c881242c922027c3dd8c"
     },
     {
-      "name": "triage",
-      "source": "devin-bundle",
-      "purpose": "Use when moving issues and external PRs through a state machine of triage roles — categorise, verify, grill if needed, and write agent-ready briefs.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\triage",
-      "export_hash": "00680180B50B1FF69A40F027590DB01329166AE55AA37FBAC6FCCEDB942EB22A",
-      "exported_at": "2026-09-08T21:39:22.446857"
-    },
-    {
       "name": "using-git-worktrees",
       "source": "devin-bundle",
       "purpose": "Use when starting feature work that needs isolation from the current workspace.",
@@ -313,28 +305,12 @@
       "export_hash": "9B59F8C8ED542186B4A71916E8D563BF4F561612B60DCA4480EC16D6EB4025A8"
     },
     {
-      "name": "task-sizer",
-      "source": "created:Devin bundle (good-practis)",
-      "purpose": "Use when estimating the size of a task or PR and deciding whether to split it into smaller tickets before implementation.",
-      "original_path": "%APPDATA%\\devin\\skills\\task-sizer",
-      "exported_at": "2026-09-08T21:39:22.449326",
-      "export_hash": "2C8963CF66B73D7FB2B890AEAC6175339C890BAED86FA96AFDE3E503043BAB0B"
-    },
-    {
       "name": "secure-defaults-check",
       "source": "created:Devin bundle (sec-needs)",
       "purpose": "Use when checking that a project or change follows secure defaults before committing or deploying.",
       "original_path": "%APPDATA%\\devin\\skills\\secure-defaults-check",
       "exported_at": "2026-09-08T21:39:22.450228",
       "export_hash": "B04721B8E9B9089F6D20A598012643EE16A0B1FDC117F308EA11CAED8750ECAE"
-    },
-    {
-      "name": "intention-capture",
-      "source": "created:Devin bundle (good-practis)",
-      "purpose": "Use when capturing and validating the \"intent\" field in tickets, specs, or PRDs before implementation. Ensures every task has a clear objective, landing zone, and user impact.",
-      "original_path": "%APPDATA%\\devin\\skills\\intention-capture",
-      "exported_at": "2026-09-08T21:39:22.450625",
-      "export_hash": "D5A6A956BF0E5C1450D20D30EBD7CDA44AFAEEAAE2D576324501477F882AE386"
     },
     {
       "name": "api-context-spec",
@@ -597,9 +573,14 @@
       "name": "planning",
       "source": "devin-bundle",
       "purpose": "Use when turning conversation into a written spec/PRD, breaking a plan or spec into independent traceable tickets, writing a concrete task-by-task implementation plan, when a decision needs external input via a questionnaire, or when planning work too large for one session as a map of decision tickets (wayfinding)."
+    },
+    {
+      "name": "intake",
+      "source": "devin-bundle",
+      "purpose": "Use when estimating the size of a task or PR and deciding whether to split it, when capturing and validating the \"intent\" field in tickets/specs/PRDs before implementation, or when moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs)."
     }
   ],
-  "skill_count": 75,
+  "skill_count": 73,
   "rule_count": 28,
   "scripts": [
     {
