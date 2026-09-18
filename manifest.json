@@ -176,14 +176,6 @@
       "export_hash": "9B59F8C8ED542186B4A71916E8D563BF4F561612B60DCA4480EC16D6EB4025A8"
     },
     {
-      "name": "api-context-spec",
-      "source": "created:Devin bundle (good-practis)",
-      "purpose": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable.",
-      "original_path": "%APPDATA%\\devin\\skills\\api-context-spec",
-      "exported_at": "2026-09-08T21:39:22.450768",
-      "export_hash": "C0B84E01855FD63C27EC64EFA4315DCFA801B175EB1A515B5D04780B98ED2CCF"
-    },
-    {
       "name": "wait-what",
       "source": "devin-bundle",
       "purpose": "Use when the last message did not land and needs to be re-explained or re-pitched.",
@@ -282,14 +274,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\a11y-audit",
       "export_hash": "D84220314E3D4541D52FEF220534862E8012B6EAD0A52FEF477CA997C15AC9F0",
       "exported_at": "2026-09-08T21:39:22.459244"
-    },
-    {
-      "name": "api-design",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication.",
-      "original_path": "%APPDATA%\\devin\\skills\\api-design",
-      "export_hash": "5CF91CFEE77222E3E21DA4F5788CF24D7C9B0FCB29BD1F5B30D42023A1886215",
-      "exported_at": "2026-09-08T21:39:22.459376"
     },
     {
       "name": "database",
@@ -419,9 +403,14 @@
       "name": "security",
       "source": "devin-bundle",
       "purpose": "Use when auditing code, dependencies, or infrastructure for security issues (SAST, dependency scanning, secret leak detection, OWASP-style checks), or when checking that a project or change follows secure defaults before committing or deploying."
+    },
+    {
+      "name": "api-spec",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-readable context for AI agents."
     }
   ],
-  "skill_count": 56,
+  "skill_count": 55,
   "rule_count": 28,
   "scripts": [
     {
