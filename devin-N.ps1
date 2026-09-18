@@ -2,6 +2,8 @@
 # Suporta ate 4 instancias em 1 a 4 projetos; worktrees apenas se 2+ instancias no mesmo projeto.
 # O comando `devin` inicia um REPL interativo no diretorio atual.
 
+Set-StrictMode -Off
+
 # Mensagens centralizadas (templates para futura i18n)
 $M = @{
     UsandoTerminal = 'Usando terminal base: {0}'
@@ -811,6 +813,13 @@ function Select-BranchesForProject {
     return [PSCustomObject]@{ Success = $true; Instances = $instances; Project = $Project }
 }
 
+function Get-InstanceTotal {
+    param([array]$Items)
+    $sum = 0
+    foreach ($i in $Items) { $sum += $i.Count }
+    return $sum
+}
+
 function Start-Wizard {
     $projetos = @()
     $instancias = @()
@@ -823,7 +832,7 @@ function Start-Wizard {
     while ($state -ne 'EXECUTE' -and $state -ne 'CANCEL') {
         switch ($state) {
             'PROJECT' {
-                $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
+                $total = Get-InstanceTotal $projetos
                 $vagas = 4 - $total
                 if ($vagas -le 0) { $state = 'BRANCH_PREP'; continue }
 
@@ -870,7 +879,7 @@ function Start-Wizard {
 
             'INSTANCES' {
                 $proj = $projetos[$currentProjectIndex]
-                $otherTotal = [int]($projetos | Where-Object { $_.Path -ne $proj.Path } | Measure-Object -Property Count -Sum).Sum
+                $otherTotal = Get-InstanceTotal @($projetos | Where-Object { $_.Path -ne $proj.Path })
                 $vagas = 4 - $otherTotal
                 $maxForProject = if ($proj.IsGitRepo) { $vagas } else { 1 }
 
@@ -903,7 +912,7 @@ function Start-Wizard {
             }
 
             'MORE' {
-                $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
+                $total = Get-InstanceTotal $projetos
                 if ($total -ge 4) { $state = 'BRANCH_PREP'; continue }
 
                 $simNao = @(
@@ -924,7 +933,7 @@ function Start-Wizard {
             }
 
             'BRANCH_PREP' {
-                $total = [int]($projetos | Measure-Object -Property Count -Sum).Sum
+                $total = Get-InstanceTotal $projetos
                 if ($total -eq 0) { $state = 'CANCEL'; continue }
 
                 $positions = switch ($total) {
@@ -956,7 +965,7 @@ function Start-Wizard {
 
             'BRANCH' {
                 $proj = $projetos[$currentProjectIndex]
-                $startLabelIndex = [int]($projetos | Select-Object -First $currentProjectIndex | Measure-Object -Property Count -Sum).Sum
+                $startLabelIndex = Get-InstanceTotal @($projetos | Select-Object -First $currentProjectIndex)
 
                 if (@($instancias | Where-Object { $_.Project -eq $proj }).Count -gt 0) {
                     $currentProjectIndex++
