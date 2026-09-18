@@ -1,8 +1,5 @@
----
-name: mutation-testing
-description: Use when the user asks to find testing gaps, mutation test, or identify surviving mutants.
-triggers: [user, model]
----
+# Mode: mutation testing
+
 # Mutation Testing
 
 Perform mutation testing on the current codebase to find gaps in test coverage.

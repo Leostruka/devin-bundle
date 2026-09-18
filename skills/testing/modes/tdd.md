@@ -1,8 +1,5 @@
----
-name: tdd
-description: Use when implementing any feature or bugfix and a test-driven approach is appropriate.
-triggers: [user, model]
----
+# Mode: TDD
+
 # Test-Driven Development (Unified)
 
 Two traditions, one loop. This skill merges the **iron-law discipline** (tests-first, no exceptions, watch them fail) with the **seams-first operational approach** (agree on test boundaries, vertical slices, avoid anti-patterns).

@@ -94,14 +94,6 @@
       "export_hash": "387624AEC9FC9CB1CB4876ACB4E6BF58EDC916F6CDD71176418BAD51CA4BD0CF"
     },
     {
-      "name": "mutation-testing",
-      "source": "adapted:CircleCI-Public/chunk-cli (chunk-testing-gaps)",
-      "purpose": "Use when the user asks to find testing gaps, mutation test, or identify surviving mutants.",
-      "original_path": "%APPDATA%\\devin\\skills\\mutation-testing",
-      "export_hash": "31FD8BC98468D4A2FEBAB6C18E2D79BEE16F09B51B26BA2D7CF892A8D076F137",
-      "exported_at": "2026-09-08T21:39:22.442107"
-    },
-    {
       "name": "observability-quality",
       "source": "created:Devin bundle",
       "purpose": "Use when adding logging, metrics, distributed tracing, error monitoring, linting, architecture testing, or test infrastructure to a project. Covers OpenTelemetry, Sentry/Datadog/Grafana, Biome/ESLint, ArchUnit, commitlint, Knip, Playwright, and coverage strategy.",
@@ -133,14 +125,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\research",
       "export_hash": "5188B6EB45CE13DD951C10BCBEE23365A09F26303A118EFE5F4AA5BF53CE3660",
       "exported_at": "2026-09-08T21:39:22.444591"
-    },
-    {
-      "name": "tdd",
-      "source": "devin-bundle",
-      "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate.",
-      "original_path": "%APPDATA%\\devin\\skills\\tdd",
-      "export_hash": "CEB57F28440E0E35CAC979654D267F0DF63192A1A530510977EB50D01E292981",
-      "exported_at": "2026-09-08T21:39:22.445987"
     },
     {
       "name": "teach",
@@ -408,9 +392,14 @@
       "name": "api-spec",
       "source": "devin-bundle",
       "purpose": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-readable context for AI agents."
+    },
+    {
+      "name": "testing",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate (red-green-refactor, seams-first), or when the user asks to find testing gaps, mutation test, or identify surviving mutants."
     }
   ],
-  "skill_count": 55,
+  "skill_count": 54,
   "rule_count": 28,
   "scripts": [
     {
