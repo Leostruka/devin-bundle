@@ -1,11 +1,5 @@
----
-name: continuous-improvement
-description: Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests.
-version: 1.1.0
-triggers:
-  - user
-  - model
----
+# Mode: Improvement Loop (10 steps)
+
 
 # Directiva de Melhoria Contínua
 

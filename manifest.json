@@ -94,15 +94,6 @@
       "export_hash": "60F239EE611A8A292547363DD1CEE26C78E2560A73F5E57DE816ED7F87DBA25E"
     },
     {
-      "name": "primeagent-reference",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when (1) researching agent harness design patterns, comparing Devin CLI to PrimeAgent/RLM architectures, or evaluating which PrimeAgent features could be adapted to Devin CLI; (2) emulating A2A messaging between subagents or between subagents and the parent agent across time within Devin CLI's ephemeral subagent runtime; (3) capturing recurring failure patterns or reusable tactics as skills/rules/hooks via the Continual Harness /refine self-improvement loop; or (4) deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run (subagent dispatch profile/budget selection).",
-      "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
-      "exported_at": "2026-09-08T21:39:22.442414",
-      "export_hash": "445DE13723DFB91F3C812389221E11A3F66E494D91771944F3D59C6336A2D194",
-      "hash": "95c67d4d67791e2926a6e4a11790789621c5d2c601aaf23390a10bc3d159486b"
-    },
-    {
       "name": "prototype",
       "source": "devin-bundle",
       "purpose": "Use when a throwaway prototype is the fastest way to answer a design question.",
@@ -196,13 +187,6 @@
       "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks. Structured prompt template with Procedure, Specs, Advice, Forbidden Actions.",
       "export_hash": "2E3888B8A049A3E05F60DFAD223F52CCFD923F9EBFD65FCB3E7ACBDD25F356D2",
       "exported_at": "2026-09-08T21:39:22.457423"
-    },
-    {
-      "name": "continuous-improvement",
-      "source": "devin-bundle (new, FASE 0 + 10-step self-improvement loop)",
-      "purpose": "Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests.",
-      "export_hash": "466379CB661D286625C3F3DAD3DD07B8FBBBAECD77FE2D4136AF078370F2923C",
-      "exported_at": "2026-09-08T21:39:22.457579"
     },
     {
       "name": "impeccable",
@@ -378,9 +362,14 @@
       "name": "knowledge-modeling",
       "source": "devin-bundle",
       "purpose": "Use when building or refining a project's domain model, glossary, or bounded contexts, when validating tool outputs/data against a domain ontology before side effects, or when extracting entities, relations, evidence, and provenance from Markdown/plain text into a typed versioned knowledge graph under `.devin/`."
+    },
+    {
+      "name": "self-improvement",
+      "source": "devin-bundle",
+      "purpose": "Use when starting a self-improvement session (deep research + validated improvement loop), when capturing recurring failure patterns or reusable tactics as skills/rules/hooks, when researching agent harness design patterns (PrimeAgent/RLM vs Devin CLI), when emulating A2A messaging between subagents, or when deciding whether to dispatch a subagent, which profile, and what budget."
     }
   ],
-  "skill_count": 52,
+  "skill_count": 51,
   "rule_count": 28,
   "scripts": [
     {
