@@ -11,7 +11,7 @@
     - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
     - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
     - scripts\*          → %APPDATA%\devin\scripts\
-    - extensions\*       → %APPDATA%\devin\extensions\ (+ computer-use .venv)
+    - extensions\*       → %APPDATA%\devin\extensions\ (+ computer-use .venv, + rust-core cargo build)
     - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
     - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
 
@@ -174,6 +174,22 @@ function Install-File($src, $dst, $label) {
   }
 }
 
+# Copy a directory tree, skipping paths matching $exclude (regex on FullName).
+# When $exclude is null, falls back to a plain recursive copy.
+function Copy-FilteredDir($src, $dst, $exclude = $null) {
+  if (-not $exclude) {
+    Copy-Item $src $dst -Recurse -Force
+    return
+  }
+  New-Item -ItemType Directory -Force -Path $dst | Out-Null
+  Get-ChildItem $src -Recurse -File | Where-Object { $_.FullName -notmatch $exclude } | ForEach-Object {
+    $rel = $_.FullName.Substring($src.Length).TrimStart('\', '/')
+    $target = Join-Path $dst $rel
+    New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent) | Out-Null
+    Copy-Item $_.FullName $target -Force
+  }
+}
+
 function Install-SkillDir($src, $dst, $name, $exclude = $null) {
   if (Test-Path $dst) {
     $srcHash = Get-FolderHash $src $exclude
@@ -191,14 +207,14 @@ function Install-SkillDir($src, $dst, $name, $exclude = $null) {
       return "would-update"
     }
     Remove-Item $dst -Recurse -Force
-    Copy-Item $src $dst -Recurse -Force
+    Copy-FilteredDir $src $dst $exclude
     $script:Overwritten++
     return "updated"
   } else {
     if ($DryRun) {
       return "would-install"
     }
-    Copy-Item $src $dst -Recurse -Force
+    Copy-FilteredDir $src $dst $exclude
     $script:Copied++
     return "installed"
   }
@@ -574,7 +590,7 @@ Write-Step "Install extensions/ (local tools)"
 if (Test-Path $extSrc) {
   $extDirs = Get-ChildItem $extSrc -Directory
   foreach ($ext in $extDirs) {
-    $result = Install-SkillDir -src $ext.FullName -dst (Join-Path $extDst $ext.Name) -name $ext.Name -exclude '\.venv\\'
+    $result = Install-SkillDir -src $ext.FullName -dst (Join-Path $extDst $ext.Name) -name $ext.Name -exclude '\.venv\\|\\target\\|\.(pyd|so|dylib)$'
     switch ($result) {
       "installed"      { Write-Ok "extensions/$($ext.Name) (installed)" }
       "updated"        { Write-Ok "extensions/$($ext.Name) (updated)" }
@@ -607,6 +623,30 @@ if (Test-Path $extSrc) {
         Write-Ok "computer-use deps installed in $cuDir\.venv"
       } else {
         Write-Warn "computer-use pip install failed (exit $LASTEXITCODE)"
+      }
+    }
+  }
+
+  # --- 8b. rust-core compiled extensions (optional toolchain, non-blocking) ---
+  $rcSrc = Join-Path $extSrc "rust-core"
+  $rcDir = Join-Path $extDst "rust-core"
+  if (Test-Path (Join-Path $rcSrc "Cargo.toml")) {
+    if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
+      Write-Warn "cargo/rustc not found — skipping rust-core build (install Rust toolchain to enable hybrid extensions)"
+    } elseif ($DryRun) {
+      Write-Skip "would run: cargo build --release in $rcDir and stage .pyd/.so artifacts"
+    } else {
+      & cargo build --release --quiet --manifest-path (Join-Path $rcDir "Cargo.toml")
+      if ($LASTEXITCODE -eq 0) {
+        $staged = 0
+        Get-ChildItem (Join-Path $rcDir "target\release") -Filter "*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $rcDir ($_.BaseName + ".pyd")) -Force
+          $staged++
+          Write-Ok "rust extension staged: $($_.BaseName).pyd"
+        }
+        if ($staged -eq 0) { Write-Warn "cargo build ok but no cdylib artifacts found in target\release" }
+      } else {
+        Write-Warn "rust-core cargo build failed (exit $LASTEXITCODE) — continuing without compiled extensions"
       }
     }
   }

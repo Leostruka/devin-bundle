@@ -36,6 +36,7 @@ keep full detail because they must survive compaction.
 25. **No test deletion without approval**
 26. **Secure by default**
 27. **Declare intent and impact before coding**
+28. **Hybrid Rust–Python extensions** (see `.devin/adr/003-`)
 
 ---
 
@@ -223,3 +224,7 @@ Use secure defaults: hidden passwords with opt-in reveal, confirmation for destr
 ### 27. Declare intent and impact before coding
 
 Before writing code, state the intent, the intended user-visible impact, and the boundaries (inputs/outputs, scope, non-goals). Ask until mutual understanding is reached; don't guess intent. Use `grilling` for non-trivial tasks. Intent reduces wrong paths.
+
+### 28. Hybrid Rust–Python extensions
+
+Whenever creating a high-performance extension, use the hybrid Rust–Python architecture in `.devin/adr/003-hybrid-rust-python-extensions.md` — crates under `extensions/rust-core/crates/` (PyO3, abi3 + `extension-module`), Python stays the orchestration layer. Python for CLI/JSON/orchestration; Rust for CPU-bound, OS-API, and memory-tight work. Compiled artifacts are built at install time, never shipped.

@@ -55,9 +55,10 @@ dir_hash() {
   ( cd "$1" 2>/dev/null && find . -type f | sort | xargs sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 )
 }
 
-# Same as dir_hash but skips .venv/ trees (extensions carry isolated venvs).
+# Same as dir_hash but skips .venv/ trees, cargo target/ dirs, and staged
+# compiled artifacts (extensions derive these at install time).
 dir_hash_ext() {
-  ( cd "$1" 2>/dev/null && find . -type f -not -path '*/.venv/*' | sort | xargs sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 )
+  ( cd "$1" 2>/dev/null && find . -type f -not -path '*/.venv/*' -not -path '*/target/*' -not -name '*.pyd' -not -name '*.so' -not -name '*.dylib' | sort | xargs sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 )
 }
 
 backup_file() {
@@ -490,13 +491,13 @@ if [[ -d "$ext_src" ]]; then
       elif [[ $FORCE -eq 1 ]]; then
         if [[ $BACKUP -eq 1 ]]; then backup_file "$dst_dir"; fi
         if [[ $DRY_RUN -eq 1 ]]; then skip "would update extensions/$name"
-        else rm -rf "$dst_dir"; mkdir -p "$ext_dst"; cp -r "$ext_dir" "$dst_dir"; ok "extensions/$name updated"; fi
+        else rm -rf "$dst_dir"; mkdir -p "$dst_dir"; tar -C "$ext_dir" --exclude='./.venv' --exclude='./target' -cf - . | tar -C "$dst_dir" -xf -; ok "extensions/$name updated"; fi
       else
         warn "extensions/$name exists and differs. Use --force to update."
       fi
     else
       if [[ $DRY_RUN -eq 1 ]]; then skip "would install extensions/$name"
-      else mkdir -p "$ext_dst"; cp -r "$ext_dir" "$dst_dir"; ok "extensions/$name installed"; fi
+      else mkdir -p "$dst_dir"; tar -C "$ext_dir" --exclude='./.venv' --exclude='./target' -cf - . | tar -C "$dst_dir" -xf -; ok "extensions/$name installed"; fi
     fi
   done
 
@@ -520,11 +521,38 @@ if [[ -d "$ext_src" ]]; then
       fi
     fi
   fi
+
+  # --- 8d. rust-core compiled extensions (optional toolchain, non-blocking) ---
+  rc_src="$ext_src/rust-core"
+  rc_dir="$ext_dst/rust-core"
+  if [[ -f "$rc_src/Cargo.toml" ]]; then
+    if ! command -v cargo &>/dev/null; then
+      warn "cargo/rustc not found — skipping rust-core build (install Rust toolchain to enable hybrid extensions)"
+    elif [[ $DRY_RUN -eq 1 ]]; then
+      skip "would run: cargo build --release in $rc_dir and stage .so artifacts"
+    else
+      if cargo build --release --quiet --manifest-path "$rc_dir/Cargo.toml"; then
+        staged=0
+        for lib in "$rc_dir"/target/release/*.so "$rc_dir"/target/release/*.dylib; do
+          [[ -f "$lib" ]] || continue
+          base="$(basename "$lib")"            # libfast_math.so / libfast_math.dylib
+          mod="${base#lib}"                    # fast_math.so / fast_math.dylib
+          mod="${mod%.dylib}.so"               # fast_math.so
+          cp "$lib" "$rc_dir/$mod"
+          staged=$((staged+1))
+          ok "rust extension staged: $mod"
+        done
+        [[ $staged -eq 0 ]] && warn "cargo build ok but no cdylib artifacts found in target/release"
+      else
+        warn "rust-core cargo build failed — continuing without compiled extensions"
+      fi
+    fi
+  fi
 else
   warn "extensions/ not found in bundle"
 fi
 
-# --- 8d. Install docs/ (bundle docs incl. SKILL-TIERS router map) ---
+# --- 8e. Install docs/ (bundle docs incl. SKILL-TIERS router map) ---
 step "Install docs/"
 docs_src="$BUNDLE_DIR/docs"
 docs_dst="$DEVIN_HOME/docs"
