@@ -52,6 +52,9 @@ _SCOPE_DESCENDANTS = 0x4
 _PAT_INVOKE = 10000
 _PAT_VALUE = 10002
 
+# CUIAutomation class GUID — the COM coclass behind IUIAutomation
+_CLSID_CUIAUTOMATION = "{ff48dba4-60ef-4201-aa87-54103eef594e}"
+
 
 def _com_thread(fn):
     """Run fn() on a COM-initialized daemon thread; return its result or
@@ -90,9 +93,8 @@ def _uia_core():
     with redirect_stdout(io.StringIO()):
         import comtypes.client
         mod = comtypes.client.GetModule("UIAutomationCore.dll")
-    return comtypes.client.CreateObject(
-        "{ff48dba4-60ef-4201-aa87-54103eef594e}",
-        interface=mod.IUIAutomation)
+    return comtypes.client.CreateObject(_CLSID_CUIAUTOMATION,
+                                        interface=mod.IUIAutomation)
 
 
 def _clickable_cond(core):
@@ -216,8 +218,7 @@ def enum_clickables(scope="focused", timeout=6.0):
         if k in seen:
             continue
         seen.add(k)
-        e.pop("_el", None)  # COM objects never leave the worker thread
-        uniq.append(e)
+        uniq.append(e)  # _el was already stripped in the worker (_enum_impl)
     uniq.sort(key=lambda e: (e["bounds"][1], e["bounds"][0]))
     return {"elements": uniq[:MAX_HINTS], "window": win,
             "truncated": len(uniq) > MAX_HINTS}

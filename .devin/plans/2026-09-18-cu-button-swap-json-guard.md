@@ -1,6 +1,6 @@
 # CU Mouse Swap + Stdout JSON Guard Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use /dispatching-parallel-agents (recommended) or /executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use /dispatching-parallel-agents (recommended) or /executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** `mouse.py click --button left` must mean the semantic *primary* click even on left-handed Windows hosts (SM_SWAPBUTTON), and every computer-use CLI must emit exactly one JSON object on stdout even when it crashes.
 
@@ -45,7 +45,7 @@
 - Produces: `cu_actions.resolve_button(Button, name)`, `cu_actions.buttons_swapped()`
 - Consumed by: `mouse.py` click (`args.button`) and drag (`"left"`)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/test_cu_mouse_swap.py`:
 
@@ -128,12 +128,12 @@ def test_click_dispatches_swapped_button(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out)["ok"] is True
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `python -m pytest tests/test_cu_mouse_swap.py -v`
 Expected: FAIL — `AttributeError: module 'cu_actions' has no attribute '_swap_state'` (or `resolve_button`)
 
-- [ ] **Step 3: Implement the swap translation in `cu_actions.py`**
+- [x] **Step 3: Implement the swap translation in `cu_actions.py`**
 
 Change the import line and append:
 
@@ -181,7 +181,7 @@ def resolve_button(Button, name):
     return getattr(Button, name)
 ```
 
-- [ ] **Step 4: Wire `resolve_button` into `mouse.py`**
+- [x] **Step 4: Wire `resolve_button` into `mouse.py`**
 
 Click path — replace line 253:
 
@@ -203,12 +203,12 @@ drag_btn = cu_actions.resolve_button(Button, "left")
 
 and replace the four `Button.left` uses inside the drag block with `drag_btn`.
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `python -m pytest tests/test_cu_mouse_swap.py -v`
 Expected: 3 passed
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add extensions/computer-use/cu_actions.py extensions/computer-use/mouse.py tests/test_cu_mouse_swap.py
@@ -230,7 +230,7 @@ git commit -m "fix(computer-use): translate logical mouse buttons under SM_SWAPB
 - Produces: `cu_actions.run_cli(main) -> None`
 - Consumed by: the three `if __name__ == "__main__"` blocks
 
-- [ ] **Step 1: Add the failing tests**
+- [x] **Step 1: Add the failing tests**
 
 Append to `tests/test_cu_mouse_swap.py`:
 
@@ -274,12 +274,12 @@ def test_hints_crash_path_prints_json(monkeypatch, capsys):
     assert out["ok"] is False and "uia provider died" in out["error"]
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `python -m pytest tests/test_cu_mouse_swap.py -k "run_cli or hints_crash" -v`
 Expected: FAIL — `AttributeError: module 'cu_actions' has no attribute 'run_cli'`; the crash test fails with the raw `RuntimeError` escaping instead of `SystemExit`.
 
-- [ ] **Step 3: Implement `run_cli` in `cu_actions.py`**
+- [x] **Step 3: Implement `run_cli` in `cu_actions.py`**
 
 Append:
 
@@ -299,7 +299,7 @@ def run_cli(main):
         sys.exit(1)
 ```
 
-- [ ] **Step 4: Wrap the three `__main__` entry points**
+- [x] **Step 4: Wrap the three `__main__` entry points**
 
 `screenshot.py` — add `import cu_actions` alongside the other `cu_*` imports at the top, and change the end of file to:
 
@@ -312,12 +312,12 @@ if __name__ == "__main__":
 
 `type_text.py` end of file — same replacement (already imports `cu_actions`).
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 Run: `python -m pytest tests/test_cu_mouse_swap.py -v`
 Expected: all passed (6 tests)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add extensions/computer-use/cu_actions.py extensions/computer-use/screenshot.py extensions/computer-use/mouse.py extensions/computer-use/type_text.py tests/test_cu_mouse_swap.py
@@ -331,23 +331,66 @@ git commit -m "fix(computer-use): guard CLI entry points so stdout stays single-
 **Files:**
 - Modify: `.devin/ledgers/cu-button-swap-json-guard.md` (fill EVIDENCE lines)
 
-- [ ] **Step 1: Run the full test suite**
+- [x] **Step 1: Run the full test suite**
 
 Run: `python -m pytest tests -q`
 Expected: all tests pass (422 collected pre-change + 6 new; no deletions, no skips introduced)
 
-- [ ] **Step 2: Smoke the real CLI**
+- [x] **Step 2: Smoke the real CLI**
 
 Run (extension venv python): `screenshot.py --hints --no-image --window all` and `mouse.py position`
 Expected: stdout is exactly one parseable JSON object each.
 
-- [ ] **Step 3: Fill the ledger**
+- [x] **Step 3: Fill the ledger**
 
 Update every `EVIDENCE: pending` line in `.devin/ledgers/cu-button-swap-json-guard.md` with the observed output snippet.
 
-- [ ] **Step 4: Commit ledger**
+- [x] **Step 4: Commit ledger**
+
+Ledger lives at `.devin/ledgers/cu-button-swap-json-guard.md` — the repo
+gitignores `.devin/ledgers/*` (local-only artifacts by convention), so only
+this plan file was committed:
 
 ```bash
-git add .devin/ledgers/cu-button-swap-json-guard.md .devin/plans/2026-09-18-cu-button-swap-json-guard.md
-git commit -m "chore(computer-use): gates ledger for button-swap + JSON guard"
+git add .devin/plans/2026-09-18-cu-button-swap-json-guard.md
+git commit -m "chore(computer-use): implementation plan for button-swap + JSON guard"
 ```
+
+---
+
+### Task 4: --hints segfault root cause (discovered mid-execution)
+
+**Finding:** the reported `screenshot.py --hints` failure was a process-level
+**segfault** — `run_cli` can never emit JSON for hard crashes. Reproduced on
+the installed extension; `python -X faulthandler` showed comtypes `Release`
+running on the main thread → `RPC_E_DISCONNECTED` → access violation.
+
+**Root cause:** COM objects escaping their creating thread's apartment —
+the `uiautomation` `_AutomationClient` singleton (created on whichever
+worker thread ran first, released at process exit on main) and `_el`
+elements crossing the queue to the caller's thread.
+
+**Fix (commit `6e20b13`):**
+- `_uia_core()` — fresh `IUIAutomation` per call via
+  `comtypes.client.CreateObject(_CLSID_CUIAUTOMATION)`; singleton dropped.
+- `_enum_impl()` — `core.GetRootElement()` (no `uiautomation` import);
+  strips `_el` inside the worker before results cross the queue.
+- `_com_thread()` — `CoUninitialize` restored; safe because every COM
+  object is frame-scoped to the worker.
+- Regression: `test_enum_clickables_no_process_crash` — real COM path in
+  a subprocess ×3 (a crash is a non-zero exit, not a dead pytest).
+  `fake_uia` fixture re-seamed to `comtypes.client`.
+
+**Evidence:** 5/5 consecutive `enum_clickables(scope='all')` runs → 196
+elements, exit 0; `screenshot.py --hints --no-image --window all` → valid
+JSON ×3.
+
+### Task 5: review follow-ups (code-review gate)
+
+- `cu_bench.py` + `profile.py` `__main__` wrapped with `run_cli` — the
+  "every CLI emits one JSON" goal is now literal. `cu_session.py` stays
+  unwrapped: daemon/worker lifecycle, per-op errors already JSON.
+- `uiautomation==2.0.29` removed from `requirements.txt` — dead dep after
+  the seam moved to `comtypes.client` (already pinned).
+- Named `_CLSID_CUIAUTOMATION`; dropped the now-redundant `_el` pop in
+  `enum_clickables`.

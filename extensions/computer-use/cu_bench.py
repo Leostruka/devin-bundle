@@ -21,6 +21,8 @@ import sys
 import tempfile
 import time
 
+import cu_actions
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -162,4 +164,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cu_actions.run_cli(main)

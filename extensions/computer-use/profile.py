@@ -14,6 +14,7 @@ import json
 import os
 import sys
 
+import cu_actions
 from cu_motion import (ENV_VAR, PROFILES, JsonParser, get_profile,
                        profile_path, set_profile)
 
@@ -66,4 +67,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cu_actions.run_cli(main)
