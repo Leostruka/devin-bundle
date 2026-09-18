@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""grainrad — unified effects CLI (parity with grainrad.com pipeline).
+
+Pipeline: input -> adjust -> process -> effect -> postprocess -> export.
+Prints JSON to stdout: {"ok": true, "path": ...} or {"ok": false, "error": ...}.
+
+Params: --param k=v repeatable. Bare keys go to the effect; prefix with
+adjust./process./bloom./grain./chromatic./scanlines./vignette. for pipeline stages.
+"""
+import argparse
+import json
+import sys
+from pathlib import Path
+
+from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fx
+from fx.pipeline import adjust, process, postprocess
+
+
+def _coerce(v):
+    for cast in (int, float):
+        try:
+            return cast(v)
+        except ValueError:
+            pass
+    if v.lower() in ("true", "false"):
+        return v.lower() == "true"
+    return v
+
+
+def _parse_params(pairs):
+    eff, adj, proc, post = {}, {}, {}, {}
+    for p in pairs or []:
+        k, _, v = p.partition("=")
+        val = _coerce(v)
+        for prefix, target in (("adjust.", adj), ("process.", proc)):
+            if k.startswith(prefix):
+                target[k[len(prefix):]] = val
+                break
+        else:
+            for stage in ("bloom", "grain", "chromatic", "scanlines", "vignette",
+                          "crtCurve", "phosphor"):
+                if k.startswith(stage + "."):
+                    post.setdefault(stage, {})[k[len(stage) + 1:]] = val
+                    break
+                if k == stage:
+                    post.setdefault(stage, {})
+                    break
+            else:
+                eff[k] = val
+    return eff, adj, proc, post
+
+
+def run(img, effect, eff_params, adj_params, proc_params, post_params, fmt=None):
+    out = adjust(img, **adj_params) if adj_params else img.convert("RGB")
+    if proc_params:
+        out = process(out, **proc_params)
+    out = fx.apply(effect, out, eff_params)
+    if post_params:
+        out = postprocess(out, **post_params)
+    return out
+
+
+def main():
+    p = argparse.ArgumentParser(description="grainrad effects CLI")
+    p.add_argument("--input", help="image/gif/mp4/webm/glb path, or 'webcam[:N]'")
+    p.add_argument("--webcam", action="store_true", help="capture frame from webcam 0")
+    p.add_argument("--output")
+    p.add_argument("--effect", default="ascii")
+    p.add_argument("--format", default=None,
+                   choices=["png", "jpeg", "svg", "txt", "threejs"])
+    p.add_argument("--preset")
+    p.add_argument("--save-preset", metavar="NAME",
+                   help="save current --param set as a custom preset")
+    p.add_argument("--delete-preset", metavar="NAME")
+    p.add_argument("--frames", type=int, default=None,
+                   help="max frames for animated input / frame count for still→gif")
+    p.add_argument("--fps", type=int, default=10, help="mp4/gif output fps")
+    p.add_argument("--param", action="append", default=[])
+    p.add_argument("--self-test", action="store_true")
+    p.add_argument("--list-effects", action="store_true")
+    p.add_argument("--list-presets", action="store_true")
+    args = p.parse_args()
+    try:
+        if args.list_effects:
+            print(json.dumps({"ok": True, "effects": sorted(fx.EFFECTS)}))
+            return 0
+        if args.list_presets:
+            from presets import list_presets
+            print(json.dumps({"ok": True, "presets": list_presets()}))
+            return 0
+        eff_params, adj, proc, post = _parse_params(args.param)
+        if args.delete_preset:
+            from presets import delete_preset
+            print(json.dumps({"ok": delete_preset(args.delete_preset)}))
+            return 0
+        if args.save_preset:
+            from presets import save_preset
+            save_preset(args.save_preset, {
+                "effect": args.effect, "params": eff_params,
+                "adjust": adj, "process": proc, "post": post})
+            print(json.dumps({"ok": True, "preset": args.save_preset}))
+            return 0
+        if args.preset:
+            from presets import get_preset
+            spec = get_preset(args.preset)
+            eff_params = {**spec["params"], **eff_params}
+            adj = {**spec["adjust"], **adj}
+            proc = {**spec["process"], **proc}
+            post = {**spec["post"], **post}
+            if not args.effect or args.effect == "ascii":
+                args.effect = spec.get("effect", args.effect)
+        if args.self_test:
+            import numpy as np
+            y, x = np.mgrid[0:480, 0:640]
+            arr = np.clip(np.exp(-(((x - 320) ** 2 + (y - 240) ** 2) / 2.0 / 140.0**2))
+                          + ((x + y) % 80 < 40) * 0.35, 0, 1)
+            img = Image.fromarray((arr * 255).astype(np.uint8)).convert("RGB")
+            out = args.output or "grainrad_selftest.png"
+        else:
+            if not args.output:
+                print(json.dumps({"ok": False, "error": "missing --output (or --self-test)"}))
+                return 2
+            out = args.output
+            inp = args.input or ""
+            if args.webcam or inp.startswith("webcam"):
+                import webcam as wc
+                dev = int(inp.split(":")[1]) if ":" in inp else 0
+                img = wc.capture(dev)
+            elif inp.lower().endswith((".glb", ".gltf")):
+                import glb_input
+                img = glb_input.load_glb(inp)
+            elif inp:
+                img = Image.open(inp)
+            else:
+                print(json.dumps({"ok": False, "error": "missing --input (or --self-test)"}))
+                return 2
+        if args.format in ("svg", "txt", "threejs"):
+            if args.effect != "ascii":
+                print(json.dumps({"ok": False, "error": f"--format {args.format} requires --effect ascii"}))
+                return 2
+            from fx.ascii_fx import grid, to_svg, to_text, to_threejs
+            gk = {k: eff_params[k] for k in ("scale", "spacing", "out_width", "charset", "custom_chars") if k in eff_params}
+            g = grid(img.convert("RGB"), **gk)
+            if args.format == "threejs":
+                Path(out).write_text(to_threejs(
+                    g, bg=eff_params.get("bg", "#000000")), encoding="utf-8")
+            else:
+                Path(out).write_text(
+                    to_svg(g, **{k: eff_params[k] for k in ("mode", "fg", "bg") if k in eff_params})
+                    if args.format == "svg" else to_text(g), encoding="utf-8")
+        else:
+            import media_io
+            animated = (media_io.is_animated(args.input or "") or
+                        Path(out).suffix.lower() in media_io.ANIM_OUTPUT)
+            if animated:
+                frames, durs = [], []
+                src_frames = (media_io.load_frames(args.input, args.frames)
+                              if media_io.is_animated(args.input or "")
+                              else [(img, 100)] * (args.frames or 20))
+                t = 0.0
+                anim_on = eff_params.get("animate", True) is not False
+                for i, (fr, dur) in enumerate(src_frames):
+                    params = {**eff_params, "seed": eff_params.get("seed", 0),
+                              "time": t if anim_on else 0.0}
+                    frames.append(run(fr, args.effect, params, adj, proc, post))
+                    durs.append(dur)
+                    t += dur / 1000.0
+                if Path(out).suffix.lower() == ".mp4":
+                    media_io.save_mp4(frames, out, fps=args.fps)
+                else:
+                    media_io.save_gif(frames, out, durs)
+            else:
+                result = run(img, args.effect, eff_params, adj, proc, post)
+                result.save(out)
+        print(json.dumps({"ok": True, "path": out}))
+        return 0
+    except Exception as e:
+        print(json.dumps({"ok": False, "error": str(e)}))
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
