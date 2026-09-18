@@ -1116,19 +1116,29 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
 
             $spinnerMessage = ($M.WorktreeInstancia -f $inst.Label, $worktree)
             $worktreeAddOk = $true
-            if ($info.Type -eq "new") {
-                $base = if ($inst.BaseBranch) { $inst.BaseBranch } else { $proj.CurrentBranch }
+            $createdBranch = $false
+            if ($info.Type -eq "new" -or $info.Type -eq "remote") {
+                $baseRef = if ($info.Type -eq "new") {
+                    if ($inst.BaseBranch) { $inst.BaseBranch } else { $proj.CurrentBranch }
+                } else {
+                    if ($info.RemoteRef) { $info.RemoteRef } else { "origin/$($inst.Branch)" }
+                }
                 $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
-                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch $using:base 2>&1
+                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch $using:baseRef 2>&1
                     [PSCustomObject]@{ Ok = $?; Output = $output }
                 }
-                $worktreeAddOk = $result -and $result.Ok
-            }
-            elseif ($info.Type -eq "remote") {
-                $remoteRef = if ($info.RemoteRef) { $info.RemoteRef } else { "origin/$($inst.Branch)" }
-                $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
-                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch $using:remoteRef 2>&1
-                    [PSCustomObject]@{ Ok = $?; Output = $output }
+                if (-not ($result -and $result.Ok) -and (git -C $projectPath branch --list $branch)) {
+                    # branch ja existe (rerun, local de remota, resto de crash): anexa em vez de recriar
+                    $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
+                        $output = git -C $using:projectPath worktree add "$using:worktree" $using:branch 2>&1
+                        [PSCustomObject]@{ Ok = $?; Output = $output }
+                    }
+                    if ($result -and $result.Ok) {
+                        Write-Host ($M.WorktreeBranch -f $branch, " (existente - anexada)") -ForegroundColor DarkGray
+                    }
+                }
+                else {
+                    $createdBranch = ($info.Type -eq "new") -and ($result -and $result.Ok)
                 }
                 $worktreeAddOk = $result -and $result.Ok
             }
@@ -1144,7 +1154,7 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
 
             $inst.WorktreePath = $worktree
             $proj.CreatedWorktrees += $worktree
-            if ($info.Type -eq "new") {
+            if ($createdBranch) {
                 $proj.CreatedBranches += $branch
             }
 
@@ -1427,7 +1437,13 @@ foreach ($proj in $projetos | Where-Object { $_.CreatedWorktrees.Count -gt 0 -or
         git worktree remove $wt --force 2>$null
     }
     foreach ($cb in $proj.CreatedBranches) {
-        git branch -D $cb 2>$null
+        # preserva branch com commits nao mergeados - merge manual apos a tarefa
+        if (git branch --merged HEAD --list $cb 2>$null) {
+            git branch -d $cb 2>$null
+        }
+        else {
+            Write-Host "  Branch '$cb' tem commits nao mergeados - mantida para merge manual." -ForegroundColor Yellow
+        }
     }
     Pop-Location
     if ($proj.WorktreesRoot -and (Test-Path -LiteralPath $proj.WorktreesRoot)) { Remove-Item -LiteralPath $proj.WorktreesRoot -Recurse -Force -ErrorAction SilentlyContinue }
