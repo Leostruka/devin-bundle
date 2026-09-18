@@ -28,14 +28,6 @@
       "exported_at": "2026-09-08T21:39:22.433086"
     },
     {
-      "name": "autonomous-gates",
-      "source": "created:Devin bundle (PrimeAgent/RLM research)",
-      "purpose": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance criteria that must pass before declaring done.",
-      "original_path": "%APPDATA%\\devin\\skills\\autonomous-gates",
-      "exported_at": "2026-09-08T21:39:22.433270",
-      "export_hash": "D4ED0FB5CC5B29EE5B5267E461EDA55356969F103F268E9681A08B7132F502EB"
-    },
-    {
       "name": "code-review",
       "source": "devin-bundle",
       "purpose": "Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'.",
@@ -273,14 +265,6 @@
       "exported_at": "2026-09-08T21:39:22.447129"
     },
     {
-      "name": "verification-before-completion",
-      "source": "devin-bundle",
-      "purpose": "Use when about to claim work is complete, fixed, or passing.",
-      "original_path": "%APPDATA%\\devin\\skills\\verification-before-completion",
-      "export_hash": "03929AB845FD0D9C96F5941EA511153801C94E3D2F8ABCB8959009A382FF90B1",
-      "exported_at": "2026-09-08T21:39:22.447321"
-    },
-    {
       "name": "ontology-validator",
       "source": "created:Devin bundle (ontologies-keep-honest)",
       "purpose": "Use when validating tool outputs or data against a domain ontology or structured knowledge base. Ensures entities, types, and relations are consistent before side effects.",
@@ -371,14 +355,6 @@
       "purpose": "Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests.",
       "export_hash": "466379CB661D286625C3F3DAD3DD07B8FBBBAECD77FE2D4136AF078370F2923C",
       "exported_at": "2026-09-08T21:39:22.457579"
-    },
-    {
-      "name": "unlazy",
-      "source": "devin-bundle (adapted from Leonxlnx/unlazy)",
-      "purpose": "Use when a task is at risk of agent laziness (large, multi-step, previously half-done, or with clear acceptance criteria) to force proof of completion through a gates ledger instead of trusting agent reports.",
-      "original_path": "%APPDATA%\\devin\\skills\\unlazy",
-      "export_hash": "9A4AE57CE56632E0661E5A82472762CEBA21FAF678B6D4BEA135FE329C727359",
-      "exported_at": "2026-09-08T21:39:22.457731"
     },
     {
       "name": "impeccable",
@@ -552,9 +528,14 @@
       "name": "execution",
       "source": "devin-bundle",
       "purpose": "Use when executing a written implementation plan with checkpoints, when implementing a feature/fix from a spec or tickets, when deciding how much human review and upfront planning a task needs, or when working unattended through local Markdown issues in a blocking DAG (AFK loop)."
+    },
+    {
+      "name": "gates",
+      "source": "devin-bundle",
+      "purpose": "Use when about to claim work is complete/fixed/passing, when a task risks agent laziness (large, multi-step, previously half-done, or with acceptance criteria), or when running long-horizon/unattended work where quality must be verified before proceeding. Covers verification-before-completion, gates ledgers, and autonomous gate semantics."
     }
   ],
-  "skill_count": 70,
+  "skill_count": 68,
   "rule_count": 28,
   "scripts": [
     {
