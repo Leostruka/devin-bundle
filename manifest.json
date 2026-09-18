@@ -152,14 +152,6 @@
       "exported_at": "2026-09-08T21:39:22.444591"
     },
     {
-      "name": "self-extend",
-      "source": "devin-bundle",
-      "purpose": "Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.",
-      "original_path": "%APPDATA%\\devin\\skills\\self-extend",
-      "export_hash": "9D3D078AA923208CAACCA28CBDBDC6D233E6945246D7CE53F78AD85911F52C73",
-      "exported_at": "2026-09-08T21:39:22.444983"
-    },
-    {
       "name": "tdd",
       "source": "devin-bundle",
       "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate.",
@@ -365,14 +357,6 @@
       "exported_at": "2026-09-08T21:39:22.460066"
     },
     {
-      "name": "devin-manager",
-      "source": "created:Devin bundle (DeepPaperNote evidence-first concept, MIT)",
-      "purpose": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only persist under `.devin/` after explicit approval.",
-      "original_path": "%APPDATA%\\devin\\skills\\devin-manager",
-      "export_hash": "7BB80502698879B6A6BE116C8085785A57669FFEA1208C55C59CA18B0CF1C31C",
-      "exported_at": "2026-09-08T21:39:22.460974"
-    },
-    {
       "name": "structured-knowledge-extraction",
       "source": "created:Devin bundle (Hyper-Extract concept, Apache-2.0)",
       "purpose": "Use when extracting entities, relations, evidence, and provenance from Markdown or plain text into a typed, versioned knowledge graph under `.devin/`.",
@@ -453,9 +437,14 @@
       "name": "project-bootstrap",
       "source": "devin-bundle",
       "purpose": "Use when starting work on a project that lacks a `.devin/` configuration, when the user wants to add skills/hooks/rules/local tools systematically, when configuring a repo's issue tracker + triage labels + domain docs for the engineering skills, or when setting up Husky pre-commit hooks with lint-staged/typecheck/tests."
+    },
+    {
+      "name": "devin-config",
+      "source": "devin-bundle",
+      "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval."
     }
   ],
-  "skill_count": 59,
+  "skill_count": 58,
   "rule_count": 28,
   "scripts": [
     {
