@@ -55,7 +55,7 @@ Every cited failure must be reproducible; every claimed improvement must be
 validated against held-out evidence, not self-chosen tests.
 
 > **Cross-skill:** For the full FASE 0 deep-research + 10-step improvement loop
-> with held-out validation and unlazy gates, invoke `/continuous-improvement`.
+> with held-out validation and unlazy gates, invoke `/self-improvement`.
 > This mode reuses its anti-cheat principles (A1-A5) and convergence criterion.
 
 **Convergence criterion:** reach the optimal operating conjuncture for the
@@ -358,7 +358,7 @@ Every refinement must be logged to `.devin/refinements.log.jsonl` (project) or
 
 Each line is a JSON object:
 ```json
-{"id": "ref-001", "timestamp": "2026-08-15T15:30:00-03:00", "type": "skill", "target": "context-folding", "action": "created", "evidence": "RLM research verified from arXiv:2512.24601", "session": "PrimeAgent verification", "status": "applied", "outcome": null}
+{"id": "ref-001", "timestamp": "2026-08-15T15:30:00-03:00", "type": "skill", "target": "context-hygiene", "action": "created", "evidence": "RLM research verified from arXiv:2512.24601", "session": "PrimeAgent verification", "status": "applied", "outcome": null}
 ```
 
 #### Fields

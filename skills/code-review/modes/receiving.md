@@ -28,7 +28,7 @@ Every review item is either **pushed** to you by the reviewer or **pulled** by y
 - **Pushed feedback:** the reviewer hands you a concrete violation of a standard, spec, or baseline smell.
   - Verify the claim against the source they cited.
   - Fix it and test it; the criterion was already in the review context.
-- **Pulled feedback:** the reviewer points you to a skill, convention, or gate you should have used before asking for review ("use `tdd`", "read `CODING_STANDARDS.md`", "run the type checker").
+- **Pulled feedback:** the reviewer points you to a skill, convention, or gate you should have used before asking for review ("use `testing`", "read `CODING_STANDARDS.md`", "run the type checker").
   - Stop and pull that source before implementing.
   - Apply the source, then verify the result before re-submitting.
   - If the same pulled pattern is repeatedly missing, add it to your pre-review checklist.
@@ -214,7 +214,7 @@ You understand 1,2,3,6. Unclear on 4,5.
 ## Cross-skills
 
 - Use `code-review` to perform a fresh two-axis review of the diff before re-submitting.
-- Use `verification-before-completion` as a gate before declaring the feedback addressed.
+- Use `gates` as a gate before declaring the feedback addressed.
 
 ## GitHub Thread Replies
 

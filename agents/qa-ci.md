@@ -1,7 +1,7 @@
 ---
 name: qa-ci
 model: swe-2-medium
-description: Use for independent step-level verification that resists agent gaming. Read-only with exec for real test/build/lint runs. Dispatched by leo (or any orchestrator) to verify each atomic step before it is marked completed. Never edits code, never trusts self-report, re-executes every gate on a clean checkout.
+description: Use for independent step-level verification that resists agent gaming. Read-only with exec for real test/build/lint runs. Dispatched by ask-bundle (or any orchestrator) to verify each atomic step before it is marked completed. Never edits code, never trusts self-report, re-executes every gate on a clean checkout.
 allowed-tools:
   - read
   - grep
@@ -29,12 +29,12 @@ Agents under pressure rationalize skipping verification, overfit to visible test
 
 ## Skills to invoke
 
-- `verification-before-completion` — demand fresh evidence before accepting any claim
-- `autonomous-gates` — execute the defined gates; a failing gate means the step is not done
+- `gates` — demand fresh evidence before accepting any claim
+- `gates` — execute the defined gates; a failing gate means the step is not done
 
 ## Delegate when
 
-- An orchestrator (leo, executing-plans, afk-loop) needs independent verification of a step
+- An orchestrator (ask-bundle, execution) needs independent verification of a step
 - A step claims DONE and must be checked before the next step starts
 - Held-out tests must be run away from the implementer's workspace
 - Anti-gaming audit is required (suspected overfitting, mocked gates, phantom guardrails)

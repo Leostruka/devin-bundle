@@ -71,8 +71,8 @@ Os números de benchmark próprios do Akita (MiniMax M3 24→91, Fable 5 96 pts,
 Grok 4.6 5x mais barato) são autorrelatados e não independentemente
 verificáveis — registrados como tal.
 
-As skills de orquestração (`primeagent-reference`, `dispatching-parallel-agents`),
-folding (`context-folding`) e spec (`planning-pipeline`) trazem caveats
+As skills de orquestração (`self-improvement`, `dispatching-parallel-agents`),
+folding (`context-hygiene`) e spec (`planning`) trazem caveats
 explícitos dessa postura em seus respectivos `SKILL.md`.
 
 ```mermaid
@@ -126,9 +126,9 @@ As 48 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 
-1. invocar `using-skills` no início;
+1. invocar `skill-discovery` no início;
 2. usar `ask-bundle` quando o fluxo completo estiver incerto;
-3. usar `tool-and-skill-discovery` quando nenhuma skill conhecida corresponder;
+3. usar `skill-discovery` quando nenhuma skill conhecida corresponder;
 4. consultar [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) para descoberta por domínio e custo de contexto;
 5. carregar apenas as 1–3 skills necessárias para a tarefa.
 
@@ -136,17 +136,17 @@ Principais grupos:
 
 | Grupo | Skills principais | Uso |
 |---|---|---|
-| Ideação e decisão | `grilling`, `wayfinder`, `prototype`, `research` | Tornar uma ideia precisa antes de construir |
-| Planejamento | `planning-pipeline`, `writing-plans`, `executing-plans` | Gerar PRD, tickets verticais ou plano detalhado |
-| Implementação | `implement`, `tdd`, `codebase-design` | Construir comportamento test-first em módulos profundos |
-| Execução autônoma | `afk-loop`, `autonomous-gates`, `unlazy` | Trabalhar sem supervisão contínua com gates verificáveis |
-| Qualidade | `code-review`, `receiving-code-review`, `mutation-testing`, `verification-before-completion` | Revisar spec, padrões, testes e evidências |
-| Diagnóstico | `diagnosing-bugs`, `debug-ci-failures` | Reproduzir, localizar causa raiz e corrigir regressões |
-| Arquitetura | `improve-codebase-architecture`, `codebase-design`, `legacy-refactor` | Aprofundar módulos e reduzir dependências rasas |
-| Contexto e memória | `context-window-hygiene`, `context-folding`, `project-memory`, `memory-hygiene`, `handoff` | Controlar contexto e preservar conhecimento útil |
-| Git e entrega | `using-git-worktrees`, `git-helper`, `gh`, `pr-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
-| Infra e especialidades | `security-audit`, `a11y-audit`, `api-design`, `database`, `e2e-testing`, `i18n`, `docker`, `performance`, `observability-quality` | Aplicar processos especializados |
-| Extensão do harness | `project-setup`, `self-extend`, `setup-pre-commit`, `devin-manager`, `continuous-improvement` | Configurar e evoluir o ecossistema |
+| Ideação e decisão | `grilling`, `planning`, `prototype`, `research` | Tornar uma ideia precisa antes de construir |
+| Planejamento | `planning`, `planning`, `execution` | Gerar PRD, tickets verticais ou plano detalhado |
+| Implementação | `execution`, `testing`, `architecture` | Construir comportamento test-first em módulos profundos |
+| Execução autônoma | `execution`, `gates`, `gates` | Trabalhar sem supervisão contínua com gates verificáveis |
+| Qualidade | `code-review`, `code-review`, `testing`, `gates` | Revisar spec, padrões, testes e evidências |
+| Diagnóstico | `debugging`, `debugging` | Reproduzir, localizar causa raiz e corrigir regressões |
+| Arquitetura | `architecture`, `architecture`, `architecture` | Aprofundar módulos e reduzir dependências rasas |
+| Contexto e memória | `context-hygiene`, `context-hygiene`, `memory-management`, `memory-management`, `handoff` | Controlar contexto e preservar conhecimento útil |
+| Git e entrega | `git-workflows`, `git-workflows`, `gh`, `code-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
+| Infra e especialidades | `security`, `a11y-audit`, `api-spec`, `database`, `e2e-testing`, `i18n`, `docker`, `performance`, `observability-quality` | Aplicar processos especializados |
+| Extensão do harness | `project-bootstrap`, `devin-config`, `project-bootstrap`, `devin-config`, `self-improvement` | Configurar e evoluir o ecossistema |
 
 ### 3. Perfis de subagentes
 
@@ -210,7 +210,7 @@ Há 26 scripts Python em `scripts/`: 9 entry points de hooks (6 consolidados que
 Em um projeto ainda não preparado:
 
 1. abra o Devin CLI na raiz;
-2. peça para executar `project-setup` para a configuração geral ou `setup-engineering-skills` para o fluxo de engenharia baseado em spec, tickets e triagem;
+2. peça para executar `project-bootstrap` para a configuração geral ou `project-bootstrap` para o fluxo de engenharia baseado em spec, tickets e triagem;
 3. revise os arquivos criados em `.devin/`;
 4. execute os checks de baseline do projeto;
 5. versione apenas configuração não sensível.
@@ -220,11 +220,11 @@ Em um projeto ainda não preparado:
 ```mermaid
 flowchart LR
     I[Ideia] --> G[grilling]
-    G --> P[planning-pipeline: Spec]
-    P --> Q[planning-pipeline: Tickets]
-    Q --> E[implement + tdd]
+    G --> P[planning: Spec]
+    P --> Q[planning: Tickets]
+    Q --> E[execution + testing]
     E --> C[code-review]
-    C --> V[verification-before-completion]
+    C --> V[gates]
     V --> F[finishing-a-development-branch / PR / deploy]
 ```
 
@@ -232,9 +232,9 @@ flowchart LR
 
 `grilling` entrevista o usuário em rodadas de frontier. Cada pergunta deve ser assertiva e incluir uma recomendação do agente, reduzindo turnos vazios. Ao final, produz um **shared design concept** estruturado como PRD. Em repositórios, o modo With-docs preserva contexto em `.devin/CONTEXT.md` e decisões em `.devin/adr/`; fora de um repositório, use o modo Stateless.
 
-Use quando o resultado ainda contém decisões. Para alterações pequenas e óbvias, `review-cadence` pode autorizar ir diretamente à implementação.
+Use quando o resultado ainda contém decisões. Para alterações pequenas e óbvias, `execution` pode autorizar ir diretamente à implementação.
 
-#### 2. Produzir o PRD com `planning-pipeline` Spec
+#### 2. Produzir o PRD com `planning` Spec
 
 O PRD é um **destination document**, não um resumo descartável. Ele registra:
 
@@ -252,11 +252,11 @@ O modo Tickets gera **tracer bullets**: cada ticket entrega um caminho estreito,
 
 Cada ticket declara `Blocked by:`. Isso forma um DAG; qualquer ticket aberto cujos blockers estejam resolvidos pertence à frontier e pode ser executado. Para tracker local, os arquivos ficam em `.devin/scratch/<feature>/issues/*.md`.
 
-Para um trabalho focado de uma sessão, a alternativa é `writing-plans` → `executing-plans`, com passos pequenos e checkpoints explícitos.
+Para um trabalho focado de uma sessão, a alternativa é `planning` → `execution`, com passos pequenos e checkpoints explícitos.
 
 #### 4. Implementar com TDD
 
-`implement` usa `tdd` para cada comportamento:
+`execution` usa `testing` para cada comportamento:
 
 1. **RED** — escrever primeiro um teste que representa comportamento ausente;
 2. **verify RED** — executar e confirmar que falha pelo motivo correto;
@@ -274,7 +274,7 @@ O feedback loop do projeto — testes, typecheck, lint ou build — define o tet
 - **Spec:** o diff entrega o comportamento e os critérios aprovados?
 - **Standards:** o diff respeita regras, arquitetura, segurança, testes e convenções?
 
-Padrões **push** são colocados explicitamente no contexto do reviewer: spec, critérios e regras locais que precisam ser julgados. Padrões **pull** são responsabilidades que o implementer deve buscar e aplicar, como `tdd`, convenções do projeto e verification; o reviewer faz spot-check sem duplicar todo esse contexto. `receiving-code-review` usa a mesma distinção para decidir se o feedback revela ausência no prompt/review ou falha do implementer em consultar um padrão existente.
+Padrões **push** são colocados explicitamente no contexto do reviewer: spec, critérios e regras locais que precisam ser julgados. Padrões **pull** são responsabilidades que o implementer deve buscar e aplicar, como `testing`, convenções do projeto e verification; o reviewer faz spot-check sem duplicar todo esse contexto. `code-review` usa a mesma distinção para decidir se o feedback revela ausência no prompt/review ou falha do implementer em consultar um padrão existente.
 
 O Sand Castle é apenas um modelo mental para planner → implementers → merger/reviewer; o bundle não instala a biblioteca nem exige Docker.
 
@@ -286,11 +286,11 @@ Antes de concluir:
 2. executar a suíte mais ampla apropriada;
 3. revisar o diff e o status do Git;
 4. confirmar que não há segredos, artefatos descartáveis ou assinaturas de IA;
-5. usar `verification-before-completion`;
+5. usar `gates`;
 6. usar `finishing-a-development-branch` para escolher merge, PR ou manutenção da branch;
-7. usar `gh`/`pr-review` para GitHub e `deploy` apenas quando a publicação for solicitada.
+7. usar `gh`/`code-review` para GitHub e `deploy` apenas quando a publicação for solicitada.
 
-### Fluxo autônomo: `afk-loop`
+### Fluxo autônomo: `execution`
 
 Use quando tickets locais já estão aprovados e o agente deve trabalhar sem direção a cada etapa.
 
@@ -320,22 +320,22 @@ O loop não faz push sem autorização e não trabalha diretamente em `main`/`ma
 
 | Situação | Entrada correta | Próximo passo |
 |---|---|---|
-| Bug difícil ou intermitente | `diagnosing-bugs` | Reproduzir → causa raiz → teste de regressão → TDD |
-| CI falhando | `debug-ci-failures` | Isolar job/ambiente → corrigir → verificar |
-| Issues externos brutos | `triage` | Transformar em issue agent-ready → `implement` |
-| Projeto grande e nebuloso | `wayfinder` | Resolver decision tickets → PRD → tickets |
+| Bug difícil ou intermitente | `debugging` | Reproduzir → causa raiz → teste de regressão → TDD |
+| CI falhando | `debugging` | Isolar job/ambiente → corrigir → verificar |
+| Issues externos brutos | `intake` | Transformar em issue agent-ready → `execution` |
+| Projeto grande e nebuloso | `planning` | Resolver decision tickets → PRD → tickets |
 | Dúvida que precisa de código executável | `prototype` | Preservar aprendizado → voltar ao PRD |
-| Pergunta factual extensa | `research` ou `deep-mode` | Gerar evidência citada → alimentar decisão |
-| Informação depende de outra pessoa | `planning-pipeline` Questionnaire | Coletar respostas → Spec/Grilling |
-| Conflito Git em andamento | `resolving-merge-conflicts` | Resolver por intenção → verificar operação |
+| Pergunta factual extensa | `research` ou `research` | Gerar evidência citada → alimentar decisão |
+| Informação depende de outra pessoa | `planning` Questionnaire | Coletar respostas → Spec/Grilling |
+| Conflito Git em andamento | `git-workflows` | Resolver por intenção → verificar operação |
 
 ## Arquitetura: módulos profundos
 
-O ecossistema segue a heurística de John Ousterhout: um módulo deve esconder muita complexidade atrás de uma interface pequena. `improve-codebase-architecture` procura módulos rasos, pass-throughs, fan-out de dependências, wrappers sem abstração e contratos espalhados. `codebase-design` ajuda a redesenhar a seam escolhida.
+O ecossistema segue a heurística de John Ousterhout: um módulo deve esconder muita complexidade atrás de uma interface pequena. `architecture` procura módulos rasos, pass-throughs, fan-out de dependências, wrappers sem abstração e contratos espalhados. `architecture` ajuda a redesenhar a seam escolhida.
 
 Uso recomendado:
 
-1. executar `improve-codebase-architecture` para encontrar oportunidades;
+1. executar `architecture` para encontrar oportunidades;
 2. selecionar uma oportunidade com evidência;
 3. usar `grilling` para delimitar o resultado;
 4. declarar módulo e interface no PRD;
@@ -358,7 +358,7 @@ A janela contém prompt do sistema, ferramentas, regras, skills invocadas, conve
 
 ### Memória entre sessões
 
-`project-memory` registra conhecimento durável como Markdown auditável em `.devin/memory/`:
+`memory-management` registra conhecimento durável como Markdown auditável em `.devin/memory/`:
 
 1. o agente identifica algo reutilizável;
 2. propõe texto e caminho;
@@ -505,9 +505,9 @@ Fluxo entre máquinas:
 1. Abra o Devin CLI na raiz do projeto.
 2. Descreva o resultado, os critérios e qualquer autorização relevante.
 3. Deixe o agente invocar as skills correspondentes antes de agir.
-4. Para ideia nova: `grilling` → PRD → tickets → `implement`/`tdd` → review → verificação.
-5. Para bug: `diagnosing-bugs` → reprodução → teste de regressão → fix → verificação.
-6. Para trabalho noturno: prepare tickets locais, worktree e baseline; então peça `afk-loop` explicitamente.
+4. Para ideia nova: `grilling` → PRD → tickets → `execution`/`testing` → review → verificação.
+5. Para bug: `debugging` → reprodução → teste de regressão → fix → verificação.
+6. Para trabalho noturno: prepare tickets locais, worktree e baseline; então peça `execution` explicitamente.
 7. Quando a tarefa mudar, prefira limpar o contexto; compacte apenas para preservar continuidade indispensável.
 8. Aprove memórias somente quando forem úteis em sessões futuras.
 9. Revise o diff e os checks antes de autorizar commit, push, merge ou deploy.
@@ -519,7 +519,7 @@ Exemplos de pedidos:
 Use grilling para transformar esta ideia em um design concept e depois gere um PRD.
 Quebre este PRD em tickets verticais com relações Blocked by.
 Implemente o ticket 03 usando TDD e faça code-review nos eixos Standards e Spec.
-Execute o afk-loop para .devin/scratch/minha-feature em um worktree isolado.
+Execute o execution para .devin/scratch/minha-feature em um worktree isolado.
 Diagnostique esta falha; primeiro crie um comando que a reproduza de forma confiável.
 Audite a arquitetura e encontre módulos rasos que podem virar módulos profundos.
 Registre esta regra de negócio na memória do projeto e me mostre o texto antes de salvar.

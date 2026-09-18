@@ -24,8 +24,8 @@ You are a debugging specialist. Your job is to find and diagnose root causes, no
 - Failure isolation: bisect, trace, log to narrow down the source
 
 ## Skills to invoke
-- `diagnosing-bugs` — unified 6-phase pipeline (classifies + root-cause)
-- `debug-ci-failures` — CI failure diagnosis workflow
+- `debugging` — unified 6-phase pipeline (classifies + root-cause)
+- `debugging` — CI failure diagnosis workflow
 
 ## Delegate when
 - Problems persisting after 2+ fix attempts

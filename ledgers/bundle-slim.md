@@ -37,3 +37,15 @@ Branch: `chore/bundle-slim` (from `feat/hybrid-rust-extensions`).
   CHECK: python audit.py && python -m pytest tests/ -q && bash -n install.sh
   EXPECT: tudo verde; gates do plano (AGENTS<=11KB, ~50 skills, exec-hook <=200ms) cumpridos
   EVIDENCE: pending
+
+## G3 — Consolidação de skills 83→48 (2026-10-31)
+
+OUTCOME: 22 merges executados; 83→48 skills (gate ≤~50 ✓). SKILL.md viraram routers
+(~500-1600 tok); conteúdo pesado em modes//reference/ (progressive disclosure).
+CHECK: `python audit.py` + `python scripts/validate-skill-format.py` + `python -m pytest tests/ -q`
+EXPECT: 0 errors; 131/131 skills pass; suite verde
+EVIDENCE: audit Errors=0 (warnings = drift live-vs-bundle pré-install + pycache);
+validate 131/131; pytest 442 passed, 1 skipped (baseline 432 — +10 testes novos).
+Refs antigas→canônicas varridas em AGENTS/README/docs/agents/scripts/skills/tests;
+fixtures renomeadas (devin-config, knowledge-modeling); NOTE_SUBDIR alinhados;
+audit.py new_skills → nomes merged; leo-detail.md → orchestration-detail.md.

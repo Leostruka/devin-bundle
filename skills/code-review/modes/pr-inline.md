@@ -3,7 +3,7 @@
 
 # PR Review (Inline GitHub)
 
-> **REQUIRED SUB-SKILLS:** `/unlazy`, `/gh`, `/writing-plans`, `/code-review`
+> **REQUIRED SUB-SKILLS:** `/gates`, `/gh`, `/planning`, `/code-review`
 > **MANDATORY BUDGET:** `standard` or `strict`
 > **Language:** follow the PR / repository language (Portuguese if the codebase is in Portuguese)
 
@@ -48,7 +48,7 @@ Before the first cycle, gather:
 1. `gh pr view {N} --json headRefOid --jq .headRefOid` — the head SHA.
 2. `gh pr diff {N} -- path/to/file` for each file that will be commented on.
 3. A confirmed `{file: line}` map for every target comment.
-4. The `.devin/ledgers/{date}-pr{N}-review.md` file created via `/unlazy`.
+4. The `.devin/ledgers/{date}-pr{N}-review.md` file created via `/gates`.
 
 ## Cycle Steps
 

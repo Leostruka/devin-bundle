@@ -23,7 +23,7 @@ Before entering plan mode without brainstorming: invoke `grilling` first.
 **Priority:** process skills first (they set the approach), implementation
 skills carry it out. "Let's build X" → `grilling` → impl skills. "Fix this
 bug" → `debugging` → domain skills. "Just rename this" → `execution`'s
-review-cadence to decide if grilling can be skipped.
+execution to decide if grilling can be skipped.
 
 **Red flags** — you're rationalizing: "just a simple question", "need more
 context first", "let me explore first", "I can check files quickly", "doesn't

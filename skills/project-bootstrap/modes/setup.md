@@ -1,9 +1,9 @@
-# Mode: project-setup
+# Mode: project-bootstrap
 
 
 # Project Setup
 
-Set up a Devin CLI project workspace inside `.devin/` only. This is a systematic, validated workflow that adapts the `continuous-improvement` 10-step loop to project onboarding.
+Set up a Devin CLI project workspace inside `.devin/` only. This is a systematic, validated workflow that adapts the `self-improvement` 10-step loop to project onboarding.
 
 ## Principle
 
@@ -17,8 +17,8 @@ Every project that the agent touches deserves a predictable, auditable `.devin/`
 
 ## When NOT to use
 
-- The project already has a complete `.devin/` and the user wants a specific edit — use `/self-extend` instead.
-- The task is to write application code — use `/implement` or `/tdd`.
+- The project already has a complete `.devin/` and the user wants a specific edit — use `/devin-config` instead.
+- The task is to write application code — use `/execution` or `/testing`.
 - The user only wants a global config change — use `~/.config/devin/` paths.
 
 ## FASE 0 — Deep Research (before any change)
@@ -37,11 +37,11 @@ Run these checks in order and record the evidence. Do not proceed until each ste
    - List `.devin/skills/*/` and `.devin/rules/*.md`.
 
 3. **Confirm Devin CLI conventions.**
-   - Rules: `.devin/global_rules.md` and `.devin/rules/*.md` (sources: Devin CLI docs, `self-extend` skill).
+   - Rules: `.devin/global_rules.md` and `.devin/rules/*.md` (sources: Devin CLI docs, `devin-config` skill).
    - Skills: `.devin/skills/<name>/SKILL.md`.
    - Hooks: `.devin/hooks.v1.json`.
    - MCP: `.devin/mcp_config.json` and `.devin/mcp_config.local.json` (gitignored).
-   - Memory: `.devin/memory/` (see `/project-memory`).
+   - Memory: `.devin/memory/` (see `/memory-management`).
 
 4. **List the bundle resources available.**
    - Read the global bundle `config.json`, `manifest.json`, and `AGENTS.md` to know which skills, scripts, and hooks can be copied into the project.
@@ -50,7 +50,7 @@ Run these checks in order and record the evidence. Do not proceed until each ste
 
 ### Passo 1 — OBSERVAR
 
-Record the current state in a ledger at `.devin/ledgers/project-setup.md` (create the `ledgers/` directory if it does not exist):
+Record the current state in a ledger at `.devin/ledgers/project-bootstrap.md` (create the `ledgers/` directory if it does not exist):
 
 ```markdown
 # Project setup: <repo-name>
@@ -90,7 +90,7 @@ Apply the best-fit alternative for each component. This is the deterministic set
 
 1. **Run the engineering-skills setup** to configure issue tracker, triage labels, and domain docs (all inside `.devin/`).
 2. **Create `.devin/global_rules.md`** with a short `## Agent skills` block and the repo-specific rules from the engineering-skills setup.
-2.5. **Create `.devin/rules/agents.md` from the project template** — copy `skills/project-setup/templates/agents.md` into `.devin/rules/agents.md` and replace the stack-specific placeholder with the project's concrete rules (e.g., TypeScript without `any`, linter commands, naming conventions). This is the project's per-stack agent rules file; keep it short and action-oriented.
+2.5. **Create `.devin/rules/agents.md` from the project template** — copy `skills/project-bootstrap/templates/agents.md` into `.devin/rules/agents.md` and replace the stack-specific placeholder with the project's concrete rules (e.g., TypeScript without `any`, linter commands, naming conventions). This is the project's per-stack agent rules file; keep it short and action-oriented.
 3. **Create `.devin/rules/*.md`** for optional, trigger-scoped rules.
 4. **Create `.devin/hooks.v1.json`** with the essential hooks from the bundle:
    - `behavioral-nudge.py` on `UserPromptSubmit`
@@ -103,19 +103,19 @@ Apply the best-fit alternative for each component. This is the deterministic set
    - `memory-post-exec.py` on `PostToolUse` for `exec`
    - `memory-stop.py` on `Stop`
 5. **Create `.devin/mcp_config.json`** as an empty scaffold if the project has no MCP servers; otherwise ask the user which servers to add.
-6. **Create `.devin/skills/project-memory/`** if it does not exist, copying `note.md`, `capture-memory.py`, `query-memory.py`, and `audit-memory.py` from the bundle. Use `/project-memory` to walk the user through the first capture.
+6. **Create `.devin/skills/memory-management/`** if it does not exist, copying `note.md`, `capture-memory.py`, `query-memory.py`, and `audit-memory.py` from the bundle. Use `/memory-management` to walk the user through the first capture.
 7. **Create a local copy of the engineering-skills setup** if the user wants the engineering flow available locally.
 8. **Create `.devin/memory/`** directory and seed `MOC.md`.
 
 ### Passo 4.5 — POPULAR A BASE DE CONHECIMENTO
 
-The `.devin/` structure is not a solid base until it has content. Run the following setup skills in order, recording everything in `.devin/ledgers/project-setup.md`:
+The `.devin/` structure is not a solid base until it has content. Run the following setup skills in order, recording everything in `.devin/ledgers/project-bootstrap.md`:
 
 1. **Run `grilling`** to capture the project's big-picture goals, constraints, and stakeholders. Save the approved design (if one emerges) to `.devin/specs/`.
-2. **Run `domain-modeling`** to build `.devin/CONTEXT.md` and `.devin/adr/`. Resolve ambiguous or overloaded terms before they leak into code.
-3. **Run `project-memory`** to capture a first memory entry — stack, conventions, and any decisions the user already shared.
-4. **Run `triage`** once on the existing issue tracker to show the user the triage flow and confirm label mapping.
-5. **Run `planning-pipeline`** on the most urgent item to demonstrate the spec -> tickets flow.
+2. **Run `knowledge-modeling`** to build `.devin/CONTEXT.md` and `.devin/adr/`. Resolve ambiguous or overloaded terms before they leak into code.
+3. **Run `memory-management`** to capture a first memory entry — stack, conventions, and any decisions the user already shared.
+4. **Run `intake`** once on the existing issue tracker to show the user the triage flow and confirm label mapping.
+5. **Run `planning`** on the most urgent item to demonstrate the spec -> tickets flow.
 
 Stop after each step if the user has no content to populate yet. The goal is to leave the project with at least a populated `CONTEXT.md`, one memory entry, and a triaged issue, not to force a full spec.
 
@@ -192,7 +192,7 @@ PENDING: <what the user still needs to decide or provide>
 
 - The user asks to write files outside `.devin/`.
 - A requested hook conflicts with the project's CI or security policy.
-- The user wants to skip the engineering-skills setup but still use `triage`, `planning-pipeline`, or `wayfinder`.
+- The user wants to skip the engineering-skills setup but still use `intake`, `planning`, or `planning`.
 - A proposed MCP server requires a secret that the user has not provided.
 
 ## Common mistakes
@@ -207,9 +207,9 @@ PENDING: <what the user still needs to decide or provide>
 - The engineering-skills setup — issue tracker, triage labels, domain docs.
 - `/grilling` — capture the project's goals and produce a design doc.
 - `/ai-coding-dictionary` — align any AI-coding jargon before it enters the project glossary.
-- `/domain-modeling` — build `.devin/CONTEXT.md` and `.devin/adr/`.
-- `/project-memory` — capture and retrieve project knowledge.
-- `/triage` — first triage run on the issue tracker.
-- `/planning-pipeline` — demonstrate spec → tickets flow.
-- `/self-extend` — add individual rules, skills, hooks, or MCP servers.
-- `/continuous-improvement` — the 10-step loop this skill adapts.
+- `/knowledge-modeling` — build `.devin/CONTEXT.md` and `.devin/adr/`.
+- `/memory-management` — capture and retrieve project knowledge.
+- `/intake` — first triage run on the issue tracker.
+- `/planning` — demonstrate spec → tickets flow.
+- `/devin-config` — add individual rules, skills, hooks, or MCP servers.
+- `/self-improvement` — the 10-step loop this skill adapts.

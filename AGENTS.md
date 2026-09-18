@@ -60,7 +60,7 @@ detail here. Non-pinned rules follow as terse one-liners referencing skills.
 - When a local check fails, fix it immediately in the inner loop — don't commit broken code hoping CI catches it.
 - Scope checks to the change; run the full suite before push/PR.
 - Never push with known failing local checks. Investigate flaky checks.
-- On CI failure, use the `debug-ci-failures` skill — don't eyeball logs.
+- On CI failure, use the `debugging` skill — don't eyeball logs.
 
 ## 7. Execute-first, opinion-silent (pinned)
 
@@ -91,9 +91,9 @@ The agent runs with the user's full permissions. No isolation layer.
 
 - Don't assume isolation. Worker/shell/Python processes run with user OS permissions. A malicious skill, MCP server, or instruction can access any file the user can.
 - Don't run untrusted code in the agent's environment. Use an external sandbox (container, VM, restricted user).
-- Don't install untrusted MCP servers without review. Review code, permissions, network behavior before adding to `mcp_config.json`. Evaluate against 5 architecture patterns (Resource Gateway, Tool Orchestrator, Stateful Session, Proxy Aggregator, Domain-Specific Adapter) and 4 anti-patterns (God Tool, Unsanitized Content, Synchronous Long-Running, Missing Descriptions). Keep tool count per server under 10-15 for >90% accuracy (arXiv:2606.30317). Use `mcp-context-audit` to measure cost.
+- Don't install untrusted MCP servers without review. Review code, permissions, network behavior before adding to `mcp_config.json`. Evaluate against 5 architecture patterns (Resource Gateway, Tool Orchestrator, Stateful Session, Proxy Aggregator, Domain-Specific Adapter) and 4 anti-patterns (God Tool, Unsanitized Content, Synchronous Long-Running, Missing Descriptions). Keep tool count per server under 10-15 for >90% accuracy (arXiv:2606.30317). Use `mcp-governance` to measure cost.
 - Don't apply untrusted skills without reading them. Read SKILL.md before invoking on a real task.
-- Don't ignore the Factorio lesson. PrimeAgent's `/refine` found a cheating exploit and optimized cheating skills. The `primeagent-reference` skill (Refine mode) has guardrails — follow them.
+- Don't ignore the Factorio lesson. PrimeAgent's `/refine` found a cheating exploit and optimized cheating skills. The `self-improvement` skill (Refine mode) has guardrails — follow them.
 - Do review changes before applying. Use `--dry-run`. Confirm before destructive operations.
 
 ## 14. Constraint Pinning survives compaction (pinned) — keep governance rules after compaction
@@ -126,8 +126,8 @@ Never infer state from reasoning alone. Use `read`, `exec`, `grep`, `glob`, `web
 
 - Context is the main constraint. Shorter, focused context retrieves better.
 - Default to `clear` over `compact`.
-- Keep rules files small; modularize into skills and reference. See `writing-for-agents`.
-- Audit MCP servers before adding (`mcp-context-audit`); keep tool count per server under 10-15.
+- Keep rules files small; modularize into skills and reference. See `writing-skills`.
+- Audit MCP servers before adding (`mcp-governance`); keep tool count per server under 10-15.
 - Paste large inputs to files, then `read` with offset/limit.
 - Prefer subagents for parallel exploration.
 - Watch the budget with `context-budget.py`.
@@ -160,13 +160,13 @@ Start with customer experience, then choose tech. Customer = whoever experiences
 
 ### 3. Don't use outdated or missing skills
 
-Update wrong skills in place before use. Create a skill for recurring patterns (`.devin/skills/<name>/SKILL.md` or `~/.config/devin/skills/<name>/SKILL.md`). Prune dead/superseded skills. Distill learned domains into skills so expertise persists. For tasks prone to agent laziness (large, multi-step, previously half-done, or with acceptance criteria), invoke the `unlazy` skill first and maintain a `.devin/ledgers/<task>.md` with gates.
+Update wrong skills in place before use. Create a skill for recurring patterns (`.devin/skills/<name>/SKILL.md` or `~/.config/devin/skills/<name>/SKILL.md`). Prune dead/superseded skills. Distill learned domains into skills so expertise persists. For tasks prone to agent laziness (large, multi-step, previously half-done, or with acceptance criteria), invoke the `gates` skill first and maintain a `.devin/ledgers/<task>.md` with gates.
 
 **Skill quality checklist (before commit):** `name`/`description` frontmatter per spec; discovery keywords, not workflow summaries; Devin-native tools and paths only; subagent profiles pinned per Rule 20 (`researcher`, never `subagent_explore`); prefer Python for cross-platform scripts; no AI signatures; no non-Devin platform leakage. Full checklist: `writing-skills` skill.
 
 ### 4. Don't start non-trivial tasks without skill discovery
 
-Invoke `skill tool-and-skill-discovery` or `skill search` + `skill list` before touching code. For faster discovery without loading all 83 descriptions, read `docs/SKILL-TIERS.md` (~1700 tok) — outside this repo, use the installed copy at `%APPDATA%\devin\docs\SKILL-TIERS.md` (POSIX `~/.config/devin/docs/SKILL-TIERS.md`) — skills categorized by domain of use with token costs. Invoke all matching skills in parallel. If no skill matches, use `tool-and-skill-discovery` (which now includes external search and install). Don't skip discovery on first occurrences each week (first PR, first debug, first CSV edit, first deploy, first MCP integration, etc.). Applies to all integrations (MCP, skills, CLIs, `gh`, `curl`, `python`).
+Invoke `skill skill-discovery` or `skill search` + `skill list` before touching code. For faster discovery without loading all 83 descriptions, read `docs/SKILL-TIERS.md` (~1700 tok) — outside this repo, use the installed copy at `%APPDATA%\devin\docs\SKILL-TIERS.md` (POSIX `~/.config/devin/docs/SKILL-TIERS.md`) — skills categorized by domain of use with token costs. Invoke all matching skills in parallel. If no skill matches, use `skill-discovery` (which now includes external search and install). Don't skip discovery on first occurrences each week (first PR, first debug, first CSV edit, first deploy, first MCP integration, etc.). Applies to all integrations (MCP, skills, CLIs, `gh`, `curl`, `python`).
 
 ### 8. Telegraphic output
 
@@ -174,11 +174,11 @@ No filler, preamble, apologies, acknowledgments, narration of tool calls. Defaul
 
 ### 9. Don't add observability infrastructure without `observability-quality` skill
 
-Invoke the skill when adding logging, metrics, tracing, lint, architecture tests, or test infrastructure. Don't add tracing universally (16-180% latency). Biome or ESLint (not both). commitlint for conventional commits. Knip for dead code. ArchUnit/dependency-cruiser for boundaries. Testing Trophy for web apps, Test Pyramid for libraries. Playwright for E2E (~16% flakiness, auto-wait). No arbitrary coverage gates. Don't duplicate `tdd`, `mutation-testing`, `verification-before-completion`, `code-review`.
+Invoke the skill when adding logging, metrics, tracing, lint, architecture tests, or test infrastructure. Don't add tracing universally (16-180% latency). Biome or ESLint (not both). commitlint for conventional commits. Knip for dead code. ArchUnit/dependency-cruiser for boundaries. Testing Trophy for web apps, Test Pyramid for libraries. Playwright for E2E (~16% flakiness, auto-wait). No arbitrary coverage gates. Don't duplicate `testing`, `testing`, `gates`, `code-review`.
 
 ### 10. Don't execute without planning, don't declare without verifying
 
-Todo list for 3+ step tasks; mark `in_progress`/`completed` immediately, no batching. Verify before claiming done (build/test/lint/typecheck/dry-run); show evidence. For 3+ step or acceptance-criteria tasks, invoke `unlazy` or `autonomous-gates` and write `.devin/ledgers/<task>.md` with gates (outcome, check, expect, evidence). Do not declare a step or the task done without running its gate and recording evidence. Parallelize independent calls. Read before writing. `--dry-run` for destructive/bulk ops; confirm with user before irreversible actions.
+Todo list for 3+ step tasks; mark `in_progress`/`completed` immediately, no batching. Verify before claiming done (build/test/lint/typecheck/dry-run); show evidence. For 3+ step or acceptance-criteria tasks, invoke `gates` or `gates` and write `.devin/ledgers/<task>.md` with gates (outcome, check, expect, evidence). Do not declare a step or the task done without running its gate and recording evidence. Parallelize independent calls. Read before writing. `--dry-run` for destructive/bulk ops; confirm with user before irreversible actions.
 
 ### 11. Never fail from failures
 

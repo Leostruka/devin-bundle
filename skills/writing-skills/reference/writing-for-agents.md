@@ -80,4 +80,4 @@ You win twice: fewer tokens, and a sharper hook for the agent to hang its thinki
 ## Cross-skills
 
 - Use `ai-coding-dictionary` to align AI-coding jargon before coining new leading words.
-- If the document is long or context is tight, use `context-window-hygiene`.
+- If the document is long or context is tight, use `context-hygiene`.

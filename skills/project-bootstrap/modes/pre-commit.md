@@ -1,4 +1,4 @@
-# Mode: setup-pre-commit
+# Mode: project-bootstrap
 
 
 # Setup Pre-Commit Hooks
@@ -10,7 +10,7 @@
 - **Prettier** config (if missing)
 - **typecheck** and **test** scripts in the pre-commit hook
 
-This is a required step for any project set up by `project-setup` and for any build/change flow routed by `leo`. It ensures lint, typecheck, and tests run before every commit.
+This is a required step for any project set up by `project-bootstrap` and for any build/change flow routed by `ask-bundle`. It ensures lint, typecheck, and tests run before every commit.
 
 ## Steps
 

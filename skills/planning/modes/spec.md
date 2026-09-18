@@ -8,7 +8,7 @@ throwaway. Do NOT interview the user — just synthesize what you already know.
 the first hotfix: a bug is fixed directly in code and the spec becomes a lie.
 This is the same law that killed UML/MDA — the model was never the reality,
 the code was. Treat the PRD as a destination document that captures intent at
-decision time, then let `project-memory` and the emerging code record what
+decision time, then let `memory-management` and the emerging code record what
 actually got built. Thoughtworks Technology Radar (Nov 2025) places
 spec-driven development in the "Assess" ring and warns "we may be relearning a
 bitter lesson — that handcrafting detailed rules for AI ultimately doesn't
@@ -71,7 +71,7 @@ The inputs the feature consumes and the outputs it produces. For APIs, specify r
 
 Declare the proposed modules and interfaces affected before any
 implementation work. This is the contract surface a reviewer checks against the
-spec and the source for tickets or `writing-plans` tasks.
+spec and the source for tickets or `planning` tasks.
 
 A list of implementation decisions that was made. This can include:
 

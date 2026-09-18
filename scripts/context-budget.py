@@ -208,10 +208,10 @@ def report(path, as_json=False, simulated_tokens=None):
     if total_tok >= smart_zone_tokens:
         print(f"  SMART ZONE NUDGE: loaded rules are at or above ~{smart_zone_tokens:,} tokens.", file=sys.stderr)
         print(f"    Prefer `/clear` (fresh thread) over `/compact`; compaction keeps lossy", file=sys.stderr)
-        print(f"    sediment and still consumes attention. See `context-window-hygiene`.", file=sys.stderr)
+        print(f"    sediment and still consumes attention. See `context-hygiene`.", file=sys.stderr)
     elif share_rows and share_rows[0]["share_pct"] >= 10:
         print(f"  WARN: total rules are >=10% of a {share_rows[0]['model_id']} window before the first", file=sys.stderr)
-        print(f"        message. Consider compressing/modularizing (context-window-hygiene).", file=sys.stderr)
+        print(f"        message. Consider compressing/modularizing (context-hygiene).", file=sys.stderr)
     return 0
 
 

@@ -29,7 +29,7 @@ Criar o ledger antes de pesquisar ou editar. Registrar nele:
 Nenhum item pode desaparecer por compactação, handoff ou mudança de skill.
 Antes de declarar a melhoria, cada ID deve estar `applied`, `deferred` ou
 `rejected`, com motivo e evidência. A síntese em
-`.devin/notes/extraction-3texts/continuous-improvement-review.md` define as
+`.devin/notes/extraction-3texts/self-improvement-review.md` define as
 lacunas verificadas nesta versão.
 
 ## OBJETIVO (único, claro, mensurável)
@@ -68,11 +68,11 @@ Pode alterar **tudo** no bundle para atingir o objetivo:
 
 ---
 
-## Ledger com `unlazy`
+## Ledger com `gates`
 
 Este processo é um alvo natural de preguiça do agente (muitos passos,
 documentação, tendência a declarar feito sem evidência). Invocar o skill
-`unlazy` no início cria um ledger rastreável com gates (`outcome`, `check`,
+`gates` no início cria um ledger rastreável com gates (`outcome`, `check`,
 `expect`, `evidence`). Resolver o diretório real antes de escrever: usar
 `.devin/ledgers/<melhoria>.md` quando o projeto o rastreia; se esse caminho for
 ignorado ou houver convenção explícita, usar o diretório de ledgers rastreado e

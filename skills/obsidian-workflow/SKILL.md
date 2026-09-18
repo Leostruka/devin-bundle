@@ -11,7 +11,7 @@ A unified skill covering the full Obsidian knowledge lifecycle: **build** a code
 
 | Mode | Trigger | What it does |
 |------|---------|--------------|
-| Build Wiki | "Document this codebase / project", "Build a local wiki for this repo", "Create architecture diagrams with source links", "Map all modules, functions, and dependencies with code references", "Visualize the system with Mermaid diagrams", updating an existing engineering wiki after code changes | Scaffolds and fills a meticulous, SRS/ISO-style local codebase wiki in an Obsidian vault with source-linked documentation, hierarchical pages, Mermaid diagrams, a re-index workflow, and a project page + MOC linked into the parent context map. Capture cross-session insights with `project-memory`. |
+| Build Wiki | "Document this codebase / project", "Build a local wiki for this repo", "Create architecture diagrams with source links", "Map all modules, functions, and dependencies with code references", "Visualize the system with Mermaid diagrams", updating an existing engineering wiki after code changes | Scaffolds and fills a meticulous, SRS/ISO-style local codebase wiki in an Obsidian vault with source-linked documentation, hierarchical pages, Mermaid diagrams, a re-index workflow, and a project page + MOC linked into the parent context map. Capture cross-session insights with `memory-management`. |
 | Reorganize Vault | "Reorganize my vault", "This vault is a mess, help me structure it", "Plan a refactoring of my documentation", "My projects are scattered, organize them", "Audit my knowledge base structure", after a merger/acquisition that combined knowledge bases, when a vault has grown organically and needs structural correction | Diagnoses organizational problems in a knowledge base, selects adaptive methodologies that fit the content, plans a safe refactoring, and executes with wikilink validation |
 | Audit Wiki | "Audit my wikis", "Check for broken links in the vault", "Validate source citations across all project wikis", "Find sensitive information in the vault", "Fix template broken links", before committing/syncing the vault, after bulk updates to wiki content | Audits and validates Obsidian project wikis against established standards — broken wikilinks, missing source citations, missing diagrams, sensitive information, language inconsistencies; can fix common template issues |
 | Cross-session Comparison | "Compare wiki knowledge by source session", "Show me what devin_session knows vs manual", "Surface cross-session blind spots", browsing/filtering wiki pages by source provenance | Browses and compares Obsidian wiki knowledge filtered by source provenance, surfacing cross-session blind spots via diff/map views built from `.manifest.json` |
@@ -252,7 +252,7 @@ Use callouts for risk or open questions:
 
 #### Step 5 — Architecture (`02-Architecture.md`)
 
-Use the `codebase-design` vocabulary (module, interface, seam, adapter, depth, leverage, locality). The page must include:
+Use the `architecture` vocabulary (module, interface, seam, adapter, depth, leverage, locality). The page must include:
 
 1. `## Relevant source files` — key architectural files (entry points, config, module indices).
 2. `## Purpose and Scope` — what this architecture page documents.
@@ -360,7 +360,7 @@ Collect config artifacts with source links:
 
 #### Step 10 — Glossary (`08-Glossary.md`)
 
-Use `domain-modeling` discipline. Copy or extend `.devin/CONTEXT.md` terms. Add:
+Use `knowledge-modeling` discipline. Copy or extend `.devin/CONTEXT.md` terms. Add:
 
 - Domain term
 - Definition
@@ -726,7 +726,7 @@ so the critique is grounded in the documented architecture.
 **Procedure:**
 
 1. Read `02-Architecture.md` and all `Modules/*.md` pages.
-2. For each module, evaluate against `codebase-design` principles:
+2. For each module, evaluate against `architecture` principles:
    - **Depth**: are there shallow modules that should be deeper?
    - **Leverage**: does a low-leverage module force changes in many dependents?
    - **Locality**: are related concerns co-located, or scattered?
@@ -751,7 +751,7 @@ summarized in the Architecture page's `## Architecture critique` section
 (if `high` effort).
 
 **Rigor note:** this step does NOT modify code. It documents issues only.
-Fixing issues is a separate task that should use `diagnosing-bugs` or
+Fixing issues is a separate task that should use `debugging` or
 `code-review` skills.
 
 #### Step 19 — Tech Debt page (`11-TechDebt.md`)
@@ -829,7 +829,7 @@ Wiki section.
 
 DeepWiki integrates with Ask Devin for conversational Q&A over the wiki.
 The local equivalent chains `query.py` (keyword search) with the
-`deep-mode` skill (multi-pass agentic search with citations).
+`research` skill (multi-pass agentic search with citations).
 
 **For simple lookups:**
 ```bash
@@ -837,8 +837,8 @@ python <vault-dir>/query.py --query "authentication flow"
 ```
 
 **For deep questions over the wiki** (equivalent to Ask Devin + DeepWiki):
-1. Invoke the `deep-mode` skill with the wiki directory as the search scope
-2. `deep-mode` runs its 4-pass search (broad sweep -> deep read ->
+1. Invoke the `research` skill with the wiki directory as the search scope
+2. `research` runs its 4-pass search (broad sweep -> deep read ->
    cross-file synthesis -> architecture map) over the wiki `.md` files
 3. Every finding cites wiki page + original source file (double citation:
    wiki page that documents the code, and the code file itself)
@@ -865,7 +865,7 @@ approximates DeepWiki + Ask Devin in the cloud.
 
 ### Deviation / exceptions
 
-- If the project is not a software project, fall back to `grilling` (With-docs mode) or `domain-modeling`.
+- If the project is not a software project, fall back to `grilling` (With-docs mode) or `knowledge-modeling`.
 - If the user only wants diagrams, use `references/modern-diagrams.md` and skip the SRS.
 - If the user only wants a database schema, use `03-Database.md` and the `Modules/Database/` notes.
 - If there is no parent context MOC (standalone project), skip step 3 of Step 16.
@@ -915,7 +915,7 @@ approximates DeepWiki + Ask Devin in the cloud.
 - [ ] **`11-TechDebt.md` exists** (effort: medium/high) — every issue has `source: path:line` citation, every anti-pattern is categorized (type, impact, recommendation, effort), issues are numbered (AP-001, OPT-001).
 - [ ] **`00-Overview.md` links to `[[11-TechDebt]]`** (effort: medium/high) — TechDebt page is not a graph orphan.
 - [ ] **Architecture critique section** (effort: high only) — `02-Architecture.md` has a `## Architecture critique` section summarizing Deep Research findings with source citations.
-- [ ] **Conversational Q&A** — `query.py` works for keyword search; `deep-mode` skill can be invoked scoped to the wiki directory for multi-pass agentic search with double citations (wiki + source).
+- [ ] **Conversational Q&A** — `query.py` works for keyword search; `research` skill can be invoked scoped to the wiki directory for multi-pass agentic search with double citations (wiki + source).
 
 ### Templates and references (Build Wiki)
 

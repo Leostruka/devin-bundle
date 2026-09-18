@@ -141,4 +141,4 @@ The user will sometimes express preferences of how they want to be taught, or th
 ## Cross-skills
 
 - If the user asks about AI-coding jargon or a term is being used loosely, invoke `ai-coding-dictionary` to ground the lesson vocabulary.
-- If the user wants to decide how deeply to plan a small example before coding it, invoke `review-cadence`.
+- If the user wants to decide how deeply to plan a small example before coding it, invoke `execution`.

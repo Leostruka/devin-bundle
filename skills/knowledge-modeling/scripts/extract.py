@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""structured-knowledge-extraction — deterministic knowledge graph extraction.
+"""knowledge-modeling — deterministic knowledge graph extraction.
 
 Conceptually inspired by Hyper-Extract (Apache-2.0). No external code, prompts,
 or templates are copied from Hyper-Extract. The core implementation uses only the
@@ -22,7 +22,7 @@ import time
 from pathlib import Path
 
 SCHEMA_VERSION = "1.0.0"
-NOTE_SUBDIR = Path("notes/structured-knowledge-extraction")
+NOTE_SUBDIR = Path("notes/knowledge-modeling")
 MAX_QUOTE = 200
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
@@ -399,7 +399,7 @@ def render_markdown(data, project_str):
         "",
         "## Source and license attribution",
         "",
-        "This extraction was produced by `structured-knowledge-extraction`.",
+        "This extraction was produced by `knowledge-modeling`.",
         "It is conceptually inspired by Hyper-Extract (Apache-2.0).",
         "- Hyper-Extract: https://github.com/yifanfeng97/Hyper-Extract",
         "- License: https://github.com/yifanfeng97/Hyper-Extract/blob/main/LICENSE",
@@ -646,13 +646,13 @@ Evaluation steps:
 
 ## MCP
 
-- Audit tool definition count with `mcp-context-audit` before enabling any MCP server.
+- Audit tool definition count with `mcp-governance` before enabling any MCP server.
 - Keep credentials in a local ignored config (e.g., `.devin/mcp_config.local.json`) and never commit unmasked values.
 - Integration should be opt-in, not installed by default.
 
 ## Attribution
 
-`structured-knowledge-extraction` is conceptually inspired by Hyper-Extract. No code, prompts, or templates are copied from Hyper-Extract. The core implementation uses only the Python standard library.
+`knowledge-modeling` is conceptually inspired by Hyper-Extract. No code, prompts, or templates are copied from Hyper-Extract. The core implementation uses only the Python standard library.
 """
 
 

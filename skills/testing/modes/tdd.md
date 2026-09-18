@@ -66,7 +66,7 @@ A **seam** is the public boundary you test at: the interface where you observe b
 
 Ask: "What's the public interface, and which seams should we test?"
 
-When the shape of that interface is itself in question — how deep the module is, where the seam belongs, what the interface should expose — use the `codebase-design` skill for the vocabulary.
+When the shape of that interface is itself in question — how deep the module is, where the seam belongs, what the interface should expose — use the `architecture` skill for the vocabulary.
 
 ## Red-Green-Refactor
 
@@ -236,6 +236,6 @@ If a test cannot be run in the project's feedback loop, it is not a real test. I
 
 ## Cross-skills
 
-- Invoke `review-cadence` before choosing seams if you're unsure how much upfront design this task needs.
-- Invoke `effort-calibration` if the task is trivial or unusually hard, so you don't over- or under-think the TDD loop.
-- Invoke `verification-before-completion` to prove each RED/GREEN step with fresh command output before claiming the cycle is complete.
+- Invoke `execution` before choosing seams if you're unsure how much upfront design this task needs.
+- Invoke `context-hygiene` if the task is trivial or unusually hard, so you don't over- or under-think the TDD loop.
+- Invoke `gates` to prove each RED/GREEN step with fresh command output before claiming the cycle is complete.

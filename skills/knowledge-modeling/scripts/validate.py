@@ -7,7 +7,7 @@ import sys
 
 def load_knowledge():
     """Load knowledge.json if present, otherwise empty list."""
-    path = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~/.config')), 'devin', '.devin', 'notes', 'structured-knowledge-extraction', 'knowledge.json')
+    path = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~/.config')), 'devin', '.devin', 'notes', 'knowledge-modeling', 'knowledge.json')
     if not os.path.exists(path):
         return []
     with open(path, encoding='utf-8') as f:

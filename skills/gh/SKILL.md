@@ -166,6 +166,6 @@ Sometimes useful data isn't on the typed commands. Examples:
 
 ## Cross-skills
 
-- Use `pr-review` when the user wants an inline GitHub review with suggestions.
-- Use `resolving-merge-conflicts` when a `gh pr merge` fails with conflicts.
+- Use `code-review` when the user wants an inline GitHub review with suggestions.
+- Use `git-workflows` when a `gh pr merge` fails with conflicts.
 - Use `finishing-a-development-branch` after a PR is merged to clean up.

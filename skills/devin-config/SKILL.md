@@ -6,7 +6,7 @@ triggers: [user, model]
 
 # Devin Config
 
-Extend Devin CLI (self-extend) and audit `.devin/` (devin-manager). Files go
+Extend Devin CLI (devin-config) and audit `.devin/` (devin-config). Files go
 to the project (`./.devin/`) or global config (`~/.config/devin/` /
 `%APPDATA%\devin\`). Most changes load at next session/reload.
 
@@ -73,10 +73,10 @@ hooks run an LLM evaluation per event.
 `.devin/mcp_config.json` (project) / `~/.config/devin/mcp_config.json`
 (global). Audit cost first with `mcp-governance`; trust review per Rule 13.
 
-## Auditing `.devin/` (devin-manager mode)
+## Auditing `.devin/` (devin-config mode)
 
 Deterministic, read-only ops via `scripts/devin-manager.py` (this skill's
-`scripts/`). Notes persist only under `.devin/notes/devin-manager/` and only
+`scripts/`). Notes persist only under `.devin/notes/devin-config/` and only
 with `--write --approve`.
 
 | Op | Purpose |

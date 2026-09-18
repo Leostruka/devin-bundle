@@ -42,7 +42,7 @@ decisions:
 3. **Write** — on approval, save a Markdown note under `.devin/memory/`.
 4. **Link** — update `.devin/memory/MOC.md` and the daily logbook entry.
 5. **Retrieve** — `python scripts/query-memory.py "<query>"` (in this skill's
-   `scripts/`) or `/deep-mode` scoped to `.devin/memory/`.
+   `scripts/`) or `/research` scoped to `.devin/memory/`.
 
 ### Paths
 

@@ -1,9 +1,10 @@
-"""Validation tests for the continuous-improvement execution contract."""
+"""Validation tests for the self-improvement execution contract."""
 from pathlib import Path
 
 
 BUNDLE_ROOT = Path(__file__).resolve().parents[2]
-SKILL_PATH = BUNDLE_ROOT / "skills" / "continuous-improvement" / "SKILL.md"
+SKILL_PATH = BUNDLE_ROOT / "skills" / "self-improvement" / "modes" / "improvement-loop.md"
+ROUTER_PATH = BUNDLE_ROOT / "skills" / "self-improvement" / "SKILL.md"
 
 
 def skill_text():
@@ -11,7 +12,7 @@ def skill_text():
 
 
 def frontmatter():
-    text = skill_text()
+    text = ROUTER_PATH.read_text(encoding="utf-8")
     return text.split("---", 2)[1]
 
 

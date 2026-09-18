@@ -26,13 +26,13 @@ the verification.
 
 | # | PrimeAgent/RLM feature | Adapted to Devin CLI | How |
 |---|---|---|---|
-| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-folding` skill | Offload to file, grep/partition, `researcher` sub-queries (depth=1 only; do NOT use `subagent_explore` when the parent is free — check `cost_tier` in `data/bundle-models.json`) |
-| 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `primeagent-reference` Refine mode + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
+| 1 | RLM context folding (prompt-as-variable, REPL, recursive sub-queries) | **Yes** — `context-hygiene` skill | Offload to file, grep/partition, `researcher` sub-queries (depth=1 only; do NOT use `subagent_explore` when the parent is free — check `cost_tier` in `data/bundle-models.json`) |
+| 2 | Continual Harness `/refine` (self-improving harness state) | **Yes** — `self-improvement` Refine mode + `refine-review-prompt.py` Stop hook | Trajectory review → small evidence-backed edits to skills/rules/agents/hooks. Auto-trigger via Stop hook + `.refine-pending` marker. Outcome tracking via `refinements.log.jsonl`. |
 | 3 | Persistent subagents with A2A messaging | **Yes (emulated)** — A2A Messaging mode in this skill | Filesystem as message broker. Mailboxes per agent (parent/subagent). Sequential A2A via file routing. Not real-time, not persistent handles, but preserves the pattern. See "Mode: A2A Messaging" below. |
-| 4 | Skills as importable Python packages | **Partial** — already supported | Skills can have `scripts/` dirs with Python. `self-extend` skill documents this. |
+| 4 | Skills as importable Python packages | **Partial** — already supported | Skills can have `scripts/` dirs with Python. `devin-config` skill documents this. |
 | 5 | Daemon-backed sessions with reattach | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `session-checkpoint` skill (structured checkpoint file). Pruned because Devin CLI has no background daemon to reattach to. |
 | 6 | Heartbeats and schedules | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `heartbeat` skill (OS scheduler + script). Pruned because Devin CLI cannot re-enter an existing session. |
-| 7 | Bounded autonomous mode with quality gates | **Yes** — `autonomous-gates` skill | Define gates at planning time, run after each step, final gate before done |
+| 7 | Bounded autonomous mode with quality gates | **Yes** — `gates` skill | Define gates at planning time, run after each step, final gate before done |
 | 8 | "Not a security sandbox" warning | **Yes** — Rule 13 in AGENTS.md | Explicit rule with guardrails |
 | 9 | Reward hacking guard (Factorio lesson) | **Yes** — Refine mode in this skill + Rule 13 | Guardrails in refine workflow, explicit reference to Factorio case |
 

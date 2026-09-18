@@ -38,7 +38,7 @@ Every review moves information in one of two directions:
   - Security, privacy, or compliance constraints.
   - The fixed point and diff command.
 - **Pull (by implementer):** patterns the implementer is expected to consult on their own before asking for review. If the reviewer has to say "you should have read X first", that pattern belongs here.
-  - The skill that governs the work (e.g., `tdd`, `verification-before-completion`, `impeccable`).
+  - The skill that governs the work (e.g., `testing`, `gates`, `impeccable`).
   - The repo's documented conventions and the smell baseline.
   - The verification gate commands (`python audit.py`, `pytest`, type checker, linter) and their results.
   - The red-green-refactor cycle output when applicable.
@@ -47,7 +47,7 @@ Every review moves information in one of two directions:
 
 ### Sand Castle as a reference pattern
 
-The Sand Castle pattern (a planner, implementers, and a merger) orchestrates agents as a **planner**, **implementers**, and a **merger**: the planner pushes the plan, each implementer pulls its own skills inside a sandbox, and the merger reviews and integrates the branches. The bundle does not add a Docker dependency or the upstream Sand Castle library. The same shape is expressed with `dispatching-parallel-agents` (planner = controller, implementers = subagents, merger = final reviewer) and `using-git-worktrees` for isolation. Use Sand Castle only as a mental model when deciding what to push and what to pull.
+The Sand Castle pattern (a planner, implementers, and a merger) orchestrates agents as a **planner**, **implementers**, and a **merger**: the planner pushes the plan, each implementer pulls its own skills inside a sandbox, and the merger reviews and integrates the branches. The bundle does not add a Docker dependency or the upstream Sand Castle library. The same shape is expressed with `dispatching-parallel-agents` (planner = controller, implementers = subagents, merger = final reviewer) and `git-workflows` for isolation. Use Sand Castle only as a mental model when deciding what to push and what to pull.
 
 ## Budget Presets
 
@@ -222,8 +222,8 @@ When the repository has a `.coderabbit.yaml` (or Code Rabbit is enabled), the au
 
 ## Cross-skills
 
-- Use `verification-before-completion` as a final gate after the review before declaring the work complete.
-- Use `review-cadence` before starting work to decide whether this change needs deep review or just a final diff check.
-- Use `effort-calibration` to match review depth to task difficulty and avoid overthinking simple renames.
+- Use `gates` as a final gate after the review before declaring the work complete.
+- Use `execution` before starting work to decide whether this change needs deep review or just a final diff check.
+- Use `context-hygiene` to match review depth to task difficulty and avoid overthinking simple renames.
 
 See template at: [code-reviewer.md](code-reviewer.md)

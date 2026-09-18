@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-'''devin-manager — deterministic evidence-first `.devin/` audit and planning.
+'''devin-config — deterministic evidence-first `.devin/` audit and planning.
 
 Conceptually inspired by DeepPaperNote's one-source-at-a-time, evidence-first
 note workflow. No external code, no PDF dependencies, no network calls.
-See `skills/devin-manager/SKILL.md` for source/license attribution.
+See `skills/devin-config/SKILL.md` for source/license attribution.
 
 Usage:
     python devin-manager.py scan [PROJECT]
@@ -21,7 +21,7 @@ DEVIN_EVENTS = {
     'Stop', 'PostCompaction', 'SessionStart', 'SessionEnd',
 }
 
-NOTE_SUBDIR = Path('notes/devin-manager')
+NOTE_SUBDIR = Path('notes/devin-config')
 
 # Reference kind strength (lower is stronger; used for source+target dedup)
 KIND_STRENGTH = {
@@ -489,7 +489,7 @@ def doctor(devin, project, project_str):
 
 def render_plan(doctor_data, project_str):
     lines = [
-        '# devin-manager plan',
+        '# devin-config plan',
         '',
         'Project: `' + project_str + '`',
         '',
@@ -542,12 +542,12 @@ def render_plan(doctor_data, project_str):
         '1. Review broken references and update source files or create missing targets under `.devin/`.',
         '2. Resolve duplicate skill names or content before writing to memory.',
         '3. Reconcile configuration divergences (malformed JSON, config.json vs hooks.v1.json, manifest counts).',
-        '4. Re-run `devin-manager doctor` after fixes to verify convergence.',
+        '4. Re-run `devin-config doctor` after fixes to verify convergence.',
         '',
         '## Source and license attribution',
         '',
-        'This plan was produced by `devin-manager`.',
-        'The `devin-manager` skill is conceptually inspired by DeepPaperNote\'s evidence-first workflow.',
+        'This plan was produced by `devin-config`.',
+        'The `devin-config` skill is conceptually inspired by DeepPaperNote\'s evidence-first workflow.',
         '- DeepPaperNote: https://github.com/917Dhj/DeepPaperNote',
         '- License: https://github.com/917Dhj/DeepPaperNote/blob/main/LICENSE (MIT)',
     ])

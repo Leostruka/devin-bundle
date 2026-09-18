@@ -1,4 +1,4 @@
-# devin-manager note template
+# devin-config note template
 
 Use this to record evidence-first notes about `.devin/` health.
 

@@ -88,7 +88,7 @@ run_subagent:
     You are subagent-a. Read your mailbox at .devin/mailboxes/subagent-a/inbox/.
     Process each message. Write results to .devin/mailboxes/parent/inbox/ as JSON.
     Mark processed messages as "read" by updating their status field.
-    Do NOT spawn subagents (depth=1 limit per context-folding skill).
+    Do NOT spawn subagents (depth=1 limit per context-hygiene skill).
 ```
 
 #### Step 4: Parent reads results from inbox
@@ -144,7 +144,7 @@ Or keep for debugging if the session is complex.
 - **Don't use this for single subagent tasks.** Overhead exceeds value. Use `run_subagent` directly.
 - **Don't forget to verify mailbox content.** Subagent may report success but not write the file. Check.
 - **Don't leave mailboxes across sessions.** Clean up or they accumulate stale messages.
-- **Don't use this for depth=2+ communication.** Depth=1 only per context-folding skill.
+- **Don't use this for depth=2+ communication.** Depth=1 only per context-hygiene skill.
 
 ### Evidence Summary
 
@@ -153,7 +153,7 @@ Or keep for debugging if the session is complex.
 | PrimeAgent A2A via `agent_message.send()` | PrimeAgent blog | Verified |
 | Subagents have persistent handles | PrimeAgent blog | Verified |
 | Nuclear family communication (parent/sibling/child) | PrimeAgent blog | Verified |
-| Devin CLI subagents are ephemeral | Devin CLI docs (self-extend skill) | Verified |
+| Devin CLI subagents are ephemeral | Devin CLI docs (devin-config skill) | Verified |
 | Filesystem as message broker is standard pattern | Standard CS practice | N/A (adaptation) |
 
 ---

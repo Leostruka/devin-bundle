@@ -14,7 +14,7 @@ NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 
 When exploring the codebase, read `.devin/CONTEXT.md` (if it exists) to get a clear
 mental model of the relevant modules, and check `.devin/adr/` in the area you're
-touching. If the bug spans multiple files, modules, or a data flow you cannot trace in one pass, invoke `deep-mode` before Phase 1.
+touching. If the bug spans multiple files, modules, or a data flow you cannot trace in one pass, invoke `research` before Phase 1.
 
 ## Redact
 
@@ -274,7 +274,7 @@ Required before declaring done:
 
 **Then ask: what would have prevented this bug?** If the answer involves
 architectural change (no good test seam, tangled callers, hidden coupling)
-hand off to `improve-codebase-architecture` with the specifics. Make the
+hand off to `architecture` with the specifics. Make the
 recommendation **after** the fix is in, not before.
 
 ## Stopping Criterion (VRR-Stop)

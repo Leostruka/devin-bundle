@@ -1,4 +1,4 @@
-"""Validation tests for devin-manager.
+"""Validation tests for devin-config.
 
 Agent-chosen infrastructure tests (tests/validation/), distinct from
 held-out behavioral tests.
@@ -12,8 +12,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).parents[2]
-FIXTURE = ROOT / "tests" / "fixtures" / "devin-manager" / "project"
-SCRIPT = ROOT / "skills" / "devin-manager" / "scripts" / "devin-manager.py"
+FIXTURE = ROOT / "tests" / "fixtures" / "devin-config" / "project"
+SCRIPT = ROOT / "skills" / "devin-config" / "scripts" / "devin-manager.py"
 
 
 def run(args, cwd=ROOT):
@@ -162,7 +162,7 @@ def test_no_absolute_paths_in_outputs():
         data = json.loads(result.stdout)
         assert data["written"].startswith(".devin/")
         assert "D:/" not in data["written"]
-        note = dst / ".devin" / "notes" / "devin-manager" / "plan.md"
+        note = dst / ".devin" / "notes" / "devin-config" / "plan.md"
         note_text = note.read_text(encoding="utf-8")
         assert "D:/" not in note_text
         assert "D:\\" not in note_text
@@ -209,7 +209,7 @@ def test_plan_does_not_update_moc_or_memory():
         memory_files = list((dst / ".devin" / "memory").rglob("*"))
         result = run(["plan", str(dst), "--write", "--approve"])
         assert result.returncode == 0, result.stderr
-        note = dst / ".devin" / "notes" / "devin-manager" / "plan.md"
+        note = dst / ".devin" / "notes" / "devin-config" / "plan.md"
         assert note.is_file()
         assert moc.read_bytes() == moc_before
         memory_files_after = list((dst / ".devin" / "memory").rglob("*"))
@@ -223,7 +223,7 @@ def test_plan_requires_approval():
         shutil.copytree(FIXTURE, dst)
         result = run(["plan", str(dst), "--write"])
         assert result.returncode != 0
-        assert not (dst / ".devin" / "notes" / "devin-manager" / "plan.md").exists()
+        assert not (dst / ".devin" / "notes" / "devin-config" / "plan.md").exists()
 
 
 def test_plan_writes_note_under_devin_with_approval():
@@ -236,7 +236,7 @@ def test_plan_writes_note_under_devin_with_approval():
         assert result.returncode == 0, result.stderr
         written = json.loads(result.stdout)["written"]
         assert ".devin/" in written
-        note = dst / ".devin" / "notes" / "devin-manager" / "plan.md"
+        note = dst / ".devin" / "notes" / "devin-config" / "plan.md"
         assert note.is_file()
         after = {f.relative_to(dst) for f in dst.rglob("*") if f.is_file() and f.relative_to(dst).parts[0] != ".devin"}
         assert after == before, f"plan created files outside .devin: {after - before}"

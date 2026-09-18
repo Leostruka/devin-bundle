@@ -15,7 +15,7 @@ Before exploring or asking questions, capture the **intent**:
 2. **Where it lands**: which project, module, or feature.
 3. **User impact**: how the change affects the user or the product.
 
-If intent is unclear, ask for it before proceeding. The captured intent feeds into `planning-pipeline` (Spec mode) as the PRD's `Intent` section.
+If intent is unclear, ask for it before proceeding. The captured intent feeds into `planning` (Spec mode) as the PRD's `Intent` section.
 
 ## Modes
 
@@ -23,7 +23,7 @@ If intent is unclear, ask for it before proceeding. The captured intent feeds in
 |---|---|---|
 | **Default** | "grill this", "stress-test", "brainstorm" | Full pipeline below |
 | **Stateless** | "grill me" without a working directory | Skip file/context exploration (Step 1); work purely from the conversation. Use frontier rounds: ask all currently-unblocked questions at once, never one at a time. If there are more than 4, split into multiple `ask_user_question` calls in the same round, each with at most 4 questions and 4 options. Every question includes a recommended answer. |
-| **With-docs** | "grill and document" / "sharpen plan + ADRs" | Run full pipeline + invoke `domain-modeling` in Phase 3 to produce ADRs and glossary alongside the spec |
+| **With-docs** | "grill and document" / "sharpen plan + ADRs" | Run full pipeline + invoke `knowledge-modeling` in Phase 3 to produce ADRs and glossary alongside the spec |
 
 ## Decision logic: which mode when
 
@@ -31,11 +31,11 @@ If intent is unclear, ask for it before proceeding. The captured intent feeds in
 |---|---|---|
 | Idea is fuzzy, early-stage, need to explore possibilities | **Brainstorm mode** | Assertive, batched independent questions. Propose 2-3 approaches with trade-offs. Visual companion for UI/layout questions. |
 | Have a plan/decision that needs stress-testing | **Grill mode** | Relentless, assertive interview. Design tree with frontier rounds. Every question includes a recommended answer. Every branch visited, nothing silently assumed. |
-| New feature from scratch | **Both, in sequence** | Brainstorm to explore the idea → Grill to stress-test the resulting design → Write spec → planning-pipeline (Tickets mode) or writing-plans. |
+| New feature from scratch | **Both, in sequence** | Brainstorm to explore the idea → Grill to stress-test the resulting design → Write spec → planning (Tickets mode) or planning. |
 | Modifying existing behavior | **Brainstorm mode** | Understand current behavior, propose changes, get approval. |
 | User says "grill me" or "stress-test this" | **Grill mode** | Explicit trigger for relentless questioning. |
 | User says "brainstorm" or "I have an idea" | **Brainstorm mode** | Explicit trigger for collaborative exploration. |
-| Design is done, need to write it up | **Brainstorm mode (final phase)** | Write design concept, spec self-review, user review gate, transition to planning-pipeline (Tickets mode) or writing-plans. |
+| Design is done, need to write it up | **Brainstorm mode (final phase)** | Write design concept, spec self-review, user review gate, transition to planning (Tickets mode) or planning. |
 
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
@@ -141,14 +141,14 @@ You MUST complete these in order:
 8. **Spec self-review** — quick inline check (see below)
 9. **User reviews written spec** — ask user to review before proceeding
 10. **Transition to implementation** — the spec is done. Pick the execution path:
-    - **planning-pipeline (Tickets mode)** — split into tracer-bullet vertical-slice tickets with blocking edges, then `implement` per ticket (canonical flow, matches `ask-bundle` router)
-    - **writing-plans** — turn the spec into a single detailed task-by-task implementation plan, then `executing-plans`
+    - **planning (Tickets mode)** — split into tracer-bullet vertical-slice tickets with blocking edges, then `execution` per ticket (canonical flow, matches `ask-bundle` router)
+    - **planning** — turn the spec into a single detailed task-by-task implementation plan, then `execution`
 
 **The terminal state is leaving grilling for one of the two execution paths.** Do NOT start implementing inside grilling — the spec is the deliverable here; execution happens in the next skill.
 
 ### Design concept
 
-Write the validated design — the conversation asset — to `.devin/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Treat this as a **design concept**, not a transcript dump: it distills the grilled decisions into a reusable handoff for `writing-plans` or `planning-pipeline`.
+Write the validated design — the conversation asset — to `.devin/specs/YYYY-MM-DD-<topic>-design.md` (user preferences for spec location override this default). Treat this as a **design concept**, not a transcript dump: it distills the grilled decisions into a reusable handoff for `planning` or `planning`.
 
 Use this PRD structure:
 
@@ -218,13 +218,13 @@ Explore context
         -> user reviews spec?
            -> changes: revise, re-review
            -> approved: pick execution path
-              -> planning-pipeline (Tickets mode) -> implement (canonical)
-              -> writing-plans -> executing-plans (detailed single plan)
+              -> planning (Tickets mode) -> implement (canonical)
+              -> planning -> execution (detailed single plan)
 ```
 
 ## Cross-skills
 
 - If the topic depends on a library or framework the user just named, invoke `context7` before the first round so you can ask informed questions.
 - If the topic needs primary-source investigation (current docs, a spec, a paper), invoke `research` first and bring the findings into the grilling session.
-- If the request might be too small for a full grilling session, invoke `review-cadence` before entering grill mode.
+- If the request might be too small for a full grilling session, invoke `execution` before entering grill mode.
 - If the user uses AI-coding jargon loosely, invoke `ai-coding-dictionary` to align terms before the first round.

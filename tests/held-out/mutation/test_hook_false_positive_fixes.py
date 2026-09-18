@@ -1,7 +1,7 @@
 """Held-out test: destructive-gate.py and check-ai-signature.py false-positive fixes.
 
 Policy: ALWAYS_PASSES
-Source: Refine mode (primeagent-reference).
+Source: Refine mode (self-improvement).
 
 Tests that hooks do not block legitimate operations:
   - git commit with descriptive text mentioning gate names in the message

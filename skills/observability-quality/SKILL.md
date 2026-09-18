@@ -160,7 +160,7 @@ Industry standard (Microsoft-backed). Auto-waiting, web-first assertions, multi-
 
 ### Mutation testing (conditional)
 
-Mutation testing is more reliable than coverage but expensive. Use `mutation-testing` skill for the full workflow.
+Mutation testing is more reliable than coverage but expensive. Use `testing` skill for the full workflow.
 
 **When to use:**
 - Critical systems (security, financial, safety)
@@ -176,11 +176,11 @@ Mutation testing is more reliable than coverage but expensive. Use `mutation-tes
 
 | This skill covers | Existing skill | Use both |
 |---|---|---|
-| Test strategy overview | `tdd` | Yes — tdd for implementation, this for infrastructure |
-| Mutation testing guidance | `mutation-testing` | Yes — this for when, that for how |
-| Verification gates | `verification-before-completion` | Yes — this for setup, that for per-task check |
+| Test strategy overview | `testing` | Yes — tdd for implementation, this for infrastructure |
+| Mutation testing guidance | `testing` | Yes — this for when, that for how |
+| Verification gates | `gates` | Yes — this for setup, that for per-task check |
 | Code review | `code-review` | Independent |
-| CI debugging | `debug-ci-failures` | Independent |
+| CI debugging | `debugging` | Independent |
 
 ## Setup checklist (new project)
 

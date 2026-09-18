@@ -7,7 +7,7 @@ The routing layer for subagent dispatch. Answers three questions in order:
 3. **How deep?** (budget preset)
 
 This skill does NOT replace `dispatching-parallel-agents` (parallel vs sequential),
-`dispatching-parallel-agents` (per-task workflow), or `tool-and-skill-discovery`
+`dispatching-parallel-agents` (per-task workflow), or `skill-discovery`
 (skill selection). It sits ABOVE them — it classifies the task and delegates to
 the right skill for execution.
 
@@ -145,8 +145,8 @@ This skill is the ENTRY POINT for dispatch decisions. It delegates to:
 - `dispatching-parallel-agents` — when routing decision is PARALLEL
 - `dispatching-parallel-agents` — when you have a multi-task plan to execute
 - `code-review` — when routing decision includes review (reviewer profile)
-- `verification-before-completion` — when VFs need to be defined (pre-execution gate)
-- `tool-and-skill-discovery` — when no profile fits and you need to find alternatives
+- `gates` — when VFs need to be defined (pre-execution gate)
+- `skill-discovery` — when no profile fits and you need to find alternatives
 
 Don't bypass this skill when the decision is non-obvious. Don't invoke it
 when the decision is obvious — overhead exceeds value.

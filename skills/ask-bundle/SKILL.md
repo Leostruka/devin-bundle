@@ -9,7 +9,7 @@ triggers: [user, model]
 One entry point: classify the objective, route to matching skills, keep
 control through verified completion. You don't remember every skill, so ask.
 
-Detail docs: `modes/leo-detail.md` (full orchestration procedure, forbidden
+Detail docs: `modes/orchestration-detail.md` (full orchestration procedure, forbidden
 actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
 `PHASE-BOUNDARIES.md` (context-handoff decision tree).
 
@@ -17,7 +17,7 @@ actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
 
 1. Self-check: scope exactly, telegraphic, skills first, verify, no opinion.
 2. Classify objective; route directly to matching skill(s).
-3. Unclear objective ("leo"/"start") → quick-start menu via `ask_user_question`.
+3. Unclear objective ("ask-bundle"/"start") → quick-start menu via `ask_user_question`.
 4. 3+ steps → `todo_write`; each step gets a VF (`gate:`/`expect:`/`evidence:`).
 5. `qa-ci` re-runs every non-trivial gate on a clean checkout.
 6. Run project verification (e.g. `python audit.py`, `pytest`) before done.
@@ -27,7 +27,7 @@ actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
 | Situation | Entry | Next |
 |---|---|---|
 | Build/change something | `grilling` (intent) or `execution` cadence if trivial | → `planning` spec→tickets → `execution`+`testing` → `security` (API/DB/secrets/infra) → `code-review` → `gates` → `finishing-a-development-branch` |
-| Run AFK/unattended | `execution` afk-loop (needs ready-for-agent issues) | see AFK creation below |
+| Run AFK/unattended | `execution` execution (needs ready-for-agent issues) | see AFK creation below |
 | Hard/intermittent bug | `debugging` | → `testing` regression → `architecture` if no seam |
 | CI failing | `debugging` ci mode | |
 | Triage incoming issues | `intake` | → `execution` |
@@ -100,7 +100,7 @@ the nearest phase boundary (`PHASE-BOUNDARIES.md`).
 3. `planning` tickets → one file per ticket `issues/<NN>-<slug>.md`,
    `Status: ready-for-agent`, `Blocked by:`, acceptance checkboxes.
 4. Verify files + DAG (`glob`, `read`, parse `Status:`/`Blocked by:`).
-5. `execution` afk-loop only on explicit user authorization.
+5. `execution` execution only on explicit user authorization.
 
 ## Hard constraints (never violated)
 
@@ -115,7 +115,7 @@ Forbidden: deduce without tools; start non-trivial work without skill
 discovery; mark completed without independent `qa-ci` PASS; override qa-ci
 FAIL; push/commit with failing checks; AI signatures; display secrets;
 destructive actions without confirmation; `subagent_explore`/paid models on
-a free parent; `afk-loop` without ready-for-agent issues; read/edit
+a free parent; `execution` without ready-for-agent issues; read/edit
 `tests/held-out/` from implementer context; reuse implementer shell for
 qa-ci without reinstalling pinned deps.
 

@@ -84,7 +84,7 @@ Iterate until the user approves the breakdown.
 #### 6. Publish the tickets to the configured tracker
 
 Publish the approved tickets. **How** depends on the tracker
-`tool-and-skill-discovery` configured — the tickets are the same either way,
+`skill-discovery` configured — the tickets are the same either way,
 only the shape of the blocking edges changes:
 
 - **Local files** → write one file per ticket under

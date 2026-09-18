@@ -50,7 +50,7 @@ defined gate is not ready-for-agent — define the gate first.
 
 - Invoke `research` (deep mode) before Spec if the codebase is unfamiliar or large.
 - Invoke `context7` when the spec depends on a library's current API.
-- Invoke `execution`'s review-cadence guidance if unsure whether the request
+- Invoke `execution`'s execution guidance if unsure whether the request
   needs full planning or can move straight to implementation.
 - `reference/plan-document-reviewer-prompt.md` — reviewer prompt for checking
   a finished plan doc.

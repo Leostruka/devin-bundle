@@ -28,4 +28,4 @@ The two branches produce very different artifacts — getting this wrong wastes 
 ## Cross-skills
 
 - If the prototype depends on an unfamiliar framework or library, invoke `context7` before writing code.
-- If the prototype requires exhaustive exploration of existing code to avoid invalid assumptions, invoke `deep-mode` first.
+- If the prototype requires exhaustive exploration of existing code to avoid invalid assumptions, invoke `research` first.

@@ -264,7 +264,7 @@ wc -w skills/path/SKILL.md
 
 **Name by what you DO or core insight:**
 - ✅ `condition-based-waiting` > `async-test-helpers`
-- ✅ `using-skills` not `skill-usage`
+- ✅ `skill-discovery` not `skill-usage`
 - ✅ `flatten-with-flags` > `data-structure-refactoring`
 - ✅ `root-cause-tracing` > `debugging-techniques`
 
@@ -277,8 +277,8 @@ wc -w skills/path/SKILL.md
 **When writing documentation that references other skills:**
 
 Use skill name only, with explicit requirement markers:
-- ✅ Good: `**REQUIRED SUB-SKILL:** Use /tdd`
-- ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand /diagnosing-bugs`
+- ✅ Good: `**REQUIRED SUB-SKILL:** Use /testing`
+- ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand /debugging`
 - ✅ Good: `**REQUIRED BACKGROUND:** Align terms with /ai-coding-dictionary`
 - ❌ Bad: `See skills/testing/test-driven-development` (unclear if required)
 - ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (force-loads, burns context)
@@ -396,7 +396,7 @@ Different skill types need different test approaches:
 
 ### Discipline-Enforcing Skills (rules/requirements)
 
-**Examples:** TDD, verification-before-completion, designing-before-coding
+**Examples:** TDD, gates, designing-before-coding
 
 **Test with:**
 - Academic questions: Do they understand the rules?

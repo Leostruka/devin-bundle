@@ -133,7 +133,7 @@ O bundle carrega servidores MCP a partir de `mcp_config.json` no Devin home do u
 - Tool count por server < 10-15 para >90% accuracy (Claude Haiku)
 - 20-30 tools para Sonnet 4
 - Verifique tool count com `mcp_list_tools` quando o servidor MCP estiver logado
-- Se >15 tools, considerar `mcp-context-audit` skill
+- Se >15 tools, considerar `mcp-governance` skill
 
 ## Modos do Devin CLI
 
@@ -176,7 +176,7 @@ SKILL-TIERS.md (se lido)     ~1782 tok (0.89%)
 MODEL-GUIDE.md (se lido)     ~3711 tok (1.86%)
 TOOLS-MAP.md (se lido)       ~2478 tok (1.24%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
-MCP tool defs (configured)   ~???? tok (medir com mcp-context-audit)
+MCP tool defs (configured)   ~???? tok (medir com mcp-governance)
 ─────────────────────────────────────────────
 Total fixo (sem docs opt)    ~5605 tok (2.80%)
 Total c/ docs opt            ~13576 tok (6.79%)

@@ -94,7 +94,7 @@ is at `~/.config/devin/skills/`.
 Browse categories: `ls ~/.config/devin/skills/`
 Search: `grep -r "keyword" ~/.config/devin/skills/ --include="SKILL.md"`
 
-Instructions: `skills/using-skills`
+Instructions: `skills/skill-discovery`
 </available_skills>
 
 <important_info_about_skills>
@@ -129,7 +129,7 @@ Your workflow for every task:
 The skills library prevents you from repeating common mistakes.
 Not checking before you start is choosing to repeat those mistakes.
 
-Start here: `skills/using-skills`
+Start here: `skills/skill-discovery`
 ```
 
 ## Testing Protocol

@@ -293,7 +293,7 @@ def process_hook(payload_str):
             print(f"  ACTION: clear or compact now. Lost-in-the-middle is severe at {pct:.0f}%.", file=sys.stderr)
             print(f"  Default: clear (blank slate). Use compact only to preserve current task intent.", file=sys.stderr)
         elif pct >= critical_pct:
-            print(f"  ACTION: clear or compact soon. Consider context-folding for large docs.", file=sys.stderr)
+            print(f"  ACTION: clear or compact soon. Consider context-hygiene for large docs.", file=sys.stderr)
         else:
             print(f"  Monitor: approaching pressure zone. Plan to clear/compact before {critical_pct}%.", file=sys.stderr)
 

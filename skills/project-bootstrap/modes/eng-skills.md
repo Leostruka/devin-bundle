@@ -1,4 +1,4 @@
-# Mode: setup-engineering-skills
+# Mode: project-bootstrap
 
 
 # Setup Engineering Skills
@@ -11,7 +11,7 @@ Scaffold the per-repo configuration that the engineering skills assume:
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write.
 
-If the repo has no `.devin/` structure at all, or the user asks for a more complete agent setup (rules, hooks, skills, memory), invoke `project-setup` first and return to this skill afterward.
+If the repo has no `.devin/` structure at all, or the user asks for a more complete agent setup (rules, hooks, skills, memory), invoke `project-bootstrap` first and return to this skill afterward.
 
 ## Process
 
@@ -25,18 +25,18 @@ Look at the current repo to understand its starting state. Read whatever exists;
 - `.devin/adr/` and any `.devin/contexts/<context>/adr/` directories
 - `.devin/agents/` — does this skill's prior output already exist?
 - `.devin/scratch/` — sign that a local-markdown issue tracker convention is already in use
-- Is the `triage` skill installed? (a `triage` skill folder alongside this one, or `triage` in your available skills.) This decides whether Section B runs at all.
+- Is the `intake` skill installed? (a `intake` skill folder alongside this one, or `intake` in your available skills.) This decides whether Section B runs at all.
 - Monorepo signals — a `pnpm-workspace.yaml`, a `workspaces` field in `package.json`, or a populated `packages/*` with its own `src/`. Present only in a genuinely large multi-package repo; their absence means single-context, which is almost every repo.
 
 ### 2. Present findings and ask
 
 Summarise what's present and what's missing. Then take the sections in order — one section, one answer, then the next.
 
-Lead each section with the recommended answer so the user can accept it in a word. Give a one-line explainer only when the choice genuinely branches; skip the section entirely when exploration already settled it (Section B when `triage` isn't installed, Section C when there's no monorepo).
+Lead each section with the recommended answer so the user can accept it in a word. Give a one-line explainer only when the choice genuinely branches; skip the section entirely when exploration already settled it (Section B when `intake` isn't installed, Section C when there's no monorepo).
 
 **Section A — Issue tracker.**
 
-> Explainer: The "issue tracker" is where issues live for this repo. Skills like `planning-pipeline` (Spec and Tickets modes) and `triage` read from and write to it — they need to know whether to call `gh issue create`, write a markdown file under `.devin/scratch/`, or follow some other workflow you describe. Pick the place you actually track work for this repo.
+> Explainer: The "issue tracker" is where issues live for this repo. Skills like `planning` (Spec and Tickets modes) and `intake` read from and write to it — they need to know whether to call `gh issue create`, write a markdown file under `.devin/scratch/`, or follow some other workflow you describe. Pick the place you actually track work for this repo.
 
 Default posture: these skills were designed for GitHub. If a `git remote` points at GitHub, propose that. If a `git remote` points at GitLab (`gitlab.com` or a self-hosted host), propose GitLab. Otherwise (or if the user prefers), offer:
 
@@ -47,13 +47,13 @@ Default posture: these skills were designed for GitHub. If a `git remote` points
 
 Record the choice in `.devin/agents/issue-tracker.md`. The GitHub and GitLab templates carry a "PRs as a request surface" flag, defaulted **off** — leave it off and don't raise it; a user who wants external PRs in the triage queue can flip the flag in the file later.
 
-**Section B — Triage label vocabulary.** Skip this section entirely if the `triage` skill isn't installed (exploration told you) — an uninstalled skill needs no labels.
+**Section B — Triage label vocabulary.** Skip this section entirely if the `intake` skill isn't installed (exploration told you) — an uninstalled skill needs no labels.
 
 If it is installed, ask exactly one question:
 
 > Do you want to keep the default triage labels? (recommended: **yes**)
 
-The defaults are the five canonical roles, each label string equal to its name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. On **yes**, write them as-is. Only if the user says no — usually because their tracker already uses other names (e.g. `bug:triage` for `needs-triage`) — collect the overrides so `triage` applies existing labels instead of creating duplicates.
+The defaults are the five canonical roles, each label string equal to its name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. On **yes**, write them as-is. Only if the user says no — usually because their tracker already uses other names (e.g. `bug:triage` for `needs-triage`) — collect the overrides so `intake` applies existing labels instead of creating duplicates.
 
 **Section C — Domain docs.** Default to **single-context** — one `.devin/CONTEXT.md` + `.devin/adr/` under `.devin/`. This fits almost every repo; write it without asking.
 
@@ -64,7 +64,7 @@ Offer **multi-context** — a `.devin/CONTEXT-MAP.md` pointing to per-context `.
 Show the user a draft of:
 
 - The `## Agent skills` block to add to `.devin/global_rules.md` (or `.devin/rules/agent-skills.md` if global rules is not appropriate)
-- The contents of `.devin/agents/issue-tracker.md`, `.devin/agents/domain.md`, and `.devin/agents/triage-labels.md` (the last only when `triage` is installed)
+- The contents of `.devin/agents/issue-tracker.md`, `.devin/agents/domain.md`, and `.devin/agents/triage-labels.md` (the last only when `intake` is installed)
 
 Let them edit before writing.
 
@@ -96,14 +96,14 @@ The block:
 [one-line summary of layout — "single-context" or "multi-context"]. See `.devin/agents/domain.md`.
 ```
 
-Include the `### Triage labels` sub-block, and write `.devin/agents/triage-labels.md`, only when `triage` is installed and Section B ran. When it isn't, both are omitted.
+Include the `### Triage labels` sub-block, and write `.devin/agents/triage-labels.md`, only when `intake` is installed and Section B ran. When it isn't, both are omitted.
 
 Then write the docs files using the seed templates in this skill folder as a starting point:
 
 - [issue-tracker-github.md](./issue-tracker-github.md) — GitHub issue tracker
 - [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) — GitLab issue tracker
 - [issue-tracker-local.md](./issue-tracker-local.md) — local-markdown issue tracker
-- [triage-labels.md](./triage-labels.md) — label mapping (only if `triage` is installed)
+- [triage-labels.md](./triage-labels.md) — label mapping (only if `intake` is installed)
 - [domain.md](./domain.md) — domain doc consumer rules + layout
 
 For "other" issue trackers, write `.devin/agents/issue-tracker.md` from scratch using the user's description.
@@ -114,4 +114,4 @@ Tell the user the setup is complete and which engineering skills will now read f
 
 ## Cross-skills
 
-- Use `continuous-improvement` to iterate the setup based on observed friction after the first projects use it.
+- Use `self-improvement` to iterate the setup based on observed friction after the first projects use it.
