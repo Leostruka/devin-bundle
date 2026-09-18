@@ -176,14 +176,6 @@
       "export_hash": "9B59F8C8ED542186B4A71916E8D563BF4F561612B60DCA4480EC16D6EB4025A8"
     },
     {
-      "name": "secure-defaults-check",
-      "source": "created:Devin bundle (sec-needs)",
-      "purpose": "Use when checking that a project or change follows secure defaults before committing or deploying.",
-      "original_path": "%APPDATA%\\devin\\skills\\secure-defaults-check",
-      "exported_at": "2026-09-08T21:39:22.450228",
-      "export_hash": "B04721B8E9B9089F6D20A598012643EE16A0B1FDC117F308EA11CAED8750ECAE"
-    },
-    {
       "name": "api-context-spec",
       "source": "created:Devin bundle (good-practis)",
       "purpose": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable.",
@@ -274,14 +266,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\deploy",
       "export_hash": "3C7C352A8CCD4564C86FB6D78C2ED4FE8984FF1EEB6B05894B8FADFE93F51AD1",
       "exported_at": "2026-09-08T21:39:22.458845"
-    },
-    {
-      "name": "security-audit",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to audit code, dependencies, or infrastructure for security issues. Covers SAST, dependency scanning, secret leak detection, and OWASP-style checks.",
-      "original_path": "%APPDATA%\\devin\\skills\\security-audit",
-      "export_hash": "7DABCF65057C16A791400985D238E700FF9DE37CF968A202867FC10975BB6734",
-      "exported_at": "2026-09-08T21:39:22.458977"
     },
     {
       "name": "performance",
@@ -430,9 +414,14 @@
       "name": "debugging",
       "source": "devin-bundle",
       "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken/throwing/failing/slow, when encountering a bug/test failure/unexpected behavior and a fix is not yet obvious, or when CI is failing and the cause needs to be found across builds, jobs, or environments."
+    },
+    {
+      "name": "security",
+      "source": "devin-bundle",
+      "purpose": "Use when auditing code, dependencies, or infrastructure for security issues (SAST, dependency scanning, secret leak detection, OWASP-style checks), or when checking that a project or change follows secure defaults before committing or deploying."
     }
   ],
-  "skill_count": 57,
+  "skill_count": 56,
   "rule_count": 28,
   "scripts": [
     {
