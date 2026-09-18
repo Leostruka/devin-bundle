@@ -45,14 +45,6 @@
       "hash": "dbb4e51f9c31d60ebdb15f10c0a545366f88716346658dc0564f977b2e100691"
     },
     {
-      "name": "domain-modeling",
-      "source": "devin-bundle",
-      "purpose": "Use when building or refining a project's domain model, glossary, or bounded contexts.",
-      "original_path": "%APPDATA%\\devin\\skills\\domain-modeling",
-      "export_hash": "B8E5AA988D637ED09B997232C70FF735E9F52A35CAF498370C59CE46B6BAE542",
-      "exported_at": "2026-09-08T21:39:22.438320"
-    },
-    {
       "name": "finishing-a-development-branch",
       "source": "devin-bundle",
       "purpose": "Use when the implementation is complete, all tests pass, and the work needs to be integrated.",
@@ -150,14 +142,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\using-skills",
       "export_hash": "9668ED813E9B975B6F12C12F6B6A70B34D3E5356782339A7C544634D38DEBC2D",
       "exported_at": "2026-09-08T21:39:22.447129"
-    },
-    {
-      "name": "ontology-validator",
-      "source": "created:Devin bundle (ontologies-keep-honest)",
-      "purpose": "Use when validating tool outputs or data against a domain ontology or structured knowledge base. Ensures entities, types, and relations are consistent before side effects.",
-      "original_path": "%APPDATA%\\devin\\skills\\ontology-validator",
-      "exported_at": "2026-09-08T21:39:22.448409",
-      "export_hash": "9B59F8C8ED542186B4A71916E8D563BF4F561612B60DCA4480EC16D6EB4025A8"
     },
     {
       "name": "wait-what",
@@ -292,14 +276,6 @@
       "exported_at": "2026-09-08T21:39:22.460066"
     },
     {
-      "name": "structured-knowledge-extraction",
-      "source": "created:Devin bundle (Hyper-Extract concept, Apache-2.0)",
-      "purpose": "Use when extracting entities, relations, evidence, and provenance from Markdown or plain text into a typed, versioned knowledge graph under `.devin/`.",
-      "original_path": "%APPDATA%\\devin\\skills\\structured-knowledge-extraction",
-      "export_hash": "41F2169BC17D44E8F1C48D8B28EE961B9C48E230D8E12DCA6A27C9247A05BD83",
-      "exported_at": "2026-09-08T21:39:22.461678"
-    },
-    {
       "name": "youtube-fetcher",
       "source": "adapted:JimmySadek/youtube-fetcher-to-markdown (MIT)",
       "purpose": "Use when you need to turn a YouTube URL and provider-supplied caption/metadata JSON into a raw, timestamped transcript + metadata Markdown note under `.devin/notes/youtube/` for later structured extraction, without auto-installing dependencies, invoking yt-dlp/Whisper, or calling the network.",
@@ -397,9 +373,14 @@
       "name": "testing",
       "source": "devin-bundle",
       "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate (red-green-refactor, seams-first), or when the user asks to find testing gaps, mutation test, or identify surviving mutants."
+    },
+    {
+      "name": "knowledge-modeling",
+      "source": "devin-bundle",
+      "purpose": "Use when building or refining a project's domain model, glossary, or bounded contexts, when validating tool outputs/data against a domain ontology before side effects, or when extracting entities, relations, evidence, and provenance from Markdown/plain text into a typed versioned knowledge graph under `.devin/`."
     }
   ],
-  "skill_count": 54,
+  "skill_count": 52,
   "rule_count": 28,
   "scripts": [
     {
