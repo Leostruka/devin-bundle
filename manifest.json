@@ -36,14 +36,6 @@
       "exported_at": "2026-09-08T21:39:22.433557"
     },
     {
-      "name": "codebase-design",
-      "source": "devin-bundle",
-      "purpose": "Use when designing modules, seams, adapters, and the structure of a codebase.",
-      "original_path": "%APPDATA%\\devin\\skills\\codebase-design",
-      "export_hash": "0FB8132BBF3D620DC461AE926D1247117EDD7C8D3E9E356D89D2C9AE08DE5FF0",
-      "exported_at": "2026-09-08T21:39:22.433862"
-    },
-    {
       "name": "context7",
       "source": "devin-bundle",
       "purpose": "Use when the user asks about a library, framework, or component and up-to-date docs would help.",
@@ -117,14 +109,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\handoff",
       "export_hash": "FC25B20B00ADEB58F4496F1BD45821685A1D2AA476A718EF6ACF3950A8793287",
       "exported_at": "2026-09-08T21:39:22.440680"
-    },
-    {
-      "name": "improve-codebase-architecture",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants to evaluate module depth, identify deepening opportunities in a codebase, and act on them.",
-      "original_path": "%APPDATA%\\devin\\skills\\improve-codebase-architecture",
-      "export_hash": "979D6C37E465DA842AA610069FBEEE91E61BCFAD2CBE122494B839F54AB6F1F7",
-      "exported_at": "2026-09-08T21:39:22.441083"
     },
     {
       "name": "jira",
@@ -405,14 +389,6 @@
       "exported_at": "2026-09-08T21:39:22.460066"
     },
     {
-      "name": "legacy-refactor",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to modernize legacy code incrementally. Covers strangler-fig, seams, characterization tests, safe extraction, and risk reduction.",
-      "original_path": "%APPDATA%\\devin\\skills\\legacy-refactor",
-      "export_hash": "C375D0D8CCCB7ACDF8CB3E93D3E3DFFF633522133B53CC1D38B7EA94D34C5038",
-      "exported_at": "2026-09-08T21:39:22.460198"
-    },
-    {
       "name": "devin-manager",
       "source": "created:Devin bundle (DeepPaperNote evidence-first concept, MIT)",
       "purpose": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only persist under `.devin/` after explicit approval.",
@@ -491,9 +467,14 @@
       "name": "git-workflows",
       "source": "devin-bundle",
       "purpose": "Use when managing branches, writing commits, creating isolated worktrees for feature work, or resolving and verifying merge/rebase conflicts."
+    },
+    {
+      "name": "architecture",
+      "source": "devin-bundle",
+      "purpose": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams, characterization tests, safe extraction)."
     }
   ],
-  "skill_count": 63,
+  "skill_count": 61,
   "rule_count": 28,
   "scripts": [
     {
