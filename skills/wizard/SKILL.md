@@ -1,7 +1,7 @@
 ---
 name: wizard
 description: Use when a human must walk through a manual procedure such as provisioning, credentials, or a one-off cutover.
-triggers: [user, model]
+triggers: [user]
 ---
 # Wizard
 

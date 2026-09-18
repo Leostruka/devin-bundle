@@ -5,7 +5,7 @@ allowed-tools:
   - mcp_call_tool
   - mcp_list_tools
   - ask_user_question
-triggers: [user, model]
+triggers: [user]
 ---
 
 # Jira operations via Atlassian Rovo MCP

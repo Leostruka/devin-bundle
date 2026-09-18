@@ -2,7 +2,7 @@
 name: youtube-fetcher
 description: Use when you need to turn a YouTube URL and provider-supplied caption/metadata JSON into a raw, timestamped transcript + metadata Markdown note under `.devin/notes/youtube/` for later structured extraction, without auto-installing dependencies, invoking yt-dlp/Whisper, or calling the network.
 version: 1.0.0
-triggers: [user, model]
+triggers: [user]
 ---
 
 # youtube-fetcher
