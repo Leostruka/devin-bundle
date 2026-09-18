@@ -13,10 +13,10 @@ Branch: `chore/bundle-slim` (from `feat/hybrid-rust-extensions`).
   EXPECT: cópia stale removida; hooks com fonte única documentada; verde
   EVIDENCE: `.devin/hooks.v1.json` removido; `config.json.hooks={}` + `render-user-hooks.py` (install injeta, export stripa); audit 0 errors (4 warn pré-existentes); pytest 433 passed. `global_rules.md` mantido (consumidores existem); agents/ divisão documentada em `.devin/agents/README.md`.
 
-- [ ] G2: hooks consolidados; latência exec-hook medida cai
+- [x] G2: hooks consolidados; latência exec-hook medida cai
   CHECK: python .devin/notes/hook-bench-post.py 2>/dev/null || true; python audit.py && python -m pytest tests/ -q
   EXPECT: bindings ~10; exec total <= ~200ms medido (alvo ~155); verde
-  EVIDENCE: pending
+  EVIDENCE: 22→9 bindings (6 guards consolidados via _hookrun in-process). N=10: exec 486→193ms (−60%), write 271→145ms, prompt 178→102ms, Stop 158→87ms (hook-bench-post.json). Desvio documentado: nudge ficou command-hook (type:prompt = eval LLM/evento — pior); signature mantida em pre-write+stop (custo ~0 in-process). audit 0 errors; pytest 439+8 passed.
 
 - [ ] G3: skills ~50; monstros split (SKILL.md <=10KB + REFERENCE.md); triggers nas raras
   CHECK: ls skills | wc -l; python audit.py && python -m pytest tests/ -q

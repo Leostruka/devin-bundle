@@ -341,6 +341,12 @@ def reset():
 
 def main():
     global SELECTED_MODEL
+    # Hot path: hook invocation has no CLI args — skip argparse construction
+    # entirely (~20ms of pure startup on every PostToolUse).
+    if not sys.argv[1:]:
+        payload = read_stdin()
+        sys.exit(process_hook(payload))
+
     ap = argparse.ArgumentParser(description="Context pressure estimator")
     ap.add_argument("--reset", action="store_true", help="clear session marker")
     ap.add_argument("--report", action="store_true", help="show current estimate")
