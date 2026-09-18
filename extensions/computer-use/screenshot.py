@@ -169,27 +169,33 @@ def main():
     if args.hints and (args.no_image or (profile == "fast" and not args.image)):
         obs = cu_hints.enum_clickables(scope=args.window)
         els = obs["elements"] if obs else None
-        if not els:
+        if els:
+            hints = [{"id": hid, "x": e["x"], "y": e["y"], "name": e["name"],
+                      "type": e["type"], "bounds": e["bounds"],
+                      "hwnd": e.get("hwnd"),
+                      "enabled": e.get("enabled", True)}
+                     for e, hid in zip(els, cu_hints.hint_ids(len(els)))]
+            data = cu_hints.write_sidecar(
+                hints, window=obs["window"], capture={"skipped": True})
+            print(json.dumps(
+                {"ok": True, "path": None, "capture": "skipped",
+                 "profile": profile, "hints": hints,
+                 "truncated": obs["truncated"],
+                 "session_id": data["session_id"],
+                 "observation_id": data["observation_id"],
+                 "generation": data["generation"],
+                 "window": obs["window"],
+                 "note": "visual bypass — no image; click via "
+                         "mouse.py click --hint <id>"}))
+            return
+        if args.no_image:
+            # explicit bypass with nothing to target: fail honestly — the
+            # caller asked for no pixels and there's nothing to offer
             cu_hints.invalidate_sidecar()
             fail("no elements enumerated and pixels skipped — "
                  "rerun with --image for a visual capture")
-        hints = [{"id": hid, "x": e["x"], "y": e["y"], "name": e["name"],
-                  "type": e["type"], "bounds": e["bounds"],
-                  "hwnd": e.get("hwnd"), "enabled": e.get("enabled", True)}
-                 for e, hid in zip(els, cu_hints.hint_ids(len(els)))]
-        data = cu_hints.write_sidecar(
-            hints, window=obs["window"], capture={"skipped": True})
-        print(json.dumps(
-            {"ok": True, "path": None, "capture": "skipped",
-             "profile": profile, "hints": hints,
-             "truncated": obs["truncated"],
-             "session_id": data["session_id"],
-             "observation_id": data["observation_id"],
-             "generation": data["generation"],
-             "window": obs["window"],
-             "note": "visual bypass — no image; click via "
-                     "mouse.py click --hint <id>"}))
-        return
+        # fast-profile default: bypass is an optimization, not a mode —
+        # UIA yielded nothing, so fall through to the pixel path below
 
     try:
         import mss.tools
