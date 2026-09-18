@@ -1,6 +1,9 @@
 """Etapa 3 gates: uia_perform re-locates the live element and runs the
 right pattern — typed rejections for stale / no_pattern / readonly, and
 FindAllBuildCache used for the enumeration."""
+import json
+import os
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -95,19 +98,15 @@ def fake_uia(monkeypatch):
     comtypes = types.ModuleType("comtypes")
     comtypes.CoInitialize = lambda: None
     comtypes.CoUninitialize = lambda: None
-    sub = types.ModuleType("uiautomation.uiautomation")
-
-    class Client:
-        @staticmethod
-        def instance():
-            return types.SimpleNamespace(IUIAutomation=state["core"])
-
-    sub._AutomationClient = Client
-    pkg = types.ModuleType("uiautomation")
-    pkg.uiautomation = sub
+    # cu_hints._uia_core builds a per-thread client via comtypes.client —
+    # the seam faked here (no process-wide singleton anymore).
+    client_mod = types.ModuleType("comtypes.client")
+    client_mod.GetModule = lambda name: types.SimpleNamespace(
+        IUIAutomation=object())
+    client_mod.CreateObject = lambda clsid, interface=None: state["core"]
+    comtypes.client = client_mod
     monkeypatch.setitem(sys.modules, "comtypes", comtypes)
-    monkeypatch.setitem(sys.modules, "uiautomation", pkg)
-    monkeypatch.setitem(sys.modules, "uiautomation.uiautomation", sub)
+    monkeypatch.setitem(sys.modules, "comtypes.client", client_mod)
     monkeypatch.setattr(cu_hints.os, "name", "nt")
     monkeypatch.delenv("CU_NO_UIA", raising=False)
     return state
@@ -283,3 +282,29 @@ def test_generation_survives_invalidate(fake_uia, tmp_path):
     # stale --gen pin must not resolve the new element
     e, reason = H.resolve_hint("a", generation=o1["generation"])
     assert reason == "stale_generation" and e is None
+
+
+def test_enum_clickables_no_process_crash():
+    """Regression for the --hints segfault: COM objects released on the
+    wrong thread (the _AutomationClient singleton bound to a dead worker
+    apartment + `_el` elements released through the queue on the caller's
+    thread). Runs the real COM path in a subprocess — a crash there is a
+    non-zero exit code, not a dead pytest."""
+    appdata = os.environ.get("APPDATA")
+    venv = (Path(appdata) / "devin" / "extensions" / "computer-use"
+            / ".venv" / "Scripts" / "python.exe") if appdata else None
+    if not venv or not venv.exists():
+        pytest.skip("computer-use extension venv not installed")
+    ext = str(Path(__file__).resolve().parents[1]
+              / "extensions" / "computer-use")
+    code = (
+        "import sys, json; sys.path.insert(0, %r); import cu_hints; "
+        "r = cu_hints.enum_clickables(scope='all', timeout=20.0); "
+        "print(json.dumps("
+        "{'elements': -1 if r is None else len(r['elements'])}))" % ext)
+    for i in range(3):  # the crash was nondeterministic — repeat
+        r = subprocess.run([str(venv), "-c", code],
+                           capture_output=True, text=True, timeout=90)
+        assert r.returncode == 0, \
+            f"run {i} exit {r.returncode}: {r.stderr[-300:]}"
+        assert "elements" in json.loads(r.stdout.strip())
