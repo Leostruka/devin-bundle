@@ -18,20 +18,30 @@ this skill — this file is only the router pointer.
 
 ## Quick start
 
+At session start, ask the user which action profile to use
+(`ask_user_question`: `fast` / `smooth` / `human`), then persist it:
+
+```bash
+PY profile.py --set human              # writes session file in OS temp dir
+```
+
 Always invoke via the extension's isolated venv Python:
 
 - Windows: `%APPDATA%\devin\extensions\computer-use\.venv\Scripts\python.exe`
 - POSIX: `~/.config/devin/extensions/computer-use/.venv/bin/python`
 
 ```bash
-PY screenshot.py --grid                  # capture → PNG lands in OS temp dir
-PY mouse.py click X Y                    # click physical pixel (X,Y)
-PY type_text.py "text" | --keys ctrl+c   # type / hotkey
+PY screenshot.py --hints               # Vimium-style badges on real UI elements
+PY screenshot.py --grid                # fallback when UIA has no elements
+PY mouse.py click --hint as            # click element center by hint id
+PY mouse.py click X Y                  # or click physical pixel directly
+PY type_text.py "text" | --keys ctrl+c # type / hotkey
 ```
 
-Workflow: `screenshot.py --grid` → `read` the PNG → pick (X,Y) from the grid
-labels (they are physical pixels — do NOT estimate from image proportions) →
-act → re-screenshot to verify.
+Workflow: `screenshot.py --hints` → pick the target by `name`/`type` from the
+JSON (or the badge letters in the PNG) → `mouse.py click --hint <id>` →
+re-screenshot to verify. For visual checks (images, canvas, rendered content)
+use plain `screenshot.py`; hints only cover interactive elements.
 
 Screenshots are disposable: keep the default temp path, and delete the shots
 you created when the task ends. Only write `--out` elsewhere if the user asks
