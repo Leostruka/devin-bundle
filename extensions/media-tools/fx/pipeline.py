@@ -47,10 +47,10 @@ def process(img, invert=False, brightness_map=1.0, edge_enhance=0, blur=0.0,
 
 
 def postprocess(img, bloom=None, grain=None, chromatic=None, scanlines=None,
-                vignette=None, seed=0):
+                vignette=None, crtCurve=None, phosphor=None, seed=0):
     """Each arg None or dict of params. bloom: threshold/soft/intensity/radius;
     grain: intensity/size/speed; chromatic: offset(px); scanlines: opacity/spacing;
-    vignette: intensity."""
+    vignette: intensity; crtCurve: amount(barrel distortion); phosphor: color/customColor."""
     out = img.convert("RGB")
     w, h = out.size
     if bloom:
@@ -89,4 +89,23 @@ def postprocess(img, bloom=None, grain=None, chromatic=None, scanlines=None,
         d = np.sqrt(((x - w / 2) / (w / 2)) ** 2 + ((y - h / 2) / (h / 2)) ** 2)
         mask = np.clip(1 - strength * np.clip(d - 0.5, 0, 1) ** 2 * 2, 0, 1)
         out = Image.fromarray((np.asarray(out, dtype=np.float32) * mask[..., None]).astype(np.uint8))
+    if crtCurve:
+        amount = float(crtCurve.get("amount", 0.1))  # site max .5
+        arr = np.asarray(out, dtype=np.float32)
+        y, x = np.mgrid[0:h, 0:w]
+        nx = (x / w - 0.5) * 2
+        ny = (y / h - 0.5) * 2
+        r2 = nx ** 2 + ny ** 2
+        sx = ((nx * (1 + amount * r2)) / 2 + 0.5) * w
+        sy = ((ny * (1 + amount * r2)) / 2 + 0.5) * h
+        sx = np.clip(sx.astype(np.int32), 0, w - 1)
+        sy = np.clip(sy.astype(np.int32), 0, h - 1)
+        out = Image.fromarray(arr[sy, sx].astype(np.uint8))
+    if phosphor:
+        tint = phosphor.get("customColor", "#00ff00")
+        named = {"green": "#00ff00", "amber": "#ffbf00", "white": "#ffffff"}
+        hex_c = named.get(phosphor.get("color"), tint).lstrip("#")
+        rgb = np.array([int(hex_c[i:i + 2], 16) for i in (0, 2, 4)], np.float32) / 255.0
+        gray = np.asarray(out.convert("L"), dtype=np.float32) / 255.0
+        out = Image.fromarray((gray[..., None] * rgb * 255).astype(np.uint8))
     return out

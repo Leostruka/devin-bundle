@@ -40,7 +40,8 @@ def _parse_params(pairs):
                 target[k[len(prefix):]] = val
                 break
         else:
-            for stage in ("bloom", "grain", "chromatic", "scanlines", "vignette"):
+            for stage in ("bloom", "grain", "chromatic", "scanlines", "vignette",
+                          "crtCurve", "phosphor"):
                 if k.startswith(stage + "."):
                     post.setdefault(stage, {})[k[len(stage) + 1:]] = val
                     break

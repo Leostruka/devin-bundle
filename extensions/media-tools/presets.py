@@ -17,7 +17,8 @@ BUILT_INS = {
                    "mode": "mono", "fg": "#00ff00", "intensity": 1},
         "post": {"bloom": {"threshold": .6, "soft": .5, "intensity": .8, "radius": 8},
                  "grain": {"intensity": 20, "size": 2},
-                 "scanlines": {"opacity": .05, "spacing": 4}},
+                 "scanlines": {"opacity": .05, "spacing": 4},
+                 "phosphor": {"color": "green", "customColor": "#00ff00"}},
     },
     "matrix": {
         "description": "Bright green, high contrast, animated grain",
@@ -35,7 +36,9 @@ BUILT_INS = {
         "post": {"bloom": {"threshold": .7, "soft": .5, "intensity": .6, "radius": 6},
                  "grain": {"intensity": 30, "size": 2},
                  "chromatic": {"offset": 3},
-                 "scanlines": {"opacity": .15, "spacing": 3}},
+                 "scanlines": {"opacity": .15, "spacing": 3},
+                 "crtCurve": {"amount": .15},
+                 "phosphor": {"color": "amber", "customColor": "#ffbf00"}},
     },
     "high-detail": {
         "description": "Small characters, extended character set",
