@@ -297,13 +297,6 @@
       "exported_at": "2026-09-08T21:39:22.456881"
     },
     {
-      "name": "deep-mode",
-      "source": "devin-bundle (new, replicates cloud Ask Devin Deep Mode)",
-      "purpose": "Use when the user says 'deep', 'deep search', 'deep research', or asks for exhaustive codebase exploration beyond a quick grep. Multi-pass agentic search with citations.",
-      "export_hash": "F2A672DC808D9965B10420E9A97A10A4E0C5D8C7FDD1732E39958C6B2500E10A",
-      "exported_at": "2026-09-08T21:39:22.457123"
-    },
-    {
       "name": "data-analyst",
       "source": "devin-bundle (new, replicates cloud DANA agent)",
       "purpose": "Use when the user asks to query a database, analyze data, create charts, or asks business questions about data. SQL-first exploration via MCP data sources.",
@@ -500,7 +493,7 @@
       "purpose": "Use when managing branches, writing commits, creating isolated worktrees for feature work, or resolving and verifying merge/rebase conflicts."
     }
   ],
-  "skill_count": 64,
+  "skill_count": 63,
   "rule_count": 28,
   "scripts": [
     {
