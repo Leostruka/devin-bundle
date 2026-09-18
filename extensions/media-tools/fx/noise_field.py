@@ -49,7 +49,7 @@ def field(h, w, noise_type="perlin", scale=50, octaves=4, seed=0):
 
 
 def apply(img, noiseType="perlin", scale=50, intensity=1.0, octaves=4,
-          speed=1.0, seed=0, **_):
+          speed=1.0, distortOnly=False, seed=0, **_):
     src = img.convert("RGB")
     h, w = src.height, src.width
     n = field(h, w, noiseType, int(scale), int(octaves), seed)
@@ -60,4 +60,8 @@ def apply(img, noiseType="perlin", scale=50, intensity=1.0, octaves=4,
     sy = np.clip((yy + gy * disp * 50).astype(np.int32), 0, h - 1)
     sx = np.clip((xx + gx * disp * 50).astype(np.int32), 0, w - 1)
     arr = np.asarray(src, dtype=np.float32)
-    return Image.fromarray(np.clip(arr[sy, sx], 0, 255).astype(np.uint8))
+    out = arr[sy, sx]
+    if not distortOnly:
+        # noise overlays as brightness modulation (site shader adds noise * intensity)
+        out = out + ((n - 0.5) * 2 * float(intensity) * 30)[..., None]
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))

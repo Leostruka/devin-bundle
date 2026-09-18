@@ -1,7 +1,7 @@
 """Pixel Sort — sort runs of pixels past a luminance threshold.
 Site params: direction(horizontal|vertical|diagonal),
-sortMode(brightness|hue|saturation), threshold 0..0.5, streakLength 10..300,
-intensity 0..1, randomness 0..1."""
+mode(brightness|hue|saturation), threshold 0..0.5, streakLength 10..300,
+intensity 0..1, randomness 0..1, reverse bool."""
 import colorsys
 
 import numpy as np
@@ -39,15 +39,16 @@ def _sort_runs(arr, lum, threshold, streak, mode, rng, randomness, reverse=False
                 start = None
 
 
-def apply(img, direction="horizontal", sortMode="brightness", threshold=0.25,
-          streakLength=100, intensity=1.0, randomness=0.0, seed=0, **_):
+def apply(img, direction="horizontal", mode="brightness", threshold=0.25,
+          streakLength=100, intensity=0.8, randomness=0.3, reverse=False,
+          seed=0, **_):
     src = img.convert("RGB")
     arr = np.asarray(src, dtype=np.float32).copy()
     rng = np.random.default_rng(seed)
     lum = np.asarray(src.convert("L"), dtype=np.float32) / 255.0
     if direction == "vertical":
         arr, lum = arr.transpose(1, 0, 2), lum.T
-        _sort_runs(arr, lum, threshold, int(streakLength), sortMode, rng, randomness)
+        _sort_runs(arr, lum, threshold, int(streakLength), mode, rng, randomness, reverse)
         arr = arr.transpose(1, 0, 2)
     elif direction == "diagonal":
         # sort along NW-SE diagonals
@@ -64,12 +65,14 @@ def apply(img, direction="horizontal", sortMode="brightness", threshold=0.25,
                     start = i
                 if (not above or i - start >= streakLength) and start is not None:
                     seg = arr[ys[start:i], xs[start:i]].copy()
-                    keys = np.array([_sort_key(px, sortMode) for px in seg])
+                    keys = np.array([_sort_key(px, mode) for px in seg])
                     order = np.argsort(keys, kind="stable")
+                    if reverse:
+                        order = order[::-1]
                     arr[ys[start:i], xs[start:i]] = seg[order]
                     start = None
     else:
-        _sort_runs(arr, lum, threshold, int(streakLength), sortMode, rng, randomness)
+        _sort_runs(arr, lum, threshold, int(streakLength), mode, rng, randomness, reverse)
     if intensity < 1.0:
         arr = np.asarray(src, dtype=np.float32) * (1 - intensity) + arr * intensity
     return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))

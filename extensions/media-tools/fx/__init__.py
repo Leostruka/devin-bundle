@@ -1,8 +1,8 @@
 """media-tools effects package — grainrad parity."""
 
 from . import (ascii_fx, blockify, contour, crosshatch, dithering, dots,
-               edge_detection, halftone, noise_field, pixel_sort, threshold,
-               voronoi, wave_lines)
+               edge_detection, halftone, matrix_rain, noise_field, pixel_sort,
+               threshold, vhs, voronoi, wave_lines)
 
 EFFECTS = {
     "ascii": ascii_fx.apply,
@@ -18,6 +18,8 @@ EFFECTS = {
     "waveLines": wave_lines.apply,
     "noiseField": noise_field.apply,
     "voronoi": voronoi.apply,
+    "matrixRain": matrix_rain.apply,
+    "vhs": vhs.apply,
 }
 
 

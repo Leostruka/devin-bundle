@@ -1,6 +1,7 @@
 """Wave Lines — horizontal/vertical wavy scan lines displaced by luminance.
 Site params: lineCount 10..150, amplitude 5..50, frequency .5..3,
-lineThickness .5..3, direction(h|v), mode, lineColor, bg."""
+lineThickness 0..1 (fraction of line spacing), direction(horizontal|vertical),
+colorMode(original|mono), fgColor, bgColor."""
 import math
 
 import numpy as np
@@ -12,18 +13,19 @@ def _hex_rgb(c):
     return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4)) if isinstance(c, str) else tuple(c)
 
 
-def apply(img, lineCount=60, amplitude=15, frequency=1.0, lineThickness=1.0,
-          direction="horizontal", mode="original", lineColor="#ffffff",
-          bg="#000000", **_):
+def apply(img, lineCount=50, amplitude=20, frequency=1.0, lineThickness=0.4,
+          direction="horizontal", colorMode="original", fgColor="#ffffff",
+          bgColor="#000000", **_):
     src = img.convert("RGB")
     arr = np.asarray(src, dtype=np.float32)
     lum = np.asarray(src.convert("L"), dtype=np.float32) / 255.0
     h, w = lum.shape
-    out = Image.new("RGB", (w, h), _hex_rgb(bg))
+    out = Image.new("RGB", (w, h), _hex_rgb(bgColor))
     draw = ImageDraw.Draw(out)
-    lc = _hex_rgb(lineColor)
+    lc = _hex_rgb(fgColor)
     n = max(10, min(150, int(lineCount)))
-    width = max(1, int(round(lineThickness)))
+    spacing = (w if direction == "vertical" else h) / n
+    width = max(1, int(round(lineThickness * spacing)))
 
     for i in range(n):
         if direction == "vertical":
@@ -40,7 +42,7 @@ def apply(img, lineCount=60, amplitude=15, frequency=1.0, lineThickness=1.0,
                 ly = min(h - 1, max(0, int(base)))
                 disp = lum[ly, x] * amplitude * math.sin(x * frequency * math.pi / w * 4)
                 pts.append((x, base + disp))
-        if mode == "mono":
+        if colorMode == "mono":
             col = tuple(int(v) for v in lc)
             draw.line(pts, fill=col, width=width, joint="curve")
         else:
