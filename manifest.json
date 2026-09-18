@@ -12,14 +12,6 @@
   },
   "skills": [
     {
-      "name": "project-setup",
-      "source": "devin-bundle",
-      "purpose": "Use when starting work on a new or existing project that lacks a `.devin/` configuration, or when the user wants to add skills, hooks, rules, and local tools to a project in a systematic, validated way.",
-      "original_path": "%APPDATA%\\devin\\skills\\project-setup",
-      "export_hash": "7E9CF0742EAED31182887BEB82AA357AB3A8461D3B734BC7CE7663CEE72951AD",
-      "exported_at": "2026-09-08T21:39:22.432746"
-    },
-    {
       "name": "ask-bundle",
       "source": "devin-bundle",
       "purpose": "Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.",
@@ -166,22 +158,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\self-extend",
       "export_hash": "9D3D078AA923208CAACCA28CBDBDC6D233E6945246D7CE53F78AD85911F52C73",
       "exported_at": "2026-09-08T21:39:22.444983"
-    },
-    {
-      "name": "setup-engineering-skills",
-      "source": "devin-bundle",
-      "purpose": "Use when configuring a repo for the engineering skills — set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\setup-engineering-skills",
-      "export_hash": "9BB8772694767CE263003AD10FE7699BB93AF57A223A9102D03F3E1944AE969E",
-      "exported_at": "2026-09-08T21:39:22.445478"
-    },
-    {
-      "name": "setup-pre-commit",
-      "source": "devin-bundle",
-      "purpose": "Use when setting up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Covers adding pre-commit hooks, configuring Husky, lint-staged, or commit-time formatting/typechecking/testing.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\setup-pre-commit",
-      "export_hash": "C139F203342C60975FACE2ADAB1D466CC3D06ACA88DE65868F40619A74894EA2",
-      "exported_at": "2026-09-08T21:39:22.445630"
     },
     {
       "name": "tdd",
@@ -472,9 +448,14 @@
       "name": "architecture",
       "source": "devin-bundle",
       "purpose": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams, characterization tests, safe extraction)."
+    },
+    {
+      "name": "project-bootstrap",
+      "source": "devin-bundle",
+      "purpose": "Use when starting work on a project that lacks a `.devin/` configuration, when the user wants to add skills/hooks/rules/local tools systematically, when configuring a repo's issue tracker + triage labels + domain docs for the engineering skills, or when setting up Husky pre-commit hooks with lint-staged/typecheck/tests."
     }
   ],
-  "skill_count": 61,
+  "skill_count": 59,
   "rule_count": 28,
   "scripts": [
     {
