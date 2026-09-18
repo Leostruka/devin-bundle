@@ -19,14 +19,21 @@ BLOCK_CHARS = " ░▒▓█"
 FONT_CANDIDATES = ["consola.ttf", "Consolas.ttf", "cour.ttf", "Courier New.ttf", "courbd.ttf"]
 
 
-def load_font(size):
+def load_font(cell):
+    """Font sized so glyph advance ~= cell px (dense tiling like grainrad)."""
+    probe = "MW@"
     for name in FONT_CANDIDATES:
         try:
-            return ImageFont.truetype(name, size)
+            size = cell * 2
+            font = ImageFont.truetype(name, size)
+            adv = font.getlength(probe) / len(probe)
+            if adv > 0:
+                return ImageFont.truetype(name, max(1, round(size * cell * 1.05 / adv)))
+            return font
         except OSError:
             continue
     try:
-        return ImageFont.load_default(size)
+        return ImageFont.load_default(cell)
     except TypeError:
         return ImageFont.load_default()
 
@@ -44,8 +51,9 @@ def render_layer(gray, charset, cell, font):
     img = Image.new("L", (cols * cell, rows * cell), 0)
     draw = ImageDraw.Draw(img)
     for r in range(rows):
-        line = "".join(charset[i] for i in idx[r])
-        draw.text((0, r * cell), line, fill=255, font=font)
+        y = r * cell
+        for c in range(cols):
+            draw.text((c * cell, y), charset[idx[r, c]], fill=255, font=font)
     return np.asarray(img, dtype=np.float32) / 255.0
 
 
