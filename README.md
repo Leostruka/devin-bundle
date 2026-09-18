@@ -3,7 +3,7 @@
 [![CI](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Skills](https://img.shields.io/badge/skills-83-blue.svg)](#2-skills)
-[![Rules](https://img.shields.io/badge/rules-26-green.svg)](#1-regras-globais)
+[![Rules](https://img.shields.io/badge/rules-28-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.1.1-orange.svg)](CHANGELOG.md)
 
 Ecossistema versionado para o Devin CLI. O bundle sincroniza entre máquinas as regras, skills, perfis de subagentes, hooks, scripts, configuração e metadados que governam todo o ciclo de trabalho: da ideia ao planejamento, implementação, revisão, memória e entrega.
@@ -188,7 +188,7 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 15 scripts usados por hooks, 2 validadores manuais e 1 helper JavaScript para Mermaid em `scripts/`.
+Há 16 scripts usados por hooks, 2 validadores manuais e 1 helper JavaScript para Mermaid em `scripts/`.
 
 ### 6. Configuração e distribuição
 

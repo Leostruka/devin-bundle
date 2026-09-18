@@ -676,7 +676,7 @@
     }
   ],
   "skill_count": 83,
-  "rule_count": 26,
+  "rule_count": 28,
   "scripts": [
     {
       "name": "behavioral-nudge.py",
@@ -713,6 +713,12 @@
       "purpose": "PreToolUse hook — gates destructive operations",
       "export_hash": "E6D9F30D4001243E3162EC0FBC0F6AB7E1096E27EF2E4ECFBCFFE6EE219E6B59",
       "exported_at": "2026-09-08T21:39:22.430612"
+    },
+    {
+      "name": "architecture-gate.py",
+      "purpose": "PreToolUse hook — blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
+      "export_hash": "AE256D109707B79645D6A4A7098CFFEBBDA71786D6327762CF1B8B1ECC421720",
+      "exported_at": "2026-09-18T17:04:48.012971"
     },
     {
       "name": "refine-review-prompt.py",
@@ -787,7 +793,7 @@
       "exported_at": "2026-09-08T21:39:22.431582"
     }
   ],
-  "script_count": 17,
+  "script_count": 18,
   "mcp_count": 1,
   "agent_count": 6,
   "tool_count": 28,

@@ -10,6 +10,11 @@
         },
         {
           "type": "command",
+          "command": "python scripts/architecture-gate.py",
+          "timeout": 10
+        },
+        {
+          "type": "command",
           "command": "python scripts/check-ai-signature.py",
           "timeout": 10
         },
@@ -17,6 +22,16 @@
           "type": "command",
           "command": "python scripts/check-push-green.py",
           "timeout": 150
+        }
+      ]
+    },
+    {
+      "matcher": "^(write|edit|notebook_edit)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/architecture-gate.py",
+          "timeout": 10
         }
       ]
     },

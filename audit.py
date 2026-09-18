@@ -112,7 +112,7 @@ print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
 rules_found = []
-for i in range(1, 28):
+for i in range(1, 30):
     # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
     if '\n' + str(i) + '. **' in agents:
         rules_found.append(i)
@@ -144,7 +144,7 @@ else:
     print('  OK  AGENTS.md within budget')
 
 # 6b. Detect missing rule numbers or duplicate numbering (only flag if count is off or duplicates exist)
-all_numbers = set(range(1, 28))
+all_numbers = set(range(1, 30))
 found_numbers = set(rules_found)
 # A gap is only a problem if it causes the total count to diverge from the manifest.
 # Intentional gaps (e.g. rule 6 omitted) are allowed as long as rule_count matches.
@@ -249,9 +249,9 @@ readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
     (f'{skill_count} skills', skill_count > 0),
-    ('26 rules', len(rules_found) == 26),  # 1-5,7-27 (Rule 6 removed)
+    ('28 rules', len(rules_found) == 28),  # 1-5,7-29 (Rule 6 removed)
     ('6 agents', agent_count == 6),
-    ('17 scripts', len(script_files) == 17),
+    ('18 scripts', len(script_files) == 18),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'

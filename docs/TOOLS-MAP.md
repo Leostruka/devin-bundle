@@ -64,11 +64,13 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (8 eventos, 17 scripts)
+## Hooks (8 eventos, 18 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
 | PreToolUse | `^exec$` | destructive-gate.py | Bloqueia ops destrutivas |
+| PreToolUse | `^exec$` | architecture-gate.py | Bloqueia mutações sem manifesto |
+| PreToolUse | `^(write\|edit\|notebook_edit)$` | architecture-gate.py | Bloqueia edits sem ARCHITECTURE_MANIFEST |
 | PreToolUse | `^exec$` | check-ai-signature.py | Bloqueia assinaturas AI |
 | PreToolUse | `^exec$` | check-push-green.py | Bloqueia push sem green |
 | PreToolUse | `^(write\|edit)$` | check-ai-signature.py | Bloqueia assinaturas AI em writes |
@@ -108,7 +110,7 @@ subagent_general — todos os 7 perfis validados.
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 83 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 17 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 18 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |

@@ -37,6 +37,7 @@ keep full detail because they must survive compaction.
 26. **Secure by default**
 27. **Declare intent and impact before coding**
 28. **Hybrid Rust–Python extensions** (see `.devin/adr/003-`)
+29. **Architecture manifest before source edits**
 
 ---
 
@@ -228,3 +229,7 @@ Before writing code, state the intent, the intended user-visible impact, and the
 ### 28. Hybrid Rust–Python extensions
 
 Whenever creating a high-performance extension, use the hybrid Rust–Python architecture in `.devin/adr/003-hybrid-rust-python-extensions.md` — crates under `extensions/rust-core/crates/` (PyO3, abi3 + `extension-module`), Python stays the orchestration layer. Python for CLI/JSON/orchestration; Rust for CPU-bound, OS-API, and memory-tight work. Compiled artifacts are built at install time, never shipped.
+
+### 29. Architecture manifest before source edits
+
+`scripts/architecture-gate.py` (PreToolUse) blocks writes outside `.devin/` when the project lacks `.devin/ARCHITECTURE_MANIFEST.md`. If the manifest is missing, source edits are blocked by design — don't guess conventions. Help the user fill it: invoke `grilling` or ask directly (paradigm, design patterns, style contracts, testing strategy, error handling, directory boundaries), then write `.devin/ARCHITECTURE_MANIFEST.md` from `docs/templates/ARCHITECTURE_MANIFEST.md`. Read-only investigation is always allowed — explore the repo first so your proposed manifest reflects reality.
