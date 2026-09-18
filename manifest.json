@@ -102,14 +102,6 @@
       "exported_at": "2026-09-08T21:39:22.438828"
     },
     {
-      "name": "git-helper",
-      "source": "devin-bundle",
-      "purpose": "Use when managing branches, writing commits, or resolving simple git workflow questions.",
-      "original_path": "%APPDATA%\\devin\\skills\\git-helper",
-      "export_hash": "F86327F9B2E0B8BA1507549E5F204D083CEFFA13D3ADD8E8FB7F18227BBBE50E",
-      "exported_at": "2026-09-08T21:39:22.438975"
-    },
-    {
       "name": "grilling",
       "source": "devin-bundle",
       "purpose": "Use when exploring and stress-testing ideas before committing to a design or plan.",
@@ -184,14 +176,6 @@
       "exported_at": "2026-09-08T21:39:22.444591"
     },
     {
-      "name": "resolving-merge-conflicts",
-      "source": "devin-bundle",
-      "purpose": "Use when a merge conflict needs to be resolved and verified.",
-      "original_path": "%APPDATA%\\devin\\skills\\resolving-merge-conflicts",
-      "export_hash": "79200E1CEFFE0ED87B1CFB175C1C7E484FE1F129E218060AF0A2CE6480DAAF59",
-      "exported_at": "2026-09-08T21:39:22.444768"
-    },
-    {
       "name": "self-extend",
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.",
@@ -239,14 +223,6 @@
       "export_hash": "8A38A175BFA497E9D177B79FEF6B4CF18DE11DE1104093B2E3D40A655387FBD2",
       "exported_at": "2026-09-08T21:39:22.446560",
       "hash": "3c0f32b233c22b8bf0b11f0ce35e6c6b6875bed809d2c881242c922027c3dd8c"
-    },
-    {
-      "name": "using-git-worktrees",
-      "source": "devin-bundle",
-      "purpose": "Use when starting feature work that needs isolation from the current workspace.",
-      "original_path": "%APPDATA%\\devin\\skills\\using-git-worktrees",
-      "export_hash": "2DD48D76FBB28E3D5C38EFD43A76729E8B044C5A01B2412A51C49CD055008696",
-      "exported_at": "2026-09-08T21:39:22.446998"
     },
     {
       "name": "using-skills",
@@ -517,9 +493,14 @@
       "name": "gates",
       "source": "devin-bundle",
       "purpose": "Use when about to claim work is complete/fixed/passing, when a task risks agent laziness (large, multi-step, previously half-done, or with acceptance criteria), or when running long-horizon/unattended work where quality must be verified before proceeding. Covers verification-before-completion, gates ledgers, and autonomous gate semantics."
+    },
+    {
+      "name": "git-workflows",
+      "source": "devin-bundle",
+      "purpose": "Use when managing branches, writing commits, creating isolated worktrees for feature work, or resolving and verifying merge/rebase conflicts."
     }
   ],
-  "skill_count": 66,
+  "skill_count": 64,
   "rule_count": 28,
   "scripts": [
     {
