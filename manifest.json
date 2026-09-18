@@ -94,14 +94,6 @@
       "exported_at": "2026-09-08T21:39:22.438320"
     },
     {
-      "name": "executing-plans",
-      "source": "devin-bundle",
-      "purpose": "Use when executing a written implementation plan with checkpoints and reviews.",
-      "original_path": "%APPDATA%\\devin\\skills\\executing-plans",
-      "export_hash": "028D858E2841D92AC66496FCE2D085E073592FBD94AB2E33BA930C83A5A5CCC6",
-      "exported_at": "2026-09-08T21:39:22.438496"
-    },
-    {
       "name": "finishing-a-development-branch",
       "source": "devin-bundle",
       "purpose": "Use when the implementation is complete, all tests pass, and the work needs to be integrated.",
@@ -141,14 +133,6 @@
       "original_path": "%APPDATA%\\devin\\skills\\handoff",
       "export_hash": "FC25B20B00ADEB58F4496F1BD45821685A1D2AA476A718EF6ACF3950A8793287",
       "exported_at": "2026-09-08T21:39:22.440680"
-    },
-    {
-      "name": "implement",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants to implement a feature or fix from a spec or set of tickets.",
-      "original_path": "%APPDATA%\\devin\\skills\\implement",
-      "export_hash": "38F1F6751BD2E562968A3E44C67BDB2DD04445E6A6E5311E9E2904C120CFE374",
-      "exported_at": "2026-09-08T21:39:22.440848"
     },
     {
       "name": "improve-codebase-architecture",
@@ -420,13 +404,6 @@
       "exported_at": "2026-09-08T21:39:22.458583"
     },
     {
-      "name": "review-cadence",
-      "source": "devin-bundle",
-      "purpose": "Use when deciding how much human review and upfront planning a task needs based on its size, risk, and blast radius, or when the user asks whether a change can skip grilling and go straight to implementation.",
-      "export_hash": "FA0D07047F2ABE99BDF02C32F2BE34163CDD078A16A7E1AE0F320414DD6B0272",
-      "exported_at": "2026-09-08T21:39:22.458713"
-    },
-    {
       "name": "deploy",
       "source": "created:v2.8.0 skill-coverage",
       "purpose": "Use when the user wants to release, deploy, rollback, or verify a deployment pipeline. Covers CI/CD gates, environment checks, canary/blue-green, and post-deploy smoke tests.",
@@ -539,14 +516,6 @@
       "exported_at": "2026-09-08T21:39:22.462465"
     },
     {
-      "name": "afk-loop",
-      "source": "created:Devin bundle",
-      "purpose": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships.",
-      "original_path": "%APPDATA%\\devin\\skills\\afk-loop",
-      "export_hash": "A6486AE9532C4846A1A542B2BF4E3C42E6E7A9F8E79C398AE059F93C2A6D52CF",
-      "exported_at": "2026-09-08T21:39:22.462610"
-    },
-    {
       "name": "computer-use",
       "source": "devin-bundle",
       "purpose": "Use when you need to see or control the local screen — screenshots, mouse clicks/movement, typing text and hotkeys. GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
@@ -578,9 +547,14 @@
       "name": "intake",
       "source": "devin-bundle",
       "purpose": "Use when estimating the size of a task or PR and deciding whether to split it, when capturing and validating the \"intent\" field in tickets/specs/PRDs before implementation, or when moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs)."
+    },
+    {
+      "name": "execution",
+      "source": "devin-bundle",
+      "purpose": "Use when executing a written implementation plan with checkpoints, when implementing a feature/fix from a spec or tickets, when deciding how much human review and upfront planning a task needs, or when working unattended through local Markdown issues in a blocking DAG (AFK loop)."
     }
   ],
-  "skill_count": 73,
+  "skill_count": 70,
   "rule_count": 28,
   "scripts": [
     {
