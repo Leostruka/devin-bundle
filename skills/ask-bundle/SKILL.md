@@ -1,95 +1,130 @@
 ---
 name: ask-bundle
-description: Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.
+description: Use when deciding which skill or flow fits your situation, when routing and orchestrating work across this bundle through one entry point (direct specialist skills, multi-skill flows, local AFK issues), or when the user starts with a vague request and needs the quick-start menu.
 triggers: [user, model]
 ---
 
-# Ask Bundle
+# Ask Bundle — the bundle router
 
-You don't remember every skill, so ask.
+One entry point: classify the objective, route to matching skills, keep
+control through verified completion. You don't remember every skill, so ask.
 
-- If the question is about a specific library or framework, route to **`context7`** first.
-- If the user wants exhaustive codebase exploration, route to **`deep-mode`**.
+Detail docs: `modes/leo-detail.md` (full orchestration procedure, forbidden
+actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
+`PHASE-BOUNDARIES.md` (context-handoff decision tree).
 
-A **flow** is a path through the skills. Most paths run along one **main flow**, and two **on-ramps** merge onto it. Everything else is standalone, or a vocabulary layer that runs underneath.
+## TL;DR
+
+1. Self-check: scope exactly, telegraphic, skills first, verify, no opinion.
+2. Classify objective; route directly to matching skill(s).
+3. Unclear objective ("leo"/"start") → quick-start menu via `ask_user_question`.
+4. 3+ steps → `todo_write`; each step gets a VF (`gate:`/`expect:`/`evidence:`).
+5. `qa-ci` re-runs every non-trivial gate on a clean checkout.
+6. Run project verification (e.g. `python audit.py`, `pytest`) before done.
+
+## Situation router
+
+| Situation | Entry | Next |
+|---|---|---|
+| Build/change something | `grilling` (intent) or `execution` cadence if trivial | → `planning` spec→tickets → `execution`+`testing` → `security` (API/DB/secrets/infra) → `code-review` → `gates` → `finishing-a-development-branch` |
+| Run AFK/unattended | `execution` afk-loop (needs ready-for-agent issues) | see AFK creation below |
+| Hard/intermittent bug | `debugging` | → `testing` regression → `architecture` if no seam |
+| CI failing | `debugging` ci mode | |
+| Triage incoming issues | `intake` | → `execution` |
+| Large foggy multi-session effort | `planning` wayfinder | → spec → tickets → implement |
+| Prototype to settle a question | `prototype` (via `handoff`) | back to `grilling`/`planning` |
+| Research/deep exploration | `research` | feeds `grilling`/spec |
+| Need input from another person | `planning` questionnaire | |
+| Git merge/rebase conflict | `git-workflows` | |
+| Improve architecture/deep modules | `architecture` | → `grilling` if it generates an idea |
+| Evolve skill/rule/hook/MCP | `self-improvement` | → `writing-skills` (one skill), `devin-config` (new capability) |
+| Release/deploy/rollback | `deploy` | → `gh`, smoke tests |
+| Security assessment | `security` | → `execution` for remediations |
+| Data query/analysis/charts | `data-analyst` | |
+| UI/UX polish | `impeccable` | → `a11y-audit`/`e2e-testing` |
+| Observability infra | `observability-quality` | |
+| API or DB design | `api-spec` or `database` | → `execution` |
+| Performance/cost | `performance` or `context-hygiene` | |
+| Human-only procedure | `wizard` | |
+| Guided learning | `teach` | |
+| Set up repo for Devin | `project-bootstrap` | |
+| Not sure / no match | `skill-discovery` | evaluate/install |
 
 ## The main flow: idea → ship
 
-The route most work travels. You have an idea and want it built.
+1. **`grilling` (with-docs)** — sharpen the idea by interview; stateful in
+   `.devin/CONTEXT.md` + `adr/`. Stateless mode when no working directory.
+2. **Runnable question?** → detour: `handoff` out → `prototype` → `handoff`
+   back.
+3. **Multi-session build?**
+   - Yes → `planning` spec → tickets (tracer bullets + blocking edges;
+     `.devin/scratch/<feature>/issues/` on local tracker) → `execution` per
+     ticket, clearing context between. Single focused session alternative:
+     `planning` plan-doc → `execution`.
+   - No → `execution` implement right here.
+4. Either way: `testing` TDD inside → `code-review` (Standards+Spec) →
+   `security` when touching API/DB/secrets/endpoints/infra → `gates` →
+   `finishing-a-development-branch`.
 
-1. **`grilling` (With-docs mode)** — sharpen the idea by interview. Start here whenever you are **working in a working directory**: it's stateful, retaining what it learns in `.devin/CONTEXT.md` and `.devin/adr/`. (No working directory? Use **`grilling` (Stateless mode)** — see Standalone. Both run the same **`grilling`** primitive; `grilling` (With-docs mode) is the one that leaves a paper trail, which makes it the better of the two whenever a repo is there to leave it in.)
-2. **Branch — can you settle every question in conversation?** If a question needs a runnable answer (state, business logic, a UI you have to see), detour through a prototype, bridged by **`handoff`** in both directions (a prototype lives in its own directory, which is exactly what `handoff` is for — see Phase boundaries):
-   - **`handoff`** out, then open a fresh session against that file,
-   - **`prototype`** to answer the question with throwaway code,
-   - **`handoff`** back what you learned, and reference it from the original idea thread.
-3. **Branch — is this a multi-session build?**
-   - **Yes** → **`planning-pipeline` (Spec mode)** (turn the thread into a spec), then **`planning-pipeline` (Tickets mode)** to split it into tracer-bullet tickets, each declaring its **blocking edges**. On a local tracker that's one file per ticket under `.devin/scratch/<feature>/issues/`, worked blockers-first by hand; on a real tracker the edges become native blocking links, so any ticket whose blockers are done can be grabbed — kick off **`implement`** per ticket, clearing context between each one. Each ticket is self-contained, so the last one's context is disposable. **Alternative:** if the work is a single focused session and you want a detailed task-by-task plan instead of tracer-bullet tickets, use **`writing-plans`** (turns the spec into bite-sized TDD steps) → **`executing-plans`** (executes with checkpoints) instead of Tickets → implement.
-   - **No** → **`implement`** right here, in the same context window.
-
-   Either way, **`implement`** builds each issue by driving **`tdd`** internally — one red-green slice at a time — then closes out by running **`code-review`**, a two-axis review (Standards + Spec) of the diff, before committing. Reach for **`tdd`** on its own when you just want to build a concrete behaviour test-first without a full spec, and **`code-review`** on its own whenever you want to review a branch or PR against a fixed point.
-
-### Context hygiene
-
-Keep steps 1–3 in **one unbroken context window** — don't compact or clear until after `planning-pipeline` (Tickets mode) — so the grilling, spec, and tickets all build on the same thinking. Each `implement` then starts fresh, working from the ticket.
-
-The limit on this is the **[smart zone](https://www.aihero.dev/ai-coding-dictionary/smart-zone)**: the window (~150k tokens on state-of-the-art models) within which the model still reasons sharply. If a session approaches it before `planning-pipeline` (Tickets mode), don't push on degraded — compact context at the nearest phase boundary and carry on (see Phase boundaries).
+**Context hygiene:** keep 1–3 in one window until tickets are cut; each
+implementation starts fresh. Approaching the smart zone (~150k) → compact at
+the nearest phase boundary (`PHASE-BOUNDARIES.md`).
 
 ## On-ramps
 
-A starting situation that generates work, then merges onto the main flow.
-
-- **Bugs and requests piling up** → **`triage`**. It moves issues through triage roles and produces agent-ready issues, which **`implement`** later picks up.
-
-  Triage is only for issues **you didn't create** — bug reports, incoming feature requests, anything that arrives raw. Tickets that `planning-pipeline` (Tickets mode) produced are already agent-ready, so **don't triage them**.
-
-- **Something's broken** → **`diagnosing-bugs`**. For the hard ones: the bug that resists a first glance, the intermittent flake, the regression that crept in between two known-good states. It refuses to theorise until it has a **tight feedback loop** — one command that already goes red on *this* bug — then fixes with a regression test. Its post-mortem hands off to **`improve-codebase-architecture`** when the real finding is that there's no good seam to lock the bug down.
-
-- **A huge, foggy effort — a greenfield project or a huge feature build, too big for one session** → **`wayfinder`**, the most cognitively demanding flow here. When the way from here to the destination isn't visible yet, it charts a **shared map** of **decision tickets** on the issue tracker and resolves them one at a time — producing **decisions, not deliverables** — until the fog is pushed back and the way is clear. Where **`grilling` (With-docs mode)** sharpens an idea you can hold in one session, wayfinder is for the idea you can't — and it's slower and denser, so save it for exactly that, never a well-scoped feature.
-
-  When the map clears, **it hands off, it doesn't build**: merge onto the main flow at **`planning-pipeline` (Spec mode)**, which collapses the map's linked decisions into a buildable plan, then `planning-pipeline` (Tickets mode) and `implement` as usual. Looping the map straight into `implement` skips that collapse and throws the linked detail away — go straight to `implement` only when the effort turned out genuinely small.
-
-## Codebase health
-
-Not feature work — upkeep.
-
-- **`improve-codebase-architecture`** — run whenever you have a spare moment to keep the codebase good for agents to operate in. It surfaces **deepening opportunities**; picking one _generates an idea_ you can take into the main flow at `grilling` (With-docs mode). It's the survey that finds the candidates; **`codebase-design`** (below) is the bench you design the chosen one on.
+- **Bugs/requests piling up** → `intake` triage (issues you didn't create).
+- **Something's broken** → `debugging` (tight feedback loop first).
+- **Huge foggy effort** → `planning` wayfinder (decision-ticket map; hands
+  off to spec when clear — never loop straight into implement).
+- **Codebase health** → `architecture` (deepening opportunities generate ideas).
 
 ## Vocabulary underneath
 
-Two model-invoked references that run *beneath* the other skills — each the single source of truth for its vocabulary. Reach for them directly when the **words**, not the process, are the problem; or let the skills above pull them in.
+- `knowledge-modeling` — domain language (`.devin/CONTEXT.md`, ADRs) +
+  ontology validation.
+- `architecture` — deep-module vocabulary (module/interface/depth/seam).
+- `ai-coding-dictionary` — canonical AI-coding jargon.
 
-- **`domain-modeling`** — sharpen the project's *domain* language: challenge a fuzzy term, resolve an overloaded word ("account" doing three jobs), record a hard-to-reverse decision as an ADR. It's the active discipline `grilling` (With-docs mode) drives to keep `.devin/CONTEXT.md` a clean glossary.
-- **`codebase-design`** — the deep-module vocabulary (module, interface, depth, seam, adapter, leverage, locality) for designing a module's *shape*: a lot of behaviour behind a small interface at a clean seam. `tdd` and `improve-codebase-architecture` both speak it.
-- **`review-cadence`** — decide how much human review and upfront planning a task needs. Use it when a request is small (button color, rename, two-line bug fix) and you are not sure whether to run `grilling` or go straight to `implement`.
-- **`ai-coding-dictionary`** — canonical definitions for overloaded AI-coding jargon (harness engineering, context engineering, prompt engineering, agent harness). Use it when the user or a skill uses a term loosely.
+## Quick-start menu (vague request)
 
-## Phase boundaries
+`ask_user_question` with 2–4 options:
+- Build/change something → `grilling` or `execution` cadence
+- Improve a skill/rule/hook/MCP → `self-improvement`
+- Debug/research → `debugging` / `research`
+- Set up repo / run AFK → `project-bootstrap` / `execution` afk
 
-A **phase** is a chunk of work inside a session — the grilling, the implementation, the QA. At the **boundary** between two of them you have five options, and picking between them is the fuzziest decision in this whole map:
+## Quick AFK issue creation
 
-- **Continue** — stay put. Costs nothing, loses nothing.
-- **Clear context** — empty the window, when nothing here matters to what's next.
-- **`handoff`** — write a portable markdown file. Narrow: only for a **new harness**, a **new directory**, a **colleague**, or forking a side task **mid-phase**. What it buys is portability.
-- **Subagent** — send a tightly-scoped task to its own window and get a report back.
-- **Compact context** — compress this context and seed a fresh session with it. The **default**, at the bottom of the tree rather than the first reach.
+1. Confirm feature slug + objective.
+2. No spec → `grilling`/`planning` spec → `.devin/scratch/<slug>/spec.md`.
+3. `planning` tickets → one file per ticket `issues/<NN>-<slug>.md`,
+   `Status: ready-for-agent`, `Blocked by:`, acceptance checkboxes.
+4. Verify files + DAG (`glob`, `read`, parse `Status:`/`Blocked by:`).
+5. `execution` afk-loop only on explicit user authorization.
 
-Read [PHASE-BOUNDARIES.md](PHASE-BOUNDARIES.md) for the ordered tree — the five questions, the reasoning behind each branch, and why the primary-source cost makes **Continue** the one to rule out first. Make the decision **at** a boundary; mid-phase, continue or split the rest into subagents.
+## Hard constraints (never violated)
 
-## Standalone
+1. Safety + pinned `AGENTS.md` rules (2, 5, 7, 12-19, 21).
+2. Verify with tools before asserting.
+3. Execute exactly what was asked, without opinion.
 
-Off the main flow entirely.
+Then: usefulness → ease → quality of experience → technical coherence →
+performance.
 
-- **`grilling` (Stateless mode)** — the same relentless interview as `grilling` (With-docs mode), but **stateless**: it saves nothing locally and builds no `.devin/CONTEXT.md`. Reach for it when you are **not working in a working directory** — sharpening a plan, a design, a piece of writing, anything with no repo under it. If you are in a working directory, use `grilling` (With-docs mode) instead: it runs the same interview and leaves a paper trail, so it is strictly the better one.
-- **`grilling`** — the interview primitive itself: rounds, the frontier, facts are the agent's job and decisions are yours. `grilling` (Stateless mode) and `grilling` (With-docs mode) are the two named ways in, and `triage`, `wayfinder` and `improve-codebase-architecture` all run it internally. Reach for it directly only when you want the interview with no wrapper around it.
-- **`resolving-merge-conflicts`** — work an in-progress merge or rebase conflict hunk by hunk, resolving by **intent** traced to each side's primary source rather than by picking lines, then finish the operation. It never runs `--abort`. Standalone and off every flow: reach for it when you are already mid-conflict.
-- **`prototype`** — a small, throwaway program that answers one design question: does this state model feel right, or what should this UI look like. Throwaway is a constraint on how the code is written, not a promise to destroy it: the answer folds into the real code, and the prototype itself is kept as a **primary source** on a `prototype/<name>` branch out of main, pointed at from the implementation issue. It's the detour in step 2 of the main flow, but reach for it any time a design question is hard to settle on paper.
-- **`research`** — delegate reading legwork to a **background agent**: it investigates a question against **primary sources**, then leaves a cited Markdown file in the repo. Keep working while it reads. The file it produces is something to take *into* the main flow at `grilling` (With-docs mode) — research feeds the thinking, it doesn't replace it.
-- **`planning-pipeline` (Questionnaire mode)** — when the thing blocking you isn't in your head or the codebase but in **someone else's**, this writes them a questionnaire to fill in. It's the inverse of `grilling` (Stateless mode): instead of interviewing you about the subject, it interviews you about the **send** — who it's going to, what you need back — and aims the questions at the gap. What comes back is material for `grilling` (With-docs mode) or `planning-pipeline` (Spec mode).
-- **`wizard`** — for the steps only a **human** can take: provisioning infrastructure, setting up credentials or CI secrets, clicking through an unfamiliar third-party dashboard, running a one-off migration or cutover. It generates an interactive bash script that opens each URL, captures each value, and writes it into `.env` and GitHub secrets — so the procedure stops being something you re-explain to an agent every time. Model-invoked, so the agent reaches for it the moment it hits a wall only you can pass. If the agent could just do it itself, it should; this is for where a human is genuinely in the loop.
-- **`wait-what`** — the corrective for a message that didn't land. Use it mid-conversation, inside any other skill, and the agent re-pitches what it just said with the context you were missing, in plain English, using the `.devin/CONTEXT.md` vocabulary. It works after the fact; `grilling` (With-docs mode) is the upfront cure, because a shared language agreed early is what stops the jargon arriving at all.
-- **`teach`** — learn a concept over multiple sessions, using the current directory as a stateful workspace.
-- **`writing-for-agents`** — reference for writing documents agents consume: skills, `.devin/global_rules.md`, pointed-at docs.
+Forbidden: deduce without tools; start non-trivial work without skill
+discovery; mark completed without independent `qa-ci` PASS; override qa-ci
+FAIL; push/commit with failing checks; AI signatures; display secrets;
+destructive actions without confirmation; `subagent_explore`/paid models on
+a free parent; `afk-loop` without ready-for-agent issues; read/edit
+`tests/held-out/` from implementer context; reuse implementer shell for
+qa-ci without reinstalling pinned deps.
 
-## Precondition
+## Bundle context
 
-The engineering-skills setup — run before your first engineering flow to configure the issue tracker, triage labels, and doc layout the other skills assume. Custom issue trackers also work.
+- Validated CLI: `{{VALIDATED_CLI_VERSION}}` (`data/bundle-identity.json`).
+- Models: `data/bundle-models.json` — parent `BUNDLE_DEFAULT_MODEL`;
+  subagents `BUNDLE_MAX_MODEL`/`BUNDLE_MEDIUM_MODEL`, all free. No paid
+  aliases on a free parent.
+- Issue tracker: `.devin/scratch/<feature>/` + `.devin/agents/issue-tracker.md`,
+  `triage-labels.md`.
+- Verification baseline: `python audit.py`, `python -m pytest`.

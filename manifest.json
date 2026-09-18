@@ -14,7 +14,7 @@
     {
       "name": "ask-bundle",
       "source": "devin-bundle",
-      "purpose": "Use when deciding which skill or flow fits your situation. A router over the skills in this repo — maps idea-to-ship flows, on-ramps, and standalone tools.",
+      "purpose": "Use when deciding which skill or flow fits your situation, when routing and orchestrating work across this bundle through one entry point (direct specialist skills, multi-skill flows, local AFK issues), or when the user starts with a vague request and needs the quick-start menu.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-bundle",
       "export_hash": "8F25FBA82F65C95F5F4DEF246DA6BBF03548C6742DB4B98B3E8368417B9AED06",
       "exported_at": "2026-09-08T21:39:22.433086"
@@ -243,14 +243,6 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     },
     {
-      "name": "leo",
-      "source": "created:Devin bundle",
-      "purpose": "Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.",
-      "original_path": "%APPDATA%\\devin\\skills\\leo",
-      "export_hash": "E882FD504740DA3ECDD6283DB316CC6CF48A2B0979D80A2EE1D702B5EEEDEFE3",
-      "exported_at": "2026-09-08T21:39:22.462465"
-    },
-    {
       "name": "computer-use",
       "source": "devin-bundle",
       "purpose": "Use when you need to see or control the local screen — screenshots, mouse clicks/movement, typing text and hotkeys. GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
@@ -349,7 +341,7 @@
       "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI."
     }
   ],
-  "skill_count": 49,
+  "skill_count": 48,
   "rule_count": 28,
   "scripts": [
     {

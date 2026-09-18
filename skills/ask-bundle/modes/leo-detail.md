@@ -1,8 +1,5 @@
----
-name: leo
-description: Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.
-triggers: [user]
----
+# Mode: /leo orchestration detail
+
 
 # /leo — Universal bundle orchestrator
 
