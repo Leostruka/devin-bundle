@@ -14,6 +14,9 @@ OwnedInputs tracks buttons/keys this session pressed and releases exactly
 those in finally paths — a held physical key owned by the user is never
 touched.
 """
+import json
+import os
+import sys
 import time
 
 STATUSES = ("verified", "dispatched", "rejected", "timeout",
@@ -115,3 +118,54 @@ def result(status, backend, extra=None, **kw):
         out["dispatch"].update(extra)
     out.update(kw)
     return out
+
+
+_SM_SWAPBUTTON = 23
+_swap_state = None
+
+
+def _get_system_metrics(index):
+    """user32.GetSystemMetrics(index); 0 off-Windows or on any failure."""
+    if os.name != "nt":
+        return 0
+    try:
+        import ctypes
+        return ctypes.windll.user32.GetSystemMetrics(index)
+    except Exception:
+        return 0
+
+
+def buttons_swapped():
+    """True when the OS reports swapped primary/secondary buttons
+    (SM_SWAPBUTTON=23). Cached: the setting requires re-login to change."""
+    global _swap_state
+    if _swap_state is None:
+        _swap_state = bool(_get_system_metrics(_SM_SWAPBUTTON))
+    return _swap_state
+
+
+def resolve_button(Button, name):
+    """Logical button name -> physical pynput Button constant.
+
+    pynput's Button.left emits MOUSEEVENTF_LEFTDOWN, which Windows routes
+    through SM_SWAPBUTTON — on a left-handed host that event IS the
+    secondary click. Swap left<->right at dispatch so the caller's
+    semantic 'left' stays the primary action; middle never swaps."""
+    if buttons_swapped() and name in ("left", "right"):
+        name = "right" if name == "left" else "left"
+    return getattr(Button, name)
+
+
+def run_cli(main):
+    """Entry-point guard for the stdout JSON contract: an unhandled crash
+    still emits exactly one {"ok": false} object so a downstream
+    json.loads(sys.stdin) never sees a traceback. SystemExit (fail/usage
+    paths) re-raises untouched — those paths already printed their JSON."""
+    try:
+        main()
+    except SystemExit:
+        raise
+    except BaseException as e:
+        print(json.dumps({"ok": False,
+                          "error": f"{type(e).__name__}: {e}"}))
+        sys.exit(1)

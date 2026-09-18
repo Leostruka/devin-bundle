@@ -250,7 +250,8 @@ def main():
                         time.sleep(cm.pre_click_delay(
                             profile, n_choices=cu_hints.hint_count(),
                             seed=args.seed))
-                        btn = getattr(Button, args.button)
+                        btn = cu_actions.resolve_button(
+                            Button, args.button)
                         for i in range(args.clicks):
                             owned.press(mouse, btn)
                             time.sleep(hold)
@@ -307,11 +308,12 @@ def main():
             if dur is None:
                 dur = 0.3 if profile == "fast" else (0.6 if profile == "smooth" else 0.8)
             if not args.dry_run:
+                drag_btn = cu_actions.resolve_button(Button, "left")
                 with cu_actions.OwnedInputs() as owned:
                     if profile == "fast":
                         mouse.position = (args.from_x, args.from_y)
                         time.sleep(0.05)
-                        owned.press(mouse, Button.left)
+                        owned.press(mouse, drag_btn)
                         steps = max(int(dur / 0.02), 1)
                         for i in range(1, steps + 1):
                             t = i / steps
@@ -319,17 +321,17 @@ def main():
                                 round(args.from_x + (args.x - args.from_x) * t),
                                 round(args.from_y + (args.y - args.from_y) * t))
                             time.sleep(dur / steps)
-                        owned.release(mouse, Button.left)
+                        owned.release(mouse, drag_btn)
                     else:
                         mouse.position = (args.from_x, args.from_y)
                         time.sleep(cm.pre_click_delay(profile, seed=args.seed))
-                        owned.press(mouse, Button.left)
+                        owned.press(mouse, drag_btn)
                         pts, _ = cm.gen_path(profile, args.from_x, args.from_y,
                                              args.x, args.y,
                                              motion=args.motion,
                                              seed=args.seed)
                         cm.play_path(mouse, pts, dur)
-                        owned.release(mouse, Button.left)
+                        owned.release(mouse, drag_btn)
             fx, fy = mouse.position
             out = cu_actions.result("dispatched", "physical", cmd="drag",
                                     x=fx, y=fy, profile=profile,
@@ -346,4 +348,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cu_actions.run_cli(main)

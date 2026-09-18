@@ -262,4 +262,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cu_actions.run_cli(main)

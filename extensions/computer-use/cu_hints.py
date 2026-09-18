@@ -52,10 +52,18 @@ _SCOPE_DESCENDANTS = 0x4
 _PAT_INVOKE = 10000
 _PAT_VALUE = 10002
 
+# CUIAutomation class GUID — the COM coclass behind IUIAutomation
+_CLSID_CUIAUTOMATION = "{ff48dba4-60ef-4201-aa87-54103eef594e}"
+
 
 def _com_thread(fn):
-    """Run fn() on a daemon thread with COM initialized; return its result
-    or None on exception/timeout is handled by the caller via the queue."""
+    """Run fn() on a COM-initialized daemon thread; return its result or
+    None on exception (timeout is the caller's concern via the queue).
+
+    Every COM object must be created, used and released on this thread —
+    see _uia_core() and the _el strip in _enum_impl. CoUninitialize in
+    finally is safe ONLY because all releases are frame-scoped and happen
+    before it runs."""
     try:
         import comtypes
         try:
@@ -74,9 +82,19 @@ def _com_thread(fn):
 
 
 def _uia_core():
+    """Fresh IUIAutomation bound to the CALLING thread's apartment.
+
+    NOT uiautomation's _AutomationClient singleton: that object ties its
+    COM interfaces to whichever thread created it first — a second
+    worker's calls then run against a dead apartment, and the singleton's
+    release at process exit RPC_E_DISCONNECTEDs into an access violation
+    (the --hints segfault). A per-call client keeps every COM object's
+    lifetime inside one apartment."""
     with redirect_stdout(io.StringIO()):
-        from uiautomation.uiautomation import _AutomationClient
-    return _AutomationClient.instance().IUIAutomation
+        import comtypes.client
+        mod = comtypes.client.GetModule("UIAutomationCore.dll")
+    return comtypes.client.CreateObject(_CLSID_CUIAUTOMATION,
+                                        interface=mod.IUIAutomation)
 
 
 def _clickable_cond(core):
@@ -151,22 +169,26 @@ def _enum_impl(scope, hwnd=None):
     core = _uia_core()
     if hwnd:
         target = core.ElementFromHandle(hwnd)
-        return _enum_elements(core, target), None
-    with redirect_stdout(io.StringIO()):
-        import uiautomation as auto
-    root = auto.GetRootControl().Element
-    fg, pid = _foreground()
-    win = {"hwnd": fg, "pid": pid, "foreground": True} if fg else None
-    target = root
-    if scope == "focused":
-        if not fg:
-            return [], None
-        el = root.FindFirst(
-            _SCOPE_CHILDREN, core.CreatePropertyCondition(_PID_HWND, fg))
-        if not el:
-            return [], win  # never broaden a focused query to the desktop
-        target = el
-    return _enum_elements(core, target), win
+        els, win = _enum_elements(core, target), None
+    else:
+        root = core.GetRootElement()
+        fg, pid = _foreground()
+        win = {"hwnd": fg, "pid": pid, "foreground": True} if fg else None
+        target = root
+        if scope == "focused":
+            if not fg:
+                return [], None
+            el = root.FindFirst(
+                _SCOPE_CHILDREN, core.CreatePropertyCondition(_PID_HWND, fg))
+            if not el:
+                return [], win  # never broaden a focused query to the desktop
+            target = el
+        els = _enum_elements(core, target)
+    # COM objects die HERE, on their own apartment — a queued _el released
+    # later on the caller's thread RPC_E_DISCONNECTEDs into an AV.
+    for e in els:
+        e.pop("_el", None)
+    return els, win
 
 
 def _enum_worker(scope):
@@ -196,8 +218,7 @@ def enum_clickables(scope="focused", timeout=6.0):
         if k in seen:
             continue
         seen.add(k)
-        e.pop("_el", None)  # COM objects never leave the worker thread
-        uniq.append(e)
+        uniq.append(e)  # _el was already stripped in the worker (_enum_impl)
     uniq.sort(key=lambda e: (e["bounds"][1], e["bounds"][0]))
     return {"elements": uniq[:MAX_HINTS], "window": win,
             "truncated": len(uniq) > MAX_HINTS}
