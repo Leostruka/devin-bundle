@@ -118,23 +118,6 @@
       "exported_at": "2026-09-08T21:39:22.446414"
     },
     {
-      "name": "tool-and-skill-discovery",
-      "source": "builtin:devin",
-      "purpose": "Use when the user asks how to do something, needs the right skill or tool, or no skill seems to match the task.",
-      "original_path": "%APPDATA%\\devin\\skills\\tool-and-skill-discovery",
-      "export_hash": "8A38A175BFA497E9D177B79FEF6B4CF18DE11DE1104093B2E3D40A655387FBD2",
-      "exported_at": "2026-09-08T21:39:22.446560",
-      "hash": "3c0f32b233c22b8bf0b11f0ce35e6c6b6875bed809d2c881242c922027c3dd8c"
-    },
-    {
-      "name": "using-skills",
-      "source": "devin-bundle",
-      "purpose": "Use when starting any conversation and before taking any non-trivial action.",
-      "original_path": "%APPDATA%\\devin\\skills\\using-skills",
-      "export_hash": "9668ED813E9B975B6F12C12F6B6A70B34D3E5356782339A7C544634D38DEBC2D",
-      "exported_at": "2026-09-08T21:39:22.447129"
-    },
-    {
       "name": "wait-what",
       "source": "devin-bundle",
       "purpose": "Use when the last message did not land and needs to be re-explained or re-pitched.",
@@ -367,9 +350,14 @@
       "name": "self-improvement",
       "source": "devin-bundle",
       "purpose": "Use when starting a self-improvement session (deep research + validated improvement loop), when capturing recurring failure patterns or reusable tactics as skills/rules/hooks, when researching agent harness design patterns (PrimeAgent/RLM vs Devin CLI), when emulating A2A messaging between subagents, or when deciding whether to dispatch a subagent, which profile, and what budget."
+    },
+    {
+      "name": "skill-discovery",
+      "source": "devin-bundle",
+      "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI."
     }
   ],
-  "skill_count": 51,
+  "skill_count": 50,
   "rule_count": 28,
   "scripts": [
     {
