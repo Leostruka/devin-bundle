@@ -74,6 +74,25 @@ simple retrieval (grep is cheaper).
 4. Add caching; shorten prompts; prefer file snippets over full reads.
 5. Re-measure; report tokens/cost before and after with commands used.
 
+## Code-formatting minification — scoped caution
+
+Stripping non-semantic whitespace cuts **input** tokens ~24.5% (arXiv:2508.13666,
+ICSE'26 — Java 33.7% avg; tool: Deblank). Verified but **narrow**: measured on
+FIM completion only. Do NOT minify code in agentic/editing flows —
+
+- SWE-bench agents: input −42% but resolution 50%→38% (arXiv:2606.01326).
+- Whitespace-preserving rewrites flip predictions up to 60% (TokDrift,
+  arXiv:2510.14972).
+- Python: indentation is syntax → ~6.5% gain; minified files break
+  edit-matching, linters, and review.
+- Output stays formatted regardless (−2.9%); "emit unformatted" prompting
+  broke Gemini 67%→11% and is model-fragile.
+
+Valid as a per-project rule only when ALL hold: model reads but never edits
+the code (analysis/completion/RAG input); brace-delimited language (not
+Python/YAML); a formatter restores output (Deblank pattern — prettier/CI
+round-trip, disk unchanged); payload is one-shot, not an editing session.
+
 ## Effort Calibration
 
 Effort is scarce — match to task difficulty. Maps to `data/bundle-models.json`:
