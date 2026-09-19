@@ -9,7 +9,7 @@
 - Task 5: complete (bounded event streams, review clean after rework)
 - Task 6: complete (verified file ops, review clean after rework)
 - Task 7: complete (native Windows adapter, review clean after rework)
-- Task 8: pending
+- Task 8: complete (native Linux adapter, review clean after rework)
 - Task 9: pending
 - Task 10: pending
 - Task 11: pending
@@ -23,6 +23,8 @@
 - Task 4: 75d179d — safe recovery point
 - Task 5: 80ae8e6 — safe recovery point
 - Task 6: bcca26f — safe recovery point
+- Task 7: 8d34289 — safe recovery point
+- Task 8: <pending commit> — safe recovery point
 
 ## Detail Log
 QA precondition: worktree created at `D:/Programing/ai_workspace/devin-bundle-system-control`.
@@ -55,3 +57,6 @@ Task 7: review Spec PASS/Standards FAIL — double CloseHandle, argtypes, fake r
 Task 7: T3 deferred Popen->Job race CLOSED via CREATE_SUSPENDED + Toolhelp resume.
 Task 7: lead fixed held-out epoch bug + os.kill probe + module-pop pollution; CIM fallback ordering.
 Task 7: 863 passed, 3 skipped; audit 0 errors; held-out 5/5.
+Task 8: held-out `test_linux_adapter.py` authored first (6 contracts, seam-based).
+Task 8: review Spec PASS/Standards FAIL — waitid EINVAL 5.3-5.4, untyped parse errors, verify->open reuse window, start_time optional; rework closed all.
+Task 8: 906 passed, 3+6 skipped (6 pending held-out T10); audit 0 errors; held-out 6/6.

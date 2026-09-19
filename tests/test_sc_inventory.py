@@ -184,7 +184,7 @@ def test_linux_boot_time_read_once_per_scan(tmp_path, monkeypatch):
         calls.append(1)
         return 1000
 
-    monkeypatch.setattr(linux, "_PROC", str(tmp_path))
+    monkeypatch.setattr(linux, "PROC_ROOT", str(tmp_path))
     monkeypatch.setattr(linux, "_boot_time", fake_boot)
     monkeypatch.setattr(linux, "_clock_ticks", lambda: 100)
     procs = linux.process_list()
