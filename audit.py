@@ -547,7 +547,7 @@ for s in script_files:
 # 16. New skills live vs bundle sync
 print()
 print('[16] New skills live vs bundle sync')
-new_skills = ['context-hygiene', 'gates', 'self-improvement', 'mcp-governance', 'grilling', 'debugging', 'skill-discovery', 'dispatching-parallel-agents', 'planning', 'obsidian-workflow', 'ask-bundle', 'memory-management', 'execution', 'intake', 'architecture', 'project-bootstrap', 'devin-config', 'security', 'api-spec', 'testing', 'knowledge-modeling', 'git-workflows', 'writing-skills', 'brag']
+new_skills = ['context-hygiene', 'gates', 'self-improvement', 'mcp-governance', 'grilling', 'debugging', 'skill-discovery', 'dispatching-parallel-agents', 'planning', 'obsidian-workflow', 'ask-bundle', 'memory-management', 'execution', 'intake', 'architecture', 'project-bootstrap', 'devin-config', 'security', 'api-spec', 'testing', 'knowledge-modeling', 'git-workflows', 'writing-skills', 'brag', 'ai-tools']
 for s in new_skills:
     lp = os.path.join(live_base, 'skills', s, 'SKILL.md')
     bp = os.path.join('skills', s, 'SKILL.md')

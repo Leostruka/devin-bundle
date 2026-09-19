@@ -344,9 +344,14 @@
       "name": "brag",
       "source": "devin-bundle",
       "purpose": "Turn the current project website into a short, polished, shareable launch video using Hyperframes. Use when someone says \"/brag\", \"let's brag about this\", \"make a launch video\", \"turn this into a video\", or wants to share what they built. Reads the project code directly — no live URL or screenshots needed."
+    },
+    {
+      "name": "ai-tools",
+      "source": "devin-bundle",
+      "purpose": "Use when running local, offline-first ML tooling — mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache, or when adding self-contained model experiments that print JSON and never download anything."
     }
   ],
-  "skill_count": 49,
+  "skill_count": 50,
   "rule_count": 28,
   "scripts": [
     {
