@@ -17,6 +17,8 @@ has no API/CLI.
 | `cu_actions.py` | shared: result contract (`status`, `dispatch.backend`, `timings_ms`) + `OwnedInputs` cleanup |
 | `cu_capture.py` | shared: capture backend seam (`grab`, `monitors`, `apply_delta`) — `$CU_CAPTURE` selects backend (default `mss`) |
 | `cu_browser.py` | shared: authorized-browser binding (loopback+pid, session+TTL) + `BrowserClient` — CDP (Chromium) or WebDriver BiDi (Firefox/Zen) via `websocket-client`; attach-only to a bound browser |
+| `browser.py` | bound-browser CLI: `bind`/`status`/`eval`/`console`/`errors`/`requests`/`wait`/`cookies`/`storage`/`find`/`tabs`/`pin`/`navigate`/`events` — one-shot via JS collector + evaluate |
+| `browser_events.py` | persistent events daemon (opt-in): holds the bound browser's ws open, buffers CDP/BiDi events — full-fidelity console/errors/network/dialogs/nav + dialog auto-policy + HAR-lite |
 | `cu_session.py` | shared: opt-in persistent worker over stdio pipes — recyclable, generation+session rotation, queue cancel |
 | `cu_bench.py` | per-boundary latency harness (protocol 4.4) — `--runs N --out FILE`, JSON to stdout |
 | `requirements.txt` | `mss` + `pynput` + `pillow` + `uiautomation`/`comtypes` (Windows) |
@@ -176,6 +178,68 @@ If UIA is unavailable, times out (>6 s), or finds no elements (non-Windows,
 unusual apps), `--hints` falls back to the `--grid 100` overlay and reports
 `"hints": null, "fallback": "grid"`. Set `CU_NO_UIA=1` to force the fallback.
 Electron apps only expose their DOM to UIA with `--force-renderer-accessibility`.
+
+## Bound-browser commands (`browser.py`)
+
+Browser observation + control against a browser explicitly bound for this
+session. Nothing is launched or auto-attached — bind first:
+
+```bash
+# launch your own Chromium with remote debugging, e.g.
+#   chrome --remote-debugging-port=9222   (loopback only)
+$PY browser.py bind --endpoint http://127.0.0.1:9222 --pid <chrome-pid>
+$PY browser.py status                     # bound? reachable? dialect?
+$PY browser.py unbind
+```
+
+One-shot commands (each opens the ws, acts, closes):
+
+```bash
+$PY browser.py eval "document.title" --boundaries   # wrap output as untrusted
+$PY browser.py navigate https://example.com
+$PY browser.py console [--clear] [--substr err]     # JS collector buffer
+$PY browser.py errors  [--clear]
+$PY browser.py requests [--clear] [--substr api]    # fetch/XHR only
+$PY browser.py collect                    # inject collector before traffic
+$PY browser.py wait --selector "#app" | --text Hi | --url "**/dash" | --fn "window.ready===true" [--state hidden] [--timeout 10]
+$PY browser.py cookies
+$PY browser.py storage local            # all entries | get K | set K V | remove K | keys | clear
+$PY browser.py find role button --name Submit   # role|text|label|placeholder|alt|testid|title
+$PY browser.py tabs
+$PY browser.py pin <targetId>           # restrict to one tab; `pin off` clears
+```
+
+The collector wraps `console.*`, `window.onerror`/`unhandledrejection` and
+`fetch`/`XHR` into bounded `window.__cu_*` buffers — installed as a preload
+script so it survives navigation, and auto-installed on first
+`console`/`errors`/`requests` call. Limits: app-level only — subresources,
+redirects, WS frames and pre-injection events need the events daemon.
+
+`--if-changed`/`--diff` on `screenshot.py` skip unchanged captures in verify
+loops (`--threshold 0.01` tolerates ≤1% pixel drift).
+
+## Events daemon (`browser.py events`)
+
+For full-fidelity streams, spawn the opt-in daemon — it holds the bound
+browser's ws open and buffers real protocol events:
+
+```bash
+$PY browser.py events start               # detached, loopback socket + pidfile
+$PY browser.py events drain               # all buckets, clears
+$PY browser.py events console|errors|requests|nav|dialogs
+$PY browser.py events requests            # Network.*: subresources too
+$PY browser.py events har out.json        # HAR-lite export of request log
+$PY browser.py events tabs | pin <id>
+$PY browser.py events dialogs             # pending confirm/prompt
+$PY browser.py events respond accept|dismiss
+$PY browser.py events status | stop
+```
+
+CDP path enables `Network`/`Runtime`/`Log`/`Page`; BiDi subscribes to
+`log.entryAdded`, `network.*`, `browsingContext.userPromptOpened`,
+`browsingContext.navigationStarted`/`load`. `alert`/`beforeunload` dialogs
+are auto-accepted; `confirm`/`prompt` stay pending until `respond`.
+Idle TTL 600 s (`$CU_BEVENTS_IDLE`); the pidfile lives in the OS temp dir.
 
 **When UIA yields nothing, always use `--grid` for clicks.** The image the
 agent perceives is rescaled by the reader; coordinates estimated from the

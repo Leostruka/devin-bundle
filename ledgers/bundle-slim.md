@@ -91,3 +91,10 @@ Resumo do programa: hooks 22→9 bindings (exec 486→191ms, −61%); skills
 83→48 c/ progressive disclosure; AGENTS.md 18.3→10.9KB; hooks fonte única
 (hooks.v1.json + render); adoção nativa (plugin manifest, permissions.deny,
 sandbox doc, devin doctor, hit-log p/ decisão data-driven em 1 semana).
+
+## cu-browser-observe — port agent-browser (console/network/dialogs/tabs)
+- intent: port agent-browser logic into computer-use — Tier1 (JS collector, wait, diff, cookies/storage, find, tabs/pin, boundaries) + Tier2 (events daemon: Network/console full, dialogs, HAR-lite)
+- seam: BrowserClient/_WSClient (cu_browser.py), browser.py CLI, browser_events.py daemon, screenshot.py
+- gate: pytest tests/test_cu_browser_observe.py tests/test_cu_browser_events.py + audit.py 0 errors + full suite
+- done: cu_browser.py + collector/wait/cookies/storage/find/tabs/pin/boundaries (24t); screenshot.py --if-changed/--diff (3t); browser.py CLI (10t); _WSClient reader mode + browser_events.py daemon — console/errors/requests/dialogs/nav + auto-accept + har-lite (20t)
+- evidence: pytest 499 passed / 1 skipped; audit.py 0 errors (warn: pycache only)
