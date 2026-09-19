@@ -20,7 +20,7 @@ import sc_sessions
 
 _COMMANDS = ("capabilities", "process-list", "process-get",
              "service-status", "preflight", "exec",
-             "sessions", "session", "events")
+             "sessions", "session", "events", "file")
 
 
 def _emit(obj):
@@ -31,9 +31,9 @@ def _diag(msg):
     sys.stderr.write(f"system-control: {msg}\n")
 
 
-def _opts(argv, allowed):
+def _opts(argv, allowed, flags=frozenset()):
     """Strict flag parsing: known flags only, no duplicates, no
-    trailing positionals."""
+    trailing positionals. `flags` names valueless boolean switches."""
     out = {}
     i = 0
     while i < len(argv):
@@ -41,11 +41,15 @@ def _opts(argv, allowed):
         if not a.startswith("--"):
             raise contract.InvalidRequest(f"unexpected argument: {a}")
         key = a[2:]
-        if key not in allowed:
+        if key not in allowed and key not in flags:
             raise contract.InvalidRequest(f"unknown flag: {a}")
         if key in out:
             raise contract.InvalidRequest(f"duplicate flag: {a}")
-        if i + 1 >= len(argv):
+        if key in flags:
+            out[key] = True
+            i += 1
+            continue
+        if i + 1 >= len(argv) or argv[i + 1].startswith("--"):
             raise contract.InvalidRequest(f"missing value for {a}")
         out[key] = argv[i + 1]
         i += 2
@@ -269,6 +273,69 @@ def _session_cmd(rest, request_id):
     raise contract.InvalidRequest(f"unknown session subcommand: {sub}")
 
 
+def _file_reply(res, request_id):
+    """Wrap the sc_files envelope in the canonical contract.result."""
+    ok = bool(res.get("ok"))
+    status = res.get("status", "unknown")
+    _emit(contract.result(
+        ok=ok, status=status, request_id=request_id,
+        backend="files", value=res.get("value"),
+        precondition=res.get("precondition"),
+        postcondition=res.get("postcondition"),
+        error=res.get("error")))
+    if ok:
+        return 0
+    return 2 if status == "rejected" else 1
+
+
+def _file_cmd(rest, request_id):
+    import sc_files
+    if not rest:
+        raise contract.InvalidRequest("file requires a subcommand")
+    sub, rest = rest[0], rest[1:]
+    if sub == "inspect":
+        opts = _opts(rest, {"root", "path"})
+        for req in ("root", "path"):
+            if req not in opts:
+                raise contract.InvalidRequest(
+                    f"file inspect requires --{req}")
+        return _file_reply(
+            sc_files.inspect_path(opts["root"], opts["path"]),
+            request_id)
+    if sub == "copy":
+        opts = _opts(rest, {"root", "src", "dst", "expected-hash",
+                            "request-id", "confirmation-id"},
+                     flags={"dry-run", "overwrite"})
+        for req in ("root", "src", "dst", "expected-hash",
+                    "confirmation-id"):
+            if req not in opts:
+                raise contract.InvalidRequest(
+                    f"file copy requires --{req}")
+        expected = opts["expected-hash"]
+        if not sc_files._valid_hash(expected):
+            raise contract.InvalidRequest(
+                "--expected-hash must be 64 hex chars")
+        overwrite = bool(opts.get("overwrite"))
+        dry_run = bool(opts.get("dry-run"))
+        # Full arg validation before the confirmation is consumed.
+        sc_files.validate_copy_args(opts["root"], opts["src"],
+                                    opts["dst"])
+        capability = ("file.copy_overwrite" if overwrite
+                      else "file.copy")
+        _confirm(capability,
+                 {"root": opts["root"], "src": opts["src"],
+                  "dst": opts["dst"], "expected_hash": expected,
+                  "dry_run": dry_run, "overwrite": overwrite},
+                 opts, request_id)
+        return _file_reply(
+            sc_files.copy_verified(opts["root"], opts["src"],
+                                   opts["dst"], expected_hash=expected,
+                                   dry_run=dry_run,
+                                   overwrite=overwrite),
+            request_id)
+    raise contract.InvalidRequest(f"unknown file subcommand: {sub}")
+
+
 def _float_opt(opts, key, flagname):
     try:
         v = float(opts[key])
@@ -408,6 +475,10 @@ def main(argv=None) -> int:
             res["request_id"] = opts["request-id"]
             _emit(res)
             return 0 if res["ok"] else 1
+        if cmd == "file":
+            # Root-bound file ops; no OS inventory backend needed.
+            name = "files"
+            return _file_cmd(rest, request_id)
         if cmd == "events":
             # Daemon-hosted event streams; ALLOW capabilities.
             name = "sessions"
