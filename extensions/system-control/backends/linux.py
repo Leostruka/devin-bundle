@@ -81,7 +81,15 @@ def capabilities():
         {"name": "service.observe", "supported": systemd,
          "reason": None if systemd else "systemd not detected",
          "mode": "systemctl"},
+        {"name": "events.process", "supported": proc,
+         "reason": None if proc else "/proc not mounted",
+         "mode": "poll"},
     ]
+
+
+def process_event_provider():
+    from backends import make_process_provider
+    return make_process_provider(lambda: process_list(), name)
 
 
 def process_list(pid=None):

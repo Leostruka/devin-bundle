@@ -20,7 +20,7 @@ import sc_sessions
 
 _COMMANDS = ("capabilities", "process-list", "process-get",
              "service-status", "preflight", "exec",
-             "sessions", "session")
+             "sessions", "session", "events")
 
 
 def _emit(obj):
@@ -269,6 +269,68 @@ def _session_cmd(rest, request_id):
     raise contract.InvalidRequest(f"unknown session subcommand: {sub}")
 
 
+def _float_opt(opts, key, flagname):
+    try:
+        v = float(opts[key])
+    except ValueError:
+        raise contract.InvalidRequest(
+            f"{flagname} must be a number")
+    if not math.isfinite(v) or v <= 0:
+        raise contract.InvalidRequest(
+            f"{flagname} must be positive and finite")
+    return v
+
+
+def _events_cmd(rest, request_id):
+    import sc_telemetry
+    if not rest:
+        raise contract.InvalidRequest("events requires a subcommand")
+    sub, rest = rest[0], rest[1:]
+    if sub == "open":
+        opts = _opts(rest, {"kind", "capacity", "ttl", "interval"})
+        kw = {}
+        if "kind" in opts:
+            kw["provider"] = opts["kind"]
+        if "capacity" in opts:
+            kw["capacity"] = _int_arg(opts["capacity"], "--capacity")
+            if not kw["capacity"]:
+                raise contract.InvalidRequest(
+                    "--capacity must be positive")
+        if "ttl" in opts:
+            kw["ttl_s"] = _float_opt(opts, "ttl", "--ttl")
+        if "interval" in opts:
+            kw["interval_s"] = _float_opt(
+                opts, "interval", "--interval")
+        return _session_reply(
+            sc_telemetry.open_stream_remote(**kw), request_id)
+    if sub == "drain":
+        opts = _opts(rest, {"stream-id", "cursor", "limit"})
+        if "stream-id" not in opts:
+            raise contract.InvalidRequest(
+                "events drain requires --stream-id")
+        kw = {}
+        if "cursor" in opts:
+            kw["cursor"] = _int_arg(opts["cursor"], "--cursor")
+        if "limit" in opts:
+            kw["limit"] = _int_arg(opts["limit"], "--limit")
+        return _session_reply(
+            sc_telemetry.drain_remote(opts["stream-id"], **kw),
+            request_id)
+    if sub == "close":
+        opts = _opts(rest, {"stream-id"})
+        if "stream-id" not in opts:
+            raise contract.InvalidRequest(
+                "events close requires --stream-id")
+        return _session_reply(
+            sc_telemetry.close_stream_remote(opts["stream-id"]),
+            request_id)
+    if sub == "list":
+        _opts(rest, set())
+        return _session_reply(
+            sc_telemetry.list_streams_remote(), request_id)
+    raise contract.InvalidRequest(f"unknown events subcommand: {sub}")
+
+
 def main(argv=None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     request_id = uuid.uuid4().hex[:12]
@@ -346,6 +408,10 @@ def main(argv=None) -> int:
             res["request_id"] = opts["request-id"]
             _emit(res)
             return 0 if res["ok"] else 1
+        if cmd == "events":
+            # Daemon-hosted event streams; ALLOW capabilities.
+            name = "sessions"
+            return _events_cmd(rest, request_id)
         if cmd in ("sessions", "session"):
             # Session daemon commands; no OS inventory backend needed.
             name = "sessions"

@@ -32,6 +32,7 @@ CONFIRM = {
 ALLOW = {
     "capabilities", "process.observe", "process.wait", "service.observe",
     "file.inspect", "events.open", "events.drain", "events.close",
+    "events.list",
     "session.status", "session.recv", "session.resize", "session.close",
     "daemon.start", "daemon.status", "broker.status",
 }

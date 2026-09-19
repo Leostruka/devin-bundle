@@ -42,6 +42,7 @@ _SESSION_KEYS = ("id", "token", "generation", "daemon_token", "pid",
 
 _LOCK = threading.Lock()
 _SESSIONS = {}
+_STREAMS = {}
 _GENERATION = None
 _DAEMON_TOKEN = None
 
@@ -289,12 +290,133 @@ def _close(sess):
             "dropped": _dropped(sess)}
 
 
+# --- daemon-side event stream state -----------------------------------
+
+def _stream_provider(pname):
+    """Map a provider name to a zero-arg callable; None is feed-only."""
+    if pname in (None, ""):
+        return None, None
+    if pname != "process":
+        return None, {"ok": False, "status": "rejected",
+                      "error": f"unknown provider {pname!r}"}
+    import sc_backend
+    backend = sc_backend.current()
+    factory = getattr(backend, "process_event_provider", None)
+    if factory is None:
+        return None, {"ok": False, "status": "rejected",
+                      "error": "backend lacks process events"}
+    return factory(), None
+
+
+def _stream_poller(entry):
+    """Tick provider() into feed at interval_s until stop/TTL/close."""
+    stream, stop = entry["stream"], entry["stop"]
+    import sc_telemetry
+    while not stop.is_set() and not stream.closed \
+            and not stream.expired:
+        try:
+            evs = sc_telemetry.provider_output(stream.provider(),
+                                               source="daemon")
+            if evs:
+                stream.feed(evs)
+        except Exception as exc:
+            try:
+                stream.feed([sc_telemetry.normalize(
+                    {}, source="daemon", kind="provider.error",
+                    severity="error",
+                    attrs={"message": str(exc)})])
+            except Exception:
+                pass
+        stop.wait(stream.interval_s)
+
+
+def _stream_open(arg):
+    import sc_telemetry
+    provider, err = _stream_provider(arg.get("provider"))
+    if err:
+        return err
+    r = sc_telemetry.open_stream(
+        capacity=arg.get("capacity", 1024),
+        ttl_s=arg.get("ttl_s", 300), provider=provider,
+        interval_s=arg.get("interval_s", 5.0))
+    if not r.get("ok"):
+        return r
+    s = r["stream"]
+    s.hosted = True
+    entry = {"stream": s, "stop": threading.Event(),
+             "poller": None}
+    if provider is not None:
+        t = threading.Thread(target=_stream_poller, args=(entry,),
+                             daemon=True)
+        try:
+            t.start()
+        except BaseException as exc:
+            sc_telemetry.close_stream(s.id)
+            return {"ok": False,
+                    "error": f"poller start failed: {exc}"}
+        entry["poller"] = t
+    with _LOCK:
+        _STREAMS[s.id] = entry
+    return {"ok": True, "stream": s.meta()}
+
+
+def _stream_close(stream_id):
+    import sc_telemetry
+    with _LOCK:
+        entry = _STREAMS.pop(stream_id, None)
+    if entry is not None:
+        entry["stop"].set()
+        t = entry["poller"]
+        if t is not None:
+            t.join(timeout=2)
+    return sc_telemetry.close_stream(stream_id)
+
+
+def _stream_op(op, arg):
+    import sc_telemetry
+    _reap_streams()
+    if op == "stream.open":
+        if not isinstance(arg, dict):
+            return {"ok": False, "status": "rejected"}
+        return _stream_open(arg)
+    if op == "stream.list":
+        return {"ok": True,
+                "streams": [e["stream"].meta()
+                            for e in list(_STREAMS.values())
+                            if not e["stream"].closed
+                            and not e["stream"].expired]}
+    sid = arg.get("id") if isinstance(arg, dict) else None
+    if op == "stream.drain":
+        if not isinstance(sid, str):
+            return {"ok": False, "status": "rejected"}
+        return sc_telemetry.drain(sid, cursor=arg.get("cursor"),
+                                  limit=arg.get("limit", 100))
+    if op == "stream.close":
+        if not isinstance(sid, str):
+            return {"ok": False, "status": "rejected"}
+        return _stream_close(sid)
+    return {"ok": False, "error": f"unknown op {op!r}"}
+
+
+def _reap_streams():
+    for sid, entry in list(_STREAMS.items()):
+        s = entry["stream"]
+        if s.closed or s.expired:
+            try:
+                _stream_close(sid)
+            except Exception:
+                pass
+
+
 def _op(env):
     op = env.get("op")
     arg = env.get("arg") or {}
     if op == "status":
         return {"ok": True, "generation": _GENERATION,
-                "sessions": len(_SESSIONS)}
+                "sessions": len(_SESSIONS),
+                "streams": len(_STREAMS)}
+    if op.startswith("stream."):
+        return _stream_op(op, arg)
     if op == "list":
         return {"ok": True,
                 "sessions": [_public(s) for s in
@@ -442,6 +564,7 @@ def daemon_main(pidfile=None, idle_ttl_s=None):
                 c, _ = srv.accept()
             except socket.timeout:
                 _reap_idle_sessions()
+                _reap_streams()
                 continue
             except OSError:
                 break
@@ -454,6 +577,11 @@ def daemon_main(pidfile=None, idle_ttl_s=None):
             last = time.time()
     finally:
         srv.close()
+        for sid in list(_STREAMS):
+            try:
+                _stream_close(sid)
+            except Exception:
+                pass
         for sess in list(_SESSIONS.values()):
             try:
                 _close(sess)

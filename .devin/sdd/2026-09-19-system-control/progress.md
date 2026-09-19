@@ -6,7 +6,7 @@
 - Task 2: complete (policy, one-shot confirmation, review clean)
 - Task 3: complete (bounded one-shot execution, review clean)
 - Task 4: complete (persistent owned sessions, review clean after rework)
-- Task 5: pending
+- Task 5: complete (bounded event streams, review clean after rework)
 - Task 6: pending
 - Task 7: pending
 - Task 8: pending
@@ -20,7 +20,7 @@
 - b02cdec: Task 1 complete — safe recovery point
 - Task 2: b8867ab — safe recovery point
 - Task 3: complete — safe recovery point
-- Task 4: cee94aa..HEAD — safe recovery point
+- Task 4: 75d179d — safe recovery point
 
 ## Detail Log
 QA precondition: worktree created at `D:/Programing/ai_workspace/devin-bundle-system-control`.
@@ -39,3 +39,7 @@ Task 3: committed cee94aa.
 Task 4: RED confirmed (held-out daemon recovery authored first).
 Task 4: review found blocker (live-pidfile respawn) + 4 majors; rework closed all.
 Task 4: 749 passed, 12 skipped (11 pending held-out T5/T6); audit 0 errors.
+Task 4: committed 75d179d.
+Task 5: held-out `test_event_integrity.py` authored first (6 contracts).
+Task 5: review Spec PASS/Standards FAIL — provider double-poll race, nested secret leak; rework closed all.
+Task 5: 782 passed, 6 skipped; audit 0 errors; held-out 6/6.

@@ -49,7 +49,15 @@ def capabilities():
         {"name": "service.observe", "supported": bool(sc),
          "reason": None if sc else "sc.exe not found",
          "mode": "subprocess"},
+        {"name": "events.process", "supported": bool(ps),
+         "reason": None if ps else "powershell not found",
+         "mode": "poll"},
     ]
+
+
+def process_event_provider():
+    from backends import make_process_provider
+    return make_process_provider(lambda: process_list(), name)
 
 
 def _nonneg_int(value, what):

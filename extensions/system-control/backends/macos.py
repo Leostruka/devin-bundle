@@ -33,7 +33,15 @@ def capabilities():
         {"name": "service.observe", "supported": lc,
          "reason": None if lc else "launchctl not found",
          "mode": "subprocess"},
+        {"name": "events.process", "supported": ps,
+         "reason": None if ps else "ps not found",
+         "mode": "poll"},
     ]
+
+
+def process_event_provider():
+    from backends import make_process_provider
+    return make_process_provider(lambda: process_list(), name)
 
 
 def _nonneg_int(value, what):
