@@ -153,6 +153,7 @@ Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: 
 | Extensão | Faz | Quando | Docs completas |
 |---|---|---|---|
 | `computer-use` | Screenshot da tela, clique/movimento de mouse em (X,Y), digitação de texto e atalhos — replica Computer Use do Devin Cloud no CLI. Skill wrapper: `skills/computer-use/` | Automatizar GUI desktop, validar app visualmente, interagir com app sem API | `extensions/computer-use/USAGE.md` |
+| `ai-tools` | Ferramentas ML locais offline-first (abliteration PoC etc.) — JSON stdout, `--self-test`, sem download. Skill wrapper: `skills/ai-tools/` | Experimentos de interpretabilidade/modelos locais | `extensions/ai-tools/USAGE.md` |
 
 ## Outros
 
