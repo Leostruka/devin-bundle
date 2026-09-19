@@ -30,5 +30,12 @@
   "mouse_capture": true,
   "auto_update": true,
   "pty_for_noninteractive_exec": true,
-  "theme_auto_detect": "never"
+  "theme_auto_detect": "never",
+  "permissions": {
+    "deny": [
+      "Write(**/.env*)",
+      "Write(**/credentials*)",
+      "Read(**/.env*)"
+    ]
+  }
 }

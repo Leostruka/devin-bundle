@@ -28,7 +28,30 @@ Excluded (matcher does not fire — tool fails clearly without validation):
   Removing these from the matcher saves Python process spawns with zero
   loss of real validation value.
 """
-import sys, json, os, re
+import sys, json, os, re, time
+
+
+def _devin_home():
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
+HIT_LOG = os.path.join(_devin_home(), "notes", "tool-args-hits.jsonl")
+
+
+def _log_hit(tool_name, result):
+    # Hit-rate instrumentation (audit Phase 5d): if blocks stay ~0 for a week
+    # of usage, this hook is pure spawn cost and should be removed.
+    if not tool_name:
+        return
+    try:
+        os.makedirs(os.path.dirname(HIT_LOG), exist_ok=True)
+        with open(HIT_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"t": int(time.time()), "tool": tool_name, "r": result}) + "\n")
+    except OSError:
+        pass
 
 VALID_PROFILES = frozenset({
     "architect", "debugger", "domain", "implementer", "issue-tracker",
@@ -44,8 +67,12 @@ STOPWORDS = frozenset({
 })
 
 
+_CURRENT_TOOL = ""
+
+
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
+    _log_hit(_CURRENT_TOOL, "block")
     print(json.dumps({"decision": "block", "reason": reason}))
     sys.exit(2)
 
@@ -302,6 +329,8 @@ def main():
     if check is None:
         sys.exit(0)
 
+    global _CURRENT_TOOL
+    _CURRENT_TOOL = tool_name
     try:
         check(tool_input)
     except SystemExit:
@@ -309,6 +338,7 @@ def main():
     except Exception:
         sys.exit(0)  # fail-open on unexpected validator error
 
+    _log_hit(tool_name, "allow")
     sys.exit(0)
 
 

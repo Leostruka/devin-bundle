@@ -60,3 +60,19 @@ EXPECT: ≤11264 bytes; rule_count=28; 0 errors; suite verde
 EVIDENCE: 11199 bytes (10.9KB, −39%); audit Errors=0; 442 passed, 1 skipped.
 PINNED_CONSTRAINTS alinhado aos números canônicos; README "20 regras"→"28
 entradas (20 corpos + 8 aliases)"; manifest hash de constraint-pinning resync.
+
+## G5 — Adoção nativa CLI 3000.10.x (2026-10-31)
+
+OUTCOME: (a) `.devin-plugin/plugin.json` criado — bundle instalável via
+`devin plugins install --local .` (hooks ficam no installer: plugin hooks são
+fail-open). (b) `permissions.deny` no config.json template (Write/Read .env,
+Write credentials) — substitui o caso secret-file do destructive-gate no nível
+CLI. (c) `--sandbox` documentado em DEVIN-CLI-COMPATIBILITY.md (WSL2 no
+Windows). (d) validate-tool-args instrumentado c/ hit-log JSONL
+(notes/tool-args-hits.jsonl) — deletar se blocks ~0 em 1 semana.
+(e) `devin doctor` pós-install em install.ps1/sh.
+CHECK: `python audit.py` + `python -m pytest tests/ -q` + `bash -n install.sh`
+EXPECT: 0 errors; suite verde; sintaxe OK
+EVIDENCE: audit Errors=0; 442 passed, 1 skipped; bash -n OK; hit-log
+verificado end-to-end (allow+block gravados); doctor gates só rodam quando
+`devin` está no PATH.

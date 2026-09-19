@@ -693,4 +693,9 @@ if ($DryRun) {
   if (-not $RestoreSecrets -and (Test-Path $credsSrc)) {
     Write-Host "  Tip: run with -RestoreSecrets to install credentials.toml." -ForegroundColor DarkGray
   }
+  $devinCmd = Get-Command devin -ErrorAction SilentlyContinue
+  if ($devinCmd) {
+    Write-Step "devin doctor"
+    & devin doctor
+  }
 }

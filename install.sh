@@ -606,4 +606,8 @@ if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"
 else
   printf "\n\033[32mDone. Restart Devin CLI to pick up new configuration.\033[0m\n"
+  if command -v devin >/dev/null 2>&1; then
+    step "devin doctor"
+    devin doctor
+  fi
 fi

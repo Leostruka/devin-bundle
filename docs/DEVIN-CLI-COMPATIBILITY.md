@@ -100,9 +100,32 @@ Blocking `PreToolUse` hooks return exit code 2 and a top-level JSON decision con
 
 Native plugins and Agent Plugins 1.0.0 are supported in recent CLI versions. Native plugin manifests use `.devin-plugin/plugin.json`; Agent Plugins use `plugin.json` at the plugin root.
 
-Plugins remain in closed beta. The existing installer workflows remain the distribution mechanism until the official plugin interface leaves closed beta. No external MCP server is required or installed by compatibility tests.
+The bundle ships `.devin-plugin/plugin.json`, so it can be installed as a native plugin:
+
+```bash
+devin plugins install --local .   # live-linked: edits apply next session
+```
+
+Plugin skills land under the `<plugin>:<skill>` namespace and install at user level. Two limits keep the installers (`install.ps1`/`install.sh`) as the primary path:
+
+- **Plugin hooks are fail-open** (docs: "don't rely on them for crucial guardrails yet"). The bundle's hooks are guardrails, so they keep shipping via `hooks.v1.json` + rendered user config — deterministic, not best-effort.
+- Plugins do not install `docs/`, `data/`, ledger conventions, or the `hooks.v1.json` project template — the installer covers the full surface.
 
 The isolated fixture at `tests/fixtures/devin-plugin-prototype/.devin-plugin/plugin.json` contains no skills or MCP servers. It was accepted by `devin plugins install --local` under earlier validated CLI versions, and a first invocation without `--local` correctly refused to sync a local path to Devin Cloud; the local registration was removed after verification. The plugin interface has no changelog entries between documented releases, so the fixture remains valid under the current CLI.
+
+## Sandbox and permissions
+
+`devin --sandbox` (Research Preview) gives OS-level isolation for `exec` — writable roots, network filtering — and pairs with `--permission-mode autonomous`. It is the recommended way to run the bundle unattended on managed projects. Platform constraint: on Windows the sandbox requires Devin running inside WSL 2; sessions that pass `--sandbox` refuse to start outside WSL.
+
+The user-level `config.json` template ships native deny rules that cover the destructive-gate's secret-file cases at CLI level (a deny rule always wins, no prompt):
+
+```json
+"permissions": {
+  "deny": ["Write(**/.env*)", "Write(**/credentials*)", "Read(**/.env*)"]
+}
+```
+
+Command-pattern analysis (`rm -rf`, force-push, pipe-to-shell) stays in the Python destructive gate — `permissions` rules match tool/path scopes, not command content.
 
 ## Installer verification
 
