@@ -7,6 +7,7 @@ subprocess timeouts), 2 rejected request.
 
 import json
 import math
+import os
 import subprocess
 import sys
 import uuid
@@ -15,9 +16,11 @@ import sc_backend
 import sc_contract as contract
 import sc_policy
 import sc_process
+import sc_sessions
 
 _COMMANDS = ("capabilities", "process-list", "process-get",
-             "service-status", "preflight", "exec")
+             "service-status", "preflight", "exec",
+             "sessions", "session")
 
 
 def _emit(obj):
@@ -72,6 +75,198 @@ def _verified(result_obj, request_id):
     result_obj["request_id"] = request_id
     _emit(result_obj)
     return 0
+
+
+def _session_reply(res, request_id):
+    """Emit a session-op result inside the contract envelope."""
+    ok = bool(res.get("ok"))
+    if ok:
+        status = "verified"
+    elif res.get("status") == "rejected":
+        status = "rejected"
+    else:
+        status = "unknown"
+    _emit(contract.result(
+        ok=ok, status=status, request_id=request_id,
+        backend="sessions", value=res,
+        error=None if ok else res.get("error")))
+    if ok:
+        return 0
+    return 2 if status == "rejected" else 1
+
+
+def _confirm(capability, args, opts, request_id):
+    """Consume a confirmation for a CONFIRM capability; the caller must
+    have finished all argument validation before invoking this.
+
+    --request-id is mandatory: the issued token's digest binds the
+    request_id, so a generated one could never match a confirmation.
+    """
+    if "request-id" not in opts:
+        raise contract.InvalidRequest("requires --request-id")
+    request = {
+        "version": 1,
+        "request_id": opts["request-id"],
+        "capability": capability, "args": args,
+        "deadline_ms": 30000,
+        "policy": {"dry_run": False,
+                   "confirmation_id": opts["confirmation-id"]},
+    }
+    if sc_policy.classify(request)["decision"] != "confirm":
+        raise contract.InvalidRequest(
+            "capability does not require confirmation")
+    outcome = sc_policy.consume_confirmation(
+        request, opts["confirmation-id"])
+    if not outcome["ok"]:
+        raise contract.InvalidRequest(
+            f"confirmation rejected: {outcome['reason']}")
+
+
+def _load_session(opts):
+    """Read the session dict from --session-file or --session-json."""
+    has_file = "session-file" in opts
+    has_json = "session-json" in opts
+    if has_file == has_json:
+        raise contract.InvalidRequest(
+            "requires exactly one of --session-file/--session-json")
+    try:
+        if has_file:
+            with open(opts["session-file"], encoding="utf-8") as fh:
+                sess = json.load(fh)
+        else:
+            sess = json.loads(opts["session-json"])
+    except (OSError, json.JSONDecodeError) as exc:
+        raise contract.InvalidRequest(f"unknown session file: {exc}")
+    if not isinstance(sess, dict):
+        raise contract.InvalidRequest("unknown session file")
+    return sess
+
+
+def _sessions_cmd(rest, request_id):
+    if not rest:
+        raise contract.InvalidRequest("sessions requires a subcommand")
+    sub, rest = rest[0], rest[1:]
+    if sub == "start":
+        _opts(rest, set())
+        return _session_reply(sc_sessions.start_daemon(), request_id)
+    if sub == "status":
+        _opts(rest, set())
+        return _session_reply(sc_sessions.daemon_status(), request_id)
+    if sub == "list":
+        _opts(rest, set())
+        res = sc_sessions.list_sessions()
+        if res.get("ok") and res.get("running") is False:
+            res["sessions"] = []
+        return _session_reply(res, request_id)
+    if sub == "stop":
+        opts = _opts(rest, {"confirmation-id", "request-id"})
+        if "confirmation-id" not in opts:
+            raise contract.InvalidRequest(
+                "sessions stop requires --confirmation-id")
+        _confirm("daemon.stop", {}, opts, request_id)
+        return _session_reply(sc_sessions.stop_daemon(), request_id)
+    raise contract.InvalidRequest(f"unknown sessions subcommand: {sub}")
+
+
+def _session_cmd(rest, request_id):
+    if not rest:
+        raise contract.InvalidRequest("session requires a subcommand")
+    sub, rest = rest[0], rest[1:]
+    if sub == "spawn":
+        if "--" not in rest:
+            raise contract.InvalidRequest(
+                "session spawn requires -- ARGV")
+        sep = rest.index("--")
+        opts = _opts(rest[:sep], {"confirmation-id", "request-id",
+                                 "cwd", "capacity", "idle-ttl",
+                                 "out-file"})
+        argv = rest[sep + 1:]
+        if "confirmation-id" not in opts:
+            raise contract.InvalidRequest(
+                "session spawn requires --confirmation-id")
+        cwd = opts.get("cwd")
+        capacity = _int_arg(opts.get("capacity", 2048), "--capacity")
+        idle_ttl = _int_arg(opts.get("idle-ttl", 900), "--idle-ttl")
+        if not capacity or not idle_ttl:
+            raise contract.InvalidRequest(
+                "--capacity/--idle-ttl must be positive")
+        sc_process.validate_spawn(argv, cwd=cwd)
+        _confirm("session.spawn",
+                 {"argv": argv, "cwd": cwd, "capacity": capacity,
+                  "idle_ttl_s": idle_ttl}, opts, request_id)
+        res = sc_sessions.spawn_session(
+            argv, cwd=cwd, capacity=capacity, idle_ttl_s=idle_ttl)
+        if res.get("ok") and "out-file" in opts:
+            sc_sessions._atomic_write(opts["out-file"], res["session"])
+        return _session_reply(res, request_id)
+    if sub == "send":
+        opts = _opts(rest, {"confirmation-id", "request-id",
+                            "session-file", "session-json", "data"})
+        for req in ("confirmation-id", "data"):
+            if req not in opts:
+                raise contract.InvalidRequest(
+                    f"session send requires --{req}")
+        sess = _load_session(opts)
+        err = sc_sessions._valid_session(sess)
+        if err:
+            raise contract.InvalidRequest(err["error"])
+        if not isinstance(opts["data"], str) or not opts["data"]:
+            raise contract.InvalidRequest("--data must be non-empty")
+        _confirm("session.send",
+                 {"session_id": sess["id"], "data": opts["data"]},
+                 opts, request_id)
+        return _session_reply(
+            sc_sessions.send(sess, opts["data"]), request_id)
+    if sub == "recv":
+        opts = _opts(rest, {"session-file", "session-json", "cursor",
+                            "tail", "wait", "timeout"})
+        sess = _load_session(opts)
+        kw = {}
+        if "cursor" in opts:
+            kw["cursor"] = _int_arg(opts["cursor"], "--cursor")
+        if "tail" in opts:
+            kw["tail"] = _int_arg(opts["tail"], "--tail")
+        if "wait" in opts:
+            kw["wait"] = opts["wait"]
+        if "timeout" in opts:
+            try:
+                kw["timeout_s"] = float(opts["timeout"])
+            except ValueError:
+                raise contract.InvalidRequest(
+                    "--timeout must be a number")
+            if not math.isfinite(kw["timeout_s"]):
+                raise contract.InvalidRequest("--timeout must be finite")
+        return _session_reply(
+            sc_sessions.recv(sess, **kw), request_id)
+    if sub == "resize":
+        opts = _opts(rest, {"session-file", "session-json",
+                            "cols", "rows"})
+        for req in ("cols", "rows"):
+            if req not in opts:
+                raise contract.InvalidRequest(
+                    f"session resize requires --{req}")
+        sess = _load_session(opts)
+        return _session_reply(sc_sessions.resize(
+            sess, _int_arg(opts["cols"], "--cols"),
+            _int_arg(opts["rows"], "--rows")), request_id)
+    if sub == "close":
+        opts = _opts(rest, {"session-file", "session-json"})
+        sess = _load_session(opts)
+        return _session_reply(sc_sessions.close(sess), request_id)
+    if sub == "cancel":
+        opts = _opts(rest, {"confirmation-id", "request-id",
+                            "session-file", "session-json"})
+        if "confirmation-id" not in opts:
+            raise contract.InvalidRequest(
+                "session cancel requires --confirmation-id")
+        sess = _load_session(opts)
+        err = sc_sessions._valid_session(sess)
+        if err:
+            raise contract.InvalidRequest(err["error"])
+        _confirm("session.cancel", {"session_id": sess["id"]},
+                 opts, request_id)
+        return _session_reply(sc_sessions.cancel(sess), request_id)
+    raise contract.InvalidRequest(f"unknown session subcommand: {sub}")
 
 
 def main(argv=None) -> int:
@@ -151,6 +346,12 @@ def main(argv=None) -> int:
             res["request_id"] = opts["request-id"]
             _emit(res)
             return 0 if res["ok"] else 1
+        if cmd in ("sessions", "session"):
+            # Session daemon commands; no OS inventory backend needed.
+            name = "sessions"
+            if cmd == "sessions":
+                return _sessions_cmd(rest, request_id)
+            return _session_cmd(rest, request_id)
         backend = sc_backend.current()
         name = sc_backend.backend_name(backend)
         if cmd == "capabilities":

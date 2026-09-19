@@ -5,7 +5,7 @@
 - Task 1: complete (commit b02cdec, review clean)
 - Task 2: complete (policy, one-shot confirmation, review clean)
 - Task 3: complete (bounded one-shot execution, review clean)
-- Task 4: pending
+- Task 4: complete (persistent owned sessions, review clean after rework)
 - Task 5: pending
 - Task 6: pending
 - Task 7: pending
@@ -20,6 +20,7 @@
 - b02cdec: Task 1 complete — safe recovery point
 - Task 2: b8867ab — safe recovery point
 - Task 3: complete — safe recovery point
+- Task 4: cee94aa..HEAD — safe recovery point
 
 ## Detail Log
 QA precondition: worktree created at `D:/Programing/ai_workspace/devin-bundle-system-control`.
@@ -34,3 +35,7 @@ Task 2: RED confirmed; three review rounds closed atomicity, Windows read races,
 Task 2: 668 passed, 1 skipped; audit 0 errors; independent Spec/Standards review PASS.
 Task 3: RED confirmed; review rounds fixed cleanup evidence, exception ownership, token burn, and spill residue.
 Task 3: 708 passed, 1 skipped; 128 targeted/held-out passed; audit 0 errors.
+Task 3: committed cee94aa.
+Task 4: RED confirmed (held-out daemon recovery authored first).
+Task 4: review found blocker (live-pidfile respawn) + 4 majors; rework closed all.
+Task 4: 749 passed, 12 skipped (11 pending held-out T5/T6); audit 0 errors.
