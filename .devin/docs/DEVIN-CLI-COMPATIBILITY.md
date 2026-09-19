@@ -100,13 +100,7 @@ Blocking `PreToolUse` hooks return exit code 2 and a top-level JSON decision con
 
 Native plugins and Agent Plugins 1.0.0 are supported in recent CLI versions. Native plugin manifests use `.devin-plugin/plugin.json`; Agent Plugins use `plugin.json` at the plugin root.
 
-The bundle ships `.devin-plugin/plugin.json`, so it can be installed as a native plugin:
-
-```bash
-devin plugins install --local .   # live-linked: edits apply next session
-```
-
-Plugin skills land under the `<plugin>:<skill>` namespace and install at user level. Two limits keep the installers (`install.ps1`/`install.sh`) as the primary path:
+The bundle does **not** ship as a plugin — `install.ps1`/`install.sh` remain the distribution path, for two reasons:
 
 - **Plugin hooks are fail-open** (docs: "don't rely on them for crucial guardrails yet"). The bundle's hooks are guardrails, so they keep shipping via `hooks.v1.json` + rendered user config — deterministic, not best-effort.
 - Plugins do not install `docs/`, `data/`, ledger conventions, or the `hooks.v1.json` project template — the installer covers the full surface.

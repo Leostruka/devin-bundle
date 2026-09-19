@@ -570,30 +570,34 @@ else
   warn "extensions/ not found in bundle"
 fi
 
-# --- 8e. Install docs/ (bundle docs incl. SKILL-TIERS router map) ---
+# --- 8e. Install docs/ (bundle docs; sources dissolved under .devin/) ---
 step "Install docs/"
-docs_src="$BUNDLE_DIR/docs"
 docs_dst="$DEVIN_HOME/docs"
-if [[ -d "$docs_src" ]]; then
-  if [[ -d "$docs_dst" ]]; then
+docs_seen=0
+for part in docs plans templates; do
+  docs_src="$BUNDLE_DIR/.devin/$part"
+  part_dst="$docs_dst"
+  [[ "$part" != "docs" ]] && part_dst="$docs_dst/$part"
+  [[ -d "$docs_src" ]] || continue
+  docs_seen=1
+  if [[ -d "$part_dst" ]]; then
     src_h="$(dir_hash "$docs_src")"
-    dst_h="$(dir_hash "$docs_dst")"
+    dst_h="$(dir_hash "$part_dst")"
     if [[ "$src_h" == "$dst_h" ]]; then
-      ok "docs (unchanged)"
+      ok "docs/$part (unchanged)"
     elif [[ $FORCE -eq 1 ]]; then
-      if [[ $BACKUP -eq 1 ]]; then backup_file "$docs_dst"; fi
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would update docs"
-      else rm -rf "$docs_dst"; cp -r "$docs_src" "$docs_dst"; ok "docs updated"; fi
+      if [[ $BACKUP -eq 1 ]]; then backup_file "$part_dst"; fi
+      if [[ $DRY_RUN -eq 1 ]]; then skip "would update docs/$part"
+      else rm -rf "$part_dst"; cp -r "$docs_src" "$part_dst"; ok "docs/$part updated"; fi
     else
-      warn "docs exists and differs. Use --force to update."
+      warn "docs/$part exists and differs. Use --force to update."
     fi
   else
-    if [[ $DRY_RUN -eq 1 ]]; then skip "would install docs"
-    else cp -r "$docs_src" "$docs_dst"; ok "docs installed"; fi
+    if [[ $DRY_RUN -eq 1 ]]; then skip "would install docs/$part"
+    else mkdir -p "$(dirname "$part_dst")"; cp -r "$docs_src" "$part_dst"; ok "docs/$part installed"; fi
   fi
-else
-  warn "docs/ not found in bundle"
-fi
+done
+[[ $docs_seen -eq 0 ]] && warn ".devin/{docs,plans,templates} not found in bundle"
 
 # --- 9. Summary ---
 step "Summary"

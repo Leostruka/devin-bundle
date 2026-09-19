@@ -1,7 +1,0 @@
-{
-  "name": "devin-bundle",
-  "version": "1.0.0",
-  "description": "Versioned Devin CLI bundle: 48 skills, 28 rules, 6 custom subagents, consolidated hooks, scripts and docs governing the full idea-to-ship workflow.",
-  "license": "MIT",
-  "keywords": ["devin-cli", "skills", "hooks", "rules", "orchestration"]
-}

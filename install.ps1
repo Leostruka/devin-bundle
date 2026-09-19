@@ -65,7 +65,7 @@ $scriptsSrc = Join-Path $bundleRoot "scripts"
 $dataSrc    = Join-Path $bundleRoot "data"
 $mcpSrc     = Join-Path $bundleRoot "mcp_config.json"
 $credsSrc   = Join-Path $bundleRoot "credentials.toml"
-$docsSrc    = Join-Path $bundleRoot "docs"
+$devinSrc   = Join-Path $bundleRoot ".devin"
 $extSrc     = Join-Path $bundleRoot "extensions"
 
 # Destination paths
@@ -589,21 +589,28 @@ if (Test-Path $credsSrc) {
   Write-Skip "credentials.toml not in bundle"
 }
 
-# --- 7b. docs/ (bundle documentation) ---
+# --- 7b. docs/ (bundle documentation; sources dissolved under .devin/) ---
 Write-Step "Install docs/ (bundle documentation)"
-if (Test-Path $docsSrc) {
-  $result = Install-SkillDir -src $docsSrc -dst $docsDst -name "docs"
+$docsParts = @(
+  @{ src = (Join-Path $devinSrc "docs");      dst = $docsDst },
+  @{ src = (Join-Path $devinSrc "plans");     dst = (Join-Path $docsDst "plans") },
+  @{ src = (Join-Path $devinSrc "templates"); dst = (Join-Path $docsDst "templates") }
+)
+$docsSeen = $false
+foreach ($part in $docsParts) {
+  if (-not (Test-Path $part.src)) { continue }
+  $docsSeen = $true
+  $result = Install-SkillDir -src $part.src -dst $part.dst -name ("docs/" + (Split-Path $part.src -Leaf))
   switch ($result) {
-    "installed"      { Write-Ok "docs (installed)" }
-    "updated"        { Write-Ok "docs (updated)" }
-    "skip"           { Write-Skip "docs (unchanged)" }
-    "diff"           { Write-Warn "docs — exists and differs (use -Force)" }
-    "would-install"  { Write-Skip "would install docs" }
-    "would-update"   { Write-Skip "would update docs" }
+    "installed"      { Write-Ok ("docs/" + (Split-Path $part.src -Leaf) + " (installed)") }
+    "updated"        { Write-Ok ("docs/" + (Split-Path $part.src -Leaf) + " (updated)") }
+    "skip"           { Write-Skip ("docs/" + (Split-Path $part.src -Leaf) + " (unchanged)") }
+    "diff"           { Write-Warn ("docs/" + (Split-Path $part.src -Leaf) + " — exists and differs (use -Force)") }
+    "would-install"  { Write-Skip ("would install docs/" + (Split-Path $part.src -Leaf)) }
+    "would-update"   { Write-Skip ("would update docs/" + (Split-Path $part.src -Leaf)) }
   }
-} else {
-  Write-Skip "docs/ not in bundle"
 }
+if (-not $docsSeen) { Write-Skip ".devin/{docs,plans,templates} not in bundle" }
 
 # --- 8. extensions/ (local tools, e.g. computer-use) ---
 Write-Step "Install extensions/ (local tools)"

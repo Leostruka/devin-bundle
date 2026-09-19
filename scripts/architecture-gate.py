@@ -95,7 +95,7 @@ def check_write_edit(tool_input):
             "Suspend source edits. Elicit the architecture from the user "
             "(invoke the 'grilling' skill or ask directly), then create "
             f".devin/{MANIFEST_NAME} from the template at "
-            "docs/templates/ARCHITECTURE_MANIFEST.md."
+            ".devin/templates/ARCHITECTURE_MANIFEST.md in the bundle repo (installed: docs/templates/)."
         )
 
 
@@ -118,7 +118,8 @@ def check_exec(tool_input):
             "Source mutations are blocked until it exists. Suspend code "
             "changes, elicit the architecture from the user (invoke the "
             f"'grilling' skill or ask directly), then create .devin/{MANIFEST_NAME} "
-            "from the template at docs/templates/ARCHITECTURE_MANIFEST.md."
+            "from the template at .devin/templates/ARCHITECTURE_MANIFEST.md "
+            "in the bundle repo (installed: docs/templates/)."
         )
 
 

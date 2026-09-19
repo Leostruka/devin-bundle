@@ -37,7 +37,7 @@ Depois da instalação, abra o Devin CLI no repositório em que deseja trabalhar
 | Git | Versionamento, branches e worktrees | `git --version` |
 | Windows, Linux, macOS ou WSL | Ambiente suportado | — |
 
-A versão validada do Devin CLI é `3000.10.27`. Consulte [docs/DEVIN-CLI-COMPATIBILITY.md](docs/DEVIN-CLI-COMPATIBILITY.md).
+A versão validada do Devin CLI é `3000.10.27`. Consulte [.devin/docs/DEVIN-CLI-COMPATIBILITY.md](.devin/docs/DEVIN-CLI-COMPATIBILITY.md).
 
 ## Como o ecossistema funciona
 
@@ -129,7 +129,7 @@ As skills são carregadas sob demanda. A forma recomendada de escolher é:
 1. invocar `skill-discovery` no início;
 2. usar `ask-bundle` quando o fluxo completo estiver incerto;
 3. usar `skill-discovery` quando nenhuma skill conhecida corresponder;
-4. consultar [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) para descoberta por domínio e custo de contexto;
+4. consultar [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) para descoberta por domínio e custo de contexto;
 5. carregar apenas as 1–3 skills necessárias para a tarefa.
 
 Principais grupos:
@@ -165,13 +165,13 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 
 Com o parent gratuito em `swe-2-high`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
 
-O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os seis perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md).
+O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os seis perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
 
 ### 4. Ferramentas e MCP
 
 O agente opera arquivos, shell, busca, notebooks, browser, subagentes, tarefas e integrações por ferramentas estruturadas. `validate-tool-args.py` valida as chamadas não triviais antes da execução.
 
-O MCP configurado é `atlassian`, usado para Jira e Confluence quando autenticado. Antes de chamar um MCP, o agente lista os servidores e ferramentas disponíveis; definições MCP desnecessárias devem permanecer desabilitadas para não consumir contexto. O mapa completo está em [docs/TOOLS-MAP.md](docs/TOOLS-MAP.md).
+O MCP configurado é `atlassian`, usado para Jira e Confluence quando autenticado. Antes de chamar um MCP, o agente lista os servidores e ferramentas disponíveis; definições MCP desnecessárias devem permanecer desabilitadas para não consumir contexto. O mapa completo está em [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md).
 
 ### 5. Hooks
 
@@ -399,9 +399,12 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 {{BUNDLE_REPO}}/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 6 perfis customizados
-├── skills/                    # 83 workflows invocáveis
+├── skills/                    # 50 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── .devin/                    # configuração e conhecimento deste projeto
+│   ├── docs/                  # mapas, guias (SKILL-TIERS, MODEL-GUIDE, TOOLS-MAP…)
+│   ├── plans/                 # planos datados
+│   ├── templates/             # templates (ARCHITECTURE_MANIFEST…)
 │   ├── global_rules.md
 │   ├── CONTEXT.md
 │   ├── adr/
@@ -417,7 +420,6 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 ├── export.ps1 / export.sh     # live config → bundle
 ├── audit.py                   # auditoria estrutural
 ├── tests/                     # validação e held-out
-├── docs/                      # mapas, guias e planos
 └── .github/                   # CI e templates GitHub
 ```
 
@@ -547,11 +549,11 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
 | [manifest.json](manifest.json) | Inventário e metadados das 50 skills |
-| [docs/SKILL-TIERS.md](docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
-| [docs/TOOLS-MAP.md](docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |
-| [docs/MODEL-GUIDE.md](docs/MODEL-GUIDE.md) | Política e características dos modelos |
-| [docs/DEVIN-CLI-COMPATIBILITY.md](docs/DEVIN-CLI-COMPATIBILITY.md) | Compatibilidade validada com o CLI |
-| [docs/AI-CODING-DICTIONARY.md](docs/AI-CODING-DICTIONARY.md) | Vocabulário canônico de AI coding |
+| [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
+| [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |
+| [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md) | Política e características dos modelos |
+| [.devin/docs/DEVIN-CLI-COMPATIBILITY.md](.devin/docs/DEVIN-CLI-COMPATIBILITY.md) | Compatibilidade validada com o CLI |
+| [.devin/docs/AI-CODING-DICTIONARY.md](.devin/docs/AI-CODING-DICTIONARY.md) | Vocabulário canônico de AI coding |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Como contribuir |
 | [SECURITY.md](SECURITY.md) | Política de segurança |
 | [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
