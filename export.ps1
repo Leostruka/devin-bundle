@@ -65,7 +65,7 @@ $scriptsDst    = Join-Path $bundleRoot "scripts"
 $dataDst       = Join-Path $bundleRoot "data"
 $mcpDst        = Join-Path $bundleRoot "mcp_config.json"
 $credsDst      = Join-Path $bundleRoot "credentials.toml"
-$docsDst       = Join-Path $bundleRoot "docs"
+$devinDst      = Join-Path $bundleRoot ".devin"
 
 # Source paths
 $rulesSrc      = Join-Path $devinHome "AGENTS.md"
@@ -105,6 +105,24 @@ function Write-FileLF($path, $content) {
   $lf = $content -replace "`r`n", "`n"
   $utf8NoBom = [Text.UTF8Encoding]::new($false)
   [IO.File]::WriteAllText($path, $lf, $utf8NoBom)
+}
+
+function Copy-TopFiles($src, $dst, $label) {
+  if (-not (Test-Path $src)) {
+    Write-Skip "$label (source not found: $src)"
+    return 0
+  }
+  if ($DryRun) {
+    $count = (Get-ChildItem $src -File).Count
+    Write-Skip "would copy $count files from $src"
+    return $count
+  }
+  if (Test-Path $dst) { Remove-Item $dst -Recurse -Force }
+  New-Item -ItemType Directory -Path $dst -Force | Out-Null
+  Get-ChildItem $src -File | Copy-Item -Destination $dst -Force
+  $count = (Get-ChildItem $dst -File).Count
+  Write-Ok "$label ($count files)"
+  return $count
 }
 
 function Copy-DirRecursive($src, $dst, $label) {
@@ -434,9 +452,14 @@ if (Test-Path $credsSrc) {
   Write-Skip "credentials.toml not found at $credsSrc"
 }
 
-# --- 7b. docs/ (bundle documentation) ---
+# --- 7b. docs/ (bundle documentation; lands dissolved under .devin/) ---
 Write-Step "Export docs/ (bundle documentation)"
-$docsCount = Copy-DirRecursive -src $docsSrc -dst $docsDst -label "docs/"
+$docsCount = 0
+if (Test-Path $docsSrc) {
+  $docsCount += Copy-TopFiles      -src $docsSrc -dst (Join-Path $devinDst "docs") -label "docs top-level"
+  $docsCount += Copy-DirRecursive -src (Join-Path $docsSrc "plans")     -dst (Join-Path $devinDst "plans")     -label "docs/plans"
+  $docsCount += Copy-DirRecursive -src (Join-Path $docsSrc "templates") -dst (Join-Path $devinDst "templates") -label "docs/templates"
+}
 if ($docsCount -eq 0 -and -not (Test-Path $docsSrc)) {
   Write-Warn "docs/ not found at $docsSrc"
 }
@@ -444,7 +467,7 @@ if ($docsCount -eq 0 -and -not (Test-Path $docsSrc)) {
 # --- 8. Summary ---
 Write-Step "Summary"
 $componentCount = 0
-foreach ($p in @($rulesDst, $agentsDst, $skillsDst, $configDst, $scriptsDst, $mcpDst, $credsDst, $docsDst)) {
+foreach ($p in @($rulesDst, $agentsDst, $skillsDst, $configDst, $scriptsDst, $mcpDst, $credsDst, $devinDst)) {
   if (Test-Path $p) { $componentCount++ }
 }
 Write-Host "    Components in bundle: $componentCount / 8"
@@ -552,7 +575,7 @@ if ($Commit -or $Push) {
 export: refresh devin bundle ($date)
 
 Skills: $skillCount total
-Config: AGENTS.md, agents/, config.json, scripts/, data/, mcp_config.json, credentials.toml, docs/
+Config: AGENTS.md, agents/, config.json, scripts/, data/, mcp_config.json, credentials.toml, .devin/{docs,plans,templates}
 Masked: $(-not $NoMask)
 "@
         git commit -m $commitMsg 2>&1 | Out-Null

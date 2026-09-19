@@ -37,5 +37,5 @@ sub_count('README.md', [
     (r'As \d+ skills são', f'As {n} skills são'),
     (r'Inventário e metadados das \d+ skills', f'Inventário e metadados das {n} skills'),
 ])
-sub_count('docs/TOOLS-MAP.md', [(r'\| \d+ skills \|', f'| {n} skills |')])
+sub_count('.devin/docs/TOOLS-MAP.md', [(r'\| \d+ skills \|', f'| {n} skills |')])
 print(f'synced: {n} skills')

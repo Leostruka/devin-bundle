@@ -712,7 +712,7 @@ else:
 # 24. TOOLS-MAP.md and SKILL-TIERS.md stale counts
 print()
 print('[24] Doc count consistency (TOOLS-MAP.md, SKILL-TIERS.md)')
-toolsmap = open('docs/TOOLS-MAP.md', encoding='utf-8').read()
+toolsmap = open('.devin/docs/TOOLS-MAP.md', encoding='utf-8').read()
 doc_checks = [
     ('TOOLS-MAP.md skills count', str(skill_count) + ' skills', str(skill_count) + ' skills' in toolsmap),
     ('TOOLS-MAP.md scripts count', str(len(script_files)) + ' scripts', str(len(script_files)) + ' scripts' in toolsmap),
@@ -838,7 +838,7 @@ else:
 print()
 print('[29] arXiv refs in scripts/ and tests/ tracked in MODEL-GUIDE.md')
 mg_content = ''
-mg_path = 'docs/MODEL-GUIDE.md'
+mg_path = '.devin/docs/MODEL-GUIDE.md'
 if os.path.exists(mg_path):
     with open(mg_path, encoding='utf-8') as fh:
         mg_content = fh.read()

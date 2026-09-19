@@ -363,7 +363,7 @@
     {
       "name": "architecture-gate.py",
       "purpose": "PreToolUse hook — blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
-      "export_hash": "4DB83FFC44B53CDEC2B6B7537CB53CE10F1180B5B5BAADA7E9D8802ECA8E29E4",
+      "export_hash": "47CA7D269D612C8D493EC29FF5D7D26DA170164E3E7771A56E1F27A6DD2E2ECD",
       "exported_at": "2026-09-18T20:22:05.262556"
     },
     {
