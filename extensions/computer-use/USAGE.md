@@ -19,7 +19,7 @@ has no API/CLI.
 | `cu_browser.py` | shared: authorized-browser binding (loopback+pid, session+TTL) + `BrowserClient` — CDP (Chromium) or WebDriver BiDi (Firefox/Zen) via `websocket-client`; attach-only to a bound browser |
 | `browser.py` | bound-browser CLI: `bind`/`status`/`eval`/`console`/`errors`/`requests`/`wait`/`cookies`/`storage`/`find`/`tabs`/`pin`/`navigate`/`events` — one-shot via JS collector + evaluate |
 | `browser_events.py` | persistent events daemon (opt-in): holds the bound browser's ws open, buffers CDP/BiDi events — full-fidelity console/errors/network/dialogs/nav + dialog auto-policy + HAR-lite |
-| `cu_terminal.py` | shared: terminal detection/binding (WT/conhost/mintty by window class) + UIA TextPattern & `CONOUT$` read paths + physical/`WriteConsoleInputW` control + command gate + PTY spawn sessions (pywinpty WinPTY backend) |
+| `cu_terminal.py` | shared: terminal detection/binding (WT/conhost/mintty by window class) + UIA TextPattern & `CONOUT$` read paths + WinRT OCR for mintty + physical/`WriteConsoleInputW` control + command gate + PTY spawn sessions (pywinpty WinPTY backend) |
 | `terminal.py` | terminal CLI: `bind`/`status`/`read`/`info`/`type`/`key`/`scroll`/`exec` (bound terminal) + `spawn`/`send-to`/`recv`/`close`/`kill`/`sessions` (own PTY via daemon) |
 | `terminal_sessions.py` | persistent sessions daemon (opt-in): holds spawned PTYs across CLI invocations — loopback socket + pidfile, idle TTL |
 | `probes/` | empirical research scripts from the terminal-control investigation (UIA/ConPTY/CONIN$/clipboard paths) — reference material, not shipped APIs |
@@ -271,8 +271,10 @@ $PY terminal.py unbind
 
 Mode detection by window class: `CASCADIA_*` → Windows Terminal (UIA
 `TextPattern` full scrollback), `ConsoleWindowClass` → conhost (`CONOUT$`
-buffer + `WriteConsoleInputW` injection), `mintty` → Git Bash (pixels only —
-no semantic read; screenshot + physical input).
+buffer + `WriteConsoleInputW` injection), `mintty` → Git Bash (WinRT
+`Windows.Media.Ocr` on the window screenshot — probabilistic text, not
+guaranteed; falls back to image-only when winrt is absent or fails).
+Control on mintty stays physical (focus + type + verify via OCR reread).
 
 `exec` appends a `CU_EXIT_<tag>` sentinel, waits for it (or idle), strips
 echo+prompt, caps output at 16K chars (spill → temp file). Command gate:
@@ -295,7 +297,8 @@ $PY terminal.py sessions stop
 `recv` flags `alt_buffer:true` on fullscreen apps (vim/htop) — detach, don't
 wait for completion. Daemon idle TTL 900 s (`$CU_TSDAEMON_IDLE`); pidfile in
 OS temp. Known limits: ConPTY backend fails on some builds (WinPTY used —
-see plan), mintty has no semantic channel, `wt send-input` does not exist.
+see plan), mintty read is OCR-based (image fallback if winrt missing),
+`wt send-input` does not exist.
 
 ## Failure modes
 
