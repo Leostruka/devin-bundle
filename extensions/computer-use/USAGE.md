@@ -19,6 +19,10 @@ has no API/CLI.
 | `cu_browser.py` | shared: authorized-browser binding (loopback+pid, session+TTL) + `BrowserClient` — CDP (Chromium) or WebDriver BiDi (Firefox/Zen) via `websocket-client`; attach-only to a bound browser |
 | `browser.py` | bound-browser CLI: `bind`/`status`/`eval`/`console`/`errors`/`requests`/`wait`/`cookies`/`storage`/`find`/`tabs`/`pin`/`navigate`/`events` — one-shot via JS collector + evaluate |
 | `browser_events.py` | persistent events daemon (opt-in): holds the bound browser's ws open, buffers CDP/BiDi events — full-fidelity console/errors/network/dialogs/nav + dialog auto-policy + HAR-lite |
+| `cu_terminal.py` | shared: terminal detection/binding (WT/conhost/mintty by window class) + UIA TextPattern & `CONOUT$` read paths + physical/`WriteConsoleInputW` control + command gate + PTY spawn sessions (pywinpty WinPTY backend) |
+| `terminal.py` | terminal CLI: `bind`/`status`/`read`/`info`/`type`/`key`/`scroll`/`exec` (bound terminal) + `spawn`/`send-to`/`recv`/`close`/`kill`/`sessions` (own PTY via daemon) |
+| `terminal_sessions.py` | persistent sessions daemon (opt-in): holds spawned PTYs across CLI invocations — loopback socket + pidfile, idle TTL |
+| `probes/` | empirical research scripts from the terminal-control investigation (UIA/ConPTY/CONIN$/clipboard paths) — reference material, not shipped APIs |
 | `cu_session.py` | shared: opt-in persistent worker over stdio pipes — recyclable, generation+session rotation, queue cancel |
 | `cu_bench.py` | per-boundary latency harness (protocol 4.4) — `--runs N --out FILE`, JSON to stdout |
 | `requirements.txt` | `mss` + `pynput` + `pillow` + `uiautomation`/`comtypes` (Windows) |
@@ -246,6 +250,52 @@ agent perceives is rescaled by the reader; coordinates estimated from the
 perceived image are systematically off by the render scale (~20% on 1080p).
 The grid labels are drawn on the physical pixels, so they read true
 regardless of how the image is displayed.
+
+## Terminal control (`terminal.py`)
+
+Two modes. **Bound**: read/control an existing terminal window (same
+bind+session+TTL contract as `browser.py`). **Spawn**: own a PTY — never
+touches user terminals.
+
+```bash
+$PY terminal.py bind --hwnd 460176        # or --pid <pid>
+$PY terminal.py status                    # bound? mode? window info
+$PY terminal.py read [--tail 20|--find x] # scrollback, UNTRUSTED-wrapped
+$PY terminal.py info                      # dims/cursor/mode
+$PY terminal.py type "echo hi"            # physical typing (focus first)
+$PY terminal.py key enter|ctrl+c|...
+$PY terminal.py scroll up|down [N]
+$PY terminal.py exec "dir" --timeout 10   # sentinel-based completion + exit code
+$PY terminal.py unbind
+```
+
+Mode detection by window class: `CASCADIA_*` → Windows Terminal (UIA
+`TextPattern` full scrollback), `ConsoleWindowClass` → conhost (`CONOUT$`
+buffer + `WriteConsoleInputW` injection), `mintty` → Git Bash (pixels only —
+no semantic read; screenshot + physical input).
+
+`exec` appends a `CU_EXIT_<tag>` sentinel, waits for it (or idle), strips
+echo+prompt, caps output at 16K chars (spill → temp file). Command gate:
+`rm|del|kill|format|shutdown|taskkill|Remove-Item|...` → denied;
+`curl|wget|eval|iex|sudo|...` → `--confirm` required. Input-needed states
+(`[y/N]`, `Password:`, `(END)`) reported as `state:input_needed` — never
+auto-answer passwords.
+
+Spawn mode runs through the sessions daemon (auto-started):
+
+```bash
+$PY terminal.py spawn --shell cmd|powershell|pwsh|bash|wsl [--cols --rows]
+$PY terminal.py send-to <sid> "echo hi\n"   # raw PTY write
+$PY terminal.py recv <sid> [--tail N|--wait REGEX --timeout S]
+$PY terminal.py sessions list|status
+$PY terminal.py close <sid> | kill <sid>
+$PY terminal.py sessions stop
+```
+
+`recv` flags `alt_buffer:true` on fullscreen apps (vim/htop) — detach, don't
+wait for completion. Daemon idle TTL 900 s (`$CU_TSDAEMON_IDLE`); pidfile in
+OS temp. Known limits: ConPTY backend fails on some builds (WinPTY used —
+see plan), mintty has no semantic channel, `wt send-input` does not exist.
 
 ## Failure modes
 

@@ -1,6 +1,6 @@
 ---
 name: computer-use
-description: Use when you need to see or control the local screen — screenshots, mouse clicks/movement, typing text and hotkeys. GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.
+description: Use when you need to see or control the local screen — screenshots, mouse clicks/movement, typing text and hotkeys — or read/control terminals (Windows Terminal, conhost, mintty, spawned PTYs). GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.
 triggers: [user, model]
 ---
 
@@ -36,7 +36,13 @@ PY screenshot.py --grid                # fallback when UIA has no elements
 PY mouse.py click --hint as            # click element center by hint id
 PY mouse.py click X Y                  # or click physical pixel directly
 PY type_text.py "text" | --keys ctrl+c # type / hotkey
+PY terminal.py bind --hwnd <n>          # read/control an existing terminal
+PY terminal.py spawn --shell cmd        # or own a PTY session (daemon)
+PY browser.py bind --endpoint <url> --pid <p>  # browser via CDP/BiDi
 ```
+
+Terminal/browser details (read paths, send/exec/recv, events daemon) are in
+`USAGE.md` — same directory.
 
 Workflow: `screenshot.py --hints` → pick the target by `name`/`type` from the
 JSON (or the badge letters in the PNG) → `mouse.py click --hint <id>` →
