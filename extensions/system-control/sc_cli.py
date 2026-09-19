@@ -6,6 +6,7 @@ subprocess timeouts), 2 rejected request.
 """
 
 import json
+import math
 import subprocess
 import sys
 import uuid
@@ -16,7 +17,7 @@ import sc_policy
 import sc_process
 
 _COMMANDS = ("capabilities", "process-list", "process-get",
-             "service-status", "preflight")
+             "service-status", "preflight", "exec")
 
 
 def _emit(obj):
@@ -99,6 +100,57 @@ def main(argv=None) -> int:
                 ok=True, status="verified", request_id=request_id,
                 backend=name,
                 value=sc_policy.classify(req)), request_id)
+        if cmd == "exec":
+            # Confirmed one-shot spawn; no OS backend needed.
+            name = "subprocess"
+            opts = _opts(rest, {"argv-json", "request-id",
+                                "confirmation-id", "cwd", "timeout"})
+            for required in ("argv-json", "request-id",
+                             "confirmation-id"):
+                if required not in opts:
+                    raise contract.InvalidRequest(
+                        f"exec requires --{required}")
+            try:
+                argv = json.loads(opts["argv-json"])
+            except json.JSONDecodeError as exc:
+                raise contract.InvalidRequest(
+                    f"invalid --argv-json: {exc}")
+            try:
+                timeout_s = float(opts.get("timeout", "30"))
+            except ValueError:
+                raise contract.InvalidRequest(
+                    "--timeout must be a number")
+            if not math.isfinite(timeout_s):
+                raise contract.InvalidRequest("--timeout must be finite")
+            if timeout_s.is_integer():
+                timeout_s = int(timeout_s)
+            cwd = opts.get("cwd")
+            # Validate spawn args before consuming the confirmation so
+            # bad input never burns a valid token.
+            sc_process.validate_spawn(argv, cwd=cwd,
+                                      timeout_s=timeout_s)
+            request = {
+                "version": 1,
+                "request_id": opts["request-id"],
+                "capability": "process.exec",
+                "args": {"argv": argv, "cwd": cwd,
+                         "timeout_s": timeout_s},
+                "deadline_ms": max(1, int(timeout_s * 1000)),
+                "policy": {"dry_run": False,
+                           "confirmation_id": opts["confirmation-id"]},
+            }
+            if sc_policy.classify(request)["decision"] != "confirm":
+                raise contract.InvalidRequest(
+                    "capability does not require confirmation")
+            outcome = sc_policy.consume_confirmation(
+                request, opts["confirmation-id"])
+            if not outcome["ok"]:
+                raise contract.InvalidRequest(
+                    f"confirmation rejected: {outcome['reason']}")
+            res = sc_process.spawn(argv, cwd=cwd, timeout_s=timeout_s)
+            res["request_id"] = opts["request-id"]
+            _emit(res)
+            return 0 if res["ok"] else 1
         backend = sc_backend.current()
         name = sc_backend.backend_name(backend)
         if cmd == "capabilities":

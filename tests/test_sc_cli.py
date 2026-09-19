@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]
                       / "extensions" / "system-control"))
 import sc_backend  # noqa: E402
 import sc_cli  # noqa: E402
+import sc_policy  # noqa: E402
 
 
 class FakeBackend:
@@ -279,3 +280,109 @@ def test_cli_preflight_exactly_one_positional(capsys):
                        "extra"], capsys)
     assert code == 2 and r["status"] == "rejected"
     assert r["backend"] == "policy"
+
+
+def _exec_request(request_id, argv, cwd=None, timeout_s=30):
+    return {
+        "version": 1, "request_id": request_id,
+        "capability": "process.exec",
+        "args": {"argv": argv, "cwd": cwd, "timeout_s": timeout_s},
+        "deadline_ms": max(1, int(timeout_s * 1000)),
+        "policy": {"dry_run": False, "confirmation_id": None}}
+
+
+def _exec_argv(argv, request_id="r1", cid="c", timeout=None, cwd=None):
+    args = ["exec", "--argv-json", json.dumps(argv),
+            "--request-id", request_id, "--confirmation-id", cid]
+    if timeout is not None:
+        args += ["--timeout", str(timeout)]
+    if cwd is not None:
+        args += ["--cwd", cwd]
+    return args
+
+
+def test_cli_exec_requires_confirmation(capsys, tmp_path, monkeypatch):
+    monkeypatch.setattr(sc_policy, "STATE_DIR", tmp_path)
+    argv = [sys.executable, "-c", "pass"]
+    code, r, _ = _run(_exec_argv(argv, cid="f" * 64), capsys)
+    assert code == 2 and r["status"] == "rejected"
+    code, r, _ = _run(_exec_argv(argv, cid="not-a-token"), capsys)
+    assert code == 2 and r["status"] == "rejected"
+
+
+def test_cli_exec_consumed_confirmation_runs_once(
+        capsys, tmp_path, monkeypatch):
+    monkeypatch.setattr(sc_policy, "STATE_DIR", tmp_path)
+    argv = [sys.executable, "-c", "print('ok')"]
+    req = _exec_request("r1", argv)
+    cid = sc_policy.issue_confirmation(req)["confirmation_id"]
+    code, r, _ = _run(_exec_argv(argv, cid=cid), capsys)
+    assert code == 0 and r["status"] == "dispatched"
+    assert r["request_id"] == "r1"
+    assert r["backend"] == "subprocess"
+    assert r["value"]["stdout"]["value"].strip() == "ok"
+    # replay rejects before spawn
+    code, r, _ = _run(_exec_argv(argv, cid=cid), capsys)
+    assert code == 2 and r["status"] == "rejected"
+
+
+def test_cli_exec_mutation_rejected_before_spawn(
+        capsys, tmp_path, monkeypatch):
+    monkeypatch.setattr(sc_policy, "STATE_DIR", tmp_path)
+    argv = [sys.executable, "-c", "pass"]
+    for mutate_argv, mutate_kw in (
+            ([sys.executable, "-c", "print(1)"], {}),
+            (argv, {"timeout": 10}),
+            (argv, {"cwd": str(tmp_path)}),
+            (argv, {})):
+        req = _exec_request("r1", argv)
+        cid = sc_policy.issue_confirmation(req)["confirmation_id"]
+        rid = "r2" if mutate_kw == {} and mutate_argv == argv else "r1"
+        code, r, _ = _run(_exec_argv(mutate_argv, request_id=rid,
+                                     cid=cid, **mutate_kw), capsys)
+        assert code == 2 and r["status"] == "rejected"
+
+
+def test_cli_exec_flag_validation(capsys, tmp_path, monkeypatch):
+    monkeypatch.setattr(sc_policy, "STATE_DIR", tmp_path)
+    argv = json.dumps([sys.executable, "-c", "pass"])
+    for args in (
+            ["exec"],
+            ["exec", "--argv-json", argv],
+            ["exec", "--argv-json", argv, "--request-id", "r"],
+            ["exec", "--argv-json", argv, "--request-id", "r",
+             "--confirmation-id", "c", "--bogus", "1"],
+            ["exec", "--argv-json", argv, "--argv-json", argv,
+             "--request-id", "r", "--confirmation-id", "c"],
+            ["exec", "positional", "--argv-json", argv,
+             "--request-id", "r", "--confirmation-id", "c"]):
+        code, r, _ = _run(args, capsys)
+        assert code == 2 and r["status"] == "rejected", args
+
+
+def test_cli_exec_bad_argv_json_rejected(capsys, tmp_path, monkeypatch):
+    monkeypatch.setattr(sc_policy, "STATE_DIR", tmp_path)
+    code, r, _ = _run(
+        ["exec", "--argv-json", "{bad", "--request-id", "r",
+         "--confirmation-id", "c" * 64], capsys)
+    assert code == 2 and r["status"] == "rejected"
+
+
+def test_cli_exec_invalid_input_never_consumes_token(
+        capsys, tmp_path, monkeypatch):
+    monkeypatch.setattr(sc_policy, "STATE_DIR", tmp_path)
+    argv = [sys.executable, "-c", "print('ok')"]
+    req = _exec_request("r1", argv)
+    cid = sc_policy.issue_confirmation(req)["confirmation_id"]
+    # invalid argv / cwd / timeout each reject before consumption
+    for bad_args in (
+            _exec_argv('"ls"', cid=cid),
+            _exec_argv(argv, cid=cid, cwd=str(tmp_path / "missing")),
+            _exec_argv(argv, cid=cid, timeout=999),
+            _exec_argv(argv, cid=cid, timeout="nan")):
+        code, r, _ = _run(bad_args, capsys)
+        assert code == 2 and r["status"] == "rejected", bad_args
+        assert (tmp_path / f"{cid}.json").exists()  # not consumed
+    # the same token still works for the exact confirmed request
+    code, r, _ = _run(_exec_argv(argv, cid=cid), capsys)
+    assert code == 0 and r["status"] == "dispatched"

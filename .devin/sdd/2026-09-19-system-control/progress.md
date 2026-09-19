@@ -4,7 +4,7 @@
 - QA precondition: complete (2 held-out tests collected; RED confirmed)
 - Task 1: complete (commit b02cdec, review clean)
 - Task 2: complete (policy, one-shot confirmation, review clean)
-- Task 3: pending
+- Task 3: complete (bounded one-shot execution, review clean)
 - Task 4: pending
 - Task 5: pending
 - Task 6: pending
@@ -18,7 +18,8 @@
 ## Commit Boundaries
 - 3b3aa5e: branch base
 - b02cdec: Task 1 complete — safe recovery point
-- Task 2: complete — safe recovery point
+- Task 2: b8867ab — safe recovery point
+- Task 3: complete — safe recovery point
 
 ## Detail Log
 QA precondition: worktree created at `D:/Programing/ai_workspace/devin-bundle-system-control`.
@@ -31,3 +32,5 @@ Task 1: minor (deferred): top-level schema remains intentionally extensible; doc
 Task 1: complete (commit 3b3aa5e..b02cdec, review clean).
 Task 2: RED confirmed; three review rounds closed atomicity, Windows read races, and malformed metadata handling.
 Task 2: 668 passed, 1 skipped; audit 0 errors; independent Spec/Standards review PASS.
+Task 3: RED confirmed; review rounds fixed cleanup evidence, exception ownership, token burn, and spill residue.
+Task 3: 708 passed, 1 skipped; 128 targeted/held-out passed; audit 0 errors.
