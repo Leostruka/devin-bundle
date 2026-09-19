@@ -339,15 +339,20 @@
       "name": "skill-discovery",
       "source": "devin-bundle",
       "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI."
+    },
+    {
+      "name": "brag",
+      "source": "devin-bundle",
+      "purpose": "Turn the current project website into a short, polished, shareable launch video using Hyperframes. Use when someone says \"/brag\", \"let's brag about this\", \"make a launch video\", \"turn this into a video\", or wants to share what they built. Reads the project code directly — no live URL or screenshots needed."
     }
   ],
-  "skill_count": 48,
+  "skill_count": 49,
   "rule_count": 28,
   "scripts": [
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "0639D3C98C46971E552336E26DC66DD67EFAFF3597603504F529E93D1914E729",
+      "export_hash": "AD35E6F8E21F6594E6468E8583014787806E34300D71A67B5A91C41B41996D4A",
       "exported_at": "2026-09-18T20:22:05.262464"
     },
     {
@@ -431,19 +436,19 @@
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec)",
-      "export_hash": "20514892E27E756D5611520C261036F05C03A867292C5224759BD64094231CCA",
+      "export_hash": "CAD25062F06DE15BFE534CBA40A5BDA2DDF91BC21A63E2AEF5D60CE1993C5E9B",
       "exported_at": "2026-09-18T20:17:52.988052"
     },
     {
       "name": "pre-exec-guard.py",
       "purpose": "PreToolUse exec consolidated guard (destructive+arch+signature+push-green+tool-args)",
-      "export_hash": "0356C7DD256B0C2FDAEF238711D7BEEA4A8BC2F4704D56CFFDFFA87573D18418",
+      "export_hash": "C29A773542F4A7F4F5136FC2F00DB413179AA5F7D273CE1046C0B0A93878662F",
       "exported_at": "2026-09-18T20:17:52.987974"
     },
     {
       "name": "pre-write-guard.py",
       "purpose": "PreToolUse write/edit/notebook_edit consolidated guard (arch+tool-args[+signature+mermaid])",
-      "export_hash": "14C904B8305A4E33145C957B2820C495407ED4B9F95D4ADF09C89B79B0BBAA85",
+      "export_hash": "407F6E145DB09B5627970A8323D7D8B01EF8B4036947EFC3F3DE8FE258E672AD",
       "exported_at": "2026-09-18T20:17:52.988013"
     },
     {
@@ -455,13 +460,13 @@
     {
       "name": "render-user-hooks.py",
       "purpose": "Install-time renderer — expands hooks.v1.json into user-level config.json hooks",
-      "export_hash": "B50BE7CCA40FECBB26E5B3714544ED599930473AC74B43E4517542EED0B88BFC",
+      "export_hash": "E33D127DBB6D4C6D70862D8D425C8E78161997BBF2D4B81CEFFD62470D61AA71",
       "exported_at": "2026-09-18T20:02:25.613042"
     },
     {
       "name": "session-start.py",
       "purpose": "SessionStart consolidated hook (constraint-pinning+context-budget)",
-      "export_hash": "E10FFF02A31B557DEEFF1FE4D0FC11D4DEF86B907F944D3B4FFB7B1DACB3237B",
+      "export_hash": "AEE9E3084057B17B58B825004B3EB4FB6B0DA8088BBB53DA5ECB552DAC68D4B1",
       "exported_at": "2026-09-18T20:17:52.988129"
     },
     {
@@ -473,13 +478,13 @@
     {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop)",
-      "export_hash": "D80D45310DC0D9E924877670448497BAD6B79CA70689F1ECC12BB6C5F45CEDFF",
+      "export_hash": "2EEC63AB23879A1CAD555D76EE2464DC8427AEDF8A0F03C5764B7E098A1D89BE",
       "exported_at": "2026-09-18T20:17:52.988164"
     },
     {
       "name": "user-prompt.py",
       "purpose": "UserPromptSubmit consolidated hook (constraint-pinning+nudge+memory-retrieval)",
-      "export_hash": "99C1DF6FC7738125D4B2BB4A7E8348CEA56AB818C489F16E3F72D85CFDDFCE85",
+      "export_hash": "F30276892E1FD5B0FD2E2B624D928359DA74E574484FB696EEEC4955D9B6350C",
       "exported_at": "2026-09-18T20:17:52.988093"
     },
     {

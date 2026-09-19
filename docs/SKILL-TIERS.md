@@ -130,6 +130,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
 | `impeccable` | Vocabulário de design para interfaces frontend: evita estéticas genéricas, define contexto antes de construir, aplica comandos de design (polish, audit, distill, etc.) | 1593 | Projetar, refatorar, auditar ou polir UI/UX |
+| `brag` | Gera launch video 15-25s do projeto via Hyperframes: inspect → storyboard → compose → render (+refs defer; assets mp3/ogg bundled; needs Node+ffmpeg) | ~2200 | "/brag", launch video, compartilhar o que construiu |
 
 ## Infra / Quality / Release
 
