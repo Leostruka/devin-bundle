@@ -137,16 +137,18 @@ Principais grupos:
 | Grupo | Skills principais | Uso |
 |---|---|---|
 | Ideação e decisão | `grilling`, `planning`, `prototype`, `research` | Tornar uma ideia precisa antes de construir |
-| Planejamento | `planning`, `planning`, `execution` | Gerar PRD, tickets verticais ou plano detalhado |
+| Planejamento | `planning`, `execution` | Gerar PRD, tickets verticais ou plano detalhado |
 | Implementação | `execution`, `testing`, `architecture` | Construir comportamento test-first em módulos profundos |
-| Execução autônoma | `execution`, `gates`, `gates` | Trabalhar sem supervisão contínua com gates verificáveis |
-| Qualidade | `code-review`, `code-review`, `testing`, `gates` | Revisar spec, padrões, testes e evidências |
-| Diagnóstico | `debugging`, `debugging` | Reproduzir, localizar causa raiz e corrigir regressões |
-| Arquitetura | `architecture`, `architecture`, `architecture` | Aprofundar módulos e reduzir dependências rasas |
-| Contexto e memória | `context-hygiene`, `context-hygiene`, `memory-management`, `memory-management`, `handoff` | Controlar contexto e preservar conhecimento útil |
-| Git e entrega | `git-workflows`, `git-workflows`, `gh`, `code-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
+| Execução autônoma | `execution`, `gates` | Trabalhar sem supervisão contínua com gates verificáveis |
+| Qualidade | `code-review`, `testing`, `gates` | Revisar spec, padrões, testes e evidências |
+| Diagnóstico | `debugging` | Reproduzir, localizar causa raiz e corrigir regressões |
+| Arquitetura | `architecture` | Aprofundar módulos e reduzir dependências rasas |
+| Pesquisa e varredura | `research`, `scan`, `context7`, `ai-coding-dictionary` | Investigar com fontes ou varrer o codebase por objetivo |
+| Contexto e memória | `context-hygiene`, `memory-management`, `handoff` | Controlar contexto e preservar conhecimento útil |
+| Git e entrega | `git-workflows`, `gh`, `code-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
 | Infra e especialidades | `security`, `a11y-audit`, `api-spec`, `database`, `e2e-testing`, `i18n`, `docker`, `performance`, `observability-quality` | Aplicar processos especializados |
-| Extensão do harness | `project-bootstrap`, `devin-config`, `project-bootstrap`, `devin-config`, `self-improvement` | Configurar e evoluir o ecossistema |
+| Extensão do harness | `project-bootstrap`, `devin-config`, `self-improvement` | Configurar e evoluir o ecossistema |
+| Desktop e dados | `computer-use`, `data-analyst`, `ai-tools`, `brag` | GUI/terminal/browser, análise de dados, ML local, vídeo de lançamento |
 
 ### 3. Perfis de subagentes
 
@@ -203,6 +205,17 @@ Há 26 scripts Python em `scripts/`: 9 entry points de hooks (6 consolidados que
 | `export.ps1` / `export.sh` | Configuração viva → bundle |
 | `audit.py` | Consistência estrutural, segurança e sincronização |
 
+### 7. Extensões
+
+Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills homônimas:
+
+| Extensão | O que faz |
+|---|---|
+| `computer-use` | Automação de GUI (screenshot, mouse, teclado, hints UIA), leitura/controle de terminais (WT/conhost/mintty) e browser via CDP/BiDi |
+| `ai-tools` | Ferramentas ML locais offline-first (abliteration PoC), JSON stdout |
+| `media-tools` | Utilitários de mídia |
+| `rust-core` | Extensão híbrida PyO3 (`fast_math.pyd`) — build no install |
+
 ## Fluxo operacional completo
 
 ### Preparação única de um projeto
@@ -210,7 +223,7 @@ Há 26 scripts Python em `scripts/`: 9 entry points de hooks (6 consolidados que
 Em um projeto ainda não preparado:
 
 1. abra o Devin CLI na raiz;
-2. peça para executar `project-bootstrap` para a configuração geral ou `project-bootstrap` para o fluxo de engenharia baseado em spec, tickets e triagem;
+2. peça para executar `project-bootstrap` (modo setup) para a configuração geral ou `project-bootstrap` (modo eng-skills) para o fluxo de engenharia baseado em spec, tickets e triagem;
 3. revise os arquivos criados em `.devin/`;
 4. execute os checks de baseline do projeto;
 5. versione apenas configuração não sensível.
@@ -325,13 +338,13 @@ O loop não faz push sem autorização e não trabalha diretamente em `main`/`ma
 | Issues externos brutos | `intake` | Transformar em issue agent-ready → `execution` |
 | Projeto grande e nebuloso | `planning` | Resolver decision tickets → PRD → tickets |
 | Dúvida que precisa de código executável | `prototype` | Preservar aprendizado → voltar ao PRD |
-| Pergunta factual extensa | `research` ou `research` | Gerar evidência citada → alimentar decisão |
+| Pergunta factual extensa | `research` | Gerar evidência citada → alimentar decisão |
 | Informação depende de outra pessoa | `planning` Questionnaire | Coletar respostas → Spec/Grilling |
 | Conflito Git em andamento | `git-workflows` | Resolver por intenção → verificar operação |
 
 ## Arquitetura: módulos profundos
 
-O ecossistema segue a heurística de John Ousterhout: um módulo deve esconder muita complexidade atrás de uma interface pequena. `architecture` procura módulos rasos, pass-throughs, fan-out de dependências, wrappers sem abstração e contratos espalhados. `architecture` ajuda a redesenhar a seam escolhida.
+O ecossistema segue a heurística de John Ousterhout: um módulo deve esconder muita complexidade atrás de uma interface pequena. `architecture` procura módulos rasos, pass-throughs, fan-out de dependências, wrappers sem abstração e contratos espalhados, e ajuda a redesenhar a seam escolhida.
 
 Uso recomendado:
 
@@ -399,8 +412,10 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 {{BUNDLE_REPO}}/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 6 perfis customizados
-├── skills/                    # 50 workflows invocáveis
+├── skills/                    # 51 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
+├── extensions/                # ferramentas locais (computer-use, ai-tools, media-tools, rust-core)
+├── data/                      # modelos, integrações e metadados versionados
 ├── .devin/                    # configuração e conhecimento deste projeto
 │   ├── docs/                  # mapas, guias (SKILL-TIERS, MODEL-GUIDE, TOOLS-MAP…)
 │   ├── plans/                 # planos datados
@@ -524,6 +539,7 @@ Implemente o ticket 03 usando TDD e faça code-review nos eixos Standards e Spec
 Execute o execution para .devin/scratch/minha-feature em um worktree isolado.
 Diagnostique esta falha; primeiro crie um comando que a reproduza de forma confiável.
 Audite a arquitetura e encontre módulos rasos que podem virar módulos profundos.
+Execute scan para mapear dead code neste repositório e gere o relatório priorizado.
 Registre esta regra de negócio na memória do projeto e me mostre o texto antes de salvar.
 ```
 
