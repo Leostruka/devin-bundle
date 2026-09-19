@@ -49,3 +49,14 @@ validate 131/131; pytest 442 passed, 1 skipped (baseline 432 — +10 testes novo
 Refs antigas→canônicas varridas em AGENTS/README/docs/agents/scripts/skills/tests;
 fixtures renomeadas (devin-config, knowledge-modeling); NOTE_SUBDIR alinhados;
 audit.py new_skills → nomes merged; leo-detail.md → orchestration-detail.md.
+
+## G4 — AGENTS.md minificado 18.3KB→10.9KB (2026-10-31)
+
+OUTCOME: merges do audit executados — 12+17+21→12, 15+16→15, 19+23+24+26→19,
+18+22→18, 3+4→3; regras-pointer (9, 27) e corpos terse comprimidos; aliases de
+número preservados no índice (refs externas intactas).
+CHECK: `wc -c AGENTS.md` + `python audit.py` + `python -m pytest tests/ -q`
+EXPECT: ≤11264 bytes; rule_count=28; 0 errors; suite verde
+EVIDENCE: 11199 bytes (10.9KB, −39%); audit Errors=0; 442 passed, 1 skipped.
+PINNED_CONSTRAINTS alinhado aos números canônicos; README "20 regras"→"28
+entradas (20 corpos + 8 aliases)"; manifest hash de constraint-pinning resync.

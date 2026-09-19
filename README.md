@@ -105,7 +105,7 @@ flowchart TD
 
 ### 1. Regras globais
 
-`AGENTS.md` é carregado em toda sessão e contém 20 regras consolidadas, formuladas principalmente como restrições e complementadas por procedimentos verificáveis. As regras centrais determinam que o agente:
+`AGENTS.md` (~11KB) é carregado em toda sessão e contém 28 entradas de regra — 20 corpos consolidados + 8 aliases de regras fundidas — formuladas principalmente como restrições e complementadas por procedimentos verificáveis. As regras centrais determinam que o agente:
 
 - descubra e invoque skills antes de ações não triviais;
 - execute pedidos claros sem reformular ou oferecer opinião não solicitada;

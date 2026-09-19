@@ -377,7 +377,7 @@
     {
       "name": "constraint-pinning.py",
       "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints",
-      "export_hash": "00B869D843010EE4061220C6D0B8B5E66ACC958FFE2D5ACB085C320A4DE610A2",
+      "export_hash": "17BF65C2AF53EB62AC531215421A73F40E1C661551EAA9AA06A749649704EC6E",
       "exported_at": "2026-09-08T21:39:22.430444"
     },
     {
