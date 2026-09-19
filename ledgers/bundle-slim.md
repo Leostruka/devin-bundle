@@ -76,3 +76,18 @@ EXPECT: 0 errors; suite verde; sintaxe OK
 EVIDENCE: audit Errors=0; 442 passed, 1 skipped; bash -n OK; hit-log
 verificado end-to-end (allow+block gravados); doctor gates só rodam quando
 `devin` está no PATH.
+
+## G6 — Verificação final (2026-10-31)
+
+OUTCOME: plano de 6 fases completo; todos os gates medidos verdes.
+CHECK: `python audit.py` + `python -m pytest tests/ -q` + `bash -n install.sh` + gates do plano
+EXPECT: 0 errors; suite verde; sintaxe OK; AGENTS.md ≤11KB; ~50 skills; exec ≤200ms
+EVIDENCE: audit Errors=0 (13 warnings = drift live-vs-bundle pré-install +
+pycache, classes conhecidas); 442 passed, 1 skipped; bash -n OK;
+AGENTS.md 11199B (10.9KB); 48 skills; exec hook ~191ms (pre-exec-guard 90 +
+post-exec 101, validate-tool-args in-process). Branch: 29 commits,
+226 files, +6501/−7042 vs feat/hybrid-rust-extensions.
+Resumo do programa: hooks 22→9 bindings (exec 486→191ms, −61%); skills
+83→48 c/ progressive disclosure; AGENTS.md 18.3→10.9KB; hooks fonte única
+(hooks.v1.json + render); adoção nativa (plugin manifest, permissions.deny,
+sandbox doc, devin doctor, hit-log p/ decisão data-driven em 1 semana).
