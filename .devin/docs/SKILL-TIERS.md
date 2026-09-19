@@ -91,6 +91,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
 | `research` | Subagent investiga c/ citações + multi-pass deep search | 651 | Investigação c/ fontes, "deep search" |
+| `scan` | Codebase-wide investigation por objetivo (equiv. `/scan` do Devin Cloud): Plan→Shard→Map→Reduce c/ subagents → relatório priorizado em `.devin/scans/` | — | "ache dead code", gaps de teste, auditoria de migração/estilo |
 | `context7` | Docs atualizadas de libs | 339 | Pergunta sobre lib |
 | `youtube-fetcher` | YouTube URL + caption JSON → transcript raw + metadata em `.devin/notes/youtube/` | 1334 | Ingerir transcript de vídeo fornecido pelo usuário |
 | `ai-coding-dictionary` | Definições canônicas para jargão de AI coding | 346 | Alinhar termos como harness engineering |
