@@ -13,7 +13,6 @@ EXT = Path(__file__).resolve().parents[3] / "extensions" / "system-control"
 
 def load(name):
     sys.path.insert(0, str(EXT))
-    sys.modules.pop(name, None)
     return importlib.import_module(name)
 
 

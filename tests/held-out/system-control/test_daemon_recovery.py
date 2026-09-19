@@ -15,7 +15,6 @@ PY = sys.executable
 
 def load(name):
     sys.path.insert(0, str(EXT))
-    sys.modules.pop(name, None)
     return importlib.import_module(name)
 
 

@@ -171,8 +171,8 @@ if os.name == "nt":
             _k32 = k32
         return _k32
 
-    def _job_assign(proc):
-        """Assign proc to a KILL_ON_JOB_CLOSE job; raise on failure."""
+    def _create_job():
+        """New KILL_ON_JOB_CLOSE job object handle; raise on failure."""
         k32 = _kernel32()
         job = k32.CreateJobObjectW(None, None)
         if not job:
@@ -184,14 +184,23 @@ if os.name == "nt":
                     job, _EXT_LIMIT_INFO, ctypes.byref(info),
                     ctypes.sizeof(info)):
                 raise RuntimeError("SetInformationJobObject failed")
+        except BaseException:
+            k32.CloseHandle(job)
+            raise
+        return job
+
+    def _job_assign(proc):
+        """Assign proc to a KILL_ON_JOB_CLOSE job; raise on failure."""
+        job = _create_job()
+        try:
             handle = getattr(proc, "_handle", None)
             if handle is None:
                 raise RuntimeError("process handle unavailable")
-            if not k32.AssignProcessToJobObject(
+            if not _kernel32().AssignProcessToJobObject(
                     job, wintypes.HANDLE(int(handle))):
                 raise RuntimeError("AssignProcessToJobObject failed")
         except BaseException:
-            k32.CloseHandle(job)
+            _kernel32().CloseHandle(job)
             raise
         return job
 
@@ -484,7 +493,11 @@ def spawn(argv: list, *, cwd=None, env_allow=None, timeout_s=30,
               "stdout": be.PIPE, "stderr": be.PIPE,
               "shell": False, "bufsize": 0}
     if os.name == "nt":
-        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        # CREATE_SUSPENDED (0x4, not exported by the subprocess module)
+        # closes the spawn->job-assign race: the child cannot run (or
+        # spawn grandchildren) before the job owns it.
+        kwargs["creationflags"] = (subprocess.CREATE_NEW_PROCESS_GROUP
+                                   | 0x00000004)
     else:
         kwargs["start_new_session"] = True
     proc = be.Popen(**kwargs)
@@ -500,6 +513,33 @@ def spawn(argv: list, *, cwd=None, env_allow=None, timeout_s=30,
         except Exception:
             pass
         raise
+    if os.name == "nt":
+        try:
+            import sc_windows
+            sc_windows.resume_main_thread(proc.pid)
+        except BaseException:
+            # Suspended proc is still killable; drop the job too so
+            # nothing owns a dead tree. Original exception preserved.
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            try:
+                proc.wait(timeout=5)
+            except Exception:
+                pass
+            job = tree.get("job")
+            if job is not None:
+                try:
+                    _kernel32().TerminateJobObject(job, 1)
+                except Exception:
+                    pass
+                try:
+                    _kernel32().CloseHandle(job)
+                except Exception:
+                    pass
+                tree["closed"] = True
+            raise
     handle = {"process": proc, "pid": proc.pid, "start_time": start_ns,
               "owner_request_id": owner_request_id, "tree": tree,
               "readers": []}

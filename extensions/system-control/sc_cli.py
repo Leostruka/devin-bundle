@@ -20,7 +20,8 @@ import sc_sessions
 
 _COMMANDS = ("capabilities", "process-list", "process-get",
              "service-status", "preflight", "exec",
-             "sessions", "session", "events", "file")
+             "sessions", "session", "events", "file",
+             "process", "service")
 
 
 def _emit(obj):
@@ -521,6 +522,75 @@ def main(argv=None) -> int:
             return _verified(contract.result(
                 ok=True, status="verified", request_id=request_id,
                 backend=name, value=value), request_id)
+        if cmd == "process":
+            if not rest or rest[0] != "wait":
+                raise contract.InvalidRequest(
+                    "process requires the wait subcommand")
+            opts = _opts(rest[1:], {"pid", "start-time", "timeout"})
+            if "pid" not in opts or "start-time" not in opts:
+                raise contract.InvalidRequest(
+                    "process wait requires --pid and --start-time")
+            identity = {"pid": _int_arg(opts["pid"], "--pid"),
+                        "start_time": _int_arg(opts["start-time"],
+                                               "--start-time")}
+            try:
+                timeout_s = float(opts.get("timeout", "30"))
+            except ValueError:
+                raise contract.InvalidRequest(
+                    "--timeout must be a number")
+            if not math.isfinite(timeout_s) or timeout_s < 0:
+                raise contract.InvalidRequest(
+                    "--timeout must be non-negative and finite")
+            wait_fn = getattr(backend, "wait_process", None)
+            if wait_fn is None:
+                return _reply(1, "unknown", request_id, name,
+                              "backend lacks process.wait")
+            res = wait_fn(identity, timeout_s)
+            ok = bool(res.get("ok"))
+            status = "verified" if ok else res.get("status", "unknown")
+            _emit(contract.result(
+                ok=ok, status=status, request_id=request_id,
+                backend=name, value=res,
+                error=None if ok else res.get("error")))
+            if ok:
+                return 0
+            return 2 if status == "rejected" else 1
+        if cmd == "service":
+            if not rest or rest[0] != "restart":
+                raise contract.InvalidRequest(
+                    "service requires the restart subcommand")
+            opts = _opts(rest[1:], {"name", "allowed",
+                                    "confirmation-id", "request-id"})
+            for req in ("name", "allowed", "confirmation-id",
+                        "request-id"):
+                if req not in opts:
+                    raise contract.InvalidRequest(
+                        f"service restart requires --{req}")
+            allowed = [s.strip() for s in opts["allowed"].split(",")
+                       if s.strip()]
+            if not allowed:
+                raise contract.InvalidRequest(
+                    "--allowed must list at least one service")
+            _confirm("service.restart",
+                     {"name": opts["name"], "allowed": allowed},
+                     opts, request_id)
+            restart_fn = getattr(backend, "restart_service", None)
+            if restart_fn is None:
+                return _reply(1, "unknown", request_id, name,
+                              "backend lacks service.restart")
+            res = restart_fn(opts["name"], allowed=allowed)
+            ok = bool(res.get("ok"))
+            status = ("verified" if ok
+                      else res.get("status", "unknown"))
+            _emit(contract.result(
+                ok=ok, status=status, request_id=request_id,
+                backend=name, value=res,
+                precondition=res.get("precondition"),
+                postcondition=res.get("postcondition"),
+                error=None if ok else res.get("error")))
+            if ok:
+                return 0
+            return 2 if status == "rejected" else 1
         if cmd == "service-status":
             if len(rest) != 1 or rest[0].startswith("--"):
                 raise contract.InvalidRequest(

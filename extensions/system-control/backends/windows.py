@@ -39,16 +39,33 @@ def _cim_epoch(value):
             f"unparseable CreationDate: {value!r}")
 
 
+def _native():
+    """Import sc_windows when available; None otherwise."""
+    try:
+        import sc_windows
+        return sc_windows
+    except Exception:
+        return None
+
+
 def capabilities():
     ps = _powershell()
     sc = shutil.which("sc")
+    nw = _native()
+    scm = bool(nw) and nw.scm_available()
     return [
         {"name": "process.observe", "supported": bool(ps),
          "reason": None if ps else "powershell not found",
          "mode": "subprocess"},
+        {"name": "process.wait", "supported": bool(nw),
+         "reason": None if nw else "sc_windows unavailable",
+         "mode": "native"},
         {"name": "service.observe", "supported": bool(sc),
          "reason": None if sc else "sc.exe not found",
          "mode": "subprocess"},
+        {"name": "service.restart", "supported": scm,
+         "reason": None if scm else "scm unavailable",
+         "mode": "scm"},
         {"name": "events.process", "supported": bool(ps),
          "reason": None if ps else "powershell not found",
          "mode": "poll"},
@@ -102,13 +119,46 @@ def process_get(pid, start_time=None):
     pid = _pid(pid)
     if start_time is not None:
         start_time = _nonneg_int(start_time, "start_time")
-    for proc in process_list(pid):
+    nw = _native()
+    nw_err = None
+    if nw is not None:
+        try:
+            return nw.process_get(pid, start_time)
+        except (LookupError, PermissionError) as exc:
+            nw_err = exc  # CIM may still see protected/dead pids
+        except Exception:
+            pass  # native layer degraded: fall back to CIM
+    try:
+        procs = process_list(pid)
+    except Exception:
+        if nw_err is not None:
+            raise nw_err
+        raise
+    for proc in procs:
         if proc["pid"] == pid:
             if (start_time is not None
                     and proc["start_time"] != start_time):
                 raise LookupError("stale pid identity")
             return proc
+    if nw_err is not None:
+        raise nw_err
     raise LookupError(f"process not found: {pid}")
+
+
+def wait_process(identity, timeout_s):
+    """Handle-wait on {pid, start_time}; native only."""
+    nw = _native()
+    if nw is None:
+        raise BackendUnavailable("sc_windows unavailable")
+    return nw.wait_process(identity, timeout_s)
+
+
+def restart_service(svc_name, *, allowed):
+    """SCM stop/start; allowlist enforced inside sc_windows first."""
+    nw = _native()
+    if nw is None:
+        raise BackendUnavailable("sc_windows unavailable")
+    return nw.restart_service(svc_name, allowed=allowed)
 
 
 def service_status(name):

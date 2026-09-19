@@ -8,7 +8,7 @@
 - Task 4: complete (persistent owned sessions, review clean after rework)
 - Task 5: complete (bounded event streams, review clean after rework)
 - Task 6: complete (verified file ops, review clean after rework)
-- Task 7: pending
+- Task 7: complete (native Windows adapter, review clean after rework)
 - Task 8: pending
 - Task 9: pending
 - Task 10: pending
@@ -19,9 +19,10 @@
 - 3b3aa5e: branch base
 - b02cdec: Task 1 complete — safe recovery point
 - Task 2: b8867ab — safe recovery point
-- Task 3: complete — safe recovery point
+- Task 3: cee94aa — safe recovery point
 - Task 4: 75d179d — safe recovery point
 - Task 5: 80ae8e6 — safe recovery point
+- Task 6: bcca26f — safe recovery point
 
 ## Detail Log
 QA precondition: worktree created at `D:/Programing/ai_workspace/devin-bundle-system-control`.
@@ -48,3 +49,9 @@ Task 5: committed 80ae8e6.
 Task 6: held-out `test_file_integrity.py` authored first (5 contracts).
 Task 6: review Spec/Standards FAIL — dirfd opens missing, non-atomic overwrite, streamed-hash trust; rework closed all 10.
 Task 6: 829 passed, 3 skipped; audit 0 errors; held-out 5/5.
+Task 6: committed bcca26f.
+Task 7: held-out `test_windows_adapter.py` authored first (5 contracts, real host).
+Task 7: review Spec PASS/Standards FAIL — double CloseHandle, argtypes, fake recursion; rework closed all 6.
+Task 7: T3 deferred Popen->Job race CLOSED via CREATE_SUSPENDED + Toolhelp resume.
+Task 7: lead fixed held-out epoch bug + os.kill probe + module-pop pollution; CIM fallback ordering.
+Task 7: 863 passed, 3 skipped; audit 0 errors; held-out 5/5.

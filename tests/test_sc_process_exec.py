@@ -123,7 +123,8 @@ def test_spawn_popen_kwargs(tmp_path):
     assert kw["args"][0] == PY
     assert Path(kw["cwd"]) == tmp_path.resolve()
     if os.name == "nt":
-        assert kw["creationflags"] == subprocess.CREATE_NEW_PROCESS_GROUP
+        assert kw["creationflags"] == (
+            subprocess.CREATE_NEW_PROCESS_GROUP | 0x00000004)
     else:
         assert kw["start_new_session"] is True
 
