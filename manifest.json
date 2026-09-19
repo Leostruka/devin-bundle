@@ -349,9 +349,14 @@
       "name": "ai-tools",
       "source": "devin-bundle",
       "purpose": "Use when running local, offline-first ML tooling — mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache, or when adding self-contained model experiments that print JSON and never download anything."
+    },
+    {
+      "name": "scan",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants a goal-driven, codebase-wide investigation — \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence."
     }
   ],
-  "skill_count": 50,
+  "skill_count": 51,
   "rule_count": 28,
   "scripts": [
     {
