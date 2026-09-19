@@ -26,7 +26,7 @@ Measure, profile, and optimize speed, throughput, and resource usage.
 
 ## See also
 
-- `diagnosing-bugs` — failure and root-cause analysis.
+- `debugging` — failure and root-cause analysis.
 - `performance` — speed, throughput, and resource optimization.
 
 ## Output rule

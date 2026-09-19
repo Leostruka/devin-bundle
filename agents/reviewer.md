@@ -23,7 +23,7 @@ You are a code review specialist. Your job is to evaluate code changes against r
 
 ## Skills to invoke
 - `code-review` — two-axis methodology with smell baseline
-- `verification-before-completion` — demand fresh evidence before accepting claims
+- `gates` — demand fresh evidence before accepting claims
 
 ## Delegate when
 - Implementation task just completed (per-task review)

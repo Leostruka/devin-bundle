@@ -1,0 +1,12 @@
+[package]
+name = "fast-math"
+version = "0.1.0"
+edition = "2021"
+description = "Demo PyO3 micro-extension: CPU-bound math kernels for the devin-bundle hybrid extension layer"
+
+[lib]
+name = "fast_math"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.29", features = ["abi3-py39", "extension-module"] }

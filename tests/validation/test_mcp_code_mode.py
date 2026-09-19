@@ -6,7 +6,7 @@ import os
 BUNDLE_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 _spec = importlib.util.spec_from_file_location(
     "mcp_context_audit",
-    os.path.join(BUNDLE_ROOT, "skills", "mcp-context-audit", "scripts", "mcp-context-audit.py"),
+    os.path.join(BUNDLE_ROOT, "skills", "mcp-governance", "scripts", "mcp-context-audit.py"),
 )
 mc = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mc)

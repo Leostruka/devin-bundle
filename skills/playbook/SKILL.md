@@ -158,8 +158,8 @@ system, but you can approximate it:
 
 ## Cross-skills
 
-- Use `writing-for-agents` to ensure the playbook is written in an agent-readable style.
-- Use `self-extend` when a playbook grows into a reusable skill or rule.
+- Use `writing-skills` to ensure the playbook is written in an agent-readable style.
+- Use `devin-config` when a playbook grows into a reusable skill or rule.
 
 ## CLI-specific notes
 

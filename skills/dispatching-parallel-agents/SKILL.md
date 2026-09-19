@@ -237,7 +237,7 @@ After agents return:
 
 ## Cross-skills
 
-- If fanning out many subagents, invoke `context-window-hygiene` to keep the parent context lean.
+- If fanning out many subagents, invoke `context-hygiene` to keep the parent context lean.
 - If work spans sessions, invoke `handoff` to capture state before ending.
 
 ## Plan execution mode
@@ -272,7 +272,7 @@ digraph when_to_use {
     "Tasks mostly independent?" [shape=diamond];
     "Stay in this session?" [shape=diamond];
     "dispatching-parallel-agents (plan execution mode)" [shape=box];
-    "executing-plans" [shape=box];
+    "execution" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
@@ -280,7 +280,7 @@ digraph when_to_use {
     "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
     "Stay in this session?" -> "dispatching-parallel-agents (plan execution mode)" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+    "Stay in this session?" -> "execution" [label="no - parallel session"];
 }
 ```
 
@@ -358,7 +358,7 @@ digraph process {
 ### Setup
 
 Ensure the work happens in an isolated workspace: use
-/using-git-worktrees to create one or verify the existing one.
+/git-workflows to create one or verify the existing one.
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
 
@@ -430,7 +430,7 @@ conflicts that only emerge from implementation.
 
 In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the CLI default router (possibly paid). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: swe-2-max`, free) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin SWE-2 effort variants to stay within the bundle's free tier.
 
-**Effort-level routing:** pick the effort level that matches the task shape (see `effort-calibration`): **Medium** (`swe-2-medium`) for simple/bounded execution, **High** (`swe-2-high`) for multi-file work, **Max** (`swe-2-max`) for open-ended or judgment-heavy work.
+**Effort-level routing:** pick the effort level that matches the task shape (see `context-hygiene`): **Medium** (`swe-2-medium`) for simple/bounded execution, **High** (`swe-2-high`) for multi-file work, **Max** (`swe-2-max`) for open-ended or judgment-heavy work.
 
 **Use `subagent_general` (inherits parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free) for:**
 - Final whole-branch review — the judgment task that needs the most capability.

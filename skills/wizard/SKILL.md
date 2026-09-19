@@ -1,7 +1,7 @@
 ---
 name: wizard
 description: Use when a human must walk through a manual procedure such as provisioning, credentials, or a one-off cutover.
-triggers: [user, model]
+triggers: [user]
 ---
 # Wizard
 
@@ -45,4 +45,4 @@ Hold the bar the template sets: open the URL before asking for its value, use `a
 ## Cross-skills
 
 - Use `handoff` if the wizard must pause and resume in another session.
-- Use `project-memory` to capture the resulting configuration or decisions with user approval.
+- Use `memory-management` to capture the resulting configuration or decisions with user approval.

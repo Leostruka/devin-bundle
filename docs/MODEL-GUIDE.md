@@ -12,7 +12,7 @@ No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é u
 | **High** | `swe-2-high` | Tarefas que atravessam múltiplos arquivos, debugging bounded, decisões com várias constraints. **Default geral.** | **Free** |
 | **Max** | `swe-2-max` | Tarefas abertas, refatorações globais, long-horizon coding, decisão custosa/irreversível. | **Free** |
 
-**Regra prática:** comece no nível que corresponde à forma da tarefa. Suba um nível quando a verificação falhar, não antes. Ver `effort-calibration` para a base empírica.
+**Regra prática:** comece no nível que corresponde à forma da tarefa. Suba um nível quando a verificação falhar, não antes. Ver `context-hygiene` para a base empírica.
 
 ## Primary model (parent)
 
@@ -86,7 +86,7 @@ likely de reter constraints → pinning fires less often → comportamento corre
 ### Implicações para subagent dispatch
 
 1. **Context window**: a janela do subagent está em `data/bundle-models.json` (262K). Subagents podem fazer mais trabalho antes de precisar compaction. Fan-out econômico.
-2. **Self-compaction**: subagents podem rodar mais tempo sem perda de contexto. Menos necessidade de `context-folding` em subagents.
+2. **Self-compaction**: subagents podem rodar mais tempo sem perda de contexto. Menos necessidade de `context-hygiene` em subagents.
 3. **Conciso por design**: SWE-2 é treinado para output conciso. Não fightar com regras verbose. Rule 8 (telegraphic) alinha.
 4. **Coding strength**: para tarefas de coding (implementação, debugging, refactoring), o parent deve delegar para subagentes em vez de implementar inline.
 
@@ -208,7 +208,7 @@ System prompt + tool defs    ~???? tok (Devin runtime, não mensurável aqui)
 AGENTS.md                    ~???? tok (medir com context-budget.py)
 SKILL-TIERS.md (se lido)     ~???? tok
 Skills invocadas (1-3)       ~1000-9700 tok
-MCP tool defs (configured)   ~???? tok (medir com mcp-context-audit)
+MCP tool defs (configured)   ~???? tok (medir com mcp-governance)
 ─────────────────────────────────────────────
 Disponível para trabalho     consulte `context_window` em `data/bundle-models.json`
 ```

@@ -98,7 +98,7 @@ class TestRender:
         assert note.is_file()
         text = note.read_text(encoding="utf-8")
         assert "## Raw transcript" in text
-        assert "structured-knowledge-extraction" in text
+        assert "knowledge-modeling" in text
         assert "manual" in text
 
     def test_requires_approval_for_write(self, tmp_path):
@@ -200,7 +200,7 @@ class TestRender:
         project, src = _setup_project(tmp_path)
         result = run(["render", str(src), str(project)])
         assert result.returncode == 0, result.stderr
-        assert "structured-knowledge-extraction" in result.stdout
+        assert "knowledge-modeling" in result.stdout
         assert "## Next step" in result.stdout
 
     def test_no_partial_file_on_failure(self, tmp_path):

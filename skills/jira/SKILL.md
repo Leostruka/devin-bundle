@@ -5,7 +5,7 @@ allowed-tools:
   - mcp_call_tool
   - mcp_list_tools
   - ask_user_question
-triggers: [user, model]
+triggers: [user]
 ---
 
 # Jira operations via Atlassian Rovo MCP
@@ -174,10 +174,10 @@ mcp_call_tool(
 
 ## Cross-skills
 
-- Use `triage` when moving issues through a triage state machine.
-- Use `planning-pipeline` to turn Jira issues into specs or tickets.
-- Use `implement` once a Jira ticket is ready for code changes.
-- If you only need the Atlassian MCP for this task, use `mcp-lazy-enablement` to avoid leaving it active.
+- Use `intake` when moving issues through a triage state machine.
+- Use `planning` to turn Jira issues into specs or tickets.
+- Use `execution` once a Jira ticket is ready for code changes.
+- If you only need the Atlassian MCP for this task, use `mcp-governance` to avoid leaving it active.
 
 ## Troubleshooting
 

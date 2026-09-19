@@ -2,7 +2,7 @@
 name: youtube-fetcher
 description: Use when you need to turn a YouTube URL and provider-supplied caption/metadata JSON into a raw, timestamped transcript + metadata Markdown note under `.devin/notes/youtube/` for later structured extraction, without auto-installing dependencies, invoking yt-dlp/Whisper, or calling the network.
 version: 1.0.0
-triggers: [user, model]
+triggers: [user]
 ---
 
 # youtube-fetcher
@@ -14,7 +14,7 @@ Deterministic, stdlib-first capture of YouTube transcripts and metadata into a c
 - A user gives you a YouTube URL and asks for a raw transcript note.
 - A provider or fixture already hands you caption + metadata JSON.
 - You want a deterministic Markdown artifact that separates raw transcript from any summary or inference.
-- You intend to hand the note off to `structured-knowledge-extraction` for entity/relation extraction.
+- You intend to hand the note off to `knowledge-modeling` for entity/relation extraction.
 
 ## When NOT to use
 
@@ -52,9 +52,9 @@ After installation the helper is available at `~/.config/devin/skills/youtube-fe
 5. **Truthful language and caption type.** The note records the language and caption type supplied by the provider. Missing values are recorded as `unknown`; no value is invented.
 6. **Duplicate preservation unless explicitly approved.** An existing note is never overwritten unless `--overwrite` is given in addition to `--write --approve`.
 7. **Timestamps are preserved and validated, not fabricated.** Each caption line keeps its start time; the rendered Markdown only includes timestamps that exist in the source. Negative or non-finite timestamps are rejected.
-8. **Raw transcript stays separate from summaries/inferences.** The `## Raw transcript` section contains only the provided text. Summaries or interpretations go through `structured-knowledge-extraction`, not into this note.
+8. **Raw transcript stays separate from summaries/inferences.** The `## Raw transcript` section contains only the provided text. Summaries or interpretations go through `knowledge-modeling`, not into this note.
 9. **Containment and atomic writes.** Output is written under the configured output directory only (`youtube_fetcher.output_dir` in `data/bundle-integrations.json`, or `BUNDLE_YOUTUBE_OUTPUT_DIR`, defaulting to `.devin/notes/youtube/`). Symlink components that would escape the target directory are rejected, and the temporary file is removed on any failure.
-10. **Handoff to structured extraction.** Every note ends with a `## Next step` section documenting how to pass the raw note to `structured-knowledge-extraction`.
+10. **Handoff to structured extraction.** Every note ends with a `## Next step` section documenting how to pass the raw note to `knowledge-modeling`.
 
 ## Source and license attribution
 
@@ -68,6 +68,6 @@ After installation the helper is available at `~/.config/devin/skills/youtube-fe
 
 ## Cross-references
 
-- `/structured-knowledge-extraction` — extract entities, relations, and evidence from the raw note produced by this skill.
+- `/knowledge-modeling` — extract entities, relations, and evidence from the raw note produced by this skill.
 - `/research` — verify upstream source claims and integration options.
-- `/mcp-context-audit` — measure tool-definition cost before enabling any MCP-based fetch provider.
+- `/mcp-governance` — measure tool-definition cost before enabling any MCP-based fetch provider.

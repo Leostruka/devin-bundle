@@ -64,11 +64,13 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (8 eventos, 17 scripts)
+## Hooks (8 eventos, 18 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
 | PreToolUse | `^exec$` | destructive-gate.py | Bloqueia ops destrutivas |
+| PreToolUse | `^exec$` | architecture-gate.py | Bloqueia mutações sem manifesto |
+| PreToolUse | `^(write\|edit\|notebook_edit)$` | architecture-gate.py | Bloqueia edits sem ARCHITECTURE_MANIFEST |
 | PreToolUse | `^exec$` | check-ai-signature.py | Bloqueia assinaturas AI |
 | PreToolUse | `^exec$` | check-push-green.py | Bloqueia push sem green |
 | PreToolUse | `^(write\|edit)$` | check-ai-signature.py | Bloqueia assinaturas AI em writes |
@@ -103,12 +105,13 @@ subagent_general — todos os 7 perfis validados.
 | AGENTS.md | `./AGENTS.md` | `~/.config/devin/AGENTS.md` | Regras globais (20 regras) |
 | config.json | `./config.json` | `~/.config/devin/config.json` | Modelo, hooks, theme |
 | mcp_config.json | `./mcp_config.json` | `~/.config/devin/mcp_config.json` | MCP servers |
-| hooks.v1.json | `./hooks.v1.json` | `~/.config/devin/hooks.v1.json` | Hooks legacy (backup) |
+| hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks; também template `.devin/` |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
-| agents/ | `./agents/` | `~/.config/devin/agents/` | 5 perfis customizados |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 83 skills |
+| agents/ | `./agents/` | `~/.config/devin/agents/` | 6 perfis user-level |
+| .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 48 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 17 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 26 scripts Python + 1 JS |
 | MODEL-GUIDE.md | `./MODEL-GUIDE.md` | — | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./SKILL-TIERS.md` | — | Discovery por domínio + custos |
 | TOOLS-MAP.md | `./TOOLS-MAP.md` | — | Este arquivo |
@@ -130,7 +133,7 @@ O bundle carrega servidores MCP a partir de `mcp_config.json` no Devin home do u
 - Tool count por server < 10-15 para >90% accuracy (Claude Haiku)
 - 20-30 tools para Sonnet 4
 - Verifique tool count com `mcp_list_tools` quando o servidor MCP estiver logado
-- Se >15 tools, considerar `mcp-context-audit` skill
+- Se >15 tools, considerar `mcp-governance` skill
 
 ## Modos do Devin CLI
 
@@ -173,7 +176,7 @@ SKILL-TIERS.md (se lido)     ~1782 tok (0.89%)
 MODEL-GUIDE.md (se lido)     ~3711 tok (1.86%)
 TOOLS-MAP.md (se lido)       ~2478 tok (1.24%)
 Skills invocadas (1-3)       ~1000-9700 tok (0.5-4.85%)
-MCP tool defs (configured)   ~???? tok (medir com mcp-context-audit)
+MCP tool defs (configured)   ~???? tok (medir com mcp-governance)
 ─────────────────────────────────────────────
 Total fixo (sem docs opt)    ~5605 tok (2.80%)
 Total c/ docs opt            ~13576 tok (6.79%)

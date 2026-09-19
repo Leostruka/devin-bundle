@@ -24,7 +24,7 @@ scripts, or config that could be exploited):
 | Push-without-green blocking | `check-push-green.py` hook | PreToolUse (exec) |
 | Post-compaction re-priming | `constraint-pinning.py` hook | PostCompaction |
 | Refinement review prompt | `refine-review-prompt.py` hook | Stop |
-| Reward hacking guard | `primeagent-reference` Refine mode guardrails | Self-improvement loops |
+| Reward hacking guard | `self-improvement` Refine mode guardrails | Self-improvement loops |
 | Untrusted code warning | Rule 13 in AGENTS.md | All sessions |
 
 ## What This Bundle Does NOT Protect Against

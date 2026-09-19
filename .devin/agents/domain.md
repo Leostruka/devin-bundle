@@ -27,6 +27,6 @@ This is a single-context repository:
 
 ## Usage
 
-Use glossary terms consistently in plans, tickets, tests, and changes. If a required concept is absent or ambiguous, invoke `domain-modeling` before adding competing terminology.
+Use glossary terms consistently in plans, tickets, tests, and changes. If a required concept is absent or ambiguous, invoke `knowledge-modeling` before adding competing terminology.
 
 Surface conflicts with accepted ADRs instead of silently overriding them.

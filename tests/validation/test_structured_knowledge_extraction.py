@@ -1,4 +1,4 @@
-"""Validation tests for structured-knowledge-extraction.
+"""Validation tests for knowledge-modeling.
 
 Agent-chosen infrastructure tests, distinct from held-out behavioral tests.
 """
@@ -11,8 +11,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).parents[2]
-SCRIPT = ROOT / "skills" / "structured-knowledge-extraction" / "scripts" / "extract.py"
-FIXTURE = ROOT / "tests" / "fixtures" / "structured-knowledge-extraction"
+SCRIPT = ROOT / "skills" / "knowledge-modeling" / "scripts" / "extract.py"
+FIXTURE = ROOT / "tests" / "fixtures" / "knowledge-modeling"
 
 
 def run(args, cwd=ROOT):
@@ -74,7 +74,7 @@ def test_extract_requires_approval(tmp_path):
     project, src = _setup_project(tmp_path)
     result = run(["extract", str(src), str(project), "--write"])
     assert result.returncode != 0
-    assert not (project / ".devin" / "notes" / "structured-knowledge-extraction" / "knowledge.json").exists()
+    assert not (project / ".devin" / "notes" / "knowledge-modeling" / "knowledge.json").exists()
 
 
 def test_extract_writes_under_devin(tmp_path):
@@ -82,7 +82,7 @@ def test_extract_writes_under_devin(tmp_path):
     before = {f: f.read_bytes() for f in project.rglob("*") if f.is_file() and f.relative_to(project).parts[0] != ".devin"}
     result = run(["extract", str(src), str(project), "--write", "--approve"])
     assert result.returncode == 0, result.stderr
-    note_dir = project / ".devin" / "notes" / "structured-knowledge-extraction"
+    note_dir = project / ".devin" / "notes" / "knowledge-modeling"
     assert (note_dir / "knowledge.json").is_file()
     assert (note_dir / "knowledge.md").is_file()
     for f, content in before.items():
@@ -110,7 +110,7 @@ def test_no_absolute_paths_in_outputs(tmp_path):
     assert "D:/" not in result.stdout
     assert "D:\\" not in result.stdout
     assert "C:" not in result.stdout
-    md = (project / ".devin" / "notes" / "structured-knowledge-extraction" / "knowledge.md").read_text(encoding="utf-8")
+    md = (project / ".devin" / "notes" / "knowledge-modeling" / "knowledge.md").read_text(encoding="utf-8")
     assert "D:/" not in md
     assert "D:\\" not in md
     assert "C:" not in md
@@ -125,7 +125,7 @@ def test_merge_no_duplicates(tmp_path):
     shutil.copy(FIXTURE / "more.md", more)
     result = run(["merge", str(more), str(project), "--write", "--approve"])
     assert result.returncode == 0, result.stderr
-    data = json.loads((project / ".devin" / "notes" / "structured-knowledge-extraction" / "knowledge.json").read_text(encoding="utf-8"))
+    data = json.loads((project / ".devin" / "notes" / "knowledge-modeling" / "knowledge.json").read_text(encoding="utf-8"))
     names = {e["name"] for e in data["entities"].values()}
     assert "Project Alpha" in names
     assert "Deployment" in names
@@ -141,7 +141,7 @@ def test_merge_no_duplicates(tmp_path):
     # Re-merging the same source must not duplicate provenance.
     result = run(["merge", str(src), str(project), "--write", "--approve"])
     assert result.returncode == 0, result.stderr
-    data2 = json.loads((project / ".devin" / "notes" / "structured-knowledge-extraction" / "knowledge.json").read_text(encoding="utf-8"))
+    data2 = json.loads((project / ".devin" / "notes" / "knowledge-modeling" / "knowledge.json").read_text(encoding="utf-8"))
     assert data2["entities"] == data["entities"]
     assert data2["sources"] == data["sources"]
     for e in data2["entities"].values():
@@ -206,7 +206,7 @@ def test_plan_writes_note_with_approval(tmp_path):
     project, _ = _setup_project(tmp_path)
     result = run(["plan", str(project), "--write", "--approve"])
     assert result.returncode == 0, result.stderr
-    plan_path = project / ".devin" / "notes" / "structured-knowledge-extraction" / "plan.md"
+    plan_path = project / ".devin" / "notes" / "knowledge-modeling" / "plan.md"
     assert plan_path.is_file()
     text = plan_path.read_text(encoding="utf-8")
     assert "Hyper-Extract" in text
@@ -311,7 +311,7 @@ def test_merge_preserves_per_source_hash_and_metadata(tmp_path):
     shutil.copy(FIXTURE / "more.md", more)
     result = run(["merge", str(more), str(project), "--write", "--approve"])
     assert result.returncode == 0, result.stderr
-    data = json.loads((project / ".devin" / "notes" / "structured-knowledge-extraction" / "knowledge.json").read_text(encoding="utf-8"))
+    data = json.loads((project / ".devin" / "notes" / "knowledge-modeling" / "knowledge.json").read_text(encoding="utf-8"))
     assert isinstance(data["sources"], dict)
     for s in ("notes.md", "more.md"):
         assert s in data["sources"]

@@ -79,7 +79,7 @@ GOOD_TRACES = [
         "prompt": "commite essas mudancas",
         "output": "Commitado.",
         "trajectory_log": [
-            {"name": "skill", "args": {"skill": "git-helper"}},
+            {"name": "skill", "args": {"skill": "git-workflows"}},
             {"name": "exec", "args": {"command": "git commit"}},
         ],
     },

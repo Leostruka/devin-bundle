@@ -13,7 +13,7 @@ triggers: [user, model]
 
 ## Step 0: Pre-flight verification
 
-Before declaring the branch ready, run a `verification-before-completion` gate: re-read the spec, run the checklist, and confirm every acceptance criterion is met. Invoke `review-cadence` first if you are unsure whether the final review should be deep or light.
+Before declaring the branch ready, run a `gates` gate: re-read the spec, run the checklist, and confirm every acceptance criterion is met. Invoke `execution` first if you are unsure whether the final review should be deep or light.
 
 ## Step 1: Verify Tests
 

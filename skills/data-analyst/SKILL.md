@@ -36,7 +36,7 @@ sources already configured in `mcp_config.json`.
 ## When NOT to Use
 
 - No MCP data source is configured — DANA requires a connected database
-- The question is about code, not data — use `deep-mode` or `grep`
+- The question is about code, not data — use `research` or `grep`
 - The task needs code changes, not analysis — use Normal mode
 - Quick file inspection (CSV/JSON on disk) — use `read` + `exec` directly
 

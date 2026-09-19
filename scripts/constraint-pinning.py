@@ -34,9 +34,8 @@ PINNED_CONSTRAINTS = """Pinned governance constraints (re-injected after context
 - Rule 12: Maximum precision - every claim verified against its primary source by reading it directly.
 - Rule 13: Devin CLI is not a security sandbox - run untrusted code externally, review changes before applying.
 - Rule 14: These constraints are pinned and survive compaction.
-- Rule 15: Refinement evidence must be reproducible - phantom guardrails occur in 25% of self-improvement runs.
-- Rule 16: Self-improvement loops produce 47-74% illusory gains - validate with held-out tests.
-- Rule 17: Don't deduce - verify with tools. Use read, exec, grep, glob before asserting anything.
+- Rule 15: Evidence standards - reproducible commands; held-out tests, never the agent's chosen tests (self-improvement gains are illusory).
+- Rule 12: Don't deduce - verify with tools. Use read, exec, grep, glob before asserting anything.
 - Rule 18: Keep the context window lean - default to clear over compact, keep rules files small, audit MCP servers before adding, paste large inputs to files not chat. Bigger window != better retrieval.
 - Rule 19: Never read secrets or sensitive env vars - never read, cat, echo, print, or output API keys, tokens, passwords, private keys, or .env secret values. Use them but never display their contents. If a key/env var is missing, empty, or doesn't behave as expected, say so without exposing the value."""
 

@@ -28,17 +28,16 @@ def test_attribution_is_boolean():
     assert isinstance(config['attribution'], bool)
 
 
-def test_hooks_events_are_known():
+def test_config_hooks_empty_single_source():
+    # hooks.v1.json is the single authored source; config.json.hooks is rendered
+    # at install time by scripts/render-user-hooks.py — a second copy would drift.
     config = load_json('config.json')
-    known = {'PreToolUse', 'PostToolUse', 'PreCompact', 'PostCompaction',
-             'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop', 'PermissionRequest'}
-    for event in config['hooks']:
-        assert event in known, f'unknown event {event}'
+    assert config['hooks'] == {}, 'config.json.hooks must stay empty (single source: hooks.v1.json)'
 
 
-def test_hooks_entries_have_required_fields():
-    config = load_json('config.json')
-    for event, entries in config['hooks'].items():
+def test_hooks_v1_entries_have_required_fields():
+    hooks = load_json('hooks.v1.json')
+    for event, entries in hooks.items():
         assert isinstance(entries, list)
         for entry in entries:
             assert isinstance(entry, dict)
@@ -46,8 +45,27 @@ def test_hooks_entries_have_required_fields():
             assert 'hooks' in entry
             assert isinstance(entry['hooks'], list)
             for h in entry['hooks']:
-                assert h.get('type') == 'command'
-                assert h.get('command')
+                assert h.get('type') in ('command', 'prompt')
+                assert h.get('command') or h.get('prompt')
+
+
+def test_render_user_hooks_expands_paths():
+    import subprocess
+    import sys
+    out = subprocess.run(
+        [sys.executable, os.path.join(REPO_ROOT, 'scripts', 'render-user-hooks.py'),
+         'HOME_TOKEN'],
+        capture_output=True, text=True)
+    assert out.returncode == 0
+    rendered = json.loads(out.stdout)
+    assert len(rendered) == 8
+    for entries in rendered.values():
+        for entry in entries:
+            for h in entry['hooks']:
+                cmd = h.get('command', '')
+                assert 'python scripts/' not in cmd
+                if cmd:
+                    assert 'HOME_TOKEN/scripts/' in cmd
 
 
 def test_mcp_config_schema():

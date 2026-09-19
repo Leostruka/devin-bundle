@@ -401,7 +401,7 @@ def _render_markdown(data, project_str, source_sha256):
         "",
         "## Next step",
         "",
-        "After reviewing the raw transcript, pass this note to `structured-knowledge-extraction` for entity, relation, and evidence extraction. Keep all summaries and inferences out of this file.",
+        "After reviewing the raw transcript, pass this note to `knowledge-modeling` for entity, relation, and evidence extraction. Keep all summaries and inferences out of this file.",
     ])
     return "\n".join(lines) + "\n"
 
