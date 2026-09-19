@@ -171,6 +171,7 @@ def _default_io():
         "focus": _focus_hwnd,
         "kbd": _keyboard,
         "screenshot_region": _screenshot_region,
+        "ocr": _ocr_image,
     }
 
 
@@ -386,6 +387,53 @@ def _screenshot_region(rect):
         return path
 
 
+def _ocr_image(path):
+    """Windows.Media.Ocr on a PNG → text, or None when winrt/engine fails.
+
+    Downscales when the bitmap exceeds the engine's max image dimension.
+    """
+    try:
+        import asyncio
+        import winrt.windows.storage.streams  # noqa: F401  (IRandomAccessStream types)
+        from winrt.windows.media.ocr import OcrEngine
+        from winrt.windows.storage import StorageFile, FileAccessMode
+        from winrt.windows.graphics.imaging import (
+            BitmapDecoder, BitmapTransform,
+        )
+    except Exception:
+        return None
+
+    async def _go():
+        f = await StorageFile.get_file_from_path_async(os.path.abspath(path))
+        s = await f.open_async(FileAccessMode.READ)
+        try:
+            dec = await BitmapDecoder.create_async(s)
+            eng = OcrEngine.try_create_from_user_profile_languages()
+            if eng is None:
+                return None
+            maxd = OcrEngine.max_image_dimension
+            w, h = dec.oriented_pixel_width, dec.oriented_pixel_height
+            if max(w, h) > maxd:
+                scale = maxd / max(w, h)
+                tr = BitmapTransform()
+                tr.scaled_width = int(w * scale)
+                tr.scaled_height = int(h * scale)
+                bmp = await dec.get_software_bitmap_async(
+                    dec.bitmap_pixel_format, dec.bitmap_alpha_mode, tr,
+                    0, 0)
+            else:
+                bmp = await dec.get_software_bitmap_async()
+            res = await eng.recognize_async(bmp)
+            return res.text
+        finally:
+            s.close()
+
+    try:
+        return asyncio.run(_go())
+    except Exception:
+        return None
+
+
 # -- read paths -----------------------------------------------------------------
 
 def _window_rect(hwnd):
@@ -469,8 +517,13 @@ def _conhost_send(pid, text, io):
 def _read_mintty(hwnd, io):
     rect = _window_rect(hwnd)
     path = io["screenshot_region"](rect)
-    return {"ok": True, "mode": "mintty", "image": path,
-            "note": "mintty exposes no text channel — image only"}
+    text = io["ocr"](path) if io.get("ocr") else None
+    if text is None:
+        return {"ok": True, "mode": "mintty", "image": path, "ocr": False,
+                "note": "mintty exposes no text channel — image only"}
+    sliced, _ = _slice(text)
+    return {"ok": True, "mode": "mintty", "image": path, "ocr": True,
+            "text": boundaries(sliced), "chars": len(text)}
 
 
 def read(tail=None, find=None, io=None):
