@@ -205,3 +205,77 @@ def test_cli_rejects_non_integer_flag(capsys):
     code, r, _ = _run(["process-get", "--pid", "abc",
                        "--start-time", "9"], capsys)
     assert code == 2 and r["status"] == "rejected"
+
+
+def _preflight_req(capability):
+    return json.dumps({
+        "version": 1, "request_id": "r1", "capability": capability,
+        "args": {}, "deadline_ms": 1000,
+        "policy": {"dry_run": False}})
+
+
+def test_cli_preflight_allow(capsys):
+    code, r, _ = _run(["preflight", _preflight_req("capabilities")],
+                      capsys)
+    assert code == 0 and r["status"] == "verified"
+    assert r["value"] == {"decision": "allow",
+                          "reason": "capability_allowed"}
+
+
+def test_cli_preflight_confirm(capsys):
+    code, r, _ = _run(["preflight", _preflight_req("process.cancel")],
+                      capsys)
+    assert code == 0
+    assert r["value"] == {"decision": "confirm",
+                          "reason": "confirmation_required"}
+
+
+def test_cli_preflight_deny(capsys):
+    code, r, _ = _run(["preflight", _preflight_req("file.delete")],
+                      capsys)
+    assert code == 0
+    assert r["value"] == {"decision": "deny",
+                          "reason": "capability_denied"}
+
+
+def test_cli_preflight_unknown_capability_denied(capsys):
+    code, r, _ = _run(["preflight", _preflight_req("nope.nope")],
+                      capsys)
+    assert code == 0
+    assert r["value"]["reason"] == "unknown_capability"
+
+
+def test_cli_preflight_invalid_json_rejected(capsys):
+    code, r, _ = _run(["preflight", "{not json"], capsys)
+    assert code == 2 and r["status"] == "rejected"
+    assert r["backend"] == "policy"
+
+
+def test_cli_preflight_invalid_request_rejected(capsys):
+    bad = json.dumps({"version": 2, "request_id": "r",
+                      "capability": "capabilities", "args": {},
+                      "deadline_ms": 1000})
+    code, r, _ = _run(["preflight", bad], capsys)
+    assert code == 2 and r["status"] == "rejected"
+
+
+def test_cli_preflight_does_not_need_backend(capsys, monkeypatch):
+    def boom():
+        raise RuntimeError("backend discovery failed")
+    monkeypatch.setattr(sc_backend, "current", boom)
+    code, r, _ = _run(["preflight", _preflight_req("capabilities")],
+                      capsys)
+    assert code == 0 and r["status"] == "verified"
+    assert r["backend"] == "policy"
+    assert r["value"] == {"decision": "allow",
+                          "reason": "capability_allowed"}
+
+
+def test_cli_preflight_exactly_one_positional(capsys):
+    code, r, _ = _run(["preflight"], capsys)
+    assert code == 2 and r["status"] == "rejected"
+    assert r["backend"] == "policy"
+    code, r, _ = _run(["preflight", _preflight_req("capabilities"),
+                       "extra"], capsys)
+    assert code == 2 and r["status"] == "rejected"
+    assert r["backend"] == "policy"

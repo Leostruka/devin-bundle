@@ -12,10 +12,11 @@ import uuid
 
 import sc_backend
 import sc_contract as contract
+import sc_policy
 import sc_process
 
 _COMMANDS = ("capabilities", "process-list", "process-get",
-             "service-status")
+             "service-status", "preflight")
 
 
 def _emit(obj):
@@ -84,6 +85,20 @@ def main(argv=None) -> int:
         return _reply(2, "rejected", request_id, name,
                       f"unknown command: {cmd}")
     try:
+        if cmd == "preflight":
+            # Policy-only: never touches backend discovery.
+            name = "policy"
+            if len(rest) != 1 or rest[0].startswith("--"):
+                raise contract.InvalidRequest(
+                    "preflight requires exactly one request JSON")
+            try:
+                req = json.loads(rest[0])
+            except json.JSONDecodeError as exc:
+                raise contract.InvalidRequest(f"invalid JSON: {exc}")
+            return _verified(contract.result(
+                ok=True, status="verified", request_id=request_id,
+                backend=name,
+                value=sc_policy.classify(req)), request_id)
         backend = sc_backend.current()
         name = sc_backend.backend_name(backend)
         if cmd == "capabilities":

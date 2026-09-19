@@ -79,6 +79,20 @@ def validate_request(value: dict) -> dict:
                 "target requires pid and start_time together: "
                 "missing start_time")
         req["target"] = target(t["pid"], t["start_time"])
+    if "policy" in req:
+        pol = req["policy"]
+        if not isinstance(pol, dict):
+            raise InvalidRequest("policy must be an object")
+        extra = set(pol) - {"dry_run", "confirmation_id"}
+        if extra:
+            raise InvalidRequest(
+                f"unexpected policy keys: {sorted(extra)}")
+        if "dry_run" in pol and not isinstance(pol["dry_run"], bool):
+            raise InvalidRequest("policy.dry_run must be a bool")
+        cid = pol.get("confirmation_id")
+        if cid is not None and not isinstance(cid, str):
+            raise InvalidRequest(
+                "policy.confirmation_id must be a string or null")
     return req
 
 

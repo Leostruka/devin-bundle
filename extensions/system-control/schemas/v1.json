@@ -43,7 +43,15 @@
         "capability": {"type": "string", "minLength": 1},
         "args": {"type": "object"},
         "deadline_ms": {"type": "integer", "minimum": 1, "maximum": 300000},
-        "target": {"$ref": "#/definitions/target"}
+        "target": {"$ref": "#/definitions/target"},
+        "policy": {
+          "type": "object",
+          "properties": {
+            "dry_run": {"type": "boolean"},
+            "confirmation_id": {"type": ["string", "null"]}
+          },
+          "additionalProperties": false
+        }
       }
     },
     "result": {
