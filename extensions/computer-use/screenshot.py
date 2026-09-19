@@ -59,6 +59,54 @@ def _to_image(img):
     return Image.frombytes("RGB", (img.width, img.height), img.rgb).convert("RGBA")
 
 
+_STATE_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-shotstate.json")
+
+
+def _shot_state():
+    try:
+        with open(_STATE_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _write_shot_state(sha, path):
+    try:
+        with open(_STATE_PATH + ".tmp", "w", encoding="utf-8") as f:
+            json.dump({"sha256": sha, "path": path}, f)
+        os.replace(_STATE_PATH + ".tmp", _STATE_PATH)
+    except Exception:
+        pass
+
+
+def _img_hash(img):
+    import hashlib
+    return hashlib.sha256(img.rgb).hexdigest()
+
+
+def _diff_file(img, path):
+    """Changed-pixel ratio of the fresh grab vs an image file. Any channel
+    shift >8 levels counts; size mismatch means everything changed."""
+    from PIL import Image, ImageChops
+    a = _to_image(img).convert("L")
+    b = Image.open(path).convert("L")
+    if a.size != b.size:
+        return 1.0
+    d = ImageChops.difference(a, b)
+    hist = d.histogram()
+    return sum(hist[9:]) / (a.width * a.height)
+
+
+def _save_diff(img, path, out):
+    """Write the pixel-difference image for a --diff comparison."""
+    from PIL import Image, ImageChops
+    a = _to_image(img).convert("RGB")
+    b = Image.open(path).convert("RGB")
+    if a.size != b.size:
+        b = b.resize(a.size)
+    ImageChops.difference(a, b).save(out, "PNG")
+
+
 def _save_image(im, out, fmt="png", quality=80):
     """Format-aware save. JPEG ~5x cheaper to encode than PNG — the fast
     profile's pixel path when pixels are still required."""
@@ -156,6 +204,17 @@ def main():
     p.add_argument("--image", action="store_true",
                    help="with --hints under profile fast: still capture "
                         "pixels (fast skips them by default)")
+    p.add_argument("--if-changed", action="store_true",
+                   help="skip writing when the capture is unchanged vs the "
+                        "last shot — token saver for verify loops")
+    p.add_argument("--threshold", type=float, default=None,
+                   help="change ratio tolerated by --if-changed/--diff "
+                        "(0.01 = ignore <=1%% of pixels)")
+    p.add_argument("--diff", default=None, metavar="BASELINE.png",
+                   help="compare the capture vs a baseline image and print "
+                        "changed_ratio instead of saving normally")
+    p.add_argument("--diff-out", default=None,
+                   help="with --diff: also save the pixel-difference image")
     args = p.parse_args()
 
     set_dpi_awareness()
@@ -217,6 +276,34 @@ def main():
             bbox = mons[args.monitor]
         img, _meta = cu_capture.grab(bbox)
         origin = [bbox["left"], bbox["top"]]
+        if args.diff:
+            ratio = _diff_file(img, args.diff)
+            res = {"ok": True, "changed_ratio": round(ratio, 6),
+                   "changed": ratio > (args.threshold or 0.0),
+                   "baseline": args.diff, "width": img.width,
+                   "height": img.height}
+            if args.diff_out:
+                _save_diff(img, args.diff, args.diff_out)
+                res["diff_path"] = args.diff_out
+            print(json.dumps(res))
+            return
+        shot_hash = None
+        if args.if_changed:
+            shot_hash = _img_hash(img)
+            st = _shot_state()
+            if st.get("sha256") == shot_hash:
+                print(json.dumps({"ok": True, "changed": False,
+                                  "path": st.get("path")}))
+                return
+            if (args.threshold is not None and st.get("path")
+                    and os.path.isfile(st["path"])):
+                try:
+                    if _diff_file(img, st["path"]) <= args.threshold:
+                        print(json.dumps({"ok": True, "changed": False,
+                                          "path": st["path"]}))
+                        return
+                except Exception:
+                    pass
         result = {"ok": True, "path": out, "width": img.width,
                   "height": img.height, "monitor": args.monitor,
                   "origin_px": origin,
@@ -264,6 +351,8 @@ def main():
                 _save_image(_to_image(img), out, "jpeg", args.quality)
             else:
                 mss.tools.to_png(img.rgb, img.size, output=out)
+        if shot_hash:
+            _write_shot_state(shot_hash, out)
         print(json.dumps(result))
     except Exception as e:
         fail(f"{type(e).__name__}: {e}")
