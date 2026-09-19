@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://devin.local/schemas/system-control/v1.json",
+  "title": "system-control v1",
+  "description": "Request/response contract for the System Control extension. Process identity is pid + start_time, never pid alone.",
+  "definitions": {
+    "target": {
+      "type": "object",
+      "required": ["pid", "start_time"],
+      "properties": {
+        "pid": {"type": "integer", "minimum": 0},
+        "start_time": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["cursor", "spill", "dropped"],
+      "properties": {
+        "cursor": {"type": ["string", "null"]},
+        "spill": {"type": ["string", "null"]},
+        "dropped": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "capability_entry": {
+      "type": "object",
+      "required": ["name", "supported", "reason", "mode"],
+      "properties": {
+        "name": {"type": "string"},
+        "supported": {"type": "boolean"},
+        "reason": {"type": ["string", "null"]},
+        "mode": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "required": ["version", "request_id", "capability", "args", "deadline_ms"],
+      "properties": {
+        "version": {"const": 1},
+        "request_id": {"type": "string", "minLength": 1},
+        "capability": {"type": "string", "minLength": 1},
+        "args": {"type": "object"},
+        "deadline_ms": {"type": "integer", "minimum": 1, "maximum": 300000},
+        "target": {"$ref": "#/definitions/target"}
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["ok", "status", "request_id", "backend", "privilege", "precondition", "value", "postcondition", "evidence", "error"],
+      "properties": {
+        "ok": {"type": "boolean"},
+        "status": {"enum": ["dispatched", "verified", "rejected", "timeout", "unknown", "cancelled"]},
+        "request_id": {"type": ["string", "null"]},
+        "backend": {"type": "string"},
+        "privilege": {"type": "string"},
+        "precondition": {},
+        "value": {},
+        "postcondition": {},
+        "evidence": {"$ref": "#/definitions/evidence"},
+        "error": {}
+      }
+    }
+  }
+}
