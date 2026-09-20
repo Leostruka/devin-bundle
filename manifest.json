@@ -354,9 +354,14 @@
       "name": "scan",
       "source": "devin-bundle",
       "purpose": "Use when the user wants a goal-driven, codebase-wide investigation — \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence."
+    },
+    {
+      "name": "system-control",
+      "source": "devin-bundle",
+      "purpose": "Use when the task needs authorized OS-level control — process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file copies — where native system APIs beat GUI computer-use. Routes to the system-control extension."
     }
   ],
-  "skill_count": 51,
+  "skill_count": 52,
   "rule_count": 28,
   "scripts": [
     {
