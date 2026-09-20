@@ -166,9 +166,7 @@ dedup_agents_md() {
 }
 
 # --- Detect Devin config home ---
-if [[ -n "${DEVIN_HOME:-}" ]]; then
-  DEVIN_HOME="$DEVIN_HOME"
-else
+if [[ -z "${DEVIN_HOME:-}" ]]; then
   DEVIN_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/devin"
 fi
 
