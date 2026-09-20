@@ -5,6 +5,33 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2026-09-20
+
+### Added
+
+- **`system-control` extension** — authorized OS-level control: typed contract v1, deny-wins policy with one-shot request-bound confirmations, bounded argv-only execution, persistent owned sessions (loopback JSONL daemon), resumable event streams, root-bound hash-verified file ops, native Windows (Job Objects/SCM/WMI), Linux (procfs/pidfd) and macOS (ps/kqueue) adapters, opt-in privileged broker seam (JEA/polkit templates), benchmark harness (decision: stay_python), thin skill router + USAGE docs.
+- **`scan` skill** — goal-driven codebase investigation via Plan→Shard→Map→Reduce orchestration (`/scan` equivalent).
+- **`ai-tools` extension** — offline-first ML tooling with abliterator PoC.
+- **`brag` skill** — launch-video generation via Hyperframes.
+- **`media-tools`** — grainrad.com parity: 15 effects, pipeline, presets, animated io.
+- **`computer-use` terminal control** — bound read/control for WT/conhost/mintty, WinPTY PTY spawn via pywinpty, sentinel-gated exec.
+- **`computer-use` browser** — bound-browser observation + full-fidelity event daemon (network, dialogs, HAR-lite).
+- **`computer-use` mintty OCR** — text read via Windows.Media.Ocr (winrt).
+- `computer-use` action profiles, observation contracts, dual-engine browser client.
+
+### Changed
+
+- **Bundle slim** — hooks 22→9 bindings, skills 83→48, AGENTS.md 18→11 KB, native Devin CLI capabilities adopted.
+- Layout refactor — `docs/` dissolved into `.devin/`; plugin manifest dropped.
+- README — skill groups deduplicated, counts fixed, extensions layer documented.
+- `context-hygiene` — code-minification caution note (real but completion-scoped).
+- Registry trimmed to SWE-2-only models.
+
+### Fixed
+
+- `computer-use` — phantom context menus from emergency_release; SM_SWAPBUTTON button translation; JSON stdout guard; UIA segfault.
+- `devin-N` — orphan worktree dirs and reserved-name files; worktree branches preserved and re-attached; strict-mode sessions tolerated.
+
 ## [3.1.1] - 2026-09-08
 
 ### Fixed
