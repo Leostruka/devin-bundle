@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Polkit action for the system-control privileged broker.
+  Declarative template only — NOT auto-installed. An administrator must
+  copy, review, and install this file under
+  /usr/share/polkit-1/actions/ (see README.md).
+
+  A single action id names the one broker method; authorization always
+  requires an active administrator (auth_admin) — never an implicit yes.
+-->
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>system-control</vendor>
+  <vendor_url>https://example.invalid/system-control</vendor_url>
+
+  <action id="dev.system-control.restart-allowed-service">
+    <description>Restart an allowlisted system service</description>
+    <message>Administrator authentication is required to restart an allowlisted service.</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+  </action>
+</policyconfig>

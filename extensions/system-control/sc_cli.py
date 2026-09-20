@@ -21,7 +21,7 @@ import sc_sessions
 _COMMANDS = ("capabilities", "process-list", "process-get",
              "service-status", "preflight", "exec",
              "sessions", "session", "events", "file",
-             "process", "service")
+             "process", "service", "broker")
 
 
 def _emit(obj):
@@ -484,6 +484,26 @@ def main(argv=None) -> int:
             # Daemon-hosted event streams; ALLOW capabilities.
             name = "sessions"
             return _events_cmd(rest, request_id)
+        if cmd == "broker":
+            # Opt-in privileged broker: no transport is provisioned by
+            # default, so preflight/status report unprovisioned
+            # (fail closed). service.restart via a provisioned broker
+            # consumes a confirmation through sc_policy like exec.
+            import sc_broker
+            name = "broker"
+            if not rest or rest[0] not in ("preflight", "status"):
+                raise contract.InvalidRequest(
+                    "broker requires the preflight or status "
+                    "subcommand")
+            _opts(rest[1:], set())
+            probe = (sc_broker.preflight() if rest[0] == "preflight"
+                     else sc_broker.status())
+            ok = bool(probe.get("ok"))
+            _emit(contract.result(
+                ok=ok, status="verified" if ok else "unknown",
+                request_id=request_id, backend=name, value=probe,
+                error=None if ok else "broker_not_provisioned"))
+            return 0 if ok else 1
         if cmd in ("sessions", "session"):
             # Session daemon commands; no OS inventory backend needed.
             name = "sessions"
