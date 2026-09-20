@@ -286,6 +286,10 @@ def test_cli_service_restart_confirm_flow(capsys, tmp_path,
     class B:
         name = "fake"
 
+        def capabilities(self):
+            return [{"name": "service.restart", "supported": True,
+                     "reason": None, "mode": "scm"}]
+
         def restart_service(self, name, *, allowed):
             return {"ok": True, "status": "verified",
                     "precondition": {"state": "running"},

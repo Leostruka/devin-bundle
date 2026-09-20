@@ -42,9 +42,9 @@ def capabilities():
          "mode": ("kqueue" if hasattr(select, "kqueue")
                   else "ps-poll")},
         {"name": "service.restart", "supported": False,
-         "reason": "broker_required", "mode": None},
+         "reason": "broker_required", "mode": "broker"},
         {"name": "endpoint_security", "supported": False,
-         "reason": "entitlement_required", "mode": None},
+         "reason": "entitlement_required", "mode": "endpoint_security"},
         {"name": "events.process", "supported": ps,
          "reason": None if ps else "ps not found",
          "mode": "poll"},

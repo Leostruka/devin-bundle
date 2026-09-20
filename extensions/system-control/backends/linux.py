@@ -90,7 +90,7 @@ def capabilities():
          "reason": None if systemd else "systemd not detected",
          "mode": "systemctl"},
         {"name": "service.restart", "supported": False,
-         "reason": "broker_required", "mode": None},
+         "reason": "broker_required", "mode": "broker"},
         {"name": "events.process", "supported": proc,
          "reason": None if proc else "/proc not mounted",
          "mode": "poll"},

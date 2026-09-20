@@ -1,4 +1,4 @@
-"""System Control CLI: read-only host inventory.
+"""System Control CLI: authorized OS control.
 
 stdout carries exactly one JSON object per invocation; diagnostics go
 to stderr. Exit codes: 0 verified read, 1 runtime failure (including
@@ -168,6 +168,10 @@ def _sessions_cmd(rest, request_id):
         if "confirmation-id" not in opts:
             raise contract.InvalidRequest(
                 "sessions stop requires --confirmation-id")
+        status = sc_sessions.daemon_status()
+        if not status.get("running"):
+            # Nothing to stop — do not burn the confirmation.
+            return _session_reply(status, request_id)
         _confirm("daemon.stop", {}, opts, request_id)
         return _session_reply(sc_sessions.stop_daemon(), request_id)
     raise contract.InvalidRequest(f"unknown sessions subcommand: {sub}")
@@ -591,13 +595,18 @@ def main(argv=None) -> int:
             if not allowed:
                 raise contract.InvalidRequest(
                     "--allowed must list at least one service")
+            restart_fn = getattr(backend, "restart_service", None)
+            caps = {c["name"]: c for c in backend.capabilities()}
+            cap = caps.get("service.restart", {})
+            if restart_fn is None or not cap.get("supported"):
+                # Dispatchability checked BEFORE the confirmation is
+                # consumed — an unavailable restart never burns a token.
+                return _reply(1, "unknown", request_id, name,
+                              "service.restart unavailable: "
+                              f"{cap.get('reason') or 'unsupported'}")
             _confirm("service.restart",
                      {"name": opts["name"], "allowed": allowed},
                      opts, request_id)
-            restart_fn = getattr(backend, "restart_service", None)
-            if restart_fn is None:
-                return _reply(1, "unknown", request_id, name,
-                              "backend lacks service.restart")
             res = restart_fn(opts["name"], allowed=allowed)
             ok = bool(res.get("ok"))
             status = ("verified" if ok

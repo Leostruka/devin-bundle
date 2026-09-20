@@ -28,7 +28,7 @@
 - Task 9: 00ea951 — safe recovery point
 - Task 10: 7ec1bb4 — safe recovery point
 - Task 11: e4ab248 — safe recovery point
-- Task 12: <pending commit> — safe recovery point
+- Task 12: 9ce0565 — safe recovery point
 
 ## Detail Log
 QA precondition: worktree created at `D:/Programing/ai_workspace/devin-bundle-system-control`.
@@ -76,3 +76,5 @@ Task 11: review PASS/PASS — operator.index guards, argv defaults, pathlib impo
 Task 11: independent reproduction of `--runs 50 --warmup 10` matched recorded distributions (plan QA gate).
 Task 12: review Security PASS/Spec FAIL — dishonest restart matrix (SCM direct on Windows), undocumented export gap, stale README count; rework closed all 4.
 Task 12: 949 passed, 3 skipped; audit 0 errors; installer dry-runs enumerate system-control; pwsh ParseFile clean.
+Final review: Standards PASS/Spec FAIL — session-daemon Popen->Job race (CREATE_SUSPENDED+resume applied), service.restart + sessions stop burned tokens pre-validation (dispatchability checked first), undocumented confirmation shapes (canonical table added to USAGE); mode:null schema violations + stale docstring fixed.
+Final review rework: 949 passed, 3 skipped; audit 0 errors; diff --check clean; held-out 47/47.

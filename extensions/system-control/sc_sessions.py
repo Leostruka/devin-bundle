@@ -123,7 +123,10 @@ def _spawn(arg):
               "stdout": subprocess.PIPE, "stderr": subprocess.STDOUT,
               "shell": False, "bufsize": 0}
     if os.name == "nt":
-        kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        # CREATE_SUSPENDED closes the spawn->job-assign race: a
+        # grandchild cannot escape the Job before assignment.
+        kwargs["creationflags"] = (subprocess.CREATE_NEW_PROCESS_GROUP
+                                   | 0x00000004)
     else:
         kwargs["start_new_session"] = True
     try:
@@ -132,6 +135,9 @@ def _spawn(arg):
         return {"ok": False, "error": f"spawn failed: {exc}"}
     try:
         tree = sc_process._assign_tree(proc)
+        if os.name == "nt":
+            import sc_windows
+            sc_windows.resume_main_thread(proc.pid)
     except BaseException as exc:
         try:
             proc.kill()

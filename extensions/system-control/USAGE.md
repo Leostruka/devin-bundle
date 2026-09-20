@@ -53,6 +53,36 @@ Tokens are minted outside this CLI (policy API); pass the id via
 `--confirmation-id` plus `--request-id`. Tokens whose TTL elapsed are
 **dropped** at consumption time; get a fresh one.
 
+### Canonical request shapes (what the token binds)
+
+A confirmation token is bound to the digest of the exact request
+envelope the CLI builds. Mint it over this shape — any deviation
+(missing key, different value, different `deadline_ms`) fails with
+`request_mismatch`:
+
+```json
+{"version": 1, "request_id": "<--request-id>",
+ "capability": "<capability>", "args": {<see table>},
+ "deadline_ms": <see table>,
+ "policy": {"dry_run": false,
+            "confirmation_id": "<--confirmation-id>"}}
+```
+
+| Command | capability | args | deadline_ms |
+|---|---|---|---|
+| `exec` | `process.exec` | `{"argv": [...], "cwd": <str\|null>, "timeout_s": <num>}` | `timeout_s*1000` |
+| `session spawn` | `session.spawn` | `{"argv": [...], "cwd": <str\|null>, "capacity": <int>, "idle_ttl_s": <int>}` | 30000 |
+| `session send` | `session.send` | `{"session_id": <str>, "data": <str>}` | 30000 |
+| `session cancel` | `session.cancel` | `{"session_id": <str>}` | 30000 |
+| `sessions stop` | `daemon.stop` | `{}` | 30000 |
+| `service restart` | `service.restart` | `{"name": <str>, "allowed": [<str>...]}` | 30000 |
+| `file copy` | `file.copy` / `file.copy_overwrite` | `{"root","src","dst": <str>, "expected_hash": <hex64>, "dry_run": <bool>, "overwrite": <bool>}` | 30000 |
+
+`overwrite: true` switches the capability to `file.copy_overwrite`.
+The CLI validates every argument BEFORE consuming the token, so bad
+input never burns one — but a token minted over the wrong shape is
+always rejected.
+
 Check a request's classification without side effects:
 
 ```bash
