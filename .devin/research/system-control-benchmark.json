@@ -1,0 +1,85 @@
+{
+  "command": "python extensions/system-control/sc_bench.py --runs 50 --warmup 10",
+  "commit": "7ec1bb40259c46729aea0c639762a03a8135771e",
+  "decision": "stay_python",
+  "decision_rationale": "All four scenarios complete in low single-digit ms p95; no reproducible CPU/parser/reducer hot path isolated. Decision gate conditions (hot path + predeclared latency budget + two reproductions) not met.",
+  "env": {
+    "machine": "AMD64",
+    "platform": "Windows",
+    "platform_release": "11",
+    "python_implementation": "CPython",
+    "python_version": "3.14.4"
+  },
+  "iterations_per_scenario": 50,
+  "platform_class": "Windows/AMD64",
+  "scenarios": {
+    "event_reduce": {
+      "env": {
+        "machine": "AMD64",
+        "platform": "Windows",
+        "platform_release": "11",
+        "python_implementation": "CPython",
+        "python_version": "3.14.4"
+      },
+      "max_ms": 3.988299999036826,
+      "mean_ms": 2.297975999681512,
+      "min_ms": 2.026999994996004,
+      "p50_ms": 2.1945000044070184,
+      "p95_ms": 3.0172999977367,
+      "runs": 50,
+      "scenario": "event_reduce",
+      "warmup": 10
+    },
+    "json_decode": {
+      "env": {
+        "machine": "AMD64",
+        "platform": "Windows",
+        "platform_release": "11",
+        "python_implementation": "CPython",
+        "python_version": "3.14.4"
+      },
+      "max_ms": 0.0034000040614046156,
+      "mean_ms": 0.003123999631498009,
+      "min_ms": 0.0029999937396496534,
+      "p50_ms": 0.0031000017770566046,
+      "p95_ms": 0.0032999960239976645,
+      "runs": 50,
+      "scenario": "json_decode",
+      "warmup": 10
+    },
+    "process_snapshot": {
+      "env": {
+        "machine": "AMD64",
+        "platform": "Windows",
+        "platform_release": "11",
+        "python_implementation": "CPython",
+        "python_version": "3.14.4"
+      },
+      "max_ms": 2.517100001568906,
+      "mean_ms": 1.9667280008434318,
+      "min_ms": 1.788599998690188,
+      "p50_ms": 1.9188000005669892,
+      "p95_ms": 2.3037000064505264,
+      "runs": 50,
+      "scenario": "process_snapshot",
+      "warmup": 10
+    },
+    "stream_drain": {
+      "env": {
+        "machine": "AMD64",
+        "platform": "Windows",
+        "platform_release": "11",
+        "python_implementation": "CPython",
+        "python_version": "3.14.4"
+      },
+      "max_ms": 0.14909999299561605,
+      "mean_ms": 0.0982840005599428,
+      "min_ms": 0.0926000066101551,
+      "p50_ms": 0.09610000415705144,
+      "p95_ms": 0.1021999996737577,
+      "runs": 50,
+      "scenario": "stream_drain",
+      "warmup": 10
+    }
+  }
+}
