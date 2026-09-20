@@ -251,3 +251,28 @@ jobs:
           if (!(Test-Path "$env:APPDATA\devin\extensions\system-control\sc_cli.py")) { throw 'extension not installed' }
           if ((Get-Content "$env:APPDATA\devin\config.json" -Raw) -match '\{\{APPDATA\}\}') { throw 'config placeholder not expanded' }
           Write-Host "Install verified: $env:APPDATA\devin"
+
+  # Single stable check context for branch protection. Matrix jobs
+  # produce per-combination contexts; this aggregates them all into
+  # one required check. `if: always()` makes it report failure (not
+  # stay pending) when a dependency fails.
+  ci:
+    name: ci
+    if: always()
+    needs: [static, test, rust, install]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs must succeed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python -c "
+          import json, os, sys
+          needs = json.loads(os.environ['NEEDS'])
+          bad = {k: v['result'] for k, v in needs.items() if v['result'] != 'success'}
+          for k, v in needs.items():
+              print(f'{k}: {v[\"result\"]}')
+          if bad:
+              print('FAILED:', bad)
+              sys.exit(1)
+          "
