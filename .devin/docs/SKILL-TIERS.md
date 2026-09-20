@@ -155,6 +155,7 @@ Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: 
 |---|---|---|---|
 | `computer-use` | Screenshot da tela, clique/movimento de mouse em (X,Y), digitação de texto e atalhos — replica Computer Use do Devin Cloud no CLI. Skill wrapper: `skills/computer-use/` | Automatizar GUI desktop, validar app visualmente, interagir com app sem API | `extensions/computer-use/USAGE.md` |
 | `ai-tools` | Ferramentas ML locais offline-first (abliteration PoC etc.) — JSON stdout, `--self-test`, sem download. Skill wrapper: `skills/ai-tools/` | Experimentos de interpretabilidade/modelos locais | `extensions/ai-tools/USAGE.md` |
+| `system-control` | Controle autorizado do OS: inventário de processos/serviços, exec one-shot limitada, sessões persistentes, event streams, cópia de arquivo verificada por hash. Deny-wins + confirmações one-shot; sem daemon privilegiado por default. Skill wrapper: `skills/system-control/` | APIs de sistema em vez de GUI computer-use | `extensions/system-control/USAGE.md` |
 
 ## Outros
 

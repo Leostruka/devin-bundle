@@ -13,7 +13,7 @@
 - Task 9: complete (native macOS adapter, review clean after rework)
 - Task 10: complete (opt-in privileged broker seam, review clean after rework)
 - Task 11: complete (benchmark harness, decision stay_python, review clean after rework)
-- Task 12: pending
+- Task 12: complete (skill/USAGE/metadata integration, review clean after rework)
 
 ## Commit Boundaries
 - 3b3aa5e: branch base
@@ -27,7 +27,8 @@
 - Task 8: c3f6658 — safe recovery point
 - Task 9: 00ea951 — safe recovery point
 - Task 10: 7ec1bb4 — safe recovery point
-- Task 11: <pending commit> — safe recovery point
+- Task 11: e4ab248 — safe recovery point
+- Task 12: <pending commit> — safe recovery point
 
 ## Detail Log
 QA precondition: worktree created at `D:/Programing/ai_workspace/devin-bundle-system-control`.
@@ -73,3 +74,5 @@ Task 11: held-out `test_bench_harness.py` (5 contracts) — 5/5 first pass.
 Task 11: baseline measured — all p95 < 4ms; decision `stay_python` recorded; phantom command ref fixed to real CLI.
 Task 11: review PASS/PASS — operator.index guards, argv defaults, pathlib import; rework closed 4.
 Task 11: independent reproduction of `--runs 50 --warmup 10` matched recorded distributions (plan QA gate).
+Task 12: review Security PASS/Spec FAIL — dishonest restart matrix (SCM direct on Windows), undocumented export gap, stale README count; rework closed all 4.
+Task 12: 949 passed, 3 skipped; audit 0 errors; installer dry-runs enumerate system-control; pwsh ParseFile clean.
