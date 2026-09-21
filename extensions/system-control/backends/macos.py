@@ -168,7 +168,11 @@ def _wait_kqueue(pid, start_time, timeout_s):
         ev = select.kevent(pid, select.KQ_FILTER_PROC,
                            select.KQ_EV_ADD, select.KQ_NOTE_EXIT)
         ev_error = getattr(select, "KQ_EV_ERROR", 0x4000)
-        errs = kq.control([ev], 0)
+        try:
+            errs = kq.control([ev], 0)
+        except (OSError, ProcessLookupError):
+            # ESRCH: pid already gone — the exit check below reports it.
+            return _wait_poll(pid, start_time, timeout_s)
         if errs and getattr(errs[0], "flags", 0) & ev_error:
             return _wait_poll(pid, start_time, timeout_s)
         deadline = time.monotonic() + timeout_s

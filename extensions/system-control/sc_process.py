@@ -229,6 +229,25 @@ def _reap_root(proc, grace_s) -> bool:
     return proc.returncode is not None
 
 
+def _posix_group_has_live_member(pgid):
+    """True while the group has a non-zombie member. killpg(pgid, 0)
+    keeps succeeding while only zombies remain (macOS reaps reparented
+    zombies on launchd's schedule), so membership is checked by state."""
+    try:
+        out = subprocess.run(["ps", "-axo", "pgid=,stat="],
+                             capture_output=True, timeout=10)
+    except Exception:
+        return True  # unknown: fail closed
+    if out.returncode != 0:
+        return True
+    for line in out.stdout.decode("utf-8", "replace").splitlines():
+        f = line.split()
+        if (len(f) >= 2 and f[0].isdigit() and int(f[0]) == pgid
+                and not f[1].startswith("Z")):
+            return True
+    return False
+
+
 def _reap_posix_group(proc, grace_s) -> bool:
     """TERM → grace → KILL the process group; verify absence."""
     ok = True
@@ -251,15 +270,17 @@ def _reap_posix_group(proc, grace_s) -> bool:
     if not _reap_root(proc, grace_s):
         ok = False
     if ok:
-        deadline = time.time() + 2
+        deadline = time.time() + 5
         while True:
             try:
                 os.killpg(proc.pid, 0)
             except ProcessLookupError:
-                break
+                break  # group fully gone
             except OSError:
                 ok = False
                 break
+            if not _posix_group_has_live_member(proc.pid):
+                break  # only zombie members left
             if time.time() >= deadline:
                 ok = False
                 break
