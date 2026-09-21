@@ -188,13 +188,20 @@ def test_spawn_timeout_cleans_tree():
     root = r["value"]["target"]["pid"]
     backend = sc_backend.current()
     deadline = time.time() + 5
+    gpid_l = root_l = None
     while time.time() < deadline:
-        if (not backend.process_list(gpid)
-                and not backend.process_list(root)):
+        def _list(p):
+            try:
+                return backend.process_list(p)
+            except LookupError:
+                return []
+        gpid_l, root_l = _list(gpid), _list(root)
+        if not gpid_l and not root_l:
             break
         time.sleep(0.1)
     else:
-        pytest.fail("owned process tree still alive after timeout")
+        pytest.fail(f"owned process tree still alive after timeout: "
+                    f"gpid={gpid_l} root={root_l}")
 
 
 def test_spawn_output_flood_spills_combined(tmp_path):

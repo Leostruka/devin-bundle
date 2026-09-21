@@ -73,7 +73,7 @@ def _pid(value):
 def process_list(pid=None):
     if shutil.which("ps") is None:
         raise BackendUnavailable("ps not found")
-    argv = ["ps", "-axo", "pid=,lstart=,stat=,comm="]
+    argv = ["ps", "-axo", "pid=,stat=,lstart=,comm="]
     if pid is not None:
         argv += ["-p", str(_pid(pid))]
     try:
@@ -87,14 +87,16 @@ def process_list(pid=None):
             f"ps failed: {err.decode('utf-8', 'replace').strip()}")
     procs = []
     for line in out.decode("utf-8", "replace").splitlines():
+        # pid, stat, lstart (5 fields), comm — stat early so lstart
+        # format quirks cannot shift the state check.
         fields = line.split(None, 7)
         if len(fields) < 8:
             continue
-        if fields[6].startswith("Z"):
+        if fields[1].startswith("Z"):
             continue  # zombie: dead, not yet reaped
         try:
             started = int(time.mktime(time.strptime(
-                " ".join(fields[1:6]), _LSTART)))
+                " ".join(fields[2:7]), _LSTART)))
             pid_val = int(fields[0])
         except ValueError:
             continue

@@ -12,9 +12,9 @@ from sc_backend import BackendUnavailable  # noqa: E402
 from sc_contract import InvalidRequest  # noqa: E402
 
 PS_OUT = (
-    b"  42 Mon Sep 19 12:00:00 2026 Ss   worker\n"
-    b"   7 Mon Sep 19 12:00:00 2026 Ss   launchd\n"
-    b"  99 Mon Sep 19 12:00:00 2026 Z    zombie\n"
+    b"  42 Ss   Mon Sep 19 12:00:00 2026 worker\n"
+    b"   7 Ss   Mon Sep 19 12:00:00 2026 launchd\n"
+    b"  99 Z    Mon Sep 19 12:00:00 2026 zombie\n"
 )
 
 
@@ -39,7 +39,7 @@ def test_process_list_parses_lstart(fake_ps):
     procs = macos.process_list()
     assert [p["pid"] for p in procs] == [7, 42]
     assert all(isinstance(p["start_time"], int) for p in procs)
-    assert fake_ps[0][:3] == ["ps", "-axo", "pid=,lstart=,stat=,comm="]
+    assert fake_ps[0][:3] == ["ps", "-axo", "pid=,stat=,lstart=,comm="]
     assert 99 not in [p["pid"] for p in procs]  # zombies are dead
 
 
