@@ -19,7 +19,7 @@ Sources:
   Kernel-Bench and 46.8% ALE-Bench optimizations show proxy gains without real
   gains, so agent-chosen tests alone are not evidence of improvement.
 """
-import sys, json, subprocess, os
+import sys, json, subprocess, os, re
 
 TEST_TIMEOUT = 120
 

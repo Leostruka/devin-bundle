@@ -385,13 +385,13 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "A16B9FF3ACB14529207ABA177AFD550A084EE9EDD1D5478F818097771641CA04",
+      "export_hash": "901D5DCE256CEAD4DA6BA92BB9E785CE1BF0651F152FC945E83726ECCF2055B8",
       "exported_at": "2026-09-08T21:39:22.430276"
     },
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "EB1CB1893194C046C837FC523BA315DA2E26B0FFE4E72C1690808D8B1DDE9B90",
+      "export_hash": "F960515AB1CBD8FC755D7CC26DD1800BB6969E3C477D95265D10F2A2BAC196D1",
       "exported_at": "2026-09-08T21:39:22.430364"
     },
     {

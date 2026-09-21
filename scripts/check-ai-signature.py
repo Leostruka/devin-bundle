@@ -145,7 +145,14 @@ def handle_stop(_data):
             continue
         # Filter out diff hunks from self-files to avoid self-detection
         filtered = filter_self_diffs(result.stdout, self_files)
-        if check_text(filtered):
+        # Only added lines matter: a diff that removes a signature is the fix,
+        # not a violation. Headers like '+++ b/path' are not content.
+        added = "\n".join(
+            line[1:]
+            for line in filtered.split("\n")
+            if line.startswith("+") and not line.startswith("+++")
+        )
+        if check_text(added):
             scope = "staged" if "--cached" in args else "unstaged"
             block(
                 f"AI signature detected in {scope} changes. Remove it before "

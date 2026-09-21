@@ -182,19 +182,48 @@ def test_spawn_timeout_cleans_tree():
     elapsed = time.time() - t0
     assert r["ok"] is False and r["status"] == "timeout"
     assert r["error"] == "process timed out"
-    assert r["postcondition"]["tree_cleanup"] is True
+    if r["postcondition"]["tree_cleanup"] is not True and os.name != "nt":
+        probe = subprocess.run(
+            ["ps", "-axo", "pid=,pgid=,stat=,comm="],
+            capture_output=True, timeout=10)
+        diag = probe.stdout.decode("utf-8", "replace")
+        root_pid = r["value"]["target"]["pid"]
+        diag = "\n".join(ln for ln in diag.splitlines()
+                         if ln.split() and ln.split()[1] == str(root_pid))
+        pytest.fail(f"tree_cleanup False; pgid={root_pid} members:\n{diag}\n"
+                    f"ps rc={probe.returncode} "
+                    f"err={probe.stderr.decode('utf-8','replace')!r}")
     assert elapsed < 30
     gpid = int(r["value"]["stdout"]["value"].strip())
     root = r["value"]["target"]["pid"]
     backend = sc_backend.current()
     deadline = time.time() + 5
+    gpid_l = root_l = None
     while time.time() < deadline:
-        if (not backend.process_list(gpid)
-                and not backend.process_list(root)):
+        def _list(p):
+            try:
+                return backend.process_list(p)
+            except LookupError:
+                return []
+        gpid_l, root_l = _list(gpid), _list(root)
+        if not gpid_l and not root_l:
             break
         time.sleep(0.1)
     else:
-        pytest.fail("owned process tree still alive after timeout")
+        group = ""
+        if os.name != "nt":
+            try:
+                group = subprocess.run(
+                    ["ps", "-axo", "pid=,pgid=,stat=,comm="],
+                    capture_output=True, timeout=10
+                ).stdout.decode("utf-8", "replace")
+                group = "\n".join(
+                    ln for ln in group.splitlines()
+                    if str(root) in ln.split()[:2] or str(gpid) in ln.split()[:2])
+            except Exception as exc:
+                group = f"<ps diag failed: {exc}>"
+        pytest.fail(f"owned process tree still alive after timeout: "
+                    f"gpid={gpid_l} root={root_l}\ngroup:\n{group}")
 
 
 def test_spawn_output_flood_spills_combined(tmp_path):

@@ -64,7 +64,8 @@ dir_hash_ext() {
 backup_file() {
   local file="$1"
   if [[ -f "$file" ]]; then
-    local backup="${file}.backup.$(date +%Y%m%d_%H%M%S)"
+    local backup
+    backup="${file}.backup.$(date +%Y%m%d_%H%M%S)"
     if [[ $DRY_RUN -eq 1 ]]; then
       echo "$file (would backup to $backup)"
     else
@@ -162,9 +163,7 @@ dedup_agents_md() {
 }
 
 # --- Detect Devin config home ---
-if [[ -n "${DEVIN_HOME:-}" ]]; then
-  DEVIN_HOME="$DEVIN_HOME"
-else
+if [[ -z "${DEVIN_HOME:-}" ]]; then
   DEVIN_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/devin"
 fi
 
@@ -407,6 +406,7 @@ step "Install data/ (model context windows)"
 data_src="$BUNDLE_DIR/data"
 data_dst="$DEVIN_HOME/data"
 if [[ -d "$data_src" ]]; then
+  [[ $DRY_RUN -eq 1 ]] || mkdir -p "$data_dst"
   for data_file in "$data_src"/*; do
     [[ -f "$data_file" ]] || continue
     name="$(basename "$data_file")"
@@ -531,8 +531,14 @@ if [[ -d "$ext_src" ]]; then
     elif [[ $DRY_RUN -eq 1 ]]; then
       skip "would create venv at $cu_dir/.venv and pip install -r requirements.txt"
     else
-      [[ -x "$cu_dir/.venv/bin/python" ]] || "$py" -m venv "$cu_dir/.venv"
-      if "$cu_dir/.venv/bin/python" -m pip install --quiet --disable-pip-version-check -r "$cu_dir/requirements.txt"; then
+      venv_py="$cu_dir/.venv/bin/python"
+      [[ -x "$venv_py" ]] || venv_py="$cu_dir/.venv/Scripts/python.exe"
+      if [[ ! -x "$venv_py" ]]; then
+        "$py" -m venv "$cu_dir/.venv"
+        venv_py="$cu_dir/.venv/bin/python"
+        [[ -x "$venv_py" ]] || venv_py="$cu_dir/.venv/Scripts/python.exe"
+      fi
+      if "$venv_py" -m pip install --quiet --disable-pip-version-check -r "$cu_dir/requirements.txt"; then
         ok "computer-use deps installed in $cu_dir/.venv"
       else
         warn "computer-use pip install failed"
@@ -551,11 +557,14 @@ if [[ -d "$ext_src" ]]; then
     else
       if cargo build --release --quiet --manifest-path "$rc_dir/Cargo.toml"; then
         staged=0
-        for lib in "$rc_dir"/target/release/*.so "$rc_dir"/target/release/*.dylib; do
+        for lib in "$rc_dir"/target/release/*.so "$rc_dir"/target/release/*.dylib "$rc_dir"/target/release/*.dll; do
           [[ -f "$lib" ]] || continue
-          base="$(basename "$lib")"            # libfast_math.so / libfast_math.dylib
-          mod="${base#lib}"                    # fast_math.so / fast_math.dylib
-          mod="${mod%.dylib}.so"               # fast_math.so
+          base="$(basename "$lib")"            # libfast_math.so / libfast_math.dylib / fast_math.dll
+          mod="${base#lib}"                    # fast_math.so / fast_math.dylib / fast_math.dll
+          case "$mod" in
+            *.dylib) mod="${mod%.dylib}.so" ;; # fast_math.so
+            *.dll)   mod="${mod%.dll}.pyd" ;;  # fast_math.pyd (Python ext suffix on Windows)
+          esac
           cp "$lib" "$rc_dir/$mod"
           staged=$((staged+1))
           ok "rust extension staged: $mod"

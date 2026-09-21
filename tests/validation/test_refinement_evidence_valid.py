@@ -24,7 +24,7 @@ def test_refinement_evidence_no_phantoms():
     """validate-refinement-evidence.py must report 0 phantom suspects."""
     bundle_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
     result = subprocess.run(
-        ["python", "scripts/validate-refinement-evidence.py"],
+        [sys.executable, "scripts/validate-refinement-evidence.py"],
         capture_output=True,
         text=True,
         cwd=bundle_root,

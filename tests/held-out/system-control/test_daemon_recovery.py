@@ -28,15 +28,29 @@ def idle_child():
 def wait_dead(pid, timeout=8):
     deadline = time.time() + timeout
     while time.time() < deadline:
-        try:
-            os.kill(pid, 0)
-        except OSError:
-            return True
-        try:
-            if os.name == "posix":
+        if os.name == "nt":
+            import ctypes
+            import ctypes.wintypes as wt
+            h = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
+            if not h:
+                return True
+            try:
+                code = wt.DWORD()
+                ctypes.windll.kernel32.GetExitCodeProcess(
+                    h, ctypes.byref(code))
+                if code.value != 259:  # STILL_ACTIVE
+                    return True
+            finally:
+                ctypes.windll.kernel32.CloseHandle(h)
+        else:
+            try:
+                os.kill(pid, 0)
+            except OSError:
+                return True
+            try:
                 os.waitpid(pid, os.WNOHANG)
-        except OSError:
-            pass
+            except OSError:
+                pass
         time.sleep(0.1)
     return False
 

@@ -133,7 +133,8 @@ def hash_file(path):
 
 def read_text(path):
     try:
-        text = path.read_text(encoding='utf-8', newline='')
+        with path.open(encoding='utf-8', newline='') as fh:
+            text = fh.read()
         text = text.replace('\r\n', '\n').replace('\r', '\n')
         return True, text
     except UnicodeDecodeError:
@@ -563,7 +564,8 @@ def plan(devin, project, project_str, write, approve):
     if write and approve:
         note_path = devin / NOTE_SUBDIR / 'plan.md'
         note_path.parent.mkdir(parents=True, exist_ok=True)
-        note_path.write_text(note, encoding='utf-8', newline='\n')
+        with note_path.open('w', encoding='utf-8', newline='\n') as fh:
+            fh.write(note)
         emit_json({
             'command': 'plan',
             'project': project_str,

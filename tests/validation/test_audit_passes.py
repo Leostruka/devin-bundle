@@ -7,6 +7,7 @@ compares validation (these) vs held-out (independent) — if validation passes
 but held-out fails, the push is blocked (Rule 16 reward hacking guard).
 """
 import json
+import sys
 import subprocess
 from pathlib import Path
 
@@ -16,7 +17,7 @@ ROOT = Path(__file__).parents[2]
 
 def run_audit():
     return subprocess.run(
-        ["python", "audit.py"],
+        [sys.executable, "audit.py"],
         capture_output=True,
         text=True,
         cwd=ROOT,

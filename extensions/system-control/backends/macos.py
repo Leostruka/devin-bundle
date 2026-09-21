@@ -73,9 +73,13 @@ def _pid(value):
 def process_list(pid=None):
     if shutil.which("ps") is None:
         raise BackendUnavailable("ps not found")
-    argv = ["ps", "-axo", "pid=,lstart=,comm="]
-    if pid is not None:
-        argv += ["-p", str(_pid(pid))]
+    if pid is None:
+        argv = ["ps", "-axo", "pid=,stat=,lstart=,comm="]
+    else:
+        # BSD ps selection flags are OR'ed: `-ax` already selects all
+        # processes, so `-p` would be ignored. Filter mode drops -ax.
+        argv = ["ps", "-o", "pid=,stat=,lstart=,comm=",
+                "-p", str(_pid(pid))]
     try:
         rc, out, err = run_bounded(argv)
     except (OSError, subprocess.TimeoutExpired) as exc:
@@ -87,18 +91,22 @@ def process_list(pid=None):
             f"ps failed: {err.decode('utf-8', 'replace').strip()}")
     procs = []
     for line in out.decode("utf-8", "replace").splitlines():
-        fields = line.split(None, 6)
-        if len(fields) < 7:
+        # pid, stat, lstart (5 fields), comm — stat early so lstart
+        # format quirks cannot shift the state check.
+        fields = line.split(None, 7)
+        if len(fields) < 8:
             continue
+        if fields[1].startswith("Z"):
+            continue  # zombie: dead, not yet reaped
         try:
             started = int(time.mktime(time.strptime(
-                " ".join(fields[1:6]), _LSTART)))
+                " ".join(fields[2:7]), _LSTART)))
             pid_val = int(fields[0])
         except ValueError:
             continue
         procs.append({"pid": pid_val,
                       "start_time": started,
-                      "name": fields[6]})
+                      "name": fields[7]})
     procs.sort(key=lambda p: p["pid"])
     return procs
 
@@ -168,7 +176,11 @@ def _wait_kqueue(pid, start_time, timeout_s):
         ev = select.kevent(pid, select.KQ_FILTER_PROC,
                            select.KQ_EV_ADD, select.KQ_NOTE_EXIT)
         ev_error = getattr(select, "KQ_EV_ERROR", 0x4000)
-        errs = kq.control([ev], 0)
+        try:
+            errs = kq.control([ev], 0)
+        except (OSError, ProcessLookupError):
+            # ESRCH: pid already gone — the exit check below reports it.
+            return _wait_poll(pid, start_time, timeout_s)
         if errs and getattr(errs[0], "flags", 0) & ev_error:
             return _wait_poll(pid, start_time, timeout_s)
         deadline = time.monotonic() + timeout_s

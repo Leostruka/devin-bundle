@@ -107,7 +107,7 @@ def fake_uia(monkeypatch):
     comtypes.client = client_mod
     monkeypatch.setitem(sys.modules, "comtypes", comtypes)
     monkeypatch.setitem(sys.modules, "comtypes.client", client_mod)
-    monkeypatch.setattr(cu_hints.os, "name", "nt")
+    monkeypatch.setattr(cu_hints, "_on_windows", lambda: True)
     monkeypatch.delenv("CU_NO_UIA", raising=False)
     return state
 

@@ -442,7 +442,8 @@ def _atomic_write(path, text, overwrite, devin):
     try:
         if not _in_devin(tmp, devin):
             raise RuntimeError("temporary file path escapes .devin")
-        tmp.write_text(text, encoding="utf-8", newline="\n")
+        with tmp.open("w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
         if os.path.getsize(tmp) > MAX_OUTPUT_BYTES:
             raise ValueError(f"output exceeds {MAX_OUTPUT_BYTES} bytes")
         # Revalidate containment immediately before the replace. A symlink

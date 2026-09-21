@@ -1,4 +1,5 @@
 import json
+import sys
 import subprocess
 from pathlib import Path
 
@@ -8,7 +9,7 @@ ROOT = Path(__file__).parents[2]
 
 def run_memory_hook(payload):
     return subprocess.run(
-        ["python", "scripts/memory-stop.py"],
+        [sys.executable, "scripts/memory-stop.py"],
         input=json.dumps(payload),
         capture_output=True,
         text=True,
@@ -58,7 +59,7 @@ def test_native_plugin_prototype_is_isolated_and_minimal():
 def test_validator_accepts_discovered_project_profiles():
     for profile in ("domain", "issue-tracker", "triage-labels"):
         result = subprocess.run(
-            ["python", "scripts/validate-tool-args.py"],
+            [sys.executable, "scripts/validate-tool-args.py"],
             input=json.dumps({
                 "hook_event_name": "PreToolUse",
                 "tool_name": "run_subagent",

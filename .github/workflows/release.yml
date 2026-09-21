@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag ancestry and version sync
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VER="${TAG#v}"
+          echo "Tag: $TAG  Version: $VER"
+
+          # Tag must point at a commit reachable from main — no orphan releases.
+          git fetch origin main --quiet
+          git merge-base --is-ancestor "$TAG" origin/main \
+            || { echo "FAIL: $TAG is not an ancestor of origin/main"; exit 1; }
+
+          # manifest.json version must match the tag.
+          python -c "
+          import json, sys
+          v = json.load(open('manifest.json', encoding='utf-8-sig'))['version']
+          if v != '$VER':
+              print(f'FAIL: manifest version {v} != tag $VER')
+              sys.exit(1)
+          print(f'OK  manifest.json version = {v}')
+          "
+
+          # CHANGELOG must have a section for this version.
+          grep -q "^## \[${VER}\]" CHANGELOG.md \
+            || { echo "FAIL: CHANGELOG.md missing ## [${VER}] section"; exit 1; }
+          echo "OK  CHANGELOG.md has [${VER}] section"
+
+      - name: Extract release notes from CHANGELOG
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          awk -v hdr="## [$VER]" '
+            index($0, hdr) == 1 { flag=1; next }
+            /^## \[/ && flag { exit }
+            flag
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "FAIL: empty release notes for ${VER}"
+            exit 1
+          fi
+          cat notes.md
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" == *-* ]]; then
+            FLAGS="--prerelease"
+          else
+            FLAGS="--latest"
+          fi
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file notes.md \
+            --verify-tag \
+            $FLAGS
