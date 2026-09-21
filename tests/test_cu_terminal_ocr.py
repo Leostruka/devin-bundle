@@ -16,6 +16,7 @@ def _isolated(tmp_path, monkeypatch):
     monkeypatch.setattr(t, "_BINDING_OVERRIDE", str(tmp_path / "b.json"))
     monkeypatch.setattr(cu_load.sys.modules["cu_hints"], "session_id",
                         lambda: "sess-test")
+    monkeypatch.setattr(t, "_window_rect", lambda hwnd: (0, 0, 800, 600))
     yield
 
 

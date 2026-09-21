@@ -33,6 +33,12 @@ HINT_TTL_S = float(os.environ.get("CU_HINT_TTL", "120"))
 SCHEMA_VERSION = 2
 _SIDECAR_LOCK = threading.Lock()
 
+
+def _on_windows():
+    """Platform seam — tests patch this instead of mutating os.name,
+    which pathlib reads on every Path() call."""
+    return os.name == "nt"
+
 # UIA ControlType id -> short label
 CLICKABLE = {50000: "Button", 50002: "CheckBox", 50003: "ComboBox",
              50004: "Edit", 50005: "Link", 50006: "Image",
@@ -198,7 +204,7 @@ def _enum_worker(scope):
 def enum_clickables(scope="focused", timeout=6.0):
     """Return {"elements", "window", "truncated"} or None on
     failure/timeout/empty."""
-    if os.environ.get("CU_NO_UIA") or os.name != "nt":
+    if os.environ.get("CU_NO_UIA") or not _on_windows():
         return None
     q = queue.Queue(maxsize=1)
     t = threading.Thread(target=lambda: _put(q, scope), daemon=True)
@@ -297,7 +303,7 @@ def uia_perform(entry, action, text=None, timeout=4.0):
     callers must check `reason is None`, not truthiness."""
     if entry.get("enabled") is False:
         return None, "disabled"
-    if os.environ.get("CU_NO_UIA") or os.name != "nt":
+    if os.environ.get("CU_NO_UIA") or not _on_windows():
         return None, "no_uia"
     q = queue.Queue(maxsize=1)
     def run():
@@ -384,7 +390,7 @@ def _next_generation():
 def _fs_lock():
     """Cross-process byte lock on a sibling .lock file (msvcrt on Windows;
     thread-lock only elsewhere — real snapshots are separate processes)."""
-    if os.name != "nt":
+    if not _on_windows():
         return None
     import msvcrt
     f = open(sidecar_path() + ".lock", "a+b")
@@ -452,7 +458,7 @@ def invalidate_sidecar():
 
 
 def _window_alive(hwnd):
-    if not hwnd or os.name != "nt":
+    if not hwnd or not _on_windows():
         return True
     import ctypes
     return bool(ctypes.windll.user32.IsWindow(hwnd))
@@ -461,7 +467,7 @@ def _window_alive(hwnd):
 def window_foreground(hwnd):
     """Is hwnd the foreground window? Physical keystrokes land on whatever
     has focus — callers targeting a specific window must gate on this."""
-    if not hwnd or os.name != "nt":
+    if not hwnd or not _on_windows():
         return True
     import ctypes
     return ctypes.windll.user32.GetForegroundWindow() == hwnd

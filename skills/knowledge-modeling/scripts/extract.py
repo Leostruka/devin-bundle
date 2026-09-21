@@ -417,8 +417,10 @@ def write_output(project, devin, data):
     json_path = out / "knowledge.json"
     md_path = out / "knowledge.md"
     json_text = json.dumps(data, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
-    json_path.write_text(json_text, encoding="utf-8", newline="\n")
-    md_path.write_text(render_markdown(data, project_label(project)), encoding="utf-8", newline="\n")
+    with json_path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(json_text)
+    with md_path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(render_markdown(data, project_label(project)))
 
 
 def empty_kb():
@@ -690,7 +692,8 @@ def main(argv=None):
             if args.write and not args.approve:
                 err("extract --write requires --approve")
                 return 2
-            text = source.read_text(encoding="utf-8", newline="")
+            with source.open(encoding="utf-8", newline="") as fh:
+                text = fh.read()
             text = text.replace("\r\n", "\n").replace("\r", "\n")
             entities, relations, conflicts = parse_markdown(text, rel)
             data = build_extract_data(rel, text, entities, relations, conflicts)
@@ -704,7 +707,8 @@ def main(argv=None):
             if args.write and not args.approve:
                 err("merge --write requires --approve")
                 return 2
-            text = source.read_text(encoding="utf-8", newline="")
+            with source.open(encoding="utf-8", newline="") as fh:
+                text = fh.read()
             text = text.replace("\r\n", "\n").replace("\r", "\n")
             entities, relations, conflicts = parse_markdown(text, rel)
             new = build_extract_data(rel, text, entities, relations, conflicts)
@@ -738,7 +742,8 @@ def main(argv=None):
                     raise RuntimeError("output path escapes .devin")
                 out.mkdir(parents=True, exist_ok=True)
                 plan_path = out / "plan.md"
-                plan_path.write_text(note, encoding="utf-8", newline="\n")
+                with plan_path.open("w", encoding="utf-8", newline="\n") as fh:
+                    fh.write(note)
                 emit_json({
                     "command": "plan",
                     "project": project_label(project),

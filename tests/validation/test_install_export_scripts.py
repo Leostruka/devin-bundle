@@ -79,26 +79,47 @@ def test_export_sh_has_expected_parameters():
     assert content.startswith('#!')
 
 
+def _find_bash():
+    """Locate a real GNU bash: (exe, path_style) or (None, None).
+
+    On Windows CI runners, PATH 'bash' is the WSL stub in System32 (no
+    distro → fails with UTF-16 error output). Prefer Git for Windows
+    bash; accept PATH bash only if it answers --version like GNU bash.
+    """
+    candidates = []
+    if sys.platform == 'win32':
+        for env in ('PROGRAMFILES', 'PROGRAMFILES(X86)'):
+            root = os.environ.get(env)
+            if root:
+                candidates.append(os.path.join(root, 'Git', 'bin', 'bash.exe'))
+    candidates.append('bash')
+    for exe in candidates:
+        try:
+            r = subprocess.run([exe, '--version'], capture_output=True,
+                               text=True, timeout=10)
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+            continue
+        if r.returncode == 0 and 'GNU bash' in r.stdout:
+            return exe, sys.platform == 'win32' and exe == 'bash'
+    return None, False
+
+
 def test_bash_scripts_pass_syntax_check():
     """If bash is available, validate syntax of install.sh and export.sh."""
+    bash, needs_mount = _find_bash()
+    if bash is None:
+        pytest.skip('no GNU bash on this platform')
     for name in ['install.sh', 'export.sh']:
         path = os.path.join(REPO_ROOT, name)
-        # Use forward slashes for bash on Windows/WSL
         unix_path = path.replace('\\', '/')
-        # If on Windows with WSL/Cygwin bash, try to convert to a Unix path
-        if sys.platform == 'win32' and ':' in unix_path:
-            # e.g. D:/path -> /mnt/d/path or /cygdrive/d/path
+        # Git bash accepts D:/path directly; a real WSL bash needs /mnt/d/path
+        if needs_mount and ':' in unix_path:
             drive, rest = unix_path.split(':', 1)
-            wsl_path = f"/mnt/{drive.lower()}{rest}"
-            unix_path = wsl_path
-        try:
-            result = subprocess.run(
-                ['bash', '-n', unix_path],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            # bash not available or timed out; skip syntax check on this platform
-            continue
+            unix_path = f"/mnt/{drive.lower()}{rest}"
+        result = subprocess.run(
+            [bash, '-n', unix_path],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
         assert result.returncode == 0, f"{name} has bash syntax errors: {result.stderr}"
