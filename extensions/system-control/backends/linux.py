@@ -69,7 +69,12 @@ def _read_proc(pid, boot_time):
     pid = _pid(pid)
     with open(f"{PROC_ROOT}/{pid}/stat", "r",
               encoding="utf-8") as fh:
-        comm, ticks = _parse_stat(fh.read())
+        text = fh.read()
+    # Field 3 (first after ")") is state; a zombie is dead, not alive.
+    state = text[text.rfind(")") + 2:].split()[0]
+    if state == "Z":
+        raise FileNotFoundError(f"pid {pid} is a zombie")
+    comm, ticks = _parse_stat(text)
     return {"pid": pid,
             "start_time": boot_time + ticks // _clock_ticks(),
             "name": comm}
