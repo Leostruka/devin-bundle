@@ -183,14 +183,16 @@ def test_spawn_timeout_cleans_tree():
     assert r["ok"] is False and r["status"] == "timeout"
     assert r["error"] == "process timed out"
     if r["postcondition"]["tree_cleanup"] is not True and os.name != "nt":
-        diag = subprocess.run(
+        probe = subprocess.run(
             ["ps", "-axo", "pid=,pgid=,stat=,comm="],
-            capture_output=True, timeout=10
-        ).stdout.decode("utf-8", "replace")
+            capture_output=True, timeout=10)
+        diag = probe.stdout.decode("utf-8", "replace")
         root_pid = r["value"]["target"]["pid"]
         diag = "\n".join(ln for ln in diag.splitlines()
                          if ln.split() and ln.split()[1] == str(root_pid))
-        pytest.fail(f"tree_cleanup False; pgid={root_pid} members:\n{diag}")
+        pytest.fail(f"tree_cleanup False; pgid={root_pid} members:\n{diag}\n"
+                    f"ps rc={probe.returncode} "
+                    f"err={probe.stderr.decode('utf-8','replace')!r}")
     assert elapsed < 30
     gpid = int(r["value"]["stdout"]["value"].strip())
     root = r["value"]["target"]["pid"]

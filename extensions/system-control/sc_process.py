@@ -232,20 +232,23 @@ def _reap_root(proc, grace_s) -> bool:
 def _posix_group_has_live_member(pgid):
     """True while the group has a non-zombie member. killpg(pgid, 0)
     keeps succeeding while only zombies remain (macOS reaps reparented
-    zombies on launchd's schedule), so membership is checked by state."""
-    try:
-        out = subprocess.run(["ps", "-axo", "pgid=,stat="],
-                             capture_output=True, timeout=10)
-    except Exception:
-        return True  # unknown: fail closed
-    if out.returncode != 0:
-        return True
-    for line in out.stdout.decode("utf-8", "replace").splitlines():
-        f = line.split()
-        if (len(f) >= 2 and f[0].isdigit() and int(f[0]) == pgid
-                and not f[1].startswith("Z")):
-            return True
-    return False
+    zombies on launchd's schedule), so membership is checked by state.
+    pgid keyword first, pgrp fallback (BSD ps), else fail closed."""
+    for kw in ("pgid", "pgrp"):
+        try:
+            out = subprocess.run(["ps", "-axo", f"pid=,{kw}=,stat="],
+                                 capture_output=True, timeout=10)
+        except Exception:
+            continue
+        if out.returncode != 0:
+            continue
+        for line in out.stdout.decode("utf-8", "replace").splitlines():
+            f = line.split()
+            if (len(f) >= 3 and f[1].isdigit() and int(f[1]) == pgid
+                    and not f[2].startswith("Z")):
+                return True
+        return False
+    return True  # ps unusable: fail closed
 
 
 def _reap_posix_group(proc, grace_s) -> bool:
