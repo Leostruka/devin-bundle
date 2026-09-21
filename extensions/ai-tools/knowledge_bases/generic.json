@@ -1,0 +1,18 @@
+{
+  "model": "generic",
+  "template": "State the goal, the constraints, the acceptance criteria, and the expected output format.",
+  "rules": [
+    "Be explicit about scope: what is in scope and what is out of scope.",
+    "List acceptance criteria as verifiable statements.",
+    "Name the files, directories, or systems the task touches.",
+    "State what the agent must NOT do."
+  ],
+  "do": [
+    "Break ambiguous requirements into explicit checkpoints.",
+    "Prefer deterministic verification steps."
+  ],
+  "dont": [
+    "Do not assume unstated context or files.",
+    "Do not expand scope beyond the stated task."
+  ]
+}

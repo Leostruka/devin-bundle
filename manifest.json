@@ -359,9 +359,14 @@
       "name": "system-control",
       "source": "devin-bundle",
       "purpose": "Use when the task needs authorized OS-level control — process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file copies — where native system APIs beat GUI computer-use. Routes to the system-control extension."
+    },
+    {
+      "name": "prompt-compiler",
+      "source": "devin-bundle",
+      "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt and hands off to a fresh local session."
     }
   ],
-  "skill_count": 52,
+  "skill_count": 53,
   "rule_count": 28,
   "scripts": [
     {
