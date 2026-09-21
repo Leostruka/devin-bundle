@@ -36,6 +36,7 @@ _NT = os.name == "nt"
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 _DIRECTORY = getattr(os, "O_DIRECTORY", 0)
 _BINARY = getattr(os, "O_BINARY", 0)
+_NONBLOCK = getattr(os, "O_NONBLOCK", 0) if not _NT else 0
 
 
 class _Reject(Exception):
@@ -112,7 +113,8 @@ def _open_under_root(root_fd, parts):
             os.close(fd)
         fd = nxt
     try:
-        return os.open(parts[-1], os.O_RDONLY | _NOFOLLOW | _BINARY,
+        return os.open(parts[-1],
+                       os.O_RDONLY | _NOFOLLOW | _BINARY | _NONBLOCK,
                        dir_fd=fd)
     finally:
         if fd != root_fd:
@@ -129,7 +131,7 @@ def _open_source(root_fd, parts, resolved):
     """Open a validated source read-only without following links."""
     if root_fd is not None:
         return _open_under_root(root_fd, parts)
-    return os.open(resolved, os.O_RDONLY | _BINARY)
+    return os.open(resolved, os.O_RDONLY | _BINARY | _NONBLOCK)
 
 
 def _sha256_fd(fd):

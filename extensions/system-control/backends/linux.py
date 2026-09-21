@@ -109,7 +109,10 @@ def process_list(pid=None):
         pid = _pid(pid)
     boot = _boot_time()
     if pid is not None:
-        return [_read_proc(pid, boot)]
+        try:
+            return [_read_proc(pid, boot)]
+        except (OSError, ValueError, IndexError):
+            return []  # exited between lookup and read
     out = []
     for entry in os.listdir(PROC_ROOT):
         if entry.isdigit():

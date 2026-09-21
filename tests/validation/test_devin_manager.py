@@ -4,6 +4,7 @@ Agent-chosen infrastructure tests (tests/validation/), distinct from
 held-out behavioral tests.
 """
 import json
+import sys
 import shutil
 import subprocess
 import tempfile
@@ -18,7 +19,7 @@ SCRIPT = ROOT / "skills" / "devin-config" / "scripts" / "devin-manager.py"
 
 def run(args, cwd=ROOT):
     return subprocess.run(
-        ["python", str(SCRIPT)] + args,
+        [sys.executable, str(SCRIPT)] + args,
         capture_output=True,
         text=True,
         encoding="utf-8",

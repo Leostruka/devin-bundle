@@ -388,24 +388,32 @@ def _next_generation():
 
 
 def _fs_lock():
-    """Cross-process byte lock on a sibling .lock file (msvcrt on Windows;
-    thread-lock only elsewhere — real snapshots are separate processes)."""
-    if not _on_windows():
-        return None
-    import msvcrt
+    """Cross-process lock on a sibling .lock file (msvcrt byte-lock on
+    Windows, fcntl.flock elsewhere — real snapshots cross processes).
+    Uses os.name (the host), not _on_windows(): the lock mechanism must
+    exist on the OS actually running."""
     f = open(sidecar_path() + ".lock", "a+b")
-    f.seek(0)
-    msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+    if os.name == "nt":
+        import msvcrt
+        f.seek(0)
+        msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
     return f
 
 
 def _fs_unlock(f):
     if f is None:
         return
-    import msvcrt
-    f.seek(0)
     try:
-        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+        if os.name == "nt":
+            import msvcrt
+            f.seek(0)
+            msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
     finally:
         f.close()
 

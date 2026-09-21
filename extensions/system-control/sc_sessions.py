@@ -623,6 +623,14 @@ def _pid_alive(pid):
             ctypes.windll.kernel32.CloseHandle(h)
             return True
         os.kill(pid, 0)
+        # A zombie (dead child never waitpid'ed) still answers signal-0.
+        # waitpid reaps it only if it is ours; ChildProcessError means a
+        # foreign process — kill() already proved it exists.
+        try:
+            if os.waitpid(pid, os.WNOHANG)[0] == pid:
+                return False
+        except OSError:
+            pass
         return True
     except Exception:
         return False
@@ -696,20 +704,31 @@ def start_daemon():
     A pidfile whose pid is alive but unreachable is never deleted or
     respawned over — that would orphan a live daemon's sessions.
     """
-    d = _read_pidfile()
-    if d is not None:
-        if _pid_alive(d["pid"]):
+    # Alive-but-unreachable may mean mid-shutdown: the daemon acks stop,
+    # then closes the socket, reaps sessions, and removes the pidfile
+    # last. Wait for it instead of orphaning a live daemon or racing its
+    # pidfile; a different generation appearing means a new daemon won
+    # the race — ping that one.
+    deadline = time.time() + 15
+    while True:
+        d = _read_pidfile()
+        if d is not None and _pid_alive(d["pid"]):
             r = _rpc(d["port"], {"op": "ping"}, timeout=5)
             if r.get("ok"):
                 return {"ok": True, "started": False,
                         "daemon": {"pid": d["pid"], "port": d["port"],
                                    "generation": d.get("generation")}}
-            return {"ok": False,
-                    "error": "daemon busy or unresponsive"}
-        try:  # stale pidfile: dead pid
-            os.remove(PIDFILE)
-        except OSError:
-            pass
+            if time.time() >= deadline:
+                return {"ok": False,
+                        "error": "daemon busy or unresponsive"}
+            time.sleep(0.1)
+            continue
+        if d is not None:
+            try:  # stale pidfile: dead pid
+                os.remove(PIDFILE)
+            except OSError:
+                pass
+        break
     kw = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL,
           "stdin": subprocess.DEVNULL, "close_fds": True}
     if os.name == "nt":

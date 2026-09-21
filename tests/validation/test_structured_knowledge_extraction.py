@@ -3,6 +3,7 @@
 Agent-chosen infrastructure tests, distinct from held-out behavioral tests.
 """
 import json
+import sys
 import os
 import shutil
 import subprocess
@@ -17,7 +18,7 @@ FIXTURE = ROOT / "tests" / "fixtures" / "knowledge-modeling"
 
 def run(args, cwd=ROOT):
     return subprocess.run(
-        ["python", str(SCRIPT)] + args,
+        [sys.executable, str(SCRIPT)] + args,
         capture_output=True,
         text=True,
         encoding="utf-8",
