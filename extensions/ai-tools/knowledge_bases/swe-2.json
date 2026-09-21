@@ -1,0 +1,21 @@
+{
+  "model": "swe-2",
+  "template": "Goal / Context / Acceptance criteria / Scope & non-goals / Execution hints.",
+  "rules": [
+    "Front-load context: file paths, function names, and conventions the executor cannot infer.",
+    "State acceptance criteria as checkable items, not vibes.",
+    "Explicitly list out-of-scope work — SWE-2 is proactive and will expand otherwise.",
+    "Mention test commands and verification gates verbatim.",
+    "Reference existing code conventions to mimic, not restyle."
+  ],
+  "do": [
+    "Cite concrete file paths and prior commits as anchors.",
+    "Say 'verify with tools' for claims that must be checked, not assumed.",
+    "Keep instructions telegraphic — dense beats verbose."
+  ],
+  "dont": [
+    "Do not leave scope ambiguous; every unchecked edge becomes scope creep.",
+    "Do not request comments, docs, or refactors not asked for.",
+    "Do not bury the acceptance criteria — they are the contract."
+  ]
+}

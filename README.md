@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-52-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-53-blue.svg)](#2-skills)
 [![Rules](https://img.shields.io/badge/rules-28-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.3.0-orange.svg)](CHANGELOG.md)
 
@@ -122,7 +122,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 52 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 53 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 
@@ -413,7 +413,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 {{BUNDLE_REPO}}/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 6 perfis customizados
-├── skills/                    # 52 workflows invocáveis
+├── skills/                    # 53 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, rust-core)
 ├── data/                      # modelos, integrações e metadados versionados
@@ -565,7 +565,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 52 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 53 skills |
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |
 | [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md) | Política e características dos modelos |
