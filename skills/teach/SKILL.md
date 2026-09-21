@@ -11,12 +11,21 @@ The user has asked you to teach them something. This is a stateful request - the
 Treat the current directory as a teaching workspace. The state of their learning is captured in this directory in several files:
 
 - `MISSION.md`: A document capturing the _reason_ the user is interested in the topic. This should be used to ground all teaching. Use the format in [MISSION-FORMAT.md](./MISSION-FORMAT.md).
-- `./reference/*.html`: A directory of reference materials. These are the compressed learnings from the lessons - cheat sheets, reference algorithms, syntax, yoga poses, glossaries. They are the raw units of learning. They should be beautiful documents which print out well, and are designed for quick reference.
+- `GLOSSARY.md`: The canonical dictionary of the topic's jargon — **required, not optional**. Build it early; every future lesson must adhere to its terms so lessons stay short. Use the format in [GLOSSARY-FORMAT.md](./GLOSSARY-FORMAT.md).
+- `./reference/*.html`: A directory of reference materials — the cheat sheets. These are the compressed learnings from the lessons - reference algorithms, syntax, yoga poses, diagrams. They are the raw units of learning. They should be beautiful documents which print out well, and are designed for quick reference.
 - `RESOURCES.md`: A list of resources which can be explored to ground your teaching in contextual knowledge, or to acquire knowledge and wisdom. Use the format in [RESOURCES-FORMAT.md](./RESOURCES-FORMAT.md).
 - `./learning-records/*.md`: A directory of learning records, which capture what the user has learned. These are loosely equivalent to architectural decision records in software development - they capture non-obvious lessons and key insights that may need to be revised later, or drive future sessions. These should be used to calculate the zone of proximal development. They are titled `0001-<dash-case-name>.md`, where the number increments each time. Use the format in [LEARNING-RECORD-FORMAT.md](./LEARNING-RECORD-FORMAT.md).
 - `./lessons/*.html`: A directory of lessons. A **lesson** is a single, self-contained HTML output that teaches one tightly-scoped thing tied to the mission. This is the primary unit of teaching in this workspace.
 - `./assets/*`: Reusable **components** shared across lessons. See [Assets](#assets).
-- `NOTES.md`: A scratchpad for you to jot down user preferences, or working notes.
+- `NOTES.md`: A scratchpad for you to jot down user preferences, weaknesses, current state, or working notes.
+
+## State Integrity
+
+This workspace is the student's memory. Corrupting it corrupts the tutoring.
+
+- **Read before write, always.** Before updating `NOTES.md`, `MISSION.md`, `GLOSSARY.md`, `RESOURCES.md`, or any `learning-records/` file, read the existing file first. Merge new information into it — never overwrite blind. If a file does not exist yet, create it; if it exists, append or revise in place.
+- **Read the state before teaching.** Before designing any lesson, read `MISSION.md`, `NOTES.md`, `GLOSSARY.md`, and the recent `learning-records/`. The ZPD calculation depends on them — a lesson designed without reading the records is a guess, not tutoring.
+- **Never delete or rewrite learning records.** They are append-mostly: add a new numbered record rather than rewriting an old one. If a record is wrong, supersede it with a new record that references it.
 
 ## Philosophy
 
@@ -55,6 +64,16 @@ If possible, open the lesson file for the user by running a CLI command.
 
 Each lesson should link via HTML anchors to other lessons and reference documents.
 
+### Interactivity contract
+
+Lessons are HTML + CSS + JS, not static text. Every lesson must use interactivity appropriate to its skill:
+
+- **Quizzes**: clickable options where the *wrong* answer triggers immediate feedback (e.g. an `alert()` or inline reveal) explaining *why* it is wrong — not just "incorrect". The right answer explains why it is right.
+- **Expandable sections** (`<details>` or JS tabs) for optional depth — keep the core path within working memory.
+- **Buttons and inputs** for micro-exercises (type the answer, reveal, compare).
+
+Single-lesson widgets may be inline in the file; anything a second lesson would reuse belongs in `./assets/` (see below). Prefer a shared quiz component once the pattern stabilizes — but never ship a static lesson where an interactive one fits the skill.
+
 Each lesson should recommend a primary source for the user to read or watch. This should be the most high-quality, high-trust resource you found on the topic.
 
 Each lesson should contain a reminder to ask followup questions to the agent. The agent is their teacher, and can assist with anything that's unclear.
@@ -79,13 +98,17 @@ Missions may change as the user develops more skills and knowledge. This is norm
 
 ## Zone Of Proximal Development
 
-Each lesson, the user should always feel as if they are being challenged 'just enough'.
+**Strict directive: never give the complete solution at once. Every lesson must sit exactly in the user's Zone of Proximal Development — perfectly challenging, but not intimidating.**
+
+Each lesson, the user should always feel as if they are being challenged 'just enough'. One step past what they can do unaided — reachable with the lesson's scaffolding, unreachable without it.
 
 The user may specify an exact thing they want to learn. If they don't, figure out their zone of proximal development by:
 
-- Reading their `learning-records`
+- Reading their `learning-records` — this is mandatory, not optional (see [State Integrity](#state-integrity))
 - Figuring out the right thing to teach them based on their mission
 - Teach the most relevant thing that fits in their zone of proximal development
+
+If a lesson would only restate what the records show as already mastered, it is below the ZPD — skip it. If it requires knowledge with no supporting record or glossary term, it is above the ZPD — build the bridge first.
 
 ## Knowledge
 
@@ -112,6 +135,8 @@ For quizzes, each answer should be exactly the same number of words (and charact
 
 Wisdom comes from true real-world interaction - testing your skills outside the learning environment.
 
+**Graduation trigger — act on it, don't wait for it.** When `learning-records/` show the user has mastered the fundamentals, stop generating basic lessons and proactively point them at real communities: forums, subreddits, Discords, repositories to contribute to, local groups. Say explicitly that they have outgrown the basics and name where to test their skills next. Record this transition in a new learning record.
+
 When the user asks a question that appears to require wisdom, your default posture should be to attempt to answer - but to ultimately delegate to a **community**.
 
 A community is a place (online or offline) where the user can test their skills in the real world. This might be a forum, a subreddit, a real-world class (budget permitting) or a local interest group.
@@ -132,7 +157,7 @@ Some learning topics lend themselves to reference:
 - Exercises and routines for fitness
 - Glossaries for any topic with its own nomenclature
 
-Glossaries, in particular, are an essential reference. Once one is created, it should be adhered to in every lesson.
+Glossaries, in particular, are an essential reference — but the canonical one is `GLOSSARY.md` (required; see [Teaching Workspace](#teaching-workspace)). Once created, it must be adhered to in every lesson; term-level drill cards may still live in `./reference/` as cheat sheets.
 
 ## `NOTES.md`
 
