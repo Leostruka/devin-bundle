@@ -73,9 +73,13 @@ def _pid(value):
 def process_list(pid=None):
     if shutil.which("ps") is None:
         raise BackendUnavailable("ps not found")
-    argv = ["ps", "-axo", "pid=,stat=,lstart=,comm="]
-    if pid is not None:
-        argv += ["-p", str(_pid(pid))]
+    if pid is None:
+        argv = ["ps", "-axo", "pid=,stat=,lstart=,comm="]
+    else:
+        # BSD ps selection flags are OR'ed: `-ax` already selects all
+        # processes, so `-p` would be ignored. Filter mode drops -ax.
+        argv = ["ps", "-o", "pid=,stat=,lstart=,comm=",
+                "-p", str(_pid(pid))]
     try:
         rc, out, err = run_bounded(argv)
     except (OSError, subprocess.TimeoutExpired) as exc:
