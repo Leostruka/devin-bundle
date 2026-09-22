@@ -369,9 +369,14 @@
       "name": "architecture-diagrams",
       "source": "devin-bundle",
       "purpose": "Use when the deliverable is a physical diagram artifact (.svg/.png) — C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid there)."
+    },
+    {
+      "name": "media-tools",
+      "source": "devin-bundle",
+      "purpose": "Use when generating visual artifacts — ASCII art, halftone, dithering, matrix-rain, VHS, pixel-sort, voronoi, and other image/video FX — from images, GIFs, videos, GLB models, or webcam input. Local, offline-first."
     }
   ],
-  "skill_count": 54,
+  "skill_count": 55,
   "rule_count": 28,
   "scripts": [
     {
