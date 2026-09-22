@@ -91,7 +91,11 @@ Apply the best-fit alternative for each component. This is the deterministic set
 1. **Run the engineering-skills setup** to configure issue tracker, triage labels, and domain docs (all inside `.devin/`).
 2. **Create `.devin/global_rules.md`** with a short `## Agent skills` block and the repo-specific rules from the engineering-skills setup.
 2.5. **Create `.devin/rules/agents.md` from the project template** — copy `skills/project-bootstrap/templates/agents.md` into `.devin/rules/agents.md` and replace the stack-specific placeholder with the project's concrete rules (e.g., TypeScript without `any`, linter commands, naming conventions). This is the project's per-stack agent rules file; keep it short and action-oriented.
-3. **Create `.devin/rules/*.md`** for optional, trigger-scoped rules.
+3. **Create `.devin/rules/*.md`** for optional, trigger-scoped rules. Two starter templates ship in `templates/`:
+   - `domain-rules.md` → copy to `.devin/rules/domain.md`; `trigger: glob` with `globs` pointed at the project's domain paths (`src/**`, `app/**`). For business rules and invariants that should only load when domain code is touched.
+   - `devin-config-rules.md` → copy to `.devin/rules/devin-config.md`; scoped to `.devin/**`, it teaches the bundle's own conventions when the agent edits the config tree.
+   - Frontmatter format (verified CLI 3000.11.1): `trigger:` is one of `always_on`/`manual`/`model_decision`/`agent`/`glob`; **`globs:` is a YAML sequence** — `globs: "src/**"` (string) is a parse error in `devin rules list`. No frontmatter → `manual` (never injected).
+   - Keep rule bodies short and pointer-style — content duplicated from `AGENTS.md`/`global_rules.md` pays context twice when the glob hits.
 4. **Create `.devin/hooks.v1.json`** with the essential hooks from the bundle:
    - `behavioral-nudge.py` on `UserPromptSubmit`
    - `check-ai-signature.py` on `PreToolUse` for `write`/`edit`

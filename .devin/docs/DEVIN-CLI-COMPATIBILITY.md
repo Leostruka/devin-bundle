@@ -39,27 +39,26 @@ python audit.py
 python -m pytest
 ```
 
-## 3000.10.x capabilities (verified 2026-09-15, CLI 3000.10.27)
+## 3000.11.x capabilities (verified 2026-09-22, CLI 3000.11.1)
 
-Decisions for configuration keys introduced between `3000.6.14` and `3000.10.27`:
+Capabilities introduced in `3000.10.31` and `3000.11.1` that interact with bundle surfaces:
 
 | Capability | Decision | Rationale |
 |---|---|---|
-| `disabled_tools` | Not adopted | Bundle skills/scripts reference all relevant tools; disabling would remove documented capability without a measured gain. |
-| `agent.compaction_threshold_tokens` | Not adopted | No evidence-backed non-default value; earlier compaction only increases constraint-drop events (pinning hook already covers them). |
-| `PreToolUse` `tool_provenance` | Adopted passively | Field is additive in hook payloads; existing hook scripts ignore unknown keys. No config change needed. |
-| `web_search` permission rules | Not adopted | `allow` adds nothing, `ask` adds friction, `deny` breaks research skills. |
-| `/code`, `/smart`, `/bypass` modes | Adopted (docs) | Documented here; no config keys required. |
-| Skill rediscovery after compaction | Adopted passively | CLI behavior; no bundle change. |
-| `read_config_from.cursor` → `.cursor/skills/` | Not adopted | `cursor` stays `false`; bundle is Devin-native only (Rule: no platform leakage). |
-| `agent.codex_tools` | Not adopted | Bundle uses SWE effort routing, not Codex tooling. |
-| `shell.exec_shell` | Not adopted | Bundle hook commands are shell-agnostic `python` invocations. |
-| `DEVIN_REFUSAL_FALLBACK` | Not adopted | Environment variable, not a config-template key. |
-| GPT-6 Astra turn batching (3000.10.27) | Not applicable | Provider-side model behavior (fewer turns, targeted commands); no config surface. Bundle policy is SWE-2-only. |
-
-## `read_config_from` policy
-
-`config.json` sets `read_config_from.agents_standard: true` and every other foreign import to `false`. `agents_standard` is the Devin-native mechanism for project `AGENTS.md`/`AGENTS.local.md`/`AGENT.md`/`.windsurfrules` files — the same mechanism the bundle itself relies on for its global rules. Disabling it silently dropped project-level rules in every installed repository, contradicting the bundle's AGENTS-centric operating model. Other tool formats (`cursor`, `windsurf`, `claude`, `copilot`, `opencode`, `zed`) remain disabled: the bundle ships Devin-native skills/rules only, and importing foreign formats would be platform leakage.
+| `Exec` deny beats broader `allow`/`ask`; `Exec(*)` matches all (3000.10.31) | adopted (passive) | Bundle ships only `Write`/`Read` deny rules for secrets; no `Exec` rules needed. `Exec(*)` is available if a future gate needs it. |
+| Recursive rule discovery in `.devin/rules/` + `.windsurf/rules/` | adopted | Verified: `.devin/rules/README.md` listed as a `manual` rule (not always-on). README moved to `.devin/docs/` to keep `devin rules list` clean. |
+| `allowed-tools` grants `write` in profiles/skills | adopted | Verified empirically: `implementer` subagent created a file; `researcher` has no write tool. Profiles already express intent — no change. |
+| Subagents inherit global + workspace always-on rules | adopted (passive) | Verified: `researcher` quoted global AGENTS.md rule 2. Pinned constraints now reach subagents; small context cost per dispatch. |
+| `devin --cloud`/`/cloud`, `/handoff`, `/pickup`, `devin ssh`/`/ssh` | adopted (docs) | New user-facing cloud commands; mapped in `TOOLS-MAP.md`. No config surface. |
+| `otel` config block / `OTEL_EXPORTER_OTLP_*` | not adopted | No collector configured; `devin doctor` already validates the env. Revisit if an observability stack is adopted (`observability-quality`). |
+| Org/enterprise plugins via Customize | documented | They now load in the CLI subject to the current org; bundle distribution stays on the installer. |
+| `/loop` reviews in fresh read-only subagent | adopted (passive) | CLI behavior; no config. |
+| Bypass mode skips editor review on file edits | documented | UX change only. |
+| Interrupt parks running subagents | documented | Subagents survive interrupt (except Fusion sidekick); affects `afk-loop`/dispatch expectations. |
+| PowerShell output/echo fixes; `devin forward` port release (Windows) | adopted (passive) | Upstream fixes; no bundle workarounds existed to remove. |
+| ACP session config (model/effort/speed), auth cache | not adopted | Bundle does not run as an ACP server. |
+| `AI_AGENT=devin_<version>_agent` in agent shells | adopted (passive) | Informational; hook scripts may key off it. |
+| `/login` hidden in cloud sessions; session-lock identifies holder PID | documented | Minor UX/security hardening. |
 
 ## Model policy
 
@@ -99,6 +98,8 @@ Blocking `PreToolUse` hooks return exit code 2 and a top-level JSON decision con
 ## Plugins
 
 Native plugins and Agent Plugins 1.0.0 are supported in recent CLI versions. Native plugin manifests use `.devin-plugin/plugin.json`; Agent Plugins use `plugin.json` at the plugin root.
+
+Since `3000.11.1`, optional organization and enterprise plugins installed through Customize also load in the CLI (subject to the current organization). This does not change the bundle's distribution path.
 
 The bundle does **not** ship as a plugin — `install.ps1`/`install.sh` remain the distribution path, for two reasons:
 

@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`project-bootstrap` rule templates** — `templates/domain-rules.md` (glob-scoped to domain paths, for business rules) and `templates/devin-config-rules.md` (scoped to `.devin/**`, teaches bundle conventions). Frontmatter format verified on CLI 3000.11.1 (`trigger: glob`, `globs:` YAML sequence).
+
+### Changed
+
+- **Devin CLI alignment `3000.11.1`** — `validated_cli_version` bumped from `3000.10.27`; new `3000.11.x` capability-decision table in `DEVIN-CLI-COMPATIBILITY.md` covering `3000.10.31`→`3000.11.1` (recursive `.devin/rules/` discovery, `allowed-tools` write grant, subagent always-on rule inheritance, cloud commands, `otel` block, `Exec` deny precedence). All verified empirically on the installed CLI.
+- `.devin/rules/README.md` moved to `.devin/docs/RULES-DIRECTORY.md` — recursive rule discovery listed it as a `manual` rule.
+- Duplicate `3000.10.x capabilities` / `read_config_from` sections in `DEVIN-CLI-COMPATIBILITY.md` consolidated.
+- `TOOLS-MAP.md` documents the `3000.11.1` cloud commands (`--cloud`, `/handoff`, `/pickup`, `ssh`).
+
 ## [3.4.0] - 2026-09-21
 
 ### Added

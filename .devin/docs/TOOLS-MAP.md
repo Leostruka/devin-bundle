@@ -151,6 +151,20 @@ O bundle carrega servidores MCP a partir de `mcp_config.json` no Devin home do u
 não escolhe o modo. Em `normal` (default), o runtime pede aprovação para
 tools com side effects — não é o agente pedindo, é o runtime.
 
+## Comandos do CLI (3000.11.x)
+
+| Comando | Tipo | Função |
+|---|---|---|
+| `devin --cloud` / `/cloud` | Cloud | Roda sessão Devin Cloud a partir do CLI |
+| `/handoff`, `/pickup` | Cloud | Traz branch de PR de sessão cloud para sessão local |
+| `devin ssh` / `/ssh` | Cloud | Conecta a uma VM Devin Cloud |
+| `devin forward` | Cloud | Port-forward de box cloud → localhost |
+| `devin rules`, `devin skills`, `devin plugins`, `devin doctor` | Config | Gerência nativa de rules/skills/plugins e diagnóstico |
+
+**Nota 3000.11.1:** bloco `otel` no `config.json` ou `OTEL_EXPORTER_OTLP_*`
+exportam eventos/métricas para um collector OpenTelemetry — não adotado
+(sem collector configurado; `devin doctor` já valida o ambiente).
+
 ## Modelos disponíveis (Devin CLI `{{VALIDATED_CLI_VERSION}}`)
 
 | model_uid | Label | Effort | Context | Custo | Recomendado |
