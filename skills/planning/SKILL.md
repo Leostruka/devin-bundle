@@ -1,6 +1,6 @@
 ---
 name: planning
-description: Use when turning conversation into a written spec/PRD, breaking a plan or spec into independent traceable tickets, writing a concrete task-by-task implementation plan, when a decision needs external input via a questionnaire, or when planning work too large for one session as a map of decision tickets (wayfinding).
+description: Use when AUTHORING a spec/PRD, implementation plan, or ticket breakdown from conversation — writing the artifacts, not running them. Hands off to `execution` once the plan exists. Also for decisions needing external input via questionnaire, or work too large for one session mapped as decision tickets (wayfinding).
 triggers: [user, model]
 ---
 

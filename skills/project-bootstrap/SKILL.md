@@ -36,3 +36,8 @@ specific edit → `devin-config` instead.
   `reference/issue-tracker-*.md`, `reference/triage-labels.md`,
   `reference/domain.md`.
 - Agent template: `templates/agents.md`.
+
+## Cross-skills
+
+- `devin-config` — wiring project `config.json`, hooks, and permissions after scaffolding.
+- `mcp-governance` — auditing/adding MCP servers for the new project (tool-count cost, trust review).

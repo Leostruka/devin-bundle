@@ -116,6 +116,11 @@ After each pass that produces code changes:
 - If a local `npx impeccable` CLI is installed and trusted, prefer its detector output for `audit` and `critique`; otherwise apply the principles above.
 - Keep files small and focused; do not let design context leak into backend logic.
 
+## Cross-skills
+
+- `a11y-audit` — when polish touches interaction/markup, verify WCAG (contrast, focus, labels) before shipping.
+- `creative-engineering` — when the user names a visual *style/archetype* (CRT, dither, brutalist, vaporwave…), load its technical anatomy instead of improvising.
+
 ## References
 
 - `https://impeccable.style/docs/` — full command reference.

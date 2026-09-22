@@ -17,10 +17,11 @@ import re
 import subprocess
 import sys
 
-# Path to the Node-based mermaid parser
+# Path to the canonical Node-based mermaid parser (repo-root scripts/)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARSE_CHECK_JS = os.path.join(
-    os.path.dirname(os.path.dirname(SCRIPT_DIR)), "scripts", "mermaid-parse-check.js"
+    os.path.dirname(os.path.dirname(os.path.dirname(SCRIPT_DIR))),
+    "scripts", "mermaid-parse-check.js"
 )
 # Fallback: global scripts dir
 if not os.path.isfile(PARSE_CHECK_JS):

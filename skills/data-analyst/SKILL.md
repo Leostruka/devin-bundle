@@ -164,3 +164,10 @@ If the user asks about a specific pandas, seaborn, matplotlib, SQLAlchemy, or pl
 - Schema safety: never run `DROP`, `DELETE`, `UPDATE`, `INSERT`, or
   any mutating SQL unless the user explicitly asks. DANA is
   read-only by design; this skill follows the same constraint.
+
+## Cross-skills
+
+- `architecture-diagrams` / mermaid — when the analysis output needs a diagram artifact (ER, flow, topology) for reports.
+
+  any mutating SQL unless the user explicitly asks. DANA is
+  read-only by design; this skill follows the same constraint.

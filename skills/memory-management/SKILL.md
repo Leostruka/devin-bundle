@@ -1,6 +1,6 @@
 ---
 name: memory-management
-description: Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or when the session produces knowledge worth remembering (answered questions, business rules, conventions, failed approaches, decisions). Covers memory hygiene (stateless vs managed vs naive) and capturing plain-text notes under .devin/ with user approval.
+description: Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only — improving skills/rules/hooks belongs to `self-improvement`.
 triggers: [user, model]
 ---
 
