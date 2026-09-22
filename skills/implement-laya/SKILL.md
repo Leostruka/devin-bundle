@@ -45,6 +45,16 @@ python laya_cli.py predict --state-file s.json --preset guard --model multilingu
 python laya_cli.py --check-questions q.json
 ```
 
+### Bilingual EN/PT
+
+`--model auto` (default) routes by script/language detection: English and
+other Latin-script inputs (Portuguese included) go to the `english`
+checkpoint; non-Latin scripts (Devanagari, Cyrillic, CJK, Arabic…) go to
+`multilingual`. Portuguese on `english` works correctly — verified:
+`billing` @ 0.97 on a PT invoice state. Force `--model multilingual` when the
+corpus is genuinely multilingual or when PT accuracy matters more than the
+english checkpoint's edge on Latin text (multilingual is also ~2× faster).
+
 Output is `{"ok": true, "answers": {...}, "routing": {...}}` — every answer
 carries `confidence`; `routing.reason` explains the checkpoint choice.
 
