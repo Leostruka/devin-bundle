@@ -29,7 +29,7 @@ specific edit → `devin-config` instead.
 
 ## Key conventions
 
-- Rules: `.devin/global_rules.md` + `.devin/rules/*.md`.
+- Rules: `.devin/global_rules.md` + `.devin/rules/*.md` (trigger-scoped; glob/always_on/manual frontmatter — templates in `templates/`).
 - Skills: `.devin/skills/<name>/SKILL.md`.
 - Hooks: `.devin/hooks.v1.json` (project-level) or rendered into user config.
 - Issue tracker: GitHub default, local markdown supported —
