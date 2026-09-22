@@ -1,6 +1,6 @@
 ---
 name: execution
-description: Use when executing a written implementation plan with checkpoints, when implementing a feature/fix from a spec or tickets, when deciding how much human review and upfront planning a task needs, or when working unattended through local Markdown issues in a blocking DAG (AFK loop).
+description: Use when RUNNING an already-written plan/spec/tickets with checkpoints, implementing a feature/fix per spec, deciding how much human review a task needs, or working unattended through local Markdown issues in a blocking DAG (AFK loop). Plans get authored upstream in `planning`/`intake`.
 triggers: [user, model]
 ---
 

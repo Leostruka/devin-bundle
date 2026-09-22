@@ -14,7 +14,7 @@
     {
       "name": "ask-bundle",
       "source": "devin-bundle",
-      "purpose": "Use when deciding which skill or flow fits your situation, when routing and orchestrating work across this bundle through one entry point (direct specialist skills, multi-skill flows, local AFK issues), or when the user starts with a vague request and needs the quick-start menu.",
+      "purpose": "Use when deciding which skill or flow fits your situation — the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague and needs the quick-start menu. Routes then defers to the chosen specialist — does not execute the work itself.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-bundle",
       "export_hash": "8F25FBA82F65C95F5F4DEF246DA6BBF03548C6742DB4B98B3E8368417B9AED06",
       "exported_at": "2026-09-08T21:39:22.433086"
@@ -258,7 +258,7 @@
     {
       "name": "memory-management",
       "source": "devin-bundle",
-      "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or when the session produces knowledge worth remembering (answered questions, business rules, conventions, failed approaches, decisions). Covers memory hygiene (stateless vs managed vs naive) and capturing plain-text notes under .devin/ with user approval."
+      "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only — improving skills/rules/hooks belongs to `self-improvement`."
     },
     {
       "name": "mcp-governance",
@@ -268,17 +268,17 @@
     {
       "name": "planning",
       "source": "devin-bundle",
-      "purpose": "Use when turning conversation into a written spec/PRD, breaking a plan or spec into independent traceable tickets, writing a concrete task-by-task implementation plan, when a decision needs external input via a questionnaire, or when planning work too large for one session as a map of decision tickets (wayfinding)."
+      "purpose": "Use when AUTHORING a spec/PRD, implementation plan, or ticket breakdown from conversation — writing the artifacts, not running them. Hands off to `execution` once the plan exists. Also for decisions needing external input via questionnaire, or work too large for one session mapped as decision tickets (wayfinding)."
     },
     {
       "name": "intake",
       "source": "devin-bundle",
-      "purpose": "Use when estimating the size of a task or PR and deciding whether to split it, when capturing and validating the \"intent\" field in tickets/specs/PRDs before implementation, or when moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs)."
+      "purpose": "Use when SIZING a task or PR and deciding whether to split it, validating the \"intent\" field in tickets/specs/PRDs before implementation, or moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs). Feeds `planning`; does not author plans."
     },
     {
       "name": "execution",
       "source": "devin-bundle",
-      "purpose": "Use when executing a written implementation plan with checkpoints, when implementing a feature/fix from a spec or tickets, when deciding how much human review and upfront planning a task needs, or when working unattended through local Markdown issues in a blocking DAG (AFK loop)."
+      "purpose": "Use when RUNNING an already-written plan/spec/tickets with checkpoints, implementing a feature/fix per spec, deciding how much human review a task needs, or working unattended through local Markdown issues in a blocking DAG (AFK loop). Plans get authored upstream in `planning`/`intake`."
     },
     {
       "name": "gates",
@@ -333,7 +333,7 @@
     {
       "name": "self-improvement",
       "source": "devin-bundle",
-      "purpose": "Use when starting a self-improvement session (deep research + validated improvement loop), when capturing recurring failure patterns or reusable tactics as skills/rules/hooks, when researching agent harness design patterns (PrimeAgent/RLM vs Devin CLI), when emulating A2A messaging between subagents, or when deciding whether to dispatch a subagent, which profile, and what budget."
+      "purpose": "Use when improving the AGENT/BUNDLE itself: self-improvement sessions (deep research + validated loop), capturing recurring failure patterns as skills/rules/hooks (/refine), researching harness design patterns (PrimeAgent/RLM vs Devin CLI), A2A messaging between subagents, or deciding whether to dispatch a subagent, which profile, and what budget. For remembering user/project facts use `memory-management`."
     },
     {
       "name": "skill-discovery",

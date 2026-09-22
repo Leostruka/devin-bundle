@@ -1,6 +1,6 @@
 ---
 name: self-improvement
-description: Use when starting a self-improvement session (deep research + validated improvement loop), when capturing recurring failure patterns or reusable tactics as skills/rules/hooks, when researching agent harness design patterns (PrimeAgent/RLM vs Devin CLI), when emulating A2A messaging between subagents, or when deciding whether to dispatch a subagent, which profile, and what budget.
+description: Use when improving the AGENT/BUNDLE itself: self-improvement sessions (deep research + validated loop), capturing recurring failure patterns as skills/rules/hooks (/refine), researching harness design patterns (PrimeAgent/RLM vs Devin CLI), A2A messaging between subagents, or deciding whether to dispatch a subagent, which profile, and what budget. For remembering user/project facts use `memory-management`.
 triggers: [user, model]
 ---
 

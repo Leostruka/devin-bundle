@@ -27,7 +27,7 @@ End-to-end tests for critical user journeys.
 ## See also
 
 - `observability-quality` — test infrastructure, logging, and coverage strategy.
-- `e2e-testing` — writing and running end-to-end user journeys.
+- `computer-use` — when the e2e target is a desktop/native app (not a browser): drive it via screenshots, UIA, and input control.
 
 ## Output rule
 

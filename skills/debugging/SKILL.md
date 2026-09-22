@@ -51,3 +51,4 @@ Reference: `reference/root-cause-tracing.md`,
 
 - `gates` — verification evidence before declaring fixed.
 - `research` deep-mode — when the bug spans modules you can't trace in a pass.
+- `computer-use` — when the failure is in a GUI/desktop app and needs screen evidence (screenshot, UIA tree) the shell can't see.

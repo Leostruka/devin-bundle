@@ -1,6 +1,6 @@
 ---
 name: intake
-description: Use when estimating the size of a task or PR and deciding whether to split it, when capturing and validating the "intent" field in tickets/specs/PRDs before implementation, or when moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs).
+description: Use when SIZING a task or PR and deciding whether to split it, validating the "intent" field in tickets/specs/PRDs before implementation, or moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs). Feeds `planning`; does not author plans.
 triggers: [user, model]
 ---
 

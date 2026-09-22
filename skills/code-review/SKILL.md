@@ -50,3 +50,12 @@ Classify each item: **pushed** (reviewer cites a concrete violation → verify
 against the cited source, fix, test) vs **pulled** (reviewer points to a
 skill/convention/gate you should have used → pull that source first, apply,
 verify). Repeated missing pulled patterns → add to your pre-review checklist.
+
+## Cross-skills
+
+- `security` — escalate to the security skill when the diff touches auth, secrets, input handling, or public endpoints.
+- `a11y-audit` — escalate when the diff touches frontend markup/ARIA/keyboard paths.
+
+against the cited source, fix, test) vs **pulled** (reviewer points to a
+skill/convention/gate you should have used → pull that source first, apply,
+verify). Repeated missing pulled patterns → add to your pre-review checklist.

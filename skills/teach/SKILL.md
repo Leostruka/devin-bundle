@@ -167,3 +167,5 @@ The user will sometimes express preferences of how they want to be taught, or th
 
 - If the user asks about AI-coding jargon or a term is being used loosely, invoke `ai-coding-dictionary` to ground the lesson vocabulary.
 - If the user wants to decide how deeply to plan a small example before coding it, invoke `execution`.
+- To verify the student actually performed a hands-on exercise (GUI task, editor state), invoke `computer-use` — screenshot/UIA beats self-report.
+- When a lesson needs visual material (aesthetic demos, styled examples, generated media), consult `creative-engineering` (aesthetics KB) and `media-tools` (grainrad/ascii_mancer) before writing ad-hoc scripts.

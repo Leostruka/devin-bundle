@@ -1,6 +1,6 @@
 ---
 name: ask-bundle
-description: Use when deciding which skill or flow fits your situation, when routing and orchestrating work across this bundle through one entry point (direct specialist skills, multi-skill flows, local AFK issues), or when the user starts with a vague request and needs the quick-start menu.
+description: Use when deciding which skill or flow fits your situation — the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague and needs the quick-start menu. Routes then defers to the chosen specialist — does not execute the work itself.
 triggers: [user, model]
 ---
 
