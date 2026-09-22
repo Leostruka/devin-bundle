@@ -374,9 +374,14 @@
       "name": "media-tools",
       "source": "devin-bundle",
       "purpose": "Use when generating visual artifacts — ASCII art, halftone, dithering, matrix-rain, VHS, pixel-sort, voronoi, and other image/video FX — from images, GIFs, videos, GLB models, or webcam input. Local, offline-first."
+    },
+    {
+      "name": "implement-laya",
+      "source": "devin-bundle",
+      "purpose": "Use when a task needs fast typed decisions — classification, triage, scoring, guardrails, moderation, or model routing — over text/JSON states, or when integrating the 'laya' engine (non-autoregressive decision model) into a user's codebase."
     }
   ],
-  "skill_count": 55,
+  "skill_count": 56,
   "rule_count": 28,
   "scripts": [
     {

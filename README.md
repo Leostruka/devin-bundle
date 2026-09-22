@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-55-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-56-blue.svg)](#2-skills)
 [![Rules](https://img.shields.io/badge/rules-28-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.3.0-orange.svg)](CHANGELOG.md)
 
@@ -122,7 +122,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 55 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 56 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 
@@ -215,6 +215,8 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `system-control` | Controle autorizado do OS (processos, serviços, exec one-shot, sessões, eventos, cópias verificadas) — APIs de sistema em vez de GUI |
 | `ai-tools` | Ferramentas ML locais offline-first (abliteration PoC), JSON stdout |
 | `media-tools` | Utilitários de mídia |
+| `diagram-tools` | Render PlantUML serverless (Deflate + Base64 modificado → API pública), sem Java |
+| `laya-tools` | CLI sobre o motor de decisão `laya` (triage/guardrails/moderation, typed questions, JSON stdout) |
 | `rust-core` | Extensão híbrida PyO3 (`fast_math.pyd`) — build no install |
 
 ## Fluxo operacional completo
@@ -413,9 +415,9 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 {{BUNDLE_REPO}}/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 6 perfis customizados
-├── skills/                    # 55 workflows invocáveis
+├── skills/                    # 56 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
-├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, rust-core)
+├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core)
 ├── data/                      # modelos, integrações e metadados versionados
 ├── .devin/                    # configuração e conhecimento deste projeto
 │   ├── docs/                  # mapas, guias (SKILL-TIERS, MODEL-GUIDE, TOOLS-MAP…)
@@ -565,7 +567,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 55 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 56 skills |
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |
 | [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md) | Política e características dos modelos |

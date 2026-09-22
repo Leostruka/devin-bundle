@@ -10,7 +10,7 @@ print()
 print('[1] JSON files validation')
 json_files = []
 for root, dirs, files in os.walk('.'):
-    if '.git' in root: continue
+    dirs[:] = [d for d in dirs if d not in ('.git', '.venv', 'node_modules', 'target', '__pycache__')]
     for f in files:
         if f.endswith('.json'):
             json_files.append(os.path.join(root, f))
@@ -27,7 +27,7 @@ print()
 print('[2] Python scripts validation')
 py_files = []
 for root, dirs, files in os.walk('.'):
-    if '.git' in root: continue
+    dirs[:] = [d for d in dirs if d not in ('.git', '.venv', 'node_modules', 'target', '__pycache__')]
     for f in files:
         if f.endswith('.py'):
             py_files.append(os.path.join(root, f))
@@ -415,9 +415,11 @@ for pattern in required_ignores:
 pycache_dirs = []
 for root, dirs, files in os.walk('.'):
     if '.git' in root:
+        dirs[:] = []
         continue
     if '__pycache__' in dirs:
         pycache_dirs.append(root)
+    dirs[:] = [d for d in dirs if d not in ('.venv', 'node_modules', 'target', '__pycache__')]
 if pycache_dirs:
     warnings.append('__pycache__ directories found: ' + ', '.join(pycache_dirs))
     print('  WARN __pycache__ directories found: ' + ', '.join(pycache_dirs))
