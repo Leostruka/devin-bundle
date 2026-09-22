@@ -579,4 +579,4 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 
 ## Licença
 
-[MIT](LICENSE) — Leostruka
+[MIT](LICENSE) — Leostruka. Atribuições de terceiros: [NOTICE.md](NOTICE.md).
