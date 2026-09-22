@@ -1,0 +1,103 @@
+{
+ "source": "https://www.tooooools.app",
+ "note": "Curated browser-based creative tools catalog. Consult when the user asks for a visual effect not covered by local media-tools generators; suggest the tool or implement a local equivalent.",
+ "tool_count": 16,
+ "tools": [
+  {
+   "name": "Animated slide effect online",
+   "url": "https://www.tooooools.app/animate/slide",
+   "category": "animate",
+   "description": "Animate uploaded images as textured 3D planes in-browser. Orbit in Y-Z space with timeline controls and export support. Free, no sign-up required."
+  },
+  {
+   "name": "Animated card stack effect online",
+   "url": "https://www.tooooools.app/animate/stack",
+   "category": "animate",
+   "description": "Animate uploaded images as a looping stack of cards with stable per-card rotations and export support. Free, no sign-up required."
+  },
+  {
+   "name": "ASCII Text Generator - Convert Images to Text Art",
+   "url": "https://www.tooooools.app/effects/ascii",
+   "category": "effects",
+   "description": "Transform images and videos into ASCII art text characters. Create terminal-style text art with customizable character sets and grid density. Free, no sign-up required."
+  },
+  {
+   "name": "Bevel effect online",
+   "url": "https://www.tooooools.app/effects/bevel",
+   "category": "effects",
+   "description": "Apply bevel effect to photos & videos in-browser. Create 3D-like edges and depth with adjustable lighting and angles. Free, no sign-up required."
+  },
+  {
+   "name": "Cellular automata effect online",
+   "url": "https://www.tooooools.app/effects/cellular-automata",
+   "category": "effects",
+   "description": "Apply cellular automata effect to photos & videos in-browser. Create dynamic patterns and textures with evolving cellular rules. Free, no sign-up required."
+  },
+  {
+   "name": "CRT monitor effect online",
+   "url": "https://www.tooooools.app/effects/crt",
+   "category": "effects",
+   "description": "Apply authentic CRT monitor effect to photos & videos in-browser. Create retro visuals with scan lines and screen curvature. Free, no sign-up required."
+  },
+  {
+   "name": "Displacement effect online",
+   "url": "https://www.tooooools.app/effects/displace",
+   "category": "effects",
+   "description": "Apply displacement effect to photos & videos in-browser. Create displaced dot patterns. Free, no sign-up required."
+  },
+  {
+   "name": "Distortion effect online",
+   "url": "https://www.tooooools.app/effects/distort",
+   "category": "effects",
+   "description": "Apply distortion effect to photos & videos in-browser. Create warped and twisted visuals with adjustable intensity and patterns. Free, no sign-up required."
+  },
+  {
+   "name": "Dithering effect online",
+   "url": "https://www.tooooools.app/effects/dithering",
+   "category": "effects",
+   "description": "Apply dithering effect to photos & videos in-browser. Create retro pixel art and reduce colors with various dithering patterns. Free, no sign-up required."
+  },
+  {
+   "name": "Halftone dots effect online",
+   "url": "https://www.tooooools.app/effects/dots",
+   "category": "effects",
+   "description": "Apply halftone dots effect to photos & videos in-browser. Create retro-style dot patterns with adjustable sizes and grid settings. Free, no sign-up required."
+  },
+  {
+   "name": "Edge detection effect online",
+   "url": "https://www.tooooools.app/effects/edge",
+   "category": "effects",
+   "description": "Apply edge detection effect to photos & videos in-browser. Create artistic outlines and sketches with adjustable sensitivity. Free, no sign-up required."
+  },
+  {
+   "name": "Gradient effect online",
+   "url": "https://www.tooooools.app/effects/gradients",
+   "category": "effects",
+   "description": "Apply gradient effect to photos & videos in-browser. Create lo-fi blocky gradients. Free, no sign-up required."
+  },
+  {
+   "name": "Pattern effect online",
+   "url": "https://www.tooooools.app/effects/patterns",
+   "category": "effects",
+   "description": "Apply pattern effect to photos & videos in-browser. Create unique textures and designs with customizable patterns and density. Free, no sign-up required."
+  },
+  {
+   "name": "Recolor effect online",
+   "url": "https://www.tooooools.app/effects/recolor",
+   "category": "effects",
+   "description": "Apply recolor effect to photos & videos in-browser. Transform colors with customizable gradient. Free, no sign-up required."
+  },
+  {
+   "name": "Scatter effect online",
+   "url": "https://www.tooooools.app/effects/scatter",
+   "category": "effects",
+   "description": "Apply scatter effect to photos & videos in-browser. Create dot patterns with customizable density and texture. Free, no sign-up required."
+  },
+  {
+   "name": "Stippling effect online | tooooools.app",
+   "url": "https://www.tooooools.app/effects/stipping",
+   "category": "effects",
+   "description": "Apply stippling effect to photos & videos in-browser. Create beautiful stripe patterns with customizable density and size. Free, no sign-up required."
+  }
+ ]
+}
