@@ -41,4 +41,3 @@ specific edit → `devin-config` instead.
 
 - `devin-config` — wiring project `config.json`, hooks, and permissions after scaffolding.
 - `mcp-governance` — auditing/adding MCP servers for the new project (tool-count cost, trust review).
-
