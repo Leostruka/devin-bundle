@@ -364,9 +364,14 @@
       "name": "prompt-compiler",
       "source": "devin-bundle",
       "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt and hands off to a fresh local session."
+    },
+    {
+      "name": "architecture-diagrams",
+      "source": "devin-bundle",
+      "purpose": "Use when the deliverable is a physical diagram artifact (.svg/.png) — C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid there)."
     }
   ],
-  "skill_count": 53,
+  "skill_count": 54,
   "rule_count": 28,
   "scripts": [
     {
