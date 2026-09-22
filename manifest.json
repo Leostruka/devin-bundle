@@ -384,9 +384,14 @@
       "name": "operate-spline",
       "source": "devin-bundle",
       "purpose": "Use when the user asks to launch, drive, build scenes in, export from, or shut down the Spline desktop app (3D/2D design, Electron). Routes to extensions/spline-operator/wrapper.py, which speaks the app's embedded MCP bridge (ws://127.0.0.1:19692) — structured tool calls, not GUI clicking."
+    },
+    {
+      "name": "creative-engineering",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code."
     }
   ],
-  "skill_count": 57,
+  "skill_count": 58,
   "rule_count": 28,
   "scripts": [
     {
