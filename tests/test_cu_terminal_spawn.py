@@ -74,7 +74,9 @@ def test_recv_collects(fakes):
     sid = t.spawn()["session"]
     p = next(iter(fakes.values()))
     p.feed = "banner stuff"
-    out = t.recv_from(sid)
+    # wait=<regex> polls until the drain thread lands the feed — a bare
+    # recv_from races the freshly spawned reader thread on loaded CI runners.
+    out = t.recv_from(sid, wait="banner stuff")
     assert "banner stuff" in out["output"]
 
 
