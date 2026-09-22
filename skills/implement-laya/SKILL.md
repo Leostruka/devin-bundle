@@ -22,15 +22,24 @@ label spaces without tuning (see Gotchas).
 ## Where it is
 
 - Extension (self-use): `extensions/laya-tools/laya_cli.py` (installed at
-  `%APPDATA%\devin\extensions\laya-tools\`). Deps on demand:
-  `python -m pip install -r requirements.txt` inside that dir — better: use a
-  local `.venv`. Torch imports lazily; `--self-test`/`--check-questions`/
-  `--list-presets` run with zero deps.
+  `%APPDATA%\devin\extensions\laya-tools\`). Official install: run
+  `python bootstrap.py` inside that dir — it builds a contained `.venv`
+  (correct PyTorch index, VC++/GPU checks, smoke test) and emits JSON
+  `{ok, steps, venv_python, torch_version, device}`. Then invoke the CLI
+  through the venv: `.venv/Scripts/python.exe laya_cli.py ...` (POSIX:
+  `.venv/bin/python`). Never install deps into the global/Scoop Python —
+  interpreter upgrades break native-wheel ABI (WinError 126). Torch imports
+  lazily; `--self-test`/`--check-questions`/`--list-presets` run with zero
+  deps.
 - Upstream: `github.com/NandhaKishorM/laya` — `pip install laya`.
 
 ## Self-use (agent automation)
 
 ```bash
+# run inside extensions/laya-tools/ via the .venv interpreter:
+#   WIN: .venv\Scripts\python.exe   POSIX: .venv/bin/python
+# (examples below assume that interpreter as `python`)
+
 # triage a ticket with the built-in preset
 python laya_cli.py predict --state '{"body": "charged twice, refund please"}' --preset triage
 
