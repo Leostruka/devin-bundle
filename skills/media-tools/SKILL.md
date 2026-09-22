@@ -55,6 +55,16 @@ python grainrad.py --input webcam:0 --effect ascii --output selfie.png
 Every call prints `{"ok": true, "path": ...}` — verify `ok` before reporting
 done. `--self-test` runs synthetic offline asserts per script.
 
+## External catalog — tooooools.app
+
+If the user asks for a visual effect or media process NOT covered by the local
+generators above, **MANDATORY**: read
+`extensions/media-tools/knowledge_bases/creative_tooooools.json` first — a
+curated catalog (16 browser tools: stippling, dithering, CRT, cellular
+automata, displacement, ASCII, animate…) with name, URL, and description per
+tool. Use it to suggest the right external tool or as reference to implement a
+local equivalent. Refresh with `python update_tooooools_db.py`.
+
 ## Boundary
 
 - This skill is for **visual artifact generation** (stylized media).
