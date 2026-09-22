@@ -5,6 +5,32 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] - 2026-09-21
+
+### Added
+
+- **`teach` skill** — stateful tutoring engine with ZPD-strict gating and state integrity checks.
+- **`prompt compiler` + `/prompt` skill** — compile rough intent into structured prompts (`ai-tools`).
+- **`diagram-tools` extension + `architecture-diagrams` skill** — PlantUML serverless renderer.
+- **`media-tools` skill** — routes the visual-FX extension (grainrad parity).
+- **`laya-tools` extension + `implement-laya` skill** — wrapper for the laya decision engine; bilingual EN/PT routing.
+- **`spline-operator` extension + `operate-spline` skill** — Spline MCP bridge control (`ws://127.0.0.1:19692`), 36 tools, daemon keeper, `3d_load_skill` protocol.
+- **`creative-engineering` skill + aesthetics KB** — 15 visual archetypes under `extensions/media-tools/knowledge_bases/aesthetics/` (CRT, receipt, depth-map, blob, datamosh, 1-bit dither, night-vision, brutalism, PC-98, wired-cyber-UI, constructivism, Y2K, PSX, risograph, vaporwave) with math/algorithm + Python + Web implementations per archetype.
+- **`creative_tooooools.json`** — scraped tooooools.app catalog (16 tools) + refreshable stdlib scraper `update_tooooools_db.py`.
+- **`NOTICE.md`** — third-party attributions (impeccable Apache-2.0 chain, MIT/conceptual sources, runtime deps).
+- **Release automation CI** — tag-push workflow verifying manifest/CHANGELOG sync.
+
+### Changed
+
+- **Ecosystem alignment refactor** — routing sharpened (ask-bundle/planning/intake/execution/memory boundaries), 8 cross-skill wires added, `obsidian-workflow` split 70KB→3.3KB index + 4 deferred `modes/`, loose scripts moved to `scripts/`.
+- README/LICENSE placeholders rendered for the concrete repo identity.
+
+### Fixed
+
+- `validate_mermaid.py` canonical path resolution (fell back to global path).
+- Manifest mojibake (`â€”`/`→` double-encoding) reverted to UTF-8.
+- `test_recv_collects` macOS flake — root-caused: bare `recv_from` raced the drain thread; now polls with `wait=`.
+
 ## [3.3.0] - 2026-09-20
 
 ### Added
