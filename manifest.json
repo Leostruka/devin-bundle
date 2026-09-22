@@ -379,9 +379,14 @@
       "name": "implement-laya",
       "source": "devin-bundle",
       "purpose": "Use when a task needs fast typed decisions — classification, triage, scoring, guardrails, moderation, or model routing — over text/JSON states, or when integrating the 'laya' engine (non-autoregressive decision model) into a user's codebase."
+    },
+    {
+      "name": "operate-spline",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to launch, drive, build scenes in, export from, or shut down the Spline desktop app (3D/2D design, Electron). Routes to extensions/spline-operator/wrapper.py, which speaks the app's embedded MCP bridge (ws://127.0.0.1:19692) — structured tool calls, not GUI clicking."
     }
   ],
-  "skill_count": 56,
+  "skill_count": 57,
   "rule_count": 28,
   "scripts": [
     {
