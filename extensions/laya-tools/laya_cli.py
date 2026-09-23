@@ -45,7 +45,13 @@ def load_json_arg(inline, file_arg, name):
 
 
 def check_questions(q):
-    """Validate the typed-questions schema without importing laya."""
+    """Validate the typed-questions schema without importing laya.
+
+    Shapes: choice -> criteria {label: non-empty description};
+    score -> criteria ordered non-empty list of strings;
+    noul -> instructions only (P(true), no criteria).
+    instructions is always a non-empty string. An unhashable or
+    non-string `type` is an error, never a crash."""
     errors = []
     if not isinstance(q, dict) or not q:
         return ["questions must be a non-empty JSON object"]
@@ -54,20 +60,53 @@ def check_questions(q):
             errors.append(f"{key}: spec must be an object")
             continue
         t = spec.get("type")
-        if t not in QTYPES:
-            errors.append(f"{key}: type must be one of {sorted(QTYPES)}, got {t!r}")
-        if "instructions" not in spec:
-            errors.append(f"{key}: missing 'instructions'")
-        if t == "choice" and not isinstance(spec.get("criteria"), dict):
-            errors.append(f"{key}: choice requires criteria as object {{label: description}}")
-        if t == "score" and not isinstance(spec.get("criteria"), list):
-            errors.append(f"{key}: score requires criteria as ordered list")
+        if not isinstance(t, str) or t not in QTYPES:
+            errors.append(
+                f"{key}: type must be one of {sorted(QTYPES)}, "
+                f"got {t!r}")
+        ins = spec.get("instructions")
+        if not isinstance(ins, str) or not ins.strip():
+            errors.append(f"{key}: instructions must be a non-empty "
+                          "string")
+        if t == "choice":
+            crit = spec.get("criteria")
+            if not isinstance(crit, dict) or not crit:
+                errors.append(f"{key}: choice requires non-empty "
+                              "criteria object {{label: description}}")
+            else:
+                for label, desc in crit.items():
+                    if not isinstance(label, str) or not label:
+                        errors.append(
+                            f"{key}: choice label must be a non-empty "
+                            f"string, got {label!r}")
+                    if not isinstance(desc, str) or not desc.strip():
+                        errors.append(
+                            f"{key}: choice description for "
+                            f"{label!r} must be a non-empty string")
+        elif t == "score":
+            crit = spec.get("criteria")
+            if not isinstance(crit, list) or not crit:
+                errors.append(f"{key}: score requires criteria as a "
+                              "non-empty ordered list")
+            elif not all(isinstance(c, str) and c.strip()
+                         for c in crit):
+                errors.append(f"{key}: score criteria must all be "
+                              "non-empty strings")
+        elif t == "noul":
+            if "criteria" in spec:
+                errors.append(f"{key}: noul takes instructions only "
+                              "(no criteria)")
     return errors
 
 
 def resolve_questions(args):
     if args.preset:
-        import laya
+        try:
+            import laya
+        except ImportError:
+            emit({"ok": False,
+                  "error": "laya not installed — run: pip install -r "
+                           "requirements.txt (in this dir)"}, 1)
         fn = getattr(laya, f"{args.preset}_questions", None)
         if fn is None:
             emit({"ok": False, "error": f"unknown preset '{args.preset}'", "presets": PRESETS}, 2)

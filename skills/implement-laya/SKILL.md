@@ -11,8 +11,10 @@ triggers: [user, model]
 decision engine. It answers typed questions — `choice`, `score`, `noul` —
 over any state (text, email, JSON) in **one forward pass** (~33 ms GPU,
 ~200–460 ms CPU). No text generation → nothing to parse, nothing to
-hallucinate. Probabilities are RLCD-calibrated, so `confidence` is safe for
-automated gating.
+hallucinate. `confidence` is a normalized-entropy score over the returned
+distribution — **not** a calibrated probability of correctness. Use it to
+rank/abstain, never as proof a decision is right; a checkpoint can report
+high confidence on inputs it gets systematically wrong (see Gotchas).
 
 **When to recommend it:** high-frequency classification/routing where an LLM
 call is too slow or expensive — ticket triage, jailbreak/injection guards,
@@ -77,10 +79,10 @@ router = Router(preload=True)          # REQUIRED for production — see gotcha
 res = router.predict(state, questions) # questions = dict or laya.triage_questions()
 ans = res["answers"]["department"]
 
-if ans["confidence"] >= 0.85:          # calibrated — safe to automate
-    route(ans["choice"])
-else:
-    escalate_to_human(ans["choice"])   # low-confidence path
+if ans["confidence"] >= threshold:     # threshold = YOUR calibrated value
+    route(ans["choice"])               # abstain/escalate below it — the
+else:                                  # number alone is not permission
+    escalate_to_human(ans["choice"])
 ```
 
 Best practices:
@@ -108,5 +110,15 @@ Best practices:
   embedding.
 - **Score `criteria` is an ordered list** (ordinal rubric); choice `criteria`
   is `{label: description}` object; `noul` takes only `instructions` — P(true).
+- **`confidence` needs YOUR calibration.** It is normalized entropy over the
+  API-rounded probability vector — not the model's logits and not a
+  correctness probability. Thresholds must be measured on your own labeled
+  split per profile/checkpoint/language; an uncalibrated threshold is a
+  guess. Checkpoints are also checkpoint-bound: a threshold measured on one
+  does not transfer to another.
+- **One-shot vs preload vs resident.** `predict` alone rebuilds state per
+  call (seconds). `Router(preload=True)` keeps all checkpoints resident
+  (~2 GB) for repeated calls (<1 ms routing overhead). For many calls, hold
+  one Router in a long-lived process — never respawn per request.
 - Python ≥3.10 required (torch 2.x/transformers floor). CPU works; CUDA
   optional via `Router(device="cuda")`.

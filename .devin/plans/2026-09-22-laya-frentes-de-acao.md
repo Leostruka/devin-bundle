@@ -465,9 +465,9 @@ Todos os artefatos abaixo são futuros. Caminhos de testes novos não existem ne
 
 **Arquivos:** modificar `extensions/laya-tools/laya_cli.py`, `skills/implement-laya/SKILL.md`; criar `tests/test_laya_cli_contract.py`.
 
-- [ ] Repro de schema inválido e preset com dependência ausente; todas as falhas devem retornar um JSON e exit não zero.
-- [ ] Validar questions como dict não vazio, instructions string não vazia, choice com labels/descrições válidos e não vazios, score com lista válida e noul com shape próprio. Não deixar `type` não hashable derrubar o validator.
-- [ ] Corrigir documentação: entropy-confidence, limites de calibração, Router latino/idioma e diferença entre one-shot/preload/processo residente.
+- [x] Repro de schema inválido e preset com dependência ausente; todas as falhas devem retornar um JSON e exit não zero.
+- [x] Validar questions como dict não vazio, instructions string não vazia, choice com labels/descrições válidos e não vazios, score com lista válida e noul com shape próprio. Não deixar `type` não hashable derrubar o validator.
+- [x] Corrigir documentação: entropy-confidence, limites de calibração, Router latino/idioma e diferença entre one-shot/preload/processo residente.
 
 ```python
 def test_empty_choice_is_rejected():
