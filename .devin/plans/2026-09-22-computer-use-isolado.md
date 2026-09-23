@@ -525,9 +525,9 @@ def test_reset_invalidates_old_instance():
 
 **Depende de:** C10, C13. **Arquivos:** criar `cu_container.py`, `guest/container-entry.py`, `tests/test_cu_env_container.py`, `.devin/templates/computer-use/container-profile.json`.
 
-- [ ] Perfil alternativo: Xvfb + window manager + worker dentro do container; Xvfb não requer dispositivos físicos. Nenhum mount de X11/Wayland/DBus do host.
-- [ ] Criar via CLI runtime aprovada, sem docker.sock dentro do container. Non-root, cap-drop, no-new-privileges, rootfs read-only quando suportado, tmpfs limitado e rede off.
-- [ ] Não montar `/dev/input`, `/dev/uinput`, `/dev/dri`, `/mnt/c` ou home por conveniência. WSLg sockets não fazem parte deste perfil.
+- [x] Perfil alternativo: Xvfb + window manager + worker dentro do container; Xvfb não requer dispositivos físicos. Nenhum mount de X11/Wayland/DBus do host.
+- [x] Criar via CLI runtime aprovada, sem docker.sock dentro do container. Non-root, cap-drop, no-new-privileges, rootfs read-only quando suportado, tmpfs limitado e rede off.
+- [x] Não montar `/dev/input`, `/dev/uinput`, `/dev/dri`, `/mnt/c` ou home por conveniência. WSLg sockets não fazem parte deste perfil.
 
 ```python
 def test_container_spec_rejects_host_display():

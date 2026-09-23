@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "env_id": "cu-container",
+  "runtime": "podman",
+  "image": "cu-guest",
+  "image_digest": "sha256:<pin-exact-image-digest>",
+  "user": "65534:65534",
+  "network": "off",
+  "cap_drop": ["ALL"],
+  "no_new_privileges": true,
+  "read_only_rootfs": true,
+  "tmpfs": {"/tmp": "64m"},
+  "mounts": [],
+  "privileged": false,
+  "pids_limit": 256,
+  "memory_mib": 2048,
+  "entry": "container-entry.py",
+  "env": {"CU_DISPLAY": ":77"}
+}
