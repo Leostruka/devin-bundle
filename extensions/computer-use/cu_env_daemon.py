@@ -75,17 +75,84 @@ def _confined(env_dir, filename):
     return str(rp)
 
 
-def _handle(qmp, obj, env_dir):
+class Journal:
+    """Request journal — dedup by request_id. completed -> cached
+    response replay-free; accepted-but-never-completed (daemon died
+    mid-call) -> request_uncertain, the op NEVER re-executes."""
+    def __init__(self, path):
+        self.path = Path(path)
+        self._recs = {}
+        try:
+            for line in self.path.read_text("utf-8").splitlines():
+                if line.strip():
+                    r = json.loads(line)
+                    self._recs[r["request_id"]] = {
+                        "state": r["state"],
+                        "response": r.get("response")}
+        except FileNotFoundError:
+            pass
+
+    def _append(self, rid, state, command=None, response=None):
+        rec = {"request_id": rid, "state": state, "command": command,
+               "response": response}
+        with open(self.path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec) + "\n")
+
+    def begin(self, rid, command):
+        self._recs[rid] = {"state": "accepted", "response": None}
+        self._append(rid, "accepted", command)
+
+    def complete(self, rid, response):
+        self._recs[rid] = {"state": "completed", "response": response}
+        self._append(rid, "completed", response=response)
+
+    def execute(self, rid, command, args, fn):
+        if rid is None:
+            return fn(command, args)  # no id -> no dedup possible
+        rec = self._recs.get(rid)
+        if rec is not None:
+            if rec["state"] == "completed":
+                return rec["response"]
+            return {"ok": False, "error": "request_uncertain",
+                    "request_id": rid}
+        self.begin(rid, command)
+        resp = fn(command, args)
+        self.complete(rid, resp)
+        return resp
+
+
+_RELEASE_KEYS = ("shift", "shift_r", "ctrl", "ctrl_r",
+                 "alt", "alt_r", "meta_l", "meta_r")
+_RELEASE_BTNS = ("left", "right", "middle", "side", "extra")
+
+
+def _release_events():
+    """Up-events for every modifier/button — remote emergency_release."""
+    return ([{"type": "key",
+              "data": {"key": {"type": "qcode", "data": k},
+                       "down": False}} for k in _RELEASE_KEYS]
+            + [{"type": "btn", "data": {"button": b, "down": False}}
+               for b in _RELEASE_BTNS])
+
+
+def _handle(qmp, obj, env_dir, journal=None):
     """One IPC request. command is already constrained by QmpClient's
     allowlist; screendump filenames get host-path confinement."""
     cmd = obj.get("command")
     args = obj.get("arguments") or {}
+    if cmd == "release-all":
+        return qmp.call("input-send-event",
+                        {"events": _release_events()})
     if cmd == "screendump":
         if not isinstance(args.get("filename"), str):
             raise ValueError("screendump: filename required")
         args = dict(args)
         args["filename"] = _confined(env_dir, args["filename"])
-    return qmp.call(cmd, args if args else None)
+    fn = lambda c, a: qmp.call(c, a)  # noqa: E731
+    if journal is not None:
+        return journal.execute(obj.get("request_id"), cmd,
+                               args if args else None, fn)
+    return fn(cmd, args if args else None)
 
 
 def _read_request(conn):
@@ -154,6 +221,21 @@ def serve(env_dir, spawn=None, poll_s=0.2):
     (env_dir / "ready.json").write_text(
         json.dumps(ready), encoding="utf-8")
 
+    journal = Journal(env_dir / "requests.jsonl")
+    import threading
+    hb_stop = threading.Event()
+
+    def _beat():
+        hb = env_dir / "hb"
+        while not hb_stop.is_set() and proc.poll() is None:
+            try:
+                hb.write_text(str(time.time()))
+            except OSError:
+                pass
+            hb_stop.wait(1.0)
+
+    threading.Thread(target=_beat, daemon=True).start()
+
     while proc.poll() is None:
         try:
             conn, _ = lsock.accept()
@@ -167,8 +249,12 @@ def serve(env_dir, spawn=None, poll_s=0.2):
                 if token is not None and obj.get("token") != token:
                     resp = {"ok": False, "error": "unauthorized"}
                 else:
-                    result = _handle(sup.qmp, obj, env_dir)
-                    resp = {"ok": True, "return": result}
+                    result = _handle(sup.qmp, obj, env_dir, journal)
+                    resp = (result if isinstance(result, dict)
+                            and "ok" in result
+                            else {"ok": True, "return": result})
+                    if obj.get("request_id") is not None:
+                        resp["request_id"] = obj["request_id"]
             except cu_qmp.QmpRefused as exc:
                 resp = {"ok": False, "error_class": exc.cls,
                         "error": str(exc)}

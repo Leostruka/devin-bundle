@@ -138,7 +138,8 @@ def test_send_events_chunks_long_text(env_dir):
 
 def test_lost_ack_releases_held_keys(env_dir):
     """Mid-chord failure: every key seen down must get a release attempt
-    — a stuck guest key is worse than a failed send."""
+    — a stuck guest key is worse than a failed send. The send itself is
+    typed 'uncertain' (C08): the request may already have left the pipe."""
     calls = []
 
     def flaky(sock, msg, timeout_s, token=None):
@@ -149,7 +150,7 @@ def test_lost_ack_releases_held_keys(env_dir):
 
     be = cu_qmp_backend.QmpBackend("devin-linux", env_dir=env_dir,
                                  ipc=flaky)
-    with pytest.raises(TimeoutError):
+    with pytest.raises(cu_qmp_backend.BackendError, match="uncertain"):
         be.send_events(cu_qmp_backend.encode_chord("ctrl+alt+delete"))
     assert len(calls) == 2  # original + release-all attempt
     ups = calls[1]["arguments"]["events"]

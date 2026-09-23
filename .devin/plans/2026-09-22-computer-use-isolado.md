@@ -430,9 +430,9 @@ def test_out_of_frame_is_not_clamped():
 
 **Depende de:** C07. **Arquivos:** `cu_env_daemon.py`, `cu_backend.py`, `cu_actions.py`, `cu_session.py`, `cu_session_dispatch.py`; criar `tests/test_cu_env_recovery.py`.
 
-- [ ] Injetar cleanup de backend no worker; local mantém seu comportamento caracterizado, remoto nunca usa cleanup local.
-- [ ] Deduplicar request IDs; registrar accepted/inflight/completed/unknown. Não fazer replay após envio incerto.
-- [ ] EOF, heartbeat perdido e timeout levam a recuperação no mesmo guest ou quarentena; fila cancelada não executa depois de reconectar.
+- [x] Injetar cleanup de backend no worker; local mantém seu comportamento caracterizado, remoto nunca usa cleanup local.
+- [x] Deduplicar request IDs; registrar accepted/inflight/completed/unknown. Não fazer replay após envio incerto.
+- [x] EOF, heartbeat perdido e timeout levam a recuperação no mesmo guest ou quarentena; fila cancelada não executa depois de reconectar.
 
 ```python
 def test_ambiguous_action_is_not_retryable():

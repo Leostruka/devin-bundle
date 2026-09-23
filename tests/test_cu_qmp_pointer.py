@@ -144,8 +144,9 @@ def test_lost_pointer_ack_releases_button(env_dir):
 
     be = cu_qmp_backend.QmpBackend("devin-linux", env_dir=env_dir,
                                  ipc=flaky)
-    with pytest.raises(TimeoutError):
-        be.send_events(cu_qmp_backend.encode_click(1, 1, 10, 10, "left"))
+    with pytest.raises(cu_qmp_backend.BackendError, match="uncertain"):
+        be.send_events(cu_qmp_backend.encode_click(1, 1, 10, 10,
+                                                   "left"))
     ups = calls[1]["arguments"]["events"]
     assert any(e["type"] == "btn" and e["data"]["down"] is False
                for e in ups)

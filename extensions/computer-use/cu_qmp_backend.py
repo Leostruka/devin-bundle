@@ -223,10 +223,20 @@ class QmpBackend:
 
     def _ready(self):
         try:
-            return json.loads(
+            ready = json.loads(
                 (self.env_dir / "ready.json").read_text("utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise BackendError(f"env_not_ready:{self.env_id}:{exc}")
+        hb = self.env_dir / "hb"
+        if hb.exists():
+            try:
+                age = time.time() - float(hb.read_text().strip())
+            except (OSError, ValueError):
+                age = float("inf")
+            if age > 4.0:
+                raise BackendError(
+                    f"env_not_ready:{self.env_id}:heartbeat_stale")
+        return ready
 
     def instance_id(self):
         try:
@@ -255,11 +265,13 @@ class QmpBackend:
         dump = self._new_dump_path()
         args = {"filename": str(dump), "format": "png"}
         resp = self._ipc(sock, {"command": "screendump",
-                              "arguments": args}, timeout_s,
+                              "arguments": args,
+                              "request_id": _request_id()}, timeout_s,
                          token=token)
         if not resp.get("ok"):
             resp = self._ipc(sock, {"command": "screendump",
-                                    "arguments": {"filename": str(dump)}},
+                                    "arguments": {"filename": str(dump)},
+                                    "request_id": _request_id()},
                              timeout_s, token=token)
         if not resp.get("ok"):
             raise BackendError(
@@ -278,7 +290,8 @@ class QmpBackend:
     def status(self):
         ready = self._ready()
         resp = self._ipc(ready["socket"],
-                         {"command": "query-status"}, 10,
+                         {"command": "query-status",
+                          "request_id": _request_id()}, 10,
                          token=ready.get("token"))
         if not resp.get("ok"):
             raise BackendError(resp.get("error", "?"))
@@ -299,17 +312,34 @@ class QmpBackend:
             for i in range(0, len(events), step):
                 resp = self._ipc(
                     sock, {"command": "input-send-event",
-                           "arguments": {"events": events[i:i + step]}},
+                           "arguments": {"events": events[i:i + step]},
+                           "request_id": _request_id()},
                     timeout_s, token=token)
                 if not resp.get("ok"):
                     raise BackendError(
                         f"input:{resp.get('error_class', '?')}:"
                         f"{resp.get('error', '?')}")
                 sent += len(events[i:i + step])
-        except Exception:
+        except Exception as exc:
             self._release_all(sock, token, events)
-            raise
+            # the request may already have left the pipe — outcome is
+            # unknowable, so this is never a retryable failure
+            if isinstance(exc, BackendError):
+                raise
+            raise BackendError(f"uncertain:{type(exc).__name__}") from exc
         return {"dispatched": sent}
+
+    def release_all(self, timeout_s=5):
+        """Release every modifier/button the guest may be holding —
+        the remote counterpart of host emergency_release."""
+        ready = self._ready()
+        resp = self._ipc(ready["socket"],
+                         {"command": "release-all",
+                          "request_id": _request_id()},
+                         timeout_s, token=ready.get("token"))
+        if not resp.get("ok"):
+            raise BackendError(f"release:{resp.get('error', '?')}")
+        return {"released": "guest"}
 
     def _release_all(self, sock, token, events):
         ups = [key_event(q, False) for q in {
@@ -332,6 +362,11 @@ class QmpBackend:
 
 
 # -- keyboard encoding (pure; zero IO) ---------------------------------------------
+
+def _request_id():
+    import uuid
+    return uuid.uuid4().hex
+
 
 def key_event(qcode, down):
     return {"type": "key",
