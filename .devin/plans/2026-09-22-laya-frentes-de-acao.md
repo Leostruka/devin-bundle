@@ -522,10 +522,10 @@ def test_worker_reuses_engine(fake_engine, two_requests):
 
 **Arquivos futuros:** `extensions/laya-tools/eval_decisions.py`, `tests/test_laya_eval_metrics.py`; dados/evidências sob `.devin/evals/laya/`, com política de retenção aprovada.
 
-- [ ] Mantenedor implementa o harness e autoria/rotulagem/splits de §6; execução mecânica pode ser delegada, julgamento não.
-- [ ] Testar métricas com vetores conhecidos antes de rodar modelo. Congelar entradas; relatórios posteriores consomem o capture congelado, não refazem consultas.
-- [ ] Comparar B0/B1 com mesmos candidatos, ordem predefinida de casos e limites. Incluir perdas de shortlist e abstenções no relatório.
-- [ ] O comando de avaliação não despacha ferramentas, nunca lê dados de produção nem libera feature flag.
+- [~] Mantenedor implementa o harness e autoria/rotulagem/splits de §6; execução mecânica pode ser delegada, julgamento não. (harness + métricas implementados; autoria/rotulagem/splits e promoção E1 continuam com o mantenedor)
+- [x] Testar métricas com vetores conhecidos antes de rodar modelo. Congelar entradas; relatórios posteriores consomem o capture congelado, não refazem consultas.
+- [x] Comparar B0/B1 com mesmos candidatos, ordem predefinida de casos e limites. Incluir perdas de shortlist e abstenções no relatório.
+- [x] O comando de avaliação não despacha ferramentas, nunca lê dados de produção nem libera feature flag.
 
 ```python
 def test_wilson_empty_and_perfect_are_distinct():
