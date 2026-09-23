@@ -445,9 +445,9 @@ def test_ambiguous_action_is_not_retryable():
 
 **Depende de:** C08. **Arquivos:** `cu_backend.py`, `cu_actions.py`, `mouse.py`, `type_text.py`; criar `tests/test_cu_env_verification.py`.
 
-- [ ] `verify_effect(action, before, after, predicate) -> dict` exige mesma instância e observação posterior.
-- [ ] Suportar predicados fechados: valor de campo/DOM/UIA quando disponível e estado do probe de teste; mudança visual isolada gera evidência, não tarefa concluída.
-- [ ] Preservar `target_present` atual como informação, não prova de ação bem-sucedida; dry-run v2 retorna `planned`.
+- [x] `verify_effect(action, before, after, predicate) -> dict` exige mesma instância e observação posterior.
+- [x] Suportar predicados fechados: valor de campo/DOM/UIA quando disponível e estado do probe de teste; mudança visual isolada gera evidência, não tarefa concluída.
+- [x] Preservar `target_present` atual como informação, não prova de ação bem-sucedida; dry-run v2 retorna `planned`.
 
 ```python
 def test_ack_is_not_effect_verification():

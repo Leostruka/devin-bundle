@@ -77,6 +77,9 @@ def _remote_main(target):
     p.add_argument("--chord", default=None,
                    help="modifier chord (ctrl+alt+delete)")
     p.add_argument("--env", default=None)
+    p.add_argument("--verify", action="store_true",
+                   help="re-observe after dispatch; attaches "
+                        "evidence-level verification")
     args = p.parse_args()
     backend = target["backend"]
     layout = target["spec"].get("keyboard_layout", "en-us")
@@ -90,13 +93,25 @@ def _remote_main(target):
                                                 layout=layout)
         else:
             cu_target.reject_remote("no text/--key/--chord given")
+        before = None
+        if args.verify:
+            img0, meta0 = backend.observe()
+            before = {"frame": img0, "meta": meta0}
         res = backend.send_events(events)
     except cu_qmp_backend.UnsupportedText as exc:
         cu_target.reject_remote(f"unsupported_text:{exc}")
     except Exception as exc:
         cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
-    print(json.dumps({"ok": True, "status": "dispatched",
-                      "env_id": target["env_id"], **res}))
+    out = {"ok": True, "status": "dispatched",
+           "env_id": target["env_id"], **res}
+    if args.verify:
+        import cu_backend
+        img2, meta2 = backend.observe()
+        out["verification"] = cu_backend.verify_effect(
+            {"cmd": "type"}, before,
+            {"frame": img2, "meta": meta2},
+            {"kind": "frame_changed"})
+    print(json.dumps(out))
 
 
 def main():

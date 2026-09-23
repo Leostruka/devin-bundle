@@ -51,3 +51,69 @@ def cleanup(target):
         cu_actions.emergency_release()
         return {"released": "host"}
     return open_backend(target).release_all()
+
+
+def result_from_ack(ack, request_id=None):
+    """Normalize a transport ACK. 'dispatched' — an ack proves the
+    daemon accepted bytes, never that the guest reacted. Verification
+    is a separate step (verify_effect)."""
+    r = {"ok": True, "status": "dispatched"}
+    if request_id is not None:
+        r["request_id"] = request_id
+    if isinstance(ack, dict) and "return" in ack:
+        r["ack"] = ack["return"]
+    return r
+
+
+# Closed predicate set — anything else is rejected, not evaluated.
+_PREDICATE_KINDS = frozenset(
+    {"frame_changed", "region_changed", "field_equals", "probe"})
+
+
+def _region_differs(fa, fb, x, y, w, h):
+    """True iff any pixel inside rect (x,y,w,h) differs between frames.
+    Geometry mismatch counts as 'cannot compare' -> False, never True."""
+    if fa is None or fb is None:
+        return False
+    if (fa.width, fa.height) != (fb.width, fb.height):
+        return False
+    for py in range(y, min(y + h, fa.height)):
+        for px in range(x, min(x + w, fa.width)):
+            i = (py * fa.width + px) * 3
+            if fa.rgb[i:i + 3] != fb.rgb[i:i + 3]:
+                return True
+    return False
+
+
+def verify_effect(action, before, after, predicate):
+    """Compare a pre-action observation with a post-action one under a
+    closed predicate. Requires the SAME env instance and a LATER
+    observation. A satisfied visual predicate yields 'evidence' —
+    never 'verified'/'done'; intent-level proof needs a semantic
+    predicate (field/probe), which reports source_unavailable until a
+    guest agent exists."""
+    b, a = (before or {}), (after or {})
+    bm, am = b.get("meta") or {}, a.get("meta") or {}
+    if bm.get("instance_id") != am.get("instance_id"):
+        return {"verified": False, "reason": "instance_mismatch"}
+    if not (am.get("monotonic_ns") or 0) > (bm.get("monotonic_ns") or 0):
+        return {"verified": False, "reason": "stale_observation_order"}
+    if not isinstance(predicate, dict):
+        return {"verified": False, "reason": "predicate_required"}
+    kind = predicate.get("kind")
+    if kind not in _PREDICATE_KINDS:
+        return {"verified": False, "reason": f"predicate:{kind}"}
+    if kind == "frame_changed":
+        ok = bm.get("frame_sha256") != am.get("frame_sha256")
+    elif kind == "region_changed":
+        ok = _region_differs(b.get("frame"), a.get("frame"),
+                             int(predicate.get("x", 0)),
+                             int(predicate.get("y", 0)),
+                             int(predicate.get("w", 0)),
+                             int(predicate.get("h", 0)))
+    else:  # field_equals / probe — need a guest-side source (C10+)
+        return {"verified": False,
+                "reason": f"source_unavailable:{kind}"}
+    return {"verified": False, "status": "evidence",
+            "predicate": kind, "predicate_satisfied": ok,
+            "note": "visual change is evidence, not task completion"}

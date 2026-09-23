@@ -92,6 +92,9 @@ def _remote_main(target):
         sp.add_argument("--env", default=None)
         sp.add_argument("--dry-run", action="store_true",
                         help="encode+validate against geometry; send nothing")
+        sp.add_argument("--verify", action="store_true",
+                        help="re-observe after dispatch; attaches "
+                             "evidence-level verification")
         if name in ("move", "click", "scroll"):
             sp.add_argument("x", type=int, nargs="?")
             sp.add_argument("y", type=int, nargs="?")
@@ -110,13 +113,18 @@ def _remote_main(target):
             sp.add_argument("--button", default="left")
     args = p.parse_args()
     backend = target["backend"]
+    before = None
     try:
         if args.cmd == "position":
             backend.pointer_position()  # always raises — honest
         if args.cmd == "scroll" and (args.x is None or args.y is None):
+            if args.verify:
+                img0, meta0 = backend.observe()
+                before = {"frame": img0, "meta": meta0}
             events = qb.encode_scroll(args.dx, args.dy)
         else:
-            img, _ = backend.observe()
+            img, meta0 = backend.observe()
+            before = {"frame": img, "meta": meta0}
             w, h = img.width, img.height
             if args.cmd == "move":
                 events = qb.encode_move(args.x, args.y, w, h)
@@ -142,9 +150,16 @@ def _remote_main(target):
         cu_target.reject_remote(f"unsupported:{exc}")
     except Exception as exc:
         cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
-    print(json.dumps({"ok": True, "status": "dispatched",
-                      "env_id": target["env_id"], "cmd": args.cmd,
-                      **res}))
+    out = {"ok": True, "status": "dispatched",
+           "env_id": target["env_id"], "cmd": args.cmd, **res}
+    if args.verify:
+        import cu_backend
+        img2, meta2 = backend.observe()
+        out["verification"] = cu_backend.verify_effect(
+            {"cmd": args.cmd}, before,
+            {"frame": img2, "meta": meta2},
+            {"kind": "frame_changed"})
+    print(json.dumps(out))
 
 
 def main():
