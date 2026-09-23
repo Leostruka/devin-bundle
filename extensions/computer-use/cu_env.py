@@ -269,8 +269,9 @@ def validate_spec(spec):
         errors.append("resources.memory_mib: int >= 256")
     if spec.get("network") != "off":
         errors.append("network: must be 'off' (no implicit sharing)")
-    if spec.get("clipboard") != "off":
-        errors.append("clipboard: must be 'off'")
+    if spec.get("clipboard") not in ("off", "guest"):
+        errors.append(
+            "clipboard: 'off' or 'guest' (in-guest only, opt-in ops)")
     if spec.get("mounts"):
         errors.append("mounts: must be [] (no host paths)")
     if spec.get("physical_devices"):

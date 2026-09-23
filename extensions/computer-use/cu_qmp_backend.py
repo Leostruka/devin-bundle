@@ -329,6 +329,50 @@ class QmpBackend:
             raise BackendError(f"uncertain:{type(exc).__name__}") from exc
         return {"dispatched": sent}
 
+    def guest_call(self, method, params=None, timeout_s=15):
+        """Forward one op to the in-guest worker through the daemon's
+        guest-call gate. Params are size-capped before they leave —
+        oversized payloads never produce a partial wire effect."""
+        ready = self._ready()
+        blob = json.dumps({"method": method,
+                           "params": params or {}}).encode("utf-8")
+        if len(blob) > 65536:
+            raise BackendError(f"size:{len(blob)}>65536")
+        resp = self._ipc(ready["socket"],
+                         {"command": "guest-call",
+                          "arguments": {"method": method,
+                                        "params": params or {}},
+                          "request_id": _request_id()},
+                         timeout_s, token=ready.get("token"))
+        if not resp.get("ok"):
+            raise BackendError(
+                f"guest:{resp.get('error', '?')}")
+        ret = resp.get("return")
+        if isinstance(ret, dict) and ret.get("ok") is False:
+            raise BackendError(f"guest:{ret.get('error', '?')}")
+        return ret if isinstance(ret, dict) else {"ok": True,
+                                                 "return": ret}
+
+    def guest_caps(self):
+        return (self._ready().get("guest_caps") or {})
+
+    def text_insert(self, text, timeout_s=15):
+        """Unicode insert via guest worker. Requires the text_insert
+        cap; the reply's inserted count must match — a partial effect
+        is 'unknown' with the known count, never blind success."""
+        import cu_guest
+        gate = cu_guest.check_operation("text.insert",
+                                        self.guest_caps())
+        if not gate["allowed"]:
+            raise BackendError(gate["reason"])
+        r = self.guest_call("text.insert", {"text": text},
+                            timeout_s=timeout_s)
+        inserted = int(r.get("inserted") or 0)
+        if inserted != len(text):
+            return {"status": "unknown", "inserted": inserted,
+                    "expected": len(text)}
+        return {"status": "dispatched", "inserted": inserted}
+
     def release_all(self, timeout_s=5):
         """Release every modifier/button the guest may be holding —
         the remote counterpart of host emergency_release."""

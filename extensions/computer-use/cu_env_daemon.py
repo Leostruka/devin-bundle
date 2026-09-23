@@ -135,11 +135,26 @@ def _release_events():
                for b in _RELEASE_BTNS])
 
 
-def _handle(qmp, obj, env_dir, journal=None):
+def _handle(qmp, obj, env_dir, journal=None, guest=None):
     """One IPC request. command is already constrained by QmpClient's
-    allowlist; screendump filenames get host-path confinement."""
+    allowlist; screendump filenames get host-path confinement.
+    guest-call ops bypass the journal — guest payloads (clipboard!)
+    are untrusted content, never persisted."""
     cmd = obj.get("command")
     args = obj.get("arguments") or {}
+    if cmd == "guest-call":
+        if guest is None:
+            return {"ok": False, "error": "guest_channel_unavailable"}
+        method = args.get("method")
+        if not isinstance(method, str):
+            return {"ok": False, "error": "guest-call:method required"}
+        try:
+            return {"ok": True,
+                    "return": guest.call(method,
+                                         args.get("params") or {})}
+        except Exception as exc:
+            return {"ok": False,
+                    "error": f"guest:{type(exc).__name__}:{exc}"}
     if cmd == "release-all":
         return qmp.call("input-send-event",
                         {"events": _release_events()})
@@ -225,6 +240,35 @@ def serve(env_dir, spawn=None, poll_s=0.2):
     import threading
     hb_stop = threading.Event()
 
+    # virtio-serial worker pipe (spec opt-in). QEMU opens both ends at
+    # start; handshake happens in the background — the guest worker only
+    # exists after boot+login, which can take minutes. Caps land in
+    # ready.json when they arrive.
+    guest = {"channel": None, "caps": None}
+    if spec.get("guest_worker"):
+        def _guest_handshake():
+            import cu_guest
+            try:
+                rd = open(env_dir / "gwport.out", "rb", buffering=0)
+                wr = open(env_dir / "gwport.in", "wb", buffering=0)
+                ch = cu_guest.GuestChannel(rd, wr, timeout_s=120)
+                raw = ch._read_line()
+                hello = json.loads(raw).get("hello") or {}
+                guest["caps"] = cu_guest.validate_handshake(hello)
+                guest["channel"] = ch
+                try:
+                    rj = json.loads(
+                        (env_dir / "ready.json").read_text("utf-8"))
+                    rj["guest_caps"] = guest["caps"]
+                    (env_dir / "ready.json").write_text(
+                        json.dumps(rj), encoding="utf-8")
+                except (OSError, json.JSONDecodeError):
+                    pass
+            except Exception:
+                guest["channel"] = None
+
+        threading.Thread(target=_guest_handshake, daemon=True).start()
+
     def _beat():
         hb = env_dir / "hb"
         while not hb_stop.is_set() and proc.poll() is None:
@@ -249,7 +293,8 @@ def serve(env_dir, spawn=None, poll_s=0.2):
                 if token is not None and obj.get("token") != token:
                     resp = {"ok": False, "error": "unauthorized"}
                 else:
-                    result = _handle(sup.qmp, obj, env_dir, journal)
+                    result = _handle(sup.qmp, obj, env_dir, journal,
+                                     guest["channel"])
                     resp = (result if isinstance(result, dict)
                             and "ok" in result
                             else {"ok": True, "return": result})

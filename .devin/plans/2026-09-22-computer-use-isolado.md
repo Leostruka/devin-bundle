@@ -479,9 +479,9 @@ def test_guest_session_zero_has_no_interactive_capability():
 
 **Depende de:** C10. **Arquivos:** `guest/worker.py`, `cu_guest.py`, `type_text.py`; criar `tests/test_cu_env_text.py`.
 
-- [ ] Implementar SetValue na sessão Windows guest quando disponível; text-injection usa sessão guest e contrato de layout. DOM somente se C12 já fornecer binding autorizado; até lá, declarar essa capacidade indisponível.
-- [ ] Clipboard é operação independente, opt-in; não sincronizar automaticamente host/guest nem preservar conteúdo secreto em logs.
-- [ ] Validar string completa e tamanho antes do efeito; efeitos parciais retornam `unknown` com contagem conhecida, nunca retry cego.
+- [x] Implementar SetValue na sessão Windows guest quando disponível; text-injection usa sessão guest e contrato de layout. DOM somente se C12 já fornecer binding autorizado; até lá, declarar essa capacidade indisponível.
+- [x] Clipboard é operação independente, opt-in; não sincronizar automaticamente host/guest nem preservar conteúdo secreto em logs.
+- [x] Validar string completa e tamanho antes do efeito; efeitos parciais retornam `unknown` com contagem conhecida, nunca retry cego.
 
 ```python
 def test_clipboard_disabled_is_rejected():
