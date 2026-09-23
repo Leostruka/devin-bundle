@@ -19,6 +19,7 @@ import cu_actions
 import cu_browser
 import cu_motion as cm
 import cu_hints
+import cu_target
 
 
 def set_dpi_awareness():
@@ -80,6 +81,10 @@ def _resolve_xy(args):
 
 
 def main():
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        fail(f"env {target['env_id']}: remote dispatch arrives with its "
+             "backend (C07)", 2)
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("mouse", sys.argv[1:])
@@ -98,6 +103,11 @@ def main():
                         help="seed the RNG for a reproducible path")
         sp.add_argument("--dry-run", action="store_true",
                         help="compute path/timing but dispatch no input")
+        sp.add_argument("--env", default=None,
+                        help="isolated environment id "
+                             "(.devin/computer-use/envs); absent = local host")
+        sp.add_argument("--observation", default=None,
+                        help="observation id issued for that env")
         if name in ("move", "click"):
             sp.add_argument("x", type=int, nargs="?")
             sp.add_argument("y", type=int, nargs="?")
@@ -140,6 +150,11 @@ def main():
             sp.add_argument("--from-y", type=int, required=True)
             sp.add_argument("--duration", type=float, default=None)
     spos = sub.add_parser("position", help="Print current cursor position")
+    spos.add_argument("--env", default=None,
+                      help="isolated environment id "
+                           "(.devin/computer-use/envs); absent = local host")
+    spos.add_argument("--observation", default=None,
+                      help="observation id issued for that env")
 
     args = p.parse_args()
     if getattr(args, "via", None) == "browser" and \

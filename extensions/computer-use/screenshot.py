@@ -19,6 +19,7 @@ import cu_actions
 import cu_capture
 import cu_hints
 import cu_motion as cm
+import cu_target
 
 
 def set_dpi_awareness():
@@ -62,19 +63,29 @@ def _to_image(img):
 _STATE_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-shotstate.json")
 
 
-def _shot_state():
+def _shot_state_path(scope=None):
+    """scope=(env_id, instance_id, session_id) -> per-env private dir;
+    None -> _STATE_PATH (legacy tempdir seam; tests monkeypatch it)."""
+    if scope is None:
+        return _STATE_PATH
+    return str(cu_target.state_path(cu_target.runtime_root(), *scope,
+                                    "devin-cu-shotstate.json"))
+
+
+def _shot_state(scope=None):
     try:
-        with open(_STATE_PATH, encoding="utf-8") as f:
+        with open(_shot_state_path(scope), encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return {}
 
 
-def _write_shot_state(sha, path):
+def _write_shot_state(sha, path, scope=None):
+    p = _shot_state_path(scope)
     try:
-        with open(_STATE_PATH + ".tmp", "w", encoding="utf-8") as f:
+        with open(p + ".tmp", "w", encoding="utf-8") as f:
             json.dump({"sha256": sha, "path": path}, f)
-        os.replace(_STATE_PATH + ".tmp", _STATE_PATH)
+        os.replace(p + ".tmp", p)
     except Exception:
         pass
 
@@ -168,6 +179,10 @@ def _save_with_hints(img, elements, out, ox, oy, fmt="png", quality=80):
 
 
 def main():
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        fail(f"env {target['env_id']}: remote capture arrives with its "
+             "backend (C05)", 2)
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("screenshot", sys.argv[1:])
@@ -215,6 +230,9 @@ def main():
                         "changed_ratio instead of saving normally")
     p.add_argument("--diff-out", default=None,
                    help="with --diff: also save the pixel-difference image")
+    p.add_argument("--env", default=None,
+                   help="isolated environment id "
+                        "(.devin/computer-use/envs); absent = local host")
     args = p.parse_args()
 
     set_dpi_awareness()

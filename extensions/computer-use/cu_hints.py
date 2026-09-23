@@ -26,6 +26,9 @@ import threading
 import time
 import uuid
 from contextlib import redirect_stdout
+from pathlib import Path
+
+import cu_target
 
 HINT_CHARS = "sadfjklewcmpgh"  # vimium-style home-row alphabet
 MAX_HINTS = len(HINT_CHARS) ** 2  # 196
@@ -331,18 +334,39 @@ def hint_ids(n):
     return [x + y for x in a for y in a][:n]
 
 
-def sidecar_path():
-    return os.path.join(tempfile.gettempdir(), "devin-cu-hints.json")
+def _state_dir(scope=None, create=False):
+    """scope=(env_id, instance_id, session_id) -> per-env private dir;
+    None -> legacy tempdir (local backend only)."""
+    if scope is None:
+        return Path(tempfile.gettempdir())
+    d = cu_target.state_dir(cu_target.runtime_root(), *scope)
+    if create:
+        cu_target.ensure_private_dir(d)
+    return d
 
 
-def session_path():
-    return os.path.join(tempfile.gettempdir(), "devin-cu-session.json")
+def sidecar_path(scope=None):
+    return str(_state_dir(scope) / "devin-cu-hints.json")
 
 
-def session_id():
-    """Stable id for this local automation session (auto-created)."""
+def session_path(scope=None):
+    return str(_state_dir(scope) / "devin-cu-session.json")
+
+
+def _sidecar_file(scope):
+    # zero-arg call when unscoped: tests monkeypatch sidecar_path as a
+    # no-arg seam — honor it for the local path
+    return sidecar_path() if scope is None else sidecar_path(scope)
+
+
+def _session_file(scope):
+    return session_path() if scope is None else session_path(scope)
+
+
+def session_id(scope=None):
+    """Stable id for this automation session (auto-created)."""
     try:
-        with open(session_path(), encoding="utf-8") as f:
+        with open(_session_file(scope), encoding="utf-8") as f:
             sid = json.load(f).get("session_id")
         if sid:
             return sid
@@ -350,49 +374,55 @@ def session_id():
         pass
     sid = uuid.uuid4().hex[:12]
     try:
-        with open(session_path(), "w", encoding="utf-8") as f:
+        if scope is not None:
+            _state_dir(scope, create=True)
+        with open(_session_file(scope), "w", encoding="utf-8") as f:
             json.dump({"session_id": sid}, f)
     except Exception:
         pass
     return sid
 
 
-def _read_sidecar():
+def _read_sidecar(scope=None):
     try:
-        with open(sidecar_path(), encoding="utf-8") as f:
+        with open(_sidecar_file(scope), encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return None
 
 
-def _next_generation():
+def _next_generation(scope=None):
     """Monotonic generation counter persisted in the session file —
     survives sidecar invalidation (the file is deleted, the session is
     not), so a stale --gen pin can never resolve a later observation."""
     try:
-        with open(session_path(), encoding="utf-8") as f:
+        with open(_session_file(scope), encoding="utf-8") as f:
             d = json.load(f)
     except Exception:
         d = {}
     gen = int(d.get("next_generation", 0)) + 1
-    d["session_id"] = d.get("session_id") or session_id()
+    d["session_id"] = d.get("session_id") or session_id(scope)
     d["next_generation"] = gen
-    tmp = session_path() + f".{os.getpid()}.tmp"
+    tmp = _session_file(scope) + f".{os.getpid()}.tmp"
     try:
+        if scope is not None:
+            _state_dir(scope, create=True)
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(d, f)
-        os.replace(tmp, session_path())
+        os.replace(tmp, _session_file(scope))
     except Exception:
         pass
     return gen
 
 
-def _fs_lock():
+def _fs_lock(scope=None):
     """Cross-process lock on a sibling .lock file (msvcrt byte-lock on
     Windows, fcntl.flock elsewhere — real snapshots cross processes).
     Uses os.name (the host), not _on_windows(): the lock mechanism must
     exist on the OS actually running."""
-    f = open(sidecar_path() + ".lock", "a+b")
+    if scope is not None:
+        _state_dir(scope, create=True)
+    f = open(_sidecar_file(scope) + ".lock", "a+b")
     if os.name == "nt":
         import msvcrt
         f.seek(0)
@@ -418,22 +448,22 @@ def _fs_unlock(f):
         f.close()
 
 
-def write_sidecar(hints, window=None, capture=None):
+def write_sidecar(hints, window=None, capture=None, scope=None):
     """Atomic sidecar write; returns the observation dict written.
     Serialized by _SIDECAR_LOCK (threads) + a file byte-lock (processes):
     concurrent writers get monotonic generations and never share tmp."""
     with _SIDECAR_LOCK:
-        f = _fs_lock()
+        f = _fs_lock(scope)
         try:
-            return _write_sidecar_locked(hints, window, capture)
+            return _write_sidecar_locked(hints, window, capture, scope)
         finally:
             _fs_unlock(f)
 
 
-def _write_sidecar_locked(hints, window, capture):
-    generation = _next_generation()
+def _write_sidecar_locked(hints, window, capture, scope=None):
+    generation = _next_generation(scope)
     data = {"schema_version": SCHEMA_VERSION,
-            "session_id": session_id(),
+            "session_id": session_id(scope),
             "observation_id": f"obs-{generation}",
             "generation": generation,
             "created_at": time.time(),
@@ -443,24 +473,24 @@ def _write_sidecar_locked(hints, window, capture):
                                 ("x", "y", "name", "type", "bounds",
                                  "hwnd", "enabled") if k in h}
                       for h in hints}}
-    tmp = sidecar_path() + f".{os.getpid()}.tmp"
+    tmp = _sidecar_file(scope) + f".{os.getpid()}.tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False)
-    os.replace(tmp, sidecar_path())
+    os.replace(tmp, _sidecar_file(scope))
     return data
 
 
-def hint_count():
+def hint_count(scope=None):
     """Number of hints in the current sidecar — the choice count Hick–Hyman
     pre-click delay scales on. None when no observation exists."""
-    d = _read_sidecar()
+    d = _read_sidecar(scope)
     return len(d["hints"]) if d and d.get("hints") else None
 
 
-def invalidate_sidecar():
+def invalidate_sidecar(scope=None):
     """Drop all outstanding hints — e.g. when a capture fell back to grid."""
     try:
-        os.remove(sidecar_path())
+        os.remove(_sidecar_file(scope))
     except OSError:
         pass
 
@@ -481,13 +511,14 @@ def window_foreground(hwnd):
     return ctypes.windll.user32.GetForegroundWindow() == hwnd
 
 
-def resolve_hint(hint_id, session=None, generation=None):
+def resolve_hint(hint_id, session=None, generation=None, scope=None):
     """Return (entry, reason). entry has x, y, name, type, bounds, hwnd,
     enabled; reason is None on success, else a typed staleness code —
     callers must NOT dispatch input when reason is set. Pass `generation`
     (the observation's generation) to reject hints minted before a newer
-    re-observation — plain ids alone are ambiguous across snapshots."""
-    data = _read_sidecar()
+    re-observation — plain ids alone are ambiguous across snapshots.
+    scope=(env, instance, session) reads the per-env namespace."""
+    data = _read_sidecar(scope)
     if data is None:
         return None, "no_sidecar"
     if data.get("schema_version") != SCHEMA_VERSION:

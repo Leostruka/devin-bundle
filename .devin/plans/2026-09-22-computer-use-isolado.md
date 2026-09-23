@@ -298,9 +298,9 @@ Estimativa de revisão, não de prazo: cada slice visa aproximadamente 150–500
 
 **Depende de:** nenhuma. **Arquivos:** criar `env.py`, `cu_env.py`, `tests/test_cu_env_doctor.py`.
 
-- [ ] Implementar `doctor` read-only: plataforma/arquitetura, executável QEMU, versão, aceleradores anunciados, espaço/RAM e presença de imagem explicitamente indicada. Não ler credentials nem testar teclados pessoais.
-- [ ] Distinguir acelerador listado de acelerador realmente inicializado. Ausência gera `ready: false`, `required_user_actions`; não habilitar recursos Windows.
-- [ ] Testar binário ausente, arquitetura incompatível, imagem não aprovada e subprocess timeout com injeção de runner.
+- [x] Implementar `doctor` read-only: plataforma/arquitetura, executável QEMU, versão, aceleradores anunciados, espaço/RAM e presença de imagem explicitamente indicada. Não ler credentials nem testar teclados pessoais.
+- [x] Distinguir acelerador listado de acelerador realmente inicializado. Ausência gera `ready: false`, `required_user_actions`; não habilitar recursos Windows.
+- [x] Testar binário ausente, arquitetura incompatível, imagem não aprovada e subprocess timeout com injeção de runner.
 
 ```python
 def test_missing_qemu_does_not_provision():
@@ -315,9 +315,9 @@ def test_missing_qemu_does_not_provision():
 
 **Depende de:** C00. **Arquivos:** criar `cu_target.py`, `cu_backend.py`, `tests/test_cu_env_routing.py`; modificar parsing em `mouse.py`, `type_text.py`, `screenshot.py`, `profile.py`.
 
-- [ ] Resolver `--env` antes de controller, UIA, mss ou registro de cleanup.
-- [ ] `resolve_target(env_id, registry)` retorna registro válido ou lança `TargetError`; desconhecido nunca equivale a local.
-- [ ] Backend ainda ausente retorna rejeição tipada. Testar todas as entradas, incluindo `--dry-run`, `--via auto` e `$CU_SESSION=1`.
+- [x] Resolver `--env` antes de controller, UIA, mss ou registro de cleanup.
+- [x] `resolve_target(env_id, registry)` retorna registro válido ou lança `TargetError`; desconhecido nunca equivale a local.
+- [x] Backend ainda ausente retorna rejeição tipada. Testar todas as entradas, incluindo `--dry-run`, `--via auto` e `$CU_SESSION=1`.
 
 ```python
 def test_unknown_environment_is_not_local():
@@ -331,9 +331,9 @@ def test_unknown_environment_is_not_local():
 
 **Depende de:** C01. **Arquivos:** `cu_target.py`, `cu_hints.py`, `cu_motion.py`, `screenshot.py`; criar `tests/test_cu_env_state.py`.
 
-- [ ] Namespaces de hints, observações, perfil, hash de captura e binding são `(env_id, instance_id, session_id)`; diretório privado e escrita atômica.
-- [ ] Preservar leitura legacy somente no backend local. Migrar bindings de browser/terminal junto de C12, não reutilizá-los no remoto.
-- [ ] `state_path` valida componentes; campos desconhecidos não viram paths. Reinício invalida observações sem reutilizar números antigos como identidade.
+- [x] Namespaces de hints, observações, perfil, hash de captura e binding são `(env_id, instance_id, session_id)`; diretório privado e escrita atômica.
+- [x] Preservar leitura legacy somente no backend local. Migrar bindings de browser/terminal junto de C12, não reutilizá-los no remoto.
+- [x] `state_path` valida componentes; campos desconhecidos não viram paths. Reinício invalida observações sem reutilizar números antigos como identidade.
 
 ```python
 def test_state_paths_do_not_collide(tmp_path):
@@ -348,9 +348,9 @@ def test_state_paths_do_not_collide(tmp_path):
 
 **Depende de:** C01. **Arquivos:** criar `cu_qmp.py`, `tests/test_cu_qmp_protocol.py`, `tests/fixtures/cu_qmp_transcripts.json`.
 
-- [ ] Negociar greeting e `qmp_capabilities`; consultar comandos/schema suportados.
-- [ ] Correlacionar `id`; eventos assíncronos não satisfazem resposta. Tratar leituras fragmentadas, EOF, JSON inválido e deadline.
-- [ ] Manter allowlist interna separando consulta, input e lifecycle. Bloquear QMP arbitrário vindo do agente.
+- [x] Negociar greeting e `qmp_capabilities`; consultar comandos/schema suportados.
+- [x] Correlacionar `id`; eventos assíncronos não satisfazem resposta. Tratar leituras fragmentadas, EOF, JSON inválido e deadline.
+- [x] Manter allowlist interna separando consulta, input e lifecycle. Bloquear QMP arbitrário vindo do agente.
 
 ```python
 def test_monitor_escape_is_not_a_public_operation():

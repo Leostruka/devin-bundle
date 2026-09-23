@@ -21,6 +21,7 @@ import cu_actions
 import cu_browser
 import cu_motion as cm
 import cu_hints
+import cu_target
 
 
 def set_dpi_awareness():
@@ -65,6 +66,10 @@ def resolve_key(name, Key, KeyCode):
 
 
 def main():
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        fail(f"env {target['env_id']}: remote dispatch arrives with its "
+             "backend (C07)", 2)
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("type_text", sys.argv[1:])
@@ -98,6 +103,11 @@ def main():
                    help="action profile override for this call")
     p.add_argument("--dry-run", action="store_true",
                    help="compute timing plan but dispatch no input")
+    p.add_argument("--env", default=None,
+                   help="isolated environment id "
+                        "(.devin/computer-use/envs); absent = local host")
+    p.add_argument("--observation", default=None,
+                   help="observation id issued for that env")
     args = p.parse_args()
 
     if not any([args.text, args.key, args.keys]):
