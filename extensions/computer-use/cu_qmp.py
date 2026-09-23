@@ -92,7 +92,9 @@ class QmpClient:
                     raise QmpError(f"protocol: invalid JSON: {exc}")
             if time.monotonic() >= deadline:
                 raise QmpTimeout("deadline exceeded waiting for message")
-            chunk = self._reader.read(4096)
+            readline = getattr(self._reader, "readline", None)
+            chunk = readline() if readline is not None \
+                else self._reader.read(4096)
             if chunk == "" or chunk == b"":
                 raise QmpEOF("stream closed")
             self._buf += (chunk.decode("utf-8", "replace")

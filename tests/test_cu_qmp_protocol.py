@@ -29,6 +29,17 @@ class ScriptReader:
         return self._chunks.pop(0) if self._chunks else ""
 
 
+class LineReader:
+    """Pipe-like: only readline(), no read(). A read(4096) on a real pipe
+    blocks until the buffer fills — this double proves we don't do that."""
+
+    def __init__(self, lines):
+        self._lines = list(lines)
+
+    def readline(self):
+        return self._lines.pop(0) if self._lines else ""
+
+
 class ListWriter:
     def __init__(self):
         self.data = []
@@ -141,6 +152,16 @@ def test_disallowed_command_never_written():
 
 def test_monitor_escape_is_not_a_public_operation():
     assert cu_qmp.public_operation_allowed("human-monitor-command") is False
+
+
+def test_readline_reader_no_read_method():
+    """Regression: a pipe exposes readline, and read(4096) on a pipe
+    blocks until the buffer fills. The client must prefer readline."""
+    r = LineReader([_msg(FIXTURES["greeting"]), _msg(FIXTURES["caps_ack"]),
+                    _msg({"id": "qmp-1", "return": {"running": True}})])
+    c = cu_qmp.QmpClient(r, ListWriter(), deadline_s=5)
+    c.negotiate()
+    assert c.call("query-status") == {"running": True}
     assert cu_qmp.public_operation_allowed("migrate") is False
     assert cu_qmp.public_operation_allowed("query-status") is False
     assert cu_qmp.public_operation_allowed("env.capture") is True

@@ -16,12 +16,16 @@ doctor(which, run, ...) -> report dict
   substitute for the platform accelerator.
 """
 import hashlib
+import json
 import os
 import platform
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
+import uuid
+from pathlib import Path
 
 ACCEL_PREFERRED = {"Windows": "whpx", "Linux": "kvm", "Darwin": "hvf"}
 _ACCEL_HELP_RE = re.compile(r"^[a-z0-9_-]+$")
@@ -55,8 +59,11 @@ def _parse_accel_listing(text):
 
 
 def _probe_accel(run, qemu_path, accel, timeout_s):
-    argv = [qemu_path, "-machine", "none", "-accel", accel,
-            "-display", "none", "-monitor", "none"]
+    """Init probe on a real machine type, CPU frozen (-S): `-machine none`
+    is not a valid accel target (QEMU ≥11 errors on it). Staying alive
+    past the deadline = the accelerator initialized."""
+    argv = [qemu_path, "-machine", "q35", "-accel", accel,
+            "-display", "none", "-monitor", "none", "-S", "-nodefaults"]
     res = run(argv, timeout_s)
     return res["timed_out"] or res["returncode"] == 0
 
@@ -109,8 +116,10 @@ def _check_image(image_path, image_sha256):
 
 
 def doctor(which=None, run=None, sysname=None, image_path=None,
-           image_sha256=None, disk_path=None, probe_timeout_s=5):
-    """Read-only prerequisite report; performs zero mutations."""
+           image_sha256=None, disk_path=None, probe_timeout_s=5,
+           qemu_path=None):
+    """Read-only prerequisite report; performs zero mutations.
+    qemu_path overrides PATH lookup (fresh installs lag shells)."""
     which = which or shutil.which
     run = run or _default_run
     sysname = sysname or platform.system()
@@ -135,7 +144,11 @@ def doctor(which=None, run=None, sysname=None, image_path=None,
         pass
     report["resources"]["ram_mib_free"] = _free_ram_mib(sysname)
 
-    qemu_path = which(_qemu_binary(machine))
+    if qemu_path is not None and not os.path.isfile(qemu_path):
+        actions.append(f"qemu_path_missing: {qemu_path}")
+        report["image"] = _check_image(image_path, image_sha256)
+        return report
+    qemu_path = qemu_path or which(_qemu_binary(machine))
     if not qemu_path:
         actions.append("install_qemu: qemu-system binary not found on PATH")
         report["image"] = _check_image(image_path, image_sha256)
@@ -195,3 +208,354 @@ def doctor(which=None, run=None, sysname=None, image_path=None,
              or (report["image"]["present"] and report["image"]["approved"]))
     )
     return report
+
+
+# ---------------------------------------------------------------------------
+# C04 — lifecycle: validated spec, consent-bound mutations, supervisor-owned
+# QEMU process. Mutating ops never run without an interactive human approval
+# bound to the spec digest; a spec mutated after consent fails closed.
+# ---------------------------------------------------------------------------
+
+class ConsentDenied(Exception):
+    """Mutating lifecycle op without (or after) human consent."""
+
+
+class SpecMismatch(Exception):
+    """On-disk artifact diverges from the approved spec (image/binary)."""
+
+
+_ACCELS = {"whpx", "kvm", "hvf"}
+_SHA_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def validate_spec(spec):
+    """List of human-readable errors; [] means the spec is consumable.
+    Closed profile: network/clipboard/mounts/devices must be explicitly
+    off — absent or permissive values are errors, never defaults."""
+    errors = []
+    if not isinstance(spec, dict):
+        return ["spec_not_a_mapping"]
+    if spec.get("schema_version") != 1:
+        errors.append("schema_version: must be 1")
+    try:
+        import cu_target
+        cu_target._check_component(spec.get("env_id"), "env_id")
+    except (ValueError, ImportError):
+        errors.append("env_id: missing or unsafe component")
+    if spec.get("provider") != "qemu":
+        errors.append("provider: only 'qemu' supported")
+    if not isinstance(spec.get("image_ref"), str) \
+            or not spec["image_ref"]:
+        errors.append("image_ref: required")
+    digest = spec.get("image_sha256")
+    if not isinstance(digest, str) or not _SHA_RE.match(digest.lower()):
+        errors.append("image_sha256: must be 64 lowercase hex")
+    if spec.get("image_format", "iso") not in ("iso", "qcow2"):
+        errors.append("image_format: 'iso' or 'qcow2'")
+    if not isinstance(spec.get("guest_os"), str):
+        errors.append("guest_os: required")
+    if not isinstance(spec.get("keyboard_layout"), str):
+        errors.append("keyboard_layout: required")
+    if spec.get("accel") not in _ACCELS:
+        errors.append("accel: explicit whpx|kvm|hvf required (no tcg)")
+    if not isinstance(spec.get("qemu_path"), str) \
+            or not spec["qemu_path"]:
+        errors.append("qemu_path: required")
+    res = spec.get("resources") or {}
+    if not isinstance(res.get("vcpus"), int) or res["vcpus"] < 1:
+        errors.append("resources.vcpus: int >= 1")
+    if not isinstance(res.get("memory_mib"), int) \
+            or res["memory_mib"] < 256:
+        errors.append("resources.memory_mib: int >= 256")
+    if spec.get("network") != "off":
+        errors.append("network: must be 'off' (no implicit sharing)")
+    if spec.get("clipboard") != "off":
+        errors.append("clipboard: must be 'off'")
+    if spec.get("mounts"):
+        errors.append("mounts: must be [] (no host paths)")
+    if spec.get("physical_devices"):
+        errors.append("physical_devices: must be [] (leases are C15)")
+    pinned = spec.get("qemu_sha256")
+    if pinned is not None and (not isinstance(pinned, str)
+                               or not _SHA_RE.match(pinned.lower())):
+        errors.append("qemu_sha256: must be 64 lowercase hex")
+    return errors
+
+
+def build_qemu_argv(spec, overlay):
+    """Argument list (never a shell string). Closed profile: no display,
+    no monitor, no serial on stdout, no NIC. QMP rides stdio pipes owned
+    by the supervisor — never a socket."""
+    res = spec["resources"]
+    argv = [spec["qemu_path"],
+            "-name", spec["env_id"],
+            "-machine", "q35",
+            "-accel", spec["accel"],
+            "-smp", str(res["vcpus"]),
+            "-m", str(res["memory_mib"]),
+            "-display", "none",
+            "-monitor", "none",
+            "-serial", "none",
+            "-nic", "none",
+            "-qmp", "stdio",
+            "-nodefaults"]
+    if spec.get("image_format", "iso") == "iso":
+        argv += ["-boot", "once=d", "-cdrom", spec["image_ref"]]
+        if overlay is not None:
+            argv += ["-drive",
+                     f"file={overlay},format=qcow2,if=virtio"]
+    else:
+        argv += ["-drive", f"file={overlay},format=qcow2,if=virtio"]
+    return argv
+
+
+def _canonical_digest(obj):
+    blob = json.dumps(obj, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def spec_digest(spec):
+    return _canonical_digest(spec)
+
+
+def plan_digest(plan):
+    return _canonical_digest(plan)
+
+
+def interactive_consent(plan, stdin=None, stderr=None):
+    """Human-in-the-loop approval. A piped stdin (agent, CI, script) is
+    NOT a consent channel — refuse without a real TTY. The operator must
+    type 'yes' after seeing the plan digest."""
+    stdin = stdin if stdin is not None else sys.stdin
+    stderr = stderr if stderr is not None else sys.stderr
+    if not stdin.isatty():
+        print(f"refused: {plan.get('op', '?')} requires an interactive "
+              "terminal", file=stderr)
+        return False
+    print(f"plan {plan.get('op', '?')} digest={plan.get('digest', '?')}",
+          file=stderr)
+    print("type 'yes' to approve: ", end="", file=stderr, flush=True)
+    try:
+        answer = stdin.readline().strip().lower()
+    except (OSError, EOFError):
+        return False
+    return answer == "yes"
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _pid_alive(pid):
+    """Existence probe for a pid we recorded — never a name scan."""
+    if os.name == "nt":
+        import ctypes
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
+        if not h:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            if not ctypes.windll.kernel32.GetExitCodeProcess(
+                    h, ctypes.byref(code)):
+                return False
+            return code.value == 259  # STILL_ACTIVE
+        finally:
+            ctypes.windll.kernel32.CloseHandle(h)
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def _atomic_write_json(path, obj):
+    path = Path(path)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(obj, indent=2), encoding="utf-8")
+    os.replace(tmp, path)
+
+
+class EnvironmentManager:
+    """Owns env lifecycle for one spec: create overlay, start QEMU under a
+    Supervisor (private QMP stdio), stop, reset.
+
+    Seam params: run(argv,timeout)->dict, spawn(argv)->proc,
+    consent(plan)->bool. Defaults are the real subprocess/TTY paths;
+    tests inject fakes. Every mutating op requires consent bound to the
+    spec digest — mutating the spec after approval fails closed.
+    """
+
+    def __init__(self, spec, root=None, run=None, spawn=None,
+                 consent=None):
+        self.spec = spec
+        env_id = spec.get("env_id", "env") if isinstance(spec, dict) \
+            else "env"
+        if root is None:
+            import cu_target
+            root = Path(cu_target.runtime_root()) / env_id
+        self.root = Path(root)
+        self.env_dir = self.root / env_id
+        self._run = run or _default_run
+        self._spawn = spawn or self._default_spawn
+        self._consent = consent or interactive_consent
+        self._approved_digest = None
+        self._sup = None
+        self._state_file = self.env_dir / "state.json"
+
+    @staticmethod
+    def _default_spawn(argv):
+        return subprocess.Popen(argv, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True)
+
+    @property
+    def overlay_path(self):
+        return str(self.env_dir / "overlay.qcow2")
+
+    # -- validation / provenance -------------------------------------------
+
+    def _validate(self):
+        errors = validate_spec(self.spec)
+        if errors:
+            raise ValueError("invalid_spec:" + ";".join(errors))
+
+    def _check_spec_unchanged(self):
+        if self._approved_digest is not None \
+                and spec_digest(self.spec) != self._approved_digest:
+            raise ConsentDenied("spec_changed_after_consent")
+
+    def _verify_image(self):
+        actual = _sha256_file(self.spec["image_ref"])
+        if actual != self.spec["image_sha256"].lower():
+            raise SpecMismatch("image_sha256")
+
+    def _verify_binary(self):
+        pinned = self.spec.get("qemu_sha256")
+        if pinned and _sha256_file(self.spec["qemu_path"]) \
+                != pinned.lower():
+            raise SpecMismatch("qemu_sha256")
+
+    def _require_consent(self, op, detail=None):
+        plan = {"op": op, "env_id": self.spec.get("env_id"),
+                "spec_sha256": spec_digest(self.spec)}
+        if detail:
+            plan["detail"] = detail
+        plan["digest"] = plan_digest(plan)
+        if not self._consent(plan):
+            raise ConsentDenied(op)
+        self._approved_digest = plan["spec_sha256"]
+
+    # -- overlay ------------------------------------------------------------
+
+    def _resolve_overlay(self, override):
+        p = Path(override) if override is not None \
+            else Path(self.overlay_path)
+        if not p.is_absolute():
+            p = self.env_dir / p
+        rp, rr = p.resolve(), self.root.resolve()
+        if os.path.commonpath([str(rr), str(rp)]) != str(rr):
+            raise ValueError(f"escape:{p}")
+        return rp
+
+    def _qemu_img(self):
+        q = Path(self.spec["qemu_path"])
+        suffix = ".exe" if q.name.lower().endswith(".exe") else ""
+        return str(q.with_name("qemu-img" + suffix))
+
+    def _create_overlay(self, overlay):
+        if self.spec.get("image_format", "iso") == "qcow2":
+            argv = [self._qemu_img(), "create", "-f", "qcow2",
+                    "-b", self.spec["image_ref"], "-F", "qcow2",
+                    str(overlay)]
+        else:
+            size = self.spec.get("disk_mib", 8192)
+            argv = [self._qemu_img(), "create", "-f", "qcow2",
+                    str(overlay), f"{size}M"]
+        res = self._run(argv, 60)
+        if res["timed_out"] or res["returncode"] != 0:
+            raise RuntimeError(f"qemu-img failed: {res['stderr'][:200]}")
+
+    # -- public ops ----------------------------------------------------------
+
+    def create(self, override_overlay=None):
+        self._validate()
+        self._verify_image()
+        overlay = self._resolve_overlay(override_overlay)
+        self._require_consent("create", {"overlay": str(overlay)})
+        import cu_target
+        cu_target.ensure_private_dir(self.env_dir)
+        self._create_overlay(overlay)
+        _atomic_write_json(self._state_file,
+                           {"env_id": self.spec["env_id"], "pid": None,
+                            "instance_id": None, "running": False,
+                            "spec_sha256": spec_digest(self.spec)})
+        return overlay
+
+    def start(self):
+        self._check_spec_unchanged()
+        self._require_consent("start")
+        self._start()
+
+    def _start(self):
+        self._verify_image()
+        self._verify_binary()
+        argv = build_qemu_argv(self.spec, Path(self.overlay_path))
+        proc = self._spawn(argv)
+        from cu_env_daemon import Supervisor
+        self._sup = Supervisor(proc)
+        self._sup.negotiate()
+        instance_id = f"i-{uuid.uuid4().hex[:12]}"
+        _atomic_write_json(self._state_file,
+                           {"env_id": self.spec["env_id"], "pid": proc.pid,
+                            "instance_id": instance_id, "running": True,
+                            "argv_sha256": _canonical_digest(argv),
+                            "spec_sha256": spec_digest(self.spec)})
+
+    def status(self):
+        state = {}
+        try:
+            state = json.loads(self._state_file.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            pass
+        running = False
+        if self._sup is not None and self._sup.proc.poll() is None:
+            running = True
+        elif state.get("pid") and state.get("running"):
+            running = _pid_alive(state["pid"])
+        return {"env_id": self.spec.get("env_id"),
+                "running": running,
+                "pid": state.get("pid"),
+                "instance_id": state.get("instance_id")}
+
+    def stop(self, force=False):
+        self._check_spec_unchanged()
+        self._require_consent("stop:force" if force else "stop")
+        self._stop(force=force)
+
+    def _stop(self, force=False):
+        if self._sup is None:
+            return
+        self._sup.powerdown(timeout_s=15, force=force)
+        self._sup = None
+        try:
+            state = json.loads(self._state_file.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            state = {"env_id": self.spec.get("env_id")}
+        state.update({"running": False, "pid": None})
+        _atomic_write_json(self._state_file, state)
+
+    def reset(self):
+        """Cold reset: wipe overlay, new instance_id, fresh boot. Old
+        observations die with the old instance."""
+        self._check_spec_unchanged()
+        self._require_consent("reset")
+        self._stop(force=True)
+        overlay = Path(self.overlay_path)
+        if overlay.exists():
+            overlay.unlink()
+        self._create_overlay(overlay)
+        self._start()

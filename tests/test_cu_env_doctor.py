@@ -130,6 +130,26 @@ def test_run_exception_is_reported_not_raised():
     assert report["actions_performed"] == []
 
 
+def test_accel_probe_uses_real_frozen_machine():
+    """`-machine none` is not a valid accel target on QEMU ≥11 — the probe
+    must run a real machine with the CPU frozen (-S, -nodefaults)."""
+    seen = []
+
+    def run(argv, timeout_s=10):
+        seen.append(argv)
+        joined = " ".join(argv)
+        if "--version" in joined:
+            return _res(0, "QEMU emulator version 11.1.0\n")
+        if "help" in joined:
+            return _res(0, "tcg\nwhpx\n")
+        return _res(0, "", "", timed_out=True)
+
+    cu_env.doctor(which=_which_ok, run=run, sysname="Windows")
+    probe = next(a for a in seen if "-S" in a)
+    assert probe[probe.index("-machine") + 1] != "none"
+    assert "-nodefaults" in probe
+
+
 def test_linux_prefers_kvm():
     def run(argv, timeout_s=10):
         joined = " ".join(argv)

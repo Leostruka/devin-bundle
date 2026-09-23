@@ -364,10 +364,10 @@ def test_monitor_escape_is_not_a_public_operation():
 
 **Depende de:** C00, C02, C03. **Arquivos:** `cu_env.py`, `env.py`; criar `cu_env_daemon.py`, `tests/test_cu_env_lifecycle.py`, `tests/test_cu_env_consent.py`.
 
-- [ ] Consumir spec aprovado; verificar digest da base e backing chain; criar overlay novo sem alterar base.
-- [ ] Construir argv por lista, `shell=False`; perfis fechados de máquina/display/controlador. QMP em stdio; sem monitor/serial misturados no stdout.
-- [ ] `EnvironmentManager` guarda PID + identidade de início + instance_id; não adota processo encontrado apenas por nome.
-- [ ] `build_qemu_argv` inclui `-display none`, `-qmp stdio`, `-monitor none`, `-serial none`, `-nic none` no perfil default; aceleração obrigatória explícita.
+- [x] Consumir spec aprovado; verificar digest da base e backing chain; criar overlay novo sem alterar base.
+- [x] Construir argv por lista, `shell=False`; perfis fechados de máquina/display/controlador. QMP em stdio; sem monitor/serial misturados no stdout.
+- [x] `EnvironmentManager` guarda PID + identidade de início + instance_id; não adota processo encontrado apenas por nome.
+- [x] `build_qemu_argv` inclui `-display none`, `-qmp stdio`, `-monitor none`, `-serial none`, `-nic none` no perfil default; aceleração obrigatória explícita.
 
 ```python
 def test_default_vm_has_no_network(spec, overlay):
