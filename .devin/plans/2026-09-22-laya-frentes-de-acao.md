@@ -483,7 +483,7 @@ def test_empty_choice_is_rejected():
 
 **Arquivos:** criar `extensions/laya-tools/decision_contract.py`, `tests/test_laya_decision_contract.py`, `.devin/templates/laya/profile.example.json`.
 
-- [ ] Implementar contratos §5, limits, IDs únicos e `__none__` reservado. Perguntas do piloto são exatamente §5.2.
+- [x] Implementar contratos §5, limits, IDs únicos e `__none__` reservado. Perguntas do piloto são exatamente §5.2.
 - [ ] Config default `mode: off`, `calibration: null`; não ativar só porque a dependência existe. A operação off não inicia subprocess nem lê pesos.
 - [ ] Estado ML por allowlist: goal e campos observados não sensíveis. Não permitir blobs, credential values, argv ou payload de execução.
 - [ ] Registrar identidade de modelo e schema do profile; paths locais aprovados e hashes de artefatos, nunca secrets em templates.
