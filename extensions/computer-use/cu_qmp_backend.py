@@ -32,6 +32,11 @@ class BackendError(Exception):
     """Transport, protocol or confinement failure on the env channel."""
 
 
+class UnsupportedText(Exception):
+    """Text/key not representable on the negotiated guest layout —
+    raised before a single event is written (zero partial input)."""
+
+
 def axis_to_qmp(v, size):
     """Guest pixel -> absolute QMP axis value (0..32767), clamped."""
     if size <= 1:
@@ -276,3 +281,147 @@ class QmpBackend:
         if not resp.get("ok"):
             raise BackendError(resp.get("error", "?"))
         return resp["return"]
+
+    # -- input (C06) ----------------------------------------------------------
+
+    def send_events(self, events, timeout_s=10, chunk=50):
+        """Push encoded input-send-event batches. A mid-send failure
+        (lost ACK, daemon error) triggers a best-effort release of every
+        key the batch pressed — a stuck guest key is worse than a
+        failed send. ACK = transport only, never UI effect."""
+        ready = self._ready()
+        sock, token = ready["socket"], ready.get("token")
+        sent = 0
+        try:
+            for i in range(0, len(events), chunk):
+                resp = self._ipc(
+                    sock, {"command": "input-send-event",
+                           "arguments": {"events": events[i:i + chunk]}},
+                    timeout_s, token=token)
+                if not resp.get("ok"):
+                    raise BackendError(
+                        f"input:{resp.get('error_class', '?')}:"
+                        f"{resp.get('error', '?')}")
+                sent += len(events[i:i + chunk])
+        except Exception:
+            self._release_all(sock, token, events)
+            raise
+        return {"dispatched": sent}
+
+    def _release_all(self, sock, token, events):
+        ups = [key_event(q, False) for q in {
+            e["data"]["key"]["data"]
+            for e in events
+            if e.get("type") == "key" and e["data"].get("down")}]
+        if not ups:
+            return
+        try:
+            self._ipc(sock, {"command": "input-send-event",
+                             "arguments": {"events": ups}}, 5,
+                      token=token)
+        except Exception:
+            pass
+
+
+# -- keyboard encoding (pure; zero IO) ---------------------------------------------
+
+def key_event(qcode, down):
+    return {"type": "key",
+            "data": {"key": {"type": "qcode", "data": qcode},
+                     "down": bool(down)}}
+
+
+_US_SHIFTED = {
+    "!": "1", "@": "2", "#": "3", "$": "4", "%": "5", "^": "6",
+    "&": "7", "*": "8", "(": "9", ")": "0",
+    "_": "minus", "+": "equal", "{": "bracket_left",
+    "}": "bracket_right", "|": "backslash", ":": "semicolon",
+    '"': "apostrophe", "~": "grave_accent", "<": "comma",
+    ">": "dot", "?": "slash",
+}
+_US_PLAIN = {**{c: c for c in "abcdefghijklmnopqrstuvwxyz0123456789"},
+             " ": "space", "-": "minus", "=": "equal",
+             "[": "bracket_left", "]": "bracket_right",
+             "\\": "backslash", ";": "semicolon",
+             "'": "apostrophe", "`": "grave_accent",
+             ",": "comma", ".": "dot", "/": "slash"}
+_US_MAP = dict(_US_PLAIN)
+_US_MAP.update({c: (q, True) for c, q in _US_SHIFTED.items()})
+_US_MAP.update({c: (c.lower(), True)
+                for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"})
+_US_MAP.update({c: (q, False) for c, q in _US_PLAIN.items()})
+
+LAYOUTS = {"en-us": _US_MAP}
+
+NAMED_KEYS = {
+    "enter": "ret", "return": "ret", "esc": "esc", "escape": "esc",
+    "tab": "tab", "space": "space", "backspace": "backspace",
+    "delete": "delete", "del": "delete", "insert": "insert",
+    "ins": "insert", "home": "home", "end": "end",
+    "pageup": "pgup", "pagedown": "pgdn", "pgup": "pgup",
+    "pgdn": "pgdn", "up": "up", "down": "down", "left": "left",
+    "right": "right", "printscreen": "print", "capslock": "caps_lock",
+    "numlock": "num_lock", "scrolllock": "scroll_lock",
+    "pause": "pause", "menu": "menu",
+    **{f"f{i}": f"f{i}" for i in range(1, 13)},
+}
+
+_MODS = {"ctrl": "ctrl", "control": "ctrl", "alt": "alt",
+         "shift": "shift", "meta": "meta_l", "win": "meta_l",
+         "super": "meta_l", "cmd": "meta_l"}
+
+
+def encode_text(text, layout="en-us"):
+    """text -> [input-send-event dicts]. Validates EVERY char before
+    returning — UnsupportedText means zero events were produced, so a
+    caller can never emit a partial prefix."""
+    km = LAYOUTS.get(layout)
+    if km is None:
+        raise UnsupportedText(f"layout:{layout}")
+    events = []
+    for ch in text:
+        if ch in ("\n", "\r"):
+            q, shift = "ret", False
+        elif ch == "\t":
+            q, shift = "tab", False
+        else:
+            mapped = km.get(ch)
+            if mapped is None:
+                raise UnsupportedText(f"unrepresentable:{ch!r}")
+            q, shift = mapped
+        if shift:
+            events.append(key_event("shift", True))
+        events += [key_event(q, True), key_event(q, False)]
+        if shift:
+            events.append(key_event("shift", False))
+    return events
+
+
+def encode_key(name):
+    """Named key press -> [down, up]."""
+    q = NAMED_KEYS.get(name.strip().lower())
+    if q is None:
+        raise UnsupportedText(f"key:{name}")
+    return [key_event(q, True), key_event(q, False)]
+
+
+def encode_chord(chord):
+    """'ctrl+alt+delete' -> mods down in order, key down/up, mods up in
+    REVERSE order (balanced release)."""
+    parts = [p.strip().lower() for p in chord.split("+") if p.strip()]
+    if len(parts) < 2:
+        raise UnsupportedText(f"chord_needs_modifier+key:{chord}")
+    *mods, key = parts
+    qmods = []
+    for m in mods:
+        q = _MODS.get(m)
+        if q is None:
+            raise UnsupportedText(f"modifier:{m}")
+        qmods.append(q)
+    qkey = NAMED_KEYS.get(key)
+    if qkey is None:
+        raise UnsupportedText(f"key:{key}")
+    events = [key_event(q, True) for q in qmods]
+    events += [key_event(qkey, True), key_event(qkey, False)]
+    events += [key_event(q, False) for q in reversed(qmods)]
+    return events

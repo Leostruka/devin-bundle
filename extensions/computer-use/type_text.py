@@ -65,12 +65,45 @@ def resolve_key(name, Key, KeyCode):
     fail(f"unknown key: {name}", 2)
 
 
+def _remote_main(target):
+    """Type into the isolated env via QMP input-send-event. Pure encoders
+    pre-validate everything before a byte leaves — no pynput, no
+    SendInput, no host clipboard anywhere on this path."""
+    import cu_qmp_backend
+    p = cm.JsonParser(description="Type into isolated env")
+    p.add_argument("text", nargs="?", default=None)
+    p.add_argument("--key", default=None,
+                   help="named key (enter, tab, f5...)")
+    p.add_argument("--chord", default=None,
+                   help="modifier chord (ctrl+alt+delete)")
+    p.add_argument("--env", default=None)
+    args = p.parse_args()
+    backend = target["backend"]
+    layout = target["spec"].get("keyboard_layout", "en-us")
+    try:
+        if args.key:
+            events = cu_qmp_backend.encode_key(args.key)
+        elif args.chord:
+            events = cu_qmp_backend.encode_chord(args.chord)
+        elif args.text is not None:
+            events = cu_qmp_backend.encode_text(args.text,
+                                                layout=layout)
+        else:
+            cu_target.reject_remote("no text/--key/--chord given")
+        res = backend.send_events(events)
+    except cu_qmp_backend.UnsupportedText as exc:
+        cu_target.reject_remote(f"unsupported_text:{exc}")
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
+    print(json.dumps({"ok": True, "status": "dispatched",
+                      "env_id": target["env_id"], **res}))
+
+
 def main():
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
-        cu_target.reject_remote(
-            f"env {target['env_id']}: remote dispatch not implemented "
-            "for type_text yet (C06)")
+        _remote_main(target)
+        return
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("type_text", sys.argv[1:])

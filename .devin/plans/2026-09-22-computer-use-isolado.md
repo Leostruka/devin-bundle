@@ -398,9 +398,9 @@ def test_qmp_axis_corners():
 
 **Depende de:** C05. **Arquivos:** `cu_qmp_backend.py`, `type_text.py`; criar `tests/test_cu_qmp_keyboard.py`.
 
-- [ ] Mapear key names para QKeyCode/scancode negociado. Balancear modificadores e liberar em ordem reversa.
-- [ ] Pré-validar todo texto antes de enviar qualquer caractere. Layout desconhecido ou caractere não representável rejeita zero input.
-- [ ] Atalhos permanecem eventos do guest; nenhum `SendInput`, clipboard ou pynput host.
+- [x] Mapear key names para QKeyCode/scancode negociado. Balancear modificadores e liberar em ordem reversa.
+- [x] Pré-validar todo texto antes de enviar qualquer caractere. Layout desconhecido ou caractere não representável rejeita zero input.
+- [x] Atalhos permanecem eventos do guest; nenhum `SendInput`, clipboard ou pynput host.
 
 ```python
 def test_unsupported_text_never_sends_prefix():

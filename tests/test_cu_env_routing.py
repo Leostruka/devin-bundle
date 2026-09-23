@@ -71,10 +71,13 @@ def _write_env(root, env_id="devin-linux", provider="qemu"):
 
 def _run(mod, argv, monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", [f"{mod.__name__}.py"] + argv)
-    with pytest.raises(SystemExit) as ei:
+    try:
         mod.main()
+        code = 0  # dispatched remote ops return normally
+    except SystemExit as ei:
+        code = ei.code
     out = capsys.readouterr().out.strip().splitlines()
-    return ei.value.code, json.loads(out[-1])
+    return code, json.loads(out[-1])
 
 
 def test_unknown_environment_is_not_local():
@@ -140,24 +143,55 @@ def test_mouse_click_unknown_env_rejected(hostile_host, tmp_path,
     assert "unknown_environment" in out["error"]
 
 
-def test_type_text_remote_rejected(hostile_host, tmp_path,
-                                   monkeypatch, capsys):
+def test_type_text_remote_dispatches_without_host(hostile_host, tmp_path,
+                                                  monkeypatch, capsys):
+    """C06: remote type_text dispatches through the backend — still zero
+    host input (hostile_host traps pynput/session/emergency_release)."""
+    sent = []
+    (tmp_path / "env").mkdir()
+
+    class FakeBackend:
+        env_dir = tmp_path / "env"
+
+        def send_events(self, events):
+            sent.append(events)
+            return {"dispatched": len(events)}
+
     _write_env(tmp_path)
     monkeypatch.setenv("CU_ENV_ROOT", str(tmp_path))
+    monkeypatch.setattr(cu_backend, "open_backend",
+                        lambda target: FakeBackend())
     code, out = _run(type_text, ["hello", "--env", "devin-linux"],
                      monkeypatch, capsys)
-    assert out["ok"] is False
-    assert out["status"] == "rejected"
+    assert out["ok"] is True
+    assert out["status"] == "dispatched"
+    assert sent and sent[0][0]["data"]["key"]["data"] == "h"
 
 
-def test_screenshot_remote_rejected(hostile_host, tmp_path,
-                                    monkeypatch, capsys):
+def test_screenshot_remote_dispatches_without_host(hostile_host, tmp_path,
+                                                   monkeypatch, capsys):
+    """C05: remote screenshot captures via backend — no host mss/UIA."""
+    cu_qmp_backend = load("cu_qmp_backend")
+    (tmp_path / "env").mkdir()
+
+    class FakeBackend:
+        env_dir = tmp_path / "env"
+
+        def observe(self):
+            return cu_qmp_backend.Frame(b"\x00\x00\x00", 1, 1), {
+                "backend": "qmp",
+                "instance_id": "i-x", "frame_sha256": "0" * 64,
+                "monotonic_ns": 1, "origin_px": [0, 0]}
+
     _write_env(tmp_path)
     monkeypatch.setenv("CU_ENV_ROOT", str(tmp_path))
+    monkeypatch.setattr(cu_backend, "open_backend",
+                        lambda target: FakeBackend())
     code, out = _run(screenshot, ["--env", "devin-linux"],
                      monkeypatch, capsys)
-    assert out["ok"] is False
-    assert out["status"] == "rejected"
+    assert out["ok"] is True
+    assert out["backend"] == "qmp"
+    assert out["width"] == 1
 
 
 def test_profile_remote_rejected(hostile_host, tmp_path,
