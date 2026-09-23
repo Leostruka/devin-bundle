@@ -418,6 +418,20 @@ PY terminal.py exec "uname -a" --env devin-linux   # guest exec, untrusted out
   a running env and fails hard without one — it is not part of the
   normal `tests/` collection.
 
+### Laya target suggestions (`cu_decision.py`)
+
+Optional shadow plumbing: observed elements become a closed set of at
+most 8 candidates; a resident laya worker (`laya_cli.py serve-stdio`)
+returns `suggestion | abstain`. It **suggests only** — the module has
+no execution path, and in `shadow` mode the output can never influence
+an action. An exact name match short-circuits without calling the
+model; zero candidates abstain without a call. Any future `assist`
+adoption must pass `adoptable()`: every binding field
+(env/instance/observation/capabilities/policy) must match the current
+context and evaluation must be approved. QMP-only guests have no
+text tree — semantic targeting there depends on the guest worker
+(C10) or DOM/UIA bindings (C12). Laya is not a required dependency.
+
 ## Safety
 
 These scripts act on the real desktop with the user's permissions (Rule 13).

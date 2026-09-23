@@ -541,9 +541,9 @@ def test_wilson_empty_and_perfect_are_distinct():
 
 **Arquivos:** criar `extensions/computer-use/cu_decision.py`, `tests/test_cu_laya_shadow.py`; ampliar USAGE; sem alteração de `sc_policy`.
 
-- [ ] Converter UIA/DOM observados em no máximo oito candidatos permitidos. Uma correspondência exata não chama modelo; zero candidatos abstém.
-- [ ] Rodar shadow; registrar sugestão saneada sem influenciar a ação existente. QMP sem árvore textual não ganha targeting semântico por mágica: depende de C10/C12 para esse caso.
-- [ ] Antes de qualquer adoção futura, conferir env/instance/observation/policy/capabilities novamente. Usuário escolhe env; Laya nunca altera.
+- [x] Converter UIA/DOM observados em no máximo oito candidatos permitidos. Uma correspondência exata não chama modelo; zero candidatos abstém.
+- [x] Rodar shadow; registrar sugestão saneada sem influenciar a ação existente. QMP sem árvore textual não ganha targeting semântico por mágica: depende de C10/C12 para esse caso.
+- [x] Antes de qualquer adoção futura, conferir env/instance/observation/policy/capabilities novamente. Usuário escolhe env; Laya nunca altera.
 
 ```python
 def test_stale_suggestion_is_rejected():
