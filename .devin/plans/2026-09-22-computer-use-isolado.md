@@ -577,10 +577,10 @@ def test_independent_guest_and_host(probe_run):
 
 **Depende de:** C16. **Arquivos:** `extensions/computer-use/USAGE.md`, `skills/computer-use/SKILL.md`, `skills/system-control/SKILL.md`, `manifest.json`, `install.ps1`, `install.sh`, `.devin/docs/TOOLS-MAP.md`; criar testes de instalação apenas para o que mudar.
 
-- [ ] Installer copia adapters/templates; não baixa imagem/hipervisor/Laya e não inicia daemon. Não alterar o `config.json` preexistente desta sessão.
-- [ ] Documentar cada flag, status v2, backend/capability e limitação; manter índice da skill curto e detalhes na USAGE.
-- [ ] Ensinar a preferência: API/CLI autorizada no destino → DOM/UIA vinculada → input VM → físico local somente se solicitado. Não contornar políticas por mudança de ferramenta.
-- [ ] Feature permanece opt-in; Laya não é dependência necessária do computer-use.
+- [x] Installer copia adapters/templates; não baixa imagem/hipervisor/Laya e não inicia daemon. Não alterar o `config.json` preexistente desta sessão.
+- [x] Documentar cada flag, status v2, backend/capability e limitação; manter índice da skill curto e detalhes na USAGE.
+- [x] Ensinar a preferência: API/CLI autorizada no destino → DOM/UIA vinculada → input VM → físico local somente se solicitado. Não contornar políticas por mudança de ferramenta.
+- [x] Feature permanece opt-in; Laya não é dependência necessária do computer-use.
 
 **Gates:** `python audit.py`, `python -m pytest tests -q`, `bash -n install.sh`; gates de parser/shellcheck/instalação da CI se installers mudarem. Rodar a matriz existente de Python 3.11/3.14 × Linux/Windows/macOS sem removê-la. Nenhum sucesso da CI simulada substitui o gate real de C16.
 
