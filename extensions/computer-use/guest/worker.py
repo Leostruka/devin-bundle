@@ -15,7 +15,8 @@ import sys
 PROTOCOL_VERSION = 1
 
 METHODS = frozenset({"ping", "text.insert", "clipboard.get",
-                     "clipboard.set", "probe.state"})
+                     "clipboard.set", "probe.state", "exec.run",
+                     "dom.navigate", "dom.eval", "uia.snapshot"})
 
 
 def _boot_id():
@@ -48,7 +49,9 @@ def handle_request(req, caps):
     cap_for = {"text.insert": "text_insert",
                "clipboard.get": "clipboard",
                "clipboard.set": "clipboard",
-               "probe.state": "probe"}
+               "probe.state": "probe", "exec.run": "exec",
+               "dom.navigate": "dom", "dom.eval": "dom",
+               "uia.snapshot": "uia"}
     cap = cap_for.get(method)
     if cap and not (caps or {}).get(cap):
         return {"id": rid, "ok": False,

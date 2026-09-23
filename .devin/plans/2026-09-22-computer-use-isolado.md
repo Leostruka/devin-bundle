@@ -495,9 +495,9 @@ def test_clipboard_disabled_is_rejected():
 
 **Depende de:** C10. **Arquivos:** `cu_browser.py`, `browser.py`, `browser_events.py`, `cu_terminal.py`, `terminal.py`, `terminal_sessions.py`, `guest/worker.py`; criar `tests/test_cu_env_bindings.py`.
 
-- [ ] Executar PID/HWND/UIA/DOM checks dentro do guest. Namespaces dos bindings incluem env/instance; remote-debugging não publicado na rede host.
-- [ ] Não ampliar a allowlist loopback do browser host para aceitar IPs arbitrários. Guest bridge acessa o loopback guest.
-- [ ] Terminal/exec remoto não oferece caminho para contornar DENY/CONFIRM do system-control; preserva autorização da ação e output não confiável.
+- [x] Executar PID/HWND/UIA/DOM checks dentro do guest. Namespaces dos bindings incluem env/instance; remote-debugging não publicado na rede host.
+- [x] Não ampliar a allowlist loopback do browser host para aceitar IPs arbitrários. Guest bridge acessa o loopback guest.
+- [x] Terminal/exec remoto não oferece caminho para contornar DENY/CONFIRM do system-control; preserva autorização da ação e output não confiável.
 
 ```python
 def test_host_binding_is_invalid_in_guest():

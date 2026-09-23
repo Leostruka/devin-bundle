@@ -26,7 +26,8 @@ INTERACTIVE_REQUIRED = frozenset({"text_insert", "clipboard", "uia",
                                   "dom"})
 
 METHODS = frozenset({"ping", "text.insert", "clipboard.get",
-                     "clipboard.set", "probe.state"})
+                     "clipboard.set", "probe.state", "exec.run",
+                     "dom.navigate", "dom.eval", "uia.snapshot"})
 
 
 class GuestProtocolError(Exception):
@@ -59,6 +60,16 @@ def validate_handshake(reply):
     return caps
 
 
+def binding_matches(binding, env_id, instance_id):
+    """A binding is valid only for the exact (env_id, instance_id) it
+    was stamped with — host bindings never satisfy a guest target and a
+    reset env (new instance_id) invalidates everything bound to it."""
+    if not isinstance(binding, dict):
+        return False
+    return (binding.get("env_id") == env_id
+            and binding.get("instance_id") == instance_id)
+
+
 def check_operation(op, capabilities):
     """Pure gate: is `op` allowed under this capability set?
     Returns {"allowed": bool, "reason"?: str}."""
@@ -66,7 +77,7 @@ def check_operation(op, capabilities):
                 "clipboard.get": "clipboard",
                 "clipboard.set": "clipboard",
                 "uia.snapshot": "uia",
-                "dom.eval": "dom",
+                "dom.eval": "dom", "dom.navigate": "dom",
                 "exec.run": "exec",
                 "probe.state": "probe"}
     cap = _CAP_FOR.get(op)

@@ -87,7 +87,41 @@ def _daemon_start():
     return {"ok": False, "error": "daemon did not write pidfile"}
 
 
+def _remote_main(target):
+    """Terminal ops inside the env via the guest worker's exec.run.
+    Capability-gated; guest output is untrusted data. Host
+    system-control DENY/CONFIRM does not apply here — and is never
+    bypassed: without the guest 'exec' cap this is a typed rejection."""
+    import cu_guest
+    import cu_target
+    p = argparse.ArgumentParser(prog="terminal.py --env")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    e = sub.add_parser("exec")
+    e.add_argument("text")
+    e.add_argument("--env", default=None)
+    args = p.parse_args()
+    backend = target["backend"]
+    gate = cu_guest.check_operation("exec.run", backend.guest_caps())
+    if not gate["allowed"]:
+        cu_target.reject_remote(gate["reason"])
+    try:
+        r = backend.guest_call("exec.run",
+                               {"cmd": args.text})
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
+    out = {"ok": True, "status": "dispatched",
+           "env_id": target["env_id"], "untrusted": True}
+    if isinstance(r, dict):
+        out.update(r)
+    print(json.dumps(out))
+
+
 def main():
+    import cu_target
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        _remote_main(target)
+        return
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
 
