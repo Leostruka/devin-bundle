@@ -390,6 +390,24 @@ def _atomic_write_json(path, obj):
     os.replace(tmp, path)
 
 
+def same_instance(a, b):
+    """Same guest boot/instance? Both sides need valid, EQUAL ids —
+    missing ids never match (empty is not 'same')."""
+    ia = (a or {}).get("instance_id")
+    ib = (b or {}).get("instance_id")
+    return bool(ia) and ia == ib
+
+
+def _terminate_pid(pid):
+    """Best-effort terminate of a pid WE recorded (never a name scan).
+    Failure = already dead; caller verifies via _daemon_exited."""
+    try:
+        os.kill(pid, 9 if os.name != "nt" else 1)
+    except (OSError, PermissionError):
+        return False
+    return True
+
+
 class EnvironmentManager:
     """Owns env lifecycle for one spec: create overlay, start QEMU under a
     Supervisor (private QMP stdio), stop, reset.
@@ -421,6 +439,19 @@ class EnvironmentManager:
         self._approved_digest = None
         self._daemon = None
         self._state_file = self.env_dir / "state.json"
+
+    @property
+    def env_id(self):
+        return self.spec.get("env_id")
+
+    def state_file(self):
+        return self._state_file
+
+    def _load_state(self):
+        try:
+            return json.loads(self._state_file.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return {}
 
     @staticmethod
     def _default_spawn(argv):
@@ -531,13 +562,21 @@ class EnvironmentManager:
         self._check_spec_unchanged()
         self._require_consent("start")
         self._start()
+        return self.status()
 
-    def _start(self):
+    def _start(self, new_instance=False):
+        """Spawn the daemon. Instance identity = overlay lifespan: stop/
+        start keep the same instance_id and session_id; only reset
+        (new_instance=True) mints fresh ones."""
         self._verify_image()
         self._verify_binary()
         import cu_target
         cu_target.ensure_private_dir(self.env_dir)
         _atomic_write_json(self.env_dir / "spec.approved.json", self.spec)
+        prev = {} if new_instance else self._load_state()
+        instance_id = prev.get("instance_id") \
+            or f"i-{uuid.uuid4().hex[:12]}"
+        session_id = prev.get("session_id") or "default"
         daemon_py = Path(__file__).with_name("cu_env_daemon.py")
         argv = [sys.executable, str(daemon_py),
                 "--env-dir", str(self.env_dir)]
@@ -551,22 +590,21 @@ class EnvironmentManager:
                 pass
             self._daemon = None
             raise RuntimeError("daemon_ready_timeout")
-        instance_id = f"i-{uuid.uuid4().hex[:12]}"
         _atomic_write_json(self._state_file,
                            {"env_id": self.spec["env_id"],
                             "pid": proc.pid,
                             "qemu_pid": ready.get("qemu_pid"),
                             "socket": ready.get("socket"),
                             "token": ready.get("token"),
-                            "instance_id": instance_id, "running": True,
+                            "instance_id": instance_id,
+                            "session_id": session_id,
+                            "running": True,
                             "spec_sha256": spec_digest(self.spec)})
 
     def status(self):
-        state = {}
-        try:
-            state = json.loads(self._state_file.read_text("utf-8"))
-        except (OSError, json.JSONDecodeError):
-            pass
+        state = self._load_state()
+        if state.get("running") and not state.get("instance_id"):
+            raise RuntimeError("state_inconsistent")
         running = False
         if self._daemon is not None and self._daemon.poll() is None:
             running = True
@@ -576,55 +614,107 @@ class EnvironmentManager:
                 "running": running,
                 "pid": state.get("pid"),
                 "qemu_pid": state.get("qemu_pid"),
-                "instance_id": state.get("instance_id")}
+                "instance_id": state.get("instance_id"),
+                "session_id": state.get("session_id")}
 
     def stop(self, force=False):
         self._check_spec_unchanged()
         self._require_consent("stop:force" if force else "stop")
-        self._stop(force=force)
+        return self._stop(force=force)
+
+    def _daemon_exited(self, state, timeout_s):
+        import time
+        end = time.monotonic() + timeout_s
+        while time.monotonic() < end:
+            if self._daemon is not None:
+                if self._daemon.poll() is not None:
+                    return True
+            elif not (state.get("pid") and _pid_alive(state["pid"])):
+                return True
+            time.sleep(0.1)
+        return False
 
     def _stop(self, force=False):
         """Graceful: IPC system_powerdown to the daemon, which forwards it
-        over QMP. The daemon exits when QEMU does. force kills the daemon
-        proc — its atexit kills QEMU, no orphans."""
-        try:
-            state = json.loads(self._state_file.read_text("utf-8"))
-        except (OSError, json.JSONDecodeError):
-            state = {}
+        over QMP; the daemon exits when QEMU does. Undelivered or
+        unconfirmed shutdown is `unknown` — never silently escalated.
+        force terminates the daemon pid ourselves (its atexit kills
+        QEMU — no orphans) and is disclosed via `forced: true`."""
+        state = self._load_state()
         sock = state.get("socket")
-        if sock:
+        delivered = False
+        if sock and not force:
             try:
                 self._ipc(sock, {"command": "system_powerdown"}, 10,
                           token=state.get("token"))
+                delivered = True
             except Exception:
-                pass
-        daemon = self._daemon
-        if daemon is not None:
-            import time
-            end = time.monotonic() + 15
-            while time.monotonic() < end and daemon.poll() is None:
-                time.sleep(0.1)
-            if daemon.poll() is None:
-                if not force:
-                    raise TimeoutError("powerdown_timeout")
-                daemon.kill()
-                daemon.wait(timeout=5)
+                delivered = False
+        if not force and sock and not delivered:
+            return {"ok": True, "status": "unknown", "running": None,
+                    "env_id": self.spec.get("env_id"),
+                    "instance_id": state.get("instance_id")}
+        if force:
+            daemon = self._daemon
+            if daemon is not None:
+                try:
+                    daemon.kill()
+                    daemon.wait(timeout=5)
+                except Exception:
+                    pass
+            elif state.get("pid"):
+                _terminate_pid(state["pid"])
+            self._daemon_exited(state, 5)
+            self._daemon = None
+            state.update({"running": False, "pid": None,
+                          "qemu_pid": None})
+            _atomic_write_json(self._state_file, state)
+            return {"ok": True, "status": "dispatched",
+                    "running": False, "forced": True,
+                    "env_id": self.spec.get("env_id"),
+                    "instance_id": state.get("instance_id")}
+        if delivered and not self._daemon_exited(state, 15):
+            return {"ok": True, "status": "unknown", "running": None,
+                    "env_id": self.spec.get("env_id"),
+                    "instance_id": state.get("instance_id")}
         self._daemon = None
-        try:
-            state = json.loads(self._state_file.read_text("utf-8"))
-        except (OSError, json.JSONDecodeError):
-            state = {"env_id": self.spec.get("env_id")}
         state.update({"running": False, "pid": None, "qemu_pid": None})
         _atomic_write_json(self._state_file, state)
+        return {"ok": True, "status": "dispatched", "running": False,
+                "forced": False,
+                "env_id": self.spec.get("env_id"),
+                "instance_id": state.get("instance_id")}
+
+    def restart(self):
+        """Recycle the QEMU process under the SAME instance — identity
+        follows the overlay, not the process."""
+        self._check_spec_unchanged()
+        self._require_consent("restart")
+        r = self._stop()
+        if r.get("running") is None:
+            raise RuntimeError("stop_uncertain:refusing_restart")
+        self._start()
+        return self.status()
 
     def reset(self):
-        """Cold reset: wipe overlay, new instance_id, fresh boot. Old
-        observations die with the old instance."""
+        """Cold reset: archive the old instance's state, wipe overlay,
+        new instance_id + session, fresh boot. Old observations die with
+        the old instance."""
         self._check_spec_unchanged()
         self._require_consent("reset")
         self._stop(force=True)
+        prev = self._load_state()
+        old_iid = prev.get("instance_id")
+        if old_iid:
+            archive = self.env_dir / "instances" / old_iid
+            archive.mkdir(parents=True, exist_ok=True)
+            for name in ("state.json", "requests.jsonl"):
+                src = self.env_dir / name
+                if src.exists():
+                    os.replace(src, archive / name)
         overlay = Path(self.overlay_path)
         if overlay.exists():
             overlay.unlink()
         self._create_overlay(overlay)
-        self._start()
+        self._start(new_instance=True)
+        return self.status()

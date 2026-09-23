@@ -41,7 +41,14 @@ def _lifecycle(args):
         if args.cmd == "status":
             return _emit(True, "dispatched", **mgr.status())
         if args.cmd == "stop":
-            mgr.stop(force=args.force)
+            r = mgr.stop(force=args.force)
+            r.pop("ok", None)
+            return _emit(r.get("status") != "unknown",
+                         r.get("status", "dispatched"),
+                         **{k: v for k, v in r.items()
+                            if k != "status"})
+        if args.cmd == "restart":
+            mgr.restart()
             return _emit(True, "dispatched", **mgr.status())
         if args.cmd == "reset":
             mgr.reset()
@@ -68,7 +75,8 @@ def main(argv=None):
     doc.add_argument("--image-sha256", dest="image_sha256", default=None)
     doc.add_argument("--qemu-path", dest="qemu_path", default=None,
                      help="explicit qemu-system binary (bypasses PATH)")
-    for verb in ("create", "start", "status", "stop", "reset"):
+    for verb in ("create", "start", "status", "stop", "restart",
+                 "reset"):
         p = sub.add_parser(verb, help=f"{verb} environment")
         p.add_argument("--env", required=True)
     sub.choices["stop"].add_argument("--force", action="store_true")

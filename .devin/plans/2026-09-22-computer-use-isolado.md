@@ -510,9 +510,9 @@ def test_host_binding_is_invalid_in_guest():
 
 **Depende de:** C09. **Arquivos:** `cu_env.py`, `cu_env_daemon.py`, `env.py`; criar `tests/test_cu_env_reset.py`.
 
-- [ ] `stop` pede shutdown gracioso; timeout mantém estado explícito. Force stop exige confirmação separada.
-- [ ] `reset` arquiva overlay anterior e cria outro a partir da base aprovada; muda instance_id, descarta filas/bindings/observações antigas.
-- [ ] Não remover bases ou arquivos de ambientes não próprios. Deleção definitiva fica fora do primeiro release.
+- [x] `stop` pede shutdown gracioso; timeout mantém estado explícito. Force stop exige confirmação separada.
+- [x] `reset` arquiva overlay anterior e cria outro a partir da base aprovada; muda instance_id, descarta filas/bindings/observações antigas.
+- [x] Não remover bases ou arquivos de ambientes não próprios. Deleção definitiva fica fora do primeiro release.
 
 ```python
 def test_reset_invalidates_old_instance():
