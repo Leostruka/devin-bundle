@@ -541,11 +541,11 @@ def test_container_spec_rejects_host_display():
 
 **Depende de:** C13. **Arquivos:** criar `cu_devices.py`, `tests/test_cu_env_device_leases.py`; estender `env.py` com inventário e plano de lease, não attach automático.
 
-- [ ] Identificar dispositivo por serial/topologia/interface além de VID/PID; mostrar todos os membros de receptores compostos. Nunca atribuir por `eventN` persistido ou wildcard VID/PID.
-- [ ] Pessoa declara par A protegido e confirma par B. Se receptor também contém A, recusar. Nada de capturar todos os teclados para descobrir qual é o segundo.
+- [x] Identificar dispositivo por serial/topologia/interface além de VID/PID; mostrar todos os membros de receptores compostos. Nunca atribuir por `eventN` persistido ou wildcard VID/PID.
+- [x] Pessoa declara par A protegido e confirma par B. Se receptor também contém A, recusar. Nada de capturar todos os teclados para descobrir qual é o segundo.
 - [ ] Linux: passthrough USB específico para VM qualificada. Windows → guest Linux: avaliar usbipd-win com acesso restrito à rede da VM, kernel/drivers presentes e attach verificado; WSL não equivale a um container específico.
 - [ ] Não prometer passthrough QEMU Windows por libusb sem validar o pacote/driver. Windows guest e dispositivos Bluetooth ficam `unsupported` até teste próprio.
-- [ ] Lease com estados available/reserved/attached/releasing/lost; somente um consumidor. Disconnect pausa agente; replug exige reidentificação, não adota outro hardware.
+- [x] Lease com estados available/reserved/attached/releasing/lost; somente um consumidor. Disconnect pausa agente; replug exige reidentificação, não adota outro hardware.
 
 ```python
 def test_protected_device_cannot_be_leased():

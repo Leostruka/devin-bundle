@@ -53,6 +53,27 @@ def _lifecycle(args):
         if args.cmd == "reset":
             mgr.reset()
             return _emit(True, "dispatched", **mgr.status())
+        if args.cmd == "devices":
+            import cu_devices
+            return _emit(True, "dispatched",
+                         devices=cu_devices.enumerate_devices())
+        if args.cmd == "lease-plan":
+            import cu_devices
+            inv = cu_devices.enumerate_devices()
+            pol = {"protected": list(args.protect or []),
+                   "protected_serials": list(
+                       args.protect_serial or [])}
+            req = {"device_id": args.device, "env_id": args.env,
+                   "confirmed_by_human": args.confirmed}
+            errors = cu_devices.validate_lease(req, pol, inv)
+            if errors:
+                return _emit(False, "rejected", errors=errors)
+            plan = {"op": "lease", "env_id": args.env,
+                    "device_id": args.device,
+                    "note": "attach is a separate approved step — "
+                            "this plan performs no bind/attach"}
+            plan["digest"] = cu_env.plan_digest(plan)
+            return _emit(True, "planned", plan=plan)
     except cu_env.ConsentDenied:
         return _emit(False, "rejected", error="consent_denied")
     except cu_env.SpecMismatch as exc:
@@ -80,6 +101,18 @@ def main(argv=None):
         p = sub.add_parser(verb, help=f"{verb} environment")
         p.add_argument("--env", required=True)
     sub.choices["stop"].add_argument("--force", action="store_true")
+    dev = sub.add_parser("devices", help="list leasable devices")
+    dev.add_argument("--env", required=True)
+    lp = sub.add_parser("lease-plan",
+                        help="validate + plan a device lease (no attach)")
+    lp.add_argument("--env", required=True)
+    lp.add_argument("--device", required=True)
+    lp.add_argument("--protect", action="append", default=None,
+                    help="protected device_id (human pair)")
+    lp.add_argument("--protect-serial", action="append",
+                    default=None)
+    lp.add_argument("--confirmed", action="store_true",
+                    help="human confirmed the SECOND pair selection")
     args = ap.parse_args(argv)
 
     if args.cmd == "doctor":
