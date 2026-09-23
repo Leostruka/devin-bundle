@@ -44,13 +44,15 @@ def may_retry(result):
 def cleanup(target):
     """Release input state for the target. Remote envs release through
     their backend — cu_actions.emergency_release is HOST state and must
-    never run on a remote path."""
+    never run on a remote path. Host release requires an EXPLICIT
+    kind=local; an unknown/absent kind never defaults to host."""
     kind = target.get("kind") if isinstance(target, dict) else None
-    if kind == "local" or kind is None:
+    if kind == "local":
         import cu_actions
         cu_actions.emergency_release()
         return {"released": "host"}
-    return open_backend(target).release_all()
+    backend = target.get("backend") or open_backend(target)
+    return backend.release_all()
 
 
 def result_from_ack(ack, request_id=None):

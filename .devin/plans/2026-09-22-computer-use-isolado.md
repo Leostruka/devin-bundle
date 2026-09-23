@@ -559,10 +559,10 @@ def test_protected_device_cannot_be_leased():
 
 **Depende de:** C09, C13. **Arquivos:** criar `extensions/computer-use/integration/test_cu_env_live.py`, `extensions/computer-use/integration/fixtures/cu_input_probe.py`, `tests/held-out/test_cu_env_boundaries.py`; estender `cu_bench.py` sem alterar baseline congelado.
 
-- [ ] Fixture guest própria registra eventos e mudanças de UI. Host usa uma janela sentinela de teste consentida, não keylogger global nem captura de texto pessoal.
-- [ ] Rodar: humano digita/move A no host enquanto agente opera guest; segundo guest simultâneo; resize; foco; cancel; kill worker; perda de transporte; reconnect; queda da VM.
-- [ ] Separar ausência de observação de ausência de vazamento: além de contadores host, traps garantem que backend remoto não invoca APIs locais.
-- [ ] Medir cold/warm, capture/dispatch/efeito e RSS; executar controle sem Laya. Nunca importar os números de Wolf/Laya como resultados locais.
+- [ ] Fixture guest própria registra eventos e mudanças de UI. Host usa uma janela sentinela de teste consentida, não keylogger global nem captura de texto pessoal. *(probe `integration/fixtures/cu_input_probe.py` criado; execução exige imagem com worker)*
+- [ ] Rodar: humano digita/move A no host enquanto agente opera guest; segundo guest simultâneo; resize; foco; cancel; kill worker; perda de transporte; reconnect; queda da VM. *(cenários com humano/hardware = prova manual pendente)*
+- [x] Separar ausência de observação de ausência de vazamento: além de contadores host, traps garantem que backend remoto não invoca APIs locais.
+- [x] Medir cold/warm, capture/dispatch/efeito e RSS; executar controle sem Laya. Nunca importar os números de Wolf/Laya como resultados locais.
 
 ```python
 def test_independent_guest_and_host(probe_run):
