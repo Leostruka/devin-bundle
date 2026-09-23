@@ -122,15 +122,41 @@ def test_open_backend_unknown_provider_typed_unavailable(tmp_path):
         cu_backend.open_backend(target)
 
 
-def test_mouse_click_remote_rejected_without_host(hostile_host, tmp_path,
-                                                  monkeypatch, capsys):
+def _fake_pointer_backend(tmp_path):
+    """2x2 frame + send recorder — mouse remote dispatch without QEMU."""
+    cu_qmp_backend = load("cu_qmp_backend")
+
+    class FakeBackend:
+        env_dir = tmp_path / "env"
+        sent = []
+
+        def observe(self):
+            return cu_qmp_backend.Frame(b"\x00" * 12, 2, 2), \
+                {"backend": "qmp", "instance_id": "i-x"}
+
+        def send_events(self, events):
+            self.sent.append(events)
+            return {"dispatched": len(events)}
+
+    (tmp_path / "env").mkdir(exist_ok=True)
+    return FakeBackend()
+
+
+def test_mouse_click_remote_dispatches_without_host(hostile_host,
+                                                    tmp_path,
+                                                    monkeypatch, capsys):
+    """C07: remote click validates geometry and dispatches — hostile
+    host proves no pynput/UIA path was touched."""
+    be = _fake_pointer_backend(tmp_path)
     _write_env(tmp_path)
     monkeypatch.setenv("CU_ENV_ROOT", str(tmp_path))
-    code, out = _run(mouse, ["click", "10", "20", "--env", "devin-linux"],
+    monkeypatch.setattr(cu_backend, "open_backend",
+                        lambda target: be)
+    code, out = _run(mouse, ["click", "1", "1", "--env", "devin-linux"],
                      monkeypatch, capsys)
-    assert out["ok"] is False
-    assert out["status"] == "rejected"
-    assert "not implemented" in out["error"]
+    assert out["ok"] is True
+    assert out["status"] == "dispatched"
+    assert be.sent and be.sent[0][2]["type"] == "btn"
 
 
 def test_mouse_click_unknown_env_rejected(hostile_host, tmp_path,
@@ -204,27 +230,34 @@ def test_profile_remote_rejected(hostile_host, tmp_path,
     assert out["status"] == "rejected"
 
 
-def test_remote_rejected_under_session_mode(hostile_host, tmp_path,
-                                            monkeypatch, capsys):
+def test_remote_resolves_before_session_mode(hostile_host, tmp_path,
+                                             monkeypatch, capsys):
     """$CU_SESSION=1 must not forward a remote request to the local
     daemon — --env resolves before the session shortcut."""
+    be = _fake_pointer_backend(tmp_path)
     _write_env(tmp_path)
     monkeypatch.setenv("CU_ENV_ROOT", str(tmp_path))
     monkeypatch.setenv("CU_SESSION", "1")
-    code, out = _run(mouse, ["click", "10", "20", "--env", "devin-linux"],
+    monkeypatch.setattr(cu_backend, "open_backend",
+                        lambda target: be)
+    code, out = _run(mouse, ["click", "1", "1", "--env", "devin-linux"],
                      monkeypatch, capsys)
-    assert out["ok"] is False
-    assert out["status"] == "rejected"
+    assert out["ok"] is True
+    assert out["status"] == "dispatched"
 
 
-def test_dry_run_remote_still_rejected(hostile_host, tmp_path,
-                                       monkeypatch, capsys):
+def test_dry_run_remote_validates_without_sending(hostile_host, tmp_path,
+                                                  monkeypatch, capsys):
+    be = _fake_pointer_backend(tmp_path)
     _write_env(tmp_path)
     monkeypatch.setenv("CU_ENV_ROOT", str(tmp_path))
-    code, out = _run(mouse, ["click", "10", "20", "--env", "devin-linux",
+    monkeypatch.setattr(cu_backend, "open_backend",
+                        lambda target: be)
+    code, out = _run(mouse, ["click", "1", "1", "--env", "devin-linux",
                              "--dry-run"], monkeypatch, capsys)
-    assert out["ok"] is False
-    assert out["status"] == "rejected"
+    assert out["ok"] is True
+    assert out["status"] == "dry_run"
+    assert be.sent == []
 
 
 def test_no_env_keeps_local_path(monkeypatch, capsys):

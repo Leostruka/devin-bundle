@@ -71,9 +71,13 @@ def test_qmp_axis_corners():
     assert cu_qmp_backend.axis_to_qmp(1279, 1280) == 32767
 
 
-def test_qmp_axis_clamps_out_of_range():
-    assert cu_qmp_backend.axis_to_qmp(-5, 1280) == 0
-    assert cu_qmp_backend.axis_to_qmp(99999, 1280) == 32767
+def test_qmp_axis_rejects_out_of_range():
+    """C07 contract change: out-of-frame input raises — a clamped click
+    would land somewhere the caller did not choose."""
+    with pytest.raises(ValueError, match="out_of_bounds"):
+        cu_qmp_backend.axis_to_qmp(-5, 1280)
+    with pytest.raises(ValueError, match="out_of_bounds"):
+        cu_qmp_backend.axis_to_qmp(99999, 1280)
 
 
 def test_qmp_axis_midpoint_monotonic():

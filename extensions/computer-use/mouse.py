@@ -80,12 +80,78 @@ def _resolve_xy(args):
     return args.x, args.y, None
 
 
+def _remote_main(target):
+    """Guest pointer via QMP. Bounds validated against a FRESH frame —
+    no stale geometry clicks into the void. Humanization flags
+    (profiles, motion curves) are host-only and unsupported here."""
+    import cu_qmp_backend as qb
+    p = cm.JsonParser(description="Guest pointer control")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    for name in ("move", "click", "scroll", "drag", "position"):
+        sp = sub.add_parser(name)
+        sp.add_argument("--env", default=None)
+        sp.add_argument("--dry-run", action="store_true",
+                        help="encode+validate against geometry; send nothing")
+        if name in ("move", "click", "scroll"):
+            sp.add_argument("x", type=int, nargs="?")
+            sp.add_argument("y", type=int, nargs="?")
+        if name == "drag":
+            sp.add_argument("x", type=int)
+            sp.add_argument("y", type=int)
+        if name == "click":
+            sp.add_argument("--button", default="left")
+            sp.add_argument("--clicks", type=int, default=1)
+        if name == "scroll":
+            sp.add_argument("--dx", type=int, default=0)
+            sp.add_argument("--dy", type=int, default=0)
+        if name == "drag":
+            sp.add_argument("--from-x", type=int, required=True)
+            sp.add_argument("--from-y", type=int, required=True)
+            sp.add_argument("--button", default="left")
+    args = p.parse_args()
+    backend = target["backend"]
+    try:
+        if args.cmd == "position":
+            backend.pointer_position()  # always raises — honest
+        if args.cmd == "scroll" and (args.x is None or args.y is None):
+            events = qb.encode_scroll(args.dx, args.dy)
+        else:
+            img, _ = backend.observe()
+            w, h = img.width, img.height
+            if args.cmd == "move":
+                events = qb.encode_move(args.x, args.y, w, h)
+            elif args.cmd == "click":
+                events = qb.encode_click(args.x, args.y, w, h,
+                                         button=args.button,
+                                         clicks=args.clicks)
+            elif args.cmd == "scroll":
+                events = qb.encode_move(args.x, args.y, w, h) + \
+                    qb.encode_scroll(args.dx, args.dy)
+            else:  # drag
+                events = qb.encode_drag(args.from_x, args.from_y,
+                                        args.x, args.y, w, h,
+                                        button=args.button)
+        if args.dry_run:
+            print(json.dumps({"ok": True, "status": "dry_run",
+                              "env_id": target["env_id"],
+                              "cmd": args.cmd,
+                              "events": len(events)}))
+            return
+        res = backend.send_events(events)
+    except qb.UnsupportedText as exc:
+        cu_target.reject_remote(f"unsupported:{exc}")
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
+    print(json.dumps({"ok": True, "status": "dispatched",
+                      "env_id": target["env_id"], "cmd": args.cmd,
+                      **res}))
+
+
 def main():
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
-        cu_target.reject_remote(
-            f"env {target['env_id']}: remote dispatch not implemented "
-            "for mouse yet (C06/C07)")
+        _remote_main(target)
+        return
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("mouse", sys.argv[1:])

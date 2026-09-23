@@ -38,10 +38,12 @@ class UnsupportedText(Exception):
 
 
 def axis_to_qmp(v, size):
-    """Guest pixel -> absolute QMP axis value (0..32767), clamped."""
-    if size <= 1:
-        return 0
-    v = max(0, min(int(v), size - 1))
+    """Guest pixel -> absolute QMP axis value (0..32767). Strict:
+    out-of-frame input is an error, never a silent clamp — a clamped
+    click lands somewhere the caller did not choose."""
+    v = int(v)
+    if size <= 1 or not (0 <= v < size):
+        raise ValueError(f"out_of_bounds:{v}/{size}")
     return round(v * QMP_AXIS_MAX / (size - 1))
 
 
@@ -284,7 +286,7 @@ class QmpBackend:
 
     # -- input (C06) ----------------------------------------------------------
 
-    def send_events(self, events, timeout_s=10, chunk=50):
+    def send_events(self, events, timeout_s=10, chunk=None):
         """Push encoded input-send-event batches. A mid-send failure
         (lost ACK, daemon error) triggers a best-effort release of every
         key the batch pressed — a stuck guest key is worse than a
@@ -293,16 +295,17 @@ class QmpBackend:
         sock, token = ready["socket"], ready.get("token")
         sent = 0
         try:
-            for i in range(0, len(events), chunk):
+            step = chunk or len(events) or 1
+            for i in range(0, len(events), step):
                 resp = self._ipc(
                     sock, {"command": "input-send-event",
-                           "arguments": {"events": events[i:i + chunk]}},
+                           "arguments": {"events": events[i:i + step]}},
                     timeout_s, token=token)
                 if not resp.get("ok"):
                     raise BackendError(
                         f"input:{resp.get('error_class', '?')}:"
                         f"{resp.get('error', '?')}")
-                sent += len(events[i:i + chunk])
+                sent += len(events[i:i + step])
         except Exception:
             self._release_all(sock, token, events)
             raise
@@ -313,6 +316,11 @@ class QmpBackend:
             e["data"]["key"]["data"]
             for e in events
             if e.get("type") == "key" and e["data"].get("down")}]
+        ups += [btn_event(b, False) for b in {
+            e["data"]["button"]
+            for e in events
+            if e.get("type") == "btn" and e["data"].get("down")
+            and "wheel" not in e["data"]["button"]}]
         if not ups:
             return
         try:
@@ -425,3 +433,87 @@ def encode_chord(chord):
     events += [key_event(qkey, True), key_event(qkey, False)]
     events += [key_event(q, False) for q in reversed(qmods)]
     return events
+
+
+# -- pointer encoding (pure; zero IO) ---------------------------------------------
+
+_POINTER_BUTTONS = {"left": "left", "right": "right",
+                    "middle": "middle"}
+_WHEEL = {(0, 1): "wheel-down", (0, -1): "wheel-up",
+          (1, 0): "wheel-right", (-1, 0): "wheel-left"}
+
+
+def btn_event(button, down):
+    return {"type": "btn",
+            "data": {"button": button, "down": bool(down)}}
+
+
+def abs_event(axis, value):
+    return {"type": "abs", "data": {"axis": axis, "value": int(value)}}
+
+
+def _guest_button(name):
+    """Guest logical button — the guest's own mapping applies; host
+    swap state (SM_SWAPBUTTON) is irrelevant and never consulted."""
+    q = _POINTER_BUTTONS.get(str(name).lower())
+    if q is None:
+        raise UnsupportedText(f"button:{name}")
+    return q
+
+
+def encode_move(x, y, w, h):
+    return [abs_event("x", axis_to_qmp(x, w)),
+            abs_event("y", axis_to_qmp(y, h))]
+
+
+def encode_click(x, y, w, h, button="left", clicks=1):
+    """Move + N button presses. clicks validated up front — a partial
+    multi-click can never be emitted."""
+    q = _guest_button(button)
+    clicks = int(clicks)
+    if clicks < 1:
+        raise ValueError(f"clicks:{clicks}")
+    events = encode_move(x, y, w, h)
+    for _ in range(clicks):
+        events += [btn_event(q, True), btn_event(q, False)]
+    return events
+
+
+def encode_scroll(dx, dy):
+    """QMP wheel = button pulses, one pair per notch. Zero deltas are a
+    no-op, not an error."""
+    events = []
+    for axis, delta in ((0, int(dx)), (1, int(dy))):
+        steps = abs(delta)
+        if steps == 0:
+            continue
+        sign = 1 if delta > 0 else -1
+        btn = _WHEEL[(0, sign)] if axis == 1 else _WHEEL[(sign, 0)]
+        for _ in range(steps):
+            events += [btn_event(btn, True), btn_event(btn, False)]
+    return events
+
+
+def encode_drag(x0, y0, x1, y1, w, h, button="left", steps=64):
+    """Whole gesture as ONE event list — dispatched as a single
+    input-send-event call so the guest either sees all of it or the
+    transport fails and release-all cleans up."""
+    q = _guest_button(button)
+    events = encode_move(x0, y0, w, h) + [btn_event(q, True)]
+    n = max(1, min(int(steps), 128))
+    for i in range(1, n + 1):
+        xi = round(int(x0) + (int(x1) - int(x0)) * i / n)
+        yi = round(int(y0) + (int(y1) - int(y0)) * i / n)
+        events += encode_move(xi, yi, w, h)
+    events.append(btn_event(q, False))
+    return events
+
+
+def _backend_pointer_position(self):
+    """QMP has no absolute-pointer query (query-mice reports device
+    flags, not coordinates). Reject honestly — never return a
+    last-command cache as if it were the cursor."""
+    raise BackendError("position_unavailable")
+
+
+QmpBackend.pointer_position = _backend_pointer_position

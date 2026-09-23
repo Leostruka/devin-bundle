@@ -414,9 +414,9 @@ def test_unsupported_text_never_sends_prefix():
 
 **Depende de:** C06. **Arquivos:** `cu_qmp_backend.py`, `mouse.py`; criar `tests/test_cu_qmp_pointer.py`.
 
-- [ ] Validar limites, região/origem, botão lógico guest e geometria atual. Não usar `SM_SWAPBUTTON` do host no guest.
-- [ ] Gerar eventos down/up, relativo/absoluto e wheel conforme schema; serializar gesto como unidade cancelável.
-- [ ] Rejeitar consulta de posição real quando só houver last-command cache; não inventar posição.
+- [x] Validar limites, região/origem, botão lógico guest e geometria atual. Não usar `SM_SWAPBUTTON` do host no guest.
+- [x] Gerar eventos down/up, relativo/absoluto e wheel conforme schema; serializar gesto como unidade cancelável.
+- [x] Rejeitar consulta de posição real quando só houver last-command cache; não inventar posição.
 
 ```python
 def test_out_of_frame_is_not_clamped():
