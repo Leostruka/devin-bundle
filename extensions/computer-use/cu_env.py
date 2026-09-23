@@ -298,6 +298,7 @@ def build_qemu_argv(spec, overlay):
             "-serial", "none",
             "-nic", "none",
             "-qmp", "stdio",
+            "-vga", "std",
             "-nodefaults"]
     if spec.get("image_format", "iso") == "iso":
         argv += ["-boot", "once=d", "-cdrom", spec["image_ref"]]
@@ -306,6 +307,15 @@ def build_qemu_argv(spec, overlay):
                      f"file={overlay},format=qcow2,if=virtio"]
     else:
         argv += ["-drive", f"file={overlay},format=qcow2,if=virtio"]
+    if spec.get("guest_worker"):
+        # dedicated virtio-serial pipe for the in-guest worker —
+        # separate from QMP stdio; host ends live in the env's private
+        # dir, owned by the supervisor
+        port = Path(overlay).resolve().parent / "gwport"
+        argv += ["-device", "virtio-serial-pci",
+                 "-chardev", f"pipe,id=cu_gw,path={port}",
+                 "-device",
+                 "virtserialport,chardev=cu_gw,name=devin.cu"]
     return argv
 
 

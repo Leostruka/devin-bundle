@@ -462,9 +462,9 @@ def test_ack_is_not_effect_verification():
 
 **Depende de:** C09. **Arquivos:** criar `cu_guest.py`, `guest/worker.py`, `tests/test_cu_env_guest_protocol.py`.
 
-- [ ] Adicionar canal virtio-serial separado do QMP, conectado a pipes privados controlados pelo supervisor. Worker guest é opt-in, pré-instalado na imagem aprovada.
-- [ ] Handshake informa protocol_version, guest boot/session identity e capacidades; respostas são dados não confiáveis com tamanho limitado.
-- [ ] Worker iniciado no usuário gráfico, não serviço Windows Session 0. Desktop bloqueado/inacessível retorna indisponível, sem bypass de UAC ou login.
+- [x] Adicionar canal virtio-serial separado do QMP, conectado a pipes privados controlados pelo supervisor. Worker guest é opt-in, pré-instalado na imagem aprovada.
+- [x] Handshake informa protocol_version, guest boot/session identity e capacidades; respostas são dados não confiáveis com tamanho limitado.
+- [x] Worker iniciado no usuário gráfico, não serviço Windows Session 0. Desktop bloqueado/inacessível retorna indisponível, sem bypass de UAC ou login.
 
 ```python
 def test_guest_session_zero_has_no_interactive_capability():
