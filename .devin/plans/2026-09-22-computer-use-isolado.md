@@ -382,9 +382,9 @@ def test_default_vm_has_no_network(spec, overlay):
 
 **Depende de:** C04. **Arquivos:** criar `cu_qmp_backend.py`, `tests/test_cu_env_capture.py`; modificar `cu_capture.py`, `screenshot.py`.
 
-- [ ] `observe` executa `screendump` para arquivo novo dentro do root privado, lê dimensões reais e calcula digest.
-- [ ] Negociar PNG/PPM; não assumir que build tem CONFIG_PIXMAN/PNG. Rejeitar formato/dimensões inválidos e path escapando do root.
-- [ ] Gerar grid usando pixels guest. Sem UIA guest, retornar `hints: null` honestamente.
+- [x] `observe` executa `screendump` para arquivo novo dentro do root privado, lê dimensões reais e calcula digest.
+- [x] Negociar PNG/PPM; não assumir que build tem CONFIG_PIXMAN/PNG. Rejeitar formato/dimensões inválidos e path escapando do root.
+- [x] Gerar grid usando pixels guest. Sem UIA guest, retornar `hints: null` honestamente.
 
 ```python
 def test_qmp_axis_corners():

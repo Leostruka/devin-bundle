@@ -102,8 +102,16 @@ def test_registry_rejects_spec_without_env_id(tmp_path):
         cu_target.load_registry(tmp_path)
 
 
-def test_open_backend_remote_is_typed_unavailable(tmp_path):
+def test_open_backend_qemu_returns_backend(tmp_path):
     _write_env(tmp_path)
+    target = cu_target.resolve_target(
+        "devin-linux", cu_target.load_registry(tmp_path))
+    backend = cu_backend.open_backend(target)
+    assert backend.env_id == "devin-linux"
+
+
+def test_open_backend_unknown_provider_typed_unavailable(tmp_path):
+    _write_env(tmp_path, provider="xen")
     target = cu_target.resolve_target(
         "devin-linux", cu_target.load_registry(tmp_path))
     with pytest.raises(cu_backend.BackendUnavailable,
@@ -119,7 +127,7 @@ def test_mouse_click_remote_rejected_without_host(hostile_host, tmp_path,
                      monkeypatch, capsys)
     assert out["ok"] is False
     assert out["status"] == "rejected"
-    assert "backend_unavailable" in out["error"]
+    assert "not implemented" in out["error"]
 
 
 def test_mouse_click_unknown_env_rejected(hostile_host, tmp_path,

@@ -124,6 +124,15 @@ def _emit_rejection(error, code):
     raise SystemExit(code)
 
 
+def reject_remote(error, code=1, backend="qmp"):
+    """Typed rejection for a remote request this CLI cannot serve —
+    same shape as cli_guard's own rejections."""
+    print(json.dumps({"ok": False, "status": "rejected",
+                      "dispatch": {"backend": backend},
+                      "error": error}))
+    raise SystemExit(code)
+
+
 def cli_guard(argv):
     """Resolve --env before host resources exist.
 

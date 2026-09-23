@@ -68,8 +68,9 @@ def resolve_key(name, Key, KeyCode):
 def main():
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
-        fail(f"env {target['env_id']}: remote dispatch arrives with its "
-             "backend (C07)", 2)
+        cu_target.reject_remote(
+            f"env {target['env_id']}: remote dispatch not implemented "
+            "for type_text yet (C06)")
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("type_text", sys.argv[1:])

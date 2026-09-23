@@ -390,7 +390,7 @@ class EnvironmentManager:
     """
 
     def __init__(self, spec, root=None, run=None, spawn=None,
-                 consent=None):
+                 consent=None, wait_ready=None, ipc=None):
         self.spec = spec
         env_id = spec.get("env_id", "env") if isinstance(spec, dict) \
             else "env"
@@ -402,15 +402,36 @@ class EnvironmentManager:
         self._run = run or _default_run
         self._spawn = spawn or self._default_spawn
         self._consent = consent or interactive_consent
+        self._wait_ready = wait_ready or self._wait_ready_file
+        if ipc is None:
+            import cu_qmp_backend
+            ipc = cu_qmp_backend.ipc_call
+        self._ipc = ipc
         self._approved_digest = None
-        self._sup = None
+        self._daemon = None
         self._state_file = self.env_dir / "state.json"
 
     @staticmethod
     def _default_spawn(argv):
-        return subprocess.Popen(argv, stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, text=True)
+        """Daemon process: detached from our stdio — it outlives this CLI
+        and owns QEMU's QMP pipes. Crashes land in daemon-error.txt."""
+        return subprocess.Popen(argv, stdin=subprocess.DEVNULL,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
+
+    def _wait_ready_file(self, deadline_s):
+        import time
+        ready = self.env_dir / "ready.json"
+        end = time.monotonic() + deadline_s
+        while time.monotonic() < end:
+            try:
+                data = json.loads(ready.read_text("utf-8"))
+                if data.get("socket") and data.get("qemu_pid"):
+                    return data
+            except (OSError, json.JSONDecodeError):
+                pass
+            time.sleep(0.1)
+        return None
 
     @property
     def overlay_path(self):
@@ -503,16 +524,30 @@ class EnvironmentManager:
     def _start(self):
         self._verify_image()
         self._verify_binary()
-        argv = build_qemu_argv(self.spec, Path(self.overlay_path))
+        import cu_target
+        cu_target.ensure_private_dir(self.env_dir)
+        _atomic_write_json(self.env_dir / "spec.approved.json", self.spec)
+        daemon_py = Path(__file__).with_name("cu_env_daemon.py")
+        argv = [sys.executable, str(daemon_py),
+                "--env-dir", str(self.env_dir)]
         proc = self._spawn(argv)
-        from cu_env_daemon import Supervisor
-        self._sup = Supervisor(proc)
-        self._sup.negotiate()
+        self._daemon = proc
+        ready = self._wait_ready(15)
+        if ready is None:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            self._daemon = None
+            raise RuntimeError("daemon_ready_timeout")
         instance_id = f"i-{uuid.uuid4().hex[:12]}"
         _atomic_write_json(self._state_file,
-                           {"env_id": self.spec["env_id"], "pid": proc.pid,
+                           {"env_id": self.spec["env_id"],
+                            "pid": proc.pid,
+                            "qemu_pid": ready.get("qemu_pid"),
+                            "socket": ready.get("socket"),
+                            "token": ready.get("token"),
                             "instance_id": instance_id, "running": True,
-                            "argv_sha256": _canonical_digest(argv),
                             "spec_sha256": spec_digest(self.spec)})
 
     def status(self):
@@ -522,13 +557,14 @@ class EnvironmentManager:
         except (OSError, json.JSONDecodeError):
             pass
         running = False
-        if self._sup is not None and self._sup.proc.poll() is None:
+        if self._daemon is not None and self._daemon.poll() is None:
             running = True
         elif state.get("pid") and state.get("running"):
             running = _pid_alive(state["pid"])
         return {"env_id": self.spec.get("env_id"),
                 "running": running,
                 "pid": state.get("pid"),
+                "qemu_pid": state.get("qemu_pid"),
                 "instance_id": state.get("instance_id")}
 
     def stop(self, force=False):
@@ -537,15 +573,37 @@ class EnvironmentManager:
         self._stop(force=force)
 
     def _stop(self, force=False):
-        if self._sup is None:
-            return
-        self._sup.powerdown(timeout_s=15, force=force)
-        self._sup = None
+        """Graceful: IPC system_powerdown to the daemon, which forwards it
+        over QMP. The daemon exits when QEMU does. force kills the daemon
+        proc — its atexit kills QEMU, no orphans."""
+        try:
+            state = json.loads(self._state_file.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            state = {}
+        sock = state.get("socket")
+        if sock:
+            try:
+                self._ipc(sock, {"command": "system_powerdown"}, 10,
+                          token=state.get("token"))
+            except Exception:
+                pass
+        daemon = self._daemon
+        if daemon is not None:
+            import time
+            end = time.monotonic() + 15
+            while time.monotonic() < end and daemon.poll() is None:
+                time.sleep(0.1)
+            if daemon.poll() is None:
+                if not force:
+                    raise TimeoutError("powerdown_timeout")
+                daemon.kill()
+                daemon.wait(timeout=5)
+        self._daemon = None
         try:
             state = json.loads(self._state_file.read_text("utf-8"))
         except (OSError, json.JSONDecodeError):
             state = {"env_id": self.spec.get("env_id")}
-        state.update({"running": False, "pid": None})
+        state.update({"running": False, "pid": None, "qemu_pid": None})
         _atomic_write_json(self._state_file, state)
 
     def reset(self):

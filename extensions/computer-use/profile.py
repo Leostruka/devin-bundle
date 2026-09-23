@@ -28,7 +28,9 @@ def fail(msg, code=1):
 def main():
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
-        fail(f"env {target['env_id']}: per-env profiles arrive with C02", 2)
+        cu_target.reject_remote(
+            f"env {target['env_id']}: remote dispatch not implemented "
+            "for profile yet (C12)")
     p = JsonParser(description="computer-use action profile")
     p.add_argument("--set", dest="set_profile", choices=PROFILES,
                    help="persist profile to the session file")

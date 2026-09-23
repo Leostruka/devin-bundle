@@ -178,11 +178,65 @@ def _save_with_hints(img, elements, out, ox, oy, fmt="png", quality=80):
     return hints
 
 
+def _remote_main(target):
+    """Capture inside an isolated env via its backend — no mss, no UIA,
+    no host pixels anywhere on this path."""
+    p = cm.JsonParser(description="Capture env framebuffer to PNG")
+    p.add_argument("--out", default=None)
+    p.add_argument("--grid", type=int, nargs="?", const=100, default=None)
+    p.add_argument("--hints", action="store_true",
+                   help="no guest UIA yet (C10) — returns hints: null")
+    p.add_argument("--format", choices=["png", "jpeg"], default="png")
+    p.add_argument("--quality", type=int, default=80)
+    p.add_argument("--if-changed", action="store_true")
+    p.add_argument("--threshold", type=float, default=None)
+    p.add_argument("--env", default=None)
+    args = p.parse_args()
+    backend = target["backend"]
+    try:
+        img, meta = backend.observe()
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}: {exc}")
+    scope = (target["env_id"], meta.get("instance_id") or "boot",
+             "default")
+    env_dir = backend.env_dir
+    ext = "jpg" if args.format == "jpeg" else "png"
+    out = args.out or str(env_dir /
+                        f"screenshot-{int(time.time())}.{ext}")
+    if args.if_changed:
+        shot_hash = _img_hash(img)
+        st = _shot_state(scope)
+        if st.get("sha256") == shot_hash:
+            print(json.dumps({"ok": True, "changed": False,
+                              "path": st.get("path")}))
+            return
+    result = {"ok": True, "path": out, "width": img.width,
+              "height": img.height, "env_id": target["env_id"],
+              "instance_id": meta.get("instance_id"),
+              "frame_sha256": meta.get("frame_sha256"),
+              "backend": meta.get("backend"),
+              "origin_px": meta.get("origin_px"),
+              "captured_at": round(time.time(), 3)}
+    if args.hints:
+        result["hints"] = None
+        result["note"] = ("no guest element enumeration yet (C10) — "
+                          "use --grid and click pixel coords")
+    if args.grid or args.hints:
+        _save_with_grid(img, args.grid or 100, out, 0, 0,
+                        fmt=args.format, quality=args.quality)
+        result["grid_px"] = args.grid or 100
+    else:
+        _save_image(_to_image(img), out, args.format, args.quality)
+    if args.if_changed:
+        _write_shot_state(shot_hash, out, scope=scope)
+    print(json.dumps(result))
+
+
 def main():
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
-        fail(f"env {target['env_id']}: remote capture arrives with its "
-             "backend (C05)", 2)
+        _remote_main(target)
+        return
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("screenshot", sys.argv[1:])

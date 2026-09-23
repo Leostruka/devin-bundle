@@ -104,6 +104,33 @@ def _run_ok(argv, timeout_s=60, **kw):
     return {"returncode": 0, "stdout": "", "stderr": "", "timed_out": False}
 
 
+def _mgr(root, spec, spawncap=None, ipc=None, consent=None):
+    """Manager with all external seams faked. spawn appends to spawncap
+    so tests can reach the daemon stand-in; ipc replaces the AF_UNIX
+    channel (system_powerdown trips powered_down on the daemon fake)."""
+    cap = spawncap if spawncap is not None else []
+
+    def spawn(argv, **kw):
+        p = FakeProc()
+        p.argv = argv
+        cap.append(p)
+        return p
+
+    ready = {"qemu_pid": 31337, "daemon_pid": 4242,
+             "socket": str(Path(root) / "devin-linux" / "qmp.ipc")}
+
+    if ipc is None:
+        def ipc(sock, msg, timeout_s, token=None):
+            if msg.get("command") == "system_powerdown" and cap:
+                cap[-1].powered_down = True
+            return {"ok": True, "return": {}}
+
+    return cu_env.EnvironmentManager(
+        spec, root=root, run=_run_ok, spawn=spawn,
+        consent=consent or (lambda plan: True),
+        wait_ready=lambda t: ready, ipc=ipc)
+
+
 # --- validate_spec --------------------------------------------------------------
 
 def test_valid_spec_has_no_errors(spec):
@@ -184,9 +211,7 @@ def test_argv_disk_boot_uses_overlay(spec, tmp_path):
 # --- EnvironmentManager ---------------------------------------------------------
 
 def test_create_makes_overlay_not_base(root, spec, image):
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     mgr.create()
     overlay = mgr.overlay_path
     assert Path(overlay).name == "overlay.qcow2"
@@ -197,17 +222,13 @@ def test_create_makes_overlay_not_base(root, spec, image):
 
 
 def test_create_without_consent_refuses(root, spec):
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: False)
+    mgr = _mgr(root, spec, consent=lambda plan: False)
     with pytest.raises(cu_env.ConsentDenied):
         mgr.create()
 
 
 def test_start_records_pid_and_instance(root, spec):
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     mgr.create()
     mgr.start()
     st = mgr.status()
@@ -219,16 +240,12 @@ def test_start_records_pid_and_instance(root, spec):
 def test_start_never_adopts_foreign_process(root, spec):
     """No pid file + no spawn = not running; a stray qemu.exe elsewhere is
     never adopted by name."""
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     assert mgr.status()["running"] is False
 
 
 def test_spec_changed_after_consent_refuses(root, spec):
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     mgr.create()
     spec["resources"]["memory_mib"] = 99999  # mutated post-consent
     with pytest.raises(cu_env.ConsentDenied):
@@ -236,9 +253,7 @@ def test_spec_changed_after_consent_refuses(root, spec):
 
 
 def test_overlay_path_outside_root_refused(root, spec, tmp_path):
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     with pytest.raises(ValueError):
         mgr.create(override_overlay=str(tmp_path / "foreign.qcow2"))
 
@@ -248,9 +263,7 @@ def test_swapped_qemu_binary_refused(root, spec, tmp_path):
     fake_qemu.write_bytes(b"swapped-binary")
     spec["qemu_path"] = str(fake_qemu)
     spec["qemu_sha256"] = "0" * 64  # pinned digest no longer matches
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     mgr.create()
     with pytest.raises(cu_env.SpecMismatch):
         mgr.start()
@@ -258,17 +271,13 @@ def test_swapped_qemu_binary_refused(root, spec, tmp_path):
 
 def test_image_digest_mismatch_refuses(root, spec, image):
     spec["image_sha256"] = "1" * 64
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     with pytest.raises(cu_env.SpecMismatch):
         mgr.create()
 
 
 def test_stop_graceful_via_qmp(root, spec):
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     mgr.create()
     mgr.start()
     mgr.stop()
@@ -277,9 +286,7 @@ def test_stop_graceful_via_qmp(root, spec):
 
 
 def test_reset_new_instance_id(root, spec):
-    mgr = cu_env.EnvironmentManager(
-        spec, root=root, run=_run_ok, spawn=_spawn_ok,
-        consent=lambda plan: True)
+    mgr = _mgr(root, spec)
     mgr.create()
     mgr.start()
     first = mgr.status()["instance_id"]

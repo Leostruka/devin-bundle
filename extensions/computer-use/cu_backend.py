@@ -5,10 +5,9 @@ open_backend(target) -> Backend
   Backend contract (C05+): capabilities(), observe(options),
   dispatch(action), release_owned(), close() — all dicts except close.
 
-C01 implements no backend: every non-local provider raises
-BackendUnavailable with a stable reason token, so a remote request is a
-typed rejection rather than a silent local execution. `local` itself is
-not a Backend — it keeps using the existing native code path.
+provider "qemu" -> cu_qmp_backend.QmpBackend bound to the env's private
+dir; other providers remain typed rejections. `local` itself is not a
+Backend — it keeps using the existing native code path.
 """
 
 
@@ -20,4 +19,7 @@ def open_backend(target):
     kind = target.get("kind") if isinstance(target, dict) else None
     if kind == "local":
         raise BackendUnavailable("local_uses_native_dispatch")
+    if kind == "qemu":
+        import cu_qmp_backend
+        return cu_qmp_backend.QmpBackend(target["env_id"])
     raise BackendUnavailable(f"backend_unavailable:{kind}")

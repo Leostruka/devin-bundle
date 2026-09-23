@@ -83,8 +83,9 @@ def _resolve_xy(args):
 def main():
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
-        fail(f"env {target['env_id']}: remote dispatch arrives with its "
-             "backend (C07)", 2)
+        cu_target.reject_remote(
+            f"env {target['env_id']}: remote dispatch not implemented "
+            "for mouse yet (C06/C07)")
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("mouse", sys.argv[1:])
