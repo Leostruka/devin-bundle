@@ -163,6 +163,11 @@ def main():
     pr.add_argument("--device", help="cpu|cuda (default: laya auto)")
     pr.add_argument("--preload", action="store_true",
                     help="Preload all checkpoints (skip per-request reload; uses ~2GB)")
+    sv = sub.add_parser("serve-stdio",
+                        help="Resident JSON-lines worker (see laya_worker)")
+    sv.add_argument("--config",
+                    help="Path to .devin/laya/profile.json "
+                         "(default: project .devin/laya/profile.json)")
     p.add_argument("--check-questions", metavar="FILE", help="Validate questions schema offline")
     p.add_argument("--list-presets", action="store_true")
     p.add_argument("--self-test", action="store_true")
@@ -178,6 +183,13 @@ def main():
         emit({"ok": not errors, "errors": errors}, 0 if not errors else 2)
     if args.cmd == "predict":
         cmd_predict(args)
+    if args.cmd == "serve-stdio":
+        cfg = args.config
+        if cfg is None:
+            default = Path.cwd() / ".devin" / "laya" / "profile.json"
+            cfg = str(default) if default.is_file() else None
+        import laya_worker
+        sys.exit(laya_worker.main(cfg))
     p.error("no command — see --help")
 
 

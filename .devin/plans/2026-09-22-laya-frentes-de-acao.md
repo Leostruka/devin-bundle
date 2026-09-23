@@ -484,9 +484,9 @@ def test_empty_choice_is_rejected():
 **Arquivos:** criar `extensions/laya-tools/decision_contract.py`, `tests/test_laya_decision_contract.py`, `.devin/templates/laya/profile.example.json`.
 
 - [x] Implementar contratos §5, limits, IDs únicos e `__none__` reservado. Perguntas do piloto são exatamente §5.2.
-- [ ] Config default `mode: off`, `calibration: null`; não ativar só porque a dependência existe. A operação off não inicia subprocess nem lê pesos.
-- [ ] Estado ML por allowlist: goal e campos observados não sensíveis. Não permitir blobs, credential values, argv ou payload de execução.
-- [ ] Registrar identidade de modelo e schema do profile; paths locais aprovados e hashes de artefatos, nunca secrets em templates.
+- [x] Config default `mode: off`, `calibration: null`; não ativar só porque a dependência existe. A operação off não inicia subprocess nem lê pesos.
+- [x] Estado ML por allowlist: goal e campos observados não sensíveis. Não permitir blobs, credential values, argv ou payload de execução.
+- [x] Registrar identidade de modelo e schema do profile; paths locais aprovados e hashes de artefatos, nunca secrets em templates.
 
 ```python
 def test_unknown_candidate_cannot_be_adopted(request):
@@ -502,10 +502,10 @@ Fixture `request` usa o shape §5.1 com apenas `as`/`ad`, sem dados reais. **Gat
 
 **Arquivos:** criar `laya_worker.py`, `decision_client.py` em `extensions/laya-tools/`; estender `laya_cli.py` com `serve-stdio`; criar `tests/test_laya_worker.py`.
 
-- [ ] Implementar JSON-lines versionado, fila/deadline limitados e request IDs. Diagnósticos/stderr separados; nenhuma porta pública.
-- [ ] Construir Router uma vez por worker com `models` locais; preload somente nomes habilitados. Exigir tokenizer/encoder completos e offline mode; proibir download em predict.
-- [ ] Resolver idioma via `lang` explícito quando conhecido; preservar routing metadata. Device efetivo e fallback entram na resposta, não em texto solto no stdout.
-- [ ] Mock engine nos testes de CI; teste real opt-in não confunde latência cold com warm.
+- [x] Implementar JSON-lines versionado, fila/deadline limitados e request IDs. Diagnósticos/stderr separados; nenhuma porta pública.
+- [x] Construir Router uma vez por worker com `models` locais; preload somente nomes habilitados. Exigir tokenizer/encoder completos e offline mode; proibir download em predict.
+- [x] Resolver idioma via `lang` explícito quando conhecido; preservar routing metadata. Device efetivo e fallback entram na resposta, não em texto solto no stdout.
+- [x] Mock engine nos testes de CI; teste real opt-in não confunde latência cold com warm.
 
 ```python
 def test_worker_reuses_engine(fake_engine, two_requests):
