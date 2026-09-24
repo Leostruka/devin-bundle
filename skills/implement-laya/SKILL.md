@@ -122,3 +122,23 @@ Best practices:
   one Router in a long-lived process — never respawn per request.
 - Python ≥3.10 required (torch 2.x/transformers floor). CPU works; CUDA
   optional via `Router(device="cuda")`.
+
+## Decision contract (extensions/laya-tools/)
+
+Typed recommendations, never actions: `decision_contract.py` validates a
+closed request (≤8 unique candidates + reserved `__none__`) and a
+recommendation that can only be `suggestion` or `abstain` — there is no
+`allow`/`execute` outcome. `laya_worker.py` is a resident stdio JSON-lines
+worker (engine built once, offline-only, approved local snapshots by
+sha256); `decision_client.py` owns exactly one such subprocess.
+
+Modes: `off` (default — zero subprocess/weight reads), `shadow` (measured,
+never adopted), `assist` (suggestions eligible for selection **only** when
+`activation_errors(config)` is empty — calibration bound to the pinned
+checkpoint, profile, locale, cardinality and data source; a mismatch
+degrades to `shadow`). `adoptable` still means eligible-for-selection,
+never authorization; `raw_confidence` never participates in the decision.
+Consumers: `cu_decision.py` (CU targets), `spline-operator/decision.py`,
+`media-tools/intent.py`, `workflow_routing.py`, `output_context.py`,
+`knowledge_labels.py`. Evaluation: `eval_decisions.py` over frozen
+manifests only.

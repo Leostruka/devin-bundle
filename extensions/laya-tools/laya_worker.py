@@ -21,6 +21,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import math
 import os
 import sys
 import time
@@ -93,7 +94,39 @@ def _question_key(profile):
     return dc._PROFILES[profile][0]
 
 
-def recommend(request, engine, calibration=None):
+def _calibrated(cal, x):
+    """Apply the calibration map: identity | platt(a,b) | table of
+    sorted [x, y] points with linear interpolation."""
+    m = (cal or {}).get("map") or {}
+    kind = m.get("kind", "identity")
+    if kind == "identity":
+        return float(x)
+    if kind == "platt":
+        a, b = m.get("a"), m.get("b")
+        if not (dc._is_num(a) and dc._is_num(b)):
+            return None
+        z = a * x + b
+        return 1.0 / (1.0 + math.exp(-max(-60.0, min(60.0, z))))
+    if kind == "table":
+        pts = m.get("points")
+        if not isinstance(pts, list) or not pts:
+            return None
+        pts = sorted((p[0], p[1]) for p in pts
+                     if isinstance(p, (list, tuple)) and len(p) == 2)
+        if not pts:
+            return None
+        if x <= pts[0][0]:
+            return float(pts[0][1])
+        if x >= pts[-1][0]:
+            return float(pts[-1][1])
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            if x0 <= x <= x1:
+                t = 0.0 if x1 == x0 else (x - x0) / (x1 - x0)
+                return float(y0 + t * (y1 - y0))
+    return None
+
+
+def recommend(request, engine, calibration=None, assist_ok=False):
     """One typed request -> suggestion|abstain. Engine answer is
     untrusted data: label must be inside the request's closed set,
     numbers must be finite."""
@@ -161,6 +194,15 @@ def recommend(request, engine, calibration=None):
     rec["candidate_id"] = choice
     if calibration and isinstance(calibration, dict):
         rec["calibration_id"] = calibration.get("id")
+        cal_p = _calibrated(calibration, rec["raw_confidence"])
+        if cal_p is not None:
+            rec["calibrated_probability"] = cal_p
+            thr = calibration.get("threshold")
+            if assist_ok and request.get("mode") == "assist" \
+                    and dc._is_num(thr) and cal_p >= thr:
+                rec["adoptable"] = True
+                rec["reason"] = "calibrated"
+                return rec
     rec["reason"] = "uncalibrated"
     return rec
 
@@ -192,7 +234,9 @@ def serve(reader, writer, engine, config):
             rec["mode"] = "off"
         else:
             rec = recommend(request, engine,
-                            (config or {}).get("calibration"))
+                            (config or {}).get("calibration"),
+                            assist_ok=dc.effective_mode(config)
+                            == "assist")
             deadline = request.get("deadline_ms")
             if rec["outcome"] == "suggestion" and isinstance(deadline, int) \
                     and (time.monotonic() - started) * 1000 > deadline:

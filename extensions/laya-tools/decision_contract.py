@@ -167,7 +167,7 @@ def _check_candidates(cands, errs):
         else:
             seen.add(cid)
         for f in ("role", "name", "scope"):
-            if not isinstance(c.get(f), str):
+            if f in c and not isinstance(c[f], str):
                 _err(errs, "candidate_field_invalid", f"{i}.{f}")
         extra = set(c) - {"id", "role", "name", "scope",
                           "text", "enabled", "bbox"}
@@ -310,7 +310,8 @@ def build_questions(profile, candidates):
         if errs:
             raise ValueError("candidates_invalid:" + ";".join(errs))
         criteria = {
-            c["id"]: " | ".join((c["role"], c["name"], c["scope"]))
+            c["id"]: " | ".join((c.get("role", ""), c.get("name", ""),
+                                 c.get("scope", ""))).strip(" |")
             for c in candidates
         }
     else:
@@ -361,7 +362,58 @@ def load_config(path):
     return cfg
 
 
+_CALIBRATION_REQUIRED = ("id", "checkpoint_sha256", "profile",
+                         "locale", "data_source", "evaluation_id")
+
+
+def activation_errors(cfg):
+    """What blocks mode=assist. Empty list -> assist is permitted.
+    Every check binds the calibration to THIS snapshot, profile,
+    locale, cardinality and data source — an ID from another run does
+    not transfer."""
+    if not isinstance(cfg, dict) or cfg.get("mode") != "assist":
+        return []
+    errs = []
+    cal = cfg.get("calibration")
+    if not isinstance(cal, dict):
+        return ["calibration_missing"]
+    for k in _CALIBRATION_REQUIRED:
+        if not isinstance(cal.get(k), str) or not cal[k]:
+            errs.append(f"calibration_{k}_missing")
+    thr = cal.get("threshold")
+    if not _is_num(thr) or not (0.0 <= thr <= 1.0):
+        errs.append("calibration_threshold_invalid")
+    card = cal.get("cardinality")
+    if not isinstance(card, int) or isinstance(card, bool) \
+            or not (1 <= card <= MAX_CANDIDATES):
+        errs.append("calibration_cardinality_invalid")
+    models = cfg.get("models") or {}
+    digests = {m.get("sha256") for m in models.values()
+               if isinstance(m, dict)}
+    if cal.get("checkpoint_sha256") not in digests:
+        errs.append("calibration_checkpoint_mismatch")
+    if cal.get("profile") not in (cfg.get("profiles") or []):
+        errs.append("calibration_profile_mismatch")
+    m = cal.get("map")
+    if m is not None and (not isinstance(m, dict)
+                          or m.get("kind") not in
+                          ("identity", "platt", "table")):
+        errs.append("calibration_map_invalid")
+    return errs
+
+
+def effective_mode(cfg):
+    """off | shadow | assist. A requested assist without a compatible
+    calibration degrades to shadow — never blocked, never authorized."""
+    if not isinstance(cfg, dict):
+        return "off"
+    mode = cfg.get("mode")
+    if mode == "assist":
+        return "shadow" if activation_errors(cfg) else "assist"
+    return "shadow" if mode == "shadow" else "off"
+
+
 def enabled(cfg):
     """The ONLY feature gate. Anything but an explicit shadow/assist
     mode is off — no subprocess, no weight reads, no engine import."""
-    return isinstance(cfg, dict) and cfg.get("mode") in ("shadow", "assist")
+    return effective_mode(cfg) != "off"

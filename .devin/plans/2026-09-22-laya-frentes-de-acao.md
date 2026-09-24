@@ -648,10 +648,10 @@ def test_label_keeps_original_evidence(span):
 
 **Arquivos:** `decision_contract.py`, `decision_client.py`, `laya_cli.py`, `skills/implement-laya/SKILL.md`, consumidores aprovados; criar `tests/test_laya_activation.py`; atualizar installer/documentação apenas se mudar distribuição.
 
-- [ ] Config `assist` exige calibration/evaluation IDs compatíveis com snapshot, profile, locale, cardinalidade e fonte de dados. Campo raw_confidence não participa da autorização.
-- [ ] `off` encerra apenas worker próprio, não elimina dados/modelos. Sem modelo a funcionalidade original continua disponível.
-- [ ] Distribuir exemplos desativados; não invocar bootstrap no installer padrão e não editar configs instaladas automaticamente.
-- [ ] Testes reais de modelo são job opt-in com dados fixados, separado da CI stdlib; ausência de modelo não pode ser reportada como precisão validada.
+- [x] Config `assist` exige calibration/evaluation IDs compatíveis com snapshot, profile, locale, cardinalidade e fonte de dados. Campo raw_confidence não participa da autorização.
+- [x] `off` encerra apenas worker próprio, não elimina dados/modelos. Sem modelo a funcionalidade original continua disponível.
+- [x] Distribuir exemplos desativados; não invocar bootstrap no installer padrão e não editar configs instaladas automaticamente.
+- [x] Testes reais de modelo são job opt-in com dados fixados, separado da CI stdlib; ausência de modelo não pode ser reportada como precisão validada.
 
 ```python
 def test_assist_without_approved_evaluation_abstains():
