@@ -593,9 +593,9 @@ def test_explicit_skill_bypasses_model():
 
 **Arquivos:** criar `extensions/laya-tools/output_context.py`, `tests/test_laya_output_context.py`; referência opcional em `skills/debugging/`. Hook atual permanece independente.
 
-- [ ] Normalizar tool name, operation kind, código de saída/status e provenance antes de classificação. Conteúdo de fonte é dado, não execução dessa fonte.
-- [ ] Resultado do modelo é campo adicional `context_suggestion`; não apaga texto/erro original nem altera sucesso.
-- [ ] Exemplos de calibração incluem código-fonte com `raise`, falha de encoding real, teste RED esperado, falha de rede, warning com EACCES e logs truncados.
+- [x] Normalizar tool name, operation kind, código de saída/status e provenance antes de classificação. Conteúdo de fonte é dado, não execução dessa fonte.
+- [x] Resultado do modelo é campo adicional `context_suggestion`; não apaga texto/erro original nem altera sucesso.
+- [ ] Exemplos de calibração incluem código-fonte com `raise`, falha de encoding real, teste RED esperado, falha de rede, warning com EACCES e logs truncados. (calibração = L03, dados do mantenedor)
 
 ```python
 def test_classifier_cannot_turn_failed_process_green():
