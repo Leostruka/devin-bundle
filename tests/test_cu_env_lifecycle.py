@@ -179,6 +179,9 @@ def test_default_vm_has_no_network(spec, tmp_path):
     assert argv[argv.index("-display") + 1] == "none"
     assert argv[argv.index("-monitor") + 1] == "none"
     assert argv[argv.index("-serial") + 1] == "none"
+    # a console must exist for screendump — -nodefaults without -vga
+    # means no framebuffer at all (real boot proved: "no console")
+    assert argv[argv.index("-vga") + 1] == "std"
 
 
 def test_argv_is_list_no_shell(spec, tmp_path):
