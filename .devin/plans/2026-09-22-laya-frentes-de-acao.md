@@ -629,9 +629,9 @@ def test_explicit_effect_is_preserved():
 
 **Arquivos:** criar `extensions/laya-tools/knowledge_labels.py`, `tests/test_laya_knowledge_labels.py`; referências opcionais em `skills/knowledge-modeling/`, `skills/memory-management/`, `skills/obsidian-workflow/`.
 
-- [ ] Consumir spans com source hash/linhas já extraídos; somente labels existentes em ontologia aprovada.
-- [ ] Manter candidato não confirmado separado da base factual. Escrita/merge continua passando por aprovação e validação determinística existente.
-- [ ] Não alterar transcrição raw, cues de fontes ou preferências do usuário para acompanhar uma previsão.
+- [x] Consumir spans com source hash/linhas já extraídos; somente labels existentes em ontologia aprovada.
+- [x] Manter candidato não confirmado separado da base factual. Escrita/merge continua passando por aprovação e validação determinística existente.
+- [x] Não alterar transcrição raw, cues de fontes ou preferências do usuário para acompanhar uma previsão.
 
 ```python
 def test_label_keeps_original_evidence(span):
