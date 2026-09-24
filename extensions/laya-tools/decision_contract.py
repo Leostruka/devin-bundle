@@ -413,6 +413,25 @@ def effective_mode(cfg):
     return "shadow" if mode == "shadow" else "off"
 
 
+def check(cfg):
+    """Spec-shaped activation gate: {"enabled": bool, "reason": str}.
+    A missing/unapproved evaluation under mode=assist reports
+    'evaluation_required' — assist can never silently fall back."""
+    if not isinstance(cfg, dict):
+        return {"enabled": False, "reason": "config_invalid"}
+    mode = cfg.get("mode")
+    if mode == "assist":
+        errs = activation_errors(cfg)
+        if errs:
+            reason = "evaluation_required" \
+                if "calibration_missing" in errs else errs[0]
+            return {"enabled": False, "reason": reason}
+        return {"enabled": True, "reason": "assist_ok"}
+    if mode == "shadow":
+        return {"enabled": True, "reason": "shadow"}
+    return {"enabled": False, "reason": "off"}
+
+
 def enabled(cfg):
     """The ONLY feature gate. Anything but an explicit shadow/assist
     mode is off — no subprocess, no weight reads, no engine import."""

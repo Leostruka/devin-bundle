@@ -104,6 +104,20 @@ def test_missing_evaluation_id_degrades():
     assert dc.effective_mode(cfg) == "shadow"
 
 
+def test_assist_without_approved_evaluation_abstains():
+    r = dc.check({"mode": "assist", "calibration": None,
+                  "evaluation": None})
+    assert r == {"enabled": False, "reason": "evaluation_required"}
+
+
+def test_check_shape():
+    assert dc.check(_cfg()) == {"enabled": True, "reason": "assist_ok"}
+    assert dc.check({"mode": "shadow"})["enabled"] is True
+    assert dc.check({"mode": "off"}) == {"enabled": False,
+                                         "reason": "off"}
+    assert dc.check(None)["enabled"] is False
+
+
 def test_off_and_shadow_modes():
     assert dc.effective_mode({"mode": "off"}) == "off"
     assert dc.effective_mode({"mode": "shadow"}) == "shadow"
