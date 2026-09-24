@@ -576,9 +576,9 @@ def test_foreign_manifest_suggestion_is_not_usable():
 
 **Arquivos:** novo modo/referência leve em `skills/ask-bundle/` e `skills/intake/`; entrypoint `recommend` em `laya_cli.py`; criar `tests/test_laya_workflow_routing.py`.
 
-- [ ] Preservar triggers explícitos e catálogo derivado do manifesto existente. Família tem oito choices incluindo none; segunda etapa filtra no máximo oito candidatos.
-- [ ] Entregar label sugerido para o agente responsável. Nenhum `mcp_call_tool`, `gh issue edit`, comentário, fechamento, worklog ou spawn acontece no processo de decisão.
-- [ ] Não usar o preset genérico de suporte como se validasse o domínio de issues do bundle. Mantenedor escreve perguntas/casos do profile correspondente antes de implementar.
+- [x] Preservar triggers explícitos e catálogo derivado do manifesto existente. Família tem oito choices incluindo none; segunda etapa filtra no máximo oito candidatos.
+- [x] Entregar label sugerido para o agente responsável. Nenhum `mcp_call_tool`, `gh issue edit`, comentário, fechamento, worklog ou spawn acontece no processo de decisão.
+- [x] Não usar o preset genérico de suporte como se validasse o domínio de issues do bundle. Mantenedor escreve perguntas/casos do profile correspondente antes de implementar.
 
 ```python
 def test_explicit_skill_bypasses_model():

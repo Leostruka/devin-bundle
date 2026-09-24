@@ -17,6 +17,7 @@ First predict downloads ~1GB of weights from Hugging Face.
 """
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -120,6 +121,44 @@ def resolve_questions(args):
     return q
 
 
+def cmd_recommend(args):
+    """One §5.1 decision request through a resident worker. mode=off
+    (or missing config) abstains without spawning anything."""
+    import decision_contract as dc
+    import decision_client as dcl
+    cfg = dc.load_config(args.config)
+    if not dc.enabled(cfg):
+        emit({"ok": True, "mode": "off", "outcome": "abstain",
+              "reason": "feature_off"})
+    goal = args.goal or ""
+    candidates = load_json_arg(args.candidates, args.candidates_file,
+                               "candidates") or []
+    context = load_json_arg(args.context, args.context_file,
+                            "context") or {}
+    request = {"version": dc.VERSION,
+               "request_id": f"cli-{os.getpid()}",
+               "profile": args.profile, "mode": cfg["mode"],
+               "context": context,
+               "state": {"goal": goal},
+               "candidates": candidates,
+               "deadline_ms": int(cfg.get("deadline_ms") or 1000)}
+    errs = dc.validate_request(request)
+    if errs:
+        emit({"ok": False, "error": "invalid_request",
+              "details": errs}, 2)
+    here = Path(__file__).resolve()
+    venv_py = here.parent / ".venv" / (
+        "Scripts/python.exe" if os.name == "nt" else "bin/python")
+    py = str(venv_py) if venv_py.is_file() else sys.executable
+    client = dcl.DecisionClient(
+        [py, str(here), "serve-stdio", "--config", args.config or ""],
+        timeout_s=max(1.0, request["deadline_ms"] / 1000 + 2))
+    try:
+        emit(client.recommend(request))
+    finally:
+        client.close()
+
+
 def cmd_predict(args):
     state = load_json_arg(args.state, args.state_file, "state")
     if state is None:
@@ -168,6 +207,17 @@ def main():
     sv.add_argument("--config",
                     help="Path to .devin/laya/profile.json "
                          "(default: project .devin/laya/profile.json)")
+    rc = sub.add_parser("recommend",
+                        help="One typed decision via resident worker "
+                             "(abstains cleanly when mode=off)")
+    rc.add_argument("--profile", required=True,
+                    help="Closed profile id, e.g. skill-family-v1")
+    rc.add_argument("--goal", required=True)
+    rc.add_argument("--candidates", help="Inline JSON list of candidates")
+    rc.add_argument("--candidates-file")
+    rc.add_argument("--context", help="Inline JSON context object")
+    rc.add_argument("--context-file")
+    rc.add_argument("--config", help="Path to laya profile.json")
     p.add_argument("--check-questions", metavar="FILE", help="Validate questions schema offline")
     p.add_argument("--list-presets", action="store_true")
     p.add_argument("--self-test", action="store_true")
@@ -190,6 +240,8 @@ def main():
             cfg = str(default) if default.is_file() else None
         import laya_worker
         sys.exit(laya_worker.main(cfg))
+    if args.cmd == "recommend":
+        cmd_recommend(args)
     p.error("no command — see --help")
 
 

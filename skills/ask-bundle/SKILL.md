@@ -128,3 +128,7 @@ qa-ci without reinstalling pinned deps.
 - Issue tracker: `.devin/scratch/<feature>/` + `.devin/agents/issue-tracker.md`,
   `triage-labels.md`.
 - Verification baseline: `python audit.py`, `python -m pytest`.
+- Optional Laya assist (off by default, `.devin/laya/profile.json`):
+  `extensions/laya-tools/workflow_routing.py` suggests a skill for
+  genuinely ambiguous requests — explicit triggers always bypass it.
+  Suggestion only; routing authority stays with this table.

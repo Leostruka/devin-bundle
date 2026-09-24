@@ -104,3 +104,7 @@ skip grilling.
 ```
 
 Questions must be specific and actionable. On resume, read prior notes first.
+
+Optional Laya assist (off by default): profile `issue-category-v1`
+suggests bug/enhancement/needs_info via `laya_cli.py recommend` — a
+label suggestion only; triage transitions stay manual/deterministic.
