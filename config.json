@@ -23,6 +23,7 @@
   },
   "hooks": {},
   "show_path": true,
+  "include_gitignored_files": true,
   "respect_gitignore": false,
   "unicode_mode": "auto",
   "skip_workspace_trust": true,
