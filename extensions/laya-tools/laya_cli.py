@@ -152,7 +152,10 @@ def cmd_recommend(args):
     py = str(venv_py) if venv_py.is_file() else sys.executable
     client = dcl.DecisionClient(
         [py, str(here), "serve-stdio", "--config", args.config or ""],
-        timeout_s=max(1.0, request["deadline_ms"] / 1000 + 2))
+        # spawn includes a cold engine build (~1min CPU); a resident
+        # worker answers in ms — the deadline governs inference only
+        timeout_s=max(float(request["deadline_ms"]) / 1000 + 2,
+                      args.timeout))
     try:
         emit(client.recommend(request))
     finally:
@@ -218,6 +221,9 @@ def main():
     rc.add_argument("--context", help="Inline JSON context object")
     rc.add_argument("--context-file")
     rc.add_argument("--config", help="Path to laya profile.json")
+    rc.add_argument("--timeout", type=float, default=120.0,
+                    help="Seconds to wait for worker spawn + reply "
+                         "(default 120; cold engine load dominates)")
     p.add_argument("--check-questions", metavar="FILE", help="Validate questions schema offline")
     p.add_argument("--list-presets", action="store_true")
     p.add_argument("--self-test", action="store_true")

@@ -83,8 +83,11 @@ def load_engine(approved_local_models, device="cpu"):
     except ImportError as e:
         raise RuntimeError(f"laya_import_failed:{e}") from e
     try:
-        router = Router(models=paths or None, preload=list(paths) or None,
-                        device=device)
+        router = Router(models=paths or None, device=device)
+        if paths:
+            # preload() bare would build EVERY registered model,
+            # including checkpoints we never approved
+            router.preload(list(paths))
     except TypeError:
         router = Router(preload=bool(paths), device=device)
     return router
