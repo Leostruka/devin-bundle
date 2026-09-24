@@ -188,9 +188,12 @@ def _bind_listener(env_dir):
     forwards allowlisted QMP ops only, it is NOT a raw QMP proxy."""
     if hasattr(socket, "AF_UNIX"):
         sock_path = env_dir / "qmp.ipc"
-        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        s.bind(str(sock_path))
-        return s, {"socket": str(sock_path), "transport": "unix"}, None
+        # sun_path ~104-108B — deep env dirs (pytest tmp, CI) overflow it
+        if len(str(sock_path).encode()) < 100:
+            s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            s.bind(str(sock_path))
+            return s, {"socket": str(sock_path),
+                       "transport": "unix"}, None
     import secrets
     token = secrets.token_hex(16)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

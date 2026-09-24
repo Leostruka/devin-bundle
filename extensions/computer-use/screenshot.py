@@ -118,13 +118,38 @@ def _save_diff(img, path, out):
     ImageChops.difference(a, b).save(out, "PNG")
 
 
+def _write_png_raw(img, out):
+    """Minimal PNG encoder (stdlib zlib, no PIL) — remote path must not
+    require the host image stack."""
+    import struct
+    import zlib
+    w, h = img.width, img.height
+    stride = w * 3
+    raw = b"".join(b"\x00" + img.rgb[y * stride:(y + 1) * stride]
+                   for y in range(h))
+    def chunk(tag, data):
+        return (struct.pack(">I", len(data)) + tag + data +
+                struct.pack(">I",
+                            zlib.crc32(tag + data) & 0xFFFFFFFF))
+    ihdr = struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0)
+    with open(out, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr)
+                + chunk(b"IDAT", zlib.compress(raw))
+                + chunk(b"IEND", b""))
+
+
 def _save_image(im, out, fmt="png", quality=80):
-    """Format-aware save. JPEG ~5x cheaper to encode than PNG — the fast
-    profile's pixel path when pixels are still required."""
+    """Format-aware save. Accepts a PIL Image or a raw frame
+    (.rgb/.width/.height). JPEG ~5x cheaper to encode than PNG — the
+    fast profile's pixel path when pixels are still required."""
     if fmt == "jpeg":
+        if not hasattr(im, "save"):
+            im = _to_image(im)
         im.convert("RGB").save(out, "JPEG", quality=int(quality))
-    else:
+    elif hasattr(im, "save"):
         im.convert("RGB").save(out, "PNG")
+    else:
+        _write_png_raw(im, out)
 
 
 def _save_with_grid(img, spacing, out, ox=0, oy=0, fmt="png", quality=80):
@@ -226,7 +251,7 @@ def _remote_main(target):
                         fmt=args.format, quality=args.quality)
         result["grid_px"] = args.grid or 100
     else:
-        _save_image(_to_image(img), out, args.format, args.quality)
+        _save_image(img, out, args.format, args.quality)
     if args.if_changed:
         _write_shot_state(shot_hash, out, scope=scope)
     print(json.dumps(result))
