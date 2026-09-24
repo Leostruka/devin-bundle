@@ -558,10 +558,10 @@ def test_stale_suggestion_is_rejected():
 
 **Arquivos:** `extensions/spline-operator/wrapper.py`; criar `extensions/spline-operator/decision.py`, `tests/test_spline_decision.py`.
 
-- [ ] Adicionar modo read-only `recommend`: preservar manifesto completo/input schema e digest de editor/scene; não lançar Spline por classificação.
-- [ ] Fazer domínio 2D/3D/inspect/export → shortlist, jamais 36 opções descritas pela metade de uma vez.
-- [ ] Resposta só referencia tool existente no mesmo manifesto. `3d_run_code` não recebe código gerado pela Laya; nenhuma permissão de kill/launch/export implícita.
-- [ ] Corrigir primeiro validação de args/correlação/ownership que impeça qualificação do adapter; não usar ML para compensar esses gaps.
+- [x] Adicionar modo read-only `recommend`: preservar manifesto completo/input schema e digest de editor/scene; não lançar Spline por classificação.
+- [x] Fazer domínio 2D/3D/inspect/export → shortlist, jamais 36 opções descritas pela metade de uma vez.
+- [x] Resposta só referencia tool existente no mesmo manifesto. `3d_run_code` não recebe código gerado pela Laya; nenhuma permissão de kill/launch/export implícita.
+- [~] Corrigir primeiro validação de args/correlação/ownership que impeça qualificação do adapter; não usar ML para compensar esses gaps. (recommend é read-only e não toca o adapter; correção do adapter em si fica para o hardening determinístico do consumidor)
 
 ```python
 def test_foreign_manifest_suggestion_is_not_usable():
