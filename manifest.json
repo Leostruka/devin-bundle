@@ -363,7 +363,7 @@
     {
       "name": "prompt-compiler",
       "source": "devin-bundle",
-      "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt and hands off to a fresh local session."
+      "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md."
     },
     {
       "name": "architecture-diagrams",
