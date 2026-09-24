@@ -187,6 +187,29 @@ def test_disable_mid_session():
     assert replies[1]["reason"] == "feature_off"
 
 
+def test_config_model_is_forced():
+    class Rec(FakeEngine):
+        def predict(self, s, q, model=None):
+            self.seen_model = model
+            return super().predict(s, q)
+    e = Rec()
+    replies = run_worker(e, [env(REQ)],
+                         config={"mode": "shadow",
+                                 "model": "multilingual"})
+    assert e.seen_model == "multilingual"
+    assert replies[0]["outcome"] == "suggestion"
+
+
+def test_no_config_model_autoroutes():
+    class Rec(FakeEngine):
+        def predict(self, s, q, model="sentinel"):
+            self.seen_model = model
+            return super().predict(s, q)
+    e = Rec()
+    run_worker(e, [env(REQ)], config={"mode": "shadow"})
+    assert e.seen_model == "sentinel"  # no model kwarg was passed
+
+
 def test_eof_exits_cleanly():
     writer = io.StringIO()
     laya_worker.serve(io.StringIO(""), writer, FakeEngine(),

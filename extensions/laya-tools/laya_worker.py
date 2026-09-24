@@ -129,10 +129,12 @@ def _calibrated(cal, x):
     return None
 
 
-def recommend(request, engine, calibration=None, assist_ok=False):
+def recommend(request, engine, calibration=None, assist_ok=False,
+              model=None):
     """One typed request -> suggestion|abstain. Engine answer is
     untrusted data: label must be inside the request's closed set,
-    numbers must be finite."""
+    numbers must be finite. `model` pins an approved checkpoint name
+    (e.g. "multilingual"); None lets the Router auto-route."""
     rid = request.get("request_id", "")
     rec = dc.make_abstention(rid, "invalid_request")
     rec["context"] = dict(request.get("context") or {})
@@ -156,7 +158,8 @@ def recommend(request, engine, calibration=None, assist_ok=False):
 
     with contextlib.redirect_stdout(sys.stderr):
         try:
-            result = engine.predict(state, questions)
+            kw = {"model": model} if model else {}
+            result = engine.predict(state, questions, **kw)
         except Exception as e:
             rec["reason"] = f"engine_error:{type(e).__name__}"
             return rec
@@ -239,7 +242,8 @@ def serve(reader, writer, engine, config):
             rec = recommend(request, engine,
                             (config or {}).get("calibration"),
                             assist_ok=dc.effective_mode(config)
-                            == "assist")
+                            == "assist",
+                            model=(config or {}).get("model"))
             deadline = request.get("deadline_ms")
             if rec["outcome"] == "suggestion" and isinstance(deadline, int) \
                     and (time.monotonic() - started) * 1000 > deadline:
@@ -263,6 +267,11 @@ def main(config_path=None):
         print(json.dumps({"ok": True, "mode": "off",
                           "note": "feature disabled; engine not loaded"}))
         return 0
+    model = cfg.get("model")
+    if model and model not in (cfg.get("models") or {}):
+        print(json.dumps({"ok": False,
+                          "error": f"model_not_approved:{model}"}))
+        return 1
     try:
         engine = load_engine(cfg.get("models") or {},
                              cfg.get("device") or "cpu")
