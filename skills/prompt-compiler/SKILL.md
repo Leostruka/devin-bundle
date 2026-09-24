@@ -1,6 +1,6 @@
 ---
 name: prompt-compiler
-description: Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt and hands off to a fresh local session.
+description: Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md.
 argument-hint: What task should the compiled prompt execute?
 triggers: [user]
 ---
@@ -77,20 +77,6 @@ Interactive TTY fallback (user drives the fields, no agent drafting):
 python extensions/ai-tools/prompt_compiler.py            # prompts per field
 python extensions/ai-tools/prompt_compiler.py --draft spec.json   # edit-by-section loop
 ```
-
-## Golden Rule — local handoff only
-
-After `optimized_ready.md` exists, end the preparation phase by invoking
-**exactly** this command (local compaction — the `handoff` skill):
-
-```
-/handoff I have compiled the optimized prompt in .devin/scratch/optimized_ready.md. The next agent should consume this file and execute the task exactly as specified in a fresh context.
-```
-
-- **Never** use `/handoff <task description>` cloud routing — that sends the
-  work to a remote session and defeats context isolation.
-- Do not execute the compiled prompt in the current session.
-- Do not paste the prompt into the handoff text — reference the file path.
 
 ## Knowledge base upkeep
 
