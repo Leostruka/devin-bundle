@@ -19,6 +19,7 @@ import cu_actions
 import cu_browser
 import cu_motion as cm
 import cu_hints
+import cu_target
 
 
 def set_dpi_awareness():
@@ -79,7 +80,93 @@ def _resolve_xy(args):
     return args.x, args.y, None
 
 
+def _remote_main(target):
+    """Guest pointer via QMP. Bounds validated against a FRESH frame —
+    no stale geometry clicks into the void. Humanization flags
+    (profiles, motion curves) are host-only and unsupported here."""
+    import cu_qmp_backend as qb
+    p = cm.JsonParser(description="Guest pointer control")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    for name in ("move", "click", "scroll", "drag", "position"):
+        sp = sub.add_parser(name)
+        sp.add_argument("--env", default=None)
+        sp.add_argument("--dry-run", action="store_true",
+                        help="encode+validate against geometry; send nothing")
+        sp.add_argument("--verify", action="store_true",
+                        help="re-observe after dispatch; attaches "
+                             "evidence-level verification")
+        if name in ("move", "click", "scroll"):
+            sp.add_argument("x", type=int, nargs="?")
+            sp.add_argument("y", type=int, nargs="?")
+        if name == "drag":
+            sp.add_argument("x", type=int)
+            sp.add_argument("y", type=int)
+        if name == "click":
+            sp.add_argument("--button", default="left")
+            sp.add_argument("--clicks", type=int, default=1)
+        if name == "scroll":
+            sp.add_argument("--dx", type=int, default=0)
+            sp.add_argument("--dy", type=int, default=0)
+        if name == "drag":
+            sp.add_argument("--from-x", type=int, required=True)
+            sp.add_argument("--from-y", type=int, required=True)
+            sp.add_argument("--button", default="left")
+    args = p.parse_args()
+    backend = target["backend"]
+    before = None
+    try:
+        if args.cmd == "position":
+            backend.pointer_position()  # always raises — honest
+        if args.cmd == "scroll" and (args.x is None or args.y is None):
+            if args.verify:
+                img0, meta0 = backend.observe()
+                before = {"frame": img0, "meta": meta0}
+            events = qb.encode_scroll(args.dx, args.dy)
+        else:
+            img, meta0 = backend.observe()
+            before = {"frame": img, "meta": meta0}
+            w, h = img.width, img.height
+            if args.cmd == "move":
+                events = qb.encode_move(args.x, args.y, w, h)
+            elif args.cmd == "click":
+                events = qb.encode_click(args.x, args.y, w, h,
+                                         button=args.button,
+                                         clicks=args.clicks)
+            elif args.cmd == "scroll":
+                events = qb.encode_move(args.x, args.y, w, h) + \
+                    qb.encode_scroll(args.dx, args.dy)
+            else:  # drag
+                events = qb.encode_drag(args.from_x, args.from_y,
+                                        args.x, args.y, w, h,
+                                        button=args.button)
+        if args.dry_run:
+            print(json.dumps({"ok": True, "status": "dry_run",
+                              "env_id": target["env_id"],
+                              "cmd": args.cmd,
+                              "events": len(events)}))
+            return
+        res = backend.send_events(events)
+    except qb.UnsupportedText as exc:
+        cu_target.reject_remote(f"unsupported:{exc}")
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
+    out = {"ok": True, "status": "dispatched",
+           "env_id": target["env_id"], "cmd": args.cmd, **res}
+    if args.verify:
+        import cu_backend
+        img2, meta2 = backend.observe()
+        out["verification"] = cu_backend.verify_effect(
+            {"cmd": args.cmd}, before,
+            {"frame": img2, "meta": meta2},
+            {"kind": "frame_changed"})
+    print(json.dumps(out))
+
+
 def main():
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        _remote_main(target)
+        return
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("mouse", sys.argv[1:])
@@ -98,6 +185,11 @@ def main():
                         help="seed the RNG for a reproducible path")
         sp.add_argument("--dry-run", action="store_true",
                         help="compute path/timing but dispatch no input")
+        sp.add_argument("--env", default=None,
+                        help="isolated environment id "
+                             "(.devin/computer-use/envs); absent = local host")
+        sp.add_argument("--observation", default=None,
+                        help="observation id issued for that env")
         if name in ("move", "click"):
             sp.add_argument("x", type=int, nargs="?")
             sp.add_argument("y", type=int, nargs="?")
@@ -140,6 +232,11 @@ def main():
             sp.add_argument("--from-y", type=int, required=True)
             sp.add_argument("--duration", type=float, default=None)
     spos = sub.add_parser("position", help="Print current cursor position")
+    spos.add_argument("--env", default=None,
+                      help="isolated environment id "
+                           "(.devin/computer-use/envs); absent = local host")
+    spos.add_argument("--observation", default=None,
+                      help="observation id issued for that env")
 
     args = p.parse_args()
     if getattr(args, "via", None) == "browser" and \

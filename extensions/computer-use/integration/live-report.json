@@ -1,0 +1,20 @@
+{
+  "env_id": "devin-linux",
+  "timings_ms": {
+    "capture_cold": 29.3,
+    "dispatch_key": 30.5,
+    "capture_warm": 571.5
+  },
+  "instance_id": "i-f729b0c1edf9",
+  "geometry": [
+    640,
+    480
+  ],
+  "verification": {
+    "verified": false,
+    "status": "evidence",
+    "predicate": "frame_changed",
+    "predicate_satisfied": true,
+    "note": "visual change is evidence, not task completion"
+  }
+}

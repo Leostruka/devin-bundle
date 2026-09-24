@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "mode": "off",
+  "calibration": null,
+  "device": "cpu",
+  "deadline_ms": 1000,
+  "queue_depth": 4,
+  "profiles": [
+    "ui-target-v1",
+    "skill-family-v1",
+    "issue-category-v1",
+    "output-context-v1",
+    "spline-domain-v1",
+    "media-intent-v1"
+  ],
+  "models": {
+    "typed-decisions": {
+      "path": "C:/absolute/path/to/approved/local/checkpoint",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "identity": "approved-local-snapshot"
+    }
+  },
+  "_notes": {
+    "mode": "off (default) | shadow (measure, never select) | assist (usable only after calibration on YOUR labeled data)",
+    "calibration": "null until fitted; object {id, threshold, fitted_on, checkpoint_sha256} after L03 calibration",
+    "models": "local approved paths only; sha256 verified before load; never download to satisfy a request",
+    "device": "report the real device; gpu->cpu fallback is not invisible and may miss deadlines"
+  }
+}

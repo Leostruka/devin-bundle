@@ -21,6 +21,7 @@ import json
 import os
 import tempfile
 import time
+from pathlib import Path
 
 import cu_hints
 
@@ -151,8 +152,25 @@ def unbind():
     return {"ok": True}
 
 
-def binding():
-    """Current binding dict if valid for this session, else None."""
+def binding(scope=None):
+    """Current binding dict if valid for this session, else None.
+    scope=(env_id, instance_id, session_id) reads the env-namespaced
+    binding written by bind_remote."""
+    if scope is not None:
+        import cu_target
+        p = cu_target.state_path(cu_target.runtime_root(), *scope,
+                                 "browser-binding.json")
+        try:
+            data = json.loads(Path(p).read_text(encoding="utf-8"))
+        except Exception:
+            return None
+        env_id, instance_id, _ = scope
+        import cu_guest
+        if not cu_guest.binding_matches(data, env_id, instance_id):
+            return None
+        if time.time() - data.get("created_at", 0) > BINDING_TTL_S:
+            return None
+        return data
     try:
         with open(_path(), encoding="utf-8") as f:
             data = json.load(f)
@@ -163,6 +181,29 @@ def binding():
     if time.time() - data.get("created_at", 0) > BINDING_TTL_S:
         return None
     return data
+
+
+def bind_remote(env_id, instance_id, extra=None):
+    """Binding for a guest-side browser — lives under the env's private
+    state namespace, stamped with (env_id, instance_id). The endpoint
+    is the guest's own loopback reached via the worker channel; no CDP
+    port is ever published on the host."""
+    import cu_target
+    data = {"env_id": env_id, "instance_id": instance_id,
+            "kind": "guest",
+            "session_id": cu_hints.session_id(),
+            "created_at": time.time()}
+    if extra:
+        data.update(extra)
+    p = cu_target.state_path(cu_target.runtime_root(), env_id,
+                             instance_id, "default",
+                             "browser-binding.json")
+    cu_target.ensure_private_dir(Path(p).parent)
+    tmp = str(p) + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    os.replace(tmp, p)
+    return {"ok": True, "binding": data, "path": str(p)}
 
 
 def _hwnd_pid(hwnd):

@@ -29,18 +29,24 @@ class JsonParser(argparse.ArgumentParser):
         raise SystemExit(2)
 
 
-def profile_path():
-    return os.path.join(tempfile.gettempdir(), "devin-cu-profile.json")
+def profile_path(scope=None):
+    """scope=(env_id, instance_id, session_id) -> per-env private dir;
+    None -> legacy tempdir path (local backend)."""
+    if scope is None:
+        return os.path.join(tempfile.gettempdir(), "devin-cu-profile.json")
+    import cu_target
+    return str(cu_target.state_path(cu_target.runtime_root(), *scope,
+                                    "devin-cu-profile.json"))
 
 
-def get_profile(flag=None):
+def get_profile(flag=None, scope=None):
     if flag in PROFILES:
         return flag
     env = os.environ.get(ENV_VAR)
     if env in PROFILES:
         return env
     try:
-        with open(profile_path(), encoding="utf-8") as f:
+        with open(profile_path(scope), encoding="utf-8") as f:
             v = json.load(f).get("profile")
         if v in PROFILES:
             return v
@@ -49,10 +55,14 @@ def get_profile(flag=None):
     return "fast"
 
 
-def set_profile(name):
+def set_profile(name, scope=None):
     if name not in PROFILES:
         raise ValueError(f"bad profile {name!r}")
-    with open(profile_path(), "w", encoding="utf-8") as f:
+    path = profile_path(scope)
+    if scope is not None:
+        import cu_target
+        cu_target.ensure_private_dir(os.path.dirname(path))
+    with open(path, "w", encoding="utf-8") as f:
         json.dump({"profile": name}, f)
 
 

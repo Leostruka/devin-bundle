@@ -53,5 +53,10 @@ Screenshots are disposable: keep the default temp path, and delete the shots
 you created when the task ends. Only write `--out` elsewhere if the user asks
 to keep one.
 
+Isolated environments: any CLI takes `--env <env_id>` to act inside an
+approved QEMU/container guest instead of the host — lifecycle via
+`env.py` (doctor/create/start/stop/restart/reset; TTY consent required).
+Details and limits: `USAGE.md` → "Isolated environments".
+
 If the venv is missing, run the bundle installer (`install.ps1`/`install.sh`)
 or create it per `USAGE.md`.

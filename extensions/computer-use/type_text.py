@@ -21,6 +21,7 @@ import cu_actions
 import cu_browser
 import cu_motion as cm
 import cu_hints
+import cu_target
 
 
 def set_dpi_awareness():
@@ -64,7 +65,77 @@ def resolve_key(name, Key, KeyCode):
     fail(f"unknown key: {name}", 2)
 
 
+def _remote_main(target):
+    """Type into the isolated env. Unicode text prefers the guest
+    worker's text.insert; keystroke events via QMP cover --key/--chord
+    and the no-worker fallback. No pynput/SendInput/host clipboard."""
+    import cu_qmp_backend
+    import cu_guest
+    p = cm.JsonParser(description="Type into isolated env")
+    p.add_argument("text", nargs="?", default=None)
+    p.add_argument("--key", default=None,
+                   help="named key (enter, tab, f5...)")
+    p.add_argument("--chord", default=None,
+                   help="modifier chord (ctrl+alt+delete)")
+    p.add_argument("--env", default=None)
+    p.add_argument("--verify", action="store_true",
+                   help="re-observe after dispatch; attaches "
+                        "evidence-level verification")
+    args = p.parse_args()
+    backend = target["backend"]
+    layout = target["spec"].get("keyboard_layout", "en-us")
+    try:
+        events = None
+        res = None
+        if args.key:
+            events = cu_qmp_backend.encode_key(args.key)
+        elif args.chord:
+            events = cu_qmp_backend.encode_chord(args.chord)
+        elif args.text is not None:
+            # Prefer the guest worker's Unicode insert (real text, no
+            # keymap limit); fall back to keystroke events when the
+            # channel/cap isn't there — still guest-only either way.
+            try:
+                insertable = cu_guest.check_operation(
+                    "text.insert", backend.guest_caps())["allowed"]
+            except Exception:
+                insertable = False
+            if insertable:
+                pass  # dispatched via text_insert below
+            else:
+                events = cu_qmp_backend.encode_text(args.text,
+                                                    layout=layout)
+        else:
+            cu_target.reject_remote("no text/--key/--chord given")
+        before = None
+        if args.verify:
+            img0, meta0 = backend.observe()
+            before = {"frame": img0, "meta": meta0}
+        if events is not None:
+            res = backend.send_events(events)
+        else:
+            res = backend.text_insert(args.text)
+    except cu_qmp_backend.UnsupportedText as exc:
+        cu_target.reject_remote(f"unsupported_text:{exc}")
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
+    out = {"ok": True, "status": "dispatched",
+           "env_id": target["env_id"], **res}
+    if args.verify:
+        import cu_backend
+        img2, meta2 = backend.observe()
+        out["verification"] = cu_backend.verify_effect(
+            {"cmd": "type"}, before,
+            {"frame": img2, "meta": meta2},
+            {"kind": "frame_changed"})
+    print(json.dumps(out))
+
+
 def main():
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        _remote_main(target)
+        return
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("type_text", sys.argv[1:])
@@ -98,6 +169,11 @@ def main():
                    help="action profile override for this call")
     p.add_argument("--dry-run", action="store_true",
                    help="compute timing plan but dispatch no input")
+    p.add_argument("--env", default=None,
+                   help="isolated environment id "
+                        "(.devin/computer-use/envs); absent = local host")
+    p.add_argument("--observation", default=None,
+                   help="observation id issued for that env")
     args = p.parse_args()
 
     if not any([args.text, args.key, args.keys]):

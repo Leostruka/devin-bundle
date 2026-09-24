@@ -15,6 +15,7 @@ import os
 import sys
 
 import cu_actions
+import cu_target
 from cu_motion import (ENV_VAR, PROFILES, JsonParser, get_profile,
                        profile_path, set_profile)
 
@@ -25,11 +26,19 @@ def fail(msg, code=1):
 
 
 def main():
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        cu_target.reject_remote(
+            f"env {target['env_id']}: remote dispatch not implemented "
+            "for profile yet (C12)")
     p = JsonParser(description="computer-use action profile")
     p.add_argument("--set", dest="set_profile", choices=PROFILES,
                    help="persist profile to the session file")
     p.add_argument("--show", action="store_true",
                    help="print effective profile and where it came from")
+    p.add_argument("--env", default=None,
+                   help="isolated environment id "
+                        "(.devin/computer-use/envs); absent = local host")
     args = p.parse_args()
 
     if args.set_profile:

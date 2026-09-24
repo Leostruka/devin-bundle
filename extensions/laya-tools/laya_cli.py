@@ -17,6 +17,7 @@ First predict downloads ~1GB of weights from Hugging Face.
 """
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -45,7 +46,13 @@ def load_json_arg(inline, file_arg, name):
 
 
 def check_questions(q):
-    """Validate the typed-questions schema without importing laya."""
+    """Validate the typed-questions schema without importing laya.
+
+    Shapes: choice -> criteria {label: non-empty description};
+    score -> criteria ordered non-empty list of strings;
+    noul -> instructions only (P(true), no criteria).
+    instructions is always a non-empty string. An unhashable or
+    non-string `type` is an error, never a crash."""
     errors = []
     if not isinstance(q, dict) or not q:
         return ["questions must be a non-empty JSON object"]
@@ -54,20 +61,53 @@ def check_questions(q):
             errors.append(f"{key}: spec must be an object")
             continue
         t = spec.get("type")
-        if t not in QTYPES:
-            errors.append(f"{key}: type must be one of {sorted(QTYPES)}, got {t!r}")
-        if "instructions" not in spec:
-            errors.append(f"{key}: missing 'instructions'")
-        if t == "choice" and not isinstance(spec.get("criteria"), dict):
-            errors.append(f"{key}: choice requires criteria as object {{label: description}}")
-        if t == "score" and not isinstance(spec.get("criteria"), list):
-            errors.append(f"{key}: score requires criteria as ordered list")
+        if not isinstance(t, str) or t not in QTYPES:
+            errors.append(
+                f"{key}: type must be one of {sorted(QTYPES)}, "
+                f"got {t!r}")
+        ins = spec.get("instructions")
+        if not isinstance(ins, str) or not ins.strip():
+            errors.append(f"{key}: instructions must be a non-empty "
+                          "string")
+        if t == "choice":
+            crit = spec.get("criteria")
+            if not isinstance(crit, dict) or not crit:
+                errors.append(f"{key}: choice requires non-empty "
+                              "criteria object {{label: description}}")
+            else:
+                for label, desc in crit.items():
+                    if not isinstance(label, str) or not label:
+                        errors.append(
+                            f"{key}: choice label must be a non-empty "
+                            f"string, got {label!r}")
+                    if not isinstance(desc, str) or not desc.strip():
+                        errors.append(
+                            f"{key}: choice description for "
+                            f"{label!r} must be a non-empty string")
+        elif t == "score":
+            crit = spec.get("criteria")
+            if not isinstance(crit, list) or not crit:
+                errors.append(f"{key}: score requires criteria as a "
+                              "non-empty ordered list")
+            elif not all(isinstance(c, str) and c.strip()
+                         for c in crit):
+                errors.append(f"{key}: score criteria must all be "
+                              "non-empty strings")
+        elif t == "noul":
+            if "criteria" in spec:
+                errors.append(f"{key}: noul takes instructions only "
+                              "(no criteria)")
     return errors
 
 
 def resolve_questions(args):
     if args.preset:
-        import laya
+        try:
+            import laya
+        except ImportError:
+            emit({"ok": False,
+                  "error": "laya not installed — run: pip install -r "
+                           "requirements.txt (in this dir)"}, 1)
         fn = getattr(laya, f"{args.preset}_questions", None)
         if fn is None:
             emit({"ok": False, "error": f"unknown preset '{args.preset}'", "presets": PRESETS}, 2)
@@ -79,6 +119,47 @@ def resolve_questions(args):
     if errors:
         emit({"ok": False, "error": "invalid questions schema", "details": errors}, 2)
     return q
+
+
+def cmd_recommend(args):
+    """One §5.1 decision request through a resident worker. mode=off
+    (or missing config) abstains without spawning anything."""
+    import decision_contract as dc
+    import decision_client as dcl
+    cfg = dc.load_config(args.config)
+    if not dc.enabled(cfg):
+        emit({"ok": True, "mode": "off", "outcome": "abstain",
+              "reason": "feature_off"})
+    goal = args.goal or ""
+    candidates = load_json_arg(args.candidates, args.candidates_file,
+                               "candidates") or []
+    context = load_json_arg(args.context, args.context_file,
+                            "context") or {}
+    request = {"version": dc.VERSION,
+               "request_id": f"cli-{os.getpid()}",
+               "profile": args.profile, "mode": cfg["mode"],
+               "context": context,
+               "state": {"goal": goal},
+               "candidates": candidates,
+               "deadline_ms": int(cfg.get("deadline_ms") or 1000)}
+    errs = dc.validate_request(request)
+    if errs:
+        emit({"ok": False, "error": "invalid_request",
+              "details": errs}, 2)
+    here = Path(__file__).resolve()
+    venv_py = here.parent / ".venv" / (
+        "Scripts/python.exe" if os.name == "nt" else "bin/python")
+    py = str(venv_py) if venv_py.is_file() else sys.executable
+    client = dcl.DecisionClient(
+        [py, str(here), "serve-stdio", "--config", args.config or ""],
+        # spawn includes a cold engine build (~1min CPU); a resident
+        # worker answers in ms — the deadline governs inference only
+        timeout_s=max(float(request["deadline_ms"]) / 1000 + 2,
+                      args.timeout))
+    try:
+        emit(client.recommend(request))
+    finally:
+        client.close()
 
 
 def cmd_predict(args):
@@ -124,6 +205,25 @@ def main():
     pr.add_argument("--device", help="cpu|cuda (default: laya auto)")
     pr.add_argument("--preload", action="store_true",
                     help="Preload all checkpoints (skip per-request reload; uses ~2GB)")
+    sv = sub.add_parser("serve-stdio",
+                        help="Resident JSON-lines worker (see laya_worker)")
+    sv.add_argument("--config",
+                    help="Path to .devin/laya/profile.json "
+                         "(default: project .devin/laya/profile.json)")
+    rc = sub.add_parser("recommend",
+                        help="One typed decision via resident worker "
+                             "(abstains cleanly when mode=off)")
+    rc.add_argument("--profile", required=True,
+                    help="Closed profile id, e.g. skill-family-v1")
+    rc.add_argument("--goal", required=True)
+    rc.add_argument("--candidates", help="Inline JSON list of candidates")
+    rc.add_argument("--candidates-file")
+    rc.add_argument("--context", help="Inline JSON context object")
+    rc.add_argument("--context-file")
+    rc.add_argument("--config", help="Path to laya profile.json")
+    rc.add_argument("--timeout", type=float, default=120.0,
+                    help="Seconds to wait for worker spawn + reply "
+                         "(default 120; cold engine load dominates)")
     p.add_argument("--check-questions", metavar="FILE", help="Validate questions schema offline")
     p.add_argument("--list-presets", action="store_true")
     p.add_argument("--self-test", action="store_true")
@@ -139,6 +239,15 @@ def main():
         emit({"ok": not errors, "errors": errors}, 0 if not errors else 2)
     if args.cmd == "predict":
         cmd_predict(args)
+    if args.cmd == "serve-stdio":
+        cfg = args.config
+        if cfg is None:
+            default = Path.cwd() / ".devin" / "laya" / "profile.json"
+            cfg = str(default) if default.is_file() else None
+        import laya_worker
+        sys.exit(laya_worker.main(cfg))
+    if args.cmd == "recommend":
+        cmd_recommend(args)
     p.error("no command — see --help")
 
 

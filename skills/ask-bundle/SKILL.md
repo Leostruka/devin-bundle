@@ -128,3 +128,6 @@ qa-ci without reinstalling pinned deps.
 - Issue tracker: `.devin/scratch/<feature>/` + `.devin/agents/issue-tracker.md`,
   `triage-labels.md`.
 - Verification baseline: `python audit.py`, `python -m pytest`.
+- Laya is NOT wired into agent routing — zero-shot accuracy was too low
+  to justify it (see plan `2026-09-22-laya-frentes-de-acao.md`).
+  `extensions/laya-tools` + `implement-laya` remain for per-project use.

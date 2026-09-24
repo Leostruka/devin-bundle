@@ -113,7 +113,50 @@ def _events_stop(_args):
 
 # -- command handlers ------------------------------------------------------------
 
+def _remote_main(target):
+    """Browser ops inside the env via the guest worker's dom.* methods.
+    The DOM cap is required — absent means typed rejection, never a
+    host fallback. No CDP endpoint is published on the host."""
+    import cu_guest
+    import cu_target
+    p = argparse.ArgumentParser(prog="browser.py --env")
+    sub = p.add_subparsers(dest="cmd", required=True)
+    n = sub.add_parser("navigate")
+    n.add_argument("url")
+    e = sub.add_parser("eval")
+    e.add_argument("js")
+    sub.add_parser("bind-remote")
+    for s_ in (n, e, sub.choices["bind-remote"]):
+        s_.add_argument("--env", default=None)
+    args = p.parse_args()
+    backend = target["backend"]
+    if args.cmd == "bind-remote":
+        r = cu_browser.bind_remote(target["env_id"],
+                                   backend.instance_id())
+        print(json.dumps(r))
+        return
+    gate = cu_guest.check_operation(
+        f"dom.{args.cmd}", backend.guest_caps())
+    if not gate["allowed"]:
+        cu_target.reject_remote(gate["reason"])
+    try:
+        method = {"navigate": "dom.navigate",
+                  "eval": "dom.eval"}[args.cmd]
+        params = {"url": args.url} if args.cmd == "navigate" \
+            else {"js": args.js}
+        r = backend.guest_call(method, params)
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
+    print(json.dumps({"ok": True, "status": "dispatched",
+                      "env_id": target["env_id"], "return": r}))
+
+
 def main():
+    import cu_target
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        _remote_main(target)
+        return
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
 

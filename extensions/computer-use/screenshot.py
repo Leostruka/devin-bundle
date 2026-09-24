@@ -19,6 +19,7 @@ import cu_actions
 import cu_capture
 import cu_hints
 import cu_motion as cm
+import cu_target
 
 
 def set_dpi_awareness():
@@ -62,19 +63,29 @@ def _to_image(img):
 _STATE_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-shotstate.json")
 
 
-def _shot_state():
+def _shot_state_path(scope=None):
+    """scope=(env_id, instance_id, session_id) -> per-env private dir;
+    None -> _STATE_PATH (legacy tempdir seam; tests monkeypatch it)."""
+    if scope is None:
+        return _STATE_PATH
+    return str(cu_target.state_path(cu_target.runtime_root(), *scope,
+                                    "devin-cu-shotstate.json"))
+
+
+def _shot_state(scope=None):
     try:
-        with open(_STATE_PATH, encoding="utf-8") as f:
+        with open(_shot_state_path(scope), encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return {}
 
 
-def _write_shot_state(sha, path):
+def _write_shot_state(sha, path, scope=None):
+    p = _shot_state_path(scope)
     try:
-        with open(_STATE_PATH + ".tmp", "w", encoding="utf-8") as f:
+        with open(p + ".tmp", "w", encoding="utf-8") as f:
             json.dump({"sha256": sha, "path": path}, f)
-        os.replace(_STATE_PATH + ".tmp", _STATE_PATH)
+        os.replace(p + ".tmp", p)
     except Exception:
         pass
 
@@ -107,13 +118,38 @@ def _save_diff(img, path, out):
     ImageChops.difference(a, b).save(out, "PNG")
 
 
+def _write_png_raw(img, out):
+    """Minimal PNG encoder (stdlib zlib, no PIL) — remote path must not
+    require the host image stack."""
+    import struct
+    import zlib
+    w, h = img.width, img.height
+    stride = w * 3
+    raw = b"".join(b"\x00" + img.rgb[y * stride:(y + 1) * stride]
+                   for y in range(h))
+    def chunk(tag, data):
+        return (struct.pack(">I", len(data)) + tag + data +
+                struct.pack(">I",
+                            zlib.crc32(tag + data) & 0xFFFFFFFF))
+    ihdr = struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0)
+    with open(out, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr)
+                + chunk(b"IDAT", zlib.compress(raw))
+                + chunk(b"IEND", b""))
+
+
 def _save_image(im, out, fmt="png", quality=80):
-    """Format-aware save. JPEG ~5x cheaper to encode than PNG — the fast
-    profile's pixel path when pixels are still required."""
+    """Format-aware save. Accepts a PIL Image or a raw frame
+    (.rgb/.width/.height). JPEG ~5x cheaper to encode than PNG — the
+    fast profile's pixel path when pixels are still required."""
     if fmt == "jpeg":
+        if not hasattr(im, "save"):
+            im = _to_image(im)
         im.convert("RGB").save(out, "JPEG", quality=int(quality))
-    else:
+    elif hasattr(im, "save"):
         im.convert("RGB").save(out, "PNG")
+    else:
+        _write_png_raw(im, out)
 
 
 def _save_with_grid(img, spacing, out, ox=0, oy=0, fmt="png", quality=80):
@@ -167,7 +203,65 @@ def _save_with_hints(img, elements, out, ox, oy, fmt="png", quality=80):
     return hints
 
 
+def _remote_main(target):
+    """Capture inside an isolated env via its backend — no mss, no UIA,
+    no host pixels anywhere on this path."""
+    p = cm.JsonParser(description="Capture env framebuffer to PNG")
+    p.add_argument("--out", default=None)
+    p.add_argument("--grid", type=int, nargs="?", const=100, default=None)
+    p.add_argument("--hints", action="store_true",
+                   help="no guest UIA yet (C10) — returns hints: null")
+    p.add_argument("--format", choices=["png", "jpeg"], default="png")
+    p.add_argument("--quality", type=int, default=80)
+    p.add_argument("--if-changed", action="store_true")
+    p.add_argument("--threshold", type=float, default=None)
+    p.add_argument("--env", default=None)
+    args = p.parse_args()
+    backend = target["backend"]
+    try:
+        img, meta = backend.observe()
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}: {exc}")
+    scope = (target["env_id"], meta.get("instance_id") or "boot",
+             "default")
+    env_dir = backend.env_dir
+    ext = "jpg" if args.format == "jpeg" else "png"
+    out = args.out or str(env_dir /
+                        f"screenshot-{int(time.time())}.{ext}")
+    if args.if_changed:
+        shot_hash = _img_hash(img)
+        st = _shot_state(scope)
+        if st.get("sha256") == shot_hash:
+            print(json.dumps({"ok": True, "changed": False,
+                              "path": st.get("path")}))
+            return
+    result = {"ok": True, "path": out, "width": img.width,
+              "height": img.height, "env_id": target["env_id"],
+              "instance_id": meta.get("instance_id"),
+              "frame_sha256": meta.get("frame_sha256"),
+              "backend": meta.get("backend"),
+              "origin_px": meta.get("origin_px"),
+              "captured_at": round(time.time(), 3)}
+    if args.hints:
+        result["hints"] = None
+        result["note"] = ("no guest element enumeration yet (C10) — "
+                          "use --grid and click pixel coords")
+    if args.grid or args.hints:
+        _save_with_grid(img, args.grid or 100, out, 0, 0,
+                        fmt=args.format, quality=args.quality)
+        result["grid_px"] = args.grid or 100
+    else:
+        _save_image(img, out, args.format, args.quality)
+    if args.if_changed:
+        _write_shot_state(shot_hash, out, scope=scope)
+    print(json.dumps(result))
+
+
 def main():
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        _remote_main(target)
+        return
     if os.environ.get("CU_SESSION") == "1":
         import cu_session_dispatch
         cu_session_dispatch.run_via_daemon("screenshot", sys.argv[1:])
@@ -215,6 +309,9 @@ def main():
                         "changed_ratio instead of saving normally")
     p.add_argument("--diff-out", default=None,
                    help="with --diff: also save the pixel-difference image")
+    p.add_argument("--env", default=None,
+                   help="isolated environment id "
+                        "(.devin/computer-use/envs); absent = local host")
     args = p.parse_args()
 
     set_dpi_awareness()

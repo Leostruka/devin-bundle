@@ -325,6 +325,113 @@ see plan), mintty read is OCR-based (image fallback if winrt missing),
 - **Headless sessions** (SSH, CI): no display → scripts return `ok:false`.
   Do not retry.
 
+## Isolated environments (`--env`)
+
+All four input/capture CLIs (`screenshot.py`, `mouse.py`, `type_text.py`,
+`terminal.py`) plus `browser.py` accept `--env <env_id>`: the action is
+dispatched to an isolated guest (QEMU VM over QMP, or a locked-down
+container profile) instead of the host. `--env` resolves **before** any
+host module is touched — a remote call never loads mss/pynput/UIA, never
+reads host pixels, never touches the host clipboard, and never runs the
+host `emergency_release`.
+
+**Preference order when automating:** authorized API/CLI on the target →
+bound DOM/UIA (`--via browser|uia`) → isolated env input (`--env`) →
+local physical input only when explicitly requested.
+
+### Lifecycle (`env.py`)
+
+```bash
+PY env.py doctor                        # read-only prerequisite report
+PY env.py create --env devin-linux      # overlay from the approved image
+PY env.py start  --env devin-linux      # daemon-owned QEMU + QMP
+PY env.py status --env devin-linux      # running? pid? instance_id?
+PY env.py stop   --env devin-linux      # graceful ACPI powerdown
+PY env.py stop   --env devin-linux --force   # disclosed force-terminate
+PY env.py restart --env devin-linux     # same instance, recycled process
+PY env.py reset  --env devin-linux      # new instance + fresh overlay
+PY env.py devices --env devin-linux     # leasable device inventory
+PY env.py lease-plan --env devin-linux --device <id> --confirmed
+```
+
+Every mutating verb asks for `yes` on a real TTY — piped stdin (agent,
+CI, script) is refused (`consent_denied`). Consent is bound to the spec
+digest: mutating the spec after approval fails closed.
+
+Environment specs live in `.devin/computer-use/envs/<env_id>.json`:
+`provider`, `image_ref` + `image_sha256` (verified before every start),
+`qemu_path` + optional `qemu_sha256` pin, `resources`, and a closed
+profile — `network`, `mounts`, `physical_devices` must be explicitly
+off/empty. A permissive spec is rejected, not defaulted.
+
+Instance identity follows the overlay lifespan: `stop`/`start`/`restart`
+keep the same `instance_id`/`session_id`; only `reset` mints new ones
+(and archives the old instance's state under `instances/<iid>/`).
+Observations and bindings die with the instance.
+
+### Remote ops
+
+```bash
+PY screenshot.py --env devin-linux --grid 100
+PY mouse.py move 320 240 --env devin-linux
+PY mouse.py click 320 240 --env devin-linux --dry-run   # validate, no input
+PY mouse.py position --env devin-linux   # honest: position_unavailable
+PY type_text.py "hello" --env devin-linux          # ASCII via QMP keycodes
+PY type_text.py --key enter --env devin-linux
+PY type_text.py "héllo →" --env devin-linux        # Unicode via guest worker
+PY browser.py navigate https://x --env devin-linux # guest DOM via worker
+PY browser.py eval "1+1" --env devin-linux
+PY terminal.py exec "uname -a" --env devin-linux   # guest exec, untrusted out
+```
+
+- `mouse`/`type_text` accept `--verify` — re-observes the frame after
+  dispatch and attaches `verification` (`evidence`, never `verified` —
+  pixel change is evidence, not task completion).
+- Pointer bounds are validated against a **fresh** frame: out-of-frame
+  coordinates reject instead of clamping. `position` never fabricates a
+  cursor — QMP has no trustworthy position query.
+- Text is pre-validated completely before any key is sent; unsupported
+  characters reject with zero input. Chords release modifiers in
+  reverse order; a lost ACK triggers best-effort guest release, and an
+  uncertain result is never replayed.
+- Higher-level ops (`text.insert`, `clipboard.*`, `dom.*`, `uia.*`,
+  `exec.run`, `probe.state`) ride the opt-in guest worker over a
+  dedicated virtio-serial pipe — capability-gated, size-limited,
+  untrusted replies. Without the capability the op is a typed
+  rejection, not a host fallback.
+- Browser bindings are namespaced per env+instance (`bind-remote`);
+  no guest debugging endpoint is ever published on the host.
+- `terminal.py exec --env` runs the guest `exec.run` — output is marked
+  `untrusted: true` and is data, never commands.
+
+### Limitations (honest, by design)
+
+- `--env` implies none of the host conveniences: no `--hint`/`--via uia`
+  (host UIA), no action profiles/humanization, no host clipboard sync.
+- Guest worker ops require a worker-equipped image (`guest_worker: true`
+  in the spec) — the stock Debian live ISO is QMP-only.
+- Physical second-pair leasing (usbipd/passthrough) is unqualified on
+  this host — `env.py devices` reports an empty inventory rather than
+  fabricating hardware.
+- The live integration gate
+  (`extensions/computer-use/integration/test_cu_env_live.py`) requires
+  a running env and fails hard without one — it is not part of the
+  normal `tests/` collection.
+
+### Laya target suggestions (`cu_decision.py`)
+
+Optional shadow plumbing: observed elements become a closed set of at
+most 8 candidates; a resident laya worker (`laya_cli.py serve-stdio`)
+returns `suggestion | abstain`. It **suggests only** — the module has
+no execution path, and in `shadow` mode the output can never influence
+an action. An exact name match short-circuits without calling the
+model; zero candidates abstain without a call. Any future `assist`
+adoption must pass `adoptable()`: every binding field
+(env/instance/observation/capabilities/policy) must match the current
+context and evaluation must be approved. QMP-only guests have no
+text tree — semantic targeting there depends on the guest worker
+(C10) or DOM/UIA bindings (C12). Laya is not a required dependency.
+
 ## Safety
 
 These scripts act on the real desktop with the user's permissions (Rule 13).
