@@ -612,9 +612,9 @@ def test_classifier_cannot_turn_failed_process_green():
 
 **Arquivos:** criar `extensions/media-tools/intent.py`, `tests/test_media_intent.py`; referências em `skills/media-tools/` e `skills/creative-engineering/`.
 
-- [ ] Alias exato e formato pedido vencem. Classificar só descrição textual, mídia declarada e catálogo permitido.
-- [ ] Retornar preset/efeito existente para preview; parâmetros, arquivo de saída, câmera, overwrite e delete continuam fora do modelo.
-- [ ] `brag`, `impeccable` e diagramas são destinos de workflow, não versões do mesmo renderer.
+- [x] Alias exato e formato pedido vencem. Classificar só descrição textual, mídia declarada e catálogo permitido.
+- [x] Retornar preset/efeito existente para preview; parâmetros, arquivo de saída, câmera, overwrite e delete continuam fora do modelo.
+- [x] `brag`, `impeccable` e diagramas são destinos de workflow, não versões do mesmo renderer.
 
 ```python
 def test_explicit_effect_is_preserved():
