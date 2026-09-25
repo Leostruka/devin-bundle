@@ -4,7 +4,7 @@
 Handles two events, dispatched on `hook_event_name`:
   PreToolUse - exec (git commit message, including -F/--file), write,
              edit, notebook_edit
-  Stop       - scans staged/unstaged changes for the character
+  Stop       - scans staged/unstaged changes and untracked files
 
 Stdin payloads (per /cli/extensibility/hooks/lifecycle-hooks):
   PreToolUse {"hook_event_name": "PreToolUse", "tool_name": "exec",
@@ -34,22 +34,29 @@ def has_em_dash(text):
     return bool(text) and EM_DASH in text
 
 
-def read_commit_file(filepath):
+def read_text_file(filepath, cwd):
+    path = filepath if os.path.isabs(filepath) else os.path.join(cwd, filepath)
     try:
-        with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
             return f.read()
     except (OSError, IOError):
         return ""
 
 
-def extract_commit_file(command):
-    """Extract the filepath from 'git commit -F <file>' / '--file=<file>'."""
-    for pattern in (
-        r"--file=([^\s]+)",
-        r"--file\s+([^\s]+)",
-        r"(?:^|\s)-F\s+([^\s]+)",
-        r"(?:^|\s)-F([^\s]+)",
-    ):
+def extract_flag_file(command, flags, short_f=True):
+    """Extract the filepath from '--flag=<file>' args (and -F for git).
+
+    short_f must stay off for gh commands: there '-F' means --fill."""
+    patterns = [
+        rf"--(?:{flags})=([^\s]+)",
+        rf"--(?:{flags})\s+([^\s]+)",
+    ]
+    if short_f:
+        patterns += [
+            r"(?:^|\s)-F\s+([^\s]+)",
+            r"(?:^|\s)-F([^\s]+)",
+        ]
+    for pattern in patterns:
         m = re.search(pattern, command)
         if m:
             return m.group(1).strip().strip("\"'")
@@ -99,6 +106,39 @@ def handle_stop(_data):
                 f"em-dash (U+2014) detected in {scope} changes. "
                 "Replace it before stopping."
             )
+    scan_untracked(cwd)
+
+
+def scan_untracked(cwd):
+    """Scan files git diff never lists: new, unstaged-for-add files."""
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            capture_output=True, timeout=10, cwd=cwd,
+            encoding="utf-8", errors="replace",
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return
+    if result.returncode != 0:
+        return
+    for rel in result.stdout.splitlines():
+        if not rel or SELF_FILE in rel:
+            continue
+        path = os.path.join(cwd, rel)
+        try:
+            if os.path.getsize(path) > 512 * 1024:
+                continue
+            with open(path, "rb") as fh:
+                raw = fh.read()
+        except OSError:
+            continue
+        if b"\x00" in raw[:4096]:  # binary
+            continue
+        if has_em_dash(raw.decode("utf-8", "replace")):
+            block(
+                f"em-dash (U+2014) detected in untracked file '{rel}'. "
+                "Replace it before stopping."
+            )
 
 
 def handle_pre_tool_use(data):
@@ -110,23 +150,31 @@ def handle_pre_tool_use(data):
     if tool_name == "exec":
         command = tool_input.get("command", "") or ""
         low = command.lower()
-        if "git commit" in low:
-            commit_file = extract_commit_file(command)
-            if commit_file:
-                if has_em_dash(read_commit_file(commit_file)):
+        cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+        if re.search(r"git\s+(commit|tag|merge|cherry-pick|rebase|stash)\b", low):
+            msg_file = extract_flag_file(command, r"file|message")
+            if msg_file:
+                if has_em_dash(read_text_file(msg_file, cwd)):
                     block(
-                        f"em-dash (U+2014) detected in the commit message "
-                        f"file '{commit_file}'."
+                        "em-dash (U+2014) detected in the git message "
+                        f"file '{msg_file}'."
                     )
             elif has_em_dash(command):
-                block("em-dash (U+2014) detected in the git commit message.")
+                block("em-dash (U+2014) detected in the git message text.")
             return
-        # Deliverable-bound commands: the character can only be text
-        # destined for a PR/issue/release/tag body.
-        if has_em_dash(command) and re.search(
-                r"gh\s+(pr|issue|release)\s+(create|comment|edit|review)"
-                r"|git\s+tag", low):
-            block("em-dash (U+2014) detected in a deliverable text command.")
+        if re.search(
+                r"gh\s+(pr|issue|release)\s+"
+                r"(create|comment|edit|review|close|reopen)", low):
+            body_file = extract_flag_file(
+                command, r"body-file|notes-file", short_f=False)
+            if body_file:
+                if has_em_dash(read_text_file(body_file, cwd)):
+                    block(
+                        "em-dash (U+2014) detected in the gh body "
+                        f"file '{body_file}'."
+                    )
+            elif has_em_dash(command):
+                block("em-dash (U+2014) detected in a deliverable text command.")
         return
 
     if tool_name in ("write", "edit", "notebook_edit"):

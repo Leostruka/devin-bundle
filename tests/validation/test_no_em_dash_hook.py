@@ -98,6 +98,53 @@ def test_gh_read_command_allowed():
     assert p.returncode == 0
 
 
+def test_gh_body_file_blocked(tmp_path):
+    body = tmp_path / "body.md"
+    body.write_text(f"corpo {EM}\n", encoding="utf-8")
+    p = run("no-em-dash.py", _pre("exec",
+            {"command": f"gh pr create --body-file {body} --title t"}))
+    assert p.returncode == 2
+
+
+def test_gh_body_file_clean_allowed(tmp_path):
+    body = tmp_path / "body.md"
+    body.write_text("corpo limpo\n", encoding="utf-8")
+    p = run("no-em-dash.py", _pre("exec",
+            {"command": f"gh pr create --body-file {body} --title t"}))
+    assert p.returncode == 0
+
+
+def test_gh_fill_short_flag_not_a_file():
+    """'gh pr create -F' is --fill, not a file path."""
+    p = run("no-em-dash.py", _pre("exec",
+            {"command": "gh pr create -F --title ok"}))
+    assert p.returncode == 0
+
+
+def test_git_tag_file_blocked(tmp_path):
+    msg = tmp_path / "tagmsg.txt"
+    msg.write_text(f"release {EM}\n", encoding="utf-8")
+    p = run("no-em-dash.py", _pre("exec",
+            {"command": f"git tag -a v1 -F {msg}"}))
+    assert p.returncode == 2
+
+
+def test_stop_blocks_untracked_dash(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path)
+    (tmp_path / "novo.md").write_text(f"texto {EM}\n", encoding="utf-8")
+    p = run("no-em-dash.py", {"hook_event_name": "Stop"}, cwd=tmp_path)
+    assert p.returncode == 2
+    assert "untracked" in json.loads(p.stdout)["reason"]
+
+
+def test_stop_untracked_clean_allowed(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path)
+    (tmp_path / "novo.md").write_text("limpo\n", encoding="utf-8")
+    (tmp_path / "bin.dat").write_bytes(b"\x00\x01" + EM.encode("utf-8"))
+    p = run("no-em-dash.py", {"hook_event_name": "Stop"}, cwd=tmp_path)
+    assert p.returncode == 0
+
+
 def test_stop_blocks_staged_dash(tmp_path):
     subprocess.run(["git", "init", "-q"], cwd=tmp_path)
     (tmp_path / "a.md").write_text(f"line {EM}\n", encoding="utf-8")
