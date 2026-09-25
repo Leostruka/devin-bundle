@@ -258,7 +258,7 @@ checks = [
     (f'{skill_count} skills', skill_count > 0),
     ('28 rules', len(rules_found) == 28),  # 1-5,7-29 (Rule 6 removed)
     ('6 agents', agent_count == 6),
-    ('26 scripts', len(script_files) == 26),
+    ('27 scripts', len(script_files) == 27),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'

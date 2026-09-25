@@ -12,7 +12,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
 
-ALWAYS = ['architecture-gate.py', 'validate-tool-args.py']
+ALWAYS = ['architecture-gate.py', 'validate-tool-args.py',
+          'no-em-dash.py']
 TEXT_ONLY = ['check-ai-signature.py', 'validate-mermaid.py']
 
 if __name__ == '__main__':

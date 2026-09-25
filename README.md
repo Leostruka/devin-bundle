@@ -190,7 +190,7 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 26 scripts Python em `scripts/`: 9 entry points de hooks (6 consolidados que executam os 15 módulos de check in-process via `_hookrun`), 2 validadores manuais, 1 renderer de install (`render-user-hooks.py`) e 1 helper JavaScript para Mermaid.
+Há 27 scripts Python em `scripts/`: 9 entry points de hooks (6 consolidados que executam os 16 módulos de check in-process via `_hookrun`), 2 validadores manuais, 1 renderer de install (`render-user-hooks.py`) e 1 helper JavaScript para Mermaid.
 
 ### 6. Configuração e distribuição
 
