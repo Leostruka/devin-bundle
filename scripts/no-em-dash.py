@@ -80,7 +80,8 @@ def handle_stop(_data):
     ):
         try:
             result = subprocess.run(
-                args, capture_output=True, text=True, timeout=10, cwd=cwd
+                args, capture_output=True, timeout=10, cwd=cwd,
+                encoding="utf-8", errors="replace",
             )
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             return  # no git or no repo: allow
