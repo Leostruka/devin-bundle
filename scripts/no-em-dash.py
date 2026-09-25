@@ -104,7 +104,8 @@ def handle_stop(_data):
             scope = "staged" if "--cached" in args else "unstaged"
             block(
                 f"em-dash (U+2014) detected in {scope} changes. "
-                "Replace it before stopping."
+                "Rewrite the text naturally before stopping - "
+                "do not just swap in a hyphen."
             )
     scan_untracked(cwd)
 
@@ -137,7 +138,8 @@ def scan_untracked(cwd):
         if has_em_dash(raw.decode("utf-8", "replace")):
             block(
                 f"em-dash (U+2014) detected in untracked file '{rel}'. "
-                "Replace it before stopping."
+                "Rewrite the text naturally before stopping - "
+                "do not just swap in a hyphen."
             )
 
 
@@ -157,10 +159,11 @@ def handle_pre_tool_use(data):
                 if has_em_dash(read_text_file(msg_file, cwd)):
                     block(
                         "em-dash (U+2014) detected in the git message "
-                        f"file '{msg_file}'."
+                        f"file '{msg_file}'. Rewrite the text naturally."
                     )
             elif has_em_dash(command):
-                block("em-dash (U+2014) detected in the git message text.")
+                block("em-dash (U+2014) detected in the git message text. "
+                      "Rewrite the text naturally.")
             return
         if re.search(
                 r"gh\s+(pr|issue|release)\s+"
@@ -171,10 +174,11 @@ def handle_pre_tool_use(data):
                 if has_em_dash(read_text_file(body_file, cwd)):
                     block(
                         "em-dash (U+2014) detected in the gh body "
-                        f"file '{body_file}'."
+                        f"file '{body_file}'. Rewrite the text naturally."
                     )
             elif has_em_dash(command):
-                block("em-dash (U+2014) detected in a deliverable text command.")
+                block("em-dash (U+2014) detected in a deliverable text "
+                      "command. Rewrite the text naturally.")
         return
 
     if tool_name in ("write", "edit", "notebook_edit"):
@@ -188,7 +192,8 @@ def handle_pre_tool_use(data):
         if has_em_dash(content):
             block(
                 f"em-dash (U+2014) detected in {tool_name} content. "
-                "Use a regular hyphen instead."
+                "Rewrite the sentence naturally - commas, periods or "
+                "restructuring work; do not just swap in a hyphen."
             )
 
 
