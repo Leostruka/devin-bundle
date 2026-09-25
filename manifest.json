@@ -479,6 +479,12 @@
       "exported_at": "2026-09-08T21:39:22.431582"
     },
     {
+      "name": "no-em-dash.py",
+      "purpose": "PreToolUse/Stop hook - blocks U+2014 in writes, commit/PR/issue text commands, and staged/unstaged diffs",
+      "export_hash": "2F39E4F9743F904E26AE4A781D9C5F87F6846DB2187517B737519795BFFCDA6E",
+      "exported_at": "2026-09-25T16:17:01.590"
+    },
+    {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec)",
       "export_hash": "CAD25062F06DE15BFE534CBA40A5BDA2DDF91BC21A63E2AEF5D60CE1993C5E9B",
@@ -486,14 +492,14 @@
     },
     {
       "name": "pre-exec-guard.py",
-      "purpose": "PreToolUse exec consolidated guard (destructive+arch+signature+push-green+tool-args)",
-      "export_hash": "C29A773542F4A7F4F5136FC2F00DB413179AA5F7D273CE1046C0B0A93878662F",
+      "purpose": "PreToolUse exec consolidated guard (destructive+arch+signature+push-green+tool-args+em-dash)",
+      "export_hash": "3BCF67B9251786115E33604A7FF9491657867CABE06C08E098E988C4FAD2C3A1",
       "exported_at": "2026-09-18T20:17:52.987974"
     },
     {
       "name": "pre-write-guard.py",
-      "purpose": "PreToolUse write/edit/notebook_edit consolidated guard (arch+tool-args[+signature+mermaid])",
-      "export_hash": "407F6E145DB09B5627970A8323D7D8B01EF8B4036947EFC3F3DE8FE258E672AD",
+      "purpose": "PreToolUse write/edit/notebook_edit consolidated guard (arch+tool-args+em-dash[+signature+mermaid])",
+      "export_hash": "A94902D6A4F218ED2FAD42BBD3717FE9A373183FAF190BB0B06B8BCAE4A637ED",
       "exported_at": "2026-09-18T20:17:52.988013"
     },
     {
@@ -522,8 +528,8 @@
     },
     {
       "name": "stop-guard.py",
-      "purpose": "Stop consolidated guard (signature+refine-review+memory-stop)",
-      "export_hash": "2EEC63AB23879A1CAD555D76EE2464DC8427AEDF8A0F03C5764B7E098A1D89BE",
+      "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
+      "export_hash": "B75E52427DDA59AEC4CED02F6BF54E0F3DA4EEE21E931E548DBB4B47604562B3",
       "exported_at": "2026-09-18T20:17:52.988164"
     },
     {
@@ -557,7 +563,7 @@
       "exported_at": "2026-09-08T21:39:22.431131"
     }
   ],
-  "script_count": 26,
+  "script_count": 27,
   "mcp_count": 1,
   "agent_count": 6,
   "tool_count": 28,

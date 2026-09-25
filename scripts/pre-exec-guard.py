@@ -18,4 +18,5 @@ if __name__ == '__main__':
         'check-ai-signature.py',
         'check-push-green.py',
         'validate-tool-args.py',
+        'no-em-dash.py',
     ])

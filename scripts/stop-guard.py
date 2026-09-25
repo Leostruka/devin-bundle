@@ -14,4 +14,5 @@ if __name__ == '__main__':
         'check-ai-signature.py',
         'refine-review-prompt.py',
         'memory-stop.py',
+        'no-em-dash.py',
     ])
