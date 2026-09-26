@@ -51,7 +51,6 @@ def main():
     total = notes + decisions + logbook
 
     if total == 0:
-        log('memory directory exists but is empty; nothing to review')
         sys.exit(0)
 
     log(f'{total} memory page(s): {notes} note(s), {decisions} decision(s), {logbook} logbook entry(ies)')
