@@ -389,9 +389,15 @@
       "name": "creative-engineering",
       "source": "devin-bundle",
       "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code."
+    },
+    {
+      "name": "scrape-tools",
+      "source": "devin-bundle",
+      "purpose": "Tiered web scraping extension - offline parser (parse.py), Scrapling Fetcher tier (scrape.py) with SSRF-safe redirects and adaptive SQLite relocation, opt-in browser tier gated on explicit install",
+      "original_path": "%APPDATA%\\devin\\skills\\scrape-tools"
     }
   ],
-  "skill_count": 58,
+  "skill_count": 59,
   "rule_count": 28,
   "scripts": [
     {
@@ -561,9 +567,15 @@
       "purpose": "Validator — checks tool argument schemas",
       "export_hash": "26BF954097AEE3584C174055ABF1EF9EFEE95B07FF3B928A98DFC63AAFDDCB2A",
       "exported_at": "2026-09-08T21:39:22.431131"
+    },
+    {
+      "name": "spec-consistency.py",
+      "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
+      "export_hash": "C8EA4D0A7AFFE846715E47E4C5726CCA70565CABD9810E4EDC6CF267C773C2CA",
+      "exported_at": "2026-09-26T18:26:15.829557"
     }
   ],
-  "script_count": 27,
+  "script_count": 28,
   "mcp_count": 1,
   "agent_count": 6,
   "tool_count": 28,
