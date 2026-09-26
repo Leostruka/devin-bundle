@@ -241,7 +241,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in hooks.v1.json')
