@@ -25,7 +25,9 @@ has no API/CLI.
 | `probes/` | empirical research scripts from the terminal-control investigation (UIA/ConPTY/CONIN$/clipboard paths) — reference material, not shipped APIs |
 | `cu_session.py` | shared: opt-in persistent worker over stdio pipes — recyclable, generation+session rotation, queue cancel |
 | `cu_bench.py` | per-boundary latency harness (protocol 4.4) — `--runs N --out FILE`, JSON to stdout |
-| `requirements.txt` | `mss` + `pynput` + `pillow` + `uiautomation`/`comtypes` (Windows) |
+| `cu_scope.py` | shared: window-target resolution (HWND by title/class/pid, frame→input child) + scoped channels (PostMessage/UIA/WriteConsoleInput/CDP) - never the global input queue |
+| `cu_overlay.py` | ghost cursor + annotation overlay: click-through layered window (`WS_EX_TRANSPARENT|NOACTIVATE`), bezier fly-to, boxes/labels/arrows, optional capture exclusion |
+| `requirements.txt` | `mss` + `pynput` + `pillow` + `comtypes` (Windows UIA) + `websocket-client` + `pywinpty`/`winrt-*` (Windows terminal) |
 
 ## Action profiles
 
@@ -432,9 +434,76 @@ context and evaluation must be approved. QMP-only guests have no
 text tree — semantic targeting there depends on the guest worker
 (C10) or DOM/UIA bindings (C12). Laya is not a required dependency.
 
+## Scoped channels (`--channel`)
+
+`mouse.py`/`type_text.py` accept `--channel` to pick the input universe:
+
+| Channel | Mechanism | Target | Honest scope |
+|---|---|---|---|
+| `host` (default) | pynput → OS global input | focused window | existing behavior |
+| `env` | `--env ID` required | isolated guest | remote backend |
+| `scope` | `PostMessageW` (WM_CHAR/KEY/LBUTTON) | window HWND | delivery, not effect |
+| `uia` | UI Automation patterns (comtypes): Invoke, Value.SetValue, Scroll | window HWND, `--uia-name` for descendants | provider-side semantics |
+| `console` | `WriteConsoleInputW` INPUT_RECORD | conhost frame | delivery; mouse focus gating UNVERIFIED |
+| `cdp` | CDP `Input.*` / BiDi actions | bound browser window | semantic DOM input |
+
+```bash
+$PY type_text.py "echo hi" --channel scope --title Notepad
+$PY mouse.py click 500 300 --channel scope --pid 4242
+$PY mouse.py click --channel uia --title "Save" --uia-name "OK"
+$PY type_text.py "dir" --channel console --class-name ConsoleWindowClass --enter
+$PY mouse.py click 640 400 --channel cdp --hwnd 0x30A12
+$PY type_text.py "x" --channel cdp --hwnd 0x30A12        # focused element
+$PY type_text.py --key enter --channel cdp --hwnd 0x30A12
+$PY mouse.py move 500 300 --channel scope --hwnd 0x30A12 --cursor ghost
+```
+
+Rules enforced at parse time, before any input exists:
+
+- `env` requires `--env ID`; `scope|uia|console|cdp` reject `--env`
+  (window target is a different axis from env targeting).
+- Scoped channels require a window target: `--hwnd`, `--title`,
+  `--class-name`, or `--pid`. `cu_scope.py --list` enumerates; bare
+  `cu_scope.py --title X` resolves and reports the input HWND + suggested
+  channel.
+- Scoped channels are teleport-only: `--profile human|smooth` is rejected
+  (those move a REAL cursor). Resolution includes `$COMPUTER_USE_PROFILE`.
+- Chords (`--keys ctrl+c`) are unsupported on scoped channels - modifier
+  state cannot ride PostMessage reliably.
+- No fallback ladder: a scoped call that fails reports the typed reason;
+  it never silently retries through host input.
+
+**Ghost cursor (`--cursor ghost`):** a layered, click-through
+(`WS_EX_TRANSPARENT|WS_EX_NOACTIVATE`) topmost overlay draws a fake cursor
+sprite that flies a bezier arc to the target. It shows *intent* - it never
+moves the real cursor and can never receive input. Optional
+`--overlay-capture hidden` adds `WDA_EXCLUDEFROMCAPTURE` (Windows 10 2004+):
+the ghost then also disappears from `screenshot.py` evidence frames - use
+it only when the agent does not need the ghost in its own captures.
+`cu_overlay.py --demo` shows the visual gate; `GhostOverlay` exposes
+`annotate(rect, label, arrow_from)` for UIA-bounds annotations.
+
+### Honest failure matrix (scoped)
+
+| Target class | scope (PostMessage) | uia | console | cdp |
+|---|---|---|---|---|
+| Win32 controls (Notepad Edit) | delivers; app may ignore | Invoke/Value via comtypes | n/a | n/a |
+| conhost (cmd/powershell) | unreliable | limited | KEY/MOUSE records | n/a |
+| Chromium | filtered by renderer | needs `--force-renderer-accessibility` | n/a | full, bound browser only |
+| Games / anti-cheat | **non-goal** | **non-goal** | **non-goal** | **non-goal** |
+| Anything else | delivery report only | `no_pattern` when unsupported | - | - |
+
+`delivered` in scoped output means the message reached the target queue -
+never that the app acted on it. When a target resists all channels, the
+fallback is an isolated env (`--env`) with a VM/remote display, not host
+input tricks. There is deliberately no `SendInput`/`InputInjector`, no
+journal hooks, and no foreground theft anywhere in these paths.
+
 ## Safety
 
 These scripts act on the real desktop with the user's permissions (Rule 13).
 Confirm coordinates from a fresh screenshot before clicking; never chain
-click+type blind. Input goes to the focused window — a mistargeted command can
-type into the wrong app.
+click+type blind. Host-channel input goes to the focused window - a
+mistargeted command can type into the wrong app. Scoped channels never
+touch global input but still act on the target app - resolve the window
+target carefully (`cu_scope.py --title` first) and prefer `--dry-run`.

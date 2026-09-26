@@ -43,31 +43,31 @@ Decision: adopt **parser + `Fetcher`(curl_cffi) tier first**; browser tiers
 `scrapling install` [F2 §6,§9]. Do NOT register Scrapling's MCP server now
 (mcp-governance: audit tool-count first; SKILL.md exists for future).
 
-- [ ] S1 `extensions/scrape-tools/` skeleton + `requirements.txt`
+- [x] S1 `extensions/scrape-tools/` skeleton + `requirements.txt`
         (`scrapling[fetchers]>=0.4.15,<0.5` pin. Fetcher/curl_cffi lives
         in the extra, not core [F2 §6]; pip wheels incl. playwright/
         patchright packages land now, browser binaries still gated by S5).
         0.x churn documented [F2 §7].
         Gate: `pip install -r` into .venv; `python -c "import scrapling"`.
-- [ ] S2 `parse.py <file|-> --css|--xpath [--first]` - offline, parser-only,
+- [x] S2 `parse.py <file|-> --css|--xpath [--first]` - offline, parser-only,
         zero network, stdlib-shaped JSON out. Gate: parses fixture HTML;
         exits!=0 on bad selector; works with no fetchers extra installed
         (parser is core-tier [F2 §6]).
-- [ ] S3 `scrape.py <url> --css|--xpath [--impersonate chrome]
+- [x] S3 `scrape.py <url> --css|--xpath [--impersonate chrome]
         [--json]` - Fetcher+curl_cffi path; JSON {status,url,nodes[]}.
         Gate: mock-free live test against httpbin-style target documented
         manually (opt-in, not CI); SSRF-safe redirects on [F2 §3].
-- [ ] S4 `--adaptive` flag wiring `auto_save/adaptive` with SQLite storage
+- [x] S4 `--adaptive` flag wiring `auto_save` + `adaptive` with SQLite storage
         under env-namespaced dir (reuse `CU_STATE_ROOT` pattern? no -
         own `.devin/scrape-tools/storage/`; keep isolation). Gate:
         save -> rename class in fixture -> relocate finds element [F2 §4].
-- [ ] S5 Browser tiers: `--browser` rejected with
+- [x] S5 Browser tiers: `--browser` rejected with
         `feature_off:browser_tier_not_installed` until user runs
         `python -m scrapling.cli.install` themselves (consent, offline-by-
         default violated otherwise). Gate: error is honest, JSON-shaped.
-- [ ] S6 USAGE.md + skill `scrape-tools` (when-to-use rules; forbidden:
+- [x] S6 USAGE.md + skill `scrape-tools` (when-to-use rules; forbidden:
         credential scraping, auth-bypass crawling). Gate: audit.py 0 errors.
-- [ ] S7 tests: parser contract, scrape JSON shape, adaptive roundtrip,
+- [x] S7 tests: parser contract, scrape JSON shape, adaptive roundtrip,
         browser-gate error. Gate: `pytest tests` +N green.
 
 NON-GOALS: spiders framework, ProxyRotator, MCP server, Rust port [F2 §9];
@@ -84,7 +84,7 @@ reject `--env`. Naming: `cu_target.py` already owns "target" for env
 resolution. `cu_scope.py` resolves *window targets* (HWND) instead;
 keep the two meanings distinct in code and docs.
 
-- [ ] S1 `cu_scope.py` - channel dispatcher + window-target resolution
+- [x] S1 `cu_scope.py` - channel dispatcher + window-target resolution
         (HWND by title/class/pid; conhost vs Win32 detection).
         Gates: resolve notepad->Edit child HWND, not frame [F3 §1];
         unit test on fixture HWND tree.
@@ -102,7 +102,7 @@ keep the two meanings distinct in code and docs.
         for Chromium targets [F3 §3].
         Gates: invokes a real button on occluded window (manual); unit
         test via comtypes seam (test_cu_uia_actions.py style).
-- [ ] S5 `cu_overlay.py` - ghost cursor: WS_EX_LAYERED|TRANSPARENT|
+- [x] S5 `cu_overlay.py` - ghost cursor: WS_EX_LAYERED|TRANSPARENT|
         NOACTIVATE topmost window; sprite + bezier fly-to-target;
         `--overlay-capture hidden` applies WDA_EXCLUDEFROMCAPTURE
         (opt-in; default visible) [F4 §4; user decision]. Win10 2004+;
@@ -110,7 +110,7 @@ keep the two meanings distinct in code and docs.
         appears in --verify evidence frames (they read target rect,
         not the overlay). Document in S10.
         Gate: overlay visible on screen, zero input reach (WS_EX_TRANSPARENT).
-- [ ] S6 Annotation layer (same window): box+label+arrow primitives driven
+- [x] S6 Annotation layer (same window): box+label+arrow primitives driven
         by UIA geometry; used by --verify/dry-run preview.
         Gate: renders box over target rect without focus steal.
 - [ ] S7 CDP channel: reuse cu_browser `BrowserClient`/`_cdp_client`
@@ -119,14 +119,14 @@ keep the two meanings distinct in code and docs.
         send Enter). Agent-launched/attached browsers only; document
         launch flag needed [F3 §8].
         Gate: click works in headless AND headed Chromium (manual).
-- [ ] S8 Wire `--channel` into mouse.py/type_text.py: scoped channels reject
+- [x] S8 Wire `--channel` into mouse.py/type_text.py: scoped channels reject
         `--profile` other than fast (no cursor -> no motion profile;
         human/smooth remain on host+env only).
         Gate: `--channel scope --profile human` errors clearly.
-- [ ] S9 Held-out proof: scoped input delivered to target app while a real
+- [x] S9 Held-out proof: scoped input delivered to target app while a real
         user input stream is untouched (extend test_cu_env_boundaries style;
         live gate documented like C16).
-- [ ] S10 USAGE.md: channel ladder (PostMessage->UIA->CDP->RDP/VM fallback),
+- [x] S10 USAGE.md: channel ladder (PostMessage->UIA->CDP->RDP/VM fallback),
         honest failure matrix per app class [F3 §9]; no "works everywhere"
         claims. Fix stale `uiautomation` mention at USAGE.md:28 (dep was
         removed; comtypes is the UIA path).
@@ -142,13 +142,13 @@ borrow overlay+native-channels only).
 Decision: patch the two real gaps; do NOT install spec-kit (80% duplicate
 [F5 §7]).
 
-- [ ] S1 Plan template: add "Spec (what/why, tech-agnostic, user stories,
+- [x] S1 Plan template: add "Spec (what/why, tech-agnostic, user stories,
         acceptance criteria)" front-matter before Tech Stack in
         `skills/planning/modes/plan-doc.md` (header block, Tech Stack ~:79).
         Repo skills go live only after `install.ps1` re-export to
         %APPDATA%\devin\skills; include that step in the slice.
         Gate: new plan generated with block; old plans untouched.
-- [ ] S2 `analyze` - `scripts/spec-consistency.py` (stdlib-only): reads a
+- [x] S2 `analyze` - `scripts/spec-consistency.py` (stdlib-only): reads a
         plan file + ARCHITECTURE_MANIFEST + related ADRs + `.devin/ledgers/`
         (NOT root `ledgers/`, which holds audit reports); reports cross-artifact
         mismatches (files named in plan that don't exist, constraint
@@ -158,7 +158,7 @@ Decision: patch the two real gaps; do NOT install spec-kit (80% duplicate
         get best-effort extraction, not silence.
         Gate: run on this plan file -> reports clean or lists real diffs;
         unit tests on fixture plans.
-- [ ] S3 `converge` - step in `finishing-a-development-branch`: diff
+- [x] S3 `converge` - step in `finishing-a-development-branch`: diff
         delivered code vs plan+ledger, append residual tasks to the plan
         instead of silent drift (documented failure mode [F5 §6]).
         Gate: on a completed slice, produces "converged" or new open items.

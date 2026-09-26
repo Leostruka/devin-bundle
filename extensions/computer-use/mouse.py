@@ -19,6 +19,7 @@ import cu_actions
 import cu_browser
 import cu_motion as cm
 import cu_hints
+import cu_scope
 import cu_target
 
 
@@ -95,6 +96,9 @@ def _remote_main(target):
         sp.add_argument("--verify", action="store_true",
                         help="re-observe after dispatch; attaches "
                              "evidence-level verification")
+        sp.add_argument("--channel", choices=["host", "env"], default="env",
+                        help="accepted for parity; env dispatch already "
+                             "selected by --env")
         if name in ("move", "click", "scroll"):
             sp.add_argument("x", type=int, nargs="?")
             sp.add_argument("y", type=int, nargs="?")
@@ -162,7 +166,88 @@ def _remote_main(target):
     print(json.dumps(out))
 
 
+def _scoped_mouse(args, channel):
+    """Dispatch a mouse command through a window-scoped channel.
+    Never touches the real cursor or the global input queue. x,y are
+    SCREEN coordinates except on `console` (cell coords)."""
+    if cm.get_profile(getattr(args, "profile", None)) != "fast":
+        fail(f"--channel {channel} is teleport-only: resolved profile "
+             "must be fast (human/smooth move a REAL cursor)", 2)
+    try:
+        frame, inp = cu_scope.scoped_hwnd(args)
+    except cu_scope.ScopeError as exc:
+        fail(f"window target: {exc}", 2)
+    base = {"channel": channel, "hwnd": inp, "frame": frame}
+    needs_xy = (args.cmd in ("move", "click", "scroll")
+                and channel != "uia")  # uia is name/hwnd-addressed
+    if needs_xy and (getattr(args, "x", None) is None
+                     or getattr(args, "y", None) is None):
+        fail(f"{args.cmd} on --channel {channel} requires x y "
+             "(screen px; cells on console)", 2)
+    if args.cmd == "click":
+        res = None
+        ghost = None
+        if channel == "scope":
+            cx, cy = cu_scope.screen_to_client(inp, args.x, args.y)
+            base["client"] = [cx, cy]
+            if not args.dry_run:
+                ghost = cu_scope.ghost_if(args, inp, cx, cy)
+                res = cu_scope.post_click(inp, cx, cy,
+                                          button=args.button)
+        elif channel == "uia":
+            if not args.dry_run:
+                res = cu_scope.uia_invoke(inp, name=args.uia_name)
+        elif channel == "console":
+            # console input is cell-addressed; x,y are console cells
+            base["cells"] = [args.x, args.y]
+            if not args.dry_run:
+                res = cu_scope.console_mouse(frame, args.x, args.y)
+        elif channel == "cdp":
+            if not args.dry_run:
+                res = cu_scope.cdp_click(frame, args.x, args.y)
+                cx, cy = cu_scope.screen_to_client(inp, args.x, args.y)
+                ghost = cu_scope.ghost_if(args, inp, cx, cy)
+        if args.dry_run:
+            res = {"delivered": False, "dry_run": True}
+        res = res or {"delivered": False, "error": "not_dispatched"}
+        out = {"ok": bool(res.get("delivered")), "status": "dispatched",
+               **base, **res}
+        out["delivered"] = bool(res.get("delivered"))
+        if ghost:
+            out["ghost"] = ghost["ghost"]
+        print(json.dumps(out))
+        if not res.get("delivered"):
+            sys.exit(1)
+        return
+    if args.cmd == "move":
+        if getattr(args, "cursor", "real") != "ghost":
+            fail("move on a scoped channel has no cursor; "
+                 "use --cursor ghost to preview intent", 2)
+        cx, cy = cu_scope.screen_to_client(inp, args.x, args.y)
+        res = cu_scope.ghost_to(inp, cx, cy,
+                                capture=args.overlay_capture)
+        print(json.dumps({"ok": True, "status": "ghosted", **base,
+                          **res}))
+        return
+    if args.cmd == "scroll":
+        if channel == "uia" and not args.dry_run:
+            d = "down" if args.dy >= 0 else "up"
+            if args.dx and abs(args.dx) > abs(args.dy):
+                d = "right" if args.dx > 0 else "left"
+            res = cu_scope.uia_scroll(inp, direction=d,
+                                      name=args.uia_name)
+            print(json.dumps({"ok": bool(res.get("delivered")),
+                              "status": "dispatched", **base, **res}))
+            if not res.get("delivered"):
+                sys.exit(1)
+            return
+        fail(f"scroll unsupported on channel {channel} "
+             "(uia ScrollPattern only)", 2)
+    fail(f"{args.cmd} unsupported on channel {channel}", 2)
+
+
 def main():
+    cu_scope.pre_channel_check(sys.argv[1:], fail)
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
         _remote_main(target)
@@ -231,6 +316,7 @@ def main():
             sp.add_argument("--from-x", type=int, required=True)
             sp.add_argument("--from-y", type=int, required=True)
             sp.add_argument("--duration", type=float, default=None)
+        cu_scope.add_channel_args(sp)
     spos = sub.add_parser("position", help="Print current cursor position")
     spos.add_argument("--env", default=None,
                       help="isolated environment id "
@@ -239,6 +325,10 @@ def main():
                       help="observation id issued for that env")
 
     args = p.parse_args()
+    channel = cu_scope.check_channel_args(args, fail)
+    if channel in cu_scope.CHANNELS:
+        _scoped_mouse(args, channel)
+        return
     if getattr(args, "via", None) == "browser" and \
             not getattr(args, "hint", None):
         fail("--via browser requires --hint (needs element hwnd)", 2)

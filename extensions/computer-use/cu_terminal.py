@@ -340,6 +340,41 @@ class _ConOut:
                 return False
         return True
 
+    def mouse_event(self, x, y, buttons=0, event_flags=0, control=0):
+        """One MOUSE_EVENT record into CONIN$.
+
+        UNVERIFIED [F3 gaps]: whether MOUSE_EVENT records bypass the
+        documented console-mouse focus gating - callers must report
+        `delivered`, never assume effect."""
+        import ctypes
+        from ctypes import wintypes
+        k = self._k
+
+        class COORD(ctypes.Structure):
+            _fields_ = [("X", ctypes.c_short), ("Y", ctypes.c_short)]
+
+        class ME(ctypes.Structure):
+            _fields_ = [("dwMousePosition", COORD),
+                        ("dwButtonState", wintypes.DWORD),
+                        ("dwControlKeyState", wintypes.DWORD),
+                        ("dwEventFlags", wintypes.DWORD)]
+
+        class U(ctypes.Union):
+            _fields_ = [("MouseEvent", ME), ("Pad", ctypes.c_byte * 20)]
+
+        class IR(ctypes.Structure):
+            _fields_ = [("EventType", wintypes.WORD), ("Event", U)]
+        rec = IR()
+        rec.EventType = 2  # MOUSE_EVENT
+        me = rec.Event.MouseEvent
+        me.dwMousePosition = COORD(int(x), int(y))
+        me.dwButtonState = buttons
+        me.dwControlKeyState = control
+        me.dwEventFlags = event_flags
+        w = wintypes.DWORD(0)
+        return bool(k.WriteConsoleInputW(self._h_in, ctypes.byref(rec), 1,
+                                         ctypes.byref(w))) and w.value == 1
+
     def detach(self):
         try:
             if self._k is not None:

@@ -21,6 +21,7 @@ import cu_actions
 import cu_browser
 import cu_motion as cm
 import cu_hints
+import cu_scope
 import cu_target
 
 
@@ -78,6 +79,9 @@ def _remote_main(target):
     p.add_argument("--chord", default=None,
                    help="modifier chord (ctrl+alt+delete)")
     p.add_argument("--env", default=None)
+    p.add_argument("--channel", choices=["host", "env"], default="env",
+                   help="accepted for parity; env dispatch already "
+                        "selected by --env")
     p.add_argument("--verify", action="store_true",
                    help="re-observe after dispatch; attaches "
                         "evidence-level verification")
@@ -131,7 +135,74 @@ def _remote_main(target):
     print(json.dumps(out))
 
 
+def _scoped_type(args, channel):
+    """Dispatch text/key through a window-scoped channel. No focused-window
+    requirement, no global input. delivered != effect."""
+    if cm.get_profile(args.profile) != "fast":
+        fail(f"--channel {channel} is teleport-only: resolved profile "
+             "must be fast (human/smooth target a REAL window focus)", 2)
+    try:
+        frame, inp = cu_scope.scoped_hwnd(args)
+    except cu_scope.ScopeError as exc:
+        fail(f"window target: {exc}", 2)
+    base = {"channel": channel, "hwnd": inp, "frame": frame}
+    if args.dry_run:
+        print(json.dumps({"ok": True, "status": "dry_run", **base}))
+        return
+    res = None
+    if args.text is not None:
+        ghost = None
+        if getattr(args, "cursor", "real") == "ghost":
+            l, t, r_, b = cu_scope.win.rect(inp)
+            ghost = cu_scope.ghost_to(inp, (r_ - l) // 2, (b - t) // 2,
+                                      capture=args.overlay_capture)
+        if channel == "scope":
+            res = cu_scope.post_text(inp, args.text)
+        elif channel == "console":
+            res = cu_scope.console_type(frame, args.text)
+        elif channel == "uia":
+            res = cu_scope.uia_set_value(inp, args.text,
+                                         name=args.uia_name)
+        elif channel == "cdp":
+            res = cu_scope.cdp_text(frame, args.text)
+        if res is not None and ghost:
+            res["ghost"] = ghost["ghost"]
+    elif args.key:
+        if channel == "scope":
+            res = cu_scope.post_key(inp, args.key)
+        elif channel == "console":
+            res = cu_scope.console_key(frame, args.key)
+        elif channel == "cdp":
+            res = cu_scope.cdp_key(frame, args.key)
+        else:
+            fail("uia channel has no key concept; use text "
+                 "(Value.SetValue) or a named Invoke", 2)
+    elif args.keys:
+        fail(f"chords unsupported on channel {channel} "
+             "(no reliable modifier state outside the input queue)", 2)
+    if args.enter and args.text is not None:
+        if channel == "uia":
+            fail("--enter unsupported on uia channel "
+                 "(patterns have no key events)", 2)
+        if channel == "scope":
+            cu_scope.post_key(inp, "enter")
+        elif channel == "console":
+            cu_scope.console_key(frame, "enter")
+        elif channel == "cdp":
+            cu_scope.cdp_key(frame, "enter")
+    res = res or {"delivered": False, "error": "not_dispatched"}
+    if isinstance(res.get("delivered"), bool):
+        ok = res["delivered"]
+    else:
+        ok = res["delivered"] == res.get("total")
+    out = {"ok": ok, "status": "dispatched", **base, **res}
+    print(json.dumps(out))
+    if not ok:
+        sys.exit(1)
+
+
 def main():
+    cu_scope.pre_channel_check(sys.argv[1:], fail)
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
         _remote_main(target)
@@ -174,7 +245,14 @@ def main():
                         "(.devin/computer-use/envs); absent = local host")
     p.add_argument("--observation", default=None,
                    help="observation id issued for that env")
+    cu_scope.add_channel_args(p)
     args = p.parse_args()
+    channel = cu_scope.check_channel_args(args, fail)
+    if channel in cu_scope.CHANNELS:
+        if not any([args.text, args.key, args.keys]):
+            fail("provide text, --key, or --keys", 2)
+        _scoped_type(args, channel)
+        return
 
     if not any([args.text, args.key, args.keys]):
         fail("provide text, --key, or --keys", 2)
