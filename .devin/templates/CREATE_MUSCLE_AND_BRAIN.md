@@ -10,7 +10,7 @@ Realizar a ingestão autônoma do repositório `{peça o link ao usuario}` no ec
 Sempre que encontramos uma ferramenta open-source poderosa, precisamos ensiná-la ao agente. No entanto, o agente precisa de duas coisas diferentes: ele precisa do binário/script pronto para ser chamado (para automatizar suas próprias tarefas) e precisa da documentação arquitetural (para saber quando recomendar essa ferramenta para um usuário e como escrever código compatível com ela).
 
 # Acceptance Criteria
-1. **Reconhecimento (Recon):** 
+1. **Reconhecimento (Recon):**
    - Clone ou faça o curl/fetch do `README.md` e dos arquivos estruturais principais do repositório `NandhaKishorM/laya`.
    - Entenda profundamente qual é o propósito da ferramenta, suas dependências e como ela opera nativamente.
 2. **Construção do Músculo (A Extensão):**
