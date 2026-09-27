@@ -324,6 +324,31 @@ _NO_SCROLL = 2  # ScrollAmount_NoAmount
 core_factory = None  # test seam; default is cu_hints._uia_core
 
 
+def _uia_tlb():
+    import comtypes.client
+    with io_redirect():
+        return comtypes.client.GetModule("UIAutomationCore.dll")
+
+
+def io_redirect():
+    """GetModule prints typelib info to stdout; keep stdout JSON-clean."""
+    import io
+    from contextlib import redirect_stdout
+    return redirect_stdout(io.StringIO())
+
+
+def _pattern(target, pid, iface_name):
+    """GetCurrentPattern returns IUnknown; QueryInterface to the typed
+    pattern interface (probes/*.py convention). Fake test patterns lack
+    QueryInterface and pass through unchanged."""
+    pat = target.GetCurrentPattern(pid)
+    if pat is None:
+        return None
+    if hasattr(pat, "QueryInterface") and iface_name:
+        return pat.QueryInterface(getattr(_uia_tlb(), iface_name))
+    return pat
+
+
 def _uia_call(hwnd, action, name=None, value=None, direction=None,
               timeout=4.0):
     """Run one UIA pattern on the target window (or a named descendant).
@@ -348,13 +373,15 @@ def _uia_call(hwnd, action, name=None, value=None, direction=None,
             if target is None:
                 return None, "element_not_found"
         if action == "invoke":
-            pat = target.GetCurrentPattern(_PAT_INVOKE)
+            pat = _pattern(target, _PAT_INVOKE,
+                           "IUIAutomationInvokePattern")
             if pat is None:
                 return None, "no_pattern:invoke"
             pat.Invoke()
             return {"pattern": "Invoke"}, None
         if action == "set_value":
-            pat = target.GetCurrentPattern(_PAT_VALUE)
+            pat = _pattern(target, _PAT_VALUE,
+                           "IUIAutomationValuePattern")
             if pat is None:
                 return None, "no_pattern:value"
             if getattr(pat, "CurrentIsReadOnly", False):
@@ -362,7 +389,8 @@ def _uia_call(hwnd, action, name=None, value=None, direction=None,
             pat.SetValue(value)
             return {"pattern": "Value"}, None
         if action == "scroll":
-            pat = target.GetCurrentPattern(_PAT_SCROLL)
+            pat = _pattern(target, _PAT_SCROLL,
+                           "IUIAutomationScrollPattern")
             if pat is None:
                 return None, "no_pattern:scroll"
             d = (direction or "down").lower()
@@ -383,9 +411,19 @@ def _uia_call(hwnd, action, name=None, value=None, direction=None,
         try:
             if core_factory is not None:
                 q.put(impl())
-            else:
-                import cu_hints
-                q.put(cu_hints._com_thread(impl))
+                return
+            import comtypes
+            try:
+                comtypes.CoInitialize()
+            except Exception:
+                pass
+            try:
+                q.put(impl())
+            finally:
+                try:
+                    comtypes.CoUninitialize()
+                except Exception:
+                    pass
         except Exception as exc:
             q.put((None, f"error:{type(exc).__name__}:{exc}"))
 
