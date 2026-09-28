@@ -15,6 +15,27 @@ triggers: [user, model]
 
 Before declaring the branch ready, run a `gates` gate: re-read the spec, run the checklist, and confirm every acceptance criterion is met. Invoke `execution` first if you are unsure whether the final review should be deep or light.
 
+## Step 0.5: Converge - plan vs delivered
+
+Spec drift is a documented failure mode: agents implement ~70-90% of a
+spec and the missing parts stay invisible. Before the options menu, diff
+the artifacts against the tree:
+
+1. Find the plan (`.devin/plans/*.md` named by the work) and the ledger
+   (`.devin/ledgers/<task>.md`).
+2. If `scripts/spec-consistency.py` exists, run it on the plan — read the
+   `findings` list; errors must be resolved or explained.
+3. Walk the plan's checkboxes against the diff (`git diff <base>...HEAD`,
+   `git log`): every ticked task needs corresponding delivered code;
+   delivered code with no task is drift.
+4. Ledger check: no ticked gate may carry `EVIDENCE: pending`.
+5. Outcome is binary:
+   - **Converged** — plan, ledger, and tree agree. Say so with evidence.
+   - **Drift** — do NOT silently absorb it. Append the residual items to
+     the plan as open tasks (`- [ ] Residual: <what is missing>`) and
+     report them in the completion summary. The user decides whether
+     they block the merge.
+
 ## Step 1: Verify Tests
 
 Run the project's full test suite (`npm test` / `cargo test` / `pytest` / `go test ./...`).

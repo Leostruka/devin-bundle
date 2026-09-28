@@ -501,6 +501,47 @@ class BrowserClient:
             "context": self.target,
             "actions": [{"type": "key", "id": "kb", "actions": actions}]})
 
+    # name -> (vkCode, code, key, text|None, bidiValue); bidi uses WebDriver
+    # special-key codepoints (U+E000 block)
+    _KEYS = {
+        "enter": (13, "Enter", "Enter", "\r", chr(0xE007)),
+        "tab": (9, "Tab", "Tab", None, chr(0xE004)),
+        "escape": (27, "Escape", "Escape", None, chr(0xE00C)),
+        "backspace": (8, "Backspace", "Backspace", None, chr(0xE003)),
+        "delete": (46, "Delete", "Delete", None, chr(0xE017)),
+        "space": (32, "Space", " ", " ", chr(0xE00D)),
+        "up": (38, "ArrowUp", "ArrowUp", None, chr(0xE013)),
+        "down": (40, "ArrowDown", "ArrowDown", None, chr(0xE015)),
+        "left": (37, "ArrowLeft", "ArrowLeft", None, chr(0xE012)),
+        "right": (39, "ArrowRight", "ArrowRight", None, chr(0xE014)),
+        "home": (36, "Home", "Home", None, chr(0xE011)),
+        "end": (35, "End", "End", None, chr(0xE010)),
+        "pageup": (33, "PageUp", "PageUp", None, chr(0xE00E)),
+        "pagedown": (34, "PageDown", "PageDown", None, chr(0xE00F)),
+    }
+
+    def key(self, name):
+        """Non-text key (Enter/Tab/arrows): Input.dispatchKeyEvent on CDP,
+        WebDriver key actions on BiDi. insertText cannot send these."""
+        spec = self._KEYS.get(name.lower())
+        if spec is None:
+            raise ValueError(f"unknown_key:{name}")
+        vk, code, key, text, bidi = spec
+        if self.dialect == "cdp":
+            down = {"type": "keyDown" if text else "rawKeyDown",
+                    "windowsVirtualKeyCode": vk, "code": code, "key": key}
+            if text:
+                down["text"] = text
+            self._ws.call("Input.dispatchKeyEvent", down)
+            return self._ws.call("Input.dispatchKeyEvent", {
+                "type": "keyUp", "windowsVirtualKeyCode": vk,
+                "code": code, "key": key})
+        return self._ws.call("input.performActions", {
+            "context": self.target,
+            "actions": [{"type": "key", "id": "kb",
+                         "actions": [{"type": "keyDown", "value": bidi},
+                                     {"type": "keyUp", "value": bidi}]}]})
+
     # -- observation (agent-browser port, tier 1) ---------------------------
 
     def install_collector(self):
@@ -753,6 +794,27 @@ def dom_action(hwnd, x, y, op, text=None, timeout=10.0, enabled=True,
             return {"backend": "dom", "dialect": cli.dialect,
                     "typed": len(text or "")}, None
         return None, f"unknown_op:{op}"
+    except Exception as e:
+        return None, f"dom_{type(e).__name__}: {e}"
+    finally:
+        cli.close()
+
+
+def dom_key(hwnd, name, timeout=10.0):
+    """Send a named non-text key to the bound browser page. Returns
+    (result, reason); same binding rules as dom_action."""
+    ok, reason = check(hwnd)
+    if not ok:
+        return None, f"browser_{reason}"
+    cli = _cdp_client(timeout=timeout)
+    if cli is None:
+        return None, "browser_unavailable"
+    try:
+        cli.key(name)
+        return {"backend": "dom", "dialect": cli.dialect,
+                "key": name}, None
+    except ValueError as e:
+        return None, str(e)
     except Exception as e:
         return None, f"dom_{type(e).__name__}: {e}"
     finally:

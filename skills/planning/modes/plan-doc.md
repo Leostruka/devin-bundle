@@ -74,6 +74,13 @@ refactors are the exception; sequence them as expand–contract, not as a slice.
 
 **Goal:** [One sentence describing what this builds]
 
+**Spec:**
+- What/why (tech-agnostic): [the user-facing outcome and why it matters;
+  no stack, no filenames]
+- User stories: [2-4 short stories: "As X, I want Y so that Z"]
+- Acceptance criteria: [observable pass/fail conditions a reviewer can
+  check without reading code]
+
 **Architecture:** [2-3 sentences about approach]
 
 **Tech Stack:** [Key technologies/libraries]
