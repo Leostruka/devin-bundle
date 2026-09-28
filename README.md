@@ -217,6 +217,7 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `media-tools` | Utilitários de mídia |
 | `diagram-tools` | Render PlantUML serverless (Deflate + Base64 modificado → API pública), sem Java |
 | `laya-tools` | CLI sobre o motor de decisão `laya` (triage/guardrails/moderation, typed questions, JSON stdout) |
+| `scrape-tools` | Scraping/parse de HTML (parser offline, Fetcher com TLS impersonation, tier browser opt-in), JSON stdout |
 | `rust-core` | Extensão híbrida PyO3 (`fast_math.pyd`) — build no install |
 
 ## Fluxo operacional completo

@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Duplicate `3000.10.x capabilities` / `read_config_from` sections in `DEVIN-CLI-COMPATIBILITY.md` consolidated.
 - `TOOLS-MAP.md` documents the `3000.11.1` cloud commands (`--cloud`, `/handoff`, `/pickup`, `ssh`).
 
+### Fixed
+
+- `install.ps1`/`install.sh` now create the `.venv` for `scrape-tools` (previously `computer-use` only) - the skill's documented interpreter path was never provisioned.
+- `manifest.json` `export_hash` drift for `memory-stop.py`/`spec-consistency.py` corrected.
+- `no-em-dash` hook: Stop event scans untracked files (git diff never lists them); `gh --body-file`/`--notes-file` and `git -F/--file` message files are read, not just the command line; block reasons instruct rewriting naturally instead of swapping in a hyphen.
+
 ## [3.4.0] - 2026-09-21
 
 ### Added

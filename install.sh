@@ -519,32 +519,33 @@ if [[ -d "$ext_src" ]]; then
     fi
   done
 
-  # --- 8c. computer-use Python deps (isolated venv, no system/user-site) ---
-  cu_dir="$ext_dst/computer-use"
-  if [[ -f "$cu_dir/requirements.txt" ]]; then
-    py=""
-    for cand in python3 python; do
-      if command -v "$cand" &>/dev/null; then py="$cand"; break; fi
-    done
+  # --- 8c. extension Python deps (isolated venv, no system/user-site) ---
+  py=""
+  for cand in python3 python; do
+    if command -v "$cand" &>/dev/null; then py="$cand"; break; fi
+  done
+  for ext_name in computer-use scrape-tools; do
+    ext_dir="$ext_dst/$ext_name"
+    [[ -f "$ext_dir/requirements.txt" ]] || continue
     if [[ -z "$py" ]]; then
-      warn "python not found — skipping computer-use venv (scripts need mss+pynput)"
+      warn "python not found - skipping $ext_name venv (scripts need pip deps)"
     elif [[ $DRY_RUN -eq 1 ]]; then
-      skip "would create venv at $cu_dir/.venv and pip install -r requirements.txt"
+      skip "would create venv at $ext_dir/.venv and pip install -r requirements.txt"
     else
-      venv_py="$cu_dir/.venv/bin/python"
-      [[ -x "$venv_py" ]] || venv_py="$cu_dir/.venv/Scripts/python.exe"
+      venv_py="$ext_dir/.venv/bin/python"
+      [[ -x "$venv_py" ]] || venv_py="$ext_dir/.venv/Scripts/python.exe"
       if [[ ! -x "$venv_py" ]]; then
-        "$py" -m venv "$cu_dir/.venv"
-        venv_py="$cu_dir/.venv/bin/python"
-        [[ -x "$venv_py" ]] || venv_py="$cu_dir/.venv/Scripts/python.exe"
+        "$py" -m venv "$ext_dir/.venv"
+        venv_py="$ext_dir/.venv/bin/python"
+        [[ -x "$venv_py" ]] || venv_py="$ext_dir/.venv/Scripts/python.exe"
       fi
-      if "$venv_py" -m pip install --quiet --disable-pip-version-check -r "$cu_dir/requirements.txt"; then
-        ok "computer-use deps installed in $cu_dir/.venv"
+      if "$venv_py" -m pip install --quiet --disable-pip-version-check -r "$ext_dir/requirements.txt"; then
+        ok "$ext_name deps installed in $ext_dir/.venv"
       else
-        warn "computer-use pip install failed"
+        warn "$ext_name pip install failed"
       fi
     fi
-  fi
+  done
 
   # --- 8d. rust-core compiled extensions (optional toolchain, non-blocking) ---
   rc_src="$ext_src/rust-core"
