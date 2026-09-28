@@ -141,6 +141,12 @@ def _scoped_type(args, channel):
     if cm.get_profile(args.profile) != "fast":
         fail(f"--channel {channel} is teleport-only: resolved profile "
              "must be fast (human/smooth target a REAL window focus)", 2)
+    if args.key and channel == "uia":
+        fail("uia channel has no key concept; use text "
+             "(Value.SetValue) or a named Invoke", 2)
+    if args.keys:
+        fail(f"chords unsupported on channel {channel} "
+             "(no reliable modifier state outside the input queue)", 2)
     try:
         frame, inp = cu_scope.scoped_hwnd(args)
     except cu_scope.ScopeError as exc:
@@ -174,12 +180,6 @@ def _scoped_type(args, channel):
             res = cu_scope.console_key(frame, args.key)
         elif channel == "cdp":
             res = cu_scope.cdp_key(frame, args.key)
-        else:
-            fail("uia channel has no key concept; use text "
-                 "(Value.SetValue) or a named Invoke", 2)
-    elif args.keys:
-        fail(f"chords unsupported on channel {channel} "
-             "(no reliable modifier state outside the input queue)", 2)
     if args.enter and args.text is not None:
         if channel == "uia":
             fail("--enter unsupported on uia channel "
