@@ -11,7 +11,7 @@
     - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
     - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
     - scripts\*          → %APPDATA%\devin\scripts\
-    - extensions\*       → %APPDATA%\devin\extensions\ (+ computer-use .venv, + rust-core cargo build)
+    - extensions\*       → %APPDATA%\devin\extensions\ (+ .venv for computer-use/scrape-tools, + rust-core cargo build)
     - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
     - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
 
@@ -628,28 +628,29 @@ if (Test-Path $extSrc) {
     }
   }
 
-  # --- 8a. computer-use Python deps (isolated venv, no system/user-site) ---
-  $cuDir = Join-Path $extDst "computer-use"
-  $cuReq = Join-Path $cuDir "requirements.txt"
-  if (Test-Path $cuReq) {
-    $pyCmd = $null
-    foreach ($cand in @("python", "python3", "py")) {
-      if (Get-Command $cand -ErrorAction SilentlyContinue) { $pyCmd = $cand; break }
-    }
+  # --- 8a. extension Python deps (isolated venv, no system/user-site) ---
+  $pyCmd = $null
+  foreach ($cand in @("python", "python3", "py")) {
+    if (Get-Command $cand -ErrorAction SilentlyContinue) { $pyCmd = $cand; break }
+  }
+  foreach ($extName in @("computer-use", "scrape-tools")) {
+    $extDir = Join-Path $extDst $extName
+    $extReq = Join-Path $extDir "requirements.txt"
+    if (-not (Test-Path $extReq)) { continue }
     if (-not $pyCmd) {
-      Write-Warn "python not found — skipping computer-use venv (scripts need mss+pynput)"
+      Write-Warn "python not found - skipping $extName venv (scripts need pip deps)"
     } elseif ($DryRun) {
-      Write-Skip "would create venv at $cuDir\.venv and pip install -r requirements.txt"
+      Write-Skip "would create venv at $extDir\.venv and pip install -r requirements.txt"
     } else {
-      $venvPy = Join-Path $cuDir ".venv\Scripts\python.exe"
+      $venvPy = Join-Path $extDir ".venv\Scripts\python.exe"
       if (-not (Test-Path $venvPy)) {
-        & $pyCmd -m venv (Join-Path $cuDir ".venv")
+        & $pyCmd -m venv (Join-Path $extDir ".venv")
       }
-      & $venvPy -m pip install --quiet --disable-pip-version-check -r $cuReq
+      & $venvPy -m pip install --quiet --disable-pip-version-check -r $extReq
       if ($LASTEXITCODE -eq 0) {
-        Write-Ok "computer-use deps installed in $cuDir\.venv"
+        Write-Ok "$extName deps installed in $extDir\.venv"
       } else {
-        Write-Warn "computer-use pip install failed (exit $LASTEXITCODE)"
+        Write-Warn "$extName pip install failed (exit $LASTEXITCODE)"
       }
     }
   }

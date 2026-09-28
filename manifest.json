@@ -475,7 +475,7 @@
     {
       "name": "memory-stop.py",
       "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review",
-      "export_hash": "4A659CE5C4A36E095134F690F73AD6147F705FEBD62A688754640268540D1E85",
+      "export_hash": "94452813F1B5E74367AF599D56E768549BCCAE7E662B6CE05CE2F24739EEFCF9",
       "exported_at": "2026-09-08T21:39:22.431441"
     },
     {
@@ -571,7 +571,7 @@
     {
       "name": "spec-consistency.py",
       "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
-      "export_hash": "C8EA4D0A7AFFE846715E47E4C5726CCA70565CABD9810E4EDC6CF267C773C2CA",
+      "export_hash": "956BDD2B91211DA7E98F94B79E98E85857A3C2CF48E96F89983BA2C1625F2EA1",
       "exported_at": "2026-09-26T18:26:15.829557"
     }
   ],
