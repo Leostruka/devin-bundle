@@ -30,7 +30,7 @@ FAMILY_MARKERS = {
                    "install", "docker", "infra", "monitor", "hook"),
     "data": ("data", "sql", "database", "query", "chart", "dataset",
              "csv", "metric"),
-    "visual": ("spline", "image", "video", "media", "design", "ui",
+    "visual": ("blender", "image", "video", "media", "design", "ui",
                "screenshot", "render", "3d", "canvas"),
     "knowledge": ("memory", "knowledge", "ontology", "obsidian",
                   "note", "document", "extract", "learn"),

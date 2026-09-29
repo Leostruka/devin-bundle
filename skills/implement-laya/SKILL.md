@@ -138,7 +138,7 @@ never adopted), `assist` (suggestions eligible for selection **only** when
 checkpoint, profile, locale, cardinality and data source; a mismatch
 degrades to `shadow`). `adoptable` still means eligible-for-selection,
 never authorization; `raw_confidence` never participates in the decision.
-Consumers: `cu_decision.py` (CU targets), `spline-operator/decision.py`,
+Consumers: `cu_decision.py` (CU targets),
 `media-tools/intent.py`, `workflow_routing.py`, `output_context.py`,
 `knowledge_labels.py`. Evaluation: `eval_decisions.py` over frozen
 manifests only.

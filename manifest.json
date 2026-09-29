@@ -381,9 +381,24 @@
       "purpose": "Use when a task needs fast typed decisions — classification, triage, scoring, guardrails, moderation, or model routing — over text/JSON states, or when integrating the 'laya' engine (non-autoregressive decision model) into a user's codebase."
     },
     {
-      "name": "operate-spline",
+      "name": "operate-blender",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks to launch, drive, build scenes in, export from, or shut down the Spline desktop app (3D/2D design, Electron). Routes to extensions/spline-operator/wrapper.py, which speaks the app's embedded MCP bridge (ws://127.0.0.1:19692) — structured tool calls, not GUI clicking."
+      "purpose": "Use when the user asks to create, build, manipulate, render, animate, or export 3D content (scenes, models, characters, environments, stylized/cartoon or hyper-real art, procedural geometry). Routes to extensions/blender-operator/wrapper.py, which drives headless Blender through a TCP exec loop with full bpy access; no GUI, no MCP addon, free/GPL tooling."
+    },
+    {
+      "name": "ai3d-gen",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, with direct-model fallbacks (TRELLIS, TripoSG, InstantMesh, Hunyuan3D)."
+    },
+    {
+      "name": "operate-godot",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to build, inspect, import assets into, or export a Godot 4 project headlessly (realtime 3D delivery, game scenes). Uses godot --headless --script CLI; no GUI."
+    },
+    {
+      "name": "mesh-utils",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to inspect, convert, clean, or validate mesh/3D scene files (OBJ, STL, GLB, FBX, USD) via trimesh, PyMeshLab, or pxr. Routes to extensions/mesh-utils/meshops.py."
     },
     {
       "name": "creative-engineering",
@@ -397,7 +412,7 @@
       "original_path": "%APPDATA%\\devin\\skills\\scrape-tools"
     }
   ],
-  "skill_count": 59,
+  "skill_count": 62,
   "rule_count": 28,
   "scripts": [
     {
@@ -486,8 +501,8 @@
     },
     {
       "name": "no-em-dash.py",
-      "purpose": "PreToolUse/Stop hook - blocks U+2014 in writes, git/gh message files and text commands, diffs and untracked files",
-      "export_hash": "96A43D128751204DFDE43EE9D09ACC93162E3671DC9C0556FC47CE9D6677268B",
+      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position (writes, git/gh messages, diffs, untracked files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code)",
+      "export_hash": "A8F7AFF21A714A2DE62D4591C56C71D3A1DA76EB9280B39A4C57DA125944FFC2",
       "exported_at": "2026-09-25T16:17:01.590"
     },
     {
