@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Blocks the em-dash character (U+2014) in agent output and deliverables.
+"""Blocks the em-dash character (U+2014) in prose within agent output
+and deliverables.
+
+Structural markdown uses are allowed: table rows ('| a | - |'),
+em-dash bullet items ('- item'), quote attribution ('> - name'), and
+text inside fenced code blocks. Prose usage ('a - b' mid-sentence)
+is what is blocked.
 
 Handles two events, dispatched on `hook_event_name`:
   PreToolUse - exec (git commit message, including -F/--file), write,
@@ -32,6 +38,39 @@ def block(reason):
 
 def has_em_dash(text):
     return bool(text) and EM_DASH in text
+
+
+def prose_em_dash_lines(text):
+    """Return lines where U+2014 appears in prose position.
+
+    Allowed structural contexts (markdown): table rows, em-dash bullets,
+    quote attribution, and fenced code blocks. Everything else counts
+    as prose."""
+    hits = []
+    in_fence = False
+    fence_marker = None
+    for line in (text or "").split("\n"):
+        s = line.strip()
+        if s[:3] in ("```", "~~~"):
+            if not in_fence:
+                in_fence, fence_marker = True, s[:3]
+            elif s.startswith(fence_marker):
+                in_fence, fence_marker = False, None
+            continue
+        if in_fence or EM_DASH not in s:
+            continue
+        if s.startswith("|"):                    # md table row
+            continue
+        if s.startswith(EM_DASH):                # '- item' dash bullet
+            continue
+        if re.match(r"^>\s*" + EM_DASH, s):      # '> - attribution'
+            continue
+        hits.append(line)
+    return hits
+
+
+def has_prose_em_dash(text):
+    return bool(prose_em_dash_lines(text))
 
 
 def read_text_file(filepath, cwd):
@@ -100,7 +139,7 @@ def handle_stop(_data):
             for line in filtered.split("\n")
             if line.startswith("+") and not line.startswith("+++")
         )
-        if has_em_dash(added):
+        if has_prose_em_dash(added):
             scope = "staged" if "--cached" in args else "unstaged"
             block(
                 f"em-dash (U+2014) detected in {scope} changes. "
@@ -135,7 +174,7 @@ def scan_untracked(cwd):
             continue
         if b"\x00" in raw[:4096]:  # binary
             continue
-        if has_em_dash(raw.decode("utf-8", "replace")):
+        if has_prose_em_dash(raw.decode("utf-8", "replace")):
             block(
                 f"em-dash (U+2014) detected in untracked file '{rel}'. "
                 "Rewrite the text naturally before stopping - "
@@ -156,12 +195,12 @@ def handle_pre_tool_use(data):
         if re.search(r"git\s+(commit|tag|merge|cherry-pick|rebase|stash)\b", low):
             msg_file = extract_flag_file(command, r"file|message")
             if msg_file:
-                if has_em_dash(read_text_file(msg_file, cwd)):
+                if has_prose_em_dash(read_text_file(msg_file, cwd)):
                     block(
                         "em-dash (U+2014) detected in the git message "
                         f"file '{msg_file}'. Rewrite the text naturally."
                     )
-            elif has_em_dash(command):
+            elif has_prose_em_dash(command):
                 block("em-dash (U+2014) detected in the git message text. "
                       "Rewrite the text naturally.")
             return
@@ -171,12 +210,12 @@ def handle_pre_tool_use(data):
             body_file = extract_flag_file(
                 command, r"body-file|notes-file", short_f=False)
             if body_file:
-                if has_em_dash(read_text_file(body_file, cwd)):
+                if has_prose_em_dash(read_text_file(body_file, cwd)):
                     block(
                         "em-dash (U+2014) detected in the gh body "
                         f"file '{body_file}'. Rewrite the text naturally."
                     )
-            elif has_em_dash(command):
+            elif has_prose_em_dash(command):
                 block("em-dash (U+2014) detected in a deliverable text "
                       "command. Rewrite the text naturally.")
         return
@@ -189,7 +228,7 @@ def handle_pre_tool_use(data):
         content = tool_input.get("content") \
             or tool_input.get("new_string") \
             or tool_input.get("new_source") or ""
-        if has_em_dash(content):
+        if has_prose_em_dash(content):
             block(
                 f"em-dash (U+2014) detected in {tool_name} content. "
                 "Rewrite the sentence naturally - commas, periods or "
