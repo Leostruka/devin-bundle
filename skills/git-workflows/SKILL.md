@@ -58,6 +58,38 @@ Rationalizations to reject: "obviously not in a worktree" (run Step 0),
 (run check-ignore), "baseline can wait" (dirty baseline makes later failures
 ambiguous).
 
+### Multiple lanes (parallel agents)
+
+For risky refactors, spikes, or parallel subagents, manage each worktree as
+a named **lane**; the controller (orchestrator) owns lane planning,
+branch/path selection, file ownership, delegation, diff validation,
+integration, and cleanup. Subagents work inside their assigned lane only.
+
+- **Lane manifest**: optional local metadata `.devin/worktrees.json`
+  tracking `slug`, `branch`, `path`, `base`, `purpose`, `owner`, `status`,
+  `areas` (file/folder ownership), `createdAt`. Treat as local workflow
+  metadata; ask before committing it to the repo.
+- **File ownership per lane**: record which paths each lane owns so
+  parallel agents do not collide; a lane that needs another lane's area
+  stops and reports instead of editing across boundaries.
+- **Subagent isolation**: set each subagent's working directory strictly
+  to its lane path; never modify the main checkout for lane work.
+- **Managed ignore blocks**: when a project convention tracks worktree
+  dirs in `.gitignore`, add them inside `BEGIN/END` managed markers and add
+  only missing lines; never duplicate or rewrite unrelated rules.
+- **Mandatory confirmation before git mutations**: worktree add/remove,
+  branch create/delete/rename, merge, rebase, cherry-pick, prune, and any
+  destructive command (`reset --hard`, `clean`, `push --force`, removing a
+  dirty worktree) each need explicit user confirmation for that operation.
+- **Integration**: before merging a lane: run verification proportional
+  to the changed behavior, show the diff against the integration base, and
+  get user confirmation. Integrate from the main checkout.
+- **Cleanup**: confirm no uncommitted changes, get approval, remove the
+  worktree, and mark the lane `archived` in the manifest.
+
+**Skip lanes for:** single-file changes, doc updates, minor fixes, and
+repos with multi-submodule states worktrees cannot express.
+
 ## Merge conflicts
 
 1. **See the state** — merge/rebase status, history, conflicting files.
