@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`computer-use` screen recording** (`extensions/computer-use/record.py`): duration-based capture to mp4/webm via streamed ffmpeg rawvideo pipe (honest exit-2 when ffmpeg is absent) or animated webp/gif via the bundled Pillow dep; every run also writes a reservoir-sampled contact-sheet PNG that agents can `read` directly. Absolute-deadline pacing reports `dropped`/`fps_actual`; `--env` records isolated guests via `backend.observe()`.
 - **`project-bootstrap` rule templates** — `templates/domain-rules.md` (glob-scoped to domain paths, for business rules) and `templates/devin-config-rules.md` (scoped to `.devin/**`, teaches bundle conventions). Frontmatter format verified on CLI 3000.11.1 (`trigger: glob`, `globs:` YAML sequence).
 - **`prompt_compiler.py` Golden Template refactor** — the script no longer guesses: it validates and assembles a strict spec (`effort`, `persona`, `goal`, `context`, `acceptance[]`, `in_scope[]`, `out_scope[]`, `phases[]`) drafted by the agent. Effort/persona are semantic agent decisions (language-agnostic); `--draft <file|->`/`--spec` input; `recommended_model` resolves family+effort via `bundle-models.json` deterministically. `prompt-compiler` skill rewritten around the agent-as-Prompt-Engineer flow.
 
