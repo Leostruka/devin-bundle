@@ -25,7 +25,7 @@ def _catalog():
         {"id": "ask-bundle", "purpose": "route vague requests"},
         {"id": "debugging", "purpose": "diagnose and fix bugs in code"},
         {"id": "tdd", "purpose": "test driven code workflow"},
-        {"id": "operate-spline", "purpose": "spline 3d design scenes"},
+        {"id": "operate-blender", "purpose": "blender 3d design scenes"},
         {"id": "data-analyst", "purpose": "sql database query charts"},
         {"id": "research", "purpose": "investigate primary sources"},
         {"id": "jira", "purpose": "jira issue triage operations"},
