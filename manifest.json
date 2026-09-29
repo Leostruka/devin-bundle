@@ -245,7 +245,7 @@
     {
       "name": "computer-use",
       "source": "devin-bundle",
-      "purpose": "Use when you need to see or control the local screen — screenshots, mouse clicks/movement, typing text and hotkeys. GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
+      "purpose": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) or to read/control terminals (Windows Terminal, conhost, mintty, spawned PTYs). GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
       "original_path": "%APPDATA%\\devin\\skills\\computer-use",
       "export_hash": "D723482F24F5A375D2B6208A80385BCD382FEC5DC1E9A34C0DCE32F30AA0AF7A",
       "exported_at": "2026-09-15T23:29:25.416194"

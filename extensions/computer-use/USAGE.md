@@ -11,6 +11,7 @@ has no API/CLI.
 | `screenshot.py` | Capture screen/region/monitor to PNG, `--grid` overlay, `--hints` Vimium-style element badges + observation contract |
 | `mouse.py` | move, click (incl. `--hint`, `--via`, `--verify`), scroll, drag, position — profile-driven motion |
 | `type_text.py` | type literal text, single keys, hotkey chords — profile-driven cadence, `--hint`/`--via uia` set-value |
+| `record.py` | record screen to video (ffmpeg mp4/webm streamed, or Pillow animated webp/gif) + reservoir-sampled contact-sheet PNG the agent can `read` |
 | `profile.py` | get/set the session action profile (`--set`, `--show`, interactive menu) |
 | `cu_motion.py` | shared: profile state + bezier/minimum-jerk path + timing generators |
 | `cu_hints.py` | shared: UIA element extraction (cached queries) + versioned hint sidecar + live re-location/Invoke/SetValue |
@@ -136,6 +137,30 @@ Key names: `ctrl`, `alt`, `shift`, `win`/`cmd`, `enter`, `esc`, `tab`, `space`,
 `backspace`, `delete`, `insert`, `home`, `end`, `pageup`, `pagedown`,
 `up`/`down`/`left`/`right`, `f1`–`f24`, `capslock`, `printscreen`, or any
 single character.
+
+```bash
+# --- record.py --- (all write to the OS temp dir unless --out is given)
+$PY record.py --seconds 5                      # video + sheet → temp
+$PY record.py --seconds 10 --fps 12 --region 100,200,800,600
+$PY record.py --seconds 5 --out clip.webm      # VP9 webm via ffmpeg
+$PY record.py --seconds 5 --out clip.webp      # animated webp via Pillow (no ffmpeg needed)
+$PY record.py --seconds 5 --tiles 9 --cols 3   # denser contact sheet
+$PY record.py --seconds 5 --no-sheet           # video only
+$PY record.py --seconds 5 --env devin-linux    # guest framebuffer (best-effort fps)
+```
+
+Encoder is chosen by `--out` extension: `.mp4/.webm/.mkv/.mov` stream raw
+frames to ffmpeg (rejects with exit 2 when ffmpeg isn't on PATH; no silent
+downgrade); `.webp/.gif` use Pillow (buffered, capped at `--max-frames`,
+downscaled to `--max-width`). No extension → `.mp4` if ffmpeg exists else
+`.webp`. Result JSON reports `encoder`, `frames`, `dropped` (missed pacing
+slots), `fps_actual`, `size_bytes`.
+
+**The sheet is the agent-readable artifact**: `read` the `--sheet` PNG
+(default `<temp>/record-<ts>-sheet.png`): up to `--tiles` frames
+reservoir-sampled across the whole capture (uniform even on early stop).
+Video files can't be viewed directly; use the sheet to verify, or extract
+more frames from the video with ffmpeg afterwards.
 
 ## Agent workflow
 
