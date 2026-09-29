@@ -1,0 +1,35 @@
+{
+  "effort": "max",
+  "persona": "Technical Art Director Sênior e Pesquisador de Computer Graphics",
+  "model": "swe-2",
+  "goal": "Conduzir pesquisa extensa e profunda, com no mínimo 140 fontes validadas e renomadas (documentação oficial, papers, benchmarks da indústria, reviews de estúdios, comunidades profissionais como Polycount/CGSociety/ArtStation Magazine, relatórios de engines), para determinar a melhor ferramenta ou stack de criação e manipulação 3D cobrindo: obras hiper-realistas, cartoon/estilizado, criativo/procedural, animação, personagens e cenários. Entregar recomendação fundamentada para substituir a integração Spline atual, que produz artefatos inúteis.",
+  "context": "Repo devin-bundle (C:\\Users\\Fingertech\\Desktop\\scripts\\devin-bundle). Integração 3D atual: skills/operate-spline + extensions/spline-operator (MCP bridge ws://127.0.0.1:19692, 36 tools, daemon keeper). Resultado observado: gera artefatos inúteis para os eixos alvo. Candidatos a avaliar incluem Blender (+geometry nodes, addons), Maya, 3ds Max, Cinema 4D, Houdini, ZBrush, Unreal Engine 5, Unity, Substance 3D, Marvelous Designer, e geradores AI-3D (Tripo, Meshy, Luma Genie, Kaedim, Rodin/Hyper3D, Hunyuan3D, TRELLIS, Stable Fast 3D, ComfyUI-3D). Critério decisivo adicional: dirigibilidade por agente (API, scripting Python, headless CLI, MCP bridge, licença/custo).",
+  "acceptance": [
+    "Relatório cita >= 140 fontes distintas, cada uma com URL, publicação/fonte e data de acesso",
+    "Fontes renomadas apenas: docs oficiais, SIGGRAPH/papers, benchmarks publicados, reviews de veículos profissionais, postmortems de estúdios - sem blogs SEO genéricos",
+    "Matriz comparativa por eixo: hiper-realismo, cartoon, procedural/criativo, animação/rigging, personagens, cenários",
+    "Coluna explícita de dirigibilidade por agente (API/script/headless/MCP) e custo/licença",
+    "Ranking final com recomendação única justificada + 1 alternativa",
+    "Veredito sobre a spline-operator: manter, limitar ou substituir, com evidência",
+    "Saída em Markdown em .devin/research/3d-tools-comparison.md"
+  ],
+  "in_scope": [
+    "Pesquisa web extensa (web_search, webfetch) e consolidação de fontes",
+    "Matriz comparativa e ranking ponderado",
+    "Avaliação de dirigibilidade por agente e custo",
+    "Relatório final em .devin/research/"
+  ],
+  "out_scope": [
+    "Instalar, licenciar ou pagar qualquer ferramenta",
+    "Escrever código de nova integração ou modificar extensions/spline-operator",
+    "Benchmarks executados localmente (apenas benchmarks publicados)",
+    "Gerar artefatos 3D nesta etapa"
+  ],
+  "phases": [
+    "Fase 1: Declarar eixos de avaliação, critérios de inclusão de fontes e lista inicial de candidatos. PARE e aguarde aprovação.",
+    "Fase 2: Coletar >= 140 fontes (log em .devin/scratch/3d_sources.jsonl: url, publisher, data, eixo, evidência-chave).",
+    "Fase 3: Construir matriz comparativa ponderada por eixo + dirigibilidade/custo.",
+    "Fase 4: Ranking final, recomendação e veredito sobre spline-operator.",
+    "Fase 5: Escrever .devin/research/3d-tools-comparison.md e verificar todos os acceptance criteria."
+  ]
+}
