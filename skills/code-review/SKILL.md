@@ -6,7 +6,7 @@ triggers: [user, model]
 
 # Code Review
 
-Three modes; full detail in `modes/<mode>.md` — read it when you enter the
+Six modes; full detail in `modes/<mode>.md`. Read it when you enter the
 mode. `code-reviewer.md` is the reviewer subagent brief.
 
 | Mode | When | Detail |
@@ -14,6 +14,9 @@ mode. `code-reviewer.md` is the reviewer subagent brief.
 | **Giving** | Completing a task, reviewing a branch/PR, before merge, "review since X" | `modes/giving.md` |
 | **PR-inline** | Publishing a GitHub review with inline ` ```suggestion ` comments | `modes/pr-inline.md` |
 | **Receiving** | Deciding how to act on review feedback you received | `modes/receiving.md` |
+| **PR-audit** | Auditing an untrusted contributor PR before merge: claim verification, prompt-injection resistance, hostile-change and supply-chain review | `modes/pr-audit.md` |
+| **Post-merge audit** | Auditing the combined default-branch tree after merges, before deploy/release | `modes/post-merge-audit.md` |
+| **Dependency bumps** | Fast-path merge of bot-authored dependency-only PRs | `modes/dependency-bumps.md` |
 
 ## Giving — essentials
 
@@ -55,7 +58,3 @@ verify). Repeated missing pulled patterns → add to your pre-review checklist.
 
 - `security` — escalate to the security skill when the diff touches auth, secrets, input handling, or public endpoints.
 - `a11y-audit` — escalate when the diff touches frontend markup/ARIA/keyboard paths.
-
-against the cited source, fix, test) vs **pulled** (reviewer points to a
-skill/convention/gate you should have used → pull that source first, apply,
-verify). Repeated missing pulled patterns → add to your pre-review checklist.

@@ -235,10 +235,26 @@ After agents return:
 3. **Run full suite** - Verify all fixes work together
 4. **Spot check** - Agents can make systematic errors
 
+## Background subagent discipline
+
+When dispatching with `is_background=true`, act as a scheduler, not a
+worker:
+
+- Record each dispatch's agent ID and ownership boundary in the ledger, so
+  background state survives compaction.
+- Do not block the controller lane waiting on a background job. Pick the
+  next independent task; if none remains, stop briefly and let the
+  completion notification resume the workflow.
+- Never advance a dependent phase while background jobs it consumes are
+  still running or their results are unreconciled.
+- When splitting work into phases, split on dependencies and natural
+  delivery boundaries; never split merely to shrink a review's scope.
+
 ## Cross-skills
 
 - If fanning out many subagents, invoke `context-hygiene` to keep the parent context lean.
 - If work spans sessions, invoke `handoff` to capture state before ending.
+- For parallel implementation lanes, use `git-workflows` lane orchestration (per-lane worktrees + file ownership).
 
 ## Plan execution mode
 

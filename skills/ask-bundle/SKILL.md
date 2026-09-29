@@ -34,6 +34,8 @@ actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
 | Large foggy multi-session effort | `planning` wayfinder | → spec → tickets → implement |
 | Prototype to settle a question | `prototype` (via `handoff`) | back to `grilling`/`planning` |
 | Research/deep exploration | `research` | feeds `grilling`/spec |
+| Fact-check article/draft | `fact-check` | → `humanizer` on accepted fixes |
+| De-AI-ify prose | `humanizer` | |
 | Need input from another person | `planning` questionnaire | |
 | Git merge/rebase conflict | `git-workflows` | |
 | Improve architecture/deep modules | `architecture` | → `grilling` if it generates an idea |

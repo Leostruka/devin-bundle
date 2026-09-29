@@ -410,9 +410,19 @@
       "source": "devin-bundle",
       "purpose": "Tiered web scraping extension - offline parser (parse.py), Scrapling Fetcher tier (scrape.py) with SSRF-safe redirects and adaptive SQLite relocation, opt-in browser tier gated on explicit install",
       "original_path": "%APPDATA%\\devin\\skills\\scrape-tools"
+    },
+    {
+      "name": "fact-check",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to fact-check, tear apart, nitpick, or pre-publish-review an article, essay, blog post, or any markdown/text draft, verifying every checkable claim against online primary sources via adversarial checker subagents. Do not use for code review, security audits, or proofreading without factual verification."
+    },
+    {
+      "name": "humanizer",
+      "source": "devin-bundle",
+      "purpose": "Use when editing or reviewing prose for AI tells and rewriting it so it reads like the writer without changing what it says. Covers not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes used everywhere, inflated claims, sales language, stock AI words, bold labels, and filler. Do not use for code, data, or factual verification."
     }
   ],
-  "skill_count": 62,
+  "skill_count": 64,
   "rule_count": 28,
   "scripts": [
     {
