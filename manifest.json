@@ -491,8 +491,8 @@
     },
     {
       "name": "no-em-dash.py",
-      "purpose": "PreToolUse/Stop hook - blocks U+2014 in writes, git/gh message files and text commands, diffs and untracked files",
-      "export_hash": "96A43D128751204DFDE43EE9D09ACC93162E3671DC9C0556FC47CE9D6677268B",
+      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); code and data files exempt",
+      "export_hash": "A2F7E4FB8D144AB251BA66F9C7DDD263FE4AD53F12BF50E4BAB9E369701B9E85",
       "exported_at": "2026-09-25T16:17:01.590"
     },
     {

@@ -175,6 +175,40 @@ def test_stop_clean_allowed(tmp_path):
     assert p.returncode == 0
 
 
+def test_write_code_file_allowed():
+    """Code files are exempt: the dash rule covers prose only."""
+    p = run("no-em-dash.py", _pre("write",
+            {"file_path": str(ROOT / "x.py"), "content": f"a {EM} b"}))
+    assert p.returncode == 0
+
+
+def test_stop_untracked_code_dash_allowed(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path)
+    (tmp_path / "x.py").write_text(f"line {EM}\n", encoding="utf-8")
+    p = run("no-em-dash.py", {"hook_event_name": "Stop"}, cwd=tmp_path)
+    assert p.returncode == 0
+
+
+def test_stop_staged_code_dash_allowed(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path)
+    (tmp_path / "a.py").write_text(f"line {EM}\n", encoding="utf-8")
+    subprocess.run(["git", "add", "a.py"], cwd=tmp_path)
+    p = run("no-em-dash.py", {"hook_event_name": "Stop"}, cwd=tmp_path)
+    assert p.returncode == 0
+
+
+def test_stop_unstaged_code_dash_allowed(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path)
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=tmp_path)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=tmp_path)
+    (tmp_path / "a.py").write_text("clean\n", encoding="utf-8")
+    subprocess.run(["git", "add", "a.py"], cwd=tmp_path)
+    subprocess.run(["git", "commit", "-qm", "x"], cwd=tmp_path)
+    (tmp_path / "a.py").write_text(f"now {EM}\n", encoding="utf-8")
+    p = run("no-em-dash.py", {"hook_event_name": "Stop"}, cwd=tmp_path)
+    assert p.returncode == 0
+
+
 def test_invalid_payload_fails_open():
     p = subprocess.run(
         [sys.executable, "scripts/no-em-dash.py"],
