@@ -395,9 +395,14 @@
       "source": "devin-bundle",
       "purpose": "Tiered web scraping extension - offline parser (parse.py), Scrapling Fetcher tier (scrape.py) with SSRF-safe redirects and adaptive SQLite relocation, opt-in browser tier gated on explicit install",
       "original_path": "%APPDATA%\\devin\\skills\\scrape-tools"
+    },
+    {
+      "name": "project-orchestrator",
+      "source": "devin-bundle",
+      "purpose": "Use when driving a project from an empty folder or a fuzzy idea to a delivered product with CI/CD, coordinating specialist subagents under delegation contracts, producing the methodology documentation that fits the scope (RUP / Scrum / hybrid), with verified research before technology decisions and an excellence gate that reviews screen recordings of the real user path."
     }
   ],
-  "skill_count": 59,
+  "skill_count": 60,
   "rule_count": 28,
   "scripts": [
     {
