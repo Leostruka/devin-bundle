@@ -14,4 +14,5 @@ if __name__ == '__main__':
         'silent-error-review.py',
         'context-pressure.py',
         'memory-post-exec.py',
+        'gh-pr-assignee.py',
     ])
