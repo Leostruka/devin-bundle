@@ -215,3 +215,49 @@ def test_invalid_payload_fails_open():
         input="not json", capture_output=True, text=True,
         cwd=ROOT, timeout=30)
     assert p.returncode == 0
+
+
+# --- structural markdown contexts are allowed ---------------------------------
+
+def test_table_row_allowed():
+    p = run("no-em-dash.py", _pre("write",
+            {"file_path": str(ROOT / "x.md"),
+             "content": f"| a | b |\n|---|---|\n| 1 | {EM} |\n"}))
+    assert p.returncode == 0
+
+
+def test_dash_bullet_allowed():
+    p = run("no-em-dash.py", _pre("write",
+            {"file_path": str(ROOT / "x.md"),
+             "content": f"{EM} item um\n{EM} item dois\n"}))
+    assert p.returncode == 0
+
+
+def test_quote_attribution_allowed():
+    p = run("no-em-dash.py", _pre("write",
+            {"file_path": str(ROOT / "x.md"),
+             "content": f"> frase aqui\n> {EM} autor\n"}))
+    assert p.returncode == 0
+
+
+def test_fenced_code_allowed():
+    p = run("no-em-dash.py", _pre("write",
+            {"file_path": str(ROOT / "x.md"),
+             "content": f"texto ok\n```python\nx = 'a {EM} b'\n```\n"}))
+    assert p.returncode == 0
+
+
+def test_structural_ok_but_prose_still_blocked():
+    """Structural lines allowed; a prose dash on another line still blocks."""
+    p = run("no-em-dash.py", _pre("write",
+            {"file_path": str(ROOT / "x.md"),
+             "content": f"| a | {EM} |\nparagrafo com {EM} no meio\n"}))
+    assert p.returncode == 2
+
+
+def test_stop_untracked_table_row_allowed(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path)
+    (tmp_path / "novo.md").write_text(
+        f"| a | {EM} |\n", encoding="utf-8")
+    p = run("no-em-dash.py", {"hook_event_name": "Stop"}, cwd=tmp_path)
+    assert p.returncode == 0

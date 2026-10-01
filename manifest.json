@@ -381,9 +381,24 @@
       "purpose": "Use when a task needs fast typed decisions — classification, triage, scoring, guardrails, moderation, or model routing — over text/JSON states, or when integrating the 'laya' engine (non-autoregressive decision model) into a user's codebase."
     },
     {
-      "name": "operate-spline",
+      "name": "operate-blender",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks to launch, drive, build scenes in, export from, or shut down the Spline desktop app (3D/2D design, Electron). Routes to extensions/spline-operator/wrapper.py, which speaks the app's embedded MCP bridge (ws://127.0.0.1:19692) — structured tool calls, not GUI clicking."
+      "purpose": "Use when the user asks to create, build, manipulate, render, animate, or export 3D content (scenes, models, characters, environments, stylized/cartoon or hyper-real art, procedural geometry). Routes to extensions/blender-operator/wrapper.py, which drives headless Blender through a TCP exec loop with full bpy access; no GUI, no MCP addon, free/GPL tooling."
+    },
+    {
+      "name": "ai3d-gen",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, with direct-model fallbacks (TRELLIS, TripoSG, InstantMesh, Hunyuan3D)."
+    },
+    {
+      "name": "operate-godot",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to build, inspect, import assets into, or export a Godot 4 project headlessly (realtime 3D delivery, game scenes). Uses godot --headless --script CLI; no GUI."
+    },
+    {
+      "name": "mesh-utils",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to inspect, convert, clean, or validate mesh/3D scene files (OBJ, STL, GLB, FBX, USD) via trimesh, PyMeshLab, or pxr. Routes to extensions/mesh-utils/meshops.py."
     },
     {
       "name": "creative-engineering",
@@ -397,12 +412,22 @@
       "original_path": "%APPDATA%\\devin\\skills\\scrape-tools"
     },
     {
+      "name": "fact-check",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to fact-check, tear apart, nitpick, or pre-publish-review an article, essay, blog post, or any markdown/text draft, verifying every checkable claim against online primary sources via adversarial checker subagents. Do not use for code review, security audits, or proofreading without factual verification."
+    },
+    {
+      "name": "humanizer",
+      "source": "devin-bundle",
+      "purpose": "Use when editing or reviewing prose for AI tells and rewriting it so it reads like the writer without changing what it says. Covers not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes used everywhere, inflated claims, sales language, stock AI words, bold labels, and filler. Do not use for code, data, or factual verification."
+    },
+    {
       "name": "project-orchestrator",
       "source": "devin-bundle",
       "purpose": "Use when driving a project from an empty folder or a fuzzy idea to a delivered product with CI/CD, coordinating specialist subagents under delegation contracts, producing the methodology documentation that fits the scope (RUP / Scrum / hybrid), with verified research before technology decisions and an excellence gate that reviews screen recordings of the real user path."
     }
   ],
-  "skill_count": 60,
+  "skill_count": 65,
   "rule_count": 28,
   "scripts": [
     {
@@ -491,8 +516,8 @@
     },
     {
       "name": "no-em-dash.py",
-      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); code and data files exempt",
-      "export_hash": "A2F7E4FB8D144AB251BA66F9C7DDD263FE4AD53F12BF50E4BAB9E369701B9E85",
+      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code and data files exempt",
+      "export_hash": "512E5A0BAFF4DC397F5A5E5A88F02290F282547DB1C53173F6EC873AAC9E21D2",
       "exported_at": "2026-09-25T16:17:01.590"
     },
     {

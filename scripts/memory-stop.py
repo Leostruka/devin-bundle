@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Stop and SessionEnd hook for reporting .devin/memory/ state.
+"""SessionEnd hook for reporting .devin/memory/ state.
 
 The hook only writes lifecycle and memory summaries to stderr; it never blocks.
+It is silent on Stop: stderr from a Stop hook is surfaced as a new turn, and
+unconditional reporting on every Stop re-prompts the agent in a loop.
 """
 import json, os, sys
 from datetime import date
@@ -37,7 +39,7 @@ def main():
         sys.exit(0)
 
     event = data.get('hookEventName') or data.get('hook_event_name')
-    if event not in ('Stop', 'SessionEnd'):
+    if event != 'SessionEnd':
         sys.exit(0)
     if event == 'SessionEnd':
         log(f"session ended: {data.get('reason', 'unknown')}")

@@ -27,7 +27,7 @@ mechanism (no window-targeted posting, no UI Access path) exists today.
 - `decision_contract.py` - closed outcomes `suggestion|abstain`, <=8 candidates, `__none__`, context echo, allowlisted state
 - `laya_worker.py` + `decision_client.py` - resident stdio worker, offline-only, sha256-pinned local snapshots, selective preload, `model` pin from config
 - `eval_decisions.py`, `capture_eval.py` - frozen-manifest metrics + capture helper
-- Consumers (shadow-only): `cu_decision`, `spline-operator/decision`, `media-tools/intent`, `workflow_routing`, `output_context`, `knowledge_labels`
+- Consumers (shadow-only): `cu_decision`, `media-tools/intent`, `workflow_routing`, `output_context`, `knowledge_labels`
 - `assist` degrades to `shadow` without compatible calibration
 
 ## 3. Other extensions
@@ -36,7 +36,9 @@ mechanism (no window-targeted posting, no UI Access path) exists today.
 |---|---|
 | `system-control` | Brokered OS control: inventory, bounded exec, owned sessions, event streams, verified file copies; backends per-OS |
 | `media-tools` | Media fx/presets, webcam, glb input, ascii; `intent.py` consumes Laya shadow |
-| `spline-operator` | Spline desktop bridge `wrapper.py` (ws://127.0.0.1:19692) + `decision.py` manifest-bound tool picking |
+| `blender-operator` | Headless Blender bridge `wrapper.py` + `blender_server.py` (TCP JSONL exec loop, full bpy) |
+| `comfyui-operator` | Local ComfyUI HTTP client `wrapper.py` (status/submit/history/download/upload) |
+| `mesh-utils` | `meshops.py` inspect/convert/clean via trimesh, PyMeshLab, pxr |
 | `ai-tools` | `prompt_compiler.py` (golden template), `abliterator.py`, model knowledge_bases |
 | `diagram-tools`, `rust-core` | diagrams; PyO3 crates (`fast_math` staged) |
 
