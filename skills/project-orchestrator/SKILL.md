@@ -33,8 +33,8 @@ survives compaction.
 5. Fresh context per delegation. Single-writer on shared files. A branch or
    worktree lane per role when writes collide.
 6. Fan-out costs about 15x a chat turn. Cap at 3 concurrent subagents;
-   declare an explicit budget per phase in the ledger; exceeding it needs
-   the user's approval.
+   declare an explicit budget per phase in the ledger and record `consumed`
+   per contract; exceeding it needs the user's approval.
 7. Green tests never close a phase. Only the excellence gate does.
 8. You orchestrate and document; you never write product code yourself.
    Implementation is always delegated.
@@ -66,6 +66,8 @@ charter (mandate, boundaries, definition of done) plus its own `.devin/`
 with `notes/` and `adr/` where the role accumulates domain knowledge across
 delegations. Spawn a new role only when the matrix shows a real capability
 gap; diversity of roles beats headcount. Record the justification.
+Reassigning a role = editing `workers/<role>/role.md` plus a fresh dispatch
+carrying standing context; record `reassign:` in the Progress Ledger.
 
 ## Delegation contract
 
@@ -73,17 +75,28 @@ Every dispatch is preceded by a filled `templates/delegation-contract.md`
 written to `.devin/handoffs/`:
 
 - objective: one domain, self-contained
+- lane: branch/worktree path + Lane setup / Lane teardown commands
+- inputs: artifact paths + `Readable refs` allowlist of root docs
+- frozen inputs: sha256 hash per input file, pinned at dispatch and
+  re-hashed at verify; drift is a contract failure
 - output: handoff-doc fields + report file path
 - tools: profile + allowed tool set
 - boundaries: explicit NOT-list (files, actions, scope)
+- peer consults: allowed roles + cap; routed by you, never direct
 - termination: max turns, time budget, stop conditions
 - verification: the commands that prove the output (VFs)
 
-Loop per delegation: contract -> `run_subagent` -> worker writes
-`templates/handoff-doc.md` -> verify output against contract and VFs ->
-append one line to the Progress Ledger. Fix loops, re-reviews and the
-5-round breaker come from `dispatching-parallel-agents`; per-task gates and
-independent `qa-ci` verification come from `executing-plans` / `gates`.
+Loop per delegation: contract (with frozen-input hashes) -> `run_subagent`
+-> record `handle: <agent_id>` -> worker writes `templates/handoff-doc.md`
+-> verify output against contract and VFs and re-hash frozen inputs ->
+append one line with `handle:` and `spent:` to the Progress Ledger ->
+rewrite `## Status`. A handoff carrying `ESCALATE` stops the loop and goes
+to the user. A `CONSULT:` request is relayed by you (resume the peer's
+handle, cap 2 exchanges, or a micro-contract) and logged; `resume` for
+bounded follow-up (<=2 questions) counts against the contract budget.
+Fix loops, re-reviews and the 5-round breaker come from
+`dispatching-parallel-agents`; per-task gates and independent `qa-ci`
+verification come from `executing-plans` / `gates`.
 
 ## Research protocol
 
@@ -96,8 +109,10 @@ Findings land in `.devin/research/<area>.md`.
 ## Subconscious advisor
 
 A peer `devin` session you own via `computer-use` terminal control, consulted
-before decisions, after cycles, and when re-planning approach or roster. Full
-procedure: `reference/advisor-protocol.md`; charter: `templates/advisor-charter.md`.
+before decisions, after cycles, on the event triggers in
+`reference/advisor-protocol.md` (gate outcomes, contract cadence, ESCALATE
+handoffs, RESET_WORKER flags), and when re-planning approach or roster.
+Charter: `templates/advisor-charter.md`.
 
 - Spawn: `terminal.py spawn` PTY running `devin`, onboarded with the charter;
   record `Advisor:` in the ledger. Resume-loop (`run_subagent` + `resume`)
@@ -115,12 +130,20 @@ procedure: `reference/advisor-protocol.md`; charter: `templates/advisor-charter.
 
 ## Isolation rules
 
-- filesystem: branch/worktree lane per role when writes collide
-  (`git-workflows`); parallel reads always allowed
+- filesystem: you own the root `.devin/` (ledgers, handoffs, vision, adr,
+  research, raid). The advisor is a peer session on the root workspace; it
+  owns `.devin/advisor/` and reads everything else read-only. Workers live
+  in `workers/<role>/` with their own `.devin/` (notes, adr) and write only
+  inside their lane; root docs reach a worker only through the contract's
+  `Readable refs` allowlist. Branch/worktree lane per role when writes
+  collide (`git-workflows`); Lane setup / Lane teardown commands declared in
+  the contract run with `$LANE_PATH`, `$BRANCH`, `$ROOT`; parallel reads
+  always allowed
 - context: fresh window per delegation; the contract is the whole input
-- state: append-only ledgers + handoff docs; single-writer on shared files
-  (advisor owns `.devin/advisor/`, you own `.devin/ledgers/` + handoffs)
-- budget: declared per phase; termination limits in every contract
+- state: append-only ledgers + handoff docs; single-writer on shared files;
+  `## Status` is the only rewritten section
+- budget: declared per phase with `consumed` recorded per contract;
+  termination limits in every contract
 
 ## Quality bar
 
@@ -146,20 +169,23 @@ Stop and escalate to the user when: intake stays ambiguous after the
 analyst session, a fix loop hits its breaker on a load-bearing finding, the
 excellence gate fails twice on the same release candidate, the fan-out
 budget would be exceeded, a contract's termination limit trips without a
-completed deliverable, or the advisor's RESET_ORCHESTRATOR fires twice in
-one phase.
+completed deliverable, a handoff arrives with `ESCALATE` set, or the
+advisor's RESET_ORCHESTRATOR fires twice in one phase.
 
 ## Templates
 
 `templates/`: `intake-vision.md`, `development-case.md`, `role-matrix.md`,
 `delegation-contract.md`, `handoff-doc.md`, `ledger.md`, `raid-register.md`,
-`adr.md`, `worker-role.md`, `advisor-charter.md`. Usage doc in Portuguese:
-`USAGE.pt.md`.
+`adr.md`, `worker-role.md`, `advisor-charter.md`, `team-pack.md`
+(exportable roster: role-matrix + charters + conventions, importable into
+another project). Usage doc in Portuguese: `USAGE.pt.md`.
 
 ## Cross-skills
 
 `grilling` (analyst session), `dispatching-parallel-agents` (fan-out, fix
-loop), `afk-loop` (unattended issue DAG under `.devin/scratch/`),
+loop), `afk-loop` (unattended issue DAG under `.devin/scratch/`; recurring
+checks become `every gate` ledger items or afk-loop issues - the skill has
+no scheduler of its own),
 `executing-plans` + `gates` + `autonomous-gates` (step/final gates, `qa-ci`),
 `planning` (plan-doc format in `.devin/plans/`), `spec-consistency.py`
 (artifact audit), `impeccable` + `a11y-audit` (UX), `observability-quality`

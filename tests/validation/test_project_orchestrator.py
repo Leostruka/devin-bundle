@@ -23,6 +23,7 @@ TEMPLATES = [
     "adr.md",
     "worker-role.md",
     "advisor-charter.md",
+    "team-pack.md",
 ]
 
 REFERENCE = [
@@ -139,6 +140,29 @@ def test_subconscious_advisor_codified():
         "resume",
         "devin acp",
         "consultative",
+    ):
+        assert token in text, f"missing {token}"
+
+
+def test_maestri_improvements_codified():
+    text = all_text()
+    for token in (
+        "ESCALATE",
+        "## Status",
+        "Frozen inputs",
+        "sha256",
+        "handle:",
+        "reassign",
+        "spent:",
+        "consumed",
+        "trigger",
+        "Lane setup",
+        "Lane teardown",
+        "$LANE_PATH",
+        "Peer consults",
+        "CONSULT:",
+        "Readable refs",
+        "team-pack",
     ):
         assert token in text, f"missing {token}"
 

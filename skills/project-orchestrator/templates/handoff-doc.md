@@ -9,6 +9,10 @@ role; read by the consuming role. Replaces free chat between roles.
 - **From role**: <role>
 - **To role**: <role>
 - **Date**: <YYYY-MM-DD>
+- **ESCALATE**: <reason, or "none"> - when set, the orchestrator stops the
+  loop and presents it to the user before dispatching further work
+- **CONSULT**: <role>: <question>, or "none" - a bounded question to a peer
+  role, relayed by the orchestrator per the contract's Peer consults cap
 
 ## Inputs consumed
 

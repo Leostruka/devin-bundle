@@ -46,15 +46,25 @@ Nao usar para tarefa unica de codigo; nesses casos o fluxo
 .devin/raid.md              riscos, premissas, issues, dependencias
 .devin/research/<area>.md   logs de pesquisa PRISMA-lite
 .devin/handoffs/*.md        contratos e handoffs entre papeis
+.devin/team-pack.md         elenco exportavel (papeis + charters + convencoes)
 workers/<role>/             uma pasta por papel, com .devin/ proprio
 ```
+
+O ledger tem secao `## Status` reescrita a cada evento: fase atual, elenco
+ativo, escalacoes abertas. Handoffs com `ESCALATE` param o loop e chegam
+ate voce.
 
 ## Limites
 
 - maximo 3 subagentes em paralelo; budget de fan-out declarado por fase
+  com `consumed` registrado por contrato
 - papeis novos so com gap real registrado na matriz
 - o orquestrador nao escreve codigo de produto; toda implementacao e
   delegada sob contrato
+- workers leem docs da raiz somente via `Readable refs` do contrato;
+  inputs de spec sao congelados por hash (`Frozen inputs`)
+- sem scheduler proprio: checks recorrentes viram itens `every gate` no
+  ledger ou issues de `afk-loop`
 
 ## Subconsciente (advisor)
 

@@ -23,6 +23,19 @@ For a phase-long advisor, the CU sessions daemon idles out at
 advisor in a user-visible terminal window and `terminal.py bind --hwnd <n>`
 instead (bound terminals have no TTL).
 
+## Consult triggers
+
+Event-driven, still pull: the orchestrator initiates every consult. Each
+trigger fires at most one consult, charged to the phase budget:
+
+| Trigger | When |
+|---|---|
+| Gate outcome | after every G* gate result is recorded |
+| Contract cadence | every N completed contracts (default 3) |
+| ESCALATE handoff | always, before presenting to the user |
+| RESET_WORKER flag | always, before acting on it |
+| Phase boundary | per development case opt-in |
+
 ## Consult
 
 The typed prompt is a trigger channel, not the payload channel. Payloads are

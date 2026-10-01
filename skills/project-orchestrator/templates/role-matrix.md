@@ -10,6 +10,10 @@ role covers.
 |---|---|---|---|---|
 | example: external API research | researcher | yes (`agents/researcher.md`) | reuse | |
 | example: UX audit | ux-auditor | no | spawn workers/ux-auditor | gap: no design-judgment role |
+| example: tester quits mid-phase | qa-ci | yes | reassign | mandate moves; charter edited + fresh dispatch |
+
+Actions: `reuse`, `spawn workers/<role>`, `reassign` (edit charter + fresh
+dispatch, record `reassign:` in the Progress Ledger).
 
 ## Spawn checklist (per new role)
 
