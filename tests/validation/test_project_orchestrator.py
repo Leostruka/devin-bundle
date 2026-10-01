@@ -22,12 +22,14 @@ TEMPLATES = [
     "raid-register.md",
     "adr.md",
     "worker-role.md",
+    "advisor-charter.md",
 ]
 
 REFERENCE = [
     "methodology-selection.md",
     "research-protocol.md",
     "quality-gates.md",
+    "advisor-protocol.md",
 ]
 
 
@@ -119,6 +121,24 @@ def test_quality_and_excellence_bar():
         "record.py",
         "computer-use",
         "time-to-value",
+    ):
+        assert token in text, f"missing {token}"
+
+
+def test_subconscious_advisor_codified():
+    text = all_text()
+    for token in (
+        "advisor",
+        "terminal.py",
+        "send-to",
+        "HYGIENE",
+        "RESET_ORCHESTRATOR",
+        "MEMORY DELTA",
+        "onboarding.md",
+        ".devin/advisor/",
+        "resume",
+        "devin acp",
+        "consultative",
     ):
         assert token in text, f"missing {token}"
 

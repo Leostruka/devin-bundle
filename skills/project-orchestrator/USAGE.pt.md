@@ -55,3 +55,23 @@ workers/<role>/             uma pasta por papel, com .devin/ proprio
 - papeis novos so com gap real registrado na matriz
 - o orquestrador nao escreve codigo de produto; toda implementacao e
   delegada sob contrato
+
+## Subconsciente (advisor)
+
+Uma sessao `devin` parceira que o orquestrador possui via `computer-use`
+(`terminal.py spawn` -> PTY com `devin` dentro) e consulta antes de
+decisoes, apos ciclos, e ao replanejar abordagem ou elenco.
+
+- Consulta: o prompt digitado e o gatilho; o conteudo vai por artefatos.
+  Resposta no contrato VERDICT / RATIONALE / RISKS / HYGIENE / MEMORY DELTA.
+- Estado: `.devin/advisor/` (charter, notas gerenciadas, log de consultas,
+  onboarding) escrito pelo proprio advisor.
+- Higiene literal: `/clear` digitado no peer reseta; o advisor pode digitar
+  um pedido no terminal do orquestrador (`HYGIENE: RESET_ORCHESTRATOR`),
+  que chega como mensagem de usuario; quem confirma o `/clear` do
+  orquestrador e voce.
+- Consultivo apenas: VERDICT nunca executa sozinho; decisao e do
+  orquestrador; desacordo em ponto estrutural escala para voce.
+- Fallbacks documentados em `reference/advisor-protocol.md`: resume-loop
+  (subagente com `resume`, sem CU) e `devin acp` (persistencia alem do
+  processo do orquestrador).

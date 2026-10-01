@@ -93,12 +93,33 @@ logged queries, lateral reading for critical claims, citation verification
 (existence + entailment), and a coverage self-quiz before any stack proposal.
 Findings land in `.devin/research/<area>.md`.
 
+## Subconscious advisor
+
+A peer `devin` session you own via `computer-use` terminal control, consulted
+before decisions, after cycles, and when re-planning approach or roster. Full
+procedure: `reference/advisor-protocol.md`; charter: `templates/advisor-charter.md`.
+
+- Spawn: `terminal.py spawn` PTY running `devin`, onboarded with the charter;
+  record `Advisor:` in the ledger. Resume-loop (`run_subagent` + `resume`)
+  and `devin acp` are the documented fallbacks when CU control is unwanted or
+  restarts must be survived.
+- Consult: typed prompt is the trigger; artifacts are the payload. Reply
+  contract: VERDICT / RATIONALE / RISKS / HYGIENE / MEMORY DELTA / marker.
+- State: `.devin/advisor/` (charter, managed notes, consultation log,
+  onboarding) written by the advisor; you own ledgers and handoffs.
+- Hygiene is literal: `/clear` typed into the peer resets it; the advisor's
+  `HYGIENE: RESET_ORCHESTRATOR` arrives as a typed request message, and you
+  ask the user to `/clear` + re-invoke (advisor never clears you uninvited).
+- Advisory only: its VERDICT never auto-executes; 1 consult per decision,
+  debate cap 2 rounds, peer sessions count against the fan-out budget.
+
 ## Isolation rules
 
 - filesystem: branch/worktree lane per role when writes collide
   (`git-workflows`); parallel reads always allowed
 - context: fresh window per delegation; the contract is the whole input
 - state: append-only ledgers + handoff docs; single-writer on shared files
+  (advisor owns `.devin/advisor/`, you own `.devin/ledgers/` + handoffs)
 - budget: declared per phase; termination limits in every contract
 
 ## Quality bar
@@ -124,14 +145,16 @@ loop back through G3 when it does not.
 Stop and escalate to the user when: intake stays ambiguous after the
 analyst session, a fix loop hits its breaker on a load-bearing finding, the
 excellence gate fails twice on the same release candidate, the fan-out
-budget would be exceeded, or a contract's termination limit trips without a
-completed deliverable.
+budget would be exceeded, a contract's termination limit trips without a
+completed deliverable, or the advisor's RESET_ORCHESTRATOR fires twice in
+one phase.
 
 ## Templates
 
 `templates/`: `intake-vision.md`, `development-case.md`, `role-matrix.md`,
 `delegation-contract.md`, `handoff-doc.md`, `ledger.md`, `raid-register.md`,
-`adr.md`, `worker-role.md`. Usage doc in Portuguese: `USAGE.pt.md`.
+`adr.md`, `worker-role.md`, `advisor-charter.md`. Usage doc in Portuguese:
+`USAGE.pt.md`.
 
 ## Cross-skills
 
@@ -141,4 +164,5 @@ loop), `afk-loop` (unattended issue DAG under `.devin/scratch/`),
 `planning` (plan-doc format in `.devin/plans/`), `spec-consistency.py`
 (artifact audit), `impeccable` + `a11y-audit` (UX), `observability-quality`
 + `deploy` (DORA, golden signals, CI/CD), `security` (security gate),
-`computer-use` (recording), `finishing-a-development-branch` (merge).
+`computer-use` (recording, peer-session terminal control for the advisor),
+`finishing-a-development-branch` (merge).

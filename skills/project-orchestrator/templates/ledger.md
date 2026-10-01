@@ -11,8 +11,9 @@ lines are added, never rewritten. Survives compaction; trust it over memory.
 - Facts: <decisions, constraints, verified claims>
 - Plan: <phase route, current phase>
 - Roster: <active roles and their lanes>
+- Advisor: <peer sid + session id, or "in-session agent_id", or "off">
 - Dependency map: <Blocked by: edges between work items>
-- Budget: <fan-out cap per phase>
+- Budget: <fan-out cap per phase; advisor consults per phase>
 
 ## Progress Ledger (what is proven)
 
