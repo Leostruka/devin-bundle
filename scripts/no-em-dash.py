@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""Blocks the em-dash character (U+2014) in prose within agent output
-and deliverables.
+"""Blocks the em-dash character (U+2014) in prose within prose deliverables.
 
-Structural markdown uses are allowed: table rows ('| a | - |'),
-em-dash bullet items ('- item'), quote attribution ('> - name'), and
-text inside fenced code blocks. Prose usage ('a - b' mid-sentence)
-is what is blocked.
+Two scopes combine: only prose file types are covered (TEXT_EXTS;
+code/config/data files are exempt), and inside those files only
+prose-position uses count. Structural markdown uses are allowed:
+table rows ('| a | - |'), em-dash bullet items ('- item'), quote
+attribution ('> - name'), and text inside fenced code blocks. Prose
+usage ('a - b' mid-sentence) is what is blocked.
 
 Handles two events, dispatched on `hook_event_name`:
   PreToolUse - exec (git commit message, including -F/--file), write,
-             edit, notebook_edit
-  Stop       - scans staged/unstaged changes and untracked files
+             edit, notebook_edit - prose file paths only
+  Stop       - scans staged/unstaged changes and untracked files,
+             prose file paths only
 
 Stdin payloads (per /cli/extensibility/hooks/lifecycle-hooks):
   PreToolUse {"hook_event_name": "PreToolUse", "tool_name": "exec",
@@ -29,15 +31,28 @@ import sys, json, re, os, subprocess
 EM_DASH = chr(0x2014)
 SELF_FILE = "no-em-dash.py"
 
+# Prose deliverables only. Source code, configs and data files are exempt:
+# the rule guards written text, not characters inside string literals.
+TEXT_EXTS = {
+    ".md", ".markdown", ".mdx", ".txt", ".rst", ".adoc", ".tex",
+    ".ipynb",
+}
+
+
+def is_text_path(path):
+    """True when the path is a prose deliverable the rule covers."""
+    if not path:
+        return True  # unknown target: keep checking
+    ext = os.path.splitext(path)[1].lower()
+    if not ext:
+        return True  # extensionless docs (LICENSE, AUTHORS, NOTICE)
+    return ext in TEXT_EXTS
+
 
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
     print(json.dumps({"decision": "block", "reason": reason}))
     sys.exit(2)
-
-
-def has_em_dash(text):
-    return bool(text) and EM_DASH in text
 
 
 def prose_em_dash_lines(text):
@@ -102,19 +117,29 @@ def extract_flag_file(command, flags, short_f=True):
     return None
 
 
-def filter_self_diffs(diff_output):
-    """Drop diff sections of this detector (its source names the rule)."""
-    lines = diff_output.split("\n")
-    filtered = []
-    skip = False
-    for line in lines:
+DIFF_FILE_RE = re.compile(r"^\+\+\+ b/(.*)$")
+
+
+def added_text_lines(diff_output):
+    """Collect added lines from prose files only.
+
+    Tracks the `+++ b/<path>` header per diff section; also drops this
+    detector's own file (its source names the rule)."""
+    out = []
+    current_is_text = False
+    for line in diff_output.split("\n"):
         if line.startswith("diff --git"):
-            skip = bool(
-                re.search(r'[ab]/(?:.*/)?' + re.escape(SELF_FILE)
-                          + r'(?:\s|$)', line))
-        if not skip:
-            filtered.append(line)
-    return "\n".join(filtered)
+            current_is_text = False
+            continue
+        m = DIFF_FILE_RE.match(line)
+        if m:
+            path = m.group(1)
+            current_is_text = (SELF_FILE not in path) and is_text_path(path)
+            continue
+        if current_is_text and line.startswith("+") \
+                and not line.startswith("+++"):
+            out.append(line[1:])
+    return "\n".join(out)
 
 
 def handle_stop(_data):
@@ -133,12 +158,7 @@ def handle_stop(_data):
             return  # no git or no repo: allow
         if result.returncode != 0:
             continue
-        filtered = filter_self_diffs(result.stdout)
-        added = "\n".join(
-            line[1:]
-            for line in filtered.split("\n")
-            if line.startswith("+") and not line.startswith("+++")
-        )
+        added = added_text_lines(result.stdout)
         if has_prose_em_dash(added):
             scope = "staged" if "--cached" in args else "unstaged"
             block(
@@ -162,7 +182,7 @@ def scan_untracked(cwd):
     if result.returncode != 0:
         return
     for rel in result.stdout.splitlines():
-        if not rel or SELF_FILE in rel:
+        if not rel or SELF_FILE in rel or not is_text_path(rel):
             continue
         path = os.path.join(cwd, rel)
         try:
@@ -222,8 +242,8 @@ def handle_pre_tool_use(data):
 
     if tool_name in ("write", "edit", "notebook_edit"):
         file_path = tool_input.get("file_path", "") \
-            or tool_input.get("notebook_path", "") or ""
-        if SELF_FILE in file_path:
+            or tool_input.get("notebook_path") or ""
+        if SELF_FILE in file_path or not is_text_path(file_path):
             return
         content = tool_input.get("content") \
             or tool_input.get("new_string") \

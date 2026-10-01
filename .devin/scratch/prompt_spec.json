@@ -1,35 +1,32 @@
 {
   "effort": "max",
-  "persona": "Technical Art Director Sênior e Pesquisador de Computer Graphics",
+  "persona": "Staff Engineer - Agent Systems / LLM Orchestration",
   "model": "swe-2",
-  "goal": "Conduzir pesquisa extensa e profunda, com no mínimo 140 fontes validadas e renomadas (documentação oficial, papers, benchmarks da indústria, reviews de estúdios, comunidades profissionais como Polycount/CGSociety/ArtStation Magazine, relatórios de engines), para determinar a melhor ferramenta ou stack de criação e manipulação 3D cobrindo: obras hiper-realistas, cartoon/estilizado, criativo/procedural, animação, personagens e cenários. Entregar recomendação fundamentada para substituir a integração Spline atual, que produz artefatos inúteis.",
-  "context": "Repo devin-bundle (C:\\Users\\Fingertech\\Desktop\\scripts\\devin-bundle). Integração 3D atual: skills/operate-spline + extensions/spline-operator (MCP bridge ws://127.0.0.1:19692, 36 tools, daemon keeper). Resultado observado: gera artefatos inúteis para os eixos alvo. Candidatos a avaliar incluem Blender (+geometry nodes, addons), Maya, 3ds Max, Cinema 4D, Houdini, ZBrush, Unreal Engine 5, Unity, Substance 3D, Marvelous Designer, e geradores AI-3D (Tripo, Meshy, Luma Genie, Kaedim, Rodin/Hyper3D, Hunyuan3D, TRELLIS, Stable Fast 3D, ComfyUI-3D). Critério decisivo adicional: dirigibilidade por agente (API, scripting Python, headless CLI, MCP bridge, licença/custo).",
+  "goal": "Avaliar e desenhar o padrao 'subconsciente-orquestrador' para a skill project-orchestrator: uma segunda sessao que o orchestrator consulta para tomar decisoes, planejar, fazer brainstorms, debater topicos, avaliar resultados dos subordinados e dos ciclos, e planejar melhorias na abordagem e no time (adicionar/remover papeis). Inclui o protocolo de higiene de contexto dos dois lados: o orchestrator pode limpar/reintroduzir o subconsciente (/clear, /rm-session <sessao-anterior>, /bypass) e o subconsciente pode pedir a mesma limpeza da sessao do orchestrator, retornando com /project-orchestrator de mente limpa. Estende-se aos subordinados: o orchestrator pode resetar o contexto de um subordinado e reintroduzi-lo a sua funcao antes de solicitar a proxima acao. A decisao deve se basear nas melhores praticas e padroes renomados de contexto/sessao (lost-in-the-middle, contexto maior = maior possibilidade de degradacao, compact vs clear) e no que o Devin CLI e o bundle realmente suportam.",
+  "context": "Bundle Devin CLI em D:\\Programing\\ai_workspace\\devin-bundle. Skill recem-criada skills/project-orchestrator/ (commit ba856bf, branch feat/project-orchestrator): PM-grade, fases P0-G5, delegation contracts, handoffs por artefatos, ledgers duplos Task/Progress, workers/<role>/.devin/ por papel. Primitivas a avaliar como base do subconsciente: run_subagent (foreground e is_background, retorno unico), profiles em agents/, .devin/ledgers/ append-only, .devin/handoffs/, skills context-hygiene (lost-in-the-middle, clear-vs-compact, folding), memory-management, handoff, test_durable_session_log.py e system-control (sessoes persistentes). Ponto critico a verificar com ferramentas, nao deduzir: run_subagent e efemero e retorna uma vez; 'segunda sessao persistente' provavelmente nao existe como primitiva - avaliar equivalencias (background subagent por consulta, arquivos como memoria do subconsciente, durable sessions se existirem). Os comandos /clear, /rm-session, /bypass sao comandos de usuario do CLI - verificar em .devin/docs/ (TOOLS-MAP, DEVIN-CLI-COMPATIBILITY) se e como um agente pode invoca-los. Pesquisar fontes renomadas externas sobre degradacao de contexto e multi-agent memory.",
   "acceptance": [
-    "Relatório cita >= 140 fontes distintas, cada uma com URL, publicação/fonte e data de acesso",
-    "Fontes renomadas apenas: docs oficiais, SIGGRAPH/papers, benchmarks publicados, reviews de veículos profissionais, postmortems de estúdios - sem blogs SEO genéricos",
-    "Matriz comparativa por eixo: hiper-realismo, cartoon, procedural/criativo, animação/rigging, personagens, cenários",
-    "Coluna explícita de dirigibilidade por agente (API/script/headless/MCP) e custo/licença",
-    "Ranking final com recomendação única justificada + 1 alternativa",
-    "Veredito sobre a spline-operator: manter, limitar ou substituir, com evidência",
-    "Saída em Markdown em .devin/research/3d-tools-comparison.md"
+    "Veredicto documentado (viavel / parcial / inviavel) para a segunda sessao subconsciente no Devin CLI, com evidencia verificada por ferramentas de como run_subagent, sessoes persistentes e os comandos /clear, /rm-session e /bypass funcionam de fato",
+    "Mapa pratica-renomada -> mecanica concreta: lost-in-the-middle, degradacao com contexto crescente, compact vs clear, contexto fresco por tarefa, memoria externa em arquivos - cada item citando fonte primaria ou arquivo do bundle",
+    "Design proposto cobrindo: como o orchestrator consulta o subconsciente (dispatch por consulta vs sessao persistente), o contrato de consulta (input/artefatos/output), o protocolo de higiene bidirecional orchestrator<->subconsciente, e o reset de subordinados (respawn com role + artefatos, single-writer), com limites e condicoes de escalada explicitos",
+    "Decisao aplicada: se aprovada, mudancas em skills/project-orchestrator/ (SKILL.md/templates/reference) + testes de contrato atualizados; se rejeitada ou parcial, rationale registrado em .devin/adr/ do repo ou doc de decisao",
+    "Gates verdes: python -m pytest tests -q 0 falhas, python audit.py 0 erros, validate-skill-format PASS se SKILL.md mudar"
   ],
   "in_scope": [
-    "Pesquisa web extensa (web_search, webfetch) e consolidação de fontes",
-    "Matriz comparativa e ranking ponderado",
-    "Avaliação de dirigibilidade por agente e custo",
-    "Relatório final em .devin/research/"
+    "Avaliacao e pesquisa com evidencias (bundle + fontes primarias externas)",
+    "Doc de design/decisao da arquitetura do subconsciente e da higiene de contexto",
+    "Atualizacao de skills/project-orchestrator/ e testes de contrato apos aprovacao",
+    "Reuso das primitivas existentes (run_subagent, profiles, ledgers, handoffs, context-hygiene)"
   ],
   "out_scope": [
-    "Instalar, licenciar ou pagar qualquer ferramenta",
-    "Escrever código de nova integração ou modificar extensions/spline-operator",
-    "Benchmarks executados localmente (apenas benchmarks publicados)",
-    "Gerar artefatos 3D nesta etapa"
+    "Novos mecanismos de runtime (daemon, sessao persistente criada do zero)",
+    "Mudar hooks, MCP ou protocolos existentes",
+    "Executar o padrao num projeto real",
+    "Modelos pagos (parent free: apenas swe-2-medium/max)",
+    "SAFe/LeSS ou frameworks corporativos"
   ],
   "phases": [
-    "Fase 1: Declarar eixos de avaliação, critérios de inclusão de fontes e lista inicial de candidatos. PARE e aguarde aprovação.",
-    "Fase 2: Coletar >= 140 fontes (log em .devin/scratch/3d_sources.jsonl: url, publisher, data, eixo, evidência-chave).",
-    "Fase 3: Construir matriz comparativa ponderada por eixo + dirigibilidade/custo.",
-    "Fase 4: Ranking final, recomendação e veredito sobre spline-operator.",
-    "Fase 5: Escrever .devin/research/3d-tools-comparison.md e verificar todos os acceptance criteria."
+    "Pesquisa (bundle: context-hygiene, memory-management, handoff, run_subagent, sessoes duraveis; externo: lost-in-the-middle, context rot, multi-agent memory) + avaliacao de viabilidade + design proposto. PARE e aguarde aprovacao.",
+    "Aplicar as mudancas aprovadas em skills/project-orchestrator/ e nos testes de contrato, ou registrar a rejeicao.",
+    "pytest + audit.py + validate-skill-format verdes, contagens manifest/README se mudarem, commit e reporte com evidencias."
   ]
 }

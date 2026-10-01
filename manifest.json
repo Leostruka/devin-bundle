@@ -420,9 +420,14 @@
       "name": "humanizer",
       "source": "devin-bundle",
       "purpose": "Use when editing or reviewing prose for AI tells and rewriting it so it reads like the writer without changing what it says. Covers not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes used everywhere, inflated claims, sales language, stock AI words, bold labels, and filler. Do not use for code, data, or factual verification."
+    },
+    {
+      "name": "project-orchestrator",
+      "source": "devin-bundle",
+      "purpose": "Use when driving a project from an empty folder or a fuzzy idea to a delivered product with CI/CD, coordinating specialist subagents under delegation contracts, producing the methodology documentation that fits the scope (RUP / Scrum / hybrid), with verified research before technology decisions and an excellence gate that reviews screen recordings of the real user path."
     }
   ],
-  "skill_count": 64,
+  "skill_count": 65,
   "rule_count": 28,
   "scripts": [
     {
@@ -511,8 +516,8 @@
     },
     {
       "name": "no-em-dash.py",
-      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position (writes, git/gh messages, diffs, untracked files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code)",
-      "export_hash": "A8F7AFF21A714A2DE62D4591C56C71D3A1DA76EB9280B39A4C57DA125944FFC2",
+      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code and data files exempt",
+      "export_hash": "512E5A0BAFF4DC397F5A5E5A88F02290F282547DB1C53173F6EC873AAC9E21D2",
       "exported_at": "2026-09-25T16:17:01.590"
     },
     {
