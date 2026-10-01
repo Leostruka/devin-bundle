@@ -7,7 +7,8 @@ PTY processes (winpty backend) — never attached to user terminals.
 
 Ops ({op, arg?}):
   status | list | spawn {shell,cols,rows} | send {sid,text} |
-  recv {sid,tail?,wait?,timeout?} | close {sid} | kill {sid} | stop
+  recv {sid,tail?,wait?,timeout?} | close {sid} | kill {sid} |
+  link {src,dst,limit?} | unlink {id} | links | stop
 """
 import json
 import os
@@ -54,6 +55,13 @@ def _op(env):
         return cu_terminal.close_session(arg["sid"])
     if op == "kill":
         return cu_terminal.kill(arg["sid"])
+    if op == "link":
+        return cu_terminal.link(arg["src"], arg["dst"],
+                                limit=int(arg.get("limit", 0)))
+    if op == "unlink":
+        return cu_terminal.unlink(arg["id"])
+    if op == "links":
+        return {"ok": True, "links": cu_terminal.links()}
     if op == "stop":
         return {"ok": True, "stopped": True}
     return {"ok": False, "error": f"unknown op {op!r}"}

@@ -327,6 +327,30 @@ OS temp. Known limits: ConPTY backend fails on some builds (WinPTY used —
 see plan), mintty read is OCR-based (image fallback if winrt missing),
 `wt send-input` does not exist.
 
+### Links (agent-to-agent piping)
+
+`link` wires one spawned session's output into another's input, the
+Maestri-style "agent typing into another agent's terminal":
+
+```bash
+$PY terminal.py link <src-sid> <dst-sid> [--limit N]
+$PY terminal.py links                  # state + per-link stats
+$PY terminal.py unlink <link-id>
+```
+
+- Only output emitted **after** the link is created is forwarded; existing
+  scrollback is never replayed into dst.
+- The pump strips ANSI escapes/control chars, forwards complete lines, and
+  flushes a partial last line once src goes idle. Each forward ends with
+  `\r` (submit). Payloads are capped at 4000 chars (`truncated` stat).
+- The `send`/`exec` command gate applies per line: deny- and confirm-listed
+  lines are dropped and counted in `dropped`. Forwarded output is never
+  executed blindly.
+- Links stop on `unlink`, on `--limit` reached (`state: limit`), or when an
+  endpoint dies (`state: src_gone|dst_gone|write_failed`). Dead links stay
+  listed until `unlink`. Cycles (A to B to A) are allowed; `limit` is the
+  brake.
+
 ## Failure modes
 
 - **Wayland (Linux):** pynput keyboard/mouse control needs X11 or an XWayland
@@ -444,6 +468,41 @@ PY terminal.py exec "uname -a" --env devin-linux   # guest exec, untrusted out
   (`extensions/computer-use/integration/test_cu_env_live.py`) requires
   a running env and fails hard without one — it is not part of the
   normal `tests/` collection.
+
+### Android devices (`provider: "adb"`)
+
+An adb device or emulator registers as an attach-only env: no
+create/start/stop lifecycle, no TTY consent (the spec file itself is the
+authorization):
+
+```json
+.devin/computer-use/envs/phone.json
+{"env_id": "phone", "provider": "adb", "serial": "emulator-5554"}
+```
+
+`serial` is optional when exactly one device is attached; `adb_path` pins a
+binary (else `$CU_ADB` then PATH). Then:
+
+```bash
+$PY screenshot.py --env phone            # exec-out screencap -> PNG
+$PY screenshot.py --env phone --hints    # uiautomator tree -> real badges
+$PY mouse.py click 500 300 --env phone   # input tap (bounds-checked on fresh frame)
+$PY mouse.py click --hint as --env phone # tap the element's center
+$PY mouse.py scroll --dy -2 --env phone  # center swipe
+$PY mouse.py drag 800 400 --from-x 500 --from-y 300 --env phone
+$PY type_text.py "hello" --env phone     # input text (%s/% escaped, ASCII)
+$PY type_text.py --key enter --env phone # input keyevent KEYCODE_*
+$PY terminal.py exec "ls /sdcard" --env phone   # adb shell via guest channel
+$PY env.py status --env phone            # device state; lifecycle rejected
+$PY record.py --seconds 5 --env phone    # screencap polling (best-effort fps)
+```
+
+Honest limits: `move`/`position` reject (no hover cursor on touch);
+`--chord` rejects (no reliable modifier state via `input`); `input text`
+carries ASCII printable only, everything else is `unsupported_text`;
+`dispatched` means adb accepted the command, never that the app reacted.
+Hint sidecars live under the env scope (`hint_scope` on the backend), so
+device hints never collide with host hints.
 
 ### Laya target suggestions (`cu_decision.py`)
 

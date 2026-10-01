@@ -188,6 +188,16 @@ def main():
     ss = sub.add_parser("sessions")
     ss.add_argument("op", choices=["start", "stop", "status", "list"])
 
+    lk = sub.add_parser("link")
+    lk.add_argument("src")
+    lk.add_argument("dst")
+    lk.add_argument("--limit", type=int, default=0)
+
+    ul = sub.add_parser("unlink")
+    ul.add_argument("id")
+
+    sub.add_parser("links")
+
     args = p.parse_args()
 
     if args.cmd == "bind":
@@ -248,7 +258,8 @@ def main():
         else:
             print(json.dumps(_daemon_call(args.op)))
         return
-    if args.cmd in ("spawn", "send-to", "recv", "close", "kill"):
+    if args.cmd in ("spawn", "send-to", "recv", "close", "kill",
+                    "link", "unlink", "links"):
         # persistent sessions live in the daemon — start on demand
         if not _daemon_info():
             r = _daemon_start()
@@ -269,8 +280,16 @@ def main():
                                         "timeout": args.timeout})
         elif args.cmd == "close":
             out = _daemon_call("close", {"sid": args.session})
-        else:
+        elif args.cmd == "kill":
             out = _daemon_call("kill", {"sid": args.session})
+        elif args.cmd == "link":
+            out = _daemon_call("link", {"src": args.src,
+                                        "dst": args.dst,
+                                        "limit": args.limit})
+        elif args.cmd == "unlink":
+            out = _daemon_call("unlink", {"id": args.id})
+        else:
+            out = _daemon_call("links")
         print(json.dumps(out))
         return
     fail(f"unknown cmd {args.cmd}")

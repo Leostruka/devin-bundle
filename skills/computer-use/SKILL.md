@@ -39,7 +39,13 @@ PY type_text.py "text" | --keys ctrl+c # type / hotkey
 PY record.py --seconds 5               # screen video + contact-sheet PNG
 PY terminal.py bind --hwnd <n>          # read/control an existing terminal
 PY terminal.py spawn --shell cmd        # or own a PTY session (daemon)
+PY terminal.py link <src> <dst>         # pipe session A output into B input
+PY terminal.py links | unlink <id>      # inspect / stop a link
 PY browser.py bind --endpoint <url> --pid <p>  # browser via CDP/BiDi
+# Android: envs/<id>.json {"provider":"adb","serial":"..."} then:
+PY screenshot.py --env <id> --hints     # uiautomator tree -> hint badges
+PY mouse.py click --hint as --env <id>  # tap element center via adb
+PY terminal.py exec "ls /sdcard" --env <id>  # adb shell
 ```
 
 Terminal/browser details (read paths, send/exec/recv, events daemon) are in

@@ -82,10 +82,14 @@ def _resolve_xy(args):
 
 
 def _remote_main(target):
-    """Guest pointer via QMP. Bounds validated against a FRESH frame —
-    no stale geometry clicks into the void. Humanization flags
+    """Guest pointer via the env backend. Bounds validated against a FRESH
+    frame — no stale geometry clicks into the void. Humanization flags
     (profiles, motion curves) are host-only and unsupported here."""
     import cu_qmp_backend as qb
+    enc = qb
+    if target["kind"] == "adb":
+        import cu_adb_backend
+        enc = cu_adb_backend
     p = cm.JsonParser(description="Guest pointer control")
     sub = p.add_subparsers(dest="cmd", required=True)
     for name in ("move", "click", "scroll", "drag", "position"):
@@ -102,6 +106,12 @@ def _remote_main(target):
         if name in ("move", "click", "scroll"):
             sp.add_argument("x", type=int, nargs="?")
             sp.add_argument("y", type=int, nargs="?")
+        if name in ("move", "click"):
+            sp.add_argument("--hint", default=None,
+                            help="hint id from screenshot.py --hints "
+                                 "(device element tree)")
+            sp.add_argument("--gen", type=int, default=None,
+                            help="generation pin for the observation")
         if name == "drag":
             sp.add_argument("x", type=int)
             sp.add_argument("y", type=int)
@@ -117,32 +127,44 @@ def _remote_main(target):
             sp.add_argument("--button", default="left")
     args = p.parse_args()
     backend = target["backend"]
+    if getattr(args, "hint", None):
+        hscope = getattr(backend, "hint_scope", lambda: None)()
+        entry, reason = cu_hints.resolve_hint(
+            args.hint, session=cu_hints.session_id(hscope),
+            generation=getattr(args, "gen", None), scope=hscope)
+        if not entry:
+            cu_target.reject_remote(f"hint:{reason}")
+        args.x, args.y = entry["x"], entry["y"]
     before = None
     try:
         if args.cmd == "position":
             backend.pointer_position()  # always raises — honest
-        if args.cmd == "scroll" and (args.x is None or args.y is None):
+        if args.cmd == "scroll" and (args.x is None or args.y is None) \
+                and target["kind"] != "adb":
             if args.verify:
                 img0, meta0 = backend.observe()
                 before = {"frame": img0, "meta": meta0}
-            events = qb.encode_scroll(args.dx, args.dy)
+            events = enc.encode_scroll(args.dx, args.dy)
         else:
             img, meta0 = backend.observe()
             before = {"frame": img, "meta": meta0}
             w, h = img.width, img.height
             if args.cmd == "move":
-                events = qb.encode_move(args.x, args.y, w, h)
+                events = enc.encode_move(args.x, args.y, w, h)
             elif args.cmd == "click":
-                events = qb.encode_click(args.x, args.y, w, h,
-                                         button=args.button,
-                                         clicks=args.clicks)
+                events = enc.encode_click(args.x, args.y, w, h,
+                                          button=args.button,
+                                          clicks=args.clicks)
             elif args.cmd == "scroll":
-                events = qb.encode_move(args.x, args.y, w, h) + \
-                    qb.encode_scroll(args.dx, args.dy)
+                if target["kind"] == "adb":
+                    events = enc.encode_scroll(args.dx, args.dy, w, h)
+                else:
+                    events = enc.encode_move(args.x, args.y, w, h) + \
+                        enc.encode_scroll(args.dx, args.dy)
             else:  # drag
-                events = qb.encode_drag(args.from_x, args.from_y,
-                                        args.x, args.y, w, h,
-                                        button=args.button)
+                events = enc.encode_drag(args.from_x, args.from_y,
+                                         args.x, args.y, w, h,
+                                         button=args.button)
         if args.dry_run:
             print(json.dumps({"ok": True, "status": "dry_run",
                               "env_id": target["env_id"],
@@ -150,12 +172,15 @@ def _remote_main(target):
                               "events": len(events)}))
             return
         res = backend.send_events(events)
-    except qb.UnsupportedText as exc:
+    except (qb.UnsupportedText,
+            getattr(enc, "UnsupportedOp", qb.UnsupportedText)) as exc:
         cu_target.reject_remote(f"unsupported:{exc}")
     except Exception as exc:
         cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
     out = {"ok": True, "status": "dispatched",
            "env_id": target["env_id"], "cmd": args.cmd, **res}
+    if getattr(args, "hint", None):
+        out["hint"] = args.hint
     if args.verify:
         import cu_backend
         img2, meta2 = backend.observe()

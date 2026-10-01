@@ -72,6 +72,10 @@ def _remote_main(target):
     and the no-worker fallback. No pynput/SendInput/host clipboard."""
     import cu_qmp_backend
     import cu_guest
+    enc = cu_qmp_backend
+    if target["kind"] == "adb":
+        import cu_adb_backend
+        enc = cu_adb_backend
     p = cm.JsonParser(description="Type into isolated env")
     p.add_argument("text", nargs="?", default=None)
     p.add_argument("--key", default=None,
@@ -92,9 +96,9 @@ def _remote_main(target):
         events = None
         res = None
         if args.key:
-            events = cu_qmp_backend.encode_key(args.key)
+            events = enc.encode_key(args.key)
         elif args.chord:
-            events = cu_qmp_backend.encode_chord(args.chord)
+            events = enc.encode_chord(args.chord)
         elif args.text is not None:
             # Prefer the guest worker's Unicode insert (real text, no
             # keymap limit); fall back to keystroke events when the
@@ -107,8 +111,7 @@ def _remote_main(target):
             if insertable:
                 pass  # dispatched via text_insert below
             else:
-                events = cu_qmp_backend.encode_text(args.text,
-                                                    layout=layout)
+                events = enc.encode_text(args.text, layout=layout)
         else:
             cu_target.reject_remote("no text/--key/--chord given")
         before = None
@@ -119,7 +122,10 @@ def _remote_main(target):
             res = backend.send_events(events)
         else:
             res = backend.text_insert(args.text)
-    except cu_qmp_backend.UnsupportedText as exc:
+    except (cu_qmp_backend.UnsupportedText,
+            getattr(enc, "UnsupportedText", cu_qmp_backend.UnsupportedText),
+            getattr(enc, "UnsupportedOp", cu_qmp_backend.UnsupportedText)
+            ) as exc:
         cu_target.reject_remote(f"unsupported_text:{exc}")
     except Exception as exc:
         cu_target.reject_remote(f"{type(exc).__name__}:{exc}")

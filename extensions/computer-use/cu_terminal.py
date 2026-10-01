@@ -1023,3 +1023,148 @@ def kill(sid):
     except Exception as e:
         return {"ok": False, "error": f"kill_failed: {e}"}
     return {"ok": True}
+
+
+# -- session links (agent-to-agent PTY piping) ----------------------------------
+#
+# A link forwards NEW output of session src as input to session dst — the
+# Maestri-style "one agent typing into another's terminal". The pump lives
+# wherever _SESSIONS lives (the sessions daemon for CLI use). Scrollback
+# already emitted before `link` is never replayed.
+
+_ANSI_RX = re.compile(
+    r"\x1b\[[0-9;?]*[ -/]*[@-~]"               # CSI
+    r"|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)"      # OSC
+    r"|\x1b[PX^_].*?\x1b\\"                    # DCS/SOS/PM/APC
+    r"|\x1b[@-_]",                             # Fe escapes
+    re.S)
+_LINK_CTRL_RX = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")  # keeps \t \n
+_LINK_MAX_CHARS = 4000
+
+_LINKS = {}
+
+
+def _link_clean(s):
+    s = _ANSI_RX.sub("", s)
+    s = s.replace("\r\n", "\n").replace("\r", "")
+    return _LINK_CTRL_RX.sub("", s)
+
+
+def _link_take(pending, flush):
+    if flush:
+        return pending, ""
+    if "\n" in pending:
+        head, _, tail = pending.rpartition("\n")
+        return head, tail
+    return "", pending
+
+
+class _Link:
+    """Pump thread: new src output → sanitized lines → dst input + \\r."""
+
+    def __init__(self, lid, src, dst, limit, poll_s):
+        self.id, self.src, self.dst = lid, src, dst
+        self.limit = limit          # max forwards; 0 = unlimited
+        self.poll_s = poll_s
+        self.pos = 0
+        self.pending = ""
+        self.stable = 0
+        self.forwards = 0
+        self.dropped = 0            # deny/confirm-gated lines
+        self.truncated = 0
+        self.resyncs = 0
+        self.bytes = 0
+        self.last_at = None
+        self.state = "active"
+        self._stop = threading.Event()
+        self._t = threading.Thread(target=self._pump, daemon=True)
+
+    def meta(self):
+        return {"id": self.id, "src": self.src, "dst": self.dst,
+                "state": self.state, "forwards": self.forwards,
+                "dropped": self.dropped, "truncated": self.truncated,
+                "resyncs": self.resyncs, "bytes": self.bytes,
+                "last_at": self.last_at, "limit": self.limit}
+
+    def _pump(self):
+        while not self._stop.is_set():
+            time.sleep(self.poll_s)
+            if self._stop.is_set():
+                break
+            src = _SESSIONS.get(self.src)
+            if src is None or not src.pty.isalive():
+                self.state = "src_gone"
+                break
+            dst = _SESSIONS.get(self.dst)
+            if dst is None or not dst.pty.isalive():
+                self.state = "dst_gone"
+                break
+            txt = src.text()
+            if len(txt) < self.pos:          # deque wrapped — skip the gap
+                self.pos = len(txt)
+                self.resyncs += 1
+                continue
+            delta = txt[self.pos:]
+            self.pos = len(txt)
+            if delta:
+                self.stable = 0
+                self.pending += _link_clean(delta)
+            else:
+                self.stable += 1
+            payload, self.pending = _link_take(
+                self.pending, flush=self.stable >= 2)
+            if not payload:
+                continue
+            kept = []
+            for l in payload.split("\n"):
+                if not l.strip():
+                    continue
+                if _DENY_RX.match(l.strip()) or _CONFIRM_RX.match(l.strip()):
+                    self.dropped += 1        # gated line — never forwarded
+                else:
+                    kept.append(l)
+            if not kept:
+                continue
+            msg = "\n".join(kept)
+            if len(msg) > _LINK_MAX_CHARS:
+                msg = msg[-_LINK_MAX_CHARS:]
+                self.truncated += 1
+            try:
+                dst.pty.write(msg + "\r")
+            except Exception:
+                self.state = "write_failed"
+                break
+            self.forwards += 1
+            self.bytes += len(msg) + 1
+            self.last_at = time.time()
+            if self.limit and self.forwards >= self.limit:
+                self.state = "limit"
+                break
+
+
+def link(src, dst, limit=0, poll_s=POLL_S):
+    if src == dst:
+        return {"ok": False, "error": "self_link"}
+    s_src = _SESSIONS.get(src)
+    if s_src is None:
+        return {"ok": False, "error": "unknown_src"}
+    if _SESSIONS.get(dst) is None:
+        return {"ok": False, "error": "unknown_dst"}
+    l = _Link(uuid.uuid4().hex[:8], src, dst, int(limit or 0), poll_s)
+    l.pos = len(s_src.text())    # forward only output emitted after now
+    _LINKS[l.id] = l
+    l._t.start()
+    return {"ok": True, "link": l.id, "src": src, "dst": dst}
+
+
+def unlink(lid):
+    l = _LINKS.pop(lid, None)
+    if l is None:
+        return {"ok": False, "error": "unknown_link"}
+    l._stop.set()
+    l.state = "stopped"
+    return {"ok": True}
+
+
+def links():
+    return {lid: l.meta() for lid, l in _LINKS.items()}

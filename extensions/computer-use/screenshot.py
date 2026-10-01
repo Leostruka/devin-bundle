@@ -243,13 +243,40 @@ def _remote_main(target):
               "origin_px": meta.get("origin_px"),
               "captured_at": round(time.time(), 3)}
     if args.hints:
-        result["hints"] = None
-        result["note"] = ("no guest element enumeration yet (C10) — "
-                          "use --grid and click pixel coords")
-    if args.grid or args.hints:
-        _save_with_grid(img, args.grid or 100, out, 0, 0,
+        ui_enum = getattr(backend, "ui_elements", None)
+        els = ui_enum() if ui_enum else None
+        if els:
+            hints = _save_with_hints(img, els, out, 0, 0,
+                                     fmt=args.format, quality=args.quality)
+            hscope = getattr(backend, "hint_scope", lambda: None)()
+            data = cu_hints.write_sidecar(
+                hints, window={"kind": meta.get("backend"),
+                               "title": str(meta.get("instance_id"))},
+                capture={"origin_px": [0, 0],
+                         "size_px": [img.width, img.height]},
+                scope=hscope)
+            result.update(hints=hints, truncated=False,
+                          session_id=data["session_id"],
+                          observation_id=data["observation_id"],
+                          generation=data["generation"],
+                          note=("element tree from the device — click via "
+                                "mouse.py click X Y --env or --hint"))
+        else:
+            if ui_enum:
+                hscope = getattr(backend, "hint_scope", lambda: None)()
+                if hscope:
+                    cu_hints.invalidate_sidecar(scope=hscope)
+            result["hints"] = None
+            result["note"] = ("no element enumeration on this backend "
+                              "(adb offers uiautomator) — use --grid and "
+                              "click pixel coords")
+            _save_with_grid(img, args.grid or 100, out, 0, 0,
+                            fmt=args.format, quality=args.quality)
+            result["grid_px"] = args.grid or 100
+    elif args.grid:
+        _save_with_grid(img, args.grid, out, 0, 0,
                         fmt=args.format, quality=args.quality)
-        result["grid_px"] = args.grid or 100
+        result["grid_px"] = args.grid
     else:
         _save_image(img, out, args.format, args.quality)
     if args.if_changed:
