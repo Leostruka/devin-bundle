@@ -38,9 +38,10 @@ def main():
 
     url = m.group(0)
     who = os.environ.get("GH_PR_ASSIGNEE", "Leostruka")
+    gh = os.environ.get("GH_PR_BIN", "gh")
     try:
         r = subprocess.run(
-            ["gh", "pr", "edit", url, "--add-assignee", who],
+            [gh, "pr", "edit", url, "--add-assignee", who],
             cwd=ti.get("workdir") or None,
             capture_output=True, text=True, timeout=20)
     except Exception as exc:

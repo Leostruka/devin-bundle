@@ -92,3 +92,47 @@ def test_env_override_assignee(monkeypatch):
     code, out, m = _run(_payload(output=URL))
     assert "someone-else" in m.call_args[0][0]
     monkeypatch.delenv("GH_PR_ASSIGNEE")
+
+
+# -- E2E: real post-exec.py runner, real `gh` subprocess (bat shim) -----------
+
+REPO = os.path.join(os.path.dirname(__file__), "..")
+POST_EXEC = os.path.join(REPO, "scripts", "post-exec.py")
+FAKE_GH = os.path.join(os.path.dirname(__file__), "fake_gh.py")
+
+
+def _gh_shim(tmp_path):
+    """gh.bat on PATH calls the fake; hook resolves it via $GH_PR_BIN."""
+    bat = tmp_path / "gh.bat"
+    bat.write_text(f'@echo off\r\n"{sys.executable}" '
+                   f'"{FAKE_GH}" %*\r\n')
+    log = tmp_path / "gh_calls.jsonl"
+    env = dict(os.environ)
+    env.update({"GH_PR_BIN": str(bat), "FAKE_GH_LOG": str(log),
+                "PYTHONUTF8": "1"})
+    env.pop("GH_PR_ASSIGNEE", None)
+    return env, log
+
+
+def _post_exec(payload, env):
+    return subprocess.run(
+        [sys.executable, POST_EXEC], input=json.dumps(payload),
+        capture_output=True, text=True, env=env, timeout=30)
+
+
+def test_e2e_assigns_via_real_runner(tmp_path):
+    env, log = _gh_shim(tmp_path)
+    r = _post_exec(_payload(output=f"Created\n{URL}\n"), env)
+    assert r.returncode == 0
+    calls = [json.loads(l) for l in
+             log.read_text(encoding="utf-8").splitlines() if l.strip()]
+    assert len(calls) == 1
+    assert calls[0]["argv"] == ["pr", "edit", URL,
+                              "--add-assignee", "Leostruka"]
+
+
+def test_e2e_non_create_never_touches_gh(tmp_path):
+    env, log = _gh_shim(tmp_path)
+    r = _post_exec(_payload(cmd="git status", output="clean"), env)
+    assert r.returncode == 0
+    assert not log.exists() or not log.read_text().strip()
