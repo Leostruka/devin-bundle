@@ -56,13 +56,14 @@ Cross-cutting findings that shape the skills:
 
 ## 4. Proposed tree
 
-Location: `.devin/skills/social-midia/` (project skills). Justification:
-spec scope pins writes to `.devin/skills/social-midia*`; root `skills/` is
-bundle-distributed content requiring `manifest.json` and installer changes,
-which the spec's out-of-scope forbids.
+Location: `skills/social-midia/` (bundle-distributed skills; corrected
+from `.devin/skills/` after owner review). Requires a `manifest.json`
+entry (`name`, `source`, `purpose`) and `skill_count` bump, enforced by
+`audit.py` manifest-sync check. Research digests stay in
+`.devin/research/social-midia/`; api.md provenance pointers still valid.
 
 ```
-.devin/skills/social-midia/
+skills/social-midia/
   SKILL.md                      router (model-invoked): picks the network,
                                 states the never-post gate, points onward
   reference/
@@ -138,7 +139,8 @@ URL; unverifiable claims marked UNVERIFIED.
 
 ## 8. Open decisions for approval
 
-- **D1 (location):** `.devin/skills/` chosen over `skills/` (see section 4).
+- **D1 (location):** `skills/` (bundle-distributed) per owner correction;
+  original `.devin/skills/` choice superseded (see section 4).
 - **D2 (LinkedIn stance):** write-only-by-hand (copy-ready drafts) because API
   ToS bans automated posting; org-page posting still documented for
   completeness.
