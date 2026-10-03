@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Use when implementing any feature or bugfix and a test-driven approach is appropriate (red-green-refactor, seams-first), or when the user asks to find testing gaps, mutation test, or identify surviving mutants.
+description: Use when implementing any feature or bugfix and a test-driven approach is appropriate (red-green-refactor, seams-first), or when the user asks to find testing gaps, mutation test, or identify surviving mutants. Unit and integration tests only; browser journeys go to e2e-testing, test infrastructure to observability-quality, completion claims to gates.
 triggers: [user, model]
 ---
 

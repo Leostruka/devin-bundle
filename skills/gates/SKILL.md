@@ -1,6 +1,6 @@
 ---
 name: gates
-description: Use when about to claim work is complete/fixed/passing, when a task risks agent laziness (large, multi-step, previously half-done, or with acceptance criteria), or when running long-horizon/unattended work where quality must be verified before proceeding. Covers gates, gates ledgers, and autonomous gate semantics.
+description: Use when about to claim work is complete/fixed/passing, when a task risks agent laziness (large, multi-step, previously half-done, or with acceptance criteria), or when running long-horizon/unattended work where quality must be verified before proceeding. Covers gates, gates ledgers, and autonomous gate semantics. Completion-claim discipline only; writing tests goes to testing or e2e-testing.
 triggers: [user, model]
 ---
 
