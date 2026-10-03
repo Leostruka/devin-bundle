@@ -28,6 +28,15 @@ def _manager(env_id):
 
 def _lifecycle(args):
     try:
+        import cu_target
+        target = cu_target.resolve_target(args.env, cu_target.load_registry())
+        if target["kind"] == "adb":
+            if args.cmd != "status":
+                return _emit(False, "rejected",
+                             error="no_lifecycle:adb is attach-only")
+            import cu_backend
+            b = cu_backend.open_backend(target)
+            return _emit(True, "dispatched", provider="adb", **b.status())
         mgr = _manager(args.env)
     except Exception as exc:
         return _emit(False, "rejected", error=str(exc))

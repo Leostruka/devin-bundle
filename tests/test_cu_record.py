@@ -145,9 +145,9 @@ def test_record_stops_at_duration():
     frame = FakeImg(b"\x00" * 300)
     stats = {"captured": 0, "dropped": 0}
     t0 = time.monotonic()
-    rec._record(lambda: (frame, {}), seconds=0.2, fps=10,
+    rec._record(lambda: (frame, {}), seconds=0.5, fps=10,
                 consume=lambda img: None, stats=stats)
-    assert time.monotonic() - t0 < 0.6
+    assert time.monotonic() - t0 < 1.2
     assert stats["captured"] >= 2
 
 

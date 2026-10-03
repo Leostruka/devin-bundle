@@ -6,8 +6,9 @@ open_backend(target) -> Backend
   dispatch(action), release_owned(), close() — all dicts except close.
 
 provider "qemu" -> cu_qmp_backend.QmpBackend bound to the env's private
-dir; other providers remain typed rejections. `local` itself is not a
-Backend — it keeps using the existing native code path.
+dir; provider "adb" -> cu_adb_backend.AdbBackend (attach-only Android
+device/emulator); other providers remain typed rejections. `local` itself
+is not a Backend — it keeps using the existing native code path.
 """
 
 
@@ -22,6 +23,10 @@ def open_backend(target):
     if kind == "qemu":
         import cu_qmp_backend
         return cu_qmp_backend.QmpBackend(target["env_id"])
+    if kind == "adb":
+        import cu_adb_backend
+        return cu_adb_backend.AdbBackend(target["env_id"],
+                                         target.get("spec"))
     raise BackendUnavailable(f"backend_unavailable:{kind}")
 
 
