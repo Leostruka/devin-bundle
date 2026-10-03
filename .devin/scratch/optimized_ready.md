@@ -1,34 +1,35 @@
 # Nível de Esforço Obrigatório: MAX
-# Perfil Operacional: Technical Art Director Sênior e Pesquisador de Computer Graphics
+# Perfil Operacional: Staff AI Systems Engineer (Agent Skills & Platform Integrations)
 
 # Goal
-Conduzir pesquisa extensa e profunda, com no mínimo 140 fontes validadas e renomadas (documentação oficial, papers, benchmarks da indústria, reviews de estúdios, comunidades profissionais como Polycount/CGSociety/ArtStation Magazine, relatórios de engines), para determinar a melhor ferramenta ou stack de criação e manipulação 3D cobrindo: obras hiper-realistas, cartoon/estilizado, criativo/procedural, animação, personagens e cenários. Entregar recomendação fundamentada para substituir a integração Spline atual, que produz artefatos inúteis.
+Criar a skill (ou árvore de skills) `social-midia` no devin-bundle, usando o repositório https://github.com/Jakeschincariol/linkedin-agent-skill apenas como referência de formato/abordagem, e estendida com coleções pesquisadas para as demais redes sociais relevantes. Cada rede deve cobrir tanto o uso prático (capacidades de postagem, formatos, agendamento/automação, rotinas profissionais) quanto o conhecimento técnico de funcionamento (API oficial, autenticação, limites, analytics). Entregar um plano sistemático e metódico e implementar tudo em uma nova branch com PR.
 
 # Context
-Repo devin-bundle (C:\Users\Fingertech\Desktop\scripts\devin-bundle). Integração 3D atual: skills/operate-spline + extensions/spline-operator (MCP bridge ws://127.0.0.1:19692, 36 tools, daemon keeper). Resultado observado: gera artefatos inúteis para os eixos alvo. Candidatos a avaliar incluem Blender (+geometry nodes, addons), Maya, 3ds Max, Cinema 4D, Houdini, ZBrush, Unreal Engine 5, Unity, Substance 3D, Marvelous Designer, e geradores AI-3D (Tripo, Meshy, Luma Genie, Kaedim, Rodin/Hyper3D, Hunyuan3D, TRELLIS, Stable Fast 3D, ComfyUI-3D). Critério decisivo adicional: dirigibilidade por agente (API, scripting Python, headless CLI, MCP bridge, licença/custo).
+Repositório: devin-bundle (D:\Programing\ai_workspace\devin-bundle), branch atual `main`. Skills vivem em `.devin/skills/<nome>/SKILL.md` (projeto) ou `%APPDATA%\devin\skills\<nome>` (global); cabe ao executor decidir e justificar a localização. Convenções obrigatórias: skill `writing-skills` (frontmatter com gatilhos 'Use when', contexto enxuto, conteúdo pesado em arquivos de referência por ponteiro), AGENTS.md Rule 2 (sem assinaturas/Co-Authored-By de IA), Rule 12 (verificar com ferramentas, citar fontes primárias), Rule 18 (mínimo necessário, sem overengineering). Pesquisa paralela via subagents `researcher` (swe-2-max, grátis); nunca usar `subagent_explore`. Repo de referência: clonar/inspecionar https://github.com/Jakeschincariol/linkedin-agent-skill (somente leitura, repo externo) apenas como referência de formato, pois as skills serão autorais do bundle e não vendored/adaptadas. Pesquisa extensiva exigida por rede: documentação oficial de API como fonte primária.
 
 # Acceptance Criteria
-1. Relatório cita >= 140 fontes distintas, cada uma com URL, publicação/fonte e data de acesso
-2. Fontes renomadas apenas: docs oficiais, SIGGRAPH/papers, benchmarks publicados, reviews de veículos profissionais, postmortems de estúdios - sem blogs SEO genéricos
-3. Matriz comparativa por eixo: hiper-realismo, cartoon, procedural/criativo, animação/rigging, personagens, cenários
-4. Coluna explícita de dirigibilidade por agente (API/script/headless/MCP) e custo/licença
-5. Ranking final com recomendação única justificada + 1 alternativa
-6. Veredito sobre a spline-operator: manter, limitar ou substituir, com evidência
-7. Saída em Markdown em .devin/research/3d-tools-comparison.md
+1. Repo linkedin-agent-skill inspecionado como referência de formato (paths/commits citados); skill de LinkedIn é autoral, não cópia/adaptação do repo
+2. Árvore `social-midia` criada: SKILL.md raiz funcionando como router + um SKILL.md por rede: LinkedIn, X/Twitter, Instagram, Facebook, TikTok, YouTube, Threads e Reddit no mínimo
+3. Cada SKILL.md de rede cobre: capacidades de uso, autenticação/modelo de API, formatos e limites de postagem, agendamento/automação, analytics/métricas e rotinas profissionais
+4. Toda skill segue o schema de `writing-skills` e permanece enxuta (detalhe pesado em arquivos de referência apontados)
+5. Pesquisa baseada em fontes primárias (docs oficiais) com URLs citadas, sem capacidade inventada ou deduzida
+6. Plano de implementação sistemático persistido em `.devin/` (doc de plano ou ledger)
+7. Entrega em branch nova com PR aberto via `gh` (summary + test plan); commits limpos sem trailers de IA
+8. Estrutura final verificada com ferramentas (paths existem, frontmatter válido), não por dedução
 
 # Scope & Non-Goals
-- **IN SCOPE:** Pesquisa web extensa (web_search, webfetch) e consolidação de fontes
-- **IN SCOPE:** Matriz comparativa e ranking ponderado
-- **IN SCOPE:** Avaliação de dirigibilidade por agente e custo
-- **IN SCOPE:** Relatório final em .devin/research/
-- **OUT OF SCOPE:** Instalar, licenciar ou pagar qualquer ferramenta
-- **OUT OF SCOPE:** Escrever código de nova integração ou modificar extensions/spline-operator
-- **OUT OF SCOPE:** Benchmarks executados localmente (apenas benchmarks publicados)
-- **OUT OF SCOPE:** Gerar artefatos 3D nesta etapa
+- **IN SCOPE:** Inspeção read-only do repo externo linkedin-agent-skill (referência de formato) e de outros repos de skills de redes sociais encontrados
+- **IN SCOPE:** Pesquisa profunda por rede usando docs oficiais de API como fonte primária
+- **IN SCOPE:** Criação da árvore `.devin/skills/social-midia/` (SKILL.md + arquivos de referência)
+- **IN SCOPE:** Doc de plano sistemático em `.devin/`
+- **IN SCOPE:** Nova branch, commits e abertura de PR
+- **OUT OF SCOPE:** Postar, agendar ou autenticar em contas reais; executar chamadas contra APIs vivas
+- **OUT OF SCOPE:** Usar ou commitar credenciais/tokens reais; documentar apenas os nomes das variáveis de ambiente
+- **OUT OF SCOPE:** Criar MCP servers ou código executável além dos arquivos de skill/plano
+- **OUT OF SCOPE:** Modificar skills, hooks ou código fora de `.devin/skills/social-midia*` e do doc de plano
+- **OUT OF SCOPE:** Adicionar redes além da lista acordada sem aprovação explícita
 
 # Execution Hints & Checkpoints
-1. **Fase 1:** Fase 1: Declarar eixos de avaliação, critérios de inclusão de fontes e lista inicial de candidatos. PARE e aguarde aprovação.
-2. **Fase 2:** Fase 2: Coletar >= 140 fontes (log em .devin/scratch/3d_sources.jsonl: url, publisher, data, eixo, evidência-chave).
-3. **Fase 3:** Fase 3: Construir matriz comparativa ponderada por eixo + dirigibilidade/custo.
-4. **Fase 4:** Fase 4: Ranking final, recomendação e veredito sobre spline-operator.
-5. **Fase 5:** Fase 5: Escrever .devin/research/3d-tools-comparison.md e verificar todos os acceptance criteria.
+1. **Fase 1:** Pesquisa profunda: inspecionar o repo linkedin-agent-skill e levantar, com researchers paralelos, docs oficiais e capacidades de cada rede; produzir inventário de capacidades + proposta de arquitetura da árvore + plano sistemático em `.devin/`. **PARE e aguarde aprovação.**
+2. **Fase 2:** Implementar a árvore `social-midia` em branch nova (`feat/social-midia-skills`), seguindo `writing-skills`.
+3. **Fase 3:** Verificar estrutura e frontmatter com ferramentas, rodar os gates do bundle, commit limpo e abrir PR via `gh` com summary + test plan.
