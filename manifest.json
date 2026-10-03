@@ -425,9 +425,14 @@
       "name": "project-orchestrator",
       "source": "devin-bundle",
       "purpose": "Use when driving a project from an empty folder or a fuzzy idea to a delivered product with CI/CD, coordinating specialist subagents under delegation contracts, producing the methodology documentation that fits the scope (RUP / Scrum / hybrid), with verified research before technology decisions and an excellence gate that reviews screen recordings of the real user path."
+    },
+    {
+      "name": "social-midia",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to draft, post, schedule, or analyze content on a social network (LinkedIn, X/Twitter, Instagram, Facebook, TikTok, YouTube, Threads, Reddit), asks about a platform official API (auth, scopes, endpoints, rate limits, analytics), or needs cross-network publishing workflows. Routes to the per-network skill; does not execute the work itself."
     }
   ],
-  "skill_count": 65,
+  "skill_count": 66,
   "rule_count": 28,
   "scripts": [
     {
