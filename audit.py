@@ -255,10 +255,10 @@ print('[9] README counts vs reality')
 readme = open('README.md', encoding='utf-8').read()
 agent_count = len([f for f in os.listdir('agents') if f.endswith('.md')])
 checks = [
-    (f'{skill_count} skills', skill_count > 0),
-    ('28 rules', len(rules_found) == 28),  # 1-5,7-29 (Rule 6 removed)
-    ('6 agents', agent_count == 6),
-    ('29 scripts', len(script_files) == 29),
+    (str(skill_count) + ' skills', str(skill_count) + ' skills' in readme),
+    ('rules-' + str(len(rules_found)) + ' badge', ('rules-' + str(len(rules_found)) + '-') in readme),
+    (str(agent_count) + ' agents (disk vs manifest)', agent_count == manifest.get('agent_count')),
+    (str(len(script_files)) + ' scripts', str(len(script_files)) + ' scripts' in readme),
 ]
 for label, ok in checks:
     status = 'OK' if ok else 'FAIL'
@@ -399,6 +399,15 @@ if mcp_schema_errors:
         print('  FAIL ' + e)
 else:
     print('  OK  mcp_config.json schema valid')
+
+# mcp_count = available MCP integrations declared in bundle-integrations.json
+bund_integ = json.load(open('data/bundle-integrations.json', encoding='utf-8-sig'))
+avail_mcp = len(bund_integ.get('mcp', {}))
+if manifest.get('mcp_count') == avail_mcp:
+    print('  OK  mcp_count = ' + str(avail_mcp) + ' (bundle-integrations.json)')
+else:
+    errors.append('manifest mcp_count ' + str(manifest.get('mcp_count')) + ' != bundle-integrations mcp ' + str(avail_mcp))
+    print('  FAIL mcp_count (expected ' + str(avail_mcp) + ')')
 
 # 11. .gitignore coverage
 print()
@@ -548,8 +557,8 @@ for s in script_files:
 
 # 16. New skills live vs bundle sync
 print()
-print('[16] New skills live vs bundle sync')
-new_skills = ['context-hygiene', 'gates', 'self-improvement', 'mcp-governance', 'grilling', 'debugging', 'skill-discovery', 'dispatching-parallel-agents', 'planning', 'obsidian-workflow', 'ask-bundle', 'memory-management', 'execution', 'intake', 'architecture', 'project-bootstrap', 'devin-config', 'security', 'api-spec', 'testing', 'knowledge-modeling', 'git-workflows', 'writing-skills', 'brag', 'ai-tools', 'scan']
+print('[16] Skills live vs bundle sync')
+new_skills = sorted(d for d in os.listdir('skills') if os.path.isdir(os.path.join('skills', d)))
 for s in new_skills:
     lp = os.path.join(live_base, 'skills', s, 'SKILL.md')
     bp = os.path.join('skills', s, 'SKILL.md')
@@ -597,15 +606,19 @@ else:
 # 19. agents/ profiles
 print()
 print('[19] Subagent profiles')
-expected_agents = ['architect.md', 'debugger.md', 'implementer.md', 'qa-ci.md', 'researcher.md', 'reviewer.md']
-actual_agents = sorted(os.listdir('agents'))
-print('  Found: ' + str(actual_agents))
+expected_agents = sorted(f for f in os.listdir('agents') if f.endswith('.md'))
+manifest_agents = sorted(a['name'] + '.md' for a in manifest.get('agents', []))
+print('  Found: ' + str(expected_agents))
 for a in expected_agents:
-    if a in actual_agents:
+    if a in manifest_agents:
         print('  OK  ' + a)
     else:
-        errors.append('Missing agent profile: ' + a)
-        print('  FAIL ' + a + ' missing')
+        errors.append('Agent not in manifest: ' + a)
+        print('  FAIL ' + a + ' not in manifest')
+for a in manifest_agents:
+    if a not in expected_agents:
+        errors.append('Manifest agent missing on disk: ' + a)
+        print('  FAIL ' + a + ' in manifest but not on disk')
 
 # 20. No temp files left
 print()
