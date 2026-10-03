@@ -131,8 +131,8 @@ def main():
             _out("")
             sys.stderr.write("java.lang.SecurityException: injected\n")
             return 1
-        if cmd[1:3] == ["sh", "-c"]:
-            _out(f"fake:{cmd[-1]}\n")
+        if len(cmd) > 1:
+            _out("fake:" + " ".join(str(a) for a in cmd[1:]) + "\n")
         return 0
     return 0
 

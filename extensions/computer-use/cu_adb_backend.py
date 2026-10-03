@@ -150,12 +150,31 @@ class AdbBackend:
         return img, meta
 
     def ui_elements(self, timeout_s=20):
-        """uiautomator dump -> real node tree -> hint-shape elements."""
+        """uiautomator dump -> real node tree -> hint-shape elements.
+        Real devices can exit 0 yet fail ('could not get idle state' on
+        animated screens) leaving no/empty XML — retry, then raise a
+        typed BackendError instead of a raw ParseError."""
         remote = "/data/local/tmp/cu-ui.xml"
-        self._call(["shell", "uiautomator", "dump", remote], timeout_s)
-        xml = self._call(["exec-out", "cat", remote], timeout_s)
+        xml, detail = "", ""
+        for _ in range(3):
+            try:
+                out = self._call(["shell", "uiautomator", "dump", remote],
+                                 timeout_s)
+                detail = out.strip()
+                xml = self._call(["exec-out", "cat", remote], timeout_s)
+            except BackendError as exc:
+                detail = str(exc)
+            if xml.lstrip().startswith("<"):
+                break
+            xml = ""
+            time.sleep(1)
         self._call(["shell", "rm", "-f", remote], 5)
-        root = ET.fromstring(xml)
+        if not xml:
+            raise BackendError(f"uia_dump:{(detail or 'no xml')[:200]}")
+        try:
+            root = ET.fromstring(xml)
+        except ET.ParseError as exc:
+            raise BackendError(f"uia_parse:{exc}")
         out = []
         for node in root.iter("node"):
             if node.get("enabled", "true") != "true":
@@ -202,8 +221,11 @@ class AdbBackend:
         params = params or {}
         if method == "exec.run":
             cmd = params.get("cmd", "")
+            # adb joins `shell` argv with spaces — ["shell","sh","-c",cmd]
+            # makes remote `sh -c` see only the first word of cmd. One argv
+            # element keeps multi-word commands intact (`:` = shell no-op).
             p = self._run(["-s", self.serial(), "shell",
-                           "sh", "-c", cmd], timeout_s)
+                           cmd or ":"], timeout_s)
             return {"ok": True,
                     "stdout": p.stdout.decode("utf-8", "replace")[:16000],
                     "stderr": p.stderr.decode("utf-8", "replace")[:4000],

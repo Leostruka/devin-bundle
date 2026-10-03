@@ -29,6 +29,10 @@ def phone(tmp_path):
     shutil.copy(FAKE, shimdir / "adb_fake.py")
     (shimdir / "adb.bat").write_text(
         f'@echo off\r\n"{sys.executable}" "%~dp0adb_fake.py" %*\r\n')
+    adb_sh = shimdir / "adb"
+    adb_sh.write_text(
+        f'#!/bin/sh\nexec "{sys.executable}" "{shimdir}/adb_fake.py" "$@"\n')
+    adb_sh.chmod(0o755)
     envs = tmp_path / "envs"
     envs.mkdir()
     (envs / "phone.json").write_text(
@@ -194,7 +198,7 @@ def test_terminal_exec_runs_remote_shell(phone):
     out = _json(r)
     assert r.returncode == 0 and out["ok"], out
     assert out["stdout"] == "fake:pm list packages\n"
-    assert any(c[2:] == ["shell", "sh", "-c", "pm list packages"]
+    assert any(c[2:] == ["shell", "pm list packages"]
                for c in calls() if c[:1] == ["-s"])
 
 
@@ -242,6 +246,10 @@ def test_explicit_serial_skips_discovery(tmp_path):
     shutil.copy(FAKE, shimdir / "adb_fake.py")
     (shimdir / "adb.bat").write_text(
         f'@echo off\r\n"{sys.executable}" "%~dp0adb_fake.py" %*\r\n')
+    adb_sh = shimdir / "adb"
+    adb_sh.write_text(
+        f'#!/bin/sh\nexec "{sys.executable}" "{shimdir}/adb_fake.py" "$@"\n')
+    adb_sh.chmod(0o755)
     envs = tmp_path / "envs"
     envs.mkdir()
     (envs / "phone.json").write_text(json.dumps(

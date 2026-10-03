@@ -485,6 +485,12 @@
       "exported_at": "2026-09-08T21:39:22.430612"
     },
     {
+      "name": "gh-pr-assignee.py",
+      "purpose": "PostToolUse hook — auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
+      "export_hash": "4ED606EF5064ECEF109EA563A5E80601D6933E5EC3CF3B02BBDB0288A3B5A71E",
+      "exported_at": "2026-10-02T00:00:00.000000"
+    },
+    {
       "name": "memory-post-edit.py",
       "purpose": "PostToolUse hook — injects .devin/memory/ notes after write/edit based on cues.path",
       "export_hash": "07BAF5C0E85625E9C0C5D1A91D4DC18EB10BE550EB16D75A6BF4D81D5BB8ECB4",
@@ -505,7 +511,7 @@
     {
       "name": "memory-stop.py",
       "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review",
-      "export_hash": "94452813F1B5E74367AF599D56E768549BCCAE7E662B6CE05CE2F24739EEFCF9",
+      "export_hash": "F9485FFC3EF5C1A9C8544684C6A415F0B5FA1E3D14DD60485D4EA263954AF5EF",
       "exported_at": "2026-09-08T21:39:22.431441"
     },
     {
@@ -522,8 +528,8 @@
     },
     {
       "name": "post-exec.py",
-      "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec)",
-      "export_hash": "CAD25062F06DE15BFE534CBA40A5BDA2DDF91BC21A63E2AEF5D60CE1993C5E9B",
+      "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
+      "export_hash": "A67C6AA1EA19EBBFC271750B2945B5338E0943A0AB3C33026DE9BBB196A02DB0",
       "exported_at": "2026-09-18T20:17:52.988052"
     },
     {
@@ -605,7 +611,7 @@
       "exported_at": "2026-09-26T18:26:15.829557"
     }
   ],
-  "script_count": 28,
+  "script_count": 29,
   "mcp_count": 1,
   "agent_count": 6,
   "tool_count": 28,

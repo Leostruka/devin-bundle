@@ -141,8 +141,49 @@ def test_guest_exec_run(tmp_path, monkeypatch):
                      run=lambda a, t: (calls.append(a), _proc(b"hi\n"))[1])
     r = b.guest_call("exec.run", {"cmd": "echo hi"})
     assert r["stdout"] == "hi\n" and r["exit_code"] == 0
-    assert calls[0][-2:] == ["-c", "echo hi"]
+    # adb joins `shell` argv with spaces — cmd must be ONE argv element
+    # or the remote shell sees only its first word (real-device bug).
+    assert calls[0][-2:] == ["shell", "echo hi"]
     assert "exec" in b.guest_caps()
+
+
+def test_ui_elements_retries_idle_failure(tmp_path, monkeypatch):
+    monkeypatch.setenv("CU_STATE_ROOT", str(tmp_path))
+    monkeypatch.setattr(t.time, "sleep", lambda s: None)
+    cats = []
+
+    def run(argv, tmo):
+        if "cat" in argv:
+            cats.append(argv)
+            return _proc(b"" if len(cats) < 3 else UI_XML)
+        return _proc(b"UI hierchary dumped to: x\n")
+    els = t.AdbBackend("phone", {"serial": "s1"}, run=run).ui_elements()
+    assert els and len(cats) == 3
+
+
+def test_ui_elements_typed_error_on_persistent_idle(tmp_path, monkeypatch):
+    monkeypatch.setenv("CU_STATE_ROOT", str(tmp_path))
+    monkeypatch.setattr(t.time, "sleep", lambda s: None)
+
+    def run(argv, tmo):
+        if "cat" in argv:
+            return _proc(b"")
+        return _proc(b"ERROR: could not get idle state.\n")
+    b = t.AdbBackend("phone", {"serial": "s1"}, run=run)
+    with pytest.raises(qmp.BackendError, match="uia_dump"):
+        b.ui_elements()
+
+
+def test_ui_elements_typed_error_on_garbage_xml(tmp_path, monkeypatch):
+    monkeypatch.setenv("CU_STATE_ROOT", str(tmp_path))
+
+    def run(argv, tmo):
+        if "cat" in argv:
+            return _proc(b"<hierarchy><node")
+        return _proc(b"UI hierchary dumped to: x\n")
+    b = t.AdbBackend("phone", {"serial": "s1"}, run=run)
+    with pytest.raises(qmp.BackendError, match="uia_parse"):
+        b.ui_elements()
 
 
 def test_encoder_semantics():

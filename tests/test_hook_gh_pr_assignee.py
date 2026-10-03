@@ -102,13 +102,17 @@ FAKE_GH = os.path.join(os.path.dirname(__file__), "fake_gh.py")
 
 
 def _gh_shim(tmp_path):
-    """gh.bat on PATH calls the fake; hook resolves it via $GH_PR_BIN."""
+    """gh shim on PATH calls the fake; hook resolves it via $GH_PR_BIN."""
     bat = tmp_path / "gh.bat"
     bat.write_text(f'@echo off\r\n"{sys.executable}" '
                    f'"{FAKE_GH}" %*\r\n')
+    sh = tmp_path / "gh"
+    sh.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{FAKE_GH}" "$@"\n')
+    sh.chmod(0o755)
     log = tmp_path / "gh_calls.jsonl"
     env = dict(os.environ)
-    env.update({"GH_PR_BIN": str(bat), "FAKE_GH_LOG": str(log),
+    env.update({"GH_PR_BIN": str(bat if os.name == "nt" else sh),
+                "FAKE_GH_LOG": str(log),
                 "PYTHONUTF8": "1"})
     env.pop("GH_PR_ASSIGNEE", None)
     return env, log
