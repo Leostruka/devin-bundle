@@ -37,7 +37,38 @@ Findings beyond latency:
 
 **P1 verdict: PASS** — feeds P11 (event-driven perception daemon design).
 
+## P2 — UIA client event handlers (comtypes COMObject, MTA thread)
+
+Probe: `p2_uia_events.py` (+ decisive scope experiment inline). Handlers as
+comtypes `COMObject` subclasses; whole UIA lifecycle inside one MTA thread
+(`CoInitializeEx(COINIT_MULTITHREADED)`); `CacheRequest` prefetch verified.
+
+| Channel | Result | Verdict |
+|---|---|---|
+| `AddStructureChangedEventHandler` on **root, TreeScope_Children** | fires on window spawn; wake **264ms p50** end-to-end (n=5, min 231) — dominated by process+window creation, UIA share is a fraction | WORKS |
+| `AddStructureChangedEventHandler` on **element, TreeScope_Descendants** (XAML Notepad) + `AddPropertyChangedEventHandler` + `AddAutomationEventHandler` | registered without error; **ZERO events** across real verified mutations (Invoke added tab: 1→2 TabItems, 45→47 descendants — re-enumerated to confirm) | NO DELIVERY on this provider |
+| `AddPropertyChangedEventHandler` on plain win32 window (SetWindowText) | 0 events | NO COVERAGE |
+| `AddFocusChangedEventHandler` | ambient focus event arrived | WORKS |
+
+Decisive finding: **UIA client events are reliable only at coarse scopes**
+(desktop children). Element/subtree-scoped listeners — the ones that would
+power per-window semantic wake — depend entirely on provider cooperation
+and delivered nothing on XAML Notepad or plain windows. Matches MS warning
+("not all property changes cause events … by the standard proxy
+providers") — now measured, not just cited.
+
+Gotchas found: `IUIAutomationFocusChangedEventHandler` is a distinct
+interface (registration rejects generic `IUIAutomationEventHandler`);
+`TreeScope_Subtree=0x7` (not 0x8 = Parent); thread-mode already set on
+import (`comtypes.client` auto-STA) — handlers must live on a thread that
+did `CoInitializeEx(MTA)` before importing client bindings.
+
+**P2 verdict: PASS-CONSTRAINED** — usable wake = root-children structure
+events + focus; element-level semantic events unreliable → P1 (WinEvents
+out-of-context, 8-21ms, element-granular) is the primary wake channel;
+P2 complements only at desktop scope. Feeds P11 daemon design.
+
 ## Pending
 
-P2 UIA event handlers; P3 DPI v2 + round-trip precision; P4 OCR text->coords;
+P3 DPI v2 + round-trip precision; P4 OCR text->coords;
 P5 DXGI DDA backend; P6 WGC; P7 numpy FFT-NCC; P11 integration verdict.

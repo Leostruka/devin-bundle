@@ -12,6 +12,7 @@ k = ctypes.windll.kernel32
 
 title = sys.argv[1]
 secs = float(sys.argv[2]) if len(sys.argv) > 2 else 60
+qpc_out = "--qpc" in sys.argv
 
 WNDPROC = ctypes.WINFUNCTYPE(wt.LPARAM, wt.HWND, wt.UINT,
                              wt.WPARAM, wt.LPARAM)
@@ -38,6 +39,11 @@ wc.hInstance = k.GetModuleHandleW(None)
 wc.hbrBackground = 5  # COLOR_WINDOW
 u.RegisterClassExW(ctypes.byref(wc))
 u.CreateWindowExW.restype = wt.HWND
+if qpc_out:
+    c, f = ctypes.c_int64(), ctypes.c_int64()
+    k.QueryPerformanceFrequency(ctypes.byref(f))
+    k.QueryPerformanceCounter(ctypes.byref(c))
+    print(c.value, f.value, flush=True)
 hwnd = u.CreateWindowExW(0, "cu_p1_target", title, 0x00CF0000,
                          400, 300, 320, 200, None, None,
                          wt.HINSTANCE(wc.hInstance), None)
