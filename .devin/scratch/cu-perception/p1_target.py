@@ -13,11 +13,36 @@ k = ctypes.windll.kernel32
 title = sys.argv[1]
 secs = float(sys.argv[2]) if len(sys.argv) > 2 else 60
 qpc_out = "--qpc" in sys.argv
+draw_text = "--drawtext" in sys.argv
 
 WNDPROC = ctypes.WINFUNCTYPE(wt.LPARAM, wt.HWND, wt.UINT,
                              wt.WPARAM, wt.LPARAM)
 u.DefWindowProcW.restype = wt.LPARAM
 u.DefWindowProcW.argtypes = [wt.HWND, wt.UINT, wt.WPARAM, wt.LPARAM]
+
+TEXT_LINES = ["File Edit View Help", "The quick brown fox 12345",
+              "cu-perception OCR probe", "Apply  Cancel  OK"]
+
+
+class PAINTSTRUCT(ctypes.Structure):
+    _fields_ = [("hdc", wt.HDC), ("fErase", wt.BOOL),
+                ("rcPaint", wt.RECT), ("fRestore", wt.BOOL),
+                ("fIncUpdate", wt.BOOL), ("rgbReserved", ctypes.c_byte * 32)]
+
+
+def _wndproc(h, m, w, l):
+    if m == 0x000F and draw_text:  # WM_PAINT
+        ps = PAINTSTRUCT()
+        hdc = u.BeginPaint(h, ctypes.byref(ps))
+        ctypes.windll.gdi32.SetBkMode(hdc, 1)  # TRANSPARENT
+        y = 12
+        for line in TEXT_LINES:
+            r = wt.RECT(12, y, 600, y + 24)
+            u.DrawTextW(hdc, line, -1, ctypes.byref(r), 0)
+            y += 28
+        u.EndPaint(h, ctypes.byref(ps))
+        return 0
+    return u.DefWindowProcW(h, m, w, l)
 
 
 class WNDCLASSEXW(ctypes.Structure):
@@ -29,7 +54,7 @@ class WNDCLASSEXW(ctypes.Structure):
                 ("lpszClassName", wt.LPCWSTR), ("hIconSm", wt.HICON)]
 
 
-_cb = WNDPROC(lambda h, m, w, l: u.DefWindowProcW(h, m, w, l))
+_cb = WNDPROC(_wndproc)
 k.GetModuleHandleW.restype = wt.HMODULE
 wc = WNDCLASSEXW()
 wc.cbSize = ctypes.sizeof(wc)

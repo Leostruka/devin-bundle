@@ -90,7 +90,35 @@ DWM-vs-GWR border offset and per-entry-point awareness requirement.
 Precision baseline recorded for regression on scaled setups (hardware
 limitation noted — host is 100%).
 
+## P4 — Windows.Media.Ocr as general text->coords channel
+
+Probe: `p4_ocr.py` (+ `p1_target --drawtext` known-text window). Same
+winrt call pattern as `cu_terminal._ocr_image` but consuming
+`res.lines -> words -> bounding_rect` (image space) + region origin.
+
+| Metric | Result | Threshold | Verdict |
+|---|---|---|---|
+| locate_ms (full-window recognize, 306x193) | **7.76ms p50** steady (n=10; first call ~48ms decoder/stream warmup) | <200 | PASS |
+| expected word hit rate | 92.9% (13/14; "OK"->"0k" OCR noise) | reported | — |
+| coordinate fidelity (line-band re-crop, 3x) | **11/12** re-found at expected x | reported | sane rects confirmed |
+| engine cold start | ~17ms once per process | — | — |
+| `MaxImageDimension` | **10000** (runtime-measured; docs don't publish it) | — | — |
+
+Hard constraints measured:
+- **~48px image-height floor** — below it `recognize_async` returns EMPTY,
+  silently. Single-word crops and small text need ~3-4x upscale
+  (nearest-neighbor works). No error is raised — callers must check empty.
+- **`winrt-Windows.Foundation.Collections` package required** for
+  lines/words projection (`res.text` works without it; word rects don't).
+  Installed in venv for probe; if integrated -> add to requirements.txt.
+- OCR noise exists at word level (OK->0k) — coordinate use should prefer
+  multi-char words; verification pattern (re-crop re-OCR) works.
+
+**P4 verdict: PASS** — new capability confirmed: text->screen-coords on
+any raster surface at ~8ms/region, zero added model deps. Integration
+shape for P11: `region + query_text -> [word, x, y, w, h]` with upscale
+guard and empty-result check.
+
 ## Pending
 
-P4 OCR text->coords; P5 DXGI DDA backend; P6 WGC;
-P7 numpy FFT-NCC; P11 integration verdict.
+P5 DXGI DDA backend; P6 WGC; P7 numpy FFT-NCC; P11 integration verdict.
