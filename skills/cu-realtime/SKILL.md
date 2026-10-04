@@ -41,7 +41,11 @@ inside one tool call.
   --limit N` pipes one spawned PTY's output lines into another's input
   (measured 0.33s src->dst execution, zero model turns). Deterministic
   triggers only; the send/exec command gate applies per forwarded
-  line and `--limit` is the brake.
+  line and `--limit` is the brake. Resident (non-PTY) reflexes were
+  proven in phase 4 but are prototype-only: a held-open ws eval poll
+  reacts in ~16ms, a per-hwnd UIA enum poll + `uia_invoke` in ~54ms.
+  Any reflex consumer MUST be resident - a subprocess per poll costs
+  ~150-300ms and erases the reflex.
 - **`CU_SESSION=1`**: persistent worker daemon amortizes imports
   (~30-75ms/call on screenshot-class ops, ~0 on light ones). Optional.
 
@@ -55,10 +59,18 @@ inside one tool call.
   %VAR% at parse time per line).
 - `--if-changed`/`--diff` rarely skips on a live desktop (clock/cursor
   drift) - do not count it as the reperceive saving.
+- Provider elements (XAML/Notepad) carry `hwnd: null` in hint JSON:
+  `uia_perform` and `mouse.py --via uia` return `no_hwnd` and silently
+  fall back to a physical click. Use `--channel uia --uia-name` /
+  `cu_scope.uia_invoke(hwnd, name=...)` to stay provider-side.
+  UWP apps own multiple same-class hwnds and a stub pid - match
+  windows by class + element presence, never by spawned pid.
 - `dispatched` never means done - reperceive via `--wait`/`--verify`.
 
 ## Pointers
 
 - Full CLI contract: `extensions/computer-use/USAGE.md`
-- Evidence + thresholds: `.devin/research/cu-realtime-verdict.md`
-- Harness: `.devin/scratch/cu-realtime/s1_probe.py`
+- Evidence + thresholds: `.devin/research/cu-realtime-verdict.md`,
+  reflex/UIA/laya ceiling data: `.devin/research/cu-realtime-phase4.md`
+- Harnesses: `.devin/scratch/cu-realtime/` (`s1_probe.py`,
+  `p4_probe.py`, `p4_laya.py`)
