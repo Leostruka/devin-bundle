@@ -68,7 +68,29 @@ events + focus; element-level semantic events unreliable → P1 (WinEvents
 out-of-context, 8-21ms, element-granular) is the primary wake channel;
 P2 complements only at desktop scope. Feeds P11 daemon design.
 
+## P3 — DPI v2 + coordinate-space precision
+
+Probe: `p3_dpi.py` (extension venv + `cu_hints.enum_clickables`).
+
+| Check | Result |
+|---|---|
+| Awareness upgrade | fresh python starts `DPI_AWARENESS_UNAWARE` (0); `SetProcessDpiAwarenessContext(-4)` -> `PER_MONITOR` (2). **Every future daemon entry point must set awareness before any coordinate read** — unaware on a scaled display = virtualized wrong coords |
+| Display context | system DPI 96 (100%); `dpi_values=[96]` across 29 windows — no scaling stress-test possible on this host; logical==physical here |
+| `GetWindowRect` vs `DWMWA_EXTENDED_FRAME_BOUNDS` | **13/29 windows differ by ±5px** — invisible resize borders counted by GWR even at 96 DPI. Window geometry for capture/UIA space must use DWM extended bounds |
+| `GetCursorPos` vs `GetPhysicalCursorPos` | identical (96 DPI — trivially) |
+| `ElementFromPoint(center)` round-trip on 22 clickable elements (focused window) | **22/22 hit** (100%), offsets ~0; 1 outlier resolved to a wider containing element (ancestor hit — expected for overlapped centers) |
+
+Bug found+fixed in probe: `CurrentBoundingRectangle` returns RECT
+(left/top/right/bottom), not w/h — earlier run's "miss" was probe-side
+AttributeError, re-run corrected.
+
+**P3 verdict: PASS** — v2 adopted (context flag; awareness reads 2),
+round-trip hit-rate 100% >= baseline; two production-relevant findings:
+DWM-vs-GWR border offset and per-entry-point awareness requirement.
+Precision baseline recorded for regression on scaled setups (hardware
+limitation noted — host is 100%).
+
 ## Pending
 
-P3 DPI v2 + round-trip precision; P4 OCR text->coords;
-P5 DXGI DDA backend; P6 WGC; P7 numpy FFT-NCC; P11 integration verdict.
+P4 OCR text->coords; P5 DXGI DDA backend; P6 WGC;
+P7 numpy FFT-NCC; P11 integration verdict.
