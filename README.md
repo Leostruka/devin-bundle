@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-66-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-67-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-28-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.4.0-orange.svg)](CHANGELOG.md)
@@ -123,7 +123,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 66 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 67 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
@@ -571,7 +571,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 66 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 67 skills |
 
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |

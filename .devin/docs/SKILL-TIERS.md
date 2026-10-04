@@ -164,6 +164,7 @@ Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: 
 | `teach` | Aprendizado guiado multi-sessão | 2471 | Aprender conceito |
 | `wizard` | Scripts p/ procedimentos manuais | 1033 | Provisioning one-off |
 | `observability-quality` | Infra de observabilidade c/ evidência | 2370 | Adicionar logging/metrics/tracing |
+| `cu-realtime` | Padrões medidos de baixa latência p/ computer-use (espera, batch, reflexo) | 850 | Reação rápida em CU/terminal |
 
 ## Linha lógica para parent + subagent
 

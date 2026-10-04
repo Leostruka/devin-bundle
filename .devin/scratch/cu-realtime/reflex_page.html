@@ -1,0 +1,32 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>p4-reflex</title>
+<body>
+<h3>p4 reflex target</h3>
+<div id="log">idle</div>
+<script>
+// Probe contract: eval window.__arm(ms) schedules a button; the reflex
+// loop polls window.__state() and clicks the button on appearance.
+// __appeared/__hit are page-side performance.now() stamps — the honest
+// event->reaction latency, no wall-clock guesswork.
+window.__arm = function (ms) {
+    window.__appeared = null; window.__hit = null;
+    var old = document.getElementById('reflex-target');
+    if (old) old.remove();
+    setTimeout(function () {
+        var b = document.createElement('button');
+        b.id = 'reflex-target';
+        b.textContent = 'GO';
+        b.onclick = function () {
+            window.__hit = performance.now();
+            document.getElementById('log').textContent = 'HIT';
+        };
+        document.body.appendChild(b);
+        window.__appeared = performance.now();
+    }, ms);
+    return true;
+};
+window.__state = function () {
+    return JSON.stringify({ a: window.__appeared, h: window.__hit });
+};
+</script>
