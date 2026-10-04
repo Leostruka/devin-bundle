@@ -1,35 +1,30 @@
 # Nível de Esforço Obrigatório: MAX
-# Perfil Operacional: Staff AI Systems Engineer (Agent Skills & Platform Integrations)
+# Perfil Operacional: Staff Engineer - Agent Runtime / LLM Systems
 
 # Goal
-Criar a skill (ou árvore de skills) `social-midia` no devin-bundle, usando o repositório https://github.com/Jakeschincariol/linkedin-agent-skill apenas como referência de formato/abordagem, e estendida com coleções pesquisadas para as demais redes sociais relevantes. Cada rede deve cobrir tanto o uso prático (capacidades de postagem, formatos, agendamento/automação, rotinas profissionais) quanto o conhecimento técnico de funcionamento (API oficial, autenticação, limites, analytics). Entregar um plano sistemático e metódico e implementar tudo em uma nova branch com PR.
+Melhoria geral do agente Devin CLI, inicialmente focada no Computer Use (CU): entender exatamente como o devin-cli recebe informacao, processa, pensa e age, e encontrar a forma mais viavel de o agente processar, pensar e agir de forma continua - o mais proximo possivel de tempo real. Para cada hipotese levantada, pesquisar validacao tecnica e evidencias (codigo do bundle, docs locais, fontes primarias externas). Testar na pratica, uma a uma, as hipoteses tecnicamente validas, com parametrizacao e metricas. Se nenhuma atingir o limiar satisfatorio, voltar ao levantamento de hipoteses.
 
 # Context
-Repositório: devin-bundle (D:\Programing\ai_workspace\devin-bundle), branch atual `main`. Skills vivem em `.devin/skills/<nome>/SKILL.md` (projeto) ou `%APPDATA%\devin\skills\<nome>` (global); cabe ao executor decidir e justificar a localização. Convenções obrigatórias: skill `writing-skills` (frontmatter com gatilhos 'Use when', contexto enxuto, conteúdo pesado em arquivos de referência por ponteiro), AGENTS.md Rule 2 (sem assinaturas/Co-Authored-By de IA), Rule 12 (verificar com ferramentas, citar fontes primárias), Rule 18 (mínimo necessário, sem overengineering). Pesquisa paralela via subagents `researcher` (swe-2-max, grátis); nunca usar `subagent_explore`. Repo de referência: clonar/inspecionar https://github.com/Jakeschincariol/linkedin-agent-skill (somente leitura, repo externo) apenas como referência de formato, pois as skills serão autorais do bundle e não vendored/adaptadas. Pesquisa extensiva exigida por rede: documentação oficial de API como fonte primária.
+Repo: bundle Devin CLI em D:\Programing\ai_workspace\devin-bundle. Branch nova feat/cu-realtime; commits = checkpoints por fase/hipotese. 'Tempo real' no contexto CU = latencia do ciclo perceber->decidir->agir->reperceber. Mecanismos candidatos existentes a verificar com ferramentas (nao deduzir): skills/computer-use (screenshot, screen recording com video + contact sheet, mouse/teclado, leitura de terminais), extensions/ (blender-operator = TCP exec loop persistente com bpy; spline-operator = bridge MCP ws://127.0.0.1:19692; system-control = sessoes persistentes + event streams + inventario de processos), hooks PreToolUse/UserPromptSubmit/SessionStart (constraint-pinning.py, architecture-gate.py), run_subagent is_background + <subagent_completion_notification>, get_output polling de shells. O binario devin-cli e fechado - 'vasculhar o proprio codigo' = bundle, extensions, skills, .devin/docs e %APPDATA%\devin\docs. Skills relevantes: primeagent-reference (harness design, A2A, Refine loop), computer-use, system-control, context-hygiene, gates. Anti reward-hacking: metrica e limiar de 'satisfatorio' definidos ANTES dos testes.
 
 # Acceptance Criteria
-1. Repo linkedin-agent-skill inspecionado como referência de formato (paths/commits citados); skill de LinkedIn é autoral, não cópia/adaptação do repo
-2. Árvore `social-midia` criada: SKILL.md raiz funcionando como router + um SKILL.md por rede: LinkedIn, X/Twitter, Instagram, Facebook, TikTok, YouTube, Threads e Reddit no mínimo
-3. Cada SKILL.md de rede cobre: capacidades de uso, autenticação/modelo de API, formatos e limites de postagem, agendamento/automação, analytics/métricas e rotinas profissionais
-4. Toda skill segue o schema de `writing-skills` e permanece enxuta (detalhe pesado em arquivos de referência apontados)
-5. Pesquisa baseada em fontes primárias (docs oficiais) com URLs citadas, sem capacidade inventada ou deduzida
-6. Plano de implementação sistemático persistido em `.devin/` (doc de plano ou ledger)
-7. Entrega em branch nova com PR aberto via `gh` (summary + test plan); commits limpos sem trailers de IA
-8. Estrutura final verificada com ferramentas (paths existem, frontmatter válido), não por dedução
+1. Mapa verificado por ferramentas do ciclo do devin-cli (entrada do prompt -> tools/hooks -> raciocinio -> acao -> saida), citando arquivos/skills concretos; inclui o ciclo CU atual com baseline de latencia medido por iteracao
+2. Tabela de hipoteses de tempo real: cada uma com evidencia tecnica (arquivo do bundle ou fonte primaria) e veredicto viavel/inviavel com motivo
+3. Cada hipotese viavel testada na pratica, uma a uma, com parametrizacao e metricas registradas (latencia por ciclo, custo de tokens, taxa de acerto); resultados em doc/ledger rastreavel
+4. Veredicto final: abordagem mais proxima de tempo real + parametros recomendados; OU retorno documentado a fase de hipoteses com aprendizados, se nenhuma atingir o limiar pre-definido
+5. Branch feat/cu-realtime com um commit por checkpoint; nenhum checkpoint com estado quebrado; gates verdes ao final (validate-skill-format se SKILL.md mudar, pytest/audit se existirem)
 
 # Scope & Non-Goals
-- **IN SCOPE:** Inspeção read-only do repo externo linkedin-agent-skill (referência de formato) e de outros repos de skills de redes sociais encontrados
-- **IN SCOPE:** Pesquisa profunda por rede usando docs oficiais de API como fonte primária
-- **IN SCOPE:** Criação da árvore `.devin/skills/social-midia/` (SKILL.md + arquivos de referência)
-- **IN SCOPE:** Doc de plano sistemático em `.devin/`
-- **IN SCOPE:** Nova branch, commits e abertura de PR
-- **OUT OF SCOPE:** Postar, agendar ou autenticar em contas reais; executar chamadas contra APIs vivas
-- **OUT OF SCOPE:** Usar ou commitar credenciais/tokens reais; documentar apenas os nomes das variáveis de ambiente
-- **OUT OF SCOPE:** Criar MCP servers ou código executável além dos arquivos de skill/plano
-- **OUT OF SCOPE:** Modificar skills, hooks ou código fora de `.devin/skills/social-midia*` e do doc de plano
-- **OUT OF SCOPE:** Adicionar redes além da lista acordada sem aprovação explícita
+- **IN SCOPE:** Pesquisa com evidencias: bundle, extensions, skills, docs locais, fontes primarias externas
+- **IN SCOPE:** Prototipos/testes de hipoteses dentro do bundle (extensions, hooks, skills, scripts em .devin/)
+- **IN SCOPE:** Medicao e parametrizacao do ciclo CU (screenshot->acao->screenshot e alternativas)
+- **IN SCOPE:** Commits checkpoint na branch feat/cu-realtime
+- **OUT OF SCOPE:** Modificar o binario devin-cli ou exigir features inexistentes do runtime fechado
+- **OUT OF SCOPE:** Modelos pagos (parent free: apenas swe-2-medium/max)
+- **OUT OF SCOPE:** Deploy em producao ou mudancas irreversiveis no ambiente do usuario
+- **OUT OF SCOPE:** Reescrever skills/extensions existentes sem design aprovado
 
 # Execution Hints & Checkpoints
-1. **Fase 1:** Pesquisa profunda: inspecionar o repo linkedin-agent-skill e levantar, com researchers paralelos, docs oficiais e capacidades de cada rede; produzir inventário de capacidades + proposta de arquitetura da árvore + plano sistemático em `.devin/`. **PARE e aguarde aprovação.**
-2. **Fase 2:** Implementar a árvore `social-midia` em branch nova (`feat/social-midia-skills`), seguindo `writing-skills`.
-3. **Fase 3:** Verificar estrutura e frontmatter com ferramentas, rodar os gates do bundle, commit limpo e abrir PR via `gh` com summary + test plan.
+1. **Fase 1:** Mapear com ferramentas o ciclo devin-cli (prompt -> tools/hooks -> acao) e o ciclo CU atual, medindo baseline de latencia por iteracao; levantar hipoteses de tempo real, cada uma com evidencia tecnica e veredicto de viabilidade; definir metrica e limiar de 'satisfatorio' ANTES dos testes. Commit checkpoint. PARE e aguarde aprovacao.
+2. **Fase 2:** Testar as hipoteses viaveis uma a uma, com parametrizacao; registrar metricas por hipotese; um commit checkpoint por hipotese testada.
+3. **Fase 3:** Avaliar resultados contra o limiar: se nenhuma satisfatoria, voltar a Fase 1 incorporando os aprendizados; senao, documentar veredicto + parametros + recomendacao. Gates verdes, commit final e reporte com evidencias.
