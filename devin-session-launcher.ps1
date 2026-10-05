@@ -4,10 +4,42 @@
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# Mensagens centralizadas do launcher (pt-BR, ASCII-safe)
+$LM = @{
+    FiltroPrompt = 'Filtro (Enter para mostrar tudo)'
+    NumeroPrompt = 'Digite o numero (Enter para cancelar)'
+    AjudaCtrlL = 'Setas = mover  Enter = selecionar  Esc = voltar  Ctrl+L = editar caminho  Backspace/Delete = filtro  ? = ajuda  1-9 = atalho'
+    AjudaBase = 'Setas = mover  Enter = selecionar  Esc = voltar  Backspace/Delete = filtro  ? = ajuda  1-9 = atalho'
+    ResumoNaoInterativo = 'Resumo da configuracao (modo nao interativo):'
+    ResumoTitulo = 'Resumo da configuracao - Enter inicia . Esc reconfigurar'
+    DevinNaoEncontrado = "Aviso: comando 'devin' nao encontrado no PATH. Iniciar nova sessao diretamente nao e possivel."
+    ListaSessoesFalha = 'Aviso: nao foi possivel listar sessoes: {0}'
+    ListaSessoesFalhaNova = 'Aviso: nao foi possivel listar sessoes. Iniciando nova sessao...'
+    NenhumaSessao = 'Nenhuma sessao encontrada. Iniciando nova...'
+    SessaoCancelada = 'Selecao cancelada. Nenhuma sessao sera iniciada.'
+    NovaSessao = 'Iniciando nova sessao...'
+    RetomandoSessao = 'Retomando sessao {0}...'
+    TituloSessoes = 'Sessoes encontradas - escolha uma ou inicie nova'
+    NovaSessaoOpcao = '[Nova sessao]'
+}
+
 function Get-TuiWidth {
     $w = [Console]::WindowWidth
     if ($w -le 0) { $w = 120 }
     return $w
+}
+
+function Test-FuzzyMatch {
+    param([string]$Text, [string]$Query)
+    if ([string]::IsNullOrEmpty($Query)) { return $true }
+    $t = $Text.ToLowerInvariant()
+    $q = $Query.ToLowerInvariant()
+    $pos = -1
+    foreach ($c in $q.ToCharArray()) {
+        $pos = $t.IndexOf($c, $pos + 1)
+        if ($pos -lt 0) { return $false }
+    }
+    return $true
 }
 
 function Show-TerminalList {
@@ -29,30 +61,19 @@ function Show-TerminalList {
         return "$label"
     }
 
-    function Test-FuzzyMatch {
-        param([string]$Text, [string]$Query)
-        if ([string]::IsNullOrEmpty($Query)) { return $true }
-        $t = $Text.ToLowerInvariant()
-        $q = $Query.ToLowerInvariant()
-        $pos = -1
-        foreach ($c in $q.ToCharArray()) {
-            $pos = $t.IndexOf($c, $pos + 1)
-            if ($pos -lt 0) { return $false }
-        }
-        return $true
-    }
+    # Test-FuzzyMatch vive em top-level (testavel via AST import).
 
     # Fallback nao interativo: listagem simples com filtro e numeros
     if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected) {
         Write-Host $Title -ForegroundColor Cyan
         if ($Subtitle) { Write-Host $Subtitle -ForegroundColor DarkGray }
-        $filter = Read-Host "Filtro (Enter para mostrar tudo)"
+        $filter = Read-Host $LM.FiltroPrompt
         $filtered = @($Items | Where-Object { Test-FuzzyMatch -Text (Get-Label $_) -Query $filter })
         if ($filtered.Count -eq 0) { return $null }
         for ($i = 0; $i -lt $filtered.Count; $i++) {
             Write-Host "  [$($i+1)] $(Get-Label $filtered[$i])" -ForegroundColor White
         }
-        $choice = Read-Host "Digite o numero (Enter para cancelar)"
+        $choice = Read-Host $LM.NumeroPrompt
         if ([string]::IsNullOrWhiteSpace($choice)) { return $null }
         if (-not [int]::TryParse($choice, [ref]$null)) { return $null }
         $idx = [int]$choice - 1
@@ -74,6 +95,7 @@ function Show-TerminalList {
     $lastTotalLines = 0
     $lastW = [Console]::WindowWidth
     $lastH = [Console]::WindowHeight
+    $windowSize = 10
 
     try {
         while ($true) {
@@ -119,9 +141,6 @@ function Show-TerminalList {
                     $digitIndex = [int]$char.ToString() - 1
                     if ($digitIndex -ge 0 -and $digitIndex -lt $filtered.Count) {
                         return $filtered[$digitIndex]
-                    }
-                    if ($char -eq '0') {
-                        if ($filtered.Count -gt 0) { return $filtered[0] }
                     }
                     $needsRedraw = $true
                     continue
@@ -279,11 +298,7 @@ function Show-TerminalList {
 
             # Ajuda
             if ($showHelp) {
-                $h = if ($OnCtrlL) {
-                    "Setas = mover  Enter = selecionar  Esc = voltar  Ctrl+L = editar caminho  Backspace/Delete = filtro  ? = ajuda  1-9 = atalho"
-                } else {
-                    "Setas = mover  Enter = selecionar  Esc = voltar  Backspace/Delete = filtro  ? = ajuda  1-9 = atalho"
-                }
+                $h = if ($OnCtrlL) { $LM.AjudaCtrlL } else { $LM.AjudaBase }
                 if ($h.Length -gt $inner) { $h = $h.Substring(0, $inner) }
                 $h = $h.PadRight($inner)
                 Write-Host -NoNewline '│ ' -ForegroundColor $border
@@ -399,18 +414,29 @@ function Get-PathSuggestions {
     $resolved = $null
     if ($dir -eq '.') {
         if ($prefix -match '^[a-zA-Z]:?$') {
-            $drives = [System.IO.DriveInfo]::GetDrives() | Where-Object { $_.Name -like "$prefix*" }
+            $drives = [System.IO.DriveInfo]::GetDrives() | Where-Object { $_.Name -like (([WildcardPattern]::Escape($prefix)) + '*') }
             $result.Suggestions = @($drives | ForEach-Object { $_.Name })
             return $result
         }
     }
 
-    try { $resolved = Resolve-Path -LiteralPath $dir -ErrorAction SilentlyContinue } catch {}
+    try { $resolved = Resolve-Path -LiteralPath $dir -ErrorAction SilentlyContinue } catch { Write-Verbose "Resolve-Path falhou para '$dir'" }
     if (-not $resolved) { return $result }
 
-    $items = Get-ChildItem -LiteralPath $resolved.ProviderPath -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -like "$prefix*" } |
-        Sort-Object { $_.PSIsContainer -eq $false }, { $_.Name }
+    # Cache TTL do diretorio: digitacao rapida nao repete Get-ChildItem
+    $resolvedPath = $resolved.ProviderPath
+    $now = Get-Date
+    $cache = $script:DevinPathSuggestCache
+    if (-not $cache -or $cache.Path -ne $resolvedPath -or ($now - $cache.Time).TotalMilliseconds -gt 500) {
+        $script:DevinPathSuggestCache = @{
+            Path = $resolvedPath
+            Items = @(Get-ChildItem -LiteralPath $resolvedPath -ErrorAction SilentlyContinue)
+            Time = $now
+        }
+    }
+    $items = @($script:DevinPathSuggestCache.Items |
+        Where-Object { $_.Name -like (([WildcardPattern]::Escape($prefix)) + '*') } |
+        Sort-Object { $_.PSIsContainer -eq $false }, { $_.Name })
 
     if ($items) {
         $result.Suggestions = @($items | ForEach-Object { $_.FullName })
@@ -448,7 +474,9 @@ function Read-EditableLine {
     if ([Console]::IsInputRedirected) { return $null }
 
     $old = [Console]::CursorVisible
+    $oldTreatCtrlC = [Console]::TreatControlCAsInput
     [Console]::CursorVisible = $true
+    [Console]::TreatControlCAsInput = $true
     $startLeft = [Console]::CursorLeft
     $startTop = [Console]::CursorTop
     $sb = [System.Text.StringBuilder]::new($Initial)
@@ -516,7 +544,7 @@ function Read-EditableLine {
                 }
                 $sug = $suggestions[$i]
                 $name = $sug
-                try { $name = Split-Path -Leaf -Path $sug } catch {}
+                try { $name = Split-Path -Leaf -Path $sug } catch { Write-Verbose "Split-Path falhou para '$sug'" }
                 if ([string]::IsNullOrEmpty($name)) { $name = [string]$sug }
                 if ($name.Length -gt ($w - $listLeft)) { $name = $name.Substring(0, $w - $listLeft) }
                 [Console]::Write($name)
@@ -658,27 +686,35 @@ function Read-EditableLine {
     }
     finally {
         [Console]::CursorVisible = $old
+        [Console]::TreatControlCAsInput = $oldTreatCtrlC
     }
 }
 
 
 
 function Invoke-WithSpinner {
+    # Executa o scriptblock num runspace (sem processo pwsh filho, sem CliXml).
+    # Valores externos entram via $Ctx.<nome> passados em -ArgumentList.
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string]$Message,
         [Parameter(Mandatory)]
-        [scriptblock]$ScriptBlock
+        [scriptblock]$ScriptBlock,
+        [hashtable]$ArgumentList = @{}
     )
 
     $Message = ($Message -replace '[\r\n]+', ' ').Trim()
     $frames = @('⢿','⣻','⣽','⣾','⣷','⣯','⣟','⡿')
-    $job = $null
+    $ps = $null
+    $async = $null
     try {
-        $job = Start-Job -ScriptBlock $ScriptBlock
+        $ps = [powershell]::Create()
+        $wrapped = "param(`$Ctx)`n" + $ScriptBlock.ToString()
+        $null = $ps.AddScript($wrapped).AddArgument($ArgumentList)
+        $async = $ps.BeginInvoke()
         $i = 0
-        while ($job.JobStateInfo.State -in 'NotStarted','Running') {
+        while ($ps.InvocationStateInfo.State -in 'NotStarted','Running') {
             Write-Host -NoNewline "`r$($frames[$i % $frames.Count]) $Message" -ForegroundColor Cyan
             Start-Sleep -Milliseconds 80
             $i++
@@ -688,19 +724,23 @@ function Invoke-WithSpinner {
         Write-Host -NoNewline (' ' * ($Message.Length + 4))
         Write-Host -NoNewline "`r"
 
-        if ($job.JobStateInfo.State -eq 'Failed') {
-            $err = $job.ChildJobs[0].JobStateInfo.Reason
+        if ($ps.InvocationStateInfo.State -eq 'Failed') {
+            $err = $ps.InvocationStateInfo.Reason
             if (-not $err) { $err = "Falha na operacao." }
             throw $err
         }
 
-        $result = Receive-Job -Job $job
+        $result = $ps.EndInvoke($async)
+        if ($result.Count -eq 0) { return $null }
+        if ($result.Count -eq 1) { return $result[0] }
         return $result
     }
     finally {
-        if ($job) {
-            Stop-Job -Job $job -ErrorAction SilentlyContinue
-            Remove-Job -Job $job -ErrorAction SilentlyContinue
+        if ($ps) {
+            if ($ps.InvocationStateInfo.State -in 'NotStarted','Running') {
+                try { $ps.Stop() } catch { Write-Verbose "Runspace Stop falhou: $_" }
+            }
+            $ps.Dispose()
         }
     }
 }
@@ -713,7 +753,7 @@ function Show-Summary {
     )
 
     if ([Console]::IsInputRedirected -or [Console]::IsOutputRedirected) {
-        Write-Host 'Resumo da configuracao (modo nao interativo):' -ForegroundColor Cyan
+        Write-Host $LM.ResumoNaoInterativo -ForegroundColor Cyan
         $Instances | Select-Object Label, @{N='Projeto';E={$_.Project.Path}}, Branch, @{N='Tipo';E={if (-not $_.Project.IsGitRepo) { 'sem git' } elseif ($_.BranchInfo -and $_.BranchInfo.Type) { $_.BranchInfo.Type } else { '-' }}}, @{N='Posicao';E={if ($_.Position) { $_.Position } else { '-' }}} | Format-Table -AutoSize | Out-String | Write-Host
         return $true
     }
@@ -778,7 +818,7 @@ function Show-Summary {
                 Clear-Host
 
                 Write-Host ('┌' + ('─' * ($boxW - 2)) + '┐') -ForegroundColor $border
-                $title = 'Resumo da configuracao — Enter inicia · Esc reconfigurar'
+                $title = $LM.ResumoTitulo
                 if ($title.Length -gt $inner) { $title = $title.Substring(0, $inner) }
                 $title = $title.PadRight($inner)
                 Write-Host -NoNewline '│ ' -ForegroundColor $border
@@ -844,35 +884,56 @@ function Show-Summary {
 }
 
 
+function Get-DevinSessionData {
+    # devin ls --format json; usa cache compartilhado quando DEVIN_N_SESSIONS_FILE
+    # aponta para arquivo fresco (<60s) escrito pelo processo pai.
+    param([Parameter(Mandatory)]$DevinCmd)
+    $file = $env:DEVIN_N_SESSIONS_FILE
+    if ($file -and (Test-Path -LiteralPath $file)) {
+        $age = ((Get-Date) - (Get-Item -LiteralPath $file).LastWriteTime).TotalSeconds
+        if ($age -lt 60) {
+            $cached = Get-Content -LiteralPath $file -Raw -ErrorAction SilentlyContinue
+            if ($cached -and $cached.Trim()) {
+                return [PSCustomObject]@{ Ok = $true; Json = $cached; Stderr = ''; Cached = $true }
+            }
+        }
+    }
+    $allOutput = & $DevinCmd ls --format json 2>&1
+    $stderr = $allOutput | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] } | ForEach-Object { $_.ToString() }
+    $sessionsJson = $allOutput | Where-Object { $_ -is [string] } | Out-String
+    return [PSCustomObject]@{
+        Ok = ($LASTEXITCODE -eq 0)
+        Json = $sessionsJson
+        Stderr = ($stderr | Out-String).Trim()
+        Cached = $false
+    }
+}
+
 function Start-DevinSession {
     $devinCmd = Get-Command devin -ErrorAction SilentlyContinue
     if (-not $devinCmd) {
-        Write-Host "Aviso: comando 'devin' nao encontrado no PATH. Iniciando nova sessao diretamente nao e possivel." -ForegroundColor Red
+        Write-Host $LM.DevinNaoEncontrado -ForegroundColor Red
         return
     }
 
-    $allOutput = & $devinCmd ls --format json 2>&1
-    $stderr = $allOutput | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] } | ForEach-Object { $_.ToString() }
-    $sessionsJson = $allOutput | Where-Object { $_ -is [string] } | Out-String
-    $devinLsOk = $LASTEXITCODE -eq 0
-
-    if (-not $devinLsOk) {
-        if ($stderr) { Write-Host "Aviso: nao foi possivel listar sessoes: $stderr" -ForegroundColor Yellow }
-        else { Write-Host "Aviso: nao foi possivel listar sessoes. Iniciando nova sessao..." -ForegroundColor Yellow }
+    $ls = Get-DevinSessionData -DevinCmd $devinCmd
+    if (-not $ls.Ok) {
+        if ($ls.Stderr) { Write-Host ($LM.ListaSessoesFalha -f $ls.Stderr) -ForegroundColor Yellow }
+        else { Write-Host $LM.ListaSessoesFalhaNova -ForegroundColor Yellow }
         & $devinCmd
         return
     }
 
-    $sessions = $sessionsJson | ConvertFrom-Json -ErrorAction SilentlyContinue
+    $sessions = $ls.Json | ConvertFrom-Json -ErrorAction SilentlyContinue
     if (-not $sessions -or $sessions.Count -eq 0) {
-        Write-Host "Nenhuma sessao encontrada. Iniciando nova..." -ForegroundColor Cyan
+        Write-Host $LM.NenhumaSessao -ForegroundColor Cyan
         & $devinCmd
         return
     }
 
     $choices = [System.Collections.ArrayList]::new()
     [void]$choices.Add([PSCustomObject]@{
-        Name = '[Nova sessao]'
+        Name = $LM.NovaSessaoOpcao
         Id = ''
     })
 
@@ -883,19 +944,19 @@ function Start-DevinSession {
         })
     }
 
-    $selected = Show-TerminalList -Items $choices -Title "Sessoes encontradas - escolha uma ou inicie nova" -ToString { param($x) $x.Name }
+    $selected = Show-TerminalList -Items $choices -Title $LM.TituloSessoes -ToString { param($x) $x.Name }
 
     if ($null -eq $selected) {
-        Write-Host "Selecao cancelada. Nenhuma sessao sera iniciada." -ForegroundColor DarkGray
+        Write-Host $LM.SessaoCancelada -ForegroundColor DarkGray
         return
     }
 
     if ([string]::IsNullOrWhiteSpace($selected.Id)) {
-        Write-Host "Iniciando nova sessao..." -ForegroundColor Cyan
+        Write-Host $LM.NovaSessao -ForegroundColor Cyan
         & $devinCmd
     }
     else {
-        Write-Host "Retomando sessao $($selected.Id)..." -ForegroundColor Cyan
+        Write-Host ($LM.RetomandoSessao -f $selected.Id) -ForegroundColor Cyan
         & $devinCmd -r $selected.Id
     }
 }
