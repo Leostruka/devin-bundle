@@ -76,10 +76,11 @@ class _Win32:
         return bool(self.u32.IsWindowVisible(int(hwnd)))
 
     def rect(self, hwnd):
-        r = wintypes.RECT()
-        if not self.u32.GetWindowRect(int(hwnd), ctypes.byref(r)):
+        try:
+            import cu_dpi
+            return cu_dpi.physical_window_bounds(hwnd)
+        except OSError:
             raise ScopeError(f"no_rect:{hwnd}")
-        return (r.left, r.top, r.right, r.bottom)
 
 
 win = None
