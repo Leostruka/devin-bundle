@@ -28,6 +28,10 @@ has no API/CLI.
 | `cu_bench.py` | per-boundary latency harness (protocol 4.4) — `--runs N --out FILE`, JSON to stdout |
 | `cu_scope.py` | shared: window-target resolution (HWND by title/class/pid, frame→input child) + scoped channels (PostMessage/UIA/WriteConsoleInput/CDP) - never the global input queue |
 | `cu_overlay.py` | ghost cursor + annotation overlay: click-through layered window (`WS_EX_TRANSPARENT|NOACTIVATE`), bezier fly-to, boxes/labels/arrows, optional capture exclusion |
+| `cu_dpi.py` | shared: per-monitor-v2 DPI awareness (fallback: shcore v1, user32) + `physical_window_bounds` — DWM visible-frame rect with GetWindowRect fallback |
+| `cu_ocr.py` | WinRT OCR text→screen-coords: `find "text" --window/--region` returns word rects in physical pixels; ~48px-height floor handled by upscale |
+| `cu_events.py` | event-driven hint daemon (opt-in): out-of-context WinEvent hook → hwnd/event filter → per-hwnd debounce → UIA re-enum → per-hwnd hint sidecar |
+| `cu_wgc.py` | optional Windows.Graphics.Capture per-window frames — the ONLY path that captures occluded windows; `caps` reports availability, degrades to structured error without the winrt/dxcam deps |
 | `requirements.txt` | `mss` + `pynput` + `pillow` + `comtypes` (Windows UIA) + `websocket-client` + `pywinpty`/`winrt-*` (Windows terminal) |
 
 ## Action profiles
@@ -80,7 +84,7 @@ python3 -m venv <ext-dir>/.venv
 - `screenshot.py` output includes `origin_px` (image top-left in desktop space) and `captured_at`; with `--hints` also `session_id`, `observation_id`, `generation`, `window`, `truncated`.
 - Exit codes: `0` success, `1` runtime failure, `2` usage/dependency error.
 - Coordinates are physical pixels, origin at the top-left of the primary monitor. On multi-monitor setups, monitor 0 = the combined virtual screen; negative coordinates are valid for secondary monitors.
-- On Windows the scripts set per-monitor DPI awareness so screenshot pixels and mouse coordinates agree on scaled displays.
+- On Windows the scripts set per-monitor-v2 DPI awareness (`cu_dpi.set_dpi_awareness`, fallback: shcore v1) so screenshot pixels and mouse coordinates agree on scaled displays; window rects use DWM extended frame bounds (visible frame, no invisible resize borders).
 - Default `--out` goes to the OS temp dir (`%TEMP%`/`/tmp`) — screenshots are disposable. **Do not pass `--out` at all during normal work**; let shots land in temp. Only write elsewhere when the user explicitly asks to keep a shot (documentation/evidence), to the path they choose.
 - **Cleanup:** temp shots are the agent's working files — delete the ones you created when the task ends (`screenshot-<ts>.png` etc.). Never leave them in the project root or `.devin/`.
 
@@ -161,6 +165,32 @@ slots), `fps_actual`, `size_bytes`.
 reservoir-sampled across the whole capture (uniform even on early stop).
 Video files can't be viewed directly; use the sheet to verify, or extract
 more frames from the video with ffmpeg afterwards.
+
+```bash
+# --- cu_ocr.py --- text → screen coordinates (Windows only)
+$PY cu_ocr.py find "Save" --window 123456        # word rects for matches
+$PY cu_ocr.py find "OK" --region 100,100,800,600 # OCR on a crop
+$PY cu_ocr.py all --region 0,0,400,200           # every word in the area
+
+# --- cu_events.py --- event-driven hint daemon (Windows only, opt-in)
+$PY cu_events.py start --hwnd 123456             # hook + primed enum
+$PY cu_events.py watch --hwnd 789                # add a window later
+$PY cu_events.py hints --hwnd 123456             # cached hints (~0ms)
+$PY cu_events.py drain                           # matched events log
+$PY cu_events.py status | stop
+
+# --- cu_wgc.py --- optional WGC per-window frames (Windows only)
+$PY cu_wgc.py caps                               # {"available": bool}
+$PY cu_wgc.py shot --hwnd 123456 --out frame.png # current content
+$PY cu_wgc.py shot --hwnd 123456 --wait          # next content change
+```
+
+OCR notes: word-level recognition (~93% hit on tested text) — prefer
+multi-char queries; regions under ~48px tall are upscaled automatically.
+`cu_wgc` is the only capture path that sees an **occluded** window's
+content; without `dxcam` + `winrt-Windows.Graphics.Capture*` installed it
+reports `available:false` and every `shot` fails with a structured error —
+the rest of the extension is unaffected.
 
 ## Agent workflow
 
