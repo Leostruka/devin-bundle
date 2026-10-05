@@ -160,6 +160,42 @@ only viable during sustained animation (video-ish regions), which is
 not the perception use case. `E_NOINTERFACE` + drain semantics must be
 handled in any future impl.
 
+## P6 — Windows.Graphics.Capture per-window (raw winrt bindings)
+
+Probe: `p6_wgc.py` — create_for_window(hwnd) + free-threaded frame pool +
+`add_frame_arrived` -> threading.Event (the event semantics dxcam's
+monitor-only winrt backend does not expose). D3D11 plumbing reused from
+dxcam internals. winrt stack: `winrt-Windows.Graphics{,.Capture{,.Interop},
+.DirectX{,.Direct3D11{,.Interop}},.Foundation{,.Collections}}` 3.2.1.
+
+| Metric | Result | Note |
+|---|---|---|
+| FrameArrived wake, single window content change (resize) | **p50 38.6–41.2ms, p95 43.6, n=6/6** | event-driven works — DD's exact failure mode absent |
+| FrameArrived on pure position move | **0/3 events** | correct content-scoped semantics: item surface unchanged → no frame. Content changes are what fire |
+| Idle noise | 0 events, 0 frames / 2s | no spurious wakes |
+| **Occluded window** (fully covered by topmost) | **FrameArrived 29–40ms + frame content delivered** | WGC captures the window's own surface — works while covered; impossible for DD/mss/BitBlt |
+| Per-window isolation | item 306x193 vs window 320x200 | `is_border_required=False` strips frame/titlebar |
+| surface->numpy copy | **1.8–3.2ms** for ~316x193 | trivial vs PNG encode |
+| frame pixels | 96.6% non-black, mean ~234 (white bg) | real content verified |
+| frame.system_relative_time | present (ticks) | frame timestamps available |
+| `session.dirty_region_mode` | attribute exists | delivery of dirty rects not measured |
+
+Caveats found:
+- Stale pooled frames: after resize, `try_get_next_frame` returned a
+  frame whose texture (306x193) predates content_size (316x193) —
+  consumers must read dims from the texture desc, not content_size.
+- winrt pip namespace packages are fragile under `--target` (shared
+  `winrt/` dir wiped by partial --upgrade) — single-shot install works.
+- Wake ~40ms is slower than P1 WinEvents (~14ms) but content-scoped and
+  carries the frame itself; complementary granularity.
+
+**P6 verdict: PASS** — per-window event-driven capture is real:
+FrameArrived on content change + occluded-surface capture + ~2ms
+surface->numpy. Unique capabilities vs all other layers measured.
+Integration shape for P11: daemon-side per-window frame pool feeding a
+"window changed" wake + fresh content rect; heavier dep footprint
+(5+ winrt wheels + D3D11 boilerplate) argues for optional-plugin seam.
+
 ## Pending
 
-P6 WGC; P7 numpy FFT-NCC; P11 integration verdict.
+P7 numpy FFT-NCC; P11 integration verdict.
