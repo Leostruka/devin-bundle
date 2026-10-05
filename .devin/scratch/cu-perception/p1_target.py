@@ -14,6 +14,7 @@ title = sys.argv[1]
 secs = float(sys.argv[2]) if len(sys.argv) > 2 else 60
 qpc_out = "--qpc" in sys.argv
 draw_text = "--drawtext" in sys.argv
+topmost = "--topmost" in sys.argv
 
 WNDPROC = ctypes.WINFUNCTYPE(wt.LPARAM, wt.HWND, wt.UINT,
                              wt.WPARAM, wt.LPARAM)
@@ -69,11 +70,13 @@ if qpc_out:
     k.QueryPerformanceFrequency(ctypes.byref(f))
     k.QueryPerformanceCounter(ctypes.byref(c))
     print(c.value, f.value, flush=True)
-hwnd = u.CreateWindowExW(0, "cu_p1_target", title, 0x00CF0000,
-                         400, 300, 320, 200, None, None,
+hwnd = u.CreateWindowExW(0x8 if topmost else 0, "cu_p1_target", title,
+                         0x00CF0000, 400, 300, 320, 200, None, None,
                          wt.HINSTANCE(wc.hInstance), None)
 u.ShowWindow(hwnd, 5)  # SW_SHOW
 u.UpdateWindow(hwnd)
+if topmost:
+    u.SetWindowPos(hwnd, wt.HWND(-1), 0, 0, 0, 0, 0x0001 | 0x0002)
 
 deadline = time.time() + secs
 msg = wt.MSG()

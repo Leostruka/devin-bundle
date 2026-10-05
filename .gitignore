@@ -53,3 +53,4 @@ ci-logs.zip
 credentials.toml
 .devin/config.local.json
 .devin/mcp_config.local.json
+.devin/scratch/cu-perception/_deps/

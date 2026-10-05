@@ -119,6 +119,47 @@ any raster surface at ~8ms/region, zero added model deps. Integration
 shape for P11: `region + query_text -> [word, x, y, w, h]` with upscale
 guard and empty-result check.
 
+## P5 — DXGI Desktop Duplication (dxcam 0.3.0, isolated scratch target)
+
+Probe: `p5_dxgi.py` + inline matrix experiments
+(`dxcam==0.3.0` in `scratch/_deps`, `processor_backend="numpy"`).
+Target: `p1_target --topmost --drawtext` (always-on-top guarantees the
+moved window is NOT occluded — required after first run showed 0 frames
+for an occluded move, which is expected behavior).
+
+### The negative result that matters
+
+| Experiment | Result |
+|---|---|
+| `AcquireNextFrame(timeout=1500..5000)` while a topmost window moves DURING the wait | **timeout 10/10 — the blocking wait never fires for desktop updates on this host** |
+| `AcquireNextFrame(timeout)` when frames already queued | returns immediately (acc=34 seen) — queue has data, the waitable object just isn't signaled |
+| `acquire(0)` poll @0.5ms for 3s after a single window move | **0 frames — single updates never reach the duplicator queue at all** |
+| dxcam `start(target_fps=0)` thread during continuous move+resize spam | 76 frames collected — frames flow only under sustained compositor activity |
+| same single moves via mss grab+diff | 10/10 detected, 14.6–24.0ms |
+| cursor spam | frames delivered with `LastMouseUpdateTime` (pointer path works) |
+| `DuplicateOutput` vs `IDXGIOutput5::DuplicateOutput1` | identical behavior — not an API-variant issue |
+
+Interpretation: on this host (Win11-class DWM, single monitor, likely
+MPO/overlay-plane composition), a single window move is composed without
+a full desktop present reaching the duplicator; only sustained
+compositor activity produces DD frames, and even then the blocking wait
+is not signaled. The frame-event premise of P5 fails empirically —
+NOT a dxcam bug (verified at the raw COM layer, both API variants).
+
+Secondary defect found: `AcquireNextFrame` raises `E_NOINTERFACE`
+(0x80004002) for frames with no desktop resource (mouse-only/metadata);
+dxcam's `update_frame` does not handle it -> `cam.grab()` crashes.
+Integration would require handling this ourselves anyway.
+
+**P5 verdict: FAIL-CONSTRAINED on this host** — DD cannot serve as a
+frame-event channel (blocking wait dead) nor as a reliable pixel source
+for single updates (queue never receives them). Scratch-only; raw-capture
+speed was never measured as a benefit and is now moot. `apply_delta()`
+in cu_capture remains orphaned — justified. If ever revisited: DD is
+only viable during sustained animation (video-ish regions), which is
+not the perception use case. `E_NOINTERFACE` + drain semantics must be
+handled in any future impl.
+
 ## Pending
 
-P5 DXGI DDA backend; P6 WGC; P7 numpy FFT-NCC; P11 integration verdict.
+P6 WGC; P7 numpy FFT-NCC; P11 integration verdict.
