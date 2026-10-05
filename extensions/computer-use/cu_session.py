@@ -40,7 +40,8 @@ def _run_op(cmd):
     name, argv = cmd.get("script"), cmd.get("argv") or []
     if name == "_echo":
         return {"ok": True, "output": json.dumps({"echo": argv})}
-    if name not in ("mouse", "type_text", "screenshot", "profile"):
+    if name not in ("mouse", "type_text", "screenshot", "profile",
+                    "cu_ocr"):
         return {"ok": False, "error": f"unknown script {name!r}"}
     if HERE not in sys.path:
         sys.path.insert(0, HERE)

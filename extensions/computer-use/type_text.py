@@ -26,15 +26,8 @@ import cu_target
 
 
 def set_dpi_awareness():
-    if sys.platform == "win32":
-        try:
-            import ctypes
-            ctypes.windll.shcore.SetProcessDpiAwareness(2)
-        except Exception:
-            try:
-                ctypes.windll.user32.SetProcessDPIAware()
-            except Exception:
-                pass
+    import cu_dpi
+    cu_dpi.set_dpi_awareness()
 
 
 def fail(msg, code=1):

@@ -51,15 +51,8 @@ def _load_pil():
 
 
 def set_dpi_awareness():
-    if sys.platform == "win32":
-        try:
-            import ctypes
-            ctypes.windll.shcore.SetProcessDpiAwareness(2)
-        except Exception:
-            try:
-                ctypes.windll.user32.SetProcessDPIAware()
-            except Exception:
-                pass
+    import cu_dpi
+    cu_dpi.set_dpi_awareness()
 
 
 def _pick_encoder(out):

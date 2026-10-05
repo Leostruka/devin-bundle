@@ -472,14 +472,9 @@ def _ocr_image(path):
 # -- read paths -----------------------------------------------------------------
 
 def _window_rect(hwnd):
-    import ctypes
-
-    class R(ctypes.Structure):
-        _fields_ = [("l", ctypes.c_long), ("t", ctypes.c_long),
-                    ("r", ctypes.c_long), ("b", ctypes.c_long)]
-    r = R()
-    ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(r))
-    return (r.l, r.t, r.r - r.l, r.b - r.t)
+    import cu_dpi
+    l, t, r, b = cu_dpi.physical_window_bounds(hwnd)
+    return (l, t, r - l, b - t)
 
 
 def _slice(text, tail=None, find=None):
