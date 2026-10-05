@@ -34,7 +34,8 @@ def test_set_awareness_prefers_pmav2(monkeypatch):
             return 0
 
     monkeypatch.setattr(ctypes, "windll",
-                        types.SimpleNamespace(user32=U32(), shcore=Shcore()))
+                        types.SimpleNamespace(user32=U32(), shcore=Shcore()),
+                        raising=False)
     assert d.set_dpi_awareness() == "pmv2"
     assert calls == [("ctx", -4)]
 
@@ -54,7 +55,8 @@ def test_set_awareness_fallback_to_v1(monkeypatch):
             return 0
 
     monkeypatch.setattr(ctypes, "windll",
-                        types.SimpleNamespace(user32=U32(), shcore=Shcore()))
+                        types.SimpleNamespace(user32=U32(), shcore=Shcore()),
+                        raising=False)
     assert d.set_dpi_awareness() == "shcore"
     assert calls == [("ctx", -4), ("awareness", 2)]
 
@@ -104,7 +106,7 @@ def test_physical_bounds_dwm_fail_falls_back(monkeypatch):
     monkeypatch.setattr(ctypes, "windll",
                         types.SimpleNamespace(dwmapi=types.SimpleNamespace(
                             DwmGetWindowAttribute=lambda *a: 1),
-                            user32=U32()))
+                            user32=U32()), raising=False)
     assert d.physical_window_bounds(7) == (2, 12, 318, 228)
 
 
@@ -118,7 +120,7 @@ def test_physical_bounds_gwr_fail_raises(monkeypatch):
     monkeypatch.setattr(ctypes, "windll",
                         types.SimpleNamespace(dwmapi=types.SimpleNamespace(
                             DwmGetWindowAttribute=lambda *a: 1),
-                            user32=U32()))
+                            user32=U32()), raising=False)
     with pytest.raises(OSError):
         d.physical_window_bounds(7)
 
