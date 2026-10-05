@@ -196,6 +196,27 @@ Integration shape for P11: daemon-side per-window frame pool feeding a
 "window changed" wake + fresh content rect; heavier dep footprint
 (5+ winrt wheels + D3D11 boilerplate) argues for optional-plugin seam.
 
+## P7 — numpy FFT-NCC template matching (no cv2)
+
+Probe: `p7_template.py` — FFT cross-correlation + integral-image local
+normalization, pure numpy. Template: 120x60 text patch from
+`p1_target --drawtext`, ground-truth offset known.
+
+| Metric | Result |
+|---|---|
+| FFT-NCC full screen (1920x1080) | **373ms p50** — hit 10/10 pixel-exact, score 1.0 |
+| FFT-NCC scoped region (640x480) | **31ms p50, p95 32** — hit 10/10 |
+| Direct sliding-window NCC (same region) | ~13,000ms — 400x slower; FFT wins decisively |
+| Noise robustness (sigma=12 gaussian) | hit, score 0.993 |
+| Scale robustness (template ±10%) | **miss both ways, score ~0.32** — NCC is scale-brittle; scale-invariance needs a pyramid pass (not built) |
+
+**P7 verdict: PASS-SCOPED** — viable only scoped to a known window/region
+(~31ms vs UIA hint 18-31ms, so it is a complement for pixel-only
+content: canvas, images, icons). Full-screen search (373ms) is not
+competitive as a primary locator. Requires numpy (new extension dep).
+Scale/DPI fragility documented: templates must be captured at the same
+scale they are matched at.
+
 ## Pending
 
-P7 numpy FFT-NCC; P11 integration verdict.
+P11 integration verdict.
