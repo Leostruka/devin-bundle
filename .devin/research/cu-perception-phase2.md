@@ -217,6 +217,46 @@ competitive as a primary locator. Requires numpy (new extension dep).
 Scale/DPI fragility documented: templates must be captured at the same
 scale they are matched at.
 
+## P11 — event-driven hint refresh (daemon seam end-to-end)
+
+Probe: `p11_daemon.py` — WinEvent hook -> hwnd/event filter ->
+`cu_hints` enum on the affected hwnd -> refreshed hint set. Measured
+event->hints-ready + filter efficiency, plus enum cost breakdown by
+provider type.
+
+| Metric | Result |
+|---|---|
+| Event->refreshed hints, per-hwnd enum (plain win32 window, MSAA-proxied provider) | **~600ms** steady (ElementFromHandle ~82ms + FindAll subtree ~526ms, 4 hints) |
+| Same on Notepad (native UIA provider) | **~55ms** (FromHandle 9ms + enum 46ms, 22 hints) |
+| Per-call `_uia_core()` | 48ms first / 1.3-1.7ms cached — NOT the bottleneck; resident core is cheap |
+| Filter efficiency | 199 ambient events -> 16 triggered refreshes (92% filtered before any UIA call) |
+| Noise floor | 0 events in idle 3s |
+
+Provider cost distribution is the design-shaping finding:
+**enum cost spans ~10x (55ms UIA-native .. 610ms MSAA-proxy)**. Consequences:
+
+- The daemon seam is justified ONLY as a resident async refresher —
+  the agent reads a pre-computed sidecar at ~0 cost vs the 591ms cold
+  `screenshot --hints` path (>10x effective for repeated reads). The
+  ">=2x perception" criterion is met by the residency model, not by
+  per-refresh speed on hostile providers.
+- Refresh must be debounced/coalesced per hwnd (a move burst = one
+  re-enum after settle, not N), and heavy MSAA windows may warrant
+  lazy/on-demand enum instead of eager.
+- `_uia_core()` per call is fine cached, but a resident core removes
+  even that.
+
+**P11 verdict: SEAM JUSTIFIED, design-constrained.** Recommended
+production seam: `cu_events.py` (hook pump thread -> per-hwnd debounced
+refresh -> existing sidecar format + generation bump). Order of
+integration by cost/benefit: P3 (one-liners, mandatory) > P1 (wake
+channel, ~14ms, cheap) > P4 (new OCR command, independent value) >
+P11 daemon (needs the design + tests) > P6 (optional plugin, heavy
+winrt+D3D11 deps, unique occluded-window capability) > P7
+(scratch-complement until a consumer exists) > P5/P8/P9/P10 (dead/
+observability-only/redundant/mapped-only — stay out).
+
 ## Pending
 
-P11 integration verdict.
+None — Phase 2 hypothesis sweep complete. Phase 3: verdict matrix +
+final gates + integration decision per technique.
