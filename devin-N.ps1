@@ -2,6 +2,12 @@
 # Suporta ate 4 instancias em 1 a 4 projetos; worktrees apenas se 2+ instancias no mesmo projeto.
 # O comando `devin` inicia um REPL interativo no diretorio atual.
 
+[CmdletBinding()]
+param(
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$DevinArgs = @()
+)
+
 Set-StrictMode -Off
 
 # Mensagens centralizadas (templates para futura i18n)
@@ -13,7 +19,9 @@ $M = @{
     WorkspaceDefinido = "Workspace definido para: {0}`n"
     NenhumaPastaSelecionada = "Nenhuma pasta selecionada. Mantendo no diretorio atual.`n"
     DimensaoJanela = 'Aviso: Nao foi possivel obter as dimensoes da janela. Redimensionamento desabilitado.'
-    NaoGitRepo = 'O projeto nao e um repositorio Git. Apenas 1 instancia e permitida e nao havera selecao de branch.'
+    NaoGitRepo = 'O projeto "{0}" nao e um repositorio Git. Apenas 1 instancia e permitida e nao havera selecao de branch.'
+    ArgsIgnorados = 'Aviso: argumentos nao utilizados pelo launcher (ignorados): {0}'
+    EscolhaReconfigurar = 'Escolha qual projeto reconfigurar (Esc volta ao resumo)'
     ConfigurandoInstancias = "`nConfigurando {0} instancia(s) em {1} projeto(s)..."
     WorktreeWorkspaceGit = "`n[WORKTREE] Projeto e um repositorio Git."
     SincronizandoReferencias = 'Sincronizando referencias remotas...'
@@ -37,7 +45,7 @@ $M = @{
     JanelaGeracao = 'Aguardando geracao da janela {0}...'
     JanelaPosicionada = 'Terminal {0} posicionado com sucesso.'
     JanelaTimeout = 'Aviso: A nova janela {0} demorou muito para responder e nao foi redimensionada.'
-    EstabilizacaoCpu = 'Aguardando 3 segundos para estabilizacao da CPU...'
+    EstabilizacaoCpu = 'Verificando instancias extras (max 10s)...'
     IniciandoPrincipal = 'Iniciando a instancia principal neste terminal. Feche-a ou encerre-a para continuar o script...'
     SincronizandoBranch = "`nSincronizando branch com remoto..."
     BranchAtualizada = '  Branch atualizada (fast-forward).'
@@ -64,7 +72,18 @@ $M = @{
     BranchNomeInvalido = 'Nome de branch invalido. Tente outro.'
     BranchNomeExiste = 'A branch `{0}` ja existe neste projeto. Escolha outro nome.'
     BranchNomeReservado = 'O nome `{0}` esta reservado para outra instancia deste projeto. Escolha outro.'
+    WorktreeSujo = '  Worktree "{0}" tem alteracoes nao commitadas:'
+    WorktreeSujoConfirm = '  Remover mesmo assim, descartando as alteracoes? [s/N]'
+    WorktreePreservado = '  Worktree "{0}" preservado.'
+    WorktreeBloqueado = '  Worktree "{0}" bloqueado por outra sessao ({1}). Ignorando.'
+    DepFaltando = 'Dependencias obrigatorias ausentes: {0}. Instale-as e tente novamente.'
+    DepGhAusente = 'gh CLI ausente: metadados de PR/branches protegidas ficarao vazios.'
+    DepGhSemAuth = 'gh nao autenticado (gh auth status falhou): metadados gh podem vir vazios.'
+    MetadadosGithub = 'Obtendo metadados do GitHub (PRs, protegidas, default)...'
 }
+
+# Sentinel da opcao "nova branch": contem '[' e espaco, invalidos em git check-ref-format
+$script:NewBranchSentinel = '[Nova branch]'
 
 function Find-WorkingWt {
     $candidates = @()
@@ -72,7 +91,7 @@ function Find-WorkingWt {
         $candidates = (& where.exe 'wt' 2>$null) -split '\r?\n' |
             ForEach-Object { $_.Trim() } |
             Where-Object { $_ }
-    } catch {}
+    } catch { Write-Verbose "where.exe wt falhou: $_" }
 
     foreach ($candidate in $candidates) {
         if (-not (Test-Path -LiteralPath $candidate -PathType Leaf)) { continue }
@@ -100,6 +119,22 @@ function Find-WorkingWt {
     return $null
 }
 
+function Test-DevinPreflight {
+    # Falha cedo: git/devin obrigatorios; gh (e auth) so avisos.
+    $missing = @()
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) { $missing += 'git' }
+    if (-not (Get-Command devin -ErrorAction SilentlyContinue)) { $missing += 'devin' }
+    $warnings = @()
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        $warnings += 'gh-ausente'
+    }
+    else {
+        $null = gh auth status 2>&1
+        if ($LASTEXITCODE -ne 0) { $warnings += 'gh-sem-auth' }
+    }
+    return [PSCustomObject]@{ Missing = $missing; Warnings = $warnings }
+}
+
 # 2. Salva o diretorio atual
 $diretorioOriginal = Get-Location
 $bundleRoot = $PSScriptRoot
@@ -114,6 +149,22 @@ Write-Host ($M.UsandoTerminal -f $psExecutable) -ForegroundColor DarkGray
 # Localiza o Windows Terminal (wt.exe) para abrir paineis/janelas extras
 $wtPath = Find-WorkingWt
 if (-not $wtPath) { Write-Host $M.WtNaoEncontrado -ForegroundColor DarkYellow }
+
+if ($DevinArgs.Count -gt 0) {
+    Write-Host ($M.ArgsIgnorados -f ($DevinArgs -join ' ')) -ForegroundColor DarkYellow
+}
+
+# Preflight de dependencias: falha antes de criar worktrees/paineis
+$preflight = Test-DevinPreflight
+if ($preflight.Missing.Count -gt 0) {
+    Write-Host ($M.DepFaltando -f ($preflight.Missing -join ', ')) -ForegroundColor Red
+    exit 1
+}
+foreach ($w in $preflight.Warnings) {
+    if ($w -eq 'gh-ausente') { Write-Host $M.DepGhAusente -ForegroundColor DarkYellow }
+    elseif ($w -eq 'gh-sem-auth') { Write-Host $M.DepGhSemAuth -ForegroundColor DarkYellow }
+}
+Write-Verbose "Preflight: missing=[$($preflight.Missing -join ',')] warnings=[$($preflight.Warnings -join ',')] wt=$wtPath"
 
 # 4. Carrega utilitarios e menu full-terminal
 Add-Type -AssemblyName System.Windows.Forms
@@ -229,26 +280,28 @@ function Get-BranchMetadata {
             }
         }
 
-        $headLines = git -C $RepoPath for-each-ref 'refs/heads' --format='%(refname:short)|%(upstream:short)|%(objectname:short)|%(committerdate:iso8601)' 2>&1
+        $headLines = git -C $RepoPath for-each-ref 'refs/heads' --format='%(refname:short)|%(upstream:short)|%(objectname:short)|%(committerdate:iso8601)|%(upstream:track)' 2>&1
         foreach ($line in $headLines) {
-            $parts = $line -split '\|', 4
-            if ($parts.Count -lt 4) { continue }
+            $parts = $line -split '\|'
+            if ($parts.Count -lt 5) { continue }
             $name = $parts[0]
             $upstream = $parts[1]
             $sha = $parts[2]
             $lastCommit = if ($parts[3]) { [datetime]::Parse($parts[3], [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind) } else { $null }
+            $track = $parts[4]
             $hasUpstream = -not [string]::IsNullOrWhiteSpace($upstream)
             $remoteInfo = $remoteMeta[$name]
             $existsOnRemote = $null -ne $remoteInfo
 
+            # ahead/behind via %(upstream:track) na mesma chamada; rev-list so p/ fallback sem upstream
             $ahead = 0
             $behind = 0
-            $target = $null
-            if ($hasUpstream) { $target = $upstream }
-            elseif ($existsOnRemote) { $target = $remoteInfo.Ref }
-
-            if ($target) {
-                $counts = git -C $RepoPath rev-list --left-right --count "refs/heads/$name...$target" 2>&1
+            if ($hasUpstream) {
+                if ($track -match 'ahead (\d+)') { $ahead = [int]$matches[1] }
+                if ($track -match 'behind (\d+)') { $behind = [int]$matches[2] }
+            }
+            elseif ($existsOnRemote) {
+                $counts = git -C $RepoPath rev-list --left-right --count "refs/heads/$name...$($remoteInfo.Ref)" 2>&1
                 if ($counts -and $counts -match '(\d+)\s+(\d+)') {
                     $ahead = [int]$matches[1]
                     $behind = [int]$matches[2]
@@ -520,45 +573,164 @@ function Remove-DirRobust {
     }
 }
 
+function Escape-Sq {
+    param([string]$Text)
+    if ($null -eq $Text) { return '' }
+    return ($Text -replace "'", "''")
+}
+
+function Get-WorktreePorcelainInfo {
+    # path normalizado -> @{ Locked; Reason } para cada worktree registrado
+    param([string]$RepoPath)
+    $info = @{}
+    $current = $null
+    foreach ($line in @(git -C $RepoPath worktree list --porcelain 2>$null)) {
+        if ($line -match '^worktree\s+(.+)$') {
+            $current = ($matches[1] -replace '/', '\').TrimEnd('\')
+            $info[$current] = @{ Locked = $false; Reason = '' }
+        }
+        elseif ($line -match '^locked\b\s*(.*)$' -and $current) {
+            $info[$current].Locked = $true
+            $info[$current].Reason = $matches[1].Trim()
+        }
+        elseif ($line -eq '') { $current = $null }
+    }
+    return $info
+}
+
+function Get-WorktreeDirtyFiles {
+    # alteracoes nao commitadas do worktree; @() se limpo/inexistente/nao-worktree
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return @() }
+    if (-not (Test-Path -LiteralPath (Join-Path $Path '.git'))) { return @() }
+    $status = @(git -C $Path status --porcelain 2>$null | Where-Object { $_ })
+    if ($LASTEXITCODE -ne 0) { return @('(git status falhou)') }
+    return $status
+}
+
+function Remove-WorktreeSafe {
+    # Remove worktree com gates: lock de outra sessao = skip; sujo = confirma.
+    # Retorna $true se o diretorio nao existe mais.
+    param([string]$RepoPath, [string]$WorktreePath)
+    $norm = ($WorktreePath -replace '/', '\').TrimEnd('\')
+
+    $info = Get-WorktreePorcelainInfo -RepoPath $RepoPath
+    $entry = $info[$norm]
+    if ($entry -and $entry.Locked) {
+        if ($entry.Reason -eq "devin-N $PID") {
+            $null = git -C $RepoPath worktree unlock "$WorktreePath" 2>&1
+        }
+        else {
+            Write-Host ($M.WorktreeBloqueado -f $WorktreePath, $entry.Reason) -ForegroundColor Yellow
+            return $false
+        }
+    }
+
+    $dirty = Get-WorktreeDirtyFiles -Path $WorktreePath
+    if ($dirty.Count -gt 0) {
+        Write-Host ($M.WorktreeSujo -f $WorktreePath) -ForegroundColor Yellow
+        $dirty | Select-Object -First 10 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+        $resp = Read-Host $M.WorktreeSujoConfirm
+        if ($resp -notmatch '^[sS]') {
+            Write-Host ($M.WorktreePreservado -f $WorktreePath) -ForegroundColor DarkYellow
+            return $false
+        }
+    }
+
+    $null = git -C $RepoPath worktree remove "$WorktreePath" --force 2>&1
+    if (Test-Path -LiteralPath $WorktreePath) {
+        if ($entry) {
+            Write-Warning "Nao foi possivel remover worktree '$WorktreePath'."
+            return $false
+        }
+        # dir orfao (nao registrado pelo git): seguro apagar
+        Remove-DirRobust $WorktreePath
+    }
+    return -not (Test-Path -LiteralPath $WorktreePath)
+}
+
 function Remove-StaleWorktrees {
+    # Escopo: so worktrees unlocked com prefixo instancia- (locks "devin-N <pid>"
+    # protegem sessoes concorrentes) e dirs orfaos apenas quando nenhuma outra
+    # sessao devin-N esta viva (marcador .session-<pid> no .worktrees).
     param([string]$RepoPath)
     try {
-        Push-Location -LiteralPath $RepoPath
-        try {
-            $lines = git worktree list --porcelain 2>&1
+        $info = Get-WorktreePorcelainInfo -RepoPath $RepoPath
+        foreach ($p in @($info.Keys)) {
+            if ($p -notmatch '\\\.worktrees\\instancia-') { continue }
+            if ($info[$p].Locked) { continue }
+            $null = Remove-WorktreeSafe -RepoPath $RepoPath -WorktreePath $p
         }
-        finally { Pop-Location }
-        $paths = @()
-        $currentPath = $null
-        foreach ($line in $lines) {
-            if ($line -match '^worktree\s+(.+)$') {
-                $currentPath = $matches[1]
-                $normPath = $currentPath -replace '/', '\'
-                if ($normPath -match '\\\.worktrees\\instancia-') {
-                    $paths += $currentPath
-                }
-            }
-            elseif ($line -eq '') { $currentPath = $null }
-        }
-        foreach ($p in $paths) {
-            try {
-                Push-Location -LiteralPath $RepoPath
-                try { $null = git worktree remove "$p" --force 2>&1 } finally { Pop-Location }
-            }
-            catch { Write-Verbose "Falha ao remover worktree '$p': $_" }
-            if (Test-Path -LiteralPath $p) { Remove-DirRobust $p }
-        }
-        Push-Location -LiteralPath $RepoPath
-        try { $null = git worktree prune 2>&1 } finally { Pop-Location }
+        $null = git -C $RepoPath worktree prune 2>&1
         # dirs orfaos: worktree remove falhou antes ou o dir foi recriado sem
-        # registro (ex.: checkout abortado) — git worktree list nao os ve
+        # registro (ex.: checkout abortado); git worktree list nao os ve
         $orphanRoot = Join-Path $RepoPath ".worktrees"
         if (Test-Path -LiteralPath $orphanRoot) {
-            Get-ChildItem -LiteralPath $orphanRoot -Directory -Filter "instancia-*" -ErrorAction SilentlyContinue |
-                ForEach-Object { Remove-DirRobust $_.FullName }
+            $foreignAlive = $false
+            $markers = @(Get-ChildItem -LiteralPath $orphanRoot -Filter ".session-*" -Force -ErrorAction SilentlyContinue)
+            foreach ($m in $markers) {
+                if ($m.Name -match '^\.session-(\d+)$') {
+                    $mpid = [int]$matches[1]
+                    if ($mpid -ne $PID -and (Get-Process -Id $mpid -ErrorAction SilentlyContinue)) {
+                        $foreignAlive = $true
+                    }
+                }
+            }
+            if (-not $foreignAlive) {
+                Get-ChildItem -LiteralPath $orphanRoot -Directory -Filter "instancia-*" -ErrorAction SilentlyContinue |
+                    ForEach-Object {
+                        $d = $_.FullName
+                        if (Test-Path -LiteralPath (Join-Path $d '.git')) {
+                            $null = Remove-WorktreeSafe -RepoPath $RepoPath -WorktreePath $d
+                        }
+                        else {
+                            Remove-DirRobust $d
+                        }
+                    }
+            }
+            # limpa marcadores de sessoes mortas
+            foreach ($m in $markers) {
+                if ($m.Name -match '^\.session-(\d+)$' -and -not (Get-Process -Id $matches[1] -ErrorAction SilentlyContinue)) {
+                    Remove-Item -LiteralPath $m.FullName -Force -ErrorAction SilentlyContinue
+                }
+            }
         }
     }
     catch { Write-Warning "Falha ao remover worktrees antigas: $_" }
+}
+
+function Restore-OriginalBranches {
+    # Restaura a branch original de todo projeto cujo dir real sofreu switch
+    # (instancias sem worktree, em qualquer modo de execucao).
+    param([array]$Projetos)
+    foreach ($proj in @($Projetos | Where-Object { $_.IsGitRepo -and $_.OriginalBranch })) {
+        $current = git -C $proj.Path branch --show-current 2>$null
+        if ($current -and $current -ne $proj.OriginalBranch) {
+            $null = git -C $proj.Path switch $proj.OriginalBranch 2>&1
+            if ($?) { Write-Host ($M.BranchOriginalRestaurada -f $proj.OriginalBranch) -ForegroundColor Green }
+            else { Write-Host ($M.BranchOriginalFalha -f $proj.OriginalBranch) -ForegroundColor Yellow }
+        }
+    }
+}
+
+function Remove-CreatedBranches {
+    # Deleta branches criadas nesta execucao (merged-only); roda apos o restore.
+    param([array]$Projetos)
+    foreach ($proj in @($Projetos | Where-Object { $_.CreatedBranches.Count -gt 0 })) {
+        Push-Location -LiteralPath $proj.Path
+        try {
+            foreach ($cb in $proj.CreatedBranches) {
+                # preserva branch com commits nao mergeados - merge manual apos a tarefa
+                if (git branch --merged HEAD --list $cb 2>$null) {
+                    $null = git branch -d $cb 2>&1
+                }
+                else {
+                    Write-Host "  Branch '$cb' tem commits nao mergeados - mantida para merge manual." -ForegroundColor Yellow
+                }
+            }
+        }
+        finally { Pop-Location }
+    }
 }
 
 function Select-BranchTerminal {
@@ -655,9 +827,9 @@ function Select-BranchesForProject {
     Remove-StaleWorktrees -RepoPath $projectPath
 
     $fetchResult = Invoke-WithSpinner -Message $M.SincronizandoReferencias -ScriptBlock {
-        $output = git -C $using:projectPath fetch --all --prune 2>&1
+        $output = git -C $Ctx.projectPath fetch --all --prune 2>&1
         [PSCustomObject]@{ Ok = $?; Output = $output }
-    }
+    } -ArgumentList @{ projectPath = $projectPath }
     if ($fetchResult -and $fetchResult.Ok) {
         Write-Host $M.ReferenciasAtualizadas -ForegroundColor Green
     }
@@ -667,14 +839,34 @@ function Select-BranchesForProject {
 
     $getBranchMetadataDef = (Get-Command Get-BranchMetadata).ScriptBlock.ToString()
     $branchMeta = Invoke-WithSpinner -Message $M.MetadadosBranches -ScriptBlock {
-        $def = $using:getBranchMetadataDef
+        $def = $Ctx.getBranchMetadataDef
         New-Item -Path 'function:global:Get-BranchMetadata' -Value ([scriptblock]::Create($def)) -Force | Out-Null
-        Get-BranchMetadata -RepoPath $using:projectPath
+        Get-BranchMetadata -RepoPath $Ctx.projectPath
+    } -ArgumentList @{ getBranchMetadataDef = $getBranchMetadataDef; projectPath = $projectPath }
+    # shape defensivo: retorno deve ser hashtable de metadados por branch
+    if ($branchMeta -isnot [hashtable]) {
+        Write-Warning "Metadados de branches em formato inesperado; usando mapa vazio."
+        $branchMeta = @{}
     }
 
-    $prMap = Get-PullRequestMap -RepoPath $projectPath
-    $protectedSet = Get-ProtectedBranchSet -RepoPath $projectPath
-    $defaultBranch = Get-DefaultBranchName -RepoPath $projectPath
+    $ghFnDefs = @(
+        @{ Name = 'Get-PullRequestMap'; Body = (Get-Command Get-PullRequestMap).ScriptBlock.ToString() },
+        @{ Name = 'Get-ProtectedBranchSet'; Body = (Get-Command Get-ProtectedBranchSet).ScriptBlock.ToString() },
+        @{ Name = 'Get-DefaultBranchName'; Body = (Get-Command Get-DefaultBranchName).ScriptBlock.ToString() }
+    )
+    $ghMeta = Invoke-WithSpinner -Message $M.MetadadosGithub -ScriptBlock {
+        foreach ($d in $Ctx.defs) {
+            New-Item -Path "function:global:$($d.Name)" -Value ([scriptblock]::Create($d.Body)) -Force | Out-Null
+        }
+        [PSCustomObject]@{
+            PrMap = Get-PullRequestMap -RepoPath $Ctx.projectPath
+            ProtectedSet = Get-ProtectedBranchSet -RepoPath $Ctx.projectPath
+            DefaultBranch = Get-DefaultBranchName -RepoPath $Ctx.projectPath
+        }
+    } -ArgumentList @{ defs = $ghFnDefs; projectPath = $projectPath }
+    $prMap = $ghMeta.PrMap
+    $protectedSet = $ghMeta.ProtectedSet
+    $defaultBranch = $ghMeta.DefaultBranch
 
     Write-Host $M.ListandoBranches -ForegroundColor DarkGray
 
@@ -725,7 +917,7 @@ function Select-BranchesForProject {
         Write-Host $M.NenhumBranch -ForegroundColor DarkGray
     }
 
-    $newBranchOption = @{ Name = "devin-new"; Type = "new"; IsCurrent = $false }
+    $newBranchOption = @{ Name = $script:NewBranchSentinel; Type = "new"; IsCurrent = $false }
 
     for ($i = 0; $i -lt $count; $i++) {
         $labelIndex = $StartLabelIndex + $i
@@ -743,7 +935,7 @@ function Select-BranchesForProject {
                 return [PSCustomObject]@{ Success = $false; Instances = @(); Project = $Project }
             }
 
-            if ($selected.Name -ne 'devin-new' -and $selected.Name -in $selectedBranchNames) {
+            if ($selected.Type -ne 'new' -and $selected.Name -in $selectedBranchNames) {
                 Write-Host ($M.AvisoBranchIgual -f $selected.Name) -ForegroundColor Red
                 $selected = $null
             }
@@ -1028,10 +1220,11 @@ function Start-Wizard {
                 $confirm = Show-Summary -Instances $instancias
                 if ($confirm) { $state = 'EXECUTE'; continue }
 
-                # Esc: reconfigurar o ultimo projeto
-                $lastProject = $instancias[-1].Project
-                $instancias = @($instancias | Where-Object { $_.Project -ne $lastProject })
-                $currentProjectIndex = [array]::IndexOf($projetos, $lastProject)
+                # Esc: escolher QUALQUER projeto para reconfigurar (era so o ultimo)
+                $projPick = Show-TerminalList -Items @($projetos) -Title $M.EscolhaReconfigurar -ToString { param($x) $x.Path }
+                if (-not $projPick) { $state = 'SUMMARY'; continue }
+                $instancias = @($instancias | Where-Object { $_.Project -ne $projPick })
+                $currentProjectIndex = [array]::IndexOf($projetos, $projPick)
                 $instancesMode = 'edit'
                 $instancesReturn = 'BRANCH_PREP'
                 $state = 'INSTANCES'
@@ -1067,6 +1260,34 @@ if (-not ("WindowUtil" -as [type])) {
 
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder text, int count);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        public const uint WM_CLOSE = 0x0010;
+
+        public static IntPtr FindWindowByTitle(string needle) {
+            IntPtr found = IntPtr.Zero;
+            EnumWindows(delegate(IntPtr h, IntPtr l) {
+                if (!IsWindowVisible(h)) { return true; }
+                var sb = new System.Text.StringBuilder(512);
+                GetWindowText(h, sb, sb.Capacity);
+                if (sb.ToString().IndexOf(needle, StringComparison.Ordinal) >= 0) { found = h; return false; }
+                return true;
+            }, IntPtr.Zero);
+            return found;
+        }
     }
 "@
 }
@@ -1114,7 +1335,6 @@ Write-Host ($M.ConfigurandoInstancias -f $totalInstancias, $projetos.Count) -For
 
 # 5. Prepara variaveis de execucao
 $numInstancias = $totalInstancias
-$singleInstanceMode = ($numInstancias -eq 1 -and $projetos[0].IsGitRepo)
 # Cria worktrees por projeto conforme necessario
 
 foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 }) {
@@ -1123,14 +1343,17 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
     $worktreesRoot = Join-Path $projectPath ".worktrees"
     if (-not (Test-Path -LiteralPath $worktreesRoot)) { New-Item -ItemType Directory -LiteralPath $worktreesRoot -Force | Out-Null }
     $proj.WorktreesRoot = $worktreesRoot
+    # marcador de sessao: outras execucoes nao varrem dirs orfaos enquanto este PID vive
+    New-Item -ItemType File -Path (Join-Path $worktreesRoot ".session-$PID") -Force | Out-Null
 
     try {
         $projInstances = @($instancias | Where-Object { $_.Project -eq $proj })
         foreach ($inst in $projInstances) {
             $worktree = Join-Path $worktreesRoot "instancia-$($inst.Label.ToLower())"
 
-            $null = git -C $projectPath worktree remove "$worktree" --force 2>&1
-            Remove-DirRobust $worktree
+            if (-not (Remove-WorktreeSafe -RepoPath $projectPath -WorktreePath $worktree)) {
+                throw "Worktree '$worktree' preservado (alteracoes ou bloqueio de outra sessao). Encerrando."
+            }
 
             $info = $inst.BranchInfo
             $branch = $inst.Branch
@@ -1145,15 +1368,15 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
                     if ($info.RemoteRef) { $info.RemoteRef } else { "origin/$($inst.Branch)" }
                 }
                 $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
-                    $output = git -C $using:projectPath worktree add "$using:worktree" -b $using:branch $using:baseRef 2>&1
+                    $output = git -C $Ctx.projectPath worktree add "$($Ctx.worktree)" -b $Ctx.branch $Ctx.baseRef 2>&1
                     [PSCustomObject]@{ Ok = $?; Output = $output }
-                }
+                } -ArgumentList @{ projectPath = $projectPath; worktree = $worktree; branch = $branch; baseRef = $baseRef }
                 if (-not ($result -and $result.Ok) -and (git -C $projectPath branch --list $branch)) {
                     # branch ja existe (rerun, local de remota, resto de crash): anexa em vez de recriar
                     $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
-                        $output = git -C $using:projectPath worktree add "$using:worktree" $using:branch 2>&1
+                        $output = git -C $Ctx.projectPath worktree add "$($Ctx.worktree)" $Ctx.branch 2>&1
                         [PSCustomObject]@{ Ok = $?; Output = $output }
-                    }
+                    } -ArgumentList @{ projectPath = $projectPath; worktree = $worktree; branch = $branch }
                     if ($result -and $result.Ok) {
                         Write-Host ($M.WorktreeBranch -f $branch, " (existente - anexada)") -ForegroundColor DarkGray
                     }
@@ -1165,9 +1388,9 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
             }
             else {
                 $result = Invoke-WithSpinner -Message $spinnerMessage -ScriptBlock {
-                    $output = git -C $using:projectPath worktree add "$using:worktree" $using:branch 2>&1
+                    $output = git -C $Ctx.projectPath worktree add "$($Ctx.worktree)" $Ctx.branch 2>&1
                     [PSCustomObject]@{ Ok = $?; Output = $output }
-                }
+                } -ArgumentList @{ projectPath = $projectPath; worktree = $worktree; branch = $branch }
                 $worktreeAddOk = $result -and $result.Ok
             }
 
@@ -1178,12 +1401,14 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
 
             $inst.WorktreePath = $worktree
             $proj.CreatedWorktrees += $worktree
+            $null = git -C $projectPath worktree lock "$worktree" --reason "devin-N $PID" 2>&1
             if ($createdBranch) {
                 $proj.CreatedBranches += $branch
             }
 
             $typeLabel = switch ($info.Type) { "new" { " (nova)" } "remote" { " (remota -> local)" } default { "" } }
             Write-Host ($M.WorktreeInstancia -f $inst.Label, $worktree) -ForegroundColor DarkCyan
+            Write-Verbose "Worktree OK para $($inst.Label) em $worktree"
             Write-Host ($M.WorktreeBranch -f $branch, $typeLabel) -ForegroundColor DarkGray
         }
 
@@ -1192,8 +1417,7 @@ foreach ($proj in $projetos | Where-Object { $_.IsGitRepo -and $_.Count -gt 1 })
     catch {
         Write-Host ($M.WorktreeFalha -f $_.Exception.Message) -ForegroundColor Yellow
         foreach ($wt in $proj.CreatedWorktrees) {
-            $null = git -C $projectPath worktree remove "$wt" --force 2>&1
-            Remove-DirRobust $wt
+            $null = Remove-WorktreeSafe -RepoPath $projectPath -WorktreePath $wt
         }
         foreach ($cb in $proj.CreatedBranches) {
             $null = git -C $projectPath branch -D $cb 2>&1
@@ -1211,6 +1435,10 @@ foreach ($inst in $instancias) {
     }
     else {
         $inst | Add-Member -NotePropertyName WorkingDirectory -NotePropertyValue $inst.ProjectPath -Force
+        # branch nova criada no dir real (filho via switch -c ou main): registra p/ cleanup
+        if ($inst.Project.IsGitRepo -and $inst.BranchInfo -and $inst.BranchInfo.Type -eq 'new') {
+            $inst.Project.CreatedBranches += $inst.Branch
+        }
     }
 }
 
@@ -1250,22 +1478,24 @@ if ($windowUtilAvailable) {
 }
 
 $processosAdicionais = @()
+$janelasAdicionais = @()
 
 function Get-InstanceCommand {
     param([PSCustomObject]$Inst)
-    $workingDir = $Inst.WorkingDirectory
-    $branch = $Inst.Branch
-    $baseBranch = $Inst.BaseBranch
+    $workingDir = Escape-Sq $Inst.WorkingDirectory
+    $branch = Escape-Sq $Inst.Branch
+    $baseBranch = Escape-Sq $Inst.BaseBranch
     $isGitRepo = $Inst.Project.IsGitRepo
     $branchInfo = $Inst.BranchInfo
-    $bundlePath = $bundleRoot.Replace("'", "''")
+    $bundlePath = Escape-Sq $bundleRoot
+    $doneFlagEsc = Escape-Sq $doneFlag
 
     $preCommands = @()
     $preCommands += "Set-Location -LiteralPath '$workingDir'"
 
     if ($isGitRepo -and $branch) {
         if ($branchInfo.Type -eq 'new') {
-            $base = if ($baseBranch) { $baseBranch } else { $Inst.Project.CurrentBranch }
+            $base = if ($baseBranch) { $baseBranch } else { Escape-Sq $Inst.Project.CurrentBranch }
             $preCommands += "git -C '$workingDir' switch -c '$branch' '$base' 2>`$null"
         }
         elseif (-not $Inst.WorktreePath) {
@@ -1273,7 +1503,7 @@ function Get-InstanceCommand {
         }
     }
 
-    $preCommands += ". '$bundlePath\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while ((Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) -and -not (Test-Path -LiteralPath '$doneFlag')) { Start-Sleep 2 }; exit"
+    $preCommands += ". '$bundlePath\devin-session-launcher.ps1'; Start-DevinSession; Write-Host 'Instancia principal ainda ativa - aguardando encerrar...'; while ((Get-Process -Id $scriptPid -ErrorAction SilentlyContinue) -and -not (Test-Path -LiteralPath '$doneFlagEsc')) { Start-Sleep 2 }; exit"
     return ($preCommands -join "; ")
 }
 
@@ -1288,6 +1518,15 @@ if ($numInstancias -gt 1) {
     $scriptPid = $PID
     $doneFlag = Join-Path $env:TEMP "devin-N-$scriptPid.done"
     Remove-Item -LiteralPath $doneFlag -Force -ErrorAction SilentlyContinue
+
+    # devin ls compartilhado: 1 chamada no pai; filhos leem via DEVIN_N_SESSIONS_FILE
+    $sessionsFile = Join-Path $env:TEMP "devin-N-$scriptPid-sessions.json"
+    $lsOut = devin ls --format json 2>$null
+    if ($LASTEXITCODE -eq 0 -and $lsOut) {
+        [System.IO.File]::WriteAllText($sessionsFile, ($lsOut | Out-String))
+        $env:DEVIN_N_SESSIONS_FILE = $sessionsFile
+        Write-Verbose "devin ls compartilhado gravado em $sessionsFile"
+    }
 
     if ($insideWT -and $wtPath) {
         Write-Host $M.PaineisDivididos -ForegroundColor Cyan
@@ -1320,13 +1559,16 @@ if ($numInstancias -gt 1) {
     elseif ($wtPath) {
         Write-Host $M.JanelasSeparadas -ForegroundColor DarkYellow
 
+        # wt -w <id>: id unico por janela (derivado do PID); marcador de titulo
+        # resolve o hwnd sem diff de processo (glomming tornaria o diff racy)
+        $wtWinIdBase = ($PID % 200000) * 10
         for ($i = 1; $i -lt $numInstancias; $i++) {
-            [int[]]$wtBefore = @(Get-Process WindowsTerminal -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
-
             $inst = $instancias[$i]
-            $cmd = Get-InstanceCommand -Inst $inst
+            $wtWinId = $wtWinIdBase + $i
+            $titleMarker = "devin-N-wt$wtWinId"
+            $cmd = "[Console]::Title = '$titleMarker'; " + (Get-InstanceCommand -Inst $inst)
 
-            $argsWT = "-w new -d `"$($inst.WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand $cmd)"
+            $argsWT = "-w $wtWinId -d `"$($inst.WorkingDirectory)`" $psExecutable -NoExit -EncodedCommand $(ConvertTo-EncodedCommand $cmd)"
             $proc = Start-Process -FilePath $wtPath -ArgumentList $argsWT -PassThru
             if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($inst.Label) via wt.exe."; continue }
 
@@ -1336,13 +1578,9 @@ if ($numInstancias -gt 1) {
             Write-Host ($M.JanelaGeracao -f $inst.Label) -ForegroundColor DarkGray
             while ($timeout -lt 60) {
                 Start-Sleep -Milliseconds 200
-                $wtAfter = Get-Process WindowsTerminal -ErrorAction SilentlyContinue
-
-                $newWtProc = $wtAfter | Where-Object { $_.Id -notin $wtBefore -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1
-
-                if ($newWtProc -and $newWtProc.MainWindowHandle -ne [IntPtr]::Zero) {
-                    $hWndFilho = $newWtProc.MainWindowHandle
-                    $processosAdicionais += $newWtProc
+                $hWndFilho = [WindowUtil]::FindWindowByTitle($titleMarker)
+                if ($hWndFilho -ne [IntPtr]::Zero) {
+                    $janelasAdicionais += $hWndFilho
                     break
                 }
                 $timeout++
@@ -1351,6 +1589,7 @@ if ($numInstancias -gt 1) {
             if ($hWndFilho -ne [IntPtr]::Zero -and $windowUtilAvailable) {
                 [WindowUtil]::SetWindowPos($hWndFilho, [IntPtr]::Zero, [int]$grid[$i].X, [int]$grid[$i].Y, [int]$grid[$i].W, [int]$grid[$i].H, 0x0040) | Out-Null
                 Write-Host ($M.JanelaPosicionada -f $inst.Label) -ForegroundColor Green
+                Write-Verbose "Janela $($inst.Label): hwnd=$hWndFilho wt-id=$wtWinId"
             }
             else {
                 Write-Host ($M.JanelaTimeout -f $inst.Label) -ForegroundColor Yellow
@@ -1364,14 +1603,20 @@ if ($numInstancias -gt 1) {
             $inst = $instancias[$i]
             $cmd = Get-InstanceCommand -Inst $inst
 
-            $proc = Start-Process -FilePath $psExecutable -ArgumentList "-NoExit -Command `"$cmd`"" -PassThru
+            $proc = Start-Process -FilePath $psExecutable -ArgumentList "-NoExit -EncodedCommand $(ConvertTo-EncodedCommand $cmd)" -PassThru
             if (-not $proc) { Write-Warning "Nao foi possivel abrir a janela $($inst.Label)." }
             else { $processosAdicionais += $proc }
         }
     }
 
     Write-Host $M.EstabilizacaoCpu -ForegroundColor DarkGray
-    Start-Sleep -Seconds 3
+    # probe curto (era Start-Sleep fixo de 3s): filhos vivos -> segue; teto 10s
+    $probeDeadline = (Get-Date).AddSeconds(10)
+    do {
+        Start-Sleep -Milliseconds 500
+        $todosVivos = -not (@($processosAdicionais | Where-Object { $_.HasExited }).Count)
+    } while (-not $todosVivos -and (Get-Date) -lt $probeDeadline)
+    Write-Verbose "Probe de estabilizacao: todosVivos=$todosVivos"
 }
 
 Write-Host $M.IniciandoPrincipal -ForegroundColor Green
@@ -1389,9 +1634,9 @@ if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPat
         if ($mainInst.BranchInfo.Type -eq 'new') {
             $base = if ($mainInst.BaseBranch) { $mainInst.BaseBranch } else { $mainInst.Project.CurrentBranch }
             $switchResult = Invoke-WithSpinner -Message "Criando e ativando branch $targetBranch..." -ScriptBlock {
-                $output = git -C $using:mainPath switch -c $using:targetBranch $using:base 2>&1
+                $output = git -C $Ctx.mainPath switch -c $Ctx.targetBranch $Ctx.base 2>&1
                 [PSCustomObject]@{ Ok = $?; Output = $output }
-            }
+            } -ArgumentList @{ mainPath = $mainPath; targetBranch = $targetBranch; base = $base }
             if ($switchResult -and $switchResult.Ok) {
                 Write-Host ($M.BranchAtiva -f $targetBranch, " (nova)") -ForegroundColor Green
             }
@@ -1401,9 +1646,9 @@ if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPat
         }
         elseif (-not $mainInst.WorktreePath) {
             $switchResult = Invoke-WithSpinner -Message "Ativando branch $targetBranch..." -ScriptBlock {
-                $output = git -C $using:mainPath switch $using:targetBranch 2>&1
+                $output = git -C $Ctx.mainPath switch $Ctx.targetBranch 2>&1
                 [PSCustomObject]@{ Ok = $?; Output = $output }
-            }
+            } -ArgumentList @{ mainPath = $mainPath; targetBranch = $targetBranch }
             if ($switchResult -and $switchResult.Ok) {
                 Write-Host ($M.BranchAtiva -f $targetBranch, "") -ForegroundColor Green
             }
@@ -1416,16 +1661,17 @@ if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPat
     # Sincroniza a branch da instancia principal com o remoto
     if ($mainInst.BranchInfo -and $mainInst.BranchInfo.Type -ne 'new') {
         Write-Host $M.SincronizandoBranch -ForegroundColor Cyan
+        # status --porcelain cobre staged+unstaged (diff --quiet perdia staged, DEF-8)
         $diffResult = Invoke-WithSpinner -Message "Verificando estado da working tree..." -ScriptBlock {
-            $output = git -C $using:mainPath diff --quiet 2>&1
-            [PSCustomObject]@{ Ok = $?; Output = $output }
-        }
+            $output = git -C $Ctx.mainPath status --porcelain --untracked-files=no 2>&1
+            [PSCustomObject]@{ Ok = ($LASTEXITCODE -eq 0 -and -not (($output | Out-String).Trim())); Output = $output }
+        } -ArgumentList @{ mainPath = $mainPath }
         $clean = $diffResult -and $diffResult.Ok
         if ($clean) {
             $pullResult = Invoke-WithSpinner -Message $M.SincronizandoBranch -ScriptBlock {
-                $output = git -C $using:mainPath pull --ff-only 2>&1
+                $output = git -C $Ctx.mainPath pull --ff-only 2>&1
                 [PSCustomObject]@{ Ok = $?; Output = $output }
-            }
+            } -ArgumentList @{ mainPath = $mainPath }
             if ($pullResult -and $pullResult.Ok) { Write-Host $M.BranchAtualizada -ForegroundColor Green }
             else { Write-Host $M.FastForwardFalha -ForegroundColor Yellow }
         }
@@ -1438,9 +1684,13 @@ if ($mainInst.Project.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainPat
 # Decide entre retomar sessao existente ou iniciar nova
 Start-DevinSession
 
-# 8. Finaliza as instancias extras (fallback)
-if ($processosAdicionais.Count -gt 0) {
+# 8. Finaliza as instancias extras (fallback): WM_CLOSE so nas janelas
+# criadas por esta sessao; Stop-Process apenas nos filhos pwsh diretos
+if ($processosAdicionais.Count -gt 0 -or $janelasAdicionais.Count -gt 0) {
     Write-Host $M.PrincipalEncerradaTerminais -ForegroundColor Yellow
+    foreach ($h in $janelasAdicionais) {
+        try { [void][WindowUtil]::PostMessage($h, [WindowUtil]::WM_CLOSE, [IntPtr]::Zero, [IntPtr]::Zero) } catch { Write-Verbose "WM_CLOSE falhou para hwnd $h" }
+    }
     foreach ($p in $processosAdicionais) {
         if (-not $p.HasExited) {
             Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
@@ -1453,33 +1703,33 @@ else {
     Write-Host $M.PaineisFecham -ForegroundColor DarkGray
 }
 
-# 5. Limpa worktrees por projeto
-foreach ($proj in $projetos | Where-Object { $_.CreatedWorktrees.Count -gt 0 -or $_.CreatedBranches.Count -gt 0 }) {
+# 5. Limpa worktrees por projeto (gate de sujeira + locks de sessao)
+foreach ($proj in $projetos | Where-Object { $_.CreatedWorktrees.Count -gt 0 }) {
     Write-Host ($M.LimpandoWorktrees + " (" + $proj.Path + ")") -ForegroundColor Magenta
     Push-Location -LiteralPath $proj.Path
-    foreach ($wt in $proj.CreatedWorktrees) {
-        git worktree remove $wt --force 2>$null
-    }
-    foreach ($cb in $proj.CreatedBranches) {
-        # preserva branch com commits nao mergeados - merge manual apos a tarefa
-        if (git branch --merged HEAD --list $cb 2>$null) {
-            git branch -d $cb 2>$null
-        }
-        else {
-            Write-Host "  Branch '$cb' tem commits nao mergeados - mantida para merge manual." -ForegroundColor Yellow
+    try {
+        $allRemoved = $true
+        foreach ($wt in $proj.CreatedWorktrees) {
+            if (-not (Remove-WorktreeSafe -RepoPath $proj.Path -WorktreePath $wt)) { $allRemoved = $false }
         }
     }
-    Pop-Location
-    if ($proj.WorktreesRoot -and (Test-Path -LiteralPath $proj.WorktreesRoot)) { Remove-DirRobust $proj.WorktreesRoot }
+    finally { Pop-Location }
+    if ($allRemoved -and $proj.WorktreesRoot -and (Test-Path -LiteralPath $proj.WorktreesRoot)) {
+        Remove-DirRobust $proj.WorktreesRoot
+    }
     Write-Host $M.WorktreesRemovidos -ForegroundColor Green
 }
 
-# Restaura a branch original no modo 1 instancia
-$mainProj = $mainInst.Project
-if ($singleInstanceMode -and $mainProj.OriginalBranch -and $mainProj.IsGitRepo -and (Test-Path -LiteralPath (Join-Path $mainProj.Path ".git"))) {
-    $null = git -C $mainProj.Path switch $mainProj.OriginalBranch 2>&1
-    if ($?) { Write-Host ($M.BranchOriginalRestaurada -f $mainProj.OriginalBranch) -ForegroundColor Green }
-    else { Write-Host ($M.BranchOriginalFalha -f $mainProj.OriginalBranch) -ForegroundColor Yellow }
+# Restaura a branch original em todo projeto cujo dir real teve switch (1 ou N instancias)
+Write-Verbose "Restore: $($projetos.Count) projeto(s) para revisar"
+Restore-OriginalBranches -Projetos $projetos
+
+# Deleta branches criadas nesta execucao (merged-only), apos o restore
+Remove-CreatedBranches -Projetos $projetos
+
+# Remove o marcador de sessao desta execucao (se o root sobreviveu)
+foreach ($proj in $projetos | Where-Object { $_.WorktreesRoot }) {
+    Remove-Item -LiteralPath (Join-Path $proj.WorktreesRoot ".session-$PID") -Force -ErrorAction SilentlyContinue
 }
 
 # 8. Restora a janela principal ao tamanho/posicao originais
@@ -1495,4 +1745,10 @@ Write-Host ($M.RetornandoDiretorio -f $diretorioOriginal.Path) -ForegroundColor 
 # 9. Sinaliza conclusao para os paineis extras (libera o loop de espera)
 if ($numInstancias -gt 1 -and $doneFlag) {
     New-Item -ItemType File -Path $doneFlag -Force | Out-Null
+}
+
+# Limpa o cache compartilhado de 'devin ls'
+if ($sessionsFile) {
+    Remove-Item -LiteralPath $sessionsFile -Force -ErrorAction SilentlyContinue
+    if ($env:DEVIN_N_SESSIONS_FILE -eq $sessionsFile) { $env:DEVIN_N_SESSIONS_FILE = $null }
 }

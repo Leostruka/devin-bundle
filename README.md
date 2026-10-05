@@ -484,6 +484,19 @@ O instalador:
 
 A operação é idempotente: sem `Force`, conteúdo idêntico ou existente é preservado conforme o contrato do instalador.
 
+## Launcher multi-instância (devin-N)
+
+`devin-N.cmd` / `devin-N.ps1` abrem até 4 sessões do Devin CLI lado a lado em um ou mais projetos Git (somente Windows).
+
+```powershell
+.\devin-N.cmd        # equivalente: pwsh -File .\devin-N.ps1
+.\devin-N.cmd -Verbose
+```
+
+Fluxo: selecione os projetos no wizard de terminal (1 a 4 instâncias), escolha as branches e confirme. No Windows Terminal as instâncias extras abrem em painéis divididos; fora dele, em janelas separadas (`wt -w <id>`) ou janelas de PowerShell. Para 2+ instâncias no mesmo projeto, o launcher cria git worktrees isolados e os remove no encerramento (worktrees sujos pedem confirmação; worktrees de outras sessões ativas são preservados por lock + marcador `.session-<pid>`).
+
+Comportamentos de segurança: a branch original de cada projeto é restaurada ao sair; branches criadas pelo launcher só são removidas se merged; o estado de sessões `devin ls` é compartilhado entre pai e filhos via `DEVIN_N_SESSIONS_FILE`. `devin-N.cmd` repassa `%*` para o `.ps1`; argumentos não reconhecidos geram aviso. Testes: `Invoke-Pester tests/pester`.
+
 ## Exportação e sincronização
 
 O exportador sincroniza a configuração viva desta máquina de volta ao bundle.
