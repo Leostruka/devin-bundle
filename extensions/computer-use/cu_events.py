@@ -47,12 +47,16 @@ WM_QUIT = 0x0012
 OBJID_WINDOW = 0
 REFRESH_EVENTS = {0x8000, EVENT_OBJECT_SHOW, EVENT_OBJECT_LOCATIONCHANGE,
                   EVENT_OBJECT_NAMECHANGE, EVENT_SYSTEM_FOREGROUND}
-WINEVENTPROC = ctypes.WINFUNCTYPE(
-    None, wt.HANDLE, wt.DWORD, wt.HWND, wt.LONG, wt.LONG,
-    wt.DWORD, wt.DWORD)
-
-user32 = ctypes.windll.user32 if sys.platform == "win32" else None
-kernel32 = ctypes.windll.kernel32 if sys.platform == "win32" else None
+if sys.platform == "win32":
+    WINEVENTPROC = ctypes.WINFUNCTYPE(
+        None, wt.HANDLE, wt.DWORD, wt.HWND, wt.LONG, wt.LONG,
+        wt.DWORD, wt.DWORD)
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+else:
+    WINEVENTPROC = None
+    user32 = None
+    kernel32 = None
 
 
 def _hints_path(hwnd):
