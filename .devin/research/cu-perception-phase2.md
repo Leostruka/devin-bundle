@@ -256,7 +256,38 @@ winrt+D3D11 deps, unique occluded-window capability) > P7
 (scratch-complement until a consumer exists) > P5/P8/P9/P10 (dead/
 observability-only/redundant/mapped-only — stay out).
 
-## Pending
+## Phase 3 — verdict matrix
 
-None — Phase 2 hypothesis sweep complete. Phase 3: verdict matrix +
-final gates + integration decision per technique.
+| # | Technique | Empirical core | Verdict | Disposition |
+|---|---|---|---|---|
+| P1 | WinEvents out-of-context hook | wake 14.1ms p50 / 18.8 p95 (foreign GUI); 92% of ambient events filtered pre-UIA; 0 idle noise | **PASS** | **INTEGRATE** — wake channel inside `cu_events.py` seam |
+| P2 | UIA event handlers | root-children structure works (264ms incl. spawn); element/property handlers: zero delivery on real XAML+win32 providers | PASS-CONSTRAINED | complement only — coarse scope inside P11, never primary |
+| P3 | DPI v2 + coordinate space | 22/22 ElementFromPoint round-trips; fresh proc starts DPI-unaware; GWR vs DWM ±5px on 13/29 windows | **PASS** | **INTEGRATE** — `SetProcessDpiAwarenessContext(-4)` at every entry point reading coords; prefer DWM extended bounds for window geometry |
+| P4 | WinRT OCR text->coords | 7.76ms p50 locate; 92.9% word hit; 11/12 recrop; 48px image floor; MaxImageDim=10000 | **PASS** | **INTEGRATE** — new command `region + query -> word rects`; needs `winrt-Windows.Foundation.Collections==3.2.1` in requirements + empty/upscale guards |
+| P5 | DXGI Desktop Duplication | blocking AcquireNextFrame never wakes (10/10 timeout); single updates never reach queue (0 frames/3s); only sustained-activity frames; E_NOINTERFACE quirk | **FAIL-CONSTRAINED** | scratch-only; `apply_delta()` stays orphaned — revisit only for video-like regions |
+| P6 | WGC per-window | FrameArrived on content change 38-44ms p50; works occluded; borderless content rect; ~2ms surface->numpy; stale-pool-frame caveat | **PASS** | optional-plugin seam (5+ winrt wheels + D3D11) — integrate behind flag if occluded-window need is real |
+| P7 | numpy FFT-NCC | scoped 31ms p50 10/10 pixel-exact; full-screen 373ms; scale-brittle ±10% | PASS-SCOPED | scratch — keep impl; integrate when a consumer (icon/canvas locator) appears; adds numpy dep |
+| P8 | ETW | — | INFEASIBLE (Phase 1) | observability/debug only |
+| P9 | MSAA pipeline | UIA already proxies it | REJECTED (Phase 1) | none |
+| P10 | DWM internals | WaitForVBlank public only | MAPPED-ONLY | none |
+| P11 | event-driven daemon | event->hints 55ms (UIA-native) .. 600ms (MSAA); residency model >> 591ms cold CLI | **SEAM JUSTIFIED** | `cu_events.py`: hook pump -> per-hwnd debounced refresh -> sidecar+generation bump; needs design+tests |
+
+### Integration order (cost/benefit)
+
+1. **P3** — awareness + DWM-bounds one-liners; fixes real coordinate bugs.
+2. **P4** — self-contained new capability (text->coords on any raster).
+3. **P1+P11** — `cu_events.py` daemon: WinEvent hook, per-hwnd debounce,
+   sidecar refresh; design doc + tests required before prod.
+4. **P6** — optional plugin behind flag (occluded-window frames).
+5. Scratch-only: P5, P7. Excluded: P8, P9, P10.
+
+### Final gates
+
+- `python audit.py`: **0 errors**, 9 warnings (all pre-existing:
+  __pycache__ dirs + live/bundle skill drift).
+- `git diff main -- extensions/`: **0 files** — Phase 2 was scratch-only,
+  production code untouched.
+- AI-signature scan on new files: clean.
+- Checkpoint commits: fcf7586 (P1-map), P1 8a00c98, P2 2a6cc0f,
+  P3 30ec7e5, P4 6bbcfee, P5 348c3af, P6 dd6552d, P7 87076de,
+  P11 c85d248.
