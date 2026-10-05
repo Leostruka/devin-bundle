@@ -86,7 +86,8 @@ def test_physical_bounds_uses_dwm(monkeypatch):
 
     monkeypatch.setattr(ctypes, "windll",
                         types.SimpleNamespace(dwmapi=types.SimpleNamespace(
-                            DwmGetWindowAttribute=fake_dwm), user32=U32()))
+                            DwmGetWindowAttribute=fake_dwm), user32=U32()),
+                        raising=False)
     assert d.physical_window_bounds(7) == (10, 20, 310, 220)
 
 
