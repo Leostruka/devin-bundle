@@ -127,6 +127,15 @@ def result(status, backend, extra=None, **kw):
     if extra:
         out["dispatch"].update(extra)
     out.update(kw)
+    try:
+        import cu_audit
+        tool = os.path.basename(sys.argv[0]) if sys.argv else "?"
+        cmd = sys.argv[1] if len(sys.argv) > 1 else None
+        cu_audit.record({"tool": tool, "cmd": cmd, "status": status,
+                         "backend": backend, "extra": kw or None,
+                         "timings_ms": kw.get("timings_ms")})
+    except Exception:
+        pass
     return out
 
 

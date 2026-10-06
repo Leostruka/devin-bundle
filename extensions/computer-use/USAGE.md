@@ -89,6 +89,12 @@ python3 -m venv <ext-dir>/.venv
 - Default `--out` goes to the OS temp dir (`%TEMP%`/`/tmp`) — screenshots are disposable. **Do not pass `--out` at all during normal work**; let shots land in temp. Only write elsewhere when the user explicitly asks to keep a shot (documentation/evidence), to the path they choose.
 - **Cleanup:** temp shots are the agent's working files — delete the ones you created when the task ends (`screenshot-<ts>.png` etc.). Never leave them in the project root or `.devin/`.
 
+**Audit:** every `result()` appends one line to
+`%TEMP%/devin-cu-audit.jsonl` (`$CU_AUDIT_PATH`): tool, subcommand name,
+status, backend, timings. Never typed text, file contents, or full
+commands. Rotates at 256 KiB keeping the last 1000 lines.
+`CU_AUDIT=off` disables.
+
 ## Commands
 
 ```bash
