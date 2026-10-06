@@ -60,3 +60,29 @@ def test_launch_cli_json(monkeypatch, tmp_path):
         sys.argv = old
     out = json.loads(buf.getvalue())
     assert out["ok"] and out["pid"] == 9
+
+
+def test_launch_kills_spawned_on_timeout(monkeypatch, tmp_path):
+    monkeypatch.setattr(br, "find_browser_exe", lambda: "/x/chrome")
+    monkeypatch.setattr(br, "_spawn_browser",
+                        lambda exe, port, udd: {"pid": 777, "proc": object()})
+    monkeypatch.setattr(br, "_wait_devtools", lambda ep, t: False)
+    monkeypatch.setattr(br, "_free_port", lambda: 49998)
+    monkeypatch.setattr(br, "profile_root", lambda: str(tmp_path))
+    killed = []
+    monkeypatch.setattr(br, "_kill_pid", lambda pid: killed.append(pid) or True)
+    r = br.launch_owned("work")
+    assert killed == [777]
+    assert r["ok"] is False and r["error"] == "browser_start_timeout"
+    assert r["pid"] == 777
+
+
+def test_stop_reports_kill_failure(monkeypatch, tmp_path):
+    monkeypatch.setattr(br, "LAUNCHED_PATH", str(tmp_path / "x.json"))
+    open(br.LAUNCHED_PATH, "w").write(json.dumps({"pid": 555}))
+    monkeypatch.setattr(br, "_pid_alive", lambda pid: True)
+    monkeypatch.setattr(br, "binding", lambda: None)
+    monkeypatch.setattr(br, "_kill_pid", lambda pid: False)
+    r = br.stop_owned()
+    assert r["ok"] is False and r["error"].startswith("kill_failed")
+    assert os.path.isfile(br.LAUNCHED_PATH)

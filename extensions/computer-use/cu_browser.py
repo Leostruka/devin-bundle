@@ -910,6 +910,8 @@ def _browser_pid_via_cdp(endpoint, timeout_s):
     """Real browser-process pid via CDP SystemInfo.getProcessInfo. The
     spawned launcher may hand off to a different browser process."""
     info = _http_json(endpoint + "/json/list", timeout=2.0)
+    if not info:
+        raise RuntimeError("empty_target_list")
     page = next((t for t in info if t.get("type") == "page"), info[0])
     ws = _WSClient(page["webSocketDebuggerUrl"], "cdp", timeout=5.0)
     try:
@@ -948,6 +950,20 @@ def launched():
     return d
 
 
+def _kill_pid(pid):
+    """Kill a recorded/spawned pid. Returns True on confirmed-or-best-
+    effort success; False when the kill itself failed."""
+    if os.name == "nt":
+        r = subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
+                           capture_output=True)
+        return r.returncode == 0
+    try:
+        os.kill(pid, 15)
+        return True
+    except OSError:
+        return False
+
+
 def launch_owned(profile, timeout_s=15.0):
     if (not profile or "/" in profile or "\\" in profile
             or profile in (".", "..") or len(profile) > 64):
@@ -963,13 +979,23 @@ def launch_owned(profile, timeout_s=15.0):
         return {"ok": False, "error": "browser_spawn_failed:" + str(e)}
     endpoint = "http://127.0.0.1:" + str(port)
     if not _wait_devtools(endpoint, timeout_s):
+        _kill_pid(spawned["pid"])
         return {"ok": False, "error": "browser_start_timeout",
                 "pid": spawned["pid"]}
-    pid = _browser_pid_via_cdp(endpoint, timeout_s)
+    try:
+        pid = _browser_pid_via_cdp(endpoint, timeout_s)
+    except Exception as e:
+        _kill_pid(spawned["pid"])
+        return {"ok": False, "error": "process_info_failed",
+                "detail": str(e), "pid": spawned["pid"]}
     if not pid:
-        return {"ok": False, "error": "process_info_failed"}
+        _kill_pid(spawned["pid"])
+        return {"ok": False, "error": "process_info_failed",
+                "pid": spawned["pid"]}
     b = bind(endpoint, pid)
     if not b.get("ok"):
+        _kill_pid(pid)
+        b["pid"] = pid
         return b
     rec = {"pid": pid, "endpoint": endpoint, "profile": profile,
            "profile_dir": udd, "created_at": time.time()}
@@ -993,14 +1019,9 @@ def stop_owned():
     b = binding()
     if b and b.get("pid") == pid:
         unbind()
-    if os.name == "nt":
-        subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
-                       capture_output=True)
-    else:
-        try:
-            os.kill(pid, 15)
-        except OSError:
-            pass
+    if not _kill_pid(pid):
+        return {"ok": False, "error": "kill_failed:pid " + str(pid),
+                "pid": pid}
     try:
         os.remove(LAUNCHED_PATH)
     except OSError:
