@@ -467,9 +467,14 @@
       "name": "cu-realtime",
       "source": "devin-bundle",
       "purpose": "Use when computer-use or terminal automation needs the fastest reaction the runtime allows - event waits instead of screenshot polling, text perception instead of image reads, whole perceive-act-verify cycles batched into one exec, or deterministic reflex loops below model latency. Composes with the `computer-use` skill (same extension CLIs)."
+    },
+    {
+      "name": "scheduled-turns",
+      "source": "devin-bundle",
+      "purpose": "Use when a task needs recurring or always-on agent turns (periodic checks, polling workflows, run-this-every-morning jobs) without adding a daemon. OS scheduler plus one-shot headless Devin turns writing to ledgers."
     }
   ],
-  "skill_count": 67,
+  "skill_count": 68,
   "rule_count": 28,
   "scripts": [
     {

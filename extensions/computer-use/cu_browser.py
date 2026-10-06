@@ -19,6 +19,8 @@ approved driver module is importable — honest "unavailable", never silent.
 """
 import json
 import os
+import socket
+import subprocess
 import tempfile
 import time
 from pathlib import Path
@@ -819,3 +821,276 @@ def dom_key(hwnd, name, timeout=10.0):
         return None, f"dom_{type(e).__name__}: {e}"
     finally:
         cli.close()
+
+
+# -- agent-owned persistent browser (launch/stop) -------------------------------
+
+LAUNCHED_PATH = os.path.join(tempfile.gettempdir(),
+                             "devin-cu-launched.json")
+
+
+def find_browser_exe():
+    exe = os.environ.get("CU_BROWSER_EXE")
+    if exe:
+        return exe
+    import shutil
+    for name in ("chrome", "chromium", "chromium-browser",
+                 "google-chrome", "msedge", "brave"):
+        hit = shutil.which(name)
+        if hit:
+            return hit
+    if os.name == "nt":
+        roots = [os.environ.get("PROGRAMFILES", ""),
+                 os.environ.get("PROGRAMFILES(X86)", ""),
+                 os.environ.get("LOCALAPPDATA", "")]
+        rels = [r"Google\Chrome\Application\chrome.exe",
+                r"Microsoft\Edge\Application\msedge.exe"]
+        for root in roots:
+            for rel in rels:
+                p = os.path.join(root, rel)
+                if os.path.isfile(p):
+                    return p
+    for p in ("/usr/bin/google-chrome", "/usr/bin/chromium",
+              "/snap/bin/chromium",
+              "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"):
+        if os.path.isfile(p):
+            return p
+    return None
+
+
+def profile_root():
+    root = os.environ.get("CU_PROFILE_ROOT")
+    if root:
+        return root
+    if os.name == "nt":
+        return os.path.join(os.environ.get("LOCALAPPDATA",
+                                           tempfile.gettempdir()),
+                            "devin", "cu-profiles")
+    return os.path.join(os.path.expanduser("~"), ".local", "share",
+                        "devin-cu", "profiles")
+
+
+def _free_port():
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
+def _spawn_browser(exe, port, udd):
+    os.makedirs(udd, exist_ok=True)
+    flags = getattr(subprocess, "DETACHED_PROCESS", 0) | \
+        getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    kw = dict(stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+              stdin=subprocess.DEVNULL, close_fds=True)
+    if flags:
+        kw["creationflags"] = flags
+    else:
+        kw["start_new_session"] = True
+    proc = subprocess.Popen(
+        [exe, "--remote-debugging-port=" + str(port),
+         "--user-data-dir=" + udd, "--no-first-run",
+         "--no-default-browser-check", "about:blank"], **kw)
+    return {"pid": proc.pid, "proc": proc}
+
+
+def _wait_devtools(endpoint, timeout_s):
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        try:
+            _http_json(endpoint + "/json/version", timeout=1.0)
+            return True
+        except Exception:
+            time.sleep(0.2)
+    return False
+
+
+def _browser_pid_via_cdp(endpoint, timeout_s):
+    """Real browser-process pid via CDP SystemInfo.getProcessInfo. The
+    spawned launcher may hand off to a different browser process."""
+    info = _http_json(endpoint + "/json/list", timeout=2.0)
+    if not info:
+        raise RuntimeError("empty_target_list")
+    page = next((t for t in info if t.get("type") == "page"), info[0])
+    ws = _WSClient(page["webSocketDebuggerUrl"], "cdp", timeout=5.0)
+    try:
+        r = ws.call("SystemInfo.getProcessInfo")
+        for p in (r or {}).get("processInfo", []):
+            if p.get("type") == "browser":
+                return p.get("id")
+        return None
+    finally:
+        ws.close()
+
+
+def _pid_alive(pid):
+    if os.name == "nt":
+        import ctypes
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
+        if not h:
+            return False
+        ctypes.windll.kernel32.CloseHandle(h)
+        return True
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def launched():
+    try:
+        with open(LAUNCHED_PATH, encoding="utf-8") as f:
+            d = json.load(f)
+    except Exception:
+        return None
+    if not _pid_alive(d.get("pid", 0)):
+        return None
+    return d
+
+
+def _kill_pid(pid):
+    """Kill a recorded/spawned pid. Returns True on confirmed-or-best-
+    effort success; False when the kill itself failed."""
+    if os.name == "nt":
+        r = subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
+                           capture_output=True)
+        return r.returncode == 0
+    try:
+        os.kill(pid, 15)
+        return True
+    except OSError:
+        return False
+
+
+def launch_owned(profile, timeout_s=15.0):
+    if (not profile or "/" in profile or "\\" in profile
+            or profile in (".", "..") or len(profile) > 64):
+        return {"ok": False, "error": "bad_profile_name"}
+    if launched() is not None:
+        # Re-launch would orphan the first browser (LAUNCHED_PATH and the
+        # binding are overwritten, leaving it running untracked).
+        return {"ok": False, "error": "already_launched",
+                "detail": "stop first: browser.py stop"}
+    exe = find_browser_exe()
+    if not exe:
+        return {"ok": False, "error": "browser_exe_not_found"}
+    port = _free_port()
+    udd = os.path.join(profile_root(), profile)
+    try:
+        spawned = _spawn_browser(exe, port, udd)
+    except OSError as e:
+        return {"ok": False, "error": "browser_spawn_failed:" + str(e)}
+    endpoint = "http://127.0.0.1:" + str(port)
+    if not _wait_devtools(endpoint, timeout_s):
+        _kill_pid(spawned["pid"])
+        return {"ok": False, "error": "browser_start_timeout",
+                "pid": spawned["pid"]}
+    try:
+        pid = _browser_pid_via_cdp(endpoint, timeout_s)
+    except Exception as e:
+        _kill_pid(spawned["pid"])
+        return {"ok": False, "error": "process_info_failed",
+                "detail": str(e), "pid": spawned["pid"]}
+    if not pid:
+        _kill_pid(spawned["pid"])
+        return {"ok": False, "error": "process_info_failed",
+                "pid": spawned["pid"]}
+    b = bind(endpoint, pid)
+    if not b.get("ok"):
+        _kill_pid(pid)
+        b["pid"] = pid
+        return b
+    rec = {"pid": pid, "endpoint": endpoint, "profile": profile,
+           "profile_dir": udd, "created_at": time.time()}
+    tmp = LAUNCHED_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(rec, f)
+    os.replace(tmp, LAUNCHED_PATH)
+    return {"ok": True, "pid": pid, "endpoint": endpoint,
+            "profile_dir": udd, "binding": b.get("binding", {})}
+
+
+def stop_owned():
+    d = launched()
+    if d is None:
+        try:
+            os.remove(LAUNCHED_PATH)
+        except OSError:
+            pass
+        return {"ok": False, "error": "not_owned:no live launched record"}
+    pid = d["pid"]
+    # Pid existence is not ownership: Windows recycles pids. Corroborate
+    # identity via the recorded DevTools endpoint before killing, so a
+    # reused pid cannot take down a foreign process tree.
+    try:
+        _http_json(d["endpoint"] + "/json/version", timeout=1.0)
+    except Exception:
+        try:
+            os.remove(LAUNCHED_PATH)
+        except OSError:
+            pass
+        return {"ok": False, "error": "not_owned:endpoint_dead"}
+    b = binding()
+    if b and b.get("pid") == pid:
+        unbind()
+    if not _kill_pid(pid):
+        return {"ok": False, "error": "kill_failed:pid " + str(pid),
+                "pid": pid}
+    try:
+        os.remove(LAUNCHED_PATH)
+    except OSError:
+        pass
+    return {"ok": True, "stopped": pid}
+
+
+def watch_frames(cli, seconds, out_dir, max_frames=100, last_only=False):
+    """CDP screencast -> jpeg files. Chrome pushes one frame per page
+    change; every frame MUST be acked or Chrome stalls (the pattern in
+    OpenBot's screencast.ts). BiDi has no equivalent: typed rejection."""
+    if cli.dialect != "cdp":
+        return {"ok": False, "error": "screencast_cdp_only"}
+    import base64
+    os.makedirs(out_dir, exist_ok=True)
+    ws = cli._ws
+    ws.start_reader()
+    ws.call("Page.startScreencast",
+            {"format": "jpeg", "quality": 70,
+             "maxWidth": 1280, "maxHeight": 800, "everyNthFrame": 1})
+    written = 0
+    latest = None
+    deadline = time.time() + seconds
+    try:
+        while time.time() < deadline and written < max_frames:
+            pulled = False
+            while ws.events:
+                pulled = True
+                ev = ws.events.popleft()
+                if ev.get("method") != "Page.screencastFrame":
+                    continue
+                p = ev["params"]
+                ws.call("Page.screencastFrameAck",
+                        {"sessionId": p["sessionId"]})
+                written += 1
+                raw = base64.b64decode(p["data"])
+                if last_only:
+                    latest = raw
+                else:
+                    path = os.path.join(
+                        out_dir, "frame-%04d.jpg" % written)
+                    with open(path, "wb") as f:
+                        f.write(raw)
+            if not pulled:
+                time.sleep(0.05)
+    finally:
+        try:
+            ws.call("Page.stopScreencast")
+        except Exception:
+            pass
+    if last_only and latest is not None:
+        with open(os.path.join(out_dir, "latest.jpg"), "wb") as f:
+            f.write(latest)
+    return {"ok": True, "frames": written, "dir": out_dir,
+            "last": (os.path.join(out_dir, "latest.jpg")
+                     if last_only and latest is not None else None)}

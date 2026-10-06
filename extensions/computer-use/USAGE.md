@@ -89,6 +89,12 @@ python3 -m venv <ext-dir>/.venv
 - Default `--out` goes to the OS temp dir (`%TEMP%`/`/tmp`) — screenshots are disposable. **Do not pass `--out` at all during normal work**; let shots land in temp. Only write elsewhere when the user explicitly asks to keep a shot (documentation/evidence), to the path they choose.
 - **Cleanup:** temp shots are the agent's working files — delete the ones you created when the task ends (`screenshot-<ts>.png` etc.). Never leave them in the project root or `.devin/`.
 
+**Audit:** every `result()` appends one line to
+`%TEMP%/devin-cu-audit.jsonl` (`$CU_AUDIT_PATH`): tool, subcommand name,
+status, backend, timings. Never typed text, file contents, or full
+commands. Rotates at 256 KiB keeping the last 1000 lines.
+`CU_AUDIT=off` disables.
+
 ## Commands
 
 ```bash
@@ -283,6 +289,18 @@ $PY browser.py bind --endpoint http://127.0.0.1:9222 --pid <chrome-pid>
 $PY browser.py status                     # bound? reachable? dialect?
 $PY browser.py unbind
 ```
+
+`launch` spawns an agent-owned Chromium with a persistent profile:
+cookies/logins survive `stop`/`launch` cycles because the user-data-dir
+is stable (`$CU_PROFILE_ROOT` or `%LOCALAPPDATA%\devin\cu-profiles`).
+`stop` kills only a pid recorded by `launch` and still alive; it refuses
+foreign pids. The spawned browser binds to this session like any `bind`
+(same TTL + session rules).
+
+`watch` streams the bound browser over CDP `Page.startScreencast` (one
+JPEG per page change, acked per frame) into a temp dir the agent can
+read. `--last` keeps only `latest.jpg` (single-frame reperception).
+CDP only; bound BiDi browsers reject with `screencast_cdp_only`.
 
 One-shot commands (each opens the ws, acts, closes):
 
