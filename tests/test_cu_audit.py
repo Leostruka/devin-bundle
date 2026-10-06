@@ -41,6 +41,27 @@ def test_rotation_keeps_tail(monkeypatch, tmp_path):
     assert json.loads(lines[-1])["extra"]["n"] == 59
 
 
+def test_rotation_actually_truncates(monkeypatch, tmp_path):
+    """Supplemental: actually exercise _rotate. `_MAX_BYTES` binds at
+    import time, so monkeypatch the module constant directly; >1000
+    records force a real truncation the cap-env test cannot reach."""
+    p = tmp_path / "a.jsonl"
+    monkeypatch.setenv("CU_AUDIT_PATH", str(p))
+    monkeypatch.setattr(au, "_MAX_BYTES", 4096)
+    monkeypatch.setattr(sys, "argv", ["type_text.py", "x"])
+    for i in range(1100):
+        ca.result("dispatched", "physical", n=i)
+    data = p.read_bytes()
+    lines = data.decode().strip().splitlines()
+    # rotate runs before append: at most 1000 kept + 1 new line
+    assert len(lines) <= 1001
+    assert len(lines) < 1100  # proves lines were dropped
+    assert json.loads(lines[-1])["extra"]["n"] == 1099
+    assert json.loads(lines[0])["extra"]["n"] > 0  # head was truncated
+    line_len = len(lines[-1].encode()) + 2  # +\r\n
+    assert len(data) < 1100 * line_len  # below unrotated size
+
+
 def test_audit_failure_never_raises(monkeypatch, tmp_path):
     monkeypatch.setattr(au, "audit_path",
                         lambda: str(tmp_path / "x\x00bad.jsonl"))
