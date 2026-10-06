@@ -290,6 +290,13 @@ $PY browser.py status                     # bound? reachable? dialect?
 $PY browser.py unbind
 ```
 
+`launch` spawns an agent-owned Chromium with a persistent profile:
+cookies/logins survive `stop`/`launch` cycles because the user-data-dir
+is stable (`$CU_PROFILE_ROOT` or `%LOCALAPPDATA%\devin\cu-profiles`).
+`stop` kills only a pid recorded by `launch` and still alive; it refuses
+foreign pids. The spawned browser binds to this session like any `bind`
+(same TTL + session rules).
+
 One-shot commands (each opens the ws, acts, closes):
 
 ```bash

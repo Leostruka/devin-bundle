@@ -223,6 +223,11 @@ def main():
                     help="respond: accept|dismiss; pin: targetId; "
                          "har: output path")
 
+    l = sub.add_parser("launch")
+    l.add_argument("--profile", required=True)
+    l.add_argument("--timeout", type=float, default=15.0)
+    sub.add_parser("stop")
+
     args = p.parse_args()
 
     if args.cmd == "bind":
@@ -258,6 +263,13 @@ def main():
             if args.arg is not None:
                 op["arg"] = args.arg
             print(json.dumps(_events_call(op)))
+        return
+    if args.cmd == "launch":
+        print(json.dumps(cu_browser.launch_owned(args.profile,
+                                               args.timeout)))
+        return
+    if args.cmd == "stop":
+        print(json.dumps(cu_browser.stop_owned()))
         return
 
     cli = _client()
