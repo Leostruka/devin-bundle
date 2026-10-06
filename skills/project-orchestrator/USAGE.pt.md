@@ -47,7 +47,8 @@ Nao usar para tarefa unica de codigo; nesses casos o fluxo
 .devin/research/<area>.md   logs de pesquisa PRISMA-lite
 .devin/handoffs/*.md        contratos e handoffs entre papeis
 .devin/team-pack.md         elenco exportavel (papeis + charters + convencoes)
-workers/<role>/             uma pasta por papel, com .devin/ proprio
+workers/<role>/             home duravel do papel (charter + .devin/ proprio)
+.worktrees/<role>/          lane de codigo do papel (worktree + branch <slug>-<role>)
 ```
 
 O ledger tem secao `## Status` reescrita a cada evento: fase atual, elenco
@@ -63,6 +64,10 @@ ate voce.
   delegada sob contrato
 - workers leem docs da raiz somente via `Readable refs` do contrato;
   inputs de spec sao congelados por hash (`Frozen inputs`)
+- todo papel que escreve codigo executa num worktree proprio
+  (`$ROOT/.worktrees/<role>`); handoffs, relatorios e a home duravel
+  resolvem por caminhos absolutos sob `$ROOT`, nunca pelo cwd do worktree;
+  papeis de leitura usam `Lane: read-only`
 - sem scheduler proprio: checks recorrentes viram itens `every gate` no
   ledger ou issues de `afk-loop`
 

@@ -1,9 +1,12 @@
 # Worker role charter
 
-Saved as `workers/<role>/role.md` in the target project when the role
+Saved as `workers/<role>/role.md` in the target project root when the role
 matrix spawns or activates a role. The role's accumulated knowledge lives in
 `workers/<role>/.devin/` (`notes/` for domain knowledge, `adr/` for
-role-local decisions), separate from the project-level `.devin/`.
+role-local decisions), separate from the project-level `.devin/`. This home
+is durable and stays at the root: execution happens in the role's worktree
+lane (`$ROOT/.worktrees/<role>`), so the worker reaches it through absolute
+`$ROOT` paths, never through the worktree cwd.
 
 ```markdown
 # Role: <name>
@@ -30,6 +33,6 @@ role-local decisions), separate from the project-level `.devin/`.
 ## Standing context
 
 - key artifacts: <paths the role always re-reads>
-- knowledge base: `workers/<role>/.devin/notes/`
-- role ADRs: `workers/<role>/.devin/adr/`
+- knowledge base: `$ROOT/workers/<role>/.devin/notes/`
+- role ADRs: `$ROOT/workers/<role>/.devin/adr/`
 ```

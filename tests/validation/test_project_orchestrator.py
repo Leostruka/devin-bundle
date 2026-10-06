@@ -31,6 +31,7 @@ REFERENCE = [
     "research-protocol.md",
     "quality-gates.md",
     "advisor-protocol.md",
+    "worktree-lanes.md",
 ]
 
 
@@ -159,6 +160,12 @@ def test_maestri_improvements_codified():
         "Lane setup",
         "Lane teardown",
         "$LANE_PATH",
+        "$ROOT",
+        "worktree",
+        ".worktrees/",
+        "worktree add",
+        "worktree remove",
+        "durable home",
         "Peer consults",
         "CONSULT:",
         "Readable refs",
