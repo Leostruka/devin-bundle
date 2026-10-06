@@ -130,8 +130,12 @@ def result(status, backend, extra=None, **kw):
     try:
         import cu_audit
         tool = os.path.basename(sys.argv[0]) if sys.argv else "?"
-        cmd = sys.argv[1] if len(sys.argv) > 1 else None
-        cu_audit.record({"tool": tool, "cmd": cmd, "status": status,
+        # cmd comes only from explicit result() kwargs (mouse.py passes
+        # "move"/"click"/"scroll"/"drag"). Never sys.argv[1]: tools like
+        # type_text.py take their literal value positionally, and logging
+        # it would leak typed text into the audit trail.
+        cu_audit.record({"tool": tool, "cmd": kw.get("cmd"),
+                         "status": status,
                          "backend": backend, "extra": kw or None,
                          "timings_ms": kw.get("timings_ms")})
     except Exception:

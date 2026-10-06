@@ -968,6 +968,11 @@ def launch_owned(profile, timeout_s=15.0):
     if (not profile or "/" in profile or "\\" in profile
             or profile in (".", "..") or len(profile) > 64):
         return {"ok": False, "error": "bad_profile_name"}
+    if launched() is not None:
+        # Re-launch would orphan the first browser (LAUNCHED_PATH and the
+        # binding are overwritten, leaving it running untracked).
+        return {"ok": False, "error": "already_launched",
+                "detail": "stop first: browser.py stop"}
     exe = find_browser_exe()
     if not exe:
         return {"ok": False, "error": "browser_exe_not_found"}
@@ -1016,6 +1021,17 @@ def stop_owned():
             pass
         return {"ok": False, "error": "not_owned:no live launched record"}
     pid = d["pid"]
+    # Pid existence is not ownership: Windows recycles pids. Corroborate
+    # identity via the recorded DevTools endpoint before killing, so a
+    # reused pid cannot take down a foreign process tree.
+    try:
+        _http_json(d["endpoint"] + "/json/version", timeout=1.0)
+    except Exception:
+        try:
+            os.remove(LAUNCHED_PATH)
+        except OSError:
+            pass
+        return {"ok": False, "error": "not_owned:endpoint_dead"}
     b = binding()
     if b and b.get("pid") == pid:
         unbind()

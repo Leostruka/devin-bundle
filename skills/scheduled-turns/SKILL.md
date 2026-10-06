@@ -31,7 +31,7 @@ heartbeat/session-checkpoint emulations were pruned for this reason).
    Windows (PowerShell, run once by the user):
    ```powershell
    $act = New-ScheduledTaskAction -Execute "devin" `
-     -Argument "-p --read .devin/scheduled/<name>.md" `
+     -Argument "-p --prompt-file .devin/scheduled/<name>.md --respect-workspace-trust false" `
      -WorkingDirectory "C:\path\to\project"
    $trg = New-ScheduledTaskTrigger -Daily -At 09:00
    Register-ScheduledTask -TaskName "devin-<name>" `
@@ -39,7 +39,7 @@ heartbeat/session-checkpoint emulations were pruned for this reason).
    ```
 
    POSIX cron equivalent:
-   `0 9 * * * cd /path && devin -p --read .devin/scheduled/<name>.md >> .devin/ledgers/scheduled-<name>.log 2>&1`
+   `0 9 * * * cd /path && devin -p --prompt-file .devin/scheduled/<name>.md --respect-workspace-trust false >> .devin/ledgers/scheduled-<name>.log 2>&1`
 
 3. Each run appends outcome evidence to
    `.devin/ledgers/scheduled-<name>.md`: outcome, what ran, next check.
@@ -54,6 +54,8 @@ heartbeat/session-checkpoint emulations were pruned for this reason).
   a task itself. It writes the prompt file and the user runs the
   register command.
 - No secrets in prompt files, task arguments, or ledger output.
+- `--respect-workspace-trust false` is required: print mode cannot show
+  the workspace trust prompt, so an untrusted dir fails without it.
 - Turns are bounded: the prompt must state a hard stop condition and a
   max runtime expectation; a turn that cannot finish writes
   `ABANDON: <reason>` to its ledger instead of hanging.

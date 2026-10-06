@@ -12,7 +12,12 @@ import os
 import tempfile
 import time
 
-_MAX_BYTES = int(os.environ.get("CU_AUDIT_MAX_BYTES", str(256 * 1024)))
+try:
+    _MAX_BYTES = int(os.environ.get("CU_AUDIT_MAX_BYTES", str(256 * 1024)))
+except ValueError:
+    # A malformed env var must not silently disable auditing via the
+    # swallowed import error inside result()'s try.
+    _MAX_BYTES = 256 * 1024
 _KEEP_LINES = 1000
 
 

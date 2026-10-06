@@ -62,6 +62,20 @@ def test_rotation_actually_truncates(monkeypatch, tmp_path):
     assert len(data) < 1100 * line_len  # below unrotated size
 
 
+def test_positional_text_never_audited(monkeypatch, tmp_path):
+    """type_text.py takes its literal text positionally; argv[1] must
+    never reach the audit trail (typed-value exclusion rule)."""
+    p = tmp_path / "a.jsonl"
+    monkeypatch.setenv("CU_AUDIT_PATH", str(p))
+    monkeypatch.setattr(sys, "argv", ["type_text.py", "s3cret-passphrase"])
+    ca.result("dispatched", "physical")
+    line = p.read_text().strip()
+    assert "s3cret" not in line
+    rec = json.loads(line)
+    assert rec.get("cmd") is None
+    assert rec["tool"] == "type_text.py"
+
+
 def test_audit_failure_never_raises(monkeypatch, tmp_path):
     monkeypatch.setattr(au, "audit_path",
                         lambda: str(tmp_path / "x\x00bad.jsonl"))

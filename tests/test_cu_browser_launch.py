@@ -45,6 +45,32 @@ def test_stop_refuses_foreign_pid(monkeypatch, tmp_path):
     assert r["ok"] is False and r["error"].startswith("not_owned")
 
 
+def test_launch_refuses_when_already_launched(monkeypatch, tmp_path):
+    monkeypatch.setattr(br, "launched", lambda: {"pid": 111})
+    spawned = []
+    monkeypatch.setattr(br, "_spawn_browser",
+                        lambda *a: spawned.append(a) or {"pid": 1})
+    r = br.launch_owned("work")
+    assert r["ok"] is False and r["error"] == "already_launched"
+    assert spawned == []
+
+
+def test_stop_refuses_dead_endpoint(monkeypatch, tmp_path):
+    monkeypatch.setattr(br, "LAUNCHED_PATH", str(tmp_path / "x.json"))
+    open(br.LAUNCHED_PATH, "w").write(json.dumps(
+        {"pid": 555, "endpoint": "http://127.0.0.1:1"}))
+    monkeypatch.setattr(br, "_pid_alive", lambda pid: True)
+    def _boom(url, timeout=5.0):
+        raise OSError("connection refused")
+    monkeypatch.setattr(br, "_http_json", _boom)
+    killed = []
+    monkeypatch.setattr(br, "_kill_pid",
+                        lambda pid: killed.append(pid) or True)
+    r = br.stop_owned()
+    assert r["ok"] is False and r["error"].startswith("not_owned")
+    assert killed == []
+
+
 def test_launch_cli_json(monkeypatch, tmp_path):
     monkeypatch.setattr(br, "launch_owned",
                         lambda profile, timeout_s=15.0:
@@ -79,8 +105,11 @@ def test_launch_kills_spawned_on_timeout(monkeypatch, tmp_path):
 
 def test_stop_reports_kill_failure(monkeypatch, tmp_path):
     monkeypatch.setattr(br, "LAUNCHED_PATH", str(tmp_path / "x.json"))
-    open(br.LAUNCHED_PATH, "w").write(json.dumps({"pid": 555}))
+    open(br.LAUNCHED_PATH, "w").write(json.dumps(
+        {"pid": 555, "endpoint": "http://127.0.0.1:2"}))
     monkeypatch.setattr(br, "_pid_alive", lambda pid: True)
+    monkeypatch.setattr(br, "_http_json",
+                        lambda url, timeout=5.0: {"Browser": "x"})
     monkeypatch.setattr(br, "binding", lambda: None)
     monkeypatch.setattr(br, "_kill_pid", lambda pid: False)
     r = br.stop_owned()
