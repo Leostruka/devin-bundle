@@ -731,9 +731,9 @@ toolsmap = open('.devin/docs/TOOLS-MAP.md', encoding='utf-8').read()
 doc_checks = [
     ('TOOLS-MAP.md skills count', str(skill_count) + ' skills', str(skill_count) + ' skills' in toolsmap),
     ('TOOLS-MAP.md scripts count', str(len(script_files)) + ' scripts', str(len(script_files)) + ' scripts' in toolsmap),
-    ('TOOLS-MAP.md hook events (8)', '8 eventos', '8 eventos' in toolsmap),
-    ('TOOLS-MAP.md tool count (28)', '28 in TOOLS-MAP', ('28 ferramentas' in toolsmap or '19/28' in toolsmap)),
-    ('TOOLS-MAP.md excluded tools (9)', '9 in TOOLS-MAP', '9 excluídas' in toolsmap),
+    ('TOOLS-MAP.md hook events (8)', '8 events', '8 events' in toolsmap),
+    ('TOOLS-MAP.md tool count (28)', '28 tools in TOOLS-MAP', '26 active + 2 mode-dependent' in toolsmap),
+    ('TOOLS-MAP.md excluded tools (9)', '9 excluded tools in TOOLS-MAP', 'Excluded tools' in toolsmap and 'exit_plan_mode' in toolsmap),
     ('README.md diagram skills count', str(skill_count) + ' skills', str(skill_count) + ' skills' in readme),
     ('README.md diagram hook events (8)', '8 events', '8 events' in readme),
 ]

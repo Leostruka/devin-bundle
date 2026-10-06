@@ -469,12 +469,17 @@
       "purpose": "Use when computer-use or terminal automation needs the fastest reaction the runtime allows - event waits instead of screenshot polling, text perception instead of image reads, whole perceive-act-verify cycles batched into one exec, or deterministic reflex loops below model latency. Composes with the `computer-use` skill (same extension CLIs)."
     },
     {
+      "name": "rag",
+      "source": "devin-bundle",
+      "purpose": "Use when building retrieval over a project corpus (docs, code, notes), when answering chunking/embedding/vector-store questions, when evaluating whether retrieval actually works, or when an agent \"can't find things in the docs\" and grep alone is not cutting it."
+    },
+    {
       "name": "scheduled-turns",
       "source": "devin-bundle",
       "purpose": "Use when a task needs recurring or always-on agent turns (periodic checks, polling workflows, run-this-every-morning jobs) without adding a daemon. OS scheduler plus one-shot headless Devin turns writing to ledgers."
     }
   ],
-  "skill_count": 68,
+  "skill_count": 69,
   "rule_count": 28,
   "scripts": [
     {
@@ -648,7 +653,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "26BF954097AEE3584C174055ABF1EF9EFEE95B07FF3B928A98DFC63AAFDDCB2A",
+      "export_hash": "3EF5EE5B42E279CEBEF2B20FD41E3198FFBDB54FE1F5A68BE59CCC6340B5EC86",
       "exported_at": "2026-09-08T21:39:22.431131"
     },
     {
@@ -664,12 +669,15 @@
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
-    "MODEL-GUIDE.md",
-    "SKILL-TIERS.md",
-    "TOOLS-MAP.md",
-    "CHANGELOG.md",
     "README.md",
-    "AI-CODING-DICTIONARY.md"
+    "CHANGELOG.md",
+    ".devin/docs/3D-STACK-INSTALL.md",
+    ".devin/docs/AI-CODING-DICTIONARY.md",
+    ".devin/docs/DEVIN-CLI-COMPATIBILITY.md",
+    ".devin/docs/MODEL-GUIDE.md",
+    ".devin/docs/RULES-DIRECTORY.md",
+    ".devin/docs/SKILL-TIERS.md",
+    ".devin/docs/TOOLS-MAP.md"
   ],
   "agents": [
     {
