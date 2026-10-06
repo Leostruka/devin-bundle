@@ -36,7 +36,7 @@ shard must be describable as a path set + short focus line. Prefer
 
 ### 3. Map (parallel read-only subagents)
 
-Dispatch **one `researcher` (or `subagent_explore`) background subagent per
+Dispatch **one `researcher` background subagent per
 shard** — all in parallel, disjoint read sets. Each prompt must be
 self-contained (subagents see no session context):
 

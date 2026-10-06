@@ -1,6 +1,7 @@
 ---
 name: operate-godot
 description: Use when the user asks to build, inspect, import assets into, or export a Godot 4 project headlessly (realtime 3D delivery, game scenes, interactive world execution). Uses godot --headless --script CLI; no GUI. Free/MIT engine.
+triggers: [user, model]
 ---
 
 # Operate Godot (headless)

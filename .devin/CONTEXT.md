@@ -85,7 +85,7 @@ The bundle does not own:
 | `export.ps1`, `export.sh` | Cross-platform exporters. |
 | `audit.py` | Bundle consistency audit. |
 | `.github/workflows/ci.yml` | CI validation source. |
-| `docs/plans/` | Approved implementation roadmaps and sub-plans. |
+| `.devin/plans/` | Approved implementation roadmaps and sub-plans. |
 
 ## Vocabulary constraints
 

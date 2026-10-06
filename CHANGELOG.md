@@ -118,7 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **7 Matt Pocock AI Coding workshop plans**: skills, plans and ledgers for context-workflow, grill-me, prd-to-issues, afk-loop, tdd-feedback, deep-modules, and push-pull-review.
+- **7 <contributor> AI Coding workshop plans**: skills, plans and ledgers for context-workflow, grill-me, prd-to-issues, afk-loop, tdd-feedback, deep-modules, and push-pull-review.
   - `context-window-hygiene` + `scripts/context-budget.py`: added `SMART_ZONE_TOKENS` (100k), `--simulate`, and explicit `clear` over `compact` nudge.
   - `grilling`: assertive questions, one recommendation alongside every question, and `shared design concept` PRD export.
   - `planning-pipeline` and `writing-plans`: PRD as destination document, declared modules and interfaces, tracer-bullet vertical slices, and prototype/disposable asset lifecycle.
@@ -570,7 +570,7 @@ primary sources (`devin models list`, docs.devin.ai, cognition.com, z.ai).
 - **`refine-review-prompt.py` skill ref fixa**: referência a skill `refine`
   inexistente → `primeagent-reference` Refine mode.
 - **`mermaid-parse-check.js` hardcoded paths**: paths machine-specific
-  (`C:\Users\Fingertech\scoop\...`) → portable lookup (require.resolve,
+  (`<user-path>\scoop\...`) → portable lookup (require.resolve,
   npm root -g, Linux paths, Windows fallback).
 - **MODEL-GUIDE.md dados de GLM-4.6 atribuídos a GLM-5.2**: max output
   128K → 131,072. Custos $1.4/$4.4 removidos (GLM-5.2 High é gratuito).
@@ -579,7 +579,7 @@ primary sources (`devin models list`, docs.devin.ai, cognition.com, z.ai).
   `find-skills`→`tool-and-skill-discovery`, `grill-with-docs`→`grilling`,
   `wiki-audit/audit.py`→`obsidian-workflow/scripts/audit.py` (11 skills).
 - **`hooks.v1.json` `%APPDATA%` → `{{APPDATA}}`**: sintaxe Devin-native.
-- **`audit.py` live_base stale**: `C:\Users\leand\...` → auto-detect
+- **`audit.py` live_base stale**: `<user-path>\...` → auto-detect
   (WSL/Linux/Windows).
 
 ### Added
@@ -713,7 +713,7 @@ primary sources (`devin models list`, docs.devin.ai, cognition.com, z.ai).
 
 ## [2.3.0] - 2026-08-18
 
-### Added (context window management — from "Context Windows Explained for Coding Agents", Matt Pocock)
+### Added (context window management, from the "Context Windows Explained for Coding Agents" talk by <contributor>)
 
 - **Rule 18: Keep the context window lean** — new pinned governance rule.
   Context window = input + output tokens (hard-capped); lost-in-the-middle
@@ -778,7 +778,7 @@ primary sources (`devin models list`, docs.devin.ai, cognition.com, z.ai).
   through cmd.exe, so `%APPDATA%` stays literal and the path becomes
   `D:\...\%APPDATA%\devin\scripts\...` (No such file or directory). All hooks failed
   to find their scripts. Live config.json now uses absolute paths
-  (`C:/Users/leand/AppData/Roaming/devin/scripts/...`).
+  (`<user-path>/AppData/Roaming/devin/scripts/...`).
 - **Bundle uses `{{APPDATA}}` placeholder** — portable across users/machines.
   `install.ps1` expands `{{APPDATA}}` to `$env:APPDATA` (forward slashes) during
   merge. `export.ps1` normalizes absolute APPDATA paths back to `{{APPDATA}}`.

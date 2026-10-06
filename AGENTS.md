@@ -35,6 +35,9 @@ survive compaction; merged rules keep their number as an alias.
 28. **Hybrid Rust–Python extensions** (`.devin/adr/003-`)
 29. **Architecture manifest before source edits**
 
+Numbering gaps (e.g. no Rule 6) are retained for reference stability: rule
+numbers are cited elsewhere and are never renumbered.
+
 ---
 
 ## Pinned rules (full detail)

@@ -1,6 +1,7 @@
 ---
 name: operate-blender
 description: Use when the user asks to create, build, manipulate, render, animate, or export 3D content (scenes, models, characters, environments, stylized/cartoon or hyper-real art, procedural geometry). Routes to extensions/blender-operator/wrapper.py, which drives headless Blender through a TCP exec loop with full bpy access; no GUI, no MCP addon, free/GPL tooling.
+triggers: [user, model]
 ---
 
 # Operate Blender

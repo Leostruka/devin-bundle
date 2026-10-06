@@ -1,246 +1,246 @@
 # Model Guide
 
-Política de modelos do bundle, nativa SWE-2. O roteamento é por **nível de esforço** (Medium/High/Max), não por tamanho de modelo. Valores concretos estão em `data/bundle-models.json`; as variáveis de ambiente `BUNDLE_DEFAULT_MODEL`, `BUNDLE_MAX_MODEL` e `BUNDLE_MEDIUM_MODEL` podem sobrescrever os padrões. A versão validada do CLI está em `data/bundle-identity.json`.
+Bundle model policy, SWE-2 native. Routing is by **effort level** (Medium/High/Max), not model size. Concrete values live in `data/bundle-models.json`; the `BUNDLE_DEFAULT_MODEL`, `BUNDLE_MAX_MODEL` and `BUNDLE_MEDIUM_MODEL` environment variables can override the defaults. The validated CLI version is in `data/bundle-identity.json`.
 
 ## Effort levels (SWE-2)
 
-No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é um campo separado na config — a variante escolhida define o esforço. A UI oferece `Alt+T` para alternar.
+In SWE-2, effort is the reasoning level built into the `model_uid`. It is not a separate config field - the chosen variant defines the effort. The UI offers `Alt+T` to switch.
 
-| Nível | model_uid | Quando usar | Custo |
+| Level | model_uid | When to use | Cost |
 |---|---|---|---|
-| **Medium** | `swe-2-medium` | Tarefas simples, ajustes pontuais, scripts isolados, edições mecânicas. Spec claro; sucesso verificável por um teste/build. | **Free** |
-| **High** | `swe-2-high` | Tarefas que atravessam múltiplos arquivos, debugging bounded, decisões com várias constraints. **Default geral.** | **Free** |
-| **Max** | `swe-2-max` | Tarefas abertas, refatorações globais, long-horizon coding, decisão custosa/irreversível. | **Free** |
+| **Medium** | `swe-2-medium` | Simple tasks, spot fixes, isolated scripts, mechanical edits. Clear spec; success verifiable by a single test/build. | **Free** |
+| **High** | `swe-2-high` | Tasks spanning multiple files, bounded debugging, decisions with several constraints. **General default.** | **Free** |
+| **Max** | `swe-2-max` | Open-ended tasks, global refactors, long-horizon coding, costly/irreversible decisions. | **Free** |
 
-**Regra prática:** comece no nível que corresponde à forma da tarefa. Suba um nível quando a verificação falhar, não antes. Ver `context-hygiene` para a base empírica.
+**Rule of thumb:** start at the level matching the task shape. Step up one level when verification fails, not before. See `context-hygiene` for the empirical basis.
 
 ## Primary model (parent)
 
-O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bundle-models.json.default_parent_model`). Default do bundle: **`swe-2-high`** (High effort, 262K, free).
+The primary model (parent) is set by `BUNDLE_DEFAULT_MODEL` (or `data/bundle-models.json.default_parent_model`). Bundle default: **`swe-2-high`** (High effort, 262K, free).
 
-| Atributo | Valor | Fonte |
+| Attribute | Value | Source |
 |---|---|---|
 | model_uid | `{{BUNDLE_DEFAULT_MODEL}}` | `data/bundle-models.json` / `devin models list` |
-| Context window | `context_window` do registro | `data/bundle-models.json` |
-| Effort | definido pelo sufixo do `model_uid` | esta tabela |
-| Tool use | nativo durante inferência | Devin docs |
-| Custo | `cost_tier: free` para o default | `data/bundle-models.json` / `devin models list` |
+| Context window | `context_window` from the registry | `data/bundle-models.json` |
+| Effort | defined by the `model_uid` suffix | this table |
+| Tool use | native during inference | Devin docs |
+| Cost | `cost_tier: free` for the default | `data/bundle-models.json` / `devin models list` |
 
-### Implicações para o harness
+### Implications for the harness
 
-1. **Raciocínio nativo**: SWE-2 planeja e raciocina sem instruções de
-   chain-of-thought. Prompts, skills e profiles declaram O QUE deve ser feito
-   e os critérios de aceitação — nunca COMO raciocinar ("pense passo a passo",
-   "planeje antes de agir" são anti-padrões).
+1. **Native reasoning**: SWE-2 plans and reasons without chain-of-thought
+   instructions. Prompts, skills and profiles declare WHAT must be done
+   and the acceptance criteria - never HOW to reason ("think step by step",
+   "plan before acting" are anti-patterns).
 
-2. **Tool-use nativo**: o modelo decide quando invocar ferramentas durante
-   inferência. O harness não deve over-specificar regras de tool-use —
-   Rule 17 (verify with tools) alinha naturalmente.
+2. **Native tool-use**: the model decides when to invoke tools during
+   inference. The harness should not over-specify tool-use rules-
+   Rule 17 (verify with tools) aligns naturally.
 
-3. **Prompt caching**: manter AGENTS.md e system prompt cache-stable. Regras pinned no topo = prefixo estável = cache hit. Não reordenar regras pinned frequentemente.
+3. **Prompt caching**: keep AGENTS.md and the system prompt cache-stable. Pinned rules at the top = stable prefix = cache hit. Do not reorder pinned rules frequently.
 
-4. **Lost-in-the-middle (arXiv:2307.03172)**: curva U-shaped confirmada.
-   Constraints críticas no início (pinned rules), contexto recente no fim,
-   evitar dependência de informação no meio do contexto. Constraint-pinning
-   (Rule 14) é a defesa correta.
+4. **Lost-in-the-middle (arXiv:2307.03172)**: U-shaped curve confirmed.
+   Critical constraints at the start (pinned rules), recent context at the
+   end; avoid depending on information in the middle of the context. Constraint-pinning
+   (Rule 14) is the correct defense.
 
-5. **Budget**: porcentagens fixas da `context_window` em `data/bundle-models.json`
-   são consumidas por AGENTS.md, SKILL-TIERS.md, skills invocadas e tool defs.
-   O restante fica disponível para trabalho.
+5. **Budget**: fixed percentages of the `context_window` in `data/bundle-models.json`
+   are consumed by AGENTS.md, SKILL-TIERS.md, invoked skills and tool defs.
+   The rest remains available for work.
 
 ## Subagent models
 
-Subagents usam os mesmos variantes SWE-2, escolhidos por nível de esforço:
+Subagents use the same SWE-2 variants, chosen by effort level:
 
-| Campo | Descrição | Effort | Custo | Notas |
+| Field | Description | Effort | Cost | Notes |
 |---|---|---|---|---|
-| `{{BUNDLE_MAX_MODEL}}` | Subagent Max (`swe-2-max`) | max | **Free** | Agents de planejamento/julgamento/review |
-| `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium (`swe-2-medium`) | medium | **Free** | Agents de execução bounded |
-| `{{BUNDLE_DEFAULT_MODEL}}` | Parent (`swe-2-high`) | high | **Free** | Orquestração, raciocínio diverso |
+| `{{BUNDLE_MAX_MODEL}}` | Max subagent (`swe-2-max`) | max | **Free** | Planning/judgment/review agents |
+| `{{BUNDLE_MEDIUM_MODEL}}` | Medium subagent (`swe-2-medium`) | medium | **Free** | Bounded execution agents |
+| `{{BUNDLE_DEFAULT_MODEL}}` | Parent (`swe-2-high`) | high | **Free** | Orchestration, diverse reasoning |
 
-**⚠️ CRÍTICO**: aliases não canônicos podem apontar para um modelo pago — **não use** sem verificar `data/bundle-models.json`.
-Os agents/ devem fazer pin com os variantes canônicos (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`) do bundle.
+**⚠️ CRITICAL**: non-canonical aliases may resolve to a paid model - **do not use** without checking `data/bundle-models.json`.
+Agents under agents/ should pin the bundle's canonical variants (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`).
 
-**⚠️ CRÍTICO — `subagent_explore` (built-in) pode ser pago**: o profile built-in
-`subagent_explore` roda no default router do CLI, que pode cobrar por token.
-Não há override local — apenas enterprise settings podem mudar isso.
-**NUNCA dispatchar `subagent_explore`.** Usar o profile customizado `researcher`
-(`agents/researcher.md`, pin `model: {{BUNDLE_MAX_MODEL}}`, gratuito, veja `data/bundle-models.json`)
-que tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
+**⚠️ CRITICAL - `subagent_explore` (built-in) may be paid**: the built-in
+`subagent_explore` profile runs on the CLI default router, which may charge per token.
+There is no local override - only enterprise settings can change that.
+**NEVER dispatch `subagent_explore`.** Use the custom `researcher` profile
+(`agents/researcher.md`, pin `model: {{BUNDLE_MAX_MODEL}}`, free, see `data/bundle-models.json`),
+which has the same read-only capabilities. Source: docs.devin.ai/cli/subagents.
 
-### Self-compaction (diferencial chave)
+### Self-compaction (key differentiator)
 
-Os subagentes do bundle são treinados para:
-1. Escrever summaries informativos e concisos do estado de trabalho.
-2. Resumir a partir desses summaries eficientemente.
+The bundle's subagents are trained to:
+1. Write informative, concise summaries of work state.
+2. Summarize from those summaries efficiently.
 
-Isso significa que os subagentes preservam constraints melhor que modelos genéricos
-durante compaction. Mas Governance Decay (arXiv:2606.22528v2) mostra que compaction
-dropa constraints em TODOS os modelos testados — constraint-pinning ainda é necessário.
+This means subagents preserve constraints better than generic models
+during compaction. But Governance Decay (arXiv:2606.22528v2) shows compaction
+drops constraints in ALL tested models - constraint-pinning is still needed.
 
-O hook `constraint-pinning.py` tem heuristic `summary_retains_constraints()` que
-verifica se key phrases sobreviveram. Para subagentes treinados, o summary é mais
-likely de reter constraints → pinning fires less often → comportamento correto
-(pin só quando necessário).
+The `constraint-pinning.py` hook has a `summary_retains_constraints()` heuristic that
+checks whether key phrases survived. For trained subagents, the summary is more
+likely to retain constraints → pinning fires less often → correct behavior
+(pin only when needed).
 
-### Implicações para subagent dispatch
+### Implications for subagent dispatch
 
-1. **Context window**: a janela do subagent está em `data/bundle-models.json` (262K). Subagents podem fazer mais trabalho antes de precisar compaction. Fan-out econômico.
-2. **Self-compaction**: subagents podem rodar mais tempo sem perda de contexto. Menos necessidade de `context-hygiene` em subagents.
-3. **Conciso por design**: SWE-2 é treinado para output conciso. Não fightar com regras verbose. Rule 8 (telegraphic) alinha.
-4. **Coding strength**: para tarefas de coding (implementação, debugging, refactoring), o parent deve delegar para subagentes em vez de implementar inline.
+1. **Context window**: the subagent window is in `data/bundle-models.json` (262K). Subagents can do more work before needing compaction. Economical fan-out.
+2. **Self-compaction**: subagents can run longer without context loss. Less need for `context-hygiene` in subagents.
+3. **Concise by design**: SWE-2 is trained for concise output. Do not fight it with verbose rules. Rule 8 (telegraphic) aligns.
+4. **Coding strength**: for coding tasks (implementation, debugging, refactoring), the parent should delegate to subagents instead of implementing inline.
 
-### Matriz de routing: parent inline vs subagent
+### Routing matrix: parent inline vs subagent
 
-| Task type | Best function | Como executar | Por quê |
+| Task type | Best function | How to execute | Why |
 |---|---|---|---|
-| Implementação de código | Subagent Medium | `implementer` subagent | Spec'd work, execução bounded |
-| Debugging de código | Subagent Medium | `debugger` subagent (parent planeja) | Iteração de hipóteses |
-| Code review | Subagent Max | `reviewer` subagent | Julgamento independente |
-| Research/exploração | Subagent Max | `researcher` subagent | Alto contexto, free |
-| Arquitetura (routine) | Subagent Max | `architect` subagent | Trade-off analysis |
-| Arquitetura (high-stakes) | Parent model | inline ou `subagent_general` | Needs parent reasoning |
-| Final whole-branch review | Parent model | inline ou `subagent_general` | Judgment task, max capability |
-| Reasoning diverso | Parent model | inline | Primary model for diverse reasoning |
+| Code implementation | Medium subagent | `implementer` subagent | Spec'd work, bounded execution |
+| Code debugging | Medium subagent | `debugger` subagent (parent plans) | Hypothesis iteration |
+| Code review | Max subagent | `reviewer` subagent | Independent judgment |
+| Research/exploration | Max subagent | `researcher` subagent | High context, free |
+| Architecture (routine) | Max subagent | `architect` subagent | Trade-off analysis |
+| Architecture (high-stakes) | Parent model | inline or `subagent_general` | Needs parent reasoning |
+| Final whole-branch review | Parent model | inline or `subagent_general` | Judgment task, max capability |
+| Diverse reasoning | Parent model | inline | Primary model for diverse reasoning |
 | Fix-loop escalation (R4-5) | Parent model | `subagent_general` | Fresh eyes + parent reasoning |
-| Coordenação/orquestração | Parent model | inline (parent) | Parent role, never delegate |
+| Coordination/orchestration | Parent model | inline (parent) | Parent role, never delegate |
 
-### Subagent vs compaction: quando usar cada um
+### Subagent vs compaction: when to use each
 
-Fonte: dreaming.press/posts/subagents-vs-compaction-isolate-context
+Source: dreaming.press/posts/subagents-vs-compaction-isolate-context
 
-| Resposta | Mecanismo | Custo | Sobrevive reset? | Quando usar |
+| Answer | Mechanism | Cost | Survives reset? | When to use |
 |---|---|---|---|---|
-| **Subagent** | Fresh window, só final message retorna | ~15x tokens, sem herança automática | N/A — parent nunca teve o lixo | Subtask separável com resultado sumarizável (research sweep, file exploration, parallel review) |
-| **Compaction** | Sumariza transcript, dropa verbatim | Lossy: specifics omitidos gone for good | Não — summary ainda em-window | Thread contínua de raciocínio que deve ficar coerente |
-| **Context editing** | Evicta tool results antigos, keep 3 | Invalida prompt cache prefix | Parcial — results re-fetchable | Loop vivo que precisa de tool results recentes |
+| **Subagent** | Fresh window, only final message returns | ~15x tokens, no automatic inheritance | N/A - parent never had the garbage | Separable subtask with summarizable result (research sweep, file exploration, parallel review) |
+| **Compaction** | Summarizes transcript, drops verbatim | Lossy: omitted specifics gone for good | No - summary still in-window | Continuous reasoning thread that must stay coherent |
+| **Context editing** | Evicts old tool results, keeps 3 | Invalidates prompt cache prefix | Partial - results re-fetchable | Live loop that needs recent tool results |
 
-**Regra de composição**: subagents mantêm o orchestrator lean; compaction
-mantém cada loop long-lived sob seu cap. Use subagents para evitar que
-trabalho bulk entre no parent window; use compaction quando o trabalho
-já está no parent e precisa continuar coerente.
+**Composition rule**: subagents keep the orchestrator lean; compaction
+keeps each long-lived loop under its cap. Use subagents to keep bulk
+work out of the parent window; use compaction when the work
+is already in the parent and must continue coherently.
 
-Para o parent (`{{BUNDLE_DEFAULT_MODEL}}`) despachando subagents:
-- Pesquisa/exploração extensa → `researcher` (Max, gratuito, retorna só síntese)
-- Implementação bounded → `implementer` (Medium, gratuito)
-- Debugging iterativo que precisa de contexto acumulado → inline + compaction
-- Arquitetura/decisão que precisa ver tudo → inline (parent, High)
+For the parent (`{{BUNDLE_DEFAULT_MODEL}}`) dispatching subagents:
+- Extensive research/exploration → `researcher` (Max, free, returns only synthesis)
+- Bounded implementation → `implementer` (Medium, free)
+- Iterative debugging needing accumulated context → inline + compaction
+- Architecture/decision needing to see everything → inline (parent, High)
 
-## Estratégia de model pin em agents/
+## Model pin strategy in agents/
 
-| Agent | model: pin | Effort | Racional |
+| Agent | model: pin | Effort | Rationale |
 |---|---|---|---|
-| researcher | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Read-only, gratuito, alto contexto |
-| architect | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Trade-off analysis, gratuito |
-| reviewer | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Julgamento independente, gratuito |
-| debugger | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Iteração rápida, gratuito |
-| implementer | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Bounded tasks, gratuito |
-| qa-ci | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Gate re-execution, gratuito |
+| researcher | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Read-only, free, high context |
+| architect | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Trade-off analysis, free |
+| reviewer | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Independent judgment, free |
+| debugger | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Fast iteration, free |
+| implementer | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Bounded tasks, free |
+| qa-ci | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Gate re-execution, free |
 
-**Por que pin e não alias?** Aliases não canônicos podem apontar para um modelo pago.
-Use os variantes canônicos do bundle (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`)
-que são gratuitos e têm a maior `context_window`. Sem pin, o router pode
-resolver para um modelo pago. Quando novas versões saírem, atualize os agents/
-para os novos modelos listados em `data/bundle-models.json`.
+**Why pin and not alias?** Non-canonical aliases may resolve to a paid model.
+Use the bundle's canonical variants (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`),
+which are free and have the largest `context_window`. Without a pin, the router may
+resolve to a paid model. When new versions ship, update the agents/
+to the new models listed in `data/bundle-models.json`.
 
-O parent (`{{BUNDLE_DEFAULT_MODEL}}`) faz trabalho complexo inline. Para implementação
-que precisa do parent, usar `subagent_general` (herda parent, **gratuito**
-quando parent é free) ou pin `model: {{BUNDLE_DEFAULT_MODEL}}` no agent.
+The parent (`{{BUNDLE_DEFAULT_MODEL}}`) does complex work inline. For implementation
+that needs the parent, use `subagent_general` (inherits parent, **free**
+when the parent is free) or pin `model: {{BUNDLE_DEFAULT_MODEL}}` on the agent.
 
-### Profiles built-in vs custom agents (custo)
+### Built-in profiles vs custom agents (cost)
 
-| Profile | Modelo | Custo | Quando usar |
+| Profile | Model | Cost | When to use |
 |---|---|---|---|
-| `subagent_general` | Herda parent (`{{BUNDLE_DEFAULT_MODEL}}`) | **Gratuito** (quando parent é free) | Implementação que precisa do parent, contexto isolado |
-| `subagent_explore` | Default router do CLI | **PAGO** (possível) | **EVITAR** — usar custom agent `researcher` (gratuito) em vez |
-| Custom agents (researcher, architect, etc.) | `{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}` (pin) | **Gratuito** (quando free no registro) | Pesquisa, arquitetura, review, debug, implementação |
+| `subagent_general` | Inherits parent (`{{BUNDLE_DEFAULT_MODEL}}`) | **Free** (when parent is free) | Implementation needing the parent, isolated context |
+| `subagent_explore` | CLI default router | **PAID** (possible) | **AVOID** - use custom agent `researcher` (free) instead |
+| Custom agents (researcher, architect, etc.) | `{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}` (pin) | **Free** (when free in the registry) | Research, architecture, review, debug, implementation |
 
-**⚠️ Nunca usar `subagent_explore`** — ele pode resolver para um modelo pago.
-Os custom agents com os pins canônicos são gratuitos e têm mais contexto.
-Fonte: docs.devin.ai/cli/subagents.
+**⚠️ Never use `subagent_explore`** - it may resolve to a paid model.
+Custom agents with the canonical pins are free and have more context.
+Source: docs.devin.ai/cli/subagents.
 
-## Modelos pagos — política CONDICIONAL
+## Paid models - CONDITIONAL policy
 
-**Gratuitos** na assinatura são definidos em `data/bundle-models.json`
-com `cost_tier: free`:
+**Free** on the subscription are defined in `data/bundle-models.json`
+with `cost_tier: free`:
 
-- `{{BUNDLE_DEFAULT_MODEL}}` — parent (default, High)
-- `{{BUNDLE_MAX_MODEL}}` — subagent Max
-- `{{BUNDLE_MEDIUM_MODEL}}` — subagent Medium
+- `{{BUNDLE_DEFAULT_MODEL}}` - parent (default, High)
+- `{{BUNDLE_MAX_MODEL}}` - Max subagent
+- `{{BUNDLE_MEDIUM_MODEL}}` - Medium subagent
 
-**Pagos**: quaisquer entradas com `cost_tier: paid` em `data/bundle-models.json`,
-incluindo aliases/short names. Sempre verifique o registro antes de usar um
-modelo não-canônico.
+**Paid**: any entries with `cost_tier: paid` in `data/bundle-models.json`,
+including aliases/short names. Always check the registry before using a
+non-canonical model.
 
-### Política CONDICIONAL ao modelo do parent
+### Policy CONDITIONAL on the parent model
 
-**Caso 1 — Parent FREE (`cost_tier: free`): subagents DEVEM ser FREE.**
+**Case 1 - Parent FREE (`cost_tier: free`): subagents MUST be FREE.**
 
-Protocolo FREE-ONLY:
-1. Parent (`{{BUNDLE_DEFAULT_MODEL}}`, High) — tentativa inicial
-2. Subagent fan-out (`{{BUNDLE_MAX_MODEL}}` Max / `{{BUNDLE_MEDIUM_MODEL}}` Medium) — paralelismo
-3. Parent com esforço `max` (via `Alt+T` ou `/model swe-2-max`) — mais raciocínio, mesmo modelo gratuito
-4. Repetir com contexto mais limpo (`clear` + recarregar apenas o necessário)
-5. Se todos os gratuitos falharem: **parar e reportar ao usuário** — não escalar para pago
+FREE-ONLY protocol:
+1. Parent (`{{BUNDLE_DEFAULT_MODEL}}`, High) - initial attempt
+2. Subagent fan-out (`{{BUNDLE_MAX_MODEL}}` Max / `{{BUNDLE_MEDIUM_MODEL}}` Medium) - parallelism
+3. Parent at `max` effort (via `Alt+T` or `/model swe-2-max`) - more reasoning, same free model
+4. Repeat with cleaner context (`clear` + reload only what is needed)
+5. If all free options fail: **stop and report to the user** - do not escalate to paid
 
-Neste caso: **NUNCA usar `subagent_explore`**, **NUNCA usar aliases pagos não verificados**
-sem verificar `data/bundle-models.json`, **NUNCA usar modelos pagos** para subagents.
+In this case: **NEVER use `subagent_explore`**, **NEVER use unverified paid aliases**
+without checking `data/bundle-models.json`, **NEVER use paid models** for subagents.
 
-**Caso 2 — Parent PAGO (usuário escolheu um modelo pago): subagents podem usar pagos.**
+**Case 2 - Parent PAID (user chose a paid model): subagents may use paid.**
 
-O usuário já optou por pagar pelo parent. Neste caso:
-- `subagent_explore` (default router, possivelmente pago) é permitido se for mais barato que o parent
-- `subagent_general` herda o modelo pago do parent (já está pago)
-- Custom profiles com os pins canônicos continuam FREE — preferir quando possível
-- Para reasoning pesado, pode-se usar o mesmo modelo do parent via `subagent_general`
+The user already opted to pay for the parent. In this case:
+- `subagent_explore` (default router, possibly paid) is allowed if cheaper than the parent
+- `subagent_general` inherits the parent's paid model (already paid)
+- Custom profiles with the canonical pins remain FREE - prefer when possible
+- For heavy reasoning, the same parent model can be used via `subagent_general`
 
-**Como detectar o caso**: verificar o `cost_tier` do modelo ativo no parent em `data/bundle-models.json`. Se for `free`, é Caso 1 (FREE-ONLY). Qualquer outro modelo é Caso 2.
+**How to detect the case**: check the `cost_tier` of the active parent model in `data/bundle-models.json`. If `free`, it is Case 1 (FREE-ONLY). Any other model is Case 2.
 
-**Regra**: quando o parent está em modelo FREE (`cost_tier: free`), **NUNCA usar
-modelos pagos** para subagents. Os modelos gratuitos canônicos cobrem 100% dos casos.
-Se ambos falharem, reportar ao usuário. Quando o parent está em modelo PAGO
-(usuário escolheu), subagents podem usar modelos pagos.
+**Rule**: when the parent is on a FREE model (`cost_tier: free`), **NEVER use
+paid models** for subagents. The canonical free models cover 100% of cases.
+If both fail, report to the user. When the parent is on a PAID model
+(user's choice), subagents may use paid models.
 
 ## Context budget (parent model)
 
 ```
-System prompt + tool defs    ~???? tok (Devin runtime, não mensurável aqui)
-AGENTS.md                    ~???? tok (medir com context-budget.py)
-SKILL-TIERS.md (se lido)     ~???? tok
-Skills invocadas (1-3)       ~1000-9700 tok
-MCP tool defs (configured)   ~???? tok (medir com mcp-governance)
+System prompt + tool defs    ~???? tok (Devin runtime, not measurable here)
+AGENTS.md                    ~???? tok (measure with context-budget.py)
+SKILL-TIERS.md (if read)     ~???? tok
+Invoked skills (1-3)         ~1000-9700 tok
+MCP tool defs (configured)   ~???? tok (measure with mcp-governance)
 ─────────────────────────────────────────────
-Disponível para trabalho     consulte `context_window` em `data/bundle-models.json`
+Available for work           see `context_window` in `data/bundle-models.json`
 ```
 
-> Nota: este arquivo (MODEL-GUIDE.md) é leitura opcional — não carrega automaticamente.
+> Note: this file (MODEL-GUIDE.md) is optional reading - it does not load automatically.
 
-## Verificação de fontes (Rule 12)
+## Source verification (Rule 12)
 
-Especificações de modelos devem ser verificadas contra
-`data/bundle-models.json`, `devin models list` e os sites dos providers.
+Model specifications must be verified against
+`data/bundle-models.json`, `devin models list` and the provider sites.
 
-| Citação | Status | URL primária |
+| Citation | Status | Primary URL |
 |---|---|---|
-| arXiv:2307.03172 (Lost in the Middle) | Verificado | aclanthology.org/2024.tacl-1.9 |
-| arXiv:2606.22528v2 (Governance Decay) | Verificado | arxiv.org/abs/2606.22528v2 |
-| arXiv:2607.13083 (Phantom Guardrails) | Verificado | arxiv.org/html/2607.13083 |
-| arXiv:2606.30317 (MCP Patterns) | Verificado | arxiv.org/html/2606.30317 |
-| arXiv:2607.25152 (Progress Mirage) | Verificado | arxiv.org/abs/2607.25152v1 |
-| ICLR 2026 Workshop (Reward Hacking) | Verificado | iclr.cc/virtual/2026/10018648 |
-| arXiv:2605.10039 (Instruction Adherence) | Verificado | arxiv.org/abs/2605.10039 |
-| arXiv:2605.21384 (SpecBench) | Verificado | arxiv.org/abs/2605.21384 |
-| arXiv:2603.15473 (ALTK) | Verificado | arxiv.org/abs/2603.15473 |
-| arXiv:2607.07405 (Reason Less, Verify More) | Verificado | arxiv.org/abs/2607.07405 |
-| arXiv:2605.09998 (Continual Harness) | Verificado | arxiv.org/abs/2605.09998 |
-| arXiv:2607.17641 (VRR-Stop) | Verificado | arxiv.org/abs/2607.17641 |
-| arXiv:2607.28802 (Model or Harness?) | Verificado | arxiv.org/abs/2607.28802 |
-| arXiv:2512.24601 (Recursive Language Models) | Verificado | arxiv.org/abs/2512.24601 |
-| arXiv:2602.03786 (AOrchestra) | Verificado | arxiv.org/abs/2602.03786 |
-| arXiv:2603.02615 (RLM depth reproduction) | Verificado | arxiv.org/abs/2603.02615 |
-| arXiv:2606.20629 (AgentCARD) | Verificado | arxiv.org/abs/2606.20629 |
-| arXiv:2608.03535 (CodeAssay) | Verificado | arxiv.org/abs/2608.03535 |
-| arXiv:2605.20251 (ProcCtrlBench) | Verificado | arxiv.org/abs/2605.20251 |
-| arXiv:2607.20972 (Delivery, Not Storage) | Verificado | arxiv.org/abs/2607.20972 |
-| arXiv:2608.15008 (Harness the Memory) | Verificado | arxiv.org/abs/2608.15008 |
-| `swe-2-*` variantes e custo | Verificado | `devin models list` (262K, Free) |
+| arXiv:2307.03172 (Lost in the Middle) | Verified | aclanthology.org/2024.tacl-1.9 |
+| arXiv:2606.22528v2 (Governance Decay) | Verified | arxiv.org/abs/2606.22528v2 |
+| arXiv:2607.13083 (Phantom Guardrails) | Verified | arxiv.org/html/2607.13083 |
+| arXiv:2606.30317 (MCP Patterns) | Verified | arxiv.org/html/2606.30317 |
+| arXiv:2607.25152 (Progress Mirage) | Verified | arxiv.org/abs/2607.25152v1 |
+| ICLR 2026 Workshop (Reward Hacking) | Verified | iclr.cc/virtual/2026/10018648 |
+| arXiv:2605.10039 (Instruction Adherence) | Verified | arxiv.org/abs/2605.10039 |
+| arXiv:2605.21384 (SpecBench) | Verified | arxiv.org/abs/2605.21384 |
+| arXiv:2603.15473 (ALTK) | Verified | arxiv.org/abs/2603.15473 |
+| arXiv:2607.07405 (Reason Less, Verify More) | Verified | arxiv.org/abs/2607.07405 |
+| arXiv:2605.09998 (Continual Harness) | Verified | arxiv.org/abs/2605.09998 |
+| arXiv:2607.17641 (VRR-Stop) | Verified | arxiv.org/abs/2607.17641 |
+| arXiv:2607.28802 (Model or Harness?) | Verified | arxiv.org/abs/2607.28802 |
+| arXiv:2512.24601 (Recursive Language Models) | Verified | arxiv.org/abs/2512.24601 |
+| arXiv:2602.03786 (AOrchestra) | Verified | arxiv.org/abs/2602.03786 |
+| arXiv:2603.02615 (RLM depth reproduction) | Verified | arxiv.org/abs/2603.02615 |
+| arXiv:2606.20629 (AgentCARD) | Verified | arxiv.org/abs/2606.20629 |
+| arXiv:2608.03535 (CodeAssay) | Verified | arxiv.org/abs/2608.03535 |
+| arXiv:2605.20251 (ProcCtrlBench) | Verified | arxiv.org/abs/2605.20251 |
+| arXiv:2607.20972 (Delivery, Not Storage) | Verified | arxiv.org/abs/2607.20972 |
+| arXiv:2608.15008 (Harness the Memory) | Verified | arxiv.org/abs/2608.15008 |
+| `swe-2-*` variants and cost | Verified | `devin models list` (262K, Free) |

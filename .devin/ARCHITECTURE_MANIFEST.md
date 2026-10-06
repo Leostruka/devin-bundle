@@ -50,7 +50,7 @@
 
 - **Layout:** `skills/` = invocable workflows, `scripts/` = hook scripts
   (stdlib-only), `extensions/` = local tools (`computer-use`, `media-tools`,
-  `rust-core` Cargo workspace), `agents/` = subagent profiles, `docs/` =
+  `rust-core` Cargo workspace), `agents/` = subagent profiles, `.devin/docs/` =
   reference docs, `data/` = model data, `.devin/` = project config
   (adr/, ledgers/, rules/, plans/), `tests/` = pytest suites.
 - **Forbidden crossings:** `scripts/` hooks never import from `extensions/`;

@@ -1,6 +1,7 @@
 ---
 name: ai3d-gen
 description: Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, with direct-model fallbacks (TRELLIS, TripoSG, InstantMesh, Hunyuan3D). All free/open weights, no paid SaaS.
+triggers: [user, model]
 ---
 
 # AI 3D Generation (self-hosted)

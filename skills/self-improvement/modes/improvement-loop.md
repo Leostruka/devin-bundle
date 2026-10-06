@@ -162,7 +162,7 @@ exit code. Um output narrativo sem comando, fonte ou artefato não fecha o gate.
 - `git status --short` e `git diff --stat` antes de alterar.
 - `python audit.py` — capturar erros/warnings atuais.
 - `python -m pytest tests/held-out/ -q` e `python -m pytest -q` — baselines.
-- `read` nos arquivos-chave (AGENTS.md, docs/MODEL-GUIDE.md, config.json).
+- `read` the key files (AGENTS.md, docs/MODEL-GUIDE.md, config.json).
 - Registrar versão, contagens, working tree e arquivos fora do escopo.
 - Output/gate: snapshot reproduzível do estado, não apenas “baseline OK”.
 

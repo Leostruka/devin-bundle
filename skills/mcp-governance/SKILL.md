@@ -73,5 +73,6 @@ active. YES → enable only what's needed → audit cost → work → disable.
 
 ## Source
 
-Tool-count accuracy threshold: arXiv:2606.30317. Context tax framing: Matt
-Pocock, "Context Windows Explained for Coding Agents". Trust review: Rule 13.
+Tool-count accuracy threshold: arXiv:2606.30317. Context tax framing:
+"Context-window management for coding agents" (conference talk). Trust
+review: Rule 13.

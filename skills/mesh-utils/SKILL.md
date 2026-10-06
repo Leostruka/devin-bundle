@@ -1,6 +1,7 @@
 ---
 name: mesh-utils
 description: Use when the user asks to inspect, convert, clean, or validate mesh/3D scene files (OBJ, STL, GLB, FBX, USD) via trimesh, PyMeshLab, or pxr. Routes to extensions/mesh-utils/meshops.py. Lightweight stdlib CLI; deps are pip-installed only when needed.
+triggers: [user, model]
 ---
 
 # Mesh Utilities
