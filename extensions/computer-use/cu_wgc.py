@@ -1,8 +1,10 @@
-"""cu_wgc.py — optional Windows.Graphics.Capture per-window frames (P6).
+"""cu_wgc.py — optional Windows.Graphics.Capture frames (P6).
 
     cu_wgc.py shot --hwnd 123456 --out frame.png   # latest/next frame
     cu_wgc.py shot --hwnd 123456 --wait 5          # event-driven: next
                                                    # content change
+    cu_wgc.py wait [--monitor N] [--timeout S]     # block until ANY
+                    [--out path.png]               # monitor repaints
     cu_wgc.py caps                                 # capability probe
 
 Unique capability (probe-validated): captures pixels of an OCCLUDED
@@ -38,7 +40,7 @@ def capability():
         from winrt.windows.graphics.capture import (  # noqa: F401
             Direct3D11CaptureFramePool)
         from winrt.windows.graphics.capture.interop import (  # noqa: F401
-            create_for_window)
+            create_for_window, create_for_monitor)
         from winrt.windows.graphics.directx.direct3d11.interop import \
             create_direct3d11_device_from_dxgi_device  # noqa: F401
         return True, "ok"
@@ -46,10 +48,11 @@ def capability():
         return False, f"wgc deps missing: {e}"
 
 
-class WgcWindow:
-    """Per-window WGC session: device + pool + frame drain + resize."""
+class _WgcSession:
+    """WGC session over any GraphicsCaptureItem: device + pool + frame
+    drain + resize. Subclasses supply the item (window or monitor)."""
 
-    def __init__(self, hwnd):
+    def __init__(self, item):
         ok, why = capability()
         if not ok:
             raise RuntimeError(why)
@@ -58,8 +61,6 @@ class WgcWindow:
         from dxcam._libs.dxgi import IDXGIDevice
         from winrt.windows.graphics.capture import (
             Direct3D11CaptureFramePool)
-        from winrt.windows.graphics.capture.interop import (
-            create_for_window)
         from winrt.windows.graphics.directx import DirectXPixelFormat
 
         self._dxcam = dxcam
@@ -68,7 +69,7 @@ class WgcWindow:
         self._interops = __import__(
             "winrt.windows.graphics.directx.direct3d11.interop",
             fromlist=["interop"])
-        self.hwnd = int(hwnd)
+        self.item = item
         self.cam = dxcam.create(backend="dxgi", processor_backend="numpy",
                                 output_color="RGB")
         self.device = self.cam._device
@@ -77,7 +78,6 @@ class WgcWindow:
         dxgi_ptr = ctypes.cast(dxgi, ctypes.c_void_p).value
         self.winrt_dev = self._interops.\
             create_direct3d11_device_from_dxgi_device(dxgi_ptr)
-        self.item = create_for_window(self.hwnd)
         self._psize = (int(self.item.size.width),
                        int(self.item.size.height))
         self.pool = self._new_pool(self.item.size)
@@ -190,6 +190,97 @@ class WgcWindow:
                 pass
 
 
+class WgcWindow(_WgcSession):
+    """Per-window WGC session."""
+
+    def __init__(self, hwnd):
+        from winrt.windows.graphics.capture.interop import (
+            create_for_window)
+        self.hwnd = int(hwnd)
+        super().__init__(create_for_window(self.hwnd))
+
+
+class WgcMonitor(_WgcSession):
+    """Per-monitor WGC session (CreateForMonitor — Screen Ruler path)."""
+
+    def __init__(self, hmon):
+        from winrt.windows.graphics.capture.interop import (
+            create_for_monitor)
+        self.hmon = int(hmon)
+        super().__init__(create_for_monitor(self.hmon))
+
+
+def enum_monitors():
+    """-> [{"hmon": int, "rect": [l,t,r,b]}], 1-based CLI index order."""
+    import ctypes
+    from ctypes import wintypes
+    out = []
+    proc = ctypes.WINFUNCTYPE(
+        wintypes.BOOL, wintypes.HMONITOR, wintypes.HDC,
+        ctypes.POINTER(wintypes.RECT), wintypes.LPARAM)
+
+    def cb(h, _d, r, _l):
+        rc = r.contents
+        out.append({"hmon": int(h),
+                    "rect": [rc.left, rc.top, rc.right, rc.bottom]})
+        return True
+    ctypes.windll.user32.EnumDisplayMonitors(None, None, proc(cb), 0)
+    return out
+
+
+def wait_change(timeout=10.0, monitor=None):
+    """Block until the next frame on any (or the Nth, 1-based) monitor.
+    -> (result_dict, error). changed=True carries the newest frame."""
+    mons = enum_monitors()
+    if not mons:
+        return None, "no_monitors"
+    if monitor is not None:
+        if not (1 <= monitor <= len(mons)):
+            return None, f"monitor_out_of_range:1..{len(mons)}"
+        targets = [(monitor, mons[monitor - 1])]
+    else:
+        targets = list(enumerate(mons, start=1))
+    sessions = []
+    t0 = time.monotonic()
+    try:
+        first_err = None
+        for idx, m in targets:
+            try:
+                sessions.append((idx, WgcMonitor(m["hmon"])))
+            except Exception as exc:
+                if first_err is None:
+                    first_err = f"{type(exc).__name__}:{exc}"
+        if not sessions:
+            return None, f"no_capture_sessions:{first_err}"
+        # arm: drop the initial frame each session queued at start
+        for _idx, s in sessions:
+            s.drain()
+            s._frame_ev.clear()
+        deadline = t0 + timeout
+        while time.monotonic() < deadline:
+            for idx, s in sessions:
+                if s._frame_ev.wait(0.05):
+                    frame = s.next_frame(timeout=0.5)
+                    arr = None
+                    if frame is not None:
+                        try:
+                            arr = s.frame_to_array(frame)
+                        finally:
+                            try:
+                                frame.close()
+                            except Exception:
+                                pass
+                    return {"changed": True, "monitor": idx,
+                            "elapsed_s": round(time.monotonic() - t0, 3),
+                            "frame_array": arr}, None
+        return {"changed": False, "monitor": None,
+                "elapsed_s": round(time.monotonic() - t0, 3),
+                "frame_array": None}, None
+    finally:
+        for _idx, s in sessions:
+            s.close()
+
+
 def shot(hwnd, timeout=4.0, wait=False):
     """Capture one frame of hwnd. wait=False -> latest queued frame
     (initial = current content, works on static windows); wait=True ->
@@ -223,18 +314,37 @@ def fail(msg):
 
 def main():
     p = argparse.ArgumentParser(prog="cu_wgc.py")
-    p.add_argument("cmd", choices=["shot", "caps"])
+    p.add_argument("cmd", choices=["shot", "caps", "wait"])
     p.add_argument("--hwnd", type=int, default=None)
+    p.add_argument("--monitor", type=int, default=None,
+                   help="with wait: 1-based monitor index (default: all)")
     p.add_argument("--out", default=None)
     p.add_argument("--wait", action="store_true",
-                   help="wait for the NEXT content change instead of "
-                        "returning the current frame")
+                   help="with shot: wait for the NEXT content change "
+                        "instead of returning the current frame")
     p.add_argument("--timeout", type=float, default=4.0)
     args = p.parse_args()
 
     if args.cmd == "caps":
         ok, why = capability()
         print(json.dumps({"ok": True, "available": ok, "reason": why}))
+        return
+    if args.cmd == "wait":
+        ok, why = capability()
+        if not ok:
+            fail(f"wgc unavailable: {why}")
+        res, err = wait_change(timeout=args.timeout, monitor=args.monitor)
+        if res is None:
+            fail(err)
+        arr = res.pop("frame_array")
+        if arr is not None:
+            res["frame_w"], res["frame_h"] = int(arr.shape[1]), int(arr.shape[0])
+        if args.out and arr is not None:
+            from PIL import Image
+            Image.fromarray(arr).save(args.out, format="PNG")
+            res["path"] = args.out
+        res["ok"] = True
+        print(json.dumps(res))
         return
     if args.hwnd is None:
         fail("--hwnd required")

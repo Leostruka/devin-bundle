@@ -31,7 +31,8 @@ has no API/CLI.
 | `cu_dpi.py` | shared: per-monitor-v2 DPI awareness (fallback: shcore v1, user32) + `physical_window_bounds` — DWM visible-frame rect with GetWindowRect fallback |
 | `cu_ocr.py` | WinRT OCR text→screen-coords: `find "text" --window/--region` returns word rects in physical pixels; ~48px-height floor handled by upscale |
 | `cu_events.py` | event-driven hint daemon (opt-in): out-of-context WinEvent hook → hwnd/event filter → per-hwnd debounce → UIA re-enum → per-hwnd hint sidecar |
-| `cu_wgc.py` | optional Windows.Graphics.Capture per-window frames — the ONLY path that captures occluded windows; `caps` reports availability, degrades to structured error without the winrt/dxcam deps |
+| `cu_wgc.py` | optional Windows.Graphics.Capture per-window/per-monitor frames — the ONLY path that captures occluded windows; `wait` blocks until any monitor repaints (event-driven reperception); `caps` reports availability, degrades to structured error without the winrt/dxcam deps |
+| `cu_probe.py` | "what is at x,y": UIA `ElementFromPoint` (name/type/bounds/hwnd of deepest element) + pixel edge-detection bounding box (Screen Ruler algorithm) for UIA-blind surfaces |
 | `requirements.txt` | `mss` + `pynput` + `pillow` + `comtypes` (Windows UIA) + `websocket-client` + `pywinpty`/`winrt-*` (Windows terminal) |
 
 ## Action profiles
@@ -179,18 +180,45 @@ $PY cu_events.py hints --hwnd 123456             # cached hints (~0ms)
 $PY cu_events.py drain                           # matched events log
 $PY cu_events.py status | stop
 
-# --- cu_wgc.py --- optional WGC per-window frames (Windows only)
+# --- cu_wgc.py --- optional WGC per-window/monitor frames (Windows only)
 $PY cu_wgc.py caps                               # {"available": bool}
 $PY cu_wgc.py shot --hwnd 123456 --out frame.png # current content
 $PY cu_wgc.py shot --hwnd 123456 --wait          # next content change
+$PY cu_wgc.py wait --timeout 15                  # block until ANY monitor
+                                                 # repaints (FrameArrived)
+$PY cu_wgc.py wait --monitor 1 --out ev.png      # one monitor + evidence frame
+
+# --- cu_probe.py --- what's at a screen point (Windows only)
+$PY cu_probe.py --at 640,360                     # UIA element + edge box
+$PY cu_probe.py --at 640,360 --no-uia            # edges only (canvas/images)
+$PY cu_probe.py --at 640,360 --tolerance 60      # looser edge match
 ```
 
 OCR notes: word-level recognition (~93% hit on tested text) — prefer
 multi-char queries; regions under ~48px tall are upscaled automatically.
 `cu_wgc` is the only capture path that sees an **occluded** window's
-content; without `dxcam` + `winrt-Windows.Graphics.Capture*` installed it
-reports `available:false` and every `shot` fails with a structured error —
-the rest of the extension is unaffected.
+content; without `dxcam` + the winrt Graphics family installed it
+reports `available:false` and every `shot`/`wait` fails with a
+structured error. The rest of the extension is unaffected. Optional
+deps:
+
+```bash
+$PY -m pip install dxcam winrt-Windows.Graphics \
+    winrt-Windows.Graphics.Capture \
+    winrt-Windows.Graphics.Capture.Interop \
+    winrt-Windows.Graphics.DirectX \
+    winrt-Windows.Graphics.DirectX.Direct3D11 \
+    winrt-Windows.Graphics.DirectX.Direct3D11.Interop
+```
+
+`wait` is event-driven reperception: `FrameArrived` fires only on real
+content changes (cursor moves do NOT count), so it replaces screenshot
+polling in verify loops. `cu_probe` answers "what's at x,y" two ways:
+the UIA element (deepest node, including non-clickable types that
+`--hints` skips) and, where UIA is blind, the bounding box of the
+coherent color region around the point (PowerToys Screen Ruler edge
+scan). `hit_image_edge:true` means the region likely extends past the
+capture; retry with a larger `--tolerance`.
 
 ## Agent workflow
 
@@ -238,7 +266,10 @@ foreign contexts rather than evaluating in the wrong frame.
 If UIA is unavailable, times out (>6 s), or finds no elements (non-Windows,
 unusual apps), `--hints` falls back to the `--grid 100` overlay and reports
 `"hints": null, "fallback": "grid"`. Set `CU_NO_UIA=1` to force the fallback.
-Electron apps only expose their DOM to UIA with `--force-renderer-accessibility`.
+On UIA-blind surfaces (canvas, images, custom-drawn UI), `cu_probe.py --at
+x,y` can still return the visual region's bounding box via pixel edge
+detection. Electron apps only expose their DOM to UIA with
+`--force-renderer-accessibility`.
 
 ## Bound-browser commands (`browser.py`)
 
