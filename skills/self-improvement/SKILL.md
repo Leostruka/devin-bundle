@@ -16,6 +16,16 @@ Five modes; full detail in `modes/<mode>.md` — read it when you enter.
 | Subagents communicating across time (A2A mailboxes) | **A2A Messaging** | `modes/a2a-messaging.md` |
 | Whether/which subagent to dispatch + budget | **Subagent Router** | `modes/subagent-router.md` |
 
+## Proposal queue and publish
+
+Refine output lands as PROPOSALS, not edits. A proposal is a queued
+record {target file, diff, evidence, expected effect} that the user
+reviews and publishes. Nothing is applied on the loop's own authority,
+mirroring OpenDots' Automatic Learning flow where proposed skills are
+reviewed and published in Intelligence before delivery. Their delivery
+denial fails the turn; ours fails the proposal. Already-implemented
+proposals cite their ledger evidence; rejected ones keep the reason.
+
 ## Default stance — reference, not default workflow
 
 Opt-in material for the niches where it earns its cost. For the common case,
