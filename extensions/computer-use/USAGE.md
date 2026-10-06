@@ -297,6 +297,11 @@ is stable (`$CU_PROFILE_ROOT` or `%LOCALAPPDATA%\devin\cu-profiles`).
 foreign pids. The spawned browser binds to this session like any `bind`
 (same TTL + session rules).
 
+`watch` streams the bound browser over CDP `Page.startScreencast` (one
+JPEG per page change, acked per frame) into a temp dir the agent can
+read. `--last` keeps only `latest.jpg` (single-frame reperception).
+CDP only; bound BiDi browsers reject with `screencast_cdp_only`.
+
 One-shot commands (each opens the ws, acts, closes):
 
 ```bash

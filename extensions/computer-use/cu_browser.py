@@ -1027,3 +1027,54 @@ def stop_owned():
     except OSError:
         pass
     return {"ok": True, "stopped": pid}
+
+
+def watch_frames(cli, seconds, out_dir, max_frames=100, last_only=False):
+    """CDP screencast -> jpeg files. Chrome pushes one frame per page
+    change; every frame MUST be acked or Chrome stalls (the pattern in
+    OpenBot's screencast.ts). BiDi has no equivalent: typed rejection."""
+    if cli.dialect != "cdp":
+        return {"ok": False, "error": "screencast_cdp_only"}
+    import base64
+    os.makedirs(out_dir, exist_ok=True)
+    ws = cli._ws
+    ws.start_reader()
+    ws.call("Page.startScreencast",
+            {"format": "jpeg", "quality": 70,
+             "maxWidth": 1280, "maxHeight": 800, "everyNthFrame": 1})
+    written = 0
+    latest = None
+    deadline = time.time() + seconds
+    try:
+        while time.time() < deadline and written < max_frames:
+            pulled = False
+            while ws.events:
+                pulled = True
+                ev = ws.events.popleft()
+                if ev.get("method") != "Page.screencastFrame":
+                    continue
+                p = ev["params"]
+                ws.call("Page.screencastFrameAck",
+                        {"sessionId": p["sessionId"]})
+                written += 1
+                raw = base64.b64decode(p["data"])
+                if last_only:
+                    latest = raw
+                else:
+                    path = os.path.join(
+                        out_dir, "frame-%04d.jpg" % written)
+                    with open(path, "wb") as f:
+                        f.write(raw)
+            if not pulled:
+                time.sleep(0.05)
+    finally:
+        try:
+            ws.call("Page.stopScreencast")
+        except Exception:
+            pass
+    if last_only and latest is not None:
+        with open(os.path.join(out_dir, "latest.jpg"), "wb") as f:
+            f.write(latest)
+    return {"ok": True, "frames": written, "dir": out_dir,
+            "last": (os.path.join(out_dir, "latest.jpg")
+                     if last_only and latest is not None else None)}

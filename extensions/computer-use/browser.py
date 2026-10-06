@@ -14,6 +14,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import time
 
 import cu_actions
 import cu_browser
@@ -228,6 +229,13 @@ def main():
     l.add_argument("--timeout", type=float, default=15.0)
     sub.add_parser("stop")
 
+    wc = sub.add_parser("watch")
+    wc.add_argument("--seconds", type=float, default=10.0)
+    wc.add_argument("--out", default=None)
+    wc.add_argument("--max-frames", type=int, default=100)
+    wc.add_argument("--last", action="store_true",
+                    help="keep only the newest frame as latest.jpg")
+
     args = p.parse_args()
 
     if args.cmd == "bind":
@@ -311,6 +319,13 @@ def main():
             out = {"ok": True, "tabs": cli.tabs()}
         elif args.cmd == "navigate":
             out = {"ok": True, "result": cli.navigate(args.url)}
+        elif args.cmd == "watch":
+            out_dir = args.out or os.path.join(
+                tempfile.gettempdir(),
+                "devin-cu-watch-%d" % int(time.time()))
+            out = cu_browser.watch_frames(
+                cli, seconds=args.seconds, out_dir=out_dir,
+                max_frames=args.max_frames, last_only=args.last)
         else:
             out = {"ok": False, "error": f"unknown cmd {args.cmd}"}
         print(json.dumps(out))
