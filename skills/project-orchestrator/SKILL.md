@@ -30,8 +30,9 @@ survives compaction.
 4. `.devin/ledgers/<project>.md` is append-only and holds two sections:
    Task Ledger (facts, plan, roster, dependency map) and Progress Ledger
    (gate status with evidence lines).
-5. Fresh context per delegation. Single-writer on shared files. A branch or
-   worktree lane per role when writes collide.
+5. Fresh context per delegation. Single-writer on shared files. One
+   worktree + branch lane per writing role; read-only roles get
+   `Lane: read-only`.
 6. Fan-out costs about 15x a chat turn. Cap at 3 concurrent subagents;
    declare an explicit budget per phase in the ledger and record `consumed`
    per contract; exceeding it needs the user's approval.
@@ -61,11 +62,13 @@ Seed roster = bundle profiles: `researcher`, `architect`, `implementer`,
 `reviewer`, `qa-ci`, `debugger`, `domain`. Product-facing roles (UX auditor,
 docs writer, release manager) are delegation contracts on `subagent_general`.
 
-Each active role gets `workers/<role>/` in the target project: `role.md`
-charter (mandate, boundaries, definition of done) plus its own `.devin/`
-with `notes/` and `adr/` where the role accumulates domain knowledge across
-delegations. Spawn a new role only when the matrix shows a real capability
-gap; diversity of roles beats headcount. Record the justification.
+Each active role gets `workers/<role>/` in the target project root as its
+durable home: `role.md` charter (mandate, boundaries, definition of done)
+plus its own `.devin/` with `notes/` and `adr/` where the role accumulates
+domain knowledge across delegations. The durable home is not a working
+directory: execution happens in the role's worktree lane (Isolation rules).
+Spawn a new role only when the matrix shows a real capability gap;
+diversity of roles beats headcount. Record the justification.
 Reassigning a role = editing `workers/<role>/role.md` plus a fresh dispatch
 carrying standing context; record `reassign:` in the Progress Ledger.
 
@@ -75,7 +78,8 @@ Every dispatch is preceded by a filled `templates/delegation-contract.md`
 written to `.devin/handoffs/`:
 
 - objective: one domain, self-contained
-- lane: branch/worktree path + Lane setup / Lane teardown commands
+- lane: worktree path + branch + Lane setup / Lane teardown commands
+  (worktree is the default for writing roles; `read-only` otherwise)
 - inputs: artifact paths + `Readable refs` allowlist of root docs
 - frozen inputs: sha256 hash per input file, pinned at dispatch and
   re-hashed at verify; drift is a contract failure
@@ -130,15 +134,23 @@ Charter: `templates/advisor-charter.md`.
 
 ## Isolation rules
 
-- filesystem: you own the root `.devin/` (ledgers, handoffs, vision, adr,
-  research, raid). The advisor is a peer session on the root workspace; it
-  owns `.devin/advisor/` and reads everything else read-only. Workers live
-  in `workers/<role>/` with their own `.devin/` (notes, adr) and write only
-  inside their lane; root docs reach a worker only through the contract's
-  `Readable refs` allowlist. Branch/worktree lane per role when writes
-  collide (`git-workflows`); Lane setup / Lane teardown commands declared in
-  the contract run with `$LANE_PATH`, `$BRANCH`, `$ROOT`; parallel reads
-  always allowed
+- filesystem: you and the advisor are anchored in the project root. You own
+  the root `.devin/` (ledgers, handoffs, vision, adr, research, raid) and
+  are the single writer of `ledgers/` and the contract docs in `handoffs/`;
+  the advisor is a peer session on the root workspace, owns `.devin/advisor/`
+  and reads everything else read-only. Each writing role executes inside its
+  own worktree lane at `$ROOT/.worktrees/<role>` on branch `<slug>-<role>`
+  (fallback: sibling dir `<repo>-<role>` when `.gitignore` is untouchable);
+  read-only roles keep `Lane: read-only`. `workers/<role>/` stays at the
+  root as the role's durable home (charter, notes, adr), never as a cwd.
+  Worktrees are separate checkouts and untracked `.devin/` files are not
+  shared, so handoffs, reports, frozen inputs, VFs and the durable home
+  resolve as absolute paths under `$ROOT`, never against the worktree cwd;
+  a worker writes only the `-out` handoff and report path its contract
+  declares. Root docs reach a worker only through the contract's
+  `Readable refs` allowlist. Lane setup / Lane teardown commands declared in
+  the contract run with `$LANE_PATH`, `$BRANCH`, `$ROOT` (`git-workflows`;
+  rationale in `reference/worktree-lanes.md`); parallel reads always allowed
 - context: fresh window per delegation; the contract is the whole input
 - state: append-only ledgers + handoff docs; single-writer on shared files;
   `## Status` is the only rewritten section
