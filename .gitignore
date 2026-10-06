@@ -14,6 +14,8 @@ extensions/*/.venv/
 .devin/mailboxes/
 .devin/checkpoints/
 .devin/scratch/*-install/
+.devin/scratch/*.mp4
+.devin/scratch/*.webm
 .devin/ledgers/*
 !.devin/ledgers/bitter-lesson.md
 !.devin/ledgers/grilling-frontier.md
