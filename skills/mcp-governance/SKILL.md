@@ -36,7 +36,7 @@ count.
    | Server unused in N sessions | Remove from `mcp_config.json` |
    | Tool count > 15 | Prefer narrower server or scope tools |
    | Token cost > 5% of window | Justify with concrete usage; else remove |
-   | Untrusted server | Review code/permissions first (Rule 13); sandbox |
+   | Untrusted server | Review code/permissions first; sandbox |
 
 4. **Verify after removal:** re-run step 1; confirm budget dropped
    (`context-budget.py --full`).
@@ -68,10 +68,10 @@ active. YES → enable only what's needed → audit cost → work → disable.
 - Adding servers without measuring before/after.
 - Trusting tool count alone — check token cost.
 - Skipping the trust review — MCP servers run with user permissions; evaluate
-  against Rule 13's architecture patterns/anti-patterns before adding.
+  architecture patterns/anti-patterns before adding.
 - Treating MCP config as immutable — it's a living config.
 
 ## Source
 
 Tool-count accuracy threshold: arXiv:2606.30317. Context tax framing: Matt
-Pocock, "Context Windows Explained for Coding Agents". Trust review: Rule 13.
+Pocock, "Context Windows Explained for Coding Agents".

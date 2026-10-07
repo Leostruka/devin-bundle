@@ -202,7 +202,7 @@ When the user wants unattended work but there are no local tickets yet:
 - Override a `qa-ci` FAIL with self-report, "should work", or confidence.
 - Push or commit with failing local checks (Rule 5).
 - Sign commits, files, PRs, or docs as AI (Rule 2).
-- Display secret values (Rule 19).
+- Display secret values.
 - Run destructive/irreversible actions without explicit user confirmation.
 - Use `subagent_explore` or paid models when the parent is free.
 - Compact when `clear` is sufficient; let context grow unchecked.

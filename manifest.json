@@ -475,7 +475,7 @@
     }
   ],
   "skill_count": 68,
-  "rule_count": 28,
+  "rule_count": 24,
   "scripts": [
     {
       "name": "_hookrun.py",
@@ -510,7 +510,7 @@
     {
       "name": "constraint-pinning.py",
       "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints",
-      "export_hash": "17BF65C2AF53EB62AC531215421A73F40E1C661551EAA9AA06A749649704EC6E",
+      "export_hash": "C6B2561018A85BEC0D20A79DF1B4748C3B7DE56705876B6C4245175A8675D4C2",
       "exported_at": "2026-09-08T21:39:22.430444"
     },
     {

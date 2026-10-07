@@ -4,7 +4,7 @@
 
 The Devin CLI agent executes commands, writes files, and runs code with the
 user's full OS permissions. There is no isolation layer between the agent and
-the system. This is documented in Rule 13 of `AGENTS.md`.
+the system.
 
 ## Reporting a Vulnerability
 
@@ -25,7 +25,7 @@ scripts, or config that could be exploited):
 | Post-compaction re-priming | `constraint-pinning.py` hook | PostCompaction |
 | Refinement review prompt | `refine-review-prompt.py` hook | Stop |
 | Reward hacking guard | `self-improvement` Refine mode guardrails | Self-improvement loops |
-| Untrusted code warning | Rule 13 in AGENTS.md | All sessions |
+| Untrusted code warning | this document (see above) | All sessions |
 
 ## What This Bundle Does NOT Protect Against
 

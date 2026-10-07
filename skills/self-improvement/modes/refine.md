@@ -77,7 +77,7 @@ z.ai, AI labs) and practical experience recorded in the bundle history.
 | Hook (lifecycle logic) | `~/.config/devin/hooks.v1.json` | `edit` (add event handler) |
 | Script (executable helper) | `~/.config/devin/scripts/<name>.py` | `write` |
 | Config (model, theme, hooks) | `~/.config/devin/config.json` | `edit` (change fields, never secrets) |
-| MCP server config | `~/.config/devin/mcp_config.json` | `edit` (add/remove servers, review per Rule 13) |
+| MCP server config | `~/.config/devin/mcp_config.json` | `edit` (add/remove servers; audit cost with `mcp-governance`) |
 | Memory (project-specific) | `.devin/memory/<name>.md` | `write` |
 
 ### What Cannot Be Refined (anti-cheat, non-negotiable)
@@ -86,7 +86,7 @@ z.ai, AI labs) and practical experience recorded in the bundle history.
   only the harness layer around it (skills, rules, agents, hooks).
 - **Repository security policies** — never modify CI configs, branch
   protection, or compliance settings to "fix" a failure.
-- **Credentials** — never store secrets in skills or rules (Rule 19).
+- **Credentials**: never store secrets in skills or rules.
 - **AI signatures in deliverables** — never add, always remove (Rule 2).
 - **`tests/held-out/`** — if it exists, the agent cannot see or write these
   tests. They are the independent validation set (P-A2).

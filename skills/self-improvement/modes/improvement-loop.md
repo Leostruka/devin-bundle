@@ -63,7 +63,7 @@ Pode alterar **tudo** no bundle para atingir o objetivo:
 **Não pode alterar (anti-trapaça, não negociável):**
 - Os princípios anti-trapaça abaixo (auto-referência proibida)
 - `tests/held-out/` (se existir — o agente não pode ver/escrever estes testes)
-- Segredos (Rule 19) — usar, nunca exibir
+- Segredos: usar, nunca exibir
 - Assinaturas de IA em deliverables (Rule 2)
 
 ---
