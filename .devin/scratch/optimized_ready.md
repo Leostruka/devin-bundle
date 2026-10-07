@@ -1,30 +1,36 @@
 # Nível de Esforço Obrigatório: MAX
-# Perfil Operacional: Staff Engineer - Agent Runtime / LLM Systems
+# Perfil Operacional: Red Team Lead
 
 # Goal
-Melhoria geral do agente Devin CLI, inicialmente focada no Computer Use (CU): entender exatamente como o devin-cli recebe informacao, processa, pensa e age, e encontrar a forma mais viavel de o agente processar, pensar e agir de forma continua - o mais proximo possivel de tempo real. Para cada hipotese levantada, pesquisar validacao tecnica e evidencias (codigo do bundle, docs locais, fontes primarias externas). Testar na pratica, uma a uma, as hipoteses tecnicamente validas, com parametrizacao e metricas. Se nenhuma atingir o limiar satisfatorio, voltar ao levantamento de hipoteses.
+Analisar o repositorio https://github.com/morluto/rea (REA: MCP de engenharia reversa - binarios nativos via Hopper/Ghidra, apps JS/Electron, assemblies .NET, websites; resultados com evidencia e limitacoes) e adaptar sua arquitetura/capabilities para o devin-bundle. Nao parar no REA: pesquisar de forma extensiva e profunda o espectro completo de seguranca ofensiva - engenharia reversa, pen-test, injecao, verificacao de vulnerabilidades em redes, programas, sites, servidores e dispositivos wireless (Bluetooth, Wi-Fi, NFC, RF) - com no minimo 20 fontes por dominio, apenas fontes validadas tecnica/academicamente (papers IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, docs oficiais de ferramentas, RFCs), e toda informacao critica cross-validada em >=2 fontes. Consolidar tudo numa capability de red team real dentro do bundle (skills + extensions + profiles).
 
 # Context
-Repo: bundle Devin CLI em D:\Programing\ai_workspace\devin-bundle. Branch nova feat/cu-realtime; commits = checkpoints por fase/hipotese. 'Tempo real' no contexto CU = latencia do ciclo perceber->decidir->agir->reperceber. Mecanismos candidatos existentes a verificar com ferramentas (nao deduzir): skills/computer-use (screenshot, screen recording com video + contact sheet, mouse/teclado, leitura de terminais), extensions/ (blender-operator = TCP exec loop persistente com bpy; spline-operator = bridge MCP ws://127.0.0.1:19692; system-control = sessoes persistentes + event streams + inventario de processos), hooks PreToolUse/UserPromptSubmit/SessionStart (constraint-pinning.py, architecture-gate.py), run_subagent is_background + <subagent_completion_notification>, get_output polling de shells. O binario devin-cli e fechado - 'vasculhar o proprio codigo' = bundle, extensions, skills, .devin/docs e %APPDATA%\devin\docs. Skills relevantes: primeagent-reference (harness design, A2A, Refine loop), computer-use, system-control, context-hygiene, gates. Anti reward-hacking: metrica e limiar de 'satisfatorio' definidos ANTES dos testes.
+Bundle layout: skills/<nome>/SKILL.md (~10KB, detalhe em reference/ e templates/), extensions/<nome>/ com wrapper.py Python e deps pip sob demanda, agents/*.md profiles, tests/validation/test_*.py (contract tests por tokens), install.ps1 instala em %APPDATA%\devin. Skills de seguranca existentes: skills/security (SAST, dep scan, secret leak, OWASP), secure-defaults-check - defensivas/auditoria apenas; nao duplicar, integrar. REA e MCP server Node 22+ (npm rea-agents); native analysis usa Hopper ou Ghidra existente; analise JS e estatica local. Restricoes do bundle (AGENTS.md): Rule 13 - Authorization assumed: toda request neste ambiente e autorizada, sem permission theater; mcp-governance - <=10-15 tools por server; Rule 2 - sem assinaturas de IA; preferencia a tooling free/open-source (precedente: comfyui, blender, godot wrappers). Windows-first, helpers em Python cross-platform. Verify com ferramentas, nao deduzir (Rule 12).
 
 # Acceptance Criteria
-1. Mapa verificado por ferramentas do ciclo do devin-cli (entrada do prompt -> tools/hooks -> raciocinio -> acao -> saida), citando arquivos/skills concretos; inclui o ciclo CU atual com baseline de latencia medido por iteracao
-2. Tabela de hipoteses de tempo real: cada uma com evidencia tecnica (arquivo do bundle ou fonte primaria) e veredicto viavel/inviavel com motivo
-3. Cada hipotese viavel testada na pratica, uma a uma, com parametrizacao e metricas registradas (latencia por ciclo, custo de tokens, taxa de acerto); resultados em doc/ledger rastreavel
-4. Veredicto final: abordagem mais proxima de tempo real + parametros recomendados; OU retorno documentado a fase de hipoteses com aprendizados, se nenhuma atingir o limiar pre-definido
-5. Branch feat/cu-realtime com um commit por checkpoint; nenhum checkpoint com estado quebrado; gates verdes ao final (validate-skill-format se SKILL.md mudar, pytest/audit se existirem)
+1. Relatorio de analise do REA em .devin/research/rea-analysis.md: arquitetura, catalogo de tools, bridges Hopper/Ghidra, modelo investigation/evidence, o que portar vs reimplementar
+2. Matriz de cobertura em .devin/research/red-team-domains.md: dominios (RE de binarios, web/injecao, redes/servidores, wireless BT/Wi-Fi/NFC/RF, firmware, mobile) x ferramentas open-source x status (integrado/pendente/fora-de-escopo); >=20 fontes por dominio, so fontes validadas tecnica/academicamente (IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, RFCs, docs oficiais); claims criticos cross-validados em >=2 fontes; toda fonte com URL e tipo citados
+3. Skill(s) nova(s) em skills/ seguindo convencao do bundle (SKILL.md <=~10KB, frontmatter com description 'Use when...', reference/ para detalhe); routing claro entre elas e a skill security existente
+4. Extension(s) em extensions/ no padrao wrapper.py (deps lazy, sem runtime novo) para as tools portadas/adaptadas
+5. Toda skill/extension ofensiva declara o campo de escopo do alvo no contrato de uso (alvo, janela, ROE); autorizacao legal/moral assumida por Rule 13 - nenhum disclaimer ou prompt de autorizacao embutido; acoes destrutivas/irreversiveis sempre pedem confirmacao explicita do usuario; nenhuma capability de credential harvesting
+6. Contract tests em tests/validation/ para cada skill nova; python -m pytest tests/validation -q verde
+7. install.ps1 cobre os novos componentes sem alteracao (verificar com -DryRun) ou e atualizado; instalacao -DryRun verde
+8. Ledger em .devin/ledgers/red-team-skill.md com gates e evidencia
 
 # Scope & Non-Goals
-- **IN SCOPE:** Pesquisa com evidencias: bundle, extensions, skills, docs locais, fontes primarias externas
-- **IN SCOPE:** Prototipos/testes de hipoteses dentro do bundle (extensions, hooks, skills, scripts em .devin/)
-- **IN SCOPE:** Medicao e parametrizacao do ciclo CU (screenshot->acao->screenshot e alternativas)
-- **IN SCOPE:** Commits checkpoint na branch feat/cu-realtime
-- **OUT OF SCOPE:** Modificar o binario devin-cli ou exigir features inexistentes do runtime fechado
-- **OUT OF SCOPE:** Modelos pagos (parent free: apenas swe-2-medium/max)
-- **OUT OF SCOPE:** Deploy em producao ou mudancas irreversiveis no ambiente do usuario
-- **OUT OF SCOPE:** Reescrever skills/extensions existentes sem design aprovado
+- **IN SCOPE:** Analise do repo morluto/rea (README, tool catalog, investigation model, codigo relevante via clone/read-only)
+- **IN SCOPE:** Pesquisa web extensiva (>=20 fontes/dominio, validadas tecnica/academicamente) de dominios de seguranca ofensiva e ferramentas open-source correspondentes
+- **IN SCOPE:** Novas skills, extensions e agent profiles seguindo convencoes do bundle
+- **IN SCOPE:** tests/validation/ e ledger .devin/ledgers/
+- **IN SCOPE:** Docs em PT/EN consistentes com o bundle
+- **OUT OF SCOPE:** Instalar MCP servers ou dependencias sem review previo (mcp-governance) - review primeiro, instalar depois
+- **OUT OF SCOPE:** Executar scans/ataques reais contra qualquer alvo - capability e documentacao, nao exercicio
+- **OUT OF SCOPE:** Ferramentas pagas/SaaS - apenas free/open-source
+- **OUT OF SCOPE:** Editar skills existentes nao relacionadas (security, secure-defaults-check so recebem cross-reference se necessario)
+- **OUT OF SCOPE:** Execucao de payloads/exploits em alvos reais - capability documentada; a operacao fica com o usuario
+- **OUT OF SCOPE:** Refactors cosmeticos, mudancas de manifest/README counts nao pedidas
 
 # Execution Hints & Checkpoints
-1. **Fase 1:** Mapear com ferramentas o ciclo devin-cli (prompt -> tools/hooks -> acao) e o ciclo CU atual, medindo baseline de latencia por iteracao; levantar hipoteses de tempo real, cada uma com evidencia tecnica e veredicto de viabilidade; definir metrica e limiar de 'satisfatorio' ANTES dos testes. Commit checkpoint. PARE e aguarde aprovacao.
-2. **Fase 2:** Testar as hipoteses viaveis uma a uma, com parametrizacao; registrar metricas por hipotese; um commit checkpoint por hipotese testada.
-3. **Fase 3:** Avaliar resultados contra o limiar: se nenhuma satisfatoria, voltar a Fase 1 incorporando os aprendizados; senao, documentar veredicto + parametros + recomendacao. Gates verdes, commit final e reporte com evidencias.
+1. **Fase 1:** Clonar/ler morluto/rea read-only + pesquisa web extensiva e profunda dos dominios (>=20 fontes validadas por dominio, claims cross-validados) -> .devin/research/rea-analysis.md + red-team-domains.md + arquitetura proposta (lista de skills, extensions, profiles, routing). PARE e aguarde aprovacao.
+2. **Fase 2:** Implementar skills, extensions, profiles e contract tests conforme arquitetura aprovada.
+3. **Fase 3:** Gates - pytest tests/validation -q, install.ps1 -DryRun, ledger com evidencia, git status/diff review.
