@@ -49,6 +49,7 @@ actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
 | Performance/cost | `performance` or `context-hygiene` | |
 | Human-only procedure | `wizard` | |
 | Guided learning | `teach` | |
+| User owns design, agent teaches + writes | `learn-mode` | off-ramp to `execution` once design approved |
 | Set up repo for Devin | `project-bootstrap` | |
 | Not sure / no match | `skill-discovery` | evaluate/install |
 
