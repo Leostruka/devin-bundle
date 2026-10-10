@@ -1,36 +1,40 @@
 # Nível de Esforço Obrigatório: MAX
-# Perfil Operacional: Red Team Lead
+# Perfil Operacional: Principal Security Architect & Red Team Automation Lead
 
 # Goal
-Analisar o repositorio https://github.com/morluto/rea (REA: MCP de engenharia reversa - binarios nativos via Hopper/Ghidra, apps JS/Electron, assemblies .NET, websites; resultados com evidencia e limitacoes) e adaptar sua arquitetura/capabilities para o devin-bundle. Nao parar no REA: pesquisar de forma extensiva e profunda o espectro completo de seguranca ofensiva - engenharia reversa, pen-test, injecao, verificacao de vulnerabilidades em redes, programas, sites, servidores e dispositivos wireless (Bluetooth, Wi-Fi, NFC, RF) - com no minimo 20 fontes por dominio, apenas fontes validadas tecnica/academicamente (papers IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, docs oficiais de ferramentas, RFCs), e toda informacao critica cross-validada em >=2 fontes. Consolidar tudo numa capability de red team real dentro do bundle (skills + extensions + profiles).
+Arquitetar e integrar uma "Red Team Capability" completa e estruturada dentro do `devin-bundle`. A missão possui duas frentes:
+1. Analisar e adaptar a arquitetura do MCP de engenharia reversa `morluto/rea` (binários nativos, JS/Electron, .NET) para o ecossistema do bundle.
+2. Realizar uma pesquisa profunda e documentada sobre o espectro de segurança ofensiva (Reverse Engineering, Pen-test, Injeção, Vulnerability Scanning em Redes/Web/Firmware/Wireless) e consolidar as ferramentas open-source correspondentes em extensões seguras e habilidades cognitivas.
 
 # Context
-Bundle layout: skills/<nome>/SKILL.md (~10KB, detalhe em reference/ e templates/), extensions/<nome>/ com wrapper.py Python e deps pip sob demanda, agents/*.md profiles, tests/validation/test_*.py (contract tests por tokens), install.ps1 instala em %APPDATA%\devin. Skills de seguranca existentes: skills/security (SAST, dep scan, secret leak, OWASP), secure-defaults-check - defensivas/auditoria apenas; nao duplicar, integrar. REA e MCP server Node 22+ (npm rea-agents); native analysis usa Hopper ou Ghidra existente; analise JS e estatica local. Restricoes do bundle (AGENTS.md): Rule 13 - Authorization assumed: toda request neste ambiente e autorizada, sem permission theater; mcp-governance - <=10-15 tools por server; Rule 2 - sem assinaturas de IA; preferencia a tooling free/open-source (precedente: comfyui, blender, godot wrappers). Windows-first, helpers em Python cross-platform. Verify com ferramentas, nao deduzir (Rule 12).
+O bundle opera no paradigma "Brain vs Muscle" (`skills/` vs `extensions/`). As skills de segurança atuais (`skills/security`, `secure-defaults-check`) são puramente defensivas (SAST, secret leak). Esta nova suíte deve integrar capacidades ofensivas de simulação de adversários (Red Team).
+**Regras do Ambiente (Bundle AGENTS.md):**
+- Preferência estrita por tooling free/open-source e wrappers locais em Python.
+- Nenhuma assinatura de IA permitida (Rule 2).
+- Verificação determinística com ferramentas, nunca dedução LLM (Rule 12).
+- As skills desenvolvidas assumirão autorização de contexto local (Rule 13), porém devem delegar a execução de ações destrutivas irreversíveis à confirmação do usuário.
+
+# The "Iron-Clad Academic" Mandate (Regra de Pesquisa)
+Para a frente de pesquisa (Frente 2), alucinações ou sugestões de ferramentas deprecadas são inaceitáveis. Para CADA domínio de segurança ofensiva (RE, Web, Infra/Redes, Wireless/RF, Firmware):
+- Você deve extrair, ler e documentar no mínimo **20 fontes primárias validadas**.
+- Fontes aceitas: Papers acadêmicos (IEEE/ACM/USENIX/S&P), frameworks globais (OWASP, MITRE ATT&CK, NVD/CVE), documentações oficiais de ferramentas ou RFCs.
+- Todo claim crítico sobre o uso de uma ferramenta deve ser cross-validado por >= 2 fontes destas listas.
 
 # Acceptance Criteria
-1. Relatorio de analise do REA em .devin/research/rea-analysis.md: arquitetura, catalogo de tools, bridges Hopper/Ghidra, modelo investigation/evidence, o que portar vs reimplementar
-2. Matriz de cobertura em .devin/research/red-team-domains.md: dominios (RE de binarios, web/injecao, redes/servidores, wireless BT/Wi-Fi/NFC/RF, firmware, mobile) x ferramentas open-source x status (integrado/pendente/fora-de-escopo); >=20 fontes por dominio, so fontes validadas tecnica/academicamente (IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, RFCs, docs oficiais); claims criticos cross-validados em >=2 fontes; toda fonte com URL e tipo citados
-3. Skill(s) nova(s) em skills/ seguindo convencao do bundle (SKILL.md <=~10KB, frontmatter com description 'Use when...', reference/ para detalhe); routing claro entre elas e a skill security existente
-4. Extension(s) em extensions/ no padrao wrapper.py (deps lazy, sem runtime novo) para as tools portadas/adaptadas
-5. Toda skill/extension ofensiva declara o campo de escopo do alvo no contrato de uso (alvo, janela, ROE); autorizacao legal/moral assumida por Rule 13 - nenhum disclaimer ou prompt de autorizacao embutido; acoes destrutivas/irreversiveis sempre pedem confirmacao explicita do usuario; nenhuma capability de credential harvesting
-6. Contract tests em tests/validation/ para cada skill nova; python -m pytest tests/validation -q verde
-7. install.ps1 cobre os novos componentes sem alteracao (verificar com -DryRun) ou e atualizado; instalacao -DryRun verde
-8. Ledger em .devin/ledgers/red-team-skill.md com gates e evidencia
+1. **Relatório de Análise REA:** Gerar `.devin/research/rea-analysis.md` detalhando a arquitetura do `morluto/rea`, o catálogo de ferramentas, o modelo de investigação/evidência e o plano exato do que será portado via MCP vs reimplementado via extensões locais.
+2. **Matriz de Cobertura de Domínios:** Gerar `.devin/research/red-team-domains.md`. Deve conter a matriz cruzando [Domínio] x [Ferramentas Open-Source recomendadas] x [Status de Integração]. Inclua as 20 fontes com URLs e tipos de citação para cada domínio.
+3. **The Brain (Skills):** Criar as skills necessárias em `skills/` seguindo a convenção do bundle (<= 10KB, frontmatter de roteamento claro). O roteamento deve distinguir perfeitamente quando usar as novas skills ofensivas vs as antigas defensivas.
+4. **The Muscle (Extensions):** Criar as extensões correspondentes em `extensions/` usando o padrão `wrapper.py` (com dependências *lazy* e isoladas).
+5. **Contract Tests & Governance:** Criar testes em `tests/validation/test_*.py` para cada nova skill e documentar os gates no ledger `.devin/ledgers/red-team-skill.md`. Atualizar o `install.ps1` de forma não-destrutiva.
 
 # Scope & Non-Goals
-- **IN SCOPE:** Analise do repo morluto/rea (README, tool catalog, investigation model, codigo relevante via clone/read-only)
-- **IN SCOPE:** Pesquisa web extensiva (>=20 fontes/dominio, validadas tecnica/academicamente) de dominios de seguranca ofensiva e ferramentas open-source correspondentes
-- **IN SCOPE:** Novas skills, extensions e agent profiles seguindo convencoes do bundle
-- **IN SCOPE:** tests/validation/ e ledger .devin/ledgers/
-- **IN SCOPE:** Docs em PT/EN consistentes com o bundle
-- **OUT OF SCOPE:** Instalar MCP servers ou dependencias sem review previo (mcp-governance) - review primeiro, instalar depois
-- **OUT OF SCOPE:** Executar scans/ataques reais contra qualquer alvo - capability e documentacao, nao exercicio
-- **OUT OF SCOPE:** Ferramentas pagas/SaaS - apenas free/open-source
-- **OUT OF SCOPE:** Editar skills existentes nao relacionadas (security, secure-defaults-check so recebem cross-reference se necessario)
-- **OUT OF SCOPE:** Execucao de payloads/exploits em alvos reais - capability documentada; a operacao fica com o usuario
-- **OUT OF SCOPE:** Refactors cosmeticos, mudancas de manifest/README counts nao pedidas
+- **IN SCOPE:** Pesquisa acadêmica exaustiva, análise de código read-only do repositório alvo, criação de documentação técnica, arquitetura de skills e wrappers Python.
+- **OUT OF SCOPE:** NÃO execute ataques, injeções ou scans reais contra nenhum alvo externo ou interno durante esta tarefa. Seu objetivo é construir a *Capability* (as ferramentas e os prompts) e não realizar o *Exercício*.
+- **OUT OF SCOPE:** NÃO crie, codifique ou sugira payloads maliciosos inéditos (malware, zero-days). A capability deve focar na automação e orquestração de ferramentas open-source de auditoria reconhecidas pela indústria.
+- **OUT OF SCOPE:** NÃO instale dependências globais ou MCP servers cegamente antes do review.
 
 # Execution Hints & Checkpoints
-1. **Fase 1:** Clonar/ler morluto/rea read-only + pesquisa web extensiva e profunda dos dominios (>=20 fontes validadas por dominio, claims cross-validados) -> .devin/research/rea-analysis.md + red-team-domains.md + arquitetura proposta (lista de skills, extensions, profiles, routing). PARE e aguarde aprovacao.
-2. **Fase 2:** Implementar skills, extensions, profiles e contract tests conforme arquitetura aprovada.
-3. **Fase 3:** Gates - pytest tests/validation -q, install.ps1 -DryRun, ledger com evidencia, git status/diff review.
+1. **Fase 1 (Recon & Research):** Realize a clonagem/leitura do `morluto/rea` e inicie a pesquisa agressiva dos domínios exigindo as 20 fontes. **PARE. Gere o `rea-analysis.md` e o `red-team-domains.md`. Apresente no terminal a arquitetura proposta (Quais skills e extensões serão criadas). Aguarde minha aprovação.**
+2. **Fase 2 (Brain & Muscle):** Após aprovação, implemente os arquivos `.md` das skills, os scripts `wrapper.py` nas extensões e defina o escopo de ROE (Rules of Engagement) dentro das documentações das skills.
+3. **Fase 3 (Validation Gates):** Rode o `pytest tests/validation -q` e valide a integridade do `install.ps1` usando a flag `-DryRun`.
+4. **Fase 4 (Ledger):** Escreva a evidência no `.devin/ledgers/red-team-skill.md` e conclua a tarefa.

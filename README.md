@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-68-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-75-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.4.0-orange.svg)](CHANGELOG.md)
@@ -123,7 +123,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 68 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 75 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
@@ -169,7 +169,7 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 
 Com o parent gratuito em `swe-2-high`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
 
-O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os seis perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
+O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os sete perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
 
 ### 4. Ferramentas e MCP
 
@@ -417,11 +417,11 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 ```text
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
-├── agents/                    # 6 perfis customizados
-├── skills/                    # 66 workflows invocáveis
+├── agents/                    # 7 perfis customizados
+├── skills/                    # 75 workflows invocáveis
 
 ├── scripts/                   # hooks, validadores e helper Mermaid
-├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core)
+├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools)
 ├── data/                      # modelos, integrações e metadados versionados
 ├── .devin/                    # configuração e conhecimento deste projeto
 │   ├── docs/                  # mapas, guias (SKILL-TIERS, MODEL-GUIDE, TOOLS-MAP…)
@@ -584,7 +584,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 68 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 75 skills |
 
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |

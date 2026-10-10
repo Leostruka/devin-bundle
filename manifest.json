@@ -472,9 +472,51 @@
       "name": "scheduled-turns",
       "source": "devin-bundle",
       "purpose": "Use when a task needs recurring or always-on agent turns (periodic checks, polling workflows, run-this-every-morning jobs) without adding a daemon. OS scheduler plus one-shot headless Devin turns writing to ledgers."
+    },
+    {
+      "name": "red-team",
+      "source": "devin-bundle",
+      "purpose": "Use when running an authorized offensive-security engagement against a declared target (binary, web app, network, wireless, firmware, mobile). Routes to domain skills (re-binary, web-probe, net-probe, wireless-probe, firmware-probe, mobile-probe) and enforces the engagement contract (target/window/ROE) plus evidence discipline.",
+      "export_hash": "7610C2B512FAC8F72C270A1F6657B67AAE95B25479C84F4B63E28BEB1B59CBBE"
+    },
+    {
+      "name": "re-binary",
+      "source": "devin-bundle",
+      "purpose": "Use when reverse-engineering a declared binary, library, APK, firmware image, or script artifact under an engagement contract (native code, .NET, Java/Android, Electron/JS, browser extensions). Routes to extensions/rea-ops/wrapper.py, a whitelist passthrough to the rea-agents CLI (Hopper/Ghidra engines probed via doctor).",
+      "export_hash": "47FDE026EFB16D16626A396116DCFBCA67A9997FBEAD93AEC5AB6C4D23F98B5B"
+    },
+    {
+      "name": "web-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools: zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.",
+      "export_hash": "C51BD22CD7D7D202C96D51FA05472CD792C8DE23F640ECD8D482F6AE572DBEB1"
+    },
+    {
+      "name": "net-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when probing declared hosts or networks under an engagement contract (port/service scan, SMB/AD enumeration, TLS audit, vulnerability scan). Routes to extensions/offsec-tools/wrapper.py tools: nmap, masscan, netexec, enum4linux-ng, testssl.sh, openvas. Verify-not-exploit by default.",
+      "export_hash": "AFA1FAD5FE389852851DA9A7E44435DD5A4B7D334612ECA9193E9A5BFB200863"
+    },
+    {
+      "name": "wireless-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when assessing declared wireless/RF targets under an engagement contract (Wi-Fi capture analysis, handshake conversion, BLE/SDR signal review, RFID). Routes to extensions/offsec-tools/wrapper.py tools: aircrack-ng, hcxdumptool, hcxtools, kismet, bettercap, hashcat, urh. Offline analysis needs no hardware; capture/inject needs usbipd-win passthrough.",
+      "export_hash": "606A31A264BDF5C875D03C1B8CBF056CD76E0D208D1B55A4D23A813DDAA1B8AD"
+    },
+    {
+      "name": "firmware-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools: binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.",
+      "export_hash": "5C010E22F75234B036389CB9794ED7F2ECC96BA1F00964823D11A75E34DAAE06"
+    },
+    {
+      "name": "mobile-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools: jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.",
+      "export_hash": "8CC940AFD212613644C29B04DEE0EE7AFCD8423529BBD6C4678C84C6D41BEA40"
     }
   ],
-  "skill_count": 68,
+  "skill_count": 75,
   "rule_count": 24,
   "scripts": [
     {
@@ -660,7 +702,7 @@
   ],
   "script_count": 29,
   "mcp_count": 1,
-  "agent_count": 6,
+  "agent_count": 7,
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
@@ -713,6 +755,13 @@
       "original_path": "%APPDATA%\\devin\\agents\\reviewer.md",
       "export_hash": "2A9286CFF4FA4E78C0239BDADD374F7F8FCF48ABAE8FFA045F17CC30B002A7BF",
       "exported_at": "2026-09-08T21:39:22.432096"
+    },
+    {
+      "name": "red-team-lead",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\red-team-lead.md",
+      "export_hash": "0B97729BF98DDC326859177034F4D20A9943C1FD707B5DB75A11E68FB98AE630",
+      "exported_at": "2026-10-01T00:00:00.000000"
     }
   ]
 }
