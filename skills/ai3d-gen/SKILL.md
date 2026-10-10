@@ -62,6 +62,18 @@ fetches each via `/view`.
 Prefer TRELLIS/TripoSG for permissive licensing; Hunyuan3D-2 when PBR
 texture quality matters; Stable Fast 3D for speed.
 
+## Intake preflight (photo-sourced pipelines)
+
+Before spending a reconstruction/splat run on user photos:
+
+1. **Provenance**: source images should verify as real captures — run
+   `extensions/image-forensics/verdict.py` per image when a camera
+   reference exists; synthetic inputs break PRNU assumptions and usually
+   produce bad splats.
+2. **Photometric QC**: run `extensions/ppisp-prep/photo_qc.py` on the
+   set; `correct`/`recapture` verdicts route through the PPISP
+   correction pass or a re-shoot before generation.
+
 ## Recipes
 
 **image -> textured GLB (ComfyUI path)**
