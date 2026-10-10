@@ -525,10 +525,34 @@
       "name": "animation-direction",
       "source": "devin-bundle",
       "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics — narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
-      "export_hash": "C025F3C82A8DAE99556CB4E7E2153880A9EC79650B480E1FFB1D0463DE16D106"
+      "export_hash": "1E87048847CCBA1A3E8C00D85A3F884C1C7682EB1CCAC0538A16EDFDE525574B"
+    },
+    {
+      "name": "learn-mode",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to own the design while the agent teaches and implements — unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
+      "export_hash": "A13B8AAB58220EF76523CF4596928DABAB7FD0D1F3F1B667388EE0F4F71AA5C7"
+    },
+    {
+      "name": "pr",
+      "source": "devin-bundle",
+      "purpose": "Use when writing a PR body or description — a visual Summary (smallest diagram/diff-sketch/tree that makes the point), concrete Evidence (before/after runs), and Merge Danger (one-way vs two-way door + blast radius). Ported and adapted from mattpocock/skills engineering/pr.",
+      "export_hash": "AE0AC354DCF6130AB3C9B8251E30F23D844411051B99C5CD9B0F44EA29C79CCD"
+    },
+    {
+      "name": "retro",
+      "source": "devin-bundle",
+      "purpose": "Use when conducting a retrospective on a coding session to improve the agent's environment for future runs — navigation pointers, automated guardrails, reviewer standards, rules-file hygiene, tool economy, information access. Lightweight per-session review; deeper self-improvement loops go to continuous-improvement.",
+      "export_hash": "F0AEC461BACED44FA49F4C5D5E164CA39644A23523112CB551820FC693FCC20A"
+    },
+    {
+      "name": "setup-pre-commit",
+      "source": "devin-bundle",
+      "purpose": "Use when setting up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Covers adding pre-commit hooks, configuring Husky, lint-staged, or commit-time formatting/typechecking/testing.",
+      "export_hash": "406E973BADC6D89B4D2F336D4B18EC400866DB9D33646DB1416E71472314B7D1"
     }
   ],
-  "skill_count": 77,
+  "skill_count": 81,
   "rule_count": 24,
   "scripts": [
     {
