@@ -26,6 +26,36 @@ directly. Apply the techniques below only when actually needed.
 Compaction leaves "sediment" — treat it as escape hatch, not hygiene default.
 If dense access to early detail is needed, fold (below) instead.
 
+## Prune vs Fold vs Compact vs Summarize
+
+| Action | Mechanism | When |
+|---|---|---|
+| Prune | Per-item keep/truncate/drop via `extensions/laya-compactor` (laya `compact-item-v1`, suggestion/abstain only) | Tool noise fills the window; facts must survive verbatim. |
+| Fold | Offload artifacts to files; peek/grep/sub-query | Dense access to early detail needed; >50k-token artifacts. |
+| Compact | `compact` summary | Escape hatch when pruning cannot reach target size. |
+| Summarize | Manual tl;dr | Almost never inside a session; for handoffs write a doc instead. |
+
+Pruning decision policy lives here: pin system + first message + last user
+task + newest `preserve_recent` messages; abstain means keep (fail-safe);
+drop applies pair-wise so no `tool_result` is orphaned; survivors stay
+byte-identical. Escalate to `compact` summary only when pruning cannot
+reach `compact_to`.
+
+**Smart Window params** (adaptive effective window, not fixed recency):
+
+| Param | Value | Basis |
+|---|---|---|
+| `compact_at` | 0.70 x window (SWE-2 262k -> ~183k) | headroom for next tool batch |
+| `compact_to` | 0.40 x window (~105k) | hysteresis, avoids thrash |
+| `preserve_recent` | 6 messages + first message | fast-jev default |
+| `keep_threshold` | 0.5, calibrate on real transcripts | laya confidence is entropy-based |
+| `truncate_head` | 300 chars | fast-jev default |
+| `max_state` | ~25k est. tokens | fits laya context |
+| `reduction_floor` | <0.25 -> abort, keep original | avoids pointless churn |
+
+`assist` mode requires `activation_errors` empty plus a calibrated
+threshold; run shadow first, measure, then promote.
+
 ## Lean Context Rules
 
 1. Clear chats between unrelated tasks.
