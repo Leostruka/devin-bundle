@@ -1,6 +1,6 @@
 """state — build the bounded decision state for one item.
 
-Port of fast-jev's fitState: staged shrinking until the serialized
+Port of the upstream fitState (MIT): staged shrinking until the serialized
 state fits max_state chars. Stages mirror upstream:
 
   stage 0  full content (up to max_state)

@@ -210,6 +210,16 @@ def main():
     sv.add_argument("--config",
                     help="Path to .devin/laya/profile.json "
                          "(default: project .devin/laya/profile.json)")
+    sd = sub.add_parser("serve-daemon",
+                        help="Resident TCP daemon for per-event "
+                             "consumers (see layad)")
+    sd.add_argument("--config",
+                    help="Path to .devin/laya/profile.json "
+                         "(default: project .devin/laya/profile.json)")
+    sd.add_argument("--host", default="127.0.0.1")
+    sd.add_argument("--port", type=int, default=0)
+    sd.add_argument("--laya-dir", help="Dir for daemon.json identity "
+                                       "(default: config file's dir)")
     rc = sub.add_parser("recommend",
                         help="One typed decision via resident worker "
                              "(abstains cleanly when mode=off)")
@@ -246,6 +256,14 @@ def main():
             cfg = str(default) if default.is_file() else None
         import laya_worker
         sys.exit(laya_worker.main(cfg))
+    if args.cmd == "serve-daemon":
+        cfg = args.config
+        if cfg is None:
+            default = Path.cwd() / ".devin" / "laya" / "profile.json"
+            cfg = str(default) if default.is_file() else None
+        import layad
+        sys.exit(layad.main(cfg, host=args.host, port=args.port,
+                            laya_dir=args.laya_dir))
     if args.cmd == "recommend":
         cmd_recommend(args)
     p.error("no command — see --help")

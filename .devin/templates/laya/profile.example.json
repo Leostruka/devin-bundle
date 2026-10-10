@@ -10,7 +10,11 @@
     "skill-family-v1",
     "issue-category-v1",
     "output-context-v1",
-    "media-intent-v1"
+    "compact-item-v1",
+    "compact-gate-v1",
+    "compact-boundary-v1",
+    "cmd-risk-v1",
+    "filebool-v1"
   ],
   "models": {
     "typed-decisions": {
@@ -19,10 +23,22 @@
       "identity": "approved-local-snapshot"
     }
   },
+  "daemon": {
+    "idle_ttl_s": 1800
+  },
+  "compact_gate": {
+    "eval_floor": 0.50,
+    "compact_at": 0.70,
+    "compact_to": 0.40,
+    "force_at": 0.80,
+    "k_calls": 8,
+    "cooldown_turns": 10
+  },
   "_notes": {
     "mode": "off (default) | shadow (measure, never select) | assist (usable only after calibration on YOUR labeled data)",
     "calibration": "null until fitted; object {id, threshold, fitted_on, checkpoint_sha256} after L03 calibration",
     "models": "local approved paths only; sha256 verified before load; never download to satisfy a request",
-    "device": "report the real device; gpu->cpu fallback is not invisible and may miss deadlines"
+    "daemon": "resident TCP daemon (layad), required for any assist mode; hooks fail-degraded to deterministic tiers when it is down",
+    "compact_gate": "Layer 7 trigger bands; eval_floor gates all laya calls, force_at forces action even on abstain"
   }
 }

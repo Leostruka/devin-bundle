@@ -13,6 +13,7 @@ if __name__ == '__main__':
     _hookrun.main([
         'silent-error-review.py',
         'context-pressure.py',
+        'compact-gate.py',
         'memory-post-exec.py',
         'gh-pr-assignee.py',
     ])

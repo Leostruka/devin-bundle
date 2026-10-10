@@ -19,4 +19,5 @@ if __name__ == '__main__':
         'check-push-green.py',
         'validate-tool-args.py',
         'no-em-dash.py',
+        'laya-guard.py',
     ])

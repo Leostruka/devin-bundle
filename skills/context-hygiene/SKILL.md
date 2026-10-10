@@ -47,9 +47,9 @@ reach `compact_to`.
 |---|---|---|
 | `compact_at` | 0.70 x window (SWE-2 262k -> ~183k) | headroom for next tool batch |
 | `compact_to` | 0.40 x window (~105k) | hysteresis, avoids thrash |
-| `preserve_recent` | 6 messages + first message | fast-jev default |
+| `preserve_recent` | 6 messages + first message | upstream port default |
 | `keep_threshold` | 0.5, calibrate on real transcripts | laya confidence is entropy-based |
-| `truncate_head` | 300 chars | fast-jev default |
+| `truncate_head` | 300 chars | upstream port default |
 | `max_state` | ~25k est. tokens | fits laya context |
 | `reduction_floor` | <0.25 -> abort, keep original | avoids pointless churn |
 

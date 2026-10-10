@@ -29,6 +29,12 @@ extensions/*/.venv/
 .devin/.resume-pending
 .devin/refinements.log.jsonl
 
+# Laya runtime state
+.devin/laya/gate-state.json
+.devin/laya/daemon.*
+.devin/laya/shadow.jsonl
+.devin/laya/*.lock
+
 # OS files
 Thumbs.db
 Desktop.ini

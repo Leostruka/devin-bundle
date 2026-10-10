@@ -64,7 +64,7 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, debugger, implementer, researcher, reviewer, subagent_explore,
 subagent_general — todos os 7 perfis validados.
 
-## Hooks (8 eventos, 18 scripts)
+## Hooks (8 eventos, 23 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
@@ -73,17 +73,20 @@ subagent_general — todos os 7 perfis validados.
 | PreToolUse | `^(write\|edit\|notebook_edit)$` | architecture-gate.py | Bloqueia edits sem ARCHITECTURE_MANIFEST |
 | PreToolUse | `^exec$` | check-ai-signature.py | Bloqueia assinaturas AI |
 | PreToolUse | `^exec$` | check-push-green.py | Bloqueia push sem green |
+| PreToolUse | `^exec$` | laya-guard.py | Camada 4: laya cmd-risk-v1 em gray-zone (off/shadow/assist, fail-degraded) |
 | PreToolUse | `^(write\|edit)$` | check-ai-signature.py | Bloqueia assinaturas AI em writes |
 | PreToolUse | `^(write\|edit)$` | validate-mermaid.py | Valida Mermaid em writes |
 | PreToolUse | 19 tool names | validate-tool-args.py | Valida argumentos (ALTK SPARC) |
 | PostToolUse | `^(exec\|mcp_call_tool)$` | silent-error-review.py | Revisa erros silenciosos (ALTK scope) |
 | PostToolUse | `^(exec\|mcp_call_tool)$` | context-pressure.py | Reporta context pressure e padrões de tools caras (Rule 18) |
 | PostToolUse | `^exec$` | memory-post-exec.py | Injeta memórias por symbol/keyword após exec |
+| PostToolUse | `^(exec\|mcp_call_tool\|write\|edit)$` | compact-gate.py | Camada 7: decide trigger de compactação (pressão + trajetória via laya) |
 | PostToolUse | `^(write\|edit)$` | memory-post-edit.py | Injeta memórias por path após write/edit |
 | PostCompaction | — | constraint-pinning.py | Detecta constraints dropadas |
 | UserPromptSubmit | — | constraint-pinning.py | Re-injeta constraints |
 | UserPromptSubmit | — | behavioral-nudge.py | Nudge behavioral self-check (Rules 7,8,4,17) |
 | UserPromptSubmit | — | memory-retrieval.py | Recupera memórias de `.devin/memory/` por cues |
+| UserPromptSubmit | — | compact-gate.py | Sonda de escopo: reavalia trigger de compactação em novo prompt |
 | SessionStart | — | constraint-pinning.py | Limpa markers stale |
 | SessionStart | — | context-budget.py | Reporta token cost |
 | SessionEnd | — | memory-stop.py | Log do estado de `.devin/memory/` no fim de sessão |
@@ -109,9 +112,9 @@ subagent_general — todos os 7 perfis validados.
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 6 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 81 skills |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 82 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation; `system-control` — OS autorizado) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 29 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 31 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |
 | MODEL-GUIDE.md | `./.devin/docs/MODEL-GUIDE.md` | `~/.config/devin/docs/MODEL-GUIDE.md` | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./.devin/docs/SKILL-TIERS.md` | `~/.config/devin/docs/SKILL-TIERS.md` | Discovery por domínio + custos |
