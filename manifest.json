@@ -403,6 +403,12 @@
       "export_hash": "D20ED14CA6698EC54FC85F57B7B94BA6AC4053B1198C55A4D6E32D4FBF506EA3"
     },
     {
+      "name": "laya-orchestrator",
+      "source": "devin-bundle",
+      "purpose": "Use when a cheap typed check beats reading files into context - batch file classification (contains auth data? has tests?), review risk scoring, or pre-dispatch triage. Laya ranks and abstains, never proves - it is not a substitute for reading primary sources (Rule 12).",
+      "export_hash": "D1853981144F7CE50321D611A71A0C8B5E326C9DEB58725700182E0F5263DFF2"
+    },
+    {
       "name": "operate-blender",
       "source": "devin-bundle",
       "purpose": "Use when the user asks to create, build, manipulate, render, animate, or export 3D content (scenes, models, characters, environments, stylized/cartoon or hyper-real art, procedural geometry). Routes to extensions/blender-operator/wrapper.py, which drives headless Blender through a TCP exec loop with full bpy access; no GUI, no MCP addon, free/GPL tooling.",
@@ -552,7 +558,7 @@
       "export_hash": "406E973BADC6D89B4D2F336D4B18EC400866DB9D33646DB1416E71472314B7D1"
     }
   ],
-  "skill_count": 81,
+  "skill_count": 82,
   "rule_count": 24,
   "scripts": [
     {
@@ -654,13 +660,13 @@
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "A67C6AA1EA19EBBFC271750B2945B5338E0943A0AB3C33026DE9BBB196A02DB0",
+      "export_hash": "B8F38EB166A0DEEEE7B1FC098C4AA729B2C808B85248BA8F1E10CAD226B0DDBF",
       "exported_at": "2026-09-18T20:17:52.988052"
     },
     {
       "name": "pre-exec-guard.py",
       "purpose": "PreToolUse exec consolidated guard (destructive+arch+signature+push-green+tool-args+em-dash)",
-      "export_hash": "3BCF67B9251786115E33604A7FF9491657867CABE06C08E098E988C4FAD2C3A1",
+      "export_hash": "216D4D62ECEE08753BA8476CC2E69EE0C1832F0F9628EB1546FFDA7BFB55F021",
       "exported_at": "2026-09-18T20:17:52.987974"
     },
     {
@@ -702,7 +708,7 @@
     {
       "name": "user-prompt.py",
       "purpose": "UserPromptSubmit consolidated hook (constraint-pinning+nudge+memory-retrieval)",
-      "export_hash": "F30276892E1FD5B0FD2E2B624D928359DA74E574484FB696EEEC4955D9B6350C",
+      "export_hash": "8F938E9138E01E0BAEC5885867E0DA8E1408E04A21C11427CE93C2752C0FC73E",
       "exported_at": "2026-09-18T20:17:52.988093"
     },
     {
@@ -734,9 +740,21 @@
       "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
       "export_hash": "956BDD2B91211DA7E98F94B79E98E85857A3C2CF48E96F89983BA2C1625F2EA1",
       "exported_at": "2026-09-26T18:26:15.829557"
+    },
+    {
+      "name": "laya-guard.py",
+      "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
+      "export_hash": "92EE6D08CEC65AE79AC40EB8A30CAC7964DBA1B4ABBB0BD1326BD9B6772EB419",
+      "exported_at": "2026-10-10T15:45:25.322611"
+    },
+    {
+      "name": "compact-gate.py",
+      "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
+      "export_hash": "80131C04A51D61E418F608B8C507E761701E944713811E2DB95110585803FEE7",
+      "exported_at": "2026-10-10T15:45:25.322611"
     }
   ],
-  "script_count": 29,
+  "script_count": 31,
   "mcp_count": 1,
   "agent_count": 7,
   "tool_count": 28,

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "mode": "off",
+  "calibration": null,
+  "device": "cpu",
+  "deadline_ms": 1000,
+  "queue_depth": 4,
+  "profiles": [
+    "ui-target-v1",
+    "skill-family-v1",
+    "issue-category-v1",
+    "output-context-v1",
+    "compact-item-v1",
+    "compact-gate-v1",
+    "compact-boundary-v1",
+    "cmd-risk-v1",
+    "filebool-v1"
+  ],
+  "models": {},
+  "daemon": {
+    "idle_ttl_s": 1800
+  },
+  "compact_gate": {
+    "eval_floor": 0.50,
+    "compact_at": 0.70,
+    "compact_to": 0.40,
+    "force_at": 0.80,
+    "k_calls": 8,
+    "cooldown_turns": 10
+  }
+}

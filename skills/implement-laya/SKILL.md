@@ -142,3 +142,23 @@ Consumers: `cu_decision.py` (CU targets),
 `media-tools/intent.py`, `workflow_routing.py`, `output_context.py`,
 `knowledge_labels.py`. Evaluation: `eval_decisions.py` over frozen
 manifests only.
+
+## Resident daemon + bundle profiles (LAYA Master, layers 4/7/8-9)
+
+`layad.py` (`laya_cli.py serve-daemon`) is a TCP daemon sharing the
+same JSON-lines envelope and engine as `laya_worker`, required for
+any per-event consumer (hooks spawn per call; engine build is
+seconds). `laya_client.py` is the thin client: `ensure_daemon()`
+lazy-spawns/recycles on config-sha mismatch, `recommend()` and
+`DaemonSession.batch()` return typed abstentions on any failure.
+
+Contract profiles added for self-use gating: `cmd-risk-v1` (exec
+risk class, consumed by `scripts/laya-guard.py` in pre-exec-guard),
+`compact-gate-v1` + `compact-boundary-v1` (Smart Window trigger,
+consumed by `scripts/compact-gate.py` in post-exec + user-prompt),
+`filebool-v1` (`filebool.py` batch yes/no over file sets, returns a
+verdict map only; file contents never enter context). Frozen wording
+and canonical option order: bump `-vN` to change either; prior
+calibration invalidates by design.
+
+Blueprint + evidence plan: `.devin/research/LAYA_MASTER_ARCHITECTURE.md`.
