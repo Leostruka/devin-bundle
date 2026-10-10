@@ -15,4 +15,5 @@ if __name__ == '__main__':
         'constraint-pinning.py',
         'behavioral-nudge.py',
         'memory-retrieval.py',
+        'compact-gate.py',
     ])

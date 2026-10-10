@@ -39,6 +39,11 @@
           "type": "command",
           "command": "python scripts/memory-post-edit.py",
           "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python scripts/compact-gate.py",
+          "timeout": 15
         }
       ]
     }
