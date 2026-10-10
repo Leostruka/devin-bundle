@@ -1,6 +1,6 @@
 """transcript — parse session transcripts into pinned tool items.
 
-Port of fast-jev-compaction's collectToolCalls: walk session messages,
+Port of the upstream compaction algorithm's collectToolCalls (MIT):
 pair each tool_use with its tool_result, and mark the pin set that must
 never be touched (first message, last user task, newest N messages).
 
