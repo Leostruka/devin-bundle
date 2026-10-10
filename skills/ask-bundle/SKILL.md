@@ -50,6 +50,9 @@ actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
 | Human-only procedure | `wizard` | |
 | Guided learning | `teach` | |
 | User owns design, agent teaches + writes | `learn-mode` | off-ramp to `execution` once design approved |
+| Write PR body/description | `pr` | → `gh` to create/update |
+| Session retrospective / improve agent env | `retro` | findings → `continuous-improvement` or issues |
+| Husky/lint-staged pre-commit setup | `setup-pre-commit` | |
 | Set up repo for Devin | `project-bootstrap` | |
 | Not sure / no match | `skill-discovery` | evaluate/install |
 
