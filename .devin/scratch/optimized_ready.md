@@ -1,30 +1,40 @@
 # Nível de Esforço Obrigatório: MAX
-# Perfil Operacional: Staff Engineer - Agent Runtime / LLM Systems
+# Perfil Operacional: Principal Security Architect & Red Team Automation Lead
 
 # Goal
-Melhoria geral do agente Devin CLI, inicialmente focada no Computer Use (CU): entender exatamente como o devin-cli recebe informacao, processa, pensa e age, e encontrar a forma mais viavel de o agente processar, pensar e agir de forma continua - o mais proximo possivel de tempo real. Para cada hipotese levantada, pesquisar validacao tecnica e evidencias (codigo do bundle, docs locais, fontes primarias externas). Testar na pratica, uma a uma, as hipoteses tecnicamente validas, com parametrizacao e metricas. Se nenhuma atingir o limiar satisfatorio, voltar ao levantamento de hipoteses.
+Arquitetar e integrar uma "Red Team Capability" completa e estruturada dentro do `devin-bundle`. A missão possui duas frentes:
+1. Analisar e adaptar a arquitetura do MCP de engenharia reversa `morluto/rea` (binários nativos, JS/Electron, .NET) para o ecossistema do bundle.
+2. Realizar uma pesquisa profunda e documentada sobre o espectro de segurança ofensiva (Reverse Engineering, Pen-test, Injeção, Vulnerability Scanning em Redes/Web/Firmware/Wireless) e consolidar as ferramentas open-source correspondentes em extensões seguras e habilidades cognitivas.
 
 # Context
-Repo: bundle Devin CLI em D:\Programing\ai_workspace\devin-bundle. Branch nova feat/cu-realtime; commits = checkpoints por fase/hipotese. 'Tempo real' no contexto CU = latencia do ciclo perceber->decidir->agir->reperceber. Mecanismos candidatos existentes a verificar com ferramentas (nao deduzir): skills/computer-use (screenshot, screen recording com video + contact sheet, mouse/teclado, leitura de terminais), extensions/ (blender-operator = TCP exec loop persistente com bpy; spline-operator = bridge MCP ws://127.0.0.1:19692; system-control = sessoes persistentes + event streams + inventario de processos), hooks PreToolUse/UserPromptSubmit/SessionStart (constraint-pinning.py, architecture-gate.py), run_subagent is_background + <subagent_completion_notification>, get_output polling de shells. O binario devin-cli e fechado - 'vasculhar o proprio codigo' = bundle, extensions, skills, .devin/docs e %APPDATA%\devin\docs. Skills relevantes: primeagent-reference (harness design, A2A, Refine loop), computer-use, system-control, context-hygiene, gates. Anti reward-hacking: metrica e limiar de 'satisfatorio' definidos ANTES dos testes.
+O bundle opera no paradigma "Brain vs Muscle" (`skills/` vs `extensions/`). As skills de segurança atuais (`skills/security`, `secure-defaults-check`) são puramente defensivas (SAST, secret leak). Esta nova suíte deve integrar capacidades ofensivas de simulação de adversários (Red Team).
+**Regras do Ambiente (Bundle AGENTS.md):**
+- Preferência estrita por tooling free/open-source e wrappers locais em Python.
+- Nenhuma assinatura de IA permitida (Rule 2).
+- Verificação determinística com ferramentas, nunca dedução LLM (Rule 12).
+- As skills desenvolvidas assumirão autorização de contexto local (Rule 13), porém devem delegar a execução de ações destrutivas irreversíveis à confirmação do usuário.
+
+# The "Iron-Clad Academic" Mandate (Regra de Pesquisa)
+Para a frente de pesquisa (Frente 2), alucinações ou sugestões de ferramentas deprecadas são inaceitáveis. Para CADA domínio de segurança ofensiva (RE, Web, Infra/Redes, Wireless/RF, Firmware):
+- Você deve extrair, ler e documentar no mínimo **20 fontes primárias validadas**.
+- Fontes aceitas: Papers acadêmicos (IEEE/ACM/USENIX/S&P), frameworks globais (OWASP, MITRE ATT&CK, NVD/CVE), documentações oficiais de ferramentas ou RFCs.
+- Todo claim crítico sobre o uso de uma ferramenta deve ser cross-validado por >= 2 fontes destas listas.
 
 # Acceptance Criteria
-1. Mapa verificado por ferramentas do ciclo do devin-cli (entrada do prompt -> tools/hooks -> raciocinio -> acao -> saida), citando arquivos/skills concretos; inclui o ciclo CU atual com baseline de latencia medido por iteracao
-2. Tabela de hipoteses de tempo real: cada uma com evidencia tecnica (arquivo do bundle ou fonte primaria) e veredicto viavel/inviavel com motivo
-3. Cada hipotese viavel testada na pratica, uma a uma, com parametrizacao e metricas registradas (latencia por ciclo, custo de tokens, taxa de acerto); resultados em doc/ledger rastreavel
-4. Veredicto final: abordagem mais proxima de tempo real + parametros recomendados; OU retorno documentado a fase de hipoteses com aprendizados, se nenhuma atingir o limiar pre-definido
-5. Branch feat/cu-realtime com um commit por checkpoint; nenhum checkpoint com estado quebrado; gates verdes ao final (validate-skill-format se SKILL.md mudar, pytest/audit se existirem)
+1. **Relatório de Análise REA:** Gerar `.devin/research/rea-analysis.md` detalhando a arquitetura do `morluto/rea`, o catálogo de ferramentas, o modelo de investigação/evidência e o plano exato do que será portado via MCP vs reimplementado via extensões locais.
+2. **Matriz de Cobertura de Domínios:** Gerar `.devin/research/red-team-domains.md`. Deve conter a matriz cruzando [Domínio] x [Ferramentas Open-Source recomendadas] x [Status de Integração]. Inclua as 20 fontes com URLs e tipos de citação para cada domínio.
+3. **The Brain (Skills):** Criar as skills necessárias em `skills/` seguindo a convenção do bundle (<= 10KB, frontmatter de roteamento claro). O roteamento deve distinguir perfeitamente quando usar as novas skills ofensivas vs as antigas defensivas.
+4. **The Muscle (Extensions):** Criar as extensões correspondentes em `extensions/` usando o padrão `wrapper.py` (com dependências *lazy* e isoladas).
+5. **Contract Tests & Governance:** Criar testes em `tests/validation/test_*.py` para cada nova skill e documentar os gates no ledger `.devin/ledgers/red-team-skill.md`. Atualizar o `install.ps1` de forma não-destrutiva.
 
 # Scope & Non-Goals
-- **IN SCOPE:** Pesquisa com evidencias: bundle, extensions, skills, docs locais, fontes primarias externas
-- **IN SCOPE:** Prototipos/testes de hipoteses dentro do bundle (extensions, hooks, skills, scripts em .devin/)
-- **IN SCOPE:** Medicao e parametrizacao do ciclo CU (screenshot->acao->screenshot e alternativas)
-- **IN SCOPE:** Commits checkpoint na branch feat/cu-realtime
-- **OUT OF SCOPE:** Modificar o binario devin-cli ou exigir features inexistentes do runtime fechado
-- **OUT OF SCOPE:** Modelos pagos (parent free: apenas swe-2-medium/max)
-- **OUT OF SCOPE:** Deploy em producao ou mudancas irreversiveis no ambiente do usuario
-- **OUT OF SCOPE:** Reescrever skills/extensions existentes sem design aprovado
+- **IN SCOPE:** Pesquisa acadêmica exaustiva, análise de código read-only do repositório alvo, criação de documentação técnica, arquitetura de skills e wrappers Python.
+- **OUT OF SCOPE:** NÃO execute ataques, injeções ou scans reais contra nenhum alvo externo ou interno durante esta tarefa. Seu objetivo é construir a *Capability* (as ferramentas e os prompts) e não realizar o *Exercício*.
+- **OUT OF SCOPE:** NÃO crie, codifique ou sugira payloads maliciosos inéditos (malware, zero-days). A capability deve focar na automação e orquestração de ferramentas open-source de auditoria reconhecidas pela indústria.
+- **OUT OF SCOPE:** NÃO instale dependências globais ou MCP servers cegamente antes do review.
 
 # Execution Hints & Checkpoints
-1. **Fase 1:** Mapear com ferramentas o ciclo devin-cli (prompt -> tools/hooks -> acao) e o ciclo CU atual, medindo baseline de latencia por iteracao; levantar hipoteses de tempo real, cada uma com evidencia tecnica e veredicto de viabilidade; definir metrica e limiar de 'satisfatorio' ANTES dos testes. Commit checkpoint. PARE e aguarde aprovacao.
-2. **Fase 2:** Testar as hipoteses viaveis uma a uma, com parametrizacao; registrar metricas por hipotese; um commit checkpoint por hipotese testada.
-3. **Fase 3:** Avaliar resultados contra o limiar: se nenhuma satisfatoria, voltar a Fase 1 incorporando os aprendizados; senao, documentar veredicto + parametros + recomendacao. Gates verdes, commit final e reporte com evidencias.
+1. **Fase 1 (Recon & Research):** Realize a clonagem/leitura do `morluto/rea` e inicie a pesquisa agressiva dos domínios exigindo as 20 fontes. **PARE. Gere o `rea-analysis.md` e o `red-team-domains.md`. Apresente no terminal a arquitetura proposta (Quais skills e extensões serão criadas). Aguarde minha aprovação.**
+2. **Fase 2 (Brain & Muscle):** Após aprovação, implemente os arquivos `.md` das skills, os scripts `wrapper.py` nas extensões e defina o escopo de ROE (Rules of Engagement) dentro das documentações das skills.
+3. **Fase 3 (Validation Gates):** Rode o `pytest tests/validation -q` e valide a integridade do `install.ps1` usando a flag `-DryRun`.
+4. **Fase 4 (Ledger):** Escreva a evidência no `.devin/ledgers/red-team-skill.md` e conclua a tarefa.

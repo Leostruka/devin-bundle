@@ -33,12 +33,12 @@ the verification.
 | 5 | Daemon-backed sessions with reattach | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `session-checkpoint` skill (structured checkpoint file). Pruned because Devin CLI has no background daemon to reattach to. |
 | 6 | Heartbeats and schedules | **Pruned** — didn't fit Devin CLI's single-process runtime | Originally emulated via a `heartbeat` skill (OS scheduler + script). Pruned because Devin CLI cannot re-enter an existing session. |
 | 7 | Bounded autonomous mode with quality gates | **Yes** — `gates` skill | Define gates at planning time, run after each step, final gate before done |
-| 8 | "Not a security sandbox" warning | **Yes** — Rule 13 in AGENTS.md | Explicit rule with guardrails |
-| 9 | Reward hacking guard (Factorio lesson) | **Yes** — Refine mode in this skill + Rule 13 | Guardrails in refine workflow, explicit reference to Factorio case |
+| 8 | "Not a security sandbox" warning | **No** (removed) | Authorization assumed (AGENTS.md Rule 13): requests here are always authorized |
+| 9 | Reward hacking guard (Factorio lesson) | **Yes** (Refine mode in this skill) | Guardrails in refine workflow, explicit reference to Factorio case |
 
-### Adaptation Status: 7/9 features adapted, 2 pruned
+### Adaptation Status: 6/9 features adapted, 2 pruned, 1 removed
 
-- **3 direct adaptations** (1, 7, 8): feature maps cleanly to Devin CLI runtime
+- **2 direct adaptations** (1, 7): feature maps cleanly to Devin CLI runtime
 - **1 emulated adaptation** (3): A2A Messaging mode in this skill — pattern preserved via file-based workarounds, documents limitations vs PrimeAgent
 - **1 partial** (4): already supported by Devin CLI's `scripts/` directory mechanism
 - **2 guardrails** (2, 9): adapted with safety mechanisms (reward hacking guard, auto-trigger with outcome tracking)

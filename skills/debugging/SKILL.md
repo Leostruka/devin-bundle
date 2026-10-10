@@ -1,7 +1,6 @@
 ---
 name: debugging
 description: Use when the user says 'diagnose', 'debug this', reports something broken/throwing/failing/slow, when encountering a bug/test failure/unexpected behavior and a fix is not yet obvious, or when CI is failing and the cause needs to be found across builds, jobs, or environments.
-agent: debugger
 triggers: [user, model]
 ---
 

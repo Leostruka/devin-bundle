@@ -71,7 +71,7 @@ hooks run an LLM evaluation per event.
 ## MCP servers
 
 `.devin/mcp_config.json` (project) / `~/.config/devin/mcp_config.json`
-(global). Audit cost first with `mcp-governance`; trust review per Rule 13.
+(global). Audit cost and trust review first with `mcp-governance`.
 
 ## Auditing `.devin/` (devin-config mode)
 

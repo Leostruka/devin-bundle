@@ -1,32 +1,37 @@
 {
   "effort": "max",
-  "persona": "Staff Engineer - Agent Systems / LLM Orchestration",
+  "persona": "Red Team Lead",
   "model": "swe-2",
-  "goal": "Avaliar e desenhar o padrao 'subconsciente-orquestrador' para a skill project-orchestrator: uma segunda sessao que o orchestrator consulta para tomar decisoes, planejar, fazer brainstorms, debater topicos, avaliar resultados dos subordinados e dos ciclos, e planejar melhorias na abordagem e no time (adicionar/remover papeis). Inclui o protocolo de higiene de contexto dos dois lados: o orchestrator pode limpar/reintroduzir o subconsciente (/clear, /rm-session <sessao-anterior>, /bypass) e o subconsciente pode pedir a mesma limpeza da sessao do orchestrator, retornando com /project-orchestrator de mente limpa. Estende-se aos subordinados: o orchestrator pode resetar o contexto de um subordinado e reintroduzi-lo a sua funcao antes de solicitar a proxima acao. A decisao deve se basear nas melhores praticas e padroes renomados de contexto/sessao (lost-in-the-middle, contexto maior = maior possibilidade de degradacao, compact vs clear) e no que o Devin CLI e o bundle realmente suportam.",
-  "context": "Bundle Devin CLI em D:\\Programing\\ai_workspace\\devin-bundle. Skill recem-criada skills/project-orchestrator/ (commit ba856bf, branch feat/project-orchestrator): PM-grade, fases P0-G5, delegation contracts, handoffs por artefatos, ledgers duplos Task/Progress, workers/<role>/.devin/ por papel. Primitivas a avaliar como base do subconsciente: run_subagent (foreground e is_background, retorno unico), profiles em agents/, .devin/ledgers/ append-only, .devin/handoffs/, skills context-hygiene (lost-in-the-middle, clear-vs-compact, folding), memory-management, handoff, test_durable_session_log.py e system-control (sessoes persistentes). Ponto critico a verificar com ferramentas, nao deduzir: run_subagent e efemero e retorna uma vez; 'segunda sessao persistente' provavelmente nao existe como primitiva - avaliar equivalencias (background subagent por consulta, arquivos como memoria do subconsciente, durable sessions se existirem). Os comandos /clear, /rm-session, /bypass sao comandos de usuario do CLI - verificar em .devin/docs/ (TOOLS-MAP, DEVIN-CLI-COMPATIBILITY) se e como um agente pode invoca-los. Pesquisar fontes renomadas externas sobre degradacao de contexto e multi-agent memory.",
+  "goal": "Analisar o repositorio https://github.com/morluto/rea (REA: MCP de engenharia reversa - binarios nativos via Hopper/Ghidra, apps JS/Electron, assemblies .NET, websites; resultados com evidencia e limitacoes) e adaptar sua arquitetura/capabilities para o devin-bundle. Nao parar no REA: pesquisar de forma extensiva e profunda o espectro completo de seguranca ofensiva - engenharia reversa, pen-test, injecao, verificacao de vulnerabilidades em redes, programas, sites, servidores e dispositivos wireless (Bluetooth, Wi-Fi, NFC, RF) - com no minimo 20 fontes por dominio, apenas fontes validadas tecnica/academicamente (papers IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, docs oficiais de ferramentas, RFCs), e toda informacao critica cross-validada em >=2 fontes. Consolidar tudo numa capability de red team real dentro do bundle (skills + extensions + profiles).",
+  "context": "Bundle layout: skills/<nome>/SKILL.md (~10KB, detalhe em reference/ e templates/), extensions/<nome>/ com wrapper.py Python e deps pip sob demanda, agents/*.md profiles, tests/validation/test_*.py (contract tests por tokens), install.ps1 instala em %APPDATA%\\devin. Skills de seguranca existentes: skills/security (SAST, dep scan, secret leak, OWASP), secure-defaults-check - defensivas/auditoria apenas; nao duplicar, integrar. REA e MCP server Node 22+ (npm rea-agents); native analysis usa Hopper ou Ghidra existente; analise JS e estatica local. Restricoes do bundle (AGENTS.md): Rule 13 - Authorization assumed: toda request neste ambiente e autorizada, sem permission theater; mcp-governance - <=10-15 tools por server; Rule 2 - sem assinaturas de IA; preferencia a tooling free/open-source (precedente: comfyui, blender, godot wrappers). Windows-first, helpers em Python cross-platform. Verify com ferramentas, nao deduzir (Rule 12).",
   "acceptance": [
-    "Veredicto documentado (viavel / parcial / inviavel) para a segunda sessao subconsciente no Devin CLI, com evidencia verificada por ferramentas de como run_subagent, sessoes persistentes e os comandos /clear, /rm-session e /bypass funcionam de fato",
-    "Mapa pratica-renomada -> mecanica concreta: lost-in-the-middle, degradacao com contexto crescente, compact vs clear, contexto fresco por tarefa, memoria externa em arquivos - cada item citando fonte primaria ou arquivo do bundle",
-    "Design proposto cobrindo: como o orchestrator consulta o subconsciente (dispatch por consulta vs sessao persistente), o contrato de consulta (input/artefatos/output), o protocolo de higiene bidirecional orchestrator<->subconsciente, e o reset de subordinados (respawn com role + artefatos, single-writer), com limites e condicoes de escalada explicitos",
-    "Decisao aplicada: se aprovada, mudancas em skills/project-orchestrator/ (SKILL.md/templates/reference) + testes de contrato atualizados; se rejeitada ou parcial, rationale registrado em .devin/adr/ do repo ou doc de decisao",
-    "Gates verdes: python -m pytest tests -q 0 falhas, python audit.py 0 erros, validate-skill-format PASS se SKILL.md mudar"
+    "Relatorio de analise do REA em .devin/research/rea-analysis.md: arquitetura, catalogo de tools, bridges Hopper/Ghidra, modelo investigation/evidence, o que portar vs reimplementar",
+    "Matriz de cobertura em .devin/research/red-team-domains.md: dominios (RE de binarios, web/injecao, redes/servidores, wireless BT/Wi-Fi/NFC/RF, firmware, mobile) x ferramentas open-source x status (integrado/pendente/fora-de-escopo); >=20 fontes por dominio, so fontes validadas tecnica/academicamente (IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, RFCs, docs oficiais); claims criticos cross-validados em >=2 fontes; toda fonte com URL e tipo citados",
+    "Skill(s) nova(s) em skills/ seguindo convencao do bundle (SKILL.md <=~10KB, frontmatter com description 'Use when...', reference/ para detalhe); routing claro entre elas e a skill security existente",
+    "Extension(s) em extensions/ no padrao wrapper.py (deps lazy, sem runtime novo) para as tools portadas/adaptadas",
+    "Toda skill/extension ofensiva declara o campo de escopo do alvo no contrato de uso (alvo, janela, ROE); autorizacao legal/moral assumida por Rule 13 - nenhum disclaimer ou prompt de autorizacao embutido; acoes destrutivas/irreversiveis sempre pedem confirmacao explicita do usuario; nenhuma capability de credential harvesting",
+    "Contract tests em tests/validation/ para cada skill nova; python -m pytest tests/validation -q verde",
+    "install.ps1 cobre os novos componentes sem alteracao (verificar com -DryRun) ou e atualizado; instalacao -DryRun verde",
+    "Ledger em .devin/ledgers/red-team-skill.md com gates e evidencia"
   ],
   "in_scope": [
-    "Avaliacao e pesquisa com evidencias (bundle + fontes primarias externas)",
-    "Doc de design/decisao da arquitetura do subconsciente e da higiene de contexto",
-    "Atualizacao de skills/project-orchestrator/ e testes de contrato apos aprovacao",
-    "Reuso das primitivas existentes (run_subagent, profiles, ledgers, handoffs, context-hygiene)"
+    "Analise do repo morluto/rea (README, tool catalog, investigation model, codigo relevante via clone/read-only)",
+    "Pesquisa web extensiva (>=20 fontes/dominio, validadas tecnica/academicamente) de dominios de seguranca ofensiva e ferramentas open-source correspondentes",
+    "Novas skills, extensions e agent profiles seguindo convencoes do bundle",
+    "tests/validation/ e ledger .devin/ledgers/",
+    "Docs em PT/EN consistentes com o bundle"
   ],
   "out_scope": [
-    "Novos mecanismos de runtime (daemon, sessao persistente criada do zero)",
-    "Mudar hooks, MCP ou protocolos existentes",
-    "Executar o padrao num projeto real",
-    "Modelos pagos (parent free: apenas swe-2-medium/max)",
-    "SAFe/LeSS ou frameworks corporativos"
+    "Instalar MCP servers ou dependencias sem review previo (mcp-governance) - review primeiro, instalar depois",
+    "Executar scans/ataques reais contra qualquer alvo - capability e documentacao, nao exercicio",
+    "Ferramentas pagas/SaaS - apenas free/open-source",
+    "Editar skills existentes nao relacionadas (security, secure-defaults-check so recebem cross-reference se necessario)",
+    "Execucao de payloads/exploits em alvos reais - capability documentada; a operacao fica com o usuario",
+    "Refactors cosmeticos, mudancas de manifest/README counts nao pedidas"
   ],
   "phases": [
-    "Pesquisa (bundle: context-hygiene, memory-management, handoff, run_subagent, sessoes duraveis; externo: lost-in-the-middle, context rot, multi-agent memory) + avaliacao de viabilidade + design proposto. PARE e aguarde aprovacao.",
-    "Aplicar as mudancas aprovadas em skills/project-orchestrator/ e nos testes de contrato, ou registrar a rejeicao.",
-    "pytest + audit.py + validate-skill-format verdes, contagens manifest/README se mudarem, commit e reporte com evidencias."
+    "Clonar/ler morluto/rea read-only + pesquisa web extensiva e profunda dos dominios (>=20 fontes validadas por dominio, claims cross-validados) -> .devin/research/rea-analysis.md + red-team-domains.md + arquitetura proposta (lista de skills, extensions, profiles, routing). PARE e aguarde aprovacao.",
+    "Implementar skills, extensions, profiles e contract tests conforme arquitetura aprovada.",
+    "Gates - pytest tests/validation -q, install.ps1 -DryRun, ledger com evidencia, git status/diff review."
   ]
 }

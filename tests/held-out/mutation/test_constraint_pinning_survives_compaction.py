@@ -64,7 +64,7 @@ def test_post_compaction_dropped_constraints():
 def test_post_compaction_retained_constraints():
     """PostCompaction with constraints in summary should NOT write a marker."""
     clear_all_markers()
-    summary = "Pinned governance constraints: no AI signatures, no push without green, execute-first, maximum precision, security sandbox, constraint pinning, context window lean, never read secrets."
+    summary = "Pinned governance constraints: no AI signatures, no push without green, execute-first, maximum precision, authorization assumed, constraint pinning, context window lean, reproducible evidence."
     code, out, err = run_pinning("PostCompaction", {"summary": summary, "session_id": "test-sess2"})
     assert code == 0
     # Marker should not exist for this session

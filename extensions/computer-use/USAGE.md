@@ -664,7 +664,7 @@ journal hooks, and no foreground theft anywhere in these paths.
 
 ## Safety
 
-These scripts act on the real desktop with the user's permissions (Rule 13).
+These scripts act on the real desktop with the user's permissions.
 Confirm coordinates from a fresh screenshot before clicking; never chain
 click+type blind. Host-channel input goes to the focused window - a
 mistargeted command can type into the wrong app. Scoped channels never

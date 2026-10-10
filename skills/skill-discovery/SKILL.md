@@ -42,6 +42,10 @@ requests) take precedence over skills; skills override defaults.
 4. **Built-in tools:** `web_search`, `webfetch`, `mcp_call_tool`,
    `run_subagent` for parallel exploration.
 5. **Invoke matches immediately**, in parallel if several.
+   Exception: skills whose frontmatter declares `agent:`/`subagent:` spawn a
+   real autonomous subagent on invoke, costing a full agent loop. Check
+   frontmatter first; invoke at most ONE per task, never inside a
+   discovery batch.
 6. **No local match → external search:** `github:<owner>/<repo>` (this
    bundle — `data/bundle-identity.json`), `gh search repos <kw> skills`,
    `web_search`.

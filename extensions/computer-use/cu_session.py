@@ -6,7 +6,7 @@ startup_subprocess p50 ~142ms is the largest single boundary; a persistent
 worker amortizes interpreter+imports across calls.
 
 Transport is the child's stdin/stdout — JSON lines over OS pipes. No
-sockets, no listeners, no network surface; this is not a security sandbox.
+sockets, no listeners, no network surface.
 A worker that stops answering is killed and respawned; restart bumps the
 generation and rotates the session tag so stale envelopes reject.
 

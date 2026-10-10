@@ -83,7 +83,7 @@ Date: <YYYY-MM-DD> | Shards: N | Findings: M
 - Subagents are read-only; the scan itself never edits repo code.
 - Every finding carries `file:line` evidence — drop unverifiable claims.
 - Cap the report at 100 findings; group the rest by pattern.
-- Secrets found → report the location class only, never the value (Rule 19).
+- Secrets found → report the location class only, never the value.
 - Cost: ~1 subagent per shard; keep ≤8 unless the user asks for more.
 
 ## Examples
