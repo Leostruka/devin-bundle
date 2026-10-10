@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-10-10
+
 ### Added
 
+- **`laya-compactor` Smart Window pruning** (`extensions/laya-compactor/`): per-item transcript compaction through the resident Laya worker — `compact-item-v1` keep/truncate/drop decision profile (suggestion-only), tool_use/tool_result pair integrity, orphan-risk abort, reduction-floor fallback returning the original transcript.
+- **`image-forensics` extension + skill** (`extensions/image-forensics/`): metadata inspection + PRNU residual/PCE scoring emitting `real_capture`/`synthetic`/`inconclusive` verdicts with confidence; abstains on weak residual or recompression.
+- **`craft-bridge` extension** (`extensions/craft-bridge/`): uniform dispatch over the verified storytold suite (filmcraft, photocraft, vectorcraft, wordcraft, pdfcraft, gridcraft, deckcraft, cadcraft, lightcraft, soundcraft — Apache-2.0; spark MIT), cross-engine scene manifest, ops matrix, and a static `spark-view` gsplat preview page.
+- **`animation-direction` pipeline**: local ASR timestamped transcript (`extensions/asr/`), motion scene manifest with mandatory approval gate (`extensions/remotion-render/plan_check.py` validates timing/overlap/read-time/budget), Remotion rendering + FFmpeg compositing.
+- **`ppisp-prep` extension** (`extensions/ppisp-prep/`): photometric QC (exposure/WB/vignetting variance) emitting go/correct/recapture, wrapping NVIDIA PPISP upstream rather than reimplementing.
+- **`learn-mode` skill**: opt-in learning-first collaboration adapted from `nykooi1/vibe-wise` — user owns design decisions, agent explains concepts, waits for approval before implementing, explains the diff.
+- **Pocock upstream ports** (`mattpocock/skills` @49dd158): `skills/pr` (visual Summary + Evidence + Merge Danger), `skills/retro` (session retrospective feeding `continuous-improvement`), `skills/setup-pre-commit` adopted into the repo; 22 skills verified already covered, 12 skipped with reasons in `.devin/research/pocock_port_matrix.md`.
 - **`computer-use` screen recording** (`extensions/computer-use/record.py`): duration-based capture to mp4/webm via streamed ffmpeg rawvideo pipe (honest exit-2 when ffmpeg is absent) or animated webp/gif via the bundled Pillow dep; every run also writes a reservoir-sampled contact-sheet PNG that agents can `read` directly. Absolute-deadline pacing reports `dropped`/`fps_actual`; `--env` records isolated guests via `backend.observe()`.
 - **`project-bootstrap` rule templates** — `templates/domain-rules.md` (glob-scoped to domain paths, for business rules) and `templates/devin-config-rules.md` (scoped to `.devin/**`, teaches bundle conventions). Frontmatter format verified on CLI 3000.11.1 (`trigger: glob`, `globs:` YAML sequence).
 - **`prompt_compiler.py` Golden Template refactor** — the script no longer guesses: it validates and assembles a strict spec (`effort`, `persona`, `goal`, `context`, `acceptance[]`, `in_scope[]`, `out_scope[]`, `phases[]`) drafted by the agent. Effort/persona are semantic agent decisions (language-agnostic); `--draft <file|->`/`--spec` input; `recommended_model` resolves family+effort via `bundle-models.json` deterministically. `prompt-compiler` skill rewritten around the agent-as-Prompt-Engineer flow.
