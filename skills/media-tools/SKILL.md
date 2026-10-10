@@ -65,6 +65,25 @@ automata, displacement, ASCII, animate…) with name, URL, and description per
 tool. Use it to suggest the right external tool or as reference to implement a
 local equivalent. Refresh with `python update_tooooools_db.py`.
 
+## Craft suite dispatch (structured media ops)
+
+For **document-grade operations** (timeline edits, PSD layers, PDF,
+sheets, slides, CAD, audio) prefer the storytold craft engines over
+reimplementing: every craft app is agent-native — `<app>-cli commands`,
+`<app>-cli run`, `<app>-cli mcp` (MCP server), some add `--control`
+JSON-lines. All Apache-2.0; `spark` is MIT for gsplat preview.
+
+- Bridge: `extensions/craft-bridge/bridge.py` — `doctor`, `commands <app>`,
+  `run <app> <command_id> [params]` normalized across the suite.
+- Manifests: `scene_manifest.py` compiles our `scene_manifest.json`
+  (schema v1) into engine command plans; unknown ops pass through marked
+  `unverified` — confirm ids via `bridge.py commands <app>` first.
+- Coverage map: `extensions/craft-bridge/ops_matrix.md`.
+- gsplat preview: `extensions/craft-bridge/spark-view/` (static three.js
+  + spark page, opens .PLY/.SPZ).
+- MCP channels: register lazily per `mcp-lazy-enablement` — enable the
+  one app server the task needs, never the whole suite.
+
 ## Boundary
 
 - This skill is for **visual artifact generation** (stylized media).

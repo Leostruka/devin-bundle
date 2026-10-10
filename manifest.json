@@ -514,9 +514,21 @@
       "source": "devin-bundle",
       "purpose": "Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools: jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.",
       "export_hash": "8CC940AFD212613644C29B04DEE0EE7AFCD8423529BBD6C4678C84C6D41BEA40"
+    },
+    {
+      "name": "image-forensics",
+      "source": "devin-bundle",
+      "purpose": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating that ai3d-gen source photos are real captures before splatting. Covers PRNU noise-residual forensics, EXIF/XMP/C2PA first pass, and PCE scoring via extensions/image-forensics.",
+      "export_hash": "C151812073C65A3554B81D84F2F1BC0A470EA921E116A617783F920AF525BFEC"
+    },
+    {
+      "name": "animation-direction",
+      "source": "devin-bundle",
+      "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics — narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
+      "export_hash": "C025F3C82A8DAE99556CB4E7E2153880A9EC79650B480E1FFB1D0463DE16D106"
     }
   ],
-  "skill_count": 75,
+  "skill_count": 77,
   "rule_count": 24,
   "scripts": [
     {

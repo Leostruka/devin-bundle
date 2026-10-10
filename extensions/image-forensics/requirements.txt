@@ -1,0 +1,6 @@
+numpy
+Pillow
+# optional, stronger denoiser / readers when present:
+PyWavelets
+opencv-python-headless
+piexif
