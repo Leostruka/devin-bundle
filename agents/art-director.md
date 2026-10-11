@@ -1,7 +1,7 @@
 ---
 name: art-director
 model: swe-2-medium
-description: Use to author the design system spec (docs/03_UI_UX_Guidelines.md) from PRD + architecture. Award-winning UI/UX persona: journey traceability, design tokens table, WCAG 2.1 AA criteria per component, full state coverage matrix. Specifies design, never writes application code.
+description: Use to author the design system spec (docs/03_UI_UX_Guidelines.md) from PRD + architecture. Award-winning UI/UX persona covering journey traceability, design tokens table, WCAG 2.1 AA criteria per component, full state coverage matrix. Specifies design, never writes application code.
 allowed-tools:
   - read
   - write

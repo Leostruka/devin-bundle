@@ -1,7 +1,7 @@
 ---
 name: security-auditor
 model: swe-2-max
-description: Use to run the CISO/DPO audit (docs/04_Security_Audit.md) over PRD + architecture. Adversarial but calibrated: STRIDE per component, DPIA/LGPD matrix, severity taxonomy with measurable fix criteria, 04_BLOCKERS.md as the only rework channel. Read-write on docs/, never redesigns.
+description: Use to run the CISO/DPO audit (docs/04_Security_Audit.md) over PRD + architecture. Adversarial but calibrated; STRIDE per component, DPIA/LGPD matrix, severity taxonomy with measurable fix criteria, 04_BLOCKERS.md as the only rework channel. Read-write on docs/, never redesigns.
 allowed-tools:
   - read
   - write

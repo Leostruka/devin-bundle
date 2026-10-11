@@ -744,13 +744,13 @@
     {
       "name": "laya-guard.py",
       "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
-      "export_hash": "92EE6D08CEC65AE79AC40EB8A30CAC7964DBA1B4ABBB0BD1326BD9B6772EB419",
+      "export_hash": "8A178C18295BA03F29B486EC214E21D352862152ECA5FC1E93DA7269CFE4E95A",
       "exported_at": "2026-10-10T15:45:25.322611"
     },
     {
       "name": "compact-gate.py",
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
-      "export_hash": "80131C04A51D61E418F608B8C507E761701E944713811E2DB95110585803FEE7",
+      "export_hash": "1F70BE9FE953D367E355C940630FE1AFD062CACFBC07D68F6A16047035DCB656",
       "exported_at": "2026-10-10T15:45:25.322611"
     }
   ],
@@ -820,32 +820,32 @@
     {
       "name": "product-manager",
       "purpose": "Use to author the product spec (docs/01_Product_Requirements.md) for the file-handoff agency pipeline. Ex-FAANG PM persona: RICE/Kano, user journeys, data inventory, non-goals.",
-      "export_hash": "98C76795999C2B5F4ACBEEA2ECA072078DFB2AA61ED9A526D70835BBE00F58CA"
+      "export_hash": "59E91DD8F3F9B736600122A4FD2E37533EC3E6F11679BEE04583AF07A10C4730"
     },
     {
       "name": "tech-lead",
       "purpose": "Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer: ADRs with rejected alternatives, file-granular tree, interface contracts, NFR budgets.",
-      "export_hash": "7CEA41DE7F1907005649D8EB5EC7AE4682CF0D7F9926EB3956CD7E7FDE4BCF20"
+      "export_hash": "9C935AC958D0949CF3FCBE8397E32DA6A126B2FE6CCD322C57F9157431D42CA7"
     },
     {
       "name": "art-director",
       "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
-      "export_hash": "9D2BF7D19E3EA9974D9DF2AA9D5D97191234301BA463AAF397A46CE2C49D4E47"
+      "export_hash": "45DDA8B8F9AE28282537DB27C71EEED796979C560C68C31AFFFB86099530E353"
     },
     {
       "name": "security-auditor",
       "purpose": "Use to run the CISO/DPO audit (docs/04_Security_Audit.md). STRIDE per component, DPIA/LGPD, severity taxonomy with measurable fixes, 04_BLOCKERS.md rework channel.",
-      "export_hash": "431682A88CE9ACDDA0B6DEDF506E6C7151BC8C215FBD2B759D7A1FAAEA758474"
+      "export_hash": "F5E5D9D9BCF53219BB7418E660BF546BCD94ADF58C4768B9401056F573B5D7DF"
     },
     {
       "name": "scrum-master",
       "purpose": "Use as the agency pipeline error handler and planner: validates artifact freshness, detects spec conflicts, writes 05_Pipeline_Report + 00_INDEX sprint plan, DONE/REWORK/BLOCKED verdict.",
-      "export_hash": "84C2AF1000ED5E860AA64BF195BCD3357D0920E538333B78DF48CEFFC902F0CF"
+      "export_hash": "09E7165C110E1D9806D5A845D3B185B482E1D3F509425EBF25591690F248D590"
     },
     {
       "name": "copywriter",
       "purpose": "Use to author README/marketing/doc map (docs/06_Documentation.md). Claims traceability to specs, PAS narrative, Diataxis split, sub-5-minute quickstart.",
-      "export_hash": "99DA85DD890C1E6A7DCDB5BD8DEF3D2B08567377C3AB02211136D0095175536A"
+      "export_hash": "274B450C1673307751E518A906088646ADCADC5ABCF1E36D8B983EC1A8436C4E"
     }
   ]
 }
