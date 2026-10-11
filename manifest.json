@@ -732,7 +732,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "26BF954097AEE3584C174055ABF1EF9EFEE95B07FF3B928A98DFC63AAFDDCB2A",
+      "export_hash": "126ADC67D759F29FB92FC41C2098F022FC70350873E57C24853E96398DE13A97",
       "exported_at": "2026-09-08T21:39:22.431131"
     },
     {
@@ -756,7 +756,7 @@
   ],
   "script_count": 31,
   "mcp_count": 1,
-  "agent_count": 7,
+  "agent_count": 13,
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
@@ -816,6 +816,36 @@
       "original_path": "%APPDATA%\\devin\\agents\\red-team-lead.md",
       "export_hash": "0B97729BF98DDC326859177034F4D20A9943C1FD707B5DB75A11E68FB98AE630",
       "exported_at": "2026-10-01T00:00:00.000000"
+    },
+    {
+      "name": "product-manager",
+      "purpose": "Use to author the product spec (docs/01_Product_Requirements.md) for the file-handoff agency pipeline. Ex-FAANG PM persona: RICE/Kano, user journeys, data inventory, non-goals.",
+      "export_hash": "98C76795999C2B5F4ACBEEA2ECA072078DFB2AA61ED9A526D70835BBE00F58CA"
+    },
+    {
+      "name": "tech-lead",
+      "purpose": "Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer: ADRs with rejected alternatives, file-granular tree, interface contracts, NFR budgets.",
+      "export_hash": "7CEA41DE7F1907005649D8EB5EC7AE4682CF0D7F9926EB3956CD7E7FDE4BCF20"
+    },
+    {
+      "name": "art-director",
+      "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
+      "export_hash": "9D2BF7D19E3EA9974D9DF2AA9D5D97191234301BA463AAF397A46CE2C49D4E47"
+    },
+    {
+      "name": "security-auditor",
+      "purpose": "Use to run the CISO/DPO audit (docs/04_Security_Audit.md). STRIDE per component, DPIA/LGPD, severity taxonomy with measurable fixes, 04_BLOCKERS.md rework channel.",
+      "export_hash": "431682A88CE9ACDDA0B6DEDF506E6C7151BC8C215FBD2B759D7A1FAAEA758474"
+    },
+    {
+      "name": "scrum-master",
+      "purpose": "Use as the agency pipeline error handler and planner: validates artifact freshness, detects spec conflicts, writes 05_Pipeline_Report + 00_INDEX sprint plan, DONE/REWORK/BLOCKED verdict.",
+      "export_hash": "84C2AF1000ED5E860AA64BF195BCD3357D0920E538333B78DF48CEFFC902F0CF"
+    },
+    {
+      "name": "copywriter",
+      "purpose": "Use to author README/marketing/doc map (docs/06_Documentation.md). Claims traceability to specs, PAS narrative, Diataxis split, sub-5-minute quickstart.",
+      "export_hash": "99DA85DD890C1E6A7DCDB5BD8DEF3D2B08567377C3AB02211136D0095175536A"
     }
   ]
 }

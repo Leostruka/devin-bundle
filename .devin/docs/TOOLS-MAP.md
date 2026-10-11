@@ -42,7 +42,7 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 close_browser_preview, mcp_list_tools, mcp_list_servers, apply_patch,
 exit_plan_mode) — o tool falha claramente sem validação do hook.**
 
-## Subagentes (7 perfis)
+## Subagentes (13 perfis)
 
 | Perfil | Tipo | Modelo | Tools | Bundle agent file |
 |---|---|---|---|---|
@@ -53,6 +53,14 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 | `implementer` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
 | `researcher` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
 | `reviewer` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
+| `qa-ci` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read-only + exec (verify only) | `agents/qa-ci.md` |
+| `red-team-lead` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | red-team skills + offsec wrappers | `agents/red-team-lead.md` |
+| `product-manager` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec, web_* | `agents/product-manager.md` |
+| `tech-lead` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec, web_search | `agents/tech-lead.md` |
+| `art-director` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/art-director.md` |
+| `security-auditor` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/security-auditor.md` |
+| `scrum-master` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/scrum-master.md` |
+| `copywriter` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/copywriter.md` |
 
 **Estratégia de modelo:**
 - `subagent_explore` (built-in): default router do CLI — verifique `data/bundle-models.json` aliases; evite em modo free.
@@ -61,8 +69,10 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 - Para trabalho que precisa do parent: usar `subagent_general` (herda parent) ou pin `model: {{BUNDLE_DEFAULT_MODEL}}` no agent.
 
 **VALID_PROFILES no validate-tool-args.py:**
-architect, debugger, implementer, researcher, reviewer, subagent_explore,
-subagent_general — todos os 7 perfis validados.
+architect, art-director, copywriter, debugger, domain, implementer,
+issue-tracker, product-manager, qa-ci, red-team-lead, researcher,
+reviewer, scrum-master, security-auditor, subagent_explore,
+subagent_general, tech-lead, triage-labels. 18 perfis validados.
 
 ## Hooks (8 eventos, 23 scripts)
 
@@ -110,7 +120,7 @@ subagent_general — todos os 7 perfis validados.
 | mcp_config.json | `./mcp_config.json` | `~/.config/devin/mcp_config.json` | MCP servers |
 | hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks; também template `.devin/` |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
-| agents/ | `./agents/` | `~/.config/devin/agents/` | 6 perfis user-level |
+| agents/ | `./agents/` | `~/.config/devin/agents/` | 13 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 82 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation; `system-control` — OS autorizado) |
