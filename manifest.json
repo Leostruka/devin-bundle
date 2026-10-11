@@ -556,9 +556,15 @@
       "source": "devin-bundle",
       "purpose": "Use when setting up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Covers adding pre-commit hooks, configuring Husky, lint-staged, or commit-time formatting/typechecking/testing.",
       "export_hash": "406E973BADC6D89B4D2F336D4B18EC400866DB9D33646DB1416E71472314B7D1"
+    },
+    {
+      "name": "ascii-art",
+      "source": "devin-bundle",
+      "purpose": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii.rest library (217 MIT pieces, React components, npx CLI, image-to-ascii).",
+      "export_hash": "E19BCAFE5AC07742F153952D144517A1AC70FBA06F2BF3435236FE048F867E5C"
     }
   ],
-  "skill_count": 82,
+  "skill_count": 83,
   "rule_count": 24,
   "scripts": [
     {
@@ -820,32 +826,32 @@
     {
       "name": "product-manager",
       "purpose": "Use to author the product spec (docs/01_Product_Requirements.md) for the file-handoff agency pipeline. Ex-FAANG PM persona: RICE/Kano, user journeys, data inventory, non-goals.",
-      "export_hash": "59E91DD8F3F9B736600122A4FD2E37533EC3E6F11679BEE04583AF07A10C4730"
+      "export_hash": "3331E039D9108FF1EFAA84CEAA70DE7388DA561F143EE8ECC4D0C34764F9E46A"
     },
     {
       "name": "tech-lead",
       "purpose": "Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer: ADRs with rejected alternatives, file-granular tree, interface contracts, NFR budgets.",
-      "export_hash": "9C935AC958D0949CF3FCBE8397E32DA6A126B2FE6CCD322C57F9157431D42CA7"
+      "export_hash": "1C9C5A8993458DAF8D262910F9497701DA1FDCDE1642E0EC4DEDBD04A7A30661"
     },
     {
       "name": "art-director",
       "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
-      "export_hash": "45DDA8B8F9AE28282537DB27C71EEED796979C560C68C31AFFFB86099530E353"
+      "export_hash": "A8144E8C9E6781282034CFB20B15C8732AADA69A006F66D3D66DE5FCE6006DC0"
     },
     {
       "name": "security-auditor",
       "purpose": "Use to run the CISO/DPO audit (docs/04_Security_Audit.md). STRIDE per component, DPIA/LGPD, severity taxonomy with measurable fixes, 04_BLOCKERS.md rework channel.",
-      "export_hash": "F5E5D9D9BCF53219BB7418E660BF546BCD94ADF58C4768B9401056F573B5D7DF"
+      "export_hash": "7A10BD3A00F6BB9EB84FC2A3A2A9B11AE6AEA7B9A22BD06099EC7C3148DAE15E"
     },
     {
       "name": "scrum-master",
       "purpose": "Use as the agency pipeline error handler and planner: validates artifact freshness, detects spec conflicts, writes 05_Pipeline_Report + 00_INDEX sprint plan, DONE/REWORK/BLOCKED verdict.",
-      "export_hash": "09E7165C110E1D9806D5A845D3B185B482E1D3F509425EBF25591690F248D590"
+      "export_hash": "7FB85B446BB6CC68A07ADD6FADA05D54C0EE3057FB89CED048116BB6DEA86E2E"
     },
     {
       "name": "copywriter",
       "purpose": "Use to author README/marketing/doc map (docs/06_Documentation.md). Claims traceability to specs, PAS narrative, Diataxis split, sub-5-minute quickstart.",
-      "export_hash": "274B450C1673307751E518A906088646ADCADC5ABCF1E36D8B983EC1A8436C4E"
+      "export_hash": "238008C570FD86235BBFD3F557CDE60732A39D0455F6C3DECCB049D685467933"
     }
   ]
 }
