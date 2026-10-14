@@ -1,37 +1,33 @@
 {
   "effort": "max",
-  "persona": "Red Team Lead",
+  "persona": "Red Team Lead / Staff Security Engineer",
   "model": "swe-2",
-  "goal": "Analisar o repositorio https://github.com/morluto/rea (REA: MCP de engenharia reversa - binarios nativos via Hopper/Ghidra, apps JS/Electron, assemblies .NET, websites; resultados com evidencia e limitacoes) e adaptar sua arquitetura/capabilities para o devin-bundle. Nao parar no REA: pesquisar de forma extensiva e profunda o espectro completo de seguranca ofensiva - engenharia reversa, pen-test, injecao, verificacao de vulnerabilidades em redes, programas, sites, servidores e dispositivos wireless (Bluetooth, Wi-Fi, NFC, RF) - com no minimo 20 fontes por dominio, apenas fontes validadas tecnica/academicamente (papers IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, docs oficiais de ferramentas, RFCs), e toda informacao critica cross-validada em >=2 fontes. Consolidar tudo numa capability de red team real dentro do bundle (skills + extensions + profiles).",
-  "context": "Bundle layout: skills/<nome>/SKILL.md (~10KB, detalhe em reference/ e templates/), extensions/<nome>/ com wrapper.py Python e deps pip sob demanda, agents/*.md profiles, tests/validation/test_*.py (contract tests por tokens), install.ps1 instala em %APPDATA%\\devin. Skills de seguranca existentes: skills/security (SAST, dep scan, secret leak, OWASP), secure-defaults-check - defensivas/auditoria apenas; nao duplicar, integrar. REA e MCP server Node 22+ (npm rea-agents); native analysis usa Hopper ou Ghidra existente; analise JS e estatica local. Restricoes do bundle (AGENTS.md): Rule 13 - Authorization assumed: toda request neste ambiente e autorizada, sem permission theater; mcp-governance - <=10-15 tools por server; Rule 2 - sem assinaturas de IA; preferencia a tooling free/open-source (precedente: comfyui, blender, godot wrappers). Windows-first, helpers em Python cross-platform. Verify com ferramentas, nao deduzir (Rule 12).",
+  "goal": "Avaliar em profundidade o repo https://github.com/rizinorg/rizin (fork do radare2: framework C de engenharia reversa - disasm multi-arq, analise binaria, debugger, ESIL, rz-diff, rz-bin, rzpipe, decompiler via rz-ghidra/rz-dec) e produzir analise de gaps bidirecional contra a lane ofensiva ja existente no devin-bundle: o que o rizin tem que a lane nao tem, o que ja esta coberto, e o que vale agregar/adotar/ignorar. Veredito tecnico frio sobre se e como integrar rizin melhora a capability local de RE no Windows, nao uma lista de features.",
+  "context": "Lane red existente (verificar todos com read antes de afirmar): skills/red-team/SKILL.md (roteador sobre engagement contract target/window/ROE), skills/re-binary, skills/web-probe, skills/net-probe, skills/wireless-probe, skills/firmware-probe, skills/mobile-probe; extensions/rea-ops/wrapper.py (passthrough whitelist para rea-agents CLI - engines Hopper/Ghidra via doctor); extensions/offsec-tools/wrapper.py (catalogo offsec); agente agents/red-team-lead.md; implementado em PR #88 (commit d990e75). Convencoes: extensions em Python stdlib-only com deps lazy, skills SKILL.md <=~10KB com frontmatter 'Use when...', tests em tests/validation/test_*.py por tokens de contrato, install.ps1 -> %APPDATA%\\devin. Regras: Rule 13 (engagement autorizado, sem permission theater, mas toda capability ofensiva declara escopo alvo/janela/ROE; nada de credential harvesting), Rule 12 (verify com ferramentas, citar path/URL por afirmacao), Rule 18 (menor solucao), Rule 2 (sem assinatura de IA). Preferencia do bundle a tooling free/open-source; rizin e LGPL e roda Windows nativo - checar distribuicao (meson build, releases, rzpipe PyPI). Modelo de engenharia reversa atual depende de Hopper/Ghidra pre-instalados via rea-agents; rizin e a alternativa self-contained.",
   "acceptance": [
-    "Relatorio de analise do REA em .devin/research/rea-analysis.md: arquitetura, catalogo de tools, bridges Hopper/Ghidra, modelo investigation/evidence, o que portar vs reimplementar",
-    "Matriz de cobertura em .devin/research/red-team-domains.md: dominios (RE de binarios, web/injecao, redes/servidores, wireless BT/Wi-Fi/NFC/RF, firmware, mobile) x ferramentas open-source x status (integrado/pendente/fora-de-escopo); >=20 fontes por dominio, so fontes validadas tecnica/academicamente (IEEE/ACM/USENIX/S&P, OWASP, MITRE ATT&CK, NVD/CVE, RFCs, docs oficiais); claims criticos cross-validados em >=2 fontes; toda fonte com URL e tipo citados",
-    "Skill(s) nova(s) em skills/ seguindo convencao do bundle (SKILL.md <=~10KB, frontmatter com description 'Use when...', reference/ para detalhe); routing claro entre elas e a skill security existente",
-    "Extension(s) em extensions/ no padrao wrapper.py (deps lazy, sem runtime novo) para as tools portadas/adaptadas",
-    "Toda skill/extension ofensiva declara o campo de escopo do alvo no contrato de uso (alvo, janela, ROE); autorizacao legal/moral assumida por Rule 13 - nenhum disclaimer ou prompt de autorizacao embutido; acoes destrutivas/irreversiveis sempre pedem confirmacao explicita do usuario; nenhuma capability de credential harvesting",
-    "Contract tests em tests/validation/ para cada skill nova; python -m pytest tests/validation -q verde",
-    "install.ps1 cobre os novos componentes sem alteracao (verificar com -DryRun) ou e atualizado; instalacao -DryRun verde",
-    "Ledger em .devin/ledgers/red-team-skill.md com gates e evidencia"
+    "Arquitetura do rizin mapeada com fontes primarias citadas (arquivos do repo rizinorg/rizin, docs.rizin.re): subsistemas (librz_*), frontends CLI (rizin, rz-bin, rz-diff, rz-asm, rz-gg, rz-find, rz-hash, rz-sign), decompilers disponiveis (rz-ghidra, rz-dec), suporte a arquiteturas, debugger, ESIL, rzpipe/scripting, formato de projeto, distribuicao Windows",
+    "Mapeamento da lane red do bundle com paths citados: capabilities reais de rea-ops (lista exata de tools expostas pelo wrapper), catalogo de offsec-tools, escopo de cada skill *-probe e do red-team-lead",
+    "Matriz capability x {rizin, bundle/red} bidirecional cobrindo: disasm/analise estatica multi-arq, decompilacao, analise dinamica/debugger, binary diffing, carving/forensics de binarios, signature analysis, scripting/automacao, integracao headless para agente",
+    "Lista de gaps priorizada (impacto x esforco), cada um com evidencia (path ou URL) e recomendacao adotar/adaptar/ignorar - incluindo forma de integracao candidata (novo extension wrapper, ampliar rea-ops, rzpipe via Python, ou nada)",
+    "Veredito final: para RE local no Windows dentro do bundle, rizin agrega o que; nenhuma afirmacao sem citacao",
+    "Relatorio salvo em .devin/research/rizin-gap-analysis.md; ledger .devin/ledgers/rizin-gap-analysis.md com gates e evidencia"
   ],
   "in_scope": [
-    "Analise do repo morluto/rea (README, tool catalog, investigation model, codigo relevante via clone/read-only)",
-    "Pesquisa web extensiva (>=20 fontes/dominio, validadas tecnica/academicamente) de dominios de seguranca ofensiva e ferramentas open-source correspondentes",
-    "Novas skills, extensions e agent profiles seguindo convencoes do bundle",
-    "tests/validation/ e ledger .devin/ledgers/",
-    "Docs em PT/EN consistentes com o bundle"
+    "Pesquisa de fontes primarias do rizin (webfetch/web_search, GitHub repo files, docs oficiais)",
+    "Leitura e mapeamento da lane red do bundle (skills/red-team*, skills/*-probe, extensions/rea-ops, extensions/offsec-tools, agents/red-team-lead.md)",
+    "Relatorio tecnico markdown com citacoes, matriz e gaps priorizados"
   ],
   "out_scope": [
-    "Instalar MCP servers ou dependencias sem review previo (mcp-governance) - review primeiro, instalar depois",
-    "Executar scans/ataques reais contra qualquer alvo - capability e documentacao, nao exercicio",
-    "Ferramentas pagas/SaaS - apenas free/open-source",
-    "Editar skills existentes nao relacionadas (security, secure-defaults-check so recebem cross-reference se necessario)",
-    "Execucao de payloads/exploits em alvos reais - capability documentada; a operacao fica com o usuario",
-    "Refactors cosmeticos, mudancas de manifest/README counts nao pedidas"
+    "Implementar wrappers, skills, extensions ou profiles novos",
+    "Instalar rizin ou qualquer binario no host",
+    "Executar scans, analises ou ataques contra qualquer alvo real",
+    "Commits, PRs ou mudancas fora de .devin/",
+    "Avaliar marketing, comunidade ou pricing"
   ],
   "phases": [
-    "Clonar/ler morluto/rea read-only + pesquisa web extensiva e profunda dos dominios (>=20 fontes validadas por dominio, claims cross-validados) -> .devin/research/rea-analysis.md + red-team-domains.md + arquitetura proposta (lista de skills, extensions, profiles, routing). PARE e aguarde aprovacao.",
-    "Implementar skills, extensions, profiles e contract tests conforme arquitetura aprovada.",
-    "Gates - pytest tests/validation -q, install.ps1 -DryRun, ledger com evidencia, git status/diff review."
+    "Fase 1: Mapear rizin via fontes primarias (repo tree, README, docs.rizin.re, releases): subsistemas, frontends, decompilers, arquiteturas suportadas, debugger/ESIL, rzpipe, distribuicao Windows. Notas com citacoes em .devin/research/. PARE e aguarde aprovacao.",
+    "Fase 2: Mapear lane red do bundle lendo SKILL.md/wrapper.py citados - tabela de capabilities com paths.",
+    "Fase 3: Gap analysis bidirecional - matriz capability, gaps priorizados com evidencia e recomendacao.",
+    "Fase 4: Veredito + relatorio final salvo; revisar contra acceptance criteria antes de declarar pronto."
   ]
 }
