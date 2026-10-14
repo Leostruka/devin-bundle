@@ -52,6 +52,11 @@ capability `unknown`, proceed with what exists.
 signature match, CLI disassembly. Same contract fields via
 `run --tool <name>`.
 
+`extensions/rz-ops/wrapper.py` is the structured rizin path:
+JSON presets (info/functions/imports/strings/disasm/xrefs/diff/find/
+sign/decompile), validated tokens only, `dbg` (target execution) gated
+as active mode. Self-contained; use when REA engines are `missing`.
+
 ## Boundaries
 
 - Artifacts only; no live-process tampering without explicit ROE line.
