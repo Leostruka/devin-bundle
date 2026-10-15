@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `devin-session-launcher.ps1`: session picker now lists only sessions of the current directory. `Get-DevinSessionData` discards a shared `DEVIN_N_SESSIONS_FILE` cache whose entries all belong to another `working_directory` (multi-project mode: parent cache is cwd-scoped to the parent) and refetches live; `Start-DevinSession` filters parsed sessions by `working_directory` as a safety net. 2 new Pester tests (26 total).
+
 ## [3.5.0] - 2026-10-10
 
 ### Added

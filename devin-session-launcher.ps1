@@ -887,6 +887,9 @@ function Show-Summary {
 function Get-DevinSessionData {
     # devin ls --format json; usa cache compartilhado quando DEVIN_N_SESSIONS_FILE
     # aponta para arquivo fresco (<60s) escrito pelo processo pai.
+    # O cache e descartado quando todas as sessoes nele pertencem a outro
+    # working_directory: no modo multi-projeto o pai pode ter gerado a lista
+    # num cwd diferente do filho, e devin ls ja filtra por cwd na origem.
     param([Parameter(Mandatory)]$DevinCmd)
     $file = $env:DEVIN_N_SESSIONS_FILE
     if ($file -and (Test-Path -LiteralPath $file)) {
@@ -894,7 +897,17 @@ function Get-DevinSessionData {
         if ($age -lt 60) {
             $cached = Get-Content -LiteralPath $file -Raw -ErrorAction SilentlyContinue
             if ($cached -and $cached.Trim()) {
-                return [PSCustomObject]@{ Ok = $true; Json = $cached; Stderr = ''; Cached = $true }
+                $parsed = $cached | ConvertFrom-Json -ErrorAction SilentlyContinue
+                $cwdNorm = (Get-Location).Path.TrimEnd('\')
+                $foreignOnly = $false
+                if ($parsed) {
+                    $withDir = @($parsed | Where-Object { $_.working_directory })
+                    $foreignOnly = ($withDir.Count -gt 0) -and
+                        (-not ($withDir | Where-Object { $_.working_directory.TrimEnd('\') -eq $cwdNorm }))
+                }
+                if (-not $foreignOnly) {
+                    return [PSCustomObject]@{ Ok = $true; Json = $cached; Stderr = ''; Cached = $true }
+                }
             }
         }
     }
@@ -925,6 +938,11 @@ function Start-DevinSession {
     }
 
     $sessions = $ls.Json | ConvertFrom-Json -ErrorAction SilentlyContinue
+    # Somente sessoes do diretorio atual; entradas sem working_directory (legado) sao mantidas.
+    $cwdNorm = (Get-Location).Path.TrimEnd('\')
+    $sessions = @($sessions | Where-Object {
+        -not $_.working_directory -or ($_.working_directory.TrimEnd('\') -eq $cwdNorm)
+    })
     if (-not $sessions -or $sessions.Count -eq 0) {
         Write-Host $LM.NenhumaSessao -ForegroundColor Cyan
         & $devinCmd

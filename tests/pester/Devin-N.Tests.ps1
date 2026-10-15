@@ -143,6 +143,26 @@ Describe 'Get-DevinSessionData (launcher)' {
         $r.Cached | Should -BeFalse
         Remove-Item function:global:devin-fake2
     }
+    It 'cache so com sessoes de outro diretorio cai para chamada viva' {
+        $f = Join-Path $TestDrive 'foreign.json'
+        (ConvertTo-Json @(@{ id = 'x1'; working_directory = 'D:\outro\projeto' })) | Set-Content -LiteralPath $f
+        $env:DEVIN_N_SESSIONS_FILE = $f
+        function global:devin-fake3 { '[{"id":"live","working_directory":"."}]'; $global:LASTEXITCODE = 0 }
+        $r = Get-DevinSessionData -DevinCmd (Get-Command devin-fake3)
+        $r.Cached | Should -BeFalse
+        $r.Json | Should -Match 'live'
+        Remove-Item function:global:devin-fake3
+    }
+    It 'cache do mesmo diretorio e usado sem chamar devin' {
+        $f = Join-Path $TestDrive 'local.json'
+        (ConvertTo-Json @(@{ id = 'y1'; working_directory = (Get-Location).Path })) | Set-Content -LiteralPath $f
+        $env:DEVIN_N_SESSIONS_FILE = $f
+        function devin-fake-should-not-run4 { throw 'nao deveria executar devin' }
+        $r = Get-DevinSessionData -DevinCmd (Get-Command devin-fake-should-not-run4)
+        $r.Ok | Should -BeTrue
+        $r.Cached | Should -BeTrue
+        $r.Json | Should -Match 'y1'
+    }
 }
 
 Describe 'Get-PathSuggestions (launcher, cache TTL)' {
