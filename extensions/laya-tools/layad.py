@@ -150,7 +150,10 @@ def serve_socket(engine, config, *, host="127.0.0.1", port=0,
                 "started_at": time.strftime("%Y-%m-%dT%H:%M:%S")}
         p = Path(laya_dir)
         p.mkdir(parents=True, exist_ok=True)
-        (p / DAEMON_FILE).write_text(json.dumps(info), encoding="utf-8")
+        info_file = p / DAEMON_FILE
+        tmp_file = p / (DAEMON_FILE + ".tmp")
+        tmp_file.write_text(json.dumps(info), encoding="utf-8")
+        os.replace(tmp_file, info_file)
     threading.Thread(target=_idle_watchdog,
                      args=(server, state, idle_ttl_s),
                      daemon=True).start()
