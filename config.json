@@ -5,7 +5,8 @@
   },
   "theme_mode": "dark",
   "agent": {
-    "model": "swe-2-high"
+    "model": "swe-2-high",
+    "subagent_model": "swe-2-max"
   },
   "attribution": false,
   "read_config_from": {
