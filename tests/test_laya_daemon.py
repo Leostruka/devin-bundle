@@ -62,9 +62,16 @@ def daemon(tmp_path):
     t.start()
     info_path = tmp_path / "daemon.json"
     deadline = time.time() + 10
-    while not info_path.is_file() and time.time() < deadline:
+    info = None
+    while info is None and time.time() < deadline:
+        if info_path.is_file():
+            try:
+                info = json.loads(info_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                pass
         time.sleep(0.05)
-    info = json.loads(info_path.read_text(encoding="utf-8"))
+    if info is None:
+        pytest.fail(f"daemon.json not readable within deadline: {info_path}")
     yield info
 
 
