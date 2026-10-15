@@ -104,8 +104,9 @@ subagent_general, tech-lead, triage-labels. 18 perfis validados.
 | Stop | — | refine-review-prompt.py | Prompt de refine review |
 | Stop | — | memory-stop.py | Log do estado de `.devin/memory/` |
 
-**Evento disponível no runtime mas não utilizado pelo bundle:**
-- `PermissionRequest` — dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
+**Eventos disponíveis no runtime mas não utilizados pelo bundle:**
+- `PermissionRequest`: dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
+- `PreCompact` / `PostCompact` (3000.11.92): disparam antes/depois da compactação; matchers `manual`/`auto`; falhas não bloqueiam. `PostCompaction` segue suportado e é o evento usado por `constraint-pinning.py`.
 
 **Scripts manuais (não-hooks):**
 - validate-refinement-evidence.py — verifica refinements.log.jsonl
@@ -168,10 +169,15 @@ tools com side effects — não é o agente pedindo, é o runtime.
 
 | Comando | Tipo | Função |
 |---|---|---|
-| `devin --cloud` / `/cloud` | Cloud | Roda sessão Devin Cloud a partir do CLI |
+| `devin --cloud` / `devin cloud` / `/cloud` | Cloud | Roda sessão Devin Cloud a partir do CLI |
+| `devin cloud drs` | Cloud | Gerencia Declarative Repo Setup (blueprints de ambiente, sandbox sessions, builds) |
+| `devin connect <CODE>` | Cloud | Conecta esta máquina a uma sessão cloud para local tool use (hidden; ver imagens, copiar arquivos) |
 | `/handoff`, `/pickup` | Cloud | Traz branch de PR de sessão cloud para sessão local |
 | `devin ssh` / `/ssh` | Cloud | Conecta a uma VM Devin Cloud |
 | `devin forward` | Cloud | Port-forward de box cloud → localhost |
+| `/goal <objective>` | REPL | Continua trabalhando no objetivo entre turns até completar/bloquear (pausa aos 50 turns; `resume`/`clear`) |
+| `/billing on\|off` | REPL | Liga/desliga provider billing (modelos com `*` no picker cobram via plano do provider) |
+| `Alt+Enter` no `/model` picker | REPL | Troca modelo só na sessão atual (`model_picker.confirm_for_session` rebinda) |
 | `devin rules`, `devin skills`, `devin plugins`, `devin doctor` | Config | Gerência nativa de rules/skills/plugins e diagnóstico |
 
 **Nota 3000.11.1:** bloco `otel` no `config.json` ou `OTEL_EXPORTER_OTLP_*`

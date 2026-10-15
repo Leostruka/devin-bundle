@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `devin-session-launcher.ps1`: session picker now lists only sessions of the current directory. `Get-DevinSessionData` discards a shared `DEVIN_N_SESSIONS_FILE` cache whose entries all belong to another `working_directory` (multi-project mode: parent cache is cwd-scoped to the parent) and refetches live; `Start-DevinSession` filters parsed sessions by `working_directory` as a safety net. 2 new Pester tests (26 total).
+
+### Changed
+
+- **Devin CLI alignment `3000.11.92`**: `validated_cli_version` bumped from `3000.11.1`; new `3000.11.92` capability-decision table in `DEVIN-CLI-COMPATIBILITY.md` covering `3000.11.3`→`3000.11.92`. Adopted `agent.subagent_model: swe-2-max` in `config.json` (verified empirically: `subagent_explore` ran on SWE-2 Max with the key vs parent-inherited SWE-2 High without). Documented `PreCompact`/`PostCompact` events, `/goal`, steering, `/billing`, `Alt+Enter` session model pick, `devin connect`/`cloud drs`, plugin `platforms`/`PLUGIN_ROOT`/`PLUGIN_DATA`, `sandbox.excluded.allow`, and rules/`read_config_from` hardening fixes.
+- `TOOLS-MAP.md`: new commands (`/goal`, `/billing`, `Alt+Enter`, `devin connect`, `devin cloud drs`); unused hook events list now includes `PreCompact`/`PostCompact`.
+- Plan: `.devin/plans/2026-10-15-adequacao-devin-cli-3000.11.92.md`.
+
 ## [3.5.0] - 2026-10-10
 
 ### Added

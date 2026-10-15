@@ -195,7 +195,7 @@ for s in sorted(scripts_referenced):
 # 7b. config.json + hooks.v1.json schema validation
 print()
 print('[7b] config.json / hooks.v1.json schema validation')
-HOOK_EVENTS = ['PreToolUse', 'PostToolUse', 'PreCompact', 'PostCompaction', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop', 'PermissionRequest']
+HOOK_EVENTS = ['PreToolUse', 'PostToolUse', 'PreCompact', 'PostCompact', 'PostCompaction', 'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop', 'PermissionRequest']
 config_errors = []
 if not isinstance(config.get('version'), int):
     config_errors.append('version must be an integer')
@@ -878,6 +878,8 @@ else:
 # 30. Hook events match Devin CLI docs in both hooks.v1.json and config.json
 print()
 print('[30] Hook events match Devin CLI lifecycle docs')
+# Runtime supports 10 events since CLI 3000.11.92; the bundle intentionally does
+# not hook PreCompact/PostCompact (see DEVIN-CLI-COMPATIBILITY.md 3000.11.92 table).
 devin_events = {'PreToolUse', 'PostToolUse', 'PermissionRequest', 'UserPromptSubmit',
                 'Stop', 'PostCompaction', 'SessionStart', 'SessionEnd'}
 
