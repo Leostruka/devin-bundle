@@ -33,9 +33,9 @@ for root, dirs, files in os.walk('.'):
             py_files.append(os.path.join(root, f))
 for pf in sorted(py_files):
     try:
-        py_compile.compile(pf, doraise=True)
+        compile(open(pf, 'rb').read(), pf, 'exec')
         print('  OK  ' + pf)
-    except py_compile.PyCompileError as e:
+    except (SyntaxError, ValueError) as e:
         errors.append('Python ' + pf + ': ' + str(e))
         print('  FAIL ' + pf)
 
@@ -241,7 +241,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'rts-decision.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in hooks.v1.json')
@@ -420,20 +420,19 @@ for pattern in required_ignores:
     else:
         warnings.append('.gitignore missing ' + pattern)
         print('  WARN .gitignore missing ' + pattern)
-# Also check for tracked __pycache__ directories
-pycache_dirs = []
-for root, dirs, files in os.walk('.'):
-    if '.git' in root:
-        dirs[:] = []
-        continue
-    if '__pycache__' in dirs:
-        pycache_dirs.append(root)
-    dirs[:] = [d for d in dirs if d not in ('.venv', 'node_modules', 'target', '__pycache__')]
-if pycache_dirs:
-    warnings.append('__pycache__ directories found: ' + ', '.join(pycache_dirs))
-    print('  WARN __pycache__ directories found: ' + ', '.join(pycache_dirs))
+# Also check for tracked __pycache__ files (on-disk caches are normal and
+# gitignored; only versioned pollution is a problem)
+try:
+    import subprocess
+    tracked = subprocess.check_output(
+        ['git', 'ls-files', '--', '*__pycache__*'], text=True).split()
+except Exception:
+    tracked = []
+if tracked:
+    warnings.append('tracked __pycache__ files: ' + ', '.join(tracked))
+    print('  WARN tracked __pycache__ files: ' + ', '.join(tracked))
 else:
-    print('  OK  no __pycache__ directories')
+    print('  OK  no tracked __pycache__ files')
 
 # 12. CI workflow
 print()
