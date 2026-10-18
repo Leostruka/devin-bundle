@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "3.5.0",
+  "version": "3.7.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -762,7 +762,7 @@
     {
       "name": "rts-decision.py",
       "purpose": "Decision bridge — creates .devin/rts/decisions/<id>.json and waits for UI answer (fail-closed default deny)",
-      "export_hash": "8FC2B806B5C25FC4F4029D5C43FD453BB6C092BED3DD5C6EABF3DF65DD3997E7",
+      "export_hash": "C9F201485D2867E0E9CD752F771A409747E0CAD3D2EA20C491B6EB9C0504F579",
       "exported_at": "2026-10-17T21:34:32.826967"
     },
     {
@@ -774,7 +774,7 @@
     {
       "name": "rts-intents.py",
       "purpose": "UserPromptSubmit hook — surfaces pending RTS intents via additionalContext and deposits message intents into mailboxes",
-      "export_hash": "8A19854CA6DE12745DDB9D9DFC6AAE646372EE54D59F9DAA51621D58F1C13288",
+      "export_hash": "C13BAC4E11CE15B2C0E9F0FED0A981B0642A7418AF0E887A3329E73DAC1F0F63",
       "exported_at": "2026-10-17T21:34:32.826967"
     }
   ],

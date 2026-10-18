@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-10-18
+
 ### Added
 
 - **`extensions/rtsd` RTS overlay**: local state daemon projecting ephemeral `run_subagent` activity into a live RTS-style view (AgentCraft-inspired heroes/quest board/decision podium/evidence panel). Python stdlib only — HTTP + hand-rolled RFC 6455 WebSocket (snapshot + upserts), fleet/ledger/intent/decision file projections under `.devin/rts/`, canvas-2D web UI, PWA (manifest + service worker + mobile tabs), stdlib TUI client (`/status /agents /decisions /answer /feed`), `--remote MIN` LAN listener with per-session token + TTL deny-safe expiry + auth audit events.
