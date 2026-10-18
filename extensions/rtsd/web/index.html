@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="/manifest.webmanifest">
+<title>rtsd - fleet command</title>
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --border:#30363d; --fg:#e6edf3;
+          --dim:#8b949e; --ok:#3fb950; --warn:#d29922; --err:#f85149; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--fg); font:13px/1.4 "Segoe UI",monospace;
+         height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+  header { display:flex; align-items:center; gap:12px; padding:6px 12px;
+           background:var(--panel); border-bottom:1px solid var(--border); }
+  header b { letter-spacing:1px; }
+  #conn { font-size:11px; padding:2px 8px; border:1px solid var(--border);
+          border-radius:10px; }
+  #conn.on { color:var(--ok); border-color:var(--ok); }
+  #conn.off { color:var(--err); border-color:var(--err); }
+  main { flex:1; display:flex; min-height:0; }
+  #map { flex:1; position:relative; min-width:0; }
+  canvas { width:100%; height:100%; display:block; }
+  #side { width:340px; background:var(--panel); border-left:1px solid var(--border);
+          display:flex; flex-direction:column; overflow:hidden; }
+  .pane { padding:8px 10px; border-bottom:1px solid var(--border);
+          overflow-y:auto; }
+  .pane h3 { font-size:11px; text-transform:uppercase; color:var(--dim);
+             letter-spacing:1px; margin-bottom:6px; }
+  #agents { flex:0 0 auto; max-height:34%; }
+  #quests { flex:1; }
+  #podium { flex:0 0 auto; max-height:30%; }
+  #evidence { flex:0 0 auto; max-height:30%; }
+  .agent { display:flex; align-items:center; gap:8px; padding:4px 6px;
+           border:1px solid var(--border); border-radius:6px; margin-bottom:4px;
+           cursor:pointer; }
+  .agent.sel { border-color:var(--warn); }
+  .dot { width:10px; height:10px; border-radius:50%; flex:none; }
+  .st-running { background:var(--ok); }
+  .st-done { background:#58a6ff; }
+  .st-failed { background:var(--err); }
+  .st-dispatched { background:var(--dim); }
+  .meta { color:var(--dim); font-size:11px; }
+  .task { padding:4px 6px; border-left:3px solid var(--border);
+          margin-bottom:4px; }
+  .task.blocked { border-color:var(--err); }
+  .task .id { color:var(--dim); font-size:11px; }
+  .dec { border:1px solid var(--warn); border-radius:6px; padding:6px;
+         margin-bottom:6px; }
+  .ledger { margin-bottom:8px; }
+  .ledger .lpath { color:var(--dim); font-size:10px; }
+  .gate { padding:2px 6px; border-left:3px solid var(--border);
+          margin-bottom:2px; font-size:11px; }
+  .gate.g-pass { border-color:var(--ok); }
+  .gate.g-fail { border-color:var(--err); }
+  .gate.g-pending { border-color:var(--dim); }
+  .gate .gev { color:var(--dim); font-size:10px; white-space:pre-wrap; }
+  .agent.gatefail { border-color:var(--err); }
+  .flag { color:var(--warn); }
+  .dec button { margin:2px 4px 0 0; }
+  button { background:#21262d; color:var(--fg); border:1px solid var(--border);
+           border-radius:6px; padding:3px 10px; cursor:pointer; font:inherit; }
+  button:hover { border-color:var(--warn); }
+  #cmd { display:flex; gap:6px; padding:8px 10px; background:var(--panel);
+         border-top:1px solid var(--border); }
+  #cmd input { flex:1; background:#0d1117; border:1px solid var(--border);
+               color:var(--fg); border-radius:6px; padding:6px 8px; font:inherit; }
+  #log { height:90px; overflow-y:auto; padding:4px 10px; font-size:11px;
+         color:var(--dim); border-top:1px solid var(--border); }
+  #tabs { display:none; }
+  @media (max-width:700px) {
+    main { flex-direction:column; }
+    #map { display:none; }
+    #side { width:auto; flex:1; border-left:none; }
+    #side .pane { display:none; max-height:none; }
+    #side .pane.on { display:block; }
+    #tabs { display:flex; background:var(--panel);
+            border-top:1px solid var(--border); }
+    #tabs button { flex:1; border:none; border-radius:0; padding:10px;
+                   color:var(--dim); }
+    #tabs button.on { color:var(--fg); border-top:2px solid var(--warn); }
+    #cmd { display:none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <b>RTSD</b><span class="meta">fleet command</span>
+  <span id="conn" class="off">offline</span>
+  <span class="meta" id="counts"></span>
+  <span style="flex:1"></span>
+  <button onclick="spawn()">+ hero</button>
+  <button onclick="goal()">goal</button>
+</header>
+<main>
+  <div id="map"><canvas id="cv"></canvas></div>
+  <div id="side">
+    <div class="pane" id="podium"><h3>decision podium</h3><div id="decs"></div></div>
+    <div class="pane" id="agents"><h3>fleet</h3><div id="alist"></div></div>
+    <div class="pane" id="evidence"><h3>evidence</h3><div id="llist"></div></div>
+    <div class="pane" id="quests"><h3>quest board</h3><div id="tlist"></div></div>
+  </div>
+</main>
+<div id="tabs">
+  <button data-pane="agents" class="on">agents</button>
+  <button data-pane="podium">chat</button>
+  <button data-pane="quests">quests</button>
+  <button data-pane="evidence">evidence</button>
+</div>
+<div id="cmd">
+  <input id="msg" placeholder="@agent message  |  /spawn <profile> <task>" />
+  <button onclick="send()">send</button>
+</div>
+<div id="log"></div>
+<script>
+let ws=null, snap={agents:[],tasks:[],decisions:[],intents:[],ledgers:[]}, sel=null;
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const pos={};
+
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function log(m){const l=document.getElementById('log');
+  l.innerHTML='<div>'+esc(m)+'</div>'+l.innerHTML;}
+
+function connect(){
+  const proto=location.protocol==='https:'?'wss':'ws';
+  ws=new WebSocket(proto+'://'+location.host+'/ws'+(TOK?'?token='+encodeURIComponent(TOK):''));
+  ws.onopen=()=>{document.getElementById('conn').className='on';
+    document.getElementById('conn').textContent='online';};
+  ws.onclose=()=>{document.getElementById('conn').className='off';
+    document.getElementById('conn').textContent='offline';
+    setTimeout(connect,2000);};
+  ws.onmessage=(e)=>{const m=JSON.parse(e.data);
+    if(m.type==='snapshot'){snap=m.snapshot;render();}
+    else if(m.type==='upsert'){refresh();log(ev(m.event));}
+  };
+}
+function ev(e){const t=e.tool?(' '+e.tool):'';
+  return new Date((e.ts||0)*1000).toLocaleTimeString()+' '+e.type+t;}
+async function refresh(){
+  try{snap=await(await fetch('/snapshot')).json();render();}catch(e){}}
+
+function layout(){
+  const n=Math.max(snap.agents.length,1);
+  const w=cv.clientWidth,h=cv.clientHeight;
+  const cx=w/2,cy=h/2,r=Math.min(w,h)*0.32;
+  snap.agents.forEach((a,i)=>{
+    const t=i/n*Math.PI*2-Math.PI/2;
+    pos[a.id]={x:cx+Math.cos(t)*r,y:cy+Math.sin(t)*r};});
+}
+const COLORS={running:'#3fb950',done:'#58a6ff',failed:'#f85149',
+  dispatched:'#8b949e',paused:'#d29922'};
+function draw(){
+  cv.width=cv.clientWidth;cv.height=cv.clientHeight;layout();
+  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.strokeStyle='#30363d';ctx.beginPath();
+  ctx.arc(cv.width/2,cv.height/2,Math.min(cv.width,cv.height)*0.36,0,7);ctx.stroke();
+  ctx.fillStyle='#161b22';ctx.beginPath();
+  ctx.arc(cv.width/2,cv.height/2,26,0,7);ctx.fill();
+  ctx.fillStyle='#8b949e';ctx.font='10px monospace';ctx.textAlign='center';
+  ctx.fillText('HQ',cv.width/2,cv.height/2+3);
+  for(const a of snap.agents){
+    const p=pos[a.id]||{x:cv.width/2,y:cv.height/2};
+    const c=COLORS[a.status]||COLORS.dispatched;
+    ctx.strokeStyle='#21262d';ctx.beginPath();
+    ctx.moveTo(cv.width/2,cv.height/2);ctx.lineTo(p.x,p.y);ctx.stroke();
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(p.x,p.y,14,0,7);ctx.fill();
+    if(a.gate_fail){ctx.strokeStyle='#f85149';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(p.x,p.y,18,0,7);ctx.stroke();ctx.lineWidth=1;}
+    if(a.status==='abandoned'){ctx.fillStyle='#d29922';ctx.font='11px monospace';
+      ctx.fillText('!',p.x+16,p.y-12);}
+    if(sel===a.id){ctx.strokeStyle='#d29922';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(p.x,p.y,18,0,7);ctx.stroke();ctx.lineWidth=1;}
+    ctx.fillStyle='#e6edf3';ctx.font='11px monospace';
+    ctx.fillText(a.profile||'?',p.x,p.y-20);
+    ctx.fillStyle='#8b949e';ctx.font='9px monospace';
+    ctx.fillText((a.model||'')+' '+(a.status||''),p.x,p.y+28);}
+}
+cv.onclick=(e)=>{
+  const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  sel=null;for(const a of snap.agents){const p=pos[a.id];
+    if(p&&Math.hypot(p.x-x,p.y-y)<16)sel=a.id;}
+  draw();renderList();};
+
+function renderList(){
+  document.getElementById('alist').innerHTML=snap.agents.map(a=>
+    `<div class="agent ${sel===a.id?'sel':''} ${a.gate_fail?'gatefail':''}" data-id="${esc(a.id)}">
+     <span class="dot st-${esc(a.status)}"></span>
+     <div><b>${esc(a.profile)}</b> <span class="meta">${esc(a.id)}</span>
+     ${a.status==='abandoned'?'<span class="flag">[ABANDON]</span>':''}<br>
+     <span class="meta">${esc(a.title||a.task||'')}</span>
+     ${a.gate_fail?'<br><span class="meta" style="color:var(--err)">gate FAIL in '+esc(a.ledger||'')+'</span>':''}
+     ${a.heartbeat?`<br><span class="meta">hb ${esc(a.heartbeat.phase||'')} ${esc(a.heartbeat.note||'')}</span>`:''}
+     </div></div>`).join('')||'<span class="meta">no heroes</span>';
+  document.getElementById('tlist').innerHTML=snap.tasks.map(t=>
+    `<div class="task ${t.blocked_by&&t.blocked_by!=='-'?'blocked':''}">
+     <span class="id">${esc(t.effort)}/${esc(t.id)}</span> <b>${esc(t.title)}</b><br>
+     <span class="meta">${esc(t.status)}${t.blocked_by?' / blocked by '+esc(t.blocked_by):''}${t.ledger?' / ledger '+esc(t.ledger):''}</span></div>`
+  ).join('')||'<span class="meta">no quests</span>';
+  document.getElementById('llist').innerHTML=(snap.ledgers||[]).map(l=>
+    `<div class="ledger"><b>${esc(l.id)}</b> <span class="lpath">${esc(l.path)}</span><br>
+     ${(l.gates||[]).map(g=>
+       `<div class="gate g-${esc(g.state)}"><b>${esc(g.id)}</b> ${esc(g.title)}
+        <span class="meta">[${esc(g.state)}]</span>
+        ${g.check||g.expect||g.evidence?`<div class="gev">${esc([g.check&&('CHECK '+g.check),g.expect&&('EXPECT '+g.expect),g.evidence&&('EVID '+g.evidence)].filter(Boolean).join('\n'))}</div>`:''}
+        </div>`).join('')}
+     </div>`).join('')||'<span class="meta">no ledgers</span>';
+  document.getElementById('decs').innerHTML=snap.decisions.map(d=>
+    `<div class="dec" data-id="${esc(d.id)}"><b>${esc(d.kind||'decision')}</b>
+     <div class="meta">${esc(d.prompt||d.summary||'')}</div>
+     ${(d.options||['allow','deny']).map((o,i)=>
+       `<button data-dec="${esc(d.id)}" data-idx="${i}">${esc(o)}</button>`).join('')}
+     </div>`).join('')||'<span class="meta">no pending decisions</span>';
+  document.getElementById('counts').textContent=
+    `${snap.agents.length} heroes - ${snap.tasks.length} quests - ${snap.decisions.length} decisions`;
+}
+function render(){draw();renderList();}
+
+async function answer(id,i){
+  await fetch('/decisions/'+id+'/answer',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({choice:i})});refresh();}
+async function intent(it){
+  await fetch('/intent',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(it)});
+  refresh();}
+function spawn(){
+  const p=prompt('profile','implementer');if(!p)return;
+  const t=prompt('task','');if(!t)return;
+  intent({kind:'spawn',profile:p,task:t});}
+function goal(){
+  const g=prompt('goal','');if(!g)return;
+  intent({kind:'goal',text:g});}
+function send(){
+  const v=document.getElementById('msg').value.trim();if(!v)return;
+  document.getElementById('msg').value='';
+  const m=v.match(/^\/spawn\s+(\S+)\s+(.+)/);
+  if(m)return intent({kind:'spawn',profile:m[1],task:m[2]});
+  const at=v.match(/^@(\S+)\s+(.+)/);
+  if(at)return intent({kind:'message',to:at[1],text:at[2]});
+  intent({kind:'goal',text:v});}
+document.getElementById('msg').addEventListener('keydown',
+  e=>{if(e.key==='Enter')send();});
+document.getElementById('alist').addEventListener('click',e=>{
+  const el=e.target.closest('.agent');if(!el)return;
+  sel=el.dataset.id;draw();renderList();});
+document.getElementById('decs').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-dec]');if(!b)return;
+  answer(b.dataset.dec,parseInt(b.dataset.idx,10));});
+window.onresize=draw;
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+// remote clients pass ?token=; keep it for WS+fetch
+const TOK=new URLSearchParams(location.search).get('token');
+if(TOK){const _f=window.fetch;window.fetch=(u,o)=>{o=o||{};o.headers=Object.assign(
+  {'X-RTS-Token':TOK},o.headers||{});return _f(u,o);};}
+document.getElementById('tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-pane]');if(!b)return;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('#side .pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.pane));
+  if(b.dataset.pane==='agents')document.getElementById('podium').classList.add('on');
+});
+if(matchMedia('(max-width:700px)').matches){
+  document.getElementById('agents').classList.add('on');
+  document.getElementById('podium').classList.add('on');
+}
+connect();
+</script>
+</body>
+</html>

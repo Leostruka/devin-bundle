@@ -16,4 +16,5 @@ if __name__ == '__main__':
         'compact-gate.py',
         'memory-post-exec.py',
         'gh-pr-assignee.py',
+        'rts-emit.py',
     ])

@@ -188,9 +188,10 @@ def _scoped_mouse(args, channel):
     """Dispatch a mouse command through a window-scoped channel.
     Never touches the real cursor or the global input queue. x,y are
     SCREEN coordinates except on `console` (cell coords)."""
-    if cm.get_profile(getattr(args, "profile", None)) != "fast":
-        fail(f"--channel {channel} is teleport-only: resolved profile "
-             "must be fast (human/smooth move a REAL cursor)", 2)
+    prof = getattr(args, "profile", None)
+    if prof in ("human", "smooth"):
+        fail(f"--channel {channel} is teleport-only: --profile {prof} is "
+             "host-only (human/smooth move a REAL cursor)", 2)
     try:
         frame, inp = cu_scope.scoped_hwnd(args)
     except cu_scope.ScopeError as exc:
