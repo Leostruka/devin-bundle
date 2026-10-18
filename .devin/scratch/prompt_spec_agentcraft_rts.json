@@ -1,0 +1,34 @@
+{
+  "effort": "max",
+  "persona": "Principal Engineer (Agent Orchestration & RTS UX)",
+  "model": "swe-2",
+  "goal": "Analisar as duas referências 'AgentCraft' (o mod Minecraft de blendi-remade e o orquestrador com interface RTS de getagentcraft.com, do idosal) e produzir análise comparativa + plano arquitetural para construir um orquestrador de agentes com UX de jogo RTS sobre o Devin CLI. O usuário prefere explicitamente a abordagem RTS. O resultado deve ser diretamente consumível pelo orchestrator deste bundle (skills leo / project-orchestrator), mapeando como uma camada RTS de visualização e comando se conecta ao runtime efêmero de subagentes, ledgers e issues locais já existentes.",
+  "context": "Repositório devin-bundle: bundle de configuração do Devin CLI com skills (~/.config/devin/skills e .devin/skills), perfis de subagentes (run_subagent: leo, project-orchestrator, implementer, researcher, qa-ci etc.), extensions/ (wrappers headless: operate-godot, operate-spline, blender-operator, system-control), issue tracker local em .devin/scratch/ (Markdown), ledgers de gates em .devin/ledgers/, e roteamento de modelos via data/bundle-models.json. Runtime de subagentes é efêmero (sem A2A nativo; ver skill primeagent-reference). Não existe UI gráfica hoje: orquestração é via prompts/skills CLI. Referências externas: github.com/blendi-remade/agentcraft (Fabric mod Minecraft; Claude Agent SDK; foreman/sandbox/tools; task wall, decision podium, merge gate) e getagentcraft.com (npx @idosal/agentcraft; UI RTS single-pane; suporta Claude Code/Codex/OpenCode/Cursor; Docker/Apple Containers com isolamento; PWA remota + Telegram/Discord; Alliance Hall multiplayer). Verificar com tools (webfetch/web_search); não deduzir features.",
+  "acceptance": [
+    "Feature matrix comparando as duas referências lado a lado (lifecycle de agentes, task board, fluxo de aprovação/decisão, isolamento, controle remoto, persistência) com fontes citadas.",
+    "Comparação explícita RTS vs Minecraft e justificativa da escolha RTS para este bundle.",
+    "Documento de arquitetura: componentes (UI RTS, camada de controle de agentes, transporte/eventos, persistência), integração com run_subagent, .devin/scratch, .devin/ledgers e bundle-models.json, e recomendação de stack (Godot headless? web/canvas? Electron?) com alternativas rejeitadas.",
+    "Gap analysis: o que o bundle já tem (dispatch, ledgers, triage labels, issue DAG) vs o que falta para uma UX RTS (event streaming, estado observável, comandos remotos).",
+    "Roadmap faseado MVP -> v1 com tickets/decisões rastreáveis e pontos de reuso para leo/project-orchestrator.",
+    "Artefatos salvos sob .devin/ (ex.: .devin/scratch/agentcraft-rts/); nada fora de .devin/ sem manifest."
+  ],
+  "in_scope": [
+    "Análise das duas referências AgentCraft (repo, docs, site) com verificação via tools.",
+    "Inventário dos pontos de extensão do Devin CLI/bundle relevantes (subagent dispatch, hooks, ledgers, scratch issues, extensions headless).",
+    "Arquitetura proposta, trade-offs de stack, e roadmap faseado.",
+    "Mapeamento de como o orchestrator existente consumiria a camada RTS."
+  ],
+  "out_scope": [
+    "Implementar código ou scaffolding de produto; somente análise e plano.",
+    "Commits, pushes, ou instalação de dependências.",
+    "Clonar a versão Minecraft; a referência principal é a RTS (getagentcraft.com).",
+    "Redesenhar skills existentes (leo, project-orchestrator); a camada RTS consome, não substitui.",
+    "Decisões de monetização/branding."
+  ],
+  "phases": [
+    "Pesquisa: deep-dive nas duas referências (estrutura do repo, docs de integração do idosal, features reais vs marketing) + inventário dos hooks de lifecycle de subagentes, ledgers e scratch issues do bundle. **PARE e aguarde aprovação.**",
+    "Análise comparativa + gap analysis vs capacidades atuais do bundle.",
+    "Proposta de arquitetura (UI RTS, agent-control layer, transporte de eventos, persistência) + recomendação de stack com alternativas rejeitadas.",
+    "Roadmap MVP -> v1 em tickets + plano de integração com o orchestrator. **PARE e aguarde aprovação final.**"
+  ]
+}

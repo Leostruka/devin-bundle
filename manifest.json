@@ -666,8 +666,8 @@
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "B8F38EB166A0DEEEE7B1FC098C4AA729B2C808B85248BA8F1E10CAD226B0DDBF",
-      "exported_at": "2026-09-18T20:17:52.988052"
+      "export_hash": "D77BC3CF08CA5CA1D31EFE367BD07D1523E90AD9D040AD335AAF6FAFF48B4D43",
+      "exported_at": "2026-10-17T21:34:47.616596"
     },
     {
       "name": "pre-exec-guard.py",
@@ -696,8 +696,8 @@
     {
       "name": "session-start.py",
       "purpose": "SessionStart consolidated hook (constraint-pinning+context-budget)",
-      "export_hash": "AEE9E3084057B17B58B825004B3EB4FB6B0DA8088BBB53DA5ECB552DAC68D4B1",
-      "exported_at": "2026-09-18T20:17:52.988129"
+      "export_hash": "15B6C1789DD90FE3F6D314CA195861D64936799832BB0CED206D5E71DD535761",
+      "exported_at": "2026-10-17T21:34:47.616596"
     },
     {
       "name": "silent-error-review.py",
@@ -708,14 +708,14 @@
     {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
-      "export_hash": "B75E52427DDA59AEC4CED02F6BF54E0F3DA4EEE21E931E548DBB4B47604562B3",
-      "exported_at": "2026-09-18T20:17:52.988164"
+      "export_hash": "776AD28934C70F2CAE7A03051367ECBACC6B68E466FC7C88C5CDF419098670CF",
+      "exported_at": "2026-10-17T21:34:47.616596"
     },
     {
       "name": "user-prompt.py",
       "purpose": "UserPromptSubmit consolidated hook (constraint-pinning+nudge+memory-retrieval)",
-      "export_hash": "8F938E9138E01E0BAEC5885867E0DA8E1408E04A21C11427CE93C2752C0FC73E",
-      "exported_at": "2026-09-18T20:17:52.988093"
+      "export_hash": "6E809521AC1A69487FC6F1E573287F880878C7FE8EA3D8B3BA7323F7630C17DF",
+      "exported_at": "2026-10-17T21:34:47.616596"
     },
     {
       "name": "validate-mermaid.py",
@@ -758,9 +758,27 @@
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
       "export_hash": "1F70BE9FE953D367E355C940630FE1AFD062CACFBC07D68F6A16047035DCB656",
       "exported_at": "2026-10-10T15:45:25.322611"
+    },
+    {
+      "name": "rts-decision.py",
+      "purpose": "Decision bridge — creates .devin/rts/decisions/<id>.json and waits for UI answer (fail-closed default deny)",
+      "export_hash": "8FC2B806B5C25FC4F4029D5C43FD453BB6C092BED3DD5C6EABF3DF65DD3997E7",
+      "exported_at": "2026-10-17T21:34:32.826967"
+    },
+    {
+      "name": "rts-emit.py",
+      "purpose": "Lifecycle/PostToolUse event tap — POSTs hook payload to rtsd /event, falls back to direct events.jsonl append (fail-open)",
+      "export_hash": "7869D66FCAC709882F4282CBE42B0B0361F84DD7749BE1135F3244042A1F729B",
+      "exported_at": "2026-10-17T21:34:32.826967"
+    },
+    {
+      "name": "rts-intents.py",
+      "purpose": "UserPromptSubmit hook — surfaces pending RTS intents via additionalContext and deposits message intents into mailboxes",
+      "export_hash": "8A19854CA6DE12745DDB9D9DFC6AAE646372EE54D59F9DAA51621D58F1C13288",
+      "exported_at": "2026-10-17T21:34:32.826967"
     }
   ],
-  "script_count": 31,
+  "script_count": 34,
   "mcp_count": 1,
   "agent_count": 13,
   "tool_count": 28,
