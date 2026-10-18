@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`extensions/rtsd` RTS overlay**: local state daemon projecting ephemeral `run_subagent` activity into a live RTS-style view (AgentCraft-inspired heroes/quest board/decision podium/evidence panel). Python stdlib only — HTTP + hand-rolled RFC 6455 WebSocket (snapshot + upserts), fleet/ledger/intent/decision file projections under `.devin/rts/`, canvas-2D web UI, PWA (manifest + service worker + mobile tabs), stdlib TUI client (`/status /agents /decisions /answer /feed`), `--remote MIN` LAN listener with per-session token + TTL deny-safe expiry + auth audit events.
+- **RTS bridges in `scripts/`**: `rts-emit.py` (fail-open lifecycle event tap wired into the `_hookrun` chains), `rts-intents.py` (UserPromptSubmit surfacing of pending UI intents + mailbox deposits with traversal guards), `rts-decision.py` (create/wait bridge for the podium, fail-closed on timeout).
+- **Heartbeat clause** in `skills/project-orchestrator/templates/delegation-contract.md`: workers write `.devin/rts/agents/<Contract ID>/status.json` per milestone; rtsd attaches heartbeat to the hero by contract-id.
+
 ### Fixed
 
+- `extensions/computer-use` scoped channels: `_scoped_mouse`/`_scoped_type` gated on `cm.get_profile()` which resolves env + persisted profile file — an ambient `human`/`smooth` preference silently blocked every scoped dispatch (exit 2) even without `--profile`. Gate now fires only on an explicit `--profile human/smooth` flag, matching `cu_scope.resolve_channel`. Fixes `test_cu_scope_boundaries` (3) + `test_uia_has_no_key_concept`.
+- `audit.py`: compile step wrote bytecode (`py_compile`) then warned about the `__pycache__` dirs it created itself — an always-firing warning. Compile now uses the `compile()` builtin (no writes); the `__pycache__` check matches its stated intent (tracked files via `git ls-files`).
 - `devin-session-launcher.ps1`: session picker now lists only sessions of the current directory. `Get-DevinSessionData` discards a shared `DEVIN_N_SESSIONS_FILE` cache whose entries all belong to another `working_directory` (multi-project mode: parent cache is cwd-scoped to the parent) and refetches live; `Start-DevinSession` filters parsed sessions by `working_directory` as a safety net. 2 new Pester tests (26 total).
 
 ### Changed
