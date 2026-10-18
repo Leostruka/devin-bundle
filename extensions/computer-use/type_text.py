@@ -137,9 +137,10 @@ def _remote_main(target):
 def _scoped_type(args, channel):
     """Dispatch text/key through a window-scoped channel. No focused-window
     requirement, no global input. delivered != effect."""
-    if cm.get_profile(args.profile) != "fast":
-        fail(f"--channel {channel} is teleport-only: resolved profile "
-             "must be fast (human/smooth target a REAL window focus)", 2)
+    prof = getattr(args, "profile", None)
+    if prof in ("human", "smooth"):
+        fail(f"--channel {channel} is teleport-only: --profile {prof} is "
+             "host-only (human/smooth target a REAL window focus)", 2)
     if args.key and channel == "uia":
         fail("uia channel has no key concept; use text "
              "(Value.SetValue) or a named Invoke", 2)
