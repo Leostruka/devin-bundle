@@ -32,6 +32,9 @@
     feed: [],                // comms lines {t,kind,who,cls,uid,text} (#128)
     feedFilter: { kind: null, cls: null },
     ravens: [],              // in-flight mailbox birds {fx,fy,tx,ty,t0}
+    seenDec: null,           // pending decision ids from last snapshot
+    heardDec: {},            // ids already alarmed via WS upsert (#129)
+    decActive: null,         // decision shown in the council modal
     barks: {}
   };
 
@@ -282,6 +285,7 @@
 
   function applySnapshot(snap) {
     state.snap = snap;
+    syncDecisions();
     state.world = snap.world || null;
     var m2 = state.world ? state.world.map : null;
     if (m2 && m2.tile_region) {          // authoritative server map (#122)
@@ -329,6 +333,19 @@
           got = true; refresh(); noteEvent(m.event); pushPing(m.hint);
           if (m.feed) pushFeed(m.feed);
           if (m.hint && m.hint.kind === "raven") pushRaven(m.hint);
+          // #129 tiers: decision = sound (modal+ping via hint/snapshot
+          // diff); gate-fail = red banner; everything else = feed only
+          if (m.event && m.event.type === "decision.created") {
+            var pid = (m.event.payload || {}).id;
+            if (pid) state.heardDec[pid] = 1;
+            beep(660, .18);
+          } else if (m.hint && m.hint.kind === "fail") {
+            failBanner((m.feed && m.feed.text) ||
+                       (m.event.tool || m.event.type));
+          } else if (m.feed && m.feed.kind === "debrief" &&
+              /fail|retreat|unit down/i.test(m.feed.text || "")) {
+            failBanner(m.feed.text);
+          }
         } else if (m.type === "tick") { got = true; applyTick(m); }
       };
       ws.onerror = function () { ws.close(); };
@@ -414,6 +431,117 @@
                         ty: (h.to[1] + .5) * TILE,
                         t0: performance.now() });
     if (state.ravens.length > 8) state.ravens.shift();
+  }
+
+  // ---- war council alerts (#129) --------------------------------------
+  // Tiers: decision = modal + sound + gold minimap ping; gate-fail = red
+  // banner + ping; info = feed line only. Everything reads the daemon's
+  // pending-decision list (same files rts-decision.py creates/waits on);
+  // the last option is the deny-safe timeout default and is marked so.
+
+  var _ac = null;
+  function beep(freq, dur) {   // optional sound: fails silently if blocked
+    try {
+      _ac = _ac || new (window.AudioContext ||
+                       window.webkitAudioContext)();
+      var o = _ac.createOscillator(), g2 = _ac.createGain();
+      o.type = "square"; o.frequency.value = freq;
+      g2.gain.value = .04;
+      o.connect(g2); g2.connect(_ac.destination);
+      o.start(); o.stop(_ac.currentTime + (dur || .15));
+    } catch (e) {}
+  }
+
+  // Pending decisions annotated with expiry: rts-decision.py --wait fails
+  // closed after `timeout` seconds, so a stale pending file is shown as
+  // "timed out: deny applied" and never re-alarms.
+  function pendingDecs() {
+    var now = Date.now() / 1000;
+    return ((state.snap || {}).decisions || []).map(function (d) {
+      d._expired = !!(d.timeout && d.created_at &&
+                      now - d.created_at > d.timeout);
+      return d;
+    });
+  }
+
+  function reqUnit(d) {   // requesting hero -> real world unit (portrait)
+    var ref = d.requester, units = (state.world || {}).units || [];
+    if (!ref) return null;
+    var u = units.filter(function (x) {
+      return x.id === ref || x.name === ref; })[0];
+    if (!u) {
+      var best = -1;
+      units.forEach(function (x) {
+        if (x.lane === ref && (x.last_seen || 0) > best) {
+          best = x.last_seen; u = x; }
+      });
+    }
+    return u || null;
+  }
+
+  function decAlarm(d) {  // new pending decision: flash + sound + gold ping
+    beep(660, .18);
+    var th = ((state.world || {}).buildings || []).filter(function (b) {
+      return b.id === "town-hall"; })[0];
+    if (th && th.pos && th.pos.xy)
+      state.pings.push({ x: (th.pos.xy[0] + .5) * TILE,
+                         y: (th.pos.xy[1] + .5) * TILE,
+                         kind: "decision", t0: performance.now() });
+  }
+
+  function syncDecisions() {   // diff pending ids; works on WS and polling
+    var decs = pendingDecs(), ids = {};
+    decs.forEach(function (d) { ids[d.id] = 1; });
+    if (state.seenDec) {
+      decs.forEach(function (d) {
+        if (!state.seenDec[d.id] && !state.heardDec[d.id] && !d._expired)
+          decAlarm(d);
+      });
+    }
+    state.seenDec = ids;
+    if (state.decActive && !ids[state.decActive]) state.decActive = null;
+  }
+
+  // gate-fail tier: red breach banner + low tone (ping comes from the
+  // event hint); auto-clears - the ledger stays the persistent record
+  function failBanner(msg) {
+    var b = el("banner");
+    b.textContent = "BREACH: " + msg;
+    b.className = "on";
+    beep(220, .3);
+    clearTimeout(state._bt);
+    state._bt = setTimeout(function () { b.className = ""; }, 6000);
+  }
+
+  function decHtml(d, active) {
+    var opts = (d.options && d.options.length) ? d.options
+                                             : ["allow", "deny"];
+    var deny = opts.length - 1;
+    var u = reqUnit(d);
+    var h = "<div class='dec" + (d._expired ? " exp" : "") + "'" +
+      (active ? "" : " data-decid='" + esc(d.id) + "'") + ">";
+    if (u)
+      h += "<div class='req'><span class='rface'>" +
+        esc((u.cls || "?")[0]) + "</span> <b>" + esc(u.name || u.id) +
+        "</b> <span class='meta'>" + esc(u.cls || "") +
+        " asks the council</span></div>";
+    else if (d.requester)
+      h += "<div class='req meta'>requester: " + esc(d.requester) +
+        "</div>";
+    h += "<b>" + esc(d.kind || "decision") + "</b>" +
+      "<div class='meta'>" + esc(d.prompt || d.summary || "") + "</div>";
+    if (d._expired)
+      h += "<div class='meta'>timed out - deny applied (fail-closed)</div>";
+    else if (d.timeout)
+      h += "<div class='meta'>timeout " + esc(String(d.timeout)) +
+        "s -> last option (deny-safe)</div>";
+    h += opts.map(function (o, i) {
+      var def = i === deny;
+      return "<button data-dec='" + esc(d.id) + "' data-idx='" + i + "'" +
+        (def ? " class='denydef' title='deny-safe default on timeout'"
+             : "") + ">" + esc(o) + (def ? " *" : "") + "</button>";
+    }).join("") + "</div>";
+    return h;
   }
 
   function noteEvent(ev) {
@@ -535,17 +663,30 @@
           "' data-grp='" + n + "' title='group " + n + " (" +
           alive.length + ")'>" + n + "</button>";
       }).join("");
-    // decisions (war council content until #129 restyles it)
-    var decs = (state.snap || {}).decisions || [];
+    // war council (#129): active decision in the chamber + the rest of
+    // the pending queue stacked under it; header shows flashing hero
+    // portraits + a badge count for the whole alert stack
+    var decs = pendingDecs();
     el("council").classList.toggle("on", decs.length > 0);
-    el("decs").innerHTML = decs.map(function (d) {
-      return "<div class='dec'><b>" + esc(d.kind || "decision") + "</b>" +
-        "<div class='meta'>" + esc(d.prompt || d.summary || "") + "</div>" +
-        (d.options || ["allow", "deny"]).map(function (o, i) {
-          return "<button data-dec='" + esc(d.id) + "' data-idx='" + i +
-            "'>" + esc(o) + "</button>";
-        }).join("") + "</div>";
-    }).join("");
+    if (!decs.some(function (d) { return d.id === state.decActive; }))
+      state.decActive = decs.length ? decs[0].id : null;
+    var act = decs.filter(function (d) {
+      return d.id === state.decActive; })[0];
+    el("decs").innerHTML = act ? decHtml(act, true) : "";
+    el("decsStack").innerHTML = decs.filter(function (d) {
+      return d !== act; }).map(function (d) {
+        return decHtml(d, false); }).join("");
+    el("alerts").innerHTML = decs.length ?
+      "<span class='abadge'>alerts:" + decs.length + "</span>" +
+      decs.map(function (d) {
+        var u = reqUnit(d);
+        var label = u ? (u.name || u.id)
+                      : (d.requester || d.kind || d.id);
+        return "<span class='achip" + (d._expired ? " exp" : "") +
+          (d.id === state.decActive ? " on" : "") + "' data-dec='" +
+          esc(d.id) + "' title='" + esc(d.prompt || "") + "'>" +
+          esc(label) + "</span>";
+      }).join("") : "";
     // idle-worker button (#127): real count from world.idle
     var nIdle = (w.idle || []).length;
     el("idleBtn").textContent = "idle:" + nIdle;
@@ -1077,6 +1218,22 @@
   document.getElementById("decs").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-dec]");
     if (b) RTS.answer(b.dataset.dec, parseInt(b.dataset.idx, 10));
+  });
+  // stacked pending decisions: option buttons answer in place; clicking
+  // the card pulls it into the council chamber (#129)
+  el("decsStack").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-dec]");
+    if (b) {
+      RTS.answer(b.dataset.dec, parseInt(b.dataset.idx, 10));
+      return;
+    }
+    var d = e.target.closest("[data-decid]");
+    if (d) { state.decActive = d.dataset.decid; renderPanels(); }
+  });
+  // alert-stack chips bring their decision to the chamber front
+  el("alerts").addEventListener("click", function (e) {
+    var c = e.target.closest("[data-dec]");
+    if (c) { state.decActive = c.dataset.dec; renderPanels(); }
   });
   document.getElementById("send").onclick = function () {
     var v = el("msg").value.trim(); if (!v) return;

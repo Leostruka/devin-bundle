@@ -50,7 +50,9 @@ def safe_name(s):
         and bool(str(s).lstrip("."))
 
 STATE = {"root": None, "clients": [], "lock": threading.Lock(),
-        "write_lock": threading.Lock(), "token": None, "world": None}
+        # RLock: a permissionrequest append recursively appends its
+        # decision.created event through the same locked path (#129)
+        "write_lock": threading.RLock(), "token": None, "world": None}
 
 
 def state_dir():
@@ -72,6 +74,49 @@ def append_event(ev):
             line = STATE["world"].apply(ev)
             hint = STATE["world"].event_hint(ev)
     broadcast({"type": "upsert", "event": ev, "hint": hint, "feed": line})
+    if ev.get("type") == "hook.permissionrequest":
+        _permission_decision(ev)
+
+
+def _permission_decision(ev):
+    """Project a PermissionRequest hook event into a real pending decision
+    (#129): writes .devin/rts/decisions/<id>.json in the exact shape
+    scripts/rts-decision.py --create produces (so --wait + the
+    /decisions/<id>/answer endpoint resolve it, timeout -> last option =
+    deny), then appends a decision.created event for feed/ping/upsert."""
+    payload = ev.get("payload") or {}
+    tool = ev.get("tool") or payload.get("tool_name") or "?"
+    ti = payload.get("tool_input") or {}
+    opts = payload.get("options") or payload.get("choices") \
+        or ["allow", "deny"]
+    if not isinstance(opts, list) or not opts:
+        opts = ["allow", "deny"]
+    opts = [str(o) for o in opts]
+    summary = ti.get("command") or ti.get("file_path") \
+        or ti.get("prompt") or json.dumps(ti, ensure_ascii=False)[:120]
+    ddir = state_dir()
+    base = int(ev.get("ts", time.time()) * 1000)
+    n = 0
+    while os.path.isfile(os.path.join(ddir, "decisions",
+                                      "d%d.json" % (base + n))):
+        n += 1  # same-ms requests stack, never silently merge
+    did = "d%d" % (base + n)
+    dpath = os.path.join(ddir, "decisions", did + ".json")
+    d = {"id": did, "kind": "permission",
+         "prompt": "%s: %s" % (tool, summary),
+         "options": opts, "status": "pending",
+         "created_at": ev.get("ts", time.time()),
+         "timeout": payload.get("timeout", 120),
+         "tool": str(tool),
+         "requester": str(ev.get("session_id")
+                          or ti.get("lane") or "")}
+    with open(dpath, "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False, indent=2)
+    append_event({"type": "decision.created",
+                  "payload": {"id": did, "kind": "permission",
+                              "prompt": d["prompt"],
+                              "options": opts,
+                              "requester": d["requester"]}})
 
 
 def _find_agent_id(resp):
@@ -544,6 +589,25 @@ def main():
                         "to": str(d.get("to") or to),
                         "kind": str(d.get("type") or "task"),
                         "preview": str(d.get("content") or "")[:80]}})
+        # pending decision files created out-of-band (rts-decision.py
+        # --create, agents) ring the council bell exactly once (#129);
+        # w.dec_seen is event-sourced so replay stays quiet
+        ddir = os.path.join(root, ".devin", "rts", "decisions")
+        if os.path.isdir(ddir):
+            for fn in sorted(os.listdir(ddir)):
+                if not fn.endswith(".json"):
+                    continue
+                d = read_json(os.path.join(ddir, fn), None)
+                if not d or d.get("status") != "pending":
+                    continue
+                did = str(d.get("id") or fn[:-5])
+                if did in w.dec_seen:
+                    continue
+                append_event({"type": "decision.created", "payload": {
+                    "id": did, "kind": str(d.get("kind") or "decision"),
+                    "prompt": str(d.get("prompt") or "")[:120],
+                    "options": d.get("options") or [],
+                    "requester": str(d.get("requester") or "")}})
         adir = os.path.join(root, ".devin", "rts", "agents")
         if os.path.isdir(adir):
             for key in sorted(os.listdir(adir)):

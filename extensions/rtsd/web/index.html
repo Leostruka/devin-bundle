@@ -20,6 +20,25 @@
   #conn.on { color:var(--ok); border-color:var(--ok); }
   #conn.off { color:var(--err); border-color:var(--err); }
   #res { font-size:11px; color:var(--warn); }
+  #alerts { font-size:11px; }
+  #alerts .abadge { color:var(--warn); margin-left:6px; }
+  #alerts .achip { display:inline-block; padding:0 7px; margin-left:4px;
+    border:1px solid var(--warn); border-radius:10px; color:var(--warn);
+    cursor:pointer; animation:aflash .8s infinite; }
+  #alerts .achip.exp { border-color:var(--err); color:var(--err);
+    animation:none; }
+  @keyframes aflash { 50% { opacity:.3 } }
+  #banner { display:none; position:absolute; top:0; left:0; right:0;
+    z-index:14; background:#5a1f1f; color:#ffb3ad; padding:4px 12px;
+    font-size:12px; border-bottom:1px solid var(--err); }
+  #banner.on { display:block; }
+  .dec.exp { border-color:var(--err); }
+  .dec .req { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+  .dec .rface { display:inline-block; width:20px; height:20px;
+    line-height:20px; text-align:center; border:1px solid var(--warn);
+    border-radius:50%; color:var(--warn); font-weight:bold; }
+  .dec button.denydef { border-color:var(--err); color:var(--err); }
+  #decsStack .dec { border-style:dashed; cursor:pointer; opacity:.85; }
   #fps { font-size:10px; color:var(--dim); }
   main { flex:1; display:flex; min-height:0; position:relative; }
   #feedpane { width:210px; background:var(--panel); display:flex;
@@ -118,6 +137,7 @@
   <b>RTSD</b><span class="meta">the Keep</span>
   <span id="conn" class="off">offline</span>
   <span id="res"></span>
+  <span id="alerts"></span>
   <span style="flex:1"></span>
   <span id="fps"></span>
   <button id="themeBtn">theme</button>
@@ -127,8 +147,9 @@
     <div id="ffilter"></div></div>
   <div id="mapwrap">
     <canvas id="cv"></canvas>
+    <div id="banner"></div>
     <div id="council"><div id="councilBox">
-      <h2>WAR COUNCIL</h2><div id="decs"></div>
+      <h2>WAR COUNCIL</h2><div id="decs"></div><div id="decsStack"></div>
     </div></div>
     <div id="help">
       <b>Controls</b><br>
