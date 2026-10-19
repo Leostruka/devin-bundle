@@ -433,6 +433,74 @@ def main():
         assert not any(x["id"] == "sh-zz9" for x in snap["world"]["units"])
         print("PASS tick decay + minion spawn/despawn")
 
+        # #128 comms feed: real events -> flavored radio chatter lines.
+        # Events already sent above cover spawn / debrief(done+failed) /
+        # file position / council decision / orders; add a steering
+        # message intent and out-of-band surfaces (mailbox, heartbeat).
+        assert post(PORT, "/intent", {
+            "kind": "message", "to": "abc12345",
+            "text": "re-check the ledger"}) == 200
+        # mailbox deposit (rts-intents.py format) + heartbeat note land
+        # via the daemon's comms poller on the next tick
+        mbx = os.path.join(root, ".devin", "mailboxes", "abc12345",
+                           "inbox")
+        os.makedirs(mbx, exist_ok=True)
+        with open(os.path.join(mbx, "msg-t1.json"), "w") as f:
+            json.dump({"id": "msg-t1", "from": "rts-ui",
+                       "to": "abc12345", "type": "task",
+                       "content": "status?", "status": "unread"}, f)
+        agd = os.path.join(root, ".devin", "rts", "agents", "abc12345")
+        os.makedirs(agd, exist_ok=True)
+        with open(os.path.join(agd, "status.json"), "w") as f:
+            json.dump({"note": "tests 46/46 green"}, f)
+        feed = []
+        for _ in range(30):
+            st, snap = get(PORT, "/snapshot")
+            feed = snap["world"].get("feed") or []
+            if any(l["kind"] == "raven" for l in feed) and \
+                    any(l["kind"] == "note" for l in feed):
+                break
+            time.sleep(0.3)
+        by_kind = {}
+        for l in feed:
+            by_kind.setdefault(l["kind"], []).append(l)
+        # 5+ distinct flavors, all with real payload data
+        for k in ("spawn", "debrief", "position", "council", "order",
+                  "steering", "raven", "note"):
+            assert k in by_kind, (k, feed)
+        sp = [l for l in by_kind["spawn"]
+              if "takes the field" in l["text"]][0]
+        assert sp["who"].startswith("Far Seer"), sp      # researcher cls
+        assert "probe task" in sp["text"], sp
+        assert any(l["who"] == "Cmdr" and "requisition" in l["text"]
+                   for l in by_kind["spawn"])            # spawn intent
+        deb = [l for l in by_kind["debrief"] if "46" not in l["text"]]
+        assert any("failed" in l["text"] or "retreat" in l["text"]
+                   or "unit down" in l["text"] for l in deb), deb
+        pos = by_kind["position"][0]
+        assert "alpha/f.py" in pos["text"], pos          # real file path
+        assert any("rallied job" in l["text"] for l in by_kind["spawn"])
+        st_line = by_kind["steering"][0]
+        assert st_line["uid"] == "abc12345", st_line     # right agent id
+        assert "Far Seer-1" in st_line["text"], st_line  # name resolved
+        assert "re-check the ledger" in st_line["text"], st_line
+        rv = by_kind["raven"][0]
+        assert "rts-ui" in rv["text"] and "Far Seer-1" in rv["text"], rv
+        assert rv["uid"] == "abc12345", rv
+        nt = by_kind["note"][0]
+        assert "tests 46/46 green" in nt["text"], nt
+        mails = snap["world"].get("mail") or []
+        assert any(m["id"] == "msg-t1" for m in mails), mails
+        # the deposit became a real event in events.jsonl
+        evs = [json.loads(l) for l in open(log, encoding="utf-8")
+               if l.strip()]
+        assert any(e["type"] == "mail.deposit" for e in evs)
+        assert any(e["type"] == "agent.note" for e in evs)
+        # scrollback is event-sourced: feed rebuilds identically (the
+        # replay equality check below covers world.feed byte-for-byte)
+        print("PASS comms feed (%d lines, %d kinds, raven+note poller)"
+              % (len(feed), len(by_kind)))
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
         sys.path.insert(0, HERE)
         import world as worldmod

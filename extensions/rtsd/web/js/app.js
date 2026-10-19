@@ -29,7 +29,9 @@
     fades: [],               // death/despawn markers {x,y,cls,t0} (#125)
     acks: {},                // unit id -> {text,t0} local ack barks
     demo: false,
-    feed: [],                // raw recent events (comms feed lands in #128)
+    feed: [],                // comms lines {t,kind,who,cls,uid,text} (#128)
+    feedFilter: { kind: null, cls: null },
+    ravens: [],              // in-flight mailbox birds {fx,fy,tx,ty,t0}
     barks: {}
   };
 
@@ -39,12 +41,58 @@
         '"': "&quot;", "'": "&#39;" }[c]; });
   }
   function el(id) { return document.getElementById(id); }
-  function logFeed(m) {
-    state.feed.unshift(m);
+
+  // ---- comms feed (#128) ----------------------------------------------
+  // Server feed lines are event-sourced (world.feed rebuilds identically
+  // from events.jsonl); local entries (order echoes, group assigns) are
+  // UI-side only and never pretend to be agent traffic.
+  var FEED_KINDS = ["spawn", "debrief", "position", "note", "council",
+                    "order", "steering", "raven", "local"];
+
+  function logFeed(m) {   // local UI echo (orders, groups, demo notice)
+    pushFeed({ t: Date.now() / 1000, kind: "local", who: "UI",
+               cls: null, uid: null, text: m });
+  }
+  function pushFeed(f) {
+    // skip if the snapshot rebuild already delivered this line
+    for (var i = 0; i < Math.min(5, state.feed.length); i++) {
+      var g = state.feed[i];
+      if (g.t === f.t && g.who === f.who && g.text === f.text) return;
+    }
+    state.feed.unshift(f);
     if (state.feed.length > 200) state.feed.pop();
-    el("feed").innerHTML = state.feed.map(function (f) {
-      return "<div>" + esc(f) + "</div>";
+    renderFeed();
+  }
+  function renderFeed() {
+    var ff = state.feedFilter;
+    var lines = state.feed.filter(function (f) {
+      return (!ff.kind || f.kind === ff.kind) &&
+             (!ff.cls || f.cls === ff.cls || f.who === ff.cls);
+    });
+    el("feed").innerHTML = lines.map(function (f) {
+      var t = new Date((f.t || 0) * 1000).toLocaleTimeString();
+      return "<div class='fl k-" + esc(f.kind || "local") + "'" +
+        (f.uid ? " data-uid='" + esc(f.uid) + "'" : "") +
+        "><span class='ft'>" + t + "</span> " +
+        "<span class='fw'>[" + esc(f.who || "?") + "]</span> " +
+        esc(f.text || "") + "</div>";
     }).join("");
+    // filter chips: one per kind seen + per unit class seen
+    var kinds = {}, clss = {};
+    state.feed.forEach(function (f) {
+      if (f.kind) kinds[f.kind] = 1;
+      if (f.cls) clss[f.cls] = 1;
+    });
+    var chip = function (key, val) {
+      return "<button class='fchip" +
+        (ff[key] === (val || null) ? " on" : "") + "' data-fk='" + key +
+        "' data-fv='" + esc(val) + "'>" + esc(val || "all") + "</button>";
+    };
+    el("ffilter").innerHTML =
+      chip("kind", "") + Object.keys(kinds).sort().map(function (k) {
+        return chip("kind", k); }).join("") +
+      Object.keys(clss).sort().map(function (c) {
+        return chip("cls", c); }).join("");
   }
 
   // ---- world -> render state ----------------------------------------
@@ -253,6 +301,10 @@
       var c0 = state.map.caps[Object.keys(state.map.caps)[0]];
       eng.centerOn(c0.cx * TILE, c0.cy * TILE); state._camInit = true;
     }
+    // comms scrollback is event-sourced: the snapshot carries the full
+    // rebuilt feed (world.feed from replayed events) (#128)
+    state.feed = ((snap.world || {}).feed || []).slice().reverse();
+    renderFeed();
     syncRenderables();
     renderPanels();
   }
@@ -275,6 +327,8 @@
         if (m.type === "snapshot") { got = true; applySnapshot(m.snapshot); }
         else if (m.type === "upsert") {
           got = true; refresh(); noteEvent(m.event); pushPing(m.hint);
+          if (m.feed) pushFeed(m.feed);
+          if (m.hint && m.hint.kind === "raven") pushRaven(m.hint);
         } else if (m.type === "tick") { got = true; applyTick(m); }
       };
       ws.onerror = function () { ws.close(); };
@@ -351,9 +405,18 @@
     return state.pings;
   }
 
+  // raven flight: mailbox deposit -> bird arcs sender->recipient (#128)
+  function pushRaven(h) {
+    if (!h.from || !h.to) return;
+    state.ravens.push({ fx: (h.from[0] + .5) * TILE,
+                        fy: (h.from[1] + .5) * TILE,
+                        tx: (h.to[0] + .5) * TILE,
+                        ty: (h.to[1] + .5) * TILE,
+                        t0: performance.now() });
+    if (state.ravens.length > 8) state.ravens.shift();
+  }
+
   function noteEvent(ev) {
-    var t = new Date((ev.ts || 0) * 1000).toLocaleTimeString();
-    logFeed(t + " " + ev.type + (ev.tool ? " " + ev.tool : ""));
     // last-event camera jump target: the unit the event most plausibly owns
     var w = state.world;
     if (w && ev.type === "hook.posttooluse") {
@@ -991,6 +1054,26 @@
   });
   el("themeBtn").onclick = function () { Theme.toggle(); renderPanels(); };
 
+  // feed entry click -> select the speaking unit + camera jump (#128)
+  el("feed").addEventListener("click", function (e) {
+    var d = e.target.closest("[data-uid]");
+    if (!d || !state.map) return;
+    var id = d.dataset.uid;
+    var u = state.units.filter(function (x) { return x.id === id; })[0];
+    if (!u) return;
+    state.selAll = [id]; state.sel = id;
+    state.selB = null; state.bDetail = null;
+    eng.centerOn(u.x, u.y);
+    syncRenderables(); renderPanels();
+  });
+  // filter chips: kind / class toggles (click again or 'all' to clear)
+  el("ffilter").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-fk]");
+    if (!b) return;
+    var key = b.dataset.fk, val = b.dataset.fv || null;
+    state.feedFilter[key] = state.feedFilter[key] === val ? null : val;
+    renderFeed();
+  });
   document.getElementById("decs").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-dec]");
     if (b) RTS.answer(b.dataset.dec, parseInt(b.dataset.idx, 10));
@@ -1001,7 +1084,22 @@
     var m = v.match(/^\/spawn\s+(\S+)\s+(.+)/);
     if (m) return RTS.intent({ kind: "spawn", profile: m[1], task: m[2] });
     var at = v.match(/^@(\S+)\s+(.+)/);
-    if (at) return RTS.intent({ kind: "message", to: at[1], text: at[2] });
+    if (at) {
+      // steering (#128): resolve unit names (Knight-4) to the real
+      // agent id the mailbox / rts-intents.py path expects
+      var to = at[1], uid = null;
+      (state.world && state.world.units || []).forEach(function (u) {
+        if (uid) return;
+        if (u.id === to || (u.name &&
+            u.name.toLowerCase() === to.toLowerCase())) uid = u.id;
+      });
+      var it = { kind: "message", to: uid || to, text: at[2] };
+      if (!uid) {
+        logFeed("@" + to + " not a known unit - message queued raw");
+        return RTS.intent(it);
+      }
+      return RTS.intent(it);
+    }
     RTS.intent({ kind: "goal", text: v });
   };
   el("msg").addEventListener("keydown", function (e) {
@@ -1016,7 +1114,7 @@
     eng.render({ tiles: state.map, fog: state.map && state.map.fog,
       pois: state.map && state.map.pois, pings: livePings(),
       workers: state.workers, fades: state.fades,
-      waypoints: state.waypoints,
+      waypoints: state.waypoints, ravens: state.ravens,
       srvClock: state.srvClock,
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,

@@ -325,6 +325,38 @@
                      s.x - 10 * z, s.y - 10 * z, 20 * z, 20 * z);
         ctx.globalAlpha = 1;
       });
+      // ravens: mailbox deposits arc sender -> recipient, flap + fade (#128)
+      (st.ravens || []).forEach(function (r) {
+        var age = (now - r.t0) / 1000, dur = 5;
+        if (age > dur) return;
+        var p = age / dur;
+        var wx = r.fx + (r.tx - r.fx) * p;
+        var wy = r.fy + (r.ty - r.fy) * p - Math.sin(p * Math.PI) * TILE;
+        var s = self.toScreen(wx, wy);
+        if (s.x < -20 || s.y < -20 || s.x > cv.width + 20 ||
+            s.y > cv.height + 20) return;
+        var flap = (now % 360 < 180) ? -1 : 1;
+        ctx.strokeStyle = "#e6e2d0";
+        ctx.lineWidth = 2;
+        ctx.beginPath();                      // body + flapping wings
+        ctx.arc(s.x, s.y, 2.5 * z, 0, 7);
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - 6 * z, s.y + flap * 5 * z);
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x + 6 * z, s.y + flap * 5 * z);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        // faint dotted trail back to the origin
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = "#e6e2d0";
+        for (var q = 0.15; q < p; q += 0.15) {
+          var tx2 = r.fx + (r.tx - r.fx) * q;
+          var ty2 = r.fy + (r.ty - r.fy) * q - Math.sin(q * Math.PI) * TILE;
+          var ts2 = self.toScreen(tx2, ty2);
+          ctx.fillRect(ts2.x - 1, ts2.y - 1, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+      });
       // queued order waypoints (#127): dashed path from the unit to each
       // numbered flag; ghost (translucent) while the intent is pending,
       // solid once the session acknowledged it
