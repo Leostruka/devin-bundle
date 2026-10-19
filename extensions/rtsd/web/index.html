@@ -20,6 +20,15 @@
   #conn.on { color:var(--ok); border-color:var(--ok); }
   #conn.off { color:var(--err); border-color:var(--err); }
   #res { font-size:11px; color:var(--warn); }
+  #res.flash { animation:resflash 1.2s ease-out; }
+  @keyframes resflash { 0% { color:#fff; background:var(--err); }
+    100% { color:var(--warn); background:transparent; } }
+  .fl.k-econ .fw { color:var(--warn); }
+  .ebars { display:flex; align-items:flex-end; gap:2px; height:14px;
+           margin:3px 0; }
+  .ebar { display:inline-block; width:8px; background:var(--warn);
+          min-height:1px; }
+  #econ { max-height:110px; }
   #alerts { font-size:11px; }
   #alerts .abadge { color:var(--warn); margin-left:6px; }
   #alerts .achip { display:inline-block; padding:0 7px; margin-left:4px;
@@ -179,6 +188,7 @@
   </div>
   <div id="side">
     <div class="pane" id="quests"><h3>Quest log</h3><div id="tlist"></div></div>
+    <div class="pane" id="econ"><h3>Economy</h3><div id="econbody"></div></div>
   </div>
 </main>
 <div id="bottom">
