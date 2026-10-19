@@ -230,9 +230,15 @@
         var s = self.toScreen(p.x * TILE + TILE / 2, p.y * TILE + TILE / 2);
         if (s.x < -30 || s.y < -30 || s.x > cv.width + 30 ||
             s.y > cv.height + 30) return;
-        var g = { quest: "!", gold: "*", camp: "x" }[p.kind] || "?";
-        var c = { quest: pal.sel, gold: "#ffd54a",
-                  camp: pal.err }[p.kind] || pal.text;
+        // #130 quest marker states: open "!" gold, blocked "?" grey,
+        // done "*" rewards stamp (green), failed "!" red until retried
+        var g = p.kind === "quest"
+          ? (p.qst === "done" ? "*" : p.qst === "blocked" ? "?" : "!")
+          : { gold: "*", camp: "x" }[p.kind] || "?";
+        var c = p.kind === "quest"
+          ? ({ done: "#3fb950", blocked: "#8b949e", failed: pal.err,
+               open: "#ffd54a" })[p.qst] || "#ffd54a"
+          : { gold: "#ffd54a", camp: pal.err }[p.kind] || pal.text;
         ctx.fillStyle = c;
         ctx.font = "bold " + Math.max(10, 14 * z) + "px monospace";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";

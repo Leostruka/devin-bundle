@@ -760,7 +760,7 @@ class World:
                         "files": self.layout["counts"].get(rid, 0)})
         return out
 
-    def _fog_mark(self, now):
+    def _fog_mark(self, now, by_lane=None):
         """Per-tile fog (0 shroud / 1 explored / 2 lit) + mark codes.
         Fog is time-derived from tile_heat so replay stays pure."""
         n = MAP_W * MAP_H
@@ -783,14 +783,23 @@ class World:
                  "y": file_tile(self.layout, self.root, g["path"]) // MAP_W,
                  "ref": g["path"], "size": g["size"]}
                 for g in self.layout["gold"]]
-        for q in scan_issues(self.root):
+        for q in self._quests(by_lane):
+            if q["kind"] == "main":
+                continue
             p = os.path.join(self.root, ".devin", "scratch", q["effort"],
                              "issues", q["id"] + ".md")
             t = file_tile(self.layout, self.root, p)
             if mark[t] == M_NONE:
                 mark[t] = M_QUEST
+            # marker state for the renderer (#130): done = reward stamp,
+            # failed = stays red until retried, blocked = greyed "?",
+            # open = golden "!"
+            g = q.get("gates")
+            qst = ("done" if q["done"] else
+                   "failed" if q["failed"] or (g and g["fail"]) else
+                   "blocked" if q["blocked"] else "open")
             pois.append({"kind": "quest", "x": t % MAP_W, "y": t // MAP_W,
-                         "ref": q["id"], "title": q["title"]})
+                         "ref": q["id"], "title": q["title"], "qst": qst})
         caps = self.layout["capitals"]
         for r in self.layout["regions"]:
             live = self.regions.get(r)
@@ -815,8 +824,7 @@ class World:
         root = self.root
         if bid == "town-hall":
             qs = self._quests()
-            done = {q["id"] for q in qs
-                    if q["status"] in ("done", "closed", "complete")}
+            done = {q["id"] for q in qs if q.get("done")}
             d["goal"] = self.goal
             d["quests"] = {"total": len(qs), "done": len(done),
                            "blocked": sum(1 for q in qs if q["blocked"])}
@@ -1074,8 +1082,11 @@ class World:
                 if isinstance(it.get("x"), int) and \
                         isinstance(it.get("y"), int):
                     extra = " (%s,%s)" % (it["x"], it["y"])
-                if it.get("quest"):
-                    extra += " [%s]" % it["quest"]
+                if it.get("quest"):   # #130: assign = quest accepted
+                    return self._line(ts, "quest", "Quest Log", None,
+                                      self._uid_of(to),
+                                      "Quest accepted: %s -> %s%s" % (
+                                          it["quest"], nm, extra))
                 return self._line(ts, "order", "Cmdr", None,
                                   self._uid_of(to),
                                   "orders -> %s: %s%s" % (
@@ -1172,21 +1183,109 @@ class World:
                     "xy": list(self.layout["capitals"][reg])}
         return None
 
-    def _quests(self):
+    # issue #130: quest log. DONE/FAIL cover both the canonical local
+    # triage labels and the "resolved" status the scratch issues actually
+    # use. Dependency tokens may be short prefixes ("01" -> "01-x.md"),
+    # GitHub refs ("#120" -> "120.md") or prose; only tokens that resolve
+    # to a real issue id count toward blocking (raw text stays in
+    # blocked_by for the dependency-chain display).
+    _Q_DONE = {"done", "closed", "complete", "completed", "resolved"}
+    _Q_FAIL = {"failed", "fail", "rework", "blocked-fail"}
+
+    def _resolve_dep(self, dep, qs, effort):
+        dep = dep.strip().lstrip("#")
+        if not dep:
+            return None
+        pools = ([q["id"] for q in qs if q["effort"] == effort] +
+                 [q["id"] for q in qs if q["effort"] != effort])
+        for qid in pools:
+            if qid == dep or qid.startswith(dep + "-") \
+                    or qid.split("-")[0] == dep:
+                return qid
+        return None
+
+    def _quests(self, by_lane=None):
         qs = scan_issues(self.root)
-        done = {q["id"] for q in qs
-                if q["status"] in ("done", "closed", "complete")}
+        done = {q["id"] for q in qs if q["status"] in self._Q_DONE}
         for q in qs:
-            deps = [d.strip() for d in re.split(r"[,;\s]+",
-                    q.get("blocked_by") or "") if d.strip()
-                    and d.strip() != "-"]
+            q["kind"] = "side"
+            toks = [d.strip() for d in re.split(r"[,;\s]+",
+                    q.get("blocked_by") or "")
+                    if d.strip() and d.strip() != "-"]
+            deps = []
+            for t in toks:
+                r = self._resolve_dep(t, qs, q["effort"])
+                if r and r not in deps:
+                    deps.append(r)
             q["deps"] = deps
             q["blocked"] = any(d not in done for d in deps)
+            q["done"] = q["id"] in done
+            q["failed"] = q["status"] in self._Q_FAIL
+        # assignment: a hero's latest order carrying a quest ref marks it
+        # as that quest's assignee (#130 assign flow); order lifecycle is
+        # overlaid separately, so consumed quests stay on the hero's sheet
+        latest = {}
+        for uid, ords in self.orders.items():
+            for o in reversed(ords):
+                if o.get("quest"):
+                    latest[uid] = str(o["quest"])
+                    break
+        # ledger link: a ledger named after the issue id wins (per-quest
+        # gates), else the effort ledger (v1 convention)
+        for q in qs:
+            lid = None
+            if by_lane:
+                if q["id"] in by_lane:
+                    lid = q["id"]
+                elif q["effort"] in by_lane:
+                    lid = q["effort"]
+            q["ledger"] = lid
+            if lid and by_lane:
+                lg = by_lane[lid]
+                q["gates"] = {"pass": lg["passed"],
+                              "fail": sum(1 for g in lg["gates"]
+                                          if g["state"] == "fail"),
+                              "total": len(lg["gates"])}
+            else:
+                q["gates"] = None
+            q["assignees"] = [u["id"] for u in self.units.values()
+                              if latest.get(u["id"]) == q["id"]]
         if self.goal:
-            qs.insert(0, {"id": "main-quest", "effort": "",
+            qs.insert(0, {"id": "main-quest", "effort": "", "kind": "main",
                           "title": self.goal["text"], "status": "main",
-                          "blocked_by": "", "deps": [], "blocked": False})
+                          "blocked_by": "", "deps": [], "blocked": False,
+                          "done": False, "failed": False, "ledger": None,
+                          "gates": None, "assignees": []})
         return qs
+
+    def _quest_feed(self, qs, now):
+        """Snapshot-time quest lines (#130): progress/completion is file
+        state (issue Status + ledger gates), so these are computed, never
+        appended to the event-sourced feed - replay stays pure."""
+        lines = []
+        for q in qs:
+            if q["kind"] == "main":
+                continue
+            g = q.get("gates")
+            if q["done"]:
+                txt = ("Quest complete - reward: %s ledger GREEN (%d/%d)"
+                       % (q["ledger"] or q["effort"], g["pass"],
+                          g["total"]) if g else
+                       "Quest complete: %s" % q["id"])
+            elif g and g["fail"]:
+                txt = ("Quest failed: %s - marker stays red until retried"
+                       % q["id"])
+            elif g and g["pass"]:
+                txt = "Objective complete (%d/%d): %s" % (
+                    g["pass"], g["total"], q["title"][:60])
+            elif q["assignees"]:
+                txt = "Quest accepted: %s" % q["id"]
+            else:
+                continue
+            lines.append({"t": now, "kind": "quest", "who": "Quest Log",
+                          "cls": None, "uid": (q["assignees"] or [None])[0],
+                          "text": txt})
+        return lines
 
     def snapshot(self, now=None):
         now = time.time() if now is None else now
@@ -1212,11 +1311,27 @@ class World:
                     continue
         units = []
         ist = self._intent_status()
+        quests = self._quests(by_lane)
+        qmap = {q["id"]: q for q in quests}
         for u in self.units.values():
             u = dict(u)
             if u["kind"] == "hero":
                 u["status_live"] = self._live_status(u, now)
-                lane = by_lane.get(u.get("lane") or "")
+                # quest assignment (#130): the hero's latest order carrying
+                # a quest ref binds it to that issue; HP/xp/loot then track
+                # the issue's ledger gates (per-issue ledger wins, else the
+                # effort ledger, else the lane ledger)
+                qid = None
+                for o in reversed(self.orders.get(u["id"], [])):
+                    if o.get("quest"):
+                        qid = str(o["quest"])
+                        break
+                if qid:
+                    u["quest"] = qid
+                lkey = (qmap[qid]["ledger"] if qid and qid in qmap
+                        and qmap[qid].get("ledger") else None) \
+                    or u.get("lane") or ""
+                lane = by_lane.get(lkey)
                 if lane:
                     total = len(lane["gates"]) or 1
                     u["hp"] = round(100 * lane["passed"] / total)
@@ -1224,7 +1339,11 @@ class World:
                     u["xp"] = u.get("xp", 0) + lane["passed"]
                     u["level"] = 1 + u["xp"] // 3
                     u["inventory"] = [
-                        {"gate": g["id"], "evidence": g.get("evidence", "")}
+                        {"gate": g["id"],
+                         "evidence": g.get("evidence", ""),
+                         "ledger": lkey,
+                         "quest": qid if lkey == (qmap.get(qid) or {})
+                         .get("ledger") else None}
                         for g in lane["gates"]
                         if g["state"] == "pass" and g.get("evidence")][:6]
                 else:
@@ -1270,7 +1389,7 @@ class World:
                    "ts": wk["ts"], "from": wk["from"], "to": wk["to"]}
                   for i, wk in enumerate(workers[-8:])]
         regions = self._region_list()
-        fog, mark, pois = self._fog_mark(now)
+        fog, mark, pois = self._fog_mark(now, by_lane)
         # idle-worker button (#127): heroes with no active order; fleet
         # status cross-checked via status_live (idle/stale, not busy)
         idle = [u["id"] for u in units
@@ -1282,7 +1401,10 @@ class World:
             "now": now,
             "units": units,
             "idle": idle,
-            "feed": self.feed[-80:],       # comms scrollback (#128)
+            # comms scrollback (#128) + quest log lines (#130): the quest
+            # lines are snapshot-derived (issue status + ledger gates),
+            # appended after the event feed so replay stays pure
+            "feed": self.feed[-80:] + self._quest_feed(quests, now),
             "mail": self.mail[-20:],       # recent mailbox deposits
             "workers": wunits,
             "buildings": [dict(b, pos=self.sites.get(b["id"]),
@@ -1292,7 +1414,7 @@ class World:
                           "supply_used": supply_used,
                           "supply_cap": SUPPLY_CAP, "upkeep": upkeep,
                           "window": self._window},
-            "quests": self._quests(),
+            "quests": quests,
             "map": {"root": self.root, "sig": self.layout["sig"],
                     "w": MAP_W, "h": MAP_H,
                     "tile_region": self.layout["tile_region"],
