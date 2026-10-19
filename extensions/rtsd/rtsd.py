@@ -67,11 +67,11 @@ def append_event(ev):
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(ev, ensure_ascii=False) + "\n")
         project_fleet(ev)
-        hint = None
+        hint = line = None
         if STATE["world"] is not None:
-            STATE["world"].apply(ev)
+            line = STATE["world"].apply(ev)
             hint = STATE["world"].event_hint(ev)
-    broadcast({"type": "upsert", "event": ev, "hint": hint})
+    broadcast({"type": "upsert", "event": ev, "hint": hint, "feed": line})
 
 
 def _find_agent_id(resp):
@@ -517,10 +517,50 @@ def main():
         print("remote: http://<lan-ip>:%d/?token=%s (ttl %ds)"
               % (rport, STATE["token"], int(ttl)))
 
+    def poll_comms():
+        """Turn out-of-band surfaces into real events (#128): new
+        .devin/mailboxes/*/inbox/msg-*.json files -> mail.deposit (raven),
+        changed agent status.json `note` -> agent.note (status report).
+        Dedup keys live in the world (mail_seen/notes), so replay of
+        events.jsonl keeps them quiet."""
+        w = STATE["world"]
+        root = STATE["root"]
+        mroot = os.path.join(root, ".devin", "mailboxes")
+        if os.path.isdir(mroot):
+            for to in sorted(os.listdir(mroot)):
+                ib = os.path.join(mroot, to, "inbox")
+                if not os.path.isdir(ib):
+                    continue
+                for fn in sorted(os.listdir(ib)):
+                    if not fn.endswith(".json"):
+                        continue
+                    d = read_json(os.path.join(ib, fn), None)
+                    if not d or not d.get("id") \
+                            or d["id"] in w.mail_seen:
+                        continue
+                    append_event({"type": "mail.deposit", "mail": {
+                        "id": str(d["id"]),
+                        "from": str(d.get("from") or "?"),
+                        "to": str(d.get("to") or to),
+                        "kind": str(d.get("type") or "task"),
+                        "preview": str(d.get("content") or "")[:80]}})
+        adir = os.path.join(root, ".devin", "rts", "agents")
+        if os.path.isdir(adir):
+            for key in sorted(os.listdir(adir)):
+                hb = read_json(os.path.join(adir, key, "status.json"),
+                               None)
+                if not hb:
+                    continue
+                note = hb.get("note")
+                if note and w.notes.get(key) != note:
+                    append_event({"type": "agent.note", "agent": key,
+                                  "note": str(note)[:120]})
+
     def tick_loop():
         while True:
             time.sleep(TICK_S)
             try:
+                poll_comms()
                 deltas = STATE["world"].tick(time.time())
                 if deltas:
                     broadcast({"type": "tick", "ts": time.time(),

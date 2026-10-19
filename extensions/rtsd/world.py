@@ -466,6 +466,12 @@ class World:
         self.tile_of = {}          # path -> tile idx (deterministic)
         self.file_lanes = {}       # path -> set(lanes) for contested
         self._fogc = {}            # tile idx -> last broadcast fog level
+        self.feed = []             # comms chatter lines (#128, event-sourced)
+        self.mail = []             # mailbox deposits seen via events
+        self.mail_seen = set()     # msg ids already announced
+        self.notes = {}            # agent key -> last status.json note
+        self._fn = 0               # feed-line counter (template pick, replay-
+                                   # deterministic: same order, same count)
         # WC3 start: home territory around the "root" capital is explored
         # (ts=0 -> permanently dim-explored, never lit)
         hc = self.layout["capitals"].get("root")
@@ -489,6 +495,24 @@ class World:
             self._bump("town-hall", ts)
         elif et == "decision.answered":
             self._bump("town-hall", ts)
+        elif et == "mail.deposit":
+            m = ev.get("mail") or {}
+            if m.get("id") and m["id"] not in self.mail_seen:
+                self.mail_seen.add(m["id"])
+                self.mail.append(dict(m))
+                if len(self.mail) > 64:
+                    self.mail = self.mail[-64:]
+        elif et == "agent.note":
+            key = ev.get("agent")
+            if key:
+                self.notes[str(key)] = ev.get("note", "")
+        line = self.feed_line(ev, ts)
+        if line:
+            self.feed.append(line)
+            self._fn += 1
+            if len(self.feed) > 400:
+                self.feed = self.feed[-400:]
+        return line
 
     def _bump(self, building, ts):
         if building in self.buildings:
@@ -897,10 +921,216 @@ class World:
             d["loot"] = loot[:20]
         return d
 
+    # ---- comms feed (#128) ----
+    # Every line is generated inside apply() from the event's real payload,
+    # so replaying events.jsonl rebuilds identical scrollback. Template
+    # choice uses self._fn (a pure function of event order), never random.
+
+    def _name_of(self, ref):
+        """Unit display name for an agent id / unit name / raw handle."""
+        if not ref:
+            return None
+        ref = str(ref)
+        u = self.units.get(ref)
+        if u:
+            return u.get("name") or ref
+        for u in self.units.values():
+            if u.get("name") == ref:
+                return ref
+        return None
+
+    def _uid_of(self, ref):
+        if not ref:
+            return None
+        ref = str(ref)
+        if ref in self.units:
+            return ref
+        for uid, u in self.units.items():
+            if u.get("name") == ref:
+                return uid
+        return None
+
+    def _lane_speaker(self, lane):
+        """Most recently active hero working this lane, else the peasants."""
+        best, bts = None, -1
+        for u in self.units.values():
+            if u.get("kind") == "hero" and u.get("lane") == lane \
+                    and u.get("last_seen", 0) > bts:
+                best, bts = u, u["last_seen"]
+        if best:
+            return best["id"], best.get("name") or best["id"], \
+                best.get("cls")
+        return None, "Peasants", "Worker"
+
+    def _line(self, ts, kind, who, cls, uid, text):
+        return {"t": ts, "kind": kind, "who": who, "cls": cls,
+                "uid": uid, "text": text[:160]}
+
+    def feed_line(self, ev, ts):
+        """One in-fiction radio line for an event, or None if the event is
+        not chatter-worthy. All payloads come from the event itself."""
+        et = ev.get("type", "")
+        pick = self._fn % 3   # rotates templates deterministically
+        if et == "hook.posttooluse":
+            tool = ev.get("tool") or ""
+            payload = ev.get("payload") or {}
+            ti = payload.get("tool_input") or {}
+            resp = payload.get("tool_response",
+                              payload.get("tool_output",
+                                          payload.get("result")))
+            if tool == "run_subagent":
+                aid = _agent_id(resp)
+                uid, name, cls = aid, self._name_of(aid), None
+                u = self.units.get(aid) or {}
+                cls = u.get("cls")
+                return self._line(ts, "spawn", name or "Barracks", cls,
+                                  uid, "%s takes the field - %s" % (
+                                      name or "new unit",
+                                      str(ti.get("task") or "?")[:60]))
+            if tool == "read_subagent":
+                aid = str(ti.get("agent_id", ""))
+                u = self.units.get(aid) or {}
+                name = u.get("name") or aid or "?"
+                txt = resp if isinstance(resp, str) else json.dumps(
+                    resp or "")
+                fail = "failed" in txt.lower() or "error" in txt.lower()
+                m = re.search(r"(\d+)\s*/\s*(\d+)", txt)
+                tail = " - tests %s/%s" % (m.group(1), m.group(2)) if m \
+                    else ""
+                verb = ("mission failed", "retreat sounded",
+                        "unit down")[pick] if fail else \
+                    ("area clear", "mission complete",
+                     "objective secured")[pick]
+                return self._line(ts, "debrief", name, u.get("cls"), aid,
+                                  "%s%s" % (verb, tail))
+            if tool in FILE_TOOLS:
+                p = _input_path(ti)
+                if not p:
+                    return None
+                lane = str(ti.get("lane") or payload.get("session_id")
+                           or "cmdr")
+                uid, name, cls = self._lane_speaker(lane)
+                rel = os.path.relpath(p, self.root).replace("\\", "/") \
+                    if os.path.isabs(p) else p
+                verb = {"read": "scouting", "grep": "searching",
+                        "glob": "mapping", "find_file_by_name": "locating",
+                        "write": "raising", "edit": "fortifying",
+                        "notebook_edit": "inscribing",
+                        "apply_patch": "patching"}.get(tool, "at")
+                return self._line(ts, "position", name, cls, uid,
+                                  "%s %s" % (verb, rel[-70:]))
+            if tool == "exec":
+                sid = (resp or {}).get("shell_id") if isinstance(resp, dict) \
+                    else None
+                if not sid:
+                    return None
+                nm = "Shell-" + str(sid)[-4:]
+                return self._line(ts, "spawn", nm, "Minion", "sh-" +
+                                  str(sid), "%s summoned" % nm)
+            if tool == "kill_shell":
+                sid = ti.get("shell_id")
+                if not sid:
+                    return None
+                nm = "Shell-" + str(sid)[-4:]
+                return self._line(ts, "position", nm, "Minion",
+                                  "sh-" + str(sid), "%s dismissed" % nm)
+            if tool in ("get_output", "write_to_process"):
+                sid = ti.get("shell_id")
+                if sid and ("sh-" + str(sid)) in self.units:
+                    nm = "Shell-" + str(sid)[-4:]
+                    return self._line(ts, "position", nm, "Minion",
+                                      "sh-" + str(sid),
+                                      "%s reporting in" % nm)
+            return None
+        if et == "decision.created":
+            kind = (ev.get("payload") or {}).get("kind", "decision")
+            return self._line(ts, "council", "War Council", "Marshal",
+                              None, "council called - %s awaits ruling"
+                              % kind)
+        if et == "decision.answered":
+            return self._line(ts, "council", "War Council", "Marshal",
+                              None, "order confirmed - council adjourned")
+        if et == "intent.created":
+            it = ev.get("intent") or {}
+            kind = it.get("kind")
+            if kind == "message":
+                to = str(it.get("to") or "session")
+                nm = self._name_of(to) or to
+                return self._line(ts, "steering", "Cmdr", None,
+                                  self._uid_of(to),
+                                  "-> %s: %s" % (nm, str(
+                                      it.get("text") or "")[:80]))
+            if kind == "order":
+                to = str(it.get("to") or "?")
+                nm = self._name_of(to) or to
+                extra = ""
+                if isinstance(it.get("x"), int) and \
+                        isinstance(it.get("y"), int):
+                    extra = " (%s,%s)" % (it["x"], it["y"])
+                if it.get("quest"):
+                    extra += " [%s]" % it["quest"]
+                return self._line(ts, "order", "Cmdr", None,
+                                  self._uid_of(to),
+                                  "orders -> %s: %s%s" % (
+                                      nm, it.get("order", "?"), extra))
+            if kind == "spawn":
+                return self._line(ts, "spawn", "Cmdr", None, None,
+                                  "requisition: %s - %s" % (
+                                      it.get("profile", "?"),
+                                      str(it.get("task") or "")[:60]))
+            if kind == "goal":
+                return self._line(ts, "order", "Cmdr", None, None,
+                                  "new main quest: %s" % str(
+                                      it.get("text") or "")[:80])
+            return None
+        if et == "mail.deposit":
+            m = ev.get("mail") or {}
+            frm = self._name_of(m.get("from")) or str(
+                m.get("from") or "?")
+            to = self._name_of(m.get("to")) or str(m.get("to") or "?")
+            return self._line(ts, "raven", "Raven", None,
+                              self._uid_of(m.get("to")),
+                              "%s -> %s: %s" % (frm, to, str(
+                                  m.get("preview") or "")[:60]))
+        if et == "agent.note":
+            key = str(ev.get("agent") or "?")
+            nm = self._name_of(key) or key
+            return self._line(ts, "note", nm, None,
+                              self._uid_of(key),
+                              "reports: %s" % str(
+                                  ev.get("note") or "")[:80])
+        if et == "remote.open":
+            return self._line(ts, "council", "Watchtower", None, None,
+                              "remote link open on :%s (ttl %ss)" % (
+                                  ev.get("port"), int(
+                                      ev.get("ttl_s") or 0)))
+        if et == "remote.expired":
+            return self._line(ts, "council", "Watchtower", None, None,
+                              "remote link closed")
+        if et == "auth.deny":
+            return self._line(ts, "council", "Watchtower", None, None,
+                              "unauthorized contact turned away (%s)"
+                              % ev.get("ip", "?"))
+        return None
+
     def event_hint(self, ev):
         """Map-ping hint for a just-applied event: {kind, xy:[tx,ty]}.
         Called by rtsd after apply() so file_lanes reflect this event."""
         et = ev.get("type", "")
+        if et == "mail.deposit":
+            m = ev.get("mail") or {}
+            th = self.sites.get("town-hall")
+            home = list(th["xy"]) if th else [MAP_W // 2, MAP_H // 2]
+
+            def endpoint(ref):
+                uid = self._uid_of(ref)
+                u = self.units.get(uid) if uid else None
+                lane = (u or {}).get("lane")
+                if lane in self.layout["capitals"]:
+                    return list(self.layout["capitals"][lane])
+                return home
+            return {"kind": "raven", "from": endpoint(m.get("from")),
+                    "to": endpoint(m.get("to"))}
         if et == "decision.created":
             s = self.sites.get("town-hall")
             return {"kind": "decision", "xy": s["xy"]} if s else None
@@ -1045,6 +1275,8 @@ class World:
             "now": now,
             "units": units,
             "idle": idle,
+            "feed": self.feed[-80:],       # comms scrollback (#128)
+            "mail": self.mail[-20:],       # recent mailbox deposits
             "workers": wunits,
             "buildings": [dict(b, pos=self.sites.get(b["id"]),
                              rally=self.rally_of(b["id"]))
