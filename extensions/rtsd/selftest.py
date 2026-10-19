@@ -225,6 +225,48 @@ def main():
         assert 1 in m["fog"] and 2 in m["fog"], "fog dims/lits missing"
         print("PASS world map (territories, plots, fog, contested, pois)")
 
+        # #123 buildings: pinned to real plots; detail endpoint = real data
+        os.makedirs(os.path.join(root, ".devin", "agents"),
+                    exist_ok=True)
+        os.makedirs(os.path.join(root, ".devin", "memory"),
+                    exist_ok=True)
+        with open(os.path.join(root, ".devin", "agents",
+                               "implementer.md"), "w") as f:
+            f.write("# implementer\n")
+        with open(os.path.join(root, ".devin", "memory", "m1.md"),
+                  "w") as f:
+            f.write("# note\n")
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "read_subagent",
+            "payload": {"tool_input": {"agent_id": "lane1"},
+                        "tool_response": "task failed with error"}})
+        st, snap = get(PORT, "/snapshot")
+        blds = {b["id"]: b for b in snap["world"]["buildings"]}
+        regmap = {r["id"]: {tuple(p) for p in r["plots"]}
+                  for r in snap["world"]["map"]["regions"]}
+        for b in blds.values():
+            p = b["pos"]
+            assert p and (tuple(p["xy"]) in regmap[p["region"]]
+                          or p["plot"] == -1), (b["id"], p)
+        st, d = get(PORT, "/buildings/tavern")
+        assert st == 200 and any(
+            r["profile"] == "implementer" for r in d["roster"]), d
+        st, d = get(PORT, "/buildings/library")
+        assert any(e["file"] == "m1.md" for e in d["entries"]), d
+        st, d = get(PORT, "/buildings/watchtower")
+        lg = {l["id"]: l for l in d["ledgers"]}
+        assert lg["eff"]["pass"] == 1 and lg["eff"]["fail"] == 1
+        st, d = get(PORT, "/buildings/barracks")
+        assert any(c["cls"] == "Knight" for c in d["classes"])
+        assert any(i.get("profile") == "researcher" for i in d["queue"])
+        st, d = get(PORT, "/buildings/altar")
+        assert any(f["id"] == "lane1" for f in d["fallen"]), d
+        st, d = get(PORT, "/buildings/portal")
+        assert "remote" in d
+        st, d = get(PORT, "/buildings/nope")
+        assert st == 404
+        print("PASS buildings (plots + real detail endpoints)")
+
         # #120 tick: old heartbeat-less hero decays running -> idle -> stale
         post(PORT, "/event", {
             "type": "hook.posttooluse", "tool": "run_subagent",

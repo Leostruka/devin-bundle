@@ -17,6 +17,8 @@
     units: [],               // renderable units [{id,x,y,cls,...}]
     buildings: [],           // renderable buildings [{id,x,y,bid}]
     sel: null,               // selected unit id
+    selB: null,              // selected building id
+    bDetail: null,           // fetched /buildings/<id> payload
     lastEventPos: null,      // {x,y} for spacebar jump
     demo: false,
     feed: [],                // raw recent events (comms feed lands in #128)
@@ -130,20 +132,24 @@
         gate_fail: !!u.gate_fail, sel: state.sel === u.id,
         unit: u };
     });
-    // buildings: world provides {pos:{r,c}} per plot (#122); for now place
-    // one building per region capital in registry order.
+    // buildings sit on their fixed server-assigned plots (#123)
     var regs = Object.keys(state.map.caps);
     state.buildings = (w.buildings || []).map(function (b, i) {
-      if (b.pos && state.map.caps[b.pos.region]) {
-        var c = state.map.caps[b.pos.region];
-        return { id: b.id, bid: b.id, x: c.cx * TILE, y: c.cy * TILE,
-                 activity: b.activity };
+      var out = { id: b.id, bid: b.id, activity: b.activity,
+        region: b.pos && b.pos.region, sel: state.selB === b.id };
+      if (b.pos && b.pos.xy) {
+        out.x = b.pos.xy[0] * TILE + TILE / 2;
+        out.y = b.pos.xy[1] * TILE + TILE / 2;
+        return out;
       }
-      var c = state.map.caps[regs[i % regs.length]];
+      var c = state.map.caps[out.region] ||
+              state.map.caps[regs[i % regs.length]];
+      if (!c) return out;
       var h = Engine.hash(b.id);
-      return { id: b.id, bid: b.id, activity: b.activity,
-        x: (c.cx + ((h % 5) - 2)) * TILE, y: (c.cy + ((h >> 4) % 5 - 2)) * TILE };
-    });
+      out.x = (c.cx + ((h % 5) - 2)) * TILE;
+      out.y = (c.cy + ((h >> 4) % 5 - 2)) * TILE;
+      return out;
+    }).filter(function (b) { return typeof b.x === "number"; });
   }
 
   // ---- connection ----------------------------------------------------
@@ -316,11 +322,13 @@
           " / needs " + esc(t.deps.join(",")) : "") +
         "</span></div>";
     }).join("") || "<span class='meta'>no quests</span>";
-    // portrait / selection
+    // portrait / selection (unit or building inspector)
     var u = (w.units || []).filter(function (x) {
       return x.id === state.sel; })[0];
     el("portrait").innerHTML = u ? portraitHtml(u) :
-      "<span class='meta'>no unit selected</span>";
+      (state.bDetail ? buildingHtml(state.bDetail) :
+       (state.selB ? "<b>" + esc(state.selB) + "</b>" :
+        "<span class='meta'>nothing selected</span>"));
     // decisions (war council content until #129 restyles it)
     var decs = (state.snap || {}).decisions || [];
     el("council").classList.toggle("on", decs.length > 0);
@@ -333,6 +341,95 @@
         }).join("") + "</div>";
     }).join("");
     el("themeBtn").textContent = "theme: " + th.name;
+  }
+
+  function rows(list, fmt) {
+    return (list || []).map(fmt).join("") ||
+           "<span class='meta'>none</span>";
+  }
+
+  // Inspector for a selected building - every field is live data from
+  // GET /buildings/<id> (issue #123: no fake actions).
+  function buildingHtml(d) {
+    var h = "<b>" + esc(d.name) + "</b> <span class='meta'>" +
+      (d.pos ? esc(d.pos.region) + " plot " + d.pos.plot : "") +
+      " | used " + (d.activity || 0) + "x</span><br>";
+    if (d.id === "town-hall") {
+      h += "<div class='meta'>main quest: " +
+        esc((d.goal && d.goal.text) || "-") + "</div>" +
+        "<div class='meta'>quests " + d.quests.done + "/" +
+        d.quests.total + " done, " + d.quests.blocked + " blocked" +
+        " | workers " + d.workers.active + "/" + d.workers.total +
+        " | pending calls " + d.decisions_pending + "</div>";
+    } else if (d.id === "barracks") {
+      h += "<div class='meta'>production queue: " + d.queue.length +
+        " pending spawn intents</div>" +
+        rows(d.classes, function (c) {
+          return "<button data-cls='" + esc(c.profile) + "'>" +
+            esc(c.cls) + "</button>";
+        }) + "<div class='meta'>pick a class, type task, Enter</div>";
+    } else if (d.id === "tavern") {
+      h += rows(d.roster, function (r) {
+        return "<div>" + esc(r.profile) + " <span class='meta'>" +
+          esc(r.cls) + " | " + esc(r.tier) + " | " + esc(r.scope) +
+          "</span></div>";
+      });
+    } else if (d.id === "library") {
+      h += rows(d.entries, function (e) {
+        return "<div>" + esc(e.file) + " <span class='meta'>" +
+          e.size + "b</span></div>";
+      });
+    } else if (d.id === "watchtower") {
+      h += rows(d.ledgers, function (l) {
+        return "<div>" + esc(l.id) + " <span class='meta'>" + l.pass +
+          " pass / " + l.fail + " fail / " + l.pending +
+          " pending</span></div>";
+      }) + "<div class='meta'>heartbeats: " + d.heartbeats + "</div>";
+    } else if (d.id === "runeforge") {
+      h += rows(d.artifacts, function (a) {
+        return "<div>" + esc(a) + "</div>"; });
+    } else if (d.id === "vault") {
+      h += rows(d.deposits, function (l) {
+        return "<div class='meta'>" + esc(l) + "</div>"; });
+    } else if (d.id === "portal") {
+      var r = d.remote || {};
+      h += r.port
+        ? "<div class='meta'>listening :" + r.port + " | ttl " +
+          (r.ttl_left_s == null ? "-" : r.ttl_left_s) + "s | token " +
+          (r.token ? "set" : "off") + "</div>"
+        : "<span class='meta'>remote link closed (rtsd --remote MIN)</span>";
+    } else if (d.id === "marketplace") {
+      h += rows(d.servers, function (s) {
+        return "<div>" + esc(s.name) + " <span class='meta'>" +
+          esc(s.transport) + " | " + (s.enabled ? "enabled" : "disabled") +
+          "</span></div>";
+      });
+    } else if (d.id === "altar") {
+      h += rows(d.fallen, function (f) {
+        return "<div>" + esc(f.name || f.id) +
+          " <button data-revive='" + esc(f.profile) + "' data-task='" +
+          esc(f.task || "") + "'>revive</button></div>";
+      });
+    } else if (d.id === "trophy-hall") {
+      h += rows(d.loot, function (l) {
+        return "<div>" + esc(l.ledger + "/" + l.gate) +
+          " <span class='meta'>" + esc(l.evidence) + "</span></div>";
+      });
+    }
+    return h;
+  }
+
+  function selectBuilding(b) {
+    state.selB = b ? b.id : null;
+    state.bDetail = null;
+    if (!b || state.demo) { renderPanels(); return; }
+    fetch("/buildings/" + b.id, { headers: TOK ? { "X-RTS-Token": TOK }
+                                               : {} })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (state.selB === (d && d.id)) { state.bDetail = d; }
+        renderPanels();
+      }).catch(renderPanels);
   }
 
   function portraitHtml(u) {
@@ -371,9 +468,24 @@
 
   var eng = Engine.create(el("cv"));
   eng.onPick = function (u, pt, ev) {
-    state.sel = u ? u.id : null;
+    if (u) { state.sel = u.id; state.selB = null; state.bDetail = null; }
+    else {
+      state.sel = null;
+      selectBuilding(eng.pickBuilding(ev.offsetX, ev.offsetY));
+    }
     syncRenderables(); renderPanels();
   };
+  // building inspector actions: hero-class picker + altar revive
+  el("portrait").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.cls) {
+      el("msg").value = "/spawn " + b.dataset.cls + " ";
+      el("msg").focus();
+    } else if (b.dataset.revive) {
+      RTS.intent({ kind: "spawn", profile: b.dataset.revive,
+                   task: b.dataset.task || "revive" });
+    }
+  });
 
   el("mm").addEventListener("click", function (e) {
     var r = e.target.getBoundingClientRect();

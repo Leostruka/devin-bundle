@@ -10,6 +10,7 @@ import math
 import os
 import re
 import json
+import subprocess
 import time
 
 CHARS_PER_TOKEN = 4
@@ -70,6 +71,56 @@ TOOL_TO_BUILDING = {
 
 FILE_TOOLS = {"read", "write", "edit", "notebook_edit",
               "grep", "glob", "find_file_by_name", "apply_patch"}
+
+# Preferred home region per building (falls back round-robin when the
+# workspace lacks it or its plots are full).
+BUILDING_AFFINITY = {
+    "town-hall": "root", "watchtower": "root",
+    "library": ".devin", "trophy-hall": ".devin",
+    "barracks": "agents", "tavern": "agents",
+    "runeforge": "scripts", "vault": "docs",
+    "portal": "extensions", "marketplace": "extensions",
+    "altar": "tests",
+}
+
+
+def assign_sites(layout):
+    """Pin each building to a fixed map plot: affinity region first, then
+    round-robin over remaining plots. Deterministic per layout."""
+    plots = layout["plots"]
+    regs = layout["regions"]
+    used = set()
+    sites = {}
+
+    def take(r):
+        for pi, xy in enumerate(plots.get(r, [])):
+            if (r, pi) not in used:
+                used.add((r, pi))
+                return {"region": r, "plot": pi, "xy": list(xy)}
+        return None
+
+    deferred = []
+    for bid, _name in BUILDINGS:
+        pref = BUILDING_AFFINITY.get(bid)
+        s = take(pref) if pref in plots else None
+        if s:
+            sites[bid] = s
+        else:
+            deferred.append(bid)
+    ri = 0
+    for bid in deferred:
+        for k in range(len(regs)):
+            s = take(regs[(ri + k) % len(regs)])
+            if s:
+                sites[bid] = s
+                ri = ri + k + 1
+                break
+        else:                     # more buildings than plots: overflow
+            r = regs[ri % len(regs)]
+            cx, cy = layout["capitals"][r]
+            sites[bid] = {"region": r, "plot": -1, "xy": [cx, cy]}
+            ri += 1
+    return sites
 
 _find_agent_id = None  # injected by rtsd (avoids duplicating the regex)
 _read_json = None
@@ -355,6 +406,7 @@ class World:
         self._thresholds = load_thresholds(root)
         self._live = {}            # unit id -> last computed live status
         self.layout = load_layout(root)   # static terrain (map.json)
+        self.sites = assign_sites(self.layout)  # building -> plot
         self.tile_heat = {}        # tile idx -> last file-touch ts
         self.tile_of = {}          # path -> tile idx (deterministic)
         self.file_lanes = {}       # path -> set(lanes) for contested
@@ -596,6 +648,129 @@ class World:
             pois.append({"kind": "camp", "x": cx, "y": cy, "ref": r})
         return fog, mark, pois
 
+    def building_detail(self, bid, now=None, extra=None):
+        """Per-building real state for the inspector panel (#123). Every
+        field is read from an actual bundle/CLI surface - nothing fake."""
+        now = time.time() if now is None else now
+        extra = extra or {}
+        b = self.buildings.get(bid)
+        if not b:
+            return None
+        d = {"id": bid, "name": b["name"], "activity": b["activity"],
+             "pos": self.sites.get(bid)}
+        root = self.root
+        if bid == "town-hall":
+            qs = self._quests()
+            done = {q["id"] for q in qs
+                    if q["status"] in ("done", "closed", "complete")}
+            d["goal"] = self.goal
+            d["quests"] = {"total": len(qs), "done": len(done),
+                           "blocked": sum(1 for q in qs if q["blocked"])}
+            d["workers"] = {"total": self.worker_total,
+                            "active": sum(1 for wk in self.workers
+                                          if now - wk["ts"]
+                                          <= WORKER_WINDOW_S)}
+            d["decisions_pending"] = extra.get("decisions_pending", 0)
+        elif bid == "barracks":
+            d["classes"] = [{"profile": p, "cls": c,
+                             "model": self._submodel}
+                            for p, c in sorted(HERO_CLASSES.items())]
+            d["queue"] = [i for i in extra.get("intents", [])
+                          if i.get("kind") == "spawn"]
+        elif bid == "tavern":
+            roster = []
+            tiers = {}
+            tm = os.path.join(root, ".devin", "docs", "TOOLS-MAP.md")
+            try:
+                for ln in open(tm, encoding="utf-8"):
+                    mm = re.match(r"\|\s*`?([a-z_-]+)`?\s*\|\s*\w+\s*\|"
+                                  r"\s*(Medium|Max|High)", ln)
+                    if mm:
+                        tiers[mm.group(1)] = mm.group(2)
+            except OSError:
+                pass
+            for adir, scope in ((os.path.join(root, "agents"), "user"),
+                                (os.path.join(root, ".devin", "agents"),
+                                 "project")):
+                if not os.path.isdir(adir):
+                    continue
+                for fn in sorted(os.listdir(adir)):
+                    if fn.endswith(".md") and fn != "README.md":
+                        p = fn[:-3]
+                        roster.append({"profile": p, "scope": scope,
+                                       "cls": HERO_CLASSES.get(p, "Squire"),
+                                       "tier": tiers.get(p, "-")})
+            d["roster"] = roster
+        elif bid == "library":
+            mem = os.path.join(root, ".devin", "memory")
+            d["entries"] = [
+                {"file": fn, "size": os.path.getsize(
+                    os.path.join(mem, fn))}
+                for fn in sorted(os.listdir(mem))
+                if os.path.isfile(os.path.join(mem, fn))
+            ] if os.path.isdir(mem) else []
+        elif bid == "watchtower":
+            lgs = []
+            for lg in scan_ledgers(root):
+                st = [g["state"] for g in lg["gates"]]
+                lgs.append({"id": lg["id"], "pass": st.count("pass"),
+                            "fail": st.count("fail"),
+                            "pending": st.count("pending")})
+            d["ledgers"] = lgs
+            adir = os.path.join(root, ".devin", "rts", "agents")
+            d["heartbeats"] = len(os.listdir(adir)) \
+                if os.path.isdir(adir) else 0
+        elif bid == "runeforge":
+            sdir = os.path.join(root, "scripts")
+            d["artifacts"] = [fn for fn in sorted(os.listdir(sdir))
+                              if os.path.isfile(os.path.join(sdir, fn))
+                              and re.search(r"prompt|compile|forge|emit|rag",
+                                            fn)] \
+                if os.path.isdir(sdir) else []
+        elif bid == "vault":
+            try:
+                out = subprocess.run(
+                    ["git", "log", "--oneline", "-10"], cwd=root,
+                    capture_output=True, text=True, timeout=3)
+                d["deposits"] = [l for l in out.stdout.splitlines() if l]
+            except Exception:
+                d["deposits"] = []
+        elif bid == "portal":
+            r = dict(extra.get("remote") or {})
+            if r.get("opened_at"):
+                r["ttl_left_s"] = max(0, int(r["ttl_s"]
+                                         - (now - r["opened_at"])))
+                r["token"] = bool(r.get("token"))   # never expose the token
+            d["remote"] = r
+        elif bid == "marketplace":
+            cfg = {}
+            try:
+                with open(os.path.join(root, "data",
+                                       "bundle-integrations.json"),
+                          encoding="utf-8") as f:
+                    cfg = json.load(f).get("mcp", {})
+            except Exception:
+                pass
+            d["servers"] = [{"name": k, "enabled": bool(v.get("enabled")),
+                             "transport": v.get("transport", "?")}
+                            for k, v in sorted(cfg.items())]
+        elif bid == "altar":
+            d["fallen"] = [{"id": u["id"], "cls": u.get("cls"),
+                            "name": u.get("name"), "profile":
+                            u.get("profile"), "task": u.get("task", "")}
+                           for u in self.units.values()
+                           if u["kind"] == "hero" and u["status"]
+                           == "failed"]
+        elif bid == "trophy-hall":
+            loot = []
+            for lg in scan_ledgers(root):
+                for g in lg["gates"]:
+                    if g["state"] == "pass" and g.get("evidence"):
+                        loot.append({"ledger": lg["id"], "gate": g["id"],
+                                     "evidence": g["evidence"]})
+            d["loot"] = loot[:20]
+        return d
+
     def _quests(self):
         qs = scan_issues(self.root)
         done = {q["id"] for q in qs
@@ -689,7 +864,8 @@ class World:
         return {
             "now": now,
             "units": units,
-            "buildings": list(self.buildings.values()),
+            "buildings": [dict(b, pos=self.sites.get(b["id"]))
+                          for b in self.buildings.values()],
             "resources": {"gold": gold, "lumber_pct": lumber_pct,
                           "supply_used": supply_used,
                           "supply_cap": SUPPLY_CAP, "upkeep": upkeep,
