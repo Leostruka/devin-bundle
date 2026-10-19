@@ -287,8 +287,28 @@
     c.className = on ? "on" : "off";
   }
 
+  // #135 replay/spectator: body classes come from the snapshot (server
+  // is authoritative for mode + role); replay bar reflects /replay state
+  function syncReplay(rp) {
+    state.rp = rp;
+    el("rpp").textContent = rp.playing ? "pause" : "play";
+    var sc = el("rpscrub");
+    sc.max = rp.total;
+    if (document.activeElement !== sc) sc.value = rp.index;
+    el("rpinfo").textContent = rp.index + "/" + rp.total +
+      (rp.done ? " done" : "");
+    var btns = document.querySelectorAll(".rpsp");
+    for (var i = 0; i < btns.length; i++)
+      btns[i].className = "rpsp" + (+btns[i].dataset.s === rp.speed
+        ? " on" : "");
+  }
+
   function applySnapshot(snap) {
     state.snap = snap;
+    document.body.className =
+      (snap.mode === "replay" ? "replay " : "") +
+      (snap.client_role === "spectator" ? "spectator" : "");
+    if (snap.replay) syncReplay(snap.replay);
     syncDecisions();
     state.world = snap.world || null;
     syncUpkeep();
@@ -363,6 +383,8 @@
                  hk === "spawn" ? "spawn" : "order");
           }
         } else if (m.type === "tick") { got = true; applyTick(m); }
+        else if (m.type === "replay") syncReplay(m.replay);
+        else if (m.type === "score") showScore(m.score);
       };
       ws.onerror = function () { ws.close(); };
       // polling fallback so PWA/remote clients without WS still update
@@ -1282,8 +1304,41 @@
     answer: function (id, i) {
       return post("/decisions/" + id + "/answer", { choice: i })
         .then(refresh);
-    }
+    },
+    replay: function (b) { return post("/replay", b); }
   };
+
+  // #135 victory screen: aggregates arrive via WS at end of replay or
+  // are fetched on demand from GET /score (live sessions included)
+  function showScore(sc) {
+    var h = "<h2>VICTORY SCREEN</h2>" +
+      "<div class='meta'>quests " + sc.quests_done + "/" +
+      sc.quests_total + " complete &nbsp; gates " + sc.gates_pass + "/" +
+      sc.gates_total + " pass (" + sc.gates_fail + " fail) &nbsp; " +
+      "tokens " + sc.gold + " &nbsp; calls " + sc.calls +
+      " &nbsp; duration " + sc.duration_s + "s</div>";
+    if (sc.goal) h += "<div class='meta'>main quest: " +
+      esc(sc.goal) + "</div>";
+    h += "<table><tr><th>hero</th><th>class</th><th>lvl</th>" +
+      "<th>xp</th><th>burn</th><th>status</th></tr>";
+    (sc.heroes || []).forEach(function (u) {
+      h += "<tr><td>" + esc(u.id) + "</td><td>" + esc(u.cls || "?") +
+        "</td><td>" + (u.level || 1) + "</td><td>" + (u.xp || 0) +
+        "</td><td>" + (u.burn || 0) + "</td><td>" +
+        esc(u.status || "?") + "</td></tr>";
+    });
+    h += "</table><div class='meta' style='margin-top:8px'>" +
+      "click anywhere to close</div>";
+    var b = el("scorebox"); b.innerHTML = h; b.className = "on";
+  }
+
+  function fetchScore() {
+    var h = { "X-RTS-Token": TOK };
+    fetch("/score", { headers: TOK ? h : {} })
+      .then(function (r) { return r.json(); })
+      .then(function (sc) { if (!sc.error) showScore(sc); })
+      .catch(function () {});
+  }
 
   // ---- boot ------------------------------------------------------------
 
@@ -1689,6 +1744,17 @@
       eng.centerOn(state.map.caps[b.dataset.breg].cx * TILE,
                    state.map.caps[b.dataset.breg].cy * TILE);
   });
+  // #135 replay transport + victory screen
+  el("scoreBtn").onclick = fetchScore;
+  el("scorebox").addEventListener("click", function () {
+    el("scorebox").className = ""; });
+  el("rpp").onclick = function () {
+    RTS.replay({ action: state.rp && state.rp.playing ?
+      "pause" : "play" }); };
+  document.querySelectorAll(".rpsp").forEach(function (b) {
+    b.onclick = function () { RTS.replay({ speed: +b.dataset.s }); }; });
+  el("rpscrub").addEventListener("change", function (e) {
+    RTS.replay({ action: "seek", index: +e.target.value }); });
   document.getElementById("send").onclick = function () {
     var v = el("msg").value.trim(); if (!v) return;
     el("msg").value = "";

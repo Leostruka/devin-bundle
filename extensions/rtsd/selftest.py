@@ -791,7 +791,181 @@ def main():
                    for b in snap["world"]["breaches"])
         print("PASS breach alarms (persistent territory, seal clears)")
 
+        # #135 replay + spectator + match history + score screen.
+        # Freeze the log at this point into a copy so the live daemon's
+        # poller appends do not shift the replay horizon mid-check.
+        sys.path.insert(0, HERE)
+        import world as worldmod_pre
+        evs_now = [json.loads(l) for l in
+                   open(log, encoding="utf-8") if l.strip()]
+        copylog = os.path.join(root, ".devin", "rts", "sessions")
+        os.makedirs(copylog, exist_ok=True)
+        copylog = os.path.join(copylog, "match-1.jsonl")
+        with open(copylog, "w", encoding="utf-8") as f:
+            for e in evs_now:
+                f.write(json.dumps(e) + "\n")
+
+        # score screen: real aggregates over the same snapshot path
+        st, sc = get(PORT, "/score")
+        assert st == 200 and sc["gates_total"] > 0, sc
+        assert sc["quests_total"] >= 2 and sc["quests_done"] >= 1, sc
+        assert any(h["id"] == "lane1" for h in sc["heroes"]), sc
+        assert sc["heroes"] == sorted(
+            sc["heroes"], key=lambda u: (-u["xp"], u["id"]))
+        assert sc["gold"] > 0 and sc["calls"] > 0 and \
+            sc["duration_s"] >= 0, sc
+        assert sc["goal"] == "ship v3.8.0", sc
+
+        # match history: both logs listed with real per-session stats
+        st, ss = get(PORT, "/sessions")
+        assert st == 200 and len(ss) >= 2, ss
+        ids = [s["id"] for s in ss]
+        assert "events.jsonl" in ids, ids
+        m1 = [s for s in ss if s["id"].endswith("match-1.jsonl")][0]
+        assert m1["events"] == len(evs_now) and m1["agents"] >= 4, m1
+        assert m1["tokens"] == sc["gold"] or m1["tokens"] > 0, m1
+        assert m1["score"]["heroes"], m1
+        print("PASS score screen + match history (%d sessions)" % len(ss))
+
+        # spectator: --remote mints a read-only token; presenting it
+        # (even loopback) scopes every POST to 403 - server-enforced
+        RPORT = PORT + 4
+        # separate root: the remote daemon writes its own events.jsonl
+        # (auth/intent events), which must not shift the main log's
+        # replay horizon for the #120 determinism check below
+        rroot = tempfile.mkdtemp()
+        rproc = subprocess.Popen(
+            [sys.executable, os.path.join(HERE, "rtsd.py"),
+             "--port", str(RPORT), "--root", rroot, "--remote", "2"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            rj = os.path.join(rroot, ".devin", "rts", "remote.json")
+            for _ in range(50):
+                if os.path.isfile(rj):
+                    break
+                time.sleep(0.1)
+            else:
+                raise AssertionError("remote.json never written")
+            toks = json.load(open(rj, encoding="utf-8"))
+            assert toks["token"] and toks["spectator_token"] and \
+                toks["token"] != toks["spectator_token"]
+
+            def post_tok(port, path, obj, tok):
+                c = http.client.HTTPConnection("127.0.0.1", port,
+                                               timeout=5)
+                c.request("POST", path, json.dumps(obj),
+                          {"Content-Type": "application/json",
+                           "X-RTS-Token": tok})
+                r = c.getresponse(); r.read()
+                return r.status
+
+            def get_tok(port, path, tok):
+                c = http.client.HTTPConnection("127.0.0.1", port,
+                                               timeout=5)
+                c.request("GET", path,
+                          headers={"X-RTS-Token": tok})
+                r = c.getresponse()
+                return r.status, json.loads(r.read())
+
+            st, snap = get_tok(RPORT, "/snapshot",
+                               toks["spectator_token"])
+            assert st == 200 and snap["client_role"] == "spectator", \
+                snap.get("client_role")
+            assert post_tok(RPORT, "/intent",
+                            {"kind": "goal", "text": "x"},
+                            toks["spectator_token"]) == 403
+            assert post_tok(RPORT, "/decisions/d1/answer",
+                            {"choice": 0},
+                            toks["spectator_token"]) == 403
+            assert post_tok(RPORT, "/event", {"type": "x"},
+                            toks["spectator_token"]) == 403
+            assert post_tok(RPORT, "/intent",
+                            {"kind": "goal", "text": "admin ok"},
+                            toks["token"]) == 200
+            st, snap = get_tok(RPORT, "/snapshot", toks["token"])
+            assert snap["client_role"] == "admin"
+            print("PASS spectator (read-only token, POSTs 403 "
+                  "server-side, admin unaffected)")
+        finally:
+            rproc.terminate()
+            try:
+                rproc.wait(3)
+            except subprocess.TimeoutExpired:
+                rproc.kill()
+
+        # replay mode: --replay <log> serves a deterministic rebuild;
+        # mutating POSTs are denied, /replay drives play/pause/seek/speed
+        PPORT = PORT + 6
+        pproc = subprocess.Popen(
+            [sys.executable, os.path.join(HERE, "rtsd.py"),
+             "--port", str(PPORT), "--root", root,
+             "--replay", copylog],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            for _ in range(50):
+                try:
+                    st, body = get(PPORT, "/health")
+                    if st == 200:
+                        break
+                except Exception:
+                    time.sleep(0.1)
+            else:
+                raise AssertionError("replay daemon did not start")
+            st, rp = get(PPORT, "/replay")
+            assert rp["total"] == len(evs_now) and rp["index"] == 0 \
+                and not rp["playing"] and not rp["done"], rp
+            st, snap = get(PPORT, "/snapshot")
+            assert snap["mode"] == "replay" and snap["replay"], snap
+            assert post(PPORT, "/intent",
+                        {"kind": "goal", "text": "x"}) == 403
+            assert post(PPORT, "/event", {"type": "x"}) == 403
+            # jump-to-event: scrub to the end = deterministic rebuild
+            assert post(PPORT, "/replay",
+                        {"action": "seek",
+                         "index": rp["total"]}) == 200
+            st, rp = get(PPORT, "/replay")
+            assert rp["done"] and rp["index"] == rp["total"], rp
+            st, snap = get(PPORT, "/snapshot")
+            got_ids = {u["id"] for u in snap["world"]["units"]}
+            live_ids = {u["id"] for u in
+                        worldmod_pre.World.replay(
+                            root, evs_now).snapshot()["units"]}
+            assert got_ids == live_ids, (got_ids ^ live_ids)
+            got_feed = [l["text"] for l in snap["world"]["feed"]]
+            live_feed = [l["text"] for l in
+                         worldmod_pre.World.replay(
+                             root, evs_now).snapshot()["feed"]]
+            assert got_feed == live_feed
+            # scrub back to 0 then play at 4x: visuals stream as the
+            # same upserts live events produce, ending on the score
+            assert post(PPORT, "/replay",
+                        {"action": "seek", "index": 0}) == 200
+            st, snap = get(PPORT, "/snapshot")
+            assert len(snap["world"]["units"]) == 0
+            assert post(PPORT, "/replay",
+                        {"action": "play", "speed": 4}) == 200
+            for _ in range(200):
+                st, rp = get(PPORT, "/replay")
+                if rp["done"]:
+                    break
+                assert rp["speed"] == 4
+                time.sleep(0.2)
+            assert rp["done"], rp          # full tape at 4x
+            st, sc2 = get(PPORT, "/score")
+            assert {h["id"] for h in sc2["heroes"]} == \
+                {h["id"] for h in sc["heroes"]}, sc2
+            assert sc2["gold"] == sc["gold"], (sc2["gold"], sc["gold"])
+            print("PASS replay mode (seek/play@4x/403s, deterministic "
+                  "world + feed, score parity)")
+        finally:
+            pproc.terminate()
+            try:
+                pproc.wait(3)
+            except subprocess.TimeoutExpired:
+                pproc.kill()
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
+        st, snap = get(PORT, "/snapshot")
         sys.path.insert(0, HERE)
         import world as worldmod
         now = snap["world"]["now"]

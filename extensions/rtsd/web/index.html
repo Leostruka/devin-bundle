@@ -160,6 +160,24 @@
   .fl.k-spell .fw { color:#bc8cff; }
   .fl.k-breach .fw { color:var(--err); }
   .fl.k-breach { color:#f8a49e; }
+  #replaybar { display:none; position:absolute; top:0; left:0; right:0;
+    z-index:15; background:rgba(22,27,34,0.95); padding:4px 10px;
+    border-bottom:1px solid var(--warn); align-items:center; gap:8px;
+    font-size:11px; }
+  body.replay #replaybar { display:flex; }
+  body.replay #banner { top:28px; }
+  #replaybar button { font-size:11px; padding:1px 8px; }
+  #replaybar button.on { border-color:var(--ok); color:var(--ok); }
+  #rpscrub { flex:1; }
+  #scorebox { display:none; position:absolute; inset:40px 60px; z-index:16;
+    background:rgba(13,17,23,0.97); border:2px solid var(--warn);
+    border-radius:8px; padding:16px; overflow-y:auto; }
+  #scorebox.on { display:block; }
+  #scorebox h2 { color:var(--warn); font-size:15px; margin-bottom:8px; }
+  #scorebox table { border-collapse:collapse; font-size:11px; }
+  #scorebox td, #scorebox th { padding:2px 10px 2px 0; text-align:left; }
+  body.spectator #cmd, body.spectator #cmdcard { display:none; }
+  body.spectator #bottom { height:110px; }
   #help { display:none; position:absolute; top:40px; right:320px; z-index:20;
           background:var(--panel); border:1px solid var(--warn);
           border-radius:8px; padding:12px; font-size:11px; max-width:260px; }
@@ -182,6 +200,7 @@
   <span id="fps"></span>
   <button id="sndBtn" title="alert sounds (M toggles, -/= volume)">snd:on</button>
   <button id="ntfBtn" title="browser notifications when tab is hidden">notify:off</button>
+  <button id="scoreBtn" title="victory screen: session aggregates">score</button>
   <button id="themeBtn">theme</button>
 </header>
 <main>
@@ -189,6 +208,16 @@
     <div id="ffilter"></div></div>
   <div id="mapwrap">
     <canvas id="cv"></canvas>
+    <div id="replaybar">
+      <span style="color:var(--warn)">REPLAY</span>
+      <button id="rpp">play</button>
+      <button class="rpsp" data-s="1">1x</button>
+      <button class="rpsp" data-s="2">2x</button>
+      <button class="rpsp" data-s="4">4x</button>
+      <input id="rpscrub" type="range" min="0" max="0" value="0">
+      <span id="rpinfo" class="meta">0/0</span>
+    </div>
+    <div id="scorebox"></div>
     <div id="banner"></div>
     <div id="council"><div id="councilBox">
       <h2>WAR COUNCIL</h2><div id="decs"></div><div id="decsStack"></div>
