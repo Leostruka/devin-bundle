@@ -64,7 +64,10 @@ def get(port, path):
 
 def main():
     root = sys.argv[1] if len(sys.argv) > 1 else tempfile.mkdtemp()
-    os.makedirs(os.path.join(root, ".devin"), exist_ok=True)
+    for d in (".devin", "alpha", "beta"):
+        os.makedirs(os.path.join(root, d), exist_ok=True)
+    with open(os.path.join(root, "alpha", "f.py"), "w") as f:
+        f.write("x = 1\n")
     proc = subprocess.Popen(
         [sys.executable, os.path.join(HERE, "rtsd.py"),
          "--port", str(PORT), "--root", root],
@@ -177,6 +180,50 @@ def main():
         assert w["resources"]["supply_used"] >= 0
         assert isinstance(w["map"]["regions"], list)
         print("PASS snapshot v2 (units/buildings/resources/quests/map)")
+
+        # #122 world map: territories from top-level dirs, plots, fog, POIs
+        m = w["map"]
+        assert m["w"] == 72 and m["h"] == 54
+        n = m["w"] * m["h"]
+        assert len(m["tile_region"]) == n and len(m["fog"]) == n
+        assert len(m["mark"]) == n
+        rids = {r["id"] for r in m["regions"]}
+        assert {"alpha", "beta", ".devin", "root"} <= rids, rids
+        assert all(r["capital"] and len(r["plots"]) == 2
+                   for r in m["regions"])
+        assert os.path.isfile(os.path.join(root, ".devin", "rts",
+                                           "map.json"))
+        assert any(p["kind"] == "quest" for p in m["pois"])
+        assert any(p["kind"] == "camp" for p in m["pois"])
+        # editing a file lifts its tile patch live; 2nd lane -> contested
+        pa = os.path.join(root, "alpha", "f.py")
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "edit",
+            "payload": {"tool_input": {"file_path": pa, "lane": "A"},
+                        "tool_response": "ok"}})
+        st, snap = get(PORT, "/snapshot")
+        m = snap["world"]["map"]
+        assert sum(1 for f_ in m["fog"] if f_ == 2) >= 9, "no lit tiles"
+        reg = {r["id"]: r for r in m["regions"]}
+        assert reg["alpha"]["revealed"] is True
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "read",
+            "payload": {"tool_input": {"file_path": pa, "lane": "B"},
+                        "tool_response": "x=1"}})
+        st, snap = get(PORT, "/snapshot")
+        m = snap["world"]["map"]
+        assert 2 in m["mark"], "contested tile not marked"
+        # a stale touch stays explored (dim), not lit
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "read", "ts":
+            time.time() - 400,
+            "payload": {"tool_input": {"file_path": os.path.join(
+                root, "beta", "g.py"), "lane": "A"},
+                        "tool_response": ""}})
+        st, snap = get(PORT, "/snapshot")
+        m = snap["world"]["map"]
+        assert 1 in m["fog"] and 2 in m["fog"], "fog dims/lits missing"
+        print("PASS world map (territories, plots, fog, contested, pois)")
 
         # #120 tick: old heartbeat-less hero decays running -> idle -> stale
         post(PORT, "/event", {

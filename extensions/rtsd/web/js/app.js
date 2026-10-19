@@ -39,22 +39,44 @@
 
   // ---- world -> render state ----------------------------------------
 
-  var MAPW = 72, MAPH = 54; // tile grid size (terrain detail in #122)
+  var MAPW = 72, MAPH = 54; // tile grid size must match world.py
 
-  // Region capitals via nearest-capital tiles; deterministic per region set.
-  function buildMap(regions) {
-    var regs = (regions && regions.length ? regions :
+  // Authoritative map from the daemon snapshot (#122): tile_region,
+  // per-tile fog (0 shroud/1 explored/2 lit), mark codes and POIs are all
+  // server-computed; we only pick region-tinted tile colors.
+  function serverMap(m) {
+    var W = m.w, H = m.h, n = W * H;
+    var data = new Uint8Array(n);
+    for (var i = 0; i < n; i++) {
+      var x = i % W, y = (i / W) | 0;
+      data[i] = (m.tile_region[i] * 3 + (Engine.hash(x + ":" + y) % 3)) % 10;
+    }
+    var caps = {};
+    (m.regions || []).forEach(function (r) {
+      if (r.capital) caps[r.id] = { cx: r.capital[0], cy: r.capital[1],
+                                    region: r };
+    });
+    return { w: W, h: H, data: data, sig: m.sig, caps: caps,
+             fog: new Uint8Array(m.fog || n),
+             mark: new Uint8Array(m.mark || n),
+             pois: m.pois || [] };
+  }
+
+  // Offline/demo fallback: same shape as serverMap, synthesized locally.
+  function buildMap(regs) {
+    var regs = (regs && regs.length ? regs :
       [{ id: "wilds", revealed: true, activity: 0, contested: 0 }]);
     var caps = {};
     regs.forEach(function (r, i) {
-      var h = Engine.hash(r.id);
-      caps[r.id] = {
-        cx: (h % (MAPW - 8)) + 4, cy: ((h >> 9) % (MAPH - 8)) + 4,
-        region: r, idx: i
-      };
+      var ang = 6.2832 * i / regs.length;
+      caps[r.id] = { cx: Math.round(MAPW / 2 + Math.cos(ang) * MAPW * .33),
+                     cy: Math.round(MAPH / 2 + Math.sin(ang) * MAPH * .33),
+                     region: r, idx: i };
     });
     var tiles = new Uint8Array(MAPW * MAPH);
     var fog = new Uint8Array(MAPW * MAPH);
+    var mark = new Uint8Array(MAPW * MAPH);
+    var pois = [];
     var list = Object.keys(caps);
     for (var y = 0; y < MAPH; y++) {
       for (var x = 0; x < MAPW; x++) {
@@ -65,14 +87,24 @@
           if (d < bd) { bd = d; best = id; }
         });
         var reg = caps[best].region, i = y * MAPW + x;
-        // tile texture varies by region index + light noise
         var n = (Engine.hash(x + ":" + y) % 3);
-        tiles[i] = reg.contested ? 99 :
-          ((caps[best].idx * 3 + n) % 10);
+        tiles[i] = ((caps[best].idx * 3 + n) % 10);
         fog[i] = reg.revealed ? 2 : 0;
       }
     }
-    return { w: MAPW, h: MAPH, data: tiles, fog: fog, caps: caps };
+    list.forEach(function (id) {
+      var c = caps[id];
+      mark[c.cy * MAPW + c.cx] = 1; // build plot
+      if (c.region.contested) mark[c.cy * MAPW + c.cx + 1] = 2;
+      if (!c.region.revealed) {
+        mark[c.cy * MAPW + c.cx - 1] = 5;
+        pois.push({ kind: "camp", x: c.cx - 1, y: c.cy, ref: id });
+      }
+    });
+    pois.push({ kind: "quest", x: caps[list[0]].cx, y: caps[list[0]].cy - 2,
+                ref: "demo", title: "offline demo" });
+    return { w: MAPW, h: MAPH, data: tiles, fog: fog, mark: mark,
+             caps: caps, pois: pois };
   }
 
   function unitPos(u, map) {
@@ -124,14 +156,22 @@
   function applySnapshot(snap) {
     state.snap = snap;
     state.world = snap.world || null;
-    var regs = state.world ? state.world.map.regions : [];
-    var key = regs.map(function (r) { return r.id; }).join(",");
-    if (!state.map || state.mapKey !== key) {
-      state.map = buildMap(regs); state.mapKey = key;
-      if (!state._camInit) {
-        var c0 = state.map.caps[Object.keys(state.map.caps)[0]];
-        eng.centerOn(c0.cx * TILE, c0.cy * TILE); state._camInit = true;
+    var m2 = state.world ? state.world.map : null;
+    if (m2 && m2.tile_region) {          // authoritative server map (#122)
+      if (!state.map || state.map.sig !== m2.sig) state.map = serverMap(m2);
+      state.map.fog = new Uint8Array(m2.fog || []);
+      state.map.mark = new Uint8Array(m2.mark || []);
+      state.map.pois = m2.pois || [];
+    } else {
+      var regs = m2 ? m2.regions : [];
+      var key = regs.map(function (r) { return r.id; }).join(",");
+      if (!state.map || state.mapKey !== key) {
+        state.map = buildMap(regs); state.mapKey = key;
       }
+    }
+    if (!state._camInit && state.map) {
+      var c0 = state.map.caps[Object.keys(state.map.caps)[0]];
+      eng.centerOn(c0.cx * TILE, c0.cy * TILE); state._camInit = true;
     }
     syncRenderables();
     renderPanels();
@@ -178,6 +218,10 @@
   function applyTick(m) {
     var d = m.deltas || {};
     if (!state.world) return;
+    if (d._map && state.map) {           // tile fog demotions from server
+      var fd = d._map.fog || {};
+      for (var t in fd) state.map.fog[t] = fd[t];
+    }
     state.world.units.forEach(function (u) {
       if (d[u.id]) {
         if (d[u.id].expired) u._gone = true;
@@ -373,6 +417,7 @@
     eng.step(dt);
     var th = Theme.get();
     eng.render({ tiles: state.map, fog: state.map && state.map.fog,
+      pois: state.map && state.map.pois,
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
       fog: state.map && state.map.fog, units: state.units }, th);
