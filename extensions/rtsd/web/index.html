@@ -71,9 +71,17 @@
              letter-spacing:1px; margin-bottom:6px; }
   #quests { flex:1; }
   .task { padding:4px 6px; border-left:3px solid var(--border);
-          margin-bottom:4px; }
-  .task.blocked { border-color:var(--err); }
+          margin-bottom:4px; cursor:pointer; }
+  .task.blocked { border-color:var(--err); opacity:.55; }
+  .task.done { border-color:var(--ok); opacity:.75; }
+  .task.failed { border-color:var(--err); }
   .task .id { color:var(--dim); font-size:11px; }
+  .qhead { font-size:10px; color:var(--warn); letter-spacing:1px;
+           margin:8px 0 3px; border-bottom:1px solid var(--border); }
+  .qstamp { color:var(--ok); font-weight:bold; }
+  .qhint { margin-top:6px; font-size:10px; }
+  .fl.k-quest .fw { color:var(--warn); }
+  .inv.qloot { border-color:var(--ok); color:var(--ok); }
   #bottom { display:flex; background:var(--panel);
             border-top:1px solid var(--border); height:150px; }
   #mmwrap { width:190px; padding:6px; border-right:1px solid var(--border); }
@@ -161,6 +169,7 @@
       right-click map: order (quest/building snap) &nbsp; shift: enqueue<br>
       right-click with building selected: rally point<br>
       command card: Move/Stop/Hold/Patrol/Attack + kit abilities<br>
+      quest log: click = jump to marker, drag onto hero = assign<br>
       idle:N cycles idle heroes &nbsp; waypoint flags = order queue<br>
       SPACE: cycle pings &nbsp; ESC: cancel target &nbsp; T: theme<br>
       Cmd: <code>/spawn &lt;profile&gt; &lt;task&gt;</code>,

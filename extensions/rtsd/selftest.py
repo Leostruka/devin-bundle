@@ -406,6 +406,61 @@ def main():
         assert "lane1" not in snap["world"]["idle"]  # has queued orders
         print("PASS orders queue (waypoints, ack state, rally, idle)")
 
+        # #130 quests: DAG blocking, main/side split, assign -> hero tracks
+        # the issue's ledger gates, evidence loot, quest feed lines
+        issdir = os.path.join(root, ".devin", "scratch", "eff", "issues")
+        with open(os.path.join(issdir, "02-t.md"), "w",
+                  encoding="utf-8") as f:
+            f.write("# t2\n\nStatus: ready-for-agent\nBlocked by: 01-t\n")
+        with open(os.path.join(ldir, "02-t.md"), "w", encoding="utf-8") as f:
+            f.write("# G\n\n- [x] A1: ok\n  EVIDENCE: loot-a1\n"
+                    "- [x] A2: ok\n  EVIDENCE: loot-a2\n")
+        assert post(PORT, "/intent",
+                    {"kind": "goal", "text": "ship v3.8.0"}) == 200
+        st, snap = get(PORT, "/snapshot")
+        qs = {q["id"]: q for q in snap["world"]["quests"]}
+        assert qs["main-quest"]["kind"] == "main" and \
+            qs["main-quest"]["title"] == "ship v3.8.0", qs["main-quest"]
+        assert qs["01-t"]["kind"] == "side" and not qs["01-t"]["blocked"]
+        assert qs["02-t"]["blocked"] is True and \
+            qs["02-t"]["deps"] == ["01-t"], qs["02-t"]  # DAG resolution
+        assert qs["02-t"]["gates"] == {"pass": 2, "fail": 0, "total": 2}
+        assert qs["01-t"]["ledger"] == "eff"  # effort-ledger fallback
+        pois = {p["ref"]: p for p in snap["world"]["map"]["pois"]
+                if p["kind"] == "quest"}
+        assert pois["02-t"]["qst"] == "blocked", pois["02-t"]
+        assert pois["01-t"]["qst"] == "failed"  # effort ledger has a fail
+        # assign: attack order carrying the issue ref binds hero -> quest;
+        # HP/loot then track the issue's own ledger (2/2 pass, evidence)
+        assert post(PORT, "/intent", {
+            "kind": "order", "to": "lane1", "order": "attack",
+            "x": 5, "y": 6, "quest": "02-t"}) == 200
+        st, snap = get(PORT, "/snapshot")
+        w3 = snap["world"]
+        lane1 = {u["id"]: u for u in w3["units"]}["lane1"]
+        assert lane1["quest"] == "02-t", lane1
+        assert lane1["hp"] == 100 and not lane1.get("gate_fail"), lane1
+        assert lane1["inventory"][0]["quest"] == "02-t" and \
+            lane1["inventory"][0]["evidence"] == "loot-a1", lane1
+        qs = {q["id"]: q for q in w3["quests"]}
+        assert qs["02-t"]["assignees"] == ["lane1"], qs["02-t"]
+        feed_txt = [l["text"] for l in w3["feed"] if l["kind"] == "quest"]
+        assert any("Quest accepted: 02-t" in t for t in feed_txt), feed_txt
+        assert any("Objective complete (2/2)" in t for t in feed_txt)
+        assert any("Quest failed: 01-t" in t for t in feed_txt), feed_txt
+        # completing the issue flips the marker to the rewards stamp
+        with open(os.path.join(issdir, "01-t.md"), "w",
+                  encoding="utf-8") as f:
+            f.write("# t\n\nStatus: resolved\nBlocked by: -\n")
+        st, snap = get(PORT, "/snapshot")
+        qs = {q["id"]: q for q in snap["world"]["quests"]}
+        assert qs["02-t"]["blocked"] is False  # dep resolved
+        pois = {p["ref"]: p for p in snap["world"]["map"]["pois"]
+                if p["kind"] == "quest"}
+        assert pois["01-t"]["qst"] == "done", pois["01-t"]
+        print("PASS quest log (DAG block, assign->intent, ledger HP, "
+              "loot, feed, marker states)")
+
         # #120 tick: old heartbeat-less hero decays running -> idle -> stale
         post(PORT, "/event", {
             "type": "hook.posttooluse", "tool": "run_subagent",

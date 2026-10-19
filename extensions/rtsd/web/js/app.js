@@ -50,7 +50,7 @@
   // from events.jsonl); local entries (order echoes, group assigns) are
   // UI-side only and never pretend to be agent traffic.
   var FEED_KINDS = ["spawn", "debrief", "position", "note", "council",
-                    "order", "steering", "raven", "local"];
+                    "order", "steering", "raven", "quest", "local"];
 
   function logFeed(m) {   // local UI echo (orders, groups, demo notice)
     pushFeed({ t: Date.now() / 1000, kind: "local", who: "UI",
@@ -615,16 +615,44 @@
          "%  SUPPLY " + r.supply_used + "/" + r.supply_cap +
          "  UPKEEP " + (r.upkeep || "-"))
       : "";
-    // quest log
+    // quest log (#130): WC3-style main/side split; every row maps to a
+    // real .devin/scratch issue (Status/Blocked by) plus its ledger gates
     var qs2 = w.quests || (state.snap || {}).tasks || [];
-    el("tlist").innerHTML = qs2.map(function (t) {
-      return "<div class='task " + (t.blocked ? "blocked" : "") + "'>" +
+    var main = qs2.filter(function (t) {
+      return t.kind === "main" || t.id === "main-quest"; });
+    var side = qs2.filter(function (t) {
+      return main.indexOf(t) < 0; });
+    var qrow = function (t) {
+      var g = t.gates;
+      var prog = g ? " gates " + g.pass + "/" + g.total +
+        (g.fail ? " (" + g.fail + " fail)" : "") : "";
+      var who = (t.assignees || []).map(function (id) {
+        var uu = (w.units || []).filter(function (x) {
+          return x.id === id; })[0];
+        return uu ? (uu.name || id) : id;
+      });
+      return "<div class='task " +
+        (t.blocked ? "blocked" : "") + (t.done ? " done" : "") +
+        (t.failed ? " failed" : "") +
+        "' draggable='true' data-quest='" + esc(t.id) + "'>" +
         "<span class='id'>" + esc(t.effort) + "/" + esc(t.id) + "</span> " +
-        "<b>" + esc(t.title) + "</b><br><span class='meta'>" +
-        esc(t.status) + (t.deps && t.deps.length ?
-          " / needs " + esc(t.deps.join(",")) : "") +
+        "<b>" + esc(t.title) + "</b>" +
+        (t.done ? " <span class='qstamp'>*</span>" : "") +
+        "<br><span class='meta'>" + esc(t.status) + prog +
+        (t.deps && t.deps.length ?
+          " / needs " + esc(t.deps.join(" <- ")) : "") +
+        (t.blocked_by && !t.deps.length ?
+          " / blocked_by: " + esc(t.blocked_by) : "") +
+        (who.length ? " / assigned: " + esc(who.join(",")) : "") +
         "</span></div>";
-    }).join("") || "<span class='meta'>no quests</span>";
+    };
+    el("tlist").innerHTML =
+      (main.length
+        ? "<div class='qhead'>MAIN QUEST</div>" + main.map(qrow).join("")
+        : "<span class='meta'>no main quest - type a goal below</span>") +
+      "<div class='qhead'>SIDE QUESTS</div>" +
+      (side.map(qrow).join("") || "<span class='meta'>no quests</span>") +
+      "<div class='meta qhint'>drag a quest onto a hero to assign</div>";
     // portrait / selection (unit or building inspector); multi-select
     // shows a combined strip of the selected heroes (#126)
     var u = (w.units || []).filter(function (x) {
@@ -790,7 +818,9 @@
 
   function portraitHtml(u) {
     var inv = (u.inventory || []).map(function (it) {
-      return "<span class='inv' title='" + esc(it.gate + " " +
+      return "<span class='inv" + (it.quest ? " qloot" : "") +
+        "' title='" + esc((it.ledger || "") + "/" + it.gate +
+        (it.quest ? " [quest " + it.quest + "]" : "") + " " +
         (it.evidence || "")) + "'>o</span>";
     }).join("");
     var kit = (u.kit || []).map(function (k) {
@@ -807,6 +837,8 @@
       "  MP " + (u.mana == null ? "-" : u.mana) +
       "  " + esc(u.status_live || u.status || "") + "</span>" +
       (kit ? " <span class='meta'>kit:</span>" + kit : "") +
+      (u.quest ? "<div class='meta'>quest: " + esc(u.quest) + "</div>"
+               : "") +
       "<br><i>&quot;" + esc(bark) + "&quot;</i>" +
       (inv ? "<div class='meta'>loot: " + inv + "</div>" : "");
     // order queue (#127): numbered pending orders for this hero
@@ -1140,6 +1172,43 @@
             (extra.quest ? " (" + extra.quest + ")" : "") +
             (extra.building ? " (" + extra.building + ")" : ""));
     renderPanels();
+  });
+
+  // #130 quest assignment: drag a quest row onto a hero on the map (or
+  // use the command-card Attack on a quest marker - same intent shape).
+  // The drop resolves to the unit under the cursor and posts a real
+  // order intent carrying the issue ref; nothing auto-executes.
+  el("tlist").addEventListener("dragstart", function (e) {
+    var d = e.target.closest("[data-quest]");
+    if (d && e.dataTransfer)
+      e.dataTransfer.setData("text/quest", d.dataset.quest);
+  });
+  el("cv").addEventListener("dragover", function (e) {
+    if (e.dataTransfer &&
+        e.dataTransfer.types.indexOf("text/quest") >= 0)
+      e.preventDefault();
+  });
+  el("cv").addEventListener("drop", function (e) {
+    var qid = e.dataTransfer && e.dataTransfer.getData("text/quest");
+    if (!qid) return;
+    e.preventDefault();
+    var u = eng.pickUnit(e.offsetX, e.offsetY);
+    if (!u || u.kind !== "hero") {
+      logFeed("assign: drop on a hero to accept quest " + qid);
+      return;
+    }
+    var it = { kind: "order", to: u.id, order: "attack", quest: qid };
+    RTS.intent(it);
+    logFeed("assign: quest " + qid + " -> " + (u.name || u.id));
+  });
+  // click a quest row: center the camera on its map marker (#130)
+  el("tlist").addEventListener("click", function (e) {
+    var d = e.target.closest("[data-quest]");
+    if (!d || !state.map) return;
+    var qid = d.dataset.quest, poi = null;
+    (state.map.pois || []).forEach(function (p) {
+      if (p.kind === "quest" && p.ref === qid) poi = p; });
+    if (poi) eng.centerOn((poi.x + .5) * TILE, (poi.y + .5) * TILE);
   });
 
   // idle-worker button (#127): count from the world snapshot's idle list
