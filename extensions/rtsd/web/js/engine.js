@@ -151,7 +151,10 @@
           var i = ty * W + tx;
           var f = st.fog ? st.fog[i] : 2;
           if (f === 0) continue; // shroud: stays palette.bg
-          ctx.fillStyle = theme.tiles[ts.data[i] % 10] || theme.tiles[0];
+          var mk = ts.mark ? ts.mark[i] : 0;
+          ctx.fillStyle = mk === 2 ? theme.tiles.contested :
+            mk === 1 ? theme.tiles.plot :
+            theme.tiles[ts.data[i] % 10] || theme.tiles[0];
           var sx = (tx * TILE - v.x) * z, sy = (ty * TILE - v.y) * z;
           ctx.fillRect(sx, sy, px + 1, px + 1);
           if (f === 1) {           // explored-but-dim
@@ -160,7 +163,23 @@
           }
         }
       }
+      // POI markers: quests show through fog, others only once seen (#122)
       var self = this;
+      (st.pois || []).forEach(function (p) {
+        var i = p.y * W + p.x;
+        var f = st.fog ? st.fog[i] : 2;
+        if (f === 0 && p.kind !== "quest") return;
+        var s = self.toScreen(p.x * TILE + TILE / 2, p.y * TILE + TILE / 2);
+        if (s.x < -30 || s.y < -30 || s.x > cv.width + 30 ||
+            s.y > cv.height + 30) return;
+        var g = { quest: "!", gold: "*", camp: "x" }[p.kind] || "?";
+        var c = { quest: pal.sel, gold: "#ffd54a",
+                  camp: pal.err }[p.kind] || pal.text;
+        ctx.fillStyle = c;
+        ctx.font = "bold " + Math.max(10, 14 * z) + "px monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(g, s.x, s.y);
+      });
       (st.buildings || []).forEach(function (b) {
         var s = self.toScreen(b.x, b.y);
         if (s.x < -64 || s.y < -64 || s.x > cv.width + 64 ||
@@ -231,7 +250,10 @@
           var i = y * W + x;
           var f = st.fog ? st.fog[i] : 2;
           if (f === 0) continue;
-          ctx.fillStyle = theme.tiles[ts.data[i] % 10] || theme.tiles[0];
+          var mk = ts.mark ? ts.mark[i] : 0;
+          ctx.fillStyle = mk === 2 ? theme.tiles.contested :
+            mk === 1 ? theme.tiles.plot :
+            theme.tiles[ts.data[i] % 10] || theme.tiles[0];
           ctx.fillRect(x * kx, y * ky, sx + 0.5, sy + 0.5);
           if (f === 1) {
             ctx.fillStyle = "rgba(0,0,0,0.5)";

@@ -6,6 +6,7 @@ time-derived fields (decay, idle, minion TTL, worker window) are computed
 in snapshot(now) from stored timestamps, so replaying events.jsonl with
 the same `now` reproduces an identical world dict. Stdlib only.
 """
+import math
 import os
 import re
 import json
@@ -17,6 +18,16 @@ WORKER_WINDOW_S = 60.0  # a hook firing keeps a peasant alive this long
 MINION_TTL_S = 300.0    # a summoned shell unit fades without fresh signals
 IDLE_AFTER_S = 120.0    # hero with no events this long reads as idle
 STALE_AFTER_S = 600.0   # beyond this the hero is stale (signal lost)
+
+MAP_W, MAP_H = 72, 54   # tile grid shared with web/js/engine.js
+LIT_WINDOW_S = 180.0    # lit tile re-dims to explored after this quiet period
+REVEAL_RADIUS = 1       # a file touch lights a 3x3 tile patch
+GOLD_NODES = 8          # largest files become resource nodes
+_SKIP_DIRS = {".git", ".hg", ".svn", "node_modules", "__pycache__",
+              ".pytest_cache", ".mypy_cache", ".ruff_cache", ".venv",
+              "venv", "dist", "build"}
+# per-tile mark codes in snapshot map.mark
+M_NONE, M_PLOT, M_CONTESTED, M_QUEST, M_GOLD, M_CAMP = range(6)
 
 HERO_CLASSES = {
     "implementer": "Knight", "debugger": "Ranger", "qa-ci": "Cleric",
@@ -193,6 +204,129 @@ def default_window(root):
     return 200_000
 
 
+def _h32(s):
+    """FNV-1a; deterministic across processes (unlike builtin hash())."""
+    h = 2166136261
+    for ch in s:
+        h ^= ord(ch)
+        h = (h * 16777619) & 0xFFFFFFFF
+    return h
+
+
+def _scan_root(root):
+    """Top-level dirs -> regions; walk (bounded) -> file counts + sizes."""
+    dirs, counts, sizes = [], {}, []
+    try:
+        names = sorted(os.listdir(root))
+    except OSError:
+        return ["root"], {"root": 0}, []
+    for name in names:
+        p = os.path.join(root, name)
+        if os.path.isdir(p) and name not in _SKIP_DIRS:
+            dirs.append(name)
+    regions = dirs + ["root"]
+    counts = {r: 0 for r in regions}
+    walked = 0
+    for base, dnames, fnames in os.walk(root):
+        dnames[:] = [d for d in dnames if d not in _SKIP_DIRS]
+        rel = os.path.relpath(base, root).replace("\\", "/")
+        top = "root" if rel == "." else rel.split("/")[0]
+        if top not in counts:
+            top = "root"
+        for fn in fnames:
+            p = os.path.join(base, fn)
+            try:
+                sz = os.path.getsize(p)
+            except OSError:
+                continue
+            counts[top] += 1
+            sizes.append((sz, p))
+            walked += 1
+        if walked > 20000:
+            break
+    return regions, counts, sizes
+
+
+def build_layout(root):
+    """Static terrain for this workspace: region set from top-level dirs,
+    capitals on a deterministic ring, tiles assigned by weighted Voronoi
+    (bigger dirs -> bigger territory), fixed build plots + gold nodes."""
+    regions, counts, sizes = _scan_root(root)
+    n = len(regions)
+    cx0, cy0 = MAP_W / 2.0, MAP_H / 2.0
+    rx, ry = MAP_W * 0.36, MAP_H * 0.36
+    phase = (_h32(os.path.abspath(root)) % 628) / 100.0
+    caps = {}
+    for i, r in enumerate(regions):
+        ang = phase + 6.2831853 * i / n
+        caps[r] = [int(cx0 + rx * math.cos(ang)),
+                   int(cy0 + ry * math.sin(ang))]
+    weight = {r: 1.0 + 0.6 * math.log10(1 + counts.get(r, 0))
+              for r in regions}
+    tile_region = [0] * (MAP_W * MAP_H)
+    regtiles = {r: [] for r in regions}
+    for y in range(MAP_H):
+        for x in range(MAP_W):
+            bi, bs = 0, 1e30
+            for i, r in enumerate(regions):
+                cx, cy = caps[r]
+                d2 = (x - cx) * (x - cx) + (y - cy) * (y - cy)
+                s = d2 / weight[r]
+                if s < bs:
+                    bs, bi = s, i
+            i0 = y * MAP_W + x
+            tile_region[i0] = bi
+            regtiles[regions[bi]].append(i0)
+    plots = {}
+    for r in regions:
+        cx, cy = caps[r]
+        tiles = regtiles[r] or [cy * MAP_W + cx]
+        alt = tiles[_h32(r + ":plot") % len(tiles)]
+        plots[r] = [[cx, cy], [alt % MAP_W, alt // MAP_W]]
+    gold = sorted(sizes, reverse=True)[:GOLD_NODES]
+    layout = {"sig": _h32(",".join(regions)), "w": MAP_W, "h": MAP_H,
+              "regions": regions, "counts": counts, "capitals": caps,
+              "tile_region": tile_region, "plots": plots,
+              "gold": [{"path": p, "size": s} for s, p in gold]}
+    layout["_regtiles"] = regtiles
+    return layout
+
+
+def file_tile(layout, root, path):
+    """Deterministic tile for a file inside its region's tile set."""
+    reg = region_of(root, path)
+    tiles = layout["_regtiles"].get(reg) or layout["_regtiles"]["root"]
+    return tiles[_h32(path) % len(tiles)]
+
+
+def load_layout(root):
+    """Persisted map.json keyed by region signature; regenerates when the
+    top-level dir set changes (issue #122)."""
+    mp = os.path.join(root, ".devin", "rts", "map.json")
+    try:
+        with open(mp, encoding="utf-8") as f:
+            saved = json.load(f)
+    except Exception:
+        saved = None
+    regions = _scan_root(root)[0]
+    if saved and saved.get("sig") == _h32(",".join(regions)) \
+            and saved.get("w") == MAP_W and saved.get("h") == MAP_H:
+        regtiles = {r: [] for r in saved["regions"]}
+        for i, ri in enumerate(saved["tile_region"]):
+            regtiles[saved["regions"][ri]].append(i)
+        saved["_regtiles"] = regtiles
+        return saved
+    layout = build_layout(root)
+    try:
+        os.makedirs(os.path.dirname(mp), exist_ok=True)
+        out = {k: v for k, v in layout.items() if not k.startswith("_")}
+        with open(mp, "w", encoding="utf-8") as f:
+            json.dump(out, f)
+    except OSError:
+        pass
+    return layout
+
+
 class World:
     """Event-sourced world. apply() = the only mutator; snapshot(now) is
     a pure function of (applied state, file overlay, now)."""
@@ -220,6 +354,20 @@ class World:
             pass
         self._thresholds = load_thresholds(root)
         self._live = {}            # unit id -> last computed live status
+        self.layout = load_layout(root)   # static terrain (map.json)
+        self.tile_heat = {}        # tile idx -> last file-touch ts
+        self.tile_of = {}          # path -> tile idx (deterministic)
+        self.file_lanes = {}       # path -> set(lanes) for contested
+        self._fogc = {}            # tile idx -> last broadcast fog level
+        # WC3 start: home territory around the "root" capital is explored
+        # (ts=0 -> permanently dim-explored, never lit)
+        hc = self.layout["capitals"].get("root")
+        if hc:
+            for dy in range(-3, 4):
+                for dx in range(-3, 4):
+                    nx, ny = hc[0] + dx, hc[1] + dy
+                    if 0 <= nx < MAP_W and 0 <= ny < MAP_H:
+                        self.tile_heat.setdefault(ny * MAP_W + nx, 0.0)
 
     # ---- event application (only path that mutates state) ----
 
@@ -251,6 +399,18 @@ class World:
         r["lanes"][lane] = r["lanes"].get(lane, 0) + 1
         f = r["files"].setdefault(path, set())
         f.add(lane)
+        # tile-level fog: light the file's tile + reveal radius (#122)
+        t = self.tile_of.get(path)
+        if t is None:
+            t = file_tile(self.layout, self.root, path)
+            self.tile_of[path] = t
+        self.file_lanes.setdefault(path, set()).add(lane)
+        x, y = t % MAP_W, t // MAP_W
+        for dy in range(-REVEAL_RADIUS, REVEAL_RADIUS + 1):
+            for dx in range(-REVEAL_RADIUS, REVEAL_RADIUS + 1):
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < MAP_W and 0 <= ny < MAP_H:
+                    self.tile_heat[ny * MAP_W + nx] = ts
 
     def _apply_hook(self, ev, ts):
         tool = ev.get("tool") or ""
@@ -362,20 +522,79 @@ class World:
             if self._live.get(uid) != live:
                 self._live[uid] = live
                 deltas[uid] = {"status_live": live}
+        # tile fog demotions (lit -> explored) ride the tick broadcast
+        fdiff = {}
+        for t, hts in self.tile_heat.items():
+            lvl = 2 if now - hts < LIT_WINDOW_S else 1
+            if self._fogc.get(t, 0) != lvl:
+                self._fogc[t] = lvl
+                fdiff[t] = lvl
+        if fdiff:
+            deltas["_map"] = {"fog": fdiff}
         return deltas
 
     # ---- snapshot ----
 
     def _region_list(self):
         out = []
-        for r in self.regions.values():
+        caps = self.layout["capitals"]
+        plots = self.layout["plots"]
+        for rid in self.layout["regions"]:
+            r = self.regions.get(rid, {"id": rid, "revealed": False,
+                                       "activity": 0, "lanes": {},
+                                       "files": {}})
             contested = sum(1 for lanes in r["files"].values()
                             if len(lanes) > 1)
-            out.append({"id": r["id"], "revealed": r["revealed"],
+            out.append({"id": rid, "revealed": r["revealed"],
                         "activity": r["activity"],
                         "lanes": sorted(r["lanes"]),
-                        "contested": contested})
-        return sorted(out, key=lambda x: x["id"])
+                        "contested": contested,
+                        "capital": caps.get(rid),
+                        "plots": plots.get(rid, []),
+                        "files": self.layout["counts"].get(rid, 0)})
+        return out
+
+    def _fog_mark(self, now):
+        """Per-tile fog (0 shroud / 1 explored / 2 lit) + mark codes.
+        Fog is time-derived from tile_heat so replay stays pure."""
+        n = MAP_W * MAP_H
+        fog = [0] * n
+        mark = [0] * n
+        for t, hts in self.tile_heat.items():
+            fog[t] = 2 if now - hts < LIT_WINDOW_S else 1
+        for pls in self.layout["plots"].values():
+            for x, y in pls:
+                mark[y * MAP_W + x] = M_PLOT
+        for g in self.layout["gold"]:
+            mark[file_tile(self.layout, self.root, g["path"])] = M_GOLD
+        for path, lanes in self.file_lanes.items():
+            if len(lanes) > 1:      # contested outranks plot/gold marks
+                t = self.tile_of.get(path)
+                if t is not None:
+                    mark[t] = M_CONTESTED
+        pois = [{"kind": "gold", "x": file_tile(self.layout, self.root,
+                                                g["path"]) % MAP_W,
+                 "y": file_tile(self.layout, self.root, g["path"]) // MAP_W,
+                 "ref": g["path"], "size": g["size"]}
+                for g in self.layout["gold"]]
+        for q in scan_issues(self.root):
+            p = os.path.join(self.root, ".devin", "scratch", q["effort"],
+                             "issues", q["id"] + ".md")
+            t = file_tile(self.layout, self.root, p)
+            if mark[t] == M_NONE:
+                mark[t] = M_QUEST
+            pois.append({"kind": "quest", "x": t % MAP_W, "y": t // MAP_W,
+                         "ref": q["id"], "title": q["title"]})
+        caps = self.layout["capitals"]
+        for r in self.layout["regions"]:
+            live = self.regions.get(r)
+            if live and live["activity"]:
+                continue
+            cx, cy = caps[r]
+            if mark[cy * MAP_W + cx] == M_NONE:
+                mark[cy * MAP_W + cx] = M_CAMP
+            pois.append({"kind": "camp", "x": cx, "y": cy, "ref": r})
+        return fog, mark, pois
 
     def _quests(self):
         qs = scan_issues(self.root)
@@ -465,6 +684,8 @@ class World:
                           and self._live_status(u, now) in ("running", "idle"))
         workers = [wk for wk in self.workers
                    if now - wk["ts"] <= WORKER_WINDOW_S]
+        regions = self._region_list()
+        fog, mark, pois = self._fog_mark(now)
         return {
             "now": now,
             "units": units,
@@ -474,7 +695,11 @@ class World:
                           "supply_cap": SUPPLY_CAP, "upkeep": upkeep,
                           "window": self._window},
             "quests": self._quests(),
-            "map": {"root": self.root, "regions": self._region_list(),
+            "map": {"root": self.root, "sig": self.layout["sig"],
+                    "w": MAP_W, "h": MAP_H,
+                    "tile_region": self.layout["tile_region"],
+                    "fog": fog, "mark": mark, "pois": pois,
+                    "regions": regions,
                     "workers_active": len(workers),
                     "workers_total": self.worker_total},
         }
