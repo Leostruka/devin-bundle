@@ -2,7 +2,11 @@
 """rtsd - RTS overlay daemon for the Devin bundle.
 
 Local state daemon: ingests hook events, projects fleet/task/decision state
-from .devin files, serves snapshot+upserts over HTTP+WebSocket and the web UI.
+from .devin files plus an event-sourced v2 world (units/buildings/resources/
+quests/map, world.py), serves snapshot+upserts over HTTP+WebSocket and the
+web UI. A 2s tick recomputes time-derived state (heartbeat decay, idle,
+minion TTL) and broadcasts deltas; replaying events.jsonl reproduces the
+same world.
 
 Endpoints (127.0.0.1 only):
   POST /event        append JSON event to .devin/rts/events.jsonl, broadcast
@@ -26,13 +30,18 @@ import re
 import secrets
 import socket
 import struct
+import sys
 import threading
 import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import world as worldmod  # noqa: E402
+
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 DEFAULT_PORT = 8797
+TICK_S = 2.0
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 
@@ -41,7 +50,7 @@ def safe_name(s):
         and bool(str(s).lstrip("."))
 
 STATE = {"root": None, "clients": [], "lock": threading.Lock(),
-        "write_lock": threading.Lock(), "token": None}
+        "write_lock": threading.Lock(), "token": None, "world": None}
 
 
 def state_dir():
@@ -58,6 +67,8 @@ def append_event(ev):
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(ev, ensure_ascii=False) + "\n")
         project_fleet(ev)
+        if STATE["world"] is not None:
+            STATE["world"].apply(ev)
     broadcast({"type": "upsert", "event": ev})
 
 
@@ -133,31 +144,7 @@ def read_json(path, default):
 
 
 def scan_issues(root):
-    tasks = []
-    scratch = os.path.join(root, ".devin", "scratch")
-    if not os.path.isdir(scratch):
-        return tasks
-    for effort in sorted(os.listdir(scratch)):
-        idir = os.path.join(scratch, effort, "issues")
-        if not os.path.isdir(idir):
-            continue
-        for fn in sorted(os.listdir(idir)):
-            if not fn.endswith(".md"):
-                continue
-            p = os.path.join(idir, fn)
-            try:
-                head = open(p, encoding="utf-8").read(1500)
-            except OSError:
-                continue
-            status = re.search(r"^Status:\s*(\S+)", head, re.M)
-            blocked = re.search(r"^Blocked by:\s*(.+)", head, re.M)
-            title = head.splitlines()[0].lstrip("# ").strip() if head else fn
-            tasks.append({
-                "id": fn[:-3], "effort": effort, "title": title,
-                "status": status.group(1) if status else "needs-triage",
-                "blocked_by": (blocked.group(1).strip() if blocked else ""),
-            })
-    return tasks
+    return worldmod.scan_issues(root)
 
 
 def scan_ledgers(root):
@@ -166,35 +153,7 @@ def scan_ledgers(root):
     Checkbox convention: [x]=pass, [ ]=pending, [!]/[F]=fail.
     Indented CHECK/EXPECT/EVIDENCE lines attach to the last gate.
     """
-    ldir = os.path.join(root, ".devin", "ledgers")
-    out = []
-    if not os.path.isdir(ldir):
-        return out
-    for fn in sorted(os.listdir(ldir)):
-        if not fn.endswith(".md"):
-            continue
-        try:
-            lines = open(os.path.join(ldir, fn),
-                         encoding="utf-8").read().splitlines()
-        except OSError:
-            continue
-        gates, cur = [], None
-        for ln in lines:
-            m = re.match(r"- \[([xX !fF])\]\s*(\S+?):?\s+(.*)", ln)
-            if m:
-                mark = m.group(1).lower()
-                cur = {"id": m.group(2), "title": m.group(3).strip(),
-                       "state": {"x": "pass", " ": "pending"}.get(mark, "fail")}
-                gates.append(cur)
-                continue
-            if cur:
-                mm = re.match(r"\s+(CHECK|EXPECT|EVIDENCE):\s*(.*)", ln)
-                if mm:
-                    cur[mm.group(1).lower()] = mm.group(2).strip()
-        out.append({"id": fn[:-3],
-                    "path": os.path.join(".devin", "ledgers", fn),
-                    "gates": gates})
-    return out
+    return worldmod.scan_ledgers(root)
 
 
 def build_snapshot():
@@ -242,7 +201,7 @@ def build_snapshot():
             a["ledger"] = a["lane"]
         if a.get("lane") in fail_ledgers:
             a["gate_fail"] = True
-    return {
+    snap = {
         "generated_at": time.time(),
         "agents": list(agents.values()),
         "tasks": tasks,
@@ -250,6 +209,10 @@ def build_snapshot():
         "intents": intents,
         "ledgers": ledgers,
     }
+    if STATE["world"] is not None:
+        snap["v"] = 2
+        snap["world"] = STATE["world"].snapshot(snap["generated_at"])
+    return snap
 
 
 # --- minimal WebSocket (RFC 6455, text frames only) ---
@@ -495,6 +458,8 @@ def main():
     args = ap.parse_args()
     STATE["root"] = os.path.abspath(args.root)
     state_dir()
+    STATE["world"] = worldmod.World.replay_file(
+        STATE["root"], os.path.join(state_dir(), "events.jsonl"))
     srv = RtsServer(("127.0.0.1", args.port), Handler)
     srv.daemon_threads = True
     print("rtsd on http://127.0.0.1:%d (root=%s)" % (args.port, STATE["root"]))
@@ -520,6 +485,19 @@ def main():
         threading.Thread(target=remote_serve, daemon=True).start()
         print("remote: http://<lan-ip>:%d/?token=%s (ttl %ds)"
               % (rport, STATE["token"], int(ttl)))
+
+    def tick_loop():
+        while True:
+            time.sleep(TICK_S)
+            try:
+                deltas = STATE["world"].tick(time.time())
+                if deltas:
+                    broadcast({"type": "tick", "ts": time.time(),
+                               "deltas": deltas})
+            except Exception:
+                pass  # fail-open: a bad tick never kills the daemon
+
+    threading.Thread(target=tick_loop, daemon=True).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

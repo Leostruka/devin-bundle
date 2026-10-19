@@ -161,6 +161,61 @@ def main():
         assert tk["01-t"].get("ledger") == "eff", tk["01-t"]
         print("PASS ledger projection (pass/fail/pending + gate_fail)")
 
+        # v3.8.0 #120: snapshot v2 world model
+        st, snap = get(PORT, "/snapshot")
+        assert snap.get("v") == 2 and isinstance(snap.get("world"), dict)
+        w = snap["world"]
+        for k in ("units", "buildings", "resources", "quests", "map"):
+            assert k in w, list(w)
+        assert any(b["id"] == "barracks" for b in w["buildings"])
+        assert {q["id"] for q in w["quests"]} >= {"01-t"}
+        units = {u["id"]: u for u in w["units"]}
+        assert units["abc12345"]["kind"] == "hero"
+        assert units["abc12345"]["cls"] == "Far Seer"  # researcher -> GDD
+        assert units["abc12345"]["status"] == "done"
+        assert units["lane1"]["status_live"] in ("running", "idle", "stale")
+        assert w["resources"]["supply_used"] >= 0
+        assert isinstance(w["map"]["regions"], list)
+        print("PASS snapshot v2 (units/buildings/resources/quests/map)")
+
+        # #120 tick: old heartbeat-less hero decays running -> idle -> stale
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "run_subagent",
+            "ts": time.time() - 700,
+            "payload": {"tool_input": {"profile": "implementer",
+                                       "task": "old job",
+                                       "is_background": True},
+                        "tool_response": {"agent_id": "oldhero"}}})
+        st, snap = get(PORT, "/snapshot")
+        u = {x["id"]: x for x in snap["world"]["units"]}["oldhero"]
+        assert u["status_live"] == "stale", u
+        # minion from exec shell + kill_shell expiry
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "exec",
+            "payload": {"tool_input": {"command": "sleep 30"},
+                        "tool_response": {"shell_id": "zz9"}}})
+        st, snap = get(PORT, "/snapshot")
+        assert any(x.get("kind") == "minion" and x["id"] == "sh-zz9"
+                   for x in snap["world"]["units"]), snap["world"]["units"]
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "kill_shell",
+            "payload": {"tool_input": {"shell_id": "zz9"},
+                        "tool_response": {}}})
+        st, snap = get(PORT, "/snapshot")
+        assert not any(x["id"] == "sh-zz9" for x in snap["world"]["units"])
+        print("PASS tick decay + minion spawn/despawn")
+
+        # #120 determinism: replaying events.jsonl rebuilds the same world
+        sys.path.insert(0, HERE)
+        import world as worldmod
+        now = snap["world"]["now"]
+        events = [json.loads(l) for l in
+                  open(log, encoding="utf-8") if l.strip()]
+        rw = worldmod.World.replay(root, events, now).snapshot(now)
+        assert rw == snap["world"], "replay diverged from live world"
+        print("PASS replay(events.jsonl) == live world (%d events)"
+              % len(events))
+
         print("ALL PASS")
         return 0
     finally:
