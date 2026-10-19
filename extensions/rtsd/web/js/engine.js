@@ -154,7 +154,8 @@
       var k = this.keys;
       if (k["w"] || k["arrowup"]) this.panBy(0, -sp);
       if (k["s"] || k["arrowdown"]) this.panBy(0, sp);
-      if (k["a"] || k["arrowleft"]) this.panBy(-sp, 0);
+      // #136: 'a' is the WC3 attack hotkey now; left-pan = arrow/edge
+      if (k["arrowleft"]) this.panBy(-sp, 0);
       if (k["d"] || k["arrowright"]) this.panBy(sp, 0);
       if (this.mouse.in) {
         var m = this.mouse, W = this.cv.width, H = this.cv.height, E = 24;
@@ -366,6 +367,64 @@
       }
     },
 
+    /* #136 ambient life: purely cosmetic critters seeded by hash so the
+       scene feels alive without touching world state. Battlefield gets
+       birds crossing the sky and fog wisps; office gets dust motes. */
+    _ambient: function (ctx, st, theme, z, now) {
+      var ts = st.tiles;
+      if (!ts) return;
+      var mw = ts.w * TILE, mh = ts.h * TILE, cv = this.cv, i, s;
+      if (this.iso) {                          // office: drifting motes
+        ctx.fillStyle = "rgba(200,210,235,0.28)";
+        for (i = 0; i < 8; i++) {
+          var sd = hash("mote" + i);
+          var mx = ((sd % 977) / 977 * mw + now / 90 * (6 + sd % 9)) % mw;
+          var my = mh - ((now / 70 * (5 + sd % 7) + sd % mh) % mh);
+          s = this.toScreen(mx, my);
+          if (s.x < 0 || s.y < 0 || s.x > cv.width || s.y > cv.height)
+            continue;
+          ctx.fillRect(s.x, s.y, 1.6, 1.6);
+        }
+        return;
+      }
+      // birds: slow crossings high over the field, flap by time parity
+      ctx.strokeStyle = "rgba(30,36,30,0.8)";
+      ctx.lineWidth = Math.max(1, 1.4 * z);
+      for (i = 0; i < 5; i++) {
+        var bs = hash("bird" + i);
+        var per = 38000 + (bs % 5) * 9000;
+        var p = ((now + bs % per) % per) / per;
+        var bx = -40 + p * (mw + 80);
+        var by = (bs % 1000) / 1000 * mh * 0.8 +
+                 Math.sin(now / 700 + bs) * 18;
+        s = this.toScreen(bx, by);
+        if (s.x < -20 || s.y < -20 || s.x > cv.width + 20 ||
+            s.y > cv.height + 20) continue;
+        var flap = (now % 400 < 200) ? -1 : 1;
+        ctx.beginPath();
+        ctx.moveTo(s.x - 5 * z, s.y);
+        ctx.quadraticCurveTo(s.x, s.y + flap * 4 * z, s.x, s.y);
+        ctx.quadraticCurveTo(s.x, s.y + flap * 4 * z, s.x + 5 * z, s.y);
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1;
+      // fog wisps: pale motes drifting over the field edges
+      ctx.fillStyle = "rgba(210,225,205,0.20)";
+      for (i = 0; i < 6; i++) {
+        var ws = hash("wisp" + i);
+        var wx = ((ws % 1400) / 1400 * mw +
+                  Math.sin(now / 3200 + ws) * 60) % mw;
+        var wy = ((ws % 900) / 900 * mh +
+                  Math.cos(now / 2700 + ws) * 40) % mh;
+        s = this.toScreen(wx, wy);
+        if (s.x < 0 || s.y < 0 || s.x > cv.width || s.y > cv.height)
+          continue;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, (2 + ws % 3) * Math.max(z, 0.6), 0, 7);
+        ctx.fill();
+      }
+    },
+
     // ---- frame -----------------------------------------------------
     /* state = {tiles:{w,h,data}, fog, regions:{id->{cx,cy,tileId}},
        units:[{id,x,y,cls,kind,status_live,hp,mana,gate_fail,sel,bark}],
@@ -428,16 +487,22 @@
         var sz = (u.kind === "minion" ? 14 : u.kind === "worker" ? 10 : 22)
             * Math.max(z, 0.7);
         var ent = theme.units[u.cls] || theme.units.Squire;
-        var dy = 0;
+        var dy = 0, ph = hash(String(u.id));
         if (self.iso) {          // #134: desk under office workers
           var dw = u.kind === "minion" ? sz * 2.2 : sz * 1.3;
           ctx.fillStyle = "#4a4034";
           ctx.fillRect(s.x - dw / 2, s.y + sz * 0.15, dw, sz * 0.38);
           ctx.fillStyle = "#5c503f";
           ctx.fillRect(s.x - dw / 2, s.y + sz * 0.15, dw, 2);
-          if (u.status_live === "running")   // typing: heartbeat anim
-            dy = Math.sin(t0 / 160 + hash(String(u.id))) * 1.5 * z;
         }
+        // #136 animation states: walk bounce while gliding on an order,
+        // work-loop hammering on an active task, slow fidget when idle
+        if (u.moving)
+          dy = -Math.abs(Math.sin(t0 / 90 + ph)) * 2.5 * z;
+        else if (u.status_live === "running")
+          dy = Math.sin(t0 / 160 + ph) * 1.5 * z;
+        else
+          dy = Math.sin(t0 / 2400 + ph) * 1.0 * z;
         Theme.sprite(ctx, ent, s.x - sz / 2, s.y - sz / 2 + dy, sz, sz);
         if (u.status_live === "failed" || u.gate_fail) {
           ctx.strokeStyle = pal.err; ctx.lineWidth = 2;
@@ -578,6 +643,23 @@
         ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, 7); ctx.stroke();
         ctx.globalAlpha = 1; ctx.lineWidth = 1;
       });
+      this._ambient(ctx, st, theme, z, now);
+      // #136 day/night: cosmetic dim over the map (session-time cycle,
+      // computed client-side); skipped entirely when the toggle is off
+      if (st.night) {
+        ctx.fillStyle = "rgba(10,12,40," + (st.night * 0.55).toFixed(3) + ")";
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        (st.buildings || []).forEach(function (b) {   // lit windows
+          var s = self.toScreen(b.x, b.y);
+          if (s.x < -64 || s.y < -64 || s.x > cv.width + 64 ||
+              s.y > cv.height + 64) return;
+          ctx.fillStyle = "rgba(255,214,110," +
+            (0.5 + 0.4 * st.night).toFixed(3) + ")";
+          var wz = Math.max(z, 0.6);
+          ctx.fillRect(s.x - 9 * wz, s.y - 3 * wz, 5 * wz, 6 * wz);
+          ctx.fillRect(s.x + 4 * wz, s.y - 3 * wz, 5 * wz, 6 * wz);
+        });
+      }
       // drag-select rectangle overlay (#126)
       if (this.box) {
         var b = this.box;

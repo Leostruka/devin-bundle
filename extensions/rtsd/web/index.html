@@ -180,7 +180,8 @@
   body.spectator #bottom { height:110px; }
   #help { display:none; position:absolute; top:40px; right:320px; z-index:20;
           background:var(--panel); border:1px solid var(--warn);
-          border-radius:8px; padding:12px; font-size:11px; max-width:260px; }
+          border-radius:8px; padding:12px; font-size:11px; max-width:320px;
+          max-height:82%; overflow-y:auto; }
   #help.on { display:block; }
   @media (max-width:700px) {
     #feedpane, #side { display:none; }
@@ -201,6 +202,7 @@
   <button id="sndBtn" title="alert sounds (M toggles, -/= volume)">snd:on</button>
   <button id="ntfBtn" title="browser notifications when tab is hidden">notify:off</button>
   <button id="scoreBtn" title="victory screen: session aggregates">score</button>
+  <button id="dnBtn" title="day/night cycle (N toggles)">day/night:off</button>
   <button id="themeBtn">theme</button>
 </header>
 <main>
@@ -224,23 +226,35 @@
     </div></div>
     <div id="techtree"></div>
     <div id="help">
-      <b>Controls</b><br>
-      WASD/arrows/edge: pan &nbsp; wheel: zoom &nbsp; alt+drag: pan<br>
-      click: select &nbsp; shift-click: add &nbsp; drag: box-select<br>
-      dbl-click: all of class on screen &nbsp; Tab: cycle subgroup<br>
+      <b>Guide card (? closes)</b><br><br>
+      <b>Hotkeys (audited vs code)</b><br>
+      WSD/arrows/edge: pan &nbsp; wheel: zoom &nbsp; alt/middle-drag: pan<br>
+      A: attack target &nbsp; H: hold &nbsp; P: patrol &nbsp; ESC: cancel<br>
       Ctrl+0-9: assign group &nbsp; 0-9: recall &nbsp; tap x2: center<br>
-      minimap click: jump/ping &nbsp; minimap right-click: move order<br>
+      Tab: cycle subgroup &nbsp; . : idle worker &nbsp; SPACE: last alert<br>
+      F1-F4: camera recall &nbsp; Ctrl+F1-F4: save camera<br>
+      T: theme mode &nbsp; N: day/night &nbsp; K: tech tree &nbsp; ?: help<br>
+      M: mute &nbsp; -/=: volume<br><br>
+      <b>Mouse</b><br>
+      click: select &nbsp; shift-click: add &nbsp; drag: box-select<br>
+      dbl-click: all of class on screen<br>
       right-click map: order (quest/building snap) &nbsp; shift: enqueue<br>
       right-click with building selected: rally point<br>
-      command card: Move/Stop/Hold/Patrol/Attack + kit abilities<br>
+      minimap click: jump/ping &nbsp; minimap right-click: move order<br>
       quest log: click = jump to marker, drag onto hero = assign<br>
-      idle:N cycles idle heroes &nbsp; waypoint flags = order queue<br>
-      SPACE: cycle pings &nbsp; ESC: cancel target &nbsp; T: theme<br>
-      M: mute &nbsp; -/=: volume &nbsp; breach chips = gate-fail territory<br>
-      K: tech tree (skills as spells, armory tiers, library doctrines)<br>
-      Cmd: <code>/spawn &lt;profile&gt; &lt;task&gt;</code>,
-      <code>@unit msg</code> (name or id steers that hero), text = goal<br>
-      feed: click a line to jump to its unit; chips filter by type/class
+      feed: click a line to jump to its unit; chips filter type/class<br><br>
+      <b>Entities</b><br>
+      heroes = subagents (class from profile kit) &nbsp; minions = shells<br>
+      workers = hook firings &nbsp; ravens = mailbox deposits<br>
+      buildings = bundle surfaces &nbsp; POIs = quests/gold/camps<br>
+      waypoint flags = order queue &nbsp; red glow = gate-fail breach<br>
+      birds/wisps/motes + day/night = ambient, cosmetic only<br><br>
+      <b>Modes</b><br>
+      battlefield &lt;-&gt; office (T): same world, different skin<br>
+      day/night (N): session-time dim + lit windows, off = zero cost<br><br>
+      <b>Cmd line</b>: <code>/spawn &lt;profile&gt; &lt;task&gt;</code>,
+      <code>@unit msg</code>, plain text = goal<br>
+      command card: Move/Stop/Hold/Patrol/Attack + kit abilities/spells
     </div>
   </div>
   <div id="side">

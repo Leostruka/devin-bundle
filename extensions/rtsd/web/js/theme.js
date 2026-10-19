@@ -132,7 +132,11 @@
       persist();
       return current;
     },
-    /* Draw one sprite. entry={glyph,fg,bg,shape} or {sheet,sx,sy,sw,sh}. */
+    /* Draw one sprite. entry={glyph,fg,bg,shape} or {sheet,sx,sy,sw,sh}.
+       #136 perf pass: procedural entries are rasterized once into an
+       offscreen canvas (keyed on the entry object) and then blitted with
+       drawImage - one draw call per entity instead of path+text every
+       frame. */
     sprite: function (ctx, entry, x, y, w, h) {
       if (!entry) return;
       if (entry.sheet) {
@@ -143,6 +147,19 @@
           return;
         }
       }
+      var SP = 80;                      // raster box (margin for roofs)
+      if (!entry._spr) {
+        var c = document.createElement("canvas");
+        c.width = SP; c.height = SP;
+        entry._spr = c;
+        var g2 = c.getContext("2d");
+        Theme._paint(g2, entry, 8, 14, 64, 64);
+      }
+      ctx.drawImage(entry._spr, 0, 0, SP, SP,
+        x - w * 8 / 64, y - h * 14 / 64, w * SP / 64, h * SP / 64);
+    },
+    // procedural painter: draws one entry into ctx at the given box
+    _paint: function (ctx, entry, x, y, w, h) {
       var r = Math.min(w, h) / 2, cx = x + w / 2, cy = y + h / 2;
       ctx.fillStyle = entry.bg || "#444";
       if (entry.shape === "tri") {

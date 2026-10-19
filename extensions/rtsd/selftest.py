@@ -230,6 +230,8 @@ def main():
         assert units["lane1"]["status_live"] in ("running", "idle", "stale")
         assert w["resources"]["supply_used"] >= 0
         assert isinstance(w["map"]["regions"], list)
+        # #136 day/night: session anchor is the first event ts
+        assert isinstance(w["started"], (int, float)), w.get("started")
         print("PASS snapshot v2 (units/buildings/resources/quests/map)")
 
         # #122 world map: territories from top-level dirs, plots, fog, POIs
