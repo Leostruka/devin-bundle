@@ -501,6 +501,92 @@ def main():
         print("PASS comms feed (%d lines, %d kinds, raven+note poller)"
               % (len(feed), len(by_kind)))
 
+        # #129 war council: a PermissionRequest hook event becomes a real
+        # pending decision (same file shape rts-decision.py --create
+        # writes) + a decision.created event/feed/ping; pending decisions
+        # stack; answers go through the .response path --wait consumes.
+        rts_dec = os.path.abspath(os.path.join(
+            HERE, "..", "..", "scripts", "rts-decision.py"))
+        ws_drain(ws)
+        assert post(PORT, "/event", {
+            "type": "hook.permissionrequest",
+            "hook": "PermissionRequest", "tool": "exec",
+            "session_id": "eff",
+            "payload": {"tool_name": "exec",
+                        "tool_input": {"command": "rm -rf /tmp/x"},
+                        "session_id": "eff"}}) == 200
+        assert post(PORT, "/event", {
+            "type": "hook.permissionrequest",
+            "hook": "PermissionRequest", "tool": "write",
+            "session_id": "eff",
+            "payload": {"tool_name": "write",
+                        "tool_input": {"file_path": "/etc/passwd"},
+                        "session_id": "eff", "timeout": 30}}) == 200
+        h = ws_until_hint(ws, ("decision",))
+        st, snap = get(PORT, "/snapshot")
+        perm = [d for d in snap["decisions"]
+                if d.get("kind") == "permission"]
+        assert len(perm) == 2, snap["decisions"]
+        perm.sort(key=lambda d: d["created_at"])
+        p1, p2 = perm
+        assert "exec" in p1["prompt"] and "rm -rf" in p1["prompt"], p1
+        assert p1["options"] == ["allow", "deny"]
+        assert p1["status"] == "pending" and p1["requester"] == "eff"
+        dfile = os.path.join(root, ".devin", "rts", "decisions",
+                             p1["id"] + ".json")
+        assert os.path.isfile(dfile)
+        # OOB choice -> 400; real answer -> .response file; replay -> 409
+        assert post(PORT, "/decisions/%s/answer" % p1["id"],
+                    {"choice": 9}) == 400
+        assert post(PORT, "/decisions/%s/answer" % p1["id"],
+                    {"choice": 0}) == 200
+        assert post(PORT, "/decisions/%s/answer" % p1["id"],
+                    {"choice": 0}) == 409
+        resp = json.load(open(dfile + ".response", encoding="utf-8"))
+        assert resp["choice"] == 0, resp
+        # stacked queue intact: the second decision is still pending
+        st, snap = get(PORT, "/snapshot")
+        rest = [d["id"] for d in snap["decisions"]
+                if d["status"] == "pending"]
+        assert p2["id"] in rest and p1["id"] not in rest, rest
+        # the real CLI consumer resolves via the .response file
+        out = subprocess.check_output(
+            [sys.executable, rts_dec, "--wait", p1["id"]],
+            cwd=root, timeout=10).decode()
+        ans = json.loads(out)
+        assert ans["status"] == "answered" and ans["choice"] == 0, ans
+        # fail-closed: an unanswered decision times out to last option
+        d2p = os.path.join(root, ".devin", "rts", "decisions",
+                           p2["id"] + ".json")
+        d2 = json.load(open(d2p, encoding="utf-8"))
+        d2["timeout"] = 0.3
+        with open(d2p, "w", encoding="utf-8") as f:
+            json.dump(d2, f)
+        out = subprocess.check_output(
+            [sys.executable, rts_dec, "--wait", p2["id"]],
+            cwd=root, timeout=10).decode()
+        ans = json.loads(out)
+        assert ans["status"] == "timeout" and \
+            ans["choice"] == len(d2["options"]) - 1, ans
+        # out-of-band create (the real rts-decision.py --create path) is
+        # picked up by the daemon's decision poller -> decision.created
+        oob = subprocess.check_output(
+            [sys.executable, rts_dec, "--create"], cwd=root,
+            input=b'{"kind":"question","prompt":"merge now?",'
+                  b'"timeout":60}', timeout=10).decode().strip()
+        for _ in range(30):
+            st, snap = get(PORT, "/snapshot")
+            ids = [d["id"] for d in snap["decisions"]]
+            feed = snap["world"].get("feed") or []
+            if oob in ids and any("question awaits ruling" in
+                                  l["text"] for l in feed):
+                break
+            time.sleep(0.3)
+        else:
+            raise AssertionError("oob decision never surfaced: %s" % ids)
+        print("PASS war council (permissionrequest->decision, stack, "
+              "answer/.response, fail-closed timeout, oob create)")
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
         sys.path.insert(0, HERE)
         import world as worldmod

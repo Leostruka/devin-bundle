@@ -469,6 +469,7 @@ class World:
         self.feed = []             # comms chatter lines (#128, event-sourced)
         self.mail = []             # mailbox deposits seen via events
         self.mail_seen = set()     # msg ids already announced
+        self.dec_seen = set()      # decision ids already announced (#129)
         self.notes = {}            # agent key -> last status.json note
         self._fn = 0               # feed-line counter (template pick, replay-
                                    # deterministic: same order, same count)
@@ -493,8 +494,11 @@ class World:
             self._apply_intent(ev.get("intent") or {}, ts)
         elif et == "decision.created":
             self._bump("town-hall", ts)
+            self.dec_seen.add(str((ev.get("payload") or {})
+                                  .get("id") or ""))
         elif et == "decision.answered":
             self._bump("town-hall", ts)
+            self.dec_seen.discard(str(ev.get("id") or ""))
         elif et == "mail.deposit":
             m = ev.get("mail") or {}
             if m.get("id") and m["id"] not in self.mail_seen:
@@ -1043,10 +1047,13 @@ class World:
                                       "%s reporting in" % nm)
             return None
         if et == "decision.created":
-            kind = (ev.get("payload") or {}).get("kind", "decision")
+            payload = ev.get("payload") or {}
+            kind = payload.get("kind", "decision")
+            req = payload.get("requester")
+            who = self._name_of(req) if req else None
             return self._line(ts, "council", "War Council", "Marshal",
-                              None, "council called - %s awaits ruling"
-                              % kind)
+                              None, "council called - %s awaits ruling%s"
+                              % (kind, " (%s)" % who if who else ""))
         if et == "decision.answered":
             return self._line(ts, "council", "War Council", "Marshal",
                               None, "order confirmed - council adjourned")
