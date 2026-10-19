@@ -1755,6 +1755,9 @@ class World:
                             for o in u.get("orders", []))]
         return {
             "now": now,
+            # #136 day/night: earliest event ts anchors the client-side
+            # cycle; replay-safe (event-derived, not wall clock)
+            "started": self.first_ts,
             "units": units,
             "idle": idle,
             # comms scrollback (#128) + quest log lines (#130): the quest

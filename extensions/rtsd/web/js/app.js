@@ -38,6 +38,9 @@
     heardDec: {},            // ids already alarmed via WS upsert (#129)
     decActive: null,         // decision shown in the council modal
     decT0: 0,                // first-seen time for meeting summons (#134)
+    motion: {},              // unit id -> display pos {x,y} glide (#136)
+    cams: {},                // F1-F4 camera bookmarks (#136)
+    dn: localStorage.getItem("rtsd.daynight") === "1", // day/night on
     barks: {}
   };
 
@@ -219,15 +222,34 @@
     if (state.sel && state.selAll.indexOf(state.sel) < 0)
       state.sel = state.selAll[0] || null;
     var now = performance.now();
+    // #136: motion bookkeeping survives resyncs so a unit mid-glide does
+    // not snap back to its home tile when a new snapshot lands
+    var liveIds = {};
     state.units = (w.units || []).map(function (u) {
       var p = unitPos(u, state.map);
+      // glide target (#136): the unit's latest live order carrying a
+      // map coordinate wins; no order -> drift back to its home tile
+      var tgt = p;
+      var ords = u.orders || [];
+      for (var oi = ords.length - 1; oi >= 0; oi--) {
+        var o = ords[oi];
+        if (o.state !== "consumed" && typeof o.x === "number" &&
+            typeof o.y === "number") {
+          tgt = { x: (o.x + .5) * TILE, y: (o.y + .5) * TILE };
+          break;
+        }
+      }
+      var mo = state.motion[u.id] ||
+               (state.motion[u.id] = { x: p.x, y: p.y });
+      liveIds[u.id] = 1;
       var ack = state.acks[u.id];
       if (ack && now - ack.t0 > 4000) { delete state.acks[u.id]; ack = 0; }
       var live = u.status_live || u.status;
       // death animation: a hero that just failed gets a fade marker (#125)
       if (prev[u.id] && prev[u.id].status_live !== "failed" &&
-          live === "failed") pushFade(p.x, p.y, u.cls);
-      return { id: u.id, x: p.x, y: p.y, cls: u.cls || "Squire",
+          live === "failed") pushFade(mo.x, mo.y, u.cls);
+      return { id: u.id, x: mo.x, y: mo.y, tx: tgt.x, ty: tgt.y,
+        moving: false, cls: u.cls || "Squire",
         kind: u.kind, name: u.name, hp: u.hp, mana: u.mana,
         status_live: live, gate_fail: !!u.gate_fail,
         sel: state.selAll.indexOf(u.id) >= 0,
@@ -241,6 +263,10 @@
         if (p.kind === "minion" || p.status_live === "failed" ||
             p.kind === "hero") pushFade(p.x, p.y, p.cls);
       }
+    });
+    // drop motion entries of units that left the world (#136)
+    Object.keys(state.motion).forEach(function (id) {
+      if (!liveIds[id]) delete state.motion[id];
     });
     // worker peasants carry from/to + server ts; engine lerps per frame
     // via the snapshot's server->client clock offset
@@ -775,7 +801,9 @@
         for (var k = 0; k < (nBld > 11 ? 2 : 1); k++)
           blds.push({ id: b + (k ? "-" + k : ""), activity: i + k });
       });
-    return { now: Date.now() / 1000, units: units, buildings: blds,
+    return { now: Date.now() / 1000,
+      started: Date.now() / 1000 - 400,   // demo day/night anchor (#136)
+      units: units, buildings: blds,
       breaches: [],
       resources: { gold: 0, lumber_pct: 0, supply_used: nUnits,
                    supply_heroes: nUnits, supply_minions: 0,
@@ -1661,6 +1689,38 @@
       el("techtree").classList.toggle("on");
       renderPanels(); return;
     }
+    // #136 hotkey audit (WC3 set): A attack-target, H hold, P patrol,
+    // . idle-worker cycle, F1-F4 camera bookmarks (Ctrl+Fn saves)
+    if (/^f[1-4]$/.test(k)) {
+      e.preventDefault();
+      var cn = parseInt(k[1], 10);
+      if (e.ctrlKey || e.metaKey) {
+        state.cams[cn] = eng.toWorld(eng.cv.width / 2, eng.cv.height / 2);
+        logFeed("camera " + cn + " saved");
+      } else if (state.cams[cn]) {
+        eng.centerOn(state.cams[cn].x, state.cams[cn].y);
+      }
+      return;
+    }
+    if (k === "a" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
+      state.pending = { order: "attack" }; renderPanels(); return;
+    }
+    if (k === "h" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
+      issueOrder("hold", {}); renderPanels(); return;
+    }
+    if (k === "p" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
+      var pu = state.units.filter(function (x) {
+        return x.id === state.sel; })[0];
+      var praw = pu && pu.unit ? pu.unit : pu;
+      issueOrder("patrol", { lane: (praw && praw.lane) || "" });
+      renderPanels(); return;
+    }
+    if (k === ".") { el("idleBtn").click(); return; }  // idle worker
+    if (k === "n") {                       // day/night toggle (#136)
+      state.dn = !state.dn;
+      localStorage.setItem("rtsd.daynight", state.dn ? "1" : "0");
+      dnUi(); return;
+    }
     if (k === "m") { setMute(!snd.on); return; }    // #133 mute toggle
     if (k === "-" || k === "_") { setVol(snd.vol - 0.1); return; }
     if (k === "=" || k === "+") { setVol(snd.vol + 0.1); return; }
@@ -1679,6 +1739,17 @@
     if (k === "?") el("help").classList.toggle("on");
   });
   el("themeBtn").onclick = toggleTheme;
+  // day/night toggle (#136): cosmetic dim cycle anchored to the session;
+  // persisted like the theme choice, zero render cost while off
+  function dnUi() {
+    el("dnBtn").textContent = "day/night:" + (state.dn ? "on" : "off");
+  }
+  el("dnBtn").onclick = function () {
+    state.dn = !state.dn;
+    localStorage.setItem("rtsd.daynight", state.dn ? "1" : "0");
+    dnUi();
+  };
+  dnUi();
   el("sndBtn").onclick = function () { setMute(!snd.on); };
   sndUi();
   // Notification opt-in (#133): click grants/denies via the platform
@@ -1783,16 +1854,55 @@
     if (e.key === "Enter") el("send").click();
   });
 
+  // #136 unit glide: display position eases toward the unit's target
+  // (latest live order coordinate, else its home tile) so ordered units
+  // visibly path across the map instead of teleporting. Speed is a
+  // fixed world-px/s capped by a fraction of the remaining distance, so
+  // far orders march and close orders settle without overshoot.
+  var WALK_PX_S = 110;
+  function stepMotion(dt) {
+    state.units.forEach(function (u) {
+      var dx = u.tx - u.x, dy = u.ty - u.y;
+      var d = Math.hypot(dx, dy);
+      if (d < 1.5) { u.moving = false; u.x = u.tx; u.y = u.ty; }
+      else {
+        var v = Math.max(WALK_PX_S, d * 2.2) * dt;
+        if (v >= d) { u.x = u.tx; u.y = u.ty; u.moving = false; }
+        else { u.x += dx / d * v; u.y += dy / d * v; u.moving = true; }
+      }
+      var mo = state.motion[u.id];
+      if (mo) { mo.x = u.x; mo.y = u.y; }
+    });
+  }
+
+  // #136 day/night: WC3-style cycle anchored to the session's first
+  // event (world.started), so replay + live agree. 600s period:
+  // day 0-50%, dusk ramp 50-60%, night 60-90%, dawn ramp 90-100%.
+  // Purely cosmetic; returns 0 when the toggle is off (zero cost).
+  function nightFactor() {
+    if (!state.dn) return 0;
+    var now = state.srvClock
+      ? state.srvClock.srv + (performance.now() - state.srvClock.perf)/1000
+      : Date.now() / 1000;
+    var t0 = (state.world && (state.world.started || state.world.now)) ||
+             now;
+    var ph = (((now - t0) % 600) + 600) % 600 / 600;
+    return ph < 0.5 ? 0 : ph < 0.6 ? (ph - 0.5) / 0.1
+         : ph < 0.9 ? 1 : (1 - ph) / 0.1;
+  }
+
   var last = performance.now(), frames = 0, ft = 0;
   function loop(t) {
     var dt = Math.min(0.1, (t - last) / 1000); last = t;
     eng.step(dt);
+    stepMotion(dt);
     var th = Theme.get();
     eng.render({ tiles: state.map, fog: state.map && state.map.fog,
       pois: state.map && state.map.pois, pings: livePings(),
       workers: state.workers, fades: state.fades,
       waypoints: state.waypoints, ravens: state.ravens,
       srvClock: state.srvClock, decision: meetingCall(),
+      night: nightFactor(),
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
       fog: state.map && state.map.fog, units: state.units,
