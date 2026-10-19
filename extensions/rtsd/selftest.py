@@ -642,6 +642,36 @@ def main():
         print("PASS war council (permissionrequest->decision, stack, "
               "answer/.response, fail-closed timeout, oob create)")
 
+        # #131 economy: PostToolUse hook output -> income rate, last-5
+        # trend, per-lane burn on the hero, supply split by kind,
+        # thresholds straight from data/context-budget.json defaults
+        out_txt = "x" * 400   # 100 est tokens + 200 call overhead = 300
+        assert post(PORT, "/event", {
+            "type": "hook.posttooluse", "hook": "PostToolUse",
+            "tool": "exec",
+            "payload": {"tool_input": {"command": "tail log",
+                                       "lane": "eff"},
+                        "tool_response": out_txt}}) == 200
+        st, snap = get(PORT, "/snapshot")
+        r = snap["world"]["resources"]
+        assert r["income_min"] >= 300, r                    # last 60s sum
+        assert r["income_last5"][-1] == 300, r["income_last5"]
+        assert len(r["income_last5"]) <= 5
+        assert r["thresholds"] == {"warn": 60, "crit": 75,
+                                  "clear": 80}, r["thresholds"]
+        assert r["supply_heroes"] == r["supply_used"]
+        assert r["supply_minions"] == 0, r                  # zz9 killed
+        assert r["window"] > 0
+        lane1 = {u["id"]: u for u in snap["world"]["units"]}["lane1"]
+        assert lane1["burn"] >= 300, lane1            # lane "eff" spend
+        assert "turns_left" in lane1                  # None w/o heartbeat
+        # a hero whose lane saw no burn reports 0, not a guess
+        idlehero = {u["id"]: u for u in
+                    snap["world"]["units"]}["idlehero"]
+        assert idlehero["burn"] == 0 and idlehero["turns_left"] is None
+        print("PASS economy HUD (income rate, last5, thresholds, "
+              "supply split, per-hero burn)")
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
         sys.path.insert(0, HERE)
         import world as worldmod

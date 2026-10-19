@@ -33,6 +33,7 @@
     feedFilter: { kind: null, cls: null },
     ravens: [],              // in-flight mailbox birds {fx,fy,tx,ty,t0}
     seenDec: null,           // pending decision ids from last snapshot
+    prevUpkeep: null,        // upkeep tier from last snapshot (#131)
     heardDec: {},            // ids already alarmed via WS upsert (#129)
     decActive: null,         // decision shown in the council modal
     barks: {}
@@ -50,7 +51,8 @@
   // from events.jsonl); local entries (order echoes, group assigns) are
   // UI-side only and never pretend to be agent traffic.
   var FEED_KINDS = ["spawn", "debrief", "position", "note", "council",
-                    "order", "steering", "raven", "quest", "local"];
+                    "order", "steering", "raven", "quest", "econ",
+                    "local"];
 
   function logFeed(m) {   // local UI echo (orders, groups, demo notice)
     pushFeed({ t: Date.now() / 1000, kind: "local", who: "UI",
@@ -287,6 +289,7 @@
     state.snap = snap;
     syncDecisions();
     state.world = snap.world || null;
+    syncUpkeep();
     var m2 = state.world ? state.world.map : null;
     if (m2 && m2.tile_region) {          // authoritative server map (#122)
       if (!state.map || state.map.sig !== m2.sig) state.map = serverMap(m2);
@@ -502,6 +505,42 @@
     if (state.decActive && !ids[state.decActive]) state.decActive = null;
   }
 
+  // ---- economy alerts (#131) ------------------------------------------
+  // Upkeep tier is derived server-side from the real context-budget
+  // thresholds each snapshot; the HUD diffs successive snapshots so a
+  // crossing fires an alert within one tick: feed line + portrait-bar
+  // flash + tone + a minimap ping on the town hall (same pattern as the
+  // war council diff above).
+  var UPKEEP_ORDER = { "none": 0, "low": 1, "high": 2, "clear-now": 3 };
+
+  function syncUpkeep() {
+    var r = (state.world || {}).resources || {};
+    var cur = r.upkeep || "none";
+    if (state.prevUpkeep === null || state.prevUpkeep === cur) {
+      state.prevUpkeep = cur;
+      return;
+    }
+    var worse = (UPKEEP_ORDER[cur] || 0) > (UPKEEP_ORDER[state.prevUpkeep] || 0);
+    var msg = "upkeep " + state.prevUpkeep + " -> " + cur +
+      " (context " + (r.lumber_pct | 0) + "% of window)";
+    pushFeed({ t: Date.now() / 1000, kind: "econ", who: "Keep",
+               cls: null, uid: null, text: msg });
+    var rs = el("res");
+    rs.classList.remove("flash");
+    void rs.offsetWidth;               // restart the CSS animation
+    rs.classList.add("flash");
+    if (worse) {
+      beep(520, .15);
+      var th = ((state.world || {}).buildings || []).filter(function (b) {
+        return b.id === "town-hall"; })[0];
+      if (th && th.pos && th.pos.xy)
+        state.pings.push({ x: (th.pos.xy[0] + .5) * TILE,
+                           y: (th.pos.xy[1] + .5) * TILE,
+                           kind: "econ", t0: performance.now() });
+    }
+    state.prevUpkeep = cur;
+  }
+
   // gate-fail tier: red breach banner + low tone (ping comes from the
   // event hint); auto-clears - the ledger stays the persistent record
   function failBanner(msg) {
@@ -584,7 +623,11 @@
       });
     return { now: Date.now() / 1000, units: units, buildings: blds,
       resources: { gold: 0, lumber_pct: 0, supply_used: nUnits,
-                   supply_cap: 8, upkeep: "low" },
+                   supply_heroes: nUnits, supply_minions: 0,
+                   supply_cap: 8, upkeep: "low", income_min: 0,
+                   income_last5: [],
+                   thresholds: { warn: 60, crit: 75, clear: 80 },
+                   window: 0 },
       quests: [], map: { regions: regs, workers_active: 4 } };
   }
 
@@ -611,10 +654,44 @@
     var w = state.world || { units: [], quests: [], resources: {} };
     var th = Theme.get(), r = w.resources || {};
     el("res").textContent = w.resources
-      ? ("GOLD ~" + (r.gold | 0) + "  LUMBER " + (r.lumber_pct | 0) +
+      ? ("GOLD ~" + (r.gold | 0) + " +" + (r.income_min | 0) + "/m" +
+         "  LUMBER " + (r.lumber_pct | 0) +
          "%  SUPPLY " + r.supply_used + "/" + r.supply_cap +
+         (r.supply_minions ? "+" + r.supply_minions : "") +
          "  UPKEEP " + (r.upkeep || "-"))
       : "";
+    el("res").title = w.resources
+      ? ("est tokens spent this session; +" + (r.income_min | 0) +
+         " tok/min last 60s\ncontext window " + (r.window | 0) +
+         " tokens, thresholds " + (r.thresholds ?
+           r.thresholds.warn + "/" + r.thresholds.crit + "/" +
+           r.thresholds.clear + "%" : "-") +
+         "\nsupply: " + (r.supply_heroes | 0) + " heroes + " +
+         (r.supply_minions | 0) + " minions vs cap " + r.supply_cap)
+      : "";
+    // economy pane (#131): every figure comes from the snapshot, which
+    // is itself derived from events.jsonl + data/context-budget.json +
+    // data/model-context-windows.json - nothing fabricated
+    if (el("econbody")) {
+      var th2 = r.thresholds || {};
+      var mx = Math.max.apply(null, (r.income_last5 || [1]).concat([1]));
+      el("econbody").innerHTML =
+        "<div class='meta'>gold ~" + (r.gold | 0) + " est tokens " +
+        "(+" + (r.income_min | 0) + "/min)</div>" +
+        "<div class='ebars'>" + (r.income_last5 || []).map(function (v) {
+          return "<span class='ebar' style='height:" +
+            Math.max(1, Math.round(12 * v / mx)) + "px' title='~" +
+            (v | 0) + " tok'></span>";
+        }).join("") + "</div>" +
+        "<div class='meta'>lumber " + (r.lumber_pct | 0) + "% of " +
+        (r.window | 0) + "-tok window (warn " + (th2.warn | 0) +
+        " / crit " + (th2.crit | 0) + " / clear " + (th2.clear | 0) +
+        "%)</div>" +
+        "<div class='meta'>supply " + (r.supply_heroes | 0) +
+        " heroes + " + (r.supply_minions | 0) + " minions / cap " +
+        (r.supply_cap | 0) + "</div>" +
+        "<div class='meta'>upkeep " + esc(r.upkeep || "-") + "</div>";
+    }
     // quest log (#130): WC3-style main/side split; every row maps to a
     // real .devin/scratch issue (Status/Blocked by) plus its ledger gates
     var qs2 = w.quests || (state.snap || {}).tasks || [];
@@ -836,6 +913,12 @@
       "<span class='meta'>HP " + (u.hp == null ? "-" : u.hp) +
       "  MP " + (u.mana == null ? "-" : u.mana) +
       "  " + esc(u.status_live || u.status || "") + "</span>" +
+      // #131 economy: per-hero context burn + est turns left in window
+      (u.kind === "hero"
+        ? "<div class='meta'>burn ~" + (u.burn | 0) + " tok" +
+          (u.turns_left == null ? "" :
+            "  |  ~" + u.turns_left + " turns left") + "</div>"
+        : "") +
       (kit ? " <span class='meta'>kit:</span>" + kit : "") +
       (u.quest ? "<div class='meta'>quest: " + esc(u.quest) + "</div>"
                : "") +

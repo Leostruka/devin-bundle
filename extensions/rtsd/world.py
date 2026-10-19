@@ -443,6 +443,9 @@ class World:
         self.buildings = {b: {"id": b, "name": n, "activity": 0}
                           for b, n in BUILDINGS}
         self.resources = {"gold": 0, "calls": 0}
+        self.gold_log = []         # [{ts,amt,lane}] income history (#131)
+        self.burn = {}             # lane -> est tokens spent (#131)
+        self.burn_calls = {}       # lane -> tool call count (#131)
         self.regions = {}          # name -> {revealed, activity, lanes, files}
         self.workers = []          # recent hook firings: {ts, hook, tool}
         self.worker_total = 0
@@ -574,6 +577,15 @@ class World:
             out = _output_text(payload)
             self.resources["gold"] += len(out) // CHARS_PER_TOKEN
             self.resources["calls"] += 1
+            # #131 economy: per-event income record (output tokens + the
+            # same 200/call overhead used for gold) attributed to the
+            # event lane so heroes show their own context burn
+            amt = len(out) // CHARS_PER_TOKEN + 200
+            self.gold_log.append({"ts": ts, "amt": amt, "lane": lane})
+            if len(self.gold_log) > 100:
+                self.gold_log = self.gold_log[-100:]
+            self.burn[lane] = self.burn.get(lane, 0) + amt
+            self.burn_calls[lane] = self.burn_calls.get(lane, 0) + 1
             b = TOOL_TO_BUILDING.get(tool)
             if b:
                 self._bump(b, ts)
@@ -1371,6 +1383,18 @@ class World:
                 u["orders"] = [self._order_view(
                     i, ist.get(str(i.get("id")), "pending"))
                     for i in self.orders.get(u["id"], [])]
+                # #131 economy: this hero's context burn = est tokens on
+                # its lane; turns_left = remaining window (mana % of the
+                # model context window) / avg burn per tool call there
+                ln = u.get("lane") or ""
+                ub = self.burn.get(ln, 0)
+                u["burn"] = ub
+                if u.get("mana") is not None and ub and self._window:
+                    avg = ub / max(1, self.burn_calls.get(ln, 1))
+                    u["turns_left"] = int(
+                        (u["mana"] / 100.0 * self._window) / max(1, avg))
+                else:
+                    u["turns_left"] = None
             units.append(u)
         # gold = est tokens spent = tool-output tokens + 200/call overhead
         # (same accounting as scripts/context-pressure.py)
@@ -1383,6 +1407,13 @@ class World:
         supply_used = sum(1 for u in self.units.values()
                           if u["kind"] == "hero"
                           and self._live_status(u, now) in ("running", "idle"))
+        supply_minions = sum(1 for u in self.units.values()
+                             if u["kind"] == "minion")
+        # income rate (#131): est tokens from PostToolUse events inside
+        # the trailing 60s window; last5 feeds the HUD trend bars
+        income_min = sum(g["amt"] for g in self.gold_log
+                         if now - g["ts"] <= 60)
+        income_last5 = [g["amt"] for g in self.gold_log[-5:]]
         workers = [wk for wk in self.workers
                    if now - wk["ts"] <= WORKER_WINDOW_S]
         wunits = [{"id": "wk-%d" % i, "kind": "worker", "tool": wk["tool"],
@@ -1412,7 +1443,13 @@ class World:
                           for b in self.buildings.values()],
             "resources": {"gold": gold, "lumber_pct": lumber_pct,
                           "supply_used": supply_used,
+                          "supply_heroes": supply_used,
+                          "supply_minions": supply_minions,
                           "supply_cap": SUPPLY_CAP, "upkeep": upkeep,
+                          "income_min": income_min,
+                          "income_last5": income_last5,
+                          "thresholds": {"warn": w, "crit": c,
+                                         "clear": clr},
                           "window": self._window},
             "quests": quests,
             "map": {"root": self.root, "sig": self.layout["sig"],
