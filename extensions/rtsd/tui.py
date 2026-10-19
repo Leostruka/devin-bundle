@@ -10,11 +10,19 @@ Commands:
   /decisions           pending decisions
   /answer <id> <idx>   answer a pending decision
   /intent <json>       POST an intent (spawn|message|goal|answer)
+  /score               victory screen: quests/gates/heroes/tokens
+  /history             match history: past session logs + stats
+  /replay              replay status (replay-mode daemon only)
+  /play | /pause       replay playback control
+  /speed <n>           replay speed (1, 2, 4...)
+  /seek <index>        jump to event index (scrub)
   /feed                live upsert feed via /ws (Ctrl+C to stop)
   /quit                exit
 
 Usage:
   python tui.py [--host 127.0.0.1] [--port 8797] [--cmd "/agents"]
+  python tui.py --replay .devin/rts/events.jsonl   # console + playback
+  python tui.py --spectate --token <t> --host <ip> --port <p>
 """
 import argparse
 import base64
@@ -28,11 +36,19 @@ import urllib.request
 import urllib.error
 
 
+TOKEN = None          # session or spectator token (X-RTS-Token)
+SPECTATE = False      # --spectate: console blocks commands locally too;
+                      # the daemon still enforces read-only server-side
+
+
 def http(host, port, method, path, obj=None):
     data = json.dumps(obj).encode() if obj is not None else None
+    hdrs = {"Content-Type": "application/json"}
+    if TOKEN:
+        hdrs["X-RTS-Token"] = TOKEN
     req = urllib.request.Request(
         "http://%s:%d%s" % (host, port, path), data=data,
-        headers={"Content-Type": "application/json"}, method=method)
+        headers=hdrs, method=method)
     try:
         return json.loads(urllib.request.urlopen(req, timeout=10).read())
     except urllib.error.HTTPError as e:
@@ -89,7 +105,85 @@ def cmd_decisions(h, p, _a):
     return "\n".join(out)
 
 
+def cmd_score(h, p, _a):
+    sc = http(h, p, "GET", "/score")
+    if "error" in sc and len(sc) == 1:
+        return "score unavailable: %s" % sc["error"]
+    out = ["== SCORE ==",
+           "quests %d/%d  gates %d/%d pass (%d fail)  tokens %d  "
+           "calls %d  duration %ds" % (
+               sc["quests_done"], sc["quests_total"],
+               sc["gates_pass"], sc["gates_total"], sc["gates_fail"],
+               sc["gold"], sc["calls"], sc["duration_s"])]
+    if sc.get("goal"):
+        out.append("main quest: %s" % sc["goal"])
+    for u in sc["heroes"][:8]:
+        out.append("  %-12s %-14s lvl %-3d xp %-4d %s" % (
+            u["id"][:12], (u.get("cls") or "?")[:14],
+            u.get("level", 1), u.get("xp", 0), u.get("status") or "?"))
+    return "\n".join(out)
+
+
+def cmd_history(h, p, _a):
+    ss = http(h, p, "GET", "/sessions")
+    if isinstance(ss, dict):
+        return "history unavailable: %s" % ss.get("error", "?")
+    if not ss:
+        return "no recorded sessions"
+    out = ["%-28s %-6s %-8s %-7s %-7s %s" % (
+        "LOG", "EVENTS", "AGENTS", "QUESTS", "TOKENS", "DUR")]
+    for s in ss:
+        out.append("%-28s %-6d %-8d %-7s %-7d %ds" % (
+            s["id"][:28], s["events"], s["agents"],
+            "%d/%d" % (s["quests_done"], s["quests_total"]),
+            s["tokens"], s["duration_s"]))
+    return "\n".join(out)
+
+
+def cmd_replay(h, p, _a):
+    r = http(h, p, "GET", "/replay")
+    if "error" in r:
+        return "replay: %s" % r["error"]
+    return "replay %s %d/%d speed=%gx%s" % (
+        os.path.basename(r["path"]), r["index"], r["total"],
+        r["speed"], " [done]" if r["done"] else
+        " playing" if r["playing"] else " paused")
+
+
+def _replay_ctl(h, p, body):
+    return json.dumps(http(h, p, "POST", "/replay", body))
+
+
+def cmd_play(h, p, _a):
+    return _replay_ctl(h, p, {"action": "play"})
+
+
+def cmd_pause(h, p, _a):
+    return _replay_ctl(h, p, {"action": "pause"})
+
+
+def cmd_speed(h, p, args):
+    if not args:
+        return "usage: /speed <n>  (1x/2x/4x...)"
+    try:
+        return _replay_ctl(h, p, {"speed": float(args[0])})
+    except ValueError:
+        return "bad speed"
+
+
+def cmd_seek(h, p, args):
+    if not args:
+        return "usage: /seek <event-index>"
+    try:
+        return _replay_ctl(h, p, {"action": "seek",
+                                  "index": int(args[0])})
+    except ValueError:
+        return "bad index"
+
+
 def cmd_answer(h, p, args):
+    if SPECTATE:
+        return "spectator console is read-only"
     if len(args) < 2:
         return "usage: /answer <id> <choice-index> [text]"
     r = http(h, p, "POST", "/decisions/%s/answer" % args[0],
@@ -98,6 +192,8 @@ def cmd_answer(h, p, args):
 
 
 def cmd_intent(h, p, args):
+    if SPECTATE:
+        return "spectator console is read-only"
     if not args:
         return 'usage: /intent {"kind":"message","to":"x","text":"y"}'
     try:
@@ -124,9 +220,11 @@ def ws_feed(host, port):
     s = socket.create_connection((host, port), timeout=10)
     key = base64.b64encode(os.urandom(16)).decode()
     s.sendall((
-        "GET /ws HTTP/1.1\r\nHost: %s:%d\r\nUpgrade: websocket\r\n"
+        "GET /ws%s HTTP/1.1\r\nHost: %s:%d\r\nUpgrade: websocket\r\n"
         "Connection: Upgrade\r\nSec-WebSocket-Key: %s\r\n"
-        "Sec-WebSocket-Version: 13\r\n\r\n" % (host, port, key)).encode())
+        "Sec-WebSocket-Version: 13\r\n\r\n"
+        % ("?token=" + TOKEN if TOKEN else "",
+           host, port, key)).encode())
     resp = b""
     while b"\r\n\r\n" not in resp:
         chunk = s.recv(4096)
@@ -216,6 +314,13 @@ COMMANDS = {
     "/decisions": cmd_decisions,
     "/answer": cmd_answer,
     "/intent": cmd_intent,
+    "/score": cmd_score,
+    "/history": cmd_history,
+    "/replay": cmd_replay,
+    "/play": cmd_play,
+    "/pause": cmd_pause,
+    "/speed": cmd_speed,
+    "/seek": cmd_seek,
 }
 
 
@@ -244,29 +349,61 @@ def main():
         os.environ.get("RTSD_PORT", "8797")))
     ap.add_argument("--cmd", action="append",
                     help="run command non-interactively (repeatable)")
+    ap.add_argument("--token", default=os.environ.get("RTSD_TOKEN"),
+                    help="session or spectator token (X-RTS-Token)")
+    ap.add_argument("--spectate", action="store_true",
+                    help="read-only console: /intent + /answer blocked "
+                         "locally; the daemon enforces it server-side "
+                         "for spectator tokens")
+    ap.add_argument("--replay", metavar="EVENTS.JSONL",
+                    help="spawn rtsd --replay on --port and connect the "
+                         "console to it (/play /pause /speed /seek)")
     args = ap.parse_args()
-    if args.cmd:
-        rc = 0
-        for c in args.cmd:
-            out = run_line(args.host, args.port, c)
+    global TOKEN, SPECTATE
+    TOKEN = args.token
+    SPECTATE = bool(args.spectate)
+    proc = None
+    if args.replay:
+        import subprocess
+        here = os.path.dirname(os.path.abspath(__file__))
+        proc = subprocess.Popen(
+            [sys.executable, os.path.join(here, "rtsd.py"),
+             "--port", str(args.port), "--root", os.getcwd(),
+             "--replay", os.path.abspath(args.replay)])
+        for _ in range(50):                     # wait for /health
+            r = http(args.host, args.port, "GET", "/health")
+            if r.get("ok"):
+                break
+            import time as _t
+            _t.sleep(0.1)
+        print("[replay] %s -> http://%s:%d" % (
+            args.replay, args.host, args.port))
+    try:
+        if args.cmd:
+            rc = 0
+            for c in args.cmd:
+                out = run_line(args.host, args.port, c)
+                if out is not None:
+                    print(out)
+                if out and str(out).startswith("error"):
+                    rc = 1
+            return rc
+        print("rtsd tui - /help for commands")
+        while True:
+            try:
+                line = input("rts> ")
+            except (EOFError, KeyboardInterrupt):
+                print()
+                break
+            out = run_line(args.host, args.port, line)
+            if line.strip().lower() in ("/quit", "/exit"):
+                break
             if out is not None:
                 print(out)
-            if out and str(out).startswith("error"):
-                rc = 1
-        return rc
-    print("rtsd tui - /help for commands")
-    while True:
-        try:
-            line = input("rts> ")
-        except (EOFError, KeyboardInterrupt):
-            print()
-            break
-        out = run_line(args.host, args.port, line)
-        if line.strip().lower() in ("/quit", "/exit"):
-            break
-        if out is not None:
-            print(out)
-    return 0
+        return 0
+    finally:
+        if proc is not None:
+            proc.terminate()
 
 
 if __name__ == "__main__":

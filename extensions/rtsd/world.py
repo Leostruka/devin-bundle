@@ -725,6 +725,8 @@ class World:
         self.mail_seen = set()     # msg ids already announced
         self.dec_seen = set()      # decision ids already announced (#129)
         self.notes = {}            # agent key -> last status.json note
+        self.first_ts = None       # earliest applied event ts (#135)
+        self.last_ts = None        # latest applied event ts (#135)
         self._fn = 0               # feed-line counter (template pick, replay-
                                    # deterministic: same order, same count)
         # WC3 start: home territory around the "root" capital is explored
@@ -741,6 +743,10 @@ class World:
 
     def apply(self, ev):
         ts = ev.get("ts", time.time())
+        if self.first_ts is None or ts < self.first_ts:
+            self.first_ts = ts
+        if self.last_ts is None or ts > self.last_ts:
+            self.last_ts = ts
         et = ev.get("type", "")
         if et.startswith("hook."):
             self._apply_hook(ev, ts)
@@ -1787,6 +1793,36 @@ class World:
                     "regions": regions,
                     "workers_active": len(workers),
                     "workers_total": self.worker_total},
+        }
+
+    def score(self, now=None):
+        """End-of-session victory screen (#135): every figure is a real
+        aggregate re-derived from the same snapshot path the HUD uses,
+        so live, replayed and archived sessions report identically."""
+        s = self.snapshot(now)
+        ledgers = scan_ledgers(self.root)
+        gates = [g for lg in ledgers for g in lg["gates"]]
+        quests = [q for q in s["quests"] if q.get("kind") != "main"]
+        heroes = [u for u in s["units"] if u.get("kind") == "hero"]
+        heroes.sort(key=lambda u: (-u.get("xp", 0), u["id"]))
+        dur = (round(self.last_ts - self.first_ts)
+               if self.first_ts is not None and self.last_ts is not None
+               else 0)
+        return {
+            "goal": (self.goal or {}).get("text"),
+            "quests_done": sum(1 for q in quests if q.get("done")),
+            "quests_total": len(quests),
+            "gates_pass": sum(1 for g in gates if g["state"] == "pass"),
+            "gates_fail": sum(1 for g in gates if g["state"] == "fail"),
+            "gates_total": len(gates),
+            "heroes": [{"id": u["id"], "cls": u.get("cls"),
+                        "profile": u.get("profile"),
+                        "xp": u.get("xp", 0), "level": u.get("level", 1),
+                        "status": u.get("status"),
+                        "burn": u.get("burn", 0)} for u in heroes],
+            "gold": s["resources"]["gold"],
+            "calls": self.resources["calls"],
+            "duration_s": dur,
         }
 
     @classmethod

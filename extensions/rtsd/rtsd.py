@@ -16,7 +16,16 @@ Endpoints (127.0.0.1 only):
   POST /decisions/<id>/answer  {"choice": ..., "text": ...} -> writes response file
   POST /intent       {"kind": "spawn|message|goal", ...} -> .devin/rts/intents/
   GET  /ws           WebSocket upgrade: hello -> snapshot, then upserts
+  GET  /score        victory-screen aggregates (quests/gates/heroes/tokens)
+  GET  /sessions     match history: every *.jsonl under .devin/rts + stats
+  GET  /replay       replay status {total,index,playing,speed,done}
+  POST /replay       playback control {action:play|pause|seek,index,speed}
   GET  /             web UI (web/index.html)
+
+Replay mode: --replay <events.jsonl> rebuilds the session through the same
+World.apply path; all mutating POSTs are denied (server-enforced) and only
+/replay control is accepted. Spectator mode: --remote mints a second,
+read-only token; connections presenting it get GETs but every POST is 403.
 
 Stdlib only (bundle rule: no new deps). WS = minimal RFC 6455 implementation.
 State root: <cwd>/.devin/rts/ unless --root is given.
@@ -52,7 +61,8 @@ def safe_name(s):
 STATE = {"root": None, "clients": [], "lock": threading.Lock(),
         # RLock: a permissionrequest append recursively appends its
         # decision.created event through the same locked path (#129)
-        "write_lock": threading.RLock(), "token": None, "world": None}
+        "write_lock": threading.RLock(), "token": None, "world": None,
+        "spectator_token": None, "replay": None}
 
 
 def state_dir():
@@ -63,6 +73,8 @@ def state_dir():
 
 
 def append_event(ev):
+    if STATE["replay"] is not None:
+        return  # replay mode: the log is immutable history, never append
     ev.setdefault("ts", time.time())
     path = os.path.join(state_dir(), "events.jsonl")
     with STATE["write_lock"]:
@@ -259,7 +271,146 @@ def build_snapshot():
     if STATE["world"] is not None:
         snap["v"] = 2
         snap["world"] = STATE["world"].snapshot(snap["generated_at"])
+    snap["mode"] = "replay" if STATE["replay"] is not None else "live"
+    if STATE["replay"] is not None:
+        snap["replay"] = replay_status()
     return snap
+
+
+# --- #135 replay engine + match history ---------------------------------
+
+def load_events(path):
+    events = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        events.append(json.loads(line))
+                    except ValueError:
+                        continue
+    except OSError:
+        pass
+    return events
+
+
+def replay_status():
+    r = STATE["replay"]
+    return {"path": r["path"], "total": len(r["events"]),
+            "index": r["idx"], "playing": r["playing"],
+            "speed": r["speed"],
+            "done": r["idx"] >= len(r["events"])}
+
+
+def replay_seek(idx):
+    """Jump-to-event / scrub: deterministic rebuild via World.replay, then
+    a full snapshot broadcast so every client resyncs at the new index."""
+    r = STATE["replay"]
+    idx = max(0, min(int(idx), len(r["events"])))
+    with STATE["write_lock"]:
+        STATE["world"] = worldmod.World.replay(
+            STATE["root"], r["events"][:idx])
+        r["idx"] = idx
+        r["deadline"] = 0
+    broadcast({"type": "snapshot", "snapshot": build_snapshot()})
+    broadcast({"type": "replay", "replay": replay_status()})
+
+
+def replay_control(body):
+    r = STATE["replay"]
+    if r is None:
+        return None
+    act = body.get("action")
+    if act == "play":
+        if r["idx"] >= len(r["events"]):
+            replay_seek(0)                    # play at end = restart
+        r["playing"] = True
+        r["deadline"] = 0
+    elif act == "pause":
+        r["playing"] = False
+    elif act == "seek":
+        replay_seek(body.get("index") or 0)
+    if "speed" in body:
+        try:
+            sp = float(body["speed"])
+            if sp > 0:
+                r["speed"] = sp
+                r["deadline"] = 0
+        except (TypeError, ValueError):
+            pass
+    broadcast({"type": "replay", "replay": replay_status()})
+    return replay_status()
+
+
+def replay_loop():
+    """Applies recorded events on their original timeline scaled by
+    speed (1x/2x/4x from the UI, any positive factor via API); each
+    event goes through World.apply and broadcasts the same upsert a
+    live event would. Inter-event gaps cap at 1s real time so sparse
+    logs still play as a session, not a slideshow."""
+    r = STATE["replay"]
+    while True:
+        time.sleep(0.02)
+        if not r["playing"]:
+            continue
+        if r["idx"] >= len(r["events"]):
+            r["playing"] = False
+            broadcast({"type": "replay", "replay": replay_status()})
+            # victory screen at end of tape
+            broadcast({"type": "score",
+                       "score": STATE["world"].score()})
+            continue
+        now = time.time()
+        if now < (r.get("deadline") or 0):
+            continue
+        with STATE["write_lock"]:
+            i = r["idx"]
+            ev = r["events"][i]
+            line = STATE["world"].apply(ev)
+            hint = STATE["world"].event_hint(ev)
+            r["idx"] = i + 1
+        broadcast({"type": "upsert", "event": ev,
+                   "hint": hint, "feed": line})
+        if r["idx"] < len(r["events"]):
+            nxt = r["events"][r["idx"]]
+            dt = max(0.0, (nxt.get("ts") or 0) - (ev.get("ts") or 0))
+            r["deadline"] = now + min(dt / max(r["speed"], 0.01), 1.0)
+        else:
+            r["deadline"] = 0
+
+
+def list_sessions():
+    """Match history (#135): every event log under .devin/rts (the live
+    events.jsonl plus archived copies, e.g. sessions/*.jsonl) replayed
+    through World for its real per-session aggregates."""
+    rts = os.path.join(STATE["root"], ".devin", "rts")
+    out = []
+    for dirpath, _dirs, files in os.walk(rts):
+        for fn in sorted(files):
+            if not fn.endswith(".jsonl"):
+                continue
+            p = os.path.join(dirpath, fn)
+            evs = load_events(p)
+            if not evs:
+                continue
+            t0 = evs[0].get("ts") or 0
+            t1 = evs[-1].get("ts") or t0
+            w = worldmod.World.replay(STATE["root"], evs)
+            sc = w.score(now=t1)
+            out.append({"id": os.path.relpath(p, rts),
+                        "events": len(evs),
+                        "started": t0, "ended": t1,
+                        "duration_s": round(t1 - t0),
+                        "agents": len(sc["heroes"]),
+                        "quests_done": sc["quests_done"],
+                        "quests_total": sc["quests_total"],
+                        "gates_pass": sc["gates_pass"],
+                        "gates_fail": sc["gates_fail"],
+                        "tokens": sc["gold"],
+                        "score": sc})
+    out.sort(key=lambda s: s["started"])
+    return out
 
 
 # --- minimal WebSocket (RFC 6455, text frames only) ---
@@ -364,21 +515,34 @@ class Handler(BaseHTTPRequestHandler):
                ".ico": "image/x-icon"}
 
     def _auth(self):
-        """Non-loopback clients need the session token (query/header)."""
+        """Non-loopback clients need the session token (query/header).
+        Presenting the spectator token (from any client, loopback too)
+        marks the connection read-only (#135); role lands on
+        self._role for the POST gate and the snapshot's client_role."""
         ip = self.client_address[0]
-        if ip in ("127.0.0.1", "::1", "localhost") or not STATE["token"]:
-            return True
+        self._role = "admin"
         q = urllib.parse.parse_qs(
             urllib.parse.urlsplit(self.path).query)
         tok = (q.get("token", [None])[0]
                or self.headers.get("X-RTS-Token")
                or (self.headers.get("Authorization", "")
                    .removeprefix("Bearer ") or None))
+        if tok and STATE["spectator_token"] and \
+                secrets.compare_digest(tok, STATE["spectator_token"]):
+            self._role = "spectator"
+            if STATE["replay"] is None:
+                append_event({"type": "auth.allow", "ip": ip,
+                              "role": "spectator", "ts": time.time()})
+            return True
+        if ip in ("127.0.0.1", "::1", "localhost") or not STATE["token"]:
+            return True
         if tok and secrets.compare_digest(tok, STATE["token"]):
             append_event({"type": "auth.allow", "ip": ip, "ts": time.time()})
             return True
-        append_event({"type": "auth.deny", "ip": ip,
-                      "path": self.path.split("?")[0], "ts": time.time()})
+        if STATE["replay"] is None:
+            append_event({"type": "auth.deny", "ip": ip,
+                          "path": self.path.split("?")[0],
+                          "ts": time.time()})
         self._json(401, {"error": "auth required"})
         return False
 
@@ -391,7 +555,17 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/health":
             return self._json(200, {"ok": True})
         if path == "/snapshot":
-            return self._json(200, build_snapshot())
+            snap = build_snapshot()
+            snap["client_role"] = getattr(self, "_role", "admin")
+            return self._json(200, snap)
+        if path == "/score" and STATE.get("world") is not None:
+            return self._json(200, STATE["world"].score())
+        if path == "/sessions":
+            return self._json(200, list_sessions())
+        if path == "/replay":
+            if STATE["replay"] is None:
+                return self._json(404, {"error": "not in replay mode"})
+            return self._json(200, replay_status())
         if path == "/decisions":
             return self._json(200, build_snapshot()["decisions"])
         mb = re.match(r"^/buildings/([A-Za-z0-9_-]+)$", path)
@@ -429,6 +603,18 @@ class Handler(BaseHTTPRequestHandler):
         if not self._auth():
             return
         path = self.path.split("?")[0]
+        # #135 fail-closed roles: spectators are read-only everywhere;
+        # a replay daemon accepts only playback control, never new
+        # events/intents/answers (the log is already immutable history)
+        if getattr(self, "_role", "admin") == "spectator":
+            return self._json(403, {"error": "spectator read-only"})
+        if STATE["replay"] is not None:
+            if path == "/replay":
+                st = replay_control(self._body())
+                if st is None:
+                    return self._json(404, {"error": "not in replay mode"})
+                return self._json(200, st)
+            return self._json(403, {"error": "replay mode is read-only"})
         if path == "/event":
             ev = self._body()
             if not isinstance(ev, dict) or not ev:
@@ -489,8 +675,10 @@ class Handler(BaseHTTPRequestHandler):
         with STATE["lock"]:
             STATE["clients"].append(sock)
         try:
+            snap = build_snapshot()
+            snap["client_role"] = getattr(self, "_role", "admin")
             ws_send(sock, json.dumps(
-                {"type": "snapshot", "snapshot": build_snapshot()},
+                {"type": "snapshot", "snapshot": snap},
                 ensure_ascii=False))
             while True:
                 try:
@@ -528,23 +716,45 @@ def main():
     ap.add_argument("--remote", type=float, default=0, metavar="MIN",
                     help="open a LAN listener on port+1 for MIN minutes "
                          "with a per-session token, then deny-safe close")
+    ap.add_argument("--replay", metavar="EVENTS.JSONL",
+                    help="replay a recorded session: deterministic rebuild "
+                         "with play/pause/seek/speed controls over "
+                         "GET+POST /replay; all other POSTs are denied")
     args = ap.parse_args()
     STATE["root"] = os.path.abspath(args.root)
     state_dir()
-    STATE["world"] = worldmod.World.replay_file(
-        STATE["root"], os.path.join(state_dir(), "events.jsonl"))
+    if args.replay:
+        events = load_events(os.path.abspath(args.replay))
+        STATE["replay"] = {"path": os.path.abspath(args.replay),
+                           "events": events, "idx": 0, "playing": False,
+                           "speed": 1.0, "deadline": 0}
+        STATE["world"] = worldmod.World(STATE["root"])
+        threading.Thread(target=replay_loop, daemon=True).start()
+    else:
+        STATE["world"] = worldmod.World.replay_file(
+            STATE["root"], os.path.join(state_dir(), "events.jsonl"))
     srv = RtsServer(("127.0.0.1", args.port), Handler)
     srv.daemon_threads = True
-    print("rtsd on http://127.0.0.1:%d (root=%s)" % (args.port, STATE["root"]))
+    print("rtsd on http://127.0.0.1:%d (root=%s%s)"
+          % (args.port, STATE["root"],
+             ", replay=%s" % args.replay if args.replay else ""))
     if args.remote > 0:
         STATE["token"] = secrets.token_urlsafe(16)
+        STATE["spectator_token"] = secrets.token_urlsafe(16)
         rport = args.port + 1
         rsrv = RtsServer(("0.0.0.0", rport), Handler)
         rsrv.daemon_threads = True
         ttl = args.remote * 60
         STATE["remote"] = {"port": rport, "ttl_s": int(ttl),
                            "opened_at": time.time(),
-                           "token": bool(STATE["token"])}
+                           "token": bool(STATE["token"]),
+                           "spectator": bool(STATE["spectator_token"])}
+        # operator-side copy of the share URLs (never served to clients)
+        with open(os.path.join(state_dir(), "remote.json"), "w",
+                  encoding="utf-8") as f:
+            json.dump({"port": rport, "token": STATE["token"],
+                       "spectator_token": STATE["spectator_token"],
+                       "expires_at": time.time() + ttl}, f, indent=2)
 
         def remote_serve():
             t = threading.Thread(target=rsrv.serve_forever, daemon=True)
@@ -555,12 +765,20 @@ def main():
             rsrv.shutdown()
             rsrv.server_close()
             STATE["token"] = None
+            STATE["spectator_token"] = None
+            try:
+                os.remove(os.path.join(state_dir(), "remote.json"))
+            except OSError:
+                pass
             append_event({"type": "remote.expired", "port": rport,
                           "ts": time.time()})
 
         threading.Thread(target=remote_serve, daemon=True).start()
         print("remote: http://<lan-ip>:%d/?token=%s (ttl %ds)"
               % (rport, STATE["token"], int(ttl)))
+        print("remote spectator (read-only): "
+              "http://<lan-ip>:%d/?token=%s"
+              % (rport, STATE["spectator_token"]))
 
     def poll_comms():
         """Turn out-of-band surfaces into real events (#128): new
@@ -624,7 +842,8 @@ def main():
         while True:
             time.sleep(TICK_S)
             try:
-                poll_comms()
+                if STATE["replay"] is None:
+                    poll_comms()      # live only: replay world is sealed
                 deltas = STATE["world"].tick(time.time())
                 if deltas:
                     broadcast({"type": "tick", "ts": time.time(),
