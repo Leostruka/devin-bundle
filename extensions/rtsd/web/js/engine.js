@@ -127,6 +127,15 @@
       return best;
     },
 
+    pickBuilding: function (sx, sy) {
+      var p = this.toWorld(sx, sy), best = null, bd = 26 / this.cam.zoom + 8;
+      (this.buildings || []).forEach(function (b) {
+        var d = Math.hypot(b.x - p.x, b.y - p.y);
+        if (d < bd) { bd = d; best = b; }
+      });
+      return best;
+    },
+
     // ---- frame -----------------------------------------------------
     /* state = {tiles:{w,h,data}, fog, regions:{id->{cx,cy,tileId}},
        units:[{id,x,y,cls,kind,status_live,hp,mana,gate_fail,sel,bark}],
@@ -180,6 +189,7 @@
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText(g, s.x, s.y);
       });
+      this.buildings = st.buildings || [];
       (st.buildings || []).forEach(function (b) {
         var s = self.toScreen(b.x, b.y);
         if (s.x < -64 || s.y < -64 || s.x > cv.width + 64 ||
@@ -187,6 +197,11 @@
         var w = 44 * z, h = 44 * z;
         Theme.sprite(ctx, theme.buildings[b.bid] || theme.buildings["vault"],
                      s.x - w / 2, s.y - h / 2, w, h);
+        if (b.sel) {
+          ctx.strokeStyle = pal.sel; ctx.lineWidth = 2;
+          ctx.strokeRect(s.x - w / 2 - 3, s.y - h / 2 - 3, w + 6, h + 6);
+          ctx.lineWidth = 1;
+        }
       });
       (st.units || []).forEach(function (u) {
         var s = self.toScreen(u.x, u.y);

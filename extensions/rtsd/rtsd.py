@@ -347,6 +347,23 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, build_snapshot())
         if path == "/decisions":
             return self._json(200, build_snapshot()["decisions"])
+        mb = re.match(r"^/buildings/([A-Za-z0-9_-]+)$", path)
+        if mb and STATE.get("world") is not None:
+            rts = state_dir()
+            intents = [read_json(os.path.join(rts, "intents", fn), None)
+                       for fn in os.listdir(os.path.join(rts, "intents"))]
+            intents = [i for i in intents if i]
+            decs = sum(1 for fn in os.listdir(
+                os.path.join(rts, "decisions"))
+                if (read_json(os.path.join(rts, "decisions", fn), {})
+                    or {}).get("status") == "pending")
+            det = STATE["world"].building_detail(
+                mb.group(1), time.time(),
+                {"intents": intents, "remote": STATE.get("remote"),
+                 "decisions_pending": decs})
+            if det is None:
+                return self._json(404, {"error": "unknown building"})
+            return self._json(200, det)
         name = "index.html" if path in ("/", "/index.html") else \
             path.lstrip("/")
         body = self._static(name)
@@ -477,6 +494,9 @@ def main():
         rsrv = RtsServer(("0.0.0.0", rport), Handler)
         rsrv.daemon_threads = True
         ttl = args.remote * 60
+        STATE["remote"] = {"port": rport, "ttl_s": int(ttl),
+                           "opened_at": time.time(),
+                           "token": bool(STATE["token"])}
 
         def remote_serve():
             t = threading.Thread(target=rsrv.serve_forever, daemon=True)
