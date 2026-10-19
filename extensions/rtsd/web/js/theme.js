@@ -1,0 +1,135 @@
+/* theme.js - rtsd v2 theme registry (GDD §3.3).
+   A theme = { name, palette, tiles, units, buildings, ui }. A sprite entry
+   is programmer-art first: {glyph, fg, bg, shape} rendered procedurally;
+   when real art exists the entry becomes {sheet:<url>, sx,sy,sw,sh} and
+   Theme.sprite() blits from the sheet instead - no call-site changes.
+   Both themes ship inline; nothing is fetched from a CDN. */
+(function (g) {
+  "use strict";
+
+  var _sheets = {}; // url -> Image|null (async load, glyph until ready)
+
+  function sheet(url) {
+    if (!(url in _sheets)) {
+      _sheets[url] = null;
+      var img = new Image();
+      img.onload = function () { _sheets[url] = img; };
+      img.src = url;
+    }
+    return _sheets[url];
+  }
+
+  var CLASSES = ["Knight", "Ranger", "Cleric", "Spellbreaker", "Far Seer",
+    "Archmage", "Runesmith", "Herald", "Marshal", "Enchanter", "Bard",
+    "Inquisitor", "Shadowblade", "Scout", "Squire", "Cartographer",
+    "Chronicler", "Inspector", "Steward", "Minion", "Worker", "Commander"];
+
+  var BLD = ["town-hall", "barracks", "tavern", "library", "watchtower",
+    "runeforge", "vault", "portal", "marketplace", "altar", "trophy-hall"];
+
+  // unit glyphs: first letter of the class, distinct hue per class
+  function unitTable(glyphFg) {
+    var t = {}, hues = [0, 25, 50, 90, 140, 170, 200, 230, 260, 290, 320,
+      15, 40, 65, 105, 185, 250, 275, 305, 335, 210, 60];
+    CLASSES.forEach(function (c, i) {
+      t[c] = { glyph: c === "Minion" ? "s" : c === "Worker" ? "w" : c[0],
+        fg: glyphFg, bg: "hsl(" + hues[i % hues.length] + ",60%,42%)",
+        shape: c === "Minion" ? "tri" : "disc" };
+    });
+    t.Worker.bg = "#8b7d4a"; t.Minion.bg = "#7a5cc0";
+    t.Commander = { glyph: "C", fg: glyphFg, bg: "#c9a227", shape: "disc" };
+    return t;
+  }
+
+  function bldTable(base, roof) {
+    var t = {}, glyphs = { "town-hall": "H", "barracks": "B", "tavern": "T",
+      "library": "L", "watchtower": "W", "runeforge": "R", "vault": "V",
+      "portal": "P", "marketplace": "M", "altar": "A", "trophy-hall": "!" };
+    BLD.forEach(function (b) {
+      t[b] = { glyph: glyphs[b], fg: "#e6edf3", bg: base, roof: roof,
+        shape: "keep" };
+    });
+    t.portal.fg = "#b57edc"; t.portal.bg = "#2a1f3d";
+    t.watchtower.bg = "#4a4f3a"; t.altar.bg = "#3d2a2a";
+    return t;
+  }
+
+  var THEMES = {
+    battlefield: {
+      name: "battlefield",
+      palette: { bg: "#0a120b", grid: "#1d2b1e", shroud: "#000000",
+        dim: "#0e150e", text: "#e6f2e6", sel: "#ffd54a", err: "#f85149",
+        ok: "#3fb950", panel: "#141a14", border: "#2f4030" },
+      tiles: { 0: "#16301a", 1: "#1b3a20", 2: "#234728", 3: "#2c5230",
+        4: "#1f3d2a", 5: "#152b18", 6: "#28512c", 7: "#1a3521",
+        8: "#203f24", 9: "#2a4a26", water: "#12263a", plot: "#3d3d34",
+        contested: "#4a1f1f" },
+      units: unitTable("#e6f2e6"),
+      buildings: bldTable("#2f3b2f", "#4a3b28"),
+      ui: { minimapBg: "#0c140d", font: "11px monospace", ping: "#ffd54a" }
+    },
+    office: {
+      name: "office",
+      palette: { bg: "#14161c", grid: "#232733", shroud: "#000000",
+        dim: "#101219", text: "#e8ecf4", sel: "#ffd54a", err: "#f85149",
+        ok: "#3fb950", panel: "#1b1e28", border: "#333a4d" },
+      tiles: { 0: "#2b2f3c", 1: "#313647", 2: "#2e3342", 3: "#353b4e",
+        4: "#292e3d", 5: "#252a38", 6: "#383f52", 7: "#2d3243",
+        8: "#333a4c", 9: "#3a4157", water: "#1d2f45", plot: "#4a4a42",
+        contested: "#4d2626" },
+      units: unitTable("#e8ecf4"),
+      buildings: bldTable("#39415a", "#5a4632"),
+      ui: { minimapBg: "#10131b", font: "11px monospace", ping: "#ffd54a" }
+    }
+  };
+  // office reskin glyphs (GDD 3.2): same ids, interior-flavored markers
+  THEMES.office.buildings["watchtower"].glyph = "S"; // server rack (rtsd)
+  THEMES.office.buildings["library"].glyph = "B";    // bookshelf
+  THEMES.office.buildings["marketplace"].glyph = "$";
+
+  var current = THEMES.battlefield;
+
+  g.Theme = {
+    all: THEMES,
+    get: function () { return current; },
+    set: function (name) { if (THEMES[name]) current = THEMES[name]; },
+    toggle: function () {
+      current = current === THEMES.battlefield ? THEMES.office
+        : THEMES.battlefield;
+      return current;
+    },
+    /* Draw one sprite. entry={glyph,fg,bg,shape} or {sheet,sx,sy,sw,sh}. */
+    sprite: function (ctx, entry, x, y, w, h) {
+      if (!entry) return;
+      if (entry.sheet) {
+        var img = sheet(entry.sheet);
+        if (img) {
+          ctx.drawImage(img, entry.sx, entry.sy, entry.sw, entry.sh,
+            x, y, w, h);
+          return;
+        }
+      }
+      var r = Math.min(w, h) / 2, cx = x + w / 2, cy = y + h / 2;
+      ctx.fillStyle = entry.bg || "#444";
+      if (entry.shape === "tri") {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r); ctx.lineTo(cx + r, cy + r);
+        ctx.lineTo(cx - r, cy + r); ctx.closePath(); ctx.fill();
+      } else if (entry.shape === "keep") {
+        ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+        ctx.fillStyle = entry.roof || "#222";
+        ctx.beginPath();
+        ctx.moveTo(x, y + 1); ctx.lineTo(cx, y - 4); ctx.lineTo(x + w, y + 1);
+        ctx.closePath(); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+      }
+      if (entry.glyph) {
+        ctx.fillStyle = entry.fg || "#fff";
+        ctx.font = "bold " + Math.round(r) + "px monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(entry.glyph, cx, cy);
+      }
+    }
+  };
+})(window);

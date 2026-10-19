@@ -298,11 +298,23 @@ class Handler(BaseHTTPRequestHandler):
             return {}
 
     def _static(self, name):
-        p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web", name)
+        base = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "web")
+        p = os.path.normpath(os.path.join(base, name))
+        if not (p + os.sep).startswith(base + os.sep) and p != base:
+            return None
         if not os.path.isfile(p):
             return None
         with open(p, "rb") as f:
             return f.read()
+
+    _CTYPES = {".html": "text/html; charset=utf-8",
+               ".js": "text/javascript; charset=utf-8",
+               ".css": "text/css; charset=utf-8",
+               ".json": "application/json; charset=utf-8",
+               ".webmanifest": "application/manifest+json",
+               ".png": "image/png", ".svg": "image/svg+xml",
+               ".ico": "image/x-icon"}
 
     def _auth(self):
         """Non-loopback clients need the session token (query/header)."""
@@ -335,16 +347,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, build_snapshot())
         if path == "/decisions":
             return self._json(200, build_snapshot()["decisions"])
-        static = {"/": ("index.html", "text/html; charset=utf-8"),
-                  "/index.html": ("index.html", "text/html; charset=utf-8"),
-                  "/manifest.webmanifest": ("manifest.webmanifest",
-                                            "application/manifest+json"),
-                  "/sw.js": ("sw.js", "text/javascript; charset=utf-8")}
-        if path in static:
-            name, ctype = static[path]
-            body = self._static(name)
-            if body is None:
-                return self._json(404, {"error": "ui not built"})
+        name = "index.html" if path in ("/", "/index.html") else \
+            path.lstrip("/")
+        body = self._static(name)
+        if body is not None:
+            ext = os.path.splitext(name)[1].lower()
+            ctype = self._CTYPES.get(ext, "application/octet-stream")
             self.send_response(200)
             self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(body)))
