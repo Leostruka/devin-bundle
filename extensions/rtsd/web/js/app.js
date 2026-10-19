@@ -22,6 +22,8 @@
     lastEventPos: null,      // {x,y} for spacebar jump
     pings: [],               // event pings {x,y,kind,t0} (#124)
     pingIdx: 0,
+    fades: [],               // death/despawn markers {x,y,cls,t0} (#125)
+    acks: {},                // unit id -> {text,t0} local ack barks
     demo: false,
     feed: [],                // raw recent events (comms feed lands in #128)
     barks: {}
@@ -138,17 +140,45 @@
              y: (c.cy + Math.sin(ang) * ring) * TILE };
   }
 
+  function pushFade(x, y, cls) {
+    state.fades.push({ x: x, y: y, cls: cls, t0: performance.now() });
+    if (state.fades.length > 12) state.fades.shift();
+  }
+
   function syncRenderables() {
     var w = state.world;
-    if (!w || !state.map) { state.units = []; state.buildings = []; return; }
+    if (!w || !state.map) { state.units = []; state.buildings = [];
+                            state.workers = []; return; }
+    var prev = {};
+    state.units.forEach(function (u) { prev[u.id] = u; });
+    var now = performance.now();
     state.units = (w.units || []).map(function (u) {
       var p = unitPos(u, state.map);
+      var ack = state.acks[u.id];
+      if (ack && now - ack.t0 > 4000) { delete state.acks[u.id]; ack = 0; }
+      var live = u.status_live || u.status;
+      // death animation: a hero that just failed gets a fade marker (#125)
+      if (prev[u.id] && prev[u.id].status_live !== "failed" &&
+          live === "failed") pushFade(p.x, p.y, u.cls);
       return { id: u.id, x: p.x, y: p.y, cls: u.cls || "Squire",
         kind: u.kind, name: u.name, hp: u.hp, mana: u.mana,
-        status_live: u.status_live || u.status,
-        gate_fail: !!u.gate_fail, sel: state.sel === u.id,
+        status_live: live, gate_fail: !!u.gate_fail,
+        sel: state.sel === u.id,
+        bark: ack ? ack.text : (u.bark || null),
         unit: u };
     });
+    // despawned units leave a fading corpse marker
+    Object.keys(prev).forEach(function (id) {
+      if (!w.units.some(function (u) { return u.id === id; })) {
+        var p = prev[id];
+        if (p.kind === "minion" || p.status_live === "failed" ||
+            p.kind === "hero") pushFade(p.x, p.y, p.cls);
+      }
+    });
+    // worker peasants carry from/to + server ts; engine lerps per frame
+    // via the snapshot's server->client clock offset
+    state.srvClock = { srv: w.now || 0, perf: performance.now() };
+    state.workers = w.workers || [];
     // buildings sit on their fixed server-assigned plots (#123)
     var regs = Object.keys(state.map.caps);
     state.buildings = (w.buildings || []).map(function (b, i) {
@@ -255,6 +285,30 @@
     state.world.units = state.world.units.filter(function (u) {
       return !u._gone; });
     syncRenderables(); renderPanels();
+  }
+
+  // Class voice lines from the GDD voice table (fallback when the hero's
+  // heartbeat status.json has no `note` - barks never fabricate).
+  var BARKS = {
+    Knight: ["At your command.", "For the keep.", "Work complete."],
+    Ranger: ["On the trail.", "Tracking.", "Prey found."],
+    Cleric: ["The gates call.", "Verifying.", "All gates green."],
+    Spellbreaker: ["Show me the diff.", "Reviewing.", "Judgment passed."],
+    "Far Seer": ["I see far.", "Scouting.", "Report delivered."],
+    Archmage: ["A grand design.", "Drafting.", "The plan stands."],
+    Runesmith: ["Blueprints ready.", "Forging spec.", "Architecture set."],
+    Herald: ["What do users need?", "Writing the PRD.", "Spec authored."],
+    Marshal: ["Status report.", "Checking artifacts.", "DONE declared."],
+    Enchanter: ["Design calls.", "Styling.", "System specced."],
+    Bard: ["A tale to tell.", "Drafting docs.", "Published."],
+    Inquisitor: ["Trust nothing.", "Auditing.", "Audit filed."],
+    Shadowblade: ["Rules of engagement?", "Probing.", "Target assessed."],
+    Scout: ["Eyes open.", "Sweeping.", "Map updated."],
+    Squire: ["Ready.", "On it.", "Done, sir."]
+  };
+  function barkLine(cls, i) {
+    var t = BARKS[cls] || BARKS.Squire;
+    return t[i];
   }
 
   var PING_TTL_MS = 6000;
@@ -469,13 +523,21 @@
       return "<span class='inv' title='" + esc(it.gate + " " +
         (it.evidence || "")) + "'>o</span>";
     }).join("");
+    var kit = (u.kit || []).map(function (k) {
+      return "<span class='inv' title='" + esc(k) + "'>" +
+        esc(k[0]) + "</span>";
+    }).join("");
+    var bark = u.bark ||
+      (state.acks[u.id] ? state.acks[u.id].text : barkLine(u.cls, 0));
     return "<b>" + esc(u.name || u.id) + "</b> " +
+      "<span class='lvbadge'>Lv" + (u.level || 1) + "</span> " +
       "<span class='meta'>" + esc(u.cls || "") + " " + esc(u.profile || "") +
-      " Lv" + (u.level || 1) + "</span><br>" +
+      " " + esc(u.tier || "") + " " + esc(u.model || "") + "</span><br>" +
       "<span class='meta'>HP " + (u.hp == null ? "-" : u.hp) +
       "  MP " + (u.mana == null ? "-" : u.mana) +
       "  " + esc(u.status_live || u.status || "") + "</span>" +
-      (u.bark ? "<br><i>&quot;" + esc(u.bark) + "&quot;</i>" : "") +
+      (kit ? " <span class='meta'>kit:</span>" + kit : "") +
+      "<br><i>&quot;" + esc(bark) + "&quot;</i>" +
       (inv ? "<div class='meta'>loot: " + inv + "</div>" : "");
   }
 
@@ -500,7 +562,10 @@
 
   var eng = Engine.create(el("cv"));
   eng.onPick = function (u, pt, ev) {
-    if (u) { state.sel = u.id; state.selB = null; state.bDetail = null; }
+    if (u) { state.sel = u.id; state.selB = null; state.bDetail = null;
+             if (!u.bark)   // no heartbeat note -> class "selected" line
+               state.acks[u.id] = { text: barkLine(u.cls, 0),
+                                    t0: performance.now() }; }
     else {
       state.sel = null;
       selectBuilding(eng.pickBuilding(ev.offsetX, ev.offsetY));
@@ -545,6 +610,10 @@
     var tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE);
     RTS.intent({ kind: "order", to: state.sel, order: "move",
                  x: tx, y: ty });
+    var su = state.units.filter(function (u) { return u.id === state.sel;
+      })[0];
+    if (su) state.acks[su.id] = { text: barkLine(su.cls, 1),
+                                  t0: performance.now() };
     state.pings.push({ x: (tx + .5) * TILE, y: (ty + .5) * TILE,
                        kind: "order", t0: performance.now() });
     logFeed("order: " + state.sel + " -> " + tx + "," + ty);
@@ -593,6 +662,8 @@
     var th = Theme.get();
     eng.render({ tiles: state.map, fog: state.map && state.map.fog,
       pois: state.map && state.map.pois, pings: livePings(),
+      workers: state.workers, fades: state.fades,
+      srvClock: state.srvClock,
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
       fog: state.map && state.map.fog, units: state.units,
