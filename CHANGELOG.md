@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **rtsd world engine** (`extensions/rtsd/world.py`, #120): event-sourced v2 world model next to the v1 projection: units (heroes per GDD class table, exec-shell minions with TTL, hook-firing workers), 11 GDD buildings with activity counters, resources (gold=est tokens, lumber=context %, supply=live heroes, upkeep tiers from `data/context-budget.json`), quests (scratch-issue DAG + `/goal` main quest), map regions with reveal/contested tracking. All time-derived state computed at `snapshot(now)` so `events.jsonl` replay is byte-identical; daemon replays the log at startup; 2s tick thread broadcasts status deltas (running->idle->stale decay, minion expiry). `/snapshot` gains `v:2` + `world` key; v1 keys unchanged.
 - **AgentCraft RTS v2 GDD** (`.devin/scratch/agentcraft-rts-v2/gdd.md`, #119): metaphor bible for the v3.8.0 RTS milestone; entity mapping tables covering all bundle surfaces (13+2+4 agent profiles as hero classes, 83 skills as spells in 6 schools, 35 scripts as workers, 22 extensions as allied arsenal, 28 runtime tools, 8 hook events), mechanics mapping (HP/mana/supply/gold/lumber/upkeep/fog/quests/loot/barks to real data sources), dual-mode spec (battlefield + office themes on one engine), desktop + PWA layout wireframes, programmer-art direction, per-class voice lines, and binding honesty rules.
 
 ## [3.7.0] - 2026-10-18
