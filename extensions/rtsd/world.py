@@ -350,6 +350,61 @@ def file_tile(layout, root, path):
     return tiles[_h32(path) % len(tiles)]
 
 
+# Kit vocabulary from the GDD: ability flags derived from the profile's
+# real allowed-tools (agents/<profile>.md text).
+_KIT_TOOLS = {
+    "Write": ("write", "edit", "notebook_edit"),
+    "March": ("exec", "get_output", "write_to_process", "kill_shell"),
+    "Cartography": ("read", "grep", "glob", "find_file_by_name"),
+    "Farsight": ("web_search", "webfetch"),
+    "Envoy": ("mcp_",),
+    "Parley": ("ask_user_question",),
+    "Camp": ("todo_write",),
+}
+
+
+def _profile_sheet(root, profile):
+    for base in (os.path.join(root, "agents"),
+                 os.path.join(root, ".devin", "agents")):
+        p = os.path.join(base, profile + ".md")
+        if os.path.isfile(p):
+            try:
+                return open(p, encoding="utf-8").read()
+            except OSError:
+                return ""
+    return ""
+
+
+def profile_kit(root, profile):
+    """Ability names whose backing tools appear in the profile sheet;
+    'Verify' replaces 'March' when exec is restricted to read-only/tests."""
+    text = _profile_sheet(root, profile).lower()
+    if not text:
+        return ["Cartography"]   # unknown profile -> read-only squire kit
+    kit = []
+    for name, tools in _KIT_TOOLS.items():
+        if any(t in text for t in tools):
+            kit.append(name)
+    if "March" in kit and re.search(r"read-only|verify only|never edit",
+                                  text):
+        kit[kit.index("March")] = "Verify"
+    return kit
+
+
+def profile_tier(root, profile):
+    """Model tier from TOOLS-MAP (Medium->Footman, Max->Knight)."""
+    tm = os.path.join(root, ".devin", "docs", "TOOLS-MAP.md")
+    try:
+        for ln in open(tm, encoding="utf-8"):
+            m = re.match(r"\|\s*`?" + re.escape(profile) +
+                         r"`?\s*\|\s*\w+\s*\|\s*(Medium|Max|High)", ln)
+            if m:
+                return "Knight" if m.group(1) != "Medium" else "Footman"
+    except OSError:
+        pass
+    return "Footman"
+
+
 def load_layout(root):
     """Persisted map.json keyed by region signature; regenerates when the
     top-level dir set changes (issue #122)."""
@@ -472,8 +527,19 @@ class World:
                                 payload.get("result")))
         lane = str(ti.get("lane") or payload.get("session_id") or "cmdr")
         self.worker_total += 1
+        # peasant scurries: previous destination -> this tool's building
+        # site (or the touched file's region capital for FILE_TOOLS) (#125)
+        p = _input_path(ti) if tool in FILE_TOOLS else None
+        if p:
+            t = file_tile(self.layout, self.root, p)
+            to = [t % MAP_W, t // MAP_W]
+        else:
+            to = (self.sites.get(TOOL_TO_BUILDING.get(tool, "town-hall"))
+                  or self.sites["town-hall"])["xy"]
+        frm = (self.workers[-1]["to"] if self.workers
+               else self.sites["town-hall"]["xy"])
         self.workers.append({"ts": ts, "hook": ev.get("hook", ""),
-                             "tool": tool})
+                             "tool": tool, "from": frm, "to": list(to)})
         if len(self.workers) > 64:
             self.workers = self.workers[-64:]
         if ev.get("hook") == "PostToolUse" and tool:
@@ -512,6 +578,8 @@ class World:
             "id": aid, "kind": "hero", "profile": profile, "cls": cls,
             "name": "%s-%d" % (cls, self._class_seq[cls]),
             "model": self._submodel,
+            "tier": profile_tier(self.root, profile),
+            "kit": profile_kit(self.root, profile),
             "lane": str(ti.get("lane") or ""),
             "task": (ti.get("task") or "")[:120],
             "title": ti.get("title", ""),
@@ -899,11 +967,15 @@ class World:
                           and self._live_status(u, now) in ("running", "idle"))
         workers = [wk for wk in self.workers
                    if now - wk["ts"] <= WORKER_WINDOW_S]
+        wunits = [{"id": "wk-%d" % i, "kind": "worker", "tool": wk["tool"],
+                   "ts": wk["ts"], "from": wk["from"], "to": wk["to"]}
+                  for i, wk in enumerate(workers[-8:])]
         regions = self._region_list()
         fog, mark, pois = self._fog_mark(now)
         return {
             "now": now,
             "units": units,
+            "workers": wunits,
             "buildings": [dict(b, pos=self.sites.get(b["id"]))
                           for b in self.buildings.values()],
             "resources": {"gold": gold, "lumber_pct": lumber_pct,

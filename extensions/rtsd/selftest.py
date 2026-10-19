@@ -226,7 +226,9 @@ def main():
                         "tool_response": "ok"}})
         st, snap = get(PORT, "/snapshot")
         m = snap["world"]["map"]
-        assert sum(1 for f_ in m["fog"] if f_ == 2) >= 9, "no lit tiles"
+        # 3x3 patch interior; hashed file tile may sit on the map edge
+        # (corner min = 4 lit), so the floor is the corner bound.
+        assert sum(1 for f_ in m["fog"] if f_ == 2) >= 4, "no lit tiles"
         reg = {r["id"]: r for r in m["regions"]}
         assert reg["alpha"]["revealed"] is True
         post(PORT, "/event", {
@@ -310,6 +312,15 @@ def main():
         assert post(PORT, "/intent", {"kind": "order", "to": "lane1",
                     "order": "move", "x": 3, "y": 4}) == 200
         print("PASS minimap pings (upsert hints) + order intent")
+
+        # #125 unit model: kit/tier on heroes, ambient workers with path
+        st, snap = get(PORT, "/snapshot")
+        w2 = snap["world"]
+        lane1 = {u["id"]: u for u in w2["units"]}["lane1"]
+        assert lane1["kit"] and lane1["tier"] in ("Footman", "Knight")
+        assert any(wk.get("from") and wk.get("to")
+                   for wk in w2["workers"]), w2["workers"]
+        print("PASS unit model (kit/tier + worker scurry paths)")
 
         # #120 tick: old heartbeat-less hero decays running -> idle -> stale
         post(PORT, "/event", {

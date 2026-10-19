@@ -230,7 +230,10 @@
           if (typeof u.mana === "number") {
             ctx.fillStyle = "#000";
             ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 4, bw, 2);
-            ctx.fillStyle = "#58a6ff";
+            // low mana (compaction near) flashes the bar (#125)
+            var low = u.mana < 25;
+            ctx.fillStyle = low && (performance.now() % 600 < 300)
+              ? pal.err : "#58a6ff";
             ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 4,
               bw * u.mana / 100, 2);
           }
@@ -240,9 +243,40 @@
           ctx.textAlign = "center";
           ctx.fillText(u.name, s.x, s.y + sz / 2 + 9);
         }
+        // voice bark: heartbeat note / ack floats over the head (#125)
+        if (u.bark && z > 0.6) {
+          ctx.fillStyle = "rgba(230,242,230,0.9)";
+          ctx.font = "italic " + Math.max(9, 10 * z) + "px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(u.bark, s.x, s.y - sz / 2 - 14);
+        }
+      });
+      // worker peasants scurry between buildings (#125)
+      var now = performance.now();
+      var srvNow = st.srvClock ? st.srvClock.srv +
+        (now - st.srvClock.perf) / 1000 : now / 1000;
+      (st.workers || []).forEach(function (wk) {
+        var prog = Math.min(1, Math.max(0, (srvNow - wk.ts) / 4));
+        var wx = (wk.from[0] + (wk.to[0] - wk.from[0]) * prog) * TILE + 16;
+        var wy = (wk.from[1] + (wk.to[1] - wk.from[1]) * prog) * TILE + 16;
+        var s = self.toScreen(wx, wy);
+        if (s.x < -20 || s.y < -20 || s.x > cv.width + 20 ||
+            s.y > cv.height + 20) return;
+        var wsize = 9 * Math.max(z, 0.7);
+        Theme.sprite(ctx, theme.units.Worker, s.x - wsize / 2,
+                     s.y - wsize / 2, wsize, wsize);
+      });
+      // death/despawn fades (#125)
+      (st.fades || []).forEach(function (f) {
+        var age = (now - f.t0) / 1000;
+        if (age > 2.5) return;
+        var s = self.toScreen(f.x, f.y - age * 14);
+        ctx.globalAlpha = Math.max(0, 1 - age / 2.5);
+        Theme.sprite(ctx, theme.units[f.cls] || theme.units.Squire,
+                     s.x - 10 * z, s.y - 10 * z, 20 * z, 20 * z);
+        ctx.globalAlpha = 1;
       });
       // event pings: expanding rings, color = kind (#124)
-      var now = performance.now();
       (st.pings || []).forEach(function (p) {
         var age = (now - p.t0) / 1000;
         if (age < 0 || age > 6) return;
