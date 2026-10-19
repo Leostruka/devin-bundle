@@ -37,6 +37,7 @@
     prevUpkeep: null,        // upkeep tier from last snapshot (#131)
     heardDec: {},            // ids already alarmed via WS upsert (#129)
     decActive: null,         // decision shown in the council modal
+    decT0: 0,                // first-seen time for meeting summons (#134)
     barks: {}
   };
 
@@ -1288,6 +1289,29 @@
 
   var eng = Engine.create(el("cv"));
 
+  // #134: battlefield<->office is a pure reskin - state, selection and
+  // camera focus carry over; we re-center on the same world point so
+  // the view does not jump when the projection changes
+  function toggleTheme() {
+    var c = eng.toWorld(eng.cv.width / 2, eng.cv.height / 2);
+    Theme.toggle();
+    eng.iso = !!Theme.get().iso;
+    eng.centerOn(c.x, c.y);
+    renderPanels();
+  }
+
+  // pending council decision -> heroes converge on the meeting room
+  // (town-hall plot). Pure presentation state; world data untouched.
+  function meetingCall() {
+    var pd = pendingDecs().filter(function (d) { return !d._expired; });
+    if (!pd.length) { state.decT0 = 0; return null; }
+    var th = state.buildings.filter(function (b) {
+      return b.bid === "town-hall"; })[0];
+    if (!th) return null;
+    if (!state.decT0) state.decT0 = performance.now();
+    return { x: th.x, y: th.y, t0: state.decT0 };
+  }
+
   // Targeted orders (move/attack/reveal_area): the next map click is the
   // payload. Attack snaps to a quest POI within 1.5 tiles and carries its
   // issue ref so the intent file names the real quest (#126 acceptance).
@@ -1585,7 +1609,7 @@
     if (k === "m") { setMute(!snd.on); return; }    // #133 mute toggle
     if (k === "-" || k === "_") { setVol(snd.vol - 0.1); return; }
     if (k === "=" || k === "+") { setVol(snd.vol + 0.1); return; }
-    if (k === "t") { Theme.toggle(); renderPanels(); }
+    if (k === "t") { toggleTheme(); }
     if (k === " ") {               // last-alert: cycle recent pings
       e.preventDefault();
       var ps = livePings();
@@ -1599,7 +1623,7 @@
     }
     if (k === "?") el("help").classList.toggle("on");
   });
-  el("themeBtn").onclick = function () { Theme.toggle(); renderPanels(); };
+  el("themeBtn").onclick = toggleTheme;
   el("sndBtn").onclick = function () { setMute(!snd.on); };
   sndUi();
   // Notification opt-in (#133): click grants/denies via the platform
@@ -1702,7 +1726,7 @@
       pois: state.map && state.map.pois, pings: livePings(),
       workers: state.workers, fades: state.fades,
       waypoints: state.waypoints, ravens: state.ravens,
-      srvClock: state.srvClock,
+      srvClock: state.srvClock, decision: meetingCall(),
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
       fog: state.map && state.map.fog, units: state.units,

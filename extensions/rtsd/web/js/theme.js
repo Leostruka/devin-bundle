@@ -70,6 +70,7 @@
     },
     office: {
       name: "office",
+      iso: true,   // #134: isometric projection (engine render + picking)
       palette: { bg: "#14161c", grid: "#232733", shroud: "#000000",
         dim: "#101219", text: "#e8ecf4", sel: "#ffd54a", err: "#f85149",
         ok: "#3fb950", panel: "#1b1e28", border: "#333a4d" },
@@ -82,20 +83,53 @@
       ui: { minimapBg: "#10131b", font: "11px monospace", ping: "#ffd54a" }
     }
   };
-  // office reskin glyphs (GDD 3.2): same ids, interior-flavored markers
-  THEMES.office.buildings["watchtower"].glyph = "S"; // server rack (rtsd)
-  THEMES.office.buildings["library"].glyph = "B";    // bookshelf
-  THEMES.office.buildings["marketplace"].glyph = "$";
+  // office reskin (GDD 3.2): every battlefield id maps to an interior
+  // counterpart - same data, different skin. `label` is shown in the
+  // tooltip/inspector flavor; `glyph` is the map marker.
+  var OFFICE_BLD = {
+    "town-hall":   { glyph: "M", label: "meeting room" },
+    "barracks":    { glyph: "H", label: "onboarding desk" },
+    "tavern":      { glyph: "C", label: "break room" },
+    "library":     { glyph: "B", label: "bookshelf" },
+    "watchtower":  { glyph: "S", label: "server rack" },
+    "runeforge":   { glyph: "P", label: "printer" },
+    "vault":       { glyph: "W", label: "whiteboard" },
+    "portal":      { glyph: "T", label: "phone booth" },
+    "marketplace": { glyph: "$", label: "supply cabinet" },
+    "altar":       { glyph: "~", label: "water cooler" },
+    "trophy-hall": { glyph: "!", label: "kanban wall" }
+  };
+  BLD.forEach(function (b) {
+    var o = OFFICE_BLD[b], e = THEMES.office.buildings[b];
+    e.glyph = o.glyph; e.label = o.label;
+    e.bg = "#39415a"; e.roof = "#59627e";
+  });
+  THEMES.office.buildings["portal"].fg = "#b57edc";
+  THEMES.office.buildings["portal"].bg = "#2a1f3d";
+  THEMES.office.buildings["altar"].bg = "#26414a";
 
-  var current = THEMES.battlefield;
+  // theme choice persists across sessions (#134); localStorage may be
+  // unavailable under file:// so every access is guarded
+  var THEME_KEY = "rtsd.theme";
+  function savedTheme() {
+    try { return localStorage.getItem(THEME_KEY); } catch (e) {
+      return null; }
+  }
+  function persist() {
+    try { localStorage.setItem(THEME_KEY, current.name); } catch (e) {}
+  }
+
+  var current = THEMES[savedTheme()] || THEMES.battlefield;
 
   g.Theme = {
     all: THEMES,
     get: function () { return current; },
-    set: function (name) { if (THEMES[name]) current = THEMES[name]; },
+    set: function (name) { if (THEMES[name]) { current = THEMES[name];
+      persist(); } },
     toggle: function () {
       current = current === THEMES.battlefield ? THEMES.office
         : THEMES.battlefield;
+      persist();
       return current;
     },
     /* Draw one sprite. entry={glyph,fg,bg,shape} or {sheet,sx,sy,sw,sh}. */

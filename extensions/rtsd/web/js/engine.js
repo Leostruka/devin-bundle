@@ -29,6 +29,7 @@
     this.onDblPick = null;                   // cb(unit|null, worldPt, ev)
     this.box = null;                         // live drag-select rect (screen)
     this._boxUp = false;                     // swallow the click after a box
+    this.iso = false;                        // isometric projection (#134)
     this._install();
   }
 
@@ -43,23 +44,40 @@
     clampCam: function () {
       if (!this.map) return;
       var mw = this.map.w * TILE, mh = this.map.h * TILE, v = this.view();
+      if (this.iso) {          // iso plane spans x:[-mh, mw], y:[0,(mw+mh)/2]
+        this.cam.x = Math.max(-mh - 200,
+          Math.min(mw - v.w + 200, this.cam.x));
+        this.cam.y = Math.max(-200,
+          Math.min((mw + mh) / 2 - v.h + 200, this.cam.y));
+        return;
+      }
       this.cam.x = Math.max(-200, Math.min(mw - v.w + 200, this.cam.x));
       this.cam.y = Math.max(-200, Math.min(mh - v.h + 200, this.cam.y));
     },
-    centerOn: function (wx, wy) {
+    centerOn: function (wx, wy) {   // wx,wy are world px in both themes
       var v = this.view();
+      if (this.iso) { var px = wx - wy, py = (wx + wy) / 2;
+                      wx = px; wy = py; }
       this.cam.x = wx - v.w / 2; this.cam.y = wy - v.h / 2; this.clampCam();
     },
     panBy: function (dx, dy) {
       this.cam.x += dx; this.cam.y += dy; this.clampCam();
     },
+    /* #134: under the office theme every world point is projected
+       isometrically (x' = x - y, y' = (x + y)/2) before the camera is
+       applied. ALL render and picking paths funnel through these two
+       functions so what you see is exactly what you click. */
     toWorld: function (sx, sy) {
-      return { x: this.cam.x + sx / this.cam.zoom,
-               y: this.cam.y + sy / this.cam.zoom };
+      var vx = this.cam.x + sx / this.cam.zoom,
+          vy = this.cam.y + sy / this.cam.zoom;
+      if (!this.iso) return { x: vx, y: vy };
+      return { x: vy + vx / 2, y: vy - vx / 2 };
     },
     toScreen: function (wx, wy) {
-      return { x: (wx - this.cam.x) * this.cam.zoom,
-               y: (wy - this.cam.y) * this.cam.zoom };
+      var px = wx, py = wy;
+      if (this.iso) { px = wx - wy; py = (wx + wy) / 2; }
+      return { x: (px - this.cam.x) * this.cam.zoom,
+               y: (py - this.cam.y) * this.cam.zoom };
     },
 
     // ---- input -----------------------------------------------------
@@ -147,19 +165,24 @@
       }
     },
 
+    /* picking happens in screen space (#134): each entity is projected
+       through the same toScreen() the renderer used, so the sprite you
+       see is the sprite you click - under both projections. */
     pickUnit: function (sx, sy) {
-      var p = this.toWorld(sx, sy), best = null, bd = 14 / this.cam.zoom + 8;
+      var self = this, best = null, bd = 14 + 8 * this.cam.zoom;
       (this.units || []).forEach(function (u) {
-        var d = Math.hypot(u.x - p.x, u.y - p.y);
+        var s = self.toScreen(u.x, u.y);
+        var d = Math.hypot(s.x - sx, s.y - sy);
         if (d < bd) { bd = d; best = u; }
       });
       return best;
     },
 
     pickBuilding: function (sx, sy) {
-      var p = this.toWorld(sx, sy), best = null, bd = 26 / this.cam.zoom + 8;
+      var self = this, best = null, bd = 26 + 8 * this.cam.zoom;
       (this.buildings || []).forEach(function (b) {
-        var d = Math.hypot(b.x - p.x, b.y - p.y);
+        var s = self.toScreen(b.x, b.y);
+        var d = Math.hypot(s.x - sx, s.y - sy);
         if (d < bd) { bd = d; best = b; }
       });
       return best;
@@ -185,19 +208,17 @@
       });
     },
 
-    // ---- frame -----------------------------------------------------
-    /* state = {tiles:{w,h,data}, fog, regions:{id->{cx,cy,tileId}},
-       units:[{id,x,y,cls,kind,status_live,hp,mana,gate_fail,sel,bark}],
-       buildings:[{id,x,y,bid,activity}], now} */
-    render: function (st, theme) {
-      var ctx = this.ctx, cv = this.cv;
-      if (cv.width !== cv.clientWidth) cv.width = cv.clientWidth;
-      if (cv.height !== cv.clientHeight) cv.height = cv.clientHeight;
-      var t0 = performance.now();
-      var v = this.view(), z = this.cam.zoom, pal = theme.palette;
-      ctx.fillStyle = pal.bg; ctx.fillRect(0, 0, cv.width, cv.height);
-      this.units = st.units || [];
-      if (!st.tiles) return;
+    /* tile fill shared by both projections: floor color, explored-dim
+       veil, and the #133 breach pulse drawn along `path()`. */
+    _tileStyle: function (ctx, st, theme, i) {
+      var ts = st.tiles, mk = ts.mark ? ts.mark[i] : 0;
+      return mk === 2 ? theme.tiles.contested :
+        mk === 1 ? theme.tiles.plot :
+        theme.tiles[ts.data[i] % 10] || theme.tiles[0];
+    },
+
+    // battlefield: axis-aligned floor squares, culled by the view rect
+    _flatTiles: function (ctx, st, theme, z, v) {
       var ts = st.tiles, W = ts.w, H = ts.h;
       var x0 = Math.max(0, Math.floor(v.x / TILE)),
           y0 = Math.max(0, Math.floor(v.y / TILE)),
@@ -209,10 +230,7 @@
           var i = ty * W + tx;
           var f = st.fog ? st.fog[i] : 2;
           if (f === 0) continue; // shroud: stays palette.bg
-          var mk = ts.mark ? ts.mark[i] : 0;
-          ctx.fillStyle = mk === 2 ? theme.tiles.contested :
-            mk === 1 ? theme.tiles.plot :
-            theme.tiles[ts.data[i] % 10] || theme.tiles[0];
+          ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
           var sx = (tx * TILE - v.x) * z, sy = (ty * TILE - v.y) * z;
           ctx.fillRect(sx, sy, px + 1, px + 1);
           if (f === 1) {           // explored-but-dim
@@ -229,6 +247,142 @@
           }
         }
       }
+    },
+
+    /* office (#134): the same tiles drawn as iso floor diamonds. The
+       visible world bbox comes from unprojecting the four screen
+       corners through toWorld() - the same transform clicks use. */
+    _isoTiles: function (ctx, st, theme, z) {
+      var ts = st.tiles, W = ts.w, H = ts.h, cv = this.cv;
+      var a = this.toWorld(0, 0), b = this.toWorld(cv.width, 0),
+          c = this.toWorld(0, cv.height), d = this.toWorld(cv.width,
+                                                          cv.height);
+      var x0 = Math.max(0, Math.floor(
+            Math.min(a.x, b.x, c.x, d.x) / TILE) - 1),
+          y0 = Math.max(0, Math.floor(
+            Math.min(a.y, b.y, c.y, d.y) / TILE) - 1),
+          x1 = Math.min(W, Math.ceil(
+            Math.max(a.x, b.x, c.x, d.x) / TILE) + 1),
+          y1 = Math.min(H, Math.ceil(
+            Math.max(a.y, b.y, c.y, d.y) / TILE) + 1);
+      for (var ty = y0; ty < y1; ty++) {
+        for (var tx = x0; tx < x1; tx++) {
+          var i = ty * W + tx;
+          var f = st.fog ? st.fog[i] : 2;
+          if (f === 0) continue;
+          var p0 = this.toScreen(tx * TILE, ty * TILE),
+              p1 = this.toScreen((tx + 1) * TILE, ty * TILE),
+              p2 = this.toScreen((tx + 1) * TILE, (ty + 1) * TILE),
+              p3 = this.toScreen(tx * TILE, (ty + 1) * TILE);
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y);
+          ctx.closePath();
+          ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
+          ctx.fill();
+          if (f === 1) {
+            ctx.fillStyle = "rgba(0,0,0,0.45)"; ctx.fill();
+          }
+          if (ts.breach && ts.breach[i]) {
+            ctx.fillStyle = "rgba(248,81,73," +
+              (0.16 + 0.10 * Math.sin(performance.now() / 280))
+                .toFixed(3) + ")";
+            ctx.fill();
+          }
+        }
+      }
+    },
+
+    /* office furniture + ambient life (#134): pure presentation over
+       real positions. Meeting table + water cooler sit on the real
+       town-hall plot; kanban walls stand behind real quest markers;
+       heroes work at desks; a pending decision walks every hero toward
+       the meeting table (GDD 3.2 "units walk to table"). */
+    _officeProps: function (ctx, st, theme, z, now) {
+      var self = this, pal = theme.palette;
+      var th = null;
+      (st.buildings || []).forEach(function (b) {
+        if (b.bid === "town-hall") th = b; });
+      if (th) {
+        var s = this.toScreen(th.x, th.y);
+        // meeting-room table under the town-hall marker
+        ctx.fillStyle = "#3a2f28";
+        ctx.beginPath();
+        ctx.ellipse(s.x, s.y + 16 * z, 30 * z, 12 * z, 0, 0, 7);
+        ctx.fill();
+        ctx.strokeStyle = "#5a4632"; ctx.stroke();
+        // water cooler: idle staff landmark beside the meeting room
+        var wc = this.toScreen(th.x + TILE * 1.7, th.y + TILE * 1.7);
+        ctx.fillStyle = "#4a5568";
+        ctx.fillRect(wc.x - 4 * z, wc.y - 10 * z, 8 * z, 12 * z);
+        ctx.fillStyle = "#58a6ff";
+        ctx.beginPath(); ctx.arc(wc.x, wc.y - 12 * z, 4.5 * z, 0, 7);
+        ctx.fill();
+      }
+      // kanban wall behind each quest marker (quest log reskin)
+      (st.pois || []).forEach(function (p) {
+        if (p.kind !== "quest") return;
+        var s = self.toScreen((p.x + .5) * TILE, (p.y + .5) * TILE);
+        var bw = 34 * z, bh = 20 * z;
+        ctx.fillStyle = "#1b1e28";
+        ctx.fillRect(s.x - bw / 2, s.y - 26 * z, bw, bh);
+        ctx.strokeStyle = pal.border; ctx.strokeRect(s.x - bw / 2,
+          s.y - 26 * z, bw, bh);
+        for (var k = 1; k < 3; k++) {
+          ctx.beginPath();
+          ctx.moveTo(s.x - bw / 2 + bw * k / 3, s.y - 26 * z);
+          ctx.lineTo(s.x - bw / 2 + bw * k / 3, s.y - 26 * z + bh);
+          ctx.stroke();
+        }
+        var dots = { done: "#3fb950", blocked: "#8b949e",
+                     failed: pal.err, open: "#ffd54a" };
+        ctx.fillStyle = dots[p.qst] || dots.open;
+        for (var q = 0; q < 3; q++)
+          ctx.fillRect(s.x - bw / 2 + 3 * z + bw * q / 3,
+                       s.y - 23 * z, 5 * z, 4 * z);
+      });
+      // decision summons: heroes converge on the meeting-room table.
+      // Walkers are presentation ghosts - real unit positions (and so
+      // picking/selection) stay exactly where the world puts them.
+      if (st.decision) {
+        var dd = st.decision, heroes = (st.units || []).filter(
+          function (u) { return u.kind === "hero"; });
+        var p = Math.min(1, Math.max(0, (now - dd.t0) / 3500));
+        heroes.forEach(function (u, i) {
+          var ang = 6.2832 * i / Math.max(1, heroes.length);
+          var sx = dd.x + Math.cos(ang) * TILE * 1.3,
+              sy = dd.y + Math.sin(ang) * TILE * 1.3;
+          var a = self.toScreen(u.x, u.y), b = self.toScreen(sx, sy);
+          ctx.globalAlpha = 0.30;
+          ctx.strokeStyle = "#ffd54a"; ctx.setLineDash([4, 4]);
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+          ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+          var wp = self.toScreen(u.x + (sx - u.x) * p,
+                                 u.y + (sy - u.y) * p);
+          var sz = 16 * Math.max(z, 0.7);
+          Theme.sprite(ctx, theme.units[u.cls] || theme.units.Squire,
+                       wp.x - sz / 2, wp.y - sz / 2, sz, sz);
+        });
+      }
+    },
+
+    // ---- frame -----------------------------------------------------
+    /* state = {tiles:{w,h,data}, fog, regions:{id->{cx,cy,tileId}},
+       units:[{id,x,y,cls,kind,status_live,hp,mana,gate_fail,sel,bark}],
+       buildings:[{id,x,y,bid,activity}], now} */
+    render: function (st, theme) {
+      var ctx = this.ctx, cv = this.cv;
+      if (cv.width !== cv.clientWidth) cv.width = cv.clientWidth;
+      if (cv.height !== cv.clientHeight) cv.height = cv.clientHeight;
+      var t0 = performance.now();
+      this.iso = !!(theme && theme.iso);   // office = isometric (#134)
+      var v = this.view(), z = this.cam.zoom, pal = theme.palette;
+      ctx.fillStyle = pal.bg; ctx.fillRect(0, 0, cv.width, cv.height);
+      this.units = st.units || [];
+      if (!st.tiles) return;
+      var ts = st.tiles, W = ts.w, H = ts.h;
+      if (this.iso) { this._isoTiles(ctx, st, theme, z); }
+      else { this._flatTiles(ctx, st, theme, z, v); }
       // POI markers: quests show through fog, others only once seen (#122)
       var self = this;
       (st.pois || []).forEach(function (p) {
@@ -266,6 +420,7 @@
           ctx.lineWidth = 1;
         }
       });
+      if (this.iso) this._officeProps(ctx, st, theme, z, t0); // #134
       (st.units || []).forEach(function (u) {
         var s = self.toScreen(u.x, u.y);
         if (s.x < -40 || s.y < -40 || s.x > cv.width + 40 ||
@@ -273,7 +428,17 @@
         var sz = (u.kind === "minion" ? 14 : u.kind === "worker" ? 10 : 22)
             * Math.max(z, 0.7);
         var ent = theme.units[u.cls] || theme.units.Squire;
-        Theme.sprite(ctx, ent, s.x - sz / 2, s.y - sz / 2, sz, sz);
+        var dy = 0;
+        if (self.iso) {          // #134: desk under office workers
+          var dw = u.kind === "minion" ? sz * 2.2 : sz * 1.3;
+          ctx.fillStyle = "#4a4034";
+          ctx.fillRect(s.x - dw / 2, s.y + sz * 0.15, dw, sz * 0.38);
+          ctx.fillStyle = "#5c503f";
+          ctx.fillRect(s.x - dw / 2, s.y + sz * 0.15, dw, 2);
+          if (u.status_live === "running")   // typing: heartbeat anim
+            dy = Math.sin(t0 / 160 + hash(String(u.id))) * 1.5 * z;
+        }
+        Theme.sprite(ctx, ent, s.x - sz / 2, s.y - sz / 2 + dy, sz, sz);
         if (u.status_live === "failed" || u.gate_fail) {
           ctx.strokeStyle = pal.err; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(s.x, s.y, sz / 2 + 3, 0, 7); ctx.stroke();
@@ -492,11 +657,14 @@
         ctx.arc(u.x / TILE * kx, u.y / TILE * ky, r, 0, 7);
         ctx.fill();
       });
-      // viewport rectangle
-      var v = this.view();
-      ctx.strokeStyle = "#e6f2e6";
-      ctx.strokeRect(v.x / TILE * kx, v.y / TILE * ky,
-        v.w / TILE * kx, v.h / TILE * ky);
+      // viewport rectangle (top-down minimap stays a world overview;
+      // under the iso theme the camera rect has no tile-space shape)
+      if (!this.iso) {
+        var v = this.view();
+        ctx.strokeStyle = "#e6f2e6";
+        ctx.strokeRect(v.x / TILE * kx, v.y / TILE * ky,
+          v.w / TILE * kx, v.h / TILE * ky);
+      }
     },
 
     mmToWorld: function (mm, st, mx, my) {
