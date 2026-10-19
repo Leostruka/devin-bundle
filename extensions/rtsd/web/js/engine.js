@@ -219,6 +219,14 @@
             ctx.fillStyle = "rgba(0,0,0,0.45)";
             ctx.fillRect(sx, sy, px + 1, px + 1);
           }
+          // #133 breach alarm: a failed ledger gate keeps its whole
+          // territory pulsing red until the gate set goes green
+          if (ts.breach && ts.breach[i]) {
+            ctx.fillStyle = "rgba(248,81,73," +
+              (0.16 + 0.10 * Math.sin(performance.now() / 280))
+                .toFixed(3) + ")";
+            ctx.fillRect(sx, sy, px + 1, px + 1);
+          }
         }
       }
       // POI markers: quests show through fog, others only once seen (#122)
@@ -448,6 +456,11 @@
           }
           if (ts.tint && ts.tint[i]) {   // lane-ownership tint (#124)
             ctx.fillStyle = ts.tint[i];
+            ctx.fillRect(x * kx, y * ky, sx + 0.5, sy + 0.5);
+          }
+          if (ts.breach && ts.breach[i] &&   // wall-breach glow (#133)
+              (performance.now() % 900) < 450) {
+            ctx.fillStyle = "rgba(248,81,73,0.55)";
             ctx.fillRect(x * kx, y * ky, sx + 0.5, sy + 0.5);
           }
         }

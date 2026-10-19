@@ -1553,6 +1553,35 @@ class World:
                           "gates": None, "assignees": []})
         return qs
 
+    def _breaches(self, by_lane, quests):
+        """Failed ledger gates = wall breaches on their territory (#133).
+        Region: a region literally named after the ledger, else the region
+        holding a linked issue file's tile, else the keep ("root").
+        Snapshot-derived from .devin/ledgers/*.md so replay stays pure;
+        the territory glows until every gate in the ledger passes."""
+        qreg = {}
+        for q in quests:
+            lid = q.get("ledger")
+            if not lid or q["kind"] == "main" or lid in qreg:
+                continue
+            p = os.path.join(self.root, ".devin", "scratch", q["effort"],
+                             "issues", q["id"] + ".md")
+            t = file_tile(self.layout, self.root, p)
+            qreg[lid] = self.layout["regions"][
+                self.layout["tile_region"][t]]
+        caps = self.layout["capitals"]
+        out = []
+        for lid, lg in sorted(by_lane.items()):
+            if not lg["failed"]:
+                continue
+            reg = lid if lid in caps else qreg.get(lid, "root")
+            out.append({"ledger": lid, "region": reg,
+                        "xy": list(caps.get(reg)
+                                   or [MAP_W // 2, MAP_H // 2]),
+                        "gates": [g["id"] for g in lg["gates"]
+                                  if g["state"] == "fail"]})
+        return out
+
     def _quest_feed(self, qs, now):
         """Snapshot-time quest lines (#130): progress/completion is file
         state (issue Status + ledger gates), so these are computed, never
@@ -1742,6 +1771,9 @@ class World:
                                          "clear": clr},
                           "window": self._window},
             "quests": quests,
+            # #133 breach alarms: ledgers with failed gates keep their
+            # territory glowing red until the gate set is green again
+            "breaches": self._breaches(by_lane, quests),
             # #132 tech tree: real skills grouped by school with cast
             # state, armory model tiers, memory doctrines - all derived
             # from files + the event-sourced skill_casts ledger

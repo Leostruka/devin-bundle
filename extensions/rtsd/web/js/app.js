@@ -33,6 +33,7 @@
     feedFilter: { kind: null, cls: null },
     ravens: [],              // in-flight mailbox birds {fx,fy,tx,ty,t0}
     seenDec: null,           // pending decision ids from last snapshot
+    seenBreach: null,        // breached ledger ids from last snapshot (#133)
     prevUpkeep: null,        // upkeep tier from last snapshot (#131)
     heardDec: {},            // ids already alarmed via WS upsert (#129)
     decActive: null,         // decision shown in the council modal
@@ -52,7 +53,7 @@
   // UI-side only and never pretend to be agent traffic.
   var FEED_KINDS = ["spawn", "debrief", "position", "note", "council",
                     "order", "steering", "raven", "quest", "econ",
-                    "spell", "local"];
+                    "spell", "breach", "local"];
 
   function logFeed(m) {   // local UI echo (orders, groups, demo notice)
     pushFeed({ t: Date.now() / 1000, kind: "local", who: "UI",
@@ -297,6 +298,7 @@
       state.map.mark = new Uint8Array(m2.mark || []);
       state.map.pois = m2.pois || [];
       state.map.tint = laneTint(m2);
+      syncBreaches();
     } else {
       var regs = m2 ? m2.regions : [];
       var key = regs.map(function (r) { return r.id; }).join(",");
@@ -336,18 +338,28 @@
           got = true; refresh(); noteEvent(m.event); pushPing(m.hint);
           if (m.feed) pushFeed(m.feed);
           if (m.hint && m.hint.kind === "raven") pushRaven(m.hint);
-          // #129 tiers: decision = sound (modal+ping via hint/snapshot
-          // diff); gate-fail = red banner; everything else = feed only
+          // #129/#133 tiers: decision = modal+sting; gate-fail = red
+          // banner+horn; contested = clash; spawn = soft blip; the rest
+          // is feed only
+          var hk = m.hint && m.hint.kind;
           if (m.event && m.event.type === "decision.created") {
             var pid = (m.event.payload || {}).id;
             if (pid) state.heardDec[pid] = 1;
-            beep(660, .18);
-          } else if (m.hint && m.hint.kind === "fail") {
+            tone("decision");
+            notify("rtsd: war council",
+                   (m.event.payload || {}).prompt || "decision pending");
+          } else if (hk === "fail") {
             failBanner((m.feed && m.feed.text) ||
                        (m.event.tool || m.event.type));
           } else if (m.feed && m.feed.kind === "debrief" &&
               /fail|retreat|unit down/i.test(m.feed.text || "")) {
             failBanner(m.feed.text);
+          } else if (hk === "contested") {
+            tone("contested");
+          } else if (hk === "spawn" || hk === "decision" ||
+                     hk === "spell") {
+            tone(hk === "decision" ? "decision" :
+                 hk === "spawn" ? "spawn" : "order");
           }
         } else if (m.type === "tick") { got = true; applyTick(m); }
       };
@@ -436,23 +448,91 @@
     if (state.ravens.length > 8) state.ravens.shift();
   }
 
-  // ---- war council alerts (#129) --------------------------------------
-  // Tiers: decision = modal + sound + gold minimap ping; gate-fail = red
-  // banner + ping; info = feed line only. Everything reads the daemon's
-  // pending-decision list (same files rts-decision.py creates/waits on);
-  // the last option is the deny-safe timeout default and is marked so.
+  // ---- alert sounds + notifications (#133) ----------------------------
+  // Per-tier procedural WebAudio signatures (no asset files, zero-dep).
+  // Mute + volume persist in localStorage; M toggles, -/= set volume.
+  // Browser Notification API is opt-in via the header button and only
+  // fires while the tab is hidden (graceful on deny/unsupported).
+
+  var SNDKEY = "rtsd.snd", VOLKEY = "rtsd.vol", NTFKEY = "rtsd.ntf";
+  var snd = { on: localStorage.getItem(SNDKEY) !== "0",
+              vol: parseFloat(localStorage.getItem(VOLKEY) || "0.6") };
+  if (!(snd.vol > 0)) snd.vol = 0.6;
+
+  function sndUi() {
+    el("sndBtn").textContent = "snd:" +
+      (snd.on ? Math.round(snd.vol * 100) + "%" : "off");
+  }
+  function setMute(on) {
+    snd.on = on;
+    localStorage.setItem(SNDKEY, on ? "1" : "0");
+    sndUi();
+  }
+  function setVol(v) {
+    snd.vol = Math.max(0.1, Math.min(1, v));
+    localStorage.setItem(VOLKEY, String(Math.round(snd.vol * 100) / 100));
+    sndUi();
+  }
 
   var _ac = null;
-  function beep(freq, dur) {   // optional sound: fails silently if blocked
-    try {
-      _ac = _ac || new (window.AudioContext ||
-                       window.webkitAudioContext)();
-      var o = _ac.createOscillator(), g2 = _ac.createGain();
-      o.type = "square"; o.frequency.value = freq;
-      g2.gain.value = .04;
-      o.connect(g2); g2.connect(_ac.destination);
-      o.start(); o.stop(_ac.currentTime + (dur || .15));
-    } catch (e) {}
+  function _osc(type, f0, f1, delay, dur, vol) {
+    _ac = _ac || new (window.AudioContext ||
+                      window.webkitAudioContext)();
+    if (_ac.state === "suspended") _ac.resume();
+    var t = _ac.currentTime + delay;
+    var o = _ac.createOscillator(), g2 = _ac.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, t);
+    if (f1 && f1 !== f0)
+      o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g2.gain.setValueAtTime(0.0001, t);
+    g2.gain.exponentialRampToValueAtTime(vol * snd.vol, t + 0.02);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g2); g2.connect(_ac.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  // tier signatures: distinct per alert kind so they read blind
+  var SND = {
+    decision: function () {            // council sting: two-note rise
+      _osc("square", 660, 660, 0, .12, .05);
+      _osc("square", 880, 880, .14, .2, .05);
+    },
+    breach: function () {              // gate-fail horn: low falling saw
+      _osc("sawtooth", 200, 90, 0, .5, .07);
+      _osc("sawtooth", 150, 80, .3, .55, .06);
+    },
+    spawn: function () {               // soft blip
+      _osc("sine", 720, 1150, 0, .14, .05);
+    },
+    contested: function () {           // clash: two detuned squares
+      _osc("square", 340, 180, 0, .08, .05);
+      _osc("square", 255, 140, .02, .1, .05);
+    },
+    upkeep: function () {              // advisor warn: two soft tones
+      _osc("triangle", 520, 520, 0, .09, .05);
+      _osc("triangle", 392, 392, .12, .14, .05);
+    },
+    order: function () {               // quiet ack tick
+      _osc("sine", 980, 980, 0, .06, .04);
+    }
+  };
+  function tone(kind) {
+    if (!snd.on) return;
+    try { (SND[kind] || SND.order)(); } catch (e) {}
+  }
+
+  function ntfOn() {
+    return localStorage.getItem(NTFKEY) === "1" &&
+      "Notification" in window && Notification.permission === "granted";
+  }
+  function ntfUi() {
+    el("ntfBtn").textContent = "notify:" + (!("Notification" in window)
+      ? "n/a" : Notification.permission === "denied" ? "denied"
+      : ntfOn() ? "on" : "off");
+  }
+  function notify(title, body) {
+    if (!ntfOn() || !document.hidden) return;
+    try { new Notification(title, { body: body || "" }); } catch (e) {}
   }
 
   // Pending decisions annotated with expiry: rts-decision.py --wait fails
@@ -483,7 +563,8 @@
   }
 
   function decAlarm(d) {  // new pending decision: flash + sound + gold ping
-    beep(660, .18);
+    tone("decision");
+    notify("rtsd: war council", d.prompt || d.kind || "decision pending");
     var th = ((state.world || {}).buildings || []).filter(function (b) {
       return b.id === "town-hall"; })[0];
     if (th && th.pos && th.pos.xy)
@@ -530,7 +611,8 @@
     void rs.offsetWidth;               // restart the CSS animation
     rs.classList.add("flash");
     if (worse) {
-      beep(520, .15);
+      tone("upkeep");
+      notify("rtsd: upkeep " + cur, msg);
       var th = ((state.world || {}).buildings || []).filter(function (b) {
         return b.id === "town-hall"; })[0];
       if (th && th.pos && th.pos.xy)
@@ -541,13 +623,62 @@
     state.prevUpkeep = cur;
   }
 
+  // ---- breach alarms (#133) -------------------------------------------
+  // A ledger gate fail = a wall breach: the failed ledger's territory
+  // glows red on map+minimap until every gate in it passes again. Breach
+  // state is snapshot-derived server-side (world.breaches) so polling
+  // PWA/remote clients see the same alarm state without push infra.
+
+  function syncBreaches() {
+    var br = (state.world || {}).breaches || [];
+    var ids = {};
+    br.forEach(function (b) { ids[b.ledger] = 1; });
+    if (state.seenBreach) {
+      br.forEach(function (b) {
+        if (!state.seenBreach[b.ledger]) breachAlarm(b); });
+      Object.keys(state.seenBreach).forEach(function (l) {
+        if (!ids[l])
+          pushFeed({ t: Date.now() / 1000, kind: "breach",
+                     who: "Watchtower", cls: null, uid: null,
+                     text: "breach sealed: " + l + " gates green" });
+      });
+    }
+    state.seenBreach = ids;
+    // territory glow mask: every tile of a breached region
+    if (state.map && state.map.tileRegion) {
+      var rmask = {};
+      br.forEach(function (b) {
+        var ri = state.map.regionIds.indexOf(b.region);
+        if (ri >= 0) rmask[ri] = 1;
+      });
+      var bt = new Uint8Array(state.map.w * state.map.h);
+      for (var i = 0; i < bt.length; i++)
+        if (rmask[state.map.tileRegion[i]]) bt[i] = 1;
+      state.map.breach = bt;
+    }
+  }
+
+  function breachAlarm(b) {   // new breach: horn + banner + ping + notify
+    tone("breach");
+    failBanner("wall breach in " + b.region + " (" + b.ledger + ": " +
+               b.gates.join(",") + " failed)");
+    pushFeed({ t: Date.now() / 1000, kind: "breach", who: "Watchtower",
+               cls: null, uid: null,
+               text: "BREACH: " + b.region + " wall down - " + b.ledger +
+                 " gate " + b.gates.join(",") + " failed" });
+    state.pings.push({ x: (b.xy[0] + .5) * TILE, y: (b.xy[1] + .5) * TILE,
+                       kind: "fail", t0: performance.now() });
+    notify("rtsd: wall breach",
+           b.ledger + " gate fail in " + b.region);
+  }
+
   // gate-fail tier: red breach banner + low tone (ping comes from the
   // event hint); auto-clears - the ledger stays the persistent record
   function failBanner(msg) {
     var b = el("banner");
     b.textContent = "BREACH: " + msg;
     b.className = "on";
-    beep(220, .3);
+    tone("breach");
     clearTimeout(state._bt);
     state._bt = setTimeout(function () { b.className = ""; }, 6000);
   }
@@ -622,6 +753,7 @@
           blds.push({ id: b + (k ? "-" + k : ""), activity: i + k });
       });
     return { now: Date.now() / 1000, units: units, buildings: blds,
+      breaches: [],
       resources: { gold: 0, lumber_pct: 0, supply_used: nUnits,
                    supply_heroes: nUnits, supply_minions: 0,
                    supply_cap: 8, upkeep: "low", income_min: 0,
@@ -781,8 +913,18 @@
     el("decsStack").innerHTML = decs.filter(function (d) {
       return d !== act; }).map(function (d) {
         return decHtml(d, false); }).join("");
-    el("alerts").innerHTML = decs.length ?
-      "<span class='abadge'>alerts:" + decs.length + "</span>" +
+    // #133 alert stack severity order: active wall breaches (gate fails)
+    // outrank pending council decisions; both outrank info pings
+    var br = w.breaches || [];
+    el("alerts").innerHTML = (decs.length + br.length) ?
+      "<span class='abadge'>alerts:" + (decs.length + br.length) +
+      "</span>" +
+      br.map(function (b) {
+        return "<span class='achip brc' data-breg='" + esc(b.region) +
+          "' title='breach: " + esc(b.ledger) + " gates " +
+          esc(b.gates.join(", ")) + " - glows until green'>!" +
+          esc(b.region) + "</span>";
+      }).join("") +
       decs.map(function (d) {
         var u = reqUnit(d);
         var label = u ? (u.name || u.id)
@@ -1440,6 +1582,9 @@
       el("techtree").classList.toggle("on");
       renderPanels(); return;
     }
+    if (k === "m") { setMute(!snd.on); return; }    // #133 mute toggle
+    if (k === "-" || k === "_") { setVol(snd.vol - 0.1); return; }
+    if (k === "=" || k === "+") { setVol(snd.vol + 0.1); return; }
     if (k === "t") { Theme.toggle(); renderPanels(); }
     if (k === " ") {               // last-alert: cycle recent pings
       e.preventDefault();
@@ -1455,6 +1600,25 @@
     if (k === "?") el("help").classList.toggle("on");
   });
   el("themeBtn").onclick = function () { Theme.toggle(); renderPanels(); };
+  el("sndBtn").onclick = function () { setMute(!snd.on); };
+  sndUi();
+  // Notification opt-in (#133): click grants/denies via the platform
+  // prompt; choice persists; denied shows its state and stays quiet
+  el("ntfBtn").onclick = function () {
+    if (!("Notification" in window)) return;
+    if (ntfOn()) { localStorage.setItem(NTFKEY, "0"); ntfUi(); return; }
+    try {
+      var p = Notification.requestPermission(function (r) {
+        localStorage.setItem(NTFKEY, r === "granted" ? "1" : "0");
+        ntfUi();
+      });
+      if (p && p.then) p.then(function (r) {
+        localStorage.setItem(NTFKEY, r === "granted" ? "1" : "0");
+        ntfUi();
+      });
+    } catch (e) { ntfUi(); }
+  };
+  ntfUi();
 
   // feed entry click -> select the speaking unit + camera jump (#128)
   el("feed").addEventListener("click", function (e) {
@@ -1491,10 +1655,15 @@
     var d = e.target.closest("[data-decid]");
     if (d) { state.decActive = d.dataset.decid; renderPanels(); }
   });
-  // alert-stack chips bring their decision to the chamber front
+  // alert-stack chips: breach chip jumps to the breached territory's
+  // capital; decision chip brings its call to the chamber front (#133)
   el("alerts").addEventListener("click", function (e) {
     var c = e.target.closest("[data-dec]");
-    if (c) { state.decActive = c.dataset.dec; renderPanels(); }
+    if (c) { state.decActive = c.dataset.dec; renderPanels(); return; }
+    var b = e.target.closest("[data-breg]");
+    if (b && state.map && state.map.caps[b.dataset.breg])
+      eng.centerOn(state.map.caps[b.dataset.breg].cx * TILE,
+                   state.map.caps[b.dataset.breg].cy * TILE);
   });
   document.getElementById("send").onclick = function () {
     var v = el("msg").value.trim(); if (!v) return;

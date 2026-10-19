@@ -20,6 +20,7 @@ import argparse
 import base64
 import json
 import os
+import re
 import socket
 import struct
 import sys
@@ -165,9 +166,35 @@ def ws_feed(host, port):
                 t = msg.get("type", "?")
                 if t == "snapshot":
                     ss = msg.get("snapshot", {})
-                    print("[feed] snapshot: %d agents, %d tasks" % (
-                        len(ss.get("agents", [])), len(ss.get("tasks", []))))
+                    nbr = len((ss.get("world") or {}).get("breaches", []))
+                    print("[feed] snapshot: %d agents, %d tasks, "
+                          "%d pending decisions, %d breaches" % (
+                              len(ss.get("agents", [])),
+                              len(ss.get("tasks", [])),
+                              len(ss.get("decisions", [])), nbr))
+                    for b in (ss.get("world") or {}).get("breaches", []):
+                        print("[ALERT gate-fail] BREACH %s: ledger %s "
+                              "gates %s" % (b.get("region"),
+                                            b.get("ledger"),
+                                            ",".join(b.get("gates", []))))
                 else:
+                    # #133 alert lines: council calls + gate fails print
+                    # as first-class alerts, then the generic frame line
+                    if t == "upsert":
+                        ev = msg.get("event") or {}
+                        hint = msg.get("hint") or {}
+                        ln = msg.get("feed") or {}
+                        if ev.get("type") == "decision.created":
+                            pl = ev.get("payload") or {}
+                            print("[ALERT decision] %s: %s" % (
+                                pl.get("id", "?"),
+                                pl.get("prompt") or pl.get("kind", "")))
+                        if hint.get("kind") == "fail" or (
+                                ln.get("kind") == "debrief" and
+                                re.search(r"fail|retreat|unit down",
+                                          ln.get("text") or "", re.I)):
+                            print("[ALERT gate-fail] %s" % (
+                                ln.get("text") or ev.get("tool") or ""))
                     print("[feed] %s %s" % (t, json.dumps(
                         {k: v for k, v in msg.items() if k != "type"},
                         ensure_ascii=False)[:160]))
