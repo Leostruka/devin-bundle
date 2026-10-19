@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **AgentCraft RTS v2 GDD** (`.devin/scratch/agentcraft-rts-v2/gdd.md`, #119): metaphor bible for the v3.8.0 RTS milestone; entity mapping tables covering all bundle surfaces (13+2+4 agent profiles as hero classes, 83 skills as spells in 6 schools, 35 scripts as workers, 22 extensions as allied arsenal, 28 runtime tools, 8 hook events), mechanics mapping (HP/mana/supply/gold/lumber/upkeep/fog/quests/loot/barks to real data sources), dual-mode spec (battlefield + office themes on one engine), desktop + PWA layout wireframes, programmer-art direction, per-class voice lines, and binding honesty rules.
+
 ## [3.7.0] - 2026-10-18
 
 ### Added
