@@ -322,6 +322,29 @@ def main():
                    for wk in w2["workers"]), w2["workers"]
         print("PASS unit model (kit/tier + worker scurry paths)")
 
+        # #126 command card: targeted orders land as real intent files
+        # with the quest ref the UI resolved from the quest POI marker
+        assert post(PORT, "/intent", {
+            "kind": "order", "to": "lane1", "order": "attack",
+            "x": 5, "y": 6, "quest": "01-t"}) == 200
+        assert post(PORT, "/intent", {
+            "kind": "order", "to": "lane1", "order": "ability",
+            "ability": "Farsight"}) == 200
+        assert post(PORT, "/intent", {
+            "kind": "order", "to": "lane1", "order": "hold"}) == 200
+        idir = os.path.join(root, ".devin", "rts", "intents")
+        ints = [json.load(open(os.path.join(idir, fn),
+                             encoding="utf-8"))
+                for fn in os.listdir(idir)]
+        atk = [i for i in ints if i.get("order") == "attack"]
+        assert atk and atk[-1]["to"] == "lane1" and \
+            atk[-1]["quest"] == "01-t" and atk[-1]["x"] == 5, atk
+        assert any(i.get("order") == "ability" and
+                   i.get("ability") == "Farsight" for i in ints), ints
+        assert any(i.get("order") == "hold" for i in ints), ints
+        print("PASS command card orders -> intents/ (attack+quest, "
+              "ability, hold)")
+
         # #120 tick: old heartbeat-less hero decays running -> idle -> stale
         post(PORT, "/event", {
             "type": "hook.posttooluse", "tool": "run_subagent",
