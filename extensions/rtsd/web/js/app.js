@@ -70,7 +70,10 @@
              tint: laneTint(m),
              fog: new Uint8Array(m.fog || n),
              mark: new Uint8Array(m.mark || n),
-             pois: m.pois || [] };
+             pois: m.pois || [],
+             // region lookup for rally channels / lane previews (#127)
+             regionIds: (m.regions || []).map(function (r) { return r.id; }),
+             tileRegion: m.tile_region || [] };
   }
 
   // lane-ownership overlay per tile; recomputed each snapshot because
@@ -188,6 +191,20 @@
     // via the snapshot's server->client clock offset
     state.srvClock = { srv: w.now || 0, perf: performance.now() };
     state.workers = w.workers || [];
+    // queued waypoints (#127): every order intent with x/y on a hero's
+    // queue is a numbered flag; state comes from the intent file
+    // (queued = ghost, acknowledged = solid, consumed = hidden)
+    state.waypoints = [];
+    state.units.forEach(function (u) {
+      var ords = (u.unit && u.unit.orders) || [];
+      ords.forEach(function (o, i) {
+        if (o.state === "consumed" ||
+            typeof o.x !== "number" || typeof o.y !== "number") return;
+        state.waypoints.push({ x: (o.x + .5) * TILE, y: (o.y + .5) * TILE,
+          n: i + 1, state: o.state, order: o.order,
+          ux: u.x, uy: u.y });
+      });
+    });
     // buildings sit on their fixed server-assigned plots (#123)
     var regs = Object.keys(state.map.caps);
     state.buildings = (w.buildings || []).map(function (b, i) {
@@ -466,6 +483,10 @@
             "'>" + esc(o) + "</button>";
         }).join("") + "</div>";
     }).join("");
+    // idle-worker button (#127): real count from world.idle
+    var nIdle = (w.idle || []).length;
+    el("idleBtn").textContent = "idle:" + nIdle;
+    el("idleBtn").disabled = !nIdle;
     el("themeBtn").textContent = "theme: " + th.name;
   }
 
@@ -480,6 +501,11 @@
     var h = "<b>" + esc(d.name) + "</b> <span class='meta'>" +
       (d.pos ? esc(d.pos.region) + " plot " + d.pos.plot : "") +
       " | used " + (d.activity || 0) + "x</span><br>";
+    if (d.rally)   // #127: right-click on map while building selected
+      h += "<div class='meta'>rally: " +
+        esc(d.rally.region || "?") + " (" + d.rally.x + "," + d.rally.y +
+        ")" + (d.rally.channel ? " -> " + esc(d.rally.channel) : "") +
+        "</div>";
     if (d.id === "town-hall") {
       h += "<div class='meta'>main quest: " +
         esc((d.goal && d.goal.text) || "-") + "</div>" +
@@ -569,7 +595,7 @@
     }).join("");
     var bark = u.bark ||
       (state.acks[u.id] ? state.acks[u.id].text : barkLine(u.cls, 0));
-    return "<b>" + esc(u.name || u.id) + "</b> " +
+    var h = "<b>" + esc(u.name || u.id) + "</b> " +
       "<span class='lvbadge'>Lv" + (u.level || 1) + "</span> " +
       "<span class='meta'>" + esc(u.cls || "") + " " + esc(u.profile || "") +
       " " + esc(u.tier || "") + " " + esc(u.model || "") + "</span><br>" +
@@ -579,6 +605,16 @@
       (kit ? " <span class='meta'>kit:</span>" + kit : "") +
       "<br><i>&quot;" + esc(bark) + "&quot;</i>" +
       (inv ? "<div class='meta'>loot: " + inv + "</div>" : "");
+    // order queue (#127): numbered pending orders for this hero
+    var ords = ((u.unit && u.unit.orders) || u.orders || []).filter(
+      function (o) { return o.state !== "consumed"; });
+    if (ords.length)
+      h += "<div class='meta'>orders: " + ords.map(function (o, i) {
+        return (i + 1) + " " + esc(o.order || "?") +
+          (typeof o.x === "number" ? "(" + o.x + "," + o.y + ")" : "") +
+          " <i>" + esc(o.state || "queued") + "</i>";
+      }).join("; ") + "</div>";
+    return h;
   }
 
   // ---- command card (#126) ---------------------------------------------
@@ -854,6 +890,68 @@
     renderPanels();
   });
 
+  // right-click on the world canvas (#127): building selected = set that
+  // building's rally point; units selected = context order (quest POI ->
+  // attack with issue ref, building -> garrison/report, ground -> move).
+  // Shift enqueues (appends to the unit's order queue instead of a lone
+  // order); all land as real intent files via POST /intent.
+  el("cv").addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+    if (state.demo) return;
+    var pt = eng.toWorld(e.offsetX, e.offsetY);
+    var tx = Math.floor(pt.x / TILE), ty = Math.floor(pt.y / TILE);
+    if (tx < 0 || ty < 0 || !state.map ||
+        tx >= state.map.w || ty >= state.map.h) return;
+    if (state.selB) {                          // per-building rally point
+      var it = { kind: "order", to: state.selB, order: "set_rally",
+                 x: tx, y: ty };
+      if (state.selB === "watchtower" && state.map.tileRegion)
+        it.channel = state.map.regionIds[
+          state.map.tileRegion[ty * state.map.w + tx]] || "alerts";
+      RTS.intent(it).then(function () { selectBuilding({id: state.selB}); });
+      state.pings.push({ x: (tx + .5) * TILE, y: (ty + .5) * TILE,
+                         kind: "order", t0: performance.now() });
+      logFeed("rally: " + state.selB + " -> " + tx + "," + ty +
+              (it.channel ? " (" + it.channel + ")" : ""));
+      return;
+    }
+    if (!state.selAll.length) return;
+    var ord = "move", extra = { x: tx, y: ty };
+    if (e.shiftKey) extra.queue = true;        // shift-queue (#127)
+    var bd = eng.pickBuilding(e.offsetX, e.offsetY);
+    var best = null, qq = 1.5;
+    (state.map.pois || []).forEach(function (p) {
+      if (p.kind !== "quest") return;
+      var d = Math.hypot(p.x - tx, p.y - ty);
+      if (d <= qq) { qq = d; best = p; }
+    });
+    if (bd) { ord = "garrison"; extra.building = bd.id; }
+    else if (best) { ord = "attack"; extra.quest = best.ref; }
+    issueOrder(ord, extra);
+    state.pings.push({ x: (tx + .5) * TILE, y: (ty + .5) * TILE,
+                       kind: "order", t0: performance.now() });
+    logFeed("order: " + ord + " " + state.selAll.join(",") +
+            " -> " + tx + "," + ty +
+            (extra.queue ? " [queued]" : "") +
+            (extra.quest ? " (" + extra.quest + ")" : "") +
+            (extra.building ? " (" + extra.building + ")" : ""));
+    renderPanels();
+  });
+
+  // idle-worker button (#127): count from the world snapshot's idle list
+  // (heroes idle/stale with no active order); click cycles + centers each.
+  var idleIdx = 0;
+  el("idleBtn").addEventListener("click", function () {
+    var ids = (state.world && state.world.idle) || [];
+    if (!ids.length) return;
+    var id = ids[idleIdx++ % ids.length];
+    state.selAll = [id]; state.sel = id;
+    state.selB = null; state.bDetail = null;
+    var u = state.units.filter(function (x) { return x.id === id; })[0];
+    if (u) eng.centerOn(u.x, u.y);
+    syncRenderables(); renderPanels();
+  });
+
   window.addEventListener("keydown", function (e) {
     if (e.target && e.target.tagName === "INPUT") return;
     var k = e.key.toLowerCase();
@@ -918,6 +1016,7 @@
     eng.render({ tiles: state.map, fog: state.map && state.map.fog,
       pois: state.map && state.map.pois, pings: livePings(),
       workers: state.workers, fades: state.fades,
+      waypoints: state.waypoints,
       srvClock: state.srvClock,
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,

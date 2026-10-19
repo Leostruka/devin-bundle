@@ -121,7 +121,10 @@
       dbl-click: all of class on screen &nbsp; Tab: cycle subgroup<br>
       Ctrl+0-9: assign group &nbsp; 0-9: recall &nbsp; tap x2: center<br>
       minimap click: jump/ping &nbsp; minimap right-click: move order<br>
+      right-click map: order (quest/building snap) &nbsp; shift: enqueue<br>
+      right-click with building selected: rally point<br>
       command card: Move/Stop/Hold/Patrol/Attack + kit abilities<br>
+      idle:N cycles idle heroes &nbsp; waypoint flags = order queue<br>
       SPACE: cycle pings &nbsp; ESC: cancel target &nbsp; T: theme<br>
       Cmd: <code>/spawn &lt;profile&gt; &lt;task&gt;</code>,
       <code>@id msg</code>, or text = goal
@@ -132,7 +135,9 @@
   </div>
 </main>
 <div id="bottom">
-  <div id="mmwrap"><canvas id="mm"></canvas></div>
+  <div id="mmwrap"><canvas id="mm"></canvas>
+    <button id="idleBtn" style="width:100%;margin-top:4px">idle:0</button>
+  </div>
   <div id="portrait"></div>
   <div id="grps"></div>
   <div id="cmdcard"></div>
