@@ -574,13 +574,19 @@ class World:
         profile = str(ti.get("profile") or "?")
         cls = HERO_CLASSES.get(profile, "Squire")
         self._class_seq[cls] = self._class_seq.get(cls, 0) + 1
+        # barracks rally point: the newest set_rally order routes the next
+        # spawn's lane to the rally region (#127)
+        lane = str(ti.get("lane") or "")
+        rally = self.rally_of("barracks")
+        if rally and rally.get("region"):
+            lane = rally["region"]
         self.units[aid] = {
             "id": aid, "kind": "hero", "profile": profile, "cls": cls,
             "name": "%s-%d" % (cls, self._class_seq[cls]),
             "model": self._submodel,
             "tier": profile_tier(self.root, profile),
             "kit": profile_kit(self.root, profile),
-            "lane": str(ti.get("lane") or ""),
+            "lane": lane,
             "task": (ti.get("task") or "")[:120],
             "title": ti.get("title", ""),
             "status": "running" if ti.get("is_background") else "done",
@@ -615,6 +621,56 @@ class World:
             self.goal = {"text": it.get("text", ""), "ts": ts}
         elif kind == "order" and it.get("to"):
             self.orders.setdefault(str(it["to"]), []).append(it)
+
+    # ---- orders / rally (#127) ----
+
+    # intent file status -> order lifecycle state; rts-intents.py flips
+    # pending -> surfaced/delivered when the session consumes the file.
+    _ORDER_STATES = {"pending": "queued", "surfaced": "acknowledged",
+                     "delivered": "acknowledged"}
+
+    def _intent_status(self):
+        """intent id -> file status, read fresh each snapshot (the intents
+        dir is the truth; ghost waypoints key off 'queued')."""
+        out = {}
+        idir = os.path.join(self.root, ".devin", "rts", "intents")
+        if not os.path.isdir(idir):
+            return out
+        for fn in os.listdir(idir):
+            if not fn.endswith(".json"):
+                continue
+            try:
+                with open(os.path.join(idir, fn),
+                          encoding="utf-8") as f:
+                    it = json.load(f)
+            except Exception:
+                continue
+            if isinstance(it, dict) and it.get("id"):
+                out[str(it["id"])] = it.get("status", "pending")
+        return out
+
+    def _order_view(self, it, istatus):
+        """Snapshot view of one queued order: adds lifecycle state."""
+        o = dict(it)
+        o["state"] = self._ORDER_STATES.get(istatus, "consumed")
+        return o
+
+    def rally_of(self, bid):
+        """Latest set_rally order on a building -> {x,y,region?,id}."""
+        for it in reversed(self.orders.get(bid, [])):
+            if it.get("order") != "set_rally":
+                continue
+            r = {"x": it.get("x"), "y": it.get("y"), "id": it.get("id")}
+            x, y = it.get("x"), it.get("y")
+            if isinstance(x, int) and isinstance(y, int) and \
+                    not isinstance(x, bool) and not isinstance(y, bool) and \
+                    0 <= x < MAP_W and 0 <= y < MAP_H:
+                ri = self.layout["tile_region"][y * MAP_W + x]
+                r["region"] = self.layout["regions"][ri]
+            if it.get("channel"):
+                r["channel"] = it["channel"]
+            return r
+        return None
 
     # ---- time-derived live state ----
 
@@ -727,7 +783,7 @@ class World:
         if not b:
             return None
         d = {"id": bid, "name": b["name"], "activity": b["activity"],
-             "pos": self.sites.get(bid)}
+             "pos": self.sites.get(bid), "rally": self.rally_of(bid)}
         root = self.root
         if bid == "town-hall":
             qs = self._quests()
@@ -918,6 +974,7 @@ class World:
                 except Exception:
                     continue
         units = []
+        ist = self._intent_status()
         for u in self.units.values():
             u = dict(u)
             if u["kind"] == "hero":
@@ -952,7 +1009,12 @@ class World:
                                  if isinstance(ctx, (int, float)) else None)
                 else:
                     u["mana"] = None
-                u["orders"] = self.orders.get(u["id"], [])
+                # order queue (#127): lifecycle state overlaid from the
+                # intent files (queued while pending, acknowledged once
+                # the session consumed it, then 'consumed'/cleared)
+                u["orders"] = [self._order_view(
+                    i, ist.get(str(i.get("id")), "pending"))
+                    for i in self.orders.get(u["id"], [])]
             units.append(u)
         # gold = est tokens spent = tool-output tokens + 200/call overhead
         # (same accounting as scripts/context-pressure.py)
@@ -972,11 +1034,20 @@ class World:
                   for i, wk in enumerate(workers[-8:])]
         regions = self._region_list()
         fog, mark, pois = self._fog_mark(now)
+        # idle-worker button (#127): heroes with no active order; fleet
+        # status cross-checked via status_live (idle/stale, not busy)
+        idle = [u["id"] for u in units
+                if u.get("kind") == "hero"
+                and u.get("status_live") in ("idle", "stale")
+                and not any(o.get("state") != "consumed"
+                            for o in u.get("orders", []))]
         return {
             "now": now,
             "units": units,
+            "idle": idle,
             "workers": wunits,
-            "buildings": [dict(b, pos=self.sites.get(b["id"]))
+            "buildings": [dict(b, pos=self.sites.get(b["id"]),
+                             rally=self.rally_of(b["id"]))
                           for b in self.buildings.values()],
             "resources": {"gold": gold, "lumber_pct": lumber_pct,
                           "supply_used": supply_used,

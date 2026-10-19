@@ -345,6 +345,67 @@ def main():
         print("PASS command card orders -> intents/ (attack+quest, "
               "ability, hold)")
 
+        # #127 orders queue: shift-queued waypoints carry lifecycle state
+        # from the intent file (pending -> queued; surfaced -> ack)
+        for n, xy in enumerate(((8, 8), (12, 8), (12, 14))):
+            assert post(PORT, "/intent", {
+                "kind": "order", "to": "lane1", "order": "move",
+                "id": "wp%d" % n,
+                "x": xy[0], "y": xy[1], "queue": True}) == 200
+        st, snap = get(PORT, "/snapshot")
+        lane1 = {u["id"]: u for u in snap["world"]["units"]}["lane1"]
+        moves = [o for o in lane1["orders"] if o.get("queue")]
+        assert len(moves) == 3 and all(o["state"] == "queued"
+                                     for o in moves), moves
+        assert [ (o["x"], o["y"]) for o in moves] == \
+            [(8, 8), (12, 8), (12, 14)], moves     # queue order preserved
+        # ghost clears: once rts-intents.py surfaces the file, the order
+        # is acknowledged instead of queued
+        idir = os.path.join(root, ".devin", "rts", "intents")
+        first = os.path.join(idir, moves[0]["id"] + ".json")
+        it = json.load(open(first, encoding="utf-8"))
+        it["status"] = "surfaced"
+        with open(first, "w", encoding="utf-8") as f:
+            json.dump(it, f)
+        st, snap = get(PORT, "/snapshot")
+        lane1 = {u["id"]: u for u in snap["world"]["units"]}["lane1"]
+        mv = [o for o in lane1["orders"] if o.get("queue")]
+        assert mv[0]["state"] == "acknowledged" and \
+            mv[1]["state"] == "queued", mv
+        # rally point: set_rally on barracks applies to the next spawn
+        m = snap["world"]["map"]
+        aidx = [r["id"] for r in m["regions"]].index("alpha")
+        t = next(i for i, v in enumerate(m["tile_region"]) if v == aidx)
+        assert post(PORT, "/intent", {
+            "kind": "order", "to": "barracks", "order": "set_rally",
+            "id": "rally1", "x": t % m["w"], "y": t // m["w"]}) == 200
+        st, d = get(PORT, "/buildings/barracks")
+        assert d["rally"] and d["rally"]["region"] == "alpha", d["rally"]
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "run_subagent",
+            "payload": {"tool_input": {"profile": "implementer",
+                                       "task": "rallied job",
+                                       "is_background": True},
+                        "tool_response": {"agent_id": "rallied1"}}})
+        st, snap = get(PORT, "/snapshot")
+        ru = {u["id"]: u for u in snap["world"]["units"]}["rallied1"]
+        assert ru["lane"] == "alpha", ru
+        bb = {b["id"]: b for b in snap["world"]["buildings"]}["barracks"]
+        assert bb["rally"]["region"] == "alpha", bb
+        # idle worker list: hero idle (no events >120s) with no orders
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "run_subagent",
+            "ts": time.time() - 200,
+            "payload": {"tool_input": {"profile": "debugger",
+                                       "task": "afk", "is_background": True},
+                        "tool_response": {"agent_id": "idlehero"}}})
+        st, snap = get(PORT, "/snapshot")
+        iu = {u["id"]: u for u in snap["world"]["units"]}["idlehero"]
+        assert iu["status_live"] == "idle", iu
+        assert "idlehero" in snap["world"]["idle"], snap["world"]["idle"]
+        assert "lane1" not in snap["world"]["idle"]  # has queued orders
+        print("PASS orders queue (waypoints, ack state, rally, idle)")
+
         # #120 tick: old heartbeat-less hero decays running -> idle -> stale
         post(PORT, "/event", {
             "type": "hook.posttooluse", "tool": "run_subagent",

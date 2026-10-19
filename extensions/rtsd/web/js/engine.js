@@ -325,6 +325,33 @@
                      s.x - 10 * z, s.y - 10 * z, 20 * z, 20 * z);
         ctx.globalAlpha = 1;
       });
+      // queued order waypoints (#127): dashed path from the unit to each
+      // numbered flag; ghost (translucent) while the intent is pending,
+      // solid once the session acknowledged it
+      (st.waypoints || []).forEach(function (wp) {
+        var s = self.toScreen(wp.x, wp.y);
+        var us = self.toScreen(wp.ux, wp.uy);
+        var ghost = wp.state === "queued";
+        ctx.globalAlpha = ghost ? 0.4 : 0.95;
+        ctx.strokeStyle = "#58a6ff";
+        ctx.setLineDash([4 * z, 4 * z]);
+        ctx.beginPath(); ctx.moveTo(us.x, us.y);
+        ctx.lineTo(s.x, s.y); ctx.stroke();
+        ctx.setLineDash([]);
+        var fh = 12 * Math.max(z, 0.7);
+        ctx.fillStyle = "#58a6ff";
+        ctx.fillRect(s.x - 1, s.y - fh, 2, fh);
+        ctx.beginPath();
+        ctx.moveTo(s.x + 1, s.y - fh);
+        ctx.lineTo(s.x + 9 * z, s.y - fh * 0.75);
+        ctx.lineTo(s.x + 1, s.y - fh * 0.5);
+        ctx.fill();
+        ctx.fillStyle = pal.text;
+        ctx.font = "bold " + Math.max(9, 10 * z) + "px monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+        ctx.fillText(String(wp.n), s.x, s.y - fh - 1);
+        ctx.globalAlpha = 1;
+      });
       // event pings: expanding rings, color = kind (#124)
       (st.pings || []).forEach(function (p) {
         var age = (now - p.t0) / 1000;
