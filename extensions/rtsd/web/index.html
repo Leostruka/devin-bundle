@@ -48,8 +48,20 @@
   #portrait { flex:1; padding:8px 12px; overflow-y:auto; }
   #cmdcard { width:190px; padding:8px; border-left:1px solid var(--border);
              display:grid; grid-template-columns:repeat(3,1fr);
-             grid-auto-rows:38px; gap:4px; align-content:start; }
+             grid-auto-rows:34px; gap:4px; align-content:start;
+             overflow-y:auto; }
   #cmdcard button { font-size:10px; padding:2px; }
+  #cmdcard button:disabled { opacity:0.35; cursor:default; }
+  #cmdcard button.armed { border-color:var(--ok); color:var(--ok); }
+  #cmdcard .tgt { grid-column:1/-1; }
+  #grps { width:30px; padding:6px 3px; border-left:1px solid var(--border);
+          display:flex; flex-direction:column; gap:3px; align-items:center; }
+  .gpip { width:22px; height:22px; padding:0; font-size:10px;
+          border-radius:50%; }
+  .gpip.on { border-color:var(--ok); color:var(--ok); }
+  .slot { display:inline-block; border:1px solid var(--border);
+          border-radius:4px; padding:2px 6px; margin:2px; font-size:11px; }
+  .slot.pri { border-color:var(--warn); }
   #council { display:none; position:absolute; inset:0; z-index:10;
              background:rgba(0,0,0,0.55); }
   #council.on { display:flex; }
@@ -105,9 +117,12 @@
     <div id="help">
       <b>Controls</b><br>
       WASD/arrows/edge: pan &nbsp; wheel: zoom &nbsp; alt+drag: pan<br>
-      click: select unit/building &nbsp; minimap click: jump / ping<br>
-      minimap right-click: move order &nbsp; SPACE: cycle pings<br>
-      T: theme &nbsp; ?: this card<br>
+      click: select &nbsp; shift-click: add &nbsp; drag: box-select<br>
+      dbl-click: all of class on screen &nbsp; Tab: cycle subgroup<br>
+      Ctrl+0-9: assign group &nbsp; 0-9: recall &nbsp; tap x2: center<br>
+      minimap click: jump/ping &nbsp; minimap right-click: move order<br>
+      command card: Move/Stop/Hold/Patrol/Attack + kit abilities<br>
+      SPACE: cycle pings &nbsp; ESC: cancel target &nbsp; T: theme<br>
       Cmd: <code>/spawn &lt;profile&gt; &lt;task&gt;</code>,
       <code>@id msg</code>, or text = goal
     </div>
@@ -119,6 +134,7 @@
 <div id="bottom">
   <div id="mmwrap"><canvas id="mm"></canvas></div>
   <div id="portrait"></div>
+  <div id="grps"></div>
   <div id="cmdcard"></div>
 </div>
 <div id="cmd">

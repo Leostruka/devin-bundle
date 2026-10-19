@@ -24,7 +24,11 @@
     this.mouse = { x: 0, y: 0, in: false };
     this.map = null;                         // {w,h,tiles,fog,regions,poi}
     this.fps = { n: 0, t: 0, v: 0 };         // measured, shown in HUD
-    this.onPick = null;                      // cb(unit|null, worldPt)
+    this.onPick = null;                      // cb(unit|null, worldPt, ev)
+    this.onBox = null;                       // cb(rectScreen, ev) (#126)
+    this.onDblPick = null;                   // cb(unit|null, worldPt, ev)
+    this.box = null;                         // live drag-select rect (screen)
+    this._boxUp = false;                     // swallow the click after a box
     this._install();
   }
 
@@ -80,17 +84,34 @@
       }, { passive: false });
       cv.addEventListener("mousemove", function (e) {
         E.mouse.x = e.offsetX; E.mouse.y = e.offsetY; E.mouse.in = true;
+        if (box0) {                         // left-drag = box select (#126)
+          var dx = e.offsetX - box0.x, dy = e.offsetY - box0.y;
+          if (E.box || dx * dx + dy * dy > 16)
+            E.box = { x0: Math.min(box0.x, e.offsetX),
+                      y0: Math.min(box0.y, e.offsetY),
+                      x1: Math.max(box0.x, e.offsetX),
+                      y1: Math.max(box0.y, e.offsetY) };
+        }
       });
       cv.addEventListener("mouseleave", function () { E.mouse.in = false; });
       cv.addEventListener("click", function (e) {
+        if (E._boxUp) { E._boxUp = false; return; }
         if (!E.onPick || !E.map) return;
         E.onPick(E.pickUnit(e.offsetX, e.offsetY),
                  E.toWorld(e.offsetX, e.offsetY), e);
       });
+      cv.addEventListener("dblclick", function (e) {
+        if (!E.onDblPick || !E.map) return;
+        E.onDblPick(E.pickUnit(e.offsetX, e.offsetY),
+                    E.toWorld(e.offsetX, e.offsetY), e);
+      });
+      var box0 = null;                       // left-button drag origin
       var drag = null;
       cv.addEventListener("mousedown", function (e) {
         if (e.button === 1 || (e.button === 0 && e.altKey))
           drag = { x: e.clientX, y: e.clientY, cx: E.cam.x, cy: E.cam.y };
+        else if (e.button === 0)
+          box0 = { x: e.offsetX, y: e.offsetY };
       });
       window.addEventListener("mousemove", function (e) {
         if (!drag) return;
@@ -98,7 +119,15 @@
         E.cam.y = drag.cy - (e.clientY - drag.y) / E.cam.zoom;
         E.clampCam();
       });
-      window.addEventListener("mouseup", function () { drag = null; });
+      window.addEventListener("mouseup", function (e) {
+        drag = null;
+        if (E.box) {          // drag ended: emit the rectangle, eat the click
+          E._boxUp = true;
+          if (E.onBox) E.onBox(E.box, e);
+          E.box = null;
+        }
+        box0 = null;
+      });
     },
 
     // per-frame camera update: WASD/arrows + edge pan
@@ -134,6 +163,26 @@
         if (d < bd) { bd = d; best = b; }
       });
       return best;
+    },
+
+    // units whose sprite center falls inside a screen-space rect (#126)
+    unitsInBox: function (r) {
+      var self = this, out = [];
+      (this.units || []).forEach(function (u) {
+        var s = self.toScreen(u.x, u.y);
+        if (s.x >= r.x0 && s.x <= r.x1 && s.y >= r.y0 && s.y <= r.y1)
+          out.push(u);
+      });
+      return out;
+    },
+
+    // units currently inside the viewport (double-click class sweep, #126)
+    unitsInView: function () {
+      var self = this, W = this.cv.width, H = this.cv.height;
+      return (this.units || []).filter(function (u) {
+        var s = self.toScreen(u.x, u.y);
+        return s.x >= 0 && s.x <= W && s.y >= 0 && s.y <= H;
+      });
     },
 
     // ---- frame -----------------------------------------------------
@@ -291,6 +340,14 @@
         ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, 7); ctx.stroke();
         ctx.globalAlpha = 1; ctx.lineWidth = 1;
       });
+      // drag-select rectangle overlay (#126)
+      if (this.box) {
+        var b = this.box;
+        ctx.fillStyle = "rgba(88,166,255,0.10)";
+        ctx.fillRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
+        ctx.strokeStyle = pal.sel;
+        ctx.strokeRect(b.x0 + 0.5, b.y0 + 0.5, b.x1 - b.x0, b.y1 - b.y0);
+      }
       // fps meter
       var dt = performance.now() - t0;
       this.fps.n++; this.fps.t += dt;
