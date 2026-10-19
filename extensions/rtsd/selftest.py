@@ -47,6 +47,29 @@ def ws_read(s):
     return op, data.decode()
 
 
+def ws_drain(s, quiet=0.2):
+    """Discard all buffered WS frames (upsert backlog from earlier posts)."""
+    s.settimeout(quiet)
+    try:
+        while True:
+            ws_read(s)
+    except Exception:
+        pass
+    finally:
+        s.settimeout(5)
+
+
+def ws_until_hint(s, kinds, tries=8):
+    """Read upserts until one carries a hint of the expected kind."""
+    for _ in range(tries):
+        op, data = ws_read(s)
+        m = json.loads(data)
+        h = m.get("hint")
+        if m.get("type") == "upsert" and h and h.get("kind") in kinds:
+            return h
+    raise AssertionError("no hint of %s in %d frames" % (kinds, tries))
+
+
 def post(port, path, obj):
     c = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
     c.request("POST", path, json.dumps(obj), {"Content-Type": "application/json"})
@@ -266,6 +289,27 @@ def main():
         st, d = get(PORT, "/buildings/nope")
         assert st == 404
         print("PASS buildings (plots + real detail endpoints)")
+
+        # #124 minimap/camera: upserts carry a map ping hint; order intents
+        ws_drain(ws)
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "edit",
+            "payload": {"tool_input": {"file_path": pa, "lane": "A"},
+                        "tool_response": "ok2"}})
+        h = ws_until_hint(ws, ("file", "contested"))
+        assert len(h["xy"]) == 2, h
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "edit",
+            "payload": {"tool_input": {"file_path": pa, "lane": "B"},
+                        "tool_response": "ok3"}})
+        h = ws_until_hint(ws, ("contested",))
+        post(PORT, "/event", {
+            "type": "decision.created",
+            "payload": {"kind": "PermissionRequest"}})
+        h = ws_until_hint(ws, ("decision",))
+        assert post(PORT, "/intent", {"kind": "order", "to": "lane1",
+                    "order": "move", "x": 3, "y": 4}) == 200
+        print("PASS minimap pings (upsert hints) + order intent")
 
         # #120 tick: old heartbeat-less hero decays running -> idle -> stale
         post(PORT, "/event", {

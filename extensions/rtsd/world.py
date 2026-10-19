@@ -601,6 +601,8 @@ class World:
                         "activity": r["activity"],
                         "lanes": sorted(r["lanes"]),
                         "contested": contested,
+                        "owner": (max(r["lanes"], key=r["lanes"].get)
+                                  if r["lanes"] else None),
                         "capital": caps.get(rid),
                         "plots": plots.get(rid, []),
                         "files": self.layout["counts"].get(rid, 0)})
@@ -770,6 +772,44 @@ class World:
                                      "evidence": g["evidence"]})
             d["loot"] = loot[:20]
         return d
+
+    def event_hint(self, ev):
+        """Map-ping hint for a just-applied event: {kind, xy:[tx,ty]}.
+        Called by rtsd after apply() so file_lanes reflect this event."""
+        et = ev.get("type", "")
+        if et == "decision.created":
+            s = self.sites.get("town-hall")
+            return {"kind": "decision", "xy": s["xy"]} if s else None
+        if et != "hook.posttooluse":
+            return None
+        tool = ev.get("tool") or ""
+        ti = (ev.get("payload") or {}).get("tool_input") or {}
+        if tool in FILE_TOOLS:
+            p = _input_path(ti)
+            if not p:
+                return None
+            t = self.tile_of.get(p)
+            if t is None:
+                t = file_tile(self.layout, self.root, p)
+            kind = ("contested"
+                    if len(self.file_lanes.get(p, ())) > 1 else "file")
+            return {"kind": kind, "xy": [t % MAP_W, t // MAP_W]}
+        if tool in ("run_subagent", "read_subagent"):
+            kind = "spawn"
+            if tool == "read_subagent":
+                resp = (ev.get("payload") or {}).get("tool_response")
+                txt = resp if isinstance(resp, str) else json.dumps(
+                    resp or "")
+                if "fail" not in txt.lower() and "error" not in txt.lower():
+                    return None
+                kind = "fail"
+            aid = str(ti.get("agent_id", ""))
+            u = self.units.get(aid, {})
+            lane = str(u.get("lane") or ti.get("lane") or "")
+            reg = lane if lane in self.layout["capitals"] else "root"
+            return {"kind": kind,
+                    "xy": list(self.layout["capitals"][reg])}
+        return None
 
     def _quests(self):
         qs = scan_issues(self.root)

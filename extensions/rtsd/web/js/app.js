@@ -20,6 +20,8 @@
     selB: null,              // selected building id
     bDetail: null,           // fetched /buildings/<id> payload
     lastEventPos: null,      // {x,y} for spacebar jump
+    pings: [],               // event pings {x,y,kind,t0} (#124)
+    pingIdx: 0,
     demo: false,
     feed: [],                // raw recent events (comms feed lands in #128)
     barks: {}
@@ -59,9 +61,24 @@
                                     region: r };
     });
     return { w: W, h: H, data: data, sig: m.sig, caps: caps,
+             tint: laneTint(m),
              fog: new Uint8Array(m.fog || n),
              mark: new Uint8Array(m.mark || n),
              pois: m.pois || [] };
+  }
+
+  // lane-ownership overlay per tile; recomputed each snapshot because
+  // region owners shift as lanes touch files (#124)
+  function laneTint(m) {
+    var tint = new Array(m.w * m.h).fill(null);
+    (m.regions || []).forEach(function (r, ri) {
+      if (!r.owner) return;
+      var col = "hsla(" + (Engine.hash(String(r.owner)) % 360) +
+                ",70%,55%,0.22)";
+      for (var i = 0; i < tint.length; i++)
+        if (m.tile_region[i] === ri) tint[i] = col;
+    });
+    return tint;
   }
 
   // Offline/demo fallback: same shape as serverMap, synthesized locally.
@@ -168,6 +185,7 @@
       state.map.fog = new Uint8Array(m2.fog || []);
       state.map.mark = new Uint8Array(m2.mark || []);
       state.map.pois = m2.pois || [];
+      state.map.tint = laneTint(m2);
     } else {
       var regs = m2 ? m2.regions : [];
       var key = regs.map(function (r) { return r.id; }).join(",");
@@ -200,7 +218,7 @@
         var m = JSON.parse(e.data);
         if (m.type === "snapshot") { got = true; applySnapshot(m.snapshot); }
         else if (m.type === "upsert") {
-          got = true; refresh(); noteEvent(m.event);
+          got = true; refresh(); noteEvent(m.event); pushPing(m.hint);
         } else if (m.type === "tick") { got = true; applyTick(m); }
       };
       ws.onerror = function () { ws.close(); };
@@ -237,6 +255,20 @@
     state.world.units = state.world.units.filter(function (u) {
       return !u._gone; });
     syncRenderables(); renderPanels();
+  }
+
+  var PING_TTL_MS = 6000;
+  function pushPing(h) {
+    if (!h || !h.xy) return;
+    state.pings.push({ x: (h.xy[0] + 0.5) * TILE, y: (h.xy[1] + 0.5) * TILE,
+                       kind: h.kind, t0: performance.now() });
+    if (state.pings.length > 8) state.pings.shift();
+  }
+  function livePings() {
+    var now = performance.now();
+    state.pings = state.pings.filter(function (p) {
+      return now - p.t0 < PING_TTL_MS; });
+    return state.pings;
   }
 
   function noteEvent(ev) {
@@ -487,20 +519,51 @@
     }
   });
 
-  el("mm").addEventListener("click", function (e) {
+  function mmPos(e) {
     var r = e.target.getBoundingClientRect();
-    var p = eng.mmToWorld(e.target, { tiles: state.map },
-      e.clientX - r.left, e.clientY - r.top);
+    return { sx: e.clientX - r.left, sy: e.clientY - r.top, r: r };
+  }
+  // click: a ping under the cursor wins (jump to alert), else move camera
+  el("mm").addEventListener("click", function (e) {
+    var m = mmPos(e), mm = e.target;
+    var hit = null;
+    livePings().forEach(function (p) {
+      var px = p.x / TILE / state.map.w * m.r.width;
+      var py = p.y / TILE / state.map.h * m.r.height;
+      if (Math.hypot(px - m.sx, py - m.sy) < 10) hit = p;
+    });
+    if (hit) { eng.centerOn(hit.x, hit.y); return; }
+    var p = eng.mmToWorld(mm, { tiles: state.map }, m.sx, m.sy);
     eng.centerOn(p.x, p.y);
+  });
+  // right-click: move-intent for the selected unit (real /intent order)
+  el("mm").addEventListener("contextmenu", function (e) {
+    e.preventDefault();
+    if (!state.sel) return;
+    var m = mmPos(e);
+    var p = eng.mmToWorld(e.target, { tiles: state.map }, m.sx, m.sy);
+    var tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE);
+    RTS.intent({ kind: "order", to: state.sel, order: "move",
+                 x: tx, y: ty });
+    state.pings.push({ x: (tx + .5) * TILE, y: (ty + .5) * TILE,
+                       kind: "order", t0: performance.now() });
+    logFeed("order: " + state.sel + " -> " + tx + "," + ty);
   });
 
   window.addEventListener("keydown", function (e) {
     if (e.target && e.target.tagName === "INPUT") return;
     var k = e.key.toLowerCase();
     if (k === "t") { Theme.toggle(); renderPanels(); }
-    if (k === " " && state.lastEventPos) {
+    if (k === " ") {               // last-alert: cycle recent pings
       e.preventDefault();
-      eng.centerOn(state.lastEventPos.x, state.lastEventPos.y);
+      var ps = livePings();
+      if (ps.length) {
+        var p = ps[state.pingIdx % ps.length];
+        state.pingIdx++;
+        eng.centerOn(p.x, p.y);
+      } else if (state.lastEventPos) {
+        eng.centerOn(state.lastEventPos.x, state.lastEventPos.y);
+      }
     }
     if (k === "?") el("help").classList.toggle("on");
   });
@@ -529,10 +592,11 @@
     eng.step(dt);
     var th = Theme.get();
     eng.render({ tiles: state.map, fog: state.map && state.map.fog,
-      pois: state.map && state.map.pois,
+      pois: state.map && state.map.pois, pings: livePings(),
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
-      fog: state.map && state.map.fog, units: state.units }, th);
+      fog: state.map && state.map.fog, units: state.units,
+      buildings: state.buildings, pings: state.pings }, th);
     frames++; ft += dt;
     if (frames >= 60) {
       el("fps").textContent = Math.round(frames / ft) + "fps" +

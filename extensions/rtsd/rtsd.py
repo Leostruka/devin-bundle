@@ -67,9 +67,11 @@ def append_event(ev):
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(ev, ensure_ascii=False) + "\n")
         project_fleet(ev)
+        hint = None
         if STATE["world"] is not None:
             STATE["world"].apply(ev)
-    broadcast({"type": "upsert", "event": ev})
+            hint = STATE["world"].event_hint(ev)
+    broadcast({"type": "upsert", "event": ev, "hint": hint})
 
 
 def _find_agent_id(resp):
@@ -391,7 +393,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/intent":
             it = self._body()
             kind = it.get("kind")
-            if kind not in ("spawn", "message", "goal", "answer"):
+            if kind not in ("spawn", "message", "goal", "answer",
+                            "order"):
                 return self._json(400, {"error": "bad intent kind"})
             iid = str(it.setdefault("id", "i%d" % int(time.time() * 1000)))
             if not safe_name(iid):
