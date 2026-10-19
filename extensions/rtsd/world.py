@@ -391,6 +391,42 @@ def profile_kit(root, profile):
     return kit
 
 
+def profile_model(root, profile):
+    """Model id pinned in the profile's frontmatter (`model: swe-2-*`),
+    else None (falls back to the config subagent pin)."""
+    text = _profile_sheet(root, profile)
+    m = re.search(r"^model:\s*([A-Za-z0-9_.-]+)", text, re.M)
+    return m.group(1) if m else None
+
+
+# model effort -> unit tier badge (GDD: Medium=Footman, High=Commander,
+# Max=Knight); resolved from data/bundle-models.json, not hardcoded ids
+def model_tier(root, model_id):
+    """Tier badge for a model id per data/bundle-models.json effort."""
+    try:
+        with open(os.path.join(root, "data", "bundle-models.json"),
+                  encoding="utf-8") as f:
+            for m in json.load(f).get("models", []):
+                if m.get("id") == model_id:
+                    return {"medium": "Footman", "high": "Commander",
+                            "max": "Knight"}.get(m.get("effort"))
+    except Exception:
+        pass
+    return None
+
+
+def config_subagent_model(root):
+    """`agent.subagent_model` from config.json (the Armory pin); None when
+    the key is absent so callers fall back to the registry default."""
+    try:
+        with open(os.path.join(root, "config.json"),
+                  encoding="utf-8") as f:
+            cfg = json.load(f)
+        return (cfg.get("agent") or {}).get("subagent_model")
+    except Exception:
+        return None
+
+
 def profile_tier(root, profile):
     """Model tier from TOOLS-MAP (Medium->Footman, Max->Knight)."""
     tm = os.path.join(root, ".devin", "docs", "TOOLS-MAP.md")
@@ -403,6 +439,215 @@ def profile_tier(root, profile):
     except OSError:
         pass
     return "Footman"
+
+
+# ---- spellbook / tech tree (#132) ----
+# School grouping from GDD 1.4 (the 83-spell, 6-school table). The spell
+# list itself always comes from the real skills/ dir scan: names on disk
+# that the GDD table does not place land in "Unsorted" so no real skill is
+# hidden and none are invented.
+SKILL_SCHOOLS = {
+    "Command": ["ask-bundle", "dispatching-parallel-agents", "execution",
+                "gates", "grilling", "handoff", "intake", "learn-mode",
+                "planning", "playbook", "project-orchestrator",
+                "scheduled-turns", "skill-discovery", "wizard"],
+    "War": ["firmware-probe", "mobile-probe", "net-probe", "re-binary",
+            "red-team", "scan", "web-probe", "wireless-probe"],
+    "Lore": ["ai-coding-dictionary", "ai-tools", "context-hygiene",
+             "context7", "data-analyst", "fact-check", "jira",
+             "knowledge-modeling", "memory-management",
+             "obsidian-workflow", "research", "wait-what"],
+    "Craft": ["a11y-audit", "api-spec", "architecture",
+              "architecture-diagrams", "brag", "code-review", "database",
+              "debugging", "deploy", "devin-config", "docker",
+              "e2e-testing", "finishing-a-development-branch", "gh",
+              "git-workflows", "i18n", "impeccable",
+              "observability-quality", "performance", "pr",
+              "project-bootstrap", "prompt-compiler", "prototype",
+              "retro", "security", "self-improvement", "setup-pre-commit",
+              "teach", "testing", "writing-skills"],
+    "Creation": ["ai3d-gen", "animation-direction", "ascii-art",
+                 "creative-engineering", "humanizer", "image-forensics",
+                 "media-tools", "mesh-utils", "operate-blender",
+                 "operate-godot", "scrape-tools", "social-midia",
+                 "youtube-fetcher", "mcp-governance"],
+    "Summoning": ["computer-use", "cu-realtime", "implement-laya",
+                  "laya-orchestrator", "system-control"],
+}
+
+
+def scan_skills(root):
+    """Real skill names = directories under skills/ (SKILL.md inside)."""
+    sdir = os.path.join(root, "skills")
+    out = []
+    if not os.path.isdir(sdir):
+        return out
+    for name in sorted(os.listdir(sdir)):
+        if os.path.isdir(os.path.join(sdir, name)):
+            out.append(name)
+    return out
+
+
+_SKILL_KEYS = ("skill", "name", "skill_name", "id", "query", "args")
+_SKILL_VERBS = {"invoke", "list", "search"}
+
+
+def skill_name_of(ti):
+    """Skill name from a `skill` tool_input ({command:'invoke', ...})."""
+    if not isinstance(ti, dict):
+        return None
+    for k in _SKILL_KEYS:
+        v = ti.get(k)
+        if isinstance(v, str) and v and v not in _SKILL_VERBS:
+            return v.lstrip("/").strip() or None
+    v = ti.get("command")
+    if isinstance(v, str) and v and v not in _SKILL_VERBS:
+        return v.lstrip("/").strip() or None
+    return None
+
+
+def tech_tree(root, casts):
+    """Spellbook overlay (#132): real skills grouped by school; cast state
+    (casts/last_cast) comes from hook.posttooluse events tool=='skill'."""
+    known = scan_skills(root)
+    placed = {}
+    for school, names in SKILL_SCHOOLS.items():
+        for n in names:
+            placed[n] = school
+    schools = [{"id": s, "spells": []} for s in SKILL_SCHOOLS]
+    extra = {"id": "Unsorted", "spells": []}
+    by_school = {s["id"]: s for s in schools}
+    for name in known:
+        c = casts.get(name) or {}
+        spell = {"name": name,
+                 "path": os.path.join("skills", name, "SKILL.md"),
+                 "casts": c.get("n", 0),
+                 "last_cast": c.get("last")}
+        school = placed.get(name)
+        (by_school[school]["spells"] if school
+         else extra["spells"]).append(spell)
+    if extra["spells"]:
+        schools.append(extra)
+    return schools
+
+
+def armory(root):
+    """Armory ledger (#132): model tiers from data/bundle-models.json and
+    the live subagent pin: config.json agent.subagent_model wins (Alt+Enter
+    session picks are session-scoped and never persisted, so the pin is
+    the honest upgrade state)."""
+    tiers, default = [], None
+    try:
+        with open(os.path.join(root, "data", "bundle-models.json"),
+                  encoding="utf-8") as f:
+            cfg = json.load(f)
+        default = cfg.get("default_subagent_model")
+        for m in cfg.get("models", []):
+            tiers.append({"id": m.get("id"), "name": m.get("name"),
+                          "effort": m.get("effort"),
+                          "role": m.get("role"),
+                          "window": m.get("context_window"),
+                          "cost_tier": m.get("cost_tier")})
+    except Exception:
+        pass
+    pin = config_subagent_model(root)
+    return {"subagent_model": pin or default,
+            "pin": "config.json agent.subagent_model" if pin
+                   else "data/bundle-models.json default",
+            "tiers": tiers}
+
+
+# Memory doctrines (#132): the 8 RAG chunking strategies as Library
+# research. in_use is ONLY set when a real artifact proves it (a memory
+# script implementing the strategy or memory files it operates on);
+# otherwise the doctrine shows as un-researched with empty evidence.
+def _memory_sources(root):
+    sdir = os.path.join(root, "scripts")
+    src = ""
+    if os.path.isdir(sdir):
+        for fn in sorted(os.listdir(sdir)):
+            if fn.startswith("memory-") and fn.endswith(".py"):
+                try:
+                    src += open(os.path.join(sdir, fn),
+                                encoding="utf-8").read()
+                except OSError:
+                    pass
+    mdir = os.path.join(root, ".devin", "memory")
+    notes = [fn for fn in os.listdir(mdir)
+             if fn.endswith(".md")] if os.path.isdir(mdir) else []
+    return src, notes, mdir
+
+
+def doctrines(root):
+    src, notes, mdir = _memory_sources(root)
+
+    def has(pat):
+        return bool(re.search(pat, src, re.I))
+
+    def ev_for(pat):
+        """scripts/memory-*.py files whose source matches the probe."""
+        sdir = os.path.join(root, "scripts")
+        if not os.path.isdir(sdir):
+            return []
+        ev = []
+        for fn in sorted(os.listdir(sdir)):
+            if not (fn.startswith("memory-") and fn.endswith(".py")):
+                continue
+            try:
+                body = open(os.path.join(sdir, fn),
+                            encoding="utf-8").read()
+            except OSError:
+                continue
+            if re.search(pat, body, re.I):
+                ev.append(os.path.join("scripts", fn))
+        return ev
+
+    found = {}
+    # document-level: scripts retrieve whole note files keyed by cues
+    doc_ev = [os.path.join("scripts", fn) for fn in
+              ("memory-retrieval.py", "memory-post-edit.py")
+              if os.path.isfile(os.path.join(root, "scripts", fn))]
+    doc_use = bool(doc_ev and notes and has(r"cues?"))
+    found["document"] = (doc_use, doc_ev + [
+        "%s (%d notes)" % (os.path.join(".devin", "memory"), len(notes))]
+        if doc_use else [])
+    # hierarchical: a MOC index file over the notes
+    moc = os.path.join(mdir, "MOC.md")
+    hier = os.path.isfile(moc) and bool(notes)
+    found["hierarchical"] = (hier, [os.path.join(
+        ".devin", "memory", "MOC.md")] if hier else [])
+    probes = {"fixed": r"chunk_?size|fixed.?size",
+              # recursive-splitting probe must not trip on glob's
+              # `recursive=True` kwarg - require split/chunk context
+              "recursive": r"recursive[-_ ]?(split|chunk)",
+              "semantic": r"embed|vector|cosine|semantic",
+              "llm": r"llm|prompt.*chunk",
+              "agentic": r"agentic",
+              "late": r"late.?chunk"}
+    for did, pat in probes.items():
+        ev = ev_for(pat)
+        found[did] = (bool(ev), ev)
+    labels = [("fixed", "Fixed-size chunking"),
+              ("recursive", "Recursive splitting"),
+              ("document", "Document-level chunks"),
+              ("semantic", "Semantic/embedding chunking"),
+              ("llm", "LLM-guided chunking"),
+              ("agentic", "Agentic chunking"),
+              ("late", "Late chunking"),
+              ("hierarchical", "Hierarchical index")]
+    return [{"id": did, "label": label,
+             "in_use": found[did][0], "evidence": found[did][1]}
+            for did, label in labels]
+
+
+def profile_skills(root, profile):
+    """A hero's spellbook = real skills whose names are literally invoked
+    in the profile sheet (agents/<profile>.md 'Skills to invoke' etc)."""
+    text = _profile_sheet(root, profile).lower()
+    if not text:
+        return []
+    return [n for n in scan_skills(root)
+            if re.search(r"`?" + re.escape(n) + r"`?", text)]
 
 
 def load_layout(root):
@@ -461,6 +706,12 @@ class World:
                     "default_subagent_model", self._submodel)
         except Exception:
             pass
+        # #132 Armory: config.json agent.subagent_model pins the live
+        # subagent model over the registry default
+        pin = config_subagent_model(root)
+        if pin:
+            self._submodel = pin
+        self.skill_casts = {}      # skill name -> {n, last} (#132)
         self._thresholds = load_thresholds(root)
         self._live = {}            # unit id -> last computed live status
         self.layout = load_layout(root)   # static terrain (map.json)
@@ -608,6 +859,12 @@ class World:
         elif tool == "kill_shell":
             sid = ti.get("shell_id")
             self.units.pop("sh-" + str(sid), None)
+        elif tool == "skill":                    # #132: spell cast
+            nm = skill_name_of(ti)
+            if nm:
+                c = self.skill_casts.setdefault(nm, {"n": 0, "last": 0})
+                c["n"] += 1
+                c["last"] = ts
 
     def _spawn_hero(self, ti, resp, ts):
         aid = _agent_id(resp) or "fg-%d" % int(ts * 1000)
@@ -623,8 +880,14 @@ class World:
         self.units[aid] = {
             "id": aid, "kind": "hero", "profile": profile, "cls": cls,
             "name": "%s-%d" % (cls, self._class_seq[cls]),
-            "model": self._submodel,
-            "tier": profile_tier(self.root, profile),
+            # model = the hero's own profile pin (agents/<p>.md `model:`),
+            # else the config/registry subagent pin (#132 armory tier)
+            "model": profile_model(self.root, profile) or self._submodel,
+            # tier badge follows the resolved model's registry effort;
+            # TOOLS-MAP is the fallback when the model id is unknown
+            "tier": model_tier(self.root, profile_model(self.root, profile)
+                               or self._submodel)
+                    or profile_tier(self.root, profile),
             "kit": profile_kit(self.root, profile),
             "lane": lane,
             "task": (ti.get("task") or "")[:120],
@@ -883,6 +1146,11 @@ class World:
                 for fn in sorted(os.listdir(mem))
                 if os.path.isfile(os.path.join(mem, fn))
             ] if os.path.isdir(mem) else []
+            # #132: tech tree + doctrines read the same real surfaces as
+            # the spellbook overlay (skills/, memory scripts)
+            d["spellbook"] = tech_tree(root, self.skill_casts)
+            d["doctrines"] = doctrines(root)
+            d["armory"] = armory(root)
         elif bid == "watchtower":
             lgs = []
             for lg in scan_ledgers(root):
@@ -1058,6 +1326,18 @@ class World:
                 nm = "Shell-" + str(sid)[-4:]
                 return self._line(ts, "position", nm, "Minion",
                                   "sh-" + str(sid), "%s dismissed" % nm)
+            if tool == "skill":                  # #132: spell cast line
+                nm = skill_name_of(ti)
+                if not nm:
+                    return None
+                lane = str(ti.get("lane") or payload.get("session_id")
+                           or "cmdr")
+                uid, name, cls = self._lane_speaker(lane)
+                c = self.skill_casts.get(nm) or {}
+                return self._line(ts, "spell", name, cls, uid,
+                                  "casts %s%s" % (nm, " x%d" % c["n"]
+                                                  if c.get("n", 0) > 1
+                                                  else ""))
             if tool in ("get_output", "write_to_process"):
                 sid = ti.get("shell_id")
                 if sid and ("sh-" + str(sid)) in self.units:
@@ -1168,6 +1448,9 @@ class World:
             return None
         tool = ev.get("tool") or ""
         ti = (ev.get("payload") or {}).get("tool_input") or {}
+        if tool == "skill":                      # #132: ping the Library
+            s = self.sites.get("library")
+            return {"kind": "spell", "xy": s["xy"]} if s else None
         if tool in FILE_TOOLS:
             p = _input_path(ti)
             if not p:
@@ -1395,6 +1678,13 @@ class World:
                         (u["mana"] / 100.0 * self._window) / max(1, avg))
                 else:
                     u["turns_left"] = None
+                # #132 spellbook: skills the profile sheet names as its
+                # own kit; innate abilities are u["kit"] (allowed-tools)
+                u["spellbook"] = [{"name": n,
+                                   "casts": (self.skill_casts.get(n) or {})
+                                   .get("n", 0)}
+                                  for n in profile_skills(
+                                      self.root, u.get("profile") or "")]
             units.append(u)
         # gold = est tokens spent = tool-output tokens + 200/call overhead
         # (same accounting as scripts/context-pressure.py)
@@ -1452,6 +1742,12 @@ class World:
                                          "clear": clr},
                           "window": self._window},
             "quests": quests,
+            # #132 tech tree: real skills grouped by school with cast
+            # state, armory model tiers, memory doctrines - all derived
+            # from files + the event-sourced skill_casts ledger
+            "tech": {"schools": tech_tree(self.root, self.skill_casts),
+                     "armory": armory(self.root),
+                     "doctrines": doctrines(self.root)},
             "map": {"root": self.root, "sig": self.layout["sig"],
                     "w": MAP_W, "h": MAP_H,
                     "tile_region": self.layout["tile_region"],

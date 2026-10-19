@@ -137,6 +137,25 @@
   .inv { display:inline-block; width:14px; height:14px; line-height:14px;
          text-align:center; border:1px solid var(--warn); border-radius:3px;
          color:var(--warn); margin-right:2px; font-size:10px; }
+  #techtree { display:none; position:absolute; inset:24px; z-index:11;
+    background:rgba(13,17,23,0.96); border:1px solid var(--warn);
+    border-radius:8px; padding:14px; overflow-y:auto; }
+  #techtree.on { display:block; }
+  #techtree h2 { color:var(--warn); font-size:14px; margin-bottom:8px; }
+  .tcols { display:flex; flex-wrap:wrap; gap:10px; }
+  .tschool { min-width:170px; flex:1; }
+  .tschool h3, .tsect h3 { font-size:10px; text-transform:uppercase;
+    color:var(--dim); letter-spacing:1px; margin:6px 0 4px;
+    border-bottom:1px solid var(--border); }
+  .tsect { margin-top:10px; }
+  .spell { padding:1px 6px; margin:1px 0; font-size:11px;
+    border-left:3px solid var(--border); color:var(--dim); }
+  .spell.cast { border-color:var(--ok); color:var(--fg);
+    text-shadow:0 0 6px var(--ok); }
+  .spell.known { border-color:var(--warn); color:var(--fg);
+    cursor:pointer; }
+  .spell.known:hover { background:#21262d; }
+  .fl.k-spell .fw { color:#bc8cff; }
   #help { display:none; position:absolute; top:40px; right:320px; z-index:20;
           background:var(--panel); border:1px solid var(--warn);
           border-radius:8px; padding:12px; font-size:11px; max-width:260px; }
@@ -168,6 +187,7 @@
     <div id="council"><div id="councilBox">
       <h2>WAR COUNCIL</h2><div id="decs"></div><div id="decsStack"></div>
     </div></div>
+    <div id="techtree"></div>
     <div id="help">
       <b>Controls</b><br>
       WASD/arrows/edge: pan &nbsp; wheel: zoom &nbsp; alt+drag: pan<br>
@@ -181,6 +201,7 @@
       quest log: click = jump to marker, drag onto hero = assign<br>
       idle:N cycles idle heroes &nbsp; waypoint flags = order queue<br>
       SPACE: cycle pings &nbsp; ESC: cancel target &nbsp; T: theme<br>
+      K: tech tree (skills as spells, armory tiers, library doctrines)<br>
       Cmd: <code>/spawn &lt;profile&gt; &lt;task&gt;</code>,
       <code>@unit msg</code> (name or id steers that hero), text = goal<br>
       feed: click a line to jump to its unit; chips filter by type/class

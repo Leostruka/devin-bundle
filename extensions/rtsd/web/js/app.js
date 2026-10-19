@@ -52,7 +52,7 @@
   // UI-side only and never pretend to be agent traffic.
   var FEED_KINDS = ["spawn", "debrief", "position", "note", "council",
                     "order", "steering", "raven", "quest", "econ",
-                    "local"];
+                    "spell", "local"];
 
   function logFeed(m) {   // local UI echo (orders, groups, demo notice)
     pushFeed({ t: Date.now() / 1000, kind: "local", who: "UI",
@@ -797,6 +797,68 @@
     el("idleBtn").textContent = "idle:" + nIdle;
     el("idleBtn").disabled = !nIdle;
     el("themeBtn").textContent = "theme: " + th.name;
+    renderTech(u);
+  }
+
+  // ---- tech tree / spellbook overlay (#132) ----------------------------
+  // Every row is a real skill dir under skills/; cast state comes from
+  // world.tech (event-sourced skill_casts). Grey = known but never cast,
+  // glow = cast this session. Spells a selected hero knows (its profile
+  // sheet names them) are castable: click posts a real order intent
+  // {order:"cast", skill} that suggests the skill in the next order text.
+
+  function renderTech(u) {
+    var box = el("techtree");
+    if (!box.classList.contains("on")) return;
+    var tech = (state.world || {}).tech;
+    if (!tech) {
+      box.innerHTML = "<h2>TECH TREE</h2><span class='meta'>" +
+        "no daemon data</span>";
+      return;
+    }
+    var raw = u && u.unit ? u.unit : u;
+    var book = (raw && raw.spellbook || []).map(function (s) {
+      return s.name; });
+    var h = "<h2>TECH TREE <span class='meta'>K closes" +
+      (raw ? " - casting for " + esc(raw.name || raw.id) :
+       " - select a hero to cast") + "</span></h2>";
+    h += "<div class='tcols'>";
+    (tech.schools || []).forEach(function (sc) {
+      h += "<div class='tschool'><h3>" + esc(sc.id) + " (" +
+        sc.spells.length + ")</h3>";
+      sc.spells.forEach(function (sp) {
+        var known = book.indexOf(sp.name) >= 0;
+        h += "<div class='spell" + (sp.casts ? " cast" : "") +
+          (known ? " known" : "") + "'" +
+          (known ? " data-cast='" + esc(sp.name) + "'" : "") +
+          " title='" + esc(sp.path) +
+          (sp.casts ? " - cast " + sp.casts + "x" : " - unresearched") +
+          (known ? " - click to suggest cast" : "") + "'>" +
+          esc(sp.name) +
+          (sp.casts ? " <b>" + sp.casts + "</b>" : "") + "</div>";
+      });
+      h += "</div>";
+    });
+    h += "</div>";
+    var a = tech.armory || {};
+    h += "<div class='tsect'><h3>ARMORY</h3>" +
+      "<span class='meta'>subagent pin: " + esc(a.subagent_model || "-") +
+      " (" + esc(a.pin || "") + ")</span>" +
+      (a.tiers || []).map(function (t) {
+        return "<div class='spell" +
+          (t.id === a.subagent_model ? " cast" : "") + "'>" +
+          esc(t.name || t.id) + " <span class='meta'>" +
+          esc(t.effort || "") + " " + esc(t.role || "") + " " +
+          (t.window | 0) + "tok</span></div>";
+      }).join("") + "</div>";
+    h += "<div class='tsect'><h3>LIBRARY DOCTRINES</h3>" +
+      (tech.doctrines || []).map(function (d) {
+        return "<div class='spell" + (d.in_use ? " cast" : "") +
+          "' title='" + esc((d.evidence || []).join(", ")) + "'>" +
+          esc(d.label) + " <span class='meta'>" +
+          (d.in_use ? "researched" : "not in use") + "</span></div>";
+      }).join("") + "</div>";
+    box.innerHTML = h;
   }
 
   function rows(list, fmt) {
@@ -840,6 +902,21 @@
         return "<div>" + esc(e.file) + " <span class='meta'>" +
           e.size + "b</span></div>";
       });
+      // #132: tech tree summary + doctrines (K opens the full overlay)
+      var nsp = 0, ncast = 0;
+      (d.spellbook || []).forEach(function (sc) {
+        sc.spells.forEach(function (sp) { nsp++;
+          if (sp.casts) ncast++; }); });
+      h += "<div class='meta'>spellbook: " + ncast + "/" + nsp +
+        " spells cast this session (K for tech tree)</div>";
+      h += rows(d.doctrines, function (x) {
+        return "<div>" + esc(x.label) + " <span class='meta'>" +
+          (x.in_use ? "researched: " + esc(x.evidence.join(", "))
+                    : "not in use") + "</span></div>";
+      });
+      var a = d.armory || {};
+      h += "<div class='meta'>armory: " + esc(a.subagent_model || "-") +
+        " (" + esc(a.pin || "") + ")</div>";
     } else if (d.id === "watchtower") {
       h += rows(d.ledgers, function (l) {
         return "<div>" + esc(l.id) + " <span class='meta'>" + l.pass +
@@ -918,6 +995,12 @@
         ? "<div class='meta'>burn ~" + (u.burn | 0) + " tok" +
           (u.turns_left == null ? "" :
             "  |  ~" + u.turns_left + " turns left") + "</div>"
+        : "") +
+      // #132 spellbook: skills named in the profile sheet
+      ((u.spellbook || []).length
+        ? "<div class='meta'>spells: " + u.spellbook.map(function (s) {
+            return esc(s.name) + (s.casts ? "(" + s.casts + ")" : "");
+          }).join(", ") + "</div>"
         : "") +
       (kit ? " <span class='meta'>kit:</span>" + kit : "") +
       (u.quest ? "<div class='meta'>quest: " + esc(u.quest) + "</div>"
@@ -1031,6 +1114,14 @@
                    label, has && !multi,
                    ABILITY_HINT[label] || name);
     });
+    // #132 hero spellbook: skills the profile sheet names, as cast
+    // buttons; clicking posts an order intent {order:"cast", skill} that
+    // suggests invoking the skill in the next order text
+    ((raw && raw.spellbook) || []).forEach(function (s) {
+      h += cardBtn("cast:" + s.name, "*" + s.name.slice(0, 8), !multi,
+                   "cast " + s.name + " (skills/" + s.name + "/SKILL.md)" +
+                   (s.casts ? " - cast " + s.casts + "x" : ""));
+    });
     card.innerHTML = h;
   }
 
@@ -1135,6 +1226,8 @@
       else issueOrder(sp.id, {});
     } else if (act.indexOf("ability:") === 0) {
       issueOrder("ability", { ability: act.slice(8) });
+    } else if (act.indexOf("cast:") === 0) {       // #132 spell cast
+      issueOrder("cast", { skill: act.slice(5) });
     } else if (act === "patrol") {
       issueOrder("patrol", { lane: (raw && raw.lane) || "" });
     } else {
@@ -1294,6 +1387,16 @@
     if (poi) eng.centerOn((poi.x + .5) * TILE, (poi.y + .5) * TILE);
   });
 
+  // tech tree (#132): clicking a spell the selected hero knows posts the
+  // same {order:"cast", skill} intent as its command-card spell slot
+  el("techtree").addEventListener("click", function (e) {
+    var d = e.target.closest("[data-cast]");
+    if (!d || !state.selAll.length) return;
+    issueOrder("cast", { skill: d.dataset.cast });
+    logFeed("cast: " + d.dataset.cast + " -> " + state.selAll.join(","));
+    renderPanels();
+  });
+
   // idle-worker button (#127): count from the world snapshot's idle list
   // (heroes idle/stale with no active order); click cycles + centers each.
   var idleIdx = 0;
@@ -1313,6 +1416,8 @@
     var k = e.key.toLowerCase();
     if (k === "escape" && state.pending) {     // cancel targeted order
       state.pending = null; renderPanels(); return; }
+    if (k === "escape" && el("techtree").classList.contains("on")) {
+      el("techtree").classList.remove("on"); return; }
     if (k === "tab" && state.selAll.length > 1) {  // subgroup cycle
       e.preventDefault();
       var i = state.selAll.indexOf(state.sel);
@@ -1330,6 +1435,10 @@
         }
       } else recallGroup(n);
       return;
+    }
+    if (k === "k") {                       // #132 tech tree overlay
+      el("techtree").classList.toggle("on");
+      renderPanels(); return;
     }
     if (k === "t") { Theme.toggle(); renderPanels(); }
     if (k === " ") {               // last-alert: cycle recent pings

@@ -91,6 +91,34 @@ def main():
         os.makedirs(os.path.join(root, d), exist_ok=True)
     with open(os.path.join(root, "alpha", "f.py"), "w") as f:
         f.write("x = 1\n")
+    # #132 fixtures must exist before the daemon builds its map layout:
+    # new top-level dirs become regions, so creating them mid-test would
+    # diverge the replayed world from the live one
+    for s in ("testing", "debugging", "gates", "zz-unsorted"):
+        sd = os.path.join(root, "skills", s)
+        os.makedirs(sd, exist_ok=True)
+        with open(os.path.join(sd, "SKILL.md"), "w") as f:
+            f.write("---\nname: %s\n---\n" % s)
+    os.makedirs(os.path.join(root, "agents"), exist_ok=True)
+    with open(os.path.join(root, "agents", "caster.md"), "w") as f:
+        f.write("---\nname: caster\nmodel: swe-2-medium\n---\n"
+                "Skills to invoke: `testing` `gates`\n")
+    os.makedirs(os.path.join(root, "data"), exist_ok=True)
+    with open(os.path.join(root, "data", "bundle-models.json"), "w") as f:
+        json.dump({"default_subagent_model": "swe-2-max",
+                   "models": [
+                       {"id": "swe-2-medium", "effort": "medium",
+                        "context_window": 100},
+                       {"id": "swe-2-max", "effort": "max",
+                        "context_window": 100,
+                        "is_default_subagent": True}]}, f)
+    with open(os.path.join(root, "config.json"), "w") as f:
+        json.dump({"agent": {"subagent_model": "swe-2-max"}}, f)
+    os.makedirs(os.path.join(root, "scripts"), exist_ok=True)
+    with open(os.path.join(root, "scripts", "memory-retrieval.py"),
+              "w") as f:
+        f.write("# cue-anchored retrieval of whole notes\n"
+                "TOP_K = 3\ncues = []\n")
     proc = subprocess.Popen(
         [sys.executable, os.path.join(HERE, "rtsd.py"),
          "--port", str(PORT), "--root", root],
@@ -671,6 +699,78 @@ def main():
         assert idlehero["burn"] == 0 and idlehero["turns_left"] is None
         print("PASS economy HUD (income rate, last5, thresholds, "
               "supply split, per-hero burn)")
+
+        # #132 tech tree: real skills/ dirs grouped by GDD school, cast
+        # state from `skill` tool events, hero spellbook from the profile
+        # sheet, model tier from bundle-models.json effort, armory pin
+        # from config.json, doctrines from real memory scripts/files
+        # (fixtures created before daemon start - see top of main)
+        with open(os.path.join(root, ".devin", "memory", "MOC.md"),
+                  "w") as f:
+            f.write("# index\n")
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "skill",
+            "payload": {"tool_input": {"command": "invoke",
+                                       "skill": "testing", "lane": "eff"},
+                        "tool_response": "ok"}})
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "skill",
+            "payload": {"tool_input": {"command": "invoke",
+                                       "skill": "testing", "lane": "eff"},
+                        "tool_response": "ok2"}})
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "run_subagent",
+            "payload": {"tool_input": {"profile": "caster",
+                                       "task": "spell duty",
+                                       "is_background": True,
+                                       "lane": "eff"},
+                        "tool_response": {"agent_id": "caster1"}}})
+        st, snap = get(PORT, "/snapshot")
+        tech = snap["world"]["tech"]
+        by_school = {s["id"]: s for s in tech["schools"]}
+        craft = {sp["name"]: sp for sp in by_school["Craft"]["spells"]}
+        assert craft["testing"]["casts"] == 2, craft["testing"]
+        assert craft["testing"]["path"].endswith(
+            os.path.join("skills", "testing", "SKILL.md"))
+        assert craft["debugging"]["casts"] == 0     # known, never cast
+        assert any(sp["name"] == "zz-unsorted"
+                   for sp in by_school["Unsorted"]["spells"])
+        assert sum(len(s["spells"]) for s in tech["schools"]) == 4
+        assert tech["armory"]["subagent_model"] == "swe-2-max"
+        assert "config.json" in tech["armory"]["pin"]
+        assert any(t["id"] == "swe-2-medium"
+                   for t in tech["armory"]["tiers"])
+        docs = {d["id"]: d for d in tech["doctrines"]}
+        assert len(docs) == 8
+        assert docs["document"]["in_use"] is True and \
+            docs["document"]["evidence"], docs["document"]
+        assert docs["hierarchical"]["in_use"] is True   # MOC.md exists
+        assert docs["semantic"]["in_use"] is False and \
+            docs["semantic"]["evidence"] == []
+        cu = {u["id"]: u for u in snap["world"]["units"]}["caster1"]
+        assert cu["model"] == "swe-2-medium"          # profile pin wins
+        assert cu["tier"] == "Footman"                # effort medium
+        book = {s["name"]: s for s in cu["spellbook"]}
+        assert set(book) == {"testing", "gates"}, book
+        assert book["testing"]["casts"] == 2 and book["gates"]["casts"] == 0
+        assert any(l["kind"] == "spell" and "casts testing" in l["text"]
+                   for l in snap["world"]["feed"])
+        st, d = get(PORT, "/buildings/library")
+        assert st == 200 and d["spellbook"] and d["doctrines"] \
+            and d["armory"]["subagent_model"] == "swe-2-max", d.keys()
+        assert post(PORT, "/intent", {
+            "kind": "order", "to": "caster1", "order": "cast",
+            "skill": "testing"}) == 200
+        idir = os.path.join(root, ".devin", "rts", "intents")
+        ints = [json.load(open(os.path.join(idir, fn), encoding="utf-8"))
+                for fn in os.listdir(idir)]
+        assert any(i.get("order") == "cast" and
+                   i.get("skill") == "testing" for i in ints), ints
+        # the cast intent created a new event/order - refresh so the
+        # replay equality check below compares the same event horizon
+        st, snap = get(PORT, "/snapshot")
+        print("PASS tech tree (schools, cast state, hero spellbook, "
+              "armory tiers, doctrines, cast intent)")
 
         # #120 determinism: replaying events.jsonl rebuilds the same world
         sys.path.insert(0, HERE)
