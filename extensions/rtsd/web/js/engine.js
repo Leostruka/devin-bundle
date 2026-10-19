@@ -241,6 +241,22 @@
           ctx.fillText(u.name, s.x, s.y + sz / 2 + 9);
         }
       });
+      // event pings: expanding rings, color = kind (#124)
+      var now = performance.now();
+      (st.pings || []).forEach(function (p) {
+        var age = (now - p.t0) / 1000;
+        if (age < 0 || age > 6) return;
+        var s = self.toScreen(p.x, p.y);
+        var r = (8 + age * 26) * z;
+        ctx.globalAlpha = Math.max(0, 1 - age / 6);
+        ctx.strokeStyle = ({
+          decision: "#ffd54a", fail: "#f85149", spawn: "#3fb950",
+          contested: "#e3813f", file: "#9fb4c7",
+          order: "#58a6ff" })[p.kind] || pal.sel;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, 7); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.lineWidth = 1;
+      });
       // fps meter
       var dt = performance.now() - t0;
       this.fps.n++; this.fps.t += dt;
@@ -274,9 +290,30 @@
             ctx.fillStyle = "rgba(0,0,0,0.5)";
             ctx.fillRect(x * kx, y * ky, sx + 0.5, sy + 0.5);
           }
+          if (ts.tint && ts.tint[i]) {   // lane-ownership tint (#124)
+            ctx.fillStyle = ts.tint[i];
+            ctx.fillRect(x * kx, y * ky, sx + 0.5, sy + 0.5);
+          }
         }
       }
       var self = this;
+      (st.buildings || []).forEach(function (b) {
+        ctx.fillStyle = "#c9b37e";
+        ctx.fillRect(b.x / TILE * kx - 2, b.y / TILE * ky - 2, 4, 4);
+      });
+      var now = performance.now();
+      (st.pings || []).forEach(function (p) {
+        var age = (now - p.t0) / 1000;
+        if (age < 0 || age > 6) return;
+        ctx.fillStyle = ({
+          decision: "#ffd54a", fail: "#f85149", spawn: "#3fb950",
+          contested: "#e3813f" })[p.kind] || "#e6f2e6";
+        ctx.globalAlpha = (age % 0.8) < 0.4 ? 1 : 0.25; // blink
+        ctx.beginPath();
+        ctx.arc(p.x / TILE * kx, p.y / TILE * ky, 2.5, 0, 7);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
       (st.units || []).forEach(function (u) {
         var big = u.kind === "hero";
         ctx.fillStyle = u.status_live === "failed" || u.gate_fail
