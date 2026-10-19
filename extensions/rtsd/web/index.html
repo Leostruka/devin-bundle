@@ -36,6 +36,8 @@
     cursor:pointer; animation:aflash .8s infinite; }
   #alerts .achip.exp { border-color:var(--err); color:var(--err);
     animation:none; }
+  #alerts .achip.brc { border-color:var(--err); color:var(--err);
+    border-width:2px; }
   @keyframes aflash { 50% { opacity:.3 } }
   #banner { display:none; position:absolute; top:0; left:0; right:0;
     z-index:14; background:#5a1f1f; color:#ffb3ad; padding:4px 12px;
@@ -156,6 +158,8 @@
     cursor:pointer; }
   .spell.known:hover { background:#21262d; }
   .fl.k-spell .fw { color:#bc8cff; }
+  .fl.k-breach .fw { color:var(--err); }
+  .fl.k-breach { color:#f8a49e; }
   #help { display:none; position:absolute; top:40px; right:320px; z-index:20;
           background:var(--panel); border:1px solid var(--warn);
           border-radius:8px; padding:12px; font-size:11px; max-width:260px; }
@@ -176,6 +180,8 @@
   <span id="alerts"></span>
   <span style="flex:1"></span>
   <span id="fps"></span>
+  <button id="sndBtn" title="alert sounds (M toggles, -/= volume)">snd:on</button>
+  <button id="ntfBtn" title="browser notifications when tab is hidden">notify:off</button>
   <button id="themeBtn">theme</button>
 </header>
 <main>
@@ -201,6 +207,7 @@
       quest log: click = jump to marker, drag onto hero = assign<br>
       idle:N cycles idle heroes &nbsp; waypoint flags = order queue<br>
       SPACE: cycle pings &nbsp; ESC: cancel target &nbsp; T: theme<br>
+      M: mute &nbsp; -/=: volume &nbsp; breach chips = gate-fail territory<br>
       K: tech tree (skills as spells, armory tiers, library doctrines)<br>
       Cmd: <code>/spawn &lt;profile&gt; &lt;task&gt;</code>,
       <code>@unit msg</code> (name or id steers that hero), text = goal<br>

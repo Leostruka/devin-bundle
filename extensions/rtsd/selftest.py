@@ -772,6 +772,25 @@ def main():
         print("PASS tech tree (schools, cast state, hero spellbook, "
               "armory tiers, doctrines, cast intent)")
 
+        # #133 alerts: a failed ledger gate surfaces as a persistent
+        # breach on its territory (region resolved via the linked issue
+        # file's tile); sealing every gate clears the alarm state, so
+        # polling remote/PWA clients track it without push infra
+        st, snap = get(PORT, "/snapshot")
+        br = {b["ledger"]: b for b in snap["world"]["breaches"]}
+        assert "eff" in br, snap["world"]["breaches"]
+        assert br["eff"]["region"] == ".devin" and \
+            "G2" in br["eff"]["gates"], br["eff"]
+        assert len(br["eff"]["xy"]) == 2
+        with open(os.path.join(ldir, "eff.md"), "w", encoding="utf-8") as f:
+            f.write("# G\n\n- [x] G1: ok\n  EVIDENCE: ev\n"
+                    "- [x] G2: fixed\n  EVIDENCE: repaired\n"
+                    "- [x] G3: done\n  EVIDENCE: ok\n")
+        st, snap = get(PORT, "/snapshot")
+        assert all(b["ledger"] != "eff"
+                   for b in snap["world"]["breaches"])
+        print("PASS breach alarms (persistent territory, seal clears)")
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
         sys.path.insert(0, HERE)
         import world as worldmod
