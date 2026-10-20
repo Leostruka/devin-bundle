@@ -730,13 +730,20 @@ class World:
         self.last_ts = None        # latest applied event ts (#135)
         self._fn = 0               # feed-line counter (template pick, replay-
                                    # deterministic: same order, same count)
-        # WC3 start: home territory around the "root" capital is explored
-        # (ts=0 -> permanently dim-explored, never lit)
+        # WC3 start: home territory around the "root" capital and all
+        # allied building plots start explored (ts=0 -> dim-explored)
         hc = self.layout["capitals"].get("root")
         if hc:
+            for dy in range(-5, 6):
+                for dx in range(-5, 6):
+                    nx, ny = hc[0] + dx, hc[1] + dy
+                    if 0 <= nx < MAP_W and 0 <= ny < MAP_H:
+                        self.tile_heat.setdefault(ny * MAP_W + nx, 0.0)
+        for s in self.sites.values():
+            sx, sy = s["xy"]
             for dy in range(-3, 4):
                 for dx in range(-3, 4):
-                    nx, ny = hc[0] + dx, hc[1] + dy
+                    nx, ny = sx + dx, sy + dy
                     if 0 <= nx < MAP_W and 0 <= ny < MAP_H:
                         self.tile_heat.setdefault(ny * MAP_W + nx, 0.0)
 

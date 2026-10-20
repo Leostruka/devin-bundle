@@ -214,14 +214,215 @@
        veil, and the #133 breach pulse drawn along `path()`. */
     _tileStyle: function (ctx, st, theme, i) {
       var ts = st.tiles, mk = ts.mark ? ts.mark[i] : 0;
-      return mk === 2 ? theme.tiles.contested :
-        mk === 1 ? theme.tiles.plot :
-        theme.tiles[ts.data[i] % 10] || theme.tiles[0];
+      var wt = ts._water ? ts._water[i] : 0;
+      var rd = ts._roads ? ts._roads[i] : 0;
+      if (mk === 2) return theme.tiles.contested;
+      if (wt === 3) return "#7c5836"; // wooden bridge over water
+      if (wt === 2) return theme.tiles.waterDeep || theme.tiles.water;
+      if (wt === 1) return theme.tiles.water;
+      if (mk === 1) return theme.tiles.plot;
+      if (rd === 2) return theme.tiles.plaza || theme.tiles.plot;
+      if (rd === 1) return theme.tiles.road || theme.tiles.plot;
+      return theme.tiles[ts.data[i] % 10] || theme.tiles[0];
     },
 
-    // battlefield: axis-aligned floor squares, culled by the view rect
-    _flatTiles: function (ctx, st, theme, z, v) {
+    /* #157 wind physics: meteorological wind_deg is the direction wind
+       blows FROM, so particles/waves/trees bend toward wind_deg + 180. */
+    _windVec: function (st, now) {
+      var wx = (st && st.weather) || {};
+      var kph = typeof wx.wind_kph === "number" ? wx.wind_kph : 14;
+      var gust = typeof wx.wind_gust_kph === "number" ? wx.wind_gust_kph : 22;
+      var deg = typeof wx.wind_deg === "number" ? wx.wind_deg : 75;
+      var rad = ((deg + 180) % 360) * Math.PI / 180;
+      var gWave = 0.5 + 0.5 * Math.sin(now / 950) * Math.cos(now / 1700);
+      var eff = kph + (gust - kph) * gWave;
+      var str = Math.max(0.25, Math.min(3.2, eff / 16));
+      return { vx: Math.cos(rad) * str, vy: Math.sin(rad) * str,
+               ux: Math.cos(rad), uy: Math.sin(rad),
+               str: str, kph: eff, deg: deg, rad: rad,
+               gust: Math.sin(now / 520) };
+    },
+
+    /* #157 dynamic Line-of-Sight: in WC3/AoE3 every owned structure and
+       unit illuminates the terrain around it. Server fog remains the
+       baseexplored memory; active vision lifts nearby tiles to lit (2)
+       with an explored skirt (1). */
+    _sightFog: function (st) {
+      var ts = st.tiles;
+      if (!ts) return null;
+      var W = ts.w, H = ts.h, n = W * H;
+      if (!ts._visFog || ts._visFog.length !== n)
+        ts._visFog = new Uint8Array(n);
+      var out = ts._visFog, src = st.fog;
+      for (var i = 0; i < n; i++) out[i] = src ? src[i] : 2;
+      var reveal = function (wx, wy, rLit, rDim) {
+        var cx = Math.floor(wx / TILE), cy = Math.floor(wy / TILE);
+        var r2 = rLit * rLit, rd2 = rDim * rDim;
+        var x0 = Math.max(0, cx - rDim), x1 = Math.min(W - 1, cx + rDim);
+        var y0 = Math.max(0, cy - rDim), y1 = Math.min(H - 1, cy + rDim);
+        for (var y = y0; y <= y1; y++) {
+          for (var x = x0; x <= x1; x++) {
+            var d2 = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+            var idx = y * W + x;
+            if (d2 <= r2) out[idx] = 2;
+            else if (d2 <= rd2 && out[idx] < 1) out[idx] = 1;
+          }
+        }
+      };
+      (st.buildings || []).forEach(function (b) {
+        var r = b.bid === "watchtower" ? 10 : b.bid === "town-hall" ? 7 : 5;
+        reveal(b.x, b.y, r, r + 2);
+      });
+      (st.units || []).forEach(function (u) {
+        var r = u.kind === "hero" ? 6 : 4;
+        reveal(u.x, u.y, r, r + 2);
+      });
+      (st.workers || []).forEach(function (wk) {
+        if (wk.from && wk.to)
+          reveal(wk.to[0] * TILE, wk.to[1] * TILE, 3, 5);
+      });
+      return out;
+    },
+
+    /* #157 deterministic WC3/AoE3 environment synthesis: cobblestone plazas,
+       dirt roads between Keep and capitals, winding river + lake water
+       channels with wooden bridges, swaying forest trees, meadow grass,
+       reeds, boulders, and wandering critters. */
+    _ensureEnv: function (ts, st) {
+      var sig = (ts.sig || 1) + ":" + (st.buildings ? st.buildings.length : 0);
+      if (ts._envSig === sig) return;
+      ts._envSig = sig;
+      var W = ts.w, H = ts.h, n = W * H;
+      var roads = new Uint8Array(n);
+      var water = new Uint8Array(n);
+      var keep = (ts.caps && ts.caps.root) ||
+                 (ts.caps && ts.caps[Object.keys(ts.caps)[0]]) ||
+                 { cx: (W / 2) | 0, cy: (H / 2) | 0 };
+      var markPlaza = function (cx, cy, rad) {
+        for (var dy = -rad; dy <= rad; dy++) {
+          for (var dx = -rad; dx <= rad; dx++) {
+            var x = cx + dx, y = cy + dy;
+            if (x >= 0 && x < W && y >= 0 && y < H &&
+                dx * dx + dy * dy <= rad * rad + 1)
+              roads[y * W + x] = 2;
+          }
+        }
+      };
+      var carveRoad = function (x0, y0, x1, y1) {
+        var steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
+        for (var s = 0; s <= steps; s++) {
+          var t = s / steps;
+          var bend = Math.sin(t * Math.PI) * 1.4;
+          var rx = Math.round(x0 + (x1 - x0) * t + bend),
+              ry = Math.round(y0 + (y1 - y0) * t - bend * 0.6);
+          if (rx >= 0 && rx < W && ry >= 0 && ry < H) {
+            var idx = ry * W + rx;
+            if (!roads[idx]) roads[idx] = 1;
+          }
+        }
+      };
+      markPlaza(keep.cx, keep.cy, 2);
+      if (ts.caps) {
+        Object.keys(ts.caps).forEach(function (k) {
+          var c = ts.caps[k];
+          markPlaza(c.cx, c.cy, 2);
+          carveRoad(keep.cx, keep.cy, c.cx, c.cy);
+        });
+      }
+      (st.buildings || []).forEach(function (b) {
+        var bx = Math.floor(b.x / TILE), by = Math.floor(b.y / TILE);
+        markPlaza(bx, by, 1);
+        carveRoad(keep.cx, keep.cy, bx, by);
+      });
+      // Winding river channel across the valley + natural lake basin,
+      // avoiding plazas and plots (road crossings become wooden bridges=3)
+      for (var x = 0; x < W; x++) {
+        var ry = Math.round(H * 0.48 + Math.sin(x / 6.5) * 5.5 +
+                            Math.cos(x / 3.2) * 1.8);
+        for (var wy = ry - 1; wy <= ry + 1; wy++) {
+          if (wy < 1 || wy >= H - 1) continue;
+          var idx = wy * W + x;
+          if (roads[idx] === 2 || (ts.mark && ts.mark[idx])) continue;
+          if (roads[idx] === 1) water[idx] = 3; // wooden bridge!
+          else water[idx] = (wy === ry) ? 2 : 1;
+        }
+      }
+      // Scenic lake in the NW/SE basin if clear of capitals
+      var lx = Math.round(W * 0.28), ly = Math.round(H * 0.56);
+      for (var dy = -4; dy <= 4; dy++) {
+        for (var dx = -5; dx <= 5; dx++) {
+          var tx = lx + dx, ty = ly + dy;
+          if (tx < 1 || tx >= W - 1 || ty < 1 || ty >= H - 1) continue;
+          var d = (dx * dx) / 25 + (dy * dy) / 16;
+          if (d > 1) continue;
+          var idx2 = ty * W + tx;
+          if (roads[idx2] === 2 || (ts.mark && ts.mark[idx2])) continue;
+          water[idx2] = roads[idx2] === 1 ? 3 : (d < 0.45 ? 2 : 1);
+        }
+      }
+      ts._roads = roads;
+      ts._water = water;
+      // Trees & Doodads
+      var trees = [], doodads = [], critters = [];
+      for (var ty2 = 1; ty2 < H - 1; ty2++) {
+        for (var tx2 = 1; tx2 < W - 1; tx2++) {
+          var i0 = ty2 * W + tx2;
+          if (roads[i0] || water[i0] || (ts.mark && ts.mark[i0])) continue;
+          var h = hash("env:" + tx2 + ":" + ty2);
+          // Check if adjacent to water -> reeds / willow
+          var nearWater = (water[i0 - 1] === 1 || water[i0 + 1] === 1 ||
+                           water[i0 - W] === 1 || water[i0 + W] === 1);
+          if (nearWater && (h % 5 === 0)) {
+            doodads.push({ tx: tx2, ty: ty2,
+              x: (tx2 + 0.3 + (h % 40) / 100) * TILE,
+              y: (ty2 + 0.3 + ((h >> 6) % 40) / 100) * TILE,
+              kind: "reed", seed: h });
+            continue;
+          }
+          // Forest clustering using deterministic wave + hash
+          var fval = Math.sin(tx2 * 0.42) * Math.cos(ty2 * 0.38) +
+                     ((h % 100) / 100 - 0.5) * 0.8;
+          if (fval > 0.36 && (h % 3 !== 0)) {
+            trees.push({
+              tx: tx2, ty: ty2,
+              x: (tx2 + 0.25 + (h % 50) / 100) * TILE,
+              y: (ty2 + 0.25 + ((h >> 8) % 50) / 100) * TILE,
+              kind: nearWater ? "willow" : (h % 4 === 0 ? "pine" :
+                    h % 7 === 0 ? "goldleaf" : "oak"),
+              scale: 0.82 + (h % 38) / 100,
+              seed: h
+            });
+          } else if (h % 11 === 0) {
+            doodads.push({
+              tx: tx2, ty: ty2,
+              x: (tx2 + 0.2 + (h % 60) / 100) * TILE,
+              y: (ty2 + 0.2 + ((h >> 5) % 60) / 100) * TILE,
+              kind: (h % 4 === 0) ? "rock" : (h % 3 === 0) ? "flower" : "grass",
+              seed: h
+            });
+          }
+        }
+      }
+      // Wandering critters (sheep, stag, frog)
+      for (var ci = 0; ci < 16; ci++) {
+        var ch = hash("critter:" + ci);
+        var cx0 = (4 + (ch % (W - 8))) * TILE,
+            cy0 = (4 + ((ch >> 7) % (H - 8))) * TILE;
+        critters.push({
+          ox: cx0, oy: cy0, x: cx0, y: cy0,
+          kind: ci % 3 === 0 ? "stag" : ci % 3 === 1 ? "sheep" : "hare",
+          seed: ch
+        });
+      }
+      ts._trees = trees;
+      ts._doodads = doodads;
+      ts._critters = critters;
+    },
+
+    // battlefield: axis-aligned floor squares + water waves + roads + doodads
+    _flatTiles: function (ctx, st, theme, z, v, now, wind) {
       var ts = st.tiles, W = ts.w, H = ts.h;
+      var fog = st.visFog || st.fog;
       var x0 = Math.max(0, Math.floor(v.x / TILE)),
           y0 = Math.max(0, Math.floor(v.y / TILE)),
           x1 = Math.min(W, Math.ceil((v.x + v.w) / TILE)),
@@ -230,21 +431,86 @@
       for (var ty = y0; ty < y1; ty++) {
         for (var tx = x0; tx < x1; tx++) {
           var i = ty * W + tx;
-          var f = st.fog ? st.fog[i] : 2;
-          if (f === 0) continue; // shroud: stays palette.bg
-          ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
+          var f = fog ? fog[i] : 2;
           var sx = (tx * TILE - v.x) * z, sy = (ty * TILE - v.y) * z;
+          if (f === 0) {
+            // WC3 twilight shroud contour instead of flat pitch-black void
+            ctx.fillStyle = (tx + ty) % 2 ? "#0b140d" : "#09110b";
+            ctx.fillRect(sx, sy, px + 1, px + 1);
+            continue;
+          }
+          ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
           ctx.fillRect(sx, sy, px + 1, px + 1);
-          if (f === 1) {           // explored-but-dim
-            ctx.fillStyle = "rgba(0,0,0,0.45)";
+          var wt = ts._water ? ts._water[i] : 0;
+          var rd = ts._roads ? ts._roads[i] : 0;
+          // Water waves & shoreline foam driven by real wind vector (#157)
+          if ((wt === 1 || wt === 2) && z > 0.45) {
+            var wph = (now / 380) * wind.str + tx * wind.ux * 1.3 +
+                      ty * wind.uy * 1.3;
+            var crest = Math.sin(wph);
+            ctx.strokeStyle = wt === 2
+              ? "rgba(130,205,255,0.28)" : "rgba(185,235,255,0.42)";
+            ctx.lineWidth = Math.max(1, 1.2 * z);
+            ctx.beginPath();
+            var wx0 = sx + (0.2 + 0.12 * crest) * px,
+                wy0 = sy + (0.35 + 0.1 * Math.cos(wph)) * px;
+            ctx.moveTo(wx0, wy0);
+            ctx.quadraticCurveTo(wx0 + px * 0.25, wy0 - 2.5 * z,
+                                 wx0 + px * 0.5, wy0);
+            ctx.stroke();
+            // Shoreline lapping foam where adjacent tile is land
+            if (wt === 1) {
+              var foam = 0.25 + 0.2 * Math.sin(now / 420 + tx + ty);
+              ctx.strokeStyle = "rgba(235,248,255," + foam.toFixed(2) + ")";
+              ctx.strokeRect(sx + 1.5 * z, sy + 1.5 * z,
+                             px - 3 * z, px - 3 * z);
+            }
+            ctx.lineWidth = 1;
+          } else if (wt === 3 && z > 0.45) {
+            // Wooden bridge planks + side rails
+            ctx.strokeStyle = "#4d3319";
+            for (var bp = 1; bp < 4; bp++) {
+              ctx.beginPath();
+              ctx.moveTo(sx + bp * px / 4, sy);
+              ctx.lineTo(sx + bp * px / 4, sy + px);
+              ctx.stroke();
+            }
+            ctx.fillStyle = "#9c7448";
+            ctx.fillRect(sx, sy, px, 2.5 * z);
+            ctx.fillRect(sx, sy + px - 2.5 * z, px, 2.5 * z);
+          } else if (rd === 2 && z > 0.5) {
+            // Cobblestone Keep plaza detail
+            ctx.strokeStyle = "rgba(40,34,26,0.35)";
+            ctx.strokeRect(sx + 2 * z, sy + 2 * z, px - 4 * z, px - 4 * z);
+          } else if (rd === 1 && z > 0.5) {
+            // Dirt road wheel-rut pebbles
+            ctx.fillStyle = "rgba(145,122,92,0.38)";
+            ctx.fillRect(sx + px * 0.25, sy + px * 0.25, px * 0.5, px * 0.5);
+          } else if (z > 0.55 && ((tx * 7 + ty * 13) % 5 === 0)) {
+            // Subtle grass blade texture on meadow tiles
+            var sway = Math.sin(now / 520 + tx * 0.7 + ty * 0.5) *
+                       wind.vx * 2.4 * z;
+            ctx.strokeStyle = "rgba(86,154,72,0.45)";
+            ctx.beginPath();
+            ctx.moveTo(sx + px * 0.5, sy + px * 0.7);
+            ctx.lineTo(sx + px * 0.5 + sway, sy + px * 0.35);
+            ctx.stroke();
+          }
+          // Subtle region territory border line (WC3 map aesthetic)
+          if (ts.tileRegion && tx + 1 < W &&
+              ts.tileRegion[i] !== ts.tileRegion[i + 1]) {
+            ctx.fillStyle = "rgba(255,213,74,0.14)";
+            ctx.fillRect(sx + px - 1, sy, 2, px);
+          }
+          if (f === 1) {           // explored-but-dim (lighter so terrain reads!)
+            ctx.fillStyle = "rgba(8,14,10,0.28)";
             ctx.fillRect(sx, sy, px + 1, px + 1);
           }
           // #133 breach alarm: a failed ledger gate keeps its whole
           // territory pulsing red until the gate set goes green
           if (ts.breach && ts.breach[i]) {
             ctx.fillStyle = "rgba(248,81,73," +
-              (0.16 + 0.10 * Math.sin(performance.now() / 280))
-                .toFixed(3) + ")";
+              (0.16 + 0.10 * Math.sin(now / 280)).toFixed(3) + ")";
             ctx.fillRect(sx, sy, px + 1, px + 1);
           }
         }
@@ -256,6 +522,7 @@
        corners through toWorld() - the same transform clicks use. */
     _isoTiles: function (ctx, st, theme, z) {
       var ts = st.tiles, W = ts.w, H = ts.h, cv = this.cv;
+      var fog = st.visFog || st.fog;
       var a = this.toWorld(0, 0), b = this.toWorld(cv.width, 0),
           c = this.toWorld(0, cv.height), d = this.toWorld(cv.width,
                                                           cv.height);
@@ -270,8 +537,7 @@
       for (var ty = y0; ty < y1; ty++) {
         for (var tx = x0; tx < x1; tx++) {
           var i = ty * W + tx;
-          var f = st.fog ? st.fog[i] : 2;
-          if (f === 0) continue;
+          var f = fog ? fog[i] : 2;
           var p0 = this.toScreen(tx * TILE, ty * TILE),
               p1 = this.toScreen((tx + 1) * TILE, ty * TILE),
               p2 = this.toScreen((tx + 1) * TILE, (ty + 1) * TILE),
@@ -280,10 +546,17 @@
           ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y);
           ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y);
           ctx.closePath();
+          if (f === 0) {
+            ctx.fillStyle = (tx + ty) % 2 ? "#12151e" : "#0e1118";
+            ctx.fill();
+            continue;
+          }
           ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
           ctx.fill();
+          ctx.strokeStyle = "rgba(255,255,255,0.04)";
+          ctx.stroke();
           if (f === 1) {
-            ctx.fillStyle = "rgba(0,0,0,0.45)"; ctx.fill();
+            ctx.fillStyle = "rgba(8,10,16,0.28)"; ctx.fill();
           }
           if (ts.breach && ts.breach[i]) {
             ctx.fillStyle = "rgba(248,81,73," +
@@ -291,6 +564,266 @@
                 .toFixed(3) + ")";
             ctx.fill();
           }
+        }
+      }
+    },
+
+    /* #157 doodads, swaying forest trees, and wandering critters */
+    _drawNature: function (ctx, st, theme, z, now, wind) {
+      if (this.iso) return;
+      var ts = st.tiles;
+      if (!ts || !ts._trees) return;
+      var self = this, cv = this.cv, fog = st.visFog || st.fog, W = ts.w;
+      // 1. Doodads (rocks, wildflowers, reeds, grass tufts)
+      (ts._doodads || []).forEach(function (d) {
+        var f = fog ? fog[d.ty * W + d.tx] : 2;
+        if (f === 0) return;
+        var s = self.toScreen(d.x, d.y);
+        if (s.x < -20 || s.y < -20 || s.x > cv.width + 20 ||
+            s.y > cv.height + 20) return;
+        var sw = Math.sin(now / 460 + (d.seed % 31)) * wind.vx * 3 * z;
+        if (d.kind === "rock") {
+          ctx.fillStyle = "#5b6366";
+          ctx.beginPath();
+          ctx.ellipse(s.x, s.y, 5 * z, 3.5 * z, 0, 0, 7);
+          ctx.fill();
+          ctx.fillStyle = "#7c8588";
+          ctx.beginPath();
+          ctx.ellipse(s.x - 1 * z, s.y - 1 * z, 3 * z, 2 * z, 0, 0, 7);
+          ctx.fill();
+        } else if (d.kind === "reed") {
+          ctx.strokeStyle = "#5c8a46";
+          ctx.lineWidth = Math.max(1, 1.2 * z);
+          for (var r = -1; r <= 1; r++) {
+            ctx.beginPath();
+            ctx.moveTo(s.x + r * 2.5 * z, s.y);
+            ctx.quadraticCurveTo(s.x + r * 2.5 * z + sw * 0.6, s.y - 5 * z,
+                                 s.x + r * 2.5 * z + sw, s.y - 9 * z);
+            ctx.stroke();
+            ctx.fillStyle = "#5c3a21";
+            ctx.beginPath();
+            ctx.arc(s.x + r * 2.5 * z + sw * 0.9, s.y - 8 * z, 1.3 * z, 0, 7);
+            ctx.fill();
+          }
+          ctx.lineWidth = 1;
+        } else if (d.kind === "flower") {
+          ctx.fillStyle = (d.seed % 2) ? "#ffd54a" : "#ff7b72";
+          ctx.beginPath();
+          ctx.arc(s.x + sw * 0.4, s.y - 2 * z, 2 * z, 0, 7);
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = "#48823c";
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(s.x + sw * 0.8, s.y - 5 * z);
+          ctx.moveTo(s.x + 2 * z, s.y);
+          ctx.lineTo(s.x + 2 * z + sw * 0.8, s.y - 4.5 * z);
+          ctx.stroke();
+        }
+      });
+      // 2. Wandering Critters (sheep, stag, hare)
+      (ts._critters || []).forEach(function (cr) {
+        var ph = now / 1800 + (cr.seed % 100);
+        var wx = cr.ox + Math.sin(ph * 0.7) * TILE * 1.4,
+            wy = cr.oy + Math.cos(ph * 0.5) * TILE * 1.1;
+        var ti = Math.floor(wy / TILE) * W + Math.floor(wx / TILE);
+        if (fog && fog[ti] !== 2) return;
+        var s = self.toScreen(wx, wy);
+        if (s.x < -20 || s.y < -20 || s.x > cv.width + 20 ||
+            s.y > cv.height + 20) return;
+        var hop = Math.abs(Math.sin(now / 220 + cr.seed)) * 1.8 * z;
+        ctx.fillStyle = cr.kind === "sheep" ? "#eceff4" :
+                        cr.kind === "stag" ? "#9c6b3b" : "#c4a482";
+        ctx.beginPath();
+        ctx.ellipse(s.x, s.y - hop, 4.2 * z, 2.8 * z, 0, 0, 7);
+        ctx.fill();
+        ctx.fillStyle = "#2d2a26";
+        ctx.beginPath();
+        ctx.arc(s.x + 3.5 * z, s.y - 1.5 * z - hop, 1.6 * z, 0, 7);
+        ctx.fill();
+      });
+      // 3. Multi-layered Swaying Forest Trees (#157)
+      (ts._trees || []).forEach(function (tr) {
+        var f = fog ? fog[tr.ty * W + tr.tx] : 2;
+        if (f === 0) return;
+        var s = self.toScreen(tr.x, tr.y);
+        if (s.x < -36 || s.y < -36 || s.x > cv.width + 36 ||
+            s.y > cv.height + 36) return;
+        var sc = tr.scale * Math.max(z, 0.55);
+        var swayX = (Math.sin(now / 620 + (tr.seed % 50)) * 0.6 + 0.7) *
+                    wind.vx * 3.8 * sc;
+        var swayY = (Math.cos(now / 740 + (tr.seed % 50)) * 0.5 + 0.5) *
+                    wind.vy * 2.2 * sc;
+        ctx.globalAlpha = f === 1 ? 0.55 : 0.96;
+        // Ground shadow
+        ctx.fillStyle = "rgba(0,0,0,0.32)";
+        ctx.beginPath();
+        ctx.ellipse(s.x + 3 * sc, s.y + 3 * sc, 9 * sc, 5 * sc, 0, 0, 7);
+        ctx.fill();
+        // Trunk
+        ctx.fillStyle = "#4d3422";
+        ctx.fillRect(s.x - 1.8 * sc, s.y - 6 * sc, 3.6 * sc, 8 * sc);
+        // Canopy crown layers reacting to wind
+        var cDark = tr.kind === "pine" ? "#163822" :
+                    tr.kind === "goldleaf" ? "#6e5219" :
+                    tr.kind === "willow" ? "#204d38" : "#1d4723";
+        var cMid = tr.kind === "pine" ? "#1f4f30" :
+                   tr.kind === "goldleaf" ? "#9e7724" :
+                   tr.kind === "willow" ? "#2e6b4e" : "#296330";
+        var cTop = tr.kind === "pine" ? "#2c6b42" :
+                   tr.kind === "goldleaf" ? "#cfa036" :
+                   tr.kind === "willow" ? "#438c69" : "#3b8242";
+        ctx.fillStyle = cDark;
+        ctx.beginPath();
+        ctx.arc(s.x + swayX * 0.4, s.y - 7 * sc + swayY * 0.4,
+                8.5 * sc, 0, 7);
+        ctx.fill();
+        ctx.fillStyle = cMid;
+        ctx.beginPath();
+        ctx.arc(s.x - 2.5 * sc + swayX * 0.75, s.y - 9.5 * sc + swayY * 0.75,
+                6.5 * sc, 0, 7);
+        ctx.arc(s.x + 2.5 * sc + swayX * 0.75, s.y - 9 * sc + swayY * 0.75,
+                6 * sc, 0, 7);
+        ctx.fill();
+        ctx.fillStyle = cTop;
+        ctx.beginPath();
+        ctx.arc(s.x + swayX * 1.15, s.y - 12 * sc + swayY * 1.15,
+                4.8 * sc, 0, 7);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+    },
+
+    /* #157 live weather & atmospheric particles: cloud shadows, blowing
+       leaves, slanted rain + puddle ripples, storm lightning, snow, fog. */
+    _weatherPass: function (ctx, st, theme, z, now, wind) {
+      var wx = (st && st.weather) || {};
+      var cond = wx.condition || "cloudy";
+      var clouds = typeof wx.cloud_pct === "number" ? wx.cloud_pct : 40;
+      var cv = this.cv, W = cv.width, H = cv.height, i;
+      // 1. Drifting cloud shadows across the battlefield
+      var nClouds = Math.floor(clouds / 18);
+      if (nClouds > 0 && !this.iso) {
+        ctx.fillStyle = "rgba(8,14,18,0.16)";
+        for (i = 0; i < nClouds; i++) {
+          var cs = hash("cloud:" + i);
+          var cx = ((cs % 1900) + now * 0.018 * (wind.vx + 0.5)) % (W + 360) - 180;
+          var cy = (((cs >> 8) % 1300) + now * 0.012 * (wind.vy + 0.2)) % (H + 260) - 130;
+          if (cx < -200) cx += W + 360;
+          if (cy < -150) cy += H + 260;
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, (95 + (cs % 65)) * z, (48 + (cs % 35)) * z,
+                      0.2, 0, 7);
+          ctx.fill();
+        }
+      }
+      // 2. Blowing / falling leaves carried by the wind vector
+      if (!this.iso) {
+        var nLeaves = Math.min(28, Math.round(8 + wind.str * 7));
+        for (i = 0; i < nLeaves; i++) {
+          var ls = hash("leaf:" + i);
+          var lx = ((ls % 1600) + now * 0.055 * (wind.vx * 1.6 + 0.4)) % W;
+          var ly = (((ls >> 7) % 1200) + now * 0.038 * (wind.vy * 1.4 + 0.7) +
+                    Math.sin(now / 420 + i) * 14) % H;
+          if (lx < 0) lx += W;
+          if (ly < 0) ly += H;
+          ctx.fillStyle = (i % 3 === 0) ? "rgba(212,167,44,0.75)" :
+                          "rgba(78,148,64,0.72)";
+          ctx.beginPath();
+          ctx.ellipse(lx, ly, 2.6 * z, 1.3 * z,
+                      now / 260 + i, 0, 7);
+          ctx.fill();
+        }
+      }
+      // 3. Wind gust streaks when wind is strong
+      if (wind.kph >= 20) {
+        ctx.strokeStyle = "rgba(220,235,245,0.16)";
+        ctx.lineWidth = 1.2;
+        var nG = Math.min(18, Math.floor(wind.kph / 3));
+        for (i = 0; i < nG; i++) {
+          var gs = hash("gust:" + i);
+          var gx = ((gs % 1700) + now * 0.32 * wind.ux) % W;
+          var gy = (((gs >> 6) % 1100) + now * 0.32 * wind.uy) % H;
+          if (gx < 0) gx += W;
+          if (gy < 0) gy += H;
+          ctx.beginPath();
+          ctx.moveTo(gx, gy);
+          ctx.lineTo(gx + wind.ux * 38 * z, gy + wind.uy * 38 * z);
+          ctx.stroke();
+        }
+        ctx.lineWidth = 1;
+      }
+      // 4. Rain / Drizzle / Thunderstorm
+      if (cond === "rain" || cond === "storm") {
+        var nDrops = cond === "storm" ? 110 : 65;
+        ctx.strokeStyle = cond === "storm"
+          ? "rgba(175,215,255,0.58)" : "rgba(160,205,245,0.45)";
+        ctx.lineWidth = 1.2;
+        var dx = wind.vx * 6, dy = 15 + Math.abs(wind.vy) * 4;
+        ctx.beginPath();
+        for (i = 0; i < nDrops; i++) {
+          var rs = hash("rain:" + i);
+          var rx = ((rs % 1999) + now * (0.18 * wind.vx + 0.05)) % W;
+          var ry = (((rs >> 5) % 1499) + now * (0.48 + (rs % 15) * 0.01)) % H;
+          if (rx < 0) rx += W;
+          ctx.moveTo(rx, ry);
+          ctx.lineTo(rx + dx, ry + dy);
+        }
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        // Ground rain splash ripples
+        ctx.strokeStyle = "rgba(190,225,255,0.32)";
+        for (i = 0; i < 18; i++) {
+          var sp = hash("splash:" + i);
+          var age = ((now / 420 + (sp % 100) / 100) % 1);
+          var sx = (sp % W), sy = ((sp >> 8) % H);
+          ctx.beginPath();
+          ctx.arc(sx, sy, age * 6 * z, 0, 7);
+          ctx.stroke();
+        }
+        // Storm lightning flash + bolt
+        if (cond === "storm") {
+          var cyc = now % 6800;
+          if (cyc < 140 || (cyc > 220 && cyc < 290)) {
+            ctx.fillStyle = "rgba(225,240,255,0.28)";
+            ctx.fillRect(0, 0, W, H);
+            if (cyc < 140) {
+              ctx.strokeStyle = "rgba(240,248,255,0.92)";
+              ctx.lineWidth = 2.2;
+              var bx = W * (0.25 + ((Math.floor(now / 6800) * 37) % 50) / 100);
+              ctx.beginPath();
+              ctx.moveTo(bx, 0);
+              ctx.lineTo(bx - 18, H * 0.28);
+              ctx.lineTo(bx + 12, H * 0.48);
+              ctx.lineTo(bx - 24, H * 0.78);
+              ctx.stroke();
+              ctx.lineWidth = 1;
+            }
+          }
+        }
+      } else if (cond === "snow") {
+        // 5. Snowflakes swirling in wind
+        ctx.fillStyle = "rgba(240,248,255,0.82)";
+        for (i = 0; i < 75; i++) {
+          var ss = hash("snow:" + i);
+          var sx2 = ((ss % 1800) + now * 0.04 * wind.vx +
+                     Math.sin(now / 600 + i) * 18) % W;
+          var sy2 = (((ss >> 6) % 1400) + now * (0.06 + (ss % 10) * 0.004)) % H;
+          if (sx2 < 0) sx2 += W;
+          ctx.beginPath();
+          ctx.arc(sx2, sy2, (1.4 + (ss % 3) * 0.6) * z, 0, 7);
+          ctx.fill();
+        }
+      } else if (cond === "fog") {
+        // 6. Rolling mist banks
+        for (i = 0; i < 8; i++) {
+          var fs = hash("fogbank:" + i);
+          var fx = ((fs % 1600) + now * 0.025 * (wind.vx + 0.4)) % (W + 300) - 150;
+          var fy = ((fs >> 7) % H);
+          ctx.fillStyle = "rgba(205,220,225,0.14)";
+          ctx.beginPath();
+          ctx.ellipse(fx, fy, 160 * z, 46 * z, 0, 0, 7);
+          ctx.fill();
         }
       }
     },
@@ -465,34 +998,84 @@
       var v = this.view(), z = this.cam.zoom, pal = theme.palette;
       ctx.fillStyle = pal.bg; ctx.fillRect(0, 0, cv.width, cv.height);
       this.units = st.units || [];
+      this.buildings = st.buildings || [];
       if (!st.tiles) return;
       var ts = st.tiles, W = ts.w, H = ts.h;
+      this._ensureEnv(ts, st);
+      st.visFog = this._sightFog(st);
+      var wind = this._windVec(st, t0);
+      this.wind = wind;
       if (this.iso) { this._isoTiles(ctx, st, theme, z); }
-      else { this._flatTiles(ctx, st, theme, z, v); }
+      else { this._flatTiles(ctx, st, theme, z, v, t0, wind); }
+      this._drawNature(ctx, st, theme, z, t0, wind);
       // POI markers: quests show through fog, others only once seen (#122)
       var self = this;
+      var vfog = st.visFog || st.fog;
       (st.pois || []).forEach(function (p) {
         var i = p.y * W + p.x;
-        var f = st.fog ? st.fog[i] : 2;
+        var f = vfog ? vfog[i] : 2;
         if (f === 0 && p.kind !== "quest") return;
         var s = self.toScreen(p.x * TILE + TILE / 2, p.y * TILE + TILE / 2);
         if (s.x < -30 || s.y < -30 || s.x > cv.width + 30 ||
             s.y > cv.height + 30) return;
+        if (p.kind === "gold") {
+          // WC3 Gold Mine vein: rock mound + glinting gold crystals
+          ctx.fillStyle = "#4d4538";
+          ctx.beginPath();
+          ctx.ellipse(s.x, s.y + 2 * z, 11 * z, 7 * z, 0, 0, 7);
+          ctx.fill();
+          ctx.fillStyle = "#ffd54a";
+          ctx.beginPath();
+          ctx.moveTo(s.x - 5 * z, s.y + 2 * z);
+          ctx.lineTo(s.x - 2 * z, s.y - 6 * z);
+          ctx.lineTo(s.x + 2 * z, s.y + 2 * z);
+          ctx.moveTo(s.x + 1 * z, s.y + 3 * z);
+          ctx.lineTo(s.x + 5 * z, s.y - 4 * z);
+          ctx.lineTo(s.x + 7 * z, s.y + 3 * z);
+          ctx.fill();
+          return;
+        }
+        if (p.kind === "camp") {
+          // Neutral Creep Campfire: logs + flickering orange/yellow flame
+          ctx.strokeStyle = "#5c3a21";
+          ctx.lineWidth = Math.max(1.5, 2 * z);
+          ctx.beginPath();
+          ctx.moveTo(s.x - 5 * z, s.y + 3 * z);
+          ctx.lineTo(s.x + 5 * z, s.y - 2 * z);
+          ctx.moveTo(s.x - 5 * z, s.y - 2 * z);
+          ctx.lineTo(s.x + 5 * z, s.y + 3 * z);
+          ctx.stroke();
+          ctx.lineWidth = 1;
+          var fh = (6 + 2.5 * Math.sin(t0 / 110 + p.x)) * z;
+          ctx.fillStyle = "#ff7b00";
+          ctx.beginPath();
+          ctx.arc(s.x + wind.vx * 1.2 * z, s.y - 2 * z, 4 * z, 0, 7);
+          ctx.fill();
+          ctx.fillStyle = "#ffd54a";
+          ctx.beginPath();
+          ctx.arc(s.x + wind.vx * 1.8 * z, s.y - fh * 0.5, 2.2 * z, 0, 7);
+          ctx.fill();
+          return;
+        }
         // #130 quest marker states: open "!" gold, blocked "?" grey,
         // done "*" rewards stamp (green), failed "!" red until retried
-        var g = p.kind === "quest"
-          ? (p.qst === "done" ? "*" : p.qst === "blocked" ? "?" : "!")
-          : { gold: "*", camp: "x" }[p.kind] || "?";
-        var c = p.kind === "quest"
-          ? ({ done: "#3fb950", blocked: "#8b949e", failed: pal.err,
-               open: "#ffd54a" })[p.qst] || "#ffd54a"
-          : { gold: "#ffd54a", camp: pal.err }[p.kind] || pal.text;
+        var g = p.qst === "done" ? "*" : p.qst === "blocked" ? "?" : "!";
+        var c = ({ done: "#3fb950", blocked: "#8b949e", failed: pal.err,
+                   open: "#ffd54a" })[p.qst] || "#ffd54a";
+        var bob = Math.sin(t0 / 320 + p.x) * 2.5 * z;
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.beginPath();
+        ctx.arc(s.x, s.y - 8 * z + bob, 8 * z, 0, 7);
+        ctx.fill();
+        ctx.strokeStyle = c;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.lineWidth = 1;
         ctx.fillStyle = c;
-        ctx.font = "bold " + Math.max(10, 14 * z) + "px monospace";
+        ctx.font = "bold " + Math.max(10, 13 * z) + "px monospace";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText(g, s.x, s.y);
+        ctx.fillText(g, s.x, s.y - 8 * z + bob);
       });
-      this.buildings = st.buildings || [];
       (st.buildings || []).forEach(function (b) {
         var s = self.toScreen(b.x, b.y);
         if (s.x < -64 || s.y < -64 || s.x > cv.width + 64 ||
@@ -671,6 +1254,7 @@
         ctx.globalAlpha = 1; ctx.lineWidth = 1;
       });
       this._ambient(ctx, st, theme, z, now);
+      this._weatherPass(ctx, st, theme, z, now, wind);
       // #136 day/night: cosmetic dim over the map (session-time cycle,
       // computed client-side); skipped entirely when the toggle is off
       if (st.night) {
@@ -714,14 +1298,20 @@
       ctx.fillStyle = theme.ui.minimapBg;
       ctx.fillRect(0, 0, mm.width, mm.height);
       var sx = Math.max(1, kx), sy = Math.max(1, ky);
+      var vfog = ts._visFog || st.fog;
       for (var y = 0; y < H; y++) {
         for (var x = 0; x < W; x++) {
           var i = y * W + x;
-          var f = st.fog ? st.fog[i] : 2;
+          var f = vfog ? vfog[i] : 2;
           if (f === 0) continue;
           var mk = ts.mark ? ts.mark[i] : 0;
+          var wt = ts._water ? ts._water[i] : 0;
+          var rd = ts._roads ? ts._roads[i] : 0;
           ctx.fillStyle = mk === 2 ? theme.tiles.contested :
+            wt === 2 ? (theme.tiles.waterDeep || theme.tiles.water) :
+            wt === 1 ? theme.tiles.water :
             mk === 1 ? theme.tiles.plot :
+            rd ? (theme.tiles.road || theme.tiles.plot) :
             theme.tiles[ts.data[i] % 10] || theme.tiles[0];
           ctx.fillRect(x * kx, y * ky, sx + 0.5, sy + 0.5);
           if (f === 1) {

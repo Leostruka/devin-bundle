@@ -976,6 +976,16 @@ def main():
             except subprocess.TimeoutExpired:
                 pproc.kill()
 
+        # #157 live weather + mode override
+        st, wx = get(PORT, "/weather")
+        assert st == 200 and wx.get("ok") is True and "wind_kph" in wx, wx
+        assert "temp_c" in wx and "condition" in wx and "wind_deg" in wx, wx
+        assert post(PORT, "/weather", {"mode": "storm"}) == 200
+        st, wx2 = get(PORT, "/weather")
+        assert wx2.get("mode") == "storm" and wx2.get("condition") == "storm"
+        assert post(PORT, "/weather", {"mode": "live"}) == 200
+        print("PASS weather endpoint (live forecast + mode override)")
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
         st, snap = get(PORT, "/snapshot")
         sys.path.insert(0, HERE)
