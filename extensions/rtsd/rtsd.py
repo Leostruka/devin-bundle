@@ -43,6 +43,7 @@ import sys
 import threading
 import time
 import urllib.parse
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -62,7 +63,228 @@ STATE = {"root": None, "clients": [], "lock": threading.Lock(),
         # RLock: a permissionrequest append recursively appends its
         # decision.created event through the same locked path (#129)
         "write_lock": threading.RLock(), "token": None, "world": None,
-        "spectator_token": None, "replay": None}
+        "spectator_token": None, "replay": None,
+        "weather": None, "weather_ts": 0.0, "weather_mode": "live"}
+
+_WMO_MAP = {
+    0: ("clear", "Clear Sky"),
+    1: ("clear", "Mainly Clear"),
+    2: ("cloudy", "Partly Cloudy"),
+    3: ("overcast", "Overcast"),
+    45: ("fog", "Fog"),
+    48: ("fog", "Rime Fog"),
+    51: ("rain", "Light Drizzle"),
+    53: ("rain", "Moderate Drizzle"),
+    55: ("rain", "Dense Drizzle"),
+    56: ("rain", "Freezing Drizzle"),
+    57: ("rain", "Heavy Freezing Drizzle"),
+    61: ("rain", "Slight Rain"),
+    63: ("rain", "Moderate Rain"),
+    65: ("rain", "Heavy Rain"),
+    66: ("rain", "Freezing Rain"),
+    67: ("rain", "Heavy Freezing Rain"),
+    71: ("snow", "Slight Snow"),
+    73: ("snow", "Moderate Snow"),
+    75: ("snow", "Heavy Snow"),
+    77: ("snow", "Snow Grains"),
+    80: ("rain", "Rain Showers"),
+    81: ("rain", "Heavy Showers"),
+    82: ("storm", "Violent Showers"),
+    85: ("snow", "Snow Showers"),
+    86: ("snow", "Heavy Snow Showers"),
+    95: ("storm", "Thunderstorm"),
+    96: ("storm", "Thunderstorm + Hail"),
+    99: ("storm", "Severe Thunderstorm"),
+}
+
+_WX_PRESETS = {
+    "clear": {"condition": "clear", "label": "Clear Sky", "weather_code": 0,
+              "cloud_pct": 10, "precip_mm": 0.0, "wind_kph": 12.0,
+              "wind_gust_kph": 18.0, "wind_deg": 65},
+    "overcast": {"condition": "overcast", "label": "Overcast",
+                 "weather_code": 3, "cloud_pct": 95, "precip_mm": 0.0,
+                 "wind_kph": 16.0, "wind_gust_kph": 28.0, "wind_deg": 75},
+    "rain": {"condition": "rain", "label": "Moderate Rain",
+             "weather_code": 63, "cloud_pct": 92, "precip_mm": 4.2,
+             "wind_kph": 22.0, "wind_gust_kph": 38.0, "wind_deg": 110},
+    "storm": {"condition": "storm", "label": "Thunderstorm",
+              "weather_code": 95, "cloud_pct": 100, "precip_mm": 11.5,
+              "wind_kph": 38.0, "wind_gust_kph": 64.0, "wind_deg": 135},
+    "snow": {"condition": "snow", "label": "Moderate Snow",
+             "weather_code": 73, "cloud_pct": 88, "precip_mm": 2.5,
+             "wind_kph": 15.0, "wind_gust_kph": 26.0, "wind_deg": 200},
+    "fog": {"condition": "fog", "label": "Dense Fog", "weather_code": 45,
+            "cloud_pct": 85, "precip_mm": 0.0, "wind_kph": 6.0,
+            "wind_gust_kph": 11.0, "wind_deg": 45},
+    "windy": {"condition": "cloudy", "label": "Gale Winds",
+              "weather_code": 2, "cloud_pct": 45, "precip_mm": 0.0,
+              "wind_kph": 44.0, "wind_gust_kph": 72.0, "wind_deg": 80},
+}
+
+
+def _cardinal(deg):
+    dirs = ("N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+            "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW")
+    return dirs[int(((float(deg or 0) + 11.25) % 360) / 22.5)]
+
+
+def _http_get_json(url, timeout=2.5):
+    req = urllib.request.Request(url, headers={"User-Agent": "rtsd/3.8"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read().decode("utf-8", errors="replace"))
+
+
+def fetch_weather(force=False):
+    """Fetch operator's local weather via IP geolocation + Open-Meteo (#157).
+    Caches for 600s in memory and persists to .devin/rts/weather.json so
+    offline sessions and unit tests never block or fail."""
+    now = time.time()
+    if not force and STATE.get("weather") and now - STATE["weather_ts"] < 600:
+        return STATE["weather"]
+    cache_path = os.path.join(state_dir(), "weather.json")
+    cached = read_json(cache_path, None)
+    if not force and cached and now - (cached.get("fetched_at") or 0) < 600:
+        STATE["weather"] = cached
+        STATE["weather_ts"] = cached.get("fetched_at", now)
+        return cached
+    city, region, country, lat, lon = "Curitiba", "Parana", "BR", -25.50, -49.29
+    if cached:
+        city = cached.get("city", city)
+        region = cached.get("region", region)
+        country = cached.get("country", country)
+        lat = float(cached.get("lat", lat))
+        lon = float(cached.get("lon", lon))
+    if not os.environ.get("RTSD_NO_NET"):
+        for gurl in ("https://get.geojs.io/v1/ip/geo.json",
+                     "https://ipwho.is/"):
+            try:
+                g = _http_get_json(gurl, timeout=2.2)
+                if g and g.get("latitude") is not None:
+                    city = str(g.get("city") or city)
+                    region = str(g.get("region") or region)
+                    country = str(g.get("country_code") or g.get("country")
+                                  or country)
+                    lat = float(g["latitude"])
+                    lon = float(g["longitude"])
+                    break
+            except Exception:
+                continue
+        try:
+            murl = (
+                "https://api.open-meteo.com/v1/forecast"
+                "?latitude=%.4f&longitude=%.4f"
+                "&current=temperature_2m,relative_humidity_2m,is_day,"
+                "precipitation,rain,showers,snowfall,weather_code,"
+                "cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m"
+                "&hourly=temperature_2m,precipitation_probability,"
+                "weather_code,wind_speed_10m&forecast_days=1&timezone=auto"
+                % (lat, lon)
+            )
+            w = _http_get_json(murl, timeout=2.8)
+            cur = (w or {}).get("current") or {}
+            code = int(cur.get("weather_code", 0) or 0)
+            cond, label = _WMO_MAP.get(code, ("cloudy", "Cloudy"))
+            deg = float(cur.get("wind_direction_10m", 75) or 75)
+            hr = (w or {}).get("hourly") or {}
+            times = hr.get("time") or []
+            temps = hr.get("temperature_2m") or []
+            probs = hr.get("precipitation_probability") or []
+            codes = hr.get("weather_code") or []
+            winds = hr.get("wind_speed_10m") or []
+            hourly = []
+            for i in range(min(len(times), 24)):
+                c_i = int(codes[i] if i < len(codes) else code)
+                hourly.append({
+                    "time": str(times[i])[-5:],
+                    "temp_c": round(float(temps[i]), 1)
+                    if i < len(temps) else 0.0,
+                    "pop": int(probs[i]) if i < len(probs) else 0,
+                    "condition": _WMO_MAP.get(c_i, ("cloudy", "Cloudy"))[0],
+                    "wind_kph": round(float(winds[i]), 1)
+                    if i < len(winds) else 0.0,
+                })
+            data = {
+                "ok": True,
+                "source": "open-meteo",
+                "fetched_at": now,
+                "city": city,
+                "region": region,
+                "country": country,
+                "lat": round(lat, 4),
+                "lon": round(lon, 4),
+                "temp_c": round(float(cur.get("temperature_2m", 18.0)), 1),
+                "humidity": int(cur.get("relative_humidity_2m", 70) or 70),
+                "is_day": bool(cur.get("is_day", 1)),
+                "weather_code": code,
+                "condition": cond,
+                "label": label,
+                "cloud_pct": int(cur.get("cloud_cover", 40) or 40),
+                "precip_mm": round(float(cur.get("precipitation", 0.0) or 0.0),
+                                   2),
+                "wind_kph": round(float(cur.get("wind_speed_10m", 12.0)
+                                        or 12.0), 1),
+                "wind_gust_kph": round(float(cur.get("wind_gusts_10m", 18.0)
+                                             or 18.0), 1),
+                "wind_deg": int(round(deg)),
+                "wind_cardinal": _cardinal(deg),
+                "hourly": hourly[:8],
+            }
+            STATE["weather"] = data
+            STATE["weather_ts"] = now
+            try:
+                with open(cache_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+            except OSError:
+                pass
+            return data
+        except Exception:
+            pass
+    if cached:
+        STATE["weather"] = cached
+        STATE["weather_ts"] = now
+        return cached
+    fallback = {
+        "ok": True, "source": "fallback", "fetched_at": now,
+        "city": city, "region": region, "country": country,
+        "lat": lat, "lon": lon, "temp_c": 18.0, "humidity": 72,
+        "is_day": True, "weather_code": 2, "condition": "cloudy",
+        "label": "Partly Cloudy", "cloud_pct": 45, "precip_mm": 0.0,
+        "wind_kph": 14.0, "wind_gust_kph": 22.0, "wind_deg": 75,
+        "wind_cardinal": "ENE", "hourly": [],
+    }
+    STATE["weather"] = fallback
+    STATE["weather_ts"] = now
+    return fallback
+
+
+def weather_state(fetch_if_empty=False):
+    base = STATE.get("weather")
+    if base is None:
+        if fetch_if_empty:
+            base = fetch_weather()
+        else:
+            base = read_json(os.path.join(state_dir(), "weather.json"), None)
+            if base:
+                STATE["weather"] = base
+                STATE["weather_ts"] = base.get("fetched_at", time.time())
+            else:
+                base = {
+                    "ok": True, "source": "pending", "fetched_at": 0,
+                    "city": "Local", "region": "", "country": "",
+                    "lat": -25.50, "lon": -49.29, "temp_c": 18.0,
+                    "humidity": 75, "is_day": True, "weather_code": 2,
+                    "condition": "cloudy", "label": "Partly Cloudy",
+                    "cloud_pct": 45, "precip_mm": 0.0, "wind_kph": 14.0,
+                    "wind_gust_kph": 22.0, "wind_deg": 75,
+                    "wind_cardinal": "ENE", "hourly": [],
+                }
+    out = dict(base)
+    mode = STATE.get("weather_mode") or "live"
+    out["mode"] = mode
+    if mode in _WX_PRESETS:
+        out.update(_WX_PRESETS[mode])
+        out["wind_cardinal"] = _cardinal(out["wind_deg"])
+    return out
 
 
 def state_dir():
@@ -271,6 +493,7 @@ def build_snapshot():
     if STATE["world"] is not None:
         snap["v"] = 2
         snap["world"] = STATE["world"].snapshot(snap["generated_at"])
+    snap["weather"] = weather_state(fetch_if_empty=False)
     snap["mode"] = "replay" if STATE["replay"] is not None else "live"
     if STATE["replay"] is not None:
         snap["replay"] = replay_status()
@@ -576,6 +799,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, STATE["world"].score())
         if path == "/sessions":
             return self._json(200, list_sessions())
+        if path == "/weather":
+            return self._json(200, weather_state(fetch_if_empty=True))
         if path == "/replay":
             if STATE["replay"] is None:
                 return self._json(404, {"error": "not in replay mode"})
@@ -635,6 +860,17 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(400, {"error": "bad event"})
             append_event(ev)
             return self._json(200, {"ok": True})
+        if path == "/weather":
+            body = self._body() or {}
+            mode = str(body.get("mode") or "live").lower()
+            if mode not in ("live",) and mode not in _WX_PRESETS:
+                return self._json(400, {"error": "bad weather mode"})
+            STATE["weather_mode"] = mode
+            if body.get("refresh"):
+                fetch_weather(force=True)
+            wx = weather_state(fetch_if_empty=True)
+            broadcast({"type": "weather", "weather": wx})
+            return self._json(200, wx)
         if path == "/intent":
             it = self._body()
             kind = it.get("kind")
@@ -865,6 +1101,8 @@ def main():
             except Exception:
                 pass  # fail-open: a bad tick never kills the daemon
 
+    threading.Thread(target=lambda: fetch_weather(force=False),
+                     daemon=True).start()
     threading.Thread(target=tick_loop, daemon=True).start()
     try:
         srv.serve_forever()

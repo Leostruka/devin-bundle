@@ -40,6 +40,7 @@
     decT0: 0,                // first-seen time for meeting summons (#134)
     motion: {},              // unit id -> display pos {x,y} glide (#136)
     cams: {},                // F1-F4 camera bookmarks (#136)
+    weather: null,           // live local weather forecast (#157)
     dn: localStorage.getItem("rtsd.daynight") === "1" // day/night on
   };
 
@@ -346,6 +347,7 @@
 
   function applySnapshot(snap) {
     state.snap = snap;
+    if (snap.weather) state.weather = snap.weather;
     document.body.className =
       (snap.mode === "replay" ? "replay " : "") +
       (snap.client_role === "spectator" ? "spectator" : "");
@@ -369,7 +371,8 @@
       }
     }
     if (!state._camInit && state.map) {
-      var c0 = state.map.caps[Object.keys(state.map.caps)[0]];
+      var c0 = state.map.caps.root ||
+               state.map.caps[Object.keys(state.map.caps)[0]];
       eng.centerOn(c0.cx * TILE, c0.cy * TILE); state._camInit = true;
     }
     // comms scrollback is event-sourced: the snapshot carries the full
@@ -425,6 +428,8 @@
           }
         } else if (m.type === "tick") { got = true; applyTick(m); }
         else if (m.type === "replay") syncReplay(m.replay);
+        else if (m.type === "weather") { state.weather = m.weather;
+          renderPanels(); }
         else if (m.type === "score") showScore(m.score);
       };
       ws.onerror = function () { ws.close(); };
@@ -1957,6 +1962,7 @@
       workers: state.workers, fades: state.fades,
       waypoints: state.waypoints, ravens: state.ravens,
       srvClock: state.srvClock, decision: meetingCall(),
+      weather: state.weather,
       night: nightFactor(),
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
