@@ -40,8 +40,7 @@
     decT0: 0,                // first-seen time for meeting summons (#134)
     motion: {},              // unit id -> display pos {x,y} glide (#136)
     cams: {},                // F1-F4 camera bookmarks (#136)
-    dn: localStorage.getItem("rtsd.daynight") === "1", // day/night on
-    barks: {}
+    dn: localStorage.getItem("rtsd.daynight") === "1" // day/night on
   };
 
   function esc(s) {
@@ -194,12 +193,23 @@
   }
 
   function unitPos(u, map) {
+    var h = Engine.hash(String(u.id));
+    if (u.kind === "minion" && state.world) {
+      var su = (state.world.units || []).filter(function (x) {
+        return x.kind === "hero" &&
+          (x.id === u.summoner || (u.lane && x.lane === u.lane));
+      })[0];
+      if (su) {
+        var sp = unitPos(su, map), ma = (h % 628) / 100;
+        return { x: sp.x + Math.cos(ma) * TILE * 0.65,
+                 y: sp.y + Math.sin(ma) * TILE * 0.65 };
+      }
+    }
     // unit stands in its lane's region, or wanders around its class capital
     var ids = Object.keys(map.caps);
     var reg = map.caps[u.lane] ? u.lane
-      : ids[Engine.hash(String(u.id)) % ids.length];
+      : ids[h % ids.length];
     var c = map.caps[reg];
-    var h = Engine.hash(String(u.id));
     var ring = 1 + (h % 3), ang = (h % 628) / 100;
     return { x: (c.cx + Math.cos(ang) * ring) * TILE,
              y: (c.cy + Math.sin(ang) * ring) * TILE };
@@ -227,29 +237,32 @@
     var liveIds = {};
     state.units = (w.units || []).map(function (u) {
       var p = unitPos(u, state.map);
-      // glide target (#136): the unit's latest live order carrying a
-      // map coordinate wins; no order -> drift back to its home tile
-      var tgt = p;
-      var ords = u.orders || [];
-      for (var oi = ords.length - 1; oi >= 0; oi--) {
-        var o = ords[oi];
+      // glide targets (#127/#136): active queued waypoints walked in FIFO
+      // order; no active order -> drift back to the unit's home tile
+      var pts = [];
+      ((u.orders || [])).forEach(function (o) {
         if (o.state !== "consumed" && typeof o.x === "number" &&
-            typeof o.y === "number") {
-          tgt = { x: (o.x + .5) * TILE, y: (o.y + .5) * TILE };
-          break;
-        }
-      }
+            typeof o.y === "number")
+          pts.push({ x: (o.x + .5) * TILE, y: (o.y + .5) * TILE });
+      });
+      var sig = pts.map(function (q) { return q.x + ":" + q.y; }).join(",");
       var mo = state.motion[u.id] ||
-               (state.motion[u.id] = { x: p.x, y: p.y });
+               (state.motion[u.id] = { x: p.x, y: p.y, wi: 0, sig: "" });
+      if (mo.sig !== sig) { mo.sig = sig; mo.wi = 0; }
+      var tgt = pts.length ? pts[Math.min(mo.wi, pts.length - 1)] : p;
       liveIds[u.id] = 1;
       var ack = state.acks[u.id];
       if (ack && now - ack.t0 > 4000) { delete state.acks[u.id]; ack = 0; }
       var live = u.status_live || u.status;
+      if (prev[u.id] && prev[u.id].status_live !== "done" &&
+          live === "done") {
+        ack = state.acks[u.id] = { text: barkLine(u.cls, 2), t0: now };
+      }
       // death animation: a hero that just failed gets a fade marker (#125)
       if (prev[u.id] && prev[u.id].status_live !== "failed" &&
           live === "failed") pushFade(mo.x, mo.y, u.cls);
       return { id: u.id, x: mo.x, y: mo.y, tx: tgt.x, ty: tgt.y,
-        moving: false, cls: u.cls || "Squire",
+        pts: pts, moving: false, cls: u.cls || "Squire",
         kind: u.kind, name: u.name, hp: u.hp, mana: u.mana,
         status_live: live, gate_fail: !!u.gate_fail,
         sel: state.selAll.indexOf(u.id) >= 0,
@@ -273,17 +286,19 @@
     state.srvClock = { srv: w.now || 0, perf: performance.now() };
     state.workers = w.workers || [];
     // queued waypoints (#127): every order intent with x/y on a hero's
-    // queue is a numbered flag; state comes from the intent file
-    // (queued = ghost, acknowledged = solid, consumed = hidden)
+    // queue is a numbered flag chained from the unit through each flag
     state.waypoints = [];
     state.units.forEach(function (u) {
       var ords = (u.unit && u.unit.orders) || [];
-      ords.forEach(function (o, i) {
+      var px = u.x, py = u.y, wn = 0;
+      ords.forEach(function (o) {
         if (o.state === "consumed" ||
             typeof o.x !== "number" || typeof o.y !== "number") return;
-        state.waypoints.push({ x: (o.x + .5) * TILE, y: (o.y + .5) * TILE,
-          n: i + 1, state: o.state, order: o.order,
-          ux: u.x, uy: u.y });
+        var wx = (o.x + .5) * TILE, wy = (o.y + .5) * TILE;
+        state.waypoints.push({ x: wx, y: wy,
+          n: ++wn, state: o.state, order: o.order,
+          ux: px, uy: py });
+        px = wx; py = wy;
       });
     });
     // buildings sit on their fixed server-assigned plots (#123)
@@ -1062,7 +1077,9 @@
   // Inspector for a selected building - every field is live data from
   // GET /buildings/<id> (issue #123: no fake actions).
   function buildingHtml(d) {
-    var h = "<b>" + esc(d.name) + "</b> <span class='meta'>" +
+    var tb = (Theme.get().buildings || {})[d.id];
+    var lbl = tb && tb.label ? " (" + esc(tb.label) + ")" : "";
+    var h = "<b>" + esc(d.name) + lbl + "</b> <span class='meta'>" +
       (d.pos ? esc(d.pos.region) + " plot " + d.pos.plot : "") +
       " | used " + (d.activity || 0) + "x</span><br>";
     if (d.rally)   // #127: right-click on map while building selected
@@ -1132,7 +1149,8 @@
     } else if (d.id === "marketplace") {
       h += rows(d.servers, function (s) {
         return "<div>" + esc(s.name) + " <span class='meta'>" +
-          esc(s.transport) + " | " + (s.enabled ? "enabled" : "disabled") +
+          esc(s.transport) + " | " + (s.tools | 0) + " tools | " +
+          (s.enabled ? "enabled" : "disabled") +
           "</span></div>";
       });
     } else if (d.id === "altar") {
@@ -1337,8 +1355,8 @@
   };
 
   // #135 victory screen: aggregates arrive via WS at end of replay or
-  // are fetched on demand from GET /score (live sessions included)
-  function showScore(sc) {
+  // are fetched on demand from GET /score + GET /sessions (match history)
+  function showScore(sc, ss) {
     var h = "<h2>VICTORY SCREEN</h2>" +
       "<div class='meta'>quests " + sc.quests_done + "/" +
       sc.quests_total + " complete &nbsp; gates " + sc.gates_pass + "/" +
@@ -1355,17 +1373,34 @@
         "</td><td>" + (u.burn || 0) + "</td><td>" +
         esc(u.status || "?") + "</td></tr>";
     });
-    h += "</table><div class='meta' style='margin-top:8px'>" +
+    h += "</table>";
+    if (ss && ss.length) {
+      h += "<div class='qhead'>MATCH HISTORY</div>" +
+        "<table><tr><th>session</th><th>events</th><th>agents</th>" +
+        "<th>quests</th><th>tokens</th><th>dur</th></tr>";
+      ss.forEach(function (s) {
+        h += "<tr><td>" + esc(s.id) + "</td><td>" + (s.events | 0) +
+          "</td><td>" + (s.agents | 0) + "</td><td>" +
+          (s.quests_done | 0) + "/" + (s.quests_total | 0) + "</td><td>" +
+          (s.tokens | 0) + "</td><td>" + (s.duration_s | 0) + "s</td></tr>";
+      });
+      h += "</table>";
+    }
+    h += "<div class='meta' style='margin-top:8px'>" +
       "click anywhere to close</div>";
     var b = el("scorebox"); b.innerHTML = h; b.className = "on";
   }
 
   function fetchScore() {
-    var h = { "X-RTS-Token": TOK };
-    fetch("/score", { headers: TOK ? h : {} })
-      .then(function (r) { return r.json(); })
-      .then(function (sc) { if (!sc.error) showScore(sc); })
-      .catch(function () {});
+    var h = TOK ? { "X-RTS-Token": TOK } : {};
+    Promise.all([
+      fetch("/score", { headers: h }).then(function (r) { return r.json(); }),
+      fetch("/sessions", { headers: h })
+        .then(function (r) { return r.json(); })
+        .catch(function () { return []; })
+    ]).then(function (res) {
+      if (res[0] && !res[0].error) showScore(res[0], res[1]);
+    }).catch(function () {});
   }
 
   // ---- boot ------------------------------------------------------------
@@ -1817,6 +1852,16 @@
   });
   // #135 replay transport + victory screen
   el("scoreBtn").onclick = fetchScore;
+  if (el("mtabs")) {
+    el("mtabs").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-mtab]");
+      if (!b) return;
+      document.body.dataset.mtab = b.dataset.mtab;
+      el("mtabs").querySelectorAll("button").forEach(function (x) {
+        x.className = x === b ? "on" : "";
+      });
+    });
+  }
   el("scorebox").addEventListener("click", function () {
     el("scorebox").className = ""; });
   el("rpp").onclick = function () {
@@ -1862,15 +1907,25 @@
   var WALK_PX_S = 110;
   function stepMotion(dt) {
     state.units.forEach(function (u) {
+      var mo = state.motion[u.id];
       var dx = u.tx - u.x, dy = u.ty - u.y;
       var d = Math.hypot(dx, dy);
-      if (d < 1.5) { u.moving = false; u.x = u.tx; u.y = u.ty; }
-      else {
+      if (d < 1.5) {
+        u.x = u.tx; u.y = u.ty;
+        if (mo && u.pts && mo.wi < u.pts.length - 1) {
+          mo.wi++; u.tx = u.pts[mo.wi].x; u.ty = u.pts[mo.wi].y;
+          u.moving = true;
+        } else u.moving = false;
+      } else {
         var v = Math.max(WALK_PX_S, d * 2.2) * dt;
-        if (v >= d) { u.x = u.tx; u.y = u.ty; u.moving = false; }
-        else { u.x += dx / d * v; u.y += dy / d * v; u.moving = true; }
+        if (v >= d) {
+          u.x = u.tx; u.y = u.ty;
+          if (mo && u.pts && mo.wi < u.pts.length - 1) {
+            mo.wi++; u.tx = u.pts[mo.wi].x; u.ty = u.pts[mo.wi].y;
+            u.moving = true;
+          } else u.moving = false;
+        } else { u.x += dx / d * v; u.y += dy / d * v; u.moving = true; }
       }
-      var mo = state.motion[u.id];
       if (mo) { mo.x = u.x; mo.y = u.y; }
     });
   }

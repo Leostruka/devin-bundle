@@ -318,6 +318,16 @@ def main():
         assert any(f["id"] == "lane1" for f in d["fallen"]), d
         st, d = get(PORT, "/buildings/portal")
         assert "remote" in d
+        with open(os.path.join(root, "mcp_config.json"), "w") as f:
+            json.dump({"mcpServers": {"gh": {"command": "gh-mcp"}}}, f)
+        post(PORT, "/event", {
+            "type": "hook.posttooluse", "tool": "mcp_call_tool",
+            "payload": {"tool_input": {"server_name": "gh",
+                                       "tool_name": "list_prs"}}})
+        st, d = get(PORT, "/buildings/marketplace")
+        assert st == 200 and any(
+            s["name"] == "gh" and s["tools"] == 1
+            for s in d["servers"]), d
         st, d = get(PORT, "/buildings/nope")
         assert st == 404
         print("PASS buildings (plots + real detail endpoints)")
