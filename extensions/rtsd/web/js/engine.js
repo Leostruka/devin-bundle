@@ -95,9 +95,10 @@
         var p = E.toWorld(e.offsetX, e.offsetY);
         var f = e.deltaY < 0 ? 1.15 : 1 / 1.15;
         E.cam.zoom = Math.max(ZMIN, Math.min(ZMAX, E.cam.zoom * f));
-        var v = E.view();
-        E.cam.x = p.x - e.offsetX / E.cam.zoom;
-        E.cam.y = p.y - e.offsetY / E.cam.zoom;
+        var px = E.iso ? p.x - p.y : p.x,
+            py = E.iso ? (p.x + p.y) / 2 : p.y;
+        E.cam.x = px - e.offsetX / E.cam.zoom;
+        E.cam.y = py - e.offsetY / E.cam.zoom;
         E.clampCam();
       }, { passive: false });
       cv.addEventListener("mousemove", function (e) {
@@ -301,9 +302,11 @@
        the meeting table (GDD 3.2 "units walk to table"). */
     _officeProps: function (ctx, st, theme, z, now) {
       var self = this, pal = theme.palette;
-      var th = null;
+      var th = null, rf = null;
       (st.buildings || []).forEach(function (b) {
-        if (b.bid === "town-hall") th = b; });
+        if (b.bid === "town-hall") th = b;
+        if (b.bid === "runeforge") rf = b;
+      });
       if (th) {
         var s = this.toScreen(th.x, th.y);
         // meeting-room table under the town-hall marker
@@ -318,6 +321,30 @@
         ctx.fillRect(wc.x - 4 * z, wc.y - 10 * z, 8 * z, 12 * z);
         ctx.fillStyle = "#58a6ff";
         ctx.beginPath(); ctx.arc(wc.x, wc.y - 12 * z, 4.5 * z, 0, 7);
+        ctx.fill();
+        if (!st.decision) {   // idle heroes gather by the water cooler
+          (st.units || []).filter(function (u) {
+            return u.kind === "hero" && u.status_live === "idle";
+          }).forEach(function (u, i) {
+            var a = 6.2832 * i / 6;
+            var wp = self.toScreen(th.x + TILE * (1.7 + 0.6 * Math.cos(a)),
+                                   th.y + TILE * (1.7 + 0.6 * Math.sin(a)));
+            ctx.globalAlpha = 0.55;
+            var sz = 14 * Math.max(z, 0.7);
+            Theme.sprite(ctx, theme.units[u.cls] || theme.units.Squire,
+                         wp.x - sz / 2, wp.y - sz / 2, sz, sz);
+            ctx.globalAlpha = 1;
+          });
+        }
+      }
+      if (rf && st.tiles && st.tiles.breach &&
+          st.tiles.breach.some(function (x) { return x > 0; })) {
+        // gate-fail = printer fire (red/orange flash on runeforge)
+        var ps = this.toScreen(rf.x, rf.y);
+        var fl = 10 + 5 * Math.sin(now / 120);
+        ctx.fillStyle = (now % 300 < 150) ? pal.err : "#ff9800";
+        ctx.beginPath();
+        ctx.arc(ps.x, ps.y - 18 * z, fl * z, 0, 7);
         ctx.fill();
       }
       // kanban wall behind each quest marker (quest log reskin)

@@ -380,6 +380,9 @@ def replay_loop():
             r["deadline"] = 0
 
 
+_SESS_CACHE = {}  # path -> (mtime, size, World, t0, t1, n_events)
+
+
 def list_sessions():
     """Match history (#135): every event log under .devin/rts (the live
     events.jsonl plus archived copies, e.g. sessions/*.jsonl) replayed
@@ -391,15 +394,26 @@ def list_sessions():
             if not fn.endswith(".jsonl"):
                 continue
             p = os.path.join(dirpath, fn)
-            evs = load_events(p)
-            if not evs:
+            try:
+                st = os.stat(p)
+                key = (st.st_mtime_ns, st.st_size)
+            except OSError:
                 continue
-            t0 = evs[0].get("ts") or 0
-            t1 = evs[-1].get("ts") or t0
-            w = worldmod.World.replay(STATE["root"], evs)
+            cached = _SESS_CACHE.get(p)
+            if cached and cached[:2] == key:
+                _, _, w, t0, t1, nev = cached
+            else:
+                evs = load_events(p)
+                if not evs:
+                    continue
+                t0 = evs[0].get("ts") or 0
+                t1 = evs[-1].get("ts") or t0
+                w = worldmod.World.replay(STATE["root"], evs)
+                nev = len(evs)
+                _SESS_CACHE[p] = (key[0], key[1], w, t0, t1, nev)
             sc = w.score(now=t1)
             out.append({"id": os.path.relpath(p, rts),
-                        "events": len(evs),
+                        "events": nev,
                         "started": t0, "ended": t1,
                         "duration_s": round(t1 - t0),
                         "agents": len(sc["heroes"]),

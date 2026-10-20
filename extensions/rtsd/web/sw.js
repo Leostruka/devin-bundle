@@ -21,7 +21,7 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   var u = new URL(e.request.url);
   if (u.origin !== location.origin ||
-      /\/(ws|snapshot|decisions|event|intent|health)/.test(u.pathname)) {
+      /\/(ws|snapshot|decisions|event|intent|health|buildings|score|sessions|replay)/.test(u.pathname)) {
     return; // network only for live data
   }
   e.respondWith(caches.match(e.request).then(function (hit) {

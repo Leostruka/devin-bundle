@@ -27,6 +27,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 134 | #152 | Office/isometric mode: iso projection shared by render+picking, all 11 buildings reskinned, ambient furniture from real positions, decision summons, theme persisted |
 | 135 | #153 | Replay + spectator: `--replay` daemon (seek/4x, deterministic), `/sessions` match history, `/score` screen, spectator token -> server-enforced 403 on POSTs |
 | 136 | #154 | Polish: motion glide, walk/work/idle anims, ambience + day/night, sprite raster cache, hotkey audit + guide card |
+| 155 | #156 | Post-review audit fixes: `_apply_hook` guard, iso wheel zoom, SW bypass regex, Marketplace `mcp_config.json` + tool counts, done barks + minion grouping, FIFO waypoint chain/consume, Office labels/printer-fire/water-cooler, `/sessions` cache + Web UI Match History, `<700px` mobile tab bar |
 
 ## Final gate evidence (milestone branch)
 

@@ -712,6 +712,7 @@ class World:
         if pin:
             self._submodel = pin
         self.skill_casts = {}      # skill name -> {n, last} (#132)
+        self.mcp_tools = {}        # server_name -> set(tool_names) (#123)
         self._thresholds = load_thresholds(root)
         self._live = {}            # unit id -> last computed live status
         self.layout = load_layout(root)   # static terrain (map.json)
@@ -830,7 +831,8 @@ class World:
                              "tool": tool, "from": frm, "to": list(to)})
         if len(self.workers) > 64:
             self.workers = self.workers[-64:]
-        if ev.get("hook") == "PostToolUse" and tool:
+        if (ev.get("hook") == "PostToolUse"
+                or ev.get("type") == "hook.posttooluse") and tool:
             out = _output_text(payload)
             self.resources["gold"] += len(out) // CHARS_PER_TOKEN
             self.resources["calls"] += 1
@@ -871,6 +873,11 @@ class World:
                 c = self.skill_casts.setdefault(nm, {"n": 0, "last": 0})
                 c["n"] += 1
                 c["last"] = ts
+        elif tool.startswith("mcp_"):            # #123: marketplace tools
+            srv = ti.get("server_name")
+            if srv:
+                tn = ti.get("tool_name") or ti.get("resource_uri") or tool
+                self.mcp_tools.setdefault(str(srv), set()).add(str(tn))
 
     def _spawn_hero(self, ti, resp, ts):
         aid = _agent_id(resp) or "fg-%d" % int(ts * 1000)
@@ -878,10 +885,10 @@ class World:
         cls = HERO_CLASSES.get(profile, "Squire")
         self._class_seq[cls] = self._class_seq.get(cls, 0) + 1
         # barracks rally point: the newest set_rally order routes the next
-        # spawn's lane to the rally region (#127)
+        # spawn's default lane to the rally region (#127)
         lane = str(ti.get("lane") or "")
         rally = self.rally_of("barracks")
-        if rally and rally.get("region"):
+        if not lane and rally and rally.get("region"):
             lane = rally["region"]
         self.units[aid] = {
             "id": aid, "kind": "hero", "profile": profile, "cls": cls,
@@ -915,12 +922,22 @@ class World:
         u["last_seen"] = ts
         u["xp"] = u.get("xp", 0) + 1
         u["level"] = 1 + u["xp"] // 3
+        for o in self.orders.get(aid, []):
+            o["_done"] = True
 
     def _spawn_minion(self, sid, lane, ts):
         uid = "sh-" + sid
+        hid = lane if lane in self.units else self._lane_speaker(lane)[0]
+        if not hid:
+            for u in reversed(list(self.units.values())):
+                if u.get("kind") == "hero" and u.get("status") == "running":
+                    hid = u["id"]
+                    break
+        ulane = (self.units[hid].get("lane") if hid in self.units
+                 else None) or lane
         self.units[uid] = {"id": uid, "kind": "minion", "cls": "Minion",
                            "name": "Shell-" + sid[-4:],
-                           "summoner": lane, "lane": lane,
+                           "summoner": hid or lane, "lane": ulane,
                            "status": "running", "spawned_at": ts,
                            "last_seen": ts, "ttl": MINION_TTL_S}
 
@@ -929,7 +946,13 @@ class World:
         if kind == "goal":
             self.goal = {"text": it.get("text", ""), "ts": ts}
         elif kind == "order" and it.get("to"):
-            self.orders.setdefault(str(it["to"]), []).append(it)
+            lst = self.orders.setdefault(str(it["to"]), [])
+            if not it.get("queue") and it.get("order") != "set_rally":
+                for prev in lst:
+                    prev["_done"] = True
+            if it.get("order") == "stop":
+                it = dict(it, _done=True)
+            lst.append(dict(it))
 
     # ---- orders / rally (#127) ----
 
@@ -1196,12 +1219,26 @@ class World:
                 with open(os.path.join(root, "data",
                                        "bundle-integrations.json"),
                           encoding="utf-8") as f:
-                    cfg = json.load(f).get("mcp", {})
+                    cfg.update(json.load(f).get("mcp", {}))
             except Exception:
                 pass
-            d["servers"] = [{"name": k, "enabled": bool(v.get("enabled")),
-                             "transport": v.get("transport", "?")}
-                            for k, v in sorted(cfg.items())]
+            for mp in (os.path.join(root, "mcp_config.json"),
+                       os.path.join(root, ".devin", "mcp_config.json")):
+                try:
+                    with open(mp, encoding="utf-8") as f:
+                        for k, v in (json.load(f).get("mcpServers")
+                                     or {}).items():
+                            cfg.setdefault(k, {}).update(v or {})
+                except Exception:
+                    pass
+            d["servers"] = [{
+                "name": k,
+                "enabled": bool(v.get("enabled", not v.get("disabled", False))),
+                "transport": v.get("transport")
+                or ("stdio" if v.get("command") else "http"),
+                "tools": len(v.get("tools") or [])
+                or len(self.mcp_tools.get(k, ())),
+            } for k, v in sorted(cfg.items())]
         elif bid == "altar":
             d["fallen"] = [{"id": u["id"], "cls": u.get("cls"),
                             "name": u.get("name"), "profile":
@@ -1699,7 +1736,9 @@ class World:
                 # intent files (queued while pending, acknowledged once
                 # the session consumed it, then 'consumed'/cleared)
                 u["orders"] = [self._order_view(
-                    i, ist.get(str(i.get("id")), "pending"))
+                    i, "consumed" if i.get("_done") else (
+                        ist.get(str(i["id"]), "consumed")
+                        if i.get("id") else "pending"))
                     for i in self.orders.get(u["id"], [])]
                 # #131 economy: this hero's context burn = est tokens on
                 # its lane; turns_left = remaining window (mana % of the

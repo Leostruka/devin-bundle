@@ -183,15 +183,27 @@
           border-radius:8px; padding:12px; font-size:11px; max-width:320px;
           max-height:82%; overflow-y:auto; }
   #help.on { display:block; }
+  #mtabs { display:none; gap:4px; padding:4px 8px; background:var(--panel);
+           border-bottom:1px solid var(--border); }
+  #mtabs button { flex:1; font-size:11px; padding:2px 4px; }
+  #mtabs button.on { border-color:var(--warn); color:var(--warn); }
   @media (max-width:700px) {
-    #feedpane, #side { display:none; }
+    #mtabs { display:flex; }
+    #feedpane, #side, #cmdcard { display:none; }
     #bottom { height:110px; }
-    #mmwrap { width:110px; } #cmdcard { display:none; }
+    #mmwrap { width:110px; }
     #council { position:fixed; }
+    body[data-mtab="quests"] #mapwrap,
+    body[data-mtab="feed"] #mapwrap { display:none; }
+    body[data-mtab="quests"] #side,
+    body[data-mtab="feed"] #feedpane { display:flex; width:100%; border:0; }
+    body[data-mtab="card"] #mmwrap,
+    body[data-mtab="card"] #portrait { display:none; }
+    body[data-mtab="card"] #cmdcard { display:grid; width:100%; border:0; }
   }
 </style>
 </head>
-<body>
+<body data-mtab="map">
 <header>
   <b>RTSD</b><span class="meta">the Keep</span>
   <span id="conn" class="off">offline</span>
@@ -205,6 +217,12 @@
   <button id="dnBtn" title="day/night cycle (N toggles)">day/night:off</button>
   <button id="themeBtn">theme</button>
 </header>
+<div id="mtabs">
+  <button data-mtab="map" class="on">map</button>
+  <button data-mtab="quests">quests/econ</button>
+  <button data-mtab="feed">comms</button>
+  <button data-mtab="card">orders</button>
+</div>
 <main>
   <div id="feedpane"><h3>Comms</h3><div id="feed"></div>
     <div id="ffilter"></div></div>
