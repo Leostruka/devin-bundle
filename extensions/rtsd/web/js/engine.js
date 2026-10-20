@@ -985,6 +985,255 @@
       }
     },
 
+    /* #158 live building animations: wind-flapping banners, drifting
+       chimney/forge smoke, rising sparks, orbiting arcane rings, portal
+       vortex, market awning ripple, sacred braziers, watchtower beacon. */
+    _drawBuildingAnim: function (ctx, b, s, w, h, z, now, wind, pal) {
+      var bid = b.bid || "vault", i;
+      // 1. Wind-flapping roof banners on Keep, Barracks, Watchtower, Trophy Hall
+      if (bid === "town-hall" || bid === "barracks" ||
+          bid === "watchtower" || bid === "trophy-hall") {
+        var bx = s.x + (bid === "town-hall" ? -w * 0.28 : 0),
+            by = s.y - h * 0.48;
+        ctx.strokeStyle = "#d4a72c";
+        ctx.lineWidth = Math.max(1, 1.4 * z);
+        ctx.beginPath();
+        ctx.moveTo(bx, by + 6 * z);
+        ctx.lineTo(bx, by - 8 * z);
+        ctx.stroke();
+        var flCol = bid === "barracks" ? "#f85149" :
+                    bid === "watchtower" ? "#58a6ff" : "#ffd54a";
+        ctx.fillStyle = flCol;
+        var fx1 = bx + (9 + 3 * Math.sin(now / 140)) * wind.ux * z,
+            fy1 = by - 7 * z + (3 * Math.cos(now / 160)) * wind.uy * z;
+        ctx.beginPath();
+        ctx.moveTo(bx, by - 8 * z);
+        ctx.quadraticCurveTo(bx + 5 * wind.ux * z,
+                             by - 6 * z + 2 * Math.sin(now / 110) * z,
+                             fx1, fy1);
+        ctx.lineTo(bx, by - 3 * z);
+        ctx.closePath();
+        ctx.fill();
+        ctx.lineWidth = 1;
+      }
+      // 2. Chimney smoke & forge sparks drifting with the wind
+      if (bid === "tavern" || bid === "runeforge") {
+        var cx0 = s.x + (bid === "tavern" ? w * 0.24 : -w * 0.22),
+            cy0 = s.y - h * 0.42;
+        for (i = 0; i < 4; i++) {
+          var ph = ((now / 900 + i * 0.25) % 1);
+          var sx = cx0 + ph * wind.vx * 18 * z + Math.sin(now / 300 + i) * 2 * z,
+              sy = cy0 - ph * 22 * z + ph * wind.vy * 8 * z;
+          ctx.fillStyle = bid === "runeforge"
+            ? "rgba(90,85,82," + ((1 - ph) * 0.48).toFixed(2) + ")"
+            : "rgba(210,215,220," + ((1 - ph) * 0.42).toFixed(2) + ")";
+          ctx.beginPath();
+          ctx.arc(sx, sy, (2.2 + ph * 4.5) * z, 0, 7);
+          ctx.fill();
+        }
+        if (bid === "runeforge") {
+          // Rising orange forge embers/sparks
+          ctx.fillStyle = (now % 240 < 120) ? "#ffd54a" : "#ff6a00";
+          for (i = 0; i < 3; i++) {
+            var ep = ((now / 450 + i * 0.33) % 1);
+            ctx.fillRect(cx0 + ep * wind.vx * 12 * z + (i - 1) * 3 * z,
+                         cy0 - ep * 18 * z, 2 * z, 2 * z);
+          }
+        }
+      }
+      // 3. Orbiting arcane rings / crystal on Library & Vault
+      if (bid === "library" || bid === "vault") {
+        var ang = now / 520;
+        ctx.strokeStyle = bid === "library" ? "#58a6ff" : "#ffd54a";
+        ctx.lineWidth = Math.max(1, 1.3 * z);
+        ctx.beginPath();
+        ctx.ellipse(s.x, s.y - h * 0.36, 9 * z, 3.8 * z,
+                    Math.sin(ang) * 0.35, 0, 7);
+        ctx.stroke();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(s.x + Math.cos(ang) * 9 * z,
+                s.y - h * 0.36 + Math.sin(ang) * 3.8 * z, 2 * z, 0, 7);
+        ctx.fill();
+        ctx.lineWidth = 1;
+      }
+      // 4. Swirling dimensional vortex on Portal
+      if (bid === "portal") {
+        ctx.strokeStyle = (now % 320 < 160) ? "#e879f9" : "#38bdf8";
+        ctx.lineWidth = Math.max(1.2, 1.6 * z);
+        var pa = now / 280;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 7 * z, pa, pa + 2.4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 4.5 * z, -pa, -pa + 2.2);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+      // 5. Sacred soul-flame braziers on Altar & Barracks
+      if (bid === "altar" || bid === "barracks") {
+        var fcol = bid === "altar" ? "#38bdf8" : "#ff7b00";
+        var flk = Math.sin(now / 110) * 1.8 * z;
+        ctx.fillStyle = fcol;
+        ctx.beginPath();
+        ctx.arc(s.x - w * 0.30 + wind.vx * z, s.y + h * 0.12 - flk * 0.4,
+                2.8 * z, 0, 7);
+        ctx.arc(s.x + w * 0.30 + wind.vx * z, s.y + h * 0.12 + flk * 0.4,
+                2.8 * z, 0, 7);
+        ctx.fill();
+      }
+      // 6. Rotating lookout beacon on Watchtower
+      if (bid === "watchtower") {
+        var ba = now / 900;
+        ctx.fillStyle = "rgba(255,213,74,0.16)";
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y - h * 0.38);
+        ctx.lineTo(s.x + Math.cos(ba) * 28 * z,
+                   s.y - h * 0.38 + Math.sin(ba) * 18 * z);
+        ctx.lineTo(s.x + Math.cos(ba + 0.35) * 28 * z,
+                   s.y - h * 0.38 + Math.sin(ba + 0.35) * 18 * z);
+        ctx.closePath();
+        ctx.fill();
+      }
+    },
+
+    /* #158 living unit & hero renderer: Hero Glow, rotating Aura runes,
+       wind-reactive flowing cape, walking stride + dust/water puffs,
+       Stand-1/2/3 autonomous idle fidgets (look around, weapon salute,
+       social nod), and active work/combat weapon swings + sparks. */
+    _drawUnitLive: function (ctx, u, s, sz, dy, ent, z, now, wind, pal, all) {
+      var ph = hash(String(u.id));
+      var isHero = u.kind === "hero";
+      // 1. WC3 Hero Glow & Rotating Geometric Aura Rune under feet
+      if (isHero) {
+        var gRad = sz * 0.72;
+        var grad = ctx.createRadialGradient(
+          s.x, s.y + sz * 0.22, sz * 0.1,
+          s.x, s.y + sz * 0.22, gRad);
+        grad.addColorStop(0, "rgba(255,213,74,0.34)");
+        grad.addColorStop(1, "rgba(255,213,74,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y + sz * 0.22, gRad, 0, 7);
+        ctx.fill();
+        if ((u.level || 1) >= 1 && z > 0.55) {
+          var aAng = now / 900 + (ph % 10);
+          ctx.strokeStyle = ent.trim || "#ffd54a";
+          ctx.globalAlpha = 0.45;
+          ctx.setLineDash([3 * z, 3 * z]);
+          ctx.beginPath();
+          ctx.ellipse(s.x, s.y + sz * 0.28, sz * 0.54, sz * 0.22, 0, 0, 7);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          for (var rp = 0; rp < 4; rp++) {
+            var ra = aAng + rp * 1.5708;
+            ctx.fillStyle = ent.trim || "#ffd54a";
+            ctx.fillRect(s.x + Math.cos(ra) * sz * 0.52 - 1.5 * z,
+                         s.y + sz * 0.28 + Math.sin(ra) * sz * 0.21 - 1.5 * z,
+                         3 * z, 3 * z);
+          }
+          ctx.globalAlpha = 1;
+        }
+      }
+      // 2. Footstep Dust / Splash Puffs when walking + alternating boot stride
+      if (u.moving && z > 0.5) {
+        for (var dp = 0; dp < 3; dp++) {
+          var dph = ((now / 320 + dp * 0.33 + (ph % 7) * 0.1) % 1);
+          ctx.fillStyle = "rgba(185,170,140," + ((1 - dph) * 0.45).toFixed(2) + ")";
+          ctx.beginPath();
+          ctx.arc(s.x - (dp - 1) * 4 * z - wind.vx * dph * 6 * z,
+                  s.y + sz * 0.38 + dph * 4 * z,
+                  (1.8 + dph * 2.8) * z, 0, 7);
+          ctx.fill();
+        }
+        // Striding boots
+        var stride = Math.sin(now / 80 + ph) * 3.5 * z;
+        ctx.fillStyle = "#3b2818";
+        ctx.fillRect(s.x - 4 * z + stride, s.y + sz * 0.32, 3 * z, 3 * z);
+        ctx.fillRect(s.x + 1 * z - stride, s.y + sz * 0.32, 3 * z, 3 * z);
+      }
+      // 3. Wind-Reactive Flowing Cape behind Heroes & Martial/Caster classes
+      if (isHero || ent.arch === "martial" || ent.arch === "caster") {
+        var cFlap = Math.sin(now / 150 + ph) * 2.5 * z;
+        var cxTail = s.x + (wind.vx * 6 + (u.moving ? -4 : 0)) * z + cFlap,
+            cyTail = s.y + sz * 0.32 + wind.vy * 3 * z;
+        ctx.fillStyle = ent.bg || "#254e8a";
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.moveTo(s.x - sz * 0.26, s.y - sz * 0.05 + dy);
+        ctx.lineTo(s.x + sz * 0.26, s.y - sz * 0.05 + dy);
+        ctx.lineTo(cxTail + sz * 0.22, cyTail);
+        ctx.lineTo(cxTail - sz * 0.22, cyTail);
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      // 4. Autonomous Idle Fidgets (Stand - 1/2/3: look around, flourish, social)
+      var fidgetSlot = Math.floor((now / 2800 + (ph % 19))) % 7;
+      var subT = ((now / 2800 + (ph % 19)) % 1);
+      var gx = 0;
+      if (!u.moving && u.status_live !== "running" && !u.acting) {
+        if (fidgetSlot === 2) {
+          // Stand - 2: Look around left/right
+          gx = Math.sin(subT * 6.283) * 2.2 * z;
+        }
+      }
+      // Draw core multi-part unit sprite
+      Theme.sprite(ctx, ent, s.x - sz / 2 + gx, s.y - sz / 2 + dy, sz, sz);
+
+      // 5. Active Combat / Work Swing OR Idle Weapon Flourish / Social Emote
+      if (u.status_live === "running" || u.acting) {
+        // Active work/attack swing arc + golden clash sparks
+        var swAng = Math.sin(now / 95 + ph) * 1.1;
+        ctx.strokeStyle = "#ffd54a";
+        ctx.lineWidth = Math.max(1.5, 2.2 * z);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y + dy, sz * 0.58, swAng - 0.6, swAng + 0.6);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        if ((now + ph) % 260 < 110) {
+          ctx.fillStyle = "#fff8dc";
+          ctx.fillRect(s.x + Math.cos(swAng) * sz * 0.58 - 1.5 * z,
+                       s.y + Math.sin(swAng) * sz * 0.58 - 1.5 * z,
+                       3 * z, 3 * z);
+        }
+      } else if (!u.moving && z > 0.55) {
+        if (fidgetSlot === 4 && subT < 0.55) {
+          // Stand - 3: Heroic weapon/staff flourish glint above shoulder
+          ctx.strokeStyle = ent.trim || "#ffd54a";
+          ctx.lineWidth = 1.6;
+          var fy = s.y - sz * 0.55 - Math.sin(subT * 5.5) * 4 * z;
+          ctx.beginPath();
+          ctx.moveTo(s.x + sz * 0.35, s.y - sz * 0.1);
+          ctx.lineTo(s.x + sz * 0.42, fy);
+          ctx.stroke();
+          ctx.fillStyle = "#fff";
+          ctx.beginPath();
+          ctx.arc(s.x + sz * 0.42, fy, 2 * z, 0, 7);
+          ctx.fill();
+          ctx.lineWidth = 1;
+        } else if (fidgetSlot === 5 && !u.bark) {
+          // Social interaction: check if an ally is nearby -> friendly nod/chat pip
+          for (var ai = 0; ai < all.length; ai++) {
+            var o = all[ai];
+            if (o.id !== u.id && Math.hypot(o.x - u.x, o.y - u.y) < TILE * 3.2) {
+              ctx.fillStyle = "rgba(20,28,22,0.82)";
+              ctx.beginPath();
+              ctx.arc(s.x + sz * 0.42, s.y - sz * 0.48, 5.5 * z, 0, 7);
+              ctx.fill();
+              ctx.strokeStyle = "#d4a72c";
+              ctx.stroke();
+              ctx.fillStyle = "#ffd54a";
+              ctx.font = "bold " + Math.max(7, Math.round(8 * z)) + "px monospace";
+              ctx.textAlign = "center"; ctx.textBaseline = "middle";
+              ctx.fillText((ph % 2) ? ".." : "!", s.x + sz * 0.42, s.y - sz * 0.48);
+              break;
+            }
+          }
+        }
+      }
+    },
+
     // ---- frame -----------------------------------------------------
     /* state = {tiles:{w,h,data}, fog, regions:{id->{cx,cy,tileId}},
        units:[{id,x,y,cls,kind,status_live,hp,mana,gate_fail,sel,bark}],
@@ -1078,24 +1327,36 @@
       });
       (st.buildings || []).forEach(function (b) {
         var s = self.toScreen(b.x, b.y);
-        if (s.x < -64 || s.y < -64 || s.x > cv.width + 64 ||
-            s.y > cv.height + 64) return;
-        var w = 44 * z, h = 44 * z;
+        if (s.x < -72 || s.y < -72 || s.x > cv.width + 72 ||
+            s.y > cv.height + 72) return;
+        var w = 48 * z, h = 48 * z;
         Theme.sprite(ctx, theme.buildings[b.bid] || theme.buildings["vault"],
                      s.x - w / 2, s.y - h / 2, w, h);
+        self._drawBuildingAnim(ctx, b, s, w, h, z, t0, wind, pal);
         if (b.sel) {
           ctx.strokeStyle = pal.sel; ctx.lineWidth = 2;
-          ctx.strokeRect(s.x - w / 2 - 3, s.y - h / 2 - 3, w + 6, h + 6);
+          ctx.beginPath();
+          ctx.ellipse(s.x, s.y + h * 0.25, w * 0.58, h * 0.30, 0, 0, 7);
+          ctx.stroke();
           ctx.lineWidth = 1;
+        }
+        if (z > 0.72 && b.name) {
+          ctx.fillStyle = "rgba(10,16,12,0.75)";
+          ctx.fillRect(s.x - 28 * z, s.y + h / 2 + 1, 56 * z, 11 * z);
+          ctx.fillStyle = "#ffd54a";
+          ctx.font = "bold " + Math.max(8, Math.round(9 * z)) + "px monospace";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(b.name, s.x, s.y + h / 2 + 6.5 * z);
         }
       });
       if (this.iso) this._officeProps(ctx, st, theme, z, t0); // #134
-      (st.units || []).forEach(function (u) {
+      var allUnits = st.units || [];
+      allUnits.forEach(function (u) {
         var s = self.toScreen(u.x, u.y);
-        if (s.x < -40 || s.y < -40 || s.x > cv.width + 40 ||
-            s.y > cv.height + 40) return;
-        var sz = (u.kind === "minion" ? 14 : u.kind === "worker" ? 10 : 22)
-            * Math.max(z, 0.7);
+        if (s.x < -48 || s.y < -48 || s.x > cv.width + 48 ||
+            s.y > cv.height + 48) return;
+        var sz = (u.kind === "minion" ? 16 : u.kind === "worker" ? 12 : 26)
+            * Math.max(z, 0.72);
         var ent = theme.units[u.cls] || theme.units.Squire;
         var dy = 0, ph = hash(String(u.id));
         if (self.iso) {          // #134: desk under office workers
@@ -1105,69 +1366,124 @@
           ctx.fillStyle = "#5c503f";
           ctx.fillRect(s.x - dw / 2, s.y + sz * 0.15, dw, 2);
         }
-        // #136 animation states: walk bounce while gliding on an order,
-        // work-loop hammering on an active task, slow fidget when idle
+        // #136/#158 animation states: walk stride bounce, active work/combat,
+        // or autonomous Stand - 1/2/3 breathing & fidgets
         if (u.moving)
-          dy = -Math.abs(Math.sin(t0 / 90 + ph)) * 2.5 * z;
-        else if (u.status_live === "running")
-          dy = Math.sin(t0 / 160 + ph) * 1.5 * z;
+          dy = -Math.abs(Math.sin(t0 / 85 + ph)) * 2.8 * z;
+        else if (u.status_live === "running" || u.acting)
+          dy = Math.sin(t0 / 130 + ph) * 2.0 * z;
         else
-          dy = Math.sin(t0 / 2400 + ph) * 1.0 * z;
-        Theme.sprite(ctx, ent, s.x - sz / 2, s.y - sz / 2 + dy, sz, sz);
+          dy = Math.sin(t0 / 1100 + ph) * 1.2 * z;
+        self._drawUnitLive(ctx, u, s, sz, dy, ent, z, t0, wind, pal, allUnits);
         if (u.status_live === "failed" || u.gate_fail) {
           ctx.strokeStyle = pal.err; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(s.x, s.y, sz / 2 + 3, 0, 7); ctx.stroke();
           ctx.lineWidth = 1;
         }
         if (u.sel) {
-          ctx.strokeStyle = pal.sel; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(s.x, s.y, sz / 2 + 4, 0, 7); ctx.stroke();
-          ctx.lineWidth = 1;
+          // WC3 bright green/gold elliptical ground selection ring
+          ctx.strokeStyle = "#3fb950"; ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.ellipse(s.x, s.y + sz * 0.34, sz * 0.56, sz * 0.24, 0, 0, 7);
+          ctx.stroke();
+          ctx.strokeStyle = pal.sel; ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.ellipse(s.x, s.y + sz * 0.34, sz * 0.64, sz * 0.28, 0, 0, 7);
+          ctx.stroke();
         }
-        if (u.kind === "hero" && typeof u.hp === "number" && z > 0.5) {
-          var bw = sz;
-          ctx.fillStyle = "#000"; ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 8,
-            bw, 3);
+        if (u.kind === "hero" && typeof u.hp === "number" && z > 0.45) {
+          var bw = sz * 1.15;
+          ctx.fillStyle = "rgba(0,0,0,0.85)";
+          ctx.fillRect(s.x - bw / 2 - 1, s.y - sz / 2 - 10, bw + 2, 7);
           ctx.fillStyle = u.hp > 50 ? pal.ok : u.hp > 25 ? "#d29922" : pal.err;
-          ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 8, bw * u.hp / 100, 3);
+          ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 9, bw * u.hp / 100, 3);
           if (typeof u.mana === "number") {
-            ctx.fillStyle = "#000";
-            ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 4, bw, 2);
-            // low mana (compaction near) flashes the bar (#125)
             var low = u.mana < 25;
-            ctx.fillStyle = low && (performance.now() % 600 < 300)
-              ? pal.err : "#58a6ff";
-            ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 4,
+            ctx.fillStyle = low && (t0 % 600 < 300) ? pal.err : "#58a6ff";
+            ctx.fillRect(s.x - bw / 2, s.y - sz / 2 - 5,
               bw * u.mana / 100, 2);
           }
+          // Level badge pip next to HP bar
+          ctx.fillStyle = "#d4a72c";
+          ctx.fillRect(s.x - bw / 2 - 11, s.y - sz / 2 - 10, 9, 8);
+          ctx.fillStyle = "#000";
+          ctx.font = "bold 7px monospace";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(String(u.level || 1), s.x - bw / 2 - 6.5, s.y - sz / 2 - 6);
         }
-        if (z > 1.2 && u.name) {
-          ctx.fillStyle = pal.text; ctx.font = "9px monospace";
-          ctx.textAlign = "center";
-          ctx.fillText(u.name, s.x, s.y + sz / 2 + 9);
+        if (z > 0.75 && u.name) {
+          ctx.fillStyle = "rgba(0,0,0,0.65)";
+          ctx.fillRect(s.x - 24 * z, s.y + sz / 2 + 2, 48 * z, 10 * z);
+          ctx.fillStyle = pal.text;
+          ctx.font = "bold " + Math.max(8, Math.round(9 * z)) + "px monospace";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(u.name, s.x, s.y + sz / 2 + 7 * z);
         }
         // voice bark: heartbeat note / ack floats over the head (#125)
-        if (u.bark && z > 0.6) {
-          ctx.fillStyle = "rgba(230,242,230,0.9)";
-          ctx.font = "italic " + Math.max(9, 10 * z) + "px monospace";
-          ctx.textAlign = "center";
-          ctx.fillText(u.bark, s.x, s.y - sz / 2 - 14);
+        if (u.bark && z > 0.55) {
+          ctx.fillStyle = "rgba(18,26,20,0.88)";
+          var tw = Math.min(180, (u.bark.length * 5.5 + 10) * z);
+          ctx.fillRect(s.x - tw / 2, s.y - sz / 2 - 25 * z, tw, 12 * z);
+          ctx.strokeStyle = "#d4a72c";
+          ctx.strokeRect(s.x - tw / 2, s.y - sz / 2 - 25 * z, tw, 12 * z);
+          ctx.fillStyle = "#fff8dc";
+          ctx.font = "italic " + Math.max(9, Math.round(9.5 * z)) + "px monospace";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(u.bark, s.x, s.y - sz / 2 - 19 * z);
         }
       });
-      // worker peasants scurry between buildings (#125)
+      // worker peasants scurry between buildings carrying gold/lumber (#125/#158)
       var now = performance.now();
       var srvNow = st.srvClock ? st.srvClock.srv +
         (now - st.srvClock.perf) / 1000 : now / 1000;
-      (st.workers || []).forEach(function (wk) {
+      (st.workers || []).forEach(function (wk, wi) {
         var prog = Math.min(1, Math.max(0, (srvNow - wk.ts) / 4));
         var wx = (wk.from[0] + (wk.to[0] - wk.from[0]) * prog) * TILE + 16;
         var wy = (wk.from[1] + (wk.to[1] - wk.from[1]) * prog) * TILE + 16;
         var s = self.toScreen(wx, wy);
         if (s.x < -20 || s.y < -20 || s.x > cv.width + 20 ||
             s.y > cv.height + 20) return;
-        var wsize = 9 * Math.max(z, 0.7);
+        var wsize = 13 * Math.max(z, 0.7);
+        var wbob = Math.abs(Math.sin(now / 75 + wi)) * 2 * z;
         Theme.sprite(ctx, theme.units.Worker, s.x - wsize / 2,
-                     s.y - wsize / 2, wsize, wsize);
+                     s.y - wsize / 2 - wbob, wsize, wsize);
+        // Hauling sack of gold or bundle of timber on shoulder
+        ctx.fillStyle = (wi % 2 === 0) ? "#ffd54a" : "#8b5a2b";
+        ctx.beginPath();
+        ctx.arc(s.x - wsize * 0.28, s.y - wsize * 0.25 - wbob,
+                3.2 * z, 0, 7);
+        ctx.fill();
+      });
+      // Active Spell AoE & Floating Combat/Harvest Popups (#158/#159)
+      (st.fx || []).forEach(function (fx) {
+        var age = (now - fx.t0) / 1000, dur = fx.dur || 2.2;
+        if (age < 0 || age > dur) return;
+        var p = age / dur;
+        var s = self.toScreen(fx.x, fx.y);
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 1 - p);
+        if (fx.kind === "spell") {
+          var rad = (12 + p * 46) * z;
+          ctx.strokeStyle = fx.color || "#58a6ff";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, rad, 0, 7);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, rad * 0.65, p * 4, p * 4 + 4.5);
+          ctx.stroke();
+          // Vertical pillar of light / lightning bolts
+          ctx.fillStyle = fx.color || "#58a6ff";
+          ctx.globalAlpha = Math.max(0, (1 - p) * 0.28);
+          ctx.fillRect(s.x - 10 * z, s.y - 65 * z * (1 - p * 0.3),
+                       20 * z, 65 * z * (1 - p * 0.3));
+        } else if (fx.kind === "text") {
+          ctx.fillStyle = fx.color || "#ffd54a";
+          ctx.font = "bold " + Math.max(10, Math.round(11 * z)) + "px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(fx.text || "", s.x, s.y - age * 22 * z);
+        }
+        ctx.restore();
       });
       // death/despawn fades (#125)
       (st.fades || []).forEach(function (f) {
