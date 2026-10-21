@@ -2675,7 +2675,172 @@
       desc: "set the main quest" },
     { cmd: "/msg", usage: "/msg @<unit> <text>",
       desc: "steering message to a unit" }];
-  var acItems = [], acSel = 0, acProfiles = null, acProfReq = false;
+  var acItems = [], acSel = 0, acProfiles = null, acProfReq = false,
+      filesReq = false;
+
+  function ensureFilesIndex() {
+    if (state.filesList || filesReq) return;
+    filesReq = true;
+    fetch("/files", { headers: TOK ? { "X-RTS-Token": TOK } : {} })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        state.filesList = (d && d.files) || [];
+        filesReq = false;
+        renderFilesPane();
+      }).catch(function () { filesReq = false; });
+  }
+
+  function renderFilesPane() {
+    var fl = el("flist");
+    if (!fl) return;
+    ensureFilesIndex();
+    var q = (el("fsearch") && el("fsearch").value || "").toLowerCase();
+    var list = (state.filesList || []).filter(function (f) {
+      return !q || f.path.toLowerCase().indexOf(q) >= 0;
+    });
+    fl.innerHTML = list.slice(0, 180).map(function (f) {
+      return "<div class='frow' data-fpath='" + esc(f.path) + "'>" +
+        "<span><span class='fbadge b-" + esc(f.badge) + "'>" +
+        esc(f.badge) + "</span>" + esc(f.path) + "</span>" +
+        "<span class='meta'>" + f.size + "b</span></div>";
+    }).join("") || "<div class='meta'>No matching files</div>";
+  }
+
+  function showFileDiff(rel, targetId) {
+    var box = el(targetId || "fdiff");
+    if (!box) return;
+    box.innerHTML = "<div class='meta'>Loading " + esc(rel) + "...</div>";
+    fetch("/git/diff?path=" + encodeURIComponent(rel),
+          { headers: TOK ? { "X-RTS-Token": TOK } : {} })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        box.innerHTML = "<div style='margin-top:6px'><b>" + esc(rel) +
+          "</b></div><div class='diffbox'>" + esc(d.diff || "(empty)") +
+          "</div>";
+      }).catch(function () {});
+  }
+
+  function fetchGitCodex() {
+    var sp = el("spGit");
+    if (!sp) return;
+    fetch("/git", { headers: TOK ? { "X-RTS-Token": TOK } : {} })
+      .then(function (r) { return r.json(); })
+      .then(function (g) {
+        if (!g || !g.ok) return;
+        var chHtml = (g.changes || []).map(function (c) {
+          var col = c.label === "destroyed" ? "#f85149" :
+                    c.label === "newly scribed" ? "#3fb950" :
+                    c.label === "sealed" ? "#58a6ff" : "#ffd54a";
+          return "<div class='frow' data-gpath='" + esc(c.path) + "'>" +
+            "<span>" + esc(c.path) + "</span>" +
+            "<span style='color:" + col + ";font-size:9.5px'>" +
+            esc(c.label) + "</span></div>";
+        }).join("") || "<div class='meta'>Working tree clean</div>";
+        var wtHtml = (g.worktrees || []).map(function (w) {
+          return "<div class='meta'>- <b>" + esc(w.branch || w.head || "wt") +
+            "</b>: " + esc(w.path) + "</div>";
+        }).join("");
+        var stHtml = (g.stashes || []).map(function (s) {
+          return "<div class='frow'><span><b>" + esc(s.id) + "</b> " +
+            esc(s.desc) + "</span><span>" +
+            "<button data-gact='stash_apply' data-gref='" + esc(s.id) +
+            "'>apply</button> " +
+            "<button data-gact='stash_pop' data-gref='" + esc(s.id) +
+            "'>pop</button> " +
+            "<button data-gact='stash_drop' data-gref='" + esc(s.id) +
+            "'>drop</button></span></div>";
+        }).join("") || "<div class='meta'>No stashes</div>";
+        var cmHtml = (g.commits || []).slice(0, 5).map(function (c) {
+          return "<div class='meta'><code>" + esc(c.sha) + "</code> " +
+            esc(c.subject) + " (" + esc(c.when) + ")</div>";
+        }).join("");
+        sp.innerHTML =
+          "<div style='display:flex;justify-content:space-between;align-items:center'>" +
+          "<b>Branch: <span style='color:#ffd54a'>" + esc(g.branch || "HEAD") +
+          "</span></b><button data-gact='refresh'>refresh</button></div>" +
+          "<h3 style='margin-top:8px'>Codex Changes (" +
+          (g.changes || []).length + ")</h3>" + chHtml +
+          "<div id='gdiff'></div>" +
+          "<h3 style='margin-top:8px'>Worktrees (" +
+          (g.worktrees || []).length + ")</h3>" + wtHtml +
+          "<h3 style='margin-top:8px'>Stash Manager " +
+          "<button data-gact='stash_push'>+ Stash</button></h3>" + stHtml +
+          "<h3 style='margin-top:8px'>Recent Commits</h3>" + cmHtml;
+      }).catch(function () {});
+  }
+
+  if (el("sidetabs")) {
+    el("sidetabs").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-stab]");
+      if (!b) return;
+      var tab = b.dataset.stab;
+      el("sidetabs").querySelectorAll("button").forEach(function (x) {
+        x.className = x === b ? "on" : "";
+      });
+      el("spQuests").classList.toggle("on", tab === "quests");
+      el("spGit").classList.toggle("on", tab === "git");
+      el("spFiles").classList.toggle("on", tab === "files");
+      if (tab === "git") fetchGitCodex();
+      if (tab === "files") renderFilesPane();
+    });
+  }
+  if (el("fsearch")) {
+    el("fsearch").addEventListener("input", renderFilesPane);
+  }
+  if (el("spFiles")) {
+    el("spFiles").addEventListener("click", function (e) {
+      var r = e.target.closest("[data-fpath]");
+      if (r) showFileDiff(r.dataset.fpath, "fdiff");
+    });
+  }
+  if (el("spGit")) {
+    el("spGit").addEventListener("click", function (e) {
+      var r = e.target.closest("[data-gpath]");
+      if (r) { showFileDiff(r.dataset.gpath, "gdiff"); return; }
+      var b = e.target.closest("button[data-gact]");
+      if (!b) return;
+      var act = b.dataset.gact;
+      if (act === "refresh") { fetchGitCodex(); return; }
+      fetch("/git", {
+        method: "POST",
+        headers: Object.assign({ "Content-Type": "application/json" },
+                               TOK ? { "X-RTS-Token": TOK } : {}),
+        body: JSON.stringify({ action: act, ref: b.dataset.gref || "stash@{0}" })
+      }).then(function () { fetchGitCodex(); }).catch(function () {});
+    });
+  }
+  // #172 Voice Input via Web Speech API (SpeechRecognition)
+  if (el("micBtn")) {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var rec = null;
+    el("micBtn").onclick = function () {
+      if (!SR) {
+        logFeed("[Voice] Web Speech API not supported in this browser");
+        return;
+      }
+      if (rec) { rec.stop(); return; }
+      rec = new SR();
+      rec.continuous = false;
+      rec.interimResults = true;
+      el("micBtn").classList.add("rec");
+      rec.onresult = function (ev) {
+        var txt = "";
+        for (var i = 0; i < ev.results.length; i++)
+          txt += ev.results[i][0].transcript;
+        el("msg").value = txt;
+      };
+      rec.onend = function () {
+        el("micBtn").classList.remove("rec");
+        rec = null;
+        if (el("msg").value.trim()) sendMsg();
+      };
+      rec.onerror = function () {
+        el("micBtn").classList.remove("rec");
+        rec = null;
+      };
+      rec.start();
+    };
+  }
 
   function acOpen() { return el("ac").classList.contains("on"); }
   function acClose() { el("ac").className = ""; acItems = []; acSel = 0; }
@@ -2703,6 +2868,15 @@
         out.push({ k: "@" + nm,
           d: [u.cls, u.profile, u.status].filter(Boolean).join(" | "),
           ins: "@" + nm + " " });
+      });
+      // #172 @file autocomplete from /files index
+      ensureFilesIndex();
+      (state.filesList || []).slice(0, 300).forEach(function (f) {
+        if (out.length >= 16) return;
+        if (f.path.toLowerCase().indexOf(pref) >= 0) {
+          out.push({ k: "@" + f.path, d: f.badge + " (" + f.size + "b)",
+                     ins: "@" + f.path + " " });
+        }
       });
     } else {
       var mg = v.match(/^\/msg\s+(\S*)$/);

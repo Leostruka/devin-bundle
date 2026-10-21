@@ -986,6 +986,19 @@ def main():
         assert post(PORT, "/weather", {"mode": "live"}) == 200
         print("PASS weather endpoint (live forecast + mode override)")
 
+        # #172 Explorer (/files) + Git Codex (/git, /git/diff)
+        st, fls = get(PORT, "/files")
+        assert st == 200 and fls.get("ok") is True, fls
+        assert any(f["path"].endswith("f.py") and f["badge"] == "PY"
+                   for f in fls["files"]), fls
+        st, gcx = get(PORT, "/git")
+        assert st == 200 and gcx.get("ok") is True and "changes" in gcx, gcx
+        st, gdf = get(PORT, "/git/diff?path=alpha/f.py")
+        assert st == 200 and gdf.get("ok") is True and "diff" in gdf, gdf
+        st_bad, _ = get(PORT, "/git/diff?path=../../etc/passwd")
+        assert st_bad == 400
+        print("PASS explorer (/files) + git codex (/git, /git/diff, traversal guard)")
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
         st, snap = get(PORT, "/snapshot")
         sys.path.insert(0, HERE)
