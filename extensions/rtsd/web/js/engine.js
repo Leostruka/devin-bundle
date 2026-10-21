@@ -7,6 +7,7 @@
 
   var TILE = 32;
   var ZMIN = 0.35, ZMAX = 3.0;
+  var PITCH = 0.74; // #170: 3D RTS camera tilt (cos ~42 deg foreshortening)
 
   function hash(s) { // deterministic placement jitter
     var h = 2166136261;
@@ -58,32 +59,147 @@
         return;
       }
       this.cam.x = this._clampAxis(this.cam.x, 0, mw, v.w);
-      this.cam.y = this._clampAxis(this.cam.y, 0, mh, v.h);
+      this.cam.y = this._clampAxis(this.cam.y, -40, mh * PITCH + 40, v.h);
     },
     centerOn: function (wx, wy) {   // wx,wy are world px in both themes
       var v = this.view();
-      if (this.iso) { var px = wx - wy, py = (wx + wy) / 2;
-                      wx = px; wy = py; }
-      this.cam.x = wx - v.w / 2; this.cam.y = wy - v.h / 2; this.clampCam();
+      var px = this.iso ? (wx - wy) : wx,
+          py = this.iso ? (wx + wy) / 2 : wy * PITCH;
+      this.cam.x = px - v.w / 2; this.cam.y = py - v.h / 2; this.clampCam();
     },
     panBy: function (dx, dy) {
       this.cam.x += dx; this.cam.y += dy; this.clampCam();
     },
-    /* #134: under the office theme every world point is projected
-       isometrically (x' = x - y, y' = (x + y)/2) before the camera is
-       applied. ALL render and picking paths funnel through these two
-       functions so what you see is exactly what you click. */
+    /* #134/#170: 3D RTS camera projection. Ground plane (wx, wy) is
+       foreshortened by PITCH (or isometric diamond under office mode)
+       and vertical height wz lifts upward in screen Y (-wz * 0.88 * z).
+       toWorld() is the exact inverse on the ground plane (wz=0). */
     toWorld: function (sx, sy) {
       var vx = this.cam.x + sx / this.cam.zoom,
           vy = this.cam.y + sy / this.cam.zoom;
-      if (!this.iso) return { x: vx, y: vy };
+      if (!this.iso) return { x: vx, y: vy / PITCH };
       return { x: vy + vx / 2, y: vy - vx / 2 };
     },
-    toScreen: function (wx, wy) {
-      var px = wx, py = wy;
+    toScreen: function (wx, wy, wz) {
+      var px = wx, py = wy * PITCH;
       if (this.iso) { px = wx - wy; py = (wx + wy) / 2; }
-      return { x: (px - this.cam.x) * this.cam.zoom,
-               y: (py - this.cam.y) * this.cam.zoom };
+      return {
+        x: (px - this.cam.x) * this.cam.zoom,
+        y: (py - this.cam.y - (wz || 0) * 0.88) * this.cam.zoom
+      };
+    },
+
+    // #170 3D Volumetric Geometry Primitives in World Space (wx, wy, wz)
+    _box3D: function (ctx, wx, wy, wz, dx, dy, dz, cTop, cFront, cSide) {
+      var hx = dx / 2, hy = dy / 2;
+      var b0 = this.toScreen(wx - hx, wy - hy, wz),
+          b1 = this.toScreen(wx + hx, wy - hy, wz),
+          b2 = this.toScreen(wx + hx, wy + hy, wz),
+          b3 = this.toScreen(wx - hx, wy + hy, wz);
+      var t0 = this.toScreen(wx - hx, wy - hy, wz + dz),
+          t1 = this.toScreen(wx + hx, wy - hy, wz + dz),
+          t2 = this.toScreen(wx + hx, wy + hy, wz + dz),
+          t3 = this.toScreen(wx - hx, wy + hy, wz + dz);
+      // South / Front face
+      ctx.fillStyle = cFront;
+      ctx.beginPath();
+      ctx.moveTo(b3.x, b3.y); ctx.lineTo(b2.x, b2.y);
+      ctx.lineTo(t2.x, t2.y); ctx.lineTo(t3.x, t3.y);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.35)"; ctx.stroke();
+      // East / Right face (visible in iso or 3D bevel)
+      if (cSide) {
+        ctx.fillStyle = cSide;
+        ctx.beginPath();
+        ctx.moveTo(b2.x, b2.y); ctx.lineTo(b1.x, b1.y);
+        ctx.lineTo(t1.x, t1.y); ctx.lineTo(t2.x, t2.y);
+        ctx.closePath(); ctx.fill();
+      }
+      // Top face (wz + dz)
+      ctx.fillStyle = cTop;
+      ctx.beginPath();
+      ctx.moveTo(t0.x, t0.y); ctx.lineTo(t1.x, t1.y);
+      ctx.lineTo(t2.x, t2.y); ctx.lineTo(t3.x, t3.y);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.stroke();
+    },
+
+    _cyl3D: function (ctx, wx, wy, wz, rad, dz, cHi, cMid, cDark, cTop) {
+      var z = this.cam.zoom;
+      var sb = this.toScreen(wx, wy, wz),
+          st = this.toScreen(wx, wy, wz + dz);
+      var rx = rad * z, ry = rad * PITCH * 0.65 * z;
+      var grad = ctx.createLinearGradient(sb.x - rx, 0, sb.x + rx, 0);
+      grad.addColorStop(0.0, cMid);
+      grad.addColorStop(0.25, cHi);
+      grad.addColorStop(0.65, cMid);
+      grad.addColorStop(1.0, cDark);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(sb.x, sb.y, rx, ry, 0, 0, Math.PI);
+      ctx.lineTo(st.x - rx, st.y);
+      ctx.ellipse(st.x, st.y, rx, ry, 0, Math.PI, 0, true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.32)";
+      ctx.stroke();
+      // Top cap at wz + dz
+      ctx.fillStyle = cTop || cHi;
+      ctx.beginPath();
+      ctx.ellipse(st.x, st.y, rx, ry, 0, 0, 7);
+      ctx.fill();
+      ctx.stroke();
+    },
+
+    _cone3D: function (ctx, wx, wy, wz, rad, dz, cHi, cDark) {
+      var z = this.cam.zoom;
+      var sb = this.toScreen(wx, wy, wz),
+          pk = this.toScreen(wx, wy, wz + dz);
+      var rx = rad * z, ry = rad * PITCH * 0.65 * z;
+      var grad = ctx.createLinearGradient(sb.x - rx, 0, sb.x + rx, 0);
+      grad.addColorStop(0, cHi);
+      grad.addColorStop(0.55, cHi);
+      grad.addColorStop(1, cDark);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(pk.x, pk.y);
+      ctx.lineTo(sb.x + rx, sb.y);
+      ctx.ellipse(sb.x, sb.y, rx, ry, 0, 0, Math.PI);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.32)";
+      ctx.stroke();
+    },
+
+    _roofPrism3D: function (ctx, wx, wy, wz, dx, dy, dz, colW, colE, trim) {
+      var hx = dx / 2, hy = dy / 2;
+      var b0 = this.toScreen(wx - hx, wy - hy, wz),
+          b1 = this.toScreen(wx + hx, wy - hy, wz),
+          b2 = this.toScreen(wx + hx, wy + hy, wz),
+          b3 = this.toScreen(wx - hx, wy + hy, wz);
+      var rN = this.toScreen(wx, wy - hy + 2, wz + dz),
+          rS = this.toScreen(wx, wy + hy - 2, wz + dz);
+      // West sunlit roof slope
+      ctx.fillStyle = colW;
+      ctx.beginPath();
+      ctx.moveTo(b0.x, b0.y); ctx.lineTo(rN.x, rN.y);
+      ctx.lineTo(rS.x, rS.y); ctx.lineTo(b3.x, b3.y);
+      ctx.closePath(); ctx.fill();
+      // East shadowed roof slope
+      ctx.fillStyle = colE;
+      ctx.beginPath();
+      ctx.moveTo(rN.x, rN.y); ctx.lineTo(b1.x, b1.y);
+      ctx.lineTo(b2.x, b2.y); ctx.lineTo(rS.x, rS.y);
+      ctx.closePath(); ctx.fill();
+      // Front South gable triangle
+      ctx.fillStyle = colW;
+      ctx.beginPath();
+      ctx.moveTo(b3.x, b3.y); ctx.lineTo(rS.x, rS.y);
+      ctx.lineTo(b2.x, b2.y); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = trim || "#d4a72c";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.lineWidth = 1;
     },
 
     // ---- input -----------------------------------------------------
@@ -102,7 +218,7 @@
         var f = e.deltaY < 0 ? 1.15 : 1 / 1.15;
         E.cam.zoom = Math.max(ZMIN, Math.min(ZMAX, E.cam.zoom * f));
         var px = E.iso ? p.x - p.y : p.x,
-            py = E.iso ? (p.x + p.y) / 2 : p.y;
+            py = E.iso ? (p.x + p.y) / 2 : p.y * PITCH;
         E.cam.x = px - e.offsetX / E.cam.zoom;
         E.cam.y = py - e.offsetY / E.cam.zoom;
         E.clampCam();
@@ -530,111 +646,132 @@
       return c;
     },
 
-    // battlefield: blits seamless splatted terrain + Gerstner water waves + fog
+    // battlefield: blits 3D PITCH-foreshortened splatted terrain + 3D plateaus,
+    // sunken riverbanks, 3D arched bridges, and Gerstner water waves (#170)
     _flatTiles: function (ctx, st, theme, z, v, now, wind) {
       var ts = st.tiles, W = ts.w, H = ts.h;
       var fog = st.visFog || st.fog;
-      var x0 = Math.max(0, Math.floor(v.x / TILE)),
-          y0 = Math.max(0, Math.floor(v.y / TILE)),
-          x1 = Math.min(W, Math.ceil((v.x + v.w) / TILE)),
-          y1 = Math.min(H, Math.ceil((v.y + v.h) / TILE));
-      var px = TILE * z;
+      var tyPitch = TILE * PITCH;
+      var x0 = Math.max(0, Math.floor(v.x / TILE) - 1),
+          y0 = Math.max(0, Math.floor(v.y / tyPitch) - 1),
+          x1 = Math.min(W, Math.ceil((v.x + v.w) / TILE) + 1),
+          y1 = Math.min(H, Math.ceil((v.y + v.h) / tyPitch) + 2);
+      var px = TILE * z, py = tyPitch * z;
       var tcv = this._ensureTerrainCanvas(ts, theme);
       if (tcv) {
         var sx0 = x0 * TILE, sy0 = y0 * TILE,
             sw0 = (x1 - x0) * TILE, sh0 = (y1 - y0) * TILE;
         if (sw0 > 0 && sh0 > 0) {
           ctx.drawImage(tcv, sx0, sy0, sw0, sh0,
-                        (sx0 - v.x) * z, (sy0 - v.y) * z,
-                        sw0 * z, sh0 * z);
+                        (sx0 - v.x) * z, (y0 * tyPitch - v.y) * z,
+                        sw0 * z, (y1 - y0) * py);
         }
       }
       for (var ty = y0; ty < y1; ty++) {
         for (var tx = x0; tx < x1; tx++) {
           var i = ty * W + tx;
           var f = fog ? fog[i] : 2;
-          var sx = (tx * TILE - v.x) * z, sy = (ty * TILE - v.y) * z;
+          var sx = (tx * TILE - v.x) * z,
+              sy = (ty * tyPitch - v.y) * z;
           if (f === 0) {
             ctx.fillStyle = (tx + ty) % 2 ? "#0b140d" : "#09110b";
-            ctx.fillRect(sx, sy, px + 1, px + 1);
+            ctx.fillRect(sx, sy, px + 1, py + 1);
             continue;
           }
           if (!tcv) {
             ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
-            ctx.fillRect(sx, sy, px + 1, px + 1);
+            ctx.fillRect(sx, sy, px + 1, py + 1);
           } else if (ts.mark && ts.mark[i] === 2) {
             ctx.fillStyle = "rgba(180,45,45,0.45)";
-            ctx.fillRect(sx, sy, px, px);
+            ctx.fillRect(sx, sy, px, py);
           }
           var wt = ts._water ? ts._water[i] : 0;
-          // Gerstner 2-wave superposition & specular sun glints (#163)
+          var rd = ts._roads ? ts._roads[i] : 0;
+          // #170 3D Elevated Citadel Plateau cliff wall on South border
+          if (rd === 2 && ty + 1 < H && (!ts._roads || ts._roads[i + W] !== 2)) {
+            ctx.fillStyle = "#4a4338";
+            ctx.fillRect(sx, sy + py - 5 * z, px + 1, 6 * z);
+            ctx.fillStyle = "#8c8270";
+            ctx.fillRect(sx, sy + py - 6 * z, px + 1, 1.8 * z);
+          }
+          // #170 3D Sunken Riverbank ledge on North border + Gerstner waves
           if ((wt === 1 || wt === 2) && z > 0.45) {
+            if (ty > 0 && (!ts._water || !ts._water[i - W])) {
+              ctx.fillStyle = "#5c4d38";
+              ctx.fillRect(sx, sy, px + 1, 4.5 * z);
+            }
             var wph1 = (now / 360) * wind.str + tx * wind.ux * 1.4 +
                        ty * wind.uy * 1.4;
             var wph2 = (now / 520) * wind.str - tx * wind.uy * 0.9 +
                        ty * wind.ux * 0.9;
             var eta = 0.6 * Math.sin(wph1) + 0.4 * Math.cos(wph2);
             ctx.strokeStyle = wt === 2
-              ? "rgba(130,210,255,0.34)" : "rgba(195,240,255,0.48)";
+              ? "rgba(130,210,255,0.38)" : "rgba(195,240,255,0.52)";
             ctx.lineWidth = Math.max(1, 1.3 * z);
             ctx.beginPath();
             var wx0 = sx + (0.18 + 0.14 * eta) * px,
-                wy0 = sy + (0.38 + 0.12 * Math.cos(wph1)) * px;
+                wy0 = sy + (0.42 + 0.12 * Math.cos(wph1)) * py;
             ctx.moveTo(wx0, wy0);
-            ctx.quadraticCurveTo(wx0 + px * 0.28, wy0 - 3 * z * eta,
+            ctx.quadraticCurveTo(wx0 + px * 0.28, wy0 - 2.5 * z * eta,
                                  wx0 + px * 0.56, wy0);
             ctx.stroke();
             if (eta > 0.62) {
-              // Specular sun/moon water glint
-              ctx.fillStyle = "rgba(255,250,220,0.65)";
+              ctx.fillStyle = "rgba(255,250,220,0.68)";
               ctx.fillRect(wx0 + px * 0.2, wy0 - 1.5 * z, 2.5 * z, 1.5 * z);
             }
             if (wt === 1) {
               var foam = 0.22 + 0.18 * Math.sin(now / 400 + tx + ty);
               ctx.strokeStyle = "rgba(235,248,255," + foam.toFixed(2) + ")";
               ctx.beginPath();
-              ctx.arc(sx + px * 0.5, sy + px * 0.5, px * 0.44, 0, 7);
+              ctx.ellipse(sx + px * 0.5, sy + py * 0.5,
+                          px * 0.44, py * 0.44, 0, 0, 7);
               ctx.stroke();
             }
             ctx.lineWidth = 1;
           } else if (wt === 3 && z > 0.45) {
-            // 3D Wooden planked bridge with shadow + handrails
-            ctx.fillStyle = "rgba(0,0,0,0.35)";
-            ctx.fillRect(sx + 2 * z, sy + 3 * z, px, px);
-            ctx.fillStyle = "#7c5836";
-            ctx.fillRect(sx, sy, px, px);
+            // #170 3D Arched Timber & Stone Bridge with 3D piers + rails
+            var archZ = 4.5 * z;
+            ctx.fillStyle = "rgba(0,0,0,0.45)";
+            ctx.fillRect(sx + 2 * z, sy + 2 * z, px, py);
+            // Stone side piers
+            ctx.fillStyle = "#595449";
+            ctx.fillRect(sx, sy - archZ + py, px, archZ);
+            // Arched wooden deck
+            ctx.fillStyle = "#8a623c";
+            ctx.fillRect(sx, sy - archZ, px, py);
             ctx.strokeStyle = "#4d3319";
             for (var bp = 1; bp < 4; bp++) {
               ctx.beginPath();
-              ctx.moveTo(sx + bp * px / 4, sy);
-              ctx.lineTo(sx + bp * px / 4, sy + px);
+              ctx.moveTo(sx + bp * px / 4, sy - archZ);
+              ctx.lineTo(sx + bp * px / 4, sy - archZ + py);
               ctx.stroke();
             }
-            ctx.fillStyle = "#b08554";
-            ctx.fillRect(sx, sy, px, 3 * z);
-            ctx.fillRect(sx, sy + px - 3 * z, px, 3 * z);
+            // 3D Handrail posts + top rail
+            ctx.fillStyle = "#b88b58";
+            ctx.fillRect(sx, sy - archZ - 3 * z, px, 2.5 * z);
+            ctx.fillRect(sx, sy - archZ + py - 2.5 * z, px, 2.5 * z);
           } else if (z > 0.55 && ((tx * 7 + ty * 13) % 5 === 0)) {
             var sway = Math.sin(now / 520 + tx * 0.7 + ty * 0.5) *
                        wind.vx * 2.4 * z;
             ctx.strokeStyle = "rgba(96,168,78,0.48)";
             ctx.beginPath();
-            ctx.moveTo(sx + px * 0.5, sy + px * 0.7);
-            ctx.lineTo(sx + px * 0.5 + sway, sy + px * 0.35);
+            ctx.moveTo(sx + px * 0.5, sy + py * 0.7);
+            ctx.lineTo(sx + px * 0.5 + sway, sy + py * 0.25);
             ctx.stroke();
           }
           if (ts.tileRegion && tx + 1 < W &&
               ts.tileRegion[i] !== ts.tileRegion[i + 1]) {
             ctx.fillStyle = "rgba(255,213,74,0.14)";
-            ctx.fillRect(sx + px - 1, sy, 2, px);
+            ctx.fillRect(sx + px - 1, sy, 2, py);
           }
           if (f === 1) {
             ctx.fillStyle = "rgba(8,14,10,0.28)";
-            ctx.fillRect(sx, sy, px + 1, px + 1);
+            ctx.fillRect(sx, sy, px + 1, py + 1);
           }
           if (ts.breach && ts.breach[i]) {
             ctx.fillStyle = "rgba(248,81,73," +
               (0.16 + 0.10 * Math.sin(now / 280)).toFixed(3) + ")";
-            ctx.fillRect(sx, sy, px + 1, px + 1);
+            ctx.fillRect(sx, sy, px + 1, py + 1);
           }
         }
       }
@@ -765,54 +902,41 @@
         ctx.arc(s.x + 3.5 * z, s.y - 1.5 * z - hop, 1.6 * z, 0, 7);
         ctx.fill();
       });
-      // 3. Multi-layered Swaying Forest Trees (#157)
+      // 3. 3D Multi-Tier Conical/Spherical Swaying Forest Trees (#170)
       (ts._trees || []).forEach(function (tr) {
         var f = fog ? fog[tr.ty * W + tr.tx] : 2;
         if (f === 0) return;
-        var s = self.toScreen(tr.x, tr.y);
-        if (s.x < -36 || s.y < -36 || s.x > cv.width + 36 ||
-            s.y > cv.height + 36) return;
-        var sc = tr.scale * Math.max(z, 0.55);
-        var swayX = (Math.sin(now / 620 + (tr.seed % 50)) * 0.6 + 0.7) *
-                    wind.vx * 3.8 * sc;
-        var swayY = (Math.cos(now / 740 + (tr.seed % 50)) * 0.5 + 0.5) *
-                    wind.vy * 2.2 * sc;
+        var s = self.toScreen(tr.x, tr.y, 0);
+        if (s.x < -44 || s.y < -44 || s.x > cv.width + 44 ||
+            s.y > cv.height + 44) return;
+        var sc = tr.scale;
+        var swX = (Math.sin(now / 620 + (tr.seed % 50)) * 0.6 + 0.7) *
+                  wind.vx * 3.8 * sc;
+        var swY = (Math.cos(now / 740 + (tr.seed % 50)) * 0.5 + 0.5) *
+                  wind.vy * 2.2 * sc;
         ctx.globalAlpha = f === 1 ? 0.55 : 0.96;
-        // Ground shadow
-        ctx.fillStyle = "rgba(0,0,0,0.32)";
+        // 3D Projected Ground Cast Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.36)";
         ctx.beginPath();
-        ctx.ellipse(s.x + 3 * sc, s.y + 3 * sc, 9 * sc, 5 * sc, 0, 0, 7);
+        ctx.ellipse(s.x + 6 * sc * z, s.y + 2 * sc * z,
+                    10 * sc * z, 4.5 * sc * z, 0.25, 0, 7);
         ctx.fill();
-        // Trunk
-        ctx.fillStyle = "#4d3422";
-        ctx.fillRect(s.x - 1.8 * sc, s.y - 6 * sc, 3.6 * sc, 8 * sc);
-        // Canopy crown layers reacting to wind
-        var cDark = tr.kind === "pine" ? "#163822" :
-                    tr.kind === "goldleaf" ? "#6e5219" :
-                    tr.kind === "willow" ? "#204d38" : "#1d4723";
-        var cMid = tr.kind === "pine" ? "#1f4f30" :
-                   tr.kind === "goldleaf" ? "#9e7724" :
-                   tr.kind === "willow" ? "#2e6b4e" : "#296330";
-        var cTop = tr.kind === "pine" ? "#2c6b42" :
-                   tr.kind === "goldleaf" ? "#cfa036" :
-                   tr.kind === "willow" ? "#438c69" : "#3b8242";
-        ctx.fillStyle = cDark;
-        ctx.beginPath();
-        ctx.arc(s.x + swayX * 0.4, s.y - 7 * sc + swayY * 0.4,
-                8.5 * sc, 0, 7);
-        ctx.fill();
-        ctx.fillStyle = cMid;
-        ctx.beginPath();
-        ctx.arc(s.x - 2.5 * sc + swayX * 0.75, s.y - 9.5 * sc + swayY * 0.75,
-                6.5 * sc, 0, 7);
-        ctx.arc(s.x + 2.5 * sc + swayX * 0.75, s.y - 9 * sc + swayY * 0.75,
-                6 * sc, 0, 7);
-        ctx.fill();
-        ctx.fillStyle = cTop;
-        ctx.beginPath();
-        ctx.arc(s.x + swayX * 1.15, s.y - 12 * sc + swayY * 1.15,
-                4.8 * sc, 0, 7);
-        ctx.fill();
+        // 3D Cylindrical Trunk (wz: 0 -> 10)
+        self._cyl3D(ctx, tr.x, tr.y, 0, 2.3 * sc, 10 * sc,
+                    "#734f34", "#4d3422", "#2b1c11", "#4d3422");
+        var cHi = tr.kind === "pine" ? "#3b8554" :
+                  tr.kind === "goldleaf" ? "#e0b03e" :
+                  tr.kind === "willow" ? "#4ca179" : "#49964f";
+        var cDark = tr.kind === "pine" ? "#14331f" :
+                    tr.kind === "goldleaf" ? "#634814" :
+                    tr.kind === "willow" ? "#1c4230" : "#1a401f";
+        // 3 Stacked 3D Conical / Spherical Canopy Tiers rising to wz = 34
+        self._cone3D(ctx, tr.x + swX * 0.35, tr.y + swY * 0.35,
+                     7 * sc, 9.5 * sc, 12 * sc, cHi, cDark);
+        self._cone3D(ctx, tr.x + swX * 0.75, tr.y + swY * 0.75,
+                     14 * sc, 7.6 * sc, 11 * sc, cHi, cDark);
+        self._cone3D(ctx, tr.x + swX * 1.15, tr.y + swY * 1.15,
+                     21 * sc, 5.4 * sc, 10 * sc, cHi, cDark);
         ctx.globalAlpha = 1;
       });
     },
@@ -1108,9 +1232,129 @@
       }
     },
 
-    /* #158 live building animations: wind-flapping banners, drifting
-       chimney/forge smoke, rising sparks, orbiting arcane rings, portal
-       vortex, market awning ripple, sacred braziers, watchtower beacon. */
+    /* #170 3D Volumetric Multi-Face Building Renderer: constructs all 11
+       structures from real 3D (wx, wy, wz) boxes, cylinders, cones,
+       pitched roofs, and animated 3D attachments. */
+    _drawBuilding3D: function (ctx, b, theme, z, now, wind, pal) {
+      var bid = b.bid || "vault", wx = b.x, wy = b.y, i;
+      var s0 = this.toScreen(wx, wy, 0);
+      // 0. 3D Directional Ground Cast Shadow + AO Contact Footprint
+      ctx.fillStyle = "rgba(0,0,0,0.42)";
+      ctx.beginPath();
+      ctx.ellipse(s0.x + 8 * z, s0.y + 4 * z, 28 * z, 15 * z, 0.2, 0, 7);
+      ctx.fill();
+      // 3D Stone Foundation Plinth (wz: 0 -> 5)
+      this._box3D(ctx, wx, wy, 0, 38, 32, 5, "#787163", "#595449", "#3d3930");
+
+      if (bid === "town-hall") {
+        // 3D Citadel Keep: central Great Hall + 4 corner 3D cylindrical towers
+        this._box3D(ctx, wx, wy, 5, 24, 20, 20, "#949aa6", "#7d8490", "#525863");
+        this._roofPrism3D(ctx, wx, wy, 25, 26, 22, 14, "#386ec2", "#1c3b6e", "#ffd54a");
+        var tOff = [[-13, -10], [13, -10], [-13, 10], [13, 10]];
+        for (i = 0; i < 4; i++) {
+          var tx = wx + tOff[i][0], ty = wy + tOff[i][1];
+          this._cyl3D(ctx, tx, ty, 5, 5.2, 24, "#b8bfc9", "#7d8490", "#454a52", "#949aa6");
+          this._cone3D(ctx, tx, ty, 29, 6.2, 12, "#3b6ebf", "#17325c");
+        }
+        // 3D Gatehouse Arch on South facade
+        var gs = this.toScreen(wx, wy + 10, 5);
+        ctx.fillStyle = "#2b1b0e";
+        ctx.beginPath();
+        ctx.arc(gs.x, gs.y - 6 * z, 5.5 * z, Math.PI, 0);
+        ctx.lineTo(gs.x + 5.5 * z, gs.y); ctx.lineTo(gs.x - 5.5 * z, gs.y);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#ffd54a"; ctx.stroke();
+      } else if (bid === "barracks") {
+        // 3D Garrison Fortress + crenellated battlements + crimson roof
+        this._box3D(ctx, wx, wy, 5, 30, 22, 18, "#8a9099", "#6e747d", "#484d54");
+        this._roofPrism3D(ctx, wx, wy, 23, 28, 20, 12, "#b03a30", "#661e18", "#d4a72c");
+        for (i = -12; i <= 12; i += 8) {
+          this._box3D(ctx, wx + i, wy + 10, 23, 4, 3, 4, "#9aa0aa", "#7d8490", "#525863");
+        }
+      } else if (bid === "tavern") {
+        // 3D Two-story Half-Timbered Inn + tall 3D stone chimney
+        this._box3D(ctx, wx, wy, 5, 24, 18, 10, "#9e8c70", "#7d6e56", "#544938");
+        this._box3D(ctx, wx, wy, 15, 27, 20, 10, "#dec79e", "#c9b289", "#8c7a5b");
+        this._roofPrism3D(ctx, wx, wy, 25, 29, 22, 13, "#9e6832", "#593818", "#d4a72c");
+        this._box3D(ctx, wx + 10, wy - 5, 5, 5, 5, 31, "#8a7968", "#6e5f50", "#42382e");
+        this._cyl3D(ctx, wx - 11, wy + 11, 5, 3.2, 6, "#a67038", "#6e4720", "#38220d");
+      } else if (bid === "library") {
+        // 3D Arcane Sanctum: octagonal marble tower + 3D dome + 3-axis gyroscope rings
+        this._cyl3D(ctx, wx, wy, 5, 12, 22, "#a5b4cc", "#6b7a94", "#3b4454", "#8d9bb5");
+        this._cone3D(ctx, wx, wy, 27, 13, 13, "#5ec2f7", "#16425b");
+        var topS = this.toScreen(wx, wy, 44);
+        var ang = now / 480;
+        ctx.strokeStyle = "#ffd54a"; ctx.lineWidth = Math.max(1.2, 1.6 * z);
+        ctx.beginPath();
+        ctx.ellipse(topS.x, topS.y, 10 * z, 4.2 * z, Math.sin(ang) * 0.6, 0, 7);
+        ctx.stroke();
+        ctx.strokeStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.ellipse(topS.x, topS.y, 8 * z, 3.5 * z, -Math.cos(ang) * 0.7, 0, 7);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      } else if (bid === "watchtower") {
+        // 3D Guard Spire: tall cylindrical shaft + overhanging timber gallery + spire
+        this._cyl3D(ctx, wx, wy, 5, 6.8, 30, "#a3ab9c", "#6c7366", "#393d35", "#8a9184");
+        this._box3D(ctx, wx, wy, 33, 18, 18, 6, "#785534", "#5c3f24", "#3b2715");
+        this._cone3D(ctx, wx, wy, 39, 10.5, 14, "#486999", "#1d2d45");
+      } else if (bid === "runeforge") {
+        // 3D Blacksmith Foundry + smokestack + animated 3D trip-hammer on anvil
+        this._box3D(ctx, wx - 3, wy, 5, 24, 18, 16, "#6e6763", "#4a4542", "#292523");
+        this._roofPrism3D(ctx, wx - 3, wy, 21, 26, 20, 10, "#803d28", "#421d12", "#c99a49");
+        this._cyl3D(ctx, wx - 9, wy - 4, 5, 4.2, 28, "#594842", "#382d29", "#1f1816");
+        // 3D Anvil + Trip-hammer slamming in +Z
+        this._box3D(ctx, wx + 11, wy + 6, 5, 6, 4, 5, "#d0d7de", "#8b949e", "#484f58");
+        var hLift = Math.abs(Math.sin(now / 180)) * 7;
+        this._box3D(ctx, wx + 11, wy + 6, 10 + hLift, 5, 3.5, 3.5, "#ffd54a", "#b8860b", "#7a5905");
+      } else if (bid === "portal") {
+        // 3D Waygate: twin 3D carved obelisks + lintel arch + upright 3D vortex
+        this._box3D(ctx, wx - 11, wy, 5, 6, 6, 28, "#7a6599", "#463859", "#241b30");
+        this._box3D(ctx, wx + 11, wy, 5, 6, 6, 28, "#7a6599", "#463859", "#241b30");
+        this._box3D(ctx, wx, wy, 31, 28, 8, 5, "#8b74ad", "#5a4873", "#312542");
+        var vs = this.toScreen(wx, wy, 18);
+        var pg = ctx.createRadialGradient(vs.x, vs.y, 1, vs.x, vs.y, 12 * z);
+        pg.addColorStop(0, "#ffffff");
+        pg.addColorStop(0.4, "#e879f9");
+        pg.addColorStop(0.8, "#6d28d9");
+        pg.addColorStop(1, "rgba(30,27,75,0)");
+        ctx.fillStyle = pg;
+        ctx.beginPath();
+        ctx.ellipse(vs.x, vs.y, 9 * z, 13 * z, 0, 0, 7);
+        ctx.fill();
+      } else if (bid === "marketplace") {
+        // 3D Market Pavilion with 3D columns + striped awning roof + crates
+        this._box3D(ctx, wx, wy, 5, 28, 20, 12, "#8a623c", "#6e4e2e", "#47311b");
+        this._roofPrism3D(ctx, wx, wy, 17, 30, 22, 9, "#cf3636", "#8c2020", "#f5ebd6");
+        this._box3D(ctx, wx - 8, wy + 11, 5, 6, 5, 5, "#e3b341", "#b88b28", "#7a5b16");
+        this._box3D(ctx, wx + 8, wy + 11, 5, 6, 5, 5, "#e3b341", "#b88b28", "#7a5b16");
+      } else if (bid === "altar") {
+        // 3D Stepped Ziggurat Altar of Kings + 4 marble pillars + 3D winged statue
+        this._box3D(ctx, wx, wy, 5, 30, 24, 5, "#b8b2c4", "#8a8496", "#575261");
+        this._box3D(ctx, wx, wy, 10, 22, 18, 5, "#ccc6d9", "#9b95a8", "#656070");
+        this._cyl3D(ctx, wx, wy, 15, 4.2, 16, "#fff3b0", "#d4a72c", "#7a5c0c", "#fff3b0");
+        var as = this.toScreen(wx, wy, 32);
+        ctx.fillStyle = "#ffd54a";
+        ctx.beginPath();
+        ctx.moveTo(as.x, as.y);
+        ctx.lineTo(as.x - 13 * z, as.y - 8 * z);
+        ctx.lineTo(as.x - 6 * z, as.y + 4 * z);
+        ctx.moveTo(as.x, as.y);
+        ctx.lineTo(as.x + 13 * z, as.y - 8 * z);
+        ctx.lineTo(as.x + 6 * z, as.y + 4 * z);
+        ctx.fill();
+      } else {
+        // 3D Vault & Trophy Hall Pantheon with cylindrical columns + golden pediment
+        this._box3D(ctx, wx, wy, 5, 28, 20, 18, "#8a9099", "#5c6169", "#3b3f45");
+        for (i = -10; i <= 10; i += 6.6) {
+          this._cyl3D(ctx, wx + i, wy + 10, 5, 1.8, 18, "#f0f4f8", "#9ca3af", "#4b5563");
+        }
+        this._roofPrism3D(ctx, wx, wy, 23, 30, 22, 11, "#d4a72c", "#7d5f14", "#fff3b0");
+      }
+      // Animated banners, smoke, sparks, braziers, beacon in 3D space
+      var topP = this.toScreen(wx, wy, 36);
+      this._drawBuildingAnim(ctx, b, topP, 48 * z, 24 * z, z, now, wind, pal);
+    },
     _drawBuildingAnim: function (ctx, b, s, w, h, z, now, wind, pal) {
       var bid = b.bid || "vault", i;
       // 1. Wind-flapping roof banners on Keep, Barracks, Watchtower, Trophy Hall
@@ -1220,200 +1464,282 @@
       }
     },
 
-    /* #158/#163 living unit & hero renderer: directional cast shadow,
-       WC3 Hero Glow, rotating Aura runes, 4-node Verlet cloth cape,
-       2-bone articulated leg stride + dust puffs, Stand-1/2/3 autonomous
-       idle fidgets, active weapon slash ribbons, and ranged projectiles. */
+    /* #170 14-Joint 3D Articulated Skeletal Rig & 8 Keyframed 3D Animations:
+       Every unit/hero has a smooth 3D facing angle `u._yaw` (lerped toward
+       its movement/target direction), local 3D frame (Forward F, Right R,
+       Up Z), Z-sorted 3D limbs (Pelvis, Torso, Head/Helm, Shoulders, Elbows,
+       Hands with 3D Shield & Weapon, Hips, Knees, Boots, 4-node 3D Cape),
+       and 8 real 3D skeletal animation clips. */
     _drawUnitLive: function (ctx, u, s, sz, dy, ent, z, now, wind, pal, all) {
-      var ph = hash(String(u.id));
+      var self = this, ph = hash(String(u.id));
       var isHero = u.kind === "hero";
-      // 0. Directional Sun/Moon Projected Cast Shadow (#163)
-      ctx.fillStyle = "rgba(0,0,0,0.34)";
-      ctx.beginPath();
-      ctx.ellipse(s.x + sz * 0.24, s.y + sz * 0.34,
-                  sz * 0.48, sz * 0.20, 0.28, 0, 7);
-      ctx.fill();
-      // 1. WC3 Hero Glow & Rotating Geometric Aura Rune under feet
-      if (isHero) {
-        var gRad = sz * 0.76;
-        var grad = ctx.createRadialGradient(
-          s.x, s.y + sz * 0.22, sz * 0.1,
-          s.x, s.y + sz * 0.22, gRad);
-        grad.addColorStop(0, "rgba(255,213,74,0.38)");
-        grad.addColorStop(1, "rgba(255,213,74,0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y + sz * 0.22, gRad, 0, 7);
-        ctx.fill();
-        if ((u.level || 1) >= 1 && z > 0.55) {
-          var aAng = now / 900 + (ph % 10);
-          ctx.strokeStyle = ent.trim || "#ffd54a";
-          ctx.globalAlpha = 0.48;
-          ctx.setLineDash([3 * z, 3 * z]);
-          ctx.beginPath();
-          ctx.ellipse(s.x, s.y + sz * 0.28, sz * 0.56, sz * 0.23, 0, 0, 7);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          for (var rp = 0; rp < 4; rp++) {
-            var ra = aAng + rp * 1.5708;
-            ctx.fillStyle = ent.trim || "#ffd54a";
-            ctx.fillRect(s.x + Math.cos(ra) * sz * 0.54 - 1.5 * z,
-                         s.y + sz * 0.28 + Math.sin(ra) * sz * 0.22 - 1.5 * z,
-                         3 * z, 3 * z);
-          }
-          ctx.globalAlpha = 1;
-        }
-      }
-      // 2. 4-Node Verlet Cloth Cape behind Heroes & Martial/Caster classes (#163)
-      if (isHero || ent.arch === "martial" || ent.arch === "caster" ||
-          ent.arch === "commander") {
-        var vxU = u.moving ? (u.tx - u.x) : 0,
-            vyU = u.moving ? (u.ty - u.y) : 0;
-        var vLen = Math.hypot(vxU, vyU) || 1;
-        var trailX = u.moving ? (-vxU / vLen) * 5 : 0,
-            trailY = u.moving ? (-vyU / vLen) * 3 : 0;
-        var n1x = s.x + (wind.vx * 2.2 + trailX * 0.4) * z,
-            n1y = s.y + sz * 0.08 + dy;
-        var n2x = s.x + (wind.vx * 5.0 + trailX * 0.8 +
-                  Math.sin(now / 140 + ph) * 2.2) * z,
-            n2y = s.y + sz * 0.22 + wind.vy * 1.8 * z + dy * 0.5;
-        var n3x = s.x + (wind.vx * 7.8 + trailX * 1.2 +
-                  Math.sin(now / 115 + ph + 1.2) * 3.4) * z,
-            n3y = s.y + sz * 0.38 + (wind.vy * 3.2 + trailY) * z;
-        ctx.fillStyle = ent.dark || "#1b325f";
-        ctx.beginPath();
-        ctx.moveTo(s.x - sz * 0.28, s.y - sz * 0.06 + dy);
-        ctx.quadraticCurveTo(n1x - sz * 0.26, n1y, n2x - sz * 0.24, n2y);
-        ctx.lineTo(n3x - sz * 0.20, n3y);
-        ctx.lineTo(n3x + sz * 0.20, n3y);
-        ctx.lineTo(n2x + sz * 0.24, n2y);
-        ctx.quadraticCurveTo(n1x + sz * 0.26, n1y,
-                             s.x + sz * 0.28, s.y - sz * 0.06 + dy);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = ent.trim || "#ffd54a";
-        ctx.lineWidth = Math.max(0.8, 1.1 * z);
-        ctx.stroke();
-        ctx.lineWidth = 1;
-      }
-      // 3. 2-Bone Articulated Leg Stride & Footstep Dust Puffs (#163)
-      if (z > 0.5) {
-        var lph = u.moving ? (now / 72 + ph) : 0;
-        var lStride = u.moving ? Math.sin(lph) * 4.2 * z : 0;
-        var lLiftL = u.moving ? Math.max(0, -Math.cos(lph)) * 2.5 * z : 0;
-        var lLiftR = u.moving ? Math.max(0, Math.cos(lph)) * 2.5 * z : 0;
-        // Left & Right articulated thigh + armored greave/boot
-        ctx.strokeStyle = ent.dark || "#2b2623";
-        ctx.lineWidth = Math.max(2, 2.8 * z);
-        ctx.beginPath();
-        ctx.moveTo(s.x - 3.5 * z, s.y + sz * 0.16 + dy);
-        ctx.lineTo(s.x - 4 * z + lStride * 0.6,
-                   s.y + sz * 0.34 - lLiftL);
-        ctx.moveTo(s.x + 3.5 * z, s.y + sz * 0.16 + dy);
-        ctx.lineTo(s.x + 4 * z - lStride * 0.6,
-                   s.y + sz * 0.34 - lLiftR);
-        ctx.stroke();
-        ctx.lineWidth = 1;
-        ctx.fillStyle = "#4a331d";
-        ctx.fillRect(s.x - 5.5 * z + lStride * 0.6,
-                     s.y + sz * 0.32 - lLiftL, 3.6 * z, 3.2 * z);
-        ctx.fillRect(s.x + 2.0 * z - lStride * 0.6,
-                     s.y + sz * 0.32 - lLiftR, 3.6 * z, 3.2 * z);
-        if (u.moving) {
-          for (var dp = 0; dp < 3; dp++) {
-            var dph = ((now / 320 + dp * 0.33 + (ph % 7) * 0.1) % 1);
-            ctx.fillStyle = "rgba(185,170,140," +
-              ((1 - dph) * 0.45).toFixed(2) + ")";
-            ctx.beginPath();
-            ctx.arc(s.x - (dp - 1) * 4 * z - wind.vx * dph * 6 * z,
-                    s.y + sz * 0.38 + dph * 4 * z,
-                    (1.8 + dph * 2.8) * z, 0, 7);
-            ctx.fill();
-          }
-        }
-      }
-      // 4. Autonomous Idle Fidgets (Stand - 1/2/3: look around, flourish, social)
-      var fidgetSlot = Math.floor((now / 2800 + (ph % 19))) % 7;
-      var subT = ((now / 2800 + (ph % 19)) % 1);
-      var gx = 0;
-      if (!u.moving && u.status_live !== "running" && !u.acting) {
-        if (fidgetSlot === 2) {
-          gx = Math.sin(subT * 6.283) * 2.2 * z;
-        }
-      }
-      // Draw core 3D-shaded multi-part unit sprite
-      Theme.sprite(ctx, ent, s.x - sz / 2 + gx, s.y - sz / 2 + dy, sz, sz);
+      var sc = (u.kind === "minion" ? 0.68 : u.kind === "worker" ? 0.56 : 1.0);
+      var wx = u.x, wy = u.y;
 
-      // 5. Active Combat / Work Swing + Ranged Projectiles (#163)
-      if (u.status_live === "running" || u.acting) {
-        var swAng = Math.sin(now / 90 + ph) * 1.15;
-        ctx.strokeStyle = ent.arch === "caster" ? "#38bdf8" : "#ffd54a";
-        ctx.lineWidth = Math.max(1.8, 2.6 * z);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y + dy, sz * 0.60, swAng - 0.65, swAng + 0.65);
-        ctx.stroke();
-        ctx.lineWidth = 1;
-        // Ranged projectile (arrow for ranger, arcane bolt for caster)
-        if (ent.arch === "ranger" || ent.arch === "caster") {
-          var pProg = ((now / 420 + (ph % 11) * 0.1) % 1);
-          var px2 = s.x + Math.cos(ph) * pProg * 28 * z,
-              py2 = s.y + Math.sin(ph) * pProg * 28 * z -
-                    Math.sin(pProg * Math.PI) * 10 * z;
-          if (ent.arch === "caster") {
-            ctx.fillStyle = "#38bdf8";
-            ctx.beginPath();
-            ctx.arc(px2, py2, 3 * z, 0, 7);
-            ctx.fill();
-          } else {
-            ctx.strokeStyle = "#f0e6d2";
-            ctx.lineWidth = Math.max(1.2, 1.6 * z);
-            ctx.beginPath();
-            ctx.moveTo(px2 - 4 * z, py2 - 2 * z);
-            ctx.lineTo(px2 + 4 * z, py2 + 2 * z);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-          }
-        }
-        if ((now + ph) % 260 < 110) {
-          ctx.fillStyle = "#fff8dc";
-          ctx.fillRect(s.x + Math.cos(swAng) * sz * 0.58 - 1.5 * z,
-                       s.y + Math.sin(swAng) * sz * 0.58 - 1.5 * z,
-                       3 * z, 3 * z);
-        }
-      } else if (!u.moving && z > 0.55) {
-        if (fidgetSlot === 4 && subT < 0.55) {
-          // Stand - 3: Heroic weapon/staff flourish glint above shoulder
-          ctx.strokeStyle = ent.trim || "#ffd54a";
-          ctx.lineWidth = 1.6;
-          var fy = s.y - sz * 0.55 - Math.sin(subT * 5.5) * 4 * z;
-          ctx.beginPath();
-          ctx.moveTo(s.x + sz * 0.35, s.y - sz * 0.1);
-          ctx.lineTo(s.x + sz * 0.42, fy);
-          ctx.stroke();
-          ctx.fillStyle = "#fff";
-          ctx.beginPath();
-          ctx.arc(s.x + sz * 0.42, fy, 2 * z, 0, 7);
-          ctx.fill();
-          ctx.lineWidth = 1;
-        } else if (fidgetSlot === 5 && !u.bark) {
+      // 1. Smooth 3D Facing Yaw (turns toward movement vector or target)
+      var tgtYaw = typeof u._yaw === "number" ? u._yaw : 1.15;
+      if (u.moving || u.acting) {
+        var mdx = (u.tx || wx) - wx, mdy = (u.ty || wy) - wy;
+        if (mdx * mdx + mdy * mdy > 1) tgtYaw = Math.atan2(mdy, mdx);
+      } else {
+        var fidgetSlot = Math.floor((now / 2600 + (ph % 19))) % 8;
+        var subT = ((now / 2600 + (ph % 19)) % 1);
+        if (fidgetSlot === 2) {
+          tgtYaw = 1.15 + Math.sin(subT * 6.283) * 0.65; // Stand-2 look-around
+        } else if (fidgetSlot === 5) {
           for (var ai = 0; ai < all.length; ai++) {
             var o = all[ai];
-            if (o.id !== u.id && Math.hypot(o.x - u.x, o.y - u.y) < TILE * 3.2) {
-              ctx.fillStyle = "rgba(20,28,22,0.82)";
-              ctx.beginPath();
-              ctx.arc(s.x + sz * 0.42, s.y - sz * 0.48, 5.5 * z, 0, 7);
-              ctx.fill();
-              ctx.strokeStyle = "#d4a72c";
-              ctx.stroke();
-              ctx.fillStyle = "#ffd54a";
-              ctx.font = "bold " + Math.max(7, Math.round(8 * z)) + "px monospace";
-              ctx.textAlign = "center"; ctx.textBaseline = "middle";
-              ctx.fillText((ph % 2) ? ".." : "!", s.x + sz * 0.42, s.y - sz * 0.48);
+            if (o.id !== u.id && Math.hypot(o.x - wx, o.y - wy) < TILE * 3.2) {
+              tgtYaw = Math.atan2(o.y - wy, o.x - wx);
               break;
             }
           }
+        } else {
+          tgtYaw = 1.15 + Math.sin(now / 1900 + ph) * 0.18;
         }
       }
+      var curYaw = typeof u._yaw === "number" ? u._yaw : tgtYaw;
+      var dYaw = ((tgtYaw - curYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+      u._yaw = curYaw + dYaw * 0.22;
+      var cy = Math.cos(u._yaw), sy = Math.sin(u._yaw);
+      // Local 3D character space (f=forward, r=right, up=+wz) -> screen
+      var J = function (f, r, up) {
+        return self.toScreen(
+          wx + (f * cy - r * sy) * sc,
+          wy + (f * sy + r * cy) * sc,
+          up * sc
+        );
+      };
+      var limb = function (p0, p1, rad, col) {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = Math.max(1.4, rad * sc * z);
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y);
+        ctx.stroke();
+      };
+
+      // 2. Ground Shadow + WC3 Hero Glow + Rotating 3D Aura Ring
+      var g0 = J(0, 0, 0);
+      ctx.fillStyle = "rgba(0,0,0,0.40)";
+      ctx.beginPath();
+      ctx.ellipse(g0.x + 3 * sc * z, g0.y + 1.5 * sc * z,
+                  9.5 * sc * z, 5 * sc * z, 0.2, 0, 7);
+      ctx.fill();
+      if (isHero) {
+        var gRad = 18 * sc * z;
+        var grad = ctx.createRadialGradient(g0.x, g0.y, 2, g0.x, g0.y, gRad);
+        grad.addColorStop(0, "rgba(255,213,74,0.42)");
+        grad.addColorStop(1, "rgba(255,213,74,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(g0.x, g0.y, gRad, 0, 7); ctx.fill();
+        if (z > 0.5) {
+          var aAng = now / 850 + (ph % 10);
+          ctx.strokeStyle = ent.trim || "#ffd54a";
+          ctx.globalAlpha = 0.52;
+          ctx.setLineDash([3 * z, 3 * z]);
+          ctx.beginPath();
+          ctx.ellipse(g0.x, g0.y, 13 * sc * z, 13 * PITCH * sc * z, 0, 0, 7);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      // 3. Determine Active 3D Animation Clip & Joint Poses
+      var clip = u.moving ? "walk" :
+                 (u.status_live === "running" || u.acting) ? "attack" :
+                 (["idle", "idle", "look", "flourish", "idle", "social",
+                   "wave", "dance"][Math.floor((now / 2600 + (ph % 19))) % 8]);
+      var wPh = now / 82 + ph;
+      var strideF = clip === "walk" ? Math.sin(wPh) * 6.2 :
+                    clip === "dance" ? Math.sin(now / 140 + ph) * 3.5 : 0;
+      var kneeLiftL = clip === "walk" ? Math.max(0, -Math.cos(wPh)) * 5.2 :
+                      clip === "dance" ? Math.max(0, Math.sin(now / 140)) * 4.5 : 0;
+      var kneeLiftR = clip === "walk" ? Math.max(0, Math.cos(wPh)) * 5.2 :
+                      clip === "dance" ? Math.max(0, -Math.sin(now / 140)) * 4.5 : 0;
+      var jumpZ = (clip === "wave" || clip === "dance")
+        ? Math.abs(Math.sin(now / 160 + ph)) * 4.5 : 0;
+      var pelvZ = 8.5 + (clip === "walk" ? -Math.abs(Math.cos(wPh)) * 1.6 :
+                         Math.sin(now / 420 + ph) * 0.7) + jumpZ;
+      var leanF = clip === "walk" ? 2.2 : clip === "attack" ? 3.2 * Math.sin(now / 95 + ph) : 0;
+
+      // 4. 4-Node 3D Verlet Cape (drawn behind torso when facing south/camera)
+      var drawCape = function () {
+        if (!isHero && ent.arch !== "martial" && ent.arch !== "caster" &&
+            ent.arch !== "commander") return;
+        var c0L = J(-2, -4.5, pelvZ + 8), c0R = J(-2, 4.5, pelvZ + 8);
+        var billow = (u.moving ? -7.5 : -3.5) + Math.sin(now / 130 + ph) * 2.4;
+        var wLat = (wind.vx * -sy + wind.vy * cy) * 2.5;
+        var cMidL = J(billow * 0.55, -5.2 + wLat * 0.5, pelvZ + 3),
+            cMidR = J(billow * 0.55, 5.2 + wLat * 0.5, pelvZ + 3);
+        var cBotL = J(billow, -6.2 + wLat, 2 + jumpZ * 0.5),
+            cBotR = J(billow, 6.2 + wLat, 2 + jumpZ * 0.5);
+        ctx.fillStyle = ent.dark || "#1b325f";
+        ctx.beginPath();
+        ctx.moveTo(c0L.x, c0L.y); ctx.lineTo(c0R.x, c0R.y);
+        ctx.lineTo(cMidR.x, cMidR.y); ctx.lineTo(cBotR.x, cBotR.y);
+        ctx.lineTo(cBotL.x, cBotL.y); ctx.lineTo(cMidL.x, cMidL.y);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = ent.trim || "#ffd54a";
+        ctx.lineWidth = Math.max(0.8, 1.1 * z); ctx.stroke();
+      };
+      if (sy >= -0.2) drawCape();
+
+      // 5. Articulated 3D Legs (Hip -> Knee -> Ankle/Boot)
+      var hipL = J(0, -2.8, pelvZ), hipR = J(0, 2.8, pelvZ);
+      var kneeL = J(strideF * 0.65 + 1.2, -3.0, 4.5 + kneeLiftL * 0.6 + jumpZ * 0.5),
+          kneeR = J(-strideF * 0.65 + 1.2, 3.0, 4.5 + kneeLiftR * 0.6 + jumpZ * 0.5);
+      var footL = J(strideF, -3.0, kneeLiftL + jumpZ),
+          footR = J(-strideF, 3.0, kneeLiftR + jumpZ);
+      var legOrder = (cy * -1 + sy * 0 > 0) ? ["L", "R"] : ["R", "L"];
+      legOrder.forEach(function (side) {
+        var hp = side === "L" ? hipL : hipR,
+            kn = side === "L" ? kneeL : kneeR,
+            ft = side === "L" ? footL : footR;
+        limb(hp, kn, 3.2, ent.dark || "#2b2623");
+        limb(kn, ft, 2.8, ent.bg || "#48525c");
+        // 3D Armored Boot
+        var btTip = J((side === "L" ? strideF : -strideF) + 2.4,
+                      side === "L" ? -3.0 : 3.0,
+                      (side === "L" ? kneeLiftL : kneeLiftR) + jumpZ);
+        limb(ft, btTip, 3.0, "#3d2916");
+      });
+
+      // 6. 3D Tapered Armored Torso / Cuirass & Belt
+      var torsoX = wx + leanF * cy * sc, torsoY = wy + leanF * sy * sc;
+      this._cyl3D(ctx, torsoX, torsoY, pelvZ * sc, 5.2 * sc, 8.8 * sc,
+                  ent.trim || "#e2e8f0", ent.bg || "#3b5bdb",
+                  ent.dark || "#182447", ent.bg || "#3b5bdb");
+      // Golden belt + tabard
+      var beltP = J(leanF + 2.2, 0, pelvZ + 0.8),
+          tabP = J(leanF + 2.6 + Math.sin(wPh) * 1.2, 0, pelvZ - 3.5);
+      limb(beltP, tabP, 2.6, ent.trim || "#ffd54a");
+
+      // 7. Articulated 3D Shoulders, Arms, Shield & Weapons
+      var shL = J(leanF, -5.8, pelvZ + 7.5),
+          shR = J(leanF, 5.8, pelvZ + 7.5);
+      var armSwing = clip === "walk" ? -strideF * 0.75 : 0;
+      var elbL = J(leanF + 2.5 - armSwing * 0.4, -7.2, pelvZ + 4.2),
+          handL = J(leanF + 5.2 - armSwing * 0.7, -6.2, pelvZ + 3.0);
+      var rF = leanF + 3.5 + armSwing * 0.8,
+          rR = 6.8,
+          rZ = pelvZ + 3.8;
+      if (clip === "attack") {
+        var slash = Math.sin(now / 85 + ph);
+        rF = leanF + 6.5 + slash * 5.5;
+        rR = 5.0 - slash * 6.5;
+        rZ = pelvZ + 8.5 - slash * 6.0;
+      } else if (clip === "flourish" || clip === "wave") {
+        rF = leanF + 2.0;
+        rR = 7.5 + Math.sin(now / 110) * 3.0;
+        rZ = pelvZ + 14.5;
+      } else if (clip === "dance") {
+        rF = leanF + 3.0;
+        rR = 7.8;
+        rZ = pelvZ + 12.0 + Math.sin(now / 120) * 3.5;
+      }
+      var elbR = J((leanF + rF) * 0.5, 6.8, (pelvZ + 7.5 + rZ) * 0.5),
+          handR = J(rF, rR, rZ);
+
+      var drawArmL = function () {
+        // Left Pauldron + Arm + 3D Shield / Off-hand Tome
+        ctx.fillStyle = ent.bg || "#3b5bdb";
+        ctx.beginPath(); ctx.arc(shL.x, shL.y, 3.6 * sc * z, 0, 7); ctx.fill();
+        ctx.strokeStyle = ent.trim || "#ffd54a"; ctx.lineWidth = 1.2; ctx.stroke();
+        limb(shL, elbL, 2.6, ent.bg || "#3b5bdb");
+        limb(elbL, handL, 2.3, "#e8be8a");
+        if (ent.arch === "martial" || ent.arch === "commander") {
+          // 3D Kite Shield oriented on left forearm
+          var shTop = J(leanF + 4.8 - armSwing * 0.5, -7.8, pelvZ + 7.2),
+              shBot = J(leanF + 4.8 - armSwing * 0.5, -7.8, pelvZ - 1.2),
+              shIn = J(leanF + 6.8 - armSwing * 0.5, -4.8, pelvZ + 3.5),
+              shOut = J(leanF + 2.5 - armSwing * 0.5, -9.2, pelvZ + 3.5);
+          ctx.fillStyle = ent.bg || "#254e8a";
+          ctx.beginPath();
+          ctx.moveTo(shTop.x, shTop.y); ctx.lineTo(shIn.x, shIn.y);
+          ctx.lineTo(shBot.x, shBot.y); ctx.lineTo(shOut.x, shOut.y);
+          ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = "#ffd54a"; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+      };
+
+      var drawArmR = function () {
+        // Right Pauldron + Arm + 3D Weapon (Broadsword / Staff / Bow / Hammer)
+        ctx.fillStyle = ent.bg || "#3b5bdb";
+        ctx.beginPath(); ctx.arc(shR.x, shR.y, 3.6 * sc * z, 0, 7); ctx.fill();
+        ctx.strokeStyle = ent.trim || "#ffd54a"; ctx.lineWidth = 1.2; ctx.stroke();
+        limb(shR, elbR, 2.6, ent.bg || "#3b5bdb");
+        limb(elbR, handR, 2.3, "#e8be8a");
+        var wpTip = J(rF + (clip === "attack" ? 9.5 : 5.5),
+                      rR - (clip === "attack" ? 3.5 : 1.0),
+                      rZ + (clip === "attack" ? 4.5 : 11.5));
+        if (ent.arch === "caster") {
+          limb(J(rF - 1.5, rR, rZ - 6), wpTip, 2.0, "#9333ea");
+          ctx.fillStyle = "#38bdf8";
+          ctx.beginPath(); ctx.arc(wpTip.x, wpTip.y, 3.2 * sc * z, 0, 7); ctx.fill();
+          ctx.fillStyle = "#fff";
+          ctx.beginPath(); ctx.arc(wpTip.x, wpTip.y, 1.4 * sc * z, 0, 7); ctx.fill();
+        } else if (ent.arch === "ranger") {
+          var bowT = J(rF + 3, rR, rZ + 7), bowB = J(rF + 3, rR, rZ - 5);
+          ctx.strokeStyle = "#d97706"; ctx.lineWidth = Math.max(1.6, 2.2 * z);
+          ctx.beginPath();
+          ctx.moveTo(bowT.x, bowT.y);
+          ctx.quadraticCurveTo(handR.x + 5 * cy * z, handR.y + 5 * sy * z,
+                               bowB.x, bowB.y);
+          ctx.stroke();
+        } else {
+          // 3D Broadsword / Warhammer blade + golden crossguard
+          limb(handR, wpTip, 2.6, "#f0f6fc");
+          var cgL = J(rF + 1, rR - 2.5, rZ + 1.5),
+              cgR = J(rF + 1, rR + 2.5, rZ + 1.5);
+          limb(cgL, cgR, 2.0, "#ffd54a");
+        }
+        // 3D Slash Ribbon during active combat/work
+        if (clip === "attack") {
+          ctx.strokeStyle = ent.arch === "caster"
+            ? "rgba(56,189,248,0.65)" : "rgba(255,213,74,0.72)";
+          ctx.lineWidth = Math.max(2, 3.2 * z);
+          var sl0 = J(leanF + 4, 8, pelvZ + 12),
+              sl1 = J(leanF + 12, 0, pelvZ + 6),
+              sl2 = J(leanF + 5, -7, pelvZ + 2);
+          ctx.beginPath();
+          ctx.moveTo(sl0.x, sl0.y);
+          ctx.quadraticCurveTo(sl1.x, sl1.y, sl2.x, sl2.y);
+          ctx.stroke();
+        }
+      };
+
+      if (cy >= 0) { drawArmL(); drawArmR(); }
+      else { drawArmR(); drawArmL(); }
+
+      // 8. 3D Head, Directional Visor/Eyes & Class Helmet/Crown/Hat
+      var headP = J(leanF * 0.7, 0, pelvZ + 12.2);
+      var hr = 4.4 * sc * z;
+      ctx.fillStyle = Theme._sphereGrad
+        ? Theme._sphereGrad(ctx, headP.x, headP.y, hr, "#ffe4bd", "#e8be8a", "#9c6f3e")
+        : "#e8be8a";
+      ctx.beginPath(); ctx.arc(headP.x, headP.y, hr, 0, 7); ctx.fill();
+      // Directional Eyes oriented along facing vector (cy, sy)
+      if (sy > -0.35) {
+        var eyeL = J(leanF * 0.7 + 3.6, -1.5, pelvZ + 12.4),
+            eyeR = J(leanF * 0.7 + 3.6, 1.5, pelvZ + 12.4);
+        ctx.fillStyle = ent.arch === "caster" ? "#38bdf8" : "#111";
+        ctx.fillRect(eyeL.x - 1, eyeL.y - 1, 2.2 * z, 2.2 * z);
+        ctx.fillRect(eyeR.x - 1, eyeR.y - 1, 2.2 * z, 2.2 * z);
+      }
+      // 3D Helmet Plume / Wizard Cone / Hood Crest at wz = pelvZ + 16..21
+      var crestPeak = J(leanF * 0.5 - 1.0, 0, pelvZ + 18.5);
+      ctx.fillStyle = ent.arch === "caster" ? (ent.dark || "#3b0764")
+                    : (ent.trim || "#ffd54a");
+      ctx.beginPath();
+      ctx.moveTo(headP.x - hr * 0.85, headP.y - hr * 0.3);
+      ctx.lineTo(crestPeak.x, crestPeak.y);
+      ctx.lineTo(headP.x + hr * 0.85, headP.y - hr * 0.3);
+      ctx.closePath(); ctx.fill();
+
+      if (sy < -0.2) drawCape();
+      ctx.lineWidth = 1;
     },
 
     // ---- frame -----------------------------------------------------
@@ -1507,34 +1833,36 @@
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText(g, s.x, s.y - 8 * z + bob);
       });
-      (st.buildings || []).forEach(function (b) {
-        var s = self.toScreen(b.x, b.y);
-        if (s.x < -72 || s.y < -72 || s.x > cv.width + 72 ||
-            s.y > cv.height + 72) return;
+      (st.buildings || []).slice().sort(function (a, b) {
+        return a.y - b.y;
+      }).forEach(function (b) {
+        var s = self.toScreen(b.x, b.y, 0);
+        if (s.x < -80 || s.y < -80 || s.x > cv.width + 80 ||
+            s.y > cv.height + 80) return;
         var w = 48 * z, h = 48 * z;
-        Theme.sprite(ctx, theme.buildings[b.bid] || theme.buildings["vault"],
-                     s.x - w / 2, s.y - h / 2, w, h);
-        self._drawBuildingAnim(ctx, b, s, w, h, z, t0, wind, pal);
+        self._drawBuilding3D(ctx, b, theme, z, t0, wind, pal);
         if (b.sel) {
           ctx.strokeStyle = pal.sel; ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.ellipse(s.x, s.y + h * 0.25, w * 0.58, h * 0.30, 0, 0, 7);
+          ctx.ellipse(s.x, s.y, w * 0.58, h * 0.34, 0, 0, 7);
           ctx.stroke();
           ctx.lineWidth = 1;
         }
         if (z > 0.72 && b.name) {
-          ctx.fillStyle = "rgba(10,16,12,0.75)";
-          ctx.fillRect(s.x - 28 * z, s.y + h / 2 + 1, 56 * z, 11 * z);
+          ctx.fillStyle = "rgba(10,16,12,0.82)";
+          ctx.fillRect(s.x - 28 * z, s.y + 10 * z, 56 * z, 11 * z);
           ctx.fillStyle = "#ffd54a";
           ctx.font = "bold " + Math.max(8, Math.round(9 * z)) + "px monospace";
           ctx.textAlign = "center"; ctx.textBaseline = "middle";
-          ctx.fillText(b.name, s.x, s.y + h / 2 + 6.5 * z);
+          ctx.fillText(b.name, s.x, s.y + 15.5 * z);
         }
       });
       if (this.iso) this._officeProps(ctx, st, theme, z, t0); // #134
-      var allUnits = st.units || [];
+      var allUnits = (st.units || []).slice().sort(function (a, b) {
+        return a.y - b.y;
+      });
       allUnits.forEach(function (u) {
-        var s = self.toScreen(u.x, u.y);
+        var s = self.toScreen(u.x, u.y, 0);
         if (s.x < -48 || s.y < -48 || s.x > cv.width + 48 ||
             s.y > cv.height + 48) return;
         var sz = (u.kind === "minion" ? 16 : u.kind === "worker" ? 12 : 26)
@@ -1862,8 +2190,8 @@
       ctx.strokeStyle = "#e6f2e6";
       if (!this.iso) {
         var v = this.view();
-        ctx.strokeRect(v.x / TILE * kx, v.y / TILE * ky,
-          v.w / TILE * kx, v.h / TILE * ky);
+        ctx.strokeRect(v.x / TILE * kx, v.y / (TILE * PITCH) * ky,
+          v.w / TILE * kx, v.h / (TILE * PITCH) * ky);
       } else if (this.cv) {
         var c0 = this.toWorld(0, 0),
             c1 = this.toWorld(this.cv.width, 0),
