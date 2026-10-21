@@ -41,6 +41,10 @@
     motion: {},              // unit id -> display pos {x,y} glide (#136)
     cams: {},                // F1-F4 camera bookmarks (#136)
     weather: null,           // live local weather forecast (#157)
+    fx: [],                  // spell AoE + floating combat/loot text (#159)
+    councilClosed: false,    // manual close for war council (#159)
+    wxModes: ["live", "rain", "storm", "snow", "fog", "clear", "windy"],
+    wxIdx: 0,
     dn: localStorage.getItem("rtsd.daynight") === "1" // day/night on
   };
 
@@ -263,7 +267,8 @@
       if (prev[u.id] && prev[u.id].status_live !== "failed" &&
           live === "failed") pushFade(mo.x, mo.y, u.cls);
       return { id: u.id, x: mo.x, y: mo.y, tx: tgt.x, ty: tgt.y,
-        pts: pts, moving: false, cls: u.cls || "Squire",
+        pts: pts, moving: false, acting: !!mo.acting,
+        cls: u.cls || "Squire", level: u.level || 1,
         kind: u.kind, name: u.name, hp: u.hp, mana: u.mana,
         status_live: live, gate_fail: !!u.gate_fail,
         sel: state.selAll.indexOf(u.id) >= 0,
@@ -305,7 +310,8 @@
     // buildings sit on their fixed server-assigned plots (#123)
     var regs = Object.keys(state.map.caps);
     state.buildings = (w.buildings || []).map(function (b, i) {
-      var out = { id: b.id, bid: b.id, activity: b.activity,
+      var out = { id: b.id, bid: b.id, name: b.name || b.id,
+        activity: b.activity,
         region: b.pos && b.pos.region, sel: state.selB === b.id };
       if (b.pos && b.pos.xy) {
         out.x = b.pos.xy[0] * TILE + TILE / 2;
@@ -347,7 +353,17 @@
 
   function applySnapshot(snap) {
     state.snap = snap;
-    if (snap.weather) state.weather = snap.weather;
+    if (snap.weather) {
+      state.weather = snap.weather;
+      if (snap.weather.source === "pending" && !state._wxFetched) {
+        state._wxFetched = true;
+        fetch("/weather", { headers: TOK ? { "X-RTS-Token": TOK } : {} })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (wx) {
+            if (wx && wx.ok) { state.weather = wx; renderPanels(); }
+          }).catch(function () {});
+      }
+    }
     document.body.className =
       (snap.mode === "replay" ? "replay " : "") +
       (snap.client_role === "spectator" ? "spectator" : "");
@@ -583,11 +599,45 @@
     },
     order: function () {               // quiet ack tick
       _osc("sine", 980, 980, 0, .06, .04);
+    },
+    select_hero: function () {         // WC3 heroic brass/shield chime
+      _osc("triangle", 440, 554, 0, .09, .04);
+      _osc("sine", 659, 880, .06, .14, .04);
+    },
+    select_bld: function () {          // structure stone/bell resonance
+      _osc("triangle", 294, 440, 0, .14, .05);
+    },
+    attack: function () {              // sword clash + war drum
+      _osc("sawtooth", 160, 75, 0, .12, .06);
+      _osc("square", 920, 480, .03, .08, .04);
+    },
+    gather: function () {              // pickaxe / coin clink
+      _osc("sine", 1180, 1560, 0, .07, .04);
+      _osc("sine", 1560, 1980, .08, .09, .04);
+    },
+    spell: function () {               // arcane shimmer arpeggio
+      _osc("sine", 523, 784, 0, .12, .05);
+      _osc("triangle", 784, 1046, .09, .18, .05);
+      _osc("sine", 1046, 1318, .18, .22, .04);
+    },
+    thunder: function () {             // distant storm rumble
+      _osc("sawtooth", 95, 38, 0, .45, .06);
+    },
+    bird: function () {                // daytime meadow bird chirp
+      _osc("sine", 1760, 2340, 0, .06, .02);
+      _osc("sine", 2200, 1880, .08, .07, .02);
     }
   };
   function tone(kind) {
     if (!snd.on) return;
     try { (SND[kind] || SND.order)(); } catch (e) {}
+  }
+
+  function pushFx(kind, x, y, text, color, dur) {
+    state.fx.push({ kind: kind, x: x, y: y, text: text || "",
+                    color: color || "#ffd54a", dur: dur || 2.0,
+                    t0: performance.now() });
+    if (state.fx.length > 40) state.fx.shift();
   }
 
   function ntfOn() {
@@ -957,6 +1007,68 @@
           "<span class='meta'>nothing selected</span>"));
     }
     renderCard(u);
+    // #159 Live Weather HUD button (city + temp + condition + wind)
+    if (el("wxBtn")) {
+      var wx = state.weather;
+      if (wx && wx.city) {
+        var mTag = wx.mode && wx.mode !== "live" ? " [" + wx.mode + "]" : "";
+        el("wxBtn").textContent = wx.city + " " +
+          (typeof wx.temp_c === "number" ? wx.temp_c.toFixed(1) : "18") +
+          "C " + (wx.label || wx.condition || "Clear") + " " +
+          Math.round(wx.wind_kph || 12) + "km/h " +
+          (wx.wind_cardinal || "") + mTag;
+        var hrs = (wx.hourly || []).map(function (h) {
+          return h.time + " " + h.temp_c + "C " + h.condition +
+            " (" + h.pop + "% rain, " + h.wind_kph + "km/h)";
+        }).join("\n");
+        el("wxBtn").title = "Location: " + wx.city + ", " +
+          (wx.region || "") + " (" + wx.lat + ", " + wx.lon + ")\n" +
+          "Condition: " + (wx.label || wx.condition) +
+          " | Humidity: " + (wx.humidity || 70) + "% | Clouds: " +
+          (wx.cloud_pct || 0) + "%\nWind: " + (wx.wind_kph || 0) +
+          " km/h (gusts " + (wx.wind_gust_kph || 0) + " km/h) " +
+          (wx.wind_cardinal || "") + " (" + (wx.wind_deg || 0) + " deg)\n" +
+          (hrs ? "Forecast:\n" + hrs + "\n" : "") +
+          "Click to cycle weather mode (live/rain/storm/snow/fog/clear/windy)";
+      }
+    }
+    // #159 WC3 Top-Left Hero Roster Bar
+    if (el("herobar")) {
+      var heroes = state.units.filter(function (x) {
+        return x.kind === "hero"; });
+      el("herobar").innerHTML = heroes.slice(0, 8).map(function (h) {
+        var ue = (th.units && th.units[h.cls]) || { bg: "#3a5a40", glyph: "H" };
+        var hp = typeof h.hp === "number" ? h.hp : 100;
+        var mp = typeof h.mana === "number" ? h.mana : 100;
+        var hcol = hp > 50 ? "#3fb950" : hp > 25 ? "#d29922" : "#f85149";
+        return "<div class='hcard" + (h.sel ? " sel" : "") +
+          "' data-hid='" + esc(h.id) + "' title='" +
+          esc((h.name || h.id) + " (" + h.cls + " Lv" + (h.level || 1) +
+              ") - click select, dbl-click center") + "'>" +
+          "<div class='hico' style='background:" + esc(ue.bg) + "'>" +
+          esc(ue.glyph || h.cls[0]) +
+          "<span class='hlv'>" + (h.level || 1) + "</span></div>" +
+          "<div class='hinfo'><div class='hname'>" +
+          esc(h.name || h.id) + "</div>" +
+          "<div class='hbar'><span style='width:" + hp + "%;background:" +
+          hcol + "'></span></div>" +
+          "<div class='hbar'><span style='width:" + mp +
+          "%;background:#58a6ff'></span></div></div></div>";
+      }).join("");
+    }
+    // #159 AoE3 Top-Right Building Quick-Select Strip
+    if (el("bldbar")) {
+      el("bldbar").innerHTML = state.buildings.map(function (b) {
+        var be = (th.buildings && th.buildings[b.bid]) || { glyph: "B" };
+        var shortName = (b.name || b.id).replace("Trophy Hall", "Trophy")
+          .replace("Marketplace", "Market").replace("Watchtower", "Tower");
+        return "<div class='bchip" + (state.selB === b.id ? " sel" : "") +
+          "' data-bid='" + esc(b.id) + "' title='" +
+          esc((b.name || b.id) + " (used " + (b.activity || 0) +
+              "x) - click inspect, dbl-click center") + "'><b>" +
+          esc(be.glyph || "B") + "</b>" + esc(shortName) + "</div>";
+      }).join("");
+    }
     // control-group pips: only non-empty groups are shown (#126)
     el("grps").innerHTML = Object.keys(state.groups).sort().map(
       function (n) {
@@ -971,11 +1083,14 @@
           "' data-grp='" + n + "' title='group " + n + " (" +
           alive.length + ")'>" + n + "</button>";
       }).join("");
-    // war council (#129): active decision in the chamber + the rest of
-    // the pending queue stacked under it; header shows flashing hero
-    // portraits + a badge count for the whole alert stack
+    // war council (#129/#159): only auto-open when a LIVE (non-expired)
+    // decision is pending and not manually closed; expired decisions stay
+    // accessible via the header alert chips without blocking the map!
     var decs = pendingDecs();
-    el("council").classList.toggle("on", decs.length > 0);
+    var hasLiveDec = decs.some(function (d) { return !d._expired; });
+    el("council").classList.toggle(
+      "on", decs.length > 0 && (hasLiveDec || state._forceCouncil) &&
+            !state.councilClosed);
     if (!decs.some(function (d) { return d.id === state.decActive; }))
       state.decActive = decs.length ? decs[0].id : null;
     var act = decs.filter(function (d) {
@@ -1270,23 +1385,80 @@
 
   // One intent per selected unit: the daemon writes each to
   // .devin/rts/intents/ for rts-intents.py; nothing auto-executes.
+  // #159: also wires active client-side gameplay loops (patrol, gather,
+  // combat engagement, AoE spell visuals, and immediate movement glide).
   function issueOrder(order, extra) {
+    var now = performance.now();
     state.selAll.forEach(function (id) {
       var it = { kind: "order", to: id, order: order };
       if (extra) for (var k in extra) it[k] = extra[k];
       RTS.intent(it);
+      var u = state.units.filter(function (x) { return x.id === id; })[0];
+      var mo = state.motion[id];
+      if (!u || !mo) return;
+      if (order === "stop" || order === "hold") {
+        mo.patrol = null; mo.gather = null; mo.acting = false;
+        mo.tx = u.x; mo.ty = u.y;
+      } else if (order === "patrol") {
+        // Patrol between current pos and region capital / quest POI
+        var tx = (extra && typeof extra.x === "number")
+          ? (extra.x + 0.5) * TILE : u.x + TILE * 5;
+        var ty = (extra && typeof extra.y === "number")
+          ? (extra.y + 0.5) * TILE : u.y - TILE * 3;
+        mo.patrol = [{ x: u.x, y: u.y }, { x: tx, y: ty }];
+        mo.pi = 1; mo.gather = null; mo.acting = false;
+        pushFx("text", u.x, u.y - 12, "Patrolling", "#58a6ff", 1.6);
+      } else if (order === "gather") {
+        // Find nearest Gold Mine POI or forest tree + Town Hall dropoff
+        var gx = u.x + TILE * 4, gy = u.y;
+        var bestD = 1e9;
+        ((state.map && state.map.pois) || []).forEach(function (p) {
+          if (p.kind !== "gold") return;
+          var px = (p.x + 0.5) * TILE, py = (p.y + 0.5) * TILE;
+          var d = Math.hypot(px - u.x, py - u.y);
+          if (d < bestD) { bestD = d; gx = px; gy = py; }
+        });
+        var th = state.buildings.filter(function (b) {
+          return b.bid === "town-hall"; })[0] || state.buildings[0];
+        var kx = th ? th.x : u.x, ky = th ? th.y : u.y;
+        mo.gather = { gx: gx, gy: gy, kx: kx, ky: ky, phase: 0, wait: 0 };
+        mo.patrol = null;
+        tone("gather");
+        pushFx("text", u.x, u.y - 12, "Gathering Gold", "#ffd54a", 1.8);
+      } else if (order === "attack") {
+        mo.patrol = null; mo.gather = null;
+        mo.combat = { x: (extra && typeof extra.x === "number")
+          ? (extra.x + 0.5) * TILE : u.x,
+          y: (extra && typeof extra.y === "number")
+          ? (extra.y + 0.5) * TILE : u.y,
+          lastHit: 0 };
+        tone("attack");
+      } else if (order === "ability" || order === "cast" ||
+                 order === "reveal_area" || order === "build" ||
+                 order === "verify_gate" || order === "track") {
+        var sx = (extra && typeof extra.x === "number")
+          ? (extra.x + 0.5) * TILE : u.x;
+        var sy = (extra && typeof extra.y === "number")
+          ? (extra.y + 0.5) * TILE : u.y;
+        var sname = (extra && (extra.skill || extra.ability)) || order;
+        tone("spell");
+        pushFx("spell", sx, sy, sname, "#58a6ff", 2.4);
+        pushFx("text", sx, sy - 16, "*" + sname + "*", "#bc8cff", 2.2);
+      }
     });
     selUnits().forEach(function (u) {
-      state.acks[u.id] = { text: barkLine(u.cls, 1),
-                           t0: performance.now() };
+      state.acks[u.id] = { text: barkLine(u.cls, 1), t0: now };
     });
   }
 
-  function cardBtn(act, label, enabled, title, armed) {
+  function cardBtn(act, label, enabled, title, armed, ico, hk) {
     return "<button data-act='" + esc(act) + "'" +
       (enabled ? "" : " disabled") +
       (armed ? " class='armed'" : "") +
-      " title='" + esc(title || "") + "'>" + esc(label) + "</button>";
+      " title='" + esc(title || "") + "'>" +
+      (hk ? "<span class='hk'>" + esc(hk) + "</span>" : "") +
+      (ico ? "<span class='ci'>" + esc(ico) + "</span>" : "") +
+      "<span>" + esc(label) + "</span></button>";
   }
 
   function renderCard(u) {
@@ -1297,38 +1469,89 @@
     var h = "";
     if (state.pending)
       h += "<span class='meta tgt'>click target: " +
-        esc(state.pending.order) + "</span>";
+        esc(state.pending.order) + " (ESC cancels)</span>";
+    // #159 Building Command Card when a structure is selected!
+    if (!state.selAll.length && state.selB) {
+      var bid = state.selB;
+      if (bid === "barracks" || bid === "tavern") {
+        var roster = [
+          ["implementer", "Knight", "W", "Q"],
+          ["researcher", "Far Seer", "O", "W"],
+          ["architect", "Archmage", "*", "E"],
+          ["debugger", "Ranger", ">", "R"],
+          ["qa-ci", "Cleric", "+", "A"],
+          ["tech-lead", "Runesmith", "T", "S"],
+          ["reviewer", "Spellbrkr", "X", "D"],
+          ["scrum-master", "Marshal", "M", "F"]
+        ];
+        roster.forEach(function (r) {
+          h += cardBtn("train:" + r[0], r[1], true,
+                       "Summon/Train " + r[1] + " (" + r[0] + " intent)",
+                       false, r[2], r[3]);
+        });
+        h += cardBtn("bact:rally", "Rally", true,
+                     "Right-click map to set Rally Point", false, "!", "Y");
+      } else if (bid === "town-hall") {
+        h += cardBtn("train:implementer", "Recruit", true,
+                     "Deploy Knight hero from the Keep", false, "+", "Q");
+        h += cardBtn("bact:bell", "Town Bell", true,
+                     "Call idle heroes to the Keep courtyard", false, "!", "W");
+        h += cardBtn("bact:tech", "Tech Tree", true,
+                     "Open Skill & Doctrine Tech Tree (K)", false, "*", "K");
+        h += cardBtn("bact:score", "Victory", true,
+                     "Open Session Score & Match History", false, "#", "V");
+        h += cardBtn("bact:rally", "Rally", true,
+                     "Right-click map to set Keep Rally Point", false, ">", "R");
+        h += cardBtn("bact:center", "Center", true,
+                     "Center camera on the Keep", false, "O", "C");
+      } else {
+        h += cardBtn("bact:use", "Activate", true,
+                     "Trigger structure special action / pulse", false, "*", "Q");
+        h += cardBtn("bact:tech", "Tech Tree", true,
+                     "Open Tech Tree & Doctrines (K)", false, "L", "K");
+        h += cardBtn("bact:center", "Center", true,
+                     "Center camera on this structure", false, "O", "C");
+        h += cardBtn("bact:rally", "Rally", true,
+                     "Right-click map to set Rally Point", false, "!", "R");
+      }
+      card.innerHTML = h; return;
+    }
     if (!state.selAll.length) {
-      h += "<span class='meta tgt'>select a unit</span>";
+      h += "<span class='meta tgt'>select a hero or structure</span>";
       for (var i = 0; i < 9; i++) h += "<button disabled>-</button>";
       card.innerHTML = h; return;
     }
-    // shared orders: move/stop work for the whole selection; the rest is
-    // single-unit only (issue: multi-select = shared actions only)
+    // shared orders: move/stop/gather work for selection
     h += cardBtn("move", "Move", true,
                  "click map target (lane/dir reassignment)",
-                 armed === "move");
-    h += cardBtn("stop", "Stop", true, "halt current order");
-    h += cardBtn("hold", "Hold", !multi, "park: take no new orders");
+                 armed === "move", ">", "M");
+    h += cardBtn("stop", "Stop", true, "halt current order", false, "x", "S");
+    h += cardBtn("hold", "Hold", !multi, "park: take no new orders",
+                 false, "#", "H");
     h += cardBtn("patrol", "Patrol", !multi,
-                 "afk-loop the unit's lane between quest markers");
+                 "patrol back and forth scouting fog", false, "~", "P");
     h += cardBtn("attack", "Attack", !multi,
-                 "click a quest marker / tile to target",
-                 armed === "attack");
+                 "click a quest marker / camp to assault",
+                 armed === "attack", "!", "A");
+    h += cardBtn("gather", "Gather", true,
+                 "harvest gold/lumber between nearest vein and Keep",
+                 false, "$", "G");
     var sp = raw && SPECIALS[raw.cls];
     h += cardBtn("special", sp ? sp.label : "-", !!(sp && !multi),
                  sp ? "class special: " + sp.id : "no class special",
-                 !!(sp && armed === sp.id));
+                 !!(sp && armed === sp.id), "*", "Q");
     // ability slots: full kit vocabulary, disabled where the profile
     // lacks the backing tools (verified vs agents/*.md via world.py kit)
-    KIT_SLOTS.forEach(function (name) {
+    var aKeys = ["W", "E", "R", "F", "Z", "X", "C"];
+    KIT_SLOTS.forEach(function (name, idx) {
       var label = name === "March" && kit.indexOf("Verify") >= 0
         ? "Verify" : name;
       var has = kit.indexOf(name) >= 0 || kit.indexOf(label) >= 0;
       if (label === "Verify") has = kit.indexOf("Verify") >= 0;
       h += cardBtn("ability:" + (label === "Verify" ? "Verify" : name),
                    label, has && !multi,
-                   ABILITY_HINT[label] || name);
+                   ABILITY_HINT[label] || name, false,
+                   label[0], aKeys[idx] || "");
     });
     // #132 hero spellbook: skills the profile sheet names, as cast
     // buttons; clicking posts an order intent {order:"cast", skill} that
@@ -1336,7 +1559,8 @@
     ((raw && raw.spellbook) || []).forEach(function (s) {
       h += cardBtn("cast:" + s.name, "*" + s.name.slice(0, 8), !multi,
                    "cast " + s.name + " (skills/" + s.name + "/SKILL.md)" +
-                   (s.casts ? " - cast " + s.casts + "x" : ""));
+                   (s.casts ? " - cast " + s.casts + "x" : ""),
+                   false, "*", "");
     });
     card.innerHTML = h;
   }
@@ -1468,12 +1692,15 @@
         if (i >= 0) state.selAll.splice(i, 1); else state.selAll.push(u.id);
       } else state.selAll = [u.id];
       state.sel = u.id; state.selB = null; state.bDetail = null;
+      tone("select_hero");
       if (!u.bark)   // no heartbeat note -> class "selected" line
         state.acks[u.id] = { text: barkLine(u.cls, 0),
                              t0: performance.now() };
     } else {
       if (!ev.shiftKey) { state.selAll = []; state.sel = null; }
-      selectBuilding(eng.pickBuilding(ev.offsetX, ev.offsetY));
+      var pb = eng.pickBuilding(ev.offsetX, ev.offsetY);
+      if (pb) tone("select_bld");
+      selectBuilding(pb);
     }
     syncRenderables(); renderPanels();
   };
@@ -1498,11 +1725,50 @@
     syncRenderables(); renderPanels();
   };
   // command card clicks: targeted orders arm `state.pending`, the rest
-  // issue intents immediately (#126)
+  // issue intents immediately (#126/#159)
   el("cmdcard").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-act]");
-    if (!b || b.disabled || !state.selAll.length) return;
+    if (!b || b.disabled) return;
     var act = b.dataset.act;
+    // Building Command Card actions (#159)
+    if (act.indexOf("train:") === 0) {
+      var prof = act.slice(6);
+      RTS.intent({ kind: "spawn", profile: prof,
+                   task: "recruited at " + (state.selB || "keep") });
+      var sb = state.buildings.filter(function (x) {
+        return x.id === state.selB; })[0];
+      if (sb) {
+        pushFx("spell", sb.x, sb.y, prof, "#3fb950", 2.0);
+        pushFx("text", sb.x, sb.y - 18, "+Recruit " + prof, "#3fb950", 2.0);
+      }
+      tone("spawn");
+      logFeed("recruit: " + prof + " queued at " + (state.selB || "keep"));
+      return;
+    }
+    if (act.indexOf("bact:") === 0) {
+      var sub = act.slice(5);
+      var bld = state.buildings.filter(function (x) {
+        return x.id === state.selB; })[0];
+      if (sub === "tech") { el("techtree").classList.toggle("on"); }
+      else if (sub === "score") { fetchScore(); }
+      else if (sub === "center" && bld) { eng.centerOn(bld.x, bld.y); }
+      else if (sub === "bell" && bld) {
+        tone("decision");
+        pushFx("spell", bld.x, bld.y, "Town Bell", "#ffd54a", 2.2);
+        pushFx("text", bld.x, bld.y - 18, "Call to Arms!", "#ffd54a", 2.2);
+        logFeed("town-hall: Call to Arms rung");
+      } else if (sub === "use" && bld) {
+        tone("spell");
+        pushFx("spell", bld.x, bld.y, bld.name, "#58a6ff", 2.2);
+        pushFx("text", bld.x, bld.y - 18, bld.name + " Active", "#58a6ff", 2.0);
+      } else if (sub === "rally") {
+        logFeed("right-click anywhere on the map to set " +
+                (state.selB || "building") + " rally point");
+      }
+      renderPanels();
+      return;
+    }
+    if (!state.selAll.length) return;
     var u = state.units.filter(function (x) {
       return x.id === state.sel; })[0];
     var raw = u && u.unit ? u.unit : u;
@@ -1520,7 +1786,7 @@
     } else if (act === "patrol") {
       issueOrder("patrol", { lane: (raw && raw.lane) || "" });
     } else {
-      issueOrder(act, {});                     // stop / hold
+      issueOrder(act, {});                     // stop / hold / gather
     }
     renderPanels();
   });
@@ -1620,14 +1886,15 @@
     var ord = "move", extra = { x: tx, y: ty };
     if (e.shiftKey) extra.queue = true;        // shift-queue (#127)
     var bd = eng.pickBuilding(e.offsetX, e.offsetY);
-    var best = null, qq = 1.5;
+    var best = null, bestGold = null, qq = 1.6, gq = 1.6;
     (state.map.pois || []).forEach(function (p) {
-      if (p.kind !== "quest") return;
       var d = Math.hypot(p.x - tx, p.y - ty);
-      if (d <= qq) { qq = d; best = p; }
+      if (p.kind === "quest" && d <= qq) { qq = d; best = p; }
+      else if (p.kind === "gold" && d <= gq) { gq = d; bestGold = p; }
     });
     if (bd) { ord = "garrison"; extra.building = bd.id; }
     else if (best) { ord = "attack"; extra.quest = best.ref; }
+    else if (bestGold) { ord = "gather"; extra.gold = bestGold.ref; }
     issueOrder(ord, extra);
     state.pings.push({ x: (tx + .5) * TILE, y: (ty + .5) * TILE,
                        kind: "order", t0: performance.now() });
@@ -1745,6 +2012,9 @@
     if (k === "a" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
       state.pending = { order: "attack" }; renderPanels(); return;
     }
+    if (k === "g" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
+      issueOrder("gather", {}); renderPanels(); return;
+    }
     if (k === "h" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
       issueOrder("hold", {}); renderPanels(); return;
     }
@@ -1846,15 +2116,132 @@
     if (d) { state.decActive = d.dataset.decid; renderPanels(); }
   });
   // alert-stack chips: breach chip jumps to the breached territory's
-  // capital; decision chip brings its call to the chamber front (#133)
+  // capital; decision chip brings its call to the chamber front (#133/#159)
   el("alerts").addEventListener("click", function (e) {
     var c = e.target.closest("[data-dec]");
-    if (c) { state.decActive = c.dataset.dec; renderPanels(); return; }
+    if (c) {
+      state.decActive = c.dataset.dec;
+      state.councilClosed = false;
+      state._forceCouncil = true;
+      renderPanels();
+      return;
+    }
     var b = e.target.closest("[data-breg]");
     if (b && state.map && state.map.caps[b.dataset.breg])
       eng.centerOn(state.map.caps[b.dataset.breg].cx * TILE,
                    state.map.caps[b.dataset.breg].cy * TILE);
   });
+  if (el("councilClose")) {
+    el("councilClose").onclick = function () {
+      state.councilClosed = true;
+      state._forceCouncil = false;
+      el("council").classList.remove("on");
+    };
+  }
+  if (el("togFeed")) {
+    el("togFeed").onclick = function () {
+      document.body.classList.toggle("hide-feed");
+    };
+  }
+  if (el("togSide")) {
+    el("togSide").onclick = function () {
+      document.body.classList.toggle("hide-side");
+    };
+  }
+  if (el("wxBtn")) {
+    el("wxBtn").onclick = function () {
+      state.wxIdx = (state.wxIdx + 1) % state.wxModes.length;
+      var mode = state.wxModes[state.wxIdx];
+      post("/weather", { mode: mode }).then(function (r) {
+        return r && r.json ? r.json() : null;
+      }).then(function (wx) {
+        if (wx && wx.ok) { state.weather = wx; renderPanels(); }
+      });
+    };
+  }
+  // #159 Hero Roster Bar (click = select, dblclick = center camera)
+  if (el("herobar")) {
+    el("herobar").addEventListener("click", function (e) {
+      var card = e.target.closest("[data-hid]");
+      if (!card) return;
+      var id = card.dataset.hid;
+      state.selAll = [id]; state.sel = id;
+      state.selB = null; state.bDetail = null;
+      tone("select_hero");
+      syncRenderables(); renderPanels();
+    });
+    el("herobar").addEventListener("dblclick", function (e) {
+      var card = e.target.closest("[data-hid]");
+      if (!card) return;
+      var u = state.units.filter(function (x) {
+        return x.id === card.dataset.hid; })[0];
+      if (u) eng.centerOn(u.x, u.y);
+    });
+  }
+  // #159 Building Quick-Select Strip (click = inspect, dblclick = center)
+  if (el("bldbar")) {
+    el("bldbar").addEventListener("click", function (e) {
+      var chip = e.target.closest("[data-bid]");
+      if (!chip) return;
+      var bid = chip.dataset.bid;
+      state.selAll = []; state.sel = null;
+      var b = state.buildings.filter(function (x) {
+        return x.id === bid; })[0];
+      tone("select_bld");
+      selectBuilding(b || { id: bid });
+      syncRenderables(); renderPanels();
+    });
+    el("bldbar").addEventListener("dblclick", function (e) {
+      var chip = e.target.closest("[data-bid]");
+      if (!chip) return;
+      var b = state.buildings.filter(function (x) {
+        return x.id === chip.dataset.bid; })[0];
+      if (b) eng.centerOn(b.x, b.y);
+    });
+  }
+  // #159 Portrait canvas click -> center camera on selected entity
+  if (el("portcv")) {
+    el("portcv").onclick = function () {
+      var u = state.units.filter(function (x) {
+        return x.id === state.sel; })[0];
+      if (u) { eng.centerOn(u.x, u.y); return; }
+      var b = state.buildings.filter(function (x) {
+        return x.id === state.selB; })[0];
+      if (b) eng.centerOn(b.x, b.y);
+    };
+  }
+  // #159 Hover Tooltip on map canvas
+  if (el("tooltip")) {
+    el("cv").addEventListener("mousemove", function (e) {
+      var tt = el("tooltip");
+      var u = eng.pickUnit(e.offsetX, e.offsetY);
+      var b = !u ? eng.pickBuilding(e.offsetX, e.offsetY) : null;
+      if (u) {
+        tt.innerHTML = "<b>" + esc(u.name || u.id) + "</b> " +
+          "<span class='lvbadge'>Lv" + (u.level || 1) + "</span><br>" +
+          "<span class='meta'>" + esc(u.cls) + " | HP " +
+          (u.hp == null ? 100 : u.hp) + " | MP " +
+          (u.mana == null ? 100 : u.mana) + " | " +
+          esc(u.status_live || "ready") + "</span>";
+        tt.style.left = (e.clientX + 14) + "px";
+        tt.style.top = (e.clientY + 14) + "px";
+        tt.className = "on";
+      } else if (b) {
+        tt.innerHTML = "<b>" + esc(b.name || b.id) + "</b><br>" +
+          "<span class='meta'>Territory: " + esc(b.region || "root") +
+          " | Activity: " + (b.activity || 0) +
+          "x<br>Click to inspect & open production commands</span>";
+        tt.style.left = (e.clientX + 14) + "px";
+        tt.style.top = (e.clientY + 14) + "px";
+        tt.className = "on";
+      } else {
+        tt.className = "";
+      }
+    });
+    el("cv").addEventListener("mouseleave", function () {
+      el("tooltip").className = "";
+    });
+  }
   // #135 replay transport + victory screen
   el("scoreBtn").onclick = fetchScore;
   if (el("mtabs")) {
@@ -1911,8 +2298,53 @@
   // far orders march and close orders settle without overshoot.
   var WALK_PX_S = 110;
   function stepMotion(dt) {
+    var now = performance.now();
     state.units.forEach(function (u) {
       var mo = state.motion[u.id];
+      if (mo) {
+        // Active Patrol loop (#159)
+        if (mo.patrol && mo.patrol.length >= 2) {
+          var pt = mo.patrol[mo.pi || 0];
+          u.tx = pt.x; u.ty = pt.y;
+          if (Math.hypot(u.tx - u.x, u.ty - u.y) < 3) {
+            mo.pi = ((mo.pi || 0) + 1) % mo.patrol.length;
+            u.tx = mo.patrol[mo.pi].x; u.ty = mo.patrol[mo.pi].y;
+          }
+        } else if (mo.gather) {
+          // Active Gather / Harvest loop between Gold Vein and Keep (#159)
+          var g = mo.gather;
+          u.tx = g.phase === 0 ? g.gx : g.kx;
+          u.ty = g.phase === 0 ? g.gy : g.ky;
+          if (Math.hypot(u.tx - u.x, u.ty - u.y) < 4) {
+            mo.acting = true;
+            g.wait = (g.wait || 0) + dt;
+            if (g.wait >= 1.5) {
+              g.wait = 0;
+              mo.acting = false;
+              if (g.phase === 0) {
+                g.phase = 1;
+                pushFx("text", u.x, u.y - 10, "Mining...", "#ffd54a", 1.2);
+              } else {
+                g.phase = 0;
+                tone("gather");
+                pushFx("text", u.x, u.y - 14, "+25 Gold", "#ffd54a", 1.8);
+              }
+            }
+          }
+        } else if (mo.combat) {
+          // Active Combat / Quest Assault loop (#159)
+          u.tx = mo.combat.x; u.ty = mo.combat.y;
+          if (Math.hypot(u.tx - u.x, u.ty - u.y) < 6) {
+            mo.acting = true;
+            u.acting = true;
+            if (now - (mo.combat.lastHit || 0) > 1600) {
+              mo.combat.lastHit = now;
+              pushFx("text", u.x + (Math.random() - 0.5) * 16,
+                     u.y - 16, "Strike!", "#f85149", 1.2);
+            }
+          }
+        }
+      }
       var dx = u.tx - u.x, dy = u.ty - u.y;
       var d = Math.hypot(dx, dy);
       if (d < 1.5) {
@@ -1931,7 +2363,7 @@
           } else u.moving = false;
         } else { u.x += dx / d * v; u.y += dy / d * v; u.moving = true; }
       }
-      if (mo) { mo.x = u.x; mo.y = u.y; }
+      if (mo) { mo.x = u.x; mo.y = u.y; u.acting = !!mo.acting; }
     });
   }
 
@@ -1951,7 +2383,7 @@
          : ph < 0.9 ? 1 : (1 - ph) / 0.1;
   }
 
-  var last = performance.now(), frames = 0, ft = 0;
+  var last = performance.now(), frames = 0, ft = 0, lastAmb = 0;
   function loop(t) {
     var dt = Math.min(0.1, (t - last) / 1000); last = t;
     eng.step(dt);
@@ -1962,12 +2394,30 @@
       workers: state.workers, fades: state.fades,
       waypoints: state.waypoints, ravens: state.ravens,
       srvClock: state.srvClock, decision: meetingCall(),
-      weather: state.weather,
+      weather: state.weather, fx: state.fx,
       night: nightFactor(),
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
       fog: state.map && state.map.fog, units: state.units,
       buildings: state.buildings, pings: state.pings }, th);
+    // #159 Animated Live 3D-style Portrait in bottom console
+    var pcv = el("portcv");
+    if (pcv && Theme.drawPortrait) {
+      var pItem = state.units.filter(function (x) {
+        return x.id === state.sel; })[0] ||
+        state.buildings.filter(function (x) {
+          return x.id === state.selB; })[0] ||
+        state.units[0] || state.buildings[0];
+      Theme.drawPortrait(pcv.getContext("2d"), pItem,
+                         pcv.width, pcv.height, t);
+    }
+    // #159 Ambient weather/nature sound cues (storm thunder / meadow birds)
+    if (snd.on && _ac && t - lastAmb > 9000) {
+      lastAmb = t;
+      var cond = state.weather && state.weather.condition;
+      if (cond === "storm") tone("thunder");
+      else if (cond === "clear" && !nightFactor()) tone("bird");
+    }
     frames++; ft += dt;
     if (frames >= 60) {
       el("fps").textContent = Math.round(frames / ft) + "fps" +
