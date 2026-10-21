@@ -377,6 +377,10 @@
       if (!ts._visFog || ts._visFog.length !== n)
         ts._visFog = new Uint8Array(n);
       var out = ts._visFog, src = st.fog;
+      if (st.noFog) {
+        for (var k = 0; k < n; k++) out[k] = 2;
+        return out;
+      }
       for (var i = 0; i < n; i++) out[i] = src ? src[i] : 2;
       var reveal = function (wx, wy, rLit, rDim) {
         var cx = Math.floor(wx / TILE), cy = Math.floor(wy / TILE);
@@ -548,7 +552,8 @@
        riverbanks, stone-paved Keep courtyards, and soft-edged dirt roads
        so blocky tile seams disappear completely. */
     _ensureTerrainCanvas: function (ts, theme) {
-      var key = (ts._envSig || "") + ":" + (theme && theme.name);
+      var key = (ts._envSig || "") + ":" + (theme && theme.name) + ":" +
+                (theme && theme.race || "human");
       if (ts._tcv && ts._tcvKey === key) return ts._tcv;
       if (typeof document === "undefined" || !document.createElement)
         return null;
@@ -1237,6 +1242,10 @@
        pitched roofs, and animated 3D attachments. */
     _drawBuilding3D: function (ctx, b, theme, z, now, wind, pal) {
       var bid = b.bid || "vault", wx = b.x, wy = b.y, i;
+      var rc = (theme && theme.raceSpec) || {};
+      var rW = rc.roofW || "#386ec2", rE = rc.roofE || "#1c3b6e",
+          wF = rc.wallF || "#7d8490", wT = rc.wallT || "#949aa6",
+          rTrim = rc.trim || "#ffd54a";
       var s0 = this.toScreen(wx, wy, 0);
       // 0. 3D Directional Ground Cast Shadow + AO Contact Footprint
       ctx.fillStyle = "rgba(0,0,0,0.42)";
@@ -1244,17 +1253,17 @@
       ctx.ellipse(s0.x + 8 * z, s0.y + 4 * z, 28 * z, 15 * z, 0.2, 0, 7);
       ctx.fill();
       // 3D Stone Foundation Plinth (wz: 0 -> 5)
-      this._box3D(ctx, wx, wy, 0, 38, 32, 5, "#787163", "#595449", "#3d3930");
+      this._box3D(ctx, wx, wy, 0, 38, 32, 5, wT, wF, "#3d3930");
 
       if (bid === "town-hall") {
         // 3D Citadel Keep: central Great Hall + 4 corner 3D cylindrical towers
-        this._box3D(ctx, wx, wy, 5, 24, 20, 20, "#949aa6", "#7d8490", "#525863");
-        this._roofPrism3D(ctx, wx, wy, 25, 26, 22, 14, "#386ec2", "#1c3b6e", "#ffd54a");
+        this._box3D(ctx, wx, wy, 5, 24, 20, 20, wT, wF, "#525863");
+        this._roofPrism3D(ctx, wx, wy, 25, 26, 22, 14, rW, rE, rTrim);
         var tOff = [[-13, -10], [13, -10], [-13, 10], [13, 10]];
         for (i = 0; i < 4; i++) {
           var tx = wx + tOff[i][0], ty = wy + tOff[i][1];
-          this._cyl3D(ctx, tx, ty, 5, 5.2, 24, "#b8bfc9", "#7d8490", "#454a52", "#949aa6");
-          this._cone3D(ctx, tx, ty, 29, 6.2, 12, "#3b6ebf", "#17325c");
+          this._cyl3D(ctx, tx, ty, 5, 5.2, 24, wT, wF, "#33373d", wT);
+          this._cone3D(ctx, tx, ty, 29, 6.2, 12, rW, rE);
         }
         // 3D Gatehouse Arch on South facade
         var gs = this.toScreen(wx, wy + 10, 5);
@@ -1765,6 +1774,34 @@
       if (this.iso) { this._isoTiles(ctx, st, theme, z); }
       else { this._flatTiles(ctx, st, theme, z, v, t0, wind); }
       this._drawNature(ctx, st, theme, z, t0, wind);
+      // #174 Territory Activity Heatmap (H) & War Table File Activity (`)
+      if ((st.heatmap || st.warTable) && ts.caps) {
+        var self0 = this;
+        Object.keys(ts.caps).forEach(function (rid) {
+          var cap = ts.caps[rid];
+          var cs = self0.toScreen((cap.cx + 0.5) * TILE,
+                                  (cap.cy + 0.5) * TILE, 2);
+          var uCnt = (st.units || []).filter(function (u) {
+            return u.lane === rid; }).length;
+          var rad = (26 + uCnt * 12) * z;
+          var hg = ctx.createRadialGradient(cs.x, cs.y, 4, cs.x, cs.y, rad);
+          hg.addColorStop(0, uCnt > 1 ? "rgba(248,81,73,0.45)"
+                                      : "rgba(255,213,74,0.35)");
+          hg.addColorStop(1, "rgba(0,0,0,0)");
+          ctx.fillStyle = hg;
+          ctx.beginPath(); ctx.arc(cs.x, cs.y, rad, 0, 7); ctx.fill();
+          if (st.warTable) {
+            ctx.fillStyle = "rgba(13,17,23,0.88)";
+            ctx.fillRect(cs.x - 36 * z, cs.y - 10 * z, 72 * z, 16 * z);
+            ctx.strokeStyle = "#ffd54a";
+            ctx.strokeRect(cs.x - 36 * z, cs.y - 10 * z, 72 * z, 16 * z);
+            ctx.fillStyle = "#f0f6fc";
+            ctx.font = "bold " + Math.max(8, Math.round(9 * z)) + "px monospace";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(rid + " [" + uCnt + "u]", cs.x, cs.y - 2 * z);
+          }
+        });
+      }
       // POI markers: quests show through fog, others only once seen (#122)
       var self = this;
       var vfog = st.visFog || st.fog;

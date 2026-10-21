@@ -148,19 +148,74 @@
   // theme choice persists across sessions (#134); localStorage may be
   // unavailable under file:// so every access is guarded
   var THEME_KEY = "rtsd.theme";
+  var RACE_KEY = "rtsd.race";
+  var RACES = {
+    human: {
+      id: "human", label: "Human (Alliance)",
+      roofW: "#386ec2", roofE: "#1c3b6e", wallF: "#7d8490", wallT: "#949aa6",
+      trim: "#ffd54a", grass: ["#264b25", "#2b5429", "#315d2e", "#386633"],
+      water: "#184668", waterDeep: "#113450", road: "#6b5840"
+    },
+    orc: {
+      id: "orc", label: "Orc (Horde)",
+      roofW: "#b91c1c", roofE: "#631010", wallF: "#6e472b", wallT: "#8a5a36",
+      trim: "#f59e0b", grass: ["#423d21", "#4d4626", "#574e2a", "#3b351d"],
+      water: "#1c3d38", waterDeep: "#122926", road: "#614126"
+    },
+    elf: {
+      id: "elf", label: "Night Elf",
+      roofW: "#6d28d9", roofE: "#3b0764", wallF: "#526358", wallT: "#708578",
+      trim: "#38bdf8", grass: ["#194238", "#1f4f43", "#24594c", "#163830"],
+      water: "#1e3a8a", waterDeep: "#172554", road: "#4a5546"
+    },
+    undead: {
+      id: "undead", label: "Undead (Scourge)",
+      roofW: "#312e81", roofE: "#1e1b4b", wallF: "#3f3a4a", wallT: "#575066",
+      trim: "#4ade80", grass: ["#262130", "#2d2738", "#342d40", "#1f1b26"],
+      water: "#14382c", waterDeep: "#0c241c", road: "#3d3542"
+    }
+  };
   function savedTheme() {
     try { return localStorage.getItem(THEME_KEY); } catch (e) {
       return null; }
+  }
+  function savedRace() {
+    try { return localStorage.getItem(RACE_KEY); } catch (e) {
+      return null; }
+  }
+  var curRace = RACES[savedRace()] ? savedRace() : "human";
+  function applyRace(r) {
+    if (!RACES[r]) return;
+    curRace = r;
+    var rc = RACES[r], bf = THEMES.battlefield;
+    bf.race = r; bf.raceSpec = rc;
+    for (var ti = 0; ti < 10; ti++) {
+      bf.tiles[ti] = rc.grass[ti % rc.grass.length];
+    }
+    bf.tiles.water = rc.water;
+    bf.tiles.waterDeep = rc.waterDeep;
+    bf.tiles.road = rc.road;
+    try { localStorage.setItem(RACE_KEY, r); } catch (e) {}
   }
   function persist() {
     try { localStorage.setItem(THEME_KEY, current.name); } catch (e) {}
   }
 
   var current = THEMES[savedTheme()] || THEMES.battlefield;
+  applyRace(curRace);
 
   g.Theme = {
     all: THEMES,
+    races: RACES,
     get: function () { return current; },
+    getRace: function () { return curRace; },
+    setRace: function (r) { applyRace(r); return RACES[curRace]; },
+    cycleRace: function () {
+      var ks = ["human", "orc", "elf", "undead"];
+      var nxt = ks[(ks.indexOf(curRace) + 1) % ks.length];
+      applyRace(nxt);
+      return RACES[curRace];
+    },
     set: function (name) { if (THEMES[name]) { current = THEMES[name];
       persist(); } },
     toggle: function () {
