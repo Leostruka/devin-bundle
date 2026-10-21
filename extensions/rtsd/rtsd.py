@@ -821,6 +821,77 @@ def git_action(root, body):
             "git": git_codex_state(root)}
 
 
+def _loops_file():
+    return os.path.join(state_dir(), "loops.json")
+
+
+def loops_state():
+    """#178 Scheduled Loops (Active Loops panel)."""
+    items = read_json(_loops_file(), [])
+    return {"ok": True, "loops": items if isinstance(items, list) else []}
+
+
+def loops_action(body):
+    """#178 Create, trigger, or stop a recurring agent loop."""
+    act = str(body.get("action") or "create")
+    items = loops_state()["loops"]
+    if act == "create":
+        lid = "loop-%d" % int(time.time() * 1000)
+        lp = {
+            "id": lid,
+            "hero": str(body.get("hero") or "all"),
+            "interval_m": int(body.get("interval_m") or 5),
+            "prompt": str(body.get("prompt") or "Run status check")[:240],
+            "iterations": 0,
+            "active": True,
+            "created_at": time.time(),
+        }
+        items.append(lp)
+    elif act == "trigger":
+        lid = str(body.get("id") or "")
+        for lp in items:
+            if lp.get("id") == lid:
+                lp["iterations"] = int(lp.get("iterations") or 0) + 1
+                lp["last_run"] = time.time()
+                iid = "i%d" % int(time.time() * 1000)
+                it = {"id": iid, "kind": "goal",
+                      "text": "[Loop %s #%d] %s" % (
+                          lid, lp["iterations"], lp.get("prompt", "")),
+                      "status": "pending"}
+                p = os.path.join(state_dir(), "intents", iid + ".json")
+                with open(p, "w", encoding="utf-8") as f:
+                    json.dump(it, f, ensure_ascii=False, indent=2)
+                append_event({"type": "intent.created", "intent": it})
+                break
+    elif act == "stop":
+        lid = str(body.get("id") or "")
+        items = [lp for lp in items if lp.get("id") != lid]
+    else:
+        return {"error": "bad loop action"}
+    with open(_loops_file(), "w", encoding="utf-8") as f:
+        json.dump(items, f, ensure_ascii=False, indent=2)
+    return {"ok": True, "loops": items}
+
+
+def terminal_exec(root, body):
+    """#178 Integrated Terminal command execution (loopback admin only)."""
+    cmd = str(body.get("cmd") or "").strip()
+    if not cmd:
+        return {"error": "empty command"}
+    try:
+        r = subprocess.run(
+            cmd, cwd=root, shell=True,
+            capture_output=True, text=True, timeout=5.0,
+            encoding="utf-8", errors="replace")
+        out = (r.stdout or "") + (r.stderr or "")
+        return {"ok": True, "code": r.returncode,
+                "output": out[:8000] or "(exit %d)" % r.returncode}
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "code": 124, "output": "(timeout after 5s)"}
+    except Exception as e:
+        return {"ok": False, "code": 1, "output": str(e)}
+
+
 # --- minimal WebSocket (RFC 6455, text frames only) ---
 
 def ws_accept(key):
@@ -976,6 +1047,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, list_project_files(STATE["root"]))
         if path == "/git":
             return self._json(200, git_codex_state(STATE["root"]))
+        if path == "/loops":
+            return self._json(200, loops_state())
         if path == "/git/diff":
             q = urllib.parse.parse_qs(
                 urllib.parse.urlparse(self.path).query)
@@ -1054,6 +1127,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, wx)
         if path == "/git":
             res = git_action(STATE["root"], self._body() or {})
+            return self._json(400 if res.get("error") else 200, res)
+        if path == "/loops":
+            res = loops_action(self._body() or {})
+            return self._json(400 if res.get("error") else 200, res)
+        if path == "/terminal":
+            res = terminal_exec(STATE["root"], self._body() or {})
             return self._json(400 if res.get("error") else 200, res)
         if path == "/intent":
             it = self._body()

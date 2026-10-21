@@ -375,6 +375,9 @@
   <button id="togFeed" title="toggle Comms panel">comms</button>
   <button id="togSide" title="toggle Quests/Economy panel">quests</button>
   <button id="sndBtn" title="alert & ambient sounds (M toggles, -/= volume)">snd:on</button>
+  <button id="musicBtn" title="Ambient Soundtrack with Audio Ducking">music:off</button>
+  <button id="termBtn" title="Integrated Multi-Tab Terminal (Ctrl+T)">term</button>
+  <button id="tutBtn" title="Interactive War Advisor Tutorial">advisor</button>
   <button id="ntfBtn" title="browser notifications when tab is hidden">notify:off</button>
   <button id="scoreBtn" title="victory screen: session aggregates">score</button>
   <button id="dnBtn" title="day/night cycle (N toggles)">day/night:off</button>
@@ -396,6 +399,20 @@
     <div id="bldbar"></div>
     <div id="tooltip"></div>
     <div id="gamemenu"><div id="gmBox"></div></div>
+    <div id="termdrawer" style="display:none;position:absolute;left:10px;right:10px;bottom:10px;height:210px;z-index:24;background:rgba(9,13,17,0.96);border:2px solid #d4a72c;border-radius:8px;flex-direction:column;padding:6px 10px;box-shadow:0 8px 28px rgba(0,0,0,0.85)">
+      <div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);padding-bottom:4px">
+        <b style="color:#ffd54a;font-size:11px">INTEGRATED TERMINAL (Ctrl+T)</b>
+        <span id="termtabs" style="display:flex;gap:4px"></span>
+        <button id="termNew" style="padding:1px 6px">+</button>
+        <span style="flex:1"></span>
+        <button id="termClose" style="padding:1px 6px">x</button>
+      </div>
+      <div id="termout" style="flex:1;overflow-y:auto;font:11px/1.35 monospace;white-space:pre-wrap;padding:6px 0;color:#c9d1d9"></div>
+      <div style="display:flex;gap:6px">
+        <input id="terminp" placeholder="Run workspace command (e.g. git status, pytest -q)..." style="flex:1;background:#0d1117;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:3px 6px;font:11px monospace" />
+        <button id="termRun">run</button>
+      </div>
+    </div>
     <div id="replaybar">
       <span style="color:var(--warn)">REPLAY</span>
       <button id="rpp">play</button>
@@ -447,6 +464,7 @@
   <div id="side">
     <div id="sidetabs">
       <button data-stab="quests" class="on">Quests/Econ</button>
+      <button data-stab="loops">Campaign/Loops</button>
       <button data-stab="git">Git Codex</button>
       <button data-stab="files">Files</button>
     </div>
@@ -454,6 +472,7 @@
       <div class="pane" id="quests"><h3>Quest log</h3><div id="tlist"></div></div>
       <div class="pane" id="econ"><h3>Economy</h3><div id="econbody"></div></div>
     </div>
+    <div class="spane" id="spLoops"></div>
     <div class="spane" id="spGit"></div>
     <div class="spane" id="spFiles">
       <input id="fsearch" placeholder="Filter files..." style="background:#0d1117;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:4px 6px;margin-bottom:6px;font:inherit" />

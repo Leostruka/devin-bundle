@@ -999,6 +999,20 @@ def main():
         assert st_bad == 400
         print("PASS explorer (/files) + git codex (/git, /git/diff, traversal guard)")
 
+        # #178 Scheduled Loops (/loops) + Integrated Terminal (/terminal)
+        assert post(PORT, "/loops",
+                    {"action": "create", "interval_m": 5,
+                     "prompt": "Check gates"}) == 200
+        st, lps = get(PORT, "/loops")
+        assert st == 200 and len(lps.get("loops") or []) == 1, lps
+        lid = lps["loops"][0]["id"]
+        assert post(PORT, "/loops", {"action": "trigger", "id": lid}) == 200
+        st, lps2 = get(PORT, "/loops")
+        assert lps2["loops"][0]["iterations"] == 1, lps2
+        assert post(PORT, "/loops", {"action": "stop", "id": lid}) == 200
+        assert post(PORT, "/terminal", {"cmd": "echo rtsd-term-ok"}) == 200
+        print("PASS campaigns/loops (/loops) + integrated terminal (/terminal)")
+
         # #120 determinism: replaying events.jsonl rebuilds the same world
         st, snap = get(PORT, "/snapshot")
         # #176 Collectible Skill Scrolls + Tiered Achievements in snapshot

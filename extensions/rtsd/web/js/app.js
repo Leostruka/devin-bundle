@@ -2422,6 +2422,11 @@
       RTS.answer(state.decActive, k === "y" ? 0 : 1);
       return;
     }
+    if (k === "t" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      toggleTerm();
+      return;
+    }
     if (k === "f9") {
       e.preventDefault();
       if (el("togSide")) el("togSide").click();
@@ -2896,11 +2901,186 @@
         x.className = x === b ? "on" : "";
       });
       el("spQuests").classList.toggle("on", tab === "quests");
+      if (el("spLoops")) el("spLoops").classList.toggle("on", tab === "loops");
       el("spGit").classList.toggle("on", tab === "git");
       el("spFiles").classList.toggle("on", tab === "files");
+      if (tab === "loops") fetchLoopsPane();
       if (tab === "git") fetchGitCodex();
       if (tab === "files") renderFilesPane();
     });
+  }
+  function fetchLoopsPane() {
+    var sp = el("spLoops");
+    if (!sp) return;
+    fetch("/loops", { headers: TOK ? { "X-RTS-Token": TOK } : {} })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var lps = (d && d.loops) || [];
+        var qs = (state.world && state.world.quests) || [];
+        var qDone = qs.filter(function (q) { return q.done; }).length;
+        var lpHtml = lps.map(function (lp) {
+          return "<div class='frow'><span><b>" + esc(lp.id) + "</b> (" +
+            lp.interval_m + "m, #" + (lp.iterations || 0) + ")<br>" +
+            "<span class='meta'>" + esc(lp.prompt) + "</span></span>" +
+            "<span><button data-lact='trigger' data-lid='" + esc(lp.id) +
+            "'>run</button> <button data-lact='stop' data-lid='" +
+            esc(lp.id) + "'>stop</button></span></div>";
+        }).join("") || "<div class='meta'>No active loops</div>";
+        sp.innerHTML =
+          "<h3>Campaign Overview (" + qDone + "/" + qs.length + " Quests)</h3>" +
+          "<div class='meta'>DAG dependency lines active on 3D map.</div>" +
+          "<div style='display:flex;gap:4px;margin:6px 0'>" +
+          "<button data-lact='submit_spec'>+ Submit Feature</button>" +
+          "<button data-lact='review_merge'>Review &amp; Merge Diff</button></div>" +
+          "<h3 style='margin-top:8px'>Scheduled Loops</h3>" +
+          "<div style='display:flex;gap:4px;margin-bottom:6px'>" +
+          "<select id='lpInt' style='background:#0d1117;color:var(--fg);border:1px solid var(--border);border-radius:4px;font:inherit'>" +
+          "<option value='1'>1 min</option><option value='5' selected>5 min</option>" +
+          "<option value='15'>15 min</option><option value='30'>30 min</option>" +
+          "<option value='60'>1 hour</option></select>" +
+          "<input id='lpPrompt' placeholder='Loop prompt...' style='flex:1;background:#0d1117;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:2px 5px;font:inherit' />" +
+          "<button data-lact='create'>Start</button></div>" + lpHtml;
+      }).catch(function () {});
+  }
+  if (el("spLoops")) {
+    el("spLoops").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-lact]");
+      if (!b) return;
+      var act = b.dataset.lact;
+      if (act === "submit_spec") {
+        el("msg").value = "/goal Campaign: ";
+        el("msg").focus();
+        return;
+      }
+      if (act === "review_merge") {
+        var gBtn = el("sidetabs").querySelector("button[data-stab='git']");
+        if (gBtn) gBtn.click();
+        return;
+      }
+      var body = { action: act, id: b.dataset.lid || "" };
+      if (act === "create") {
+        body.interval_m = +(el("lpInt") && el("lpInt").value || 5);
+        body.prompt = (el("lpPrompt") && el("lpPrompt").value) || "Run status check";
+      }
+      fetch("/loops", {
+        method: "POST",
+        headers: Object.assign({ "Content-Type": "application/json" },
+                               TOK ? { "X-RTS-Token": TOK } : {}),
+        body: JSON.stringify(body)
+      }).then(function () { fetchLoopsPane(); }).catch(function () {});
+    });
+  }
+  // #178 Multi-Tab Integrated Terminal Drawer (Ctrl+T / #termBtn)
+  var termTabs = [{ id: 1, title: "sh-1", log: "RTSD Integrated Terminal ready.\n" }],
+      termCur = 1, termSeq = 1;
+  function renderTerm() {
+    var td = el("termdrawer");
+    if (!td) return;
+    el("termtabs").innerHTML = termTabs.map(function (t) {
+      return "<button data-tid='" + t.id + "'" +
+        (t.id === termCur ? " style='border-color:#ffd54a;color:#ffd54a'" : "") +
+        ">" + esc(t.title) + "</button>";
+    }).join("");
+    var cur = termTabs.filter(function (t) { return t.id === termCur; })[0] ||
+              termTabs[0];
+    if (cur) el("termout").textContent = cur.log;
+    el("termout").scrollTop = el("termout").scrollHeight;
+  }
+  function toggleTerm() {
+    var td = el("termdrawer");
+    if (!td) return;
+    var show = td.style.display === "none";
+    td.style.display = show ? "flex" : "none";
+    if (show) { renderTerm(); el("terminp").focus(); }
+  }
+  if (el("termBtn")) el("termBtn").onclick = toggleTerm;
+  if (el("termClose")) el("termClose").onclick = toggleTerm;
+  if (el("termNew")) {
+    el("termNew").onclick = function () {
+      termSeq++;
+      termTabs.push({ id: termSeq, title: "sh-" + termSeq, log: "$ " });
+      termCur = termSeq;
+      renderTerm();
+    };
+  }
+  if (el("termtabs")) {
+    el("termtabs").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-tid]");
+      if (b) { termCur = +b.dataset.tid; renderTerm(); }
+    });
+  }
+  function runTermCmd() {
+    var inp = el("terminp");
+    if (!inp || !inp.value.trim()) return;
+    var cmd = inp.value.trim();
+    inp.value = "";
+    var cur = termTabs.filter(function (t) { return t.id === termCur; })[0];
+    if (!cur) return;
+    cur.log += "\n$ " + cmd + "\n";
+    renderTerm();
+    fetch("/terminal", {
+      method: "POST",
+      headers: Object.assign({ "Content-Type": "application/json" },
+                             TOK ? { "X-RTS-Token": TOK } : {}),
+      body: JSON.stringify({ cmd: cmd })
+    }).then(function (r) { return r.json(); })
+      .then(function (d) {
+        cur.log += (d.output || d.error || "") + "\n";
+        renderTerm();
+      }).catch(function () {});
+  }
+  if (el("termRun")) el("termRun").onclick = runTermCmd;
+  if (el("terminp")) {
+    el("terminp").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") runTermCmd();
+    });
+  }
+  // #178 Procedural Ambient Music Soundtrack with Audio Ducking + War Advisor
+  var musicOn = false, musicTimer = null;
+  if (el("musicBtn")) {
+    el("musicBtn").onclick = function () {
+      musicOn = !musicOn;
+      el("musicBtn").textContent = "music:" + (musicOn ? "on" : "off");
+      if (musicOn) {
+        var playChord = function () {
+          if (!musicOn || !snd.on) return;
+          var c = _ctx();
+          if (c) {
+            var roots = [146.8, 164.8, 196.0, 220.0];
+            var r = roots[Math.floor(Math.random() * roots.length)];
+            _pluck(c, c.currentTime, r, 1.4, 0.08 * snd.vol);
+            _pluck(c, c.currentTime + 0.35, r * 1.5, 1.4, 0.06 * snd.vol);
+          }
+          musicTimer = setTimeout(playChord, 3800);
+        };
+        playChord();
+      } else if (musicTimer) {
+        clearTimeout(musicTimer);
+        musicTimer = null;
+      }
+    };
+  }
+  var tutStep = 0;
+  var TUT_STEPS = [
+    "War Advisor [1/5]: Welcome Commander! Click any Hero on the 3D map or top-left Roster to inspect their 14-joint 3D rig & kit.",
+    "War Advisor [2/5]: Use the 4x3 QWER Command Card (bottom-right) or right-click Gold Veins/Quests to issue Move, Gather, Patrol, or Attack orders.",
+    "War Advisor [3/5]: Click Town Hall, Barracks, or Tavern to recruit Heroes, ring the Town Bell, or set Rally Points.",
+    "War Advisor [4/5]: Open Side Panel tabs (Campaign/Loops, Git Codex, Files) or press Ctrl+T for the Integrated Multi-Tab Terminal.",
+    "War Advisor [5/5]: Press F10 for Race Skins (Human/Orc/Elf/Undead), Live Weather Forecast, Skill Scrolls & Hall of Glory Trophy PNGs!"
+  ];
+  if (el("tutBtn")) {
+    el("tutBtn").onclick = function () {
+      var msg = TUT_STEPS[tutStep % TUT_STEPS.length];
+      tutStep++;
+      logFeed(msg);
+      var bn = el("banner");
+      if (bn) {
+        bn.textContent = msg;
+        bn.className = "on";
+        setTimeout(function () { bn.className = ""; }, 5500);
+      }
+      tone("upkeep");
+    };
   }
   if (el("fsearch")) {
     el("fsearch").addEventListener("input", renderFilesPane);
@@ -3191,6 +3371,7 @@
       waypoints: state.waypoints, ravens: state.ravens,
       srvClock: state.srvClock, decision: meetingCall(),
       weather: state.weather, fx: state.fx,
+      quests: state.world && state.world.quests,
       scrolls: state.world && state.world.scrolls,
       noFog: state.noFog, heatmap: state.heatmap, warTable: state.warTable,
       night: nightFactor(),
