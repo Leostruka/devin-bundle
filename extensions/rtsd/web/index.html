@@ -93,35 +93,93 @@
   .qhint { margin-top:6px; font-size:10px; }
   .fl.k-quest .fw { color:var(--warn); }
   .inv.qloot { border-color:var(--ok); color:var(--ok); }
-  #bottom { display:flex; background:linear-gradient(180deg,#1b221c,#111612);
-            border-top:2px solid #8a6d23; height:162px; }
-  #mmwrap { width:196px; padding:6px; border-right:1px solid #4a5a42;
-            display:flex; flex-direction:column; gap:4px; }
+  #bottom { display:flex; background:linear-gradient(180deg,#1c241d,#0e140f);
+            border-top:2px solid #b58d28; height:166px; position:relative;
+            box-shadow:0 -4px 16px rgba(0,0,0,0.65); }
+  #mmwrap { width:202px; padding:5px 6px; border-right:1px solid #4a5a42;
+            display:flex; flex-direction:column; gap:3px; }
   #mm { width:100%; flex:1; min-height:0; display:block; background:#09110b;
-        border:1px solid #8a6d23; cursor:crosshair; }
+        border:1.5px solid #8a6d23; border-radius:3px; cursor:crosshair; }
+  #mmbar { display:flex; gap:3px; align-items:center; }
+  #mmbar button { flex:1; font-size:9px; padding:1px 3px; border-radius:3px; }
+  #mmbar button.on { border-color:#ffd54a; color:#ffd54a; }
   #portwrap { flex:1; display:flex; align-items:flex-start; gap:10px;
-              padding:8px 12px; overflow:hidden; min-width:0; }
-  #portcv { width:78px; height:78px; flex-shrink:0; border-radius:6px;
-            background:#0b110d; cursor:pointer; }
-  #portrait { flex:1; overflow-y:auto; max-height:146px; font-size:12px; }
-  #cmdcard { width:246px; padding:6px; border-left:1px solid #4a5a42;
-             display:grid; grid-template-columns:repeat(3,1fr);
-             grid-auto-rows:35px; gap:4px; align-content:start;
-             overflow-y:auto; background:#121713; }
-  #cmdcard button { position:relative; font-size:10px; padding:2px 4px;
+              padding:7px 10px; overflow:hidden; min-width:0; }
+  #portcol { display:flex; flex-direction:column; gap:3px; width:82px;
+             flex-shrink:0; }
+  #portcv { width:82px; height:82px; border-radius:6px;
+            background:#0b110d; cursor:pointer;
+            box-shadow:inset 0 0 10px rgba(0,0,0,0.8); }
+  .pbar { height:11px; background:#090d0a; border:1px solid #4a5a42;
+          border-radius:3px; position:relative; overflow:hidden;
+          font-size:8px; line-height:10px; text-align:center; color:#fff; }
+  .pbar > span { position:absolute; inset:0 auto 0 0; z-index:0; }
+  .pbar > b { position:relative; z-index:1; text-shadow:0 1px 2px #000; }
+  #portrait { flex:1; overflow-y:auto; max-height:150px; font-size:11.5px; }
+  #invwrap { width:84px; flex-shrink:0; display:flex; flex-direction:column;
+             gap:3px; padding-left:6px; border-left:1px solid #354432; }
+  #invwrap .ihd { font-size:9px; color:#c9a227; text-align:center;
+                  letter-spacing:1px; font-weight:bold; }
+  #invgrid { display:grid; grid-template-columns:repeat(2,1fr);
+             grid-template-rows:repeat(3,36px); gap:4px; }
+  .islot { background:radial-gradient(circle,#1e2620,#101511);
+           border:1px solid #5c5032; border-radius:4px;
+           display:flex; flex-direction:column; align-items:center;
+           justify-content:center; font-size:9px; color:#8b949e;
+           position:relative; cursor:pointer; }
+  .islot.filled { border-color:#d4a72c; color:#ffd54a;
+                  box-shadow:inset 0 0 6px rgba(212,167,44,0.25); }
+  .islot.qloot { border-color:#3fb950; color:#3fb950; }
+  .islot .inum { position:absolute; top:1px; left:3px; font-size:7px;
+                 color:#6e7681; }
+  #cmdcard { width:268px; padding:6px; border-left:1px solid #4a5a42;
+             display:grid; grid-template-columns:repeat(4,1fr);
+             grid-auto-rows:46px; gap:4px; align-content:start;
+             overflow-y:auto; background:#101511; }
+  #cmdcard button { position:relative; font-size:9.5px; padding:2px;
                     display:flex; flex-direction:column; align-items:center;
-                    justify-content:center; line-height:1.1;
-                    background:linear-gradient(180deg,#283329,#182019);
-                    border:1px solid #5c6e54; border-radius:4px; }
+                    justify-content:center; line-height:1.05; gap:2px;
+                    background:linear-gradient(180deg,#2a362b,#151c16);
+                    border:1.5px solid #665835; border-radius:5px;
+                    box-shadow:inset 0 1px 0 rgba(255,255,255,0.12); }
   #cmdcard button:hover:not(:disabled) { border-color:#ffd54a;
-    box-shadow:0 0 6px rgba(255,213,74,0.35); }
-  #cmdcard button:disabled { opacity:0.28; cursor:default; }
+    background:linear-gradient(180deg,#364738,#1d281f);
+    box-shadow:0 0 8px rgba(255,213,74,0.45); }
+  #cmdcard button:disabled { opacity:0.24; cursor:default;
+                             border-color:#2d362e; }
   #cmdcard button.armed { border-color:var(--ok); color:var(--ok);
-    box-shadow:0 0 8px rgba(63,185,80,0.5); }
+    box-shadow:0 0 10px rgba(63,185,80,0.6); }
+  #cmdcard button svg.csvg { width:18px; height:18px; stroke:#ffd54a;
+                             fill:none; stroke-width:2;
+                             stroke-linecap:round; stroke-linejoin:round; }
+  #cmdcard button:disabled svg.csvg { stroke:#586069; }
   #cmdcard button .ci { font-size:12px; font-weight:bold; color:#ffd54a; }
   #cmdcard button .hk { position:absolute; top:1px; right:3px; font-size:8px;
-                        color:#9fb4c7; font-weight:bold; }
+                        color:#ffd54a; font-weight:bold;
+                        background:rgba(0,0,0,0.55); padding:0 2px;
+                        border-radius:2px; }
   #cmdcard .tgt { grid-column:1/-1; font-size:10px; color:#ffd54a; }
+  #cardtip { display:none; position:absolute; bottom:170px; right:10px;
+             z-index:25; width:280px; background:rgba(12,18,14,0.97);
+             border:1.5px solid #d4a72c; border-radius:6px;
+             padding:8px 10px; font-size:11px; pointer-events:none;
+             box-shadow:0 6px 18px rgba(0,0,0,0.8); }
+  #cardtip.on { display:block; }
+  #gamemenu { display:none; position:absolute; inset:0; z-index:22;
+              background:rgba(6,10,8,0.72); align-items:center;
+              justify-content:center; }
+  #gamemenu.on { display:flex; }
+  #gmBox { background:linear-gradient(180deg,#1a221b,#101511);
+           border:2px solid #d4a72c; border-radius:10px; padding:16px 20px;
+           min-width:380px; max-width:520px; max-height:86%;
+           overflow-y:auto; box-shadow:0 10px 32px rgba(0,0,0,0.85); }
+  #gmBox h2 { color:#ffd54a; font-size:15px; letter-spacing:1px;
+              margin-bottom:10px; border-bottom:1px solid #4a5a42;
+              padding-bottom:6px; display:flex;
+              justify-content:space-between; align-items:center; }
+  .gmgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px;
+            margin:6px 0 10px; }
+  .gmgrid button.on { border-color:#ffd54a; color:#ffd54a; }
   #grps { width:32px; padding:6px 3px; border-left:1px solid #4a5a42;
           display:flex; flex-direction:column; gap:3px; align-items:center; }
   .gpip { width:22px; height:22px; padding:0; font-size:10px;
@@ -277,6 +335,7 @@
   <button id="scoreBtn" title="victory screen: session aggregates">score</button>
   <button id="dnBtn" title="day/night cycle (N toggles)">day/night:off</button>
   <button id="themeBtn">theme</button>
+  <button id="menuBtn" title="Game Menu & Weather Forecast (F10)">Menu (F10)</button>
 </header>
 <div id="mtabs">
   <button data-mtab="map" class="on">map</button>
@@ -292,6 +351,7 @@
     <div id="herobar"></div>
     <div id="bldbar"></div>
     <div id="tooltip"></div>
+    <div id="gamemenu"><div id="gmBox"></div></div>
     <div id="replaybar">
       <span style="color:var(--warn)">REPLAY</span>
       <button id="rpp">play</button>
@@ -346,12 +406,27 @@
   </div>
 </main>
 <div id="bottom">
+  <div id="cardtip"></div>
   <div id="mmwrap"><canvas id="mm"></canvas>
-    <button id="idleBtn" style="width:100%">idle:0</button>
+    <div id="mmbar">
+      <button data-mmf="all" class="on" title="show all on minimap">all</button>
+      <button data-mmf="units" title="show units only">units</button>
+      <button data-mmf="bld" title="show buildings only">bld</button>
+      <button id="idleBtn" title="cycle idle heroes (.)">idle:0</button>
+    </div>
   </div>
   <div id="portwrap">
-    <canvas id="portcv" width="78" height="78"></canvas>
+    <div id="portcol">
+      <canvas id="portcv" width="82" height="82"></canvas>
+      <div class="pbar" id="pbarHp"><span style="width:100%;background:#3fb950"></span><b>HP 100/100</b></div>
+      <div class="pbar" id="pbarMp"><span style="width:100%;background:#58a6ff"></span><b>MP 100/100</b></div>
+      <div class="pbar" id="pbarXp"><span style="width:35%;background:#d4a72c"></span><b>Lv1 XP</b></div>
+    </div>
     <div id="portrait"></div>
+    <div id="invwrap">
+      <div class="ihd">INVENTORY</div>
+      <div id="invgrid"></div>
+    </div>
   </div>
   <div id="grps"></div>
   <div id="cmdcard"></div>
