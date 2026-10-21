@@ -39,6 +39,7 @@ import re
 import secrets
 import socket
 import struct
+import subprocess
 import sys
 import threading
 import time
@@ -650,6 +651,176 @@ def list_sessions():
     return out
 
 
+_BADGE_MAP = {
+    ".ts": "TS", ".tsx": "TS",
+    ".js": "JS", ".jsx": "JS", ".mjs": "JS",
+    ".css": "CSS", ".scss": "CSS", ".less": "CSS",
+    ".json": "JSON", ".yaml": "JSON", ".yml": "JSON", ".toml": "JSON",
+    ".md": "MD", ".mdx": "MD", ".txt": "MD",
+    ".py": "PY",
+    ".rs": "RS",
+    ".go": "GO",
+    ".sh": "SH", ".bash": "SH", ".zsh": "SH", ".ps1": "SH",
+    ".html": "HTML", ".svg": "HTML",
+    ".png": "IMG", ".jpg": "IMG", ".jpeg": "IMG", ".gif": "IMG", ".webp": "IMG",
+}
+_SKIP_WALK = {".git", "node_modules", "__pycache__", ".venv", "venv",
+              "target", "dist", "build", ".pytest_cache", ".mypy_cache"}
+
+
+def list_project_files(root):
+    """#172 File Explorer + @file autocomplete index."""
+    files = []
+    for base, dirs, fnames in os.walk(root):
+        dirs[:] = sorted(d for d in dirs if d not in _SKIP_WALK)
+        for fn in sorted(fnames):
+            p = os.path.join(base, fn)
+            rel = os.path.relpath(p, root).replace("\\", "/")
+            ext = os.path.splitext(fn)[1].lower()
+            try:
+                sz = os.path.getsize(p)
+            except OSError:
+                sz = 0
+            files.append({
+                "path": rel,
+                "size": sz,
+                "badge": _BADGE_MAP.get(ext, "FILE"),
+            })
+            if len(files) >= 500:
+                break
+        if len(files) >= 500:
+            break
+    return {"ok": True, "files": files}
+
+
+def _git_run(root, args):
+    try:
+        r = subprocess.run(
+            ["git"] + list(args), cwd=root,
+            capture_output=True, text=True, timeout=3.0,
+            encoding="utf-8", errors="replace")
+        return r.returncode == 0, (r.stdout or ""), (r.stderr or "")
+    except Exception as e:
+        return False, "", str(e)
+
+
+def git_codex_state(root):
+    """#172 Git Codex: status, worktrees, branches, stashes, commits."""
+    ok_s, out_s, _ = _git_run(root, ["status", "--porcelain"])
+    changes = []
+    if ok_s:
+        for line in out_s.splitlines():
+            if len(line) < 4:
+                continue
+            xy = line[:2]
+            rel = line[3:].strip().strip('"')
+            if "->" in rel:
+                rel = rel.split("->")[-1].strip()
+            lbl = ("destroyed" if "D" in xy else
+                   "newly scribed" if ("?" in xy or "A" in xy) else
+                   "sealed" if xy[0] != " " and xy[1] == " " else
+                   "altered")
+            top = rel.split("/")[0] if "/" in rel else "."
+            changes.append({"path": rel, "code": xy.strip(),
+                            "label": lbl, "dir": top})
+    ok_w, out_w, _ = _git_run(root, ["worktree", "list", "--porcelain"])
+    worktrees = []
+    if ok_w:
+        cur = {}
+        for line in out_w.splitlines():
+            if not line.strip():
+                if cur:
+                    worktrees.append(cur)
+                    cur = {}
+            elif line.startswith("worktree "):
+                cur["path"] = line[9:].strip()
+            elif line.startswith("branch "):
+                cur["branch"] = line[7:].strip().replace("refs/heads/", "")
+            elif line.startswith("HEAD "):
+                cur["head"] = line[5:].strip()[:8]
+        if cur:
+            worktrees.append(cur)
+    ok_b, out_b, _ = _git_run(
+        root, ["branch", "--format=%(refname:short)|%(HEAD)"])
+    branches = []
+    current_branch = ""
+    if ok_b:
+        for line in out_b.splitlines():
+            if "|" in line:
+                bname, head = line.split("|", 1)
+                active = head.strip() == "*"
+                if active:
+                    current_branch = bname.strip()
+                branches.append({"name": bname.strip(), "current": active})
+    ok_st, out_st, _ = _git_run(root, ["stash", "list"])
+    stashes = []
+    if ok_st:
+        for line in out_st.splitlines():
+            if ":" in line:
+                sid, desc = line.split(":", 1)
+                stashes.append({"id": sid.strip(), "desc": desc.strip()})
+    ok_lg, out_lg, _ = _git_run(
+        root, ["log", "-n", "10", "--pretty=format:%h|%an|%ar|%s"])
+    commits = []
+    if ok_lg:
+        for line in out_lg.splitlines():
+            parts = line.split("|", 3)
+            if len(parts) == 4:
+                commits.append({"sha": parts[0], "author": parts[1],
+                                "when": parts[2], "subject": parts[3]})
+    return {
+        "ok": True,
+        "branch": current_branch,
+        "changes": changes,
+        "worktrees": worktrees,
+        "branches": branches,
+        "stashes": stashes,
+        "commits": commits,
+    }
+
+
+def git_file_diff(root, rel_path):
+    """#172 Safe per-file diff or file preview (confined to root)."""
+    if not rel_path or ".." in rel_path.replace("\\", "/").split("/"):
+        return {"error": "bad path"}
+    ap = os.path.abspath(os.path.join(root, rel_path))
+    rroot = os.path.abspath(root)
+    if not ap.startswith(rroot + os.sep) and ap != rroot:
+        return {"error": "path outside root"}
+    ok, diff_out, _ = _git_run(root, ["diff", "HEAD", "--", rel_path])
+    if ok and diff_out.strip():
+        return {"ok": True, "path": rel_path, "diff": diff_out[:12000]}
+    if os.path.isfile(ap):
+        try:
+            with open(ap, encoding="utf-8", errors="replace") as f:
+                txt = f.read(8000)
+            return {"ok": True, "path": rel_path, "diff": txt, "preview": True}
+        except OSError:
+            pass
+    return {"ok": True, "path": rel_path, "diff": "(no changes)"}
+
+
+def git_action(root, body):
+    """#172 Safe Stash Manager actions (stash_push/apply/pop/drop)."""
+    act = str(body.get("action") or "")
+    ref = str(body.get("ref") or "stash@{0}")
+    if not re.match(r"^stash@\{\d+\}$", ref):
+        ref = "stash@{0}"
+    if act == "stash_push":
+        msg = re.sub(r"[^\w\s._-]", "", str(body.get("message") or "rtsd"))[:60]
+        cmd = ["stash", "push", "-m", msg or "rtsd"]
+        if body.get("untracked"):
+            cmd.insert(2, "-u")
+        ok, out, err = _git_run(root, cmd)
+    elif act in ("stash_apply", "stash_pop", "stash_drop"):
+        sub = act.split("_")[1]
+        ok, out, err = _git_run(root, ["stash", sub, ref])
+    else:
+        return {"error": "bad git action"}
+    return {"ok": ok, "output": (out or err).strip()[:400],
+            "git": git_codex_state(root)}
+
+
 # --- minimal WebSocket (RFC 6455, text frames only) ---
 
 def ws_accept(key):
@@ -801,6 +972,16 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, list_sessions())
         if path == "/weather":
             return self._json(200, weather_state(fetch_if_empty=True))
+        if path == "/files":
+            return self._json(200, list_project_files(STATE["root"]))
+        if path == "/git":
+            return self._json(200, git_codex_state(STATE["root"]))
+        if path == "/git/diff":
+            q = urllib.parse.parse_qs(
+                urllib.parse.urlparse(self.path).query)
+            rel = (q.get("path") or [""])[0]
+            res = git_file_diff(STATE["root"], rel)
+            return self._json(400 if res.get("error") else 200, res)
         if path == "/replay":
             if STATE["replay"] is None:
                 return self._json(404, {"error": "not in replay mode"})
@@ -871,6 +1052,9 @@ class Handler(BaseHTTPRequestHandler):
             wx = weather_state(fetch_if_empty=True)
             broadcast({"type": "weather", "weather": wx})
             return self._json(200, wx)
+        if path == "/git":
+            res = git_action(STATE["root"], self._body() or {})
+            return self._json(400 if res.get("error") else 200, res)
         if path == "/intent":
             it = self._body()
             kind = it.get("kind")

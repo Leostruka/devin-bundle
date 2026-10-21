@@ -169,6 +169,41 @@
               background:rgba(6,10,8,0.72); align-items:center;
               justify-content:center; }
   #gamemenu.on { display:flex; }
+  #sidetabs { display:flex; border-bottom:1px solid var(--border);
+              background:#111612; }
+  #sidetabs button { flex:1; border:0; border-bottom:2px solid transparent;
+                     border-radius:0; font-size:10.5px; padding:5px 4px;
+                     background:transparent; color:var(--dim); }
+  #sidetabs button.on { color:#ffd54a; border-bottom-color:#ffd54a;
+                        font-weight:bold; }
+  .spane { display:none; flex:1; flex-direction:column; overflow-y:auto;
+           padding:8px 10px; font-size:11px; }
+  .spane.on { display:flex; }
+  .fbadge { display:inline-block; min-width:28px; text-align:center;
+            font-size:9px; font-weight:bold; padding:0 4px; border-radius:3px;
+            margin-right:5px; color:#000; background:#58a6ff; }
+  .fbadge.b-JS, .fbadge.b-JSON { background:#ffd54a; }
+  .fbadge.b-MD, .fbadge.b-SH { background:#3fb950; }
+  .fbadge.b-CSS { background:#bc8cff; }
+  .fbadge.b-RS, .fbadge.b-HTML { background:#f0883e; }
+  .fbadge.b-IMG { background:#f778ba; }
+  .frow { padding:3px 4px; border-bottom:1px solid rgba(48,54,61,0.5);
+          cursor:pointer; display:flex; align-items:center;
+          justify-content:space-between; }
+  .frow:hover { background:#21262d; }
+  .diffbox { background:#090d11; border:1px solid var(--border);
+             border-radius:4px; padding:6px; font:10px/1.35 monospace;
+             white-space:pre-wrap; word-break:break-all; max-height:220px;
+             overflow-y:auto; margin-top:6px; color:#c9d1d9; }
+  #acbox { display:none; position:absolute; bottom:40px; left:10px;
+           z-index:28; background:#161b22; border:1px solid #d4a72c;
+           border-radius:6px; max-height:160px; overflow-y:auto;
+           min-width:260px; box-shadow:0 4px 14px rgba(0,0,0,0.8); }
+  #acbox.on { display:block; }
+  .acitem { padding:4px 8px; font-size:11px; cursor:pointer; }
+  .acitem:hover, .acitem.on { background:#283329; color:#ffd54a; }
+  #micBtn.rec { border-color:var(--err); color:var(--err);
+                animation:aflash .7s infinite; }
   #gmBox { background:linear-gradient(180deg,#1a221b,#101511);
            border:2px solid #d4a72c; border-radius:10px; padding:16px 20px;
            min-width:380px; max-width:520px; max-height:86%;
@@ -410,8 +445,21 @@
     </div>
   </div>
   <div id="side">
-    <div class="pane" id="quests"><h3>Quest log</h3><div id="tlist"></div></div>
-    <div class="pane" id="econ"><h3>Economy</h3><div id="econbody"></div></div>
+    <div id="sidetabs">
+      <button data-stab="quests" class="on">Quests/Econ</button>
+      <button data-stab="git">Git Codex</button>
+      <button data-stab="files">Files</button>
+    </div>
+    <div class="spane on" id="spQuests" style="padding:0">
+      <div class="pane" id="quests"><h3>Quest log</h3><div id="tlist"></div></div>
+      <div class="pane" id="econ"><h3>Economy</h3><div id="econbody"></div></div>
+    </div>
+    <div class="spane" id="spGit"></div>
+    <div class="spane" id="spFiles">
+      <input id="fsearch" placeholder="Filter files..." style="background:#0d1117;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:4px 6px;margin-bottom:6px;font:inherit" />
+      <div id="flist" style="flex:1;overflow-y:auto"></div>
+      <div id="fdiff"></div>
+    </div>
   </div>
 </main>
 <div id="bottom">
@@ -442,7 +490,8 @@
 </div>
 <div id="cmd">
   <div id="ac"></div>
-  <input id="msg" placeholder="/ for commands  |  @unit message  |  text = goal" autocomplete="off" />
+  <input id="msg" placeholder="/ for commands  |  @unit or @file  |  text = goal" autocomplete="off" />
+  <button id="micBtn" title="Voice Input (Web Speech API - auto-sends on silence)">mic</button>
   <button id="send">send</button>
 </div>
 <script src="/js/theme.js"></script>
