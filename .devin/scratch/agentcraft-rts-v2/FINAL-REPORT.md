@@ -36,6 +36,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 165 | #168 | Procedural WebAudio DSP sound engine (`_getNoise` pink noise, `_fm` metallic partials, `_noise` biquad bursts, `_pluck` Karplus-Strong strings, `syncAmbience` continuous wind/rain filter bank) + per-building/class acoustic signatures & Office Mode foley switching |
 | 170 | #171 | Real 3D RTS perspective engine (`PITCH` tilt + `wz` vertical elevation + exact `toWorld`/`toScreen` inverse), 3D plateaus/cliffs/sunken riverbanks/arched bridges, `_drawBuilding3D` multi-face 3D structures (`_box3D`, `_cyl3D`, `_cone3D`, `_roofPrism3D`), and 14-joint 3D articulated skeletal rig (`Rig3D`) with smooth 3D facing `yaw` and 8 3D animation clips |
 | 172 | #173 | Side Panel Explorer (`GET /files` with extension badges & filter), Git Codex (`GET /git`, `GET /git/diff`, `POST /git` Stash Manager, worktrees, branches, commits), `@file` composer autocomplete, and Web Speech API Voice Input (`#micBtn`) |
+| 174 | #175 | 4 Race Faction Skins (`human`, `orc`, `elf`, `undead`) in `theme.js`/`engine.js`/`app.js` + `V` Fog Toggle, `H` Territory Heatmap, `` ` `` War Table overlay, `Y`/`N` War Council quick-approval, and `F9`/`F12`/`Enter` hotkeys |
 
 ## Final gate evidence (milestone branch)
 

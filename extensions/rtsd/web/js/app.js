@@ -1368,13 +1368,24 @@
             "km/h " + hr.pop + "%</span></div>";
         }).join("") + "</div>";
     }
-    h += "<div class='qhead'>AUDIO, DISPLAY &amp; OVERLAYS</div>" +
+    var curRace = Theme.getRace ? Theme.getRace() : "human";
+    var races = ["human", "orc", "elf", "undead"];
+    h += "<div class='qhead'>RACE FACTION SKINS</div><div class='gmgrid'>" +
+      races.map(function (r) {
+        return "<button data-race='" + r + "'" +
+          (curRace === r ? " class='on'" : "") + ">" + r.toUpperCase() +
+          "</button>";
+      }).join("") + "</div>" +
+      "<div class='qhead'>AUDIO, DISPLAY &amp; OVERLAYS</div>" +
       "<div class='gmgrid'>" +
       "<button data-gma='mute'>Sound: " + (snd.on ? "ON" : "OFF") + "</button>" +
       "<button data-gma='voldown'>Vol - (" + Math.round(snd.vol * 100) + "%)</button>" +
       "<button data-gma='volup'>Vol +</button>" +
       "<button data-gma='theme'>Theme: " + esc(Theme.get().name) + "</button>" +
       "<button data-gma='dn'>Day/Night: " + (state.dn ? "ON" : "OFF") + "</button>" +
+      "<button data-gma='fog'>Fog (V): " + (state.noFog ? "OFF" : "ON") + "</button>" +
+      "<button data-gma='heatmap'>Heatmap (H): " + (state.heatmap ? "ON" : "OFF") + "</button>" +
+      "<button data-gma='wartable'>War Table (`): " + (state.warTable ? "ON" : "OFF") + "</button>" +
       "<button data-gma='tech'>Tech Tree (K)</button>" +
       "<button data-gma='score'>Victory / History</button>" +
       "<button data-gma='help'>Guide (?)</button>" +
@@ -2321,6 +2332,40 @@
     if (k === "h" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
       issueOrder("hold", {}); renderPanels(); return;
     }
+    if (k === "h" && !state.selAll.length && !e.ctrlKey && !e.metaKey) {
+      state.heatmap = !state.heatmap;
+      logFeed("territory heatmap: " + (state.heatmap ? "ON" : "OFF"));
+      renderPanels(); return;
+    }
+    if (k === "v" && !state.selAll.length && !e.ctrlKey && !e.metaKey) {
+      state.noFog = !state.noFog;
+      logFeed("fog of war: " + (state.noFog ? "OFF" : "ON"));
+      renderPanels(); return;
+    }
+    if (e.key === "`") {
+      state.warTable = !state.warTable;
+      logFeed("war table overlay: " + (state.warTable ? "ON" : "OFF"));
+      renderPanels(); return;
+    }
+    if ((k === "y" || k === "n") && state.decActive &&
+        el("council").classList.contains("on")) {
+      RTS.answer(state.decActive, k === "y" ? 0 : 1);
+      return;
+    }
+    if (k === "f9") {
+      e.preventDefault();
+      if (el("togSide")) el("togSide").click();
+      return;
+    }
+    if (k === "f12") {
+      e.preventDefault();
+      if (el("togFeed")) el("togFeed").click();
+      return;
+    }
+    if (k === "enter") {
+      el("msg").focus();
+      return;
+    }
     if (k === "p" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
       var pu = state.units.filter(function (x) {
         return x.id === state.sel; })[0];
@@ -2601,6 +2646,9 @@
         else if (a === "volup") setVol(snd.vol + 0.1);
         else if (a === "theme") toggleTheme();
         else if (a === "dn") el("dnBtn").click();
+        else if (a === "fog") state.noFog = !state.noFog;
+        else if (a === "heatmap") state.heatmap = !state.heatmap;
+        else if (a === "wartable") state.warTable = !state.warTable;
         else if (a === "tech") {
           el("gamemenu").classList.remove("on");
           el("techtree").classList.add("on");
@@ -3073,6 +3121,7 @@
       waypoints: state.waypoints, ravens: state.ravens,
       srvClock: state.srvClock, decision: meetingCall(),
       weather: state.weather, fx: state.fx,
+      noFog: state.noFog, heatmap: state.heatmap, warTable: state.warTable,
       night: nightFactor(),
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
