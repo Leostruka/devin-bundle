@@ -1805,6 +1805,32 @@
       // POI markers: quests show through fog, others only once seen (#122)
       var self = this;
       var vfog = st.visFog || st.fog;
+      // #178 Campaign DAG Dependency Lines between Quest POIs on the 3D Map
+      var qPois = {};
+      (st.pois || []).forEach(function (p) {
+        if (p.kind === "quest" && p.ref) qPois[p.ref] = p;
+      });
+      (st.quests || []).forEach(function (q) {
+        var pTo = qPois[q.id];
+        if (!pTo || !q.deps || !q.deps.length) return;
+        var sTo = self.toScreen((pTo.x + 0.5) * TILE, (pTo.y + 0.5) * TILE, 4);
+        q.deps.forEach(function (depId) {
+          var pFrom = qPois[depId];
+          if (!pFrom) return;
+          var sFrom = self.toScreen((pFrom.x + 0.5) * TILE,
+                                    (pFrom.y + 0.5) * TILE, 4);
+          ctx.strokeStyle = q.done ? "rgba(63,185,80,0.55)"
+            : q.blocked ? "rgba(139,148,158,0.45)" : "rgba(255,213,74,0.60)";
+          ctx.lineWidth = Math.max(1.2, 1.8 * z);
+          ctx.setLineDash([5 * z, 4 * z]);
+          ctx.beginPath();
+          ctx.moveTo(sFrom.x, sFrom.y);
+          ctx.lineTo(sTo.x, sTo.y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.lineWidth = 1;
+        });
+      });
       (st.pois || []).forEach(function (p) {
         var i = p.y * W + p.x;
         var f = vfog ? vfog[i] : 2;

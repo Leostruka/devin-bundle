@@ -38,6 +38,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 172 | #173 | Side Panel Explorer (`GET /files` with extension badges & filter), Git Codex (`GET /git`, `GET /git/diff`, `POST /git` Stash Manager, worktrees, branches, commits), `@file` composer autocomplete, and Web Speech API Voice Input (`#micBtn`) |
 | 174 | #175 | 4 Race Faction Skins (`human`, `orc`, `elf`, `undead`) in `theme.js`/`engine.js`/`app.js` + `V` Fog Toggle, `H` Territory Heatmap, `` ` `` War Table overlay, `Y`/`N` War Council quick-approval, and `F9`/`F12`/`Enter` hotkeys |
 | 176 | #177 | Collectible 3D Skill Scrolls on Map (`world._scrolls`) + 12 Tiered Achievements (`world._achievements` in `Discovery`/`Mastery`/`Secret` & `Common..Legendary`) + Hall of Glory gallery & `600x315` Trophy Card PNG export |
+| 178 | #179 | Campaign DAG dependency lines on 3D map + Campaign Review & Merge view, `GET/POST /loops` Scheduled Tasks manager, `POST /terminal` + `Ctrl+T` Multi-Tab Integrated Terminal drawer, Procedural Ambient Music (`#musicBtn`), and War Advisor interactive tutorial (`#tutBtn`) |
 
 ## Final gate evidence (milestone branch)
 
