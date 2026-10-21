@@ -28,6 +28,9 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 135 | #153 | Replay + spectator: `--replay` daemon (seek/4x, deterministic), `/sessions` match history, `/score` screen, spectator token -> server-enforced 403 on POSTs |
 | 136 | #154 | Polish: motion glide, walk/work/idle anims, ambience + day/night, sprite raster cache, hotkey audit + guide card |
 | 155 | #156 | Post-review audit fixes: `_apply_hook` guard, iso wheel zoom, SW bypass regex, Marketplace `mcp_config.json` + tool counts, done barks + minion grouping, FIFO waypoint chain/consume, Office labels/printer-fire/water-cooler, `/sessions` cache + Web UI Match History, `<700px` mobile tab bar |
+| 157 | #160 | Live local weather (`GET/POST /weather`, `snapshot.weather`, Open-Meteo + geojs/ipwho cache) + unified wind physics + WC3/AoE3 terrain (roads, plazas, rivers/lakes with waves/foam/bridges, swaying multi-layer trees, falling leaves, dynamic Line-of-Sight vision) |
+| 158 | #161 | WC3/AoE3 unit, hero & building modeling (all 22 classes + 11 structures in `theme.js`, `Theme.drawPortrait`) + `_drawBuildingAnim` & `_drawUnitLive` (Hero Glow, rotating Aura runes, wind-reactive capes/flags/smoke, `Stand - 1/2/3` fidgets, social nods, dust puffs, worker hauling) |
+| 159 | #162 | HUD, mechanics & gameplay overhaul (`#herobar` WC3 Hero Roster, `#bldbar` AoE3 Building Strip, `#wxBtn` Weather Orb, `#portcv` live 3D-style Portrait canvas, non-blocking War Council, 3x4 icon/hotkey Command Card with Building Commands, active Patrol/Gather/Combat/Spell loops, expanded WebAudio soundscape) |
 
 ## Final gate evidence (milestone branch)
 
