@@ -1352,8 +1352,11 @@ class World:
                 lane = str(ti.get("lane") or payload.get("session_id")
                            or "cmdr")
                 uid, name, cls = self._lane_speaker(lane)
-                rel = os.path.relpath(p, self.root).replace("\\", "/") \
-                    if os.path.isabs(p) else p
+                try:
+                    rel = os.path.relpath(p, self.root).replace("\\", "/") \
+                        if os.path.isabs(p) else p
+                except ValueError:
+                    rel = p.replace("\\", "/")
                 verb = {"read": "scouting", "grep": "searching",
                         "glob": "mapping", "find_file_by_name": "locating",
                         "write": "raising", "edit": "fortifying",
@@ -1395,6 +1398,28 @@ class World:
                     return self._line(ts, "position", nm, "Minion",
                                       "sh-" + str(sid),
                                       "%s reporting in" % nm)
+            return None
+        if et.startswith("hook."):
+            payload = ev.get("payload") or {}
+            lane = str(payload.get("session_id") or "cmdr")
+            uid, name, cls = self._lane_speaker(lane)
+            if et == "hook.userpromptsubmit":
+                return self._line(ts, "order", name, cls, uid,
+                                  "orders: %s" % str(
+                                      payload.get("prompt") or "")[:110])
+            if et == "hook.sessionstart":
+                return self._line(ts, "spawn", "HQ", None, None,
+                                  "command on the field (%s)" % lane[:8])
+            if et == "hook.sessionend":
+                return self._line(ts, "debrief", "HQ", None, None,
+                                  "command signed off (%s)" % lane[:8])
+            if et == "hook.stop":
+                return self._line(ts, "order", name, cls, uid,
+                                  "all units hold")
+            if et == "hook.permissionrequest":
+                return self._line(ts, "council", name, cls, uid,
+                                  "requesting authorization: %s"
+                                  % (payload.get("tool_name") or "?"))
             return None
         if et == "decision.created":
             payload = ev.get("payload") or {}

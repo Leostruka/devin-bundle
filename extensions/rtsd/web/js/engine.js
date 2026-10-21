@@ -41,18 +41,24 @@
         w: this.cv.width / this.cam.zoom,
         h: this.cv.height / this.cam.zoom };
     },
+    /* hard map clamp: the view never shows outside-map space. When the
+       view is larger than the map span on an axis (deep zoom-out or a
+       small map) the map is centered on that axis instead of pinned at
+       the origin, the standard clamp-to-map + center-align convention. */
+    _clampAxis: function (c, lo, span, v) {
+      if (v >= span) return lo + (span - v) / 2;
+      return Math.max(lo, Math.min(lo + span - v, c));
+    },
     clampCam: function () {
       if (!this.map) return;
       var mw = this.map.w * TILE, mh = this.map.h * TILE, v = this.view();
       if (this.iso) {          // iso plane spans x:[-mh, mw], y:[0,(mw+mh)/2]
-        this.cam.x = Math.max(-mh - 200,
-          Math.min(mw - v.w + 200, this.cam.x));
-        this.cam.y = Math.max(-200,
-          Math.min((mw + mh) / 2 - v.h + 200, this.cam.y));
+        this.cam.x = this._clampAxis(this.cam.x, -mh, mw + mh, v.w);
+        this.cam.y = this._clampAxis(this.cam.y, 0, (mw + mh) / 2, v.h);
         return;
       }
-      this.cam.x = Math.max(-200, Math.min(mw - v.w + 200, this.cam.x));
-      this.cam.y = Math.max(-200, Math.min(mh - v.h + 200, this.cam.y));
+      this.cam.x = this._clampAxis(this.cam.x, 0, mw, v.w);
+      this.cam.y = this._clampAxis(this.cam.y, 0, mh, v.h);
     },
     centerOn: function (wx, wy) {   // wx,wy are world px in both themes
       var v = this.view();
@@ -151,6 +157,7 @@
 
     // per-frame camera update: WASD/arrows + edge pan
     step: function (dt) {
+      this.clampCam();         // resize/zoom may leave the view off-map
       var sp = 520 * dt / this.cam.zoom;
       var k = this.keys;
       if (k["w"] || k["arrowup"]) this.panBy(0, -sp);

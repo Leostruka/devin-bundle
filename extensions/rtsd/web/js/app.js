@@ -2636,32 +2636,163 @@
     b.onclick = function () { RTS.replay({ speed: +b.dataset.s }); }; });
   el("rpscrub").addEventListener("change", function (e) {
     RTS.replay({ action: "seek", index: +e.target.value }); });
-  document.getElementById("send").onclick = function () {
+  // steering (#128): resolve unit names (Knight-4) to the real
+  // agent id the mailbox / rts-intents.py path expects
+  function resolveUnit(to) {
+    var uid = null;
+    (state.world && state.world.units || []).forEach(function (u) {
+      if (uid) return;
+      if (u.id === to || (u.name &&
+          u.name.toLowerCase() === to.toLowerCase())) uid = u.id;
+    });
+    return uid;
+  }
+
+  function sendMsg() {
     var v = el("msg").value.trim(); if (!v) return;
-    el("msg").value = "";
+    el("msg").value = ""; acClose();
     var m = v.match(/^\/spawn\s+(\S+)\s+(.+)/);
     if (m) return RTS.intent({ kind: "spawn", profile: m[1], task: m[2] });
-    var at = v.match(/^@(\S+)\s+(.+)/);
-    if (at) {
-      // steering (#128): resolve unit names (Knight-4) to the real
-      // agent id the mailbox / rts-intents.py path expects
-      var to = at[1], uid = null;
-      (state.world && state.world.units || []).forEach(function (u) {
-        if (uid) return;
-        if (u.id === to || (u.name &&
-            u.name.toLowerCase() === to.toLowerCase())) uid = u.id;
-      });
-      var it = { kind: "message", to: uid || to, text: at[2] };
-      if (!uid) {
-        logFeed("@" + to + " not a known unit - message queued raw");
-        return RTS.intent(it);
-      }
-      return RTS.intent(it);
+    var g = v.match(/^\/goal\s+(.+)/);
+    if (g) return RTS.intent({ kind: "goal", text: g[1] });
+    var ms = v.match(/^\/msg\s+@?(\S+)\s+(.+)/) ||
+             v.match(/^@(\S+)\s+(.+)/);
+    if (ms) {
+      var to = ms[1], uid = resolveUnit(to);
+      if (!uid) logFeed("@" + to + " not a known unit - message queued raw");
+      return RTS.intent({ kind: "message", to: uid || to, text: ms[2] });
     }
     RTS.intent({ kind: "goal", text: v });
-  };
+  }
+  document.getElementById("send").onclick = sendMsg;
+
+  // ---- input helpers: '/' command palette, '@' unit + /spawn profile
+  // completion (mirrors the devin-cli input facilitators).
+  var AC_CMDS = [
+    { cmd: "/spawn", usage: "/spawn <profile> <task>",
+      desc: "spawn a hero unit (runs a subagent)" },
+    { cmd: "/goal", usage: "/goal <text>",
+      desc: "set the main quest" },
+    { cmd: "/msg", usage: "/msg @<unit> <text>",
+      desc: "steering message to a unit" }];
+  var acItems = [], acSel = 0, acProfiles = null, acProfReq = false;
+
+  function acOpen() { return el("ac").classList.contains("on"); }
+  function acClose() { el("ac").className = ""; acItems = []; acSel = 0; }
+
+  function acToken() {
+    var inp = el("msg"), v = inp.value;
+    var caret = inp.selectionStart == null ? v.length : inp.selectionStart;
+    var m = v.slice(0, caret).match(/(\S*)$/);
+    return { start: caret - m[1].length, tok: m[1], caret: caret };
+  }
+
+  function acCompute() {
+    var inp = el("msg"), v = inp.value, t = acToken(), out = [];
+    if (t.start === 0 && t.tok.charAt(0) === "/") {
+      AC_CMDS.forEach(function (c) {
+        if (c.cmd.indexOf(t.tok) === 0)
+          out.push({ k: c.usage, d: c.desc, ins: c.cmd + " " });
+      });
+    } else if (t.tok.charAt(0) === "@") {
+      var pref = t.tok.slice(1).toLowerCase();
+      (state.world && state.world.units || []).forEach(function (u) {
+        var nm = u.name || u.id;
+        if (nm.toLowerCase().indexOf(pref) < 0 &&
+            String(u.id).toLowerCase().indexOf(pref) < 0) return;
+        out.push({ k: "@" + nm,
+          d: [u.cls, u.profile, u.status].filter(Boolean).join(" | "),
+          ins: "@" + nm + " " });
+      });
+    } else {
+      var mg = v.match(/^\/msg\s+(\S*)$/);
+      if (mg && t.tok === mg[1]) {
+        var mp = mg[1].toLowerCase();
+        (state.world && state.world.units || []).forEach(function (u) {
+          var nm = u.name || u.id;
+          if (nm.toLowerCase().indexOf(mp) < 0 &&
+              String(u.id).toLowerCase().indexOf(mp) < 0) return;
+          out.push({ k: "@" + nm,
+            d: [u.cls, u.profile, u.status].filter(Boolean).join(" | "),
+            ins: "@" + nm + " " });
+        });
+      }
+      var sp = v.match(/^\/spawn\s+(\S*)$/);
+      if (sp && t.tok === sp[1]) {
+        if (!acProfiles && !acProfReq) {
+          acProfReq = true;
+          fetch("/buildings/barracks",
+                { headers: TOK ? { "X-RTS-Token": TOK } : {} })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              acProfiles = (d.classes || []).map(function (c) {
+                return { profile: c.profile, cls: c.cls, model: c.model };
+              });
+              acProfReq = false; acRender();
+            }).catch(function () { acProfReq = false; });
+        }
+        (acProfiles || []).forEach(function (p) {
+          if (p.profile.toLowerCase().indexOf(sp[1].toLowerCase()) < 0)
+            return;
+          out.push({ k: p.profile,
+            d: [p.cls, p.model].filter(Boolean).join(" | "),
+            ins: p.profile + " " });
+        });
+      }
+    }
+    return out;
+  }
+
+  function acRender() {
+    var box = el("ac");
+    if (document.activeElement !== el("msg")) { acClose(); return; }
+    acItems = acCompute();
+    if (!acItems.length) { acClose(); return; }
+    acSel = Math.max(0, Math.min(acSel, acItems.length - 1));
+    box.innerHTML = acItems.map(function (it, i) {
+      return "<div class='it" + (i === acSel ? " sel" : "") +
+             "' data-i='" + i + "'><span class='k'>" + esc(it.k) +
+             "</span><span class='d'>" + esc(it.d) + "</span></div>";
+    }).join("");
+    box.className = "on";
+    box.querySelectorAll(".it").forEach(function (n) {
+      n.addEventListener("mousedown", function (e) {
+        e.preventDefault(); acAccept(+n.dataset.i); });
+    });
+    var sel = box.querySelector(".it.sel");
+    if (sel) sel.scrollIntoView({ block: "nearest" });
+  }
+
+  function acMove(d) {
+    if (!acItems.length) return;
+    acSel = (acSel + d + acItems.length) % acItems.length;
+    acRender();
+  }
+
+  function acAccept(i) {
+    var inp = el("msg"), it = acItems[i]; if (!it) return;
+    var t = acToken();
+    inp.value = inp.value.slice(0, t.start) + it.ins +
+                inp.value.slice(t.caret);
+    var pos = t.start + it.ins.length;
+    inp.setSelectionRange(pos, pos);
+    inp.focus(); acRender();
+  }
+
+  el("msg").addEventListener("input", function () { acSel = 0; acRender(); });
   el("msg").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") el("send").click();
+    if (acOpen()) {
+      if (e.key === "ArrowDown") { e.preventDefault(); acMove(1); return; }
+      if (e.key === "ArrowUp") { e.preventDefault(); acMove(-1); return; }
+      if (e.key === "Tab" || e.key === "Enter") {
+        e.preventDefault(); acAccept(acSel); return; }
+      if (e.key === "Escape") { e.preventDefault(); acClose(); return; }
+    }
+    if (e.key === "Enter") sendMsg();
+  });
+  document.addEventListener("click", function (e) {
+    if (acOpen() && !el("ac").contains(e.target) &&
+        e.target !== el("msg")) acClose();
   });
 
   // #136 unit glide: display position eases toward the unit's target
