@@ -45,6 +45,7 @@
     councilClosed: false,    // manual close for war council (#159)
     wxModes: ["live", "rain", "storm", "snow", "fog", "clear", "windy"],
     wxIdx: 0,
+    mmFilter: "all",
     dn: localStorage.getItem("rtsd.daynight") === "1" // day/night on
   };
 
@@ -1125,7 +1126,89 @@
     el("idleBtn").textContent = "idle:" + nIdle;
     el("idleBtn").disabled = !nIdle;
     el("themeBtn").textContent = "theme: " + th.name;
+    // #164 Beveled Portrait HP/MP/XP Bars + WC3 6-Slot Runed Inventory Grid
+    var rawU = u && u.unit ? u.unit : u;
+    if (el("pbarHp")) {
+      var hpV = rawU && typeof rawU.hp === "number" ? rawU.hp : 100;
+      var mpV = rawU && typeof rawU.mana === "number" ? rawU.mana : 100;
+      var lvV = rawU ? (rawU.level || 1) : 1;
+      var xpV = rawU ? Math.min(100, ((rawU.xp || 20) % 100)) : 0;
+      el("pbarHp").innerHTML = "<span style='width:" + hpV +
+        "%;background:" + (hpV > 50 ? "#3fb950" : hpV > 25 ? "#d29922" : "#f85149") +
+        "'></span><b>HP " + hpV + "/100</b>";
+      el("pbarMp").innerHTML = "<span style='width:" + mpV +
+        "%;background:#58a6ff'></span><b>MP " + mpV + "/100</b>";
+      el("pbarXp").innerHTML = "<span style='width:" + xpV +
+        "%;background:#d4a72c'></span><b>Lv" + lvV + " (" +
+        (rawU ? (rawU.xp || 0) : 0) + "xp)</b>";
+    }
+    if (el("invgrid")) {
+      var invItems = (rawU && rawU.inventory) || [];
+      var invHtml = "";
+      for (var is = 0; is < 6; is++) {
+        var itm = invItems[is];
+        if (itm) {
+          var tip = (itm.ledger || "gate") + "/" + (itm.gate || "?") +
+            (itm.quest ? " [quest " + itm.quest + "]" : "") + " - " +
+            (itm.evidence || "verified");
+          invHtml += "<div class='islot filled" +
+            (itm.quest ? " qloot" : "") + "' data-tip='" + esc(tip) +
+            "' title='" + esc(tip) + "'><span class='inum'>" +
+            (is + 1) + "</span><b>" +
+            esc(String(itm.gate || "G").slice(0, 3)) + "</b></div>";
+        } else {
+          invHtml += "<div class='islot' data-tip='Empty Runed Slot " +
+            (is + 1) + " (populated by verified ledger gate loot)'><span class='inum'>" +
+            (is + 1) + "</span><span>-</span></div>";
+        }
+      }
+      el("invgrid").innerHTML = invHtml;
+    }
     renderTech(u);
+    renderGameMenu();
+  }
+
+  function renderGameMenu() {
+    var box = el("gmBox");
+    if (!box || !el("gamemenu").classList.contains("on")) return;
+    var wx = state.weather || {};
+    var curMode = wx.mode || "live";
+    var modes = ["live", "clear", "overcast", "rain", "storm", "snow", "fog", "windy"];
+    var h = "<h2><span>GAME MENU &amp; WEATHER FORECAST (F10)</span>" +
+      "<button id='gmClose'>Resume (ESC)</button></h2>" +
+      "<div class='meta'><b>Local Forecast:</b> " + esc(wx.city || "Local") +
+      ", " + esc(wx.region || "") + " (" + (wx.temp_c || 18) + "C, " +
+      esc(wx.label || wx.condition || "Clear") + ", Wind " +
+      (wx.wind_kph || 12) + " km/h " + esc(wx.wind_cardinal || "") +
+      ", Gusts " + (wx.wind_gust_kph || 18) + " km/h, Clouds " +
+      (wx.cloud_pct || 0) + "%)</div>" +
+      "<div class='qhead'>WEATHER MODE OVERRIDE</div><div class='gmgrid'>" +
+      modes.map(function (m) {
+        return "<button data-wxm='" + m + "'" +
+          (curMode === m ? " class='on'" : "") + ">" + m + "</button>";
+      }).join("") + "</div>";
+    if (wx.hourly && wx.hourly.length) {
+      h += "<div class='qhead'>HOURLY FORECAST (" + esc(wx.city || "") + ")</div>" +
+        "<div style='display:flex;gap:6px;overflow-x:auto;padding:4px 0'>" +
+        wx.hourly.map(function (hr) {
+          return "<div style='border:1px solid #3b5038;border-radius:4px;padding:3px 6px;font-size:10px'>" +
+            "<b>" + esc(hr.time) + "</b><br>" + hr.temp_c + "C " +
+            esc(hr.condition) + "<br><span class='meta'>" + hr.wind_kph +
+            "km/h " + hr.pop + "%</span></div>";
+        }).join("") + "</div>";
+    }
+    h += "<div class='qhead'>AUDIO, DISPLAY &amp; OVERLAYS</div>" +
+      "<div class='gmgrid'>" +
+      "<button data-gma='mute'>Sound: " + (snd.on ? "ON" : "OFF") + "</button>" +
+      "<button data-gma='voldown'>Vol - (" + Math.round(snd.vol * 100) + "%)</button>" +
+      "<button data-gma='volup'>Vol +</button>" +
+      "<button data-gma='theme'>Theme: " + esc(Theme.get().name) + "</button>" +
+      "<button data-gma='dn'>Day/Night: " + (state.dn ? "ON" : "OFF") + "</button>" +
+      "<button data-gma='tech'>Tech Tree (K)</button>" +
+      "<button data-gma='score'>Victory / History</button>" +
+      "<button data-gma='help'>Guide (?)</button>" +
+      "</div>";
+    box.innerHTML = h;
   }
 
   // ---- tech tree / spellbook overlay (#132) ----------------------------
@@ -1451,13 +1534,41 @@
     });
   }
 
-  function cardBtn(act, label, enabled, title, armed, ico, hk) {
+  var ICON_SVG = {
+    move: "<path d='M5 12h14M13 6l6 6-6 6'/>",
+    stop: "<rect x='6' y='6' width='12' height='12' rx='2'/>",
+    hold: "<path d='M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z'/>",
+    patrol: "<path d='M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3'/>",
+    attack: "<path d='M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2'/>",
+    gather: "<path d='M14 4l6 6M4 20l9-9M15 3a6 6 0 0 1 6 6M11 15l-4 4'/>",
+    special: "<polygon points='12 2 15 9 22 9 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9 9 9'/>",
+    Cartography: "<polygon points='1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6'/>",
+    Write: "<path d='M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z'/>",
+    March: "<path d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7'/>",
+    Verify: "<path d='M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z'/>",
+    Farsight: "<circle cx='12' cy='12' r='3'/><path d='M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z'/>",
+    Envoy: "<path d='M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z'/>",
+    Parley: "<path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/>",
+    Camp: "<path d='M3 20L12 4l9 16H3zM12 12v8'/>",
+    cast: "<path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/>",
+    train: "<path d='M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/><circle cx='8.5' cy='7' r='4'/><path d='M20 8v6M23 11h-6'/>",
+    bell: "<path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0'/>",
+    tech: "<circle cx='12' cy='12' r='3'/><path d='M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4'/>",
+    score: "<path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z'/>",
+    rally: "<path d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7'/>",
+    center: "<circle cx='12' cy='12' r='8'/><path d='M12 2v4M12 18v4M2 12h4M18 12h4'/>"
+  };
+
+  function cardBtn(act, label, enabled, title, armed, icoKey, hk) {
+    var svg = ICON_SVG[icoKey] || ICON_SVG[act] || ICON_SVG.special;
     return "<button data-act='" + esc(act) + "'" +
       (enabled ? "" : " disabled") +
       (armed ? " class='armed'" : "") +
+      " data-tip='" + esc((label || act) + (hk ? " [" + hk + "]" : "") +
+                          " - " + (title || "")) + "'" +
       " title='" + esc(title || "") + "'>" +
       (hk ? "<span class='hk'>" + esc(hk) + "</span>" : "") +
-      (ico ? "<span class='ci'>" + esc(ico) + "</span>" : "") +
+      "<svg class='csvg' viewBox='0 0 24 24'>" + svg + "</svg>" +
       "<span>" + esc(label) + "</span></button>";
   }
 
@@ -1475,14 +1586,14 @@
       var bid = state.selB;
       if (bid === "barracks" || bid === "tavern") {
         var roster = [
-          ["implementer", "Knight", "W", "Q"],
-          ["researcher", "Far Seer", "O", "W"],
-          ["architect", "Archmage", "*", "E"],
-          ["debugger", "Ranger", ">", "R"],
-          ["qa-ci", "Cleric", "+", "A"],
-          ["tech-lead", "Runesmith", "T", "S"],
-          ["reviewer", "Spellbrkr", "X", "D"],
-          ["scrum-master", "Marshal", "M", "F"]
+          ["implementer", "Knight", "train", "Q"],
+          ["researcher", "Far Seer", "Farsight", "W"],
+          ["architect", "Archmage", "cast", "E"],
+          ["debugger", "Ranger", "attack", "R"],
+          ["qa-ci", "Cleric", "Verify", "A"],
+          ["tech-lead", "Runesmith", "Write", "S"],
+          ["reviewer", "Spellbrkr", "special", "D"],
+          ["scrum-master", "Marshal", "March", "F"]
         ];
         roster.forEach(function (r) {
           h += cardBtn("train:" + r[0], r[1], true,
@@ -1490,59 +1601,69 @@
                        false, r[2], r[3]);
         });
         h += cardBtn("bact:rally", "Rally", true,
-                     "Right-click map to set Rally Point", false, "!", "Y");
+                     "Right-click map to set Rally Point", false, "rally", "Z");
+        h += cardBtn("bact:center", "Center", true,
+                     "Center camera on this structure", false, "center", "X");
+        h += cardBtn("bact:tech", "Tech Tree", true,
+                     "Open Skill & Doctrine Tech Tree (K)", false, "tech", "C");
+        h += cardBtn("bact:score", "Victory", true,
+                     "Open Session Score & Match History", false, "score", "V");
       } else if (bid === "town-hall") {
         h += cardBtn("train:implementer", "Recruit", true,
-                     "Deploy Knight hero from the Keep", false, "+", "Q");
+                     "Deploy Knight hero from the Keep", false, "train", "Q");
         h += cardBtn("bact:bell", "Town Bell", true,
-                     "Call idle heroes to the Keep courtyard", false, "!", "W");
+                     "Call idle heroes to the Keep courtyard", false, "bell", "W");
         h += cardBtn("bact:tech", "Tech Tree", true,
-                     "Open Skill & Doctrine Tech Tree (K)", false, "*", "K");
+                     "Open Skill & Doctrine Tech Tree (K)", false, "tech", "E");
         h += cardBtn("bact:score", "Victory", true,
-                     "Open Session Score & Match History", false, "#", "V");
+                     "Open Session Score & Match History", false, "score", "R");
         h += cardBtn("bact:rally", "Rally", true,
-                     "Right-click map to set Keep Rally Point", false, ">", "R");
+                     "Right-click map to set Keep Rally Point", false, "rally", "A");
         h += cardBtn("bact:center", "Center", true,
-                     "Center camera on the Keep", false, "O", "C");
+                     "Center camera on the Keep", false, "center", "S");
       } else {
         h += cardBtn("bact:use", "Activate", true,
-                     "Trigger structure special action / pulse", false, "*", "Q");
+                     "Trigger structure special action / pulse", false, "special", "Q");
         h += cardBtn("bact:tech", "Tech Tree", true,
-                     "Open Tech Tree & Doctrines (K)", false, "L", "K");
+                     "Open Tech Tree & Doctrines (K)", false, "tech", "W");
         h += cardBtn("bact:center", "Center", true,
-                     "Center camera on this structure", false, "O", "C");
+                     "Center camera on this structure", false, "center", "E");
         h += cardBtn("bact:rally", "Rally", true,
-                     "Right-click map to set Rally Point", false, "!", "R");
+                     "Right-click map to set Rally Point", false, "rally", "R");
       }
       card.innerHTML = h; return;
     }
     if (!state.selAll.length) {
       h += "<span class='meta tgt'>select a hero or structure</span>";
-      for (var i = 0; i < 9; i++) h += "<button disabled>-</button>";
+      for (var i = 0; i < 12; i++) h += "<button disabled>-</button>";
       card.innerHTML = h; return;
     }
-    // shared orders: move/stop/gather work for selection
+    // 4x3 Grid Command Card (#164): Row 1 (Q W E R) = Move, Stop, Hold, Patrol
+    // Row 2 (A S D F) = Attack, Gather, Class Special, Primary Kit Ability
+    // Row 3 (Z X C V) = Remaining Kit Abilities & Spellbook Casts
     h += cardBtn("move", "Move", true,
                  "click map target (lane/dir reassignment)",
-                 armed === "move", ">", "M");
-    h += cardBtn("stop", "Stop", true, "halt current order", false, "x", "S");
+                 armed === "move", "move", "Q");
+    h += cardBtn("stop", "Stop", true, "halt current order",
+                 false, "stop", "W");
     h += cardBtn("hold", "Hold", !multi, "park: take no new orders",
-                 false, "#", "H");
+                 false, "hold", "E");
     h += cardBtn("patrol", "Patrol", !multi,
-                 "patrol back and forth scouting fog", false, "~", "P");
+                 "patrol back and forth scouting fog",
+                 false, "patrol", "R");
     h += cardBtn("attack", "Attack", !multi,
                  "click a quest marker / camp to assault",
-                 armed === "attack", "!", "A");
+                 armed === "attack", "attack", "A");
     h += cardBtn("gather", "Gather", true,
                  "harvest gold/lumber between nearest vein and Keep",
-                 false, "$", "G");
+                 false, "gather", "S");
     var sp = raw && SPECIALS[raw.cls];
     h += cardBtn("special", sp ? sp.label : "-", !!(sp && !multi),
                  sp ? "class special: " + sp.id : "no class special",
-                 !!(sp && armed === sp.id), "*", "Q");
+                 !!(sp && armed === sp.id), "special", "D");
     // ability slots: full kit vocabulary, disabled where the profile
     // lacks the backing tools (verified vs agents/*.md via world.py kit)
-    var aKeys = ["W", "E", "R", "F", "Z", "X", "C"];
+    var aKeys = ["F", "Z", "X", "C", "V", "", ""];
     KIT_SLOTS.forEach(function (name, idx) {
       var label = name === "March" && kit.indexOf("Verify") >= 0
         ? "Verify" : name;
@@ -1551,7 +1672,7 @@
       h += cardBtn("ability:" + (label === "Verify" ? "Verify" : name),
                    label, has && !multi,
                    ABILITY_HINT[label] || name, false,
-                   label[0], aKeys[idx] || "");
+                   label, aKeys[idx] || "");
     });
     // #132 hero spellbook: skills the profile sheet names, as cast
     // buttons; clicking posts an order intent {order:"cast", skill} that
@@ -1560,7 +1681,7 @@
       h += cardBtn("cast:" + s.name, "*" + s.name.slice(0, 8), !multi,
                    "cast " + s.name + " (skills/" + s.name + "/SKILL.md)" +
                    (s.casts ? " - cast " + s.casts + "x" : ""),
-                   false, "*", "");
+                   false, "cast", "");
     });
     card.innerHTML = h;
   }
@@ -1972,8 +2093,19 @@
     var k = e.key.toLowerCase();
     if (k === "escape" && state.pending) {     // cancel targeted order
       state.pending = null; renderPanels(); return; }
+    if (k === "escape" && el("gamemenu") &&
+        el("gamemenu").classList.contains("on")) {
+      el("gamemenu").classList.remove("on"); return; }
     if (k === "escape" && el("techtree").classList.contains("on")) {
       el("techtree").classList.remove("on"); return; }
+    if (k === "f10") {
+      e.preventDefault();
+      if (el("gamemenu")) {
+        el("gamemenu").classList.toggle("on");
+        renderGameMenu();
+      }
+      return;
+    }
     if (k === "tab" && state.selAll.length > 1) {  // subgroup cycle
       e.preventDefault();
       var i = state.selAll.indexOf(state.sel);
@@ -2242,6 +2374,76 @@
       el("tooltip").className = "";
     });
   }
+  // #164 Anchored WC3 Command & Inventory Tooltip (#cardtip)
+  if (el("cardtip")) {
+    var showCardTip = function (e) {
+      var tEl = e.target.closest("[data-tip]");
+      var ct = el("cardtip");
+      if (!tEl) { ct.className = ""; return; }
+      ct.innerHTML = "<b>" + esc(tEl.dataset.tip) + "</b>";
+      ct.className = "on";
+    };
+    var hideCardTip = function () { el("cardtip").className = ""; };
+    el("cmdcard").addEventListener("mouseover", showCardTip);
+    el("cmdcard").addEventListener("mouseout", hideCardTip);
+    if (el("invgrid")) {
+      el("invgrid").addEventListener("mouseover", showCardTip);
+      el("invgrid").addEventListener("mouseout", hideCardTip);
+    }
+  }
+  // #164 Minimap filter buttons (all / units / bld)
+  if (el("mmbar")) {
+    el("mmbar").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-mmf]");
+      if (!b) return;
+      state.mmFilter = b.dataset.mmf;
+      el("mmbar").querySelectorAll("button[data-mmf]").forEach(function (x) {
+        x.className = x === b ? "on" : "";
+      });
+    });
+  }
+  // #164 F10 Game Menu modal & Weather Forecast controls
+  if (el("menuBtn") && el("gamemenu")) {
+    el("menuBtn").onclick = function () {
+      el("gamemenu").classList.toggle("on");
+      renderGameMenu();
+    };
+    el("gamemenu").addEventListener("click", function (e) {
+      if (e.target === el("gamemenu") || e.target.id === "gmClose") {
+        el("gamemenu").classList.remove("on");
+        return;
+      }
+      var wm = e.target.closest("button[data-wxm]");
+      if (wm) {
+        post("/weather", { mode: wm.dataset.wxm }).then(function (r) {
+          return r && r.json ? r.json() : null;
+        }).then(function (wx) {
+          if (wx && wx.ok) { state.weather = wx; renderPanels(); }
+        });
+        return;
+      }
+      var gma = e.target.closest("button[data-gma]");
+      if (gma) {
+        var a = gma.dataset.gma;
+        if (a === "mute") setMute(!snd.on);
+        else if (a === "voldown") setVol(snd.vol - 0.1);
+        else if (a === "volup") setVol(snd.vol + 0.1);
+        else if (a === "theme") toggleTheme();
+        else if (a === "dn") el("dnBtn").click();
+        else if (a === "tech") {
+          el("gamemenu").classList.remove("on");
+          el("techtree").classList.add("on");
+        } else if (a === "score") {
+          el("gamemenu").classList.remove("on");
+          fetchScore();
+        } else if (a === "help") {
+          el("gamemenu").classList.remove("on");
+          el("help").classList.toggle("on");
+        }
+        renderPanels();
+      }
+    });
+  }
   // #135 replay transport + victory screen
   el("scoreBtn").onclick = fetchScore;
   if (el("mtabs")) {
@@ -2399,7 +2601,8 @@
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
       fog: state.map && state.map.fog, units: state.units,
-      buildings: state.buildings, pings: state.pings }, th);
+      buildings: state.buildings, pings: state.pings,
+      mmFilter: state.mmFilter }, th);
     // #159 Animated Live 3D-style Portrait in bottom console
     var pcv = el("portcv");
     if (pcv && Theme.drawPortrait) {

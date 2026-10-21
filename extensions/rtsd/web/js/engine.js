@@ -1820,11 +1820,13 @@
           }
         }
       }
-      var self = this;
-      (st.buildings || []).forEach(function (b) {
-        ctx.fillStyle = "#c9b37e";
-        ctx.fillRect(b.x / TILE * kx - 2, b.y / TILE * ky - 2, 4, 4);
-      });
+      var self = this, mmf = st.mmFilter || "all";
+      if (mmf === "all" || mmf === "bld") {
+        (st.buildings || []).forEach(function (b) {
+          ctx.fillStyle = "#c9b37e";
+          ctx.fillRect(b.x / TILE * kx - 2, b.y / TILE * ky - 2, 4, 4);
+        });
+      }
       var now = performance.now();
       (st.pings || []).forEach(function (p) {
         var age = (now - p.t0) / 1000;
@@ -1838,22 +1840,35 @@
         ctx.fill();
         ctx.globalAlpha = 1;
       });
-      (st.units || []).forEach(function (u) {
-        var big = u.kind === "hero";
-        ctx.fillStyle = u.status_live === "failed" || u.gate_fail
-          ? "#f85149" : big ? "#ffd54a" : "#9fb4c7";
-        var r = big ? 2.6 : 1.4;
-        ctx.beginPath();
-        ctx.arc(u.x / TILE * kx, u.y / TILE * ky, r, 0, 7);
-        ctx.fill();
-      });
-      // viewport rectangle (top-down minimap stays a world overview;
-      // under the iso theme the camera rect has no tile-space shape)
+      if (mmf === "all" || mmf === "units") {
+        (st.units || []).forEach(function (u) {
+          var big = u.kind === "hero";
+          ctx.fillStyle = u.status_live === "failed" || u.gate_fail
+            ? "#f85149" : big ? "#ffd54a" : "#9fb4c7";
+          var r = big ? 2.6 : 1.4;
+          ctx.beginPath();
+          ctx.arc(u.x / TILE * kx, u.y / TILE * ky, r, 0, 7);
+          ctx.fill();
+        });
+      }
+      // viewport rectangle (or iso frustum diamond in Office mode, #164)
+      ctx.strokeStyle = "#e6f2e6";
       if (!this.iso) {
         var v = this.view();
-        ctx.strokeStyle = "#e6f2e6";
         ctx.strokeRect(v.x / TILE * kx, v.y / TILE * ky,
           v.w / TILE * kx, v.h / TILE * ky);
+      } else if (this.cv) {
+        var c0 = this.toWorld(0, 0),
+            c1 = this.toWorld(this.cv.width, 0),
+            c2 = this.toWorld(this.cv.width, this.cv.height),
+            c3 = this.toWorld(0, this.cv.height);
+        ctx.beginPath();
+        ctx.moveTo(c0.x / TILE * kx, c0.y / TILE * ky);
+        ctx.lineTo(c1.x / TILE * kx, c1.y / TILE * ky);
+        ctx.lineTo(c2.x / TILE * kx, c2.y / TILE * ky);
+        ctx.lineTo(c3.x / TILE * kx, c3.y / TILE * ky);
+        ctx.closePath();
+        ctx.stroke();
       }
     },
 
