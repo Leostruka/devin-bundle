@@ -417,9 +417,113 @@
       ts._trees = trees;
       ts._doodads = doodads;
       ts._critters = critters;
+      ts._tcv = null; // trigger offscreen organic terrain bake (#163)
     },
 
-    // battlefield: axis-aligned floor squares + water waves + roads + doodads
+    /* #163 seamless organic terrain splatting: bakes the entire map floor
+       into an offscreen canvas with soft radial biome transitions, sandy
+       riverbanks, stone-paved Keep courtyards, and soft-edged dirt roads
+       so blocky tile seams disappear completely. */
+    _ensureTerrainCanvas: function (ts, theme) {
+      var key = (ts._envSig || "") + ":" + (theme && theme.name);
+      if (ts._tcv && ts._tcvKey === key) return ts._tcv;
+      if (typeof document === "undefined" || !document.createElement)
+        return null;
+      var c = document.createElement("canvas");
+      if (!c || !c.getContext) return null;
+      var W = ts.w, H = ts.h;
+      c.width = W * TILE; c.height = H * TILE;
+      var g2 = c.getContext("2d");
+      if (!g2 || !g2.createRadialGradient) return null;
+      ts._tcv = c; ts._tcvKey = key;
+      // 1. Base meadow fill
+      g2.fillStyle = theme.tiles[0] || "#264b25";
+      g2.fillRect(0, 0, c.width, c.height);
+      // 2. Soft overlapping organic biome splats per tile (no square edges!)
+      for (var ty = 0; ty < H; ty++) {
+        for (var tx = 0; tx < W; tx++) {
+          var i = ty * W + tx;
+          var cx = (tx + 0.5) * TILE, cy = (ty + 0.5) * TILE;
+          var wt = ts._water ? ts._water[i] : 0;
+          var rd = ts._roads ? ts._roads[i] : 0;
+          var col = theme.tiles[ts.data[i] % 10] || theme.tiles[0];
+          g2.fillStyle = col;
+          g2.beginPath();
+          g2.arc(cx, cy, TILE * 0.78, 0, 7);
+          g2.fill();
+          // Elevation / turf micro-variation
+          var h = hash("turf:" + tx + ":" + ty);
+          if (!wt && !rd && (h % 3 === 0)) {
+            g2.fillStyle = (h % 2)
+              ? "rgba(68,125,54,0.22)" : "rgba(20,42,20,0.18)";
+            g2.beginPath();
+            g2.ellipse(cx + (h % 9) - 4, cy + ((h >> 4) % 9) - 4,
+                       TILE * 0.52, TILE * 0.38, (h % 6) * 0.5, 0, 7);
+            g2.fill();
+          }
+        }
+      }
+      // 3. Soft-edged dirt roads & stone-paved Keep courtyards
+      for (var ty2 = 0; ty2 < H; ty2++) {
+        for (var tx2 = 0; tx2 < W; tx2++) {
+          var i2 = ty2 * W + tx2;
+          var rd2 = ts._roads ? ts._roads[i2] : 0;
+          var wt2 = ts._water ? ts._water[i2] : 0;
+          if (!rd2 || wt2) continue;
+          var rx = (tx2 + 0.5) * TILE, ry = (ty2 + 0.5) * TILE;
+          if (rd2 === 2) {
+            // Keep courtyard: warm stone paving + individual cobblestones
+            g2.fillStyle = theme.tiles.plaza || "#786954";
+            g2.beginPath();
+            g2.arc(rx, ry, TILE * 0.72, 0, 7);
+            g2.fill();
+            g2.fillStyle = "rgba(45,38,30,0.28)";
+            for (var py = -10; py <= 10; py += 7) {
+              for (var px = -10; px <= 10; px += 8) {
+                g2.beginPath();
+                g2.ellipse(rx + px + (py % 2) * 2, ry + py,
+                           3.2, 2.2, 0, 0, 7);
+                g2.fill();
+              }
+            }
+          } else {
+            // Dirt road: feathered sandy verge + packed earth center
+            var rg = g2.createRadialGradient(rx, ry, 2, rx, ry, TILE * 0.75);
+            rg.addColorStop(0, "#7d674a");
+            rg.addColorStop(0.65, "#635038");
+            rg.addColorStop(1, "rgba(99,80,56,0)");
+            g2.fillStyle = rg;
+            g2.beginPath();
+            g2.arc(rx, ry, TILE * 0.75, 0, 7);
+            g2.fill();
+          }
+        }
+      }
+      // 4. Sandy/pebble riverbanks + deep/shallow water basins
+      for (var ty3 = 0; ty3 < H; ty3++) {
+        for (var tx3 = 0; tx3 < W; tx3++) {
+          var i3 = ty3 * W + tx3;
+          var wt3 = ts._water ? ts._water[i3] : 0;
+          if (!wt3) continue;
+          var wx = (tx3 + 0.5) * TILE, wy = (ty3 + 0.5) * TILE;
+          // Coastal sand shelf
+          g2.fillStyle = "rgba(168,148,106,0.45)";
+          g2.beginPath();
+          g2.arc(wx, wy, TILE * 0.82, 0, 7);
+          g2.fill();
+          // Water basin
+          g2.fillStyle = wt3 === 2
+            ? (theme.tiles.waterDeep || "#113450")
+            : (theme.tiles.water || "#184668");
+          g2.beginPath();
+          g2.arc(wx, wy, TILE * 0.68, 0, 7);
+          g2.fill();
+        }
+      }
+      return c;
+    },
+
+    // battlefield: blits seamless splatted terrain + Gerstner water waves + fog
     _flatTiles: function (ctx, st, theme, z, v, now, wind) {
       var ts = st.tiles, W = ts.w, H = ts.h;
       var fog = st.visFog || st.fog;
@@ -428,46 +532,70 @@
           x1 = Math.min(W, Math.ceil((v.x + v.w) / TILE)),
           y1 = Math.min(H, Math.ceil((v.y + v.h) / TILE));
       var px = TILE * z;
+      var tcv = this._ensureTerrainCanvas(ts, theme);
+      if (tcv) {
+        var sx0 = x0 * TILE, sy0 = y0 * TILE,
+            sw0 = (x1 - x0) * TILE, sh0 = (y1 - y0) * TILE;
+        if (sw0 > 0 && sh0 > 0) {
+          ctx.drawImage(tcv, sx0, sy0, sw0, sh0,
+                        (sx0 - v.x) * z, (sy0 - v.y) * z,
+                        sw0 * z, sh0 * z);
+        }
+      }
       for (var ty = y0; ty < y1; ty++) {
         for (var tx = x0; tx < x1; tx++) {
           var i = ty * W + tx;
           var f = fog ? fog[i] : 2;
           var sx = (tx * TILE - v.x) * z, sy = (ty * TILE - v.y) * z;
           if (f === 0) {
-            // WC3 twilight shroud contour instead of flat pitch-black void
             ctx.fillStyle = (tx + ty) % 2 ? "#0b140d" : "#09110b";
             ctx.fillRect(sx, sy, px + 1, px + 1);
             continue;
           }
-          ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
-          ctx.fillRect(sx, sy, px + 1, px + 1);
+          if (!tcv) {
+            ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
+            ctx.fillRect(sx, sy, px + 1, px + 1);
+          } else if (ts.mark && ts.mark[i] === 2) {
+            ctx.fillStyle = "rgba(180,45,45,0.45)";
+            ctx.fillRect(sx, sy, px, px);
+          }
           var wt = ts._water ? ts._water[i] : 0;
-          var rd = ts._roads ? ts._roads[i] : 0;
-          // Water waves & shoreline foam driven by real wind vector (#157)
+          // Gerstner 2-wave superposition & specular sun glints (#163)
           if ((wt === 1 || wt === 2) && z > 0.45) {
-            var wph = (now / 380) * wind.str + tx * wind.ux * 1.3 +
-                      ty * wind.uy * 1.3;
-            var crest = Math.sin(wph);
+            var wph1 = (now / 360) * wind.str + tx * wind.ux * 1.4 +
+                       ty * wind.uy * 1.4;
+            var wph2 = (now / 520) * wind.str - tx * wind.uy * 0.9 +
+                       ty * wind.ux * 0.9;
+            var eta = 0.6 * Math.sin(wph1) + 0.4 * Math.cos(wph2);
             ctx.strokeStyle = wt === 2
-              ? "rgba(130,205,255,0.28)" : "rgba(185,235,255,0.42)";
-            ctx.lineWidth = Math.max(1, 1.2 * z);
+              ? "rgba(130,210,255,0.34)" : "rgba(195,240,255,0.48)";
+            ctx.lineWidth = Math.max(1, 1.3 * z);
             ctx.beginPath();
-            var wx0 = sx + (0.2 + 0.12 * crest) * px,
-                wy0 = sy + (0.35 + 0.1 * Math.cos(wph)) * px;
+            var wx0 = sx + (0.18 + 0.14 * eta) * px,
+                wy0 = sy + (0.38 + 0.12 * Math.cos(wph1)) * px;
             ctx.moveTo(wx0, wy0);
-            ctx.quadraticCurveTo(wx0 + px * 0.25, wy0 - 2.5 * z,
-                                 wx0 + px * 0.5, wy0);
+            ctx.quadraticCurveTo(wx0 + px * 0.28, wy0 - 3 * z * eta,
+                                 wx0 + px * 0.56, wy0);
             ctx.stroke();
-            // Shoreline lapping foam where adjacent tile is land
+            if (eta > 0.62) {
+              // Specular sun/moon water glint
+              ctx.fillStyle = "rgba(255,250,220,0.65)";
+              ctx.fillRect(wx0 + px * 0.2, wy0 - 1.5 * z, 2.5 * z, 1.5 * z);
+            }
             if (wt === 1) {
-              var foam = 0.25 + 0.2 * Math.sin(now / 420 + tx + ty);
+              var foam = 0.22 + 0.18 * Math.sin(now / 400 + tx + ty);
               ctx.strokeStyle = "rgba(235,248,255," + foam.toFixed(2) + ")";
-              ctx.strokeRect(sx + 1.5 * z, sy + 1.5 * z,
-                             px - 3 * z, px - 3 * z);
+              ctx.beginPath();
+              ctx.arc(sx + px * 0.5, sy + px * 0.5, px * 0.44, 0, 7);
+              ctx.stroke();
             }
             ctx.lineWidth = 1;
           } else if (wt === 3 && z > 0.45) {
-            // Wooden bridge planks + side rails
+            // 3D Wooden planked bridge with shadow + handrails
+            ctx.fillStyle = "rgba(0,0,0,0.35)";
+            ctx.fillRect(sx + 2 * z, sy + 3 * z, px, px);
+            ctx.fillStyle = "#7c5836";
+            ctx.fillRect(sx, sy, px, px);
             ctx.strokeStyle = "#4d3319";
             for (var bp = 1; bp < 4; bp++) {
               ctx.beginPath();
@@ -475,39 +603,27 @@
               ctx.lineTo(sx + bp * px / 4, sy + px);
               ctx.stroke();
             }
-            ctx.fillStyle = "#9c7448";
-            ctx.fillRect(sx, sy, px, 2.5 * z);
-            ctx.fillRect(sx, sy + px - 2.5 * z, px, 2.5 * z);
-          } else if (rd === 2 && z > 0.5) {
-            // Cobblestone Keep plaza detail
-            ctx.strokeStyle = "rgba(40,34,26,0.35)";
-            ctx.strokeRect(sx + 2 * z, sy + 2 * z, px - 4 * z, px - 4 * z);
-          } else if (rd === 1 && z > 0.5) {
-            // Dirt road wheel-rut pebbles
-            ctx.fillStyle = "rgba(145,122,92,0.38)";
-            ctx.fillRect(sx + px * 0.25, sy + px * 0.25, px * 0.5, px * 0.5);
+            ctx.fillStyle = "#b08554";
+            ctx.fillRect(sx, sy, px, 3 * z);
+            ctx.fillRect(sx, sy + px - 3 * z, px, 3 * z);
           } else if (z > 0.55 && ((tx * 7 + ty * 13) % 5 === 0)) {
-            // Subtle grass blade texture on meadow tiles
             var sway = Math.sin(now / 520 + tx * 0.7 + ty * 0.5) *
                        wind.vx * 2.4 * z;
-            ctx.strokeStyle = "rgba(86,154,72,0.45)";
+            ctx.strokeStyle = "rgba(96,168,78,0.48)";
             ctx.beginPath();
             ctx.moveTo(sx + px * 0.5, sy + px * 0.7);
             ctx.lineTo(sx + px * 0.5 + sway, sy + px * 0.35);
             ctx.stroke();
           }
-          // Subtle region territory border line (WC3 map aesthetic)
           if (ts.tileRegion && tx + 1 < W &&
               ts.tileRegion[i] !== ts.tileRegion[i + 1]) {
             ctx.fillStyle = "rgba(255,213,74,0.14)";
             ctx.fillRect(sx + px - 1, sy, 2, px);
           }
-          if (f === 1) {           // explored-but-dim (lighter so terrain reads!)
+          if (f === 1) {
             ctx.fillStyle = "rgba(8,14,10,0.28)";
             ctx.fillRect(sx, sy, px + 1, px + 1);
           }
-          // #133 breach alarm: a failed ledger gate keeps its whole
-          // territory pulsing red until the gate set goes green
           if (ts.breach && ts.breach[i]) {
             ctx.fillStyle = "rgba(248,81,73," +
               (0.16 + 0.10 * Math.sin(now / 280)).toFixed(3) + ")";
@@ -1097,20 +1213,26 @@
       }
     },
 
-    /* #158 living unit & hero renderer: Hero Glow, rotating Aura runes,
-       wind-reactive flowing cape, walking stride + dust/water puffs,
-       Stand-1/2/3 autonomous idle fidgets (look around, weapon salute,
-       social nod), and active work/combat weapon swings + sparks. */
+    /* #158/#163 living unit & hero renderer: directional cast shadow,
+       WC3 Hero Glow, rotating Aura runes, 4-node Verlet cloth cape,
+       2-bone articulated leg stride + dust puffs, Stand-1/2/3 autonomous
+       idle fidgets, active weapon slash ribbons, and ranged projectiles. */
     _drawUnitLive: function (ctx, u, s, sz, dy, ent, z, now, wind, pal, all) {
       var ph = hash(String(u.id));
       var isHero = u.kind === "hero";
+      // 0. Directional Sun/Moon Projected Cast Shadow (#163)
+      ctx.fillStyle = "rgba(0,0,0,0.34)";
+      ctx.beginPath();
+      ctx.ellipse(s.x + sz * 0.24, s.y + sz * 0.34,
+                  sz * 0.48, sz * 0.20, 0.28, 0, 7);
+      ctx.fill();
       // 1. WC3 Hero Glow & Rotating Geometric Aura Rune under feet
       if (isHero) {
-        var gRad = sz * 0.72;
+        var gRad = sz * 0.76;
         var grad = ctx.createRadialGradient(
           s.x, s.y + sz * 0.22, sz * 0.1,
           s.x, s.y + sz * 0.22, gRad);
-        grad.addColorStop(0, "rgba(255,213,74,0.34)");
+        grad.addColorStop(0, "rgba(255,213,74,0.38)");
         grad.addColorStop(1, "rgba(255,213,74,0)");
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -1119,54 +1241,89 @@
         if ((u.level || 1) >= 1 && z > 0.55) {
           var aAng = now / 900 + (ph % 10);
           ctx.strokeStyle = ent.trim || "#ffd54a";
-          ctx.globalAlpha = 0.45;
+          ctx.globalAlpha = 0.48;
           ctx.setLineDash([3 * z, 3 * z]);
           ctx.beginPath();
-          ctx.ellipse(s.x, s.y + sz * 0.28, sz * 0.54, sz * 0.22, 0, 0, 7);
+          ctx.ellipse(s.x, s.y + sz * 0.28, sz * 0.56, sz * 0.23, 0, 0, 7);
           ctx.stroke();
           ctx.setLineDash([]);
           for (var rp = 0; rp < 4; rp++) {
             var ra = aAng + rp * 1.5708;
             ctx.fillStyle = ent.trim || "#ffd54a";
-            ctx.fillRect(s.x + Math.cos(ra) * sz * 0.52 - 1.5 * z,
-                         s.y + sz * 0.28 + Math.sin(ra) * sz * 0.21 - 1.5 * z,
+            ctx.fillRect(s.x + Math.cos(ra) * sz * 0.54 - 1.5 * z,
+                         s.y + sz * 0.28 + Math.sin(ra) * sz * 0.22 - 1.5 * z,
                          3 * z, 3 * z);
           }
           ctx.globalAlpha = 1;
         }
       }
-      // 2. Footstep Dust / Splash Puffs when walking + alternating boot stride
-      if (u.moving && z > 0.5) {
-        for (var dp = 0; dp < 3; dp++) {
-          var dph = ((now / 320 + dp * 0.33 + (ph % 7) * 0.1) % 1);
-          ctx.fillStyle = "rgba(185,170,140," + ((1 - dph) * 0.45).toFixed(2) + ")";
-          ctx.beginPath();
-          ctx.arc(s.x - (dp - 1) * 4 * z - wind.vx * dph * 6 * z,
-                  s.y + sz * 0.38 + dph * 4 * z,
-                  (1.8 + dph * 2.8) * z, 0, 7);
-          ctx.fill();
-        }
-        // Striding boots
-        var stride = Math.sin(now / 80 + ph) * 3.5 * z;
-        ctx.fillStyle = "#3b2818";
-        ctx.fillRect(s.x - 4 * z + stride, s.y + sz * 0.32, 3 * z, 3 * z);
-        ctx.fillRect(s.x + 1 * z - stride, s.y + sz * 0.32, 3 * z, 3 * z);
-      }
-      // 3. Wind-Reactive Flowing Cape behind Heroes & Martial/Caster classes
-      if (isHero || ent.arch === "martial" || ent.arch === "caster") {
-        var cFlap = Math.sin(now / 150 + ph) * 2.5 * z;
-        var cxTail = s.x + (wind.vx * 6 + (u.moving ? -4 : 0)) * z + cFlap,
-            cyTail = s.y + sz * 0.32 + wind.vy * 3 * z;
-        ctx.fillStyle = ent.bg || "#254e8a";
-        ctx.globalAlpha = 0.85;
+      // 2. 4-Node Verlet Cloth Cape behind Heroes & Martial/Caster classes (#163)
+      if (isHero || ent.arch === "martial" || ent.arch === "caster" ||
+          ent.arch === "commander") {
+        var vxU = u.moving ? (u.tx - u.x) : 0,
+            vyU = u.moving ? (u.ty - u.y) : 0;
+        var vLen = Math.hypot(vxU, vyU) || 1;
+        var trailX = u.moving ? (-vxU / vLen) * 5 : 0,
+            trailY = u.moving ? (-vyU / vLen) * 3 : 0;
+        var n1x = s.x + (wind.vx * 2.2 + trailX * 0.4) * z,
+            n1y = s.y + sz * 0.08 + dy;
+        var n2x = s.x + (wind.vx * 5.0 + trailX * 0.8 +
+                  Math.sin(now / 140 + ph) * 2.2) * z,
+            n2y = s.y + sz * 0.22 + wind.vy * 1.8 * z + dy * 0.5;
+        var n3x = s.x + (wind.vx * 7.8 + trailX * 1.2 +
+                  Math.sin(now / 115 + ph + 1.2) * 3.4) * z,
+            n3y = s.y + sz * 0.38 + (wind.vy * 3.2 + trailY) * z;
+        ctx.fillStyle = ent.dark || "#1b325f";
         ctx.beginPath();
-        ctx.moveTo(s.x - sz * 0.26, s.y - sz * 0.05 + dy);
-        ctx.lineTo(s.x + sz * 0.26, s.y - sz * 0.05 + dy);
-        ctx.lineTo(cxTail + sz * 0.22, cyTail);
-        ctx.lineTo(cxTail - sz * 0.22, cyTail);
+        ctx.moveTo(s.x - sz * 0.28, s.y - sz * 0.06 + dy);
+        ctx.quadraticCurveTo(n1x - sz * 0.26, n1y, n2x - sz * 0.24, n2y);
+        ctx.lineTo(n3x - sz * 0.20, n3y);
+        ctx.lineTo(n3x + sz * 0.20, n3y);
+        ctx.lineTo(n2x + sz * 0.24, n2y);
+        ctx.quadraticCurveTo(n1x + sz * 0.26, n1y,
+                             s.x + sz * 0.28, s.y - sz * 0.06 + dy);
         ctx.closePath();
         ctx.fill();
-        ctx.globalAlpha = 1;
+        ctx.strokeStyle = ent.trim || "#ffd54a";
+        ctx.lineWidth = Math.max(0.8, 1.1 * z);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+      }
+      // 3. 2-Bone Articulated Leg Stride & Footstep Dust Puffs (#163)
+      if (z > 0.5) {
+        var lph = u.moving ? (now / 72 + ph) : 0;
+        var lStride = u.moving ? Math.sin(lph) * 4.2 * z : 0;
+        var lLiftL = u.moving ? Math.max(0, -Math.cos(lph)) * 2.5 * z : 0;
+        var lLiftR = u.moving ? Math.max(0, Math.cos(lph)) * 2.5 * z : 0;
+        // Left & Right articulated thigh + armored greave/boot
+        ctx.strokeStyle = ent.dark || "#2b2623";
+        ctx.lineWidth = Math.max(2, 2.8 * z);
+        ctx.beginPath();
+        ctx.moveTo(s.x - 3.5 * z, s.y + sz * 0.16 + dy);
+        ctx.lineTo(s.x - 4 * z + lStride * 0.6,
+                   s.y + sz * 0.34 - lLiftL);
+        ctx.moveTo(s.x + 3.5 * z, s.y + sz * 0.16 + dy);
+        ctx.lineTo(s.x + 4 * z - lStride * 0.6,
+                   s.y + sz * 0.34 - lLiftR);
+        ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.fillStyle = "#4a331d";
+        ctx.fillRect(s.x - 5.5 * z + lStride * 0.6,
+                     s.y + sz * 0.32 - lLiftL, 3.6 * z, 3.2 * z);
+        ctx.fillRect(s.x + 2.0 * z - lStride * 0.6,
+                     s.y + sz * 0.32 - lLiftR, 3.6 * z, 3.2 * z);
+        if (u.moving) {
+          for (var dp = 0; dp < 3; dp++) {
+            var dph = ((now / 320 + dp * 0.33 + (ph % 7) * 0.1) % 1);
+            ctx.fillStyle = "rgba(185,170,140," +
+              ((1 - dph) * 0.45).toFixed(2) + ")";
+            ctx.beginPath();
+            ctx.arc(s.x - (dp - 1) * 4 * z - wind.vx * dph * 6 * z,
+                    s.y + sz * 0.38 + dph * 4 * z,
+                    (1.8 + dph * 2.8) * z, 0, 7);
+            ctx.fill();
+          }
+        }
       }
       // 4. Autonomous Idle Fidgets (Stand - 1/2/3: look around, flourish, social)
       var fidgetSlot = Math.floor((now / 2800 + (ph % 19))) % 7;
@@ -1174,23 +1331,42 @@
       var gx = 0;
       if (!u.moving && u.status_live !== "running" && !u.acting) {
         if (fidgetSlot === 2) {
-          // Stand - 2: Look around left/right
           gx = Math.sin(subT * 6.283) * 2.2 * z;
         }
       }
-      // Draw core multi-part unit sprite
+      // Draw core 3D-shaded multi-part unit sprite
       Theme.sprite(ctx, ent, s.x - sz / 2 + gx, s.y - sz / 2 + dy, sz, sz);
 
-      // 5. Active Combat / Work Swing OR Idle Weapon Flourish / Social Emote
+      // 5. Active Combat / Work Swing + Ranged Projectiles (#163)
       if (u.status_live === "running" || u.acting) {
-        // Active work/attack swing arc + golden clash sparks
-        var swAng = Math.sin(now / 95 + ph) * 1.1;
-        ctx.strokeStyle = "#ffd54a";
-        ctx.lineWidth = Math.max(1.5, 2.2 * z);
+        var swAng = Math.sin(now / 90 + ph) * 1.15;
+        ctx.strokeStyle = ent.arch === "caster" ? "#38bdf8" : "#ffd54a";
+        ctx.lineWidth = Math.max(1.8, 2.6 * z);
         ctx.beginPath();
-        ctx.arc(s.x, s.y + dy, sz * 0.58, swAng - 0.6, swAng + 0.6);
+        ctx.arc(s.x, s.y + dy, sz * 0.60, swAng - 0.65, swAng + 0.65);
         ctx.stroke();
         ctx.lineWidth = 1;
+        // Ranged projectile (arrow for ranger, arcane bolt for caster)
+        if (ent.arch === "ranger" || ent.arch === "caster") {
+          var pProg = ((now / 420 + (ph % 11) * 0.1) % 1);
+          var px2 = s.x + Math.cos(ph) * pProg * 28 * z,
+              py2 = s.y + Math.sin(ph) * pProg * 28 * z -
+                    Math.sin(pProg * Math.PI) * 10 * z;
+          if (ent.arch === "caster") {
+            ctx.fillStyle = "#38bdf8";
+            ctx.beginPath();
+            ctx.arc(px2, py2, 3 * z, 0, 7);
+            ctx.fill();
+          } else {
+            ctx.strokeStyle = "#f0e6d2";
+            ctx.lineWidth = Math.max(1.2, 1.6 * z);
+            ctx.beginPath();
+            ctx.moveTo(px2 - 4 * z, py2 - 2 * z);
+            ctx.lineTo(px2 + 4 * z, py2 + 2 * z);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+          }
+        }
         if ((now + ph) % 260 < 110) {
           ctx.fillStyle = "#fff8dc";
           ctx.fillRect(s.x + Math.cos(swAng) * sz * 0.58 - 1.5 * z,
@@ -1213,7 +1389,6 @@
           ctx.fill();
           ctx.lineWidth = 1;
         } else if (fidgetSlot === 5 && !u.bark) {
-          // Social interaction: check if an ally is nearby -> friendly nod/chat pip
           for (var ai = 0; ai < all.length; ai++) {
             var o = all[ai];
             if (o.id !== u.id && Math.hypot(o.x - u.x, o.y - u.y) < TILE * 3.2) {
