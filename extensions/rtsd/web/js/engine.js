@@ -1870,6 +1870,32 @@
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText(g, s.x, s.y - 8 * z + bob);
       });
+      // #176 Collectible 3D Floating Golden Skill Scrolls on the map
+      (st.scrolls || []).forEach(function (sc) {
+        if (sc._collected) return;
+        var sx = (sc.x + 0.5) * TILE, sy = (sc.y + 0.5) * TILE;
+        var g0 = self.toScreen(sx, sy, 0);
+        if (g0.x < -30 || g0.y < -30 || g0.x > cv.width + 30 ||
+            g0.y > cv.height + 30) return;
+        var bobZ = 9 + Math.sin(t0 / 260 + sc.x) * 3.2;
+        var sp = self.toScreen(sx, sy, bobZ);
+        // Rotating gold ground rune ring
+        ctx.strokeStyle = "rgba(255,213,74,0.75)";
+        ctx.lineWidth = Math.max(1, 1.5 * z);
+        ctx.beginPath();
+        ctx.ellipse(g0.x, g0.y, 10 * z, 10 * PITCH * z, 0, 0, 7);
+        ctx.stroke();
+        // 3D Floating Parchment Scroll + crimson seal
+        ctx.fillStyle = "#fef08a";
+        ctx.fillRect(sp.x - 6 * z, sp.y - 4 * z, 12 * z, 8 * z);
+        ctx.strokeStyle = "#b45309";
+        ctx.strokeRect(sp.x - 6 * z, sp.y - 4 * z, 12 * z, 8 * z);
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, 2.2 * z, 0, 7);
+        ctx.fill();
+        ctx.lineWidth = 1;
+      });
       (st.buildings || []).slice().sort(function (a, b) {
         return a.y - b.y;
       }).forEach(function (b) {

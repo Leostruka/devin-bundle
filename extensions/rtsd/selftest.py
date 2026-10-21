@@ -1001,6 +1001,13 @@ def main():
 
         # #120 determinism: replaying events.jsonl rebuilds the same world
         st, snap = get(PORT, "/snapshot")
+        # #176 Collectible Skill Scrolls + Tiered Achievements in snapshot
+        w_snap = snap["world"]
+        assert len(w_snap.get("scrolls") or []) >= 1, w_snap.get("scrolls")
+        assert len(w_snap.get("achievements") or []) >= 10, w_snap.get("achievements")
+        assert any(a["id"] == "first_hero" and a["unlocked"]
+                   for a in w_snap["achievements"]), w_snap["achievements"]
+        print("PASS skill scrolls + tiered achievements (Hall of Glory)")
         sys.path.insert(0, HERE)
         import world as worldmod
         now = snap["world"]["now"]
