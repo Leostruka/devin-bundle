@@ -1860,6 +1860,8 @@ class World:
             "tech": {"schools": tech_tree(self.root, self.skill_casts),
                      "armory": armory(self.root),
                      "doctrines": doctrines(self.root)},
+            "scrolls": self._scrolls(),
+            "achievements": self._achievements(units, quests, by_lane, gold),
             "map": {"root": self.root, "sig": self.layout["sig"],
                     "w": MAP_W, "h": MAP_H,
                     "tile_region": self.layout["tile_region"],
@@ -1898,6 +1900,77 @@ class World:
             "calls": self.resources["calls"],
             "duration_s": dur,
         }
+
+    def _scrolls(self):
+        """#176 5 deterministic Collectible Skill Scrolls on the map."""
+        sks = sorted(scan_skills(self.root)) or ["planning"]
+        caps = list((self.layout.get("capitals") or {}).values())
+        out = []
+        for idx in range(min(5, len(sks))):
+            sk = sks[(idx * 7) % len(sks)]
+            sname = sk["name"] if isinstance(sk, dict) else str(sk)
+            cx, cy = caps[idx % len(caps)] if caps else [36, 27]
+            dx = ((idx * 5 + 3) % 7) - 3
+            dy = ((idx * 3 + 2) % 7) - 3
+            tx = max(3, min(MAP_W - 4, cx + (dx or 2)))
+            ty = max(3, min(MAP_H - 4, cy + (dy or -2)))
+            out.append({
+                "id": "scroll-%d" % idx,
+                "name": sname,
+                "school": "Craft",
+                "path": "skills/%s/SKILL.md" % sname,
+                "x": tx, "y": ty,
+                "casts": (self.skill_casts.get(sname) or {}).get("casts", 0)
+                if isinstance(self.skill_casts.get(sname), dict)
+                else int(self.skill_casts.get(sname) or 0),
+            })
+        return out
+
+    def _achievements(self, units, quests, by_lane, gold):
+        """#176 Tiered Achievements (Discovery, Mastery, Secret)."""
+        heroes = [u for u in units if u.get("kind") == "hero"]
+        side_q = [q for q in quests if q.get("kind") != "main"]
+        q_done = sum(1 for q in side_q if q.get("done"))
+        g_pass = sum(v["passed"] for v in by_lane.values())
+        casts = sum((v.get("casts", 0) if isinstance(v, dict) else int(v))
+                    for v in self.skill_casts.values())
+        lit_cnt = len(self.tile_heat)
+        defs = [
+            ("first_hero", "First Summons", "Deploy at least 1 hero unit",
+             "Discovery", "Common", len(heroes) >= 1),
+            ("war_council", "War Council", "Command 5+ heroes in a session",
+             "Discovery", "Uncommon", len(heroes) >= 5),
+            ("grand_army", "Grand Army", "Command 8+ heroes in a session",
+             "Mastery", "Rare", len(heroes) >= 8),
+            ("quest_seeker", "Quest Seeker", "Complete at least 1 side quest",
+             "Discovery", "Common", q_done >= 1),
+            ("campaign_victor", "Campaign Victor", "Complete 5+ quests",
+             "Mastery", "Rare", q_done >= 5),
+            ("gatekeeper", "Gatekeeper", "Pass 10+ verification ledger gates",
+             "Mastery", "Uncommon", g_pass >= 10),
+            ("token_whale", "Token Whale", "Burn over 100,000 tokens in session",
+             "Mastery", "Rare", gold >= 100000),
+            ("spellweaver", "Spellweaver", "Cast or invoke 3+ skills",
+             "Discovery", "Uncommon", casts >= 3),
+            ("cartographer", "Master Cartographer", "Explore 80+ map tiles",
+             "Discovery", "Common", lit_cnt >= 80),
+            ("iron_smith", "Runesmith's Pride", "Trigger 10+ tool calls",
+             "Discovery", "Common", self.resources.get("calls", 0) >= 10),
+            ("night_watch", "Secret of the Keep", "Inspect buildings & orders",
+             "Secret", "Rare", len(self.orders) >= 1),
+            ("completionist", "High Warlord", "Unlock 6+ achievements",
+             "Secret", "Legendary", False),
+        ]
+        unlocked_n = sum(1 for d in defs[:-1] if d[5])
+        out = []
+        for aid, title, desc, cat, rarity, ok in defs:
+            if aid == "completionist":
+                ok = unlocked_n >= 6
+            out.append({
+                "id": aid, "title": title, "desc": desc,
+                "category": cat, "rarity": rarity, "unlocked": bool(ok),
+            })
+        return out
 
     @classmethod
     def replay(cls, root, events, now=None):

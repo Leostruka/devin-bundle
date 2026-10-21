@@ -1387,10 +1387,80 @@
       "<button data-gma='heatmap'>Heatmap (H): " + (state.heatmap ? "ON" : "OFF") + "</button>" +
       "<button data-gma='wartable'>War Table (`): " + (state.warTable ? "ON" : "OFF") + "</button>" +
       "<button data-gma='tech'>Tech Tree (K)</button>" +
+      "<button data-gma='ach'>Hall of Glory (Achievements)</button>" +
       "<button data-gma='score'>Victory / History</button>" +
       "<button data-gma='help'>Guide (?)</button>" +
       "</div>";
+    // #176 Collectible Skill Scrolls + Hall of Glory Achievements inside Game Menu
+    var scs = (state.world && state.world.scrolls) || [];
+    if (scs.length) {
+      h += "<div class='qhead'>SKILL SCROLLS ON MAP (" + scs.length + ")</div>" +
+        "<div class='gmgrid'>" + scs.map(function (sc) {
+          return "<button data-scroll='" + esc(sc.name) +
+            "' title='School: " + esc(sc.school) + " (" + esc(sc.path) + ")'>" +
+            "Scroll: " + esc(sc.name) + "</button>";
+        }).join("") + "</div>";
+    }
+    var achs = (state.world && state.world.achievements) || [];
+    if (achs.length) {
+      var unl = achs.filter(function (a) { return a.unlocked; }).length;
+      h += "<div class='qhead'>HALL OF GLORY (" + unl + "/" + achs.length +
+        " UNLOCKED - CLICK TO EXPORT 600x315 TROPHY PNG)</div>" +
+        "<div style='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px'>" +
+        achs.map(function (a) {
+          var rCol = a.rarity === "Legendary" ? "#ffd54a" :
+                     a.rarity === "Rare" ? "#38bdf8" :
+                     a.rarity === "Uncommon" ? "#3fb950" : "#8b949e";
+          var secretMask = !a.unlocked && a.category === "Secret";
+          return "<div data-trophy='" + esc(a.id) + "' style='border:1px solid " +
+            (a.unlocked ? rCol : "#30363d") + ";opacity:" +
+            (a.unlocked ? "1" : "0.52") +
+            ";border-radius:4px;padding:4px 6px;font-size:10px;cursor:pointer'>" +
+            "<b style='color:" + rCol + "'>" +
+            esc(secretMask ? "???" : a.title) + "</b> " +
+            "<span class='meta'>[" + esc(a.rarity) + "]</span><br>" +
+            "<span class='meta'>" +
+            esc(secretMask ? "Keep exploring..." : a.desc) + "</span></div>";
+        }).join("") + "</div>";
+    }
     box.innerHTML = h;
+  }
+
+  function downloadTrophyCard(ach) {
+    if (!ach) return;
+    var c = document.createElement("canvas");
+    c.width = 600; c.height = 315;
+    var g = c.getContext("2d");
+    var bg = g.createLinearGradient(0, 0, 600, 315);
+    bg.addColorStop(0, "#141e16");
+    bg.addColorStop(1, "#090d0a");
+    g.fillStyle = bg;
+    g.fillRect(0, 0, 600, 315);
+    g.strokeStyle = "#d4a72c";
+    g.lineWidth = 4;
+    g.strokeRect(10, 10, 580, 295);
+    g.fillStyle = "#ffd54a";
+    g.font = "bold 16px monospace";
+    g.fillText("RTSD HALL OF GLORY - TROPHY CARD", 32, 48);
+    g.fillStyle = "#ffffff";
+    g.font = "bold 28px monospace";
+    g.fillText(ach.title, 32, 115);
+    g.fillStyle = "#58a6ff";
+    g.font = "bold 15px monospace";
+    g.fillText(ach.rarity.toUpperCase() + "  |  " + ach.category.toUpperCase(), 32, 152);
+    g.fillStyle = "#c9d1d9";
+    g.font = "16px monospace";
+    g.fillText(ach.desc, 32, 198);
+    g.fillStyle = ach.unlocked ? "#3fb950" : "#8b949e";
+    g.font = "bold 15px monospace";
+    g.fillText(ach.unlocked ? "STATUS: UNLOCKED" : "STATUS: LOCKED", 32, 265);
+    try {
+      var a = document.createElement("a");
+      a.download = "trophy-" + ach.id + ".png";
+      a.href = c.toDataURL("image/png");
+      a.click();
+      logFeed("Trophy Card PNG exported: " + ach.title + " (600x315)");
+    } catch (e) {}
   }
 
   // ---- tech tree / spellbook overlay (#132) ----------------------------
@@ -3121,12 +3191,14 @@
       waypoints: state.waypoints, ravens: state.ravens,
       srvClock: state.srvClock, decision: meetingCall(),
       weather: state.weather, fx: state.fx,
+      scrolls: state.world && state.world.scrolls,
       noFog: state.noFog, heatmap: state.heatmap, warTable: state.warTable,
       night: nightFactor(),
       units: state.units, buildings: state.buildings }, th);
     eng.minimap(el("mm"), { tiles: state.map,
       fog: state.map && state.map.fog, units: state.units,
       buildings: state.buildings, pings: state.pings,
+      scrolls: state.world && state.world.scrolls,
       mmFilter: state.mmFilter }, th);
     // #159 Animated Live 3D-style Portrait in bottom console
     var pcv = el("portcv");
