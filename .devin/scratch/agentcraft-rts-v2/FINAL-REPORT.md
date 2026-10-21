@@ -31,6 +31,9 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 157 | #160 | Live local weather (`GET/POST /weather`, `snapshot.weather`, Open-Meteo + geojs/ipwho cache) + unified wind physics + WC3/AoE3 terrain (roads, plazas, rivers/lakes with waves/foam/bridges, swaying multi-layer trees, falling leaves, dynamic Line-of-Sight vision) |
 | 158 | #161 | WC3/AoE3 unit, hero & building modeling (all 22 classes + 11 structures in `theme.js`, `Theme.drawPortrait`) + `_drawBuildingAnim` & `_drawUnitLive` (Hero Glow, rotating Aura runes, wind-reactive capes/flags/smoke, `Stand - 1/2/3` fidgets, social nods, dust puffs, worker hauling) |
 | 159 | #162 | HUD, mechanics & gameplay overhaul (`#herobar` WC3 Hero Roster, `#bldbar` AoE3 Building Strip, `#wxBtn` Weather Orb, `#portcv` live 3D-style Portrait canvas, non-blocking War Council, 3x4 icon/hotkey Command Card with Building Commands, active Patrol/Gather/Combat/Spell loops, expanded WebAudio soundscape) |
+| 163 | #166 | 3D volumetric modeling (`_cylGrad`, `_sphereGrad`, `_roof3D` with shingle courses & AO), seamless organic terrain splatting (`_ensureTerrainCanvas`), 2-wave Gerstner water with specular glints, directional cast shadows, 4-node Verlet cloth capes, 2-bone leg stride kinematics, and ranged projectiles |
+| 164 | #167 | RTS HUD architecture, `F10` Game Menu modal (`#gamemenu` with Weather Forecast Inspector & mode switcher), 4x3 (`QWER/ASDF/ZXCV`) Command Card with custom inline SVG vector icons & anchored `#cardtip` tooltip, beveled HP/MP/XP bars, WC3 6-Slot Runed Inventory Grid (`#invgrid`), and minimap filters + iso frustum |
+| 165 | #168 | Procedural WebAudio DSP sound engine (`_getNoise` pink noise, `_fm` metallic partials, `_noise` biquad bursts, `_pluck` Karplus-Strong strings, `syncAmbience` continuous wind/rain filter bank) + per-building/class acoustic signatures & Office Mode foley switching |
 
 ## Final gate evidence (milestone branch)
 

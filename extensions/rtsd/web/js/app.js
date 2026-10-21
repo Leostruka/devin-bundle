@@ -560,78 +560,249 @@
     sndUi();
   }
 
-  var _ac = null;
-  function _osc(type, f0, f1, delay, dur, vol) {
-    _ac = _ac || new (window.AudioContext ||
-                      window.webkitAudioContext)();
+  var _ac = null, _noiseBuf = null, _amb = null;
+  function _ctx() {
+    _ac = _ac || new (window.AudioContext || window.webkitAudioContext)();
     if (_ac.state === "suspended") _ac.resume();
-    var t = _ac.currentTime + delay;
-    var o = _ac.createOscillator(), g2 = _ac.createGain();
+    return _ac;
+  }
+  function _getNoise() {
+    var ac = _ctx();
+    if (_noiseBuf) return _noiseBuf;
+    var sr = ac.sampleRate, len = sr * 2;
+    _noiseBuf = ac.createBuffer(1, len, sr);
+    var d = _noiseBuf.getChannelData(0), b0 = 0, b1 = 0, b2 = 0;
+    for (var i = 0; i < len; i++) {
+      var w = Math.random() * 2 - 1;
+      b0 = 0.997 * b0 + w * 0.029;
+      b1 = 0.985 * b1 + w * 0.032;
+      b2 = 0.950 * b2 + w * 0.048;
+      d[i] = (b0 + b1 + b2 + w * 0.05) * 0.35; // pink-weighted noise
+    }
+    return _noiseBuf;
+  }
+  function _osc(type, f0, f1, delay, dur, vol) {
+    var ac = _ctx(), t = ac.currentTime + delay;
+    var o = ac.createOscillator(), g2 = ac.createGain();
     o.type = type;
     o.frequency.setValueAtTime(f0, t);
     if (f1 && f1 !== f0)
-      o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
     g2.gain.setValueAtTime(0.0001, t);
-    g2.gain.exponentialRampToValueAtTime(vol * snd.vol, t + 0.02);
+    g2.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol * snd.vol),
+                                         t + 0.015);
     g2.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g2); g2.connect(_ac.destination);
-    o.start(t); o.stop(t + dur + 0.05);
+    o.connect(g2); g2.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.04);
   }
-  // tier signatures: distinct per alert kind so they read blind
+  // #165 Inharmonic FM metallic synth (anvil, sword ring, bell, armor)
+  function _fm(fc, fm, idx, delay, dur, vol) {
+    var ac = _ctx(), t = ac.currentTime + delay;
+    var car = ac.createOscillator(), mod = ac.createOscillator();
+    var mg = ac.createGain(), cg = ac.createGain();
+    car.frequency.setValueAtTime(fc, t);
+    mod.frequency.setValueAtTime(fm, t);
+    mg.gain.setValueAtTime(idx, t);
+    mg.gain.exponentialRampToValueAtTime(1, t + dur);
+    cg.gain.setValueAtTime(0.0001, t);
+    cg.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol * snd.vol),
+                                         t + 0.008);
+    cg.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    mod.connect(mg); mg.connect(car.frequency);
+    car.connect(cg); cg.connect(ac.destination);
+    mod.start(t); car.start(t);
+    mod.stop(t + dur + 0.04); car.stop(t + dur + 0.04);
+  }
+  // #165 Filtered noise burst (sword impact, steam hiss, key clack, thunder)
+  function _noise(type, freq, q, delay, dur, vol) {
+    var ac = _ctx(), t = ac.currentTime + delay;
+    var src = ac.createBufferSource();
+    src.buffer = _getNoise();
+    src.loop = true;
+    var flt = ac.createBiquadFilter(), g2 = ac.createGain();
+    flt.type = type || "bandpass";
+    flt.frequency.setValueAtTime(freq, t);
+    flt.Q.setValueAtTime(q || 1.5, t);
+    g2.gain.setValueAtTime(0.0001, t);
+    g2.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol * snd.vol),
+                                         t + 0.015);
+    g2.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(flt); flt.connect(g2); g2.connect(ac.destination);
+    src.start(t, Math.random()); src.stop(t + dur + 0.04);
+  }
+  // #165 Karplus-Strong plucked string synthesis (bowstring, lute, harp)
+  function _pluck(freq, delay, dur, vol) {
+    var ac = _ctx(), t = ac.currentTime + delay, sr = ac.sampleRate;
+    var n = Math.max(2, Math.round(sr / freq)), samples = Math.round(sr * dur);
+    var buf = ac.createBuffer(1, samples, sr), ch = buf.getChannelData(0);
+    var ring = new Float32Array(n);
+    for (var i = 0; i < n; i++) ring[i] = Math.random() * 2 - 1;
+    var p = 0;
+    for (var s = 0; s < samples; s++) {
+      var nxt = (p + 1) % n;
+      ch[s] = ring[p];
+      ring[p] = 0.496 * (ring[p] + ring[nxt]);
+      p = nxt;
+    }
+    var src = ac.createBufferSource(), g2 = ac.createGain();
+    src.buffer = buf;
+    g2.gain.setValueAtTime(vol * snd.vol, t);
+    src.connect(g2); g2.connect(ac.destination);
+    src.start(t);
+  }
+  // #165 Continuous environmental wind & rain filter bank modulated by weather
+  function syncAmbience() {
+    if (!snd.on || !_ac) {
+      if (_amb) {
+        try { _amb.wGain.gain.setValueAtTime(0.0001, _ac.currentTime);
+              _amb.rGain.gain.setValueAtTime(0.0001, _ac.currentTime); }
+        catch (e) {}
+      }
+      return;
+    }
+    if (!_amb) {
+      try {
+        var ac = _ctx(), src = ac.createBufferSource();
+        src.buffer = _getNoise(); src.loop = true;
+        var wFlt = ac.createBiquadFilter(), wGain = ac.createGain();
+        wFlt.type = "bandpass"; wFlt.Q.value = 2.2; wGain.gain.value = 0.0001;
+        var rFlt = ac.createBiquadFilter(), rGain = ac.createGain();
+        rFlt.type = "bandpass"; rFlt.frequency.value = 2100; rFlt.Q.value = 0.9;
+        rGain.gain.value = 0.0001;
+        src.connect(wFlt); wFlt.connect(wGain); wGain.connect(ac.destination);
+        src.connect(rFlt); rFlt.connect(rGain); rGain.connect(ac.destination);
+        src.start();
+        _amb = { wFlt: wFlt, wGain: wGain, rGain: rGain };
+      } catch (e) { return; }
+    }
+    var wx = state.weather || {};
+    var kph = wx.wind_kph || 12, cond = wx.condition || "cloudy";
+    var nowT = _ac.currentTime;
+    _amb.wFlt.frequency.setTargetAtTime(160 + kph * 11, nowT, 0.2);
+    var wVol = Math.min(0.035, (0.006 + kph * 0.0005)) * snd.vol;
+    _amb.wGain.gain.setTargetAtTime(wVol, nowT, 0.25);
+    var rVol = (cond === "storm" ? 0.032 : cond === "rain" ? 0.018 : 0.0001) *
+               snd.vol;
+    _amb.rGain.gain.setTargetAtTime(rVol, nowT, 0.25);
+  }
+
+  // tier & theme signatures (#133/#165): Battlefield vs Office foley
   var SND = {
-    decision: function () {            // council sting: two-note rise
-      _osc("square", 660, 660, 0, .12, .05);
-      _osc("square", 880, 880, .14, .2, .05);
+    decision: function () {            // council sting: brass fanfare
+      _fm(523, 261, 180, 0, .16, .05);
+      _fm(659, 329, 180, .12, .24, .05);
     },
-    breach: function () {              // gate-fail horn: low falling saw
-      _osc("sawtooth", 200, 90, 0, .5, .07);
-      _osc("sawtooth", 150, 80, .3, .55, .06);
+    breach: function () {              // gate-fail horn: low war-horn + rumble
+      _osc("sawtooth", 196, 92, 0, .52, .07);
+      _osc("sawtooth", 147, 73, .28, .55, .06);
+      _noise("lowpass", 140, 1.2, 0, .5, .05);
     },
-    spawn: function () {               // soft blip
-      _osc("sine", 720, 1150, 0, .14, .05);
+    spawn: function () {               // hero summon chord
+      _pluck(440, 0, .28, .05);
+      _osc("sine", 660, 990, .05, .18, .04);
     },
-    contested: function () {           // clash: two detuned squares
-      _osc("square", 340, 180, 0, .08, .05);
-      _osc("square", 255, 140, .02, .1, .05);
+    contested: function () {           // metallic sword-on-shield clash
+      _fm(780, 1120, 420, 0, .14, .05);
+      _noise("bandpass", 2600, 2.5, 0, .09, .05);
     },
     upkeep: function () {              // advisor warn: two soft tones
       _osc("triangle", 520, 520, 0, .09, .05);
       _osc("triangle", 392, 392, .12, .14, .05);
     },
-    order: function () {               // quiet ack tick
-      _osc("sine", 980, 980, 0, .06, .04);
+    order: function () {               // boot march thud / office key click
+      if (Theme.get().name === "office") {
+        _noise("bandpass", 3200, 3.0, 0, .03, .04);
+      } else {
+        _osc("triangle", 140, 65, 0, .07, .05);
+        _osc("sine", 880, 980, .02, .05, .03);
+      }
     },
-    select_hero: function () {         // WC3 heroic brass/shield chime
-      _osc("triangle", 440, 554, 0, .09, .04);
-      _osc("sine", 659, 880, .06, .14, .04);
+    select_hero: function (sub) {      // class-aware & theme-aware selection
+      if (Theme.get().name === "office") {
+        _noise("bandpass", 2800, 2.8, 0, .03, .04);
+        _osc("sine", 880, 1174, .03, .08, .03);
+        return;
+      }
+      if (sub === "Ranger" || sub === "Scout" || sub === "Bard") {
+        _pluck(392, 0, .28, .05);
+        _pluck(587, .06, .32, .05);
+      } else if (sub === "Archmage" || sub === "Far Seer" ||
+                 sub === "Enchanter") {
+        _fm(880, 1320, 160, 0, .22, .04);
+      } else {
+        _fm(523, 784, 240, 0, .16, .05);
+        _osc("triangle", 440, 659, .04, .14, .04);
+      }
     },
-    select_bld: function () {          // structure stone/bell resonance
-      _osc("triangle", 294, 440, 0, .14, .05);
+    select_bld: function (bid) {       // per-structure acoustic signature (#165)
+      var isOff = Theme.get().name === "office";
+      if (bid === "runeforge") {
+        if (isOff) {                   // printer stepper motor whir
+          _osc("sawtooth", 320, 480, 0, .14, .04);
+          _noise("bandpass", 1800, 2, .04, .12, .04);
+        } else {                       // blacksmith anvil hammer clang!
+          _fm(587, 830, 520, 0, .32, .06);
+          _fm(1174, 1660, 300, .01, .22, .04);
+        }
+      } else if (bid === "tavern") {
+        if (isOff) {                   // espresso steamer hiss
+          _noise("highpass", 3400, 1.2, 0, .22, .05);
+        } else {                       // tavern lute chord
+          _pluck(293, 0, .35, .05);
+          _pluck(440, .05, .35, .05);
+          _pluck(587, .10, .40, .05);
+        }
+      } else if (bid === "altar") {
+        if (isOff) {                   // water-cooler bubble glug
+          _osc("sine", 260, 520, 0, .09, .05);
+          _osc("sine", 310, 640, .11, .09, .05);
+        } else {                       // cathedral choir triad
+          _osc("sine", 261.6, 261.6, 0, .35, .04);
+          _osc("triangle", 329.6, 329.6, .03, .35, .04);
+          _osc("sine", 392.0, 392.0, .06, .38, .04);
+        }
+      } else if (bid === "marketplace") {
+        _fm(1568, 2349, 200, 0, .12, .04);
+        _fm(2093, 3136, 200, .07, .16, .04);
+      } else if (bid === "portal") {
+        _osc("sawtooth", 110, 220, 0, .28, .05);
+        _fm(440, 311, 280, .04, .26, .04);
+      } else if (bid === "library") {
+        _pluck(659, 0, .28, .04);
+        _fm(1046, 1568, 120, .06, .24, .04);
+      } else {
+        _fm(392, 587, 180, 0, .20, .05);
+      }
     },
-    attack: function () {              // sword clash + war drum
-      _osc("sawtooth", 160, 75, 0, .12, .06);
-      _osc("square", 920, 480, .03, .08, .04);
+    attack: function () {              // metallic sword clash + war drum
+      _noise("bandpass", 2400, 2.2, 0, .08, .06);
+      _fm(680, 960, 450, 0, .14, .05);
+      _osc("triangle", 130, 55, .02, .14, .06);
     },
-    gather: function () {              // pickaxe / coin clink
-      _osc("sine", 1180, 1560, 0, .07, .04);
-      _osc("sine", 1560, 1980, .08, .09, .04);
+    gather: function () {              // pickaxe strike + gold coin chime
+      _fm(1318, 1975, 220, 0, .09, .04);
+      _fm(1760, 2637, 180, .08, .14, .04);
     },
-    spell: function () {               // arcane shimmer arpeggio
-      _osc("sine", 523, 784, 0, .12, .05);
-      _osc("triangle", 784, 1046, .09, .18, .05);
-      _osc("sine", 1046, 1318, .18, .22, .04);
+    spell: function () {               // arcane shimmer + harp glissando
+      _pluck(523, 0, .25, .04);
+      _pluck(659, .05, .25, .04);
+      _fm(1046, 1568, 160, .10, .28, .05);
     },
-    thunder: function () {             // distant storm rumble
-      _osc("sawtooth", 95, 38, 0, .45, .06);
+    thunder: function () {             // multi-tap brown/pink noise thunder
+      _noise("lowpass", 95, 0.9, 0, .65, .08);
+      _osc("sawtooth", 82, 34, .05, .55, .06);
     },
-    bird: function () {                // daytime meadow bird chirp
-      _osc("sine", 1760, 2340, 0, .06, .02);
-      _osc("sine", 2200, 1880, .08, .07, .02);
+    bird: function () {                // daytime meadow bird FM chirp
+      _osc("sine", 1760, 2480, 0, .07, .025);
+      _osc("sine", 2320, 1840, .09, .08, .025);
     }
   };
-  function tone(kind) {
+  function tone(kind, sub) {
     if (!snd.on) return;
-    try { (SND[kind] || SND.order)(); } catch (e) {}
+    try {
+      (SND[kind] || SND.order)(sub);
+      syncAmbience();
+    } catch (e) {}
   }
 
   function pushFx(kind, x, y, text, color, dur) {
@@ -1813,14 +1984,14 @@
         if (i >= 0) state.selAll.splice(i, 1); else state.selAll.push(u.id);
       } else state.selAll = [u.id];
       state.sel = u.id; state.selB = null; state.bDetail = null;
-      tone("select_hero");
+      tone("select_hero", u.cls);
       if (!u.bark)   // no heartbeat note -> class "selected" line
         state.acks[u.id] = { text: barkLine(u.cls, 0),
                              t0: performance.now() };
     } else {
       if (!ev.shiftKey) { state.selAll = []; state.sel = null; }
       var pb = eng.pickBuilding(ev.offsetX, ev.offsetY);
-      if (pb) tone("select_bld");
+      if (pb) tone("select_bld", pb.id);
       selectBuilding(pb);
     }
     syncRenderables(); renderPanels();
@@ -2319,7 +2490,7 @@
       state.selAll = []; state.sel = null;
       var b = state.buildings.filter(function (x) {
         return x.id === bid; })[0];
-      tone("select_bld");
+      tone("select_bld", bid);
       selectBuilding(b || { id: bid });
       syncRenderables(); renderPanels();
     });
