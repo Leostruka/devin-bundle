@@ -34,6 +34,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 163 | #166 | 3D volumetric modeling (`_cylGrad`, `_sphereGrad`, `_roof3D` with shingle courses & AO), seamless organic terrain splatting (`_ensureTerrainCanvas`), 2-wave Gerstner water with specular glints, directional cast shadows, 4-node Verlet cloth capes, 2-bone leg stride kinematics, and ranged projectiles |
 | 164 | #167 | RTS HUD architecture, `F10` Game Menu modal (`#gamemenu` with Weather Forecast Inspector & mode switcher), 4x3 (`QWER/ASDF/ZXCV`) Command Card with custom inline SVG vector icons & anchored `#cardtip` tooltip, beveled HP/MP/XP bars, WC3 6-Slot Runed Inventory Grid (`#invgrid`), and minimap filters + iso frustum |
 | 165 | #168 | Procedural WebAudio DSP sound engine (`_getNoise` pink noise, `_fm` metallic partials, `_noise` biquad bursts, `_pluck` Karplus-Strong strings, `syncAmbience` continuous wind/rain filter bank) + per-building/class acoustic signatures & Office Mode foley switching |
+| 170 | #171 | Real 3D RTS perspective engine (`PITCH` tilt + `wz` vertical elevation + exact `toWorld`/`toScreen` inverse), 3D plateaus/cliffs/sunken riverbanks/arched bridges, `_drawBuilding3D` multi-face 3D structures (`_box3D`, `_cyl3D`, `_cone3D`, `_roofPrism3D`), and 14-joint 3D articulated skeletal rig (`Rig3D`) with smooth 3D facing `yaw` and 8 3D animation clips |
 
 ## Final gate evidence (milestone branch)
 
