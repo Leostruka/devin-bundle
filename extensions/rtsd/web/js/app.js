@@ -1078,13 +1078,33 @@
   function renderPanels() {
     var w = state.world || { units: [], quests: [], resources: {} };
     var th = Theme.get(), r = w.resources || {};
-    el("res").textContent = w.resources
-      ? ("GOLD ~" + (r.gold | 0) + " +" + (r.income_min | 0) + "/m" +
-         "  LUMBER " + (r.lumber_pct | 0) +
-         "%  SUPPLY " + r.supply_used + "/" + r.supply_cap +
-         (r.supply_minions ? "+" + r.supply_minions : "") +
-         "  UPKEEP " + (r.upkeep || "-"))
-      : "";
+    var isOff = th.name === "office";
+    var curRace = Theme.getRace ? Theme.getRace() : "human";
+    document.body.dataset.theme = th.name;
+    document.body.dataset.race = curRace;
+    var invHd = document.querySelector("#invwrap .ihd");
+    if (invHd) invHd.textContent = isOff ? "DESK ITEMS" : "INVENTORY";
+    if (w.resources) {
+      var goldK = (r.gold | 0) >= 1000
+        ? ((r.gold / 1000).toFixed(1) + "k") : String(r.gold | 0);
+      var rateK = (r.income_min | 0) >= 1000
+        ? ("+" + (r.income_min / 1000).toFixed(1) + "k/m")
+        : ("+" + (r.income_min | 0) + "/m");
+      var lumPct = r.lumber_pct | 0;
+      var lumCol = lumPct >= 75 ? "#f85149" : lumPct >= 60 ? "#d29922" : "#3fb950";
+      el("res").innerHTML =
+        "<span class='rpod'><span>" + (isOff ? "BUDGET" : "GOLD") +
+        "</span><b>" + goldK + "</b><span class='rsub'>" + rateK + "</span></span>" +
+        "<span class='rpod'><span>" + (isOff ? "CONTEXT" : "LUMBER") +
+        "</span><b style='color:" + lumCol + "'>" + lumPct + "%</b></span>" +
+        "<span class='rpod'><span>" + (isOff ? "STAFF" : "SUPPLY") +
+        "</span><b>" + r.supply_used + "/" + r.supply_cap +
+        (r.supply_minions ? "+" + r.supply_minions : "") + "</b></span>" +
+        "<span class='rpod'><span>" + (isOff ? "BURN" : "UPKEEP") +
+        "</span><b>" + esc(r.upkeep || "low") + "</b></span>";
+    } else {
+      el("res").innerHTML = "";
+    }
     el("res").title = w.resources
       ? ("est tokens spent this session; +" + (r.income_min | 0) +
          " tok/min last 60s\ncontext window " + (r.window | 0) +
@@ -1126,8 +1146,10 @@
       return main.indexOf(t) < 0; });
     var qrow = function (t) {
       var g = t.gates;
-      var prog = g ? " gates " + g.pass + "/" + g.total +
-        (g.fail ? " (" + g.fail + " fail)" : "") : "";
+      var gPct = g && g.total ? Math.round(100 * g.pass / g.total)
+                              : (t.done ? 100 : 0);
+      var prog = g ? "gates " + g.pass + "/" + g.total +
+        (g.fail ? " (" + g.fail + " fail)" : "") : esc(t.status || "open");
       var who = (t.assignees || []).map(function (id) {
         var uu = (w.units || []).filter(function (x) {
           return x.id === id; })[0];
@@ -1137,16 +1159,14 @@
         (t.blocked ? "blocked" : "") + (t.done ? " done" : "") +
         (t.failed ? " failed" : "") +
         "' draggable='true' data-quest='" + esc(t.id) + "'>" +
-        "<span class='id'>" + esc(t.effort) + "/" + esc(t.id) + "</span> " +
-        "<b>" + esc(t.title) + "</b>" +
-        (t.done ? " <span class='qstamp'>*</span>" : "") +
-        "<br><span class='meta'>" + esc(t.status) + prog +
+        (t.done ? "<span class='qstamp'>DONE</span>" : "") +
+        "<div><b>" + esc(t.title) + "</b></div>" +
+        "<div class='meta'>" + prog +
         (t.deps && t.deps.length ?
-          " / needs " + esc(t.deps.join(" <- ")) : "") +
-        (t.blocked_by && !t.deps.length ?
-          " / blocked_by: " + esc(t.blocked_by) : "") +
-        (who.length ? " / assigned: " + esc(who.join(",")) : "") +
-        "</span></div>";
+          " | needs " + esc(t.deps.join(", ")) : "") +
+        (who.length ? " | @" + esc(who.join(",")) : "") +
+        "</div><div class='qbar'><span style='width:" + gPct +
+        "%'></span></div></div>";
     };
     el("tlist").innerHTML =
       (main.length
@@ -1299,7 +1319,8 @@
     var nIdle = (w.idle || []).length;
     el("idleBtn").textContent = "idle:" + nIdle;
     el("idleBtn").disabled = !nIdle;
-    el("themeBtn").textContent = "theme: " + th.name;
+    el("themeBtn").textContent = isOff
+      ? "Mode: Office HQ" : ("Faction: " + curRace.toUpperCase());
     // #164 Beveled Portrait HP/MP/XP Bars + WC3 6-Slot Runed Inventory Grid
     var rawU = u && u.unit ? u.unit : u;
     if (el("pbarHp")) {
@@ -1640,51 +1661,53 @@
   }
 
   function portraitHtml(u) {
-    var inv = (u.inventory || []).map(function (it) {
-      return "<span class='inv" + (it.quest ? " qloot" : "") +
-        "' title='" + esc((it.ledger || "") + "/" + it.gate +
-        (it.quest ? " [quest " + it.quest + "]" : "") + " " +
-        (it.evidence || "")) + "'>o</span>";
-    }).join("");
+    var isOff = Theme.get().name === "office";
     var kit = (u.kit || []).map(function (k) {
-      return "<span class='inv' title='" + esc(k) + "'>" +
-        esc(k[0]) + "</span>";
+      return "<span class='uchip' title='Allowed Tool: " + esc(k) + "'>" +
+        esc(k) + "</span>";
+    }).join("");
+    var spells = (u.spellbook || []).map(function (s) {
+      return "<span class='uchip spellchip' data-cast='" + esc(s.name) +
+        "' title='Click to cast skill " + esc(s.name) + "'>" +
+        esc(s.name) + (s.casts ? " (" + s.casts + ")" : "") + "</span>";
     }).join("");
     var bark = u.bark ||
       (state.acks[u.id] ? state.acks[u.id].text : barkLine(u.cls, 0));
-    var h = "<b>" + esc(u.name || u.id) + "</b> " +
+    var stTxt = String(u.status_live || u.status || "idle").toUpperCase();
+    var stCol = stTxt === "RUNNING" ? "#3fb950" :
+                stTxt === "FAILED" ? "#f85149" : "#38bdf8";
+    var h = "<div style='display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-dim);padding-bottom:4px;margin-bottom:5px'>" +
+      "<div><b style='font-size:13px;color:var(--accent)'>" +
+      esc(u.name || u.id) + "</b> " +
       "<span class='lvbadge'>Lv" + (u.level || 1) + "</span> " +
-      "<span class='meta'>" + esc(u.cls || "") + " " + esc(u.profile || "") +
-      " " + esc(u.tier || "") + " " + esc(u.model || "") + "</span><br>" +
-      "<span class='meta'>HP " + (u.hp == null ? "-" : u.hp) +
-      "  MP " + (u.mana == null ? "-" : u.mana) +
-      "  " + esc(u.status_live || u.status || "") + "</span>" +
-      // #131 economy: per-hero context burn + est turns left in window
-      (u.kind === "hero"
-        ? "<div class='meta'>burn ~" + (u.burn | 0) + " tok" +
-          (u.turns_left == null ? "" :
-            "  |  ~" + u.turns_left + " turns left") + "</div>"
-        : "") +
-      // #132 spellbook: skills named in the profile sheet
-      ((u.spellbook || []).length
-        ? "<div class='meta'>spells: " + u.spellbook.map(function (s) {
-            return esc(s.name) + (s.casts ? "(" + s.casts + ")" : "");
-          }).join(", ") + "</div>"
-        : "") +
-      (kit ? " <span class='meta'>kit:</span>" + kit : "") +
-      (u.quest ? "<div class='meta'>quest: " + esc(u.quest) + "</div>"
-               : "") +
-      "<br><i>&quot;" + esc(bark) + "&quot;</i>" +
-      (inv ? "<div class='meta'>loot: " + inv + "</div>" : "");
-    // order queue (#127): numbered pending orders for this hero
+      "<span class='uchip'>" + esc(isOff ? (u.profile || u.cls) : (u.cls || "")) +
+      "</span>" +
+      (u.model ? "<span class='uchip'>" + esc(u.model) + "</span>" : "") +
+      "</div>" +
+      "<span class='uchip' style='border-color:" + stCol + ";color:" + stCol +
+      ";font-weight:bold'>" + esc(stTxt) +
+      (u.kind === "hero" ? " | ~" + (u.burn | 0) + " tok" : "") +
+      "</span></div>";
+    if (spells) {
+      h += "<div style='margin-bottom:4px'><span class='meta'>" +
+        (isOff ? "Skills: " : "Spells: ") + "</span>" + spells + "</div>";
+    }
+    if (kit) {
+      h += "<div style='margin-bottom:4px'><span class='meta'>" +
+        (isOff ? "Permissions: " : "Kit: ") + "</span>" + kit + "</div>";
+    }
+    h += "<div style='color:#fef08a;font-style:italic;font-size:11px'>&ldquo;" +
+      esc(bark) + "&rdquo;</div>";
     var ords = ((u.unit && u.unit.orders) || u.orders || []).filter(
       function (o) { return o.state !== "consumed"; });
     if (ords.length)
-      h += "<div class='meta'>orders: " + ords.map(function (o, i) {
-        return (i + 1) + " " + esc(o.order || "?") +
-          (typeof o.x === "number" ? "(" + o.x + "," + o.y + ")" : "") +
-          " <i>" + esc(o.state || "queued") + "</i>";
-      }).join("; ") + "</div>";
+      h += "<div class='meta' style='margin-top:3px'>Orders: " +
+        ords.map(function (o, i) {
+          return "<span class='uchip'>" + (i + 1) + ". " +
+            esc(o.order || "?") +
+            (typeof o.x === "number" ? " (" + o.x + "," + o.y + ")" : "") +
+            " [" + esc(o.state || "queued") + "]</span>";
+        }).join(" ") + "</div>";
     return h;
   }
 
