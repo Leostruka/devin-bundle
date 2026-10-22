@@ -653,27 +653,38 @@
           }
         }
       }
-      // 4. Sandy/pebble riverbanks + deep/shallow water basins
-      for (var ty3 = 0; ty3 < H; ty3++) {
-        for (var tx3 = 0; tx3 < W; tx3++) {
-          var i3 = ty3 * W + tx3;
-          var wt3 = ts._water ? ts._water[i3] : 0;
-          if (!wt3) continue;
-          var wx = (tx3 + 0.5) * TILE, wy = (ty3 + 0.5) * TILE;
-          // Coastal sand shelf
-          g2.fillStyle = "rgba(168,148,106,0.45)";
-          g2.beginPath();
-          g2.arc(wx, wy, TILE * 0.82, 0, 7);
-          g2.fill();
-          // Water basin
-          g2.fillStyle = wt3 === 2
-            ? (theme.tiles.waterDeep || "#113450")
-            : (theme.tiles.water || "#184668");
-          g2.beginPath();
-          g2.arc(wx, wy, TILE * 0.68, 0, 7);
-          g2.fill();
+      // 4. Continuous connected river/lake channel (no per-tile circular blobs)
+      var strokeWaterPass = function (width, col, minType) {
+        g2.strokeStyle = col;
+        g2.fillStyle = col;
+        g2.lineWidth = width;
+        g2.lineCap = "round";
+        g2.lineJoin = "round";
+        g2.beginPath();
+        for (var ty3 = 0; ty3 < H; ty3++) {
+          for (var tx3 = 0; tx3 < W; tx3++) {
+            var i3 = ty3 * W + tx3;
+            var wt3 = ts._water ? ts._water[i3] : 0;
+            if (wt3 < minType) continue;
+            var wx = (tx3 + 0.5) * TILE, wy = (ty3 + 0.5) * TILE;
+            g2.moveTo(wx, wy);
+            g2.lineTo(wx + 0.5, wy + 0.5);
+            var nbrs = [[1, 0], [0, 1], [1, 1], [-1, 1]];
+            for (var nb = 0; nb < 4; nb++) {
+              var nx = tx3 + nbrs[nb][0], ny = ty3 + nbrs[nb][1];
+              if (nx >= 0 && nx < W && ny >= 0 && ny < H &&
+                  ts._water && ts._water[ny * W + nx] >= minType) {
+                g2.moveTo(wx, wy);
+                g2.lineTo((nx + 0.5) * TILE, (ny + 0.5) * TILE);
+              }
+            }
+          }
         }
-      }
+        g2.stroke();
+      };
+      strokeWaterPass(TILE * 1.58, "rgba(156,136,96,0.65)", 1);
+      strokeWaterPass(TILE * 1.24, theme.tiles.water || "#184668", 1);
+      strokeWaterPass(TILE * 0.78, theme.tiles.waterDeep || "#113450", 2);
       return c;
     },
 
@@ -725,39 +736,26 @@
             ctx.fillStyle = "#8c8270";
             ctx.fillRect(sx, sy + py - 6 * z, px + 1, 1.8 * z);
           }
-          // #170 3D Sunken Riverbank ledge on North border + Gerstner waves
+          // #170/#188 Unidirectional downstream water flow (no circles, no back-and-forth)
           if ((wt === 1 || wt === 2) && z > 0.45) {
             if (ty > 0 && (!ts._water || !ts._water[i - W])) {
-              ctx.fillStyle = "#5c4d38";
-              ctx.fillRect(sx, sy, px + 1, 4.5 * z);
+              ctx.fillStyle = "rgba(92,77,56,0.75)";
+              ctx.fillRect(sx, sy, px + 1, 3.5 * z);
+              ctx.fillStyle = "rgba(220,242,255,0.28)";
+              ctx.fillRect(sx, sy + 3.5 * z, px + 1, 1.5 * z);
             }
-            var wph1 = (now / 420) * wind.baseStr + tx * wind.ux * 1.4 +
-                       ty * wind.uy * 1.4;
-            var wph2 = (now / 580) * wind.baseStr - tx * wind.uy * 0.9 +
-                       ty * wind.ux * 0.9;
-            var eta = 0.6 * Math.sin(wph1) + 0.4 * Math.cos(wph2);
-            ctx.strokeStyle = wt === 2
-              ? "rgba(130,210,255,0.38)" : "rgba(195,240,255,0.52)";
-            ctx.lineWidth = Math.max(1, 1.3 * z);
+            // Unidirectional phase p in [0, 1) with sin(p*PI) fade-in/out envelope
+            var seedW = ((tx * 37 + ty * 73) % 100) / 100;
+            var pFlow = ((now / 2200 + seedW) % 1);
+            var env = Math.sin(pFlow * Math.PI);
+            var wx0 = sx + (0.15 + pFlow * 0.45) * px,
+                wy0 = sy + (0.35 + ((tx + ty) % 3) * 0.14) * py;
+            ctx.strokeStyle = "rgba(195,238,255," + (env * 0.42).toFixed(2) + ")";
+            ctx.lineWidth = Math.max(1, 1.2 * z);
             ctx.beginPath();
-            var wx0 = sx + (0.18 + 0.14 * eta) * px,
-                wy0 = sy + (0.42 + 0.12 * Math.cos(wph1)) * py;
             ctx.moveTo(wx0, wy0);
-            ctx.quadraticCurveTo(wx0 + px * 0.28, wy0 - 2.5 * z * eta,
-                                 wx0 + px * 0.56, wy0);
+            ctx.lineTo(wx0 + px * 0.28, wy0);
             ctx.stroke();
-            if (eta > 0.62) {
-              ctx.fillStyle = "rgba(255,250,220,0.68)";
-              ctx.fillRect(wx0 + px * 0.2, wy0 - 1.5 * z, 2.5 * z, 1.5 * z);
-            }
-            if (wt === 1) {
-              var foam = 0.22 + 0.18 * Math.sin(now / 400 + tx + ty);
-              ctx.strokeStyle = "rgba(235,248,255," + foam.toFixed(2) + ")";
-              ctx.beginPath();
-              ctx.ellipse(sx + px * 0.5, sy + py * 0.5,
-                          px * 0.44, py * 0.44, 0, 0, 7);
-              ctx.stroke();
-            }
             ctx.lineWidth = 1;
           } else if (wt === 3 && z > 0.45) {
             // #170 3D Arched Timber & Stone Bridge with 3D piers + rails
