@@ -1447,6 +1447,9 @@
       "<button data-gma='voldown'>Vol - (" + Math.round(snd.vol * 100) + "%)</button>" +
       "<button data-gma='volup'>Vol +</button>" +
       "<button data-gma='theme'>Theme: " + esc(Theme.get().name) + "</button>" +
+      "<button data-gma='renderer'>Renderer: " + esc(RENDERER) +
+        (window.Engine3D && Engine3D.supported() ? "" : " (no WebGL)") +
+        "</button>" +
       "<button data-gma='dn'>Day/Night: " + (state.dn ? "ON" : "OFF") + "</button>" +
       "<button data-gma='fog'>Fog (V): " + (state.noFog ? "OFF" : "ON") + "</button>" +
       "<button data-gma='heatmap'>Heatmap (H): " + (state.heatmap ? "ON" : "OFF") + "</button>" +
@@ -2140,7 +2143,14 @@
 
   // ---- boot ------------------------------------------------------------
 
-  var eng = Engine.create(el("cv"));
+  // #194 optional WebGL render path: ?renderer=webgl or the Game Menu
+  // toggle persists localStorage.rtsd.renderer; canvas painter remains
+  // the default/fallback (and the isometric office painter)
+  var RENDERER = (new URLSearchParams(location.search)).get("renderer") ||
+                 localStorage.getItem("rtsd.renderer") || "canvas";
+  var eng = (RENDERER === "webgl" && window.Engine3D &&
+             Engine3D.supported())
+            ? Engine3D.create(el("cv")) : Engine.create(el("cv"));
 
   // #134: battlefield<->office is a pure reskin - state, selection and
   // camera focus carry over; we re-center on the same world point so
@@ -2858,6 +2868,13 @@
         else if (a === "voldown") setVol(snd.vol - 0.1);
         else if (a === "volup") setVol(snd.vol + 0.1);
         else if (a === "theme") toggleTheme();
+        else if (a === "renderer") {
+          var nr = RENDERER === "webgl" ? "canvas" : "webgl";
+          localStorage.setItem("rtsd.renderer", nr);
+          logFeed("renderer -> " + nr + " (reloading)");
+          setTimeout(function () { location.reload(); }, 300);
+          return;
+        }
         else if (a === "dn") el("dnBtn").click();
         else if (a === "fog") state.noFog = !state.noFog;
         else if (a === "heatmap") state.heatmap = !state.heatmap;

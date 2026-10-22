@@ -85,6 +85,13 @@ def get(port, path):
     return r.status, json.loads(r.read())
 
 
+def get_raw(port, path):
+    c = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
+    c.request("GET", path)
+    r = c.getresponse()
+    return r.status, r.read()
+
+
 def main():
     root = sys.argv[1] if len(sys.argv) > 1 else tempfile.mkdtemp()
     for d in (".devin", "alpha", "beta"):
@@ -1042,6 +1049,17 @@ def main():
         assert all(q.get("milestone") for q in w_snap.get("quests") or []
                    if q.get("kind") != "main"), "quest milestone missing"
         print("PASS skill scrolls + achievements + AoM 5 Ages & God Powers + Office Tycoon + Gamification")
+
+        # #194 optional WebGL render path: engine3d.js is served and
+        # index.html loads it after engine.js; canvas stays the default
+        st, e3 = get_raw(PORT, "/js/engine3d.js")
+        assert st == 200 and b"Engine3D" in e3, (st, len(e3))
+        st, idx = get_raw(PORT, "/index.html")
+        assert st == 200 and b"engine3d.js" in idx and \
+            idx.index(b"engine.js") < idx.index(b"engine3d.js"), st
+        print("PASS webgl render path (engine3d.js served, "
+              "canvas default fallback)")
+
         sys.path.insert(0, HERE)
         import world as worldmod
         now = snap["world"]["now"]
