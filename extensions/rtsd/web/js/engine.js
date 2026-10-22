@@ -372,21 +372,24 @@
       return theme.tiles[ts.data[i] % 10] || theme.tiles[0];
     },
 
-    /* #157 wind physics: meteorological wind_deg is the direction wind
-       blows FROM, so particles/waves/trees bend toward wind_deg + 180. */
+    /* #157/#186 wind physics: separates steady base wind (baseStr/baseVx/baseVy)
+       from instantaneous gust sway so `now * wind` never whips backward! */
     _windVec: function (st, now) {
       var wx = (st && st.weather) || {};
       var kph = typeof wx.wind_kph === "number" ? wx.wind_kph : 14;
       var gust = typeof wx.wind_gust_kph === "number" ? wx.wind_gust_kph : 22;
       var deg = typeof wx.wind_deg === "number" ? wx.wind_deg : 75;
       var rad = ((deg + 180) % 360) * Math.PI / 180;
-      var gWave = 0.5 + 0.5 * Math.sin(now / 950) * Math.cos(now / 1700);
+      var ux = Math.cos(rad), uy = Math.sin(rad);
+      var baseStr = Math.max(0.25, Math.min(2.8, kph / 16));
+      var gWave = 0.5 + 0.5 * Math.sin(now / 1400) * Math.cos(now / 2300);
       var eff = kph + (gust - kph) * gWave;
       var str = Math.max(0.25, Math.min(3.2, eff / 16));
-      return { vx: Math.cos(rad) * str, vy: Math.sin(rad) * str,
-               ux: Math.cos(rad), uy: Math.sin(rad),
+      return { vx: ux * str, vy: uy * str,
+               baseVx: ux * baseStr, baseVy: uy * baseStr,
+               baseStr: baseStr, ux: ux, uy: uy,
                str: str, kph: eff, deg: deg, rad: rad,
-               gust: Math.sin(now / 520) };
+               gust: Math.sin(now / 720) };
     },
 
     /* #157 dynamic Line-of-Sight: in WC3/AoE3 every owned structure and
@@ -728,9 +731,9 @@
               ctx.fillStyle = "#5c4d38";
               ctx.fillRect(sx, sy, px + 1, 4.5 * z);
             }
-            var wph1 = (now / 360) * wind.str + tx * wind.ux * 1.4 +
+            var wph1 = (now / 420) * wind.baseStr + tx * wind.ux * 1.4 +
                        ty * wind.uy * 1.4;
-            var wph2 = (now / 520) * wind.str - tx * wind.uy * 0.9 +
+            var wph2 = (now / 580) * wind.baseStr - tx * wind.uy * 0.9 +
                        ty * wind.ux * 0.9;
             var eta = 0.6 * Math.sin(wph1) + 0.4 * Math.cos(wph2);
             ctx.strokeStyle = wt === 2
@@ -1042,135 +1045,142 @@
       });
     },
 
-    /* #157 live weather & atmospheric particles: cloud shadows, blowing
-       leaves, slanted rain + puddle ripples, storm lightning, snow, fog. */
+    /* #157/#186 Stateful dt-integrated atmospheric & weather particle engine:
+       Replaces broken `now * oscillating_wind` modulo math with true frame-dt
+       velocity integration (`p.x += vx * dt`), soft radial-gradient volumetric
+       cloud/fog puffs, and indoor Office Mode exclusion. */
     _weatherPass: function (ctx, st, theme, z, now, wind) {
+      if (this.iso) return; // Indoor Office HQ has no outdoor weather
       var wx = (st && st.weather) || {};
       var cond = wx.condition || "cloudy";
       var clouds = typeof wx.cloud_pct === "number" ? wx.cloud_pct : 40;
-      var cv = this.cv, W = cv.width, H = cv.height, i;
-      // 1. Drifting cloud shadows across the battlefield
-      var nClouds = Math.floor(clouds / 18);
-      if (nClouds > 0 && !this.iso) {
-        ctx.fillStyle = "rgba(8,14,18,0.16)";
+      var cv = this.cv, W = cv.width || 800, H = cv.height || 600, i;
+      var dt = this._wxLast ? Math.min(0.05, Math.max(0.001, (now - this._wxLast) / 1000)) : 0.016;
+      this._wxLast = now;
+
+      if (!this._wxPool || this._wxPool.w !== W || this._wxPool.h !== H) {
+        var cl = [], lv = [], rn = [], sn = [];
+        for (i = 0; i < 6; i++) {
+          var hc = hash("cld:" + i);
+          cl.push({ x: (hc % W), y: ((hc >> 8) % H), r: 130 + (hc % 90) });
+        }
+        for (i = 0; i < 18; i++) {
+          var hl = hash("lf:" + i);
+          lv.push({ x: (hl % W), y: ((hl >> 7) % H), ph: (hl % 628) / 100,
+                    spd: 0.75 + (hl % 50) / 100, gold: i % 3 === 0 });
+        }
+        for (i = 0; i < 95; i++) {
+          var hr = hash("rn:" + i);
+          rn.push({ x: (hr % W), y: ((hr >> 6) % H),
+                    spd: 0.85 + (hr % 35) / 100, len: 13 + (hr % 7) });
+        }
+        for (i = 0; i < 65; i++) {
+          var hs = hash("sn:" + i);
+          sn.push({ x: (hs % W), y: ((hs >> 6) % H), ph: (hs % 628) / 100,
+                    sz: 1.5 + (hs % 3) * 0.6, spd: 0.7 + (hs % 40) / 100 });
+        }
+        this._wxPool = { w: W, h: H, clouds: cl, leaves: lv, rain: rn, snow: sn };
+      }
+      var pool = this._wxPool;
+
+      // 1. Soft Radial-Gradient Cloud Shadows & Fog Banks (no hard ellipses)
+      var nClouds = cond === "fog" ? 6 : Math.min(5, Math.floor(clouds / 22));
+      if (nClouds > 0 && ctx.createRadialGradient) {
         for (i = 0; i < nClouds; i++) {
-          var cs = hash("cloud:" + i);
-          var cx = ((cs % 1900) + now * 0.018 * (wind.vx + 0.5)) % (W + 360) - 180;
-          var cy = (((cs >> 8) % 1300) + now * 0.012 * (wind.vy + 0.2)) % (H + 260) - 130;
-          if (cx < -200) cx += W + 360;
-          if (cy < -150) cy += H + 260;
+          var c = pool.clouds[i];
+          c.x += (wind.baseVx * 18 + 6) * dt;
+          c.y += (wind.baseVy * 12 + 2) * dt;
+          var rad = c.r * Math.max(0.7, z);
+          if (c.x > W + rad) c.x = -rad;
+          if (c.x < -rad) c.x = W + rad;
+          if (c.y > H + rad) c.y = -rad;
+          if (c.y < -rad) c.y = H + rad;
+          var cg = ctx.createRadialGradient(c.x, c.y, rad * 0.1, c.x, c.y, rad);
+          if (cond === "fog") {
+            cg.addColorStop(0, "rgba(210,225,230,0.16)");
+            cg.addColorStop(0.6, "rgba(210,225,230,0.07)");
+            cg.addColorStop(1, "rgba(210,225,230,0)");
+          } else {
+            cg.addColorStop(0, "rgba(6,12,16,0.16)");
+            cg.addColorStop(0.6, "rgba(6,12,16,0.07)");
+            cg.addColorStop(1, "rgba(6,12,16,0)");
+          }
+          ctx.fillStyle = cg;
           ctx.beginPath();
-          ctx.ellipse(cx, cy, (95 + (cs % 65)) * z, (48 + (cs % 35)) * z,
-                      0.2, 0, 7);
+          ctx.arc(c.x, c.y, rad, 0, 7);
           ctx.fill();
         }
       }
-      // 2. Blowing / falling leaves carried by the wind vector
-      if (!this.iso) {
-        var nLeaves = Math.min(28, Math.round(8 + wind.str * 7));
-        for (i = 0; i < nLeaves; i++) {
-          var ls = hash("leaf:" + i);
-          var lx = ((ls % 1600) + now * 0.055 * (wind.vx * 1.6 + 0.4)) % W;
-          var ly = (((ls >> 7) % 1200) + now * 0.038 * (wind.vy * 1.4 + 0.7) +
-                    Math.sin(now / 420 + i) * 14) % H;
-          if (lx < 0) lx += W;
-          if (ly < 0) ly += H;
-          ctx.fillStyle = (i % 3 === 0) ? "rgba(212,167,44,0.75)" :
-                          "rgba(78,148,64,0.72)";
-          ctx.beginPath();
-          ctx.ellipse(lx, ly, 2.6 * z, 1.3 * z,
-                      now / 260 + i, 0, 7);
-          ctx.fill();
-        }
+
+      // 2. Gentle dt-integrated Wind-Carried Leaves
+      var nLeaves = Math.min(18, Math.round(5 + wind.baseStr * 5));
+      for (i = 0; i < nLeaves; i++) {
+        var lf = pool.leaves[i];
+        lf.ph += 2.2 * dt;
+        lf.x += (wind.baseVx * 36 * lf.spd + Math.cos(lf.ph) * 14) * dt;
+        lf.y += (wind.baseVy * 22 * lf.spd + 18 * lf.spd + Math.sin(lf.ph) * 10) * dt;
+        if (lf.x > W + 10) lf.x = -10;
+        if (lf.x < -10) lf.x = W + 10;
+        if (lf.y > H + 10) lf.y = -10;
+        if (lf.y < -10) lf.y = H + 10;
+        ctx.fillStyle = lf.gold ? "rgba(218,175,52,0.72)" : "rgba(86,158,72,0.68)";
+        ctx.beginPath();
+        ctx.ellipse(lf.x, lf.y, 2.5 * z, 1.2 * z, lf.ph, 0, 7);
+        ctx.fill();
       }
-      // 3. Wind gust streaks when wind is strong
-      if (wind.kph >= 20) {
-        ctx.strokeStyle = "rgba(220,235,245,0.16)";
-        ctx.lineWidth = 1.2;
-        var nG = Math.min(18, Math.floor(wind.kph / 3));
-        for (i = 0; i < nG; i++) {
-          var gs = hash("gust:" + i);
-          var gx = ((gs % 1700) + now * 0.32 * wind.ux) % W;
-          var gy = (((gs >> 6) % 1100) + now * 0.32 * wind.uy) % H;
-          if (gx < 0) gx += W;
-          if (gy < 0) gy += H;
-          ctx.beginPath();
-          ctx.moveTo(gx, gy);
-          ctx.lineTo(gx + wind.ux * 38 * z, gy + wind.uy * 38 * z);
-          ctx.stroke();
-        }
-        ctx.lineWidth = 1;
-      }
-      // 4. Rain / Drizzle / Thunderstorm
+
+      // 3. Rain / Thunderstorm (stateful dt-integrated streaks + puddle ripples)
       if (cond === "rain" || cond === "storm") {
-        var nDrops = cond === "storm" ? 110 : 65;
+        var nDrops = cond === "storm" ? 95 : 55;
         ctx.strokeStyle = cond === "storm"
-          ? "rgba(175,215,255,0.58)" : "rgba(160,205,245,0.45)";
-        ctx.lineWidth = 1.2;
-        var dx = wind.vx * 6, dy = 15 + Math.abs(wind.vy) * 4;
+          ? "rgba(185,220,255,0.52)" : "rgba(170,210,245,0.40)";
+        ctx.lineWidth = 1.15;
+        var vxR = wind.baseVx * 110 + 40,
+            vyR = 540 + Math.abs(wind.baseVy) * 80;
+        var streakX = vxR * 0.026, streakY = vyR * 0.026;
         ctx.beginPath();
         for (i = 0; i < nDrops; i++) {
-          var rs = hash("rain:" + i);
-          var rx = ((rs % 1999) + now * (0.18 * wind.vx + 0.05)) % W;
-          var ry = (((rs >> 5) % 1499) + now * (0.48 + (rs % 15) * 0.01)) % H;
-          if (rx < 0) rx += W;
-          ctx.moveTo(rx, ry);
-          ctx.lineTo(rx + dx, ry + dy);
+          var r = pool.rain[i];
+          r.x += vxR * r.spd * dt;
+          r.y += vyR * r.spd * dt;
+          if (r.y > H + 20) { r.y = -15; r.x = (r.x + 137) % W; }
+          if (r.x > W + 20) r.x -= W + 40;
+          if (r.x < -20) r.x += W + 40;
+          ctx.moveTo(r.x, r.y);
+          ctx.lineTo(r.x + streakX, r.y + streakY);
         }
         ctx.stroke();
         ctx.lineWidth = 1;
         // Ground rain splash ripples
-        ctx.strokeStyle = "rgba(190,225,255,0.32)";
-        for (i = 0; i < 18; i++) {
+        ctx.strokeStyle = "rgba(195,230,255,0.28)";
+        for (i = 0; i < 14; i++) {
           var sp = hash("splash:" + i);
-          var age = ((now / 420 + (sp % 100) / 100) % 1);
+          var age = ((now / 520 + (sp % 100) / 100) % 1);
           var sx = (sp % W), sy = ((sp >> 8) % H);
           ctx.beginPath();
-          ctx.arc(sx, sy, age * 6 * z, 0, 7);
+          ctx.ellipse(sx, sy, age * 6.5 * z, age * 3.5 * z, 0, 0, 7);
           ctx.stroke();
         }
-        // Storm lightning flash + bolt
         if (cond === "storm") {
-          var cyc = now % 6800;
-          if (cyc < 140 || (cyc > 220 && cyc < 290)) {
-            ctx.fillStyle = "rgba(225,240,255,0.28)";
+          var cyc = now % 8200;
+          if (cyc < 110 || (cyc > 190 && cyc < 250)) {
+            ctx.fillStyle = "rgba(225,240,255,0.22)";
             ctx.fillRect(0, 0, W, H);
-            if (cyc < 140) {
-              ctx.strokeStyle = "rgba(240,248,255,0.92)";
-              ctx.lineWidth = 2.2;
-              var bx = W * (0.25 + ((Math.floor(now / 6800) * 37) % 50) / 100);
-              ctx.beginPath();
-              ctx.moveTo(bx, 0);
-              ctx.lineTo(bx - 18, H * 0.28);
-              ctx.lineTo(bx + 12, H * 0.48);
-              ctx.lineTo(bx - 24, H * 0.78);
-              ctx.stroke();
-              ctx.lineWidth = 1;
-            }
           }
         }
       } else if (cond === "snow") {
-        // 5. Snowflakes swirling in wind
+        // 4. Stateful dt-integrated Snowflakes
         ctx.fillStyle = "rgba(240,248,255,0.82)";
-        for (i = 0; i < 75; i++) {
-          var ss = hash("snow:" + i);
-          var sx2 = ((ss % 1800) + now * 0.04 * wind.vx +
-                     Math.sin(now / 600 + i) * 18) % W;
-          var sy2 = (((ss >> 6) % 1400) + now * (0.06 + (ss % 10) * 0.004)) % H;
-          if (sx2 < 0) sx2 += W;
+        for (i = 0; i < 65; i++) {
+          var snw = pool.snow[i];
+          snw.ph += 1.8 * dt;
+          snw.x += (wind.baseVx * 28 * snw.spd + Math.sin(snw.ph) * 18) * dt;
+          snw.y += 52 * snw.spd * dt;
+          if (snw.y > H + 10) { snw.y = -10; snw.x = (snw.x + 97) % W; }
+          if (snw.x > W + 10) snw.x = -10;
+          if (snw.x < -10) snw.x = W + 10;
           ctx.beginPath();
-          ctx.arc(sx2, sy2, (1.4 + (ss % 3) * 0.6) * z, 0, 7);
-          ctx.fill();
-        }
-      } else if (cond === "fog") {
-        // 6. Rolling mist banks
-        for (i = 0; i < 8; i++) {
-          var fs = hash("fogbank:" + i);
-          var fx = ((fs % 1600) + now * 0.025 * (wind.vx + 0.4)) % (W + 300) - 150;
-          var fy = ((fs >> 7) % H);
-          ctx.fillStyle = "rgba(205,220,225,0.14)";
-          ctx.beginPath();
-          ctx.ellipse(fx, fy, 160 * z, 46 * z, 0, 0, 7);
+          ctx.arc(snw.x, snw.y, snw.sz * z, 0, 7);
           ctx.fill();
         }
       }
