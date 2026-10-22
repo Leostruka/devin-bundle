@@ -1228,15 +1228,18 @@
           "%;background:#58a6ff'></span></div></div></div>";
       }).join("");
     }
-    // #159 AoE3 Top-Right Building Quick-Select Strip
+    // #159/#180 AoE3 Top-Right Building Quick-Select Strip (Office labels in Office Mode)
     if (el("bldbar")) {
+      var isOff = th.name === "office";
       el("bldbar").innerHTML = state.buildings.map(function (b) {
         var be = (th.buildings && th.buildings[b.bid]) || { glyph: "B" };
-        var shortName = (b.name || b.id).replace("Trophy Hall", "Trophy")
-          .replace("Marketplace", "Market").replace("Watchtower", "Tower");
+        var shortName = (isOff && be.label) ? be.label
+          : (b.name || b.id).replace("Trophy Hall", "Trophy")
+              .replace("Marketplace", "Market").replace("Watchtower", "Tower");
         return "<div class='bchip" + (state.selB === b.id ? " sel" : "") +
           "' data-bid='" + esc(b.id) + "' title='" +
-          esc((b.name || b.id) + " (used " + (b.activity || 0) +
+          esc((isOff && be.label ? be.label : (b.name || b.id)) +
+              " (used " + (b.activity || 0) +
               "x) - click inspect, dbl-click center") + "'><b>" +
           esc(be.glyph || "B") + "</b>" + esc(shortName) + "</div>";
       }).join("");
