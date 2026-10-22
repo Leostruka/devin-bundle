@@ -40,6 +40,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 176 | #177 | Collectible 3D Skill Scrolls on Map (`world._scrolls`) + 12 Tiered Achievements (`world._achievements` in `Discovery`/`Mastery`/`Secret` & `Common..Legendary`) + Hall of Glory gallery & `600x315` Trophy Card PNG export |
 | 178 | #179 | Campaign DAG dependency lines on 3D map + Campaign Review & Merge view, `GET/POST /loops` Scheduled Tasks manager, `POST /terminal` + `Ctrl+T` Multi-Tab Integrated Terminal drawer, Procedural Ambient Music (`#musicBtn`), and War Advisor interactive tutorial (`#tutBtn`) |
 | 180 | #181 | Complete 3D Isometric Office Mode overhaul (`_drawOfficeBuilding3D` 11 3D office rooms/furniture sets, `_drawOfficeUnit3D` 3D software-engineer rigs with headsets/glasses/hoodies/laptops & 3D dual-monitor sit-stand workstations, potted Monstera plants & robot vacuums) |
+| 182 | #183 | Complete UI/UX & multi-theme HUD overhaul (`body[data-theme="battlefield|office"]` & `body[data-race="human|orc|elf|undead"]`, 4 structured Resource Pods, decluttered header, Unit Dossier Card with Kit/Spell chips, and Quest Cards with gate progress bars) |
 
 ## Final gate evidence (milestone branch)
 
