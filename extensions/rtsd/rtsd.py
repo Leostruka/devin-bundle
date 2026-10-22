@@ -1049,6 +1049,40 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, git_codex_state(STATE["root"]))
         if path == "/loops":
             return self._json(200, loops_state())
+        if path == "/trophies":
+            tdir = os.path.join(state_dir(), "trophies")
+            out = []
+            if os.path.isdir(tdir):
+                for fn in sorted(os.listdir(tdir)):
+                    if fn.endswith(".md"):
+                        aid = fn[:-3]
+                        first = ""
+                        try:
+                            with open(os.path.join(tdir, fn),
+                                      encoding="utf-8") as fh:
+                                first = fh.readline().lstrip("# ").strip()
+                        except OSError:
+                            pass
+                        out.append({"id": aid, "title": first,
+                                    "svg": "/trophies/" + aid + ".svg"})
+            mb2 = re.match(r"^/trophies$", path)
+            return self._json(200, {"trophies": out})
+        mb_t = re.match(r"^/trophies/([A-Za-z0-9_-]+\.svg)$", path)
+        if mb_t:
+            fp = os.path.join(state_dir(), "trophies", mb_t.group(1))
+            if not os.path.isfile(fp):
+                return self._json(404, {"error": "trophy not found"})
+            try:
+                with open(fp, "rb") as fh:
+                    data = fh.read()
+            except OSError:
+                return self._json(404, {"error": "trophy unreadable"})
+            self.send_response(200)
+            self.send_header("Content-Type", "image/svg+xml")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if path == "/git/diff":
             q = urllib.parse.parse_qs(
                 urllib.parse.urlparse(self.path).query)
