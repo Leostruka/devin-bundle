@@ -1025,7 +1025,13 @@ def main():
         assert "age" in w_snap and w_snap["age"]["num"] >= 2, w_snap.get("age")
         assert w_snap["resources"].get("favor", 0) >= 25, w_snap["resources"]
         assert len(w_snap["age"].get("powers") or []) == 4, w_snap["age"]
-        print("PASS skill scrolls + achievements + AoM 5 Ages & God Powers")
+        # #192 True Office Tycoon Mode: staff roster, departments, sprint, upgrades
+        off = w_snap.get("office") or {}
+        assert off.get("mode") == "office", off
+        assert len(off.get("staff") or []) >= 1, off.get("staff")
+        assert "sprint" in off and "progress" in off["sprint"], off.get("sprint")
+        assert len(off.get("upgrades") or []) >= 5, off.get("upgrades")
+        print("PASS skill scrolls + achievements + AoM 5 Ages & God Powers + Office Tycoon")
         sys.path.insert(0, HERE)
         import world as worldmod
         now = snap["world"]["now"]
