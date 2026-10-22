@@ -2395,6 +2395,31 @@
           ctx.textAlign = "center"; ctx.textBaseline = "middle";
           ctx.fillText(u.name, s.x, s.y + sz / 2 + 7 * z);
         }
+        // #193 order status badge (P/G/A/F chip over the shoulder) and
+        // god-power buff ring (flaming weapons: flickering orange aura)
+        if (u.buff === "flame") {
+          ctx.strokeStyle = "rgba(255,106,0," +
+            (0.45 + 0.35 * Math.sin(t0 / 90 + ph)) + ")";
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(s.x, s.y + sz * 0.1, sz * 0.5, 0, 7);
+          ctx.stroke(); ctx.lineWidth = 1;
+        }
+        if (u.statusFx && z > 0.45) {
+          var bc = ({ patrol: "#58a6ff", gather: "#ffd54a",
+                      attack: "#f85149", focus: "#ff6a00" })[u.statusFx] ||
+                   "#8b949e";
+          var bg = ({ patrol: "P", gather: "G",
+                      attack: "A", focus: "F" })[u.statusFx] || "?";
+          ctx.fillStyle = "rgba(10,14,20,0.92)";
+          ctx.beginPath();
+          ctx.arc(s.x + sz * 0.44, s.y - sz * 0.5, 6.5 * z, 0, 7);
+          ctx.fill();
+          ctx.strokeStyle = bc; ctx.stroke();
+          ctx.fillStyle = bc;
+          ctx.font = "bold " + Math.max(8, Math.round(8 * z)) + "px monospace";
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(bg, s.x + sz * 0.44, s.y - sz * 0.5);
+        }
         // voice bark: heartbeat note / ack floats over the head (#125)
         if (u.bark && z > 0.55) {
           ctx.fillStyle = "rgba(18,26,20,0.88)";
@@ -2530,6 +2555,75 @@
         ctx.fillText(String(wp.n), s.x, s.y - fh - 1);
         ctx.globalAlpha = 1;
       });
+      // #193 client-side loop orders: dashed path chain + destination flag
+      // (patrol waypoints, gather mine->keep, attack/focus target)
+      var MARK_COL = { patrol: "#58a6ff", gather: "#ffd54a",
+                       attack: "#f85149", focus: "#ff6a00" };
+      (st.orderMarks || []).forEach(function (mk) {
+        var col = MARK_COL[mk.kind] || "#58a6ff";
+        ctx.globalAlpha = 0.8;
+        ctx.strokeStyle = col;
+        ctx.setLineDash([5 * z, 4 * z]);
+        ctx.beginPath();
+        var s0 = self.toScreen(mk.fx, mk.fy);
+        ctx.moveTo(s0.x, s0.y);
+        mk.pts.forEach(function (p) {
+          var s = self.toScreen(p.x, p.y);
+          ctx.lineTo(s.x, s.y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+        mk.pts.forEach(function (p, i) {
+          var s = self.toScreen(p.x, p.y), last = i === mk.pts.length - 1;
+          ctx.fillStyle = col;
+          if (mk.kind === "gather" && !last) {
+            // gold-mine diamond at the harvest node
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y - 7 * z); ctx.lineTo(s.x + 5 * z, s.y);
+            ctx.lineTo(s.x, s.y + 7 * z); ctx.lineTo(s.x - 5 * z, s.y);
+            ctx.fill();
+          } else if (mk.kind === "attack" || mk.kind === "focus") {
+            // crosshair X at the assault target
+            ctx.lineWidth = 2; ctx.strokeStyle = col;
+            ctx.beginPath();
+            ctx.moveTo(s.x - 4 * z, s.y - 4 * z);
+            ctx.lineTo(s.x + 4 * z, s.y + 4 * z);
+            ctx.moveTo(s.x + 4 * z, s.y - 4 * z);
+            ctx.lineTo(s.x - 4 * z, s.y + 4 * z);
+            ctx.stroke(); ctx.lineWidth = 1;
+          } else {
+            // pennant flag
+            ctx.fillRect(s.x - 1, s.y - 13 * z, 2, 13 * z);
+            ctx.beginPath();
+            ctx.moveTo(s.x + 1, s.y - 13 * z);
+            ctx.lineTo(s.x + 8 * z, s.y - 10 * z);
+            ctx.lineTo(s.x + 1, s.y - 7 * z);
+            ctx.fill();
+          }
+        });
+        ctx.globalAlpha = 1;
+      });
+      // #193 armed targeted order: live path preview from each selected
+      // unit to the cursor + pulsing target ring (WC3/SC2 style)
+      if (st.armed && st.armed.to) {
+        var ac = ({ move: "#58a6ff", attack: "#f85149",
+                    focus: "#ff6a00" })[st.armed.order] || "#bc8cff";
+        var ts = self.toScreen(st.armed.to.x, st.armed.to.y);
+        ctx.globalAlpha = 0.85;
+        ctx.strokeStyle = ac; ctx.lineWidth = 2;
+        ctx.setLineDash([6 * z, 5 * z]);
+        (st.armed.from || []).forEach(function (f) {
+          var fs = self.toScreen(f.x, f.y);
+          ctx.beginPath();
+          ctx.moveTo(fs.x, fs.y); ctx.lineTo(ts.x, ts.y);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+        var pr = (9 + 3 * Math.sin(now / 160)) * z;
+        ctx.beginPath(); ctx.arc(ts.x, ts.y, pr, 0, 7); ctx.stroke();
+        ctx.beginPath(); ctx.arc(ts.x, ts.y, 2, 0, 7); ctx.stroke();
+        ctx.lineWidth = 1; ctx.globalAlpha = 1;
+      }
       // event pings: expanding rings, color = kind (#124)
       (st.pings || []).forEach(function (p) {
         var age = (now - p.t0) / 1000;

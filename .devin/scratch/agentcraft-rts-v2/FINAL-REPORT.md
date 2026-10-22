@@ -46,6 +46,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 188 | #189 | Continuous connected river channel (`strokeWaterPass` eliminating per-tile circular water blobs & white `ctx.ellipse` rings) + unidirectional downstream water ripples (`pFlow = (now / 2200 + seed) % 1` with `sin(pFlow * PI)` fade envelope, eliminating circular `(sin, cos)` wave orbits) |
 | 190 | #191 | Age of Mythology: Retold 5 Ages progression (`I. Archaic -> V. Wonder Age`), Divine Favor (`resources.favor`), top-center Reusable God Powers Bar (`#godbar`: `Vision`, `Restoration`, `Flaming Weapons`, `Meteor Storm`), and BANG!-engine unit collision pushing |
 | 192 | #193 | True Office Tycoon Mode (Game Dev Tycoon / Cafe Mania style: `_office_state()` staff roster with energy/coffee/needs/desk/task/XP, departments by lane, sprint progress, upgrade cards + `Office` side panel) |
+| 193 | #197 | RTS Micro & Command Layer (armed-order cursor path preview + target ring, patrol/gather/attack/focus destination marks, P/G/A/F unit status badges, Flaming Weapons buff ring, cast/ability cooldown overlays `.cd`, `.fired` action flash, Focus-Fire order + `F` hotkey, inspector status chips) |
 
 ## Final gate evidence (milestone branch)
 
