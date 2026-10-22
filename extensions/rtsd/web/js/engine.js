@@ -782,9 +782,13 @@
       }
     },
 
-    /* office (#134): the same tiles drawn as iso floor diamonds. The
-       visible world bbox comes from unprojecting the four screen
-       corners through toWorld() - the same transform clicks use. */
+    /* office (#134/#180): Architectural 3D Isometric Tech Startup HQ Floorplan!
+       Divides the floor into bright, well-lit rectangular architectural rooms:
+       - Central Porcelain Hallways (cross-corridors)
+       - Walnut Hardwood Boardroom & Executive Wing
+       - Checkered Ceramic Breakroom & Kitchen Wing
+       - Dark Anti-Static Raised Data-Center / Server Room
+       - Warm Light-Grey Open-Plan Engineering Carpet with Cubicle Bays */
     _isoTiles: function (ctx, st, theme, z) {
       var ts = st.tiles, W = ts.w, H = ts.h, cv = this.cv;
       var fog = st.visFog || st.fog;
@@ -799,29 +803,65 @@
             Math.max(a.x, b.x, c.x, d.x) / TILE) + 1),
           y1 = Math.min(H, Math.ceil(
             Math.max(a.y, b.y, c.y, d.y) / TILE) + 1);
+      var cx = Math.floor(W / 2), cy = Math.floor(H / 2);
+      if (ts.caps && ts.caps.root) {
+        cx = ts.caps.root.cx; cy = ts.caps.root.cy;
+      }
       for (var ty = y0; ty < y1; ty++) {
         for (var tx = x0; tx < x1; tx++) {
           var i = ty * W + tx;
           var f = fog ? fog[i] : 2;
-          var p0 = this.toScreen(tx * TILE, ty * TILE),
-              p1 = this.toScreen((tx + 1) * TILE, ty * TILE),
-              p2 = this.toScreen((tx + 1) * TILE, (ty + 1) * TILE),
-              p3 = this.toScreen(tx * TILE, (ty + 1) * TILE);
+          var p0 = this.toScreen(tx * TILE, ty * TILE, 0),
+              p1 = this.toScreen((tx + 1) * TILE, ty * TILE, 0),
+              p2 = this.toScreen((tx + 1) * TILE, (ty + 1) * TILE, 0),
+              p3 = this.toScreen(tx * TILE, (ty + 1) * TILE, 0);
           ctx.beginPath();
           ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y);
           ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y);
           ctx.closePath();
-          if (f === 0) {
-            ctx.fillStyle = (tx + ty) % 2 ? "#12151e" : "#0e1118";
+
+          // Architectural Room Zoning around HQ center (cx, cy)
+          var dx = tx - cx, dy = ty - cy;
+          var isHall = (Math.abs(dx) <= 1 || Math.abs(dy) <= 1);
+          var isBoardroom = (dx >= -6 && dx <= 6 && dy >= -6 && dy <= 6);
+          var isKitchen = (dx > 6 && dy < -1);
+          var isServerRm = (dx < -6 && dy < -1);
+
+          if (isHall) {
+            // Bright White/Silver Porcelain Main Corridor
+            ctx.fillStyle = (tx + ty) % 2 ? "#cbd5e1" : "#bcc6d4";
             ctx.fill();
-            continue;
+            ctx.strokeStyle = "rgba(15,23,42,0.18)";
+            ctx.stroke();
+          } else if (isBoardroom) {
+            // Executive Boardroom Wing: Warm Honey-Oak Hardwood Parquet
+            ctx.fillStyle = (tx + ty) % 2 ? "#b0824e" : "#9e7242";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(69,26,3,0.22)";
+            ctx.stroke();
+          } else if (isKitchen) {
+            // Breakroom & Cafe Wing: Classic Checkered Ceramic Tile
+            ctx.fillStyle = (tx + ty) % 2 ? "#e2e8f0" : "#94a3b8";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(15,23,42,0.15)";
+            ctx.stroke();
+          } else if (isServerRm) {
+            // Data Center / Server Room: Dark Anti-Static Perforated Floor + Cyan Grid
+            ctx.fillStyle = (tx + ty) % 2 ? "#1e293b" : "#172033";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(56,189,248,0.25)";
+            ctx.stroke();
+          } else {
+            // Open-Plan Engineering Workspace: Warm Modern Office Carpet Tiles
+            ctx.fillStyle = (tx + ty) % 2 ? "#526075" : "#4a576b";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255,255,255,0.08)";
+            ctx.stroke();
           }
-          ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
-          ctx.fill();
-          ctx.strokeStyle = "rgba(255,255,255,0.04)";
-          ctx.stroke();
-          if (f === 1) {
-            ctx.fillStyle = "rgba(8,10,16,0.28)"; ctx.fill();
+          if (f === 0) {
+            // Subtle dimming for unvisited office wings (still clearly visible!)
+            ctx.fillStyle = "rgba(15,23,42,0.22)";
+            ctx.fill();
           }
           if (ts.breach && ts.breach[i]) {
             ctx.fillStyle = "rgba(248,81,73," +
@@ -833,10 +873,43 @@
       }
     },
 
-    /* #157 doodads, swaying forest trees, and wandering critters */
+    /* #157/#180 doodads, swaying forest trees (or 3D indoor office plants &
+       robot vacuums in Office Mode), and wandering critters */
     _drawNature: function (ctx, st, theme, z, now, wind) {
-      if (this.iso) return;
       var ts = st.tiles;
+      if (!ts || !ts._trees) return;
+      var self = this, cv = this.cv, fog = st.visFog || st.fog, W = ts.w;
+      if (this.iso) {
+        // #180 Office Mode: 3D Potted Monstera/Ficus Plants & Robot Vacuums
+        (ts._trees || []).forEach(function (tr, idx) {
+          if (idx % 3 !== 0) return; // sparser indoor planters
+          var f = fog ? fog[tr.ty * W + tr.tx] : 2;
+          if (f === 0) return;
+          var s = self.toScreen(tr.x, tr.y, 0);
+          if (s.x < -36 || s.y < -36 || s.x > cv.width + 36 ||
+              s.y > cv.height + 36) return;
+          // 3D White Ceramic Planter Pot (wz: 0 -> 7)
+          self._cyl3D(ctx, tr.x, tr.y, 0, 3.8, 7,
+                      "#f8fafc", "#cbd5e1", "#64748b", "#3e2723");
+          // 3D Indoor Monstera / Ficus Foliage Crown
+          self._cone3D(ctx, tr.x, tr.y, 6, 6.2, 11, "#22c55e", "#14532d");
+          self._cone3D(ctx, tr.x, tr.y, 13, 4.5, 8, "#4ade80", "#166534");
+        });
+        // Robot Vacuums (Roombas) gliding across the office carpet
+        (ts._critters || []).forEach(function (cr) {
+          var ph = now / 1600 + (cr.seed % 100);
+          var wx = cr.ox + Math.sin(ph * 0.7) * TILE * 1.3,
+              wy = cr.oy + Math.cos(ph * 0.5) * TILE * 1.1;
+          var ti = Math.floor(wy / TILE) * W + Math.floor(wx / TILE);
+          if (fog && fog[ti] !== 2) return;
+          self._cyl3D(ctx, wx, wy, 0, 4.2, 2.5,
+                      "#475569", "#1e293b", "#0f172a", "#334155");
+          var rs = self.toScreen(wx, wy, 3);
+          ctx.fillStyle = "#38bdf8";
+          ctx.beginPath(); ctx.arc(rs.x, rs.y, 1.5 * z, 0, 7); ctx.fill();
+        });
+        return;
+      }
       if (!ts || !ts._trees) return;
       var self = this, cv = this.cv, fog = st.visFog || st.fog, W = ts.w;
       // 1. Doodads (rocks, wildflowers, reeds, grass tufts)
@@ -1080,11 +1153,9 @@
       }
     },
 
-    /* office furniture + ambient life (#134): pure presentation over
-       real positions. Meeting table + water cooler sit on the real
-       town-hall plot; kanban walls stand behind real quest markers;
-       heroes work at desks; a pending decision walks every hero toward
-       the meeting table (GDD 3.2 "units walk to table"). */
+    /* office furniture + ambient life (#134/#180): 3D cutaway office walls
+       with windows, printer-fire alert on runeforge during gate breaches,
+       and 3D engineer summons to the glass boardroom during decisions. */
     _officeProps: function (ctx, st, theme, z, now) {
       var self = this, pal = theme.palette;
       var th = null, rf = null;
@@ -1092,71 +1163,45 @@
         if (b.bid === "town-hall") th = b;
         if (b.bid === "runeforge") rf = b;
       });
+      // 3D Architectural Cutaway Walls, Glass Room Partitions & Open-Plan Cubicle Pods
       if (th) {
-        var s = this.toScreen(th.x, th.y);
-        // meeting-room table under the town-hall marker
-        ctx.fillStyle = "#3a2f28";
-        ctx.beginPath();
-        ctx.ellipse(s.x, s.y + 16 * z, 30 * z, 12 * z, 0, 0, 7);
-        ctx.fill();
-        ctx.strokeStyle = "#5a4632"; ctx.stroke();
-        // water cooler: idle staff landmark beside the meeting room
-        var wc = this.toScreen(th.x + TILE * 1.7, th.y + TILE * 1.7);
-        ctx.fillStyle = "#4a5568";
-        ctx.fillRect(wc.x - 4 * z, wc.y - 10 * z, 8 * z, 12 * z);
-        ctx.fillStyle = "#58a6ff";
-        ctx.beginPath(); ctx.arc(wc.x, wc.y - 12 * z, 4.5 * z, 0, 7);
-        ctx.fill();
-        if (!st.decision) {   // idle heroes gather by the water cooler
-          (st.units || []).filter(function (u) {
-            return u.kind === "hero" && u.status_live === "idle";
-          }).forEach(function (u, i) {
-            var a = 6.2832 * i / 6;
-            var wp = self.toScreen(th.x + TILE * (1.7 + 0.6 * Math.cos(a)),
-                                   th.y + TILE * (1.7 + 0.6 * Math.sin(a)));
-            ctx.globalAlpha = 0.55;
-            var sz = 14 * Math.max(z, 0.7);
-            Theme.sprite(ctx, theme.units[u.cls] || theme.units.Squire,
-                         wp.x - sz / 2, wp.y - sz / 2, sz, sz);
-            ctx.globalAlpha = 1;
-          });
+        // North-West & North-East Exterior Cutaway Walls with Panoramic Windows
+        this._box3D(ctx, th.x - TILE * 6, th.y - TILE * 7, 0,
+                    TILE * 14, 5, 28, "#f1f5f9", "#cbd5e1", "#94a3b8");
+        this._box3D(ctx, th.x - TILE * 12, th.y - TILE * 1, 0,
+                    5, TILE * 12, 28, "#f1f5f9", "#cbd5e1", "#94a3b8");
+        for (var wi = -5; wi <= 5; wi += 2.5) {
+          this._box3D(ctx, th.x - TILE * 6 + wi * TILE, th.y - TILE * 7 + 1,
+                      7, TILE * 1.6, 2, 15, "#e0f2fe", "#38bdf8", "#0284c7");
+        }
+        // Glass Partition Walls framing the Executive Boardroom
+        this._box3D(ctx, th.x - TILE * 4, th.y - TILE * 3.5, 0,
+                    TILE * 5, 3, 18, "#94a3b8", "rgba(186,230,253,0.35)", "#475569");
+        this._box3D(ctx, th.x + TILE * 4, th.y - TILE * 3.5, 0,
+                    TILE * 5, 3, 18, "#94a3b8", "rgba(186,230,253,0.35)", "#475569");
+        // Open-Plan Cubicle Workstation Pods in the Engineering Wing
+        var pods = [[-5, 4], [-2, 4], [3, 4], [6, 4], [-5, 7], [3, 7]];
+        for (var pi = 0; pi < pods.length; pi++) {
+          var px = th.x + pods[pi][0] * TILE, py = th.y + pods[pi][1] * TILE;
+          // Acoustic fabric cubicle divider + birch desk + dual monitors + chair
+          this._box3D(ctx, px, py - 8, 0, 24, 3, 13, "#64748b", "#475569", "#334155");
+          this._box3D(ctx, px, py, 0, 22, 12, 7, "#e2c799", "#c2a370", "#8c6d46");
+          this._box3D(ctx, px - 5, py - 3, 7, 7, 2, 5.5, "#38bdf8", "#0f172a", "#1e293b");
+          this._box3D(ctx, px + 5, py - 3, 7, 7, 2, 5.5, "#3fb950", "#0f172a", "#1e293b");
+          this._cyl3D(ctx, px, py + 9, 0, 3.8, 6, "#334155", "#1e293b", "#0f172a", "#475569");
         }
       }
       if (rf && st.tiles && st.tiles.breach &&
           st.tiles.breach.some(function (x) { return x > 0; })) {
-        // gate-fail = printer fire (red/orange flash on runeforge)
-        var ps = this.toScreen(rf.x, rf.y);
+        // gate-fail = printer fire (red/orange flame on 3D printer)
+        var ps = this.toScreen(rf.x, rf.y, 18);
         var fl = 10 + 5 * Math.sin(now / 120);
         ctx.fillStyle = (now % 300 < 150) ? pal.err : "#ff9800";
         ctx.beginPath();
-        ctx.arc(ps.x, ps.y - 18 * z, fl * z, 0, 7);
+        ctx.arc(ps.x, ps.y, fl * z, 0, 7);
         ctx.fill();
       }
-      // kanban wall behind each quest marker (quest log reskin)
-      (st.pois || []).forEach(function (p) {
-        if (p.kind !== "quest") return;
-        var s = self.toScreen((p.x + .5) * TILE, (p.y + .5) * TILE);
-        var bw = 34 * z, bh = 20 * z;
-        ctx.fillStyle = "#1b1e28";
-        ctx.fillRect(s.x - bw / 2, s.y - 26 * z, bw, bh);
-        ctx.strokeStyle = pal.border; ctx.strokeRect(s.x - bw / 2,
-          s.y - 26 * z, bw, bh);
-        for (var k = 1; k < 3; k++) {
-          ctx.beginPath();
-          ctx.moveTo(s.x - bw / 2 + bw * k / 3, s.y - 26 * z);
-          ctx.lineTo(s.x - bw / 2 + bw * k / 3, s.y - 26 * z + bh);
-          ctx.stroke();
-        }
-        var dots = { done: "#3fb950", blocked: "#8b949e",
-                     failed: pal.err, open: "#ffd54a" };
-        ctx.fillStyle = dots[p.qst] || dots.open;
-        for (var q = 0; q < 3; q++)
-          ctx.fillRect(s.x - bw / 2 + 3 * z + bw * q / 3,
-                       s.y - 23 * z, 5 * z, 4 * z);
-      });
-      // decision summons: heroes converge on the meeting-room table.
-      // Walkers are presentation ghosts - real unit positions (and so
-      // picking/selection) stay exactly where the world puts them.
+      // decision summons: engineers walk to the glass boardroom table
       if (st.decision) {
         var dd = st.decision, heroes = (st.units || []).filter(
           function (u) { return u.kind === "hero"; });
@@ -1165,16 +1210,11 @@
           var ang = 6.2832 * i / Math.max(1, heroes.length);
           var sx = dd.x + Math.cos(ang) * TILE * 1.3,
               sy = dd.y + Math.sin(ang) * TILE * 1.3;
-          var a = self.toScreen(u.x, u.y), b = self.toScreen(sx, sy);
-          ctx.globalAlpha = 0.30;
-          ctx.strokeStyle = "#ffd54a"; ctx.setLineDash([4, 4]);
+          var a = self.toScreen(u.x, u.y, 2), b = self.toScreen(sx, sy, 2);
+          ctx.globalAlpha = 0.35;
+          ctx.strokeStyle = "#38bdf8"; ctx.setLineDash([4, 4]);
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
           ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-          var wp = self.toScreen(u.x + (sx - u.x) * p,
-                                 u.y + (sy - u.y) * p);
-          var sz = 16 * Math.max(z, 0.7);
-          Theme.sprite(ctx, theme.units[u.cls] || theme.units.Squire,
-                       wp.x - sz / 2, wp.y - sz / 2, sz, sz);
         });
       }
     },
@@ -1237,10 +1277,162 @@
       }
     },
 
+    /* #180 3D Isometric Tech Startup HQ Rooms & Furniture for all 11
+       structures when Office Mode (`this.iso`) is active. */
+    _drawOfficeBuilding3D: function (ctx, b, theme, z, now, pal) {
+      var bid = b.bid || "vault", wx = b.x, wy = b.y, i;
+      var s0 = this.toScreen(wx, wy, 0);
+      // Soft floor shadow
+      ctx.fillStyle = "rgba(0,0,0,0.38)";
+      ctx.beginPath();
+      ctx.ellipse(s0.x + 4 * z, s0.y + 3 * z, 28 * z, 14 * z, 0, 0, 7);
+      ctx.fill();
+
+      if (bid === "town-hall") {
+        // 1. Executive Glass Boardroom (Meeting Room): rug + walnut table +
+        // 6 ergonomic swivel chairs + 65" wall presentation screen
+        this._box3D(ctx, wx, wy, 0, 42, 34, 1.5, "#1e3a5f", "#172554", "#0f172a");
+        // Back glass-and-steel partition wall + 65" Presentation Display
+        this._box3D(ctx, wx, wy - 14, 1.5, 36, 3, 24, "#94a3b8", "rgba(148,163,184,0.32)", "#475569");
+        this._box3D(ctx, wx, wy - 12.5, 9, 22, 2, 13, "#38bdf8", "#0f172a", "#1e293b");
+        var tvS = this.toScreen(wx, wy - 12, 15);
+        ctx.fillStyle = "#3fb950";
+        ctx.fillRect(tvS.x - 6 * z, tvS.y - 2 * z, 3 * z, 5 * z);
+        ctx.fillStyle = "#58a6ff";
+        ctx.fillRect(tvS.x - 1 * z, tvS.y - 4 * z, 3 * z, 7 * z);
+        ctx.fillStyle = "#ffd54a";
+        ctx.fillRect(tvS.x + 4 * z, tvS.y - 5 * z, 3 * z, 8 * z);
+        // 6 Swivel Chairs + Long 3D Mahogany Conference Table
+        for (i = -10; i <= 10; i += 10) {
+          this._cyl3D(ctx, wx + i, wy - 8, 1.5, 3.2, 7, "#475569", "#1e293b", "#0f172a");
+          this._cyl3D(ctx, wx + i, wy + 8, 1.5, 3.2, 7, "#475569", "#1e293b", "#0f172a");
+        }
+        this._box3D(ctx, wx, wy, 1.5, 28, 13, 6.5, "#7c4a27", "#5c3419", "#3b200e");
+        // Open laptops on boardroom table
+        this._box3D(ctx, wx - 6, wy, 8, 5, 4, 2.5, "#e2e8f0", "#94a3b8", "#64748b");
+        this._box3D(ctx, wx + 6, wy, 8, 5, 4, 2.5, "#38bdf8", "#94a3b8", "#64748b");
+      } else if (bid === "barracks") {
+        // 2. Onboarding & IT Provisioning Desk: L-counter + dual monitors + MacBook boxes
+        this._box3D(ctx, wx, wy, 0, 34, 26, 1.5, "#334155", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx, wy - 4, 1.5, 28, 10, 9, "#e2e8f0", "#cbd5e1", "#94a3b8");
+        this._box3D(ctx, wx - 10, wy + 4, 1.5, 8, 12, 9, "#e2e8f0", "#cbd5e1", "#94a3b8");
+        // Dual curved monitors + stacked silver laptop boxes
+        this._box3D(ctx, wx - 4, wy - 4, 10.5, 7, 2, 6, "#38bdf8", "#0f172a", "#334155");
+        this._box3D(ctx, wx + 5, wy - 4, 10.5, 7, 2, 6, "#3fb950", "#0f172a", "#334155");
+        this._box3D(ctx, wx + 9, wy + 5, 1.5, 7, 6, 6, "#f8fafc", "#cbd5e1", "#64748b");
+      } else if (bid === "tavern") {
+        // 3. Break Room & Espresso Bar: kitchen counter + stainless fridge +
+        // steaming 3D espresso machine + cafe table
+        this._box3D(ctx, wx, wy, 0, 36, 28, 1.5, "#475569", "#334155", "#1e293b");
+        // Stainless Steel Refrigerator (wz: 1.5 -> 26)
+        this._box3D(ctx, wx - 11, wy - 6, 1.5, 9, 9, 24, "#f1f5f9", "#cbd5e1", "#64748b");
+        // Kitchen Counter + Commercial Espresso Machine
+        this._box3D(ctx, wx + 4, wy - 6, 1.5, 18, 9, 9, "#d97706", "#92400e", "#451a03");
+        this._box3D(ctx, wx + 2, wy - 6, 10.5, 8, 6, 7.5, "#e2e8f0", "#dc2626", "#7f1d1d");
+        // Rising Espresso Steam puffs
+        var esS = this.toScreen(wx + 2, wy - 6, 19);
+        for (i = 0; i < 3; i++) {
+          var sp = ((now / 700 + i * 0.33) % 1);
+          ctx.fillStyle = "rgba(255,255,255," + ((1 - sp) * 0.55).toFixed(2) + ")";
+          ctx.beginPath();
+          ctx.arc(esS.x + Math.sin(now / 220 + i) * 2 * z,
+                  esS.y - sp * 12 * z, (1.8 + sp * 2.5) * z, 0, 7);
+          ctx.fill();
+        }
+        // Round Cafe Bistro Table
+        this._cyl3D(ctx, wx + 4, wy + 7, 1.5, 6.5, 6.5, "#f8fafc", "#cbd5e1", "#64748b", "#ffffff");
+      } else if (bid === "library") {
+        // 4. Documentation Bookshelf Wall & Reading Lounge
+        this._box3D(ctx, wx, wy, 0, 34, 26, 1.5, "#3b2f2f", "#292020", "#1a1414");
+        this._box3D(ctx, wx, wy - 7, 1.5, 28, 7, 25, "#78350f", "#451a03", "#270e02");
+        // Colored book rows on shelves
+        var bkCols = ["#38bdf8", "#ffd54a", "#f85149", "#3fb950"];
+        for (i = 0; i < 4; i++) {
+          this._box3D(ctx, wx - 9 + i * 6, wy - 5.5, 5 + (i % 2) * 8, 5, 4, 5,
+                      bkCols[i], bkCols[i], "#1e293b");
+        }
+        // Cozy reading couch in front
+        this._box3D(ctx, wx, wy + 6, 1.5, 18, 9, 6, "#3b82f6", "#1d4ed8", "#1e3a8a");
+      } else if (bid === "watchtower") {
+        // 5. Data Center Server Rack Bank (3x 42U Racks with blinking LEDs)
+        this._box3D(ctx, wx, wy, 0, 34, 26, 2, "#0f172a", "#1e293b", "#020617");
+        for (i = -9; i <= 9; i += 9) {
+          this._box3D(ctx, wx + i, wy, 2, 7.5, 11, 28, "#334155", "#0f172a", "#020617");
+          for (var uR = 6; uR <= 26; uR += 5) {
+            var led = this.toScreen(wx + i, wy + 5.5, uR);
+            ctx.fillStyle = ((Math.floor(now / 240) + i + uR) % 3 === 0)
+              ? "#38bdf8" : "#3fb950";
+            ctx.fillRect(led.x - 2.5 * z, led.y, 2 * z, 1.5 * z);
+            ctx.fillStyle = "#ffd54a";
+            ctx.fillRect(led.x + 1 * z, led.y, 1.8 * z, 1.5 * z);
+          }
+        }
+      } else if (bid === "runeforge") {
+        // 6. Commercial Multifunction Laser Printer / Copier Station
+        this._box3D(ctx, wx, wy, 0, 32, 24, 1.5, "#334155", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx - 2, wy, 1.5, 20, 15, 14, "#f8fafc", "#cbd5e1", "#64748b");
+        // Top ADF Scanner Lid + Touch Control Panel
+        this._box3D(ctx, wx - 2, wy, 15.5, 21, 16, 3, "#e2e8f0", "#94a3b8", "#475569");
+        // Animated white paper sheet ejecting into side tray
+        var pSlide = ((now / 600) % 1) * 5;
+        this._box3D(ctx, wx + 10 + pSlide, wy, 11, 6, 8, 1, "#ffffff", "#e2e8f0", "#cbd5e1");
+      } else if (bid === "portal") {
+        // 7. Soundproof Framery Acoustic Phone Booth (Zoom Pod)
+        this._box3D(ctx, wx, wy, 0, 26, 24, 1.5, "#334155", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx, wy, 1.5, 16, 16, 28, "#f59e0b", "#1e293b", "#0f172a");
+        // Illuminated Glass Door & Interior Video-Call Screen
+        var pbS = this.toScreen(wx, wy + 6, 14);
+        ctx.fillStyle = "rgba(254,240,138,0.45)";
+        ctx.fillRect(pbS.x - 5 * z, pbS.y - 9 * z, 10 * z, 18 * z);
+        ctx.strokeStyle = "#38bdf8";
+        ctx.strokeRect(pbS.x - 5 * z, pbS.y - 9 * z, 10 * z, 18 * z);
+      } else if (bid === "marketplace") {
+        // 8. Smart Vending Machine & Tech Swag Locker
+        this._box3D(ctx, wx, wy, 0, 32, 24, 1.5, "#334155", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx - 6, wy - 2, 1.5, 13, 11, 25, "#38bdf8", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx + 7, wy - 2, 1.5, 11, 11, 25, "#f59e0b", "#334155", "#0f172a");
+      } else if (bid === "altar") {
+        // 9. Office Water Cooler Dispenser (5-Gallon Jug with Bubbles) & Lounge Sofa
+        this._box3D(ctx, wx, wy, 0, 32, 24, 1.5, "#334155", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx - 8, wy - 2, 1.5, 7, 7, 13, "#f8fafc", "#cbd5e1", "#94a3b8");
+        this._cyl3D(ctx, wx - 8, wy - 2, 14.5, 3.2, 9, "#bae6fd", "#38bdf8", "#0284c7", "#e0f2fe");
+        // Rising water cooler bubble
+        var bub = this.toScreen(wx - 8, wy - 2, 16 + ((now / 400) % 1) * 6);
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath(); ctx.arc(bub.x, bub.y, 1.4 * z, 0, 7); ctx.fill();
+        // Teal Lounge Sofa beside water cooler
+        this._box3D(ctx, wx + 6, wy + 2, 1.5, 15, 10, 7, "#14b8a6", "#0d9488", "#115e59");
+      } else if (bid === "vault") {
+        // 10. Magnetic Glass Architecture Whiteboard Wall & Safe
+        this._box3D(ctx, wx, wy, 0, 34, 24, 1.5, "#334155", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx, wy - 4, 4, 28, 3, 20, "#f8fafc", "#ffffff", "#cbd5e1");
+        var wbS = this.toScreen(wx, wy - 3, 14);
+        ctx.strokeStyle = "#2563eb"; ctx.lineWidth = Math.max(1, 1.4 * z);
+        ctx.strokeRect(wbS.x - 8 * z, wbS.y - 4 * z, 6 * z, 5 * z);
+        ctx.strokeRect(wbS.x + 2 * z, wbS.y - 4 * z, 6 * z, 5 * z);
+        ctx.lineWidth = 1;
+      } else {
+        // 11. Trophy Hall -> 3-Column Sprint Kanban Wall (TODO | WIP | DONE) + Trophies
+        this._box3D(ctx, wx, wy, 0, 34, 24, 1.5, "#334155", "#1e293b", "#0f172a");
+        this._box3D(ctx, wx, wy - 4, 2, 30, 4, 22, "#475569", "#1e293b", "#0f172a");
+        var kbCols = ["#ffd54a", "#38bdf8", "#3fb950"];
+        for (i = 0; i < 3; i++) {
+          this._box3D(ctx, wx - 8 + i * 8, wy - 2, 10 + (i % 2) * 4, 5, 2, 4,
+                      kbCols[i], kbCols[i], "#0f172a");
+        }
+        // Golden Shipped Trophy Cup on top of Kanban board
+        this._cyl3D(ctx, wx, wy - 4, 24, 2.5, 5, "#fff3b0", "#ffd54a", "#b45309", "#fff3b0");
+      }
+    },
+
     /* #170 3D Volumetric Multi-Face Building Renderer: constructs all 11
        structures from real 3D (wx, wy, wz) boxes, cylinders, cones,
        pitched roofs, and animated 3D attachments. */
     _drawBuilding3D: function (ctx, b, theme, z, now, wind, pal) {
+      if (this.iso) {
+        this._drawOfficeBuilding3D(ctx, b, theme, z, now, pal);
+        return;
+      }
       var bid = b.bid || "vault", wx = b.x, wy = b.y, i;
       var rc = (theme && theme.raceSpec) || {};
       var rW = rc.roofW || "#386ec2", rE = rc.roofE || "#1c3b6e",
@@ -1473,6 +1665,142 @@
       }
     },
 
+    /* #180 3D Software Engineer / Tech Worker Rig & Dual-Monitor Workstation
+       in Office Mode (`this.iso`): replaces medieval knights/shields/swords
+       with a 3D sit-stand desk, dual ultrawide IDE monitors, ergonomic chair,
+       hoodie/blazer attire, lanyard badge, glasses, headset + boom mic, and
+       typing / laptop / coffee-mug animations. */
+    _drawOfficeUnit3D: function (ctx, u, s, sz, ent, z, now, pal, all) {
+      var self = this, ph = hash(String(u.id));
+      var sc = (u.kind === "minion" ? 0.68 : u.kind === "worker" ? 0.56 : 1.0);
+      var wx = u.x, wy = u.y;
+      var atDesk = !u.moving && u.kind !== "worker";
+
+      // 1. 3D Sit-Stand Workstation Desk + Dual Ultrawide IDE Monitors + Chair
+      if (atDesk) {
+        // Ergonomic Mesh Swivel Chair behind engineer
+        this._cyl3D(ctx, wx - 4 * sc, wy - 4 * sc, 0, 4.5 * sc, 6 * sc,
+                    "#475569", "#1e293b", "#0f172a", "#334155");
+        this._box3D(ctx, wx - 6 * sc, wy - 6 * sc, 6 * sc,
+                    6 * sc, 2.5 * sc, 9 * sc, "#334155", "#1e293b", "#0f172a");
+        // 3D Sit-Stand Desk in front of engineer (wz: 0 -> 8.5)
+        this._box3D(ctx, wx + 6 * sc, wy + 5 * sc, 6.5 * sc,
+                    18 * sc, 10 * sc, 2 * sc, "#d97706", "#92400e", "#451a03");
+        // Desk legs
+        this._box3D(ctx, wx, wy + 5 * sc, 0, 2 * sc, 8 * sc, 6.5 * sc,
+                    "#94a3b8", "#475569", "#1e293b");
+        this._box3D(ctx, wx + 12 * sc, wy + 5 * sc, 0, 2 * sc, 8 * sc, 6.5 * sc,
+                    "#94a3b8", "#475569", "#1e293b");
+        // Dual 3D Ultrawide Monitors on desk (wz: 8.5 -> 16)
+        this._box3D(ctx, wx + 3 * sc, wy + 7 * sc, 9 * sc,
+                    7.5 * sc, 1.8 * sc, 6.5 * sc, "#38bdf8", "#0f172a", "#1e293b");
+        this._box3D(ctx, wx + 10.5 * sc, wy + 4 * sc, 9 * sc,
+                    7.5 * sc, 1.8 * sc, 6.5 * sc, "#3fb950", "#0f172a", "#1e293b");
+        // Glowing scrolling IDE syntax lines on monitor screen
+        var mScr = this.toScreen(wx + 3 * sc, wy + 7 * sc, 12.5 * sc);
+        ctx.fillStyle = "#3fb950";
+        ctx.fillRect(mScr.x - 2.5 * z, mScr.y - 1.5 * z, 4 * z, 1.2 * z);
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillRect(mScr.x - 2.5 * z, mScr.y + 0.5 * z, 5 * z, 1.2 * z);
+      }
+
+      // 2. Smooth 3D Facing Yaw & Local Frame
+      var tgtYaw = u.moving
+        ? Math.atan2((u.ty || wy) - wy, (u.tx || wx) - wx) : 0.78;
+      var curYaw = typeof u._yaw === "number" ? u._yaw : tgtYaw;
+      var dYaw = ((tgtYaw - curYaw + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+      u._yaw = curYaw + dYaw * 0.22;
+      var cy = Math.cos(u._yaw), sy = Math.sin(u._yaw);
+      var J = function (f, r, up) {
+        return self.toScreen(
+          wx + (f * cy - r * sy) * sc,
+          wy + (f * sy + r * cy) * sc,
+          up * sc
+        );
+      };
+      var limb = function (p0, p1, rad, col) {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = Math.max(1.4, rad * sc * z);
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y);
+        ctx.stroke();
+      };
+
+      // 3. Floor shadow + Active Selection/Status Ring
+      var g0 = J(0, 0, 0);
+      ctx.fillStyle = "rgba(0,0,0,0.34)";
+      ctx.beginPath();
+      ctx.ellipse(g0.x, g0.y, 8 * sc * z, 4.5 * sc * z, 0, 0, 7);
+      ctx.fill();
+
+      // 4. 3D Chinos/Jeans & White Sneakers
+      var wPh = now / 82 + ph;
+      var strideF = u.moving ? Math.sin(wPh) * 5.8 : 0;
+      var liftL = u.moving ? Math.max(0, -Math.cos(wPh)) * 4.5 : 0;
+      var liftR = u.moving ? Math.max(0, Math.cos(wPh)) * 4.5 : 0;
+      var pelvZ = 8.0 + (u.moving ? -Math.abs(Math.cos(wPh)) * 1.2 : 0);
+      limb(J(0, -2.5, pelvZ), J(strideF, -2.6, liftL), 2.8, "#1e293b");
+      limb(J(0, 2.5, pelvZ), J(-strideF, 2.6, liftR), 2.8, "#1e293b");
+      // White/Grey Tech Sneakers
+      limb(J(strideF, -2.6, liftL), J(strideF + 2.2, -2.6, liftL), 2.6, "#f8fafc");
+      limb(J(-strideF, 2.6, liftR), J(-strideF + 2.2, 2.6, liftR), 2.6, "#f8fafc");
+
+      // 5. 3D Hoodie / Blazer Torso + Lanyard ID Badge
+      this._cyl3D(ctx, wx, wy, pelvZ * sc, 4.8 * sc, 8.5 * sc,
+                  ent.bg || "#2563eb", ent.dark || "#1e3a8a",
+                  "#0f172a", ent.bg || "#2563eb");
+      // White Employee ID Badge on Lanyard
+      var bdg = J(3.8, 0.8, pelvZ + 3.5);
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(bdg.x - 1.5 * z, bdg.y - 2 * z, 3 * z, 3.8 * z);
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillRect(bdg.x - 1.5 * z, bdg.y - 2 * z, 3 * z, 1.2 * z);
+
+      // 6. 3D Arms: Rapid Keyboard Typing at Desk OR Carrying Laptop & Coffee Mug
+      var shL = J(0, -5.2, pelvZ + 7.2), shR = J(0, 5.2, pelvZ + 7.2);
+      var typL = atDesk ? Math.sin(now / 55 + ph) * 1.6 : -strideF * 0.5;
+      var typR = atDesk ? Math.cos(now / 55 + ph) * 1.6 : strideF * 0.5;
+      var handL = J(4.8 + typL, -4.2, pelvZ + 3.2),
+          handR = J(4.8 + typR, 4.2, pelvZ + 3.2);
+      limb(shL, handL, 2.4, ent.bg || "#2563eb");
+      limb(shR, handR, 2.4, ent.bg || "#2563eb");
+      if (!atDesk) {
+        // Walking: Silver MacBook under left arm + White Coffee Mug in right hand
+        ctx.fillStyle = "#e2e8f0";
+        ctx.fillRect(handL.x - 3 * z, handL.y - 2 * z, 6 * z, 4 * z);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(handR.x - 1.8 * z, handR.y - 2.2 * z, 3.5 * z, 4 * z);
+      }
+
+      // 7. 3D Head + Smart Glasses + Headset with Boom Mic
+      var headP = J(0.5, 0, pelvZ + 12.0);
+      var hr = 4.3 * sc * z;
+      ctx.fillStyle = Theme._sphereGrad
+        ? Theme._sphereGrad(ctx, headP.x, headP.y, hr, "#ffe4bd", "#e8be8a", "#9c6f3e")
+        : "#e8be8a";
+      ctx.beginPath(); ctx.arc(headP.x, headP.y, hr, 0, 7); ctx.fill();
+      // Hair / Modern Quiff
+      ctx.fillStyle = (ph % 2 === 0) ? "#1e293b" : "#451a03";
+      ctx.beginPath();
+      ctx.arc(headP.x, headP.y - hr * 0.25, hr * 0.95, Math.PI, 0);
+      ctx.fill();
+      // Smart Glasses frames
+      ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = Math.max(1, 1.2 * z);
+      ctx.strokeRect(headP.x - 3.2 * z, headP.y - 1 * z, 2.6 * z, 1.8 * z);
+      ctx.strokeRect(headP.x + 0.6 * z, headP.y - 1 * z, 2.6 * z, 1.8 * z);
+      // Over-ear Headset band + earcup + boom mic
+      ctx.strokeStyle = "#0f172a"; ctx.lineWidth = Math.max(1.4, 1.8 * z);
+      ctx.beginPath();
+      ctx.arc(headP.x, headP.y, hr * 1.05, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.stroke();
+      ctx.fillStyle = "#3fb950";
+      ctx.beginPath();
+      ctx.arc(headP.x + hr * 1.02, headP.y + 0.5 * z, 1.8 * z, 0, 7);
+      ctx.fill();
+      ctx.lineWidth = 1;
+    },
+
     /* #170 14-Joint 3D Articulated Skeletal Rig & 8 Keyframed 3D Animations:
        Every unit/hero has a smooth 3D facing angle `u._yaw` (lerped toward
        its movement/target direction), local 3D frame (Forward F, Right R,
@@ -1480,6 +1808,10 @@
        Hands with 3D Shield & Weapon, Hips, Knees, Boots, 4-node 3D Cape),
        and 8 real 3D skeletal animation clips. */
     _drawUnitLive: function (ctx, u, s, sz, dy, ent, z, now, wind, pal, all) {
+      if (this.iso) {
+        this._drawOfficeUnit3D(ctx, u, s, sz, ent, z, now, pal, all);
+        return;
+      }
       var self = this, ph = hash(String(u.id));
       var isHero = u.kind === "hero";
       var sc = (u.kind === "minion" ? 0.68 : u.kind === "worker" ? 0.56 : 1.0);
@@ -1839,6 +2171,14 @@
         if (s.x < -30 || s.y < -30 || s.x > cv.width + 30 ||
             s.y > cv.height + 30) return;
         if (p.kind === "gold") {
+          if (self.iso) {
+            // #180 Office Mode: 3D Espresso & Token Charger Barista Cart
+            self._box3D(ctx, p.x * TILE + TILE / 2, p.y * TILE + TILE / 2,
+                        0, 14, 10, 10, "#e2e8f0", "#475569", "#1e293b");
+            self._cyl3D(ctx, p.x * TILE + TILE / 2, p.y * TILE + TILE / 2,
+                        10, 3.2, 6, "#ffd54a", "#d97706", "#78350f", "#fef08a");
+            return;
+          }
           // WC3 Gold Mine vein: rock mound + glinting gold crystals
           ctx.fillStyle = "#4d4538";
           ctx.beginPath();
@@ -1856,6 +2196,14 @@
           return;
         }
         if (p.kind === "camp") {
+          if (self.iso) {
+            // #180 Office Mode: 3D Beanbag Hackathon Huddle Lounge
+            self._cyl3D(ctx, p.x * TILE + TILE / 2 - 4, p.y * TILE + TILE / 2,
+                        0, 4.5, 4, "#ec4899", "#be185d", "#831843", "#f472b6");
+            self._cyl3D(ctx, p.x * TILE + TILE / 2 + 5, p.y * TILE + TILE / 2,
+                        0, 4.5, 4, "#38bdf8", "#0284c7", "#075985", "#7dd3fc");
+            return;
+          }
           // Neutral Creep Campfire: logs + flickering orange/yellow flame
           ctx.strokeStyle = "#5c3a21";
           ctx.lineWidth = Math.max(1.5, 2 * z);
@@ -1938,12 +2286,15 @@
           ctx.lineWidth = 1;
         }
         if (z > 0.72 && b.name) {
+          var bLbl = (self.iso && theme.buildings[b.bid] &&
+                      theme.buildings[b.bid].label)
+                     ? theme.buildings[b.bid].label : b.name;
           ctx.fillStyle = "rgba(10,16,12,0.82)";
-          ctx.fillRect(s.x - 28 * z, s.y + 10 * z, 56 * z, 11 * z);
+          ctx.fillRect(s.x - 32 * z, s.y + 10 * z, 64 * z, 11 * z);
           ctx.fillStyle = "#ffd54a";
           ctx.font = "bold " + Math.max(8, Math.round(9 * z)) + "px monospace";
           ctx.textAlign = "center"; ctx.textBaseline = "middle";
-          ctx.fillText(b.name, s.x, s.y + 15.5 * z);
+          ctx.fillText(bLbl, s.x, s.y + 15.5 * z);
         }
       });
       if (this.iso) this._officeProps(ctx, st, theme, z, t0); // #134
@@ -1958,13 +2309,6 @@
             * Math.max(z, 0.72);
         var ent = theme.units[u.cls] || theme.units.Squire;
         var dy = 0, ph = hash(String(u.id));
-        if (self.iso) {          // #134: desk under office workers
-          var dw = u.kind === "minion" ? sz * 2.2 : sz * 1.3;
-          ctx.fillStyle = "#4a4034";
-          ctx.fillRect(s.x - dw / 2, s.y + sz * 0.15, dw, sz * 0.38);
-          ctx.fillStyle = "#5c503f";
-          ctx.fillRect(s.x - dw / 2, s.y + sz * 0.15, dw, 2);
-        }
         // #136/#158 animation states: walk stride bounce, active work/combat,
         // or autonomous Stand - 1/2/3 breathing & fidgets
         if (u.moving)

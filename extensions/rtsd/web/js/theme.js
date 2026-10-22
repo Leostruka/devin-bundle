@@ -686,12 +686,15 @@
       }
     },
 
-    /* #159 animated 3D-style portrait renderer for the bottom console */
+    /* #159/#180 animated 3D-style portrait renderer for the bottom console:
+       switches to a 3D Tech Engineer portrait (hoodie, lanyard, smart
+       glasses, over-ear headset + boom mic) when Office Mode is active. */
     drawPortrait: function (ctx, item, w, h, now) {
       ctx.clearRect(0, 0, w, h);
+      var isOff = !!(current && current.iso);
       var grad = ctx.createRadialGradient(w / 2, h / 2, 4, w / 2, h / 2, w * 0.7);
-      grad.addColorStop(0, "#243428");
-      grad.addColorStop(1, "#0b110d");
+      grad.addColorStop(0, isOff ? "#1e293b" : "#243428");
+      grad.addColorStop(1, isOff ? "#090d16" : "#0b110d");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
       var bob = Math.sin((now || 0) / 380) * 2.2;
@@ -699,6 +702,39 @@
       if (item && item.bid) {
         var be = current.buildings[item.bid] || current.buildings["town-hall"];
         Theme._paintBuilding(ctx, be, 8, 8 + bob * 0.5, w - 16, h - 16);
+      } else if (item && isOff) {
+        var ue0 = current.units[item.cls] || current.units.Knight;
+        var cx = w / 2, cy = h / 2 + bob;
+        // 3D Hoodie shoulders & Lanyard ID badge
+        ctx.fillStyle = ue0.bg || "#2563eb";
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + 22, 24, 16, 0, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = "#f8fafc";
+        ctx.fillRect(cx + 4, cy + 14, 7, 9);
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillRect(cx + 4, cy + 14, 7, 3);
+        // 3D Head sphere + modern hair + Smart Glasses + Headset & Boom Mic
+        ctx.fillStyle = _sphereGrad(ctx, cx, cy - 4, 14, "#ffe4bd", "#e8be8a", "#9c6f3e");
+        ctx.beginPath(); ctx.arc(cx, cy - 4, 14, 0, 7); ctx.fill();
+        ctx.fillStyle = "#1e293b";
+        ctx.beginPath(); ctx.arc(cx, cy - 7, 14, Math.PI, 0); ctx.fill();
+        // Glasses
+        ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1.8;
+        ctx.strokeRect(cx - 10, cy - 6, 8, 5);
+        ctx.strokeRect(cx + 2, cy - 6, 8, 5);
+        // Headset band + earcups + boom mic
+        ctx.strokeStyle = "#0f172a"; ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(cx, cy - 4, 15.5, Math.PI * 1.05, Math.PI * 1.95);
+        ctx.stroke();
+        ctx.fillStyle = "#3fb950";
+        ctx.beginPath(); ctx.arc(cx + 15, cy - 2, 3.5, 0, 7); ctx.fill();
+        ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(cx + 15, cy);
+        ctx.lineTo(cx + 4, cy + 5 + talk * 0.3);
+        ctx.stroke();
       } else if (item) {
         var ue = current.units[item.cls] || current.units.Knight;
         // Aura backdrop
