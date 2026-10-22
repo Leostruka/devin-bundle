@@ -44,6 +44,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 184 | #185 | Strict camera map clamping (`eng.map` binding, dynamic minimum zoom `zMinBf`/`zMinIso`, zero out-of-bounds margin in Battlefield mode, and exact 4-corner isometric diamond clamping in Office mode) |
 | 186 | #187 | Stateful `dt`-integrated weather particle engine (`_wxPool` clouds/leaves/rain/snow integrated by `dt`, steady `baseStr` water wave phase eliminating `now * wind(now)` slingshotting, soft radial-gradient clouds/fog, and indoor Office Mode exclusion) |
 | 188 | #189 | Continuous connected river channel (`strokeWaterPass` eliminating per-tile circular water blobs & white `ctx.ellipse` rings) + unidirectional downstream water ripples (`pFlow = (now / 2200 + seed) % 1` with `sin(pFlow * PI)` fade envelope, eliminating circular `(sin, cos)` wave orbits) |
+| 190 | #191 | Age of Mythology: Retold 5 Ages progression (`I. Archaic -> V. Wonder Age`), Divine Favor (`resources.favor`), top-center Reusable God Powers Bar (`#godbar`: `Vision`, `Restoration`, `Flaming Weapons`, `Meteor Storm`), and BANG!-engine unit collision pushing |
 
 ## Final gate evidence (milestone branch)
 
