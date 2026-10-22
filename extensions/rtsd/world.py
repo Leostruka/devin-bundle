@@ -1853,6 +1853,7 @@ class World:
                                          "clear": clr},
                           "window": self._window},
             "age": age_info,
+            "office": self._office_state(units, quests, by_lane),
             "quests": quests,
             # #133 breach alarms: ledgers with failed gates keep their
             # territory glowing red until the gate set is green again
@@ -2008,6 +2009,91 @@ class World:
         return {
             "num": num, "roman": Roman, "name": name,
             "patron": patron, "favor": favor, "powers": powers,
+        }
+
+    def _office_state(self, units, quests, by_lane):
+        """#192 True Office Tycoon Mode (Game Dev Tycoon / Cafe Mania style):
+        staff roster with needs/stamina, workstation assignment, sprint loop
+        and upgrade cards derived from real heroes, quests and lanes."""
+        heroes = [u for u in units if u.get("kind") == "hero"]
+        staff = []
+        desks = [
+            "desk-01", "desk-02", "desk-03", "desk-04", "desk-05", "desk-06",
+            "desk-07", "desk-08", "desk-09", "desk-10", "desk-11", "desk-12",
+        ]
+        tasks = {
+            "running": "sprint task", "idle": "idle at desk",
+            "stale": "AFK / coffee break", "done": "delivered PR",
+            "queued": "waiting for review", "failed": "blocked",
+        }
+        for i, u in enumerate(heroes):
+            lane = u.get("lane") or "core"
+            desk = desks[i % len(desks)]
+            status = u.get("status_live") or "idle"
+            xp = int(u.get("xp") or 0)
+            lvl = int(u.get("level") or 1)
+            burn = int(u.get("burn") or 0)
+            mana = u.get("mana")
+            hp = int(u.get("hp") or 100)
+            # needs: coffee/energy/focus derived from burn, status and context
+            energy = max(0, min(100, 100 - burn // 40))
+            coffee = 1 + (lvl // 2)
+            need = "coffee" if status in ("idle", "stale") and energy < 60 else \
+                   "focus" if status == "failed" else \
+                   "rest" if hp < 50 else "none"
+            task = tasks.get(status, "sprint task")
+            staff.append({
+                "id": u["id"], "name": u.get("name") or u["id"],
+                "role": u.get("cls") or "engineer",
+                "lane": lane, "desk": desk, "status": status,
+                "task": task, "xp": xp, "level": lvl,
+                "energy": energy, "coffee": coffee,
+                "need": need, "hp": hp, "burn": burn,
+                "mana": mana,
+                "quest": u.get("quest"),
+                "skills": len(u.get("spellbook") or []),
+            })
+        # office floors/departments by lane
+        depts = {}
+        for s in staff:
+            depts.setdefault(s["lane"], {"staff": 0, "burn": 0, "xp": 0})
+            depts[s["lane"]]["staff"] += 1
+            depts[s["lane"]]["burn"] += s["burn"]
+            depts[s["lane"]]["xp"] += s["xp"]
+        side_q = [q for q in quests if q.get("kind") != "main"]
+        done = sum(1 for q in side_q if q.get("done"))
+        gates_pass = sum(v["passed"] for v in by_lane.values())
+        gates_total = sum(len(v["gates"]) for v in by_lane.values()) or 1
+        sprint_prog = round(100 * gates_pass / gates_total)
+        # upgrade cards: real office upgrades tied to current performance
+        upgrades = [
+            {"id": "coffee_machine", "name": "Espresso Machine", "cost": 20,
+             "desc": "+2 coffee/day for all staff"},
+            {"id": "dual_monitors", "name": "Dual Monitors", "cost": 35,
+             "desc": "+10 energy on sprint tasks"},
+            {"id": "kanban_wall", "name": "Kanban Wall", "cost": 30,
+             "desc": "+5 favor per completed quest"},
+            {"id": "server_rack", "name": "Server Rack", "cost": 50,
+             "desc": "+15% context window"},
+            {"id": "whiteboard", "name": "Whiteboard", "cost": 15,
+             "desc": "+1 XP per gate passed"},
+            {"id": "standing_desk", "name": "Standing Desk", "cost": 25,
+             "desc": "+10 energy for idle staff"},
+        ]
+        return {
+            "mode": "office",
+            "staff": staff,
+            "desks": desks,
+            "departments": depts,
+            "sprint": {
+                "name": "Sprint " + str(self.layout.get("sig", "DEVIN"))[:6].upper(),
+                "progress": sprint_prog,
+                "done_quests": done,
+                "total_quests": len(side_q),
+                "gates_passed": gates_pass,
+                "gates_total": gates_total,
+            },
+            "upgrades": upgrades,
         }
 
     @classmethod

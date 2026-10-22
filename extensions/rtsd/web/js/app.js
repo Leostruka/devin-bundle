@@ -2967,9 +2967,11 @@
       if (el("spLoops")) el("spLoops").classList.toggle("on", tab === "loops");
       el("spGit").classList.toggle("on", tab === "git");
       el("spFiles").classList.toggle("on", tab === "files");
+      if (el("spOffice")) el("spOffice").classList.toggle("on", tab === "office");
       if (tab === "loops") fetchLoopsPane();
       if (tab === "git") fetchGitCodex();
       if (tab === "files") renderFilesPane();
+      if (tab === "office") renderOfficePane();
     });
   }
   function fetchLoopsPane() {
@@ -3004,6 +3006,57 @@
           "<input id='lpPrompt' placeholder='Loop prompt...' style='flex:1;background:#0d1117;border:1px solid var(--border);color:var(--fg);border-radius:4px;padding:2px 5px;font:inherit' />" +
           "<button data-lact='create'>Start</button></div>" + lpHtml;
       }).catch(function () {});
+  }
+  function renderOfficePane() {
+    var sp = el("spOffice");
+    if (!sp) return;
+    var off = (state.world && state.world.office) || {};
+    var staff = off.staff || [], sprint = off.sprint || {}, upg = off.upgrades || [];
+    var needCol = { coffee: "#d29922", focus: "#58a6ff", rest: "#f85149",
+                    none: "#8b949e" };
+    sp.innerHTML =
+      "<h3>Office Tycoon - " + esc(sprint.name || "Sprint") + "</h3>" +
+      "<div class='meta'>" + (off.staff || []).length + " staff, " +
+      (sprint.done_quests || 0) + "/" + (sprint.total_quests || 0) +
+      " quests, " + (sprint.progress || 0) + "% sprint</div>" +
+      "<div id='officeSprint'><div class='sprog'><span style='width:" +
+      (sprint.progress || 0) + "%'></span></div></div>" +
+      "<div style='margin-top:8px'><b>Staff Roster</b></div>" +
+      (staff.map(function (s) {
+        var needCls = s.need || "none";
+        return "<div class='ostaff'>" +
+          "<div class='ostat'>" +
+            "<div class='oname'>" + esc(s.name) + "</div>" +
+            "<div class='orole'>" + esc(s.role) + " - " + esc(s.desk) +
+              (s.quest ? " - " + esc(s.quest) : "") + "</div>" +
+            "<div class='obar'><span style='width:" + (s.energy || 0) +
+              "%;background:#3fb950'></span></div>" +
+            "<div class='obar'><span style='width:" + (s.hp || 0) +
+              "%;background:" + (s.hp > 50 ? "#58a6ff" : "#f85149") +
+              "'></span></div>" +
+          "</div>" +
+          "<div>" +
+            "<span class='oneed " + esc(needCls) + "'>" + esc(s.need) +
+            "</span>" +
+            "<div class='meta' style='text-align:right'>" +
+              "coffee " + (s.coffee || 0) + " | lvl " + (s.level || 1) +
+              " | burn " + (s.burn || 0) + "</div>" +
+          "</div>" +
+        "</div>";
+      }).join("") || "<div class='meta'>No staff</div>") +
+      "<div style='margin-top:8px'><b>Upgrades</b></div>" +
+      (upg.map(function (u) {
+        return "<div class='upg'><span><b>" + esc(u.name) + "</b><br>" +
+          "<span>" + esc(u.desc) + "</span></span>" +
+          "<span class='ucost'>" + String(u.cost) + "F</span></div>";
+      }).join("") || "<div class='meta'>No upgrades</div>");
+  }
+  if (el("spOffice")) {
+    el("spOffice").addEventListener("click", function (e) {
+      var b = e.target.closest(".upg");
+      if (!b) return;
+      logFeed("Office upgrade queued: " + b.querySelector("b").textContent);
+    });
   }
   if (el("spLoops")) {
     el("spLoops").addEventListener("click", function (e) {
