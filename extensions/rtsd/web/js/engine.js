@@ -52,14 +52,37 @@
     },
     clampCam: function () {
       if (!this.map) return;
-      var mw = this.map.w * TILE, mh = this.map.h * TILE, v = this.view();
-      if (this.iso) {          // iso plane spans x:[-mh, mw], y:[0,(mw+mh)/2]
-        this.cam.x = this._clampAxis(this.cam.x, -mh, mw + mh, v.w);
-        this.cam.y = this._clampAxis(this.cam.y, 0, (mw + mh) / 2, v.h);
+      var mw = this.map.w * TILE, mh = this.map.h * TILE;
+      var cw = this.cv.width || this.cv.clientWidth || 800,
+          ch = this.cv.height || this.cv.clientHeight || 600;
+      if (this.iso) {
+        // #184 Exact Isometric Diamond Clamp: all 4 screen corners must
+        // satisfy 0 <= wx <= mw and 0 <= wy <= mh.
+        // In iso space: U = 2*cam.y + cam.x in [0, 2*mw - 2*v.h - v.w]
+        //               V = 2*cam.y - cam.x in [v.w, 2*mh - 2*v.h]
+        var zMinIso = Math.max(
+          ZMIN,
+          (2 * ch + cw) / Math.max(1, Math.min(2 * mw, 2 * mh))
+        );
+        if (this.cam.zoom < zMinIso) this.cam.zoom = zMinIso;
+        var v = this.view();
+        var uSpan = Math.max(0, 2 * mw - 2 * v.h - v.w),
+            vSpan = Math.max(0, 2 * mh - 2 * v.h - v.w);
+        var U = 2 * this.cam.y + this.cam.x,
+            V = 2 * this.cam.y - this.cam.x;
+        U = Math.max(0, Math.min(uSpan, U));
+        V = Math.max(v.w, Math.min(v.w + vSpan, V));
+        this.cam.x = (U - V) / 2;
+        this.cam.y = (U + V) / 4;
         return;
       }
-      this.cam.x = this._clampAxis(this.cam.x, 0, mw, v.w);
-      this.cam.y = this._clampAxis(this.cam.y, -40, mh * PITCH + 40, v.h);
+      // #184 Strict 3D Battlefield Clamp: viewport never exceeds [0, mw] x [0, mh*PITCH]
+      var mhP = mh * PITCH;
+      var zMinBf = Math.max(ZMIN, cw / Math.max(1, mw), ch / Math.max(1, mhP));
+      if (this.cam.zoom < zMinBf) this.cam.zoom = zMinBf;
+      var v2 = this.view();
+      this.cam.x = this._clampAxis(this.cam.x, 0, mw, v2.w);
+      this.cam.y = this._clampAxis(this.cam.y, 0, mhP, v2.h);
     },
     centerOn: function (wx, wy) {   // wx,wy are world px in both themes
       var v = this.view();
@@ -2093,6 +2116,8 @@
       if (cv.height !== cv.clientHeight) cv.height = cv.clientHeight;
       var t0 = performance.now();
       this.iso = !!(theme && theme.iso);   // office = isometric (#134)
+      if (st.tiles) this.map = st.tiles;   // #184 bind map for clampCam & picking
+      this.clampCam();
       var v = this.view(), z = this.cam.zoom, pal = theme.palette;
       ctx.fillStyle = pal.bg; ctx.fillRect(0, 0, cv.width, cv.height);
       this.units = st.units || [];

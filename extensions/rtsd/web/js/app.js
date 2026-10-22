@@ -387,6 +387,7 @@
         state.map = buildMap(regs); state.mapKey = key;
       }
     }
+    if (state.map) eng.map = state.map;
     if (!state._camInit && state.map) {
       var c0 = state.map.caps.root ||
                state.map.caps[Object.keys(state.map.caps)[0]];
@@ -1065,6 +1066,7 @@
     state.world = demoWorld(n, nb);
     state.map = buildMap(state.world.map.regions);
     state.mapKey = "demo";
+    eng.map = state.map;
     var c0 = state.map.caps[Object.keys(state.map.caps)[0]];
     eng.centerOn(c0.cx * TILE, c0.cy * TILE);
     state._camInit = true;
