@@ -22,6 +22,10 @@
     groups: {},              // control groups: "1".."9" -> [unit ids] (#126)
     gtap: { n: 0, t: 0 },    // last group-recall tap for double-tap center
     pending: null,           // targeted order awaiting map click (#126)
+    cooldowns: {},           // act key -> expiry ts for cast/ability (#193)
+    firedAct: null,          // last command-card act fired (flash feedback)
+    firedT0: 0,
+    orderMarks: [],          // client-side loop destination marks (#193)
     bDetail: null,           // fetched /buildings/<id> payload
     lastEventPos: null,      // {x,y} for spacebar jump
     pings: [],               // event pings {x,y,kind,t0} (#124)
@@ -1725,6 +1729,19 @@
       ";font-weight:bold'>" + esc(stTxt) +
       (u.kind === "hero" ? " | ~" + (u.burn | 0) + " tok" : "") +
       "</span></div>";
+    // #193 active order status + buff chips
+    var mo = state.motion[u.id], stChips = [];
+    if (mo && mo.patrol) stChips.push(["PATROLLING", "#58a6ff"]);
+    if (mo && mo.gather) stChips.push(["GATHERING", "#ffd54a"]);
+    if (mo && mo.combat)
+      stChips.push([mo.focus ? "FOCUS FIRE" : "ASSAULT", "#f85149"]);
+    if (state.flamingUntil && performance.now() < state.flamingUntil)
+      stChips.push(["FLAMING WEAPONS", "#ff6a00"]);
+    if (stChips.length)
+      h += "<div style='margin-bottom:4px'>" + stChips.map(function (c) {
+        return "<span class='uchip' style='border-color:" + c[1] +
+          ";color:" + c[1] + "'>" + c[0] + "</span>";
+      }).join("") + "</div>";
     if (spells) {
       h += "<div style='margin-bottom:4px'><span class='meta'>" +
         (isOff ? "Skills: " : "Spells: ") + "</span>" + spells + "</div>";
@@ -1823,14 +1840,19 @@
         mo.patrol = null;
         tone("gather");
         pushFx("text", u.x, u.y - 12, "Gathering Gold", "#ffd54a", 1.8);
-      } else if (order === "attack") {
+      } else if (order === "attack" || order === "focus") {
         mo.patrol = null; mo.gather = null;
         mo.combat = { x: (extra && typeof extra.x === "number")
           ? (extra.x + 0.5) * TILE : u.x,
           y: (extra && typeof extra.y === "number")
           ? (extra.y + 0.5) * TILE : u.y,
           lastHit: 0 };
+        mo.focus = order === "focus"
+          ? { x: mo.combat.x, y: mo.combat.y } : null;
         tone("attack");
+        if (order === "focus")
+          pushFx("text", mo.combat.x, mo.combat.y - 18,
+                 "FOCUS FIRE", "#ff6a00", 2.0);
       } else if (order === "ability" || order === "cast" ||
                  order === "reveal_area" || order === "build" ||
                  order === "verify_gate" || order === "track") {
@@ -1842,6 +1864,13 @@
         tone("spell");
         pushFx("spell", sx, sy, sname, "#58a6ff", 2.4);
         pushFx("text", sx, sy - 16, "*" + sname + "*", "#bc8cff", 2.2);
+        // #193: cooldown visible on the command card for cast/ability
+        if (order === "cast")
+          state.cooldowns["cast:" + (extra.skill || "")] = now + 8000;
+        else if (order === "ability")
+          state.cooldowns["ability:" + (extra.ability || "")] = now + 8000;
+        else if (extra && extra.special)
+          state.cooldowns.special = now + 12000;
       }
     });
     selUnits().forEach(function (u) {
@@ -1871,20 +1900,28 @@
     tech: "<circle cx='12' cy='12' r='3'/><path d='M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4'/>",
     score: "<path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z'/>",
     rally: "<path d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7'/>",
-    center: "<circle cx='12' cy='12' r='8'/><path d='M12 2v4M12 18v4M2 12h4M18 12h4'/>"
+    center: "<circle cx='12' cy='12' r='8'/><path d='M12 2v4M12 18v4M2 12h4M18 12h4'/>",
+    focus: "<circle cx='12' cy='12' r='7'/><circle cx='12' cy='12' r='2'/><path d='M12 2v4M12 18v4M2 12h4M18 12h4'/>"
   };
 
   function cardBtn(act, label, enabled, title, armed, icoKey, hk) {
     var svg = ICON_SVG[icoKey] || ICON_SVG[act] || ICON_SVG.special;
+    var cd = (state.cooldowns && state.cooldowns[act]) || 0,
+        cdLeft = Math.ceil((cd - performance.now()) / 1000);
+    if (cdLeft > 0) enabled = false;
+    var fired = state.firedAct === act &&
+                performance.now() - state.firedT0 < 400;
     return "<button data-act='" + esc(act) + "'" +
       (enabled ? "" : " disabled") +
-      (armed ? " class='armed'" : "") +
+      (armed ? " class='armed'" : fired ? " class='fired'" : "") +
       " data-tip='" + esc((label || act) + (hk ? " [" + hk + "]" : "") +
                           " - " + (title || "")) + "'" +
       " title='" + esc(title || "") + "'>" +
       (hk ? "<span class='hk'>" + esc(hk) + "</span>" : "") +
       "<svg class='csvg' viewBox='0 0 24 24'>" + svg + "</svg>" +
-      "<span>" + esc(label) + "</span></button>";
+      "<span>" + esc(label) + "</span>" +
+      (cdLeft > 0 ? "<span class='cd'>" + cdLeft + "</span>" : "") +
+      "</button>";
   }
 
   function renderCard(u) {
@@ -1969,6 +2006,9 @@
     h += cardBtn("attack", "Attack", !multi,
                  "click a quest marker / camp to assault",
                  armed === "attack", "attack", "A");
+    h += cardBtn("focus", "Focus", !multi,
+                 "focus-fire: lock assault on the clicked target",
+                 armed === "focus", "focus", "F");
     h += cardBtn("gather", "Gather", true,
                  "harvest gold/lumber between nearest vein and Keep",
                  false, "gather", "S");
@@ -2102,7 +2142,8 @@
     var tx = Math.floor(pt.x / TILE), ty = Math.floor(pt.y / TILE);
     var ord = state.pending; state.pending = null;
     var extra = { x: tx, y: ty };
-    if (ord.order === "attack" && state.map && state.map.pois) {
+    if ((ord.order === "attack" || ord.order === "focus") &&
+        state.map && state.map.pois) {
       var best = null, bd = 1.5;
       state.map.pois.forEach(function (p) {
         if (p.kind !== "quest") return;
@@ -2208,13 +2249,13 @@
     var u = state.units.filter(function (x) {
       return x.id === state.sel; })[0];
     var raw = u && u.unit ? u.unit : u;
-    if (act === "move" || act === "attack") {
+    if (act === "move" || act === "attack" || act === "focus") {
       state.pending = { order: act };
     } else if (act === "special") {
       var sp = raw && SPECIALS[raw.cls];
       if (!sp) return;
       if (sp.target) state.pending = { order: sp.id };
-      else issueOrder(sp.id, {});
+      else issueOrder(sp.id, { special: sp.id });
     } else if (act.indexOf("ability:") === 0) {
       issueOrder("ability", { ability: act.slice(8) });
     } else if (act.indexOf("cast:") === 0) {       // #132 spell cast
@@ -2224,6 +2265,7 @@
     } else {
       issueOrder(act, {});                     // stop / hold / gather
     }
+    state.firedAct = act; state.firedT0 = performance.now();
     renderPanels();
   });
   // group pips: click = recall (same as pressing the digit)
@@ -2458,6 +2500,9 @@
     }
     if (k === "a" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
       state.pending = { order: "attack" }; renderPanels(); return;
+    }
+    if (k === "f" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
+      state.pending = { order: "focus" }; renderPanels(); return;
     }
     if (k === "g" && state.selAll.length && !e.ctrlKey && !e.metaKey) {
       issueOrder("gather", {}); renderPanels(); return;
@@ -3565,8 +3610,45 @@
     var dt = Math.min(0.1, (t - last) / 1000); last = t;
     eng.step(dt);
     stepMotion(dt);
+    // #193: client-side loop destination marks + unit status/buff badges
+    state.orderMarks = [];
+    var nowMs = performance.now(), flaming = state.flamingUntil &&
+                nowMs < state.flamingUntil;
+    state.units.forEach(function (u) {
+      var mo = state.motion[u.id];
+      u.statusFx = null; u.buff = flaming ? "flame" : null;
+      if (!mo) return;
+      if (mo.patrol && mo.patrol.length >= 2) {
+        u.statusFx = "patrol";
+        state.orderMarks.push({ kind: "patrol", fx: u.x, fy: u.y,
+                                pts: mo.patrol });
+      } else if (mo.gather) {
+        u.statusFx = "gather";
+        state.orderMarks.push({ kind: "gather", fx: u.x, fy: u.y,
+          pts: [{ x: mo.gather.gx, y: mo.gather.gy },
+                { x: mo.gather.kx, y: mo.gather.ky }] });
+      } else if (mo.combat) {
+        u.statusFx = mo.focus ? "focus" : "attack";
+        state.orderMarks.push({ kind: u.statusFx, fx: u.x, fy: u.y,
+          pts: [{ x: mo.combat.x, y: mo.combat.y }] });
+      }
+    });
+    // cooldown expiry: keep the card ticking while any is counting down
+    var cdLive = false;
+    Object.keys(state.cooldowns).forEach(function (k) {
+      if (state.cooldowns[k] <= nowMs) delete state.cooldowns[k];
+      else cdLive = true;
+    });
+    if (cdLive && t > (state._cdTick || 0)) {
+      state._cdTick = t + 400; renderPanels();
+    }
     var th = Theme.get();
     eng.render({ tiles: state.map, fog: state.map && state.map.fog,
+      orderMarks: state.orderMarks,
+      armed: (state.pending && eng.mouse && eng.mouse.in) ? {
+        order: state.pending.order,
+        from: selUnits().map(function (u) { return { x: u.x, y: u.y }; }),
+        to: eng.toWorld(eng.mouse.x, eng.mouse.y) } : null,
       pois: state.map && state.map.pois, pings: livePings(),
       workers: state.workers, fades: state.fades,
       waypoints: state.waypoints, ravens: state.ravens,

@@ -252,6 +252,12 @@
   #cmdcard button:disabled { opacity:0.24; cursor:default; }
   #cmdcard button.armed { border-color:var(--ok); color:var(--ok);
     box-shadow:0 0 10px rgba(63,185,80,0.6); }
+  #cmdcard button.fired { border-color:#ffd54a; color:#ffd54a;
+    box-shadow:0 0 12px rgba(255,213,74,0.7); }
+  #cmdcard button .cd { position:absolute; inset:0; border-radius:inherit;
+    background:rgba(4,8,12,0.78); display:flex; align-items:center;
+    justify-content:center; color:#ffd54a; font-size:15px;
+    font-weight:bold; font-family:monospace; text-shadow:0 1px 2px #000; }
   #cmdcard button svg.csvg { width:18px; height:18px; stroke:var(--accent);
                              fill:none; stroke-width:2;
                              stroke-linecap:round; stroke-linejoin:round; }

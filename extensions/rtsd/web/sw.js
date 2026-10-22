@@ -1,6 +1,6 @@
 /* rtsd PWA service worker: cache-first for the app shell only.
    Live state always comes from /snapshot + /ws at runtime. */
-var CACHE = "rtsd-v3";
+var CACHE = "rtsd-v4";
 var SHELL = ["./index.html", "./manifest.webmanifest",
              "./js/theme.js", "./js/engine.js", "./js/app.js"];
 
