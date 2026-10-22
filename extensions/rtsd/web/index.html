@@ -56,6 +56,22 @@
                  font-size:11px; border-radius:4px; }
   .hgrp button:hover { background:rgba(255,255,255,0.08); }
   #sndBtn, #ntfBtn, #dnBtn { display:none; }
+  #ageBtn { background:radial-gradient(circle,#3b2d12,#1a1408);
+            border:1.5px solid var(--accent); color:var(--accent);
+            font-weight:bold; font-size:11px; border-radius:14px;
+            padding:2px 10px; box-shadow:0 0 8px rgba(255,213,74,0.28); }
+  #godbar { position:absolute; top:10px; left:50%; transform:translateX(-50%);
+            z-index:9; display:flex; gap:6px; padding:4px 8px;
+            background:var(--panel); border:1.5px solid var(--border);
+            border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,0.7);
+            pointer-events:auto; }
+  .gpbtn { display:flex; align-items:center; gap:5px; padding:3px 9px;
+           border-radius:14px; font-size:10.5px; background:rgba(0,0,0,0.45);
+           border:1px solid var(--border-dim); color:var(--fg); }
+  .gpbtn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent);
+                                box-shadow:0 0 10px rgba(255,213,74,0.45); }
+  .gpbtn:disabled { opacity:0.35; cursor:default; }
+  .gpbtn .gcost { font-size:9px; color:var(--accent); font-weight:bold; }
   #res.flash { animation:resflash 1.2s ease-out; }
   @keyframes resflash { 0% { color:#fff; background:var(--err); }
     100% { color:var(--warn); background:transparent; } }
@@ -424,6 +440,7 @@
 <header>
   <b>RTSD</b><span class="meta">the Keep</span>
   <span id="conn" class="off">offline</span>
+  <button id="ageBtn" title="Current Age &amp; Minor God Patron (Age of Mythology progression)">I. Archaic Age</button>
   <span id="res"></span>
   <span id="alerts"></span>
   <span style="flex:1"></span>
@@ -453,6 +470,7 @@
   <div id="mapwrap">
     <canvas id="cv"></canvas>
     <div id="herobar"></div>
+    <div id="godbar"></div>
     <div id="bldbar"></div>
     <div id="tooltip"></div>
     <div id="gamemenu"><div id="gmBox"></div></div>

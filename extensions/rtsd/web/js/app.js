@@ -1094,11 +1094,14 @@
         : ("+" + (r.income_min | 0) + "/m");
       var lumPct = r.lumber_pct | 0;
       var lumCol = lumPct >= 75 ? "#f85149" : lumPct >= 60 ? "#d29922" : "#3fb950";
+      var fav = Math.max(0, (r.favor || 25) - (state.favorSpent || 0));
       el("res").innerHTML =
         "<span class='rpod'><span>" + (isOff ? "BUDGET" : "GOLD") +
         "</span><b>" + goldK + "</b><span class='rsub'>" + rateK + "</span></span>" +
         "<span class='rpod'><span>" + (isOff ? "CONTEXT" : "LUMBER") +
         "</span><b style='color:" + lumCol + "'>" + lumPct + "%</b></span>" +
+        "<span class='rpod'><span>" + (isOff ? "CREDITS" : "FAVOR") +
+        "</span><b style='color:#38bdf8'>" + fav + "</b></span>" +
         "<span class='rpod'><span>" + (isOff ? "STAFF" : "SUPPLY") +
         "</span><b>" + r.supply_used + "/" + r.supply_cap +
         (r.supply_minions ? "+" + r.supply_minions : "") + "</b></span>" +
@@ -1106,6 +1109,38 @@
         "</span><b>" + esc(r.upkeep || "low") + "</b></span>";
     } else {
       el("res").innerHTML = "";
+    }
+    // #190 Age of Mythology: Retold 5 Ages Crest (#ageBtn) + Reusable God Powers Bar (#godbar)
+    var age = w.age || { num: 1, roman: "I", name: "Archaic Age",
+                         patron: "Gaia", favor: 25, powers: [] };
+    if (el("ageBtn")) {
+      el("ageBtn").textContent = isOff
+        ? ("Stage " + age.roman + ": " + age.name.replace(" Age", ""))
+        : (age.roman + ". " + age.name);
+      el("ageBtn").title = "Patron: " + (age.patron || "Athena") +
+        " | Click to advance Age / inspect God Powers";
+    }
+    if (el("godbar")) {
+      var favNow = Math.max(0, (r.favor || age.favor || 25) - (state.favorSpent || 0));
+      var nowS = performance.now() / 1000;
+      state.gpCd = state.gpCd || {};
+      state.gpUses = state.gpUses || {};
+      el("godbar").innerHTML = (age.powers || []).map(function (gp) {
+        var uses = state.gpUses[gp.id] || 0;
+        var cost = gp.cost + uses * 15; // Escalating Favor cost per AoM: Retold!
+        var cdLeft = Math.max(0, Math.ceil((state.gpCd[gp.id] || 0) - nowS));
+        var locked = (age.num || 1) < (gp.min_age || 1);
+        var canCast = !locked && cdLeft === 0 && favNow >= cost;
+        return "<button class='gpbtn' data-gp='" + esc(gp.id) +
+          "' data-cost='" + cost + "' data-cd='" + gp.cd + "'" +
+          (canCast ? "" : " disabled") +
+          " title='" + esc(gp.name + ": " + gp.desc + " (Cost: " + cost +
+                           " Favor, Min Age " + gp.min_age + ")") + "'>" +
+          "<b>" + esc(gp.name) + "</b>" +
+          "<span class='gcost'>" +
+          (locked ? ("Age " + gp.min_age) : cdLeft > 0 ? (cdLeft + "s") : (cost + "F")) +
+          "</span></button>";
+      }).join("");
     }
     el("res").title = w.resources
       ? ("est tokens spent this session; +" + (r.income_min | 0) +
@@ -3110,6 +3145,69 @@
       tone("upkeep");
     };
   }
+  // #190 Age of Mythology: Retold God Powers Bar & Age Advancement handlers
+  if (el("ageBtn")) {
+    el("ageBtn").onclick = function () {
+      var age = (state.world && state.world.age) || {};
+      var msg = "Age Progression: " + (age.roman || "I") + ". " +
+        (age.name || "Archaic Age") + " (Patron: " + (age.patron || "Athena") +
+        ") - Deploy heroes, pass ledger gates & complete quests to reach Wonder Age (V)!";
+      logFeed(msg);
+      tone("upkeep");
+    };
+  }
+  if (el("godbar")) {
+    el("godbar").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-gp]");
+      if (!b || b.disabled) return;
+      var gpId = b.dataset.gp;
+      var cost = +(b.dataset.cost || 15), cd = +(b.dataset.cd || 20);
+      state.favorSpent = (state.favorSpent || 0) + cost;
+      state.gpUses = state.gpUses || {};
+      state.gpUses[gpId] = (state.gpUses[gpId] || 0) + 1;
+      state.gpCd = state.gpCd || {};
+      state.gpCd[gpId] = performance.now() / 1000 + cd;
+      var cx = eng.cam.x + (eng.cv.width / eng.cam.zoom) * 0.5,
+          cy = (eng.cam.y + (eng.cv.height / eng.cam.zoom) * 0.5) / 0.74;
+      if (state.selAll.length) {
+        var su = state.units.filter(function (x) { return x.id === state.sel; })[0];
+        if (su) { cx = su.x; cy = su.y; }
+      }
+      if (gpId === "vision") {
+        state.noFog = true;
+        setTimeout(function () { state.noFog = false; }, 10000);
+        pushFx("ring", cx, cy, "#38bdf8", 2.0);
+        pushFx("text", cx, cy - 18, "GOD POWER: VISION!", "#38bdf8", 2.2);
+        tone("spell");
+      } else if (gpId === "restoration") {
+        state.units.forEach(function (u) {
+          pushFx("beam", u.x, u.y, "#ffd54a", 1.8);
+        });
+        pushFx("text", cx, cy - 18, "GOD POWER: RESTORATION!", "#ffd54a", 2.2);
+        tone("upkeep");
+      } else if (gpId === "flaming_weapons") {
+        state.flamingUntil = performance.now() + 20000;
+        state.units.forEach(function (u) {
+          pushFx("ring", u.x, u.y, "#f85149", 1.8);
+        });
+        pushFx("text", cx, cy - 18, "FLAMING WEAPONS (20s)!", "#f85149", 2.5);
+        tone("attack");
+      } else if (gpId === "meteor") {
+        for (var mi = 0; mi < 5; mi++) {
+          var mx = cx + (Math.random() - 0.5) * 90,
+              my = cy + (Math.random() - 0.5) * 70;
+          pushFx("beam", mx, my, "#ff6a00", 1.9);
+          pushFx("ring", mx, my, "#ffd54a", 1.9);
+        }
+        pushFx("text", cx, cy - 22, "METEOR STORM!", "#ff6a00", 2.6);
+        tone("thunder");
+      }
+      RTS.intent({ kind: "order", to: state.sel || "all",
+                   order: "god_power", power: gpId });
+      logFeed("God Power invoked: " + gpId + " (-" + cost + " Favor)");
+      renderPanels();
+    });
+  }
   if (el("fsearch")) {
     el("fsearch").addEventListener("input", renderFilesPane);
   }
@@ -3369,6 +3467,28 @@
       }
       if (mo) { mo.x = u.x; mo.y = u.y; u.acting = !!mo.acting; }
     });
+    // #190 BANG! Engine Unit Collision Pushing: soft pairwise repulsion
+    // keeps units separated so squads form readable ranks instead of stacking
+    for (var i = 0; i < state.units.length; i++) {
+      for (var j = i + 1; j < state.units.length; j++) {
+        var u1 = state.units[i], u2 = state.units[j];
+        var sdx = u2.x - u1.x, sdy = u2.y - u1.y;
+        var sd = Math.hypot(sdx, sdy);
+        var minD = 16;
+        if (sd > 0.01 && sd < minD) {
+          var push = (minD - sd) * 0.35;
+          var nx = sdx / sd, ny = sdy / sd;
+          u1.x -= nx * push; u1.y -= ny * push;
+          u2.x += nx * push; u2.y += ny * push;
+          if (state.motion[u1.id]) {
+            state.motion[u1.id].x = u1.x; state.motion[u1.id].y = u1.y;
+          }
+          if (state.motion[u2.id]) {
+            state.motion[u2.id].x = u2.x; state.motion[u2.id].y = u2.y;
+          }
+        }
+      }
+    }
   }
 
   // #136 day/night: WC3-style cycle anchored to the session's first

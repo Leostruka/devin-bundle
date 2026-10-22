@@ -1824,6 +1824,7 @@ class World:
                 and u.get("status_live") in ("idle", "stale")
                 and not any(o.get("state") != "consumed"
                             for o in u.get("orders", []))]
+        age_info = self._age_and_favor(units, quests, by_lane)
         return {
             "now": now,
             # #136 day/night: earliest event ts anchors the client-side
@@ -1841,6 +1842,7 @@ class World:
                              rally=self.rally_of(b["id"]))
                           for b in self.buildings.values()],
             "resources": {"gold": gold, "lumber_pct": lumber_pct,
+                          "favor": age_info["favor"],
                           "supply_used": supply_used,
                           "supply_heroes": supply_used,
                           "supply_minions": supply_minions,
@@ -1850,6 +1852,7 @@ class World:
                           "thresholds": {"warn": w, "crit": c,
                                          "clear": clr},
                           "window": self._window},
+            "age": age_info,
             "quests": quests,
             # #133 breach alarms: ledgers with failed gates keep their
             # territory glowing red until the gate set is green again
@@ -1971,6 +1974,41 @@ class World:
                 "category": cat, "rarity": rarity, "unlocked": bool(ok),
             })
         return out
+
+    def _age_and_favor(self, units, quests, by_lane):
+        """#190 Age of Mythology: Retold 5 Ages (I Archaic -> V Wonder),
+        Divine Favor stockpile, and Reusable God Powers."""
+        heroes = [u for u in units if u.get("kind") == "hero"]
+        side_q = [q for q in quests if q.get("kind") != "main"]
+        q_done = sum(1 for q in side_q if q.get("done"))
+        g_pass = sum(v["passed"] for v in by_lane.values())
+        casts = sum((v.get("casts", 0) if isinstance(v, dict) else int(v))
+                    for v in self.skill_casts.values())
+        favor = 25 + g_pass * 5 + q_done * 10 + casts * 3 + len(heroes) * 4
+        if q_done >= 8 or g_pass >= 40:
+            num, Roman, name, patron = 5, "V", "Wonder Age", "Chronos / Zeus"
+        elif q_done >= 5 or g_pass >= 20:
+            num, Roman, name, patron = 4, "IV", "Mythic Age", "Hera / Hephaestus"
+        elif len(heroes) >= 3 or q_done >= 2 or g_pass >= 8:
+            num, Roman, name, patron = 3, "III", "Heroic Age", "Apollo / Dionysus"
+        elif len(heroes) >= 1 or q_done >= 1 or g_pass >= 2:
+            num, Roman, name, patron = 2, "II", "Classical Age", "Athena / Hermes"
+        else:
+            num, Roman, name, patron = 1, "I", "Archaic Age", "Gaia / Oranos"
+        powers = [
+            {"id": "vision", "name": "Vision", "cost": 10, "cd": 15,
+             "min_age": 1, "desc": "Reveal territory & scan active POI"},
+            {"id": "restoration", "name": "Restoration", "cost": 25, "cd": 25,
+             "min_age": 2, "desc": "Call golden healing pillar on heroes"},
+            {"id": "flaming_weapons", "name": "Flaming Weapons", "cost": 40,
+             "cd": 35, "min_age": 3, "desc": "Ignite all hero weapons for 20s"},
+            {"id": "meteor", "name": "Meteor Storm", "cost": 60, "cd": 45,
+             "min_age": 4, "desc": "Call 3D meteor & lightning barrage on quest"},
+        ]
+        return {
+            "num": num, "roman": Roman, "name": name,
+            "patron": patron, "favor": favor, "powers": powers,
+        }
 
     @classmethod
     def replay(cls, root, events, now=None):

@@ -1021,7 +1021,11 @@ def main():
         assert len(w_snap.get("achievements") or []) >= 10, w_snap.get("achievements")
         assert any(a["id"] == "first_hero" and a["unlocked"]
                    for a in w_snap["achievements"]), w_snap["achievements"]
-        print("PASS skill scrolls + tiered achievements (Hall of Glory)")
+        # #190 Age of Mythology: Retold 5 Ages + Divine Favor + God Powers
+        assert "age" in w_snap and w_snap["age"]["num"] >= 2, w_snap.get("age")
+        assert w_snap["resources"].get("favor", 0) >= 25, w_snap["resources"]
+        assert len(w_snap["age"].get("powers") or []) == 4, w_snap["age"]
+        print("PASS skill scrolls + achievements + AoM 5 Ages & God Powers")
         sys.path.insert(0, HERE)
         import world as worldmod
         now = snap["world"]["now"]
