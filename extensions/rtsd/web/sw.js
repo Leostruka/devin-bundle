@@ -1,8 +1,9 @@
 /* rtsd PWA service worker: cache-first for the app shell only.
    Live state always comes from /snapshot + /ws at runtime. */
-var CACHE = "rtsd-v5";
+var CACHE = "rtsd-v6";
 var SHELL = ["./index.html", "./manifest.webmanifest",
-             "./js/theme.js", "./js/engine.js", "./js/app.js"];
+             "./js/theme.js", "./js/engine.js", "./js/engine3d.js",
+             "./js/app.js"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) {

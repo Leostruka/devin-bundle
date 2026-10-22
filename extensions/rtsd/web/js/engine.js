@@ -2775,5 +2775,5 @@
   };
 
   g.Engine = { TILE: TILE, hash: hash, create: function (cv) {
-    return new Engine(cv); } };
+    return new Engine(cv); }, _ctor: Engine };
 })(window);
