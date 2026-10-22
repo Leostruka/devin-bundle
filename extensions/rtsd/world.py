@@ -1591,6 +1591,8 @@ class World:
             q["blocked"] = any(d not in done for d in deps)
             q["done"] = q["id"] in done
             q["failed"] = q["status"] in self._Q_FAIL
+            # #195 quests are real issues grouped by milestone (effort dir)
+            q["milestone"] = q["effort"] or "session"
         # assignment: a hero's latest order carrying a quest ref marks it
         # as that quest's assignee (#130 assign flow); order lifecycle is
         # overlaid separately, so consumed quests stay on the hero's sheet
@@ -1825,6 +1827,7 @@ class World:
                 and not any(o.get("state") != "consumed"
                             for o in u.get("orders", []))]
         age_info = self._age_and_favor(units, quests, by_lane)
+        achs = self._achievements(units, quests, by_lane, gold)
         return {
             "now": now,
             # #136 day/night: earliest event ts anchors the client-side
@@ -1865,7 +1868,12 @@ class World:
                      "armory": armory(self.root),
                      "doctrines": doctrines(self.root)},
             "scrolls": self._scrolls(),
-            "achievements": self._achievements(units, quests, by_lane, gold),
+            "achievements": achs,
+            # #195 Devin CLI gamification loop: commander XP/rank derived
+            # from real gates/quests/casts/spawns/unlocks; trophy artifacts
+            # minted to .devin/rts/trophies/ on unlock (idempotent)
+            "progression": self._progression(units, quests, by_lane, achs),
+            "trophies": self._mint_trophies(achs),
             "map": {"root": self.root, "sig": self.layout["sig"],
                     "w": MAP_W, "h": MAP_H,
                     "tile_region": self.layout["tile_region"],
@@ -1975,6 +1983,101 @@ class World:
                 "category": cat, "rarity": rarity, "unlocked": bool(ok),
             })
         return out
+
+    # #195 commander ranks: XP thresholds + the real HUD surface each
+    # tier "unlocks" (perks point at existing mechanics, nothing fake)
+    _RANKS = [
+        (0, "Recruit", "Command card"),
+        (150, "Squire", "Control groups"),
+        (400, "Footman", "Patrol & Gather loops"),
+        (800, "Knight", "God Power: Restoration"),
+        (1400, "Captain", "God Power: Flaming Weapons"),
+        (2200, "Marshal", "God Power: Meteor Storm"),
+        (3200, "Warlord", "Trophy Hall export"),
+        (4500, "High Warlord", "Victory screen legends"),
+        (6500, "Grand Marshal", "Campaign merge mastery"),
+        (9000, "Legendary Commander", "Wonder Age patronage"),
+    ]
+
+    def _progression(self, units, quests, by_lane, achs):
+        """#195 Devin CLI gamification loop: commander XP/rank derived
+        from real session actions - gates passed (tests/reviews),
+        quests done (issues closed), skill casts, heroes deployed
+        (subagent spawns) and achievements unlocked."""
+        heroes = [u for u in units if u.get("kind") == "hero"]
+        side_q = [q for q in quests if q.get("kind") != "main"]
+        q_done = sum(1 for q in side_q if q.get("done"))
+        g_pass = sum(v["passed"] for v in by_lane.values())
+        casts = sum((v.get("casts", 0) if isinstance(v, dict) else int(v))
+                    for v in self.skill_casts.values())
+        unl = sum(1 for a in achs if a.get("unlocked"))
+        parts = {"gates": g_pass * 10, "quests": q_done * 50,
+                 "casts": casts * 5, "heroes": len(heroes) * 25,
+                 "achievements": unl * 100}
+        xp = sum(parts.values())
+        rank_i = 0
+        for i, (need, _n, _p) in enumerate(self._RANKS):
+            if xp >= need:
+                rank_i = i
+        need_r, name_r, perk = self._RANKS[rank_i]
+        nxt = self._RANKS[rank_i + 1] if rank_i + 1 < len(self._RANKS) \
+            else None
+        span = (nxt[0] - need_r) if nxt else 1
+        return {
+            "xp": xp, "breakdown": parts,
+            "rank": {"tier": rank_i + 1, "name": name_r, "perk": perk},
+            "next": ({"name": nxt[1], "at": nxt[0],
+                      "progress": min(99, int((xp - need_r) * 100 / span))}
+                     if nxt else None),
+            "perks": [p for _n2, _r2, p in self._RANKS[:rank_i + 1]],
+        }
+
+    def _mint_trophies(self, achs):
+        """#195 real artifacts: each unlocked achievement mints a
+        deterministic SVG badge + markdown citation under
+        .devin/rts/trophies/ (idempotent; write only what is new)."""
+        tdir = os.path.join(self.root, ".devin", "rts", "trophies")
+        rcol = {"Common": "#8b949e", "Uncommon": "#3fb950",
+                "Rare": "#38bdf8", "Legendary": "#ffd54a"}
+        minted = []
+        try:
+            if os.path.isdir(tdir):
+                minted = sorted(f[:-4] for f in os.listdir(tdir)
+                                if f.endswith(".svg"))
+            for a in achs:
+                aid = a.get("id")
+                if not a.get("unlocked") or aid in minted:
+                    continue
+                os.makedirs(tdir, exist_ok=True)
+                col = rcol.get(a.get("rarity"), "#8b949e")
+                title = str(a.get("title") or aid)
+                svg = (
+                    "<svg xmlns='http://www.w3.org/2000/svg' "
+                    "width='120' height='140' viewBox='0 0 120 140'>"
+                    "<path d='M60 4l52 18v44c0 34-23 58-52 70C31 124 8 100 "
+                    "8 66V22z' fill='#141e16' stroke='" + col + "' "
+                    "stroke-width='4'/>"
+                    "<circle cx='60' cy='58' r='22' fill='none' "
+                    "stroke='" + col + "' stroke-width='3'/>"
+                    "<path d='M60 42l5 12h12l-9 9 3 12-11-7-11 7 3-12-9-9"
+                    "h12z' fill='" + col + "'/>"
+                    "<text x='60' y='112' text-anchor='middle' "
+                    "font-family='monospace' font-size='10' fill='" + col +
+                    "'>" + (a.get("rarity") or "").upper() + "</text>"
+                    "</svg>")
+                with open(os.path.join(tdir, aid + ".svg"), "w",
+                          encoding="utf-8") as fh:
+                    fh.write(svg)
+                with open(os.path.join(tdir, aid + ".md"), "w",
+                          encoding="utf-8") as fh:
+                    fh.write("# " + title + "\n\n" +
+                             str(a.get("desc") or "") +
+                             "\n\nRarity: " + str(a.get("rarity")) +
+                             " | Category: " + str(a.get("category")) + "\n")
+                minted.append(aid)
+        except OSError:
+            pass
+        return sorted(minted)
 
     def _age_and_favor(self, units, quests, by_lane):
         """#190 Age of Mythology: Retold 5 Ages (I Archaic -> V Wonder),

@@ -1031,7 +1031,17 @@ def main():
         assert len(off.get("staff") or []) >= 1, off.get("staff")
         assert "sprint" in off and "progress" in off["sprint"], off.get("sprint")
         assert len(off.get("upgrades") or []) >= 5, off.get("upgrades")
-        print("PASS skill scrolls + achievements + AoM 5 Ages & God Powers + Office Tycoon")
+        # #195 gamification loop: commander XP/rank from real actions +
+        # trophy artifacts minted under .devin/rts/trophies/
+        prog = w_snap.get("progression") or {}
+        assert prog.get("xp", 0) > 0 and prog.get("rank", {}).get("name"), prog
+        assert isinstance(w_snap.get("trophies"), list), w_snap.get("trophies")
+        assert len(w_snap["trophies"]) >= 1, w_snap["trophies"]
+        st, tr = get(PORT, "/trophies")
+        assert st == 200 and len(tr.get("trophies") or []) >= 1, tr
+        assert all(q.get("milestone") for q in w_snap.get("quests") or []
+                   if q.get("kind") != "main"), "quest milestone missing"
+        print("PASS skill scrolls + achievements + AoM 5 Ages & God Powers + Office Tycoon + Gamification")
         sys.path.insert(0, HERE)
         import world as worldmod
         now = snap["world"]["now"]

@@ -1466,11 +1466,37 @@
             "Scroll: " + esc(sc.name) + "</button>";
         }).join("") + "</div>";
     }
+    // #195 Devin CLI gamification: commander XP/rank from real actions
+    var prog = (state.world && state.world.progression) || null;
+    if (prog && prog.rank) {
+      var bd = prog.breakdown || {};
+      h += "<div class='qhead'>COMMANDER RANK</div>" +
+        "<div style='display:flex;gap:8px;align-items:center;margin:4px 0'>" +
+        "<span style='font-size:24px;color:#ffd54a'>&#9733;</span>" +
+        "<div style='flex:1'><b style='color:#ffd54a'>" + esc(prog.rank.name) +
+        "</b> <span class='meta'>Tier " + prog.rank.tier + " - " +
+        esc(prog.rank.perk) + "</span><br>" +
+        "<span class='meta'>XP " + prog.xp +
+        (prog.next ? " -> " + esc(prog.next.name) + " at " +
+                     prog.next.at : " (max rank)") + "</span>" +
+        "<div class='sprog' style='height:5px;background:#21262d;" +
+        "border-radius:3px;margin-top:3px'><span style='display:block;" +
+        "height:100%;border-radius:3px;background:#ffd54a;width:" +
+        (prog.next ? prog.next.progress : 100) + "%'></span></div>" +
+        "</div></div>" +
+        "<div class='meta'>gates +" + (bd.gates || 0) +
+        " | quests +" + (bd.quests || 0) +
+        " | casts +" + (bd.casts || 0) +
+        " | heroes +" + (bd.heroes || 0) +
+        " | achievements +" + (bd.achievements || 0) + "</div>";
+    }
     var achs = (state.world && state.world.achievements) || [];
     if (achs.length) {
       var unl = achs.filter(function (a) { return a.unlocked; }).length;
+      var tro = (state.world && state.world.trophies) || [];
       h += "<div class='qhead'>HALL OF GLORY (" + unl + "/" + achs.length +
-        " UNLOCKED - CLICK TO EXPORT 600x315 TROPHY PNG)</div>" +
+        " UNLOCKED - " + tro.length + " TROPHY ARTIFACTS MINTED - " +
+        "CLICK TO EXPORT 600x315 TROPHY PNG)</div>" +
         "<div style='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px'>" +
         achs.map(function (a) {
           var rCol = a.rarity === "Legendary" ? "#ffd54a" :
@@ -1485,7 +1511,11 @@
             esc(secretMask ? "???" : a.title) + "</b> " +
             "<span class='meta'>[" + esc(a.rarity) + "]</span><br>" +
             "<span class='meta'>" +
-            esc(secretMask ? "Keep exploring..." : a.desc) + "</span></div>";
+            esc(secretMask ? "Keep exploring..." : a.desc) +
+            (a.unlocked && tro.indexOf(a.id) >= 0
+              ? " <span style='color:#3fb950'>[minted .devin/rts/trophies/" +
+                esc(a.id) + ".svg]</span>" : "") +
+            "</span></div>";
         }).join("") + "</div>";
     }
     box.innerHTML = h;
