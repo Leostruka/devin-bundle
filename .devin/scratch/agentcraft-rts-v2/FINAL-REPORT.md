@@ -42,6 +42,7 @@ Brief used by implementers: `AGENT-BRIEF.md` (same dir).
 | 180 | #181 | Complete 3D Isometric Office Mode overhaul (`_drawOfficeBuilding3D` 11 3D office rooms/furniture sets, `_drawOfficeUnit3D` 3D software-engineer rigs with headsets/glasses/hoodies/laptops & 3D dual-monitor sit-stand workstations, potted Monstera plants & robot vacuums) |
 | 182 | #183 | Complete UI/UX & multi-theme HUD overhaul (`body[data-theme="battlefield|office"]` & `body[data-race="human|orc|elf|undead"]`, 4 structured Resource Pods, decluttered header, Unit Dossier Card with Kit/Spell chips, and Quest Cards with gate progress bars) |
 | 184 | #185 | Strict camera map clamping (`eng.map` binding, dynamic minimum zoom `zMinBf`/`zMinIso`, zero out-of-bounds margin in Battlefield mode, and exact 4-corner isometric diamond clamping in Office mode) |
+| 186 | #187 | Stateful `dt`-integrated weather particle engine (`_wxPool` clouds/leaves/rain/snow integrated by `dt`, steady `baseStr` water wave phase eliminating `now * wind(now)` slingshotting, soft radial-gradient clouds/fog, and indoor Office Mode exclusion) |
 
 ## Final gate evidence (milestone branch)
 
