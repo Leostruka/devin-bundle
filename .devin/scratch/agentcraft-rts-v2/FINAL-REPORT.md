@@ -1,0 +1,77 @@
+# v3.8.0 final report - agentcraft-rts-v2
+
+Milestone: https://github.com/Leostruka/devin-bundle/milestone/ (v3.8.0)
+Branch: `milestone/v3.8.0` (not merged to `main`; review first).
+Spec: `.devin/scratch/agentcraft-rts-v2/gdd.md`.
+Brief used by implementers: `AGENT-BRIEF.md` (same dir).
+
+## Delivered issues (18/18, dependency order)
+
+| # | PR | Delivered |
+|---|----|-----------|
+| 119 | #137 | GDD spec: full class/skill/script/extension/event mapping for the RTS overlay |
+| 120 | #138 | Event-sourced world engine `world.py`: units, buildings, resources, quests; `events.jsonl` replay is byte-identical; 2s tick deltas |
+| 121 | #139 | Renderer foundation: canvas tilemap engine, camera, minimap, themes, zero deps, ~0.1ms/frame for 200 units in Node bench |
+| 122 | #140 | Authoritative world map: dir territories, fixed plots, fog-of-war (shroud/explored/lit, 3x3 reveal, 180s decay), contested tiles, POIs, persisted `map.json` |
+| 123 | #141 | 11 buildings on plots; `GET /buildings/<id>` inspectors serving real ledger/memory/git/MCP/remote data; real spawn intents only |
+| 124 | #142 | Minimap + camera: upsert `hint` pings (file/contested/spawn/decision/fail), click-jump, SPACE cycling, lane tint, right-click order intents |
+| 125 | #143 | Unit model: kits from real allowed-tools, tiers from TOOLS-MAP, worker peasants from hook events, class barks + heartbeat notes, fades, level badges |
+| 126 | #144 | Selection + command card: box select, control groups, Tab subgroup, dbl-click class sweep, command card from real kits, quest-POI attack snap |
+| 127 | #145 | Orders queue: numbered waypoints, shift-queue, ghost queued state, barracks rally->lane, idle-worker cycler |
+| 128 | #146 | Comms feed: typed flavored lines from real events, @unit steering -> message intents, raven anim on mailbox deposits, event-sourced scrollback |
+| 129 | #147 | War council: PermissionRequest->decision files, stacked pending, answer endpoint 200/409/400, fail-closed timeout verified with real `rts-decision.py --wait`, alert tiers |
+| 130 | #148 | Quest system: DAG chains to real issue files, assign via intents, ledger-bound HP/loot, marker states, main/side split |
+| 131 | #149 | Economy HUD: real income rates, supply split, upkeep tier alerts, per-hero burn/turns, Economy pane |
+| 132 | #150 | Tech tree + spellbook: all 83 real skills grouped by school, cast counts from events, hero spellbook from profile file, armory model tiers from `bundle-models.json`, doctrines from `.devin/memory/` |
+| 133 | #151 | Alerts: per-tier WebAudio signatures, breach tiles from failed ledgers (persist + clear on seal), severity stack, Notification opt-in, TUI `[ALERT]` lines, mute persistence |
+| 134 | #152 | Office/isometric mode: iso projection shared by render+picking, all 11 buildings reskinned, ambient furniture from real positions, decision summons, theme persisted |
+| 135 | #153 | Replay + spectator: `--replay` daemon (seek/4x, deterministic), `/sessions` match history, `/score` screen, spectator token -> server-enforced 403 on POSTs |
+| 136 | #154 | Polish: motion glide, walk/work/idle anims, ambience + day/night, sprite raster cache, hotkey audit + guide card |
+| 155 | #156 | Post-review audit fixes: `_apply_hook` guard, iso wheel zoom, SW bypass regex, Marketplace `mcp_config.json` + tool counts, done barks + minion grouping, FIFO waypoint chain/consume, Office labels/printer-fire/water-cooler, `/sessions` cache + Web UI Match History, `<700px` mobile tab bar |
+| 157 | #160 | Live local weather (`GET/POST /weather`, `snapshot.weather`, Open-Meteo + geojs/ipwho cache) + unified wind physics + WC3/AoE3 terrain (roads, plazas, rivers/lakes with waves/foam/bridges, swaying multi-layer trees, falling leaves, dynamic Line-of-Sight vision) |
+| 158 | #161 | WC3/AoE3 unit, hero & building modeling (all 22 classes + 11 structures in `theme.js`, `Theme.drawPortrait`) + `_drawBuildingAnim` & `_drawUnitLive` (Hero Glow, rotating Aura runes, wind-reactive capes/flags/smoke, `Stand - 1/2/3` fidgets, social nods, dust puffs, worker hauling) |
+| 159 | #162 | HUD, mechanics & gameplay overhaul (`#herobar` WC3 Hero Roster, `#bldbar` AoE3 Building Strip, `#wxBtn` Weather Orb, `#portcv` live 3D-style Portrait canvas, non-blocking War Council, 3x4 icon/hotkey Command Card with Building Commands, active Patrol/Gather/Combat/Spell loops, expanded WebAudio soundscape) |
+| 163 | #166 | 3D volumetric modeling (`_cylGrad`, `_sphereGrad`, `_roof3D` with shingle courses & AO), seamless organic terrain splatting (`_ensureTerrainCanvas`), 2-wave Gerstner water with specular glints, directional cast shadows, 4-node Verlet cloth capes, 2-bone leg stride kinematics, and ranged projectiles |
+| 164 | #167 | RTS HUD architecture, `F10` Game Menu modal (`#gamemenu` with Weather Forecast Inspector & mode switcher), 4x3 (`QWER/ASDF/ZXCV`) Command Card with custom inline SVG vector icons & anchored `#cardtip` tooltip, beveled HP/MP/XP bars, WC3 6-Slot Runed Inventory Grid (`#invgrid`), and minimap filters + iso frustum |
+| 165 | #168 | Procedural WebAudio DSP sound engine (`_getNoise` pink noise, `_fm` metallic partials, `_noise` biquad bursts, `_pluck` Karplus-Strong strings, `syncAmbience` continuous wind/rain filter bank) + per-building/class acoustic signatures & Office Mode foley switching |
+| 170 | #171 | Real 3D RTS perspective engine (`PITCH` tilt + `wz` vertical elevation + exact `toWorld`/`toScreen` inverse), 3D plateaus/cliffs/sunken riverbanks/arched bridges, `_drawBuilding3D` multi-face 3D structures (`_box3D`, `_cyl3D`, `_cone3D`, `_roofPrism3D`), and 14-joint 3D articulated skeletal rig (`Rig3D`) with smooth 3D facing `yaw` and 8 3D animation clips |
+| 172 | #173 | Side Panel Explorer (`GET /files` with extension badges & filter), Git Codex (`GET /git`, `GET /git/diff`, `POST /git` Stash Manager, worktrees, branches, commits), `@file` composer autocomplete, and Web Speech API Voice Input (`#micBtn`) |
+| 174 | #175 | 4 Race Faction Skins (`human`, `orc`, `elf`, `undead`) in `theme.js`/`engine.js`/`app.js` + `V` Fog Toggle, `H` Territory Heatmap, `` ` `` War Table overlay, `Y`/`N` War Council quick-approval, and `F9`/`F12`/`Enter` hotkeys |
+| 176 | #177 | Collectible 3D Skill Scrolls on Map (`world._scrolls`) + 12 Tiered Achievements (`world._achievements` in `Discovery`/`Mastery`/`Secret` & `Common..Legendary`) + Hall of Glory gallery & `600x315` Trophy Card PNG export |
+| 178 | #179 | Campaign DAG dependency lines on 3D map + Campaign Review & Merge view, `GET/POST /loops` Scheduled Tasks manager, `POST /terminal` + `Ctrl+T` Multi-Tab Integrated Terminal drawer, Procedural Ambient Music (`#musicBtn`), and War Advisor interactive tutorial (`#tutBtn`) |
+| 180 | #181 | Complete 3D Isometric Office Mode overhaul (`_drawOfficeBuilding3D` 11 3D office rooms/furniture sets, `_drawOfficeUnit3D` 3D software-engineer rigs with headsets/glasses/hoodies/laptops & 3D dual-monitor sit-stand workstations, potted Monstera plants & robot vacuums) |
+| 182 | #183 | Complete UI/UX & multi-theme HUD overhaul (`body[data-theme="battlefield|office"]` & `body[data-race="human|orc|elf|undead"]`, 4 structured Resource Pods, decluttered header, Unit Dossier Card with Kit/Spell chips, and Quest Cards with gate progress bars) |
+| 184 | #185 | Strict camera map clamping (`eng.map` binding, dynamic minimum zoom `zMinBf`/`zMinIso`, zero out-of-bounds margin in Battlefield mode, and exact 4-corner isometric diamond clamping in Office mode) |
+| 186 | #187 | Stateful `dt`-integrated weather particle engine (`_wxPool` clouds/leaves/rain/snow integrated by `dt`, steady `baseStr` water wave phase eliminating `now * wind(now)` slingshotting, soft radial-gradient clouds/fog, and indoor Office Mode exclusion) |
+| 188 | #189 | Continuous connected river channel (`strokeWaterPass` eliminating per-tile circular water blobs & white `ctx.ellipse` rings) + unidirectional downstream water ripples (`pFlow = (now / 2200 + seed) % 1` with `sin(pFlow * PI)` fade envelope, eliminating circular `(sin, cos)` wave orbits) |
+| 190 | #191 | Age of Mythology: Retold 5 Ages progression (`I. Archaic -> V. Wonder Age`), Divine Favor (`resources.favor`), top-center Reusable God Powers Bar (`#godbar`: `Vision`, `Restoration`, `Flaming Weapons`, `Meteor Storm`), and BANG!-engine unit collision pushing |
+| 192 | #193 | True Office Tycoon Mode (Game Dev Tycoon / Cafe Mania style: `_office_state()` staff roster with energy/coffee/needs/desk/task/XP, departments by lane, sprint progress, upgrade cards + `Office` side panel) |
+| 193 | #197 | RTS Micro & Command Layer (armed-order cursor path preview + target ring, patrol/gather/attack/focus destination marks, P/G/A/F unit status badges, Flaming Weapons buff ring, cast/ability cooldown overlays `.cd`, `.fired` action flash, Focus-Fire order + `F` hotkey, inspector status chips) |
+| 195 | #198 | Devin CLI gamification loop (`_progression()` commander XP/rank across 10 tiers from real gates/quests/casts/spawns/unlocks, `q["milestone"]` real milestone binding, `_mint_trophies()` SVG badge + MD citation artifacts in `.devin/rts/trophies/`, `GET /trophies` + `/trophies/<id>.svg`, Commander Rank crest + XP bar in Game Menu) |
+| 194 | (PR pending) | Optional WebGL 3D render path (`engine3d.js` `Engine3D`: depth-tested lambert-lit terrain/building/unit meshes, GL selection rings + buff rings, point-sprite fx, rain streaks, 2D HUD overlay pass for names/bars/waypoints/marks/pings; `?renderer=webgl` + persisted `localStorage.rtsd.renderer` + Game Menu toggle; `canvas` default; isometric office + no-GL auto-fallback to the Canvas painter; `Engine._ctor` export; `sw.js` `rtsd-v6` shell; selftest asserts `/js/engine3d.js` served + load order). Live CDP: `#cv3d` active at 117fps, 0 JS errors, canvas mode verified clean |
+
+## Final gate evidence (milestone branch)
+
+- `python audit.py` -> Errors: 0, Warnings: 0 (ALL 32 CHECKS PASSED)
+- `python extensions/rtsd/selftest.py` -> ALL PASS (26+ checks incl. `replay(events.jsonl) == live world (41 events)`)
+- `python -m pytest` -> 1685 passed, 4 skipped (~185s). One flake seen during the run
+  (`test_check_push_green_blocks` 30s timeout under parallel load); passes in
+  isolation (0.52s) and in the clean full run.
+- CHANGELOG `[Unreleased]` has a per-issue entry for #120-#136.
+
+## Known gaps (honest list)
+
+- Raven animation + econ/upkeep feed lines are client-side diffs; pure-polling
+  clients see lines, not the flight art (#128, #131).
+- Alert sound may stay silent until first user gesture (browser autoplay
+  policy; fails silently by design).
+- Spectator mode is token-scoped; a loopback client presenting the spectator
+  token is also read-only (that is what makes it testable) (#135).
+- Inter-event replay delay capped at 1s/speed for watchability; state remains
+  deterministic (#135).
+- Iso minimap has no viewport rect (camera rect has no tile-space shape) (#134).
+- `turns_left` needs a heartbeat `status.json` with ctx data, else null (#131).
+- #136 fps claim is code-path-verified (sprite cache + culling), not a measured
+  capture; `?bench` mode remains for manual verification.
+- Issues left open per milestone convention (`Refs` in every PR; close at
+  final merge to main).

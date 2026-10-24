@@ -1,7 +1,9 @@
 /* rtsd PWA service worker: cache-first for the app shell only.
    Live state always comes from /snapshot + /ws at runtime. */
-var CACHE = "rtsd-v1";
-var SHELL = ["./index.html", "./manifest.webmanifest"];
+var CACHE = "rtsd-v6";
+var SHELL = ["./index.html", "./manifest.webmanifest",
+             "./js/theme.js", "./js/engine.js", "./js/engine3d.js",
+             "./js/app.js"];
 
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) {
@@ -20,7 +22,7 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   var u = new URL(e.request.url);
   if (u.origin !== location.origin ||
-      /\/(ws|snapshot|decisions|event|intent|health)/.test(u.pathname)) {
+      /\/(ws|snapshot|decisions|event|intent|health|buildings|score|sessions|replay|weather|files|git|loops|terminal)/.test(u.pathname)) {
     return; // network only for live data
   }
   e.respondWith(caches.match(e.request).then(function (hit) {

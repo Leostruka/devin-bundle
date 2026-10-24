@@ -44,16 +44,11 @@
           "type": "command",
           "command": "python scripts/compact-gate.py",
           "timeout": 15
-        },
-        {
-          "type": "command",
-          "command": "python scripts/rts-emit.py",
-          "timeout": 5
         }
       ]
     },
     {
-      "matcher": "^(run_subagent|read_subagent|ask_user_question)$",
+      "matcher": ".*",
       "hooks": [
         {
           "type": "command",

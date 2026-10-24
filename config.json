@@ -39,5 +39,10 @@
       "Write(**/credentials*)",
       "Read(**/.env*)"
     ]
+  },
+  "keymap": {
+    "readbox_input": {
+      "queue_message": "ctrl-alt-j"
+    }
   }
 }

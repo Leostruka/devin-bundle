@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>agent-rts - DevinCraft Orchestrator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --panel: rgba(10,16,24,.86); --line: #2a4258; --gold: #ffd54a;
+          --blue: #7fc9ff; --green: #6fe39a; --red: #ff7a7a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden;
+    background: #0b0f14; color: #cfe3ff;
+    font: 12px/1.45 "Segoe UI", system-ui, sans-serif; }
+  #gl { position: fixed; inset: 0; display: block; }
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  #hud > * { pointer-events: auto; }
+  .hidden { display: none !important; }
+
+  /* ---- top macro bar ---- */
+  #topbar { position: absolute; top: 0; left: 0; right: 0; height: 34px;
+    display: flex; gap: 8px; align-items: center; padding: 4px 10px;
+    background: linear-gradient(#0e1826, #0a121d); border-bottom:
+    1px solid var(--line); }
+  .pill { background: #14202e; border: 1px solid #28405a;
+    border-radius: 10px; padding: 2px 10px; white-space: nowrap;
+    font-variant-numeric: tabular-nums; }
+  .pill.gold { color: var(--gold); border-color: #6b5a22; }
+  .pill.warn { border-color: #b8860b; color: #ffd54a; }
+  .pill.crit { border-color: #a33; color: var(--red); }
+  .pill.btn { cursor: pointer; } .pill.btn:hover { background: #1d3049; }
+
+  /* ---- roster (left) ---- */
+  #roster { position: absolute; left: 8px; top: 46px; width: 190px;
+    display: flex; flex-direction: column; gap: 6px; }
+  .hero { background: var(--panel); border: 1px solid var(--line);
+    border-left: 3px solid var(--blue); border-radius: 5px;
+    padding: 4px 7px; cursor: pointer; display: grid;
+    grid-template-columns: auto 1fr; column-gap: 6px; font-size: 11px; }
+  .hero em { font-style: normal; color: #9fb8d4; }
+  .hero .lv { grid-column: 1/3; color: var(--gold); font-style: normal; }
+  .hero .st { grid-column: 1/3; color: #7d95b0; font-style: normal; }
+  .hero.work { border-left-color: var(--green); }
+  .hero.error { border-left-color: var(--red); }
+  .hero.idle { border-left-color: #556; }
+
+  /* ---- building strip (right) ---- */
+  #bldstrip { position: absolute; right: 8px; top: 46px; width: 120px;
+    display: flex; flex-direction: column; gap: 4px; }
+  .bld { background: var(--panel); border: 1px solid var(--line);
+    border-radius: 4px; padding: 3px 7px; cursor: pointer;
+    font-size: 11px; opacity: .85; }
+  .bld.act { border-color: var(--green); opacity: 1; }
+  .bld:hover { background: #18283c; }
+
+  /* ---- ticket rail (Cafe-Mania) ---- */
+  #tickets { position: absolute; right: 136px; top: 46px; width: 250px;
+    max-height: 42vh; overflow-y: auto; display: flex;
+    flex-direction: column; gap: 4px; }
+  .ticket { background: linear-gradient(90deg, #1b2530, #131c26);
+    border: 1px solid #33465c; border-radius: 4px; padding: 4px 7px;
+    font-size: 11px; cursor: pointer; }
+  .ticket i { float: right; color: #8fa5bd; font-style: normal; }
+  .ticket.sel { border-color: var(--gold); background: #26303c; }
+  .ticket.stale { border-color: #7a3a2a; }
+  .ticket:hover { background: #1f2c3d; }
+
+  /* ---- alerts ---- */
+  #alerts { position: absolute; left: 50%; top: 46px;
+    transform: translateX(-50%); display: flex; flex-direction: column;
+    gap: 5px; align-items: center; }
+  .toast { background: var(--panel); border: 1px solid var(--line);
+    border-radius: 6px; padding: 5px 14px; animation: pop .2s; }
+  .toast.warn { border-color: #b8860b; }
+  .toast.crit { border-color: var(--red); color: var(--red); }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } }
+
+  /* ---- decision modal ---- */
+  #decision { position: absolute; left: 50%; top: 38%;
+    transform: translate(-50%,-50%); width: 340px; background: #101a28;
+    border: 2px solid var(--gold); border-radius: 8px; padding: 12px;
+    box-shadow: 0 8px 40px #000c; z-index: 20; }
+  #decision h4 { margin: 0 0 6px; color: var(--gold); }
+  #decision button { margin: 4px 6px 0 0; }
+
+  /* ---- bottom console ---- */
+  #bottom { position: absolute; left: 0; right: 0; bottom: 0;
+    height: 150px; display: flex; gap: 8px; padding: 6px 8px;
+    background: linear-gradient(#0a121d, #0e1826); border-top:
+    1px solid var(--line); }
+  #minimap { border: 1px solid var(--line); border-radius: 4px;
+    cursor: crosshair; background: #060a10; }
+  #portrait { width: 230px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 4px; padding: 6px;
+    font-size: 11px; overflow: hidden; }
+  #p-name { color: var(--gold); margin-bottom: 4px; }
+  #p-stats div { color: #9fb8d4; margin: 1px 0; }
+  #inv i { display: inline-block; border: 1px solid #35557c;
+    border-radius: 3px; padding: 0 4px; margin: 2px 2px 0 0;
+    font-style: normal; color: #b9cee6; }
+  #cmdcard { display: grid; grid-template-columns: repeat(4, 62px);
+    grid-auto-rows: 42px; gap: 4px; }
+  .cmd { position: relative; background: #16222f; color: #d5e6fa;
+    border: 1px solid #35557c; border-radius: 5px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; font-size: 10px; padding: 0; }
+  .cmd i { font-style: normal; font-size: 15px; }
+  .cmd kbd { position: absolute; top: 1px; right: 3px; font-size: 9px;
+    color: #7d95b0; }
+  .cmd s { text-decoration: none; }
+  .cmd:hover { background: #22364e; border-color: var(--blue); }
+  #feed { flex: 1; overflow-y: auto; font-size: 11px; color: #a9c0dc;
+    background: #0b1420; border: 1px solid #1e2c3d; border-radius: 4px;
+    padding: 4px 8px; }
+  #feed .f-order { color: #8fd0ff; } #feed .f-fail { color: var(--red); }
+  #feed .f-spawn { color: var(--green); }
+  #feed .f-decision { color: var(--gold); }
+
+  /* ---- tooltip / menus / misc ---- */
+  #cardtip { position: absolute; bottom: 158px; left: 50%;
+    transform: translateX(-50%); background: #131b26;
+    border: 1px solid var(--gold); border-radius: 5px; padding: 6px 12px;
+    z-index: 15; }
+  #gamemenu { position: absolute; left: 50%; top: 30%;
+    transform: translateX(-50%); width: 220px; background: #101a28;
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+    display: flex; flex-direction: column; gap: 6px; z-index: 30; }
+  #gamemenu h3 { margin: 0; color: var(--gold); }
+  #gamemenu button, #decision button, #powermenu button {
+    background: #1d2f45; color: #cfe3ff; border: 1px solid #35557c;
+    border-radius: 4px; padding: 5px 9px; cursor: pointer; }
+  #gamemenu button:hover, #powermenu button:hover { background: #28405c; }
+  #gm-score-out pre { max-height: 200px; overflow: auto; font-size: 10px;
+    color: #9fb8d4; }
+  #powermenu { position: absolute; bottom: 160px; left: 50%;
+    transform: translateX(-50%); display: flex; gap: 6px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px; z-index: 15; }
+  #powermenu i { color: var(--gold); font-style: normal; }
+  #selbox { position: fixed; border: 1px solid var(--blue);
+    background: rgba(127,201,255,.12); display: none; z-index: 40;
+    pointer-events: none; }
+  button { font: inherit; }
+</style>
+<script>
+/* Boot error surface: module-load / uncaught errors land on-screen so a
+   headless or console-less session can still see why the scene is dark. */
+window.__bootErrors = [];
+function __bootErr(msg) {
+  window.__bootErrors.push(msg);
+  let d = document.getElementById("booterr");
+  if (!d) {
+    d = document.createElement("div"); d.id = "booterr";
+    d.style.cssText = "position:fixed;top:64px;left:8px;z-index:999;" +
+      "max-width:70%;color:#ff9a9a;background:#300a;padding:8px 10px;" +
+      "font:12px monospace;white-space:pre-wrap;border:1px solid #f66";
+    document.body.appendChild(d);
+  }
+  d.textContent = window.__bootErrors.join("\n");
+}
+window.addEventListener("error", e =>
+  __bootErr((e.message || "error") + " @ " +
+    String(e.filename || "").split("/").pop() + ":" + e.lineno));
+window.addEventListener("unhandledrejection", e =>
+  __bootErr("unhandled: " + String(e.reason).slice(0, 300)));
+</script>
+<script type="importmap">
+{ "imports": { "three": "/vendor/three.module.js",
+               "three/addons/": "/vendor/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="hud"></div>
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>
