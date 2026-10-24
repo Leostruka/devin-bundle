@@ -78,6 +78,11 @@
           "type": "command",
           "command": "python scripts/user-prompt.py",
           "timeout": 20
+        },
+        {
+          "type": "command",
+          "command": "python scripts/rts-emit.py",
+          "timeout": 5
         }
       ]
     }
@@ -90,6 +95,11 @@
           "type": "command",
           "command": "python scripts/session-start.py",
           "timeout": 10
+        },
+        {
+          "type": "command",
+          "command": "python scripts/rts-emit.py",
+          "timeout": 5
         }
       ]
     }
@@ -102,6 +112,11 @@
           "type": "command",
           "command": "python scripts/stop-guard.py",
           "timeout": 25
+        },
+        {
+          "type": "command",
+          "command": "python scripts/rts-emit.py",
+          "timeout": 5
         }
       ]
     }

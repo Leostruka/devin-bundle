@@ -1,5 +1,6 @@
-/* camera.js - RTS orbital controller: edge/WASD/MMB pan, zoom-to-cursor,
-   Q/E or RMB-drag rotate, spring-smoothed, map-clamped. */
+/* camera.js - RTS orbital controller: edge/arrows/MMB pan, zoom-to-cursor,
+   RMB-drag rotate, spring-smoothed, map-clamped. WASD/QE are reserved for
+   the HUD command card (hotkey conflict fix). */
 import * as THREE from "three";
 import { Spring, Spring3 } from "./springs.js";
 
@@ -55,8 +56,6 @@ export class RTSCamera {
     addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT") return;
       this.keys.add(e.code);
-      if (e.code === "KeyQ") this.yaw.set(this.yaw.t + Math.PI / 8);
-      if (e.code === "KeyE") this.yaw.set(this.yaw.t - Math.PI / 8);
     });
     addEventListener("keyup", (e) => this.keys.delete(e.code));
     dom.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -83,12 +82,12 @@ export class RTSCamera {
   }
 
   update(dt) {
-    /* keyboard + edge pan */
+    /* arrows + edge pan (WASD belongs to the command card) */
     let px = this._edge.x, py = this._edge.y;
-    if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) py -= 1;
-    if (this.keys.has("KeyS") || this.keys.has("ArrowDown")) py += 1;
-    if (this.keys.has("KeyA") || this.keys.has("ArrowLeft")) px -= 1;
-    if (this.keys.has("KeyD") || this.keys.has("ArrowRight")) px += 1;
+    if (this.keys.has("ArrowUp")) py -= 1;
+    if (this.keys.has("ArrowDown")) py += 1;
+    if (this.keys.has("ArrowLeft")) px -= 1;
+    if (this.keys.has("ArrowRight")) px += 1;
     if (px || py) {
       const v = 26 * dt * (this.dist.t / 52);
       const cy = Math.cos(this.yaw.t), sy = Math.sin(this.yaw.t);

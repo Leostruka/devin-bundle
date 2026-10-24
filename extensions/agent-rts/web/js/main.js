@@ -8,6 +8,7 @@ import { Selection } from "./selection.js";
 import { Particles } from "./particles.js";
 import { Net } from "./net.js";
 import { HUD } from "./hud.js";
+import { Tour } from "./tour.js";
 import { Audio3 } from "./audio.js";
 import { FX } from "./fx.js";
 import { buildBuilding } from "./buildings.js";
@@ -15,6 +16,17 @@ import { buildUnit, updateUnit } from "./units.js";
 import { Grid } from "./pathing.js";
 
 const MAP_W = 72, MAP_H = 54;
+
+/* persisted client prefs (localStorage rts.*) */
+const LS = {
+  get(k, d) {
+    try { const v = JSON.parse(localStorage.getItem("rts." + k));
+          return v ?? d; } catch { return d; }
+  },
+  set(k, v) {
+    try { localStorage.setItem("rts." + k, JSON.stringify(v)); } catch {}
+  },
+};
 
 const canvas = document.getElementById("gl");
 const s3 = new Scene3D(canvas);
@@ -25,7 +37,7 @@ const audio = new Audio3();
 const grid = new Grid();
 
 const state = {
-  theme: "medieval",
+  theme: LS.get("theme", "medieval"),
   world: null, repo: null, decisions: [], feed: [],
   units: new Map(),        // id -> {mesh, data}
   buildings: new Map(),    // id -> {mesh, data}
@@ -36,6 +48,7 @@ const unitMeshes = new Map(), bldMeshes = new Map();
 /* ---------- theme ---------- */
 function applyTheme(name) {
   state.theme = name;
+  LS.set("theme", name);
   s3.setTheme(name);
   audio.theme = name;
   hud.setThemeIcon(name);
@@ -95,10 +108,14 @@ function syncBuildings(list) {
                          bldMeshes.delete(id); state.buildings.delete(id); }
 }
 
-function unitHome(idx) {
+function unitHome(id, idx) {
+  /* stable ring slot: hash unit id so reordered snapshots don't shuffle
+     home positions; idx only disambiguates rare hash collisions */
   const th = state.world?.buildings?.find(b => b.id === "town-hall");
   const xy = th?.pos?.xy || [36, 27];
-  const a = idx * 2.4;
+  let h = 0;
+  for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) | 0;
+  const a = ((h >>> 0) % 360) * Math.PI / 180 + idx * 0.02;
   return [xy[0] + Math.cos(a) * 3.2, xy[1] + Math.sin(a) * 3.2];
 }
 
@@ -120,7 +137,7 @@ function syncUnits(list) {
     let g = unitMeshes.get(u.id);
     if (!g) {
       g = buildUnit(u, state.theme);
-      const h = unitHome(i);
+      const h = unitHome(u.id, i);
       g.position.set(h[0], 0, h[1]);
       g.userData.home = h;
       unitMeshes.set(u.id, g);
@@ -174,13 +191,16 @@ function syncWorkers(list) {
 /* ---------- net wiring ---------- */
 const hud = new HUD({
   command: (id) => command(id),
+  tour: () => tour.start(),
+  ticketSel: (n) => LS.set("ticket", n),
   theme: () => {
     const next = state.theme === "medieval" ? "office" : "medieval";
     applyTheme(next);
     net.send({ type: "set", key: "theme", value: next });
   },
   ssao: () => { if (s3.ssao) s3.ssao.enabled = !s3.ssao.enabled; },
-  audio: () => { audio.enabled = !audio.enabled; },
+  audio: () => { audio.enabled = !audio.enabled;
+                 LS.set("audio", audio.enabled); },
   score: async () => {
     const r = await fetch("/score");
     if (r.ok) hud.score(await r.json());
@@ -218,11 +238,26 @@ sel.onchange = () => {
 sel.onorder = () => audio.order();
 
 const fx = new FX(parts, audio, hud);
+const tour = new Tour();
+hud.ticket = LS.get("ticket", null);
+audio.enabled = LS.get("audio", true);
+const savedCam = LS.get("cam", null);
+if (savedCam) cam.focus(savedCam.x, savedCam.z, savedCam.d);
+applyTheme(state.theme);
+let tourPrompted = false;
+
+/* minimap click = camera jump (bound once, not per-snapshot) */
+document.getElementById("minimap").onclick = (e) => {
+  const r = e.target.getBoundingClientRect();
+  cam.focus((e.clientX - r.left) / r.width * MAP_W,
+            (e.clientY - r.top) / r.height * MAP_H);
+};
 
 net.on("open", () => hud.alert("warn", "net", "connected to the Workshop"));
 net.on("snapshot", (m) => {
   state.world = m.world; state.repo = m.repo;
   state.decisions = m.decisions || [];
+  state.feed = [...(m.world?.feed || [])];
   if (m.prefs?.theme && m.prefs.theme !== state.theme)
     applyTheme(m.prefs.theme);
   const h = (location.hash.match(/theme=(\w+)/) || [])[1];
@@ -235,14 +270,12 @@ net.on("snapshot", (m) => {
   hud.roster(m.world?.units);
   hud.bldstrip(m.world?.buildings);
   hud.tickets(m.repo?.issues);
-  hud.feed(m.world?.feed);
+  hud.feed(state.feed);
   hud.decision(state.decisions);
-  document.getElementById("minimap").onclick = (e) => {
-    const r = e.target.getBoundingClientRect();
-    const mx = (e.clientX - r.left) / r.width * MAP_W;
-    const my = (e.clientY - r.top) / r.height * MAP_H;
-    cam.focus(mx, my);
-  };
+  if (!tourPrompted && !LS.get("tour.v1")) {
+    tourPrompted = true;
+    setTimeout(() => { if (!tour.active) tour.start(); }, 900);
+  }
 });
 net.on("tick", (m) => {
   const d = m.deltas || {};
@@ -367,20 +400,27 @@ const esc = (s) => String(s ?? "").replace(/[&<>]/g,
 
 /* ---------- frame loop ---------- */
 const clock = new THREE.Clock();
+let camT = 0;
 function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), 0.1);
   const t = clock.elapsedTime;
   cam.update(dt);
+  if (t - camT > 3) {                      // camera position persists
+    camT = t;
+    LS.set("cam", { x: cam.target.x.t, z: cam.target.z.t,
+                    d: cam.dist.t });
+  }
   for (const g of unitMeshes.values()) updateUnit(g, dt, t);
   for (const e of state.workers.values()) {
-    e.t = Math.min(1, e.t + dt * 0.25);
+    e.dir ||= 1;                                    // ping-pong, no teleport
+    e.t = Math.max(0, Math.min(1, e.t + dt * 0.25 * e.dir));
+    if (e.t === 1 || e.t === 0) e.dir = -e.dir;
     const k = e.t;
     e.mesh.position.set(
       (e.from?.[0] ?? 36) + ((e.to?.[0] ?? 36) - (e.from?.[0] ?? 36)) * k + 0.5,
       0.4 + Math.sin(k * Math.PI) * 0.8,
       (e.from?.[1] ?? 27) + ((e.to?.[1] ?? 27) - (e.from?.[1] ?? 27)) * k + 0.5);
-    if (e.t >= 1) e.t = 0;
   }
   parts.step(dt, s3.camera);
   if (sel.marker.visible) {

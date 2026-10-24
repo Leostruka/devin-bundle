@@ -17,13 +17,23 @@
   .hidden { display: none !important; }
 
   /* ---- top macro bar ---- */
-  #topbar { position: absolute; top: 0; left: 0; right: 0; height: 34px;
-    display: flex; gap: 8px; align-items: center; padding: 4px 10px;
+  #topbar { position: absolute; top: 0; left: 0; right: 0; height: 38px;
+    display: flex; gap: 0; align-items: center; padding: 4px 12px;
     background: linear-gradient(#0e1826, #0a121d); border-bottom:
     1px solid var(--line); }
+  .grp { display: flex; gap: 6px; align-items: center; }
+  .grp.sys { margin-left: auto; gap: 8px; }
+  .cap { font-size: 9px; color: #6c86a2; letter-spacing: .12em;
+    text-transform: uppercase; margin-right: 2px; user-select: none; }
+  .sep { width: 1px; height: 16px; background: var(--line);
+    margin: 0 12px; }
   .pill { background: #14202e; border: 1px solid #28405a;
     border-radius: 10px; padding: 2px 10px; white-space: nowrap;
     font-variant-numeric: tabular-nums; }
+  .pill b { color: var(--gold); font-weight: 600; margin-right: 5px;
+    font-size: 10px; }
+  .pill i { color: #8fa5bd; font-style: normal; font-size: 10px;
+    margin-left: 4px; }
   .pill.gold { color: var(--gold); border-color: #6b5a22; }
   .pill.warn { border-color: #b8860b; color: #ffd54a; }
   .pill.crit { border-color: #a33; color: var(--red); }
@@ -140,6 +150,27 @@
     background: rgba(127,201,255,.12); display: none; z-index: 40;
     pointer-events: none; }
   button { font: inherit; }
+
+  /* ---- tutorial tour ---- */
+  #tour-veil { position: fixed; inset: 0; z-index: 60;
+    pointer-events: none; }
+  #tour-spot { position: absolute; border: 2px solid var(--gold);
+    border-radius: 8px; box-shadow: 0 0 0 4000px rgba(3,6,10,.68),
+    inset 0 0 22px rgba(255,213,74,.25); transition: all .25s ease; }
+  #tour-card { position: absolute; width: 264px; background: #101a28;
+    border: 1px solid var(--gold); border-radius: 8px;
+    padding: 10px 12px; pointer-events: auto; z-index: 61;
+    box-shadow: 0 8px 30px #000a; }
+  #tour-card h5 { margin: 0 0 4px; color: var(--gold); font-size: 12px; }
+  #tour-card p { margin: 0 0 8px; color: #b9cee6; font-size: 11px;
+    line-height: 1.4; }
+  #tour-card .t-nav { display: flex; gap: 6px; align-items: center; }
+  #tour-card .t-nav button { background: #1d2f45; color: #cfe3ff;
+    border: 1px solid #35557c; border-radius: 4px; padding: 4px 10px;
+    cursor: pointer; }
+  #tour-card .t-nav button:hover { background: #28405c; }
+  #tour-card .t-step { margin-left: auto; color: #7d95b0;
+    font-size: 10px; }
 </style>
 <script>
 /* Boot error surface: module-load / uncaught errors land on-screen so a

@@ -30,16 +30,26 @@ export class HUD {
   _build() {
     this.root.innerHTML = `
     <div id="topbar">
-      <span class="pill gold" id="r-gold">gold -</span>
-      <span class="pill" id="r-ctx">ctx -</span>
-      <span class="pill" id="r-gas">gas -</span>
-      <span class="pill" id="r-sup">sup -/-</span>
-      <span class="pill" id="r-dirty">dirty -</span>
-      <span class="pill" id="r-upkeep">upkeep -</span>
-      <span class="pill" id="r-age">Age -</span>
-      <span class="pill btn" id="b-idle" title="idle workers">[.]</span>
-      <span class="pill btn" id="b-theme" title="theme">theme</span>
-      <span class="pill btn" id="b-menu" title="F10">=</span>
+      <div class="grp">
+        <span class="cap">res</span>
+        <span class="pill gold" id="r-gold"><b>Au</b>-</span>
+        <span class="pill" id="r-ctx"><b>Cx</b>-</span>
+        <span class="pill" id="r-gas"><b>Gas</b>-</span>
+        <span class="pill" id="r-sup"><b>Sup</b>-/-</span>
+      </div>
+      <i class="sep"></i>
+      <div class="grp">
+        <span class="cap">war</span>
+        <span class="pill" id="r-dirty"><b>Dr</b>-</span>
+        <span class="pill" id="r-upkeep"><b>Up</b>-</span>
+        <span class="pill" id="r-age"><b>Age</b>-</span>
+      </div>
+      <div class="grp sys">
+        <span class="pill btn" id="b-idle" title="jump to an idle unit">[.]</span>
+        <span class="pill btn" id="b-tour" title="tutorial tour (T)">?</span>
+        <span class="pill btn" id="b-theme" title="theme">theme</span>
+        <span class="pill btn" id="b-menu" title="F10">=</span>
+      </div>
     </div>
     <div id="roster"></div>
     <div id="bldstrip"></div>
@@ -82,6 +92,7 @@ export class HUD {
     document.getElementById("gm-audio").onclick = () => this.act.audio();
     document.getElementById("gm-score").onclick = () => this.act.score();
     document.getElementById("b-idle").onclick = () => this.act.idlePing();
+    document.getElementById("b-tour").onclick = () => this.act.tour();
     addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT" || e.repeat) return;
       if (e.code === "F10") {
@@ -91,6 +102,7 @@ export class HUD {
       }
       const slot = SLOTS.find(s => "Key" + s[0] === e.code);
       if (slot) this.act.command(slot[1]);
+      if (e.code === "KeyT") this.act.tour();
       if (/^F[1-5]$/.test(e.code))
         this.act.focusHero(+e.code[1] - 1);
     });
@@ -109,20 +121,22 @@ export class HUD {
           git = repo?.git || {}, sup = r;
     const set = (id, v, cls = "") => {
       const e = document.getElementById(id);
-      e.textContent = v; e.className = "pill " + cls;
+      e.innerHTML = v; e.className = "pill " + cls;
     };
-    set("r-gold", `gold ${r.gold ?? 0} (+${r.income_min ?? 0}/m)`);
-    set("r-ctx", `ctx ${Math.round(r.lumber_pct ?? 0)}%`,
+    set("r-gold", `<b>Au</b>${r.gold ?? 0} <i>+${r.income_min ?? 0}/m</i>`,
+        "gold");
+    set("r-ctx", `<b>Cx</b>${Math.round(r.lumber_pct ?? 0)}%`,
         (r.lumber_pct ?? 0) > (r.thresholds?.crit ?? 90) ? "crit" :
         (r.lumber_pct ?? 0) > (r.thresholds?.warn ?? 70) ? "warn" : "");
-    set("r-gas", `gas ${gas.free_pct ?? "-"}%`,
+    set("r-gas", `<b>Gas</b>${gas.free_pct ?? "-"}%`,
         gas.free_pct < 10 ? "crit" : gas.free_pct < 25 ? "warn" : "");
-    set("r-sup", `sup ${sup.supply_used ?? 0}/${sup.supply_cap ?? 8}`);
-    set("r-dirty", `dirty ${(git.dirty || []).length}`,
+    set("r-sup", `<b>Sup</b>${sup.supply_used ?? 0}/${sup.supply_cap ?? 8}`);
+    set("r-dirty", `<b>Dr</b>${(git.dirty || []).length}`,
         (git.dirty || []).length ? "warn" : "");
-    set("r-upkeep", r.upkeep || "-");
+    set("r-upkeep", `<b>Up</b>${r.upkeep || "-"}`);
     const a = world?.age || {};
-    set("r-age", `${a.roman || "?"} ${a.name || ""} · favor ${a.favor ?? 0}`);
+    set("r-age", `<b>${a.roman || "?"}</b>${a.name || ""}
+      <i>${a.favor ?? 0}f</i>`);
   }
 
   roster(units) {
@@ -165,6 +179,7 @@ export class HUD {
       d.onclick = () => {
         this.ticket = this.ticket === i.n ? null : i.n;
         this.tickets(this._issues);
+        this.act.ticketSel?.(this.ticket);
       };
       el.appendChild(d);
     }
