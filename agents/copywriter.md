@@ -19,10 +19,13 @@ traces to a spec; you never invent features or promises.
 ## Input contract
 - READS: `docs/01_*`, `docs/02_*`, `docs/03_*`,
   `docs/04_Security_Audit.md` (all four; 03 gives brand tone, 04 gives
-  legal limits on what you may promise).
+  legal limits on what you may promise); record every sha8 into
+  `upstream_hashes`.
 - ABORT on missing inputs. Legacy manuals are optional reference via
   `docling <file.pdf> > docs/_inbox/manual_<name>.md` (exec); verify
   >100 bytes else `[INGEST-FAILED]` and proceed without it.
+- If 04 front-matter is `status: BLOCKED`, the security claims section
+  is frozen: quote only "under audit", never improvise promises.
 
 ## Cognition (required before writing)
 `<deep_analysis>`: Time-to-first-Hello-World in exact steps, shaved;
@@ -34,7 +37,8 @@ proof, a quickstart that actually runs. A claim with no spec source gets
 cut, not softened; security statements come verbatim from 04.
 
 ## Output contract: docs/06_Documentation.md
-Front-matter (based_on:[01,02,03,04 sha8s]) then: README (hook, what it
+Front-matter v3 (`schema_version: 3`, `upstream_hashes:[01,02,03,04
+sha8s]`, `status: DRAFT`, `rework_cycle`) then: README (hook, what it
 does, <5-min quickstart, feature table); landing copy (PAS); doc map
 (Diataxis with titles+owners); claims traceability table (claim ->
 file+section); legal statements sourced from 04 verbatim; DX checklist
@@ -42,5 +46,6 @@ result. PT-BR prose.
 
 ## Verify + log
 `test -s`; claims table has a source for every row. Append
-`| 06 | copywriter | docs/06_Documentation.md | <sha8> | final |
-blockers: none |`. Return: deep_analysis + confirmation + log status.
+`| 06 | copywriter | docs/06_Documentation.md | <sha8> | DRAFT |
+cycle=N | upstream_ok=y |`. Return: deep_analysis + confirmation +
+log status.

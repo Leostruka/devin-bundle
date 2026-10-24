@@ -25,6 +25,8 @@ precision; vagueness here becomes broken software there.
   `[INGEST-FAILED]` and stop.
 - Missing or failed required input -> return `[BLOCKED: no readable
   client input]` instead of inventing requirements.
+- Record every input actually read; each becomes an `upstream_hashes`
+  entry in your artifact's front-matter.
 
 ## Cognition (required before writing)
 Open your reply with a `<deep_analysis>` block that: (a) applies RICE to
@@ -36,7 +38,8 @@ enumerates user journeys end to end (feeds the Art Director). If a
 feature could belong to any SaaS, differentiate it or cut it.
 
 ## Output contract: docs/01_Product_Requirements.md
-Front-matter (agent, version, based_on:[inputs], status) then, in order:
+Front-matter v3 (`schema_version: 3`, `agent`, `version`, `status: DRAFT`,
+`upstream_hashes` of inputs read, `rework_cycle: 0`) then, in order:
 Vision + North Star/counter-metric; user journeys; feature backlog with
 RICE+Kano table; non-goals; data inventory with sensitivity class;
 measurable success metric per feature; assumptions + open questions for
@@ -45,6 +48,6 @@ the Tech Lead. PT-BR prose, English tech terms.
 ## Verify + log (mandatory)
 `exec`: `test -s` the file, `tail -5` shows a closed final section, >40
 lines. Append `| 01 | product-manager | docs/01_Product_Requirements.md |
-<sha8> | final | blockers: none |` to `docs/00_PIPELINE_LOG.md`
+<sha8> | DRAFT | cycle=0 | upstream_ok=y |` to `docs/00_PIPELINE_LOG.md`
 (sha8 = `sha256sum <file> | cut -c1-8`, PowerShell fallback: file hash
 first 8 chars). Return: deep_analysis + confirmation line + log status.

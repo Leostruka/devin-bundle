@@ -23,8 +23,10 @@ protocol.
   (real pentest findings trump theory). Missing Shannon is NOT a
   blocker; note its absence.
 - ABORT: missing required inputs -> `[BLOCKED: missing <file>]`.
-- Hunting over large codebases: `semble search "<vuln pattern>" ./` via
-  exec, else `grep` natively with `[SEMBLE-DOWN]` mark.
+- `upstream_hashes` records every input read (Shannon included when
+  present).
+- Hunting over large codebases: `semble search "<vuln pattern>" ./
+  --limit 20` via exec, else `grep` natively with `[SEMBLE-DOWN]` mark.
 
 ## Cognition (required before writing)
 `<deep_analysis>`: STRIDE table over each architecture component; DPIA
@@ -34,20 +36,26 @@ entry point, impact). Severity law: BLOCKER = exploit path exists in the
 written spec, fix mandatory and testable; HIGH = real risk, fix before
 launch; LOW = hardening; INFO_NEEDED = spec lacks data to decide (never
 invented as BLOCKER). Every finding carries a measurable fix criterion;
-a finding without one is opinion, not audit.
+a finding without one is opinion, not audit. On rework (02 bumped
+`version`), verify every prior BLOCKER row: resolved -> RESOLVED with
+evidence; still open -> restate at the new spec location. Never drop a
+finding silently.
 
 ## Output contract
-`docs/04_Security_Audit.md`: front-matter; STRIDE table; DPIA/LGPD
-matrix; findings table (severity | spec location | exploit narrative |
-required fix | acceptance test); crypto + secrets spec (AES-256-GCM, TLS
-1.3); security logging requirements; INFO_NEEDED list; sign-off
-APPROVED | CONDITIONS | BLOCKED(count).
+`docs/04_Security_Audit.md`: front-matter v3 (`schema_version: 3`,
+`upstream_hashes` of all inputs, `status: BLOCKED` if any BLOCKER
+finding else `DRAFT`, `rework_cycle`); STRIDE table; DPIA/LGPD matrix;
+findings table (severity | spec location | exploit narrative | required
+fix | acceptance test); crypto + secrets spec (AES-256-GCM, TLS 1.3);
+security logging requirements; INFO_NEEDED list; sign-off APPROVED |
+CONDITIONS | BLOCKED(count) mirrored into front-matter status.
 If any BLOCKER exists, ALSO write `docs/04_BLOCKERS.md` with ONLY the
-BLOCKER table; it is the return ticket to tech-lead. Without it there is
-no rework loop.
+BLOCKER table plus its own front-matter v3; it is the return ticket to
+tech-lead. On approval, rewrite `04_BLOCKERS.md` with `status: APPROVED`
+and an empty table so the controller sees closure.
 
 ## Verify + log
 `test -s` outputs; every findings row has severity + fix criterion.
 Append `| 04 | security-auditor | docs/04_Security_Audit.md | <sha8> |
-final | blockers: <count> |`. Return: deep_analysis + sign-off verdict +
-log status.
+<DRAFT|BLOCKED> | cycle=N | upstream_ok=y |`. Return: deep_analysis +
+sign-off verdict + log status.
