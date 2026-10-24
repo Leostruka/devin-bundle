@@ -1,0 +1,19 @@
+{
+  "three": "0.160.0",
+  "files": {
+    "three.module.js": 1272972,
+    "jsm/loaders/GLTFLoader.js": 108522,
+    "jsm/postprocessing/Pass.js": 1706,
+    "jsm/postprocessing/EffectComposer.js": 4651,
+    "jsm/postprocessing/RenderPass.js": 1915,
+    "jsm/postprocessing/ShaderPass.js": 1576,
+    "jsm/postprocessing/MaskPass.js": 2231,
+    "jsm/postprocessing/OutputPass.js": 2398,
+    "jsm/postprocessing/SSAOPass.js": 11421,
+    "jsm/shaders/CopyShader.js": 571,
+    "jsm/shaders/SSAOShader.js": 6478,
+    "jsm/shaders/OutputShader.js": 1393,
+    "jsm/math/SimplexNoise.js": 14351,
+    "jsm/utils/BufferGeometryUtils.js": 31906
+  }
+}
