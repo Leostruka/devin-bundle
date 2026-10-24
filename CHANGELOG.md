@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.9.0] - 2026-10-24
+
+### Added
+
+- **M2 NEXTGEN milestone planning suite** (`.devin/research/MILESTONE_NEXTGEN_MATRIX.md`, `.devin/issues/MILESTONE_2_*.md`, #203 #204 #205): deep technical ingestion of 10 reference sources (google-research/harness2, vercel-labs/agent-skills, nextlevelbuilder/ui-ux-pro-max-skill, alchaincyf/huashu-design, pbakaus/impeccable, msitarzewski/agency-agents{,-app}, DeusData/codebase-memory-mcp, stablyai/orca, and 2 video workflows covering Blender camera-blocking and PandaCode token-saver UX), each verified against primary sources and classified as UPGRADE_EXISTING / NEW_EXTENSION / NEW_SKILL / HOOK_INTEGRATION against the current bundle. The matrix specifies a unified design suite (one muscle `extensions/design-intelligence/` = BM25 engine + CSV corpus + ~62-rule deterministic linter + vercel frontend-rules + aesthetics re-index; brain upgrades in-place on `skills/impeccable`, `skills/creative-engineering`, `agents/art-director.md`; zero new design skills), a tripartite code-read routing rule (rg / code-graph pattern-port / semble / ask_laya_glob) with codebase-memory-mcp adoption gated on a held-out token benchmark, PPC self-improvement upgrades with anti-leakage lessons retention, installs drift ledger (5-state SHA reconcile + backup-before-overwrite), agent-rts opt-in dispatch lane, token-saver output modes, and a Blender camera-blocking pipeline. Ships the executable backlog: 14 DAG-ordered local issues `MILESTONE_2_01..14` with declared blocking edges and per-issue gates. Corrections verified during recon: drift states are five (adds Removed), cbm token-savings claim did not reproduce in independent benchmarking, and the `platform/gemini-argus` branch is absent so multi-CLI render targets ship disabled.
+
 ## [3.8.0] - 2026-10-24
 
 ### Added
