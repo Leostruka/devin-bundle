@@ -12,6 +12,10 @@ has no API/CLI.
 | `mouse.py` | move, click (incl. `--hint`, `--via`, `--verify`), scroll, drag, position — profile-driven motion |
 | `type_text.py` | type literal text, single keys, hotkey chords — profile-driven cadence, `--hint`/`--via uia` set-value |
 | `record.py` | record screen to video (ffmpeg mp4/webm streamed, or Pillow animated webp/gif) + reservoir-sampled contact-sheet PNG the agent can `read` |
+| `mcp_server.py` | MCP stdio server (stdlib JSON-RPC) exposing the CLIs above as `cu_*` tools to MCP-capable IDEs |
+| `AGENT_MINDSET.md` | working rules for GUI automation agents (explore-before-script, dynamic-first targeting, diagnose-first) |
+| `cu_taskrunner.py` | detached background task runner + durable trace store (`start/status/list/stop`, `status.json` lifecycle, stdout/stderr logs) |
+| `cu_notify.py` | composite notifier: `notifications.jsonl` log + Windows toast + `$CU_NOTIFY_WEBHOOK` + `$CU_NOTIFY_HOOK` script; fires on task completion |
 | `profile.py` | get/set the session action profile (`--set`, `--show`, interactive menu) |
 | `cu_motion.py` | shared: profile state + bezier/minimum-jerk path + timing generators |
 | `cu_hints.py` | shared: UIA element extraction (cached queries) + versioned hint sidecar + live re-location/Invoke/SetValue |
