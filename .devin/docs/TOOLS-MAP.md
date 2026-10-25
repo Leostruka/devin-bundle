@@ -74,7 +74,7 @@ issue-tracker, product-manager, qa-ci, red-team-lead, researcher,
 reviewer, scrum-master, security-auditor, subagent_explore,
 subagent_general, tech-lead, triage-labels. 18 perfis validados.
 
-## Hooks (8 eventos, 23 scripts)
+## Hooks (8 eventos, 20 scripts)
 
 | Evento | Matcher | Script(s) | Função |
 |---|---|---|---|
@@ -123,9 +123,9 @@ subagent_general, tech-lead, triage-labels. 18 perfis validados.
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 13 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 84 skills |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 83 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation; `system-control` — OS autorizado) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 34 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 31 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |
 | MODEL-GUIDE.md | `./.devin/docs/MODEL-GUIDE.md` | `~/.config/devin/docs/MODEL-GUIDE.md` | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./.devin/docs/SKILL-TIERS.md` | `~/.config/devin/docs/SKILL-TIERS.md` | Discovery por domínio + custos |

@@ -16,6 +16,4 @@ if __name__ == '__main__':
         'behavioral-nudge.py',
         'memory-retrieval.py',
         'compact-gate.py',
-        'rts-emit.py',
-        'rts-intents.py',
     ])

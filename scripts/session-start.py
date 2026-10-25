@@ -13,5 +13,4 @@ if __name__ == '__main__':
     _hookrun.main([
         'constraint-pinning.py',
         'context-budget.py',
-        'rts-emit.py',
     ])

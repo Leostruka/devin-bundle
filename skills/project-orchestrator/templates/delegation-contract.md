@@ -25,7 +25,6 @@ path. Nothing else.
   - files/areas not to touch
   - actions not to take
 - **Termination**: max <N> turns / max <N> minutes / stop conditions: <list>
-- **Heartbeat**: write `$ROOT/.devin/rts/agents/<Contract ID>/status.json` as `{"phase": "<start|work|verify|done>", "pct": <0-100>, "note": "<short>", "ts": <epoch>}` at each milestone, minimum 2 writes (start + finish). The RTS overlay projects phase/note live; absence of any heartbeat is a contract defect.
 - **Verification (VFs)**: commands that prove the output
   - VF1: `<command>` -> expect <result>
 
