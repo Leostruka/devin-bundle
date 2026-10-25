@@ -18,8 +18,9 @@ const STEPS = [
     "status, XP/level and inventory runes."],
   ["#feed", "War feed", "Live session log: orders, spawns, decisions " +
     "and hook activity emitted by the CLI."],
-  ["#bottom", "Camera", "Pan: screen edges, arrow keys, MMB-drag or " +
-    "minimap click. Zoom: wheel to cursor. Rotate: RMB-drag."],
+  ["#bottom", "Camera", "Pan: screen edges or arrow keys (1:1, no lag). " +
+    "Zoom: wheel. Rotate: Insert/Delete or MMB-drag. RMB gives orders, " +
+    "never rotates."],
 ];
 
 export class Tour {
