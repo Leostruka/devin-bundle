@@ -5,7 +5,7 @@
 [![Skills](https://img.shields.io/badge/skills-84-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
-[![Version](https://img.shields.io/badge/version-3.9.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.10.0-orange.svg)](CHANGELOG.md)
 
 Ecossistema versionado para o Devin CLI. O bundle sincroniza entre máquinas as regras, skills, perfis de subagentes, hooks, scripts, configuração e metadados que governam todo o ciclo de trabalho: da ideia ao planejamento, implementação, revisão, memória e entrega.
 
