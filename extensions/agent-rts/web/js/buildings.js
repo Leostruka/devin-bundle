@@ -93,7 +93,17 @@ function medievalBuilding(id, T) {
   banner.position.set(-1.5, 0.85, 1.5);
   const flag = M.box(0.7, 0.4, 0.02, std(0xa33c31, { side: THREE.DoubleSide }));
   flag.position.set(-1.15, 1.45, 1.5);
+  g.userData.flag = flag;                    // wind flutter in frame loop
   g.add(banner, flag);
+  /* WC3 night windows: warm emissive quads, dark by day, lit at night */
+  const winMat = std(0x0d1116, { emissive: 0xffa540,
+                                 emissiveIntensity: 0 });
+  const winA = M.box(0.5, 0.6, 0.04, winMat);
+  winA.position.set(-0.6, 1.5, 1.32);
+  const winB = M.box(0.5, 0.6, 0.04, winMat);
+  winB.position.set(0.6, 1.5, 1.32);
+  g.add(winA, winB);
+  g.userData.wins = [winMat];
   return shade(g);
 }
 
@@ -192,5 +202,40 @@ export function buildBuilding(id, themeName) {
     ? officeBuilding(id, T) : medievalBuilding(id, T);
   g.userData.bid = id;
   g.userData.kind = "building";
+  /* selection ring (WC3: buildings selectable) */
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(2.0, 2.25, 28),
+    new THREE.MeshBasicMaterial({ color: 0x7fc9ff, transparent: true,
+                                  opacity: 0.9, side: THREE.DoubleSide }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.04;
+  ring.visible = false;
+  g.add(ring);
+  g.userData.ring = ring;
+  /* WC3 production bar: floating progress arc while activity > 0 */
+  const prog = new THREE.Group();
+  const pbg = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.22),
+    new THREE.MeshBasicMaterial({ color: 0x0a0d10, transparent: true,
+      opacity: 0.7, depthWrite: false }));
+  const pfl = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 0.14),
+    new THREE.MeshBasicMaterial({ color: 0xe8c86a,
+      depthWrite: false }));
+  pfl.position.z = 0.01;
+  prog.add(pbg, pfl);
+  prog.position.y = 5.4;
+  prog.renderOrder = 5;
+  prog.visible = false;
+  g.add(prog);
+  g.userData.prog = { grp: prog, fill: pfl };
+  /* night glow registry: every already-emissive material joins `wins`;
+     frame loop boosts them at night (WC3 buildings light up after dusk) */
+  g.userData.wins = g.userData.wins || [];
+  g.traverse(o => {
+    const m = o.material;
+    if (o.isMesh && m?.emissiveIntensity > 0.5 &&
+        !g.userData.wins.includes(m)) {
+      m.userData.ei = m.emissiveIntensity;
+      g.userData.wins.push(m);
+    }
+  });
   return g;
 }

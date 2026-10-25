@@ -161,7 +161,7 @@ def fx_for_event(ev):
         color = "red" if failed else _tool_color(tool)
         xy = _unit_xy(ev) or _building_xy(bid)
         out.append({"type": "fx", "fx": "bubble", "color": color,
-                    "x": xy[0], "y": xy[1],
+                    "x": xy[0], "y": xy[1], "bid": bid, "tool": tool,
                     "label": "+" + (tool or "tool")})
         if failed and _looks_like_test(payload):
             out.append({"type": "alert", "level": "warn",
