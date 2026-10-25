@@ -15,5 +15,4 @@ if __name__ == '__main__':
         'refine-review-prompt.py',
         'memory-stop.py',
         'no-em-dash.py',
-        'rts-emit.py',
     ])

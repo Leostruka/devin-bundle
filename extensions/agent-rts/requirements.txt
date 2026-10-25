@@ -1,6 +1,0 @@
-# agent-rts core is stdlib-only (bundle rule: no new deps without approval).
-# The .venv exists so optional extras can be installed without touching the
-# system interpreter. Uncomment to enable; none are required to run.
-#
-# websockets>=12      # alternative WS impl (not used by server.py)
-# watchdog>=4         # faster events.jsonl tailing (mtime poll is default)

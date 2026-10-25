@@ -562,14 +562,9 @@
       "source": "devin-bundle",
       "purpose": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii.rest library (217 MIT pieces, React components, npx CLI, image-to-ascii).",
       "export_hash": "E19BCAFE5AC07742F153952D144517A1AC70FBA06F2BF3435236FE048F867E5C"
-    },
-    {
-      "name": "agent-rts-commander",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants the live 3D RTS/Tycoon dashboard (DevinCraft / DevTycoon Orchestrator), to launch extensions/agent-rts/, or to emit structured telemetry so units, buildings, particles, and the HUD mirror real agent execution in the browser."
     }
   ],
-  "skill_count": 84,
+  "skill_count": 83,
   "rule_count": 24,
   "scripts": [
     {
@@ -763,27 +758,9 @@
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
       "export_hash": "1F70BE9FE953D367E355C940630FE1AFD062CACFBC07D68F6A16047035DCB656",
       "exported_at": "2026-10-10T15:45:25.322611"
-    },
-    {
-      "name": "rts-decision.py",
-      "purpose": "Decision bridge — creates .devin/rts/decisions/<id>.json and waits for UI answer (fail-closed default deny)",
-      "export_hash": "C9F201485D2867E0E9CD752F771A409747E0CAD3D2EA20C491B6EB9C0504F579",
-      "exported_at": "2026-10-17T21:34:32.826967"
-    },
-    {
-      "name": "rts-emit.py",
-      "purpose": "Lifecycle/PostToolUse event tap — POSTs hook payload to rtsd /event, falls back to direct events.jsonl append (fail-open)",
-      "export_hash": "7869D66FCAC709882F4282CBE42B0B0361F84DD7749BE1135F3244042A1F729B",
-      "exported_at": "2026-10-17T21:34:32.826967"
-    },
-    {
-      "name": "rts-intents.py",
-      "purpose": "UserPromptSubmit hook — surfaces pending RTS intents via additionalContext and deposits message intents into mailboxes",
-      "export_hash": "C13BAC4E11CE15B2C0E9F0FED0A981B0642A7418AF0E887A3329E73DAC1F0F63",
-      "exported_at": "2026-10-17T21:34:32.826967"
     }
   ],
-  "script_count": 34,
+  "script_count": 31,
   "mcp_count": 1,
   "agent_count": 14,
   "tool_count": 28,
