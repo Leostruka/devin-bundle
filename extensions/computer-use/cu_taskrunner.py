@@ -8,7 +8,10 @@ gets a trace directory under .devin/scratch/cu_tasks/<trace_id>/ with:
     stdout.log    captured stdout
     stderr.log    captured stderr
 
-Adapted from ARTEMIS's task runner + status.json pattern; stdlib-only.
+Tasks run inside a detached `_exec` wrapper child that waits on the real
+command and writes the terminal state itself, so no zombie can leave a task
+stuck in `running`. Adapted from ARTEMIS's task runner + status.json
+pattern; stdlib-only.
 
 CLI:
     python cu_taskrunner.py start -- <command...>   -> prints trace_id
@@ -27,7 +30,8 @@ import uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-STORE = os.path.join(ROOT, ".devin", "scratch", "cu_tasks")
+STORE = os.environ.get(
+    "CU_TASKS_DIR", os.path.join(ROOT, ".devin", "scratch", "cu_tasks"))
 
 
 def _trace_dir(trace_id):
@@ -52,77 +56,80 @@ def _write_status(trace_id, st):
 
 
 def start(command):
-    """Spawn `command` detached; return trace_id."""
+    """Spawn `command` detached via an _exec wrapper; return trace_id."""
     trace_id = uuid.uuid4().hex[:12]
     tdir = _trace_dir(trace_id)
     os.makedirs(tdir, exist_ok=True)
-    st = {"trace_id": trace_id, "state": "queued", "command": command,
-          "pid": None, "started": time.time(), "ended": None,
-          "returncode": None}
-    _write_status(trace_id, st)
-
-    out = open(os.path.join(tdir, "stdout.log"), "w", encoding="utf-8")
-    err = open(os.path.join(tdir, "stderr.log"), "w", encoding="utf-8")
+    _write_status(trace_id, {
+        "trace_id": trace_id, "state": "queued", "command": command,
+        "pid": None, "started": time.time(), "ended": None,
+        "returncode": None})
     flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-    proc = subprocess.Popen(
-        command, stdout=out, stderr=err, cwd=ROOT,
-        creationflags=flags, start_new_session=(os.name != "nt"))
-    st["pid"], st["state"] = proc.pid, "running"
-    _write_status(trace_id, st)
-
-    watcher = subprocess.Popen(
-        [sys.executable, __file__, "_watch", trace_id, str(proc.pid)],
+    env = dict(os.environ, CU_TASKS_DIR=STORE)
+    subprocess.Popen(
+        [sys.executable, __file__, "_exec", trace_id, "--", *command],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        stdin=subprocess.DEVNULL, cwd=ROOT, env=env,
         creationflags=flags, start_new_session=(os.name != "nt"))
-    watcher.poll()
     return trace_id
 
 
 def status(trace_id):
-    """Read status; refresh state if the pid exited without a watcher."""
-    st = _read_status(trace_id)
-    if not st:
-        return None
-    if st["state"] == "running" and st.get("pid"):
-        if not _pid_alive(st["pid"]):
-            st["state"] = "done" if st.get("returncode") in (None, 0) else "failed"
-            st["ended"] = st.get("ended") or time.time()
-            _write_status(trace_id, st)
-    return st
-
-
-def _pid_alive(pid):
-    if os.name == "nt":
-        import ctypes
-        r = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
-        if r:
-            ctypes.windll.kernel32.CloseHandle(r)
-            return True
-        return False
-    try:
-        os.kill(pid, 0)
-        return True
-    except OSError:
-        return False
+    return _read_status(trace_id)
 
 
 def stop(trace_id):
     st = status(trace_id)
     if not st:
         return {"error": "no such trace_id"}
-    if st["state"] != "running":
+    if st["state"] != "running" or not st.get("pid"):
         return {"state": st["state"]}
+    st["state"], st["ended"] = "stopped", time.time()
+    _write_status(trace_id, st)  # marker so _exec does not overwrite it
     try:
         if os.name == "nt":
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(st["pid"])],
                            capture_output=True)
         else:
-            os.killpg(st["pid"], signal.SIGTERM)
+            os.kill(st["pid"], signal.SIGTERM)
     except OSError:
         pass
-    st["state"], st["ended"] = "stopped", time.time()
-    _write_status(trace_id, st)
+    deadline = time.time() + 10
+    while time.time() < deadline:
+        st = status(trace_id)
+        if st["state"] != "running":
+            return st
+        time.sleep(0.2)
     return st
+
+
+def _exec(trace_id, command):
+    """Wrapper child: run the command, then finalize status.json."""
+    st = _read_status(trace_id) or {}
+    tdir = _trace_dir(trace_id)
+    out = open(os.path.join(tdir, "stdout.log"), "w", encoding="utf-8")
+    err = open(os.path.join(tdir, "stderr.log"), "w", encoding="utf-8")
+    flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+    try:
+        proc = subprocess.Popen(
+            command, stdout=out, stderr=err, cwd=ROOT,
+            creationflags=flags)
+        st["pid"], st["state"] = proc.pid, "running"
+        _write_status(trace_id, st)
+        rc = proc.wait()
+    except Exception as exc:
+        rc = 1
+        err.write(f"taskrunner exec failed: {exc}\n")
+    out.close()
+    err.close()
+    st = _read_status(trace_id) or st
+    if st.get("state") == "stopped":
+        return
+    st["state"] = "done" if rc == 0 else "failed"
+    st["returncode"] = rc
+    st["ended"] = time.time()
+    _write_status(trace_id, st)
+    _notify_done(trace_id, st)
 
 
 def list_tasks():
@@ -135,36 +142,6 @@ def list_tasks():
             out.append({k: st.get(k) for k in
                         ("trace_id", "state", "started", "ended", "returncode")})
     return out
-
-
-def _watch(trace_id, pid):
-    """Watcher child: wait on the target pid, then finalize status."""
-    if os.name == "nt":
-        import ctypes
-        h = ctypes.windll.kernel32.OpenProcess(0x100000, False, int(pid))
-        code = None
-        if h:
-            ctypes.windll.kernel32.WaitForSingleObject(h, 0xFFFFFFFF)
-            buf = ctypes.c_ulong(0)
-            ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(buf))
-            code = buf.value
-            ctypes.windll.kernel32.CloseHandle(h)
-        rc = code
-    else:
-        rc = None
-        try:
-            while _pid_alive(int(pid)):
-                time.sleep(0.5)
-        except OSError:
-            pass
-    st = _read_status(trace_id) or {}
-    if st.get("state") == "stopped":
-        return
-    st["state"] = "done" if rc in (None, 0) else "failed"
-    st["returncode"] = rc
-    st["ended"] = time.time()
-    _write_status(trace_id, st)
-    _notify_done(trace_id, st)
 
 
 def _notify_done(trace_id, st):
@@ -187,8 +164,8 @@ def main():
     if not args:
         print(__doc__)
         return 2
-    if args[0] == "_watch":
-        _watch(args[1], args[2])
+    if args[0] == "_exec" and "--" in args:
+        _exec(args[1], args[args.index("--") + 1:])
         return 0
     if args[0] == "start" and "--" in args:
         cmd = args[args.index("--") + 1:]

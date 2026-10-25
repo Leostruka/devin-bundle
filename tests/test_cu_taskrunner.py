@@ -29,16 +29,21 @@ def store(monkeypatch, tmp_path):
     return mod
 
 
-def test_start_status_done(store):
-    tid = store.start([sys.executable, "-c", "print('hello')"])
-    assert len(tid) == 12
-    deadline = time.time() + 15
+def _wait_terminal(store, tid, timeout=15):
+    deadline = time.time() + timeout
     st = None
     while time.time() < deadline:
         st = store.status(tid)
-        if st["state"] != "running":
+        if st and st["state"] in ("done", "failed", "stopped"):
             break
         time.sleep(0.3)
+    return st
+
+
+def test_start_status_done(store):
+    tid = store.start([sys.executable, "-c", "print('hello')"])
+    assert len(tid) == 12
+    st = _wait_terminal(store, tid)
     assert st["state"] == "done", st
     assert st["ended"] is not None
     with open(os.path.join(store.STORE, tid, "stdout.log"),
@@ -48,22 +53,21 @@ def test_start_status_done(store):
 
 def test_failed_returncode(store):
     tid = store.start([sys.executable, "-c", "import sys; sys.exit(3)"])
-    deadline = time.time() + 15
-    st = None
-    while time.time() < deadline:
-        st = store.status(tid)
-        if st["state"] != "running":
-            break
-        time.sleep(0.3)
-    assert st["state"] in ("done", "failed"), st
-    if st["state"] == "failed":
-        assert st["returncode"] == 3
+    st = _wait_terminal(store, tid)
+    assert st["state"] == "failed", st
+    assert st["returncode"] == 3
 
 
 def test_stop_running_task(store):
     tid = store.start([sys.executable, "-c", "import time; time.sleep(60)"])
-    st = store.status(tid)
-    assert st["state"] == "running"
+    deadline = time.time() + 15
+    st = None
+    while time.time() < deadline:
+        st = store.status(tid)
+        if st and st["state"] == "running":
+            break
+        time.sleep(0.2)
+    assert st["state"] == "running", st
     res = store.stop(tid)
     assert res["state"] == "stopped"
     assert store.status(tid)["state"] == "stopped"
