@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.10.0] - 2026-10-24
+
+### Added
+
+- **agent-rts LORE.md: DevinCraft, A Cronica da Oficina** (`extensions/agent-rts/LORE.md`, #213): 7-section pt-BR tale mapping the 11 canonical buildings, 15 hero classes, fog, contested tiles, Wonder Age, War Council and the player beyond the mist; extension-local `ARCHITECTURE_MANIFEST.md` for the architecture gate.
+- **agent-rts 50-loop WC3 polish pass** (#214): combat (hit flash, death dissolve+pool, damage vignette, camera shake, under-attack ping+horn, hero-fallen alert, +xp floaters), control (Tab subgroups, contextual r-click, ESC disarm, control groups, formation spiral, hover ring), world (soft fog + reveal peel, void edge, instanced doodads, cloud shadows, critters, contested decals, gold piles, day/night with sun/moon/dial, night windows), meta (rally line+flag, waypoint posts, production bars, decision beacon, quest+age banners, per-class barks, ambient pad, favicon). Matrix: 51 DONE, 1 GAPPED, 4 BLOCKED-BY-CANON.
+
+### Fixed
+
+- **agent-rts fog of war leaks + army vision** (#208, #209): marks/plots/gold/decals/smoke/dust/sparks/server FX/meteor trails no longer render inside unexplored shroud; `puff(x,y,z)` honored its z argument (all smoke compressed to the north edge); own troops never vanish and carry a sight halo via a separate fog overlay plane repainted per unit-tile change; path trail counter-rotated so waypoints anchor to the map instead of spinning with facing.
+- **agent-rts camera rebuild** (#210): pan/zoom write directly to the camera (no ~150ms spring lag), rotation only via Insert/Delete/MMB-drag, RMB never rotates (fixes smart-order collision), rotated-pan sign error fixed.
+- **agent-rts HUD regression** (#211): banner skin scoped to `#banner` (was stacking portrait/feed/roster/toasts at top-center), inventory runes render readable values, feed dedups consecutive repeats, camera rescue snaps instead of gliding from the void, `window.__rts` debug handle.
+- **UTF-8 decoding on Windows pipes** (#212): `collectors._run` and `check-ai-signature` decode subprocess output as UTF-8 with replace (was cp1252: ticket mojibake `frÃ¡geis`, hook crash on UTF-8 diffs).
+- **computer-use record flake** (#118): `_record` accepts injected `_now`/`_sleep`; pacing tests run on a deterministic FakeClock instead of racing a loaded CI scheduler.
+
 ## [3.9.0] - 2026-10-24
 
 ### Added

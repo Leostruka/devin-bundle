@@ -81,6 +81,22 @@ def read_json(path, default):
         return default
 
 
+def load_prefs():
+    d = read_json(os.path.join(state_dir(), "prefs.json"), {})
+    return d if isinstance(d, dict) else {}
+
+
+def save_prefs():
+    try:
+        p = os.path.join(state_dir(), "prefs.json")
+        tmp = p + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(STATE["prefs"], f, ensure_ascii=False)
+        os.replace(tmp, p)
+    except Exception:
+        pass
+
+
 def load_events(path):
     evs = []
     try:
@@ -145,7 +161,7 @@ def fx_for_event(ev):
         color = "red" if failed else _tool_color(tool)
         xy = _unit_xy(ev) or _building_xy(bid)
         out.append({"type": "fx", "fx": "bubble", "color": color,
-                    "x": xy[0], "y": xy[1],
+                    "x": xy[0], "y": xy[1], "bid": bid, "tool": tool,
                     "label": "+" + (tool or "tool")})
         if failed and _looks_like_test(payload):
             out.append({"type": "alert", "level": "warn",
@@ -485,6 +501,7 @@ def handle_ws_msg(sock, role, msg):
         k, v = str(msg.get("key") or ""), msg.get("value")
         if k:
             STATE["prefs"][k] = v
+            save_prefs()
             broadcast({"type": "prefs", "prefs": dict(STATE["prefs"])})
         return
 
@@ -870,6 +887,7 @@ def main():
     args = ap.parse_args()
     STATE["root"] = os.path.abspath(args.root)
     state_dir()
+    STATE["prefs"] = load_prefs()
     if args.replay:
         events = load_events(os.path.abspath(args.replay))
         STATE["replay"] = {"path": os.path.abspath(args.replay),

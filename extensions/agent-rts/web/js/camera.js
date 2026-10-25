@@ -1,102 +1,115 @@
-/* camera.js - RTS orbital controller: edge/WASD/MMB pan, zoom-to-cursor,
-   Q/E or RMB-drag rotate, spring-smoothed, map-clamped. */
+/* camera.js - RTS camera, rebuilt from the WC3 control basics:
+
+   INPUT MODEL (direct, 1:1, no lag on user input):
+   - Arrow keys / screen edge  -> pan the look-at target on the ground
+   - Mouse wheel               -> zoom (distance), centered on screen
+   - Insert / Delete           -> rotate yaw
+   - Middle-mouse drag         -> rotate yaw (modern RTS extra; never RMB)
+   - RMB                       -> NEVER touches the camera (smart orders)
+
+   Springs are used ONLY for scripted jumps (focus(): F-keys, alerts,
+   minimap clicks) and for impact shake. Direct user input snaps both
+   spring current and target so the response is immediate. */
 import * as THREE from "three";
 import { Spring, Spring3 } from "./springs.js";
 
 const MAP_W = 72, MAP_H = 54;
+const DIST_MIN = 10, DIST_MAX = 110;
+const EDGE_PX = 14;
+const PAN_SPEED = 30;                       // world-units/s at dist=52
+const ROT_SPEED = 1.9;                      // rad/s for Insert/Delete
+const WHEEL_STEP = 0.12;                    // per notch: dist *= 1±step
 
 export class RTSCamera {
   constructor(camera, dom) {
     this.cam = camera;
     this.dom = dom;
-    this.target = new Spring3(36, 0, 27, 120, 16);
-    this.dist = new Spring(52, 120, 16);
-    this.yaw = new Spring(Math.PI * 0.75, 140, 18);
+    this.target = new Spring3(36, 0, 27, 160, 22);
+    this.dist = new Spring(52, 160, 22);
+    this.yaw = new Spring(Math.PI * 0.75, 160, 22);
     this.pitch = 0.92;                       // ~53deg isometric feel
     this.keys = new Set();
-    this._drag = null;
+    this._drag = null;                       // MMB rotate drag
     this._edge = { x: 0, y: 0 };
     this._v = new THREE.Vector3();
-    this._ray = new THREE.Raycaster();
-    this._plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    this._shake = 0;                         // impact shake (meteor/kills)
     this._bind(dom);
   }
 
   _bind(dom) {
     dom.addEventListener("pointerdown", (e) => {
-      if (e.button === 1 || (e.button === 2 && !e.shiftKey)) {
-        this._drag = { x: e.clientX, y: e.clientY, b: e.button };
-        dom.setPointerCapture(e.pointerId);
+      if (e.button === 1) {                  // MMB drag = rotate only
+        this._drag = { x: e.clientX };
+        try { dom.setPointerCapture(e.pointerId); } catch {}
+        e.preventDefault();                  // kill autoscroll
       }
     });
     addEventListener("pointerup", () => { this._drag = null; });
     addEventListener("pointermove", (e) => {
-      this._edge.x = e.clientX < 14 ? -1 : e.clientX > innerWidth - 14 ? 1 : 0;
-      this._edge.y = e.clientY < 14 ? -1 : e.clientY > innerHeight - 14 ? 1 : 0;
-      if (!this._drag) return;
-      const dx = e.clientX - this._drag.x, dy = e.clientY - this._drag.y;
-      this._drag.x = e.clientX; this._drag.y = e.clientY;
-      if (this._drag.b === 2) {              // RMB drag = rotate
-        this.yaw.set(this.yaw.t + dx * 0.008);
-      } else {                               // MMB drag = pan
-        this._pan(-dx, -dy);
+      this._edge.x = e.clientX < EDGE_PX ? -1 :
+                     e.clientX > innerWidth - EDGE_PX ? 1 : 0;
+      this._edge.y = e.clientY < EDGE_PX ? -1 :
+                     e.clientY > innerHeight - EDGE_PX ? 1 : 0;
+      if (this._drag) {                      // 1:1 yaw, no spring lag
+        const dx = e.clientX - this._drag.x;
+        this._drag.x = e.clientX;
+        this.yaw.snap(this.yaw.x + dx * 0.011);
       }
     });
-    dom.addEventListener("wheel", (e) => {
-      const before = this._groundAt(e.clientX, e.clientY);
-      this.dist.set(Math.max(10, Math.min(110,
-        this.dist.t * (1 + e.deltaY * 0.0011))));
-      const after = this._groundAt(e.clientX, e.clientY);
-      if (before && after) {                 // zoom-to-cursor
-        this.target.x.t += before.x - after.x;
-        this.target.z.t += before.z - after.z;
-      }
+    dom.addEventListener("wheel", (e) => {   // WC3 zoom: centered, direct
+      const f = e.deltaY > 0 ? 1 + WHEEL_STEP : 1 - WHEEL_STEP;
+      this.dist.snap(Math.max(DIST_MIN,
+        Math.min(DIST_MAX, this.dist.x * f)));
     }, { passive: true });
     addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT") return;
       this.keys.add(e.code);
-      if (e.code === "KeyQ") this.yaw.set(this.yaw.t + Math.PI / 8);
-      if (e.code === "KeyE") this.yaw.set(this.yaw.t - Math.PI / 8);
     });
     addEventListener("keyup", (e) => this.keys.delete(e.code));
     dom.addEventListener("contextmenu", (e) => e.preventDefault());
   }
 
-  _groundAt(sx, sy) {
-    const m = new THREE.Vector2(sx / innerWidth * 2 - 1,
-                                -(sy / innerHeight) * 2 + 1);
-    this._ray.setFromCamera(m, this.cam);
-    const p = new THREE.Vector3();
-    return this._ray.ray.intersectPlane(this._plane, p) ? p : null;
+  /* pan the look-at target in world space, rotated to camera yaw:
+     forward = (-cos,-sin), screen-right = (sin,-cos) on the xz plane */
+  _pan(px, py) {
+    const v = PAN_SPEED * (this.dist.x / 52);
+    const cy = Math.cos(this.yaw.x), sy = Math.sin(this.yaw.x);
+    const dx = (px * sy + py * cy) * v,
+          dz = (py * sy - px * cy) * v;
+    this.target.x.snap(this.target.x.x + dx);
+    this.target.z.snap(this.target.z.x + dz);
   }
 
-  _pan(dx, dy) {
-    const k = this.dist.t / innerHeight * 1.7;
-    const cy = Math.cos(this.yaw.t), sy = Math.sin(this.yaw.t);
-    this.target.x.t += dx * k * sy - dy * k * cy;
-    this.target.z.t += dx * k * cy + dy * k * sy;
-  }
+  shake(a = 1) { this._shake = Math.max(this._shake, a); }
 
+  /* scripted moves keep the spring glide (F-keys, alerts, minimap) */
   focus(x, y, dist) {
     this.target.set(x, 0, y);
     if (dist) this.dist.set(dist);
   }
 
+  /* instant placement, no glide: page-load restore and void rescue
+     must not make the user watch a slow pan from nowhere */
+  jump(x, y, dist) {
+    this.target.snap(x, 0, y);
+    if (dist) this.dist.snap(dist);
+  }
+
   update(dt) {
-    /* keyboard + edge pan */
     let px = this._edge.x, py = this._edge.y;
-    if (this.keys.has("KeyW") || this.keys.has("ArrowUp")) py -= 1;
-    if (this.keys.has("KeyS") || this.keys.has("ArrowDown")) py += 1;
-    if (this.keys.has("KeyA") || this.keys.has("ArrowLeft")) px -= 1;
-    if (this.keys.has("KeyD") || this.keys.has("ArrowRight")) px += 1;
-    if (px || py) {
-      const v = 26 * dt * (this.dist.t / 52);
-      const cy = Math.cos(this.yaw.t), sy = Math.sin(this.yaw.t);
-      this.target.x.t += (px * v) * sy - (py * v) * cy;
-      this.target.z.t += (px * v) * cy + (py * v) * sy;
-    }
+    if (this.keys.has("ArrowUp")) py -= 1;
+    if (this.keys.has("ArrowDown")) py += 1;
+    if (this.keys.has("ArrowLeft")) px -= 1;
+    if (this.keys.has("ArrowRight")) px += 1;
+    if (px || py) this._pan(px * dt, py * dt);
+    /* Insert/Delete rotate: direct snap, still readable per frame */
+    if (this.keys.has("Insert")) this.yaw.snap(this.yaw.x + ROT_SPEED * dt);
+    if (this.keys.has("Delete")) this.yaw.snap(this.yaw.x - ROT_SPEED * dt);
+    /* clamp target to the map (+ small apron) */
     this.target.x.t = Math.max(-4, Math.min(MAP_W + 4, this.target.x.t));
     this.target.z.t = Math.max(-4, Math.min(MAP_H + 4, this.target.z.t));
+    this.target.x.x = Math.max(-4, Math.min(MAP_W + 4, this.target.x.x));
+    this.target.z.x = Math.max(-4, Math.min(MAP_H + 4, this.target.z.x));
     this.target.step(dt, this._v);
     const d = this.dist.step(dt), yaw = this.yaw.step(dt);
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
@@ -104,5 +117,12 @@ export class RTSCamera {
                           this._v.y + d * sp,
                           this._v.z + Math.sin(yaw) * d * cp);
     this.cam.lookAt(this._v.x, this._v.y, this._v.z);
+    if (this._shake > 0.005) {               // decaying impact jitter
+      const s = this._shake;
+      this.cam.position.x += (Math.random() - 0.5) * s;
+      this.cam.position.y += (Math.random() - 0.5) * s * 0.6;
+      this.cam.position.z += (Math.random() - 0.5) * s;
+      this._shake *= Math.exp(-6 * dt);
+    }
   }
 }

@@ -36,8 +36,11 @@ def _cached(key, fn):
 
 def _run(root, args, timeout=5.0):
     try:
+        # gh/git emit UTF-8; the Windows default codec (cp1252) would
+        # mojibake accents in issue titles and dirty paths
         p = subprocess.run(args, cwd=root, capture_output=True,
-                           text=True, timeout=timeout)
+                           text=True, timeout=timeout,
+                           encoding="utf-8", errors="replace")
         return p.stdout if p.returncode == 0 else None
     except Exception:
         return None

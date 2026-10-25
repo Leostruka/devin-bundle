@@ -715,11 +715,7 @@
           var f = fog ? fog[i] : 2;
           var sx = (tx * TILE - v.x) * z,
               sy = (ty * tyPitch - v.y) * z;
-          if (f === 0) {
-            ctx.fillStyle = (tx + ty) % 2 ? "#0b140d" : "#09110b";
-            ctx.fillRect(sx, sy, px + 1, py + 1);
-            continue;
-          }
+          if (f === 0) continue;   // shroud drawn by soft fog overlay below
           if (!tcv) {
             ctx.fillStyle = this._tileStyle(ctx, st, theme, i);
             ctx.fillRect(sx, sy, px + 1, py + 1);
@@ -793,10 +789,7 @@
             ctx.fillStyle = "rgba(255,213,74,0.14)";
             ctx.fillRect(sx + px - 1, sy, 2, py);
           }
-          if (f === 1) {
-            ctx.fillStyle = "rgba(8,14,10,0.28)";
-            ctx.fillRect(sx, sy, px + 1, py + 1);
-          }
+          /* fog==1 dim handled by soft fog overlay below */
           if (ts.breach && ts.breach[i]) {
             ctx.fillStyle = "rgba(248,81,73," +
               (0.16 + 0.10 * Math.sin(now / 280)).toFixed(3) + ")";
@@ -804,6 +797,54 @@
           }
         }
       }
+      /* Soft fog-of-war shroud: tile-res alpha map upscaled with bilinear
+         smoothing -> organic feathered edges instead of blocky checker. */
+      var fcv = this._fogCanvas(ts, fog);
+      if (fcv) {
+        var prevSmooth = ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(fcv, x0, y0, x1 - x0, y1 - y0,
+                      (x0 * TILE - v.x) * z, (y0 * tyPitch - v.y) * z,
+                      (x1 - x0) * px, (y1 - y0) * py);
+        ctx.imageSmoothingEnabled = prevSmooth;
+      }
+    },
+
+    /* fog overlay bake: W x H px canvas, one px per tile, alpha by fog.
+       Rebuilt at most every 350ms (fog changes infrequently). */
+    _fogCanvas: function (ts, fog) {
+      if (!fog || !fog.length ||
+          typeof document === "undefined" || !document.createElement)
+        return null;
+      var nowT = Date.now();
+      if (ts._fcv && nowT - (ts._fcvT || 0) < 350) return ts._fcv;
+      var W = ts.w, H = ts.h, c = ts._fcv;
+      if (!c) {
+        c = document.createElement("canvas");
+        c.width = W; c.height = H;
+        ts._fcv = c;
+      }
+      var g2 = c.getContext("2d");
+      var img = g2.createImageData(W, H), d = img.data;
+      for (var i = 0; i < W * H; i++) {
+        var f = fog[i] | 0;
+        var a = f === 0 ? 235 : f === 1 ? 82 : 0;
+        d[i * 4] = 7; d[i * 4 + 1] = 14; d[i * 4 + 2] = 10;
+        d[i * 4 + 3] = a;
+      }
+      g2.putImageData(img, 0, 0);
+      /* blur pass: pixel grid -> soft shroud blobs (ctx.filter blur) */
+      if (!ts._fcvB) {
+        ts._fcvB = document.createElement("canvas");
+        ts._fcvB.width = W; ts._fcvB.height = H;
+      }
+      var g3 = ts._fcvB.getContext("2d");
+      g3.clearRect(0, 0, W, H);
+      g3.filter = "blur(1.6px)";
+      g3.drawImage(c, 0, 0);
+      g3.filter = "none";
+      ts._fcvT = nowT;
+      return ts._fcvB;
     },
 
     /* office (#134/#180): Architectural 3D Isometric Tech Startup HQ Floorplan!

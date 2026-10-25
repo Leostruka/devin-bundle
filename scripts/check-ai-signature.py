@@ -94,7 +94,7 @@ def filter_self_diffs(diff_output, self_files):
     This function removes entire file sections where the file path matches any
     self_file, so the detector doesn't flag its own source code.
     """
-    lines = diff_output.split("\n")
+    lines = (diff_output or "").split("\n")
     filtered = []
     skip = False
     for line in lines:
@@ -137,7 +137,8 @@ def handle_stop(_data):
     ):
         try:
             result = subprocess.run(
-                args, capture_output=True, text=True, timeout=10, cwd=cwd
+                args, capture_output=True, text=True, timeout=10, cwd=cwd,
+                encoding="utf-8", errors="replace",
             )
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             return  # no git or no repo: allow

@@ -6,6 +6,23 @@ import * as THREE from "three";
 const COLORS = { blue: 0x66aaff, green: 0x6fe39a, purple: 0xbf8bff,
                  red: 0xff7a7a, gold: 0xffd54a, white: 0xf4f8ff };
 
+/* soft radial sprite for volumetric puffs: hard-edged quads read as
+   white squares at range */
+let _softTex = null;
+function softTex() {
+  if (_softTex) return _softTex;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 64;
+  const c = cv.getContext("2d");
+  const g = c.createRadialGradient(32, 32, 4, 32, 32, 30);
+  g.addColorStop(0, "rgba(255,255,255,.95)");
+  g.addColorStop(0.55, "rgba(255,255,255,.55)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  c.fillStyle = g; c.fillRect(0, 0, 64, 64);
+  _softTex = new THREE.CanvasTexture(cv);
+  return _softTex;
+}
+
 class Pool {
   constructor(scene, n, size, color, opts = {}) {
     this.n = n; this.items = [];
@@ -13,7 +30,8 @@ class Pool {
     for (let i = 0; i < n; i++) {
       const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
         color, transparent: true, opacity: 0, depthWrite: false,
-        side: THREE.DoubleSide }));
+        side: THREE.DoubleSide,
+        map: opts.soft ? softTex() : null }));
       m.visible = false;
       m.userData = { t: 0, life: 0, vx: 0, vy: 0, vz: 0, wob: Math.random() * 9 };
       scene.add(m);
@@ -56,8 +74,18 @@ export class Particles {
     for (const [k, c] of Object.entries(COLORS))
       this.pools[k] = new Pool(scene, 90, 0.42, c);
     this.sparks = new Pool(scene, 160, 0.16, 0xffb347);
-    this.smoke = new Pool(scene, 60, 0.9, 0x8a929c);
+    this.smoke = new Pool(scene, 60, 0.9, 0x8a929c, { soft: true });
     this.meteors = [];
+    /* bound by main.js: () => world.map — meteor trail must not
+       scribble smoke over tiles still under unexplored shroud */
+    this.fogFn = null;
+  }
+  _seen(x, z) {
+    const m = this.fogFn?.();
+    if (!m?.fog?.length) return true;
+    const i = Math.max(0, Math.min(m.h - 1, Math.round(z))) * m.w +
+              Math.max(0, Math.min(m.w - 1, Math.round(x)));
+    return (m.fog[i] ?? 0) >= 1 || !!m.reveal?.has(i);
   }
   bubble(x, y, color = "green", label) {
     (this.pools[color] || this.pools.green).emit(x, 2.6, y, 1.15, 2.1);
@@ -67,8 +95,11 @@ export class Particles {
       this.sparks.emit(x + (Math.random() - 0.5) * 0.6,
                        y, z, 1.5 + Math.random() * 2, 0.7, 0.3);
   }
-  puff(x, y, z = null) {
-    this.smoke.emit(x, 2.4, y, 0.55, 3.2, 1.0);
+  /* callers pass (x, heightY, z); emit honors real world pos —
+     a (x, zAsY, ignored) bug once dumped every puff onto the
+     map's north edge */
+  puff(x, y = 2.4, z = 0) {
+    this.smoke.emit(x, y, z, 0.55, 3.2, 1.0);
   }
   meteor(x, y) {
     const m = new THREE.Mesh(
@@ -100,7 +131,13 @@ export class Particles {
       m.position.z += (u.ty - m.position.z) * Math.min(1, k * 0.16 + 0.02);
       m.position.y -= (30 * k * k) * dt * 2.6;
       u.trail += dt;
-      if (u.trail > 0.02) {
+      /* trail only over the map itself: a meteor spawned at
+         (x-16, 30, z-16) otherwise drags a serrated smoke band
+         across the void beyond the north edge */
+      const inMap = m.position.x >= -1 && m.position.x <= 73 &&
+                    m.position.z >= -1 && m.position.z <= 55;
+      if (u.trail > 0.02 && inMap &&
+          this._seen(m.position.x, m.position.z)) {
         u.trail = 0;
         this.smoke.emit(m.position.x, m.position.y, m.position.z,
                         0.2, 1.2, 0.5);

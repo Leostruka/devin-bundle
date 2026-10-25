@@ -131,26 +131,29 @@ class _CapReached(Exception):
     """Pillow buffer hit --max-frames: stop capturing, encode what we have."""
 
 
-def _record(grab, seconds, fps, consume, stats):
+def _record(grab, seconds, fps, consume, stats,
+            _now=time.monotonic, _sleep=time.sleep):
     """Absolute-deadline pacing (per-step sleep drift cannot accumulate).
     consume(img) receives every captured frame; stats tracks
-    captured/dropped across early exits."""
+    captured/dropped across early exits. _now/_sleep default to the real
+    clock; tests inject a fake clock so pacing math is verified
+    deterministically instead of racing a loaded CI scheduler."""
     interval = 1.0 / fps
-    end = time.monotonic() + seconds
-    deadline = time.monotonic()
+    end = _now() + seconds
+    deadline = _now()
     while True:
         img, _meta = grab()
         consume(img)
         stats["captured"] += 1
         deadline += interval
-        delay = deadline - time.monotonic()
+        delay = deadline - _now()
         if delay > 0:
-            time.sleep(delay)
+            _sleep(delay)
         else:
             missed = int(-delay // interval)
             stats["dropped"] += missed
             deadline += interval * missed
-        if time.monotonic() >= end:
+        if _now() >= end:
             break
 
 
