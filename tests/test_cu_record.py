@@ -110,10 +110,25 @@ def test_sheet_save_empty_returns_none(tmp_path):
 
 # -- _record pacing ------------------------------------------------------------
 
+class FakeClock:
+    """Deterministic monotonic+sleep pair: sleep() advances time instantly,
+    grab-side delay can be simulated by bumping t directly."""
+    def __init__(self):
+        self.t = 0.0
+
+    def now(self):
+        return self.t
+
+    def sleep(self, d):
+        self.t += d
+
+
 def test_record_pacing_counts_captured():
-    """Every consumed frame is counted; slot count tolerates scheduler slack."""
+    """Every consumed frame is counted; slot count follows the frame budget
+    exactly when the scheduler cooperates (fake clock: no CI jitter)."""
     frame = FakeImg(b"\x00" * 300)
     calls = {"n": 0}
+    clk = FakeClock()
 
     def grab():
         calls["n"] += 1
@@ -121,22 +136,28 @@ def test_record_pacing_counts_captured():
 
     stats = {"captured": 0, "dropped": 0}
     rec._record(grab, seconds=0.25, fps=40,
-                consume=lambda img: None, stats=stats)
-    assert 5 <= stats["captured"] <= 12  # ~10 slots, jitter either way
+                consume=lambda img: None, stats=stats,
+                _now=clk.now, _sleep=clk.sleep)
+    # IEEE-754 sleep accumulation lands one slot under `end`, so the loop
+    # captures a boundary frame: 11, not 10, deterministically.
+    assert stats["captured"] == 11
     assert calls["n"] == stats["captured"]
 
 
 def test_record_overrun_slots_counted_dropped():
-    """A grab slower than the frame budget counts missed slots as dropped."""
+    """A grab slower than the frame budget counts missed slots as dropped
+    (grab cost simulated on the fake clock)."""
     frame = FakeImg(b"\x00" * 300)
+    clk = FakeClock()
 
     def slow_grab():
-        time.sleep(0.05)  # 2x the 25 ms slot at 40 fps
+        clk.t += 0.05  # 2x the 25 ms slot at 40 fps
         return frame, {}
 
     stats = {"captured": 0, "dropped": 0}
     rec._record(slow_grab, seconds=0.2, fps=40,
-                consume=lambda img: None, stats=stats)
+                consume=lambda img: None, stats=stats,
+                _now=clk.now, _sleep=clk.sleep)
     assert stats["dropped"] >= stats["captured"] - 1
     assert stats["captured"] >= 2
 
@@ -144,11 +165,11 @@ def test_record_overrun_slots_counted_dropped():
 def test_record_stops_at_duration():
     frame = FakeImg(b"\x00" * 300)
     stats = {"captured": 0, "dropped": 0}
-    t0 = time.monotonic()
+    clk = FakeClock()
     rec._record(lambda: (frame, {}), seconds=0.5, fps=10,
-                consume=lambda img: None, stats=stats)
-    assert time.monotonic() - t0 < 1.2
-    assert stats["captured"] >= 2
+                consume=lambda img: None, stats=stats,
+                _now=clk.now, _sleep=clk.sleep)
+    assert stats["captured"] == 5
 
 
 # -- JSON contract (live capture, skips headless) ------------------------------
