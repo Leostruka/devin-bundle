@@ -34,6 +34,26 @@ offline, long content, permission denied); dictate exact Tailwind
 classes or library components per pattern. "Clean and modern" is
 wallpaper, not direction.
 
+## Heuristic checklist (apply per screen, cite the law in load notes)
+- **Hick**: more options -> slower choice; cap primary actions per view.
+- **Fitts**: frequent actions get large targets near the pointer path.
+- **Jacob**: users expect patterns from other products; don't reinvent.
+- **Proximity**: spacing groups related items before any border does.
+- **Miller**: chunk to ~7 items; paginate or group beyond that.
+- **Doherty**: feedback under 400ms or the UI feels unresponsive.
+- **Von Restorff**: the odd element wins attention; spend it on the CTA.
+- **Serial position**: put key items first and last in lists/menus.
+- **Peak-end**: users judge by the peak and the end; land the exit screen.
+- **Zeigarnik**: visible progress on unfinished work pulls users back.
+- **Pragnanz**: prefer the simplest perceptual organization available.
+- **Similarity**: same look -> same meaning; never restyle by accident.
+- **Uniform connectedness**: linked elements beat colored ones for grouping.
+- **Tesler**: complexity can't be deleted, only moved; keep it in the system.
+- **Postel**: accept loose input, emit strict output (forms, imports).
+- **Parkinson**: work fills the time; bound waits, deadlines, idle states.
+- **Occam**: cut elements until removal breaks the task.
+- **Pareto**: 20% of features serve 80% of use; surface them first.
+
 ## Output contract: docs/03_UI_UX_Guidelines.md
 Front-matter v3 (`schema_version: 3`, `upstream_hashes:[01@sha8,
 02@sha8]`, `status: DRAFT`, `rework_cycle`) then: journey map (PRD
