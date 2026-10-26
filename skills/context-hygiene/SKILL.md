@@ -88,6 +88,21 @@ depth=2 causes overthinking, 95x slower (arXiv:2603.02615).
 Don't fold preemptively, don't dump whole files into context, don't use for
 simple retrieval (grep is cheaper).
 
+**Reversible folds** (`scripts/fold_store.py`, inspired by billion-context):
+when you fold a range the session may need again, persist it with an id —
+the summary stays in context, the content survives on disk.
+
+```bash
+python skills/context-hygiene/scripts/fold_store.py save <id> \
+    --summary "one line" --content-file huge_log.txt   # fold away
+fold_store.py unfold <id>      # restore full text when needed
+fold_store.py grep <keyword>   # find which fold holds a detail
+fold_store.py list             # ids, summaries, est. tokens
+```
+
+Fold ids are durable across sessions (`.devin/scratch/folds/`); delete
+stale folds at task end to keep the store small.
+
 ## Cost Guard
 
 | Limit | Action |
