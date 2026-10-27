@@ -44,7 +44,7 @@ def _notify_toast(title, message, _level):
         f"$x.GetElementsByTagName('text')[0].AppendChild($x.CreateTextNode('{esc(title)}'))>$null;"
         f"$x.GetElementsByTagName('text')[1].AppendChild($x.CreateTextNode('{esc(message)}'))>$null;"
         "$t=[Windows.UI.Notifications.ToastNotification]::new($x);"
-        "$n::CreateToastNotifier('devin-computer-use').Show($t);")
+        "$n::CreateToastNotifier('Cu-Talk').Show($t);")
     r = subprocess.run(
         ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
         capture_output=True, text=True, timeout=15,

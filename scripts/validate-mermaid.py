@@ -16,6 +16,12 @@ Exit codes:
 """
 import sys, json, os, re, subprocess
 
+_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+
+def _run(*a, **kw):
+    kw.setdefault('creationflags', _CF)
+    return subprocess.run(*a, **kw)
+
 MERMAID_FENCE = re.compile(
     r"```mermaid\s*\n(.*?)```",
     re.DOTALL | re.IGNORECASE,
@@ -43,7 +49,7 @@ def validate_block(diagram):
     All other hooks in this bundle fail open on tool unavailability.
     """
     try:
-        result = subprocess.run(
+        result = _run(
             ["node", PARSE_CHECK_JS, diagram.strip()],
             capture_output=True,
             text=True,

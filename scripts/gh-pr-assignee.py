@@ -14,6 +14,12 @@ import re
 import subprocess
 import sys
 
+_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+
+def _run(*a, **kw):
+    kw.setdefault('creationflags', _CF)
+    return subprocess.run(*a, **kw)
+
 _CREATE_RX = re.compile(r"\bgh\s+pr\s+create\b")
 _URL_RX = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
 
@@ -40,7 +46,7 @@ def main():
     who = os.environ.get("GH_PR_ASSIGNEE", "Leostruka")
     gh = os.environ.get("GH_PR_BIN", "gh")
     try:
-        r = subprocess.run(
+        r = _run(
             [gh, "pr", "edit", url, "--add-assignee", who],
             cwd=ti.get("workdir") or None,
             capture_output=True, text=True, timeout=20)

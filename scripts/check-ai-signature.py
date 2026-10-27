@@ -17,6 +17,12 @@ Enforces AGENTS.md Rule 2 (no AI signatures in deliverables).
 """
 import sys, json, re, os, subprocess
 
+_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+
+def _run(*a, **kw):
+    kw.setdefault('creationflags', _CF)
+    return subprocess.run(*a, **kw)
+
 SIGNATURES = (
     r"Generated with \[?Devin\]?",
     r"Co-Authored-By:\s*Devin",
@@ -136,7 +142,7 @@ def handle_stop(_data):
         ["git", "diff", "--unified=0"],
     ):
         try:
-            result = subprocess.run(
+            result = _run(
                 args, capture_output=True, text=True, timeout=10, cwd=cwd,
                 encoding="utf-8", errors="replace",
             )

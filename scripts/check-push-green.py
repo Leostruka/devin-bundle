@@ -21,6 +21,12 @@ Sources:
 """
 import sys, json, subprocess, os, re
 
+_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+
+def _run(*a, **kw):
+    kw.setdefault('creationflags', _CF)
+    return subprocess.run(*a, **kw)
+
 TEST_TIMEOUT = 120
 
 
@@ -33,7 +39,7 @@ def block(reason):
 def run_check(cmd, cwd):
     """Run a shell check. Returns (passed, output). Fails open on timeout."""
     try:
-        result = subprocess.run(
+        result = _run(
             cmd, shell=True, cwd=cwd,
             capture_output=True, text=True, timeout=TEST_TIMEOUT,
         )
