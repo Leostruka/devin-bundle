@@ -102,7 +102,7 @@ Capabilities introduced in `3000.11.205` and `3000.11.228` that interact with bu
 | `PostToolUse` `hookSpecificOutput.updatedToolOutput` | documented | Rewrites the tool result before the model reads it (redaction use case). Reserved; no current consumer in the bundle. |
 | `/loop` + `agent.model_mixture` removed | noted | Replaced by `/goal`. The bundle never adopted `model_mixture`, and `scheduled-turns` runs `devin -p` one-shots, so no bundle change needed. |
 | `DEVIN_SESSION_STORE=files` (experimental) | not adopted | Env var that keeps session history as files on NFS/SMB homes; same reasoning as `DEVIN_SESSIONS_DIR` (env, not a `config.json` key). |
-| `agent.verbosity` | not adopted | Transcript detail preference; no basis to override the default. |
+| `agent.verbosity` | adopted = `3` | Integer 0-3 (default 1 = compact single-line tool summaries introduced in 3000.11.205); `3` restores full tool cards/diffs in the transcript. |
 | Permission UX: prompt shows the exact rule (`Exec(docker build)`), Allow/Bypass/Deny with grant duration (`Once`/`Session`/`Project`/`Always`) and `e` to edit the command | adopted (passive) | Approval cards now name the matched bundle rule (`Write(**/.env*)` denies etc.). No config surface. |
 | `/rename` (no-arg auto-title), `/pickup` cloud summary, `/confetti`, `devin models` listing | adopted (docs) | Mapped in `TOOLS-MAP.md`. |
 | Compact tool calls with `Ctrl+O` expansion, `/config` editor redesign, `/context` per-section bars, `/model` Desktop ordering, instant session picker with title search, `/resume` picker over the running session | documented | UX changes; no config. |

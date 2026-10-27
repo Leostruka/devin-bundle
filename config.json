@@ -6,7 +6,8 @@
   "theme_mode": "dark",
   "agent": {
     "model": "swe-2-high",
-    "subagent_model": "swe-2-max"
+    "subagent_model": "swe-2-max",
+    "verbosity": 3
   },
   "attribution": false,
   "read_config_from": {
@@ -43,7 +44,7 @@
   },
   "keymap": {
     "readbox_input": {
-      "queue_message": "ctrl+4"
+      "queue_message": "ctrl-4"
     }
   }
 }

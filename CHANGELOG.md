@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.13.0] - 2026-10-27
+
 ### Added
 
-- **`agentic-rag` skill**: implementation playbook for evidence-gated agentic RAG products (retrieve -> decision-gate -> answer-or-escalate). Multimodal per-page index (text chunks + page PNG), decision-model answerability thresholds in DB, human-review ticket loop with save-to-knowledge re-indexing. Stack-agnostic slots (InsForge/Supabase backend, EmbeddingGemma-style embeddings, Liquid d1/Jev-style decision model or LLM-judge).
+- **`agentic-rag` skill** (#237): implementation playbook for evidence-gated agentic RAG products (retrieve -> decision-gate -> answer-or-escalate). Multimodal per-page index (text chunks + page PNG), decision-model answerability thresholds in DB, human-review ticket loop with save-to-knowledge re-indexing. Stack-agnostic slots; decision-model slot is free-first with **Laya multilingual** (Apache-2.0, self-host) as reference, Kev/Jeeves/Strands Decider/open-weight d1-3B as swaps, Jev/hosted d1 as paid options.
+
+### Fixed
+
+- **Windows console popups** (#238): every console-subsystem child spawned from the console-less runtime allocated a visible conhost window. Hook renderer emits `pythonw` on Windows (#232); all `subprocess` call sites in hook scripts (#234) and across extensions (#236, 29+ sites) pass `CREATE_NO_WINDOW` via getattr fallback (POSIX no-op).
+- **CU toast identity** (#239): Windows notifications now show `Cu-Talk` instead of `devin-computer-use`; MCP protocol name unchanged.
 
 ## [3.12.0] - 2026-10-27
 
