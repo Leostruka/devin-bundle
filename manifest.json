@@ -587,9 +587,14 @@
       "name": "tts",
       "source": "devin-bundle",
       "purpose": "Use when generating speech, narration, voiceover, or any text-to-speech audio locally. Routes to extensions/voicebox/wrapper.py, an HTTP client for a user-started voicebox backend (jamiepine/voicebox, FastAPI on 127.0.0.1:17493)"
+    },
+    {
+      "name": "agentic-rag",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture with multimodal index and human-review loop"
     }
   ],
-  "skill_count": 88,
+  "skill_count": 89,
   "rule_count": 24,
   "scripts": [
     {
