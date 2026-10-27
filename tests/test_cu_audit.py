@@ -18,7 +18,9 @@ def test_result_writes_audit(monkeypatch, tmp_path):
     assert len(lines) == 1
     rec = json.loads(lines[0])
     assert rec["status"] == "dispatched" and rec["tool"] == "mouse.py"
-    assert rec["backend"] == "physical" and "500" not in lines[0]
+    # argv values must not leak into the audit record; match the JSON-quoted
+    # value so a timestamp like 1793120500.053 does not trip the check.
+    assert rec["backend"] == "physical" and '"500"' not in lines[0]
 
 
 def test_audit_disabled(monkeypatch, tmp_path):
