@@ -41,15 +41,36 @@ def block(reason):
 
 
 def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
-    """Run a shell check. Returns (passed, output). Fails open on timeout."""
+    """Run a shell check. Returns (passed, output). Fails open on timeout.
+
+    stdout goes to a temp file, not a pipe: a timed-out `cmd /c` kill
+    orphans the grandchild (pytest), which would otherwise hold the pipe
+    open and block run() past the timeout while its console window leaks.
+    """
+    import tempfile
+    out_file = tempfile.TemporaryFile(mode="w+t", encoding="utf-8",
+                                      errors="replace")
     try:
-        result = _run(
-            cmd, shell=True, cwd=cwd,
-            capture_output=True, text=True, timeout=timeout,
-        )
-        return result.returncode == 0, (result.stdout or "") + (result.stderr or "")
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-        return True, "check timed out or was not found - allowing push"
+        proc = subprocess.Popen(cmd, shell=True, cwd=cwd, stdout=out_file,
+                                stderr=subprocess.STDOUT, creationflags=_CF)
+        try:
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            # Kill the whole tree; cmd alone dies leaving pytest orphaned.
+            _run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                 capture_output=True, timeout=15)
+            try:
+                proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+            out_file.seek(0)
+            return True, out_file.read() or "check timed out - allowing push"
+        out_file.seek(0)
+        return proc.returncode == 0, out_file.read()
+    except (FileNotFoundError, OSError) as e:
+        return True, f"check unavailable: {e} - allowing push"
+    finally:
+        out_file.close()
 
 
 def detect_test_command(cwd):
@@ -111,24 +132,12 @@ def check_unmasked_secrets(cwd):
                 )
 
 
-def check_held_out_gap(cwd, is_pytest):
+def check_held_out_gap(cwd, is_pytest, val_result, held_result):
     """Block when validation tests pass but held-out tests fail (Rule 16)."""
-    validation_dir = os.path.join(cwd, "tests", "validation")
-    heldout_dir = os.path.join(cwd, "tests", "held-out")
-    if not (os.path.isdir(validation_dir) and os.path.isdir(heldout_dir)):
-        return  # no held-out split configured: nothing to compare
-    if not is_pytest:
-        return  # gap measurement currently implemented for pytest only
-
-    # The two pytest runs are independent; run them concurrently so the
-    # gate fits inside the PreToolUse hook timeout budget.
-    from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=2) as ex:
-        f_val = ex.submit(run_check, f'pytest "{validation_dir}" -q', cwd)
-        f_held = ex.submit(run_check, f'pytest "{heldout_dir}" -q', cwd)
-        val_passed, _ = f_val.result()
-        held_passed, held_output = f_held.result()
-
+    if val_result is None:
+        return  # no held-out split configured / not pytest
+    val_passed, _ = val_result
+    held_passed, held_output = held_result
     if val_passed and not held_passed:
         block(
             "Validation tests pass but held-out tests fail. This gap indicates "
@@ -167,7 +176,21 @@ def main():
     if not check_cmd:
         sys.exit(0)  # no test framework detected: allow
 
-    passed, output = run_check(check_cmd, cwd, timeout=MAIN_TIMEOUT)
+    validation_dir = os.path.join(cwd, "tests", "validation")
+    heldout_dir = os.path.join(cwd, "tests", "held-out")
+    gap_active = os.path.isdir(validation_dir) and os.path.isdir(heldout_dir) and is_pytest
+
+    # All pytest checks are independent; run them concurrently so the gate
+    # fits inside the PreToolUse hook timeout budget (wall time = slowest).
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        f_main = ex.submit(run_check, check_cmd, cwd, MAIN_TIMEOUT)
+        f_val = ex.submit(run_check, f'pytest "{validation_dir}" -q', cwd) if gap_active else None
+        f_held = ex.submit(run_check, f'pytest "{heldout_dir}" -q', cwd) if gap_active else None
+        passed, output = f_main.result()
+        val_result = f_val.result() if f_val else None
+        held_result = f_held.result() if f_held else None
+
     if not passed:
         block(
             f"git push rejected: '{check_cmd}' is failing. Fix the failures in the "
@@ -175,7 +198,7 @@ def main():
             + output.strip()[-800:]
         )
 
-    check_held_out_gap(cwd, is_pytest)
+    check_held_out_gap(cwd, is_pytest, val_result, held_result)
 
     sys.exit(0)
 
