@@ -28,6 +28,10 @@ def _run(*a, **kw):
     return subprocess.run(*a, **kw)
 
 TEST_TIMEOUT = 120
+# The full suite cannot finish inside a hook budget on a large repo; it
+# still runs (failures block) but is capped lower so the whole gate fits
+# under the PreToolUse timeout even on a session with the old 190s value.
+MAIN_TIMEOUT = 45
 
 
 def block(reason):
@@ -36,12 +40,12 @@ def block(reason):
     sys.exit(2)
 
 
-def run_check(cmd, cwd):
+def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
     """Run a shell check. Returns (passed, output). Fails open on timeout."""
     try:
         result = _run(
             cmd, shell=True, cwd=cwd,
-            capture_output=True, text=True, timeout=TEST_TIMEOUT,
+            capture_output=True, text=True, timeout=timeout,
         )
         return result.returncode == 0, (result.stdout or "") + (result.stderr or "")
     except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
@@ -116,8 +120,14 @@ def check_held_out_gap(cwd, is_pytest):
     if not is_pytest:
         return  # gap measurement currently implemented for pytest only
 
-    val_passed, _ = run_check(f'pytest "{validation_dir}" -q', cwd)
-    held_passed, held_output = run_check(f'pytest "{heldout_dir}" -q', cwd)
+    # The two pytest runs are independent; run them concurrently so the
+    # gate fits inside the PreToolUse hook timeout budget.
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        f_val = ex.submit(run_check, f'pytest "{validation_dir}" -q', cwd)
+        f_held = ex.submit(run_check, f'pytest "{heldout_dir}" -q', cwd)
+        val_passed, _ = f_val.result()
+        held_passed, held_output = f_held.result()
 
     if val_passed and not held_passed:
         block(
@@ -157,7 +167,7 @@ def main():
     if not check_cmd:
         sys.exit(0)  # no test framework detected: allow
 
-    passed, output = run_check(check_cmd, cwd)
+    passed, output = run_check(check_cmd, cwd, timeout=MAIN_TIMEOUT)
     if not passed:
         block(
             f"git push rejected: '{check_cmd}' is failing. Fix the failures in the "
