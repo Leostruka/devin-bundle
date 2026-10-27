@@ -71,7 +71,7 @@ def _notify_script(title, message, level):
     import shlex
     r = subprocess.run(
         shlex.split(hook, posix=(os.name != "nt")) + [title, message, level],
-                       capture_output=True, text=True, timeout=15)
+                       capture_output=True, text=True, timeout=15, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return r.returncode == 0, (r.stderr or "").strip() or "hook ran"
 
 

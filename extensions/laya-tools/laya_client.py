@@ -110,7 +110,7 @@ def _terminate(pid):
     try:
         if os.name == "nt":
             subprocess.run(["taskkill", "/PID", str(pid), "/F"],
-                           capture_output=True, timeout=10)
+                           capture_output=True, timeout=10, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         else:
             os.kill(pid, 15)
     except (OSError, subprocess.SubprocessError):

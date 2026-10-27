@@ -69,7 +69,7 @@ def fetch_audio(source, workdir):
     out = Path(workdir) / "audio.wav"
     subprocess.run(
         ["yt-dlp", "-x", "--audio-format", "wav", "-o", str(out),
-         source], check=True, capture_output=True, timeout=600)
+         source], check=True, capture_output=True, timeout=600, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return out
 
 
@@ -94,7 +94,7 @@ def transcribe(source, model="base", lang="auto", timeout=600):
         if lang != "auto":
             argv += ["-l", lang]
         p = subprocess.run(argv, capture_output=True, text=True,
-                           timeout=timeout)
+                           timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if p.returncode != 0:
         return {"ok": False, "error": "whisper_failed",
                 "stderr": p.stderr[-2000:]}

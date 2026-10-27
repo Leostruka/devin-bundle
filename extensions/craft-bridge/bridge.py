@@ -93,7 +93,7 @@ def list_commands(app, timeout=TIMEOUT_S):
                 "error": f"{APPS[app]['cli']} not on PATH"}
     try:
         p = subprocess.run(cli + ["commands"], capture_output=True,
-                           text=True, timeout=timeout)
+                           text=True, timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except (OSError, subprocess.TimeoutExpired) as e:
         return {"ok": False, "app": app, "error": f"{type(e).__name__}"}
     return {"ok": p.returncode == 0, "app": app,
@@ -120,7 +120,7 @@ def run_command(app, command_id, params=None, timeout=TIMEOUT_S,
         argv += ["--file", str(f)]
     try:
         p = subprocess.run(argv, capture_output=True, text=True,
-                           timeout=timeout)
+                           timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except (OSError, subprocess.TimeoutExpired) as e:
         return {"ok": False, "app": app, "command": command_id,
                 "error": f"{type(e).__name__}"}

@@ -56,7 +56,7 @@ def _bench(fn, runs, warmup):
 def _b_startup(mouse_py):
     def f():
         subprocess.run([sys.executable, mouse_py, "position"],
-                       capture_output=True, timeout=30)
+                       capture_output=True, timeout=30, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return f
 
 

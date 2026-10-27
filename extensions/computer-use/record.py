@@ -279,7 +279,8 @@ def main():
     else:
         proc = subprocess.Popen(
             _ffmpeg_cmd(img0.width, img0.height, args.fps, out),
-            stdin=subprocess.PIPE)
+            stdin=subprocess.PIPE,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
         def consume(img):
             try:

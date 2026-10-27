@@ -43,7 +43,7 @@ class DecisionClient:
         self._kill()
         self._proc = subprocess.Popen(
             self._argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=None, text=True, bufsize=1)
+            stderr=None, text=True, bufsize=1, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         self._q = queue.Queue()
         threading.Thread(target=self._read_loop,
                          args=(self._proc, self._q),

@@ -124,12 +124,12 @@ def _find_pids(image=None, cmdline_contains=None):
         out = subprocess.run(
             ["powershell", "-NoProfile", "-Command", q],
             capture_output=True, text=True, timeout=15,
-        ).stdout
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
         pids = [int(x) for x in out.split() if x.strip().isdigit()]
     else:
         out = subprocess.run(
             ["ps", "-axo", "pid,comm,args"], capture_output=True, text=True
-        ).stdout
+        , creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
         for line in out.splitlines():
             parts = line.split(None, 2)
             if len(parts) < 3:
@@ -145,7 +145,7 @@ def _kill_pid(pid):
     try:
         if os.name == "nt":
             subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
-                           capture_output=True, timeout=10)
+                           capture_output=True, timeout=10, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         else:
             os.kill(pid, signal.SIGTERM)
             for _ in range(20):
@@ -277,7 +277,7 @@ def cmd_self_test(args):
     if blender:
         try:
             v = subprocess.run([blender, "--version"], capture_output=True,
-                               text=True, timeout=20).stdout.splitlines()
+                               text=True, timeout=20, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.splitlines()
             out["checks"]["blender_version"] = v[0] if v else None
         except (OSError, subprocess.TimeoutExpired) as e:
             out["checks"]["blender_version_error"] = str(e)

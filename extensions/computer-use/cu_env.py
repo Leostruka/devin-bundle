@@ -35,7 +35,7 @@ _VERSION_RE = re.compile(r"version (\d+\.\d+\.\d+)")
 def _default_run(argv, timeout_s=10):
     try:
         proc = subprocess.run(argv, capture_output=True, text=True,
-                              timeout=timeout_s)
+                              timeout=timeout_s, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         return {"returncode": proc.returncode, "stdout": proc.stdout,
                 "stderr": proc.stderr, "timed_out": False}
     except subprocess.TimeoutExpired:
@@ -459,7 +459,8 @@ class EnvironmentManager:
         and owns QEMU's QMP pipes. Crashes land in daemon-error.txt."""
         return subprocess.Popen(argv, stdin=subprocess.DEVNULL,
                                 stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL)
+                                stderr=subprocess.DEVNULL,
+                                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
     def _wait_ready_file(self, deadline_s):
         import time

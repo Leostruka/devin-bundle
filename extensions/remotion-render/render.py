@@ -47,7 +47,7 @@ def render(plan, workdir, dry=True, comp="Plan", out_name="out.mp4",
         return {"ok": False, "error": "npx_missing",
                 "hint": "install Node.js", "workdir": str(workdir)}
     p = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True,
-                       timeout=timeout)
+                       timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     result.update({"rendered": p.returncode == 0,
                    "stdout": p.stdout[-2000:],
                    "stderr": p.stderr[-2000:]})

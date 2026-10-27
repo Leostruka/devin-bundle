@@ -35,7 +35,7 @@ def run_bounded(argv, timeout=RUN_TIMEOUT_S, cap=OUTPUT_CAP):
     """
     proc = subprocess.Popen(argv, shell=False,
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                            stderr=subprocess.PIPE, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     out_parts, err_parts = [], []
     threads = [
         threading.Thread(target=_drain,

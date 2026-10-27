@@ -209,7 +209,8 @@ def serve(env_dir, spawn=None, poll_s=0.2):
     import subprocess
     spawn = spawn or (lambda argv, **kw: subprocess.Popen(
         argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, text=True))
+        stderr=subprocess.PIPE, text=True,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)))
     env_dir = Path(env_dir)
     spec = json.loads((env_dir / "spec.approved.json")
                       .read_text("utf-8"))

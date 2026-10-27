@@ -143,7 +143,8 @@ class Worker:
     def _spawn(self):
         self._proc = subprocess.Popen(
             self.argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL, text=True, bufsize=1)
+            stderr=subprocess.DEVNULL, text=True, bufsize=1,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         self.generation += 1
         self.session = uuid.uuid4().hex[:12]
         self._lines = queue.Queue()
