@@ -43,7 +43,7 @@
   },
   "keymap": {
     "readbox_input": {
-      "queue_message": "ctrl+4"
+      "queue_message": "ctrl-4"
     }
   }
 }
