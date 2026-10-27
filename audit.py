@@ -526,6 +526,7 @@ if os.path.exists(live_cfg) and os.path.exists(bundle_hooks_src):
             s = json.dumps(obj, sort_keys=True)
             if home:
                 s = s.replace(home.replace('\\', '/').rstrip('/'), '')
+            s = s.replace('pythonw ', 'python ')
             s = s.replace('python scripts/', 'python /scripts/')
             s = s.replace('\\"', '').replace('"', '')
             return s
