@@ -90,7 +90,7 @@ def run(images_dir, out_dir, steps=None, extra=None):
     if steps:
         argv += ["--steps", str(steps)]
     argv += list(extra or [])
-    p = subprocess.run(argv, cwd=up, capture_output=True, text=True)
+    p = subprocess.run(argv, cwd=up, capture_output=True, text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return {"ok": p.returncode == 0, "exit": p.returncode,
             "out": str(out_dir), "stdout": p.stdout[-2000:],
             "stderr": p.stderr[-2000:]}

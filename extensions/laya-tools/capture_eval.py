@@ -84,7 +84,7 @@ def main(argv=None):
     note("spawning worker (cold engine load ~1min on CPU) ...")
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=sys.stderr,
-                            text=True, bufsize=1, cwd=HERE)
+                            text=True, bufsize=1, cwd=HERE, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     q = queue.Queue()
     threading.Thread(target=_reader, args=(proc.stdout, q),
                      daemon=True).start()

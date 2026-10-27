@@ -89,7 +89,7 @@ class AdbBackend:
 
     def _default_run(self, argv, timeout_s):
         return subprocess.run([self._adb_bin(), *[str(a) for a in argv]],
-                              capture_output=True, timeout=timeout_s)
+                              capture_output=True, timeout=timeout_s, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
     def _call(self, argv, timeout_s=15, binary=False):
         try:

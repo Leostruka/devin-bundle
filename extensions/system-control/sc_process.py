@@ -237,7 +237,7 @@ def _posix_group_has_live_member(pgid):
     for kw in ("pgid", "pgrp"):
         try:
             out = subprocess.run(["ps", "-axo", f"pid=,{kw}=,stat="],
-                                 capture_output=True, timeout=10)
+                                 capture_output=True, timeout=10, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         except Exception:
             continue
         if out.returncode != 0:

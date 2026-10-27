@@ -34,7 +34,7 @@ def _cli(script, *args):
             [sys.executable, os.path.join(HERE, script), *args],
             capture_output=True, text=True, encoding="utf-8",
             errors="replace", timeout=CALL_TIMEOUT_S, cwd=HERE,
-        )
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         out = (proc.stdout or "") + (proc.stderr or "")
         return proc.returncode == 0, out.strip()
     except subprocess.TimeoutExpired:

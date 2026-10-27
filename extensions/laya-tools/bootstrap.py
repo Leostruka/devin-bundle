@@ -49,7 +49,7 @@ def run(cmd, timeout=None):
     """Run cmd, return (rc, combined_output). Never raises."""
     try:
         p = subprocess.run(cmd, capture_output=True, text=True,
-                           timeout=timeout, cwd=HERE)
+                           timeout=timeout, cwd=HERE, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         return p.returncode, (p.stdout or "") + (p.stderr or "")
     except (OSError, subprocess.TimeoutExpired) as e:
         return 1, f"{type(e).__name__}: {e}"
@@ -186,7 +186,7 @@ def main():
                             "--state", '{"body": "charged twice"}',
                             "--preset", "triage"],
                            capture_output=True, text=True,
-                           timeout=PREDICT_TIMEOUT, cwd=HERE)
+                           timeout=PREDICT_TIMEOUT, cwd=HERE, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         pred_ok = p.returncode == 0 and json.loads(p.stdout).get("ok") is True
         out = p.stdout + (p.stderr or "")
     except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError) as e:

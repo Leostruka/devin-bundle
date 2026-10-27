@@ -66,7 +66,7 @@ def run_cmd(argv, timeout=DEFAULT_TIMEOUT):
             text=True,
             timeout=timeout,
             errors="replace",
-        )
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except FileNotFoundError as e:
         return {"ok": False, "status": "missing", "error": str(e), "argv": argv}
     except subprocess.TimeoutExpired:
