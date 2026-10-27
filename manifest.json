@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "3.13.0",
+  "version": "3.14.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -592,9 +592,14 @@
       "name": "agentic-rag",
       "source": "devin-bundle",
       "purpose": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture with multimodal index and human-review loop"
+    },
+    {
+      "name": "drift-report",
+      "source": "devin-bundle",
+      "purpose": "Use when checking whether design documents, READMEs, or specs still match the code they describe. Reads each document, locates the referenced source files, and reports only concrete divergences in a dated drift report"
     }
   ],
-  "skill_count": 89,
+  "skill_count": 90,
   "rule_count": 24,
   "scripts": [
     {
@@ -618,14 +623,14 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "901D5DCE256CEAD4DA6BA92BB9E785CE1BF0651F152FC945E83726ECCF2055B8",
-      "exported_at": "2026-09-08T21:39:22.430276"
+      "export_hash": "53F0CE5D29D206C37456FC37BA8E1DD6CB2A87D03F9FF5DD20FEA024278B3174",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "F960515AB1CBD8FC755D7CC26DD1800BB6969E3C477D95265D10F2A2BAC196D1",
-      "exported_at": "2026-09-08T21:39:22.430364"
+      "export_hash": "07D3B52C6F18E210278910DF9C1752DC4727FB8DCEFB576AA74E439297B58107",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "constraint-pinning.py",
@@ -654,8 +659,8 @@
     {
       "name": "gh-pr-assignee.py",
       "purpose": "PostToolUse hook — auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
-      "export_hash": "4ED606EF5064ECEF109EA563A5E80601D6933E5EC3CF3B02BBDB0288A3B5A71E",
-      "exported_at": "2026-10-02T00:00:00.000000"
+      "export_hash": "5A98F97A830AC8E01FDD97A85FD09B36281EBE52FDB1625234F1F22A773AD64F",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "memory-post-edit.py",
@@ -690,14 +695,14 @@
     {
       "name": "no-em-dash.py",
       "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code and data files exempt",
-      "export_hash": "512E5A0BAFF4DC397F5A5E5A88F02290F282547DB1C53173F6EC873AAC9E21D2",
-      "exported_at": "2026-09-25T16:17:01.590"
+      "export_hash": "B55C6EACD2B8A903111001359448A79EFA86A62305296DDC0298B6AA9CBFD57A",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "D77BC3CF08CA5CA1D31EFE367BD07D1523E90AD9D040AD335AAF6FAFF48B4D43",
-      "exported_at": "2026-10-17T21:34:47.616596"
+      "export_hash": "B8F38EB166A0DEEEE7B1FC098C4AA729B2C808B85248BA8F1E10CAD226B0DDBF",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "pre-exec-guard.py",
@@ -720,14 +725,14 @@
     {
       "name": "render-user-hooks.py",
       "purpose": "Install-time renderer — expands hooks.v1.json into user-level config.json hooks",
-      "export_hash": "E33D127DBB6D4C6D70862D8D425C8E78161997BBF2D4B81CEFFD62470D61AA71",
-      "exported_at": "2026-09-18T20:02:25.613042"
+      "export_hash": "7F01B4F33415985533104F4BFADDA6BED8162CE0CCFDAAC6B5E0178554E9484C",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "session-start.py",
       "purpose": "SessionStart consolidated hook (constraint-pinning+context-budget)",
-      "export_hash": "15B6C1789DD90FE3F6D314CA195861D64936799832BB0CED206D5E71DD535761",
-      "exported_at": "2026-10-17T21:34:47.616596"
+      "export_hash": "AEE9E3084057B17B58B825004B3EB4FB6B0DA8088BBB53DA5ECB552DAC68D4B1",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "silent-error-review.py",
@@ -738,20 +743,20 @@
     {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
-      "export_hash": "776AD28934C70F2CAE7A03051367ECBACC6B68E466FC7C88C5CDF419098670CF",
-      "exported_at": "2026-10-17T21:34:47.616596"
+      "export_hash": "B75E52427DDA59AEC4CED02F6BF54E0F3DA4EEE21E931E548DBB4B47604562B3",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "user-prompt.py",
       "purpose": "UserPromptSubmit consolidated hook (constraint-pinning+nudge+memory-retrieval)",
-      "export_hash": "6E809521AC1A69487FC6F1E573287F880878C7FE8EA3D8B3BA7323F7630C17DF",
-      "exported_at": "2026-10-17T21:34:47.616596"
+      "export_hash": "8F938E9138E01E0BAEC5885867E0DA8E1408E04A21C11427CE93C2752C0FC73E",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "validate-mermaid.py",
       "purpose": "Validator — checks Mermaid syntax in wiki diagrams",
-      "export_hash": "8623655B53E7BE095C26CB065AA0774C7340C2A846995BA019862B894173D1E7",
-      "exported_at": "2026-09-08T21:39:22.430865"
+      "export_hash": "7B2FACB7AA35B09B1F84EAE9B4D80E893D05596249349915D2FD4FEAF87300F8",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "validate-refinement-evidence.py",
@@ -866,7 +871,8 @@
     {
       "name": "art-director",
       "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
-      "export_hash": "2266C25008A6EDD10F7BD2876FB389BF01F2B97FC07CC8DEA3A6392AA7F56766"
+      "export_hash": "082E6CDC22662988066BC416EAC30C1E641E5E8D54D72C39C6A783145D2A0BA5",
+      "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "security-auditor",
@@ -886,7 +892,8 @@
     {
       "name": "chief-of-staff",
       "purpose": "Use as the agency pipeline SysAdmin watchdog (Goose tier, node 07); probes tool/inbox environment, applies whitelisted AUTO-FIX, writes docs/07_SysAdmin_Log.md with NOMINAL|DEGRADED|ESCALATE verdict. Never edits specs or code.",
-      "export_hash": "CC07FA2C8DDBB27141227CBA4BD6E3B9A7364C0E33B7A5FD56A5EBC509C8B2EC"
+      "export_hash": "94544A86E9611F024FF7ECD99F8469C841E541DBBF8A10C60F49928E0C133A81",
+      "exported_at": "2026-10-27T15:18:55.679807"
     }
   ]
 }
