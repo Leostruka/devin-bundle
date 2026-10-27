@@ -16,7 +16,8 @@
     "claude": false,
     "copilot": false,
     "opencode": false,
-    "zed": false
+    "zed": false,
+    "cloud": false
   },
   "shell": {
     "setup_complete": true,
@@ -42,7 +43,7 @@
   },
   "keymap": {
     "readbox_input": {
-      "queue_message": "ctrl-alt-j"
+      "queue_message": "ctrl+4"
     }
   }
 }
