@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.11.1] - 2026-10-27
+
+### Fixed
+
+- **`manifest.json` version sync**: bumped `3.10.0` -> `3.11.1` so the release workflow's version gate passes. The `v3.11.0` tag shipped without the manifest bump and its release run failed at `Verify tag ancestry and version sync`; tags `v*` are immutable, so the fix lands as this patch release. All `3.11.0` content ships unchanged in `v3.11.1`.
+
 ## [3.11.0] - 2026-10-27
 
 ### Changed
