@@ -13,10 +13,20 @@ Usage:
 """
 import json
 import os
+import shutil
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PREFIX = 'python scripts/'
+
+
+def hook_python():
+    """On Windows use pythonw so hook spawns don't flash a console window
+    that steals focus; stdout/stderr still flow through inherited pipes.
+    POSIX keeps python (pythonw is a Windows-only binary)."""
+    if os.name == 'nt' and shutil.which('pythonw'):
+        return 'pythonw'
+    return 'python'
 
 
 def render(devin_home):
@@ -29,7 +39,7 @@ def render(devin_home):
             for h in entry.get('hooks', []):
                 cmd = h.get('command', '')
                 if cmd.startswith(PREFIX):
-                    h['command'] = 'python "{}/scripts/{}"'.format(home, cmd[len(PREFIX):])
+                    h['command'] = '{} "{}/scripts/{}"'.format(hook_python(), home, cmd[len(PREFIX):])
     return hooks
 
 
