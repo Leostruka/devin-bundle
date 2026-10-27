@@ -1,6 +1,6 @@
 {
   "name": "devin-bundle",
-  "version": "3.11.1",
+  "version": "3.12.0",
   "description": "Devin CLI bundle: skills I use + consolidated rules. Cross-platform installer. Unified and adapted engineering + productivity skill sets.",
   "rules": {
     "source": "AGENTS.md",
@@ -562,9 +562,34 @@
       "source": "devin-bundle",
       "purpose": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii.rest library (217 MIT pieces, React components, npx CLI, image-to-ascii).",
       "export_hash": "E19BCAFE5AC07742F153952D144517A1AC70FBA06F2BF3435236FE048F867E5C"
+    },
+    {
+      "name": "frontend-design",
+      "source": "devin-bundle",
+      "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view"
+    },
+    {
+      "name": "career-ops",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications"
+    },
+    {
+      "name": "hyperframes",
+      "source": "devin-bundle",
+      "purpose": "Use when turning HTML/data-attribute animations into MP4 video (kinetic text, web-native motion graphics, DOM-driven scenes). Routes to extensions/hyperframes/wrapper.py, a whitelist passthrough to the hyperframes CLI"
+    },
+    {
+      "name": "agent-reach",
+      "source": "devin-bundle",
+      "purpose": "Use when researching trends or public sources across credential-free channels (GitHub, YouTube, Bilibili, V2EX, generic web). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to the agent-reach CLI"
+    },
+    {
+      "name": "tts",
+      "source": "devin-bundle",
+      "purpose": "Use when generating speech, narration, voiceover, or any text-to-speech audio locally. Routes to extensions/voicebox/wrapper.py, an HTTP client for a user-started voicebox backend (jamiepine/voicebox, FastAPI on 127.0.0.1:17493)"
     }
   ],
-  "skill_count": 83,
+  "skill_count": 88,
   "rule_count": 24,
   "scripts": [
     {

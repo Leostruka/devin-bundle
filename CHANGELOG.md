@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.12.0] - 2026-10-27
+
+### Added
+
+- **External-repo integration suite** (Stackademic top-10 analysis, #224, #226, #227, #228, #229): 10 repos evaluated against the bundle; 5 landed as skills/wrappers, 4 already covered (`brag`, `grilling`/`tdd`/`implement`/`triage`, `rea-ops`, `scrape-tools`), 1 rejected (VoiceStudio: AGPL + desktop GUI).
+- **`frontend-design` skill** (#224): port of anthropics/skills `frontend-design` (Apache-2.0); aesthetic direction up front, pairs with `impeccable`.
+- **`career-ops` skill** (#229): port of santifer/career-ops workflow modes (MIT); public-board scan, fit scoring, CV tailoring, tracker under `.devin/scratch/career-ops/`; agent never submits applications.
+- **`hyperframes` extension + skill** (#226): governed wrapper (`extensions/hyperframes/wrapper.py`) for `npx hyperframes` HTML-to-MP4 rendering, whitelisted `doctor`/`init`/`render`; HTML-native alternative to `remotion-render`.
+- **`agent-reach` extension + skill** (#227): governed wrapper for the `agent-reach` JSON CLI, limited to credential-free channels (`github`, `youtube`, `bilibili`, `v2ex`, `web`); cookie channels rejected per bundle credential policy.
+- **`tts` skill + `voicebox` wrapper** (#228): local TTS via the voicebox FastAPI backend (`127.0.0.1:17493`, urllib-only client); completes the local narration pipeline `tts -> asr -> animation-direction`.
+- Contract tests for the three wrappers (25 tests, no network).
+
 ## [3.11.1] - 2026-10-27
 
 ### Fixed
