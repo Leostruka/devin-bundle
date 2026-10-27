@@ -108,6 +108,11 @@ subagent_general, tech-lead, triage-labels. 18 perfis validados.
 - `PermissionRequest`: dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
 - `PreCompact` / `PostCompact` (3000.11.92): disparam antes/depois da compactação; matchers `manual`/`auto`; falhas não bloqueiam. `PostCompaction` segue suportado e é o evento usado por `constraint-pinning.py`.
 
+**Campos de hook novos (3000.11.205):**
+- `fail_closed: true` na entrada do hook: falha do próprio hook bloqueia a ação guardada. Adotado nos dois matchers `PreToolUse` (verificado empiricamente); demais hooks seguem fail-open.
+- `stop: "<reason>"` no output: encerra o turn a partir de qualquer evento (Claude-format `continue: false`/`stopReason` também lido).
+- `hookSpecificOutput.updatedToolOutput` (PostToolUse): reescreve o resultado da tool antes do modelo ler (redaction).
+
 **Scripts manuais (não-hooks):**
 - validate-refinement-evidence.py — verifica refinements.log.jsonl
 - validate-skill-format.py — valida formato de skills
@@ -176,13 +181,30 @@ tools com side effects — não é o agente pedindo, é o runtime.
 | `devin ssh` / `/ssh` | Cloud | Conecta a uma VM Devin Cloud |
 | `devin forward` | Cloud | Port-forward de box cloud → localhost |
 | `/goal <objective>` | REPL | Continua trabalhando no objetivo entre turns até completar/bloquear (pausa aos 50 turns; `resume`/`clear`) |
+| `/rename [title]` | REPL | Renomeia a sessão; sem argumento gera título a partir do contexto (3000.11.205) |
+| `/confetti` | REPL | Animação de celebração (3000.11.205) |
+| `/hooks` | REPL | Lista hooks carregados e o arquivo de origem de cada um |
+| `devin models` | CLI | Lista os modelos disponíveis na conta |
 | `/billing on\|off` | REPL | Liga/desliga provider billing (modelos com `*` no picker cobram via plano do provider) |
 | `Alt+Enter` no `/model` picker | REPL | Troca modelo só na sessão atual (`model_picker.confirm_for_session` rebinda) |
 | `devin rules`, `devin skills`, `devin plugins`, `devin doctor` | Config | Gerência nativa de rules/skills/plugins e diagnóstico |
 
 **Nota 3000.11.1:** bloco `otel` no `config.json` ou `OTEL_EXPORTER_OTLP_*`
-exportam eventos/métricas para um collector OpenTelemetry — não adotado
+exportam eventos/métricas para um collector OpenTelemetry; não adotado
 (sem collector configurado; `devin doctor` já valida o ambiente).
+
+**Notas 3000.11.205/228:**
+- `/loop` e `agent.model_mixture` removidos; usar `/goal`. A skill
+  `scheduled-turns` usa `devin -p`, não afetada.
+- `read_config_from.cloud` (novo): `false` mantém MCPs do Devin Cloud e
+  plugins pessoais fora do CLI. Adotado como `false` no bundle.
+- `DEVIN_SESSION_STORE=files` (experimental): sessões como arquivos p/
+  homes em NFS/SMB. Não adotado (env var).
+- `agent.verbosity`: detalhe do transcript. Não adotado.
+- Permission prompt mostra a regra exata (`Exec(docker build)`), com
+  Allow/Bypass/Deny + duração do grant (`Once`/`Session`/`Project`/`Always`)
+  e `e` para editar o comando.
+- Steering agora interrompe imediatamente preservando comandos longos.
 
 ## Modelos disponíveis (Devin CLI `{{VALIDATED_CLI_VERSION}}`)
 

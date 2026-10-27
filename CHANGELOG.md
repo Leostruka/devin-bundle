@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.11.0] - 2026-10-27
+
+### Changed
+
+- **Devin CLI 3000.11.228 alignment**: `data/bundle-identity.json` and README now validate against `3000.11.228` (installed `053434014dbd`; delta covers `3000.11.205` + `3000.11.228`). New capability table in `.devin/docs/DEVIN-CLI-COMPATIBILITY.md`; `TOOLS-MAP.md` gains `/rename`, `/confetti`, `/hooks`, `devin models` and the new hook fields; `/loop` + `agent.model_mixture` removal noted (bundle unaffected: `scheduled-turns` uses `devin -p`).
+
+### Added
+
+- **`fail_closed: true` on PreToolUse guards** (`hooks.v1.json`): verified empirically that an exit-1 hook lets `exec` through without the flag and blocks it with `Blocked: a required PreToolUse hook failed`. Ships on `pre-exec-guard.py` and `pre-write-guard.py` so a broken gate fails secure; observer hooks stay fail-open.
+- **`read_config_from.cloud: false`** (`config.json`): keeps Devin Cloud MCP servers and personal plugins out of the validated surface, matching the existing `read_config_from` policy; organization-required plugins still load.
+
 ## [3.10.0] - 2026-10-24
 
 ### Added
