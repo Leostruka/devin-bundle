@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.14.0] - 2026-10-27
+
+### Added
+
+- **`drift-report` skill** (#242): port of `egm-drift-report` (google/elephant-goldfish-model, Apache-2.0). Detects design-doc-vs-code drift: missing features, incomplete models, logic shortcuts, architectural divergence. Report-only output `<YYYY-MM-DD>_DRIFT_REPORT.md`; complements `spec-consistency.py` (plan-file internals) with doc-to-code fidelity.
+
+### Fixed
+
+- **Audit drift warnings** (#241): `render_norm()` now normalizes `pythonw` -> `python` (false-positive hooks live-vs-render after the pythonw renderer in #232); `manifest.json` `export_hash` re-synced for 10 scripts + 2 agents stale since #234/#236/#240; README version badge synced with manifest.
+
 ## [3.13.0] - 2026-10-27
 
 ### Added
