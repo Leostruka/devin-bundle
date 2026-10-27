@@ -28,6 +28,12 @@ enter a deliverable: the git commit message.
 """
 import sys, json, re, os, subprocess
 
+_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+
+def _run(*a, **kw):
+    kw.setdefault('creationflags', _CF)
+    return subprocess.run(*a, **kw)
+
 EM_DASH = chr(0x2014)
 SELF_FILE = "no-em-dash.py"
 
@@ -150,7 +156,7 @@ def handle_stop(_data):
         ["git", "diff", "--unified=0"],
     ):
         try:
-            result = subprocess.run(
+            result = _run(
                 args, capture_output=True, timeout=10, cwd=cwd,
                 encoding="utf-8", errors="replace",
             )
@@ -172,7 +178,7 @@ def handle_stop(_data):
 def scan_untracked(cwd):
     """Scan files git diff never lists: new, unstaged-for-add files."""
     try:
-        result = subprocess.run(
+        result = _run(
             ["git", "ls-files", "--others", "--exclude-standard"],
             capture_output=True, timeout=10, cwd=cwd,
             encoding="utf-8", errors="replace",
