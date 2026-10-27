@@ -20,7 +20,7 @@ Five slots, stack-agnostic:
 |---|---|---|
 | Backend | InsForge OSS (Postgres+pgvector, auth, storage, edge functions, realtime, model gateway) | Supabase / plain Postgres+pgvector + functions |
 | Embeddings | EmbeddingGemma 2 (multimodal, 768-dim, text+image same space) | Any text embedder if corpus is text-only |
-| Decision model | Liquid AI d1-3B / Jev-style (Choice/Score/Noul structured judgments, text+image) | LLM-judge with strict JSON schema |
+| Decision model | Laya multilingual (Convai Innovations; 322M BERT-style encoder, Apache 2.0, self-host, free; this bundle already ships `laya-tools`/`layad` and the `implement-laya` skill) | Free/open: Kev 9B, Jeeves 9B, Strands Decider 2B, open-weight d1-3B/d1-omni-600M. Paid optional: Jev or hosted d1/d1-ultra (Choice/Score/Noul API, text+image). Last resort: LLM-judge with strict JSON schema |
 | Generator | Vision-capable LLM through a model gateway, model id in secrets | Any cited-generation capable model |
 | Hosting | One L4 (~7.2 GB both models); SIE for multi-model single-GPU serving | Any GPU host or managed endpoint |
 
