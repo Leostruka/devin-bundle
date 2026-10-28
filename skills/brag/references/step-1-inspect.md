@@ -104,7 +104,7 @@ Write down:
 - Accent/brand color
 - Any gradient or special treatment
 
-These colors are recorded in `composition-brief.md` and carry into the design spec the current hyperframes-creative workflow scaffolds.
+These colors are recorded in `composition-brief.md` and carry into the composition's look (see the bundle's `hyperframes` and `animation-direction` skills for composition and motion guidance).
 
 ## Font extraction
 
@@ -122,4 +122,12 @@ Don't read:
 - Lock files (`package-lock.json`, `yarn.lock`)
 - Test files
 - `.git/`
+- Environment and secret files (`.env`, `.env.*`)
+- Credential and key material (`.pem`, `.key`, `id_rsa`, service-account JSON, anything under a `secrets/` or `credentials/` directory)
+- Local config that commonly holds tokens
+- Any file the project's `.gitignore` excludes for the reasons above
+
+## Rule: nothing secret leaves this step
+
+Everything read in this step can end up on screen in a video the user posts publicly. Never carry secrets, API keys, tokens, internal hostnames or URLs, real customer or user names, email addresses, or any personal data into `brag-plan.md`, `composition-brief.md`, the composition, the rendered video, or share copy. If the product's real UI contains such data, substitute plausible fictional stand-ins and say so in the plan.
 
