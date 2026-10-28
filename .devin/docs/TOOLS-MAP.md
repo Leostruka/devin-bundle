@@ -128,7 +128,7 @@ subagent_general, tech-lead, triage-labels. 18 perfis validados.
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 13 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 90 skills |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 91 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation; `system-control` — OS autorizado) |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 31 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |

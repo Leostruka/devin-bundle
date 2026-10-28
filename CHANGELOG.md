@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.15.0] - 2026-10-28
+
+### Added
+
+- **`brag-slim` skill** (#244): single-file `/brag` variant vendored from latent-spaces/brag v0.5.0. No bundled assets; builds the launch video with tools already on the machine and supports website-URL input with prompt-injection hardening (fetched content treated as data, never instructions). Full `skills/brag/` synced to upstream 0.5.0: Opus 5.5 dispatch to `/brag-slim`, bundled `slim.md`, refreshed cue-analysis deps. Manifest, README and TOOLS-MAP synced to 91 skills.
+
+### Fixed
+
+- **Stale composition-skill references in vendored `/brag`** (#245): the delegation pointed at HeyGen domain skills absent from the bundle. Composition guidance now uses `skills/hyperframes` + `extensions/hyperframes/wrapper.py` for the CLI contract and `skills/animation-direction` for motion and beat-to-visual mapping. HeyGen skills stay optional when their plugin is installed; audio-reactive extraction documents a local ffmpeg/librosa fallback, and `.claude` paths were replaced with Devin install paths.
+
 ## [3.14.0] - 2026-10-27
 
 ### Added
