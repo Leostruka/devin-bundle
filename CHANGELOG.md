@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Devin CLI 3000.11.234 alignment**: `data/bundle-identity.json` and `README.md` now validate against `3000.11.234` (installed `92c83011d113`). Added `3000.11.234` capability table in `.devin/docs/DEVIN-CLI-COMPATIBILITY.md` and synced `.devin/docs/TOOLS-MAP.md` (`--verbosity`/`DEVIN_VERBOSITY`, hook stdin `session_id` + `prompt_id`, `PreToolUse` `hookSpecificOutput.updatedInput`, `keymap` `-`-separated key-spec validation, `devin desktop`, and `agent.verbosity: 3` alignment note).
+- **`agentic-rag` skill production guardrails**: added architecture selector (<200k prompt-cache vs. linear RAG+reranker vs. agentic RAG), 3-context separation table (verbatim recent turns vs. `kind=conversation` user memory vs. `kind=document` corpus so document examples are never attributed to the caller), iron rules against silent rerank/gate fallback (`RERANKING_FAILED` / stage verification) and streamed request deadlines (`CancellationTokenSource` + reasoning `gen_token_budget`), and `hit@1`/`hit@3`/`MRR` + split `p50`/`p95` latency metrics in Gate G5.
+
 ## [3.15.0] - 2026-10-28
 
 ### Added
