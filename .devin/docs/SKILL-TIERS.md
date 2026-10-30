@@ -157,6 +157,21 @@ Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: 
 | `ai-tools` | Ferramentas ML locais offline-first (`abliterator.py`, `prompt_compiler.py`) + playbook de Post-Training, Reasoning Distillation (`s1K`/R1) e RLVR/GRPO — JSON stdout, `--self-test`, sem download. Skill wrapper: `skills/ai-tools/` | Experimentos de interpretabilidade, pós-treinamento, destilação ou RLVR de modelos | `extensions/ai-tools/USAGE.md` |
 | `system-control` | Controle autorizado do OS: inventário de processos/serviços, exec one-shot limitada, sessões persistentes, event streams, cópia de arquivo verificada por hash. Deny-wins + confirmações one-shot; sem daemon privilegiado por default. Skill wrapper: `skills/system-control/` | APIs de sistema em vez de GUI computer-use | `extensions/system-control/USAGE.md` |
 
+## Disciplinas de código e shell (novo, portado)
+
+| Skill | Faz | Quando |
+|---|---|---|
+| `powershell-safe` | Traps do PS 5.1: redirect UTF-16/BOM, read-write mesmo pipe, `$null` apaga, `-LiteralPath` | File I/O via PowerShell, .ps1 |
+| `shell-safe` | Análogo bash: same-file redirect, `rm -rf $VAR` vazio, pipefail, glob, tarbomb | Comandos shell, .sh |
+| `edge-cases` | Enumerar inputs/estados/falhas antes de codar + self-review adversarial | Feature/bugfix, antes de "pronto" |
+| `dead-wire` | Auditoria de feature morta: botão sem destino, evento sem ouvinte, flag sem write path | Auditoria de completude |
+| `github-actions` | Segurança CI: SHA pinning, `pull_request_target`, script injection, OIDC | Editar/revisar workflows |
+| `webhooks` | Assinatura HMAC, idempotência por event_id, fast-ack + fila | Endpoint de callback de terceiro |
+| `typescript-node` | Strict TS, async footguns, ESM/CJS, npm hygiene | Código TS/Node |
+| `binary-triage` | Evidência de binário fechado sem Ghidra: strings, exports, getters, ctypes | Comparar builds/engines de libs |
+| `ghidra` | RE headless de firmware raw (Thumb/TMode, seeds Capstone) | Firmware `.bin` sem símbolos |
+| `dma` | Pentest/recon orquestrado com scope contract + tools stdlib (`/dma`) | Pentest em alvo autorizado |
+
 ## Outros
 
 | Skill | Faz | Tok | Quando |
