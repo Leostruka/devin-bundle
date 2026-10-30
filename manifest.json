@@ -602,9 +602,89 @@
       "name": "brag-slim",
       "source": "devin-bundle",
       "purpose": "Turn a project directory or a website URL into a short, shareable launch video with music, motion, and share copy. One file, no bundled assets — built entirely by the model with the tools already on the machine. Use when someone says \"/brag-slim\", \"let's /brag about this\", \"brag about a website\", \"make a launch video\", or wants to show off what they built. If the /brag skill is also installed, let /brag handle those phrases; it hands off here on Opus 5.5."
+    },
+    {
+      "name": "powershell-safe",
+      "source": "devin-bundle",
+      "purpose": "Use whenever running powershell.exe/pwsh, writing .ps1 scripts, or doing file I/O via shell on Windows. Prevents blanked files, encoding corruption, and accidental deletion: read-modify-write pipeline trap, UTF-16/BOM redirection pitfalls, JSON depth truncation, dangerous aliases, empty-variable deletes, verify-after-write discipline.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\powershell-safe",
+      "export_hash": "89133A0CB4C112EE321026500BBDFCCF8FE247935638FDC3BEB8387E343458D4",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "shell-safe",
+      "source": "devin-bundle",
+      "purpose": "Use whenever running shell commands or writing .sh/.bash scripts. Prevents blanked files, wrong-directory deletes, and silent failures: same-file redirect truncation, empty-variable rm -rf, unquoted expansion, pipe exit-code swallowing, cd-then-delete traps, sed -i portability, tarbombs, verify-after-write discipline.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\shell-safe",
+      "export_hash": "15E307A284447CF4DAE4659590B22261826DDCD1E7476676D6269ABB0479528E",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "edge-cases",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing a feature or bugfix, and before declaring done. Enumerate inputs/states/failure modes before coding, defend boundaries while coding, adversarially self-review the diff after. Prevents happy-path-only code.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\edge-cases",
+      "export_hash": "C00C463C3F8CBD52498C5FEF67D70014E4B950351CEFCEA905E890A5435950FB",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "dead-wire",
+      "source": "devin-bundle",
+      "purpose": "Use when running completeness audits, before declaring \"it works\", or when something looks too implemented to be true. Hunts cut wires: features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\dead-wire",
+      "export_hash": "2C83D1277618F03BD8C00D42AC92053A7A8C5FB7E40C0CFAC64988864570D505",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "github-actions",
+      "source": "devin-bundle",
+      "purpose": "Use when writing or reviewing .github/workflows YAML files or debugging CI. GitHub Actions security and best practices - SHA-pinned actions, least-privilege permissions, script injection via PR context, pull_request_target dangers, secrets and OIDC, cache poisoning, matrix and artifacts.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\github-actions",
+      "export_hash": "517D476745BFA0F90A4D73EDD333EB60D265BE853CB09D22178AD8D8024125EE",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "webhooks",
+      "source": "devin-bundle",
+      "purpose": "Use when building or debugging endpoints that receive third-party callbacks (payments, GitHub, ERP). Webhook receiver discipline - signature verification, idempotency by event id, fast acknowledge with background processing, replay protection.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\webhooks",
+      "export_hash": "A0106239D14DB5DACB8F6E698DA058CC8E357C6596ECA7DB1F5920FBB56CEB94",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "typescript-node",
+      "source": "devin-bundle",
+      "purpose": "Use when writing or reviewing TypeScript or Node.js code. Strict mode, async/await footguns, error handling, null safety, real types vs any, ESM/CJS interop, npm hygiene (engines, lockfile, scripts, ci).",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\typescript-node",
+      "export_hash": "C746C5689B1E7C6288337BAFC3C30C3F89807439CC24B1C9D43219EC4A0C77E5",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "binary-triage",
+      "source": "devin-bundle",
+      "purpose": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers in minutes what would take hours in Ghidra; escalate to re-binary/Ghidra only when static triage cannot close the question.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\binary-triage",
+      "export_hash": "C863C5D39E899463C5D9F159597AA0152122B3E436DE4886C9510645B1D5C45D",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "ghidra",
+      "source": "devin-bundle",
+      "purpose": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output + xrefs for offline study via Ghidra headless.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ghidra",
+      "export_hash": "986E41C707B6764C486F271B4A172DB18061D57B8893D04BABA106A22A195CAA",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "dma",
+      "source": "devin-bundle",
+      "purpose": "Use when the user invokes /dma or asks for a pentest, offensive recon, or aggressive audit on an authorized target. Dirty-work pentest agent and recon orchestrator - closes a scope contract with the user, classifies the target type, runs passive/static collection and surface mining, confirms vectors with minimal read-only probes inside the allowlist, and escalates deep testing via web-probe. Every invasive action requires explicit per-batch approval.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\dma",
+      "export_hash": "193FB3C628BBAB0DCB833B0C04F40E3CBD0B3F89F818AFB2469C4FE75CDA6D4E",
+      "exported_at": "2026-10-30T14:43:55.745135"
     }
   ],
-  "skill_count": 91,
+  "skill_count": 101,
   "rule_count": 24,
   "scripts": [
     {

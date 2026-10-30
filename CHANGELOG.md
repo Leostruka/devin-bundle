@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **10 skills ported and adapted from the parallel Fingertech Devin install** (`\\192.168.1.67` survey): `powershell-safe`, `shell-safe`, `edge-cases`, `dead-wire`, `github-actions`, `webhooks`, `typescript-node`, `binary-triage`, `ghidra`, and `dma` (with `tools/` stdlib recon/probe suite, artifacts path adapted to `.devin/scratch/dma/`). Cascades rewired to bundle skills (`testing`, `security`, `web-probe`, `re-binary`, `debugging`, `research`, `git-workflows`). Skill count 91 -> 101.
+
 ## [3.16.0] - 2026-10-30
 
 ### Changed
