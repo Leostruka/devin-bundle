@@ -5,7 +5,7 @@
 [![Skills](https://img.shields.io/badge/skills-91-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
-[![Version](https://img.shields.io/badge/version-3.15.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.16.0-orange.svg)](CHANGELOG.md)
 
 Ecossistema versionado para o Devin CLI. O bundle sincroniza entre máquinas as regras, skills, perfis de subagentes, hooks, scripts, configuração e metadados que governam todo o ciclo de trabalho: da ideia ao planejamento, implementação, revisão, memória e entrega.
 
@@ -38,7 +38,7 @@ Depois da instalação, abra o Devin CLI no repositório em que deseja trabalhar
 | Git | Versionamento, branches e worktrees | `git --version` |
 | Windows, Linux, macOS ou WSL | Ambiente suportado | — |
 
-A versão validada do Devin CLI é `3000.11.228`. Consulte [.devin/docs/DEVIN-CLI-COMPATIBILITY.md](.devin/docs/DEVIN-CLI-COMPATIBILITY.md).
+A versão validada do Devin CLI é `3000.11.234`. Consulte [.devin/docs/DEVIN-CLI-COMPATIBILITY.md](.devin/docs/DEVIN-CLI-COMPATIBILITY.md).
 
 ## Como o ecossistema funciona
 

@@ -110,6 +110,19 @@ Capabilities introduced in `3000.11.205` and `3000.11.228` that interact with bu
 | Session privacy on `devin --cloud`/Desktop connect; `local_exec` credential-path approval without `~`; hook matcher list-of-strings; MCP `server/discover` tolerance; interrupt during MCP connect | adopted (passive) | Security/reliability fixes aligned with the bundle's threat model. |
 | `3000.11.228`: session DB partial-migration repair on startup; inline-image (sixel/iTerm2/kitty) crash fix | adopted (passive) | Upstream reliability fixes; no bundle workarounds existed. |
 
+## 3000.11.234 capabilities (verified 2026-10-30, CLI 3000.11.234)
+
+Capabilities and runtime contracts verified in `3000.11.234` (`92c83011d113`) since `3000.11.228`:
+
+| Capability | Decision | Rationale |
+|---|---|---|
+| `--verbosity <0..3>` CLI flag / `DEVIN_VERBOSITY` env var | documented | Per-run override for `agent.verbosity` (`0` quiet, `1` compact, `2` detailed, `3` verbose). Bundle `config.json` keeps `"verbosity": 3` as the persistent default. |
+| Hook stdin correlation IDs (`session_id`, `prompt_id`) | adopted (passive) | Every hook stdin payload carries a session-wide `session_id` and a per-turn `prompt_id` (rotated on each `UserPromptSubmit`; absent before the first user prompt, e.g. `SessionStart`). Available for `_hookrun.py`, ledger correlation, and per-turn caching without extra state files. |
+| `PreToolUse` `hookSpecificOutput.updatedInput` | documented | Merges rewritten arguments into `tool_input` before tool execution (e.g. wrapping `exec` commands). Bundle guards currently block or allow without mutating arguments; reserved for transparent command wrappers. |
+| `keymap` strict `-`-separated key-spec validation at startup | adopted | Modifiers use `-` (`ctrl-4`, `ctrl-shift-k`); unknown contexts/actions, malformed specs, or intra-context collisions emit startup warnings and fall back to built-in defaults (`global.cancel` `Ctrl+C` cannot be unbound). Aligned in `config.json` (`"queue_message": "ctrl-4"`). |
+| `devin desktop [ARGS]...` subcommand and positional `[PATH]...` | adopted (docs) | Launches Devin Desktop matching the CLI channel and forwards path arguments. Mapped in `TOOLS-MAP.md`. |
+| `devin acp --agent-type <summarizer\|review>` and `--refusal-fallback <MODEL>` | not adopted | ACP-specific flags (`DEVIN_REFUSAL_FALLBACK` env var remains outside `config.json`). |
+
 ## Model policy
 
 `config.json` reads the primary model from `BUNDLE_DEFAULT_MODEL` (with `data/bundle-models.json` as the canonical registry). `devin models list` for the validated CLI reports the current free and paid models; the bundle's free-primary policy is enforced by choosing a `cost_tier: free` entry as the parent and matching subagent models from `data/bundle-models.json`.
@@ -145,7 +158,7 @@ The ten supported events are:
 
 Blocking `PreToolUse` hooks return exit code 2 and a top-level JSON decision containing `decision: block` and a reason. Since recent CLI releases, a blocked call reports its reason while the turn and sibling calls continue.
 
-Since `3000.11.205`, a hook entry can set `fail_closed: true` to block the guarded action when the hook itself fails to run; the bundle ships it on the two `PreToolUse` guard matchers only (verified empirically). `stop: "<reason>"` in hook output ends the turn from any event, and `PostToolUse` `hookSpecificOutput.updatedToolOutput` rewrites the tool result before the model reads it.
+Since `3000.11.205`, a hook entry can set `fail_closed: true` to block the guarded action when the hook itself fails to run; the bundle ships it on the two `PreToolUse` guard matchers only (verified empirically). `stop: "<reason>"` in hook output ends the turn from any event, `PreToolUse` `hookSpecificOutput.updatedInput` merges rewritten arguments before execution, and `PostToolUse` `hookSpecificOutput.updatedToolOutput` rewrites the tool result before the model reads it. Every hook stdin payload also includes `session_id` (session-stable) and `prompt_id` (rotated per user prompt; absent on `SessionStart`).
 
 `memory-stop.py` accepts both `Stop` and `SessionEnd`; it consumes `SessionEnd.reason` without blocking. Stop handlers tolerate `last_assistant_message` without parsing transcripts.
 

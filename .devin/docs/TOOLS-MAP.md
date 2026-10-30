@@ -108,10 +108,12 @@ subagent_general, tech-lead, triage-labels. 18 perfis validados.
 - `PermissionRequest`: dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
 - `PreCompact` / `PostCompact` (3000.11.92): disparam antes/depois da compactação; matchers `manual`/`auto`; falhas não bloqueiam. `PostCompaction` segue suportado e é o evento usado por `constraint-pinning.py`.
 
-**Campos de hook novos (3000.11.205):**
+**Campos de hook novos (3000.11.205 / 3000.11.234):**
 - `fail_closed: true` na entrada do hook: falha do próprio hook bloqueia a ação guardada. Adotado nos dois matchers `PreToolUse` (verificado empiricamente); demais hooks seguem fail-open.
 - `stop: "<reason>"` no output: encerra o turn a partir de qualquer evento (Claude-format `continue: false`/`stopReason` também lido).
+- `hookSpecificOutput.updatedInput` (PreToolUse): mescla argumentos reescritos antes da execução da tool.
 - `hookSpecificOutput.updatedToolOutput` (PostToolUse): reescreve o resultado da tool antes do modelo ler (redaction).
+- `session_id` e `prompt_id` no stdin de todos os eventos (`prompt_id` rotaciona a cada prompt do usuário e fica ausente antes do primeiro prompt, ex.: `SessionStart`).
 
 **Scripts manuais (não-hooks):**
 - validate-refinement-evidence.py — verifica refinements.log.jsonl
@@ -185,6 +187,8 @@ tools com side effects — não é o agente pedindo, é o runtime.
 | `/confetti` | REPL | Animação de celebração (3000.11.205) |
 | `/hooks` | REPL | Lista hooks carregados e o arquivo de origem de cada um |
 | `devin models` | CLI | Lista os modelos disponíveis na conta |
+| `devin desktop [ARGS]...` | CLI | Abre o Devin Desktop correspondente ao canal do CLI |
+| `--verbosity <0..3>` (`DEVIN_VERBOSITY`) | CLI flag | Sobrescreve `agent.verbosity` apenas na execução atual (`0` quiet .. `3` verbose) |
 | `/billing on\|off` | REPL | Liga/desliga provider billing (modelos com `*` no picker cobram via plano do provider) |
 | `Alt+Enter` no `/model` picker | REPL | Troca modelo só na sessão atual (`model_picker.confirm_for_session` rebinda) |
 | `devin rules`, `devin skills`, `devin plugins`, `devin doctor` | Config | Gerência nativa de rules/skills/plugins e diagnóstico |
@@ -193,14 +197,15 @@ tools com side effects — não é o agente pedindo, é o runtime.
 exportam eventos/métricas para um collector OpenTelemetry; não adotado
 (sem collector configurado; `devin doctor` já valida o ambiente).
 
-**Notas 3000.11.205/228:**
+**Notas 3000.11.205/228/234:**
 - `/loop` e `agent.model_mixture` removidos; usar `/goal`. A skill
   `scheduled-turns` usa `devin -p`, não afetada.
 - `read_config_from.cloud` (novo): `false` mantém MCPs do Devin Cloud e
   plugins pessoais fora do CLI. Adotado como `false` no bundle.
 - `DEVIN_SESSION_STORE=files` (experimental): sessões como arquivos p/
   homes em NFS/SMB. Não adotado (env var).
-- `agent.verbosity`: detalhe do transcript. Não adotado.
+- `agent.verbosity`: detalhe do transcript (`0..3`). Adotado como `3` em `config.json` (restaura cards completos); `--verbosity` / `DEVIN_VERBOSITY` sobrescreve por sessão (3000.11.234).
+- `keymap`: modificadores separados por `-` (`ctrl-4`); validação no startup alerta conflitos/chaves inválidas e reverte para o default.
 - Permission prompt mostra a regra exata (`Exec(docker build)`), com
   Allow/Bypass/Deny + duração do grant (`Once`/`Session`/`Project`/`Always`)
   e `e` para editar o comando.

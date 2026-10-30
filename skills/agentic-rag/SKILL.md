@@ -24,6 +24,24 @@ Five slots, stack-agnostic:
 | Generator | Vision-capable LLM through a model gateway, model id in secrets | Any cited-generation capable model |
 | Hosting | One L4 (~7.2 GB both models); SIE for multi-model single-GPU serving | Any GPU host or managed endpoint |
 
+## Architecture selector (when to use what)
+
+| Corpus & workload | Pattern | Why |
+|---|---|---|
+| Static corpus <200k tokens (~500 pages), low churn | Prompt context + prompt caching (no RAG) | Zero retrieval infra or chunk-boundary loss |
+| Single-source docs + per-user chat history | Linear RAG + cross-encoder reranker | One vector search (top-20) + reranker (`max_results = 5`); predictable latency |
+| High-stakes Q&A, multi-source (docs/SQL/API), support desk | **Agentic RAG (this playbook)** | Decision gate blocks ungrounded generation, allows 1 wider retry, and escalates to human with feedback loop |
+
+## Context separation (Conversation vs. Memory vs. RAG)
+
+Keep the three context sources distinct in storage metadata and in the generator system prompt:
+
+| Pattern | What it stores | Metadata / scope | Prompt rule |
+|---|---|---|---|
+| Conversation storage | Last $N$ verbatim turns (e.g. 6) | Passed in `Context` array | Resolves follow-ups ("how do I do that in Docker?") that lack semantic overlap |
+| Long-term user memory | Earlier turns or extracted user facts | `kind = conversation`, `user_id` from auth principal | Attribute to the user only when `kind = conversation` |
+| External knowledge (RAG) | Shared corpus chunks + page PNGs | `kind = document`, `title`, `url`, `page` | Technical facts only; never attribute document examples to the caller |
+
 ## Iron rules
 
 1. Never call the generation model when the gate fails. Escalation is a
@@ -40,8 +58,10 @@ Five slots, stack-agnostic:
    loop.
 7. Human actions stay human: reps write replies, customer receives email.
    "Save to knowledge" re-indexes the Q&A pair as a new chunk.
-8. Tenant isolation via RLS (per company/team) is part of the data model,
-   not an app-level afterthought.
+8. Tenant and user isolation via RLS / authenticated principal (`ClaimsPrincipal` / JWT):
+   never accept `user_id` or `session_id` from the request body, and escape or parameterize all metadata filters.
+9. No silent rerank or gate fallback: inspect stream status events (`RERANKING_FAILED`, `SUMMARIZATION_FAILED`) and verify the `rerank`/`gate` stage actually ran; enforce `max_results` cut even when reranking is off.
+10. End-to-end stream deadline and reasoning token budget: `HttpClient.Timeout` only covers response headers on streamed replies; link a request-wide deadline across history load + stream read + turn store, and size `gen_token_budget` (e.g. >=2048) so reasoning models do not exhaust budget on thinking tokens.
 
 ## Phase route
 
@@ -49,10 +69,10 @@ Five slots, stack-agnostic:
 |---|---|---|
 | P0 | Intake | Corpus shape (docs, pages, languages), tenancy model, answer channels, threshold starting values, human-review SLA defined in `.devin` notes or issue. |
 | G1 | Data model | Tables for documents, chunks (vector dim per embedder), conversations, tickets, decision_log, thresholds; tenant-scoped RLS verified with two-tenant test. |
-| G2 | Index pipeline | Upload -> storage -> job -> per-page text chunks + page PNG -> embed both -> persist with page tags; progress events stream to dashboard; 20-page PDF indexes in <1 min. |
-| G3 | Query pipeline + gate | Embed question (+attached image) -> dual search (text, image) -> merge by page -> decision model rerank+answerability -> thresholds -> answer w/ citations OR one wider retry OR ticket. Gate unit-tested above/below threshold. |
+| G2 | Index pipeline | Upload -> storage -> job -> per-page text chunks + page PNG -> embed both -> persist with page tags; deterministic doc IDs + async ingestion status polling (`COMPLETED`/`FAILED`); 20-page PDF indexes in <1 min. |
+| G3 | Query pipeline + gate | Embed question (+attached image) -> dual search (text, image) -> merge by page -> decision model rerank+answerability -> thresholds -> answer w/ citations OR one wider retry OR ticket. Gate unit-tested above/below threshold and on stage failure. |
 | G4 | Human loop | Ticket appears realtime with question + rejected candidates + scores; rep reply emails customer; save-to-knowledge re-indexes. |
-| G5 | Eval | Held-out Q&A set: gate precision/recall, citation correctness, escalation rate reported; thresholds tuned from data. |
+| G5 | Eval | Held-out Q&A set: retrieval ranking (`hit@1`, `hit@3`, `MRR`), gate precision/recall, citation correctness, escalation rate, and split `p50`/`p95` latency (retrieval vs. rerank/gate vs. LLM generation) reported; thresholds tuned from data. |
 
 ## Acceptance criteria
 
