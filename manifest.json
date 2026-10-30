@@ -363,8 +363,8 @@
     {
       "name": "ai-tools",
       "source": "devin-bundle",
-      "purpose": "Use when running local, offline-first ML tooling — mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache, or when adding self-contained model experiments that print JSON and never download anything.",
-      "export_hash": "BD8633350EE91EE73D033826F4E8043C9FA7F91D6A3797EB627BB370F6F3917B"
+      "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
+      "export_hash": "E7ED3C58C8699F74E41811C9491969BE511383B606580C24E995111758957760"
     },
     {
       "name": "scan",
