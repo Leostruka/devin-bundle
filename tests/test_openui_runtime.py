@@ -212,6 +212,7 @@ def test_semantic_json_projection():
 
 
 def test_tokenizer_benchmark_dsl_beats_json(tmp_path):
+    pytest.importorskip("tokenizers")
     tok, meta = ui_dsl.load_tokenizer()
     src = FIXTURE.read_text()
     doc = ui_dsl.parse(src)
@@ -244,6 +245,7 @@ def test_cli_parse_render_roundtrip(tmp_path):
 
 
 def test_cli_benchmark(tmp_path, capsys):
+    pytest.importorskip("tokenizers")
     res = tmp_path / "res.json"
     assert ui_dsl.main(["benchmark", "--fixture", str(FIXTURE),
                         "--output", str(res)]) == 0
@@ -330,6 +332,7 @@ def test_cli_bounded_input_and_no_clobber(tmp_path, monkeypatch):
 
 
 def test_benchmark_local_tokenizer_artifact(tmp_path):
+    pytest.importorskip("tokenizers")
     import hashlib
     tok, _ = ui_dsl.load_tokenizer()
     p = tmp_path / "tok.json"
