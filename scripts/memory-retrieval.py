@@ -95,7 +95,12 @@ def main():
     for p in glob.glob(os.path.join(BASE, '**', '*.md'), recursive=True):
         if p.endswith('MOC.md'):
             continue
-        notes.append(load_note(p))
+        try:
+            notes.append(load_note(p))
+        except (OSError, ValueError) as e:
+            # one unreadable note must not silence all retrieval
+            print(f"memory-retrieval: skipping unreadable note "
+                  f"{os.path.basename(p)}: {e}", file=sys.stderr)
 
     scored = [(score(n, prompt), n) for n in notes]
     scored = [(s, n) for s, n in scored if s > 0]

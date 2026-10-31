@@ -1,0 +1,42 @@
+{
+  ".devin/research/LAYA_MASTER_ARCHITECTURE.md": [
+    "tests/validation/test_jev_runtime_contracts.py::test_compact_gate_assist_floor_is_025",
+    "tests/validation/test_jev_runtime_contracts.py::test_compact_gate_deterministic_bands_unchanged",
+    "tests/validation/test_jev_runtime_contracts.py::test_skill_picker_lexical_hints_capped_at_3",
+    "tests/validation/test_jev_runtime_contracts.py::test_review_gate_cannot_authorize",
+    "tests/validation/test_jev_runtime_contracts.py::test_dom_picker_stale_abstains",
+    "tests/validation/test_egm_upgrade_contract.py::test_laya_rollout_is_distinct_from_current_runtime"
+  ],
+  ".devin/laya/profile.json": [
+    "tests/validation/test_egm_upgrade_contract.py::test_laya_rollout_is_distinct_from_current_runtime"
+  ],
+  ".devin/rts/openui-lang.md": [
+    "tests/validation/test_jev_runtime_contracts.py::test_ui_dsl_stream_and_parser_bounded",
+    "tests/validation/test_jev_runtime_contracts.py::test_ui_dsl_render_has_no_handler_injection",
+    "tests/validation/test_egm_upgrade_contract.py::test_openui_example_has_balanced_blocks_and_parseable_attributes"
+  ],
+  ".devin/sdd/goldfish-review.md": [
+    "tests/validation/test_egm_upgrade_contract.py::test_goldfish_requires_zoom_out_and_no_history",
+    "tests/validation/test_egm_upgrade_contract.py::test_drift_audit_reuses_existing_skill"
+  ],
+  ".devin/scratch/egm-laya-bitnet-upgrade/spec.md": [
+    "tests/validation/test_egm_upgrade_contract.py::test_spec_separates_documentation_from_runtime_acceptance"
+  ],
+  ".devin/scratch/egm-laya-bitnet-upgrade/issues/01-goldfish-review.md": [
+    "tests/validation/test_egm_upgrade_contract.py::test_goldfish_requires_zoom_out_and_no_history",
+    "tests/validation/test_egm_upgrade_contract.py::test_drift_audit_reuses_existing_skill"
+  ],
+  ".devin/scratch/egm-laya-bitnet-upgrade/issues/02-openui-lang.md": [
+    "tests/validation/test_egm_upgrade_contract.py::test_openui_example_has_balanced_blocks_and_parseable_attributes",
+    "tests/validation/test_jev_runtime_contracts.py::test_ui_dsl_render_has_no_handler_injection"
+  ],
+  ".devin/scratch/egm-laya-bitnet-upgrade/issues/03-katana-camera-blocking.md": [
+    "tests/validation/test_egm_upgrade_contract.py::test_camera_addenda_reference_existing_owner"
+  ],
+  ".devin/scratch/egm-laya-bitnet-upgrade/issues/04-laya-jev-rollout.md": [
+    "tests/validation/test_jev_runtime_contracts.py::test_compact_gate_assist_floor_is_025",
+    "tests/validation/test_jev_runtime_contracts.py::test_review_gate_cannot_authorize",
+    "tests/validation/test_jev_runtime_contracts.py::test_dom_picker_stale_abstains",
+    "tests/validation/test_jev_runtime_contracts.py::test_doc_coverage_map_targets_are_real"
+  ]
+}

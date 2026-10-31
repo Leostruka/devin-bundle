@@ -762,7 +762,7 @@
     {
       "name": "memory-retrieval.py",
       "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes",
-      "export_hash": "3B9C84228C9CE0A4FD4BE4990D55FD9B2F2C9B187C25E504A40E7BEDE036BD7D",
+      "export_hash": "1E25E3078AAD5110BD857F02DA796D8CA28D5C3A3B81E429F30CA1BED958A73E",
       "exported_at": "2026-09-08T21:39:22.431296"
     },
     {
@@ -834,7 +834,7 @@
     {
       "name": "user-prompt.py",
       "purpose": "UserPromptSubmit consolidated hook (constraint-pinning+nudge+memory-retrieval)",
-      "export_hash": "8F938E9138E01E0BAEC5885867E0DA8E1408E04A21C11427CE93C2752C0FC73E",
+      "export_hash": "38EC889E5AF03A618649B7D2143BADB59539D87E5D0ADD312604E6C3D3059EAE",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -876,11 +876,17 @@
     {
       "name": "compact-gate.py",
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
-      "export_hash": "1F70BE9FE953D367E355C940630FE1AFD062CACFBC07D68F6A16047035DCB656",
-      "exported_at": "2026-10-10T15:45:25.322611"
+      "export_hash": "06248B2AE2A308FCF5B5F677A1891719887736D74B913302E2304CA505267EAB",
+      "exported_at": "2026-10-31T00:00:00.000000"
+    },
+    {
+      "name": "skill-picker.py",
+      "purpose": "UserPromptSubmit child (JEV-2) — lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
+      "export_hash": "723A6E8BCE7A4019864A3C44D41810679393823AADDB9B5D78B2E6BC9C36A101",
+      "exported_at": "2026-10-31T00:00:00.000000"
     }
   ],
-  "script_count": 31,
+  "script_count": 32,
   "mcp_count": 1,
   "agent_count": 14,
   "tool_count": 28,
@@ -933,7 +939,7 @@
       "name": "reviewer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\reviewer.md",
-      "export_hash": "08CE79F40D571F84AFABD6BCAFBA543767C516834B1BA90AD3BAC3A9F2CD13B4",
+      "export_hash": "6279D2ABD3357BBF28650C3DF3D0C4A082EAA3F4D4D71966AC7DC27B111A8EF8",
       "exported_at": "2026-09-08T21:39:22.432096"
     },
     {
@@ -977,7 +983,7 @@
     {
       "name": "chief-of-staff",
       "purpose": "Use as the agency pipeline SysAdmin watchdog (Goose tier, node 07); probes tool/inbox environment, applies whitelisted AUTO-FIX, writes docs/07_SysAdmin_Log.md with NOMINAL|DEGRADED|ESCALATE verdict. Never edits specs or code.",
-      "export_hash": "CC07FA2C8DDBB27141227CBA4BD6E3B9A7364C0E33B7A5FD56A5EBC509C8B2EC",
+      "export_hash": "94544A86E9611F024FF7ECD99F8469C841E541DBBF8A10C60F49928E0C133A81",
       "exported_at": "2026-10-27T15:18:55.679807"
     }
   ]

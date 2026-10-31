@@ -38,9 +38,12 @@
 
 ## 5. Error Handling
 
-- **Error model:** hooks fail-open (exit 0) on parse/runtime errors; install
-  scripts warn non-blocking and continue; agent-facing blocks use
-  `{"decision": "block", "reason": ...}` + exit 2.
+- **Error model:** informational hooks fail-open (exit 0) on parse/runtime
+  errors. Security guards `pre-exec-guard.py` and `pre-write-guard.py` retain
+  `fail_closed: true` in `hooks.v1.json`; guard failure blocks the action.
+  Laya daemon unavailability preserves the deterministic policy, never
+  overrides a block. Install scripts warn non-blocking and continue;
+  agent-facing blocks use `{"decision": "block", "reason": ...}` + exit 2.
 - **Logging:** stderr for warnings; stdout reserved for hook JSON decisions
   and installer status; never print secrets.
 - **Boundaries:** errors caught at script top level; hook gate checks each

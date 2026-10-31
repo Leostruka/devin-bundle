@@ -30,7 +30,7 @@ O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bun
 
 1. **Raciocínio nativo**: SWE-2 planeja e raciocina sem instruções de
    chain-of-thought. Prompts, skills e profiles declaram O QUE deve ser feito
-   e os critérios de aceitação — nunca COMO raciocinar ("pense passo a passo",
+   e os critérios de aceitação, nunca COMO raciocinar ("pense passó a passo",
    "planeje antes de agir" são anti-padrões).
 
 2. **Tool-use nativo**: o modelo decide quando invocar ferramentas durante
@@ -239,26 +239,82 @@ Para jobs em lote de validação held-out (Rule 15), não para o loop do agente:
 - **Nunca** enviar código proprietário sensível: só fixtures, manifests e
   corpus público/anônimo. Não é path do agente online; sem daemon, sem hook.
 
+Entry point implementado: `extensions/ai-tools/vllm_tpu_runner.py` -
+dois caminhos, ambos honestos quanto a hardware:
+
+- `run_tpu_batch(entries, model, ...)`: batch finito sobre manifest
+  congelado validado por `heldout_batch.load_manifest` (bytes verificados
+  vinculados no load), usando a API offline do vLLM
+  (`from vllm import LLM, SamplingParams`; `llm.generate(prompts, sp)`).
+  jax/vllm importados lazy; sem TPU retorna `backend_unavailable` real,
+  nunca mock.
+- `serve(model, ...)`: `vllm serve` sempre bound a `127.0.0.1` em porta
+  limitada (1024-65535) - o default upstream é um listener publico sem
+  auth, inaceitável; `--host`, `--port`, `--api-key`, origins/methods/
+  headers em `extra_flags` são rejeitados.
+
+Não submete cloud jobs nem cria VMs TPU. Nenhum hardware TPU foi testado
+neste bundle - `--check-only` é o modo seguro.
+
 ### Local CPU-first: bitnet.cpp (1.58-bit)
 
 `microsoft/BitNet` (`bitnet.cpp`) roda LLMs ternários 1.58-bit 100% em
-CPU/RAM, sem consumir VRAM. Candidato como motor local para:
+CPU/RAM, sem consumir VRAM. Implementado:
 
-- `laya-tools` / decisões tipadas leves quando o snapshot dedicado não
-  estiver disponível (mantém o contrato `suggestion`/`abstain` inalterado).
-- Subagentes leves offline futuros (classificação, triagem, filebool).
+- `extensions/ai-tools/bitnet_adapter.py`: subprocess do `llama-cli`
+  compilado com `-ngl 0` (CPU puro), contrato upstream de
+  `run_inference.py`. `run()` nunca levanta exceção - binary/GGUF ausente
+  retorna `backend_unavailable`; saída passa por `_clean_output` (extrai
+  só a cauda após o echo `> <prompt>`, remove o footer de timing do
+  llama-cli); captura em UTF-8 com `errors="replace"`; em Windows recusa
+  backend `.bat`/`.cmd` (batch roda via cmd.exe mesmo com shell=False -
+  só executável nativo); `extra_flags` não pode sobrepor contrato
+  CPU/modelo/prompt nem buscar remoto. `suggest()` devolve
+  `{"type": "suggestion"|"abstain", "authority": false}` so quando o
+  `choice` parseado é um candidate id valido. `--self-test` roda checagens
+  de contrato offline.
+- `extensions/ai-tools/heldout_batch.py`: batch runner sobre manifest
+  congelado - `load_manifest` valida tipo dos campos, split `heldout`,
+  sources `public`/`synthetic`, paths sensiveis, escape de root, tamanho
+  por entrada (<=8192 B), sha256 e vincula os bytes verificados na entrada
+  (`_data`); arquivo adulterado após o load não executa sob hash stale.
+  Limites: `MAX_ENTRIES=1024`, `max_jobs=64`, manifest <=4 MiB. CLI exige
+  `--binary` + `--model` reais. Records deterministicos (sha256 de
+  input/output, sem timestamps). Nunca importado por hooks.
+- Runtime caches ficam FORA do repo, em
+  `C:/Users/leand/AppData/Local/devin-cache/egm-runtime-install/`
+  (binary + GGUF) e `.../openui-browser/`. O antigo
+  `.devin/scratch/egm-runtime-install/smoke.json` é histórico superseded.
+- Evidência real: `devin-cache/egm-runtime-install/cli_proof2.json` - run
+  nativo real do llama-cli retornou `ok: true` com output limpo, mas a
+  completion estava semanticamente errada: o pipeline executa, a
+  qualidade do modelo NÃO está estabelecida.
 
-Avaliação pendente: latência e qualidade de decisão tipada vs snapshot Laya
-atual, medidos em held-out (G5) antes de qualquer adoção. Fora do caminho
-crítico: hooks stdlib-only não podem depender dele.
+Candidato como motor local para `laya-tools` / decisões tipadas leves quando
+o snapshot dedicado não estiver disponível (mantém o contrato
+`suggestion`/`abstain` inalterado). Avaliação pendente: latência e qualidade
+de decisão tipada vs snapshot Laya atual, medidos em held-out (G5) antes de
+qualquer adoção. Fora do caminho crítico: hooks stdlib-only não podem
+depender dele. Nenhuma adoção está feita: o adapter existe, nenhum perfil
+Laya o consome ainda.
 
 ### Lookup / Expert Offloading (VRAM + System RAM)
 
 Padrão para modelos grandes em hardware limitado: hot path (atenção, experts
 ativos) em VRAM, pesos frios (experts inativos, embeddings de lookup) em
-system RAM. Aplicável se um modelo local maior for avaliado; a métrica que
-decide é prefill/decode real no hardware do usuário, não o marketing do
-backend. Mesma disciplina do BitNet: benchmark local primeiro, adoção depois.
+system RAM. Implementado: `extensions/ai-tools/offload_plan.py`
+(`build_argv`), só flags reais verificadas contra upstream:
+
+- `bitnet.cpp`: retorna `["-ngl", "0"]`; flags de expert offloading são
+  rejeitadas (b1.58 é denso, sem MoE).
+- `llama.cpp`: `-ngl N`, `--cpu-moe`, `--n-cpu-moe N`,
+  `--override-tensor "regex=BUFFER"` (buffers `CPU`/`CUDA0..3`). Flags MoE
+  exigem `model_is_moe=True`; `--cpu-moe` e `--n-cpu-moe` são mutuamente
+  exclusivos.
+
+É um construtor de argv, não um executor; nenhum kernel de offload foi
+medido neste hardware. A métrica que decide adoção é prefill/decode real no
+hardware do usuário, não o marketing do backend.
 
 ## Context budget (parent model)
 

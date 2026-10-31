@@ -157,8 +157,11 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git diff --check "origin/${{ github.base_ref }}...HEAD"
+          elif git rev-parse --verify --quiet "${{ github.event.before }}" >/dev/null 2>&1; then
+            git diff --check "${{ github.event.before }}..${{ github.sha }}"
           else
-            git diff --check "${{ github.event.before }}..${{ github.sha }}" || true
+            # before-SHA absent/zero (new branch push): check the pushed tip.
+            git diff --check HEAD~1..HEAD
           fi
 
       - name: Shellcheck shell scripts

@@ -102,10 +102,16 @@ function Get-FileHash256($path) {
 
 function Get-FolderHash($path, $exclude = $null) {
   if (-not (Test-Path $path)) { return $null }
-  $files = Get-ChildItem $path -Recurse -File | Sort-Object FullName
+  $base = (Resolve-Path $path).Path
+  $files = Get-ChildItem $base -Recurse -File | Sort-Object FullName
   if ($exclude) { $files = $files | Where-Object { $_.FullName -notmatch $exclude } }
   if ($files.Count -eq 0) { return "" }
-  $hashes = $files | ForEach-Object { Get-FileHash256 $_.FullName }
+  # hash + relative path per line, mirroring `sha256sum` output in the
+  # Bash dir_hash: a pure rename must change the folder hash.
+  $hashes = $files | ForEach-Object {
+    $rel = $_.FullName.Substring($base.Length).TrimStart('\','/') -replace '\\','/'
+    (Get-FileHash256 $_.FullName) + "  ./" + $rel
+  }
   return ($hashes -join "`n")
 }
 
