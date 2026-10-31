@@ -123,7 +123,7 @@ def run(args):
             path = args.weights or find_cached(args.model)
             tensors = load_safetensors(path)
             name = pick_tensor(tensors, args.layer, args.tensor)
-        except (OSError, ValueError, KeyError, FileNotFoundError) as e:
+        except (OSError, ValueError, KeyError, ImportError) as e:
             fail(f"weights load failed: {e}", 2)
         W = orient(np.asarray(tensors[name], dtype=np.float64), d)
         mode, weight_name = "model", name
