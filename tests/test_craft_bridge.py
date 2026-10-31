@@ -145,3 +145,27 @@ def test_default_op_is_open():
         {"id": "s", "layers": [{"type": "pdf", "source": "x.pdf"}]}]}
     out = sm.compile(m)
     assert out["plan"][0]["command"] == "file.open"
+
+
+# --- audit-r3: typed CLI errors ---------------------------------------------
+
+def test_scene_manifest_main_missing_file_typed(tmp_path, capsys):
+    code = sm.main([str(tmp_path / "nope.json")])
+    assert code == 2
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is False and "unreadable" in out["error"]
+
+
+def test_scene_manifest_main_nonobject_typed(tmp_path, capsys):
+    f = tmp_path / "m.json"
+    f.write_text("42", encoding="utf-8")
+    assert sm.main([str(f)]) == 2
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is False and "JSON object" in out["error"]
+
+
+def test_load_ops_map_invalid_json_typed(tmp_path):
+    f = tmp_path / "ops.json"
+    f.write_text("{bad", encoding="utf-8")
+    with pytest.raises(ValueError, match="ops map unreadable"):
+        sm.load_ops_map(str(f))
