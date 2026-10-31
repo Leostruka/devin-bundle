@@ -22,6 +22,12 @@ Never include:
 
 1. **zoom-out**: does the repo/bundle already solve this problem with less
    code? If yes, that verdict dominates all other findings.
+   Ask of the diff, in order (Ponytail-style minimal-diff):
+   a. does this need to exist, or is the helper/pattern already here;
+   b. does the stdlib do it;
+   c. does an already-installed dependency cover it;
+   d. does a native platform feature cover it.
+   A new abstraction that fails all four is an Important finding.
 2. Spec compliance: does the diff do exactly what spec.md asks, no more?
 3. Standards: project invariants (stdlib-only `scripts/`, fail_closed hooks,
    no secrets, ADR conventions, Rule 15 evidence).
