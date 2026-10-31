@@ -63,3 +63,5 @@ credentials.toml
 .devin/mcp_config.local.json
 .devin/scratch/cu-perception/_deps/
 .devin/scratch/rea-repo/
+
+extensions/asr/_cache/

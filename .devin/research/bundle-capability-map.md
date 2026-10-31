@@ -44,11 +44,15 @@ mechanism (no window-targeted posting, no UI Access path) exists today.
 
 ## 4. Scraping / web-fetch capability in bundle
 
-**None.** `youtube-fetcher` skill exists (yt-dlp wrapper). No extension does
-HTTP fetching, HTML parsing, crawling, or anti-bot work. `webfetch`/`web_search`
-are agent-tools, not bundle code. **Scrapling integration is greenfield - no
-existing capability to duplicate or conflict with.** Candidate fit: new
-`extensions/scrape-tools/` or inside `ai-tools` - decision deferred to research.
+**`extensions/scrape-tools/` shipped** (Scrapling, `scrapling[fetchers]==0.4.15`
+pinned): `scrape.py` HTTP fetch with curl_cffi TLS impersonation and opt-in
+browser tiers; `parse.py` offline CSS/XPath parsing; adaptive selector
+fingerprinting in local SQLite. Skill `scrape-tools` routes to it. JSON
+contract on stdout; USAGE.md documents tiers and honest limits (no
+"undetectable" claims). `agent-reach` wrapper adds credential-free channel
+research (github/youtube/bilibili/v2ex/web). Historical note: this section
+previously said "none/greenfield"; updated 2026-10-31 after the Scrapling
+integration landed.
 
 ## 5. Input mechanism status (host side)
 

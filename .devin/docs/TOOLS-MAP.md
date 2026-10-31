@@ -131,7 +131,7 @@ subagent_general, tech-lead, triage-labels. 18 perfis validados.
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 13 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 101 skills |
-| extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (ex: `computer-use` — GUI automation; `system-control` — OS autorizado) |
+| extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` — GUI automation; `system-control` — OS autorizado; `scrape-tools` — fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` — whisper.cpp local) |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 31 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |
 | MODEL-GUIDE.md | `./.devin/docs/MODEL-GUIDE.md` | `~/.config/devin/docs/MODEL-GUIDE.md` | Guia de modelos (veja `data/bundle-models.json`) |
