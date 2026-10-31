@@ -75,6 +75,7 @@ def _apply_pair_action(call_item, result_item, action):
         for it in (call_item, result_item):
             if it is not None and (it.get("text") or ""):
                 it["text"] = it["text"][:TRUNCATE_HEAD] + "\n...[snip]..."
+                it["chars"] = len(it["text"])
                 it["action"] = "truncate"
 
 
@@ -245,8 +246,17 @@ def main(argv=None):
     ap.add_argument("--config", default=".devin/laya/profile.json")
     args = ap.parse_args(argv)
 
-    messages = json.loads(Path(args.transcript).read_text(
-        encoding="utf-8"))
+    try:
+        messages = json.loads(Path(args.transcript).read_text(
+            encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        print(json.dumps({"ok": False,
+                          "error": f"transcript unreadable: {e}"}))
+        return 2
+    if not isinstance(messages, list):
+        print(json.dumps({"ok": False,
+                          "error": "transcript must be a JSON list"}))
+        return 2
     cfg = dc.load_config(args.config if Path(args.config).exists()
                          else None)
     client = None
@@ -259,14 +269,20 @@ def main(argv=None):
     finally:
         if client:
             client.close()
-    Path(args.out).write_text(
-        json.dumps(result["messages"], ensure_ascii=False, indent=2),
-        encoding="utf-8")
-    report = {"decisions": result["decisions"], "stats": result["stats"]}
-    if args.report:
-        Path(args.report).write_text(
-            json.dumps(report, ensure_ascii=False, indent=2),
+    try:
+        Path(args.out).write_text(
+            json.dumps(result["messages"], ensure_ascii=False, indent=2),
             encoding="utf-8")
+        report = {"decisions": result["decisions"],
+                  "stats": result["stats"]}
+        if args.report:
+            Path(args.report).write_text(
+                json.dumps(report, ensure_ascii=False, indent=2),
+                encoding="utf-8")
+    except OSError as e:
+        print(json.dumps({"ok": False,
+                          "error": f"output not writable: {e}"}))
+        return 2
     print(json.dumps(report["stats"], ensure_ascii=False))
     return 0
 
