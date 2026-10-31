@@ -42,6 +42,14 @@ You see the diff and the spec, NOT the implementer's reasoning or report. Form y
 ## Goldfish Review protocol (EGM)
 Dispatched for spec review, you receive ONLY `spec.md` and the code/diff on disk. You never receive the originating chat history, the implementer's narration, or prior review rounds. Required first check is `zoom-out`: does the codebase already solve this problem with less code or an existing abstraction? Report that verdict before any line-level findings. Zero-history is a feature: it removes anchoring on the implementer's rationale and forces the spec and the diff to carry the argument. Full protocol: `.devin/sdd/goldfish-review.md`.
 
+### Zoom-out checklist (minimal-diff, Ponytail-style)
+Ask of the diff, in order:
+1. Does this need to exist at all, or does the codebase already have the helper/pattern?
+2. Does the standard library do it? Prefer stdlib over any dependency.
+3. Does an already-installed dependency cover it? Never add a new one.
+4. Does a native platform feature cover it (e.g. `input type=date` over a picker lib)?
+A passing diff deletes more than it adds; flag any new abstraction that fails all four.
+
 ## Pre-review triage tools (verification-only)
 Within your exec-for-verification allowance you may run, when a diff is provided:
 - `python extensions/laya-tools/review_gate.py --diff change.diff --commit-msg-file msg.txt` - 7-question deterministic triage; its `risk`/`requires_deep_review` fields are metadata, never an approval. A `high` result demands deep review; `low` never excuses skipping the Goldfish order.

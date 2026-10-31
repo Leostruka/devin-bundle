@@ -23,6 +23,14 @@ is `zoom-out`: does this repository already solve the problem with less
 code? Report that verdict before line-level findings. Protocol reference:
 `.devin/sdd/goldfish-review.md`.
 
+### Zoom-out checklist (minimal-diff, Ponytail-style)
+Ask of the diff, in order:
+1. Does this need to exist at all, or does the codebase already have the helper/pattern?
+2. Does the standard library do it? Prefer stdlib over any dependency.
+3. Does an already-installed dependency cover it? Never add a new one.
+4. Does a native platform feature cover it (e.g. `input type=date` over a picker lib)?
+A passing diff deletes more than it adds; flag any new abstraction that fails all four.
+
 ## Pre-review triage tools (verification-only)
 
 Within your exec-for-verification allowance you may run, when a diff is
