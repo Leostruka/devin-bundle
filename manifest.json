@@ -933,7 +933,7 @@
       "name": "reviewer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\reviewer.md",
-      "export_hash": "2A9286CFF4FA4E78C0239BDADD374F7F8FCF48ABAE8FFA045F17CC30B002A7BF",
+      "export_hash": "08CE79F40D571F84AFABD6BCAFBA543767C516834B1BA90AD3BAC3A9F2CD13B4",
       "exported_at": "2026-09-08T21:39:22.432096"
     },
     {
@@ -977,7 +977,7 @@
     {
       "name": "chief-of-staff",
       "purpose": "Use as the agency pipeline SysAdmin watchdog (Goose tier, node 07); probes tool/inbox environment, applies whitelisted AUTO-FIX, writes docs/07_SysAdmin_Log.md with NOMINAL|DEGRADED|ESCALATE verdict. Never edits specs or code.",
-      "export_hash": "94544A86E9611F024FF7ECD99F8469C841E541DBBF8A10C60F49928E0C133A81",
+      "export_hash": "CC07FA2C8DDBB27141227CBA4BD6E3B9A7364C0E33B7A5FD56A5EBC509C8B2EC",
       "exported_at": "2026-10-27T15:18:55.679807"
     }
   ]

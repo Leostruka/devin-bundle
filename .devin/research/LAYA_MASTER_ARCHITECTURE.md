@@ -394,3 +394,81 @@ Updates a skills existentes: `context-hygiene` (tabela Smart Window → apontar 
 | `skills/context-hygiene/SKILL.md:50,52` | "fast-jev default" → "upstream port default" |
 | `.devin/issues/ISSUE_01_laya_compaction.md` | marcar `status: superseded-by LAYA_MASTER_ARCHITECTURE.md` |
 | `.devin/research/4_fronts_recon.md:52-76` | manter como registro histórico do upstream; menções a `Jev` passam a "hosted model replaced by laya" |
+
+---
+
+## 12. Padrões operacionais JEV adaptados (2026-10-31)
+
+Sete padrões do workflow JEV mapeados para a planta §1. Cada um respeita A1
+(Laya só `suggestion`/`abstain`), A3 (cascata barata primeiro) e A8 (fail-degraded
+para o tier determinístico quando `layad` estiver offline).
+
+### JEV-1: 25% Context Threshold (Camada 7)
+
+Compactação assistida (Laya `compact-gate-v1`) só é acionada quando a ocupação
+da janela passa de **25%** (`ASSIST_FLOOR = 0.25`). Abaixo disso o custo da
+avaliação é desperdício puro: nada é consultado, nem sonda. Os pisos
+determinísticos de ação permanecem inalterados (`COMPACT_AT = 0.70`,
+`FORCE_AT = 0.80`, histerese `COMPACT_TO = 0.40`, §4.2). Ou seja: a banda de
+avaliação abre cedo (0.25) para o boundary signal amadurecer, mas nenhuma ação
+dispara antes do piso determinístico. Atualiza `compact_gate.eval_floor` em
+`profile.json` de `0.50` para `0.25`.
+
+### JEV-2: Skill Picker (`user-prompt.py`)
+
+Pré-filtro determinístico no hook `UserPromptSubmit`: casar o prompt contra o
+`manifest.json` (nome, descrição, triggers `Use when`) e injetar no máximo 1 a
+3 candidatos de skill com score léxico, em sub-segundo e sem Laya. Somente se o
+casamento léxico for ambíguo (2+ skills dentro de margem) a Laya pode ordenar
+(`skill-family-v1`, já existe na Camada 1). Saída = hint de leitura, nunca
+invocação automática (A4).
+
+### JEV-3: Two-Stage Explore (Camadas 8-9)
+
+Pipeline de exploração em dois estágios para varreduras de código:
+
+1. `ripgrep` keyword filter: reduz o corpus para candidatos plausíveis (custo ~0).
+2. Laya `filebool-v1` em batch: score de no máximo 20 arquivos por chamada
+   (`batch_size=8` inflight, `ask_laya_filebool` §3.3), retornando top-K ao
+   agente como ordem de leitura.
+
+O agente então faz `read` nos top-K (Rule 12). Laya ranqueia, nunca prova.
+
+### JEV-4: 7-Question Pre-Review Gate (Camada 3, triagem)
+
+Antes de escalar um diff para code review profundo, triagem booleana rápida
+sobre o diff (7 perguntas determinísticas + opcionalmente `filebool-v1`):
+
+1. Diff contém secrets/tokens? 2. Toca paths protegidos (`hooks.v1.json`,
+   `scripts/*guard*`)? 3. Adiciona dependência nova? 4. Tem teste para a regra
+   alterada? 5. Toca rede/egress? 6. Diff > 400 linhas? 7. Mensagem de commit
+   declara o porquê?
+
+Qualquer `yes` em 1-3 marca `high` imediato (escala direto); demais alimentam
+`review-risk-v1` como `confidence_hint` (§2.6). Baixo risco confirmado evita
+review profundo desnecessário.
+
+### JEV-5: Doc-to-Test Coverage & Rule Check (Camada 3, contrato)
+
+Para cada regra ou invariante alterada em docs/ADRs/rules, verificar se existe
+contrato executável em `tests/validation/` (string presence, schema, syntax).
+Regra alterada sem contrato = achado `Important` no review, não `Minor`. Isso
+operacionaliza Rule 15 (evidência reproduzível) para mudanças documentais.
+
+### JEV-6: DOM Action Picker (computer-use / scrape-tools)
+
+Seleção do próximo clique/alvo em listas de elementos DOM/UIA: o snapshot de
+elementos vira `candidates` (≤8 por contrato; listas maiores passam por
+shortlist determinística primeiro, §9 cardinalidade). Reutiliza o consumidor
+`cu_decision.py` existente (Laya shadow → adoptable() gated on assist). Sem
+elemento DOM estruturado (canvas/imagem) = abstain → fallback para heurística
+de coordenadas.
+
+### JEV-7: Goldfish Review handoff (processo, não camada)
+
+Reviews de spec rodam em subagente com histórico zero (padrão EGM Goldfish):
+o subagente recebe APENAS `spec.md` + código/diff, nunca o transcript do chat.
+Primeiro check obrigatório = `zoom-out` (o bundle já resolve o problema com
+menos código?). Ver `.devin/sdd/goldfish-review.md` e o spec
+`.devin/scratch/egm-laya-bitnet-upgrade/` para o protocolo completo e o comando
+`drift-audit` (docs/ADRs vs estado real do disco).

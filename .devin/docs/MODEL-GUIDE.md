@@ -201,6 +201,65 @@ modelos pagos** para subagents. Os modelos gratuitos canônicos cobrem 100% dos 
 Se ambos falharem, reportar ao usuário. Quando o parent está em modelo PAGO
 (usuário escolheu), subagents podem usar modelos pagos.
 
+## Inferência local e batch fora do CLI (BitNet / TPU / offloading)
+
+O routing principal do bundle é SWE-2 via CLI. Esta seção cobre motores
+complementares para custos que o CLI não deve pagar.
+
+### Anti-pattern: túnel Cloudflare sobre GPU T4 com layer split
+
+Hospedar um LLM de agente numa GPU T4 dividida (layer split) atrás de um
+túnel Cloudflare falha estruturalmente:
+
+- **Prefill math**: o cenário fornecido cita 30k tokens em ~92s, equivalente
+  a ~326 tok/s. Não é medição local nem propriedade universal da T4. Com
+  timeout de 100s, a margem seria ~8s; a documentação atual do Cloudflare
+  informa **125s** de Proxy Read Timeout padrão (margem aritmética ~33s).
+  HTTP 524 depende do intervalo sem resposta do origin e da configuração,
+  não apenas do total de tokens ou do número de turns.
+- **Layer split em T4** troca compute por latência de transferência entre
+  camadas; o pior caso é exatamente o prefill longo que agentes exigem.
+- **Exposição**: um túnel público serve o endpoint a qualquer cliente que o
+  alcance; código proprietário do usuário transita por um path que o bundle
+  não controla.
+
+Veredito: **não usar** para agentes. Se um endpoint remoto for necessário,
+mínimo é GPU que processe 30k tokens de prefill em <30s com margem, auth no
+endpoint, e nunca tráfego de código sensível por túnel público.
+
+### Held-Out TPU Batch Recipe (opcional)
+
+Para jobs em lote de validação held-out (Rule 15), não para o loop do agente:
+
+- Kaggle **TPU v5e-8** + `vLLM`: ~**10.300 tok/s** é um número fornecido
+  no briefing, ainda não reproduzido neste bundle. A essa taxa, 30k tokens
+  levariam ~2,91s de prefill, excluindo filas, compilação e decode.
+- Uso restrito a **batch offline**: avaliação de perfis Laya, replay de
+  manifests congelados (`eval_decisions.py`), held-out suites.
+- **Nunca** enviar código proprietário sensível: só fixtures, manifests e
+  corpus público/anônimo. Não é path do agente online; sem daemon, sem hook.
+
+### Local CPU-first: bitnet.cpp (1.58-bit)
+
+`microsoft/BitNet` (`bitnet.cpp`) roda LLMs ternários 1.58-bit 100% em
+CPU/RAM, sem consumir VRAM. Candidato como motor local para:
+
+- `laya-tools` / decisões tipadas leves quando o snapshot dedicado não
+  estiver disponível (mantém o contrato `suggestion`/`abstain` inalterado).
+- Subagentes leves offline futuros (classificação, triagem, filebool).
+
+Avaliação pendente: latência e qualidade de decisão tipada vs snapshot Laya
+atual, medidos em held-out (G5) antes de qualquer adoção. Fora do caminho
+crítico: hooks stdlib-only não podem depender dele.
+
+### Lookup / Expert Offloading (VRAM + System RAM)
+
+Padrão para modelos grandes em hardware limitado: hot path (atenção, experts
+ativos) em VRAM, pesos frios (experts inativos, embeddings de lookup) em
+system RAM. Aplicável se um modelo local maior for avaliado; a métrica que
+decide é prefill/decode real no hardware do usuário, não o marketing do
+backend. Mesma disciplina do BitNet: benchmark local primeiro, adoção depois.
+
 ## Context budget (parent model)
 
 ```
@@ -244,3 +303,6 @@ Especificações de modelos devem ser verificadas contra
 | arXiv:2607.20972 (Delivery, Not Storage) | Verificado | arxiv.org/abs/2607.20972 |
 | arXiv:2608.15008 (Harness the Memory) | Verificado | arxiv.org/abs/2608.15008 |
 | `swe-2-*` variantes e custo | Verificado | `devin models list` (262K, Free) |
+| microsoft/BitNet (bitnet.cpp) | Repo primário | github.com/microsoft/BitNet |
+| Cloudflare Proxy Read Timeout / 524 | Verificado: padrão 125s | https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-524/ |
+| Kaggle TPU v5e-8 + vLLM ~10.3k tok/s prefill | Fonte secundária (vídeo benchmark) | medir localmente antes de adoção |
