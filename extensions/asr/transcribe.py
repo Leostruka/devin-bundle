@@ -45,18 +45,25 @@ def parse_segments(text):
 
 
 def _find_binary():
-    for name in ("whisper-cli", "whisper-cli.exe", "main", "main.exe",
-                 "whisper.cpp"):
-        p = shutil.which(name) or (CACHE / name)
-        if isinstance(p, Path) and p.exists():
-            return str(p)
-        if isinstance(p, str):
+    # bundle layout puts binaries under _cache/Release/; check there and
+    # _cache/ directly. "main" is only trusted inside CACHE -- on Windows
+    # PATH lookup resolves main.CPL from system32 (WinError 193).
+    for name in ("whisper-cli.exe", "whisper-cli", "main.exe", "main"):
+        for d in (CACHE / "Release", CACHE):
+            p = d / name
+            if p.is_file():
+                return str(p)
+    for name in ("whisper-cli", "whisper.cpp"):
+        p = shutil.which(name)
+        if p:
             return p
     return None
 
 
 def _model_path(model):
-    f = CACHE / MODELS.get(model, model)
+    # accept "base" and "ggml-base(.bin)" spellings
+    key = str(model).removeprefix("ggml-").removesuffix(".bin")
+    f = CACHE / MODELS.get(key, model)
     return str(f) if f.exists() else None
 
 

@@ -118,3 +118,47 @@ def test_render_main_missing_plan_typed(tmp_path, capsys):
     assert code == 2
     out = json.loads(capsys.readouterr().out)
     assert out["ok"] is False and "unreadable" in out["error"]
+
+
+# --- asr binary/model discovery ----------------------------------------------
+
+def test_find_binary_prefers_release_dir(tmp_path, monkeypatch):
+    rel = tmp_path / "Release"
+    rel.mkdir()
+    exe = rel / "whisper-cli.exe"
+    exe.write_bytes(b"x")
+    monkeypatch.setattr(transcribe, "CACHE", tmp_path)
+    monkeypatch.setattr(transcribe.shutil, "which", lambda n: None)
+    assert transcribe._find_binary() == str(exe)
+
+
+def test_find_binary_never_which_main(tmp_path, monkeypatch):
+    # a bare "main" on PATH (e.g. system32 main.CPL) must never win
+    monkeypatch.setattr(transcribe, "CACHE", tmp_path)
+    monkeypatch.setattr(
+        transcribe.shutil, "which",
+        lambda n: "C:/Windows/system32/main.CPL" if n == "main" else None)
+    assert transcribe._find_binary() is None
+
+
+def test_find_binary_which_namespaced_only(tmp_path, monkeypatch):
+    monkeypatch.setattr(transcribe, "CACHE", tmp_path)
+    monkeypatch.setattr(
+        transcribe.shutil, "which",
+        lambda n: "/usr/bin/whisper-cli" if n == "whisper-cli" else None)
+    assert transcribe._find_binary() == "/usr/bin/whisper-cli"
+
+
+def test_model_path_accepts_ggml_spelling(tmp_path):
+    (tmp_path / "ggml-base.bin").write_bytes(b"x")
+    import transcribe as t
+    orig = t.CACHE
+    try:
+        t.CACHE = tmp_path
+        assert t._model_path("base") == str(tmp_path / "ggml-base.bin")
+        assert t._model_path("ggml-base") == str(tmp_path / "ggml-base.bin")
+        assert t._model_path("ggml-base.bin") == \
+            str(tmp_path / "ggml-base.bin")
+        assert t._model_path("missing") is None
+    finally:
+        t.CACHE = orig
