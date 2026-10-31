@@ -72,7 +72,13 @@ BUILT_INS = {
 
 def _load_custom():
     if CUSTOM_FILE.exists():
-        return json.loads(CUSTOM_FILE.read_text(encoding="utf-8"))
+        try:
+            return json.loads(CUSTOM_FILE.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as e:
+            import sys
+            print(f"presets: skipping unreadable {CUSTOM_FILE.name}: {e}",
+                  file=sys.stderr)
+            return {}
     return {}
 
 

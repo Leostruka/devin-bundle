@@ -108,3 +108,13 @@ def test_render_dry_materializes_project(tmp_path):
     assert (wd / "package.json").exists()
     plan = json.loads((wd / "src" / "plan.json").read_text())
     assert plan["beats"][0]["id"] == "b1"
+
+
+# --- audit-r3: typed CLI errors ---------------------------------------------
+
+def test_render_main_missing_plan_typed(tmp_path, capsys):
+    code = render.main([str(tmp_path / "nope.json"),
+                        "--workdir", str(tmp_path)])
+    assert code == 2
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is False and "unreadable" in out["error"]

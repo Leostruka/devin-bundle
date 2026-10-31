@@ -63,7 +63,12 @@ def main(argv=None):
     ap.add_argument("--comp", default="Plan")
     ap.add_argument("--out", default="out.mp4")
     args = ap.parse_args(argv)
-    plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
+    try:
+        plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        print(json.dumps({"ok": False,
+                          "error": f"plan unreadable: {e}"}))
+        return 2
     print(json.dumps(render(plan, args.workdir, dry=args.dry,
                             comp=args.comp, out_name=args.out),
                      indent=2))

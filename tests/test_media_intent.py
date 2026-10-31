@@ -109,3 +109,17 @@ def test_intent_abstain_short_circuits():
     out = intent.suggest(c, "???", PRESETS)
     assert out["outcome"] == "abstain"
     assert len(c.calls) == 1
+
+
+# --- audit-r3: corrupt custom presets must not break built-ins --------------
+
+def test_corrupt_custom_presets_falls_back(tmp_path, monkeypatch, capsys):
+    import presets
+    bad = tmp_path / "custom_presets.json"
+    bad.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(presets, "CUSTOM_FILE", bad)
+    names = presets.list_presets()
+    assert "matrix" in names
+    assert presets.get_preset("matrix")["effect"]
+    err = capsys.readouterr().err
+    assert "unreadable" in err or "skipping" in err

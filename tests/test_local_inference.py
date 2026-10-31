@@ -623,3 +623,17 @@ def test_manifest_rejects_non_object_json(tmp_path):
         m.write_text(bad)
         with pytest.raises(hb.ManifestError):
             hb.load_manifest(m)
+
+
+# --- audit-r3: typed errors on bad weights -----------------------------------
+
+def test_abliterator_missing_weights_typed(tmp_path, capsys):
+    import abliterator
+    import argparse
+    with pytest.raises(SystemExit) as exc:
+        abliterator.run(argparse.Namespace(
+            weights=str(tmp_path / "nope.safetensors"), model=None,
+            tensor=None, layer=6, self_test=False))
+    assert exc.value.code == 2
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is False and "weights load failed" in out["error"]

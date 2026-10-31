@@ -55,7 +55,10 @@ _DEFAULT_OPS = {
 def load_ops_map(path=None):
     p = Path(path) if path else OPS_MAP_PATH
     if p.exists():
-        return json.loads(p.read_text(encoding="utf-8"))
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as e:
+            raise ValueError(f"ops map unreadable: {e}")
     return dict(_DEFAULT_OPS)
 
 
@@ -99,8 +102,21 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="scene manifest compiler")
     ap.add_argument("manifest")
     args = ap.parse_args(argv)
-    m = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
-    print(json.dumps(compile(m), indent=2, ensure_ascii=False))
+    try:
+        m = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        print(json.dumps({"ok": False,
+                          "error": f"manifest unreadable: {e}"}))
+        return 2
+    if not isinstance(m, dict):
+        print(json.dumps({"ok": False,
+                          "error": "manifest must be a JSON object"}))
+        return 2
+    try:
+        print(json.dumps(compile(m), indent=2, ensure_ascii=False))
+    except ValueError as e:
+        print(json.dumps({"ok": False, "error": str(e)}))
+        return 2
     return 0
 
 
