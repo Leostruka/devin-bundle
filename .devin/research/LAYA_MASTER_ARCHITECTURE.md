@@ -166,7 +166,12 @@ def recommend(request: dict, *, timeout_ms=1000) -> dict:
 def batch(requests: list[dict], *, max_inflight=4) -> list[dict]
 ```
 
-### 3.3 Varredura em lote `filebool.py` (NOVO, Camadas 8-9)
+### 3.3 Varredura em lote `filebool.py` (blueprint, Camadas 8-9)
+
+Assinaturas abaixo são propostas históricas, não documentação da API atual.
+A implementação em `extensions/laya-tools/filebool.py` não recebe
+`batch_size`; o particionamento em batches de 20 vive no caller
+`extensions/laya-tools/explore.py` (ver §12 JEV-3).
 
 ```python
 def ask_laya_filebool(paths: list[str], question: str, *,
@@ -399,40 +404,70 @@ Updates a skills existentes: `context-hygiene` (tabela Smart Window → apontar 
 
 ## 12. Padrões operacionais JEV adaptados (2026-10-31)
 
-Sete padrões do workflow JEV mapeados para a planta §1. Cada um respeita A1
+Status: implemented (runtime lanes on disk; mode-gated).
+`scripts/compact-gate.py` já roda com `eval_floor = 0.25` (DEFAULTS e
+`.devin/laya/profile.json.compact_gate`), `scripts/skill-picker.py` está na
+chain consolidada de `scripts/user-prompt.py`, e os callers JEV-3..JEV-6
+existem em `extensions/laya-tools/` e `extensions/computer-use/`.
+Gate comum: `profile.json` tem `"mode": "off"`: todo perfil responde
+`abstain`/`feature_off` até modo `shadow`/`assist` + calibração (G5).
+`review-risk-v1` existe no código (`review_gate.py`) mas não está na lista
+`profiles` de `profile.json`; shadow suggestion abstém `feature_off`.
+As definições são adaptações locais do briefing, não transcrição verificada
+do vídeo JEV. Goldfish é uma composição EGM, não um sétimo padrão JEV
+independentemente confirmado.
+
+Sete itens operacionais mapeados para a planta §1. Cada um respeita A1
 (Laya só `suggestion`/`abstain`), A3 (cascata barata primeiro) e A8 (fail-degraded
 para o tier determinístico quando `layad` estiver offline).
 
 ### JEV-1: 25% Context Threshold (Camada 7)
 
 Compactação assistida (Laya `compact-gate-v1`) só é acionada quando a ocupação
-da janela passa de **25%** (`ASSIST_FLOOR = 0.25`). Abaixo disso o custo da
+da janela passa de **25%** (`eval_floor = 0.25`). Abaixo disso o custo da
 avaliação é desperdício puro: nada é consultado, nem sonda. Os pisos
-determinísticos de ação permanecem inalterados (`COMPACT_AT = 0.70`,
-`FORCE_AT = 0.80`, histerese `COMPACT_TO = 0.40`, §4.2). Ou seja: a banda de
+determinísticos de ação permanecem inalterados (`compact_at = 0.70`,
+`force_at = 0.80`, histerese `compact_to = 0.40`, §4.2). Ou seja: a banda de
 avaliação abre cedo (0.25) para o boundary signal amadurecer, mas nenhuma ação
-dispara antes do piso determinístico. Atualiza `compact_gate.eval_floor` em
-`profile.json` de `0.50` para `0.25`.
+dispara antes do piso determinístico.
+
+Implementado: `compact_gate.eval_floor = 0.25` em `.devin/laya/profile.json` e
+em `DEFAULTS` de `scripts/compact-gate.py`. O gate emite apenas um notice
+`LAYA-GATE` via `additionalContext` em mode `assist`; `mode == "off"` só
+atualiza o digest de estado (zero subprocess, zero reads de pesos). Não
+executa compactação; decisão e execução ficam com o agente.
 
 ### JEV-2: Skill Picker (`user-prompt.py`)
 
 Pré-filtro determinístico no hook `UserPromptSubmit`: casar o prompt contra o
-`manifest.json` (nome, descrição, triggers `Use when`) e injetar no máximo 1 a
-3 candidatos de skill com score léxico, em sub-segundo e sem Laya. Somente se o
-casamento léxico for ambíguo (2+ skills dentro de margem) a Laya pode ordenar
-(`skill-family-v1`, já existe na Camada 1). Saída = hint de leitura, nunca
-invocação automática (A4).
+`manifest.json` (nome + `purpose`) e injetar no máximo 3 candidatos de skill
+com score léxico, em sub-segundo e sem Laya. Saída = hint de leitura
+(`SKILL-HINTS ... never auto-invoked`), nunca invocação automática (A4).
+
+Implementado: `scripts/skill-picker.py` (`pick_skills`: score = 2x match de
+nome + 1x match de purpose; cap absoluto `MAX_HINTS = 3`; slugs canônicos
+apenas) roda in-process dentro de `scripts/user-prompt.py` após
+`memory-retrieval.py`. Divergência consciente do desenho original: não há
+escalada para `skill-family-v1` em empate: o picker nunca chama o daemon.
 
 ### JEV-3: Two-Stage Explore (Camadas 8-9)
 
 Pipeline de exploração em dois estágios para varreduras de código:
 
 1. `ripgrep` keyword filter: reduz o corpus para candidatos plausíveis (custo ~0).
-2. Laya `filebool-v1` em batch: score de no máximo 20 arquivos por chamada
-   (`batch_size=8` inflight, `ask_laya_filebool` §3.3), retornando top-K ao
-   agente como ordem de leitura.
+2. Caller implementado: `extensions/laya-tools/explore.py` particiona os
+   candidatos em batches de `BATCH_SIZE = 20` e chama
+   `filebool.ask_laya_filebool` (que por sua vez usa `lc.batch`, uma
+   request `filebool-v1` por arquivo, 2 candidatos yes/no cada). O ranking
+   top-K (`--top-k`, default 8) ordena yes > abstain > no por
+   `calibrated_probability` com desempate na ordem do stage-1. Sem `rg`,
+   um walk stdlib determinístico faz o filtro (cap `MAX_SCAN_FILES`).
+   Não confundir quantidade de arquivos com candidatos por decisão (máximo 8).
 
 O agente então faz `read` nos top-K (Rule 12). Laya ranqueia, nunca prova.
+Daemon offline ou modo `off` -> todos abstêm e a saída cai na ordem
+determinística do stage-1. CLI:
+`python extensions/laya-tools/explore.py --root DIR --keywords kw... --question "..." [--top-k 8] [--exclude PAT] [--max-candidates 500]`
 
 ### JEV-4: 7-Question Pre-Review Gate (Camada 3, triagem)
 
@@ -444,9 +479,16 @@ sobre o diff (7 perguntas determinísticas + opcionalmente `filebool-v1`):
    alterada? 5. Toca rede/egress? 6. Diff > 400 linhas? 7. Mensagem de commit
    declara o porquê?
 
-Qualquer `yes` em 1-3 marca `high` imediato (escala direto); demais alimentam
-`review-risk-v1` como `confidence_hint` (§2.6). Baixo risco confirmado evita
-review profundo desnecessário.
+Qualquer `yes` em 1-3 marca `high` imediato (escala direto); demais marcam
+`medium`. Baixo risco confirmado evita review profundo desnecessário.
+
+Implementado: `extensions/laya-tools/review_gate.py` (`triage_diff`) responde
+as 7 perguntas sobre um unified diff e emite `{risk, requires_deep_review}`:
+metadado de triagem, nunca allow/approve/merge. Findings de secret
+registram só detector id + path (texto casado nunca sai). Shadow opcional
+`review-risk-v1` via `--config`; como o perfil não consta em
+`profile.json.profiles`, abstém `feature_off` até ser habilitado. CLI:
+`python extensions/laya-tools/review_gate.py --diff change.diff [--commit-msg-file msg.txt] [--config profile.json] [--max-lines 400]`
 
 ### JEV-5: Doc-to-Test Coverage & Rule Check (Camada 3, contrato)
 
@@ -455,14 +497,38 @@ contrato executável em `tests/validation/` (string presence, schema, syntax).
 Regra alterada sem contrato = achado `Important` no review, não `Minor`. Isso
 operacionaliza Rule 15 (evidência reproduzível) para mudanças documentais.
 
+Implementado: `extensions/laya-tools/doc_coverage.py` (`check_coverage`):
+o mapping doc -> testes é JSON declarado (heurística nunca prova
+cobertura). Map shipped: `.devin/validation-contracts.json`, coberto por
+`tests/validation/test_jev_runtime_contracts.py` (11 testes). Alvos
+`file.py` ou `file.py::test_name`, confinados a
+`<tests_root>/tests/validation/`, `test_*.py` real, não-symlink, parseado
+via AST (nunca importado). Sem mapping ou alvo quebrado = finding
+`Important`. CLI:
+`python extensions/laya-tools/doc_coverage.py --changed <docs...> --map coverage.json [--tests-root .]`
+
 ### JEV-6: DOM Action Picker (computer-use / scrape-tools)
 
 Seleção do próximo clique/alvo em listas de elementos DOM/UIA: o snapshot de
 elementos vira `candidates` (≤8 por contrato; listas maiores passam por
 shortlist determinística primeiro, §9 cardinalidade). Reutiliza o consumidor
 `cu_decision.py` existente (Laya shadow → adoptable() gated on assist). Sem
-elemento DOM estruturado (canvas/imagem) = abstain → fallback para heurística
-de coordenadas.
+elemento DOM estruturado (canvas/imagem) = abstain. O caller mantém suas
+verificações determinísticas de alvo, frescor e actionability; abstain nunca
+autoriza clique nem fallback de coordenadas sem essas verificações.
+
+Implementado: `extensions/computer-use/cu_dom_picker.py` (`suggest_dom`,
+profile `ui-target-v1`): shortlist determinística (enabled, id único, não
+`unsafe`/hidden, `actionable`; roles interativos primeiro, cap
+`MAX_CANDIDATES = 8`), staleness via `stale: true` ou `observation_id`
+mismatch (abstém `stale_*`), aceita snapshots `{"elements": [...]}` ou
+`{"nodes": [...]}` scrape/parse. Sem path de clique/dispatch/coordenadas.
+O modo efetivo vem de `dc.effective_mode(cfg)` (já degrada `assist` para
+`shadow` sem calibração bound); o argumento `mode` só pode REDUZIR esse
+nível, nunca subir acima do config calibrado. `off` abstém `feature_off`
+sem spawn de daemon; habilitado, exact-match determinístico resolve antes
+de consultar o daemon; daemon down abstém tipado.
+CLI: `python cu_dom_picker.py --snapshot snap.json --goal "..." [--observation-id obs-1] [--config profile.json] [--mode off|shadow|assist]`
 
 ### JEV-7: Goldfish Review handoff (processo, não camada)
 

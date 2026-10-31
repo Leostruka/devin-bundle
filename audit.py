@@ -1,5 +1,14 @@
 import os, re, json, hashlib, sys, py_compile
 
+
+def text_hash_matches(path, expected):
+    with open(path, 'rb') as source:
+        raw = source.read()
+    lf = raw.replace(b'\r\n', b'\n')
+    variants = (raw, lf, lf.replace(b'\n', b'\r\n'))
+    return expected.upper() in {hashlib.sha256(data).hexdigest().upper() for data in variants}
+
+
 errors = []
 warnings = []
 
@@ -298,8 +307,7 @@ else:
         if s['name'].endswith('.py') and s.get('export_hash'):
             path = os.path.join('scripts', s['name'])
             if os.path.isfile(path):
-                disk_hash = hashlib.sha256(open(path, 'rb').read()).hexdigest().upper()
-                if disk_hash != s['export_hash'].upper():
+                if not text_hash_matches(path, s['export_hash']):
                     hash_mismatch.append(s['name'])
     if hash_mismatch:
         warnings.append('manifest script hash mismatch: ' + ', '.join(hash_mismatch))
@@ -323,8 +331,7 @@ else:
         if not os.path.isfile(path):
             missing.append(a['name'])
         elif a.get('export_hash'):
-            disk_hash = hashlib.sha256(open(path, 'rb').read()).hexdigest().upper()
-            if disk_hash != a['export_hash'].upper():
+            if not text_hash_matches(path, a['export_hash']):
                 hash_mismatch.append(a['name'])
     if missing:
         errors.append('manifest agents missing on disk: ' + ', '.join(missing))

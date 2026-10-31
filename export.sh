@@ -50,7 +50,7 @@ file_hash() {
 }
 
 dir_hash() {
-  ( cd "$1" 2>/dev/null && find . -type f | sort | xargs sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 )
+  ( cd "$1" 2>/dev/null && find . -type f -print0 | xargs -0 sha256sum 2>/dev/null | sort | sha256sum | cut -d' ' -f1 )
 }
 
 convert_to_lf() {

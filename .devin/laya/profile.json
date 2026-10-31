@@ -21,7 +21,7 @@
     "idle_ttl_s": 1800
   },
   "compact_gate": {
-    "eval_floor": 0.50,
+    "eval_floor": 0.25,
     "compact_at": 0.70,
     "compact_to": 0.40,
     "force_at": 0.80,

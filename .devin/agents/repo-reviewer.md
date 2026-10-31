@@ -22,3 +22,10 @@ Never the originating chat history or the implementer's report. First check
 is `zoom-out`: does this repository already solve the problem with less
 code? Report that verdict before line-level findings. Protocol reference:
 `.devin/sdd/goldfish-review.md`.
+
+## Pre-review triage tools (verification-only)
+
+Within your exec-for-verification allowance you may run, when a diff is
+provided:
+- `python extensions/laya-tools/review_gate.py --diff change.diff --commit-msg-file msg.txt` - 7-question deterministic triage; `risk`/`requires_deep_review` are metadata, never an approval.
+- `python extensions/laya-tools/doc_coverage.py --changed <docs...> --map coverage.json --tests-root .` - changed rules/docs without a declared test contract are `Important` findings.

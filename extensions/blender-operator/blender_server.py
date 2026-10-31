@@ -23,6 +23,8 @@ stderr of the executed code are captured and truncated to 64KB each.
 import contextlib
 import io
 import json
+import os
+import secrets
 import socket
 import sys
 import traceback
@@ -31,6 +33,8 @@ import bpy  # noqa: F401  (preloaded into the exec namespace)
 
 MAX_STREAM = 65536
 NS = {"bpy": bpy, "_result": None}
+PID = os.getpid()
+NONCE = secrets.token_hex(8)
 
 
 def _run_exec(code):
@@ -61,7 +65,13 @@ def _run_exec(code):
 
 
 def _handle(req):
+    if not isinstance(req, dict):
+        return {"ok": False, "error": "request must be a JSON object"}
     op = req.get("op", "exec")
+    if op in ("exec", "shutdown"):
+        n = req.get("nonce")
+        if n is not None and n != NONCE:
+            return {"ok": False, "error": "nonce mismatch"}
     if op == "ping":
         return {"ok": True, "blender": bpy.app.version_string,
                 "scene": bpy.context.scene.name if bpy.context.scene else None}
@@ -101,10 +111,14 @@ def serve(port):
                     f.flush()
                     continue
                 resp = _handle(req)
-                resp["id"] = req.get("id")
+                resp["id"] = req.get("id") if isinstance(req, dict) else None
+                resp["pid"] = PID
+                resp["nonce"] = NONCE
                 f.write(json.dumps(resp, default=repr) + "\n")
                 f.flush()
-                if req.get("op") == "shutdown":
+                if isinstance(req, dict) \
+                        and req.get("op") == "shutdown" \
+                        and resp.get("shutdown"):
                     srv.close()
                     bpy.ops.wm.quit_blender()
                     return

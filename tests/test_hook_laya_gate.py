@@ -95,7 +95,7 @@ def gate_env(tmp_path, monkeypatch):
     monkeypatch.setattr(gate, "_profile_path", lambda: str(prof))
     monkeypatch.setattr(gate, "_state_path", lambda:
                         str(tmp_path / "laya" / "gate-state.json"))
-    monkeypatch.setattr(gate, "_laya_ext_dir", lambda: None)
+    monkeypatch.setattr(gate, "_laya_cli_path", lambda: None)
     return prof
 
 
@@ -109,6 +109,35 @@ def test_gate_updates_digest(gate_env):
     s = _read_state(gate_env)
     assert s["calls"] == 1
     assert s["digest"]["tool_hist"] == {"exec": 1}
+
+
+def test_gate_digest_captures_tool_response_errors(gate_env):
+    p = _post_payload()
+    p["tool_response"] = {"success": False,
+                          "output": "Traceback: synthetic boom"}
+    code, out = _run_main(gate, p)
+    assert code == 0
+    errs = _read_state(gate_env)["digest"]["errors"]
+    assert len(errs) == 1 and "synthetic boom" in errs[0]
+
+
+def test_gate_digest_captures_tool_response_string(gate_env):
+    p = _post_payload()
+    p["tool_response"] = "Traceback: string form error"
+    code, out = _run_main(gate, p)
+    assert code == 0
+    errs = _read_state(gate_env)["digest"]["errors"]
+    assert len(errs) == 1 and "string form" in errs[0]
+
+
+def test_gate_digest_legacy_tool_output_still_works(gate_env):
+    p = _post_payload()
+    del p["tool_response"]
+    p["tool_output"] = "Traceback: legacy field"
+    code, out = _run_main(gate, p)
+    assert code == 0
+    errs = _read_state(gate_env)["digest"]["errors"]
+    assert len(errs) == 1 and "legacy" in errs[0]
 
 
 def test_gate_below_floor_no_eval(gate_env):
@@ -125,16 +154,16 @@ def test_gate_off_mode_above_floor_no_laya(gate_env):
     assert _read_state(gate_env)["last_eval_call"] == -999
 
 
-def _real_laya_ext():
+def _real_laya_cli():
     return os.path.join(os.path.dirname(__file__), "..",
-                        "extensions", "laya-tools")
+                        "extensions", "laya-tools", "laya_cli.py")
 
 
 def test_gate_prompt_eval_when_enabled(gate_env, monkeypatch):
     prof = json.loads(open(gate_env, encoding="utf-8").read())
     prof["mode"] = "shadow"
     open(gate_env, "w", encoding="utf-8").write(json.dumps(prof))
-    monkeypatch.setattr(gate, "_laya_ext_dir", _real_laya_ext)
+    monkeypatch.setattr(gate, "_laya_cli_path", _real_laya_cli)
     monkeypatch.setenv("LAYA_NO_DAEMON", "1")
     p = {"hook_event_name": "UserPromptSubmit",
          "tool_name": "", "tool_input": {},
@@ -152,7 +181,7 @@ def test_gate_prompt_below_floor_no_eval(gate_env, monkeypatch):
     prof = json.loads(open(gate_env, encoding="utf-8").read())
     prof["mode"] = "shadow"
     open(gate_env, "w", encoding="utf-8").write(json.dumps(prof))
-    monkeypatch.setattr(gate, "_laya_ext_dir", _real_laya_ext)
+    monkeypatch.setattr(gate, "_laya_cli_path", _real_laya_cli)
     monkeypatch.setenv("LAYA_NO_DAEMON", "1")
     p = {"hook_event_name": "UserPromptSubmit",
          "tool_name": "", "tool_input": {},
