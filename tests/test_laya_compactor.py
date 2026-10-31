@@ -235,3 +235,62 @@ def test_rebuild_drops_pair_blocks():
             for b in c:
                 if b.get("type") == "tool_result":
                     assert b.get("tool_use_id") in ids
+
+
+# --- audit-r2 regressions ---------------------------------------------------
+
+def test_tool_result_without_use_id_stays_orphan():
+    msgs = [
+        {"role": "system", "content": "s"},
+        {"role": "assistant", "content": [
+            {"type": "tool_use", "name": "exec", "input": "x"}]},
+        {"role": "user", "content": [
+            {"type": "tool_result", "content": "out"}]},
+        {"role": "user", "content": "tail"},
+    ]
+    items = tr.collect_items(msgs, preserve_recent=0)
+    res = next(i for i in items if i["kind"] == "tool_result")
+    assert res["pair"] is None
+    assert tr.orphan_check(items) is False
+
+
+def test_truncate_updates_chars_and_reduction(monkeypatch):
+    # force real assist: calibration gate is tested elsewhere
+    monkeypatch.setattr(cp.dc, "activation_errors", lambda cfg: [])
+    msgs = make_transcript(n_pairs=4, noise_chars=10000)
+    table = {"m1b1": "truncate", "m2b0": "truncate"}
+    out = cp.compact(msgs, cfg("assist"), client=FakeClient(table))
+    stats = out["stats"]
+    assert stats["mode"] == "assist"
+    # stale chars would report ~no savings; post-fix kept_chars reflects
+    # the truncated texts actually written
+    assert stats["kept_chars"] < stats["original_chars"] - 9000
+    items = items_of(msgs)
+    dec = _full_dec(items, {"m1b1": {"action": "truncate"},
+                            "m2b0": {"action": "truncate"}})
+    kept = cp.apply(items, dec, cp.pair_actions(items, dec))
+    for it in kept:
+        assert it["chars"] == len(it["text"])
+
+
+def test_main_missing_transcript_typed(tmp_path, capsys):
+    code = cp.main([str(tmp_path / "nope.json"), "-o",
+                    str(tmp_path / "o.json")])
+    assert code == 2
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is False
+    assert "transcript unreadable" in payload["error"]
+
+
+def test_main_bad_json_and_nonlist_typed(tmp_path, capsys):
+    bad = tmp_path / "bad.json"
+    bad.write_text("{not json", encoding="utf-8")
+    assert cp.main([str(bad), "-o", str(tmp_path / "o.json")]) == 2
+    out1 = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert out1["ok"] is False
+    scalar = tmp_path / "scalar.json"
+    scalar.write_text("42", encoding="utf-8")
+    assert cp.main([str(scalar), "-o", str(tmp_path / "o.json")]) == 2
+    out2 = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert out2["ok"] is False
+    assert "JSON list" in out2["error"]
