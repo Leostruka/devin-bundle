@@ -61,7 +61,8 @@ def collect_items(messages, preserve_recent=6):
             if t == "tool_use":
                 iid = b.get("id") or f"m{i}b{j}"
                 pair = f"p:{iid}"
-                pending[b.get("id")] = pair
+                if b.get("id") is not None:
+                    pending[b["id"]] = pair
                 items.append({
                     "id": f"m{i}b{j}", "kind": "tool_use", "pair": pair,
                     "msg_index": i, "name": b.get("name", "tool"),
