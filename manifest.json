@@ -786,8 +786,8 @@
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "B8F38EB166A0DEEEE7B1FC098C4AA729B2C808B85248BA8F1E10CAD226B0DDBF",
-      "exported_at": "2026-10-27T15:18:55.679807"
+      "export_hash": "0161150122EB56D1546710EEB376FEB2D497C8B388C7F588B0C015E0A3BDECD6",
+      "exported_at": "2026-10-31T21:15:43.544713"
     },
     {
       "name": "pre-exec-guard.py",
@@ -884,9 +884,15 @@
       "purpose": "UserPromptSubmit child (JEV-2) — lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
       "export_hash": "723A6E8BCE7A4019864A3C44D41810679393823AADDB9B5D78B2E6BC9C36A101",
       "exported_at": "2026-10-31T00:00:00.000000"
+    },
+    {
+      "name": "stuck-detect.py",
+      "purpose": "PostToolUse hook - advisory when the same exec command fails 3x consecutively (deterministic stuck-detector subset of token-economizer mechanism)",
+      "export_hash": "D34A0C078A1C461479B121E91A47F651C005D4ED1CFE63A842E0FCC1AD0A6872",
+      "exported_at": "2026-10-31T21:15:43.544713"
     }
   ],
-  "script_count": 32,
+  "script_count": 33,
   "mcp_count": 1,
   "agent_count": 14,
   "tool_count": 28,
