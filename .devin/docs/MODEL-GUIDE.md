@@ -316,6 +316,29 @@ system RAM. Implementado: `extensions/ai-tools/offload_plan.py`
 medido neste hardware. A métrica que decide adoção é prefill/decode real no
 hardware do usuário, não o marketing do backend.
 
+### Local audio: LFM3 family (avaliado, não adotado)
+
+`liquid-ai/LFM3` (open weights): família 1.7B-2B -- texto (`LFM3 1.7B`),
+visão (`LFMVL 2B`), audio bidirecional (`LFM3 Audio 2B`: ouve, transcreve,
+fala), omni (`LFM Omni 2B`), decisão (`D1 Omni 2B`). Formatos: FP8, NVFP4,
+MLX, ONNX.
+
+- **LFM3 Audio 2B** é o único candidato relevante ao bundle:
+  speech-in/speech-out + STT + TTS num modelo só, streaming de voz com
+  baixa latência, pt-BR suportado. Dois modos observados: streaming
+  (responde rápido, pt sai com sotaque EN) vs sequencial (resposta pt
+  correta, latência maior e escolha de voz/idioma explícita).
+- **Limitações confirmadas em demo** (não medidas aqui): 2B se confunde
+  em consultas complexas (LLM -> "lentes/molduras"), às vezes repete a
+  pergunta, confiabilidade insuficiente para tool-calling sensível.
+- **Licença**: LFM Open License -- uso comercial permitido até US$10M/ano
+  de receita; NÃO é MIT/Apache. Checar threshold antes de distribuir.
+- **Candidato a backend** para `extensions/voicebox/` (wrapper HTTP já
+  existe, backend-swappable) e alternativa unificada a
+  `extensions/asr/` (whisper.cpp segue mais leve para STT puro).
+  Adoção exige runner local (llama.cpp-style/MLX/ONNX) + medição de
+  latência e WER pt-BR em held-out -- nenhuma implementada.
+
 ## Context budget (parent model)
 
 ```
