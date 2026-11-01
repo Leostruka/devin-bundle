@@ -68,3 +68,4 @@ extensions/asr/_cache/
 .devin/scratch/egm-smoke*/
 .devin/scratch/cu_*/
 .devin/scratch/cu_notifications.jsonl
+.devin/memory/.*
