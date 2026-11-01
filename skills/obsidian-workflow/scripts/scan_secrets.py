@@ -28,7 +28,7 @@ FALSE_POSITIVES = [
 def scan_file(fp):
     """Scan a single file for secrets. Returns list of (line_num, match, pattern_name)."""
     findings = []
-    with open(fp, 'r', encoding='utf-8') as fh:
+    with open(fp, 'r', encoding='utf-8', errors='replace') as fh:
         for i, line in enumerate(fh, 1):
             for pattern, name in SECRET_PATTERNS:
                 for m in pattern.finditer(line):

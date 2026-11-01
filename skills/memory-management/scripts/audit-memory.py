@@ -36,8 +36,11 @@ def main():
     link_targets = {}
     links_out = {}
     for p in pages:
-        with open(p, encoding='utf-8') as f:
-            content = f.read()
+        try:
+            with open(p, encoding='utf-8', errors='replace') as f:
+                content = f.read()
+        except OSError:
+            continue
         rel = p.replace(BASE + os.sep, '').replace('.md', '').replace(os.sep, '/')
         links = wikilinks(content)
         links_out[rel] = links

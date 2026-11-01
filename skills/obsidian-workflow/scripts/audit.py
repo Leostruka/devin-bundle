@@ -103,7 +103,8 @@ def audit_wiki(wiki_dir):
         mermaid_issues = []
         for diag_file in sorted(diags):
             diag_path = os.path.join(diag_dir, diag_file)
-            with open(diag_path, 'r', encoding='utf-8') as fh:
+            with open(diag_path, 'r', encoding='utf-8',
+                      errors='replace') as fh:
                 diag_content = fh.read()
             # Check for mermaid block
             mermaid_match = re.search(r'(`{2,3})mermaid\n(.*?)\1', diag_content, re.DOTALL)
@@ -135,7 +136,7 @@ def audit_wiki(wiki_dir):
     secrets_found = []
 
     for fp in md_files:
-        with open(fp, 'r', encoding='utf-8') as fh:
+        with open(fp, 'r', encoding='utf-8', errors='replace') as fh:
             content = fh.read()
 
         # Frontmatter checks
@@ -197,7 +198,7 @@ def audit_wiki(wiki_dir):
     # Language check (from 00-Overview)
     ov_path = os.path.join(wiki_dir, '00-Overview.md')
     if os.path.isfile(ov_path):
-        with open(ov_path, 'r', encoding='utf-8') as fh:
+        with open(ov_path, 'r', encoding='utf-8', errors='replace') as fh:
             ov_content = fh.read()
         is_scaffold = any(m in ov_content for m in SCAFFOLD_MARKERS)
         result['overview_status'] = 'scaffold' if is_scaffold else 'populated'

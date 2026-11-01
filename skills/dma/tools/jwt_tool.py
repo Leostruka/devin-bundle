@@ -39,9 +39,14 @@ def analyze(token):
     parts = token.strip().split(".")
     if len(parts) != 3:
         die("token nao tem 3 segmentos — nao e JWT compacto")
-    header = json.loads(b64d(parts[0]))
-    payload = json.loads(b64d(parts[1]))
-    sig = b64d(parts[2])
+    try:
+        header = json.loads(b64d(parts[0]))
+        payload = json.loads(b64d(parts[1]))
+        sig = b64d(parts[2])
+    except (ValueError, UnicodeDecodeError) as e:
+        die(f"segmento nao e base64/JSON valido: {e}")
+    if not isinstance(header, dict) or not isinstance(payload, dict):
+        die("header/payload do token nao sao objetos JSON")
     alg = str(header.get("alg", ""))
     flags = []
     if alg.lower() == "none":
