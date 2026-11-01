@@ -78,3 +78,11 @@ def test_scenario_label_and_mean():
                   scenario="unit")
     assert r["scenario"] == "unit"
     assert r["mean_ms"] >= r["min_ms"]
+
+
+def test_non_numeric_runs_typed_error(capsys):
+    with pytest.raises(SystemExit) as e:
+        bench._main(["--runs", "abc"])
+    assert e.value.code == 2
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is False and "bad_arg" in out["error"]

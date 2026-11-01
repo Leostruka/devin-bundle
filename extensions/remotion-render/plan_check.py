@@ -33,6 +33,9 @@ def check(plan):
     dur = plan.get("audio_duration_s")
     fps = plan.get("fps", 30)
     beats = plan.get("beats", [])
+    if not isinstance(beats, list):
+        errors.append("beats must be a list")
+        beats = []
     if plan.get("version") != 2:
         errors.append("version must be 2 (motion scene-plan)")
     if not isinstance(dur, (int, float)) or dur <= 0:
@@ -41,6 +44,9 @@ def check(plan):
     ranges = []
     total_frames = 0
     for i, b in enumerate(beats):
+        if not isinstance(b, dict):
+            errors.append(f"beat{i}: entry must be an object")
+            continue
         bid = b.get("id", f"beat{i}")
         sr = b.get("sync_range")
         if not (isinstance(sr, list) and len(sr) == 2
@@ -55,14 +61,21 @@ def check(plan):
             errors.append(f"{bid}: ends {e}s beyond audio {dur}s")
         beat_len = e - s
         vis = b.get("visual", {})
-        words = _words(vis.get("props", {}).get("text") or
-                       vis.get("props", {}).get("label"))
+        if not isinstance(vis, dict):
+            errors.append(f"{bid}: visual must be an object")
+            vis = {}
+        props = vis.get("props", {})
+        if not isinstance(props, dict):
+            props = {}
+        words = _words(props.get("text") or props.get("label"))
         min_len = words / (READ_WPM / 60.0)
         if words and beat_len < min_len:
             warnings.append(
                 f"{bid}: {beat_len:.1f}s < read time {min_len:.1f}s "
                 f"for {words} words")
         motion = b.get("motion_spec", {})
+        if not isinstance(motion, dict):
+            motion = {}
         for k in ("enter", "exit"):
             d = motion.get(f"{k}_s", 0)
             if d and d > beat_len / 2:
@@ -85,9 +98,24 @@ def check(plan):
             "budget": budget}
 
 
+def _fail(msg):
+    print(json.dumps({"ok": False, "errors": [msg], "warnings": [],
+                      "budget": {"frames": 0, "est_seconds": 0}}))
+    return 2
+
+
 def main(argv=None):
-    plan = json.loads(Path(argv[0] if argv else sys.argv[1])
-                      .read_text(encoding="utf-8"))
+    src = argv[0] if argv else sys.argv[1]
+    try:
+        raw = Path(src).read_text(encoding="utf-8")
+    except OSError as exc:
+        return _fail(f"read_error:{exc}")
+    try:
+        plan = json.loads(raw)
+    except ValueError as exc:
+        return _fail(f"json_error:{exc}")
+    if not isinstance(plan, dict):
+        return _fail("plan must be a JSON object")
     print(json.dumps(check(plan), indent=2, ensure_ascii=False))
     return 0
 

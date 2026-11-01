@@ -75,11 +75,16 @@ def _main(argv):
     """CLI: `python sc_bench.py [--runs N] [--warmup N]`."""
     runs, warmup = 30, 5
     args = iter(argv)
-    for a in args:
-        if a == "--runs":
-            runs = int(next(args, "30"))
-        elif a == "--warmup":
-            warmup = int(next(args, "5"))
+    try:
+        for a in args:
+            if a == "--runs":
+                runs = int(next(args, "30"))
+            elif a == "--warmup":
+                warmup = int(next(args, "5"))
+    except ValueError as exc:
+        print(json.dumps({"ok": False,
+                          "error": f"bad_arg:{exc}"}))
+        raise SystemExit(2)
     here = str(pathlib.Path(__file__).resolve().parent)
     if here not in sys.path:
         sys.path.insert(0, here)
