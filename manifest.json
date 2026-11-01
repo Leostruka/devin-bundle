@@ -756,7 +756,7 @@
     {
       "name": "memory-post-exec.py",
       "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword",
-      "export_hash": "AFDEA2F48F405BD7DE4F09A08DE59CE18EE0BC605EAB91FEBBF0D6FA074C2145",
+      "export_hash": "12A0EFD9883E95E555115C6368821E396393758A75821D19F97B0CD27B3BA8B2",
       "exported_at": "2026-09-08T21:39:22.431511"
     },
     {

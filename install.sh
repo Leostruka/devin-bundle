@@ -500,6 +500,10 @@ if [[ -d "$ext_src" ]]; then
   for ext_dir in "$ext_src"/*/; do
     [[ -d "$ext_dir" ]] || continue
     name="$(basename "$ext_dir")"
+    if [[ -z "$(find "$ext_dir" -mindepth 1 -type f -print -quit 2>/dev/null)" ]]; then
+      skip "extensions/$name is empty"
+      continue
+    fi
     dst_dir="$ext_dst/$name"
     if [[ -d "$dst_dir" ]]; then
       src_h="$(dir_hash_ext "$ext_dir")"

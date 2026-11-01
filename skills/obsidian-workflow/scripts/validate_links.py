@@ -49,7 +49,7 @@ def validate_links(wiki_dir):
     all_basenames = set()
     all_links = {}
     for fp in md_files:
-        with open(fp, 'r', encoding='utf-8') as fh:
+        with open(fp, 'r', encoding='utf-8', errors='replace') as fh:
             for i, line in enumerate(fh, 1):
                 for m in LINK_PATTERN.finditer(line):
                     tgt = parse_target(m.group(1))

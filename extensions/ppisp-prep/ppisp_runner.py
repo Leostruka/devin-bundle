@@ -90,7 +90,19 @@ def run(images_dir, out_dir, steps=None, extra=None):
     if steps:
         argv += ["--steps", str(steps)]
     argv += list(extra or [])
-    p = subprocess.run(argv, cwd=up, capture_output=True, text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    try:
+        timeout = int(os.environ.get("PPISP_TIMEOUT", "3600"))
+    except ValueError:
+        timeout = 3600
+    try:
+        p = subprocess.run(argv, cwd=up, capture_output=True, text=True,
+                           timeout=timeout,
+                           creationflags=getattr(
+                               subprocess, "CREATE_NO_WINDOW", 0))
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": f"upstream_timeout:{timeout}s"}
+    except OSError as e:
+        return {"ok": False, "error": f"spawn_failed:{e}"}
     return {"ok": p.returncode == 0, "exit": p.returncode,
             "out": str(out_dir), "stdout": p.stdout[-2000:],
             "stderr": p.stderr[-2000:]}

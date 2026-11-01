@@ -60,6 +60,12 @@ def test_install_sh_has_expected_parameters():
     assert content.startswith('#!')
 
 
+def test_install_sh_skips_empty_extension_dirs():
+    content = read_script('install.sh')
+    assert 'mindepth 1 -type f -print -quit' in content
+    assert 'is empty' in content
+
+
 def test_export_ps1_has_expected_parameters():
     content = read_script('export.ps1')
     assert '[switch]$DryRun' in content

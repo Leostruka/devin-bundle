@@ -99,7 +99,10 @@ def main():
     for p in glob.glob(os.path.join(BASE, '**', '*.md'), recursive=True):
         if p.endswith('MOC.md'):
             continue
-        notes.append(load_note(p))
+        try:
+            notes.append(load_note(p))
+        except (OSError, UnicodeDecodeError):
+            continue
 
     scored = [(score(n, command, output), n) for n in notes]
     scored = [(s, n) for s, n in scored if s > 0]
