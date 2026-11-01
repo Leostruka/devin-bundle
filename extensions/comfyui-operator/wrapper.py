@@ -18,6 +18,8 @@ import urllib.request
 import uuid
 
 DEFAULT_URL = "http://127.0.0.1:8188"
+LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
+_ALLOWED_SCHEMES = {"http", "https"}
 
 
 def _out(obj, code=0):
@@ -112,6 +114,27 @@ def cmd_history(base, prompt_id):
           "files": _collect_outputs(entry)})
 
 
+def _safe_dest(outdir, subfolder, filename):
+    """Resolve a server-provided output name into outdir, or None.
+
+    Filenames/subfolders are server-controlled: strip both separators,
+    reject traversal and absolute/drive paths, and require the resolved
+    destination to stay inside the resolved outdir.
+    """
+    raw = (subfolder or "") + (filename or "")
+    name = raw.replace("\\", "/").split("/")[-1]
+    if not name or name in (".", ".."):
+        return None
+    dest = os.path.realpath(os.path.join(outdir, name))
+    root = os.path.realpath(outdir)
+    try:
+        if os.path.commonpath([root, dest]) != root:
+            return None
+    except ValueError:
+        return None  # different drives on Windows
+    return dest
+
+
 def cmd_download(base, prompt_id, outdir):
     hist = _request(base, "GET", f"/history/{prompt_id}", timeout=30)
     entry = hist.get(prompt_id)
@@ -124,9 +147,10 @@ def cmd_download(base, prompt_id, outdir):
             {"filename": f["filename"], "subfolder": f["subfolder"],
              "type": f["type"]})
         blob = _request(base, "GET", f"/view?{q}", timeout=120, raw=True)
-        name = f["subfolder"] + f["filename"] if f["subfolder"] \
-            else f["filename"]
-        dest = os.path.join(outdir, name.replace("/", "_"))
+        dest = _safe_dest(outdir, f["subfolder"], f["filename"])
+        if dest is None:
+            _fail(f"unsafe output name from server: "
+                  f"{f['subfolder']!r}{f['filename']!r}")
         with open(dest, "wb") as fh:
             fh.write(blob)
         saved.append(dest)
@@ -174,6 +198,11 @@ def main():
     p = sub.add_parser("upload")
     p.add_argument("file")
     a = ap.parse_args()
+    parsed = urllib.parse.urlparse(a.url)
+    if ((parsed.hostname or "").lower() not in LOOPBACK_HOSTS
+            or parsed.scheme not in _ALLOWED_SCHEMES):
+        _fail(f"--url/COMFYUI_URL must be http(s) on a loopback host, "
+              f"got {a.url!r}")
 
     {"status": lambda: cmd_status(a.url),
      "queue": lambda: cmd_queue(a.url),
