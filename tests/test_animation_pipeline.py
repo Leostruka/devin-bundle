@@ -162,3 +162,51 @@ def test_model_path_accepts_ggml_spelling(tmp_path):
         assert t._model_path("missing") is None
     finally:
         t.CACHE = orig
+
+
+# --- plan_check CLI error contract (audit-r4 issue 01) -------------------------
+
+def test_main_missing_file_typed_error(tmp_path, capsys):
+    rc = plan_check.main([str(tmp_path / "nope.json")])
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert out["ok"] is False
+    assert out["errors"][0].startswith("read_error:")
+
+
+def test_main_bad_json_typed_error(tmp_path, capsys):
+    p = tmp_path / "bad.json"
+    p.write_text("{not json")
+    rc = plan_check.main([str(p)])
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert out["errors"][0].startswith("json_error:")
+
+
+def test_main_non_dict_plan_typed_error(tmp_path, capsys):
+    p = tmp_path / "arr.json"
+    p.write_text("[1, 2]")
+    rc = plan_check.main([str(p)])
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 2
+    assert "plan must be a JSON object" in out["errors"][0]
+
+
+def test_beats_non_list_typed_error():
+    out = plan_check.check({"version": 2, "audio_duration_s": 10,
+                            "beats": "x"})
+    assert any("beats must be a list" in e for e in out["errors"])
+
+
+def test_beat_non_dict_typed_error():
+    p = _plan()
+    p["beats"].append(42)
+    out = plan_check.check(p)
+    assert any("entry must be an object" in e for e in out["errors"])
+
+
+def test_beat_visual_non_dict_typed_error():
+    p = _plan()
+    p["beats"][0]["visual"] = "kinetic"
+    out = plan_check.check(p)
+    assert any("visual must be an object" in e for e in out["errors"])
