@@ -5,6 +5,34 @@ All notable changes to this project are documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **`install.sh` Windows split-brain** (#269): on MINGW/MSYS/CYGWIN the installer now targets `%APPDATA%/devin` (where the CLI actually reads) instead of `~/.config/devin`; `audit.py` prefers `%APPDATA%` on Windows and warns when both dirs exist. Previous bash installs had written a shadow config that drift checks validated as "live".
+- **Exporter secret masking and pre-push gate** (#268): `export.sh`/`export.ps1` now mask by key-name (`token|secret|api[_-]?key|password|auth|credential|private|pat`, e.g. `GITHUB_PAT`, `Authorization`, `client_secret`) and embedded URL userinfo; TOML masking tracks multiline openers (`[`, `"""`, `'''`) so continuation lines no longer leak; the pre-push `audit.py`/`pytest` gate now runs inside the bundle root (it previously validated the caller's cwd, where `audit.py` walks `.`, silently broken); `git add -A` replaced with export-owned paths; paths passed via `sys.argv` instead of shell interpolation; bundle-only/stale export entries now reported.
+- **Installer/skill robustness** (#264): unreadable-file guards, `ppisp` subprocess timeout, empty extension directory skip in `install.sh` (parity added to `install.ps1` in #269).
+- **`comfyui-operator` hardening** (#263): loopback-only server URL and download path sanitization.
+- **Typed-error hardening** (#262, #255, #254): `plan_check`, ASR bootstrap, `sc_bench`, custom presets, laya-compactor pairing/reduction accounting.
+- **`asr` Windows discovery** (#256): whisper binary/model discovery fixed on Windows.
+- **Unexpanded placeholders** (#272): `{{VALIDATED_CLI_VERSION}}` in `ask-bundle` (never substituted by any pipeline) now references `validated_cli_version`; `data/bundle-identity.json` filled with real values (`Leostruka/devin-bundle`, 2026); `blender-operator` POSIX `ps` call gained `timeout=15` parity.
+
+### Added
+
+- **`agentic-rag` vectorless/tree-index retrieval** (#266): architecture selector gained `long structured docs -> PageIndex-style` with honest costs (LLM call per hop, index build time, stale-tree versioning); gate/escalation unchanged.
+- **`brag` portfolio-site beat order** (#267): storyboard template for portfolio/personal-site inputs (hero -> work -> recognition -> process -> values -> CTA) from real-site reel re-analysis.
+- **`stuck-detect` deterministic advisory** (#260): token-economizer subset hook.
+- **Ponytail minimal-diff checklist** (#258): Goldfish zoom-out review step.
+- **EGM runtime rollout** (#253): JEV routing, OpenUI runtime, camera blocking, BitNet/offloading adapters, TPU held-out scaffolding + 12-issue audit hardening.
+
+### Changed
+
+- **MODEL-GUIDE**: Avalon AMD MoE fork evaluated-not-adopted with 4-question benchmark-reading checklist (#265); LFM3 local-audio family entry (#259).
+
+### Documentation
+
+- Source analyses: NCM coarse-to-fine (#261), FreeMyTv Claude-Code-on-TV (#257), batch sources incl. DeltaDB/TradingAgents/Kimi K3/Openjutsu (#265), TSF Lesson 1 (#271), all notes-only, no portable implementation; R8 issue answers (#270); review-pattern capture and drift reconciliation (#252).
+
 ## [3.17.0] - 2026-10-30
 
 ### Added
