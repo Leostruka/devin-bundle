@@ -30,7 +30,23 @@ Five slots, stack-agnostic:
 |---|---|---|
 | Static corpus <200k tokens (~500 pages), low churn | Prompt context + prompt caching (no RAG) | Zero retrieval infra or chunk-boundary loss |
 | Single-source docs + per-user chat history | Linear RAG + cross-encoder reranker | One vector search (top-20) + reranker (`max_results = 5`); predictable latency |
+| Long structured docs (filings, contracts, manuals) with real ToC | Vectorless / tree-index retrieval (PageIndex-style), optionally feeding this playbook's gate | Similarity fails on template-identical sections and cross-references; tree lets the model follow them like an analyst |
 | High-stakes Q&A, multi-source (docs/SQL/API), support desk | **Agentic RAG (this playbook)** | Decision gate blocks ungrounded generation, allows 1 wider retry, and escalates to human with feedback loop |
+
+### Vectorless retrieval notes (source: Daily Dose of DS follow-up)
+
+- Failure modes it fixes: chunks from different periods/versions that
+  look identical to an embedder (wrong-year answers, silent), and
+  pointers like "see Appendix G" whose target never ranks.
+- Trade: each tree hop is an LLM call (latency/cost per query up),
+  index build costs minutes of LLM calls per document, and it only
+  works when documents have real structure. Lots of short unrelated
+  text stays on the vector side; period-mixup can also be mitigated
+  with metadata filters there.
+- If adopted here, the tree replaces only the retrieval stage --
+  decision gate, escalation, and human loop stay identical. Version
+  the tree with the document it was built from: a stale summary node
+  is a silent wrong-version answer.
 
 ## Context separation (Conversation vs. Memory vs. RAG)
 
