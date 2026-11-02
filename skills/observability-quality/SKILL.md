@@ -2,7 +2,7 @@
 name: observability-quality
 description: Use when adding logging, metrics, distributed tracing, error monitoring, linting, architecture testing, or test infrastructure to a project. Covers OpenTelemetry, Sentry/Datadog/Grafana, Biome/ESLint, ArchUnit, commitlint, Knip, Playwright, and coverage strategy. Infrastructure and tooling quality only; writing feature tests goes to testing or e2e-testing.
 triggers: [user, model]
-allowed-tools: [read, grep, find_file_by_name, edit, write, exec]
+allowed-tools: [read, grep, glob, find_file_by_name, edit, write, exec]
 ---
 
 # Observability and Code Quality
