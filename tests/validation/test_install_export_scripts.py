@@ -262,13 +262,15 @@ def test_blender_posix_ps_has_timeout():
 
 # --- R12 recipe regression ---
 
-VALID_TOOLS = {'read', 'write', 'edit', 'exec', 'grep', 'find_file_by_name',
-               'web_search', 'webfetch', 'todo_write', 'run_subagent',
-               'read_subagent', 'ask_user_question', 'skill', 'notebook_read',
-               'notebook_edit', 'mcp_call_tool', 'mcp_list_tools',
-               'mcp_list_servers', 'mcp_read_resource', 'browser_preview',
-               'close_browser_preview', 'get_output', 'kill_shell',
-               'write_to_process', 'request_scope'}
+# Canonical 28-tool set, mirroring .devin/docs/TOOLS-MAP.md table.
+VALID_TOOLS = {'read', 'write', 'edit', 'apply_patch', 'notebook_read',
+               'notebook_edit', 'grep', 'glob', 'find_file_by_name', 'exec',
+               'get_output', 'write_to_process', 'kill_shell', 'web_search',
+               'webfetch', 'run_subagent', 'read_subagent', 'skill',
+               'todo_write', 'ask_user_question', 'browser_preview',
+               'close_browser_preview', 'request_scope', 'mcp_call_tool',
+               'mcp_list_tools', 'mcp_list_servers', 'mcp_read_resource',
+               'exit_plan_mode'}
 
 
 def test_recipes_tools_exist():
@@ -281,24 +283,43 @@ def test_recipes_tools_exist():
 
 
 def test_skill_allowed_tools_exist():
-    """SKILL.md allowed-tools frontmatter must name real CLI tools."""
+    """allowed-tools frontmatter must name real CLI tools (inline and
+    YAML-list forms), across skills and agent profiles."""
     import re
     bad = []
+    files = []
     skills_dir = os.path.join(REPO_ROOT, 'skills')
     for d in os.listdir(skills_dir):
         p = os.path.join(skills_dir, d, 'SKILL.md')
-        if not os.path.isfile(p):
+        if os.path.isfile(p):
+            files.append((d, p))
+    for agents_dir in ('agents', os.path.join('.devin', 'agents')):
+        ad = os.path.join(REPO_ROOT, agents_dir)
+        if not os.path.isdir(ad):
             continue
+        for f in os.listdir(ad):
+            p = os.path.join(ad, f)
+            if f.endswith('.md') and os.path.isfile(p):
+                files.append((agents_dir + '/' + f, p))
+    for name, p in files:
         c = open(p, encoding='utf-8').read()
         m = re.match(r'^---\n(.*?)\n---', c, re.S)
         if not m:
             continue
+        in_at = False
         for ln in m.group(1).splitlines():
             if ln.startswith('allowed-tools:'):
+                in_at = True
                 for t in re.split(r'[,\s]+', ln.split(':', 1)[1]):
                     t = t.strip().strip('[]')
                     if t and t not in VALID_TOOLS:
-                        bad.append(f'{d}: {t}')
+                        bad.append(f'{name}: {t}')
+            elif in_at and re.match(r'^\s+- ', ln):
+                t = ln.split('- ', 1)[1].split('#')[0].strip()
+                if t and t not in VALID_TOOLS:
+                    bad.append(f'{name}: {t}')
+            elif in_at:
+                in_at = False
     assert not bad, 'unknown allowed-tools: ' + ', '.join(bad)
 
 
