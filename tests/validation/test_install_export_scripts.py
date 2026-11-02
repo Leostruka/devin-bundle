@@ -331,39 +331,119 @@ PIP_TO_IMPORT = {'pillow': 'pil', 'opencv-python': 'cv2',
                  'pywinpty': 'winpty', 'winrt-runtime': 'winrt'}
 
 
+def _extension_declared_imports(ext_dir):
+    """Pip names in an extension's requirements*.txt, normalized to the
+    module names they install (Pillow -> PIL, pywinpty -> winpty)."""
+    import glob as _glob
+    import re
+    reqs = set()
+    for rf in _glob.glob(os.path.join(ext_dir, 'requirements*.txt')):
+        for ln in open(rf, encoding='utf-8'):
+            ln = ln.strip().lower()
+            if ln and not ln.startswith('#'):
+                name = re.split(r'[=<>!~;\[\s]', ln)[0].strip()
+                name = PIP_TO_IMPORT.get(
+                    name, 'winrt' if name.startswith('winrt-') else name)
+                reqs.add(name)
+    return reqs
+
+
 def test_extension_declared_deps_used():
     """Every requirement declared by an extension must be imported by
     that extension's own Python code (catches orphaned deps)."""
     import glob as _glob
-    import re
     bad = []
     for ext in sorted(os.listdir(os.path.join(REPO_ROOT, 'extensions'))):
         d = os.path.join(REPO_ROOT, 'extensions', ext)
         if not os.path.isdir(d):
             continue
-        reqs = set()
-        for rf in _glob.glob(os.path.join(d, 'requirements*.txt')):
-            for ln in open(rf, encoding='utf-8'):
-                ln = ln.strip().lower()
-                if ln and not ln.startswith('#'):
-                    name = re.split(r'[=<>!~\[]', ln)[0].strip()
-                    name = PIP_TO_IMPORT.get(
-                        name, 'winrt' if name.startswith('winrt-') else name)
-                    reqs.add(name)
+        reqs = _extension_declared_imports(d)
         if not reqs:
             continue
+        import ast
         imps = set()
         for pf in _glob.glob(os.path.join(d, '**', '*.py'),
                              recursive=True):
             if '.venv' in pf or '__pycache__' in pf:
                 continue
             src = open(pf, encoding='utf-8', errors='ignore').read()
-            imps.update(re.findall(
-                r'^\s*(?:import|from)\s+(\w+)', src, re.M))
+            try:
+                tree = ast.parse(src)
+            except SyntaxError:
+                continue
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imps.update(a.name.split('.')[0] for a in node.names)
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    imps.add(node.module.split('.')[0])
         for r in reqs:
             if r.replace('-', '_') not in {i.lower() for i in imps}:
                 bad.append(f'{ext}: {r} declared but never imported')
     assert not bad, 'orphaned requirements: ' + ', '.join(bad)
+
+
+# --- R21 used -> declared direction ---
+
+# Modules supplied by a host application, not pip-provisionable for the
+# bundle env: bpy/mathutils come from Blender's embedded interpreter
+# (blender-operator code runs inside the Blender process).
+HOST_PROVIDED = {'bpy', 'mathutils'}
+
+
+def test_extension_used_deps_declared():
+    """Module-scope third-party imports in extension code must be covered
+    by that extension's requirements*.txt (catches undeclared hard deps).
+
+    Function/try-scope imports are lazy optionals and exempt. Module roots
+    resolvable anywhere under extensions/ are internal (the sanctioned
+    cross-extension sys.path pattern); test files are exempt since the
+    repo test env provides their deps.
+    """
+    import ast
+    import sys as _sys
+    internal = ({m.lower() for m in _sys.stdlib_module_names}
+                | set(_sys.builtin_module_names))
+    ext_root = os.path.join(REPO_ROOT, 'extensions')
+    ext_modules = set()
+    for r, ds, fs in os.walk(ext_root):
+        ds[:] = [x for x in ds
+                 if x not in ('.venv', '__pycache__', 'node_modules')]
+        ext_modules.update(x.lower() for x in ds)
+        ext_modules.update(os.path.splitext(f)[0].lower() for f in fs
+                           if f.endswith('.py'))
+    bad = []
+    for ext in sorted(os.listdir(ext_root)):
+        d = os.path.join(ext_root, ext)
+        if not os.path.isdir(d):
+            continue
+        declared = _extension_declared_imports(d)
+        for r, ds, fs in os.walk(d):
+            ds[:] = [x for x in ds if x not in (
+                '.venv', '__pycache__', 'node_modules', 'tests', 'test')]
+            for f in fs:
+                if (not f.endswith('.py') or f.startswith('test_')
+                        or f.endswith('_test.py')):
+                    continue
+                pf = os.path.join(r, f)
+                try:
+                    tree = ast.parse(
+                        open(pf, encoding='utf-8').read())
+                except SyntaxError:
+                    bad.append(f'{ext}: {os.path.basename(pf)} syntax error')
+                    continue
+                mods = set()
+                for node in tree.body:
+                    if isinstance(node, ast.Import):
+                        mods.update(a.name.split('.')[0].lower()
+                                    for a in node.names)
+                    elif (isinstance(node, ast.ImportFrom)
+                          and node.level == 0 and node.module):
+                        mods.add(node.module.split('.')[0].lower())
+                for m in mods - internal - ext_modules - HOST_PROVIDED:
+                    if m != 'pytest' and m not in declared:
+                        bad.append(f'{ext}: {m} imported by '
+                                   f'{os.path.basename(pf)} but undeclared')
+    assert not bad, 'undeclared hard dependencies: ' + ', '.join(bad)
 
 
 # --- R13 hook import-boundary regression (Nx-style module boundaries) ---
