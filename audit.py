@@ -431,8 +431,8 @@ for pattern in required_ignores:
 # gitignored; only versioned pollution is a problem)
 try:
     import subprocess
-    tracked = subprocess.check_output(
-        ['git', 'ls-files', '--', '*__pycache__*'], text=True).split()
+    tracked = [p for p in subprocess.check_output(
+        ['git', 'ls-files'], text=True).split() if '__pycache__' in p]
 except Exception:
     tracked = []
 if tracked:
