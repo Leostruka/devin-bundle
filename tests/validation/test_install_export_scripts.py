@@ -207,3 +207,30 @@ def test_export_ps1_toml_mask_drops_multiline_continuations():
 def test_export_stale_entry_reporting():
     assert 'report_stale' in read_script('export.sh')
     assert 'Report-Stale' in read_script('export.ps1')
+
+
+# --- R8 install-target regressions ---
+
+
+def test_install_sh_resolves_appdata_on_windows():
+    """Git Bash on Windows must target %APPDATA%\\devin -- the CLI does
+    not read ~/.config/devin there (shadow dir bug)."""
+    content = read_script('install.sh')
+    assert 'MINGW*|MSYS*|CYGWIN*' in content
+    assert 'cygpath' in content
+    assert '${APPDATA:-}' in content
+
+
+def test_install_ps1_skips_empty_extension_dirs():
+    """Parity with the install.sh R6 guard."""
+    content = read_script('install.ps1')
+    assert 'is empty' in content
+    assert '-Recurse -File' in content
+
+
+def test_audit_prefers_appdata_on_windows():
+    """On os.name == 'nt' the CLI reads %APPDATA%/devin; auditing the
+    .config shadow instead masks real drift."""
+    content = read_script('audit.py')
+    assert "os.name == 'nt'" in content
+    assert 'shadow config dir' in content

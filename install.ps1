@@ -623,6 +623,11 @@ Write-Step "Install extensions/ (local tools)"
 if (Test-Path $extSrc) {
   $extDirs = Get-ChildItem $extSrc -Directory
   foreach ($ext in $extDirs) {
+    # Empty extension dirs (untracked placeholders) must not report "installed"
+    if (-not (Get-ChildItem $ext.FullName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1)) {
+      Write-Skip "extensions/$($ext.Name) is empty"
+      continue
+    }
     $result = Install-SkillDir -src $ext.FullName -dst (Join-Path $extDst $ext.Name) -name $ext.Name -exclude '\.venv\\|\\target\\|\.(pyd|so|dylib)$'
     switch ($result) {
       "installed"      { Write-Ok "extensions/$($ext.Name) (installed)" }
