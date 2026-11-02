@@ -29,7 +29,7 @@
   Show what would be copied without writing.
 
 .PARAMETER Commit
-  After export, run git add -A && git commit with a generated message.
+  After export, stage the exported paths and git commit with a generated message.
 
 .PARAMETER Push
   After commit, validate + git push. Implies -Commit.
@@ -142,31 +142,54 @@ function Copy-DirRecursive($src, $dst, $label) {
   return $count
 }
 
+function Report-Stale($src, $dst, $label) {
+  # Export is one-way (live -> bundle); items deleted upstream persist
+  # silently. Auto-delete is unsafe both ways, so only report.
+  if (-not (Test-Path $src) -or -not (Test-Path $dst)) { return }
+  Get-ChildItem $dst | ForEach-Object {
+    if (-not (Test-Path (Join-Path $src $_.Name))) {
+      Write-Warn "$label`: $($_.Name) is bundle-only (not in live config) -- kept; remove manually if unintended"
+    }
+  }
+}
+
 function Mask-JsonSecrets($content) {
   if ($NoMask) { return $content }
   $masked = $content
   # Mask org_id in config.json
   $masked = $masked -replace '("org_id"\s*:\s*")[^"]+', '$1MASKED'
-  # Mask env values in mcp_config.json (API_KEY, TOKEN, SECRET, PASSWORD, KEY)
-  $masked = $masked -replace '("(?:API_KEY|TOKEN|SECRET|PASSWORD|KEY|api_key|token|secret|password|key)"\s*:\s*")[^"]+', '$1MASKED'
-  # Mask URLs with embedded tokens (sk-, gho_, ghp_, etc.)
+  # Mask any JSON "key": "value" pair whose KEY NAME looks secret --
+  # exact-name whitelists miss GITHUB_PAT, Authorization, client_secret, ...
+  $masked = $masked -replace '(?i)("[^"]*(?:token|secret|key|password|passwd|auth|bearer|credential|private|pat)[^"]*"\s*:\s*")[^"]+', '$1MASKED'
+  # Mask URLs with embedded credentials
   $masked = $masked -replace '(https://[^/\s]+:[^@/]+@)', 'https://MASKED@'
   return $masked
 }
 
 function Mask-TomlSecrets($content) {
   if ($NoMask) { return $content }
-  # credentials.toml: mask all values after = sign, preserve keys
-  # Format: key = "value" or key = value
+  # credentials.toml: mask all values after =, preserve keys.
+  # Multiline values leak via continuation lines otherwise: a line
+  # inside `key = [ ... ]` or `key = """..."""` has no `=` and would
+  # be copied raw, so we drop lines until the opener closes.
   $lines = $content -split "`n"
   $masked = @()
+  $skipUntil = $null
   foreach ($line in $lines) {
+    if ($null -ne $skipUntil) {
+      if ($line.Contains($skipUntil)) { $skipUntil = $null }
+      continue
+    }
     if ($line -match '^\s*#' -or $line -match '^\s*\[' -or $line.Trim() -eq "") {
       $masked += $line
       continue
     }
     if ($line -match '^(\s*\S+\s*=\s*)(.+)$') {
+      $rhs = $Matches[2].Trim()
       $masked += "$($Matches[1])`"MASKED`""
+      if ($rhs.StartsWith('[') -and -not $rhs.Contains(']')) { $skipUntil = ']' }
+      elseif ($rhs.StartsWith('"""') -and (($rhs.Length - $rhs.Replace('"""','').Length) / 3) -eq 1) { $skipUntil = '"""' }
+      elseif ($rhs.StartsWith("'''") -and (($rhs.Length - $rhs.Replace("'''",'').Length) / 3) -eq 1) { $skipUntil = "'''" }
     } else {
       $masked += $line
     }
@@ -337,6 +360,7 @@ if ($agentFiles) {
 } else {
   Write-Skip "no agent files to check"
 }
+Report-Stale -src $agentsSrc -dst $agentsDst -label "agents"
 
 # --- 3. skills/ (auto-discover ALL) ---
 Write-Step "Export skills (auto-discover)"
@@ -369,6 +393,7 @@ if (Test-Path $skillsSrc) {
     }
   }
   Write-Ok "Skills: $exported exported, $unchanged unchanged, $failed failed (total: $($skillDirs.Count))"
+  Report-Stale -src $skillsSrc -dst $skillsDst -label "skills"
 } else {
   Write-Warn "skills/ directory not found at $skillsSrc"
 }
@@ -410,6 +435,7 @@ $scriptCount = Copy-DirRecursive -src $scriptsSrc -dst $scriptsDst -label "scrip
 if ($scriptCount -eq 0 -and -not (Test-Path $scriptsSrc)) {
   Write-Warn "scripts/ not found at $scriptsSrc"
 }
+Report-Stale -src $scriptsSrc -dst $scriptsDst -label "scripts"
 
 # --- 5a. data/ (model context windows and thresholds) ---
 Write-Step "Export data/ (model context windows)"
@@ -417,6 +443,7 @@ $dataCount = Copy-DirRecursive -src $dataSrc -dst $dataDst -label "data/"
 if ($dataCount -eq 0 -and -not (Test-Path $dataSrc)) {
   Write-Warn "data/ not found at $dataSrc"
 }
+Report-Stale -src $dataSrc -dst $dataDst -label "data"
 
 # --- 6. mcp_config.json ---
 Write-Step "Export mcp_config.json (MCP servers)"
@@ -514,27 +541,32 @@ function Invoke-Validation {
   }
 
   # Run full repo audit and test suite before push (Rule 5: no push without green)
+  # audit.py walks "." and reads manifest.json relative to cwd -- it must
+  # run inside bundleRoot or it audits the caller's directory.
   if ($Push) {
-    $auditCmd = "python `"$bundleRoot\audit.py`""
-    Write-Step "Running audit.py"
-    $auditResult = Invoke-Expression $auditCmd
-    $auditExit = $LASTEXITCODE
-    if ($auditExit -ne 0) {
-      Write-Err "audit.py failed (exit $auditExit)"
-      $errors += "audit.py failed"
-    } else {
-      Write-Ok "audit.py passed"
-    }
+    Push-Location $bundleRoot
+    try {
+      Write-Step "Running audit.py"
+      python audit.py | Out-Host
+      $auditExit = $LASTEXITCODE
+      if ($auditExit -ne 0) {
+        Write-Err "audit.py failed (exit $auditExit)"
+        $errors += "audit.py failed"
+      } else {
+        Write-Ok "audit.py passed"
+      }
 
-    $pytestCmd = "python -m pytest -q `"$bundleRoot`""
-    Write-Step "Running pytest"
-    $pytestResult = Invoke-Expression $pytestCmd
-    $pytestExit = $LASTEXITCODE
-    if ($pytestExit -ne 0) {
-      Write-Err "pytest failed (exit $pytestExit)"
-      $errors += "pytest failed"
-    } else {
-      Write-Ok "pytest passed"
+      Write-Step "Running pytest"
+      python -m pytest -q . | Out-Host
+      $pytestExit = $LASTEXITCODE
+      if ($pytestExit -ne 0) {
+        Write-Err "pytest failed (exit $pytestExit)"
+        $errors += "pytest failed"
+      } else {
+        Write-Ok "pytest passed"
+      }
+    } finally {
+      Pop-Location
     }
   }
 
@@ -551,7 +583,7 @@ function Invoke-Validation {
 if ($Commit -or $Push) {
   if ($DryRun) {
     Write-Step "Git (dry-run)"
-    Write-Skip "would git add -A && commit"
+    Write-Skip "would stage export paths && commit"
     if ($Push) { Write-Skip "would validate && git push" }
   } else {
     # Validate before committing
@@ -566,8 +598,11 @@ if ($Commit -or $Push) {
     $prevEAP = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
-      git add -A 2>&1 | Out-Null
-      $status = git status --porcelain
+      # Stage only paths export.ps1 can write -- staging the whole tree
+      # would sweep unrelated working-tree changes into the generated commit.
+      $exportPaths = @("AGENTS.md","agents","skills","config.json","hooks.v1.json","scripts","data","mcp_config.json","credentials.toml","docs","export.sh","export.ps1")
+      git add -- $exportPaths 2>&1 | Out-Null
+      $status = git status --porcelain -- $exportPaths
       if ($status) {
         $date = Get-Date -Format "yyyy-MM-dd"
         $skillCount = if (Test-Path $skillsDst) { (Get-ChildItem $skillsDst -Directory).Count } else { 0 }

@@ -3,6 +3,8 @@ import re
 import subprocess
 import sys
 
+import pytest
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -129,3 +131,79 @@ def test_bash_scripts_pass_syntax_check():
             timeout=10,
         )
         assert result.returncode == 0, f"{name} has bash syntax errors: {result.stderr}"
+
+
+# --- R7 export-hardening regressions ---
+
+
+def test_export_sh_audit_and_pytest_run_inside_bundle_dir():
+    """audit.py is cwd-dependent (walks '.', reads manifest.json) -- the
+    pre-push gate must cd into BUNDLE_DIR or it audits the caller's tree."""
+    content = read_script('export.sh')
+    assert 'cd "$BUNDLE_DIR" && python audit.py' in content
+    assert 'cd "$BUNDLE_DIR" && python -m pytest' in content
+
+
+def test_export_ps1_audit_and_pytest_run_inside_bundle_dir():
+    content = read_script('export.ps1')
+    audit_idx = content.find('python audit.py')
+    push_idx = content.rfind('Push-Location $bundleRoot', 0, audit_idx)
+    assert audit_idx != -1 and push_idx != -1, (
+        'audit.py must run under Push-Location $bundleRoot')
+
+
+def test_export_sh_commit_stages_only_export_paths():
+    """git add -A sweeps unrelated dirty files into the export commit."""
+    content = read_script('export.sh')
+    assert 'git add -A' not in content
+    assert 'git add -- AGENTS.md' in content
+
+
+def test_export_ps1_commit_stages_only_export_paths():
+    content = read_script('export.ps1')
+    assert 'git add -A' not in content
+    assert '$exportPaths' in content
+    assert 'git add -- $exportPaths' in content
+
+
+def test_export_sh_mcp_mask_matches_key_names():
+    """Value-only masking leaks secrets under custom keys (GITHUB_PAT,
+    Authorization). The mask must also inspect key names."""
+    content = read_script('export.sh')
+    assert 'SECRET_KEY' in content
+    for pat in ('token', 'secret', 'api[_-]?key', 'bearer', 'credential', 'pat'):
+        assert pat in content
+
+
+def test_export_ps1_mcp_mask_matches_key_names():
+    content = read_script('export.ps1')
+    assert 'token|secret|key|password|passwd|auth|bearer|credential|private|pat' in content
+
+
+def test_export_sh_python_blocks_use_argv_paths():
+    """Interpolating '$var' paths into python -c source mangles quotes and
+    backslashes; paths must arrive via sys.argv."""
+    content = read_script('export.sh')
+    assert "'$config_src'" not in content
+    assert "'$mcp_src'" not in content
+    assert "'$mcp_dst'" not in content
+    assert 'sys.argv[1]' in content
+
+
+def test_export_sh_toml_mask_drops_multiline_continuations():
+    """sed 's/=.*/MASKED/' leaks multiline TOML values (lines inside
+    `key = [ ... ]` have no `=`). Masking must track the opener."""
+    content = read_script('export.sh')
+    assert "sed 's/=.*/" not in content
+    assert 'skip_until' in content
+    assert 'report_stale' in content
+
+
+def test_export_ps1_toml_mask_drops_multiline_continuations():
+    content = read_script('export.ps1')
+    assert '$skipUntil' in content
+
+
+def test_export_stale_entry_reporting():
+    assert 'report_stale' in read_script('export.sh')
+    assert 'Report-Stale' in read_script('export.ps1')
