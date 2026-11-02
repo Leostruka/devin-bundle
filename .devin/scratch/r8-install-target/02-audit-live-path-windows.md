@@ -15,3 +15,8 @@ CLI config drifts.
 **Fix:** on os.name == 'nt' prefer %APPDATA%\devin (fall back to
 .config only when %APPDATA% absent); emit a warning when BOTH exist
 so the shadow copy is visible.
+
+## Answer
+
+Fixed in PR #269; live `%APPDATA%\devin` synced by first corrected
+install; regression asserts in `tests/validation/test_install_export_scripts.py`.
