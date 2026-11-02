@@ -142,6 +142,8 @@ Every brag video must show something real from the product. Options, in preferre
 3. **Animate the core concept** — if the product is "taxis for taxis", animate two taxis where one is in the other. Pure graphic but grounded in the idea.
 4. **Text-forward sequence** — if the product is copy-driven (Psychologists for Chatbots), let the copy be the visual. Giant display type, minimal chrome.
 
+Portfolio or personal-site input? The site itself has no app flow, so scroll it like proof-of-work. Beat order that reads well (observed in the wild): hero identity (name + face) → the work (project grid/thumbnails) → recognition (client or brand logos, years) → process (a before/after, e.g. raw vs graded) → values line → CTA. Show the real site scrolling or recreated faithfully: the point is "look at the actual thing", not a pitch about it.
+
 Never fill scenes with abstract patterns, color washes, or generic motion graphics that could belong to any video.
 
 ## Bias the storyboard toward the user flow
