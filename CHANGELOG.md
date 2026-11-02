@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unbounded subprocess calls** (#274): `timeout=15` added to the PowerShell CIM query in `extensions/computer-use/probes/probe_spawnpty.py`; `timeout=60` added to CLI subprocess calls in `extensions/media-tools/tests/{test_cli,test_export}.py`.
 - **Phantom recipe tool** (#275): `data/recipes.json` `explore` listed `glob`, which is not a CLI tool (matcher is `find_file_by_name`, already present); it capped the recipe tool score at 0.75 in `context-pressure.py`. Removed; regression test validates every recipe tool against the canonical CLI tool set.
 - **False architecture boundary + missing enforcement** (#278): `.devin/ARCHITECTURE_MANIFEST.md` claimed hook scripts never import from `extensions/`, but `laya-guard.py` intentionally does (dynamic, fail-open); manifest corrected to "no third-party pip deps" with the laya exception documented; new `test_scripts_import_boundary` test enforces stdlib/sibling/exception imports across `scripts/*.py`.
+- **POSIX reap verification flake** (#280): `_reap_posix_group` group-absence deadline widened 5s -> 15s; SIGKILL-to-launchd-reap latency on loaded macOS CI runners exceeded 5s, producing transient false `tree_cleanup` results (`test_spawn_timeout_cleans_tree` failed 3x).
 
 ### Added
 
@@ -32,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **MODEL-GUIDE**: Avalon AMD MoE fork evaluated-not-adopted with 4-question benchmark-reading checklist (#265); LFM3 local-audio family entry (#259).
 - **`dispatching-parallel-agents`** (#277): DeepSeek super-agent eval evidence added; task-queue interruption inverts the sub-delegation bias (neutral prompt 0/5, delegate-first 4/5, median 20.4->13.8 min) plus Cooper Bench co-edit cost (~30% lower success).
+- **`audit.py` check 32** (#281): `[Unreleased]` merge coverage now enforced; merge PRs since the released tag without `#NNN` refs in `[Unreleased]` fail the audit (`docs(changelog)` PRs exempt).
 
 ### Documentation
 
