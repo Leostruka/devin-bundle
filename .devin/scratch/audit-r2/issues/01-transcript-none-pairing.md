@@ -1,6 +1,6 @@
 # 01 - Nao parear tool_result orfao com tool_use sem id
 
-Status: claimed
+Status: resolved
 Priority: P2
 Type: data-integrity
 Blocked by: none
@@ -28,11 +28,11 @@ sem par.
 
 ## Aceite
 
-- [ ] pending so e populado quando o id do tool_use nao e None.
-- [ ] tool_result sem tool_use_id fica com pair=None (orfao visivel,
+- [x] pending so e populado quando o id do tool_use nao e None.
+- [x] tool_result sem tool_use_id fica com pair=None (orfao visivel,
   nao mascarado).
-- [ ] orphan_check reporta orfao real nesses casos.
-- [ ] Gate: testes de compactacao existentes + regressao de pareamento.
+- [x] orphan_check reporta orfao real nesses casos.
+- [x] Gate: testes de compactacao existentes + regressao de pareamento.
 
 ## Answer
 

@@ -1,6 +1,6 @@
 # 01 - custom_presets.json corrompido nao deve derrubar presets built-in
 
-Status: claimed
+Status: resolved
 Priority: P2
 Type: robustness
 Blocked by: none
@@ -27,10 +27,10 @@ Escrever `{bad` em custom_presets.json e chamar
 
 ## Aceite
 
-- [ ] _load_custom retorna {} (ou fallback seguro) em OSError/JSONDecodeError.
-- [ ] list_presets continua funcionando com custom corrompido.
-- [ ] Erro de parse e diagnostico visivel (stderr ou campo), nao silencioso.
-- [ ] Gate: regressao com custom_presets.json invalido.
+- [x] _load_custom retorna {} (ou fallback seguro) em OSError/JSONDecodeError.
+- [x] list_presets continua funcionando com custom corrompido.
+- [x] Erro de parse e diagnostico visivel (stderr ou campo), nao silencioso.
+- [x] Gate: regressao com custom_presets.json invalido.
 
 ## Answer
 
