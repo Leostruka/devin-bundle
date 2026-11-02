@@ -137,6 +137,23 @@ is_case_sensitive() {
   fi
 }
 
+# --- Report dst entries absent from src ---
+# Export is one-way (live -> bundle); items deleted upstream would
+# persist silently. Auto-delete is unsafe in both directions (bundle may
+# hold authored work not yet installed), so we only report.
+report_stale() {
+  local src_dir="$1" dst_dir="$2" label="$3"
+  [[ -d "$src_dir" && -d "$dst_dir" ]] || return
+  for dst_entry in "$dst_dir"/*; do
+    [[ -e "$dst_entry" ]] || continue
+    local name
+    name="$(basename "$dst_entry")"
+    if [[ ! -e "$src_dir/$name" ]]; then
+      warn "$label: $name is bundle-only (not in live config) -- kept; remove manually if unintended"
+    fi
+  done
+}
+
 # --- Dedup AGENTS.md case variants ---
 # On case-sensitive FSs: removes agents.md (lowercase) if it exists as a
 # separate file. On case-insensitive FSs (Windows/WSL /mnt/c, macOS default):
@@ -228,6 +245,7 @@ if [[ -d "$agents_src" ]]; then
       else cp "$agent_file" "$dst_file"; convert_to_lf "$dst_file"; ok "agents/$name exported"; fi
     fi
   done
+  report_stale "$agents_src" "$agents_dst" "agents"
 else
   warn "agents/ directory not found at $agents_src"
 fi
@@ -264,6 +282,7 @@ if [[ -d "$skills_src" ]]; then
       exported_skills=$((exported_skills+1))
     fi
   done
+  report_stale "$skills_src" "$skills_dst" "skills"
 else
   warn "skills/ directory not found at $skills_src"
 fi
@@ -281,17 +300,18 @@ if [[ -f "$config_src" ]]; then
       if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (masked)"
       else
         python3 -c "
-import json
-with open('$config_src', 'r') as f:
+import json, sys
+src, dst = sys.argv[1], sys.argv[2]
+with open(src, 'r', encoding='utf-8-sig') as f:
     data = json.load(f)
 if 'org_id' in data:
     data['org_id'] = 'MASKED'
 if 'devin' in data and 'org_id' in data['devin']:
     data['devin']['org_id'] = 'MASKED'
 data['hooks'] = {}
-with open('$config_dst', 'w') as f:
+with open(dst, 'w', encoding='utf-8', newline='\n') as f:
     json.dump(data, f, indent=2)
-"
+" "$config_src" "$config_dst"
         convert_to_lf "$config_dst"
         normalize_config_paths "$config_dst"
         ok "config.json exported (masked)"
@@ -332,6 +352,7 @@ if [[ -d "$scripts_src" ]]; then
       else cp "$script_file" "$dst_file"; ok "scripts/$name exported"; fi
     fi
   done
+  report_stale "$scripts_src" "$scripts_dst" "scripts"
 else
   warn "scripts/ directory not found at $scripts_src"
 fi
@@ -358,6 +379,7 @@ if [[ -d "$data_src" ]]; then
       else cp "$data_file" "$dst_file"; ok "data/$name exported"; fi
     fi
   done
+  report_stale "$data_src" "$data_dst" "data"
 else
   warn "data/ directory not found at $data_src"
 fi
@@ -375,35 +397,36 @@ if [[ -f "$mcp_src" ]]; then
       if [[ $DRY_RUN -eq 1 ]]; then skip "would copy mcp_config.json (masked)"
       else
         python3 -c "
-import json
-import re
-
-with open('$mcp_src', 'r') as f:
+import json, sys, re
+src, dst = sys.argv[1], sys.argv[2]
+with open(src, 'r', encoding='utf-8-sig') as f:
     data = json.load(f)
 
-def mask_value(v):
+SECRET_KEY = re.compile(r'token|secret|api[_-]?key|password|passwd|auth|bearer|credential|private|pat\b|client_secret', re.I)
+
+def mask_value(v, key=''):
+    if SECRET_KEY.search(key):
+        return 'MASKED'
     if isinstance(v, str):
-        # Mask URLs containing tokens
-        if 'token' in v.lower() or 'api_key' in v.lower():
+        # Mask URLs with embedded credentials or token-looking strings
+        if re.search(r'://[^/\s:]+:[^@/\s]+@', v):
+            return re.sub(r'://[^/\s:]+:[^@/\s]+@', '://MASKED@', v)
+        if 'token' in v.lower() or 'api_key' in v.lower() or 'apikey' in v.lower():
             return 'MASKED'
         return v
-    elif isinstance(v, dict):
-        return {k: mask_value(val) for k, val in v.items()}
-    elif isinstance(v, list):
-        return [mask_value(item) for item in v]
+    if isinstance(v, dict):
+        return {k: mask_value(val, k) for k, val in v.items()}
+    if isinstance(v, list):
+        return [mask_value(item, key) for item in v]
     return v
 
 # Mask env values with API_KEY, TOKEN, etc.
 if isinstance(data, dict):
-    for key, val in data.items():
-        if key.upper() in ['API_KEY', 'TOKEN', 'SECRET', 'PASSWORD', 'AUTH']:
-            data[key] = 'MASKED'
-        else:
-            data[key] = mask_value(val)
+    data = {k: ('MASKED' if SECRET_KEY.search(k) else mask_value(v, k)) for k, v in data.items()}
 
-with open('$mcp_dst', 'w') as f:
+with open(dst, 'w', encoding='utf-8', newline='\n') as f:
     json.dump(data, f, indent=2)
-"
+" "$mcp_src" "$mcp_dst"
         convert_to_lf "$mcp_dst"
         ok "mcp_config.json exported (masked)"
       fi
@@ -428,8 +451,32 @@ if [[ -f "$creds_src" ]]; then
   else
     if [[ $DRY_RUN -eq 1 ]]; then skip "would copy credentials.toml (masked)"
     else
-      # Mask all values in TOML (simple sed approach)
-      sed 's/=.*/= "MASKED"/g' "$creds_src" > "$creds_dst"
+      # Mask all values in TOML, including multiline arrays/strings:
+      # `key = [` masks the key line, then continuation lines are dropped
+      # until the opening `[`/`"""`/`'''` closes (they would leak raw).
+      python3 -c "
+import sys, re
+src, dst = sys.argv[1], sys.argv[2]
+out, skip_until = [], None
+for line in open(src, encoding='utf-8', errors='replace'):
+    if skip_until is not None:
+        if skip_until in line:
+            skip_until = None
+        continue
+    m = re.match(r'^(\s*[^=\s]+\s*)=(.*)$', line)
+    if not m:
+        out.append(line.rstrip('\n'))
+        continue
+    key, rhs = m.group(1), m.group(2).strip()
+    out.append(key + '= \"MASKED\"')
+    if rhs.startswith('[') and ']' not in rhs:
+        skip_until = ']'
+    elif rhs.startswith('\"\"\"') and rhs.count('\"\"\"') == 1:
+        skip_until = '\"\"\"'
+    elif rhs.startswith(chr(39)*3) and rhs.count(chr(39)*3) == 1:
+        skip_until = chr(39)*3
+open(dst, 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
+" "$creds_src" "$creds_dst"
       convert_to_lf "$creds_dst"
       ok "credentials.toml exported (masked)"
     fi
@@ -493,8 +540,10 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   fi
 
   # Run full repo audit and test suite before push (Rule 5: no push without green)
+  # audit.py walks "." and reads manifest.json/AGENTS.md relative to cwd --
+  # it must run inside BUNDLE_DIR or it audits the caller's directory.
   step "Running audit.py"
-  if python "$BUNDLE_DIR/audit.py"; then
+  if ( cd "$BUNDLE_DIR" && python audit.py ); then
     ok "audit.py passed"
   else
     err "audit.py failed"
@@ -502,7 +551,7 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   fi
 
   step "Running pytest"
-  if python -m pytest -q "$BUNDLE_DIR"; then
+  if ( cd "$BUNDLE_DIR" && python -m pytest -q . ); then
     ok "pytest passed"
   else
     err "pytest failed"
@@ -525,8 +574,10 @@ echo "    Config: AGENTS.md, agents/, config.json, scripts/, data/, mcp_config.j
 if [[ $COMMIT -eq 1 && $DRY_RUN -eq 0 ]]; then
   step "Git commit"
   cd "$BUNDLE_ROOT"
-  git add -A 2>/dev/null
-  if [[ -n "$(git status --porcelain)" ]]; then
+  # Stage only the paths export.sh can write -- staging the whole tree
+  # would sweep unrelated working-tree changes into the generated commit.
+  git add -- AGENTS.md agents skills config.json hooks.v1.json scripts data mcp_config.json credentials.toml export.sh export.ps1 2>/dev/null
+  if [[ -n "$(git status --porcelain -- AGENTS.md agents skills config.json hooks.v1.json scripts data mcp_config.json credentials.toml export.sh export.ps1)" ]]; then
     date_str="$(date +%Y-%m-%d)"
     git commit -m "export: refresh devin bundle ($date_str)
 
