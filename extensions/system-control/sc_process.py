@@ -273,7 +273,7 @@ def _reap_posix_group(proc, grace_s) -> bool:
     if not _reap_root(proc, grace_s):
         ok = False
     if ok:
-        deadline = time.time() + 5
+        deadline = time.time() + 15
         while True:
             try:
                 os.killpg(proc.pid, 0)
