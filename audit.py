@@ -969,6 +969,43 @@ else:
     errors.append('data/model-context-windows.json not found')
     print('  FAIL data/model-context-windows.json not found')
 
+# 32. CHANGELOG [Unreleased] covers PR merges since the released version
+print()
+print('[32] CHANGELOG [Unreleased] merge coverage')
+try:
+    import subprocess
+    manifest_v = json.load(open('manifest.json', encoding='utf-8-sig'))['version']
+    tag = 'v' + manifest_v
+    subjects = subprocess.check_output(
+        ['git', 'log', tag + '..HEAD', '--format=%s'],
+        text=True, stderr=subprocess.DEVNULL, timeout=15)
+    # docs(changelog) PRs cannot cite their own number pre-merge; skip them
+    pr_nums = sorted(set(re.findall(
+        r'\(#(\d+)\)\s*$', subjects, re.M))
+        - set(re.findall(
+        r'^docs\(changelog\)[^\n]*\(#(\d+)\)\s*$', subjects, re.M)),
+        key=int)
+    m = re.search(r'## \[Unreleased\](.*?)(?=\n## \[)',
+                  open('CHANGELOG.md', encoding='utf-8-sig').read(), re.S)
+    if not m:
+        errors.append('CHANGELOG.md missing ## [Unreleased] section')
+        print('  FAIL no [Unreleased] section')
+    elif not pr_nums:
+        print('  OK  no PR merges since ' + tag)
+    else:
+        missing = [n for n in pr_nums if '#' + n not in m.group(1)]
+        if missing:
+            errors.append('CHANGELOG [Unreleased] missing PR refs: '
+                          + ', '.join('#' + n for n in missing))
+            print('  FAIL missing refs: '
+                  + ', '.join('#' + n for n in missing))
+        else:
+            print('  OK  [Unreleased] covers ' + str(len(pr_nums))
+                  + ' merged PRs since ' + tag)
+except Exception as e:
+    warnings.append('changelog coverage check skipped: ' + str(e))
+    print('  WARN changelog coverage check skipped: ' + str(e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
