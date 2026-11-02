@@ -323,6 +323,49 @@ def test_skill_allowed_tools_exist():
     assert not bad, 'unknown allowed-tools: ' + ', '.join(bad)
 
 
+# --- R20 dependency drift regression ---
+
+PIP_TO_IMPORT = {'pillow': 'pil', 'opencv-python': 'cv2',
+                 'opencv-python-headless': 'cv2', 'pywavelets': 'pywt',
+                 'websocket-client': 'websocket', 'scrapling': 'scrapling',
+                 'pywinpty': 'winpty', 'winrt-runtime': 'winrt'}
+
+
+def test_extension_declared_deps_used():
+    """Every requirement declared by an extension must be imported by
+    that extension's own Python code (catches orphaned deps)."""
+    import glob as _glob
+    import re
+    bad = []
+    for ext in sorted(os.listdir(os.path.join(REPO_ROOT, 'extensions'))):
+        d = os.path.join(REPO_ROOT, 'extensions', ext)
+        if not os.path.isdir(d):
+            continue
+        reqs = set()
+        for rf in _glob.glob(os.path.join(d, 'requirements*.txt')):
+            for ln in open(rf, encoding='utf-8'):
+                ln = ln.strip().lower()
+                if ln and not ln.startswith('#'):
+                    name = re.split(r'[=<>!~\[]', ln)[0].strip()
+                    name = PIP_TO_IMPORT.get(
+                        name, 'winrt' if name.startswith('winrt-') else name)
+                    reqs.add(name)
+        if not reqs:
+            continue
+        imps = set()
+        for pf in _glob.glob(os.path.join(d, '**', '*.py'),
+                             recursive=True):
+            if '.venv' in pf or '__pycache__' in pf:
+                continue
+            src = open(pf, encoding='utf-8', errors='ignore').read()
+            imps.update(re.findall(
+                r'^\s*(?:import|from)\s+(\w+)', src, re.M))
+        for r in reqs:
+            if r.replace('-', '_') not in {i.lower() for i in imps}:
+                bad.append(f'{ext}: {r} declared but never imported')
+    assert not bad, 'orphaned requirements: ' + ', '.join(bad)
+
+
 # --- R13 hook import-boundary regression (Nx-style module boundaries) ---
 
 
