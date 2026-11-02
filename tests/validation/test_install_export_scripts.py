@@ -277,3 +277,41 @@ def test_recipes_tools_exist():
     for name, r in recipes.items():
         for t in r.get('tools', []):
             assert t in valid, f'{name}: unknown tool {t}'
+
+
+# --- R13 hook import-boundary regression (Nx-style module boundaries) ---
+
+
+def test_scripts_import_boundary():
+    """scripts/*.py must not import third-party pip modules.
+
+    Allowed non-stdlib imports: in-dir siblings (_hookrun) and the
+    documented laya-guard -> extensions/laya-tools exception.
+    """
+    import ast
+    import sys as _sys
+    stdlib = set(_sys.stdlib_module_names)
+    siblings = {os.path.basename(f)[:-3] for f in os.listdir(
+        os.path.join(REPO_ROOT, 'scripts')) if f.endswith('.py')}
+    exceptions = {'laya-guard.py': {'decision_contract', 'laya_client'}}
+    viol = []
+    script_files = [os.path.join(REPO_ROOT, 'scripts', f) for f in
+                    os.listdir(os.path.join(REPO_ROOT, 'scripts'))
+                    if f.endswith('.py')]
+    for f in script_files:
+        base = os.path.basename(f)
+        tree = ast.parse(open(f, encoding='utf-8').read())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                mods = [a.name.split('.')[0] for a in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                mods = [(node.module or '').split('.')[0]]
+            else:
+                continue
+            for m in mods:
+                if not m or m in stdlib or m in siblings:
+                    continue
+                if m in exceptions.get(base, set()):
+                    continue
+                viol.append((base, m))
+    assert not viol, f'hook boundary violations: {viol}'

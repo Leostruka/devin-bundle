@@ -56,9 +56,12 @@
   `rust-core` Cargo workspace), `agents/` = subagent profiles,
   `data/` = model data, `.devin/` = project config
   (adr/, ledgers/, rules/, plans/, docs/), `tests/` = pytest suites.
-- **Forbidden crossings:** `scripts/` hooks never import from `extensions/`;
-  `.devin/ledgers/` files are gitignored (never ship); hook scripts never
-  read `credentials.toml` or `.env`.
+- **Forbidden crossings:** `scripts/` hooks take no third-party pip deps
+  (stdlib only). One documented exception: `laya-guard.py` sys.path-imports
+  `decision_contract` + `laya_client` from `extensions/laya-tools/`
+  (installed or project copy) and fails open when absent. `.devin/ledgers/`
+  files are gitignored (never ship); hook scripts never read
+  `credentials.toml` or `.env`.
 
 ## Non-negotiables
 
