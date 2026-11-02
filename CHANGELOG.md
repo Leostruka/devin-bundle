@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`test_extension_used_deps_declared`** (#288): the reverse direction of the R20 check is now enforced — module-scope third-party imports in `extensions/` must be covered by that extension's `requirements*.txt`; AST-based (function-scope lazy imports exempt), extensions-internal module roots exempt, documented `bpy`/`mathutils` host-provided allowlist for Blender's embedded interpreter; the R20 orphan check was upgraded from regex to AST.
 - **`agentic-rag` vectorless/tree-index retrieval** (#266): architecture selector gained `long structured docs -> PageIndex-style` with honest costs (LLM call per hop, index build time, stale-tree versioning); gate/escalation unchanged.
 - **`brag` portfolio-site beat order** (#267): storyboard template for portfolio/personal-site inputs (hero -> work -> recognition -> process -> values -> CTA) from real-site reel re-analysis.
 - **`stuck-detect` deterministic advisory** (#260): token-economizer subset hook.
