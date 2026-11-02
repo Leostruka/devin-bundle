@@ -55,6 +55,16 @@ Verified evidence (primary sources):
   across 26 domains execute at most 10 steps before human intervention —
   simple supervised loops, not orchestrated constellations.
   <https://arxiv.org/abs/2512.04123>
+- DeepSeek "Super-agent" harness eval (2025-10-31 article + released
+  prototype, ~20 work requests queued): a neutral prompt delegated in 0/5
+  runs; a delegate-first prompt in 4/5, cutting median task time 20.4 ->
+  13.8 min (p95 unchanged ~29). Under a multi-request queue the failure
+  mode flips: the single agent under-delegates because interruptions keep
+  re-entering the main session. Delegate-first beats neutral when the
+  queue is deep; it does not rescue slow-tail tasks.
+- Cooper Bench (arXiv paper, Jan): paired agents editing one task succeed
+  ~30% less often than solo agents, favoring one-ticket-one-worker splits
+  over co-editing.
 
 If the failures are related, or agents would edit the same files, or the task
 is a single cohesive build — stay inline. The plan-execution mode earns its
