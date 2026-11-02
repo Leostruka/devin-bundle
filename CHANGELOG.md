@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **False architecture boundary + missing enforcement** (#278): `.devin/ARCHITECTURE_MANIFEST.md` claimed hook scripts never import from `extensions/`, but `laya-guard.py` intentionally does (dynamic, fail-open); manifest corrected to "no third-party pip deps" with the laya exception documented; new `test_scripts_import_boundary` test enforces stdlib/sibling/exception imports across `scripts/*.py`.
 - **POSIX reap verification flake** (#280): `_reap_posix_group` group-absence deadline widened 5s -> 15s; SIGKILL-to-launchd-reap latency on loaded macOS CI runners exceeded 5s, producing transient false `tree_cleanup` results (`test_spawn_timeout_cleans_tree` failed 3x).
 - **Phantom tool in skill frontmatter** (#282): `observability-quality` `allowed-tools` listed `glob` (not a CLI tool) corrected to `find_file_by_name`; new `test_skill_allowed_tools_exist` enforces canonical tool names across all SKILL.md frontmatter.
+- **`glob` tool misclassified as phantom** (#284): `glob` is a real CLI tool (`validate-tool-args` checker + TOOLS-MAP); the session toolset is mode-dependent and not canonical. #282's premise corrected: `observability-quality` restored to `glob` + `find_file_by_name`; `VALID_TOOLS` expanded to the canonical 28-tool set; allowed-tools test now covers YAML-list form and `agents/` + `.devin/agents/` profiles.
 
 ### Added
 
