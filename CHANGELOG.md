@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **MODEL-GUIDE**: Avalon AMD MoE fork evaluated-not-adopted with 4-question benchmark-reading checklist (#265); LFM3 local-audio family entry (#259).
 - **`dispatching-parallel-agents`** (#277): DeepSeek super-agent eval evidence added; task-queue interruption inverts the sub-delegation bias (neutral prompt 0/5, delegate-first 4/5, median 20.4->13.8 min) plus Cooper Bench co-edit cost (~30% lower success).
+- **`audit.py` check 32** (#281): `[Unreleased]` merge coverage now enforced; merge PRs since the released tag without `#NNN` refs in `[Unreleased]` fail the audit (`docs(changelog)` PRs exempt).
 
 ### Documentation
 
