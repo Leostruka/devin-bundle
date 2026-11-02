@@ -82,7 +82,7 @@ Provide one entry point for the bundle's universal orchestration: classify the o
 
 Keep this in mind for every session:
 
-- Devin CLI validated release: `{{VALIDATED_CLI_VERSION}}` from `data/bundle-identity.json` (see `docs/DEVIN-CLI-COMPATIBILITY.md`).
+- Devin CLI validated release: `validated_cli_version` in `data/bundle-identity.json` (see `docs/DEVIN-CLI-COMPATIBILITY.md`).
 - Models: SWE-2 routes by effort level — parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`, High); custom subagents `BUNDLE_MAX_MODEL` (`max_role_model`, Max) or `BUNDLE_MEDIUM_MODEL` (`medium_role_model`, Medium), all free. Never use non-bundle aliases (`opus`, `sonnet`, `gpt`, etc.) when the parent is free.
 - Issue tracker: local Markdown under `.devin/scratch/<feature-slug>/`, conventions in `.devin/agents/issue-tracker.md` and `.devin/agents/triage-labels.md`.
 - Skills: discover via `skill-discovery` or `docs/SKILL-TIERS.md`.

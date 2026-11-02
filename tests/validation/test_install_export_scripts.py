@@ -234,3 +234,27 @@ def test_audit_prefers_appdata_on_windows():
     content = read_script('audit.py')
     assert "os.name == 'nt'" in content
     assert 'shadow config dir' in content
+
+
+# --- R9 placeholder regressions ---
+
+
+def test_ask_bundle_no_unexpanded_cli_placeholder():
+    for f in ('skills/ask-bundle/SKILL.md',
+              'skills/ask-bundle/modes/orchestration-detail.md'):
+        assert '{{VALIDATED_CLI_VERSION}}' not in read_script(f)
+
+
+def test_bundle_identity_has_real_values():
+    import json
+    d = json.load(open(os.path.join(REPO_ROOT, 'data/bundle-identity.json'),
+                       encoding='utf-8'))
+    for key in ('bundle_name', 'owner', 'repo', 'source_url',
+                'license_holder', 'license_year'):
+        assert '{{' not in str(d[key]), key + ' still a placeholder'
+
+
+def test_blender_posix_ps_has_timeout():
+    content = read_script('extensions/blender-operator/wrapper.py')
+    ps_idx = content.find('"ps", "-axo"')
+    assert 'timeout=15' in content[ps_idx:ps_idx + 400]

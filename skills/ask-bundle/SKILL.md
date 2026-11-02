@@ -127,7 +127,7 @@ qa-ci without reinstalling pinned deps.
 
 ## Bundle context
 
-- Validated CLI: `{{VALIDATED_CLI_VERSION}}` (`data/bundle-identity.json`).
+- Validated CLI: see `validated_cli_version` in `data/bundle-identity.json`.
 - Models: `data/bundle-models.json` — parent `BUNDLE_DEFAULT_MODEL`;
   subagents `BUNDLE_MAX_MODEL`/`BUNDLE_MEDIUM_MODEL`, all free. No paid
   aliases on a free parent.
