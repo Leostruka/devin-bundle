@@ -128,7 +128,8 @@ def _find_pids(image=None, cmdline_contains=None):
         pids = [int(x) for x in out.split() if x.strip().isdigit()]
     else:
         out = subprocess.run(
-            ["ps", "-axo", "pid,comm,args"], capture_output=True, text=True
+            ["ps", "-axo", "pid,comm,args"], capture_output=True,
+            text=True, timeout=15
         , creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
         for line in out.splitlines():
             parts = line.split(None, 2)

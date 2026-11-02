@@ -1,9 +1,9 @@
 {
-  "bundle_name": "{{BUNDLE_NAME}}",
-  "owner": "{{BUNDLE_OWNER}}",
-  "repo": "{{BUNDLE_REPO}}",
-  "source_url": "https://github.com/{{BUNDLE_OWNER}}/{{BUNDLE_REPO}}",
-  "license_holder": "{{BUNDLE_OWNER}}",
-  "license_year": "{{LICENSE_YEAR}}",
+  "bundle_name": "devin-bundle",
+  "owner": "Leostruka",
+  "repo": "devin-bundle",
+  "source_url": "https://github.com/Leostruka/devin-bundle",
+  "license_holder": "Leostruka",
+  "license_year": "2026",
   "validated_cli_version": "3000.11.234"
 }
