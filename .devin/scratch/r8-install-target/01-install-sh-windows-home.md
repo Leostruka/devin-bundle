@@ -17,3 +17,8 @@ config); `~/.config/devin` matches bundle.
 **Fix:** detect MINGW*/MSYS*/CYGWIN* in `uname`; resolve
 `DEVIN_HOME` to `%APPDATA%/devin` (cygpath when available, sed
 backslash/drive-letter fallback otherwise).
+
+## Answer
+
+Fixed in PR #269; live `%APPDATA%\devin` synced by first corrected
+install; regression asserts in `tests/validation/test_install_export_scripts.py`.
