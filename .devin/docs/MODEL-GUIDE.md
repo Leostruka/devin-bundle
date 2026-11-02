@@ -316,6 +316,44 @@ system RAM. Implementado: `extensions/ai-tools/offload_plan.py`
 medido neste hardware. A métrica que decide adoção é prefill/decode real no
 hardware do usuário, não o marketing do backend.
 
+### AMD MoE: Avalon (avaliado, não adotado)
+
+Fork MIT de `llama.cpp` (base Boone-llama.cpp + compressão e-llama.cpp +
+ideias do strata), tuned para **um único modelo**: Qwen3-80B flash-next
+(MoE ~125B ativos + 51B lookup; 48x512 experts, 480 ativos/token,
+~1GB de pesos de experts tocados por token). Alvo: RX 7900XT/XTX +
+Linux + >=32GB RAM.
+
+- **Mecanismo** (documentado pelo autor, não medido aqui): todo byte
+  livre de VRAM vira expert cache (buffers de compute emprestados entre
+  fases, espaço não usado do KV cache, reserva fixa de 400MB); GPU
+  computa experts em cache enquanto CPU resolve misses de RAM em
+  paralelo; draft head MoE-ciente ~1.5GB compartilha o cache em vez de
+  competir por VRAM e corta o vocabulário para os 65k tokens mais
+  comuns.
+- **Claims do autor**: 91 t/s num 7900XT usado vs ~62 t/s do strata
+  0.1.43 na mesma máquina; arquivo 88GB (13% maior que o ISTA strata)
+  com perplexity menor (1.443 vs 1.469 EN, 1.331 vs 1.338 code).
+  Decomposição honesta: 1.27x cache+paralelismo x 1.15x drafting.
+- **Caveats**: a comparação mistura engine E arquivo de modelo (não
+  isola); ganho é específico desta carta/modelo -- em R9700 e Nvidia
+  empata com strata; sem backend Windows/Vulkan genérico; projeto de
+  um dev só, bugs early-stage corrigidos rápido (hang 2-GPU, contagem
+  tripla do arquivo de experts).
+- **Veredito**: não adotado -- não roda Windows, modelo único, fork
+  1-dev. Registrado como referência de mecanismo: se `offload_plan`
+  evoluir para MoE expert-cache (hoje emite só flags `-ngl`/`--cpu-moe`),
+  estas são as ideias a verificar.
+
+#### Checklist de leitura de benchmark (fonte: análise do vídeo)
+
+Antes de aceitar qualquer headline de speedup (Rule 12/15):
+
+1. Versão exata de cada engine testada?
+2. Arquivos de modelo idênticos ou diferentes (engine + arquivo misturam)?
+3. Hardware exato -- GPU, placa-mãe (PCIe gen), RAM (canais/bandwidth)?
+4. Quem é o dono do hardware onde cada engine foi tunada?
+
 ### Local audio: LFM3 family (avaliado, não adotado)
 
 `liquid-ai/LFM3` (open weights): família 1.7B-2B -- texto (`LFM3 1.7B`),
