@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Typed-error hardening** (#262, #255, #254): `plan_check`, ASR bootstrap, `sc_bench`, custom presets, laya-compactor pairing/reduction accounting.
 - **`asr` Windows discovery** (#256): whisper binary/model discovery fixed on Windows.
 - **Unexpanded placeholders** (#272): `{{VALIDATED_CLI_VERSION}}` in `ask-bundle` (never substituted by any pipeline) now references `validated_cli_version`; `data/bundle-identity.json` filled with real values (`Leostruka/devin-bundle`, 2026); `blender-operator` POSIX `ps` call gained `timeout=15` parity.
+- **Unbounded subprocess calls** (#274): `timeout=15` added to the PowerShell CIM query in `extensions/computer-use/probes/probe_spawnpty.py`; `timeout=60` added to CLI subprocess calls in `extensions/media-tools/tests/{test_cli,test_export}.py`.
+- **Phantom recipe tool** (#275): `data/recipes.json` `explore` listed `glob`, which is not a CLI tool (matcher is `find_file_by_name`, already present); it capped the recipe tool score at 0.75 in `context-pressure.py`. Removed; regression test validates every recipe tool against the canonical CLI tool set.
+- **False architecture boundary + missing enforcement** (#278): `.devin/ARCHITECTURE_MANIFEST.md` claimed hook scripts never import from `extensions/`, but `laya-guard.py` intentionally does (dynamic, fail-open); manifest corrected to "no third-party pip deps" with the laya exception documented; new `test_scripts_import_boundary` test enforces stdlib/sibling/exception imports across `scripts/*.py`.
 
 ### Added
 
@@ -28,10 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **MODEL-GUIDE**: Avalon AMD MoE fork evaluated-not-adopted with 4-question benchmark-reading checklist (#265); LFM3 local-audio family entry (#259).
+- **`dispatching-parallel-agents`** (#277): DeepSeek super-agent eval evidence added; task-queue interruption inverts the sub-delegation bias (neutral prompt 0/5, delegate-first 4/5, median 20.4->13.8 min) plus Cooper Bench co-edit cost (~30% lower success).
 
 ### Documentation
 
-- Source analyses: NCM coarse-to-fine (#261), FreeMyTv Claude-Code-on-TV (#257), batch sources incl. DeltaDB/TradingAgents/Kimi K3/Openjutsu (#265), TSF Lesson 1 (#271), all notes-only, no portable implementation; R8 issue answers (#270); review-pattern capture and drift reconciliation (#252).
+- Source analyses: NCM coarse-to-fine (#261), FreeMyTv Claude-Code-on-TV (#257), batch sources incl. DeltaDB/TradingAgents/Kimi K3/Openjutsu (#265), TSF Lesson 1 (#271), GG Coder demo (#276), all notes-only, no portable implementation; Nx-style lib boundaries applied internally as a real enforcement fix (#278); R8 issue answers (#270); review-pattern capture and drift reconciliation (#252).
 
 ## [3.17.0] - 2026-10-30
 
