@@ -47,7 +47,7 @@
       "instruction_signals": ["explore", "understand", "map"],
       "preferred_model_role": "parent",
       "preferred_model": null,
-      "tools": ["glob", "find_file_by_name", "read", "grep"],
+      "tools": ["find_file_by_name", "read", "grep"],
       "sidekick_profile": "researcher",
       "main_responsible_for": ["plan", "final_review"]
     }

@@ -258,3 +258,22 @@ def test_blender_posix_ps_has_timeout():
     content = read_script('extensions/blender-operator/wrapper.py')
     ps_idx = content.find('"ps", "-axo"')
     assert 'timeout=15' in content[ps_idx:ps_idx + 400]
+
+
+# --- R12 recipe regression ---
+
+
+def test_recipes_tools_exist():
+    import json
+    valid = {'read', 'write', 'edit', 'exec', 'grep', 'find_file_by_name',
+             'web_search', 'webfetch', 'todo_write', 'run_subagent',
+             'read_subagent', 'ask_user_question', 'skill', 'notebook_read',
+             'notebook_edit', 'mcp_call_tool', 'mcp_list_tools',
+             'mcp_list_servers', 'mcp_read_resource', 'browser_preview',
+             'close_browser_preview', 'get_output', 'kill_shell',
+             'write_to_process', 'request_scope'}
+    recipes = json.load(open(os.path.join(REPO_ROOT, 'data/recipes.json'),
+                             encoding='utf-8'))['recipes']
+    for name, r in recipes.items():
+        for t in r.get('tools', []):
+            assert t in valid, f'{name}: unknown tool {t}'
