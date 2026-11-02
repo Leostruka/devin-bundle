@@ -164,7 +164,25 @@ dedup_agents_md() {
 
 # --- Detect Devin config home ---
 if [[ -z "${DEVIN_HOME:-}" ]]; then
-  DEVIN_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/devin"
+  case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*)
+      # Git Bash on Windows: the Devin CLI reads %APPDATA%\devin, NOT
+      # ~/.config/devin. Resolve via APPDATA (cygpath preferred; fall back
+      # to backslash + drive-letter conversion so bash paths work).
+      if [[ -n "${APPDATA:-}" ]]; then
+        if command -v cygpath &>/dev/null; then
+          DEVIN_HOME="$(cygpath -u "$APPDATA")/devin"
+        else
+          DEVIN_HOME="$(printf '%s' "$APPDATA" | sed 's|\\|/|g; s|^\([A-Za-z]\):|/\L\1|')/devin"
+        fi
+      else
+        DEVIN_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/devin"
+      fi
+      ;;
+    *)
+      DEVIN_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/devin"
+      ;;
+  esac
 fi
 
 echo "================================================"

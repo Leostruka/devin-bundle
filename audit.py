@@ -495,15 +495,25 @@ for doc, check in docs:
 # 15. Live vs bundle sync
 print()
 print('[15] Live vs bundle sync')
-# Auto-detect live config path: WSL ~/.config/devin, Linux ~/.config/devin, Windows %APPDATA%/devin
+# Auto-detect live config path: WSL/Linux ~/.config/devin, Windows %APPDATA%/devin.
+# On Windows the CLI reads %APPDATA% -- prefer it there so a stale
+# ~/.config/devin shadow copy cannot mask real drift.
 home = os.path.expanduser('~')
 appdata = os.environ.get('APPDATA', '')
-if os.path.isdir(os.path.join(home, '.config', 'devin')):
-    live_base = os.path.join(home, '.config', 'devin')
-elif appdata and os.path.isdir(os.path.join(appdata, 'devin')):
-    live_base = os.path.join(appdata, 'devin')
+config_devin = os.path.join(home, '.config', 'devin')
+appdata_devin = os.path.join(appdata, 'devin') if appdata else ''
+if os.name == 'nt' and appdata and os.path.isdir(appdata_devin):
+    live_base = appdata_devin
+elif os.path.isdir(config_devin):
+    live_base = config_devin
+elif appdata_devin and os.path.isdir(appdata_devin):
+    live_base = appdata_devin
 else:
     live_base = ''  # no live install found; sync checks will SKIP
+if live_base and os.path.isdir(config_devin) and os.path.isdir(appdata_devin) \
+        and os.path.normcase(live_base) != os.path.normcase(config_devin):
+    warnings.append('Both %APPDATA%/devin and ~/.config/devin exist; auditing ' + live_base)
+    print('  WARN shadow config dir present (auditing ' + live_base + ')')
 pairs = [('AGENTS.md', 'AGENTS.md'), ('mcp_config.json', 'mcp_config.json')]
 for live_rel, bundle_rel in pairs:
     lp = os.path.join(live_base, live_rel)
