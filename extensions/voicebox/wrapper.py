@@ -5,6 +5,10 @@ Talks to a user-started voicebox FastAPI backend over HTTP
 (`python -m backend.main` inside a voicebox checkout), serving on
 127.0.0.1:17493. Stdlib only (urllib); no pip dependency.
 
+Alternate backend: `--backend voicestudio` (or VB_BACKEND=voicestudio)
+targets the VoiceStudio app's OpenAI-compatible API on
+127.0.0.1:3900 (/v1/models, /v1/audio/speech).
+
 Safety contract:
   - Localhost-only: VB_HOST override must resolve to a loopback host.
   - Whitelisted actions only: doctor / generate / models.
@@ -32,6 +36,13 @@ MAX_BODY = 64 * 1024 * 1024  # 64 MiB response cap
 ACTIONS = ["doctor", "generate", "models"]
 
 MISSING_HINT = "start backend: python -m backend.main in voicebox checkout"
+VS_MISSING_HINT = "start the VoiceStudio app (API on 127.0.0.1:3900)"
+
+BACKENDS = {
+    "voicebox": {"default_host": DEFAULT_HOST, "hint": MISSING_HINT},
+    "voicestudio": {"default_host": "http://127.0.0.1:3900",
+                    "hint": VS_MISSING_HINT},
+}
 
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
@@ -42,9 +53,21 @@ def emit(payload, code=0):
     sys.exit(code)
 
 
-def resolve_base_url():
+def resolve_backend(args):
+    """Return backend name: --backend flag wins, else VB_BACKEND env."""
+    name = getattr(args, "backend", None) or \
+        os.environ.get("VB_BACKEND", "voicebox")
+    name = name.strip().lower()
+    if name not in BACKENDS:
+        emit(envelope(getattr(args, "command", None) or "doctor", "error",
+                      0.0, error="unknown backend: %s" % name), 2)
+    return name
+
+
+def resolve_base_url(backend="voicebox"):
     """Return base URL for the backend, or None if VB_HOST is not loopback."""
-    raw = os.environ.get("VB_HOST", DEFAULT_HOST).strip()
+    raw = os.environ.get(
+        "VB_HOST", BACKENDS[backend]["default_host"]).strip()
     parsed = urlparse(raw)
     host = (parsed.hostname or "").lower()
     if host not in LOOPBACK_HOSTS:
@@ -87,9 +110,9 @@ def envelope(action, status, duration, result=None, error=None):
     return env
 
 
-def missing(action, duration, extra=None):
-    env = envelope(action, "missing", duration, error=MISSING_HINT)
-    env["hint"] = MISSING_HINT
+def missing(action, duration, extra=None, hint=MISSING_HINT):
+    env = envelope(action, "missing", duration, error=hint)
+    env["hint"] = hint
     if extra:
         env.update(extra)
     return env
@@ -102,7 +125,10 @@ def try_json(body):
         return None
 
 
-def cmd_doctor(_args):
+def cmd_doctor(args):
+    backend = resolve_backend(args)
+    if backend == "voicestudio":
+        return vs_doctor()
     t0 = time.time()
     base = resolve_base_url()
     if base is None:
@@ -127,7 +153,10 @@ def cmd_doctor(_args):
     emit(envelope("doctor", "ok", time.time() - t0, result=report), 0)
 
 
-def cmd_models(_args):
+def cmd_models(args):
+    backend = resolve_backend(args)
+    if backend == "voicestudio":
+        return vs_models()
     t0 = time.time()
     base = resolve_base_url()
     if base is None:
@@ -144,6 +173,9 @@ def cmd_models(_args):
 
 
 def cmd_generate(args):
+    backend = resolve_backend(args)
+    if backend == "voicestudio":
+        return vs_generate(args)
     t0 = time.time()
     base = resolve_base_url()
     if base is None:
@@ -163,10 +195,68 @@ def cmd_generate(args):
                           "bytes": len(body)}), 0)
 
 
+def vs_base(action):
+    """Resolve VoiceStudio base URL or emit error envelope and exit."""
+    base = resolve_base_url("voicestudio")
+    if base is None:
+        emit(envelope(action, "error", 0.0,
+                      error="VB_HOST must be a localhost http URL"), 2)
+    return base
+
+
+def vs_doctor():
+    t0 = time.time()
+    base = vs_base("doctor")
+    try:
+        status, _h, body = http_request("GET", base + "/v1/models",
+                                        timeout=PROBE_TIMEOUT)
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        emit(missing("doctor", time.time() - t0,
+                     {"base_url": base, "detail": str(e)},
+                     hint=VS_MISSING_HINT), 1)
+    emit(envelope("doctor", "ok", time.time() - t0,
+                  result={"base_url": base, "http_status": status,
+                          "models": try_json(body)}), 0)
+
+
+def vs_models():
+    t0 = time.time()
+    base = vs_base("models")
+    try:
+        status, _h, body = http_request("GET", base + "/v1/models",
+                                        timeout=PROBE_TIMEOUT)
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        emit(missing("models", time.time() - t0, {"detail": str(e)},
+                     hint=VS_MISSING_HINT), 1)
+    emit(envelope("models", "ok", time.time() - t0,
+                  result={"http_status": status,
+                          "models": try_json(body)}), 0)
+
+
+def vs_generate(args):
+    t0 = time.time()
+    base = vs_base("generate")
+    payload = {"model": args.engine or "tts-1", "voice": args.voice,
+               "input": args.text, "response_format": "wav"}
+    try:
+        status, headers, body = http_request(
+            "POST", base + "/v1/audio/speech", payload=payload,
+            timeout=args.timeout, out_path=args.out)
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        emit(missing("generate", time.time() - t0, {"detail": str(e)},
+                     hint=VS_MISSING_HINT), 1)
+    emit(envelope("generate", "ok", time.time() - t0,
+                  result={"http_status": status, "out": args.out,
+                          "bytes": len(body)}), 0)
+
+
 def main():
     ap = argparse.ArgumentParser(
         prog="voicebox",
         description="Wrapper for local voicebox TTS backend (:17493)")
+    ap.add_argument("--backend", choices=sorted(BACKENDS), default=None,
+                    help="backend selection (default: VB_BACKEND env or "
+                         "voicebox)")
     sub = ap.add_subparsers(dest="command")
 
     sub.add_parser("doctor", help="probe backend liveness + models")
