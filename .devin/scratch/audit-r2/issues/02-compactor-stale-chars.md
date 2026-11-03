@@ -1,6 +1,6 @@
 # 02 - Atualizar chars apos truncate para medir reducao real
 
-Status: claimed
+Status: resolved
 Priority: P2
 Type: measurement-bug
 Blocked by: none
@@ -27,10 +27,10 @@ chars + snip.
 
 ## Aceite
 
-- [ ] it["chars"] reflete o texto pos-truncate antes de new_chars.
-- [ ] stats.reduction corresponde ao tamanho real do output.
-- [ ] REDUCTION_FLOOR passa a ser avaliado com dados corretos.
-- [ ] Gate: regressao medindo reduction esperado em fixture controlada.
+- [x] it["chars"] reflete o texto pos-truncate antes de new_chars.
+- [x] stats.reduction corresponde ao tamanho real do output.
+- [x] REDUCTION_FLOOR passa a ser avaliado com dados corretos.
+- [x] Gate: regressao medindo reduction esperado em fixture controlada.
 
 ## Answer
 

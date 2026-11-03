@@ -1,6 +1,6 @@
 # 02 - CLIs devem emitir erro tipado em JSON de entrada ilegivel
 
-Status: claimed
+Status: resolved
 Priority: P3
 Type: cli-ux
 Blocked by: none
@@ -30,12 +30,12 @@ traceback; idem render.py com plan inexistente.
 
 ## Aceite
 
-- [ ] Os tres mains convertem OSError/JSONDecodeError em
+- [x] Os tres mains convertem OSError/JSONDecodeError em
   `{"ok": false, "error": ...}` + exit 2.
-- [ ] load_ops_map com path invalido cai para _DEFAULT_OPS ou erro
+- [x] load_ops_map com path invalido cai para _DEFAULT_OPS ou erro
   tipado (escolha documentada).
-- [ ] Sucesso continua emitindo o mesmo envelope JSON.
-- [ ] Gate: regressao cobrindo os tres CLIs com entrada inexistente.
+- [x] Sucesso continua emitindo o mesmo envelope JSON.
+- [x] Gate: regressao cobrindo os tres CLIs com entrada inexistente.
 
 ## Answer
 

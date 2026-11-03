@@ -414,12 +414,26 @@ if (Test-Path $configSrc) {
     # rendered artifact and must not round-trip back into the bundle.
     try {
       $cfgObj = $masked | ConvertFrom-Json
+      $cfgChanged = $false
       if ($null -ne $cfgObj.hooks) {
         $cfgObj.hooks = [PSCustomObject]@{}
+        $cfgChanged = $true
+      }
+      # Live parent model is a local preference; the bundle ships the
+      # default_parent_model declared in data/bundle-models.json.
+      $modelsFile = Join-Path $bundleRoot "data\bundle-models.json"
+      if ((Test-Path $modelsFile) -and $null -ne $cfgObj.agent) {
+        $defaultParent = (Get-Content $modelsFile -Raw | ConvertFrom-Json).default_parent_model
+        if ($defaultParent -and $cfgObj.agent.model -ne $defaultParent) {
+          $cfgObj.agent.model = $defaultParent
+          $cfgChanged = $true
+        }
+      }
+      if ($cfgChanged) {
         $masked = ($cfgObj | ConvertTo-Json -Depth 10) -replace "`r`n", "`n"
       }
     } catch {
-      Write-Warn "config.json hook strip skipped (unparseable JSON)"
+      Write-Warn "config.json normalization skipped (unparseable JSON)"
     }
     Write-FileLF $configDst $masked
     if ($masked -ne $content) { Write-Ok "config.json exported (org_id MASKED, paths normalized to {{APPDATA}})" }
@@ -557,7 +571,9 @@ function Invoke-Validation {
       }
 
       Write-Step "Running pytest"
-      python -m pytest -q . | Out-Host
+      # no path arg: pytest.ini testpaths=tests is the CI suite; "." would
+      # sweep extensions/ integration tests that hard-fail without a live env
+      python -m pytest -q | Out-Host
       $pytestExit = $LASTEXITCODE
       if ($pytestExit -ne 0) {
         Write-Err "pytest failed (exit $pytestExit)"
@@ -600,8 +616,11 @@ if ($Commit -or $Push) {
     try {
       # Stage only paths export.ps1 can write -- staging the whole tree
       # would sweep unrelated working-tree changes into the generated commit.
-      $exportPaths = @("AGENTS.md","agents","skills","config.json","hooks.v1.json","scripts","data","mcp_config.json","credentials.toml","docs","export.sh","export.ps1")
-      git add -- $exportPaths 2>&1 | Out-Null
+      # NOTE: docs land dissolved under .devin/{docs,plans,templates}, not docs/.
+      $exportPaths = @("AGENTS.md","agents","skills","config.json","hooks.v1.json","scripts","data","mcp_config.json","credentials.toml",".devin/docs",".devin/plans",".devin/templates","export.sh","export.ps1")
+      $exportPaths = @($exportPaths | Where-Object { Test-Path (Join-Path $bundleRoot $_) })
+      $addOut = git add -- $exportPaths 2>&1
+      if ($LASTEXITCODE -ne 0) { Write-Err "git add failed: $addOut" }
       $status = git status --porcelain -- $exportPaths
       if ($status) {
         $date = Get-Date -Format "yyyy-MM-dd"
@@ -613,18 +632,22 @@ Skills: $skillCount total
 Config: AGENTS.md, agents/, config.json, scripts/, data/, mcp_config.json, credentials.toml, .devin/{docs,plans,templates}
 Masked: $(-not $NoMask)
 "@
-        git commit -m $commitMsg 2>&1 | Out-Null
-        Write-Ok "committed ($skillCount skills, full config)"
+        $commitOut = git commit -m $commitMsg 2>&1
+        if ($LASTEXITCODE -ne 0) {
+          Write-Err "git commit failed: $commitOut"
+        } else {
+          Write-Ok "committed ($skillCount skills, full config)"
 
-        if ($Push) {
-          Write-Step "Git push"
-          $pushResult = git push 2>&1
-          $pushExit = $LASTEXITCODE
-          if ($pushExit -eq 0) {
-            Write-Ok "pushed"
-          } else {
-            Write-Err "push failed (exit $pushExit)"
-            Write-Host "      $pushResult" -ForegroundColor Red
+          if ($Push) {
+            Write-Step "Git push"
+            $pushResult = git push 2>&1
+            $pushExit = $LASTEXITCODE
+            if ($pushExit -eq 0) {
+              Write-Ok "pushed"
+            } else {
+              Write-Err "push failed (exit $pushExit)"
+              Write-Host "      $pushResult" -ForegroundColor Red
+            }
           }
         }
       } else {

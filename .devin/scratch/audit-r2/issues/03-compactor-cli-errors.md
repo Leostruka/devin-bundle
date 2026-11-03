@@ -1,6 +1,6 @@
 # 03 - Converter falhas de entrada do compactor em erro tipado
 
-Status: claimed
+Status: resolved
 Priority: P3
 Type: cli-ux
 Blocked by: none
@@ -24,10 +24,10 @@ com traceback.
 
 ## Aceite
 
-- [ ] Transcript ausente/invalido vira erro JSON + exit 2.
-- [ ] Escrita de out/report com falha de IO tambem e tipada.
-- [ ] Sucesso continua imprimindo stats em JSON na stdout.
-- [ ] Gate: regressao CLI com arquivo inexistente e JSON invalido.
+- [x] Transcript ausente/invalido vira erro JSON + exit 2.
+- [x] Escrita de out/report com falha de IO tambem e tipada.
+- [x] Sucesso continua imprimindo stats em JSON na stdout.
+- [x] Gate: regressao CLI com arquivo inexistente e JSON invalido.
 
 ## Answer
 
