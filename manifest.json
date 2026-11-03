@@ -563,6 +563,14 @@
       "export_hash": "F2FA8D9585AFF81D84A0B0D584A46C2D934858998D9E6276C15E4677EE1EE280"
     },
     {
+      "name": "lean-code",
+      "source": "created:v3.18.0 reels-adoption (port of DietrichGebert/ponytail, MIT)",
+      "purpose": "Use when writing, fixing, refactoring, or reviewing code, choosing dependencies, or when the user asks for the simplest solution, minimal diff, yagni, or complains about over-engineering or bloat.",
+      "original_path": "%APPDATA%\\devin\\skills\\lean-code",
+      "export_hash": "0243D9D26D516E96E299732FB6AB91D0E731ADA55E371B964E846E178CF557B3",
+      "exported_at": "2026-11-03T19:51:51.994561"
+    },
+    {
       "name": "learn-mode",
       "source": "devin-bundle",
       "purpose": "Use when the user wants to own the design while the agent teaches and implements — unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
@@ -896,6 +904,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "security-audit-cf",
+      "source": "vendored:v3.18.0 cloudflare/security-audit-skill (MIT)",
+      "purpose": "Use when security guidance and vulnerability review is needed for codebases, APIs, services, CLI tools, libraries, and daemons. Use for security questions, focused reviews, vulnerability research, security audits, or pen tests. Run the complete workflow only for explicit codebase audit or pen-test requests, full/comprehensive/end-to-end reviews, or requested report artifacts.",
+      "original_path": "%APPDATA%\\devin\\skills\\security-audit-cf",
+      "export_hash": "ABA7E5A6A3C06E39D6B34D33A2CAE093B39FC03067A2DB7B7703AD83ED7EFE8C",
+      "exported_at": "2026-11-03T19:51:51.994561"
+    },
+    {
       "name": "self-extend",
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.",
@@ -1126,7 +1142,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 155,
+  "skill_count": 157,
   "rule_count": 24,
   "scripts": [
     {
