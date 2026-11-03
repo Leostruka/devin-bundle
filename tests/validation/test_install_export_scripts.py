@@ -156,7 +156,8 @@ def test_export_sh_commit_stages_only_export_paths():
     """git add -A sweeps unrelated dirty files into the export commit."""
     content = read_script('export.sh')
     assert 'git add -A' not in content
-    assert 'git add -- AGENTS.md' in content
+    assert 'export_paths=(AGENTS.md' in content
+    assert 'git add -- "${existing_paths[@]}"' in content
 
 
 def test_export_ps1_commit_stages_only_export_paths():
