@@ -12,59 +12,457 @@
   },
   "skills": [
     {
+      "name": "a11y-audit",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment.",
+      "original_path": "%APPDATA%\\devin\\skills\\a11y-audit",
+      "export_hash": "B85F84EA8E3850DAEABB8BB9D1B534C1F31C30EC1B44CEDCB0F4F4EED45BC2D2",
+      "exported_at": "2026-09-08T21:39:22.459244"
+    },
+    {
+      "name": "afk-loop",
+      "source": "devin-bundle",
+      "purpose": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships.",
+      "original_path": "%APPDATA%\\devin\\skills\\afk-loop",
+      "export_hash": "7DF235D26AD4C97CDC9BB9A76B84DE93CFE7A5FD96BACA1E88B53B1A9E5FC6D0",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "agent-cost-guard",
+      "source": "devin-bundle",
+      "purpose": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure.",
+      "original_path": "%APPDATA%\\devin\\skills\\agent-cost-guard",
+      "export_hash": "9A55B4C8F5B28EA408CCE8F15BC3E285CCA1C47ABD0DA63AC02B990470328099",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "agent-reach",
+      "source": "devin-bundle",
+      "purpose": "Use when researching trends or public sources across credential-free channels (GitHub, YouTube, Bilibili, V2EX, generic web). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to the agent-reach CLI. Credential/cookie channels are out of scope.",
+      "export_hash": "B8ADD50730DBC89667CAB3E70C985F7B97BA9273270E61E966E1126457A7CD53"
+    },
+    {
+      "name": "agentic-rag",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture with multimodal index and human-review loop. Builds the system; does not answer questions with it.",
+      "export_hash": "015AF7D2FD858F6D49626E5E373217820EA7899560C451CB16DCD590F68D3D74"
+    },
+    {
+      "name": "ai-coding-dictionary",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term definition before continuing a technical discussion.",
+      "export_hash": "0B553CEE4D485A7B8C6DECE96FB6D3BA3F4BD383914B18E424BA1123DF409038",
+      "exported_at": "2026-09-08T21:39:22.458583"
+    },
+    {
+      "name": "ai-tools",
+      "source": "devin-bundle",
+      "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
+      "export_hash": "E7ED3C58C8699F74E41811C9491969BE511383B606580C24E995111758957760"
+    },
+    {
+      "name": "ai3d-gen",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, with direct-model fallbacks (TRELLIS, TripoSG, InstantMesh, Hunyuan3D). All free/open weights, no paid SaaS.",
+      "export_hash": "21EE4B7B63D8B6019357EE9BA8D66E846F85A249991253207A5264FC4F848A41"
+    },
+    {
+      "name": "animation-direction",
+      "source": "devin-bundle",
+      "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics — narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
+      "export_hash": "C025F3C82A8DAE99556CB4E7E2153880A9EC79650B480E1FFB1D0463DE16D106"
+    },
+    {
+      "name": "api-context-spec",
+      "source": "devin-bundle",
+      "purpose": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable.",
+      "original_path": "%APPDATA%\\devin\\skills\\api-context-spec",
+      "export_hash": "73D0EE817593E483AB83EF4188C5612A4FFC4CEDB8A34C9A9C1596515FD89EE8",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "api-design",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication.",
+      "original_path": "%APPDATA%\\devin\\skills\\api-design",
+      "export_hash": "5CF91CFEE77222E3E21DA4F5788CF24D7C9B0FCB29BD1F5B30D42023A1886215",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "api-spec",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-readable context for AI agents.",
+      "export_hash": "C642F063070A1DC924CD1CE5F43534908AA7961F29FF799F272932CB9F5E57CF"
+    },
+    {
+      "name": "architecture",
+      "source": "devin-bundle",
+      "purpose": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams, characterization tests, safe extraction).",
+      "export_hash": "6EC05C955B639F933A76062C025C200526918100BAAEDA3B97DD5D29D5DB0738"
+    },
+    {
+      "name": "architecture-diagrams",
+      "source": "devin-bundle",
+      "purpose": "Use when the deliverable is a physical diagram artifact (.svg/.png) — C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid there).",
+      "export_hash": "8C276259849AC83F1462FB19534DF03389E68F0D8D93141BD6D793762D25B99C"
+    },
+    {
+      "name": "ascii-art",
+      "source": "devin-bundle",
+      "purpose": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii.rest library (217 MIT pieces, React components, npx CLI, image-to-ascii).",
+      "export_hash": "60813F5E62E2345E8DEEB312C41D7BD320567E24E1A8547DA46C97FB68678F7E"
+    },
+    {
       "name": "ask-bundle",
       "source": "devin-bundle",
       "purpose": "Use when deciding which skill or flow fits your situation — the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague and needs the quick-start menu. Routes then defers to the chosen specialist — does not execute the work itself.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-bundle",
-      "export_hash": "8F25FBA82F65C95F5F4DEF246DA6BBF03548C6742DB4B98B3E8368417B9AED06",
+      "export_hash": "C25D77B4390FC6BCE47F4D753FA27F8A2AFA014B06697D09878648DFD409E1E7",
       "exported_at": "2026-09-08T21:39:22.433086"
+    },
+    {
+      "name": "autonomous-gates",
+      "source": "devin-bundle",
+      "purpose": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance criteria that must pass before declaring done.",
+      "original_path": "%APPDATA%\\devin\\skills\\autonomous-gates",
+      "export_hash": "A68527C5B29DD595C963F5D4A3164C35D799B53203F99E358C418837E8A95448",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "binary-triage",
+      "source": "devin-bundle",
+      "purpose": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers in minutes what would take hours in Ghidra; escalate to re-binary/Ghidra only when static triage cannot close the question.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\binary-triage",
+      "export_hash": "AE945DCFEFD17407E57C48DBD07F5E6C2A587B039025C5BFA6A3673788F45337",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "brag",
+      "source": "devin-bundle",
+      "purpose": "Turn the current project website into a short, polished, shareable launch video using Hyperframes. Use when someone says \"/brag\", \"let's brag about this\", \"make a launch video\", \"turn this into a video\", or wants to share what they built. Reads the project code directly — no live URL or screenshots needed.",
+      "export_hash": "19EB3B8DEBF03F5586AEB6A97157930DE557D43C1E3D9C6C88765586A23AE567"
+    },
+    {
+      "name": "brag-slim",
+      "source": "devin-bundle",
+      "purpose": "Turn a project directory or a website URL into a short, shareable launch video with music, motion, and share copy. One file, no bundled assets — built entirely by the model with the tools already on the machine. Use when someone says \"/brag-slim\", \"let's /brag about this\", \"brag about a website\", \"make a launch video\", or wants to show off what they built. If the /brag skill is also installed, let /brag handle those phrases; it hands off here on Opus 5.5.",
+      "export_hash": "A1C31E814A62CF38B79F1FF364F600952C7788F2F821DFABD262209174D153DF"
+    },
+    {
+      "name": "career-ops",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications.",
+      "export_hash": "8A28A64CABA50CB6AFF216210781AA3D8761DE95421A1FD10ECEFEC89E4D3DA2"
     },
     {
       "name": "code-review",
       "source": "devin-bundle",
-      "purpose": "Use when completing a task, reviewing a branch or PR, before merging, or when the user asks to 'review since X'.",
+      "purpose": "Use when completing a task, reviewing a branch or PR, before merging, when the user asks to 'review since X', when publishing a GitHub PR review with inline comments/suggestions, or when the user receives code review feedback and needs to decide how to act on it.",
       "original_path": "%APPDATA%\\devin\\skills\\code-review",
-      "export_hash": "312FE5F8C9BFE66DCC2AC2D2D65AF21135F0CDDDD1DC6CED381BF5A8E2DA9E2D",
+      "export_hash": "B3A0D6AA8E06E9F31CE2894AC52917E3E4392C1184662F12B68BB238673F35AA",
       "exported_at": "2026-09-08T21:39:22.433557"
+    },
+    {
+      "name": "codebase-design",
+      "source": "devin-bundle",
+      "purpose": "Use when designing modules, seams, adapters, and the structure of a codebase.",
+      "original_path": "%APPDATA%\\devin\\skills\\codebase-design",
+      "export_hash": "9E6A64683A9EF4E7BEF883E580C503F803ADDE7A038473B9D4D226EBBB11AD3F",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "computer-use",
+      "source": "devin-bundle",
+      "purpose": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) or to read/control terminals (Windows Terminal, conhost, mintty, spawned PTYs). GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
+      "original_path": "%APPDATA%\\devin\\skills\\computer-use",
+      "export_hash": "352952B59CD73C71909C7FC1B1109329EC3A95047CA09061FEB3E8F773F157FC",
+      "exported_at": "2026-09-15T23:29:25.416194"
+    },
+    {
+      "name": "context-folding",
+      "source": "devin-bundle",
+      "purpose": "Use when context is growing large (approaching model window limits), when long documents or transcripts need to be processed, or when compaction is losing critical information. Adapts Recursive Language Model (RLM) techniques to the Devin CLI runtime.",
+      "original_path": "%APPDATA%\\devin\\skills\\context-folding",
+      "export_hash": "896D7A289760304B2F089A45133A436AB144E7DFD19194705C0526DD9EB530AF",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "context-hygiene",
+      "source": "devin-bundle",
+      "purpose": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent fan-out, when choosing a reasoning effort level, or when reducing token/compute/MCP costs. Covers lost-in-the-middle, context folding (RLM), cost guards, and difficulty-matched effort.",
+      "export_hash": "9818F4892470C8A1A21D0B5E1B1B0B49190808E6F05F830C4D0599F407C8A42A"
+    },
+    {
+      "name": "context-window-hygiene",
+      "source": "devin-bundle",
+      "purpose": "Use when a conversation is getting long and the agent seems to be forgetting earlier instructions, before adding MCP servers or rules files, when deciding whether to clear or compact the chat, or when context window budget feels tight. Covers lost-in-the-middle, clear-vs-compact, and lean-context hygiene.",
+      "original_path": "%APPDATA%\\devin\\skills\\context-window-hygiene",
+      "export_hash": "2E8F1E0F293A761A5D3E130C1D14B81DAF2B6CD36DC764292F2A91F3124387EB",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "context7",
       "source": "devin-bundle",
       "purpose": "Use when the user asks about a library, framework, or component and up-to-date docs would help.",
       "original_path": "%APPDATA%\\devin\\skills\\context7",
-      "export_hash": "3CC6B5B5953725AC5231861545AC60EDD27BCA6B683C00959B0B8E7FDD1DBA4E",
+      "export_hash": "F8901110DBD3DF08C00713B139CC01482CA9F55CE47D3A32F2FC5947287170A7",
       "exported_at": "2026-09-08T21:39:22.434676"
+    },
+    {
+      "name": "continuous-improvement",
+      "source": "devin-bundle",
+      "purpose": "Use when starting a self-improvement session. Enforces FASE 0 deep research and the 10-step improvement loop so no step is skipped, no phantom failure is invented, and every change is validated with held-out tests.",
+      "original_path": "%APPDATA%\\devin\\skills\\continuous-improvement",
+      "export_hash": "8795E13C2FB80D21A6CA1E17F5B46FD8D4719805B6D759685E24BCBE17AE70AA",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "cost-optimization",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to reduce token, compute, or infrastructure costs. Covers context window budget, MCP selection, caching, model routing, and query optimization.",
+      "original_path": "%APPDATA%\\devin\\skills\\cost-optimization",
+      "export_hash": "5A7BAAD1B714AD4563C302AC7CF957F860AD960FB5BCF782D5E03870EE858ADD",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "creative-engineering",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
+      "export_hash": "7247147920BDD9B84D5CCF30339DE694DE56804D8F25C8A0AD908EF3F8A9486A"
+    },
+    {
+      "name": "cu-realtime",
+      "source": "devin-bundle",
+      "purpose": "Use when computer-use or terminal automation needs the fastest reaction the runtime allows - event waits instead of screenshot polling, text perception instead of image reads, whole perceive-act-verify cycles batched into one exec, or deterministic reflex loops below model latency. Composes with the `computer-use` skill (same extension CLIs).",
+      "export_hash": "F5B971D22A029447D29655F43C08BA44BD7B9D63840EF950D92B5BC9FDA31BBF"
+    },
+    {
+      "name": "data-analyst",
+      "source": "devin-bundle (new, replicates cloud DANA agent)",
+      "purpose": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA) for the CLI — SQL-first exploration, schema-aware querying, and seaborn-style visualizations via MCP data sources.",
+      "export_hash": "D41ED9B04A29C99DBF37C03368E4792AF9F8105401B1412AD7820FFBFF0CBB6C",
+      "exported_at": "2026-09-08T21:39:22.457280"
+    },
+    {
+      "name": "database",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to design, migrate, query, or optimize a database. Covers schema design, migrations, query review, indexing, and data integrity.",
+      "original_path": "%APPDATA%\\devin\\skills\\database",
+      "export_hash": "3EFE440A2148444D0AE6BDDC3A39A5253E8AFD80DDFE0053B7240E882416CCAB",
+      "exported_at": "2026-09-08T21:39:22.459508"
+    },
+    {
+      "name": "dead-wire",
+      "source": "devin-bundle",
+      "purpose": "Use when running completeness audits, before declaring \"it works\", or when something looks too implemented to be true. Hunts cut wires: features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\dead-wire",
+      "export_hash": "198D06DD7F0D6AE082238EC327B852E4A32E738C34CAA2FB4C789EB8977EE59D",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "debug-ci-failures",
+      "source": "devin-bundle",
+      "purpose": "Use when CI is failing and the cause needs to be found across builds, jobs, or environments.",
+      "original_path": "%APPDATA%\\devin\\skills\\debug-ci-failures",
+      "export_hash": "14EE34DF2D021AE71F85CB7ECBCEF8943EEF14344E13708EAB3CBC6EA80D026F",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "debugging",
+      "source": "devin-bundle",
+      "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken/throwing/failing/slow, when encountering a bug/test failure/unexpected behavior and a fix is not yet obvious, or when CI is failing and the cause needs to be found across builds, jobs, or environments.",
+      "export_hash": "F64136AD56C7DB92085C1D7543FC47065D1BCE82C0E1660A5E6F0B8662E684BB"
+    },
+    {
+      "name": "deep-mode",
+      "source": "devin-bundle",
+      "purpose": "Use when the user says 'deep', 'deep search', 'deep research', 'research this thoroughly', or asks for exhaustive codebase exploration beyond a quick grep. Replicates Ask Devin's Deep Mode (!deep in Slack/Teams) for the CLI - multi-pass agentic search with citations, cross-file synthesis, and architecture mapping.",
+      "original_path": "%APPDATA%\\devin\\skills\\deep-mode",
+      "export_hash": "8B35B13F6F11C4F8000D57C0F0D215DDA5DCB859E5B75E5B69CFE78F434BE839",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "deploy",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to release, deploy, rollback, or verify a deployment pipeline. Covers CI/CD gates, environment checks, canary/blue-green, and post-deploy smoke tests.",
+      "original_path": "%APPDATA%\\devin\\skills\\deploy",
+      "export_hash": "BD5690932FCD1ECB6F7CCFCFE68FAAAF1DB30CAFDC74598A93CB789412D199DE",
+      "exported_at": "2026-09-08T21:39:22.458845"
+    },
+    {
+      "name": "devin-config",
+      "source": "devin-bundle",
+      "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval.",
+      "export_hash": "320490FF0FF94699C4AAA1016B2580539B8371E1B1F5BD2FD3B7C18D71286BC1"
+    },
+    {
+      "name": "devin-manager",
+      "source": "devin-bundle",
+      "purpose": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only persist under `.devin/` after explicit approval.",
+      "original_path": "%APPDATA%\\devin\\skills\\devin-manager",
+      "export_hash": "DD2168CBBA15D078F2C88979C0C9FDFF83F08368257C112B35771C39B5E31484",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "diagnosing-bugs",
+      "source": "devin-bundle",
+      "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken, throwing, failing, or slow, or when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
+      "original_path": "%APPDATA%\\devin\\skills\\diagnosing-bugs",
+      "export_hash": "A6BEE9900F5BA24A7C0A35A827191D76BC055E3D01278B00A33B97DBC3355448",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "dispatching-parallel-agents",
       "source": "devin-bundle",
-      "purpose": "Use when facing two or more independent tasks with no shared state or ordering.",
+      "purpose": "Use when facing two or more independent tasks with no shared state or ordering, OR when executing a multi-task plan by dispatching a fresh subagent per task.",
       "original_path": "%APPDATA%\\devin\\skills\\dispatching-parallel-agents",
-      "export_hash": "A0E3EDF42E5E23B47040FF013F50C9BEB55BE075985C02BD6FC6066ADF27FD78\nA04987C5BF4515C4037D5F00AA11236E4722344FAA6B7227F10FC61057574B0C\nEAF6F8FF55855201659A8B1C8324C55C4F06EEC8FF713E82AC42D2283143FDDF\n3D55C6D1881C251D537E257E9A4E0C0EA836F7ABAA57758FD288EC3C9FE4F47D\nB2F86AEA694C1034B4CD86CAC62AEB126089FF2074986B793B047B61F0AD126C\nE113B1FE296E55F69FBFEB1D5157A410B9DC1D8AE35DEC9D7417A52F2B8C7B5B\n906164C8D0C0D6292A70C9FF907DE0D8AA187FD92FFD955321A1EADA1A78ED4C\n044ED4BA0802B2EB82016E37EC9E38966D5745A5BCAA5841F7718473CF1E8254\nD788EE2DEF2DF3E86EC77FF84BE0A29DB2F2531A2621AB4A30D2F83BFEA13A22\n41C4D0AA74CB9B0173AD3FBE0C15744A4E647128FB388A7EFAD332BA353C8C93\nA8C37CD364EA0C11EC562BE7B5FBBC3DE82A2FFDA3EC391234B03F16006AFA5C\n7727EBF809485219F2EDCBB51A7777435EB587459C17EF4A80BBCD72E4C2796D\n422D71E01DF2A5C6733D4C5D85CC58D918B1BD684D00ACED064649DC2BA88FDD",
+      "export_hash": "6E4934F41630C88DFB966439A6B9AB998FA707A1C048424DC51E0C0854DBA433",
       "exported_at": "2026-09-08T21:39:22.437929"
+    },
+    {
+      "name": "dma",
+      "source": "devin-bundle",
+      "purpose": "Use when the user invokes /dma or asks for a pentest, offensive recon, or aggressive audit on an authorized target. Dirty-work pentest agent and recon orchestrator - closes a scope contract with the user, classifies the target type, runs passive/static collection and surface mining, confirms vectors with minimal read-only probes inside the allowlist, and escalates deep testing via web-probe. Every invasive action requires explicit per-batch approval.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\dma",
+      "export_hash": "667A1D1D9DE3007BA4B768B0611F8B14B3259E2A16E7AEB6381A6D6AC53F63DF",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "docker",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to build, run, compose, or deploy containers. Covers Dockerfiles, docker compose, images, volumes, networks, and basic Kubernetes manifests.",
+      "original_path": "%APPDATA%\\devin\\skills\\docker",
+      "export_hash": "8A719CF04ADEEAFA2A86DFCE6D42759E7EE4A6882F84D7CEB258632CD2868B92",
+      "exported_at": "2026-09-08T21:39:22.459924"
+    },
+    {
+      "name": "domain-modeling",
+      "source": "devin-bundle",
+      "purpose": "Use when building or refining a project's domain model, glossary, or bounded contexts.",
+      "original_path": "%APPDATA%\\devin\\skills\\domain-modeling",
+      "export_hash": "631EF36A9D750ED4B02A1C87AF84D5206D37E522E5F6452CE4F39BF561385821",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "drift-report",
+      "source": "devin-bundle",
+      "purpose": "Use when checking whether design documents, READMEs, or specs still match the code they describe. Reads each document, locates the referenced source files, and reports only concrete divergences in a dated drift report. Detection only; does not fix code or docs.",
+      "export_hash": "20523ADF11A2D0038B77487D7B3E681275A30C468E024B186478B9A859008217"
+    },
+    {
+      "name": "e2e-testing",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to add, run, or debug end-to-end tests. Covers Playwright, Selenium, Cypress, happy paths, critical user journeys, and CI integration. Browser-level journeys only; unit/TDD work goes to testing, test infrastructure to observability-quality.",
+      "original_path": "%APPDATA%\\devin\\skills\\e2e-testing",
+      "export_hash": "A7341D89B1191647FD4A14FE50DAFF7E76AEEF05AEC03AC2D220BB901DFC3573",
+      "exported_at": "2026-09-08T21:39:22.459644"
+    },
+    {
+      "name": "edge-cases",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing a feature or bugfix, and before declaring done. Enumerate inputs/states/failure modes before coding, defend boundaries while coding, adversarially self-review the diff after. Prevents happy-path-only code.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\edge-cases",
+      "export_hash": "1C5C42E64516B3B60C6DECEBAA4C150FE403092436BDCB563BFD0DA3730B729C",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "effort-calibration",
+      "source": "devin-bundle",
+      "purpose": "Use when choosing a reasoning effort level for an LLM coding agent, when a task seems to be over-thinking or spending too many tokens, when deciding whether to raise effort, when writing task specifications that substitute for reasoning budget, or when a simple task is being treated as a codebase audit. Covers overthinking, compute-optimal test-time scaling, prompt-induced waste, and difficulty-matched effort.",
+      "original_path": "%APPDATA%\\devin\\skills\\effort-calibration",
+      "export_hash": "824E4B166515C2E5707783814198FD2B8E8C120D29B7A3716D6372BBF3620324",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "executing-plans",
+      "source": "devin-bundle",
+      "purpose": "Use when executing a written implementation plan with checkpoints and reviews.",
+      "original_path": "%APPDATA%\\devin\\skills\\executing-plans",
+      "export_hash": "1B38261F1881865BFCC071F872FD68C12675A4E9726607C3E821A7765E3092F4",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "execution",
+      "source": "devin-bundle",
+      "purpose": "Use when RUNNING an already-written plan/spec/tickets with checkpoints, implementing a feature/fix per spec, deciding how much human review a task needs, or working unattended through local Markdown issues in a blocking DAG (AFK loop). Plans get authored upstream in `planning`/`intake`.",
+      "export_hash": "565890BF6ECA6E33060823429635349BEACD3F8CA3E7B638536F68BA22AE767D"
+    },
+    {
+      "name": "fact-check",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to fact-check, tear apart, nitpick, or pre-publish-review an article, essay, blog post, or any markdown/text draft, verifying every checkable claim against online primary sources via adversarial checker subagents. Do not use for code review, security audits, or proofreading without factual verification.",
+      "export_hash": "CD017F10109BF51D3C085BAF1A817A0D1504334641B16C3E78AB1B4900812F39"
     },
     {
       "name": "finishing-a-development-branch",
       "source": "devin-bundle",
       "purpose": "Use when the implementation is complete, all tests pass, and the work needs to be integrated.",
       "original_path": "%APPDATA%\\devin\\skills\\finishing-a-development-branch",
-      "export_hash": "10B6B9E511F18FA5F4E45C81C716FF3EABE428531C40602A14ECDAC20C206E7B",
+      "export_hash": "3390A7655D35308BF11E61A16DCBF5770FC0F29EF9C233852F771475FEA3A2D4",
       "exported_at": "2026-09-08T21:39:22.438669"
+    },
+    {
+      "name": "firmware-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools: binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.",
+      "export_hash": "5C010E22F75234B036389CB9794ED7F2ECC96BA1F00964823D11A75E34DAAE06"
+    },
+    {
+      "name": "frontend-design",
+      "source": "devin-bundle",
+      "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view for this brief.",
+      "export_hash": "63571560E36C5DAB335C988113805EE6E2FD1501B50116CF32982B39B3C61CED"
+    },
+    {
+      "name": "gates",
+      "source": "devin-bundle",
+      "purpose": "Use when about to claim work is complete/fixed/passing, when a task risks agent laziness (large, multi-step, previously half-done, or with acceptance criteria), or when running long-horizon/unattended work where quality must be verified before proceeding. Covers gates, gates ledgers, and autonomous gate semantics. Completion-claim discipline only; writing tests goes to testing or e2e-testing.",
+      "export_hash": "33B6C111B1AB6CD66071F6FACFC261737B05394CCA51FF9B26E7DC7506B42A58"
     },
     {
       "name": "gh",
       "source": "devin-bundle",
       "purpose": "Use when interacting with GitHub via the gh CLI from an agent.",
       "original_path": "%APPDATA%\\devin\\skills\\gh",
-      "export_hash": "D447A7B7B2582E629EB7077150A726042E6635C3C6705DFCFF83A38D53A88788",
+      "export_hash": "9A8FE55D41ECCC0DB76EA68FE78FA6AFBB4B5A023EEE21426331871993571F60",
       "exported_at": "2026-09-08T21:39:22.438828"
+    },
+    {
+      "name": "ghidra",
+      "source": "devin-bundle",
+      "purpose": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output + xrefs for offline study via Ghidra headless.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ghidra",
+      "export_hash": "85ADB85681E9FF0E072D5F295E3E64E0DB13A16734CED17169E6118FA2D74F50",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "git-helper",
+      "source": "devin-bundle",
+      "purpose": "Use when managing branches, writing commits, or resolving simple git workflow questions.",
+      "original_path": "%APPDATA%\\devin\\skills\\git-helper",
+      "export_hash": "D5A0A653F46352D18E61AA91FF6B0B366C1390C4FF463C0D445FA0C7ECF8AF07",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "git-workflows",
+      "source": "devin-bundle",
+      "purpose": "Use when managing branches, writing commits, creating isolated worktrees for feature work, or resolving and verifying merge/rebase conflicts.",
+      "export_hash": "50DD34AA503406EDD79D42F46580E3E3FA3E0A288C910B9B84A8AC58B6B96345"
+    },
+    {
+      "name": "github-actions",
+      "source": "devin-bundle",
+      "purpose": "Use when writing or reviewing .github/workflows YAML files or debugging CI. GitHub Actions security and best practices - SHA-pinned actions, least-privilege permissions, script injection via PR context, pull_request_target dangers, secrets and OIDC, cache poisoning, matrix and artifacts.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\github-actions",
+      "export_hash": "B0F58C673EAFA73F4EB8689234251AFC88CFE8AD12597841D07ECF5C6B263A6E",
+      "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
       "name": "grilling",
       "source": "devin-bundle",
-      "purpose": "Use when exploring and stress-testing ideas before committing to a design or plan.",
+      "purpose": "Use when exploring and stress-testing ideas before committing to a design or plan, when the user says \"grill me\" or \"stress-test this\", or when sharpening a plan while also producing ADRs and a glossary.",
       "original_path": "%APPDATA%\\devin\\skills\\grilling",
-      "export_hash": "192FC9420510947477D15070354904BE7356F67C7924E8E356286FCBEFDC5F16\n89BD99683BA5E151E42B5D6721F18C69BE6E850821C8C35B8F5D828D0C1D80DD\n3D99B387E8A0F3E7E025E3183EE7EAC3BE324C9E9F8CDCEF12F3BDE36054C114\nEE9B451D7A941DFCE88C40946EC99F7A75DD23E4D9F011ECA21F9C2AC2CDAF05\n7B890770A00E2648A5015E71ED94D2D5BF31CD37B705BA3A0B31FFF600B92E0B\n157063C81AB42793F617FA5B00AF5F82AAABA1A061E83898D791563E28BEA4B2\n43C6D69954A46EC34A2A262BCC62A9A7E83E839C739F199CB72646D397C686E3\n06F745E681C5DEBE6C6E6B4708ADBE0B91DDBF1D0E793889A258E9645A35AB52\n75C52C9920CAA896DB90438C526E54AD97F7BF77F57086B27E900270E7047998\nDB0EB41C923CA1945D87F30344A89F67479B3F17C68A99E384DB1333A6754A9C\n2D1356B54D8CB90E255B65C50B86DF261154CAF6778D2EB4F8F2D62D6C55441A\n4CB4E4EC937AE5348652552F156C9D81A6F8C376DE155579B18093BD8666710C",
+      "export_hash": "192FC9420510947477D15070354904BE7356F67C7924E8E356286FCBEFDC5F16",
       "exported_at": "2026-09-08T21:39:22.440457"
     },
     {
@@ -72,93 +470,34 @@
       "source": "devin-bundle",
       "purpose": "Use when the user needs to compact the current conversation into a document for another agent to continue.",
       "original_path": "%APPDATA%\\devin\\skills\\handoff",
-      "export_hash": "FC25B20B00ADEB58F4496F1BD45821685A1D2AA476A718EF6ACF3950A8793287",
+      "export_hash": "43AD4BDC553670F8BE9605E2B67DAEE35D0F33D5D7FEFE81BAA326B82CC85B08",
       "exported_at": "2026-09-08T21:39:22.440680"
     },
     {
-      "name": "jira",
-      "source": "created:Devin bundle",
-      "purpose": "Use when the user asks to interact with Jira — search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
-      "original_path": "%APPDATA%\\devin\\skills\\jira",
-      "exported_at": "2026-09-08T21:39:22.441245",
-      "export_hash": "387624AEC9FC9CB1CB4876ACB4E6BF58EDC916F6CDD71176418BAD51CA4BD0CF"
-    },
-    {
-      "name": "observability-quality",
-      "source": "created:Devin bundle",
-      "purpose": "Use when adding logging, metrics, distributed tracing, error monitoring, linting, architecture testing, or test infrastructure to a project. Covers OpenTelemetry, Sentry/Datadog/Grafana, Biome/ESLint, ArchUnit, commitlint, Knip, Playwright, and coverage strategy. Infrastructure and tooling quality only; writing feature tests goes to testing or e2e-testing.",
-      "original_path": "%APPDATA%\\devin\\skills\\observability-quality",
-      "exported_at": "2026-09-08T21:39:22.442248",
-      "export_hash": "60F239EE611A8A292547363DD1CEE26C78E2560A73F5E57DE816ED7F87DBA25E"
-    },
-    {
-      "name": "prototype",
+      "name": "humanizer",
       "source": "devin-bundle",
-      "purpose": "Use when a throwaway prototype is the fastest way to answer a design question.",
-      "original_path": "%APPDATA%\\devin\\skills\\prototype",
-      "export_hash": "4E194E88256AAF11DE0E02E8403DC3FA1A1A1346EF2E1B982C9A6F8FA5C9B8B1",
-      "exported_at": "2026-09-08T21:39:22.444266"
+      "purpose": "Use when editing or reviewing prose for AI tells and rewriting it so it reads like the writer without changing what it says. Covers not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes used everywhere, inflated claims, sales language, stock AI words, bold labels, and filler. Do not use for code, data, or factual verification.",
+      "export_hash": "8EAB93383A1497C27B059E7076BA718DA34FFE682A8BF5FEFBCA3EA1A29881CD"
     },
     {
-      "name": "research",
+      "name": "hyperframes",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks a question that needs investigation against primary sources and citations.",
-      "original_path": "%APPDATA%\\devin\\skills\\research",
-      "export_hash": "5188B6EB45CE13DD951C10BCBEE23365A09F26303A118EFE5F4AA5BF53CE3660",
-      "exported_at": "2026-09-08T21:39:22.444591"
+      "purpose": "Use when turning HTML/data-attribute animations into MP4 video (kinetic text, web-native motion graphics, DOM-driven scenes). Routes to extensions/hyperframes/wrapper.py, a whitelist passthrough to the hyperframes CLI over npx (Node >= 22 + FFmpeg required).",
+      "export_hash": "D727A7DE965F13488168958F91C3607B5F1197194DE4D597083E9F21C044736C"
     },
     {
-      "name": "teach",
+      "name": "i18n",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to add or review internationalization and localization. Covers locale files, translation keys, pluralization, RTL, and date/number formatting.",
+      "original_path": "%APPDATA%\\devin\\skills\\i18n",
+      "export_hash": "440D8128BD51C10F21F81CDBB98177EFDB6A56942C498453CEC5C94D811520C3",
+      "exported_at": "2026-09-08T21:39:22.460066"
+    },
+    {
+      "name": "image-forensics",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants to learn a skill or concept through a guided, multi-step session.",
-      "original_path": "%APPDATA%\\devin\\skills\\teach",
-      "export_hash": "83056CC32BF27D17AAC6AE8DE17BEA64D9F1372FC7041D04847369CEC28CB1E2",
-      "exported_at": "2026-09-08T21:39:22.446414"
-    },
-    {
-      "name": "wait-what",
-      "source": "devin-bundle",
-      "purpose": "Use when the last message did not land and needs to be re-explained or re-pitched.",
-      "original_path": "%APPDATA%\\devin\\skills\\wait-what",
-      "export_hash": "DE9A53E7610D6CFC73096335EC9605EB3A1AB07F0326E92943190869377EE2D2",
-      "exported_at": "2026-09-08T21:39:22.450931"
-    },
-    {
-      "name": "wizard",
-      "source": "devin-bundle",
-      "purpose": "Use when a human must walk through a manual procedure such as provisioning, credentials, or a one-off cutover.",
-      "original_path": "%APPDATA%\\devin\\skills\\wizard",
-      "export_hash": "22E4B4283513409D42CCD11E245FFB4590473CFD1F3ED5F8D3AFF366B0D6AE8E",
-      "exported_at": "2026-09-08T21:39:22.451685"
-    },
-    {
-      "name": "writing-skills",
-      "source": "devin-bundle",
-      "purpose": "Use when creating new skills, editing existing skills, verifying skills work before deployment, or when creating/editing any document an agent must read (`.devin/global_rules.md`, `.devin/rules/*.md`, docs reached by pointer).",
-      "original_path": "%APPDATA%\\devin\\skills\\writing-skills",
-      "export_hash": "1DE86DAD997891536EE3A8181605F5E542C98A9A1B706F9902508C840A0E488F",
-      "exported_at": "2026-09-08T21:39:22.452693"
-    },
-    {
-      "name": "obsidian-workflow",
-      "source": "consolidated from multiple skills (v2.4.0)",
-      "purpose": "Use when the user wants to build or update a local codebase wiki in Obsidian, reorganize/refactor an Obsidian vault or docs folder, audit/validate Obsidian project wikis, or compare wiki knowledge across sessions. Four modes: Build, Reorganize, Audit, Cross-session.",
-      "export_hash": "587CFDDAB3D6F33B0F23693E0E7BF79AB5A1A6A1029103FF8D6E781FE2DAC5AA\n5302608B99DB56FA086015D682201CF052B6AA8F73ADD58CDC6A09D059D18C49\n663243B684828EBB9E7E7E0865CBB7822FFC96DD87CF644815417DD9D848615F\n9F9239EAC2F9218A60CF37F4CE9F2AFD5935A2AE696671068B204AE2C3A93E83\nACA404374E1903C4B55139164EC06790D232F5863AA01B74629CC60731DF7163\n375B811A965948F54D8296381ACF78F7FFE46B547156ECE79860D58D93F68BC7\n59D6951AFF0022B1D89828B5F2B2491B6D711DD86111ACD890BB13DC7626F4D1\n473EB438EC1EA598515BC183D5D44026E201143279ACF092276A8BFE386A3AEE\n2080E89584CF6AF3D9C7663F0ABD04F7F78445516EE41E4ECFA9DD6CB9727A3D\n5B8E5DBE8C715C3F675E86A727050DB5748E888699DB4AB97A7A2D4854C6730F\n4CD3297DEEC6206738B9F366EE66827EC49FBFF57F6AA495401B27ADC0AB003B\n040E0AD3A8685C5F8727CBDE4FE591FB3015A581431D037A818022E1DE099BBF\nA001B5E22A7DDAB0A8DF26B0ADF088833DB0B6442D6D0FE14FF66867C3862140\n52D1C637BCEFF719C881CAA285C1D3F3F74B7855A920FA38A03A7D829AA1AA89\n1E5339C5DB04CDB8B20CB3F58F030DA9D41F7ACA6AEC484DA7D162735E06AC9B\nDB4A4E91879E0F704510AB7C0C510CE819CB9432CEE13F8D96E0F1C5D1200FA7\nF2996C2679604D9366A670E46C1DBFDC54BD6B5F151DC98B92188B905566A9DD\n529307632882AD9958981996975B80B0FD23C6042D0E04B3E72D406467F02966\n18F7672EF90847862A5F7C5EA5891A9C0440E27AFA9F0AEE45AE2AF47295495C\nD3E5EF06493A4B2A7F0DC813113532FFE7585C1E29BDD05FD20A71055CC7CDCE\n332EBC94CD148BF0C6278C45F2DD1D51A4C920F5837068E2DD7BB678F11494D8\nBACAD3C9987ABD6BB732D0DD452649AAAB3F5899F0A936D95D2C7D11D2682EB7\n0466329D68A5D19A642272F4D3854F2E8ED28877F2BC82DB2AEEA73955DFCDE3\n31953892B7C37F043746D18C3E81200BC8D78E2D43227112E2D1F181A9BCBFF3\nFBE15305C97F428DF71E5A3FB4AFAC6875EDDB24FEA2C7A98DAD48CB967C4293\nBFBE85E318BC079C4BD43AEB097938E06C9240AEE9C5588C93B0D22CAAC6BE93\nEF0BD0D1C0C42BBF737F9B4172888851C31B6723FBBCCAC6D99276C51F51D6E7\n81B5F01AF6FFCEE30A8D143543422E14347DBACD8C38FB43709579D0CB7D358A\nF7B6F3CCCC8258FA6FB2317A8994AED8C10F01CD2363FAA4367084FDA729C047\n60D083CC69D6218AF2127B553668127BBF5C38F449BFD4C27760F421E9AA7AAC\n0783D1595BEB70E5CEA4127D6147E8BD4B76040BE96C970F4C4DEFD8E441C026\n8D3CE8F2E6B3CD7FAE39D3DC70024F4B0CFE9D3F9F8AFE7673A9962BAF881D9A\n86F0387D7961D9D320FC1081C3525DB4EB77DB3017CF8694E93BB5E86AEF3FE1\n0F9B49F61B2D6040696B0558622B30453B21ED99C48613736F9ABB8699391E05\n1E87C554BC15C0DD15ADEB629084F5D65E5E2894B246C651D0759624B4312A33\nB6899988B80FD33372FDDA7946B5DFBE9612A18CC027CEF750042A657B3F123A\nB95DA87DB5C3EA4D996F5D04B513CF2E91C71BF18DDE5BD48A7D98C45CC01241\nB61F0F42495CA7BDBD3C23FFE0D7768CB654CDFA3BCFDF3C5AF5DC4FA48D6396\nA271F8A4D3C6349888EE8D5DEC7B54F9B1AD4C7C2A67E5CD8B180E378D725211\nA5FD21231181EA3784226735B058FEA5FF529DE61714880A94CD768BFA004237\n051D03F017EA31FDC206F9314E0EAB17E243FF54674DB09BB54D92EF94BC9578\nFC19776F86EE89A88336136F07FBCE11F915478E5AFFB833E2EEA2157BBE95CC\nADAD1D13AE9957CE04774480DEC269FF1AB932CBDEE9A7419EEBF52056E0F02F\n5125D562CE0E1947EDD7D5EC217733C74155C8CD74C74E8CD515110DFBE24D2E",
-      "exported_at": "2026-09-08T21:39:22.456881"
-    },
-    {
-      "name": "data-analyst",
-      "source": "devin-bundle (new, replicates cloud DANA agent)",
-      "purpose": "Use when the user asks to query a database, analyze data, create charts, or asks business questions about data. SQL-first exploration via MCP data sources.",
-      "export_hash": "978991F96BF9A7449C493EFC822714ED111746300587599EDA2778A174F2C11B",
-      "exported_at": "2026-09-08T21:39:22.457280"
-    },
-    {
-      "name": "playbook",
-      "source": "devin-bundle (new, replicates cloud Playbook feature)",
-      "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks. Structured prompt template with Procedure, Specs, Advice, Forbidden Actions.",
-      "export_hash": "2E3888B8A049A3E05F60DFAD223F52CCFD923F9EBFD65FCB3E7ACBDD25F356D2",
-      "exported_at": "2026-09-08T21:39:22.457423"
+      "purpose": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating that ai3d-gen source photos are real captures before splatting. Covers PRNU noise-residual forensics, EXIF/XMP/C2PA first pass, and PCE scoring via extensions/image-forensics.",
+      "export_hash": "A1BB8E44452551D85B34874031342D861A4634C7EAABAC724C5997CEF0C44DD3"
     },
     {
       "name": "impeccable",
@@ -168,245 +507,173 @@
       "exported_at": "2026-09-08T21:39:22.458310"
     },
     {
-      "name": "ai-coding-dictionary",
+      "name": "implement",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term definition before continuing a technical discussion.",
-      "export_hash": "691E2B05603DCDD5BC6DDD95C7DD6D017FEAC09426F9C0B9B746FFCECF986DFB",
-      "exported_at": "2026-09-08T21:39:22.458583"
+      "purpose": "Use when the user wants to implement a feature or fix from a spec or set of tickets.",
+      "original_path": "%APPDATA%\\devin\\skills\\implement",
+      "export_hash": "39298A9D3D92561AA1B16E45B56737D460F59CB12468341D322B82667218B739",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
-      "name": "deploy",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to release, deploy, rollback, or verify a deployment pipeline. Covers CI/CD gates, environment checks, canary/blue-green, and post-deploy smoke tests.",
-      "original_path": "%APPDATA%\\devin\\skills\\deploy",
-      "export_hash": "3C7C352A8CCD4564C86FB6D78C2ED4FE8984FF1EEB6B05894B8FADFE93F51AD1",
-      "exported_at": "2026-09-08T21:39:22.458845"
-    },
-    {
-      "name": "performance",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure.",
-      "original_path": "%APPDATA%\\devin\\skills\\performance",
-      "export_hash": "8F1DF51995F02FAB0299B2E81A62ED7C2EB534ABC2EA7A0A20AFA0B91A6E23B4",
-      "exported_at": "2026-09-08T21:39:22.459109"
-    },
-    {
-      "name": "a11y-audit",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment.",
-      "original_path": "%APPDATA%\\devin\\skills\\a11y-audit",
-      "export_hash": "D84220314E3D4541D52FEF220534862E8012B6EAD0A52FEF477CA997C15AC9F0",
-      "exported_at": "2026-09-08T21:39:22.459244"
-    },
-    {
-      "name": "database",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to design, migrate, query, or optimize a database. Covers schema design, migrations, query review, indexing, and data integrity.",
-      "original_path": "%APPDATA%\\devin\\skills\\database",
-      "export_hash": "2A084774A9BA6847781FF57348E17EDC989611DD3CE7A08461A893B562C34572",
-      "exported_at": "2026-09-08T21:39:22.459508"
-    },
-    {
-      "name": "e2e-testing",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to add, run, or debug end-to-end tests. Covers Playwright, Selenium, Cypress, happy paths, critical user journeys, and CI integration. Browser-level journeys only; unit/TDD work goes to testing, test infrastructure to observability-quality.",
-      "original_path": "%APPDATA%\\devin\\skills\\e2e-testing",
-      "export_hash": "B0DE89D79C51DBDFC203DF463DB9A283529F27D3EAFE1DBE39BB5890CA058AFC",
-      "exported_at": "2026-09-08T21:39:22.459644"
-    },
-    {
-      "name": "docker",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to build, run, compose, or deploy containers. Covers Dockerfiles, docker compose, images, volumes, networks, and basic Kubernetes manifests.",
-      "original_path": "%APPDATA%\\devin\\skills\\docker",
-      "export_hash": "9B2EC6CE481513BEADB72E04B8DEAEEFDAE7EEDDE4BBFA301D3D2C58CBB92E85",
-      "exported_at": "2026-09-08T21:39:22.459924"
-    },
-    {
-      "name": "i18n",
-      "source": "created:v2.8.0 skill-coverage",
-      "purpose": "Use when the user wants to add or review internationalization and localization. Covers locale files, translation keys, pluralization, RTL, and date/number formatting.",
-      "original_path": "%APPDATA%\\devin\\skills\\i18n",
-      "export_hash": "8DE20EFCB53B678019CC468E17633D35DE6831F4DCFE7510E3B6951411DF1234",
-      "exported_at": "2026-09-08T21:39:22.460066"
-    },
-    {
-      "name": "youtube-fetcher",
-      "source": "adapted:JimmySadek/youtube-fetcher-to-markdown (MIT)",
-      "purpose": "Use when you need to turn a YouTube URL and provider-supplied caption/metadata JSON into a raw, timestamped transcript + metadata Markdown note under `.devin/notes/youtube/` for later structured extraction, without auto-installing dependencies, invoking yt-dlp/Whisper, or calling the network. Not for publishing or posting to YouTube; use social-midia/youtube for that.",
-      "original_path": "%APPDATA%\\devin\\skills\\youtube-fetcher",
-      "export_hash": "BF89800D30861B45FDA73CAC04A5E45014C0CCCCB758415E9104D51E101048FE",
-      "exported_at": "2026-09-08T21:39:22.462266"
-    },
-    {
-      "name": "computer-use",
+      "name": "implement-laya",
       "source": "devin-bundle",
-      "purpose": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) or to read/control terminals (Windows Terminal, conhost, mintty, spawned PTYs). GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
-      "original_path": "%APPDATA%\\devin\\skills\\computer-use",
-      "export_hash": "D723482F24F5A375D2B6208A80385BCD382FEC5DC1E9A34C0DCE32F30AA0AF7A",
-      "exported_at": "2026-09-15T23:29:25.416194"
+      "purpose": "Use when a task needs fast typed decisions — classification, triage, scoring, guardrails, moderation, or model routing — over text/JSON states, or when integrating the `laya` engine (non-autoregressive decision model) into a user's codebase.",
+      "export_hash": "4DF2DD3986F77D7902E97A8215F01177033B3CCD64E113107D69913C576E3D80"
     },
     {
-      "name": "context-hygiene",
+      "name": "improve-codebase-architecture",
       "source": "devin-bundle",
-      "purpose": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent fan-out, when choosing a reasoning effort level, or when reducing token/compute/MCP costs. Covers lost-in-the-middle, context folding (RLM), cost guards, and difficulty-matched effort.",
-      "export_hash": "A0FBF5FE465A24B0B294F92F93E472BDB15694866F1360260CFFF11374FB3562"
-    },
-    {
-      "name": "memory-management",
-      "source": "devin-bundle",
-      "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only — improving skills/rules/hooks belongs to `self-improvement`.",
-      "export_hash": "C5686B5262E90DF001A5FD846FF00684D76BA82A56EF99A9D8CDC92DFF2E0D60\n0E2A334834511BDA047F2E3A2E07CC5CA68176314CD706F6A65A0F7A57D62B92\n20B655B2A62708290251D62A2115DBF4BBB3659F12FFFFE27BAE3D43FF19D12D\n0EDB161ABBB876A0DD2EE1019255B7A1E742EA904B446823D86BA6AF06F96D0C\n76B29BDDFA14CF3C1D3D48DA497DC782E3BFFF5884A56AC757E90CAAA51EB185\n29CD6DA9953DAC2A258ECDFA130B98BF9EDF7E2A59A3806268BABDC9901961BA\n8DF093066D1AD4893C368415AD1630D8C09F7C08515089D21E03696A8DD379EE\n3345E29BD6B61C81AE9F0B2773EFD6F24E14F238218F2D555CCC282F8C8702C9\n406CDEA8292EF7F0FA1B699C55FDBF4BC1B60E8BDD587702859CE98C5E2CFAD3\n5534F97A5453AA17BB6194D5EE36C34E520D8EB95B104B1BFA9FD3DAED174D78\n27B4931469BEAAE295A51302095253B7F37B2D1FE62B60A6AF7B1FD382C7F57D"
-    },
-    {
-      "name": "mcp-governance",
-      "source": "devin-bundle",
-      "purpose": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which servers consume the most context budget, before committing mcp_config.json changes, or when deciding which servers to keep active per task. Estimates per-server tool-definition token cost and guides lazy enablement.",
-      "export_hash": "2F68A0651E0D93B117965CE168A5B2D06BECE87A74E2EF584FB3F5A36034F385\nB7F548433EE069210319AB2B4ADE2EF2CE5A8C54975FBDD3079F74F92A35E5DB\n74C783B946EBF250E9484FF64AE45CA095F4B92D77C462AFF84262E50601409B\n31F59AA34D2F6532EC6DEFB37759F7362B00F82CA840725FFD35802C7C70D3FF"
-    },
-    {
-      "name": "planning",
-      "source": "devin-bundle",
-      "purpose": "Use when AUTHORING a spec/PRD, implementation plan, or ticket breakdown from conversation — writing the artifacts, not running them. Hands off to `execution` once the plan exists. Also for decisions needing external input via questionnaire, or work too large for one session mapped as decision tickets (wayfinding).",
-      "export_hash": "10F7A19402345A233529727E1B7941972019E551FA6EF2FF4C46CAAE7160C271\n65DD6A1284023E3688581B5E16F54267D62B5BBF6B84E77FD72B674E0C1A6837\nE0FE4A87D07BAC0801DBEBD4595D0D39017872B4133CAE64599F0031755844B7\nCA5689F32AAD6BBFD933041118BEC4705FB84836A3E40241D5EB420152151E6E\nF135851BE43CE1941F74E551A3E31E0466E08E9AF3C3CB8D517203AAB943CD7D\nAA728B96AAD603C8BE28875A4305637F6C984AA81FFCADCB13E743202FA2A0C7"
+      "purpose": "Use when the user wants to evaluate module depth, identify deepening opportunities in a codebase, and act on them.",
+      "original_path": "%APPDATA%\\devin\\skills\\improve-codebase-architecture",
+      "export_hash": "27213F2AAFD83D00F4B84795B28AFD7980CE0E5DC86C9B734E91FE3381870E05",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "intake",
       "source": "devin-bundle",
       "purpose": "Use when SIZING a task or PR and deciding whether to split it, validating the \"intent\" field in tickets/specs/PRDs before implementation, or moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs). Feeds `planning`; does not author plans.",
-      "export_hash": "933B3E19645D06A10DD415DA38DDB250D9B006E75826D9B93A3FCDD54953F49B\n2526F998FD7CA5E956D3F6F234BCC2431A5971EE769F1148DDC60B92F04D5914\n2A610FCA6F6C246028AE403A5CC88CD0EBA438677E3472A5E2A0375A66C6D420\n52EDB59091AC9F51F722EF4D711C0F1FA3719D39B5A10F1967541BE5FAC46CA9\n415EF8975D8E375B0E5E806D95BD3C23D95D7C22C3AE88B4E2CFB298B7F61C3C\n4D081C4BC5B4C6DFF8E8486FEB6DEE7C597F9023213E333B58E3A2F991B64D14"
+      "export_hash": "2A610FCA6F6C246028AE403A5CC88CD0EBA438677E3472A5E2A0375A66C6D420"
     },
     {
-      "name": "execution",
+      "name": "intention-capture",
       "source": "devin-bundle",
-      "purpose": "Use when RUNNING an already-written plan/spec/tickets with checkpoints, implementing a feature/fix per spec, deciding how much human review a task needs, or working unattended through local Markdown issues in a blocking DAG (AFK loop). Plans get authored upstream in `planning`/`intake`.",
-      "export_hash": "565890BF6ECA6E33060823429635349BEACD3F8CA3E7B638536F68BA22AE767D"
+      "purpose": "Use when capturing and validating the \"intent\" field in tickets, specs, or PRDs before implementation. Ensures every task has a clear objective, landing zone, and user impact.",
+      "original_path": "%APPDATA%\\devin\\skills\\intention-capture",
+      "export_hash": "3A3BC105264481C74523F056D2888A464621F9C05FCF6CA266F9197FA488CC97",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
-      "name": "gates",
-      "source": "devin-bundle",
-      "purpose": "Use when about to claim work is complete/fixed/passing, when a task risks agent laziness (large, multi-step, previously half-done, or with acceptance criteria), or when running long-horizon/unattended work where quality must be verified before proceeding. Covers gates, gates ledgers, and autonomous gate semantics. Completion-claim discipline only; writing tests goes to testing or e2e-testing.",
-      "export_hash": "33B6C111B1AB6CD66071F6FACFC261737B05394CCA51FF9B26E7DC7506B42A58"
-    },
-    {
-      "name": "git-workflows",
-      "source": "devin-bundle",
-      "purpose": "Use when managing branches, writing commits, creating isolated worktrees for feature work, or resolving and verifying merge/rebase conflicts.",
-      "export_hash": "50DD34AA503406EDD79D42F46580E3E3FA3E0A288C910B9B84A8AC58B6B96345"
-    },
-    {
-      "name": "architecture",
-      "source": "devin-bundle",
-      "purpose": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams, characterization tests, safe extraction).",
-      "export_hash": "6EC05C955B639F933A76062C025C200526918100BAAEDA3B97DD5D29D5DB0738\n125E6B77413AD2BC7CF7A772BC74336D580A50F9E797DB2178ED133D62333D06\n98B9D03CAE0EC19F3D83F39ADDB61D58E4E0EFCC2365C180C04AF5C3DE3126AD\nCC44ABBA3093DA0AE5C94AB8154C405688293C03296DA0585833E089ED49C4B0"
-    },
-    {
-      "name": "project-bootstrap",
-      "source": "devin-bundle",
-      "purpose": "Use when starting work on a project that lacks a `.devin/` configuration, when the user wants to add skills/hooks/rules/local tools systematically, when configuring a repo's issue tracker + triage labels + domain docs for the engineering skills, or when setting up Husky pre-commit hooks with lint-staged/typecheck/tests.",
-      "export_hash": "BC97A94564C90F951A96898E3A571644EE5F320394401FAEF8CCE85E428F126E\nFC6108056896B2F4E23DAE755B51B2A712CE783B7B379A5F0F84A35EECDE7A8E\n4B3EE182671325CC5D28D31B3B0ED9AE96D44AB7E637AEC78FBF930A48DEE21C\nA3CB567B34B68C97EDDEAAD2BB2484B11574F6ECBC0FEA2AE5159D50633C248C\nCE4B51FD355A12E96DD720A0921ADD369C37B366C72EE97D392698E1E8833CE5\n8C23A1CE670360404F9C73BCD0E298349F7173429C485381B4D19743C7BB7D57\n34E54128499CDD509D80DAE29046A7ACD7F2AA904165310CBF9E0B60F27F8D3F\nC37402DF52E619CE990714B56A8F4C1653B947C01796CF3C64F34737641FD72A\nB638586D0A5816E7F5028FCEEB785777D32D9432CFC8285082F6DF54DF5EC539\n26DA4E58B29ACEFF5D4C17DCBE4B109C5C0018C905BE3EEF6BA6325D54D2ABDF\n8C620ED8CE455214A0FEDA2892270FF9C9CBF47E919EB7A43E8D4753CAE51FBC\n76090923B6FCD507522F615700E199804FE1C8CCC421E6BBB89C251AABE76F44"
-    },
-    {
-      "name": "devin-config",
-      "source": "devin-bundle",
-      "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval.",
-      "export_hash": "D175FB401E6BE9F0826CC20E341E8829E9E13799198DF90E6126B3B31CD5BA36\n91E2A029EE979CF9AD1704110EEF5B9CE51F2DB73DA20F46C199F15CCAFBB980\nD6D7D4767151824C1B016A3BFAB1199A38E7DE50D11D57A801622AC2652F08A0\n34E8791B7486D4F7340FF6F1A9D3086156A23E2750D844EF382EA3BAAB47C8AE\n651F04B31C12CB14731A1CD27C62BBE34A3CC51455A175FC4D38642EC3A60BF9"
-    },
-    {
-      "name": "debugging",
-      "source": "devin-bundle",
-      "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken/throwing/failing/slow, when encountering a bug/test failure/unexpected behavior and a fix is not yet obvious, or when CI is failing and the cause needs to be found across builds, jobs, or environments.",
-      "export_hash": "57F4716C2DB1BF1A524C6C7EDADE55B0D7C456E33E86B5F4A416CFAEE28A6CFB\n484CA88DCB6800CEAF9CF0D2CC9E7DE33B57B049066193CF1105D2FA3F6BE014\nB5B483A74339FB7F23894056035F783CDC773239B141BB8E6A942F909383439F\nE89FEC8400D6CD50F43407CEC9FAB50976BA4D55D0EC2EB51C0BD68036B54C26\n1E175FB86FC357E58C6AEBF5441E481E1B7868B4380C0456B63A17EEFBD18BA7\n50D06D316F6A2848A2800B375B2F97D06C4F9B8196535868A5EE7DCD2FB7113F\nD011F18BE62F1DC896D398C5332CBEAEB87E1377D0B0F033D401CF044F736998\n0643416ED141871BCFF7D3529323A23B099516E59FE07824E1A4F67E66354FBE\n580E4455BF65B698701D721B818EFDE42B83ECA6D407E583C9098FC9C9FA73F4"
-    },
-    {
-      "name": "security",
-      "source": "devin-bundle",
-      "purpose": "Use when auditing code, dependencies, or infrastructure for security issues (SAST, dependency scanning, secret leak detection, OWASP-style checks), or when checking that a project or change follows secure defaults before committing or deploying.",
-      "export_hash": "64502F1F8E6DFB0A541513726AC9240048628710D234B066BEF0B1E6FA3FD84D\n6949F34526A84FB92AB78C4379E1897F38D856C5326D0E7383CA31D1644C505D\n28E6923E20429128ABA896229E3D18EDEB7B9EE1E5B40F1A63DC301103172679\n72C066A878445636DFE6C7F2ECADFC7DDF8BC3027BB991D6917AEEB768030D05"
-    },
-    {
-      "name": "api-spec",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-readable context for AI agents.",
-      "export_hash": "C642F063070A1DC924CD1CE5F43534908AA7961F29FF799F272932CB9F5E57CF"
-    },
-    {
-      "name": "testing",
-      "source": "devin-bundle",
-      "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate (red-green-refactor, seams-first), or when the user asks to find testing gaps, mutation test, or identify surviving mutants. Unit and integration tests only; browser journeys go to e2e-testing, test infrastructure to observability-quality, completion claims to gates.",
-      "export_hash": "B08C8272168775AF7865727F94FF1D6BD2A035E2B56A19016EDC0E16B19831DD\nE2187E0D9209657C4C3F050B16466B3F76268DBD069C891A6B5D9D251E24591F\n02A58EEF0B617C92CA621306930B0653180AA9597BE3052B4D5D1435E802738A\n3CEB807FDF4A47D6A93D4D9A891E5BA6D362A6247BD08ADC451FEEBFC17361EF\n859F9E592C188FDA4FC7277DD180E4CE9C7A2E13F6EFE1F6F29ECCC9D28C106A\n10E2F4728B2E3D5522868E4F90FC36C260CFA6012C765B9F706A1ACCBF0ACC84"
+      "name": "jira",
+      "source": "created:Devin bundle",
+      "purpose": "Use when the user asks to interact with Jira — search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
+      "original_path": "%APPDATA%\\devin\\skills\\jira",
+      "exported_at": "2026-09-08T21:39:22.441245",
+      "export_hash": "2B714AB7B1174AFDA5269735903768A8C0325679BC6111BE66404C0DEFC08099"
     },
     {
       "name": "knowledge-modeling",
       "source": "devin-bundle",
       "purpose": "Use when building or refining a project's domain model, glossary, or bounded contexts, when validating tool outputs/data against a domain ontology before side effects, or when extracting entities, relations, evidence, and provenance from Markdown/plain text into a typed versioned knowledge graph under `.devin/`.",
-      "export_hash": "85E9587BDE6A0D17EE1D92AC64F857EB1109BB6EC43F2A169BAA08123CBC101D\n50B2895EF00506A0CA45D4E82496012D4B80CB397E11586D820159099CF17D10\nD7040229FF0DA5843FA66DD76309BF7B347D5C1CA8C1C373B8233A3C1BDFE9C2\n09BE10DF7BFB9E8316F65325CAAC6452800152BFF8C93665326B00505AC0D0F7\n6319E6F3B501512645CE3917A5864E1F2D771FDB6C5DB56F47FF9483351FA90E\nA32DA3BCB181E601D537517FC6F7C53EA5D087C2906EB4A4893B2F29C91F9895\nD3C1FDD85C0B39B66C6200D26587C39ED9B4E62446EF2A54502D248932D94948\nDAE1026233D62F7BC30C3D442D18954A68B250FE08B20447DCA306C2C579BBEB\nFCEF570D5A4A2B42D286E0FCE092EC012AB7C22544ECB240BFE38B265E918F80"
-    },
-    {
-      "name": "self-improvement",
-      "source": "devin-bundle",
-      "purpose": "Use when improving the AGENT/BUNDLE itself: self-improvement sessions (deep research + validated loop), capturing recurring failure patterns as skills/rules/hooks (/refine), researching harness design patterns (PrimeAgent/RLM vs Devin CLI), A2A messaging between subagents, or deciding whether to dispatch a subagent, which profile, and what budget. For remembering user/project facts use `memory-management`.",
-      "export_hash": "B3DD15DAD534BEC9618F621E38B7C1E5B99563DA371C6FDB9A73D09D15B59FFA\nC20BD0EF74E27212D3547CB253E73FF11AE89358F4DA06A9018AD168D74895B5\nA5A87AE0B47A6DBD1FD91CD65C915DA4F02A4DF2509EA2782E3E46F3D905758E\n16E45A1E694CC2E0E54ED2998FD864D56854BC15D0010C1C2926FF643968E49B\n19BFFB1F7EBD6A3CC96D931C6AD62FC8AE3B06F0AB268D1445EEB1468AF61B21\n2C99AC9DA6D9BE3A24DDE77311BD3E5DCA4C184A742DA9AD5FF2E4650F97D558"
-    },
-    {
-      "name": "skill-discovery",
-      "source": "devin-bundle",
-      "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI.",
-      "export_hash": "EB0AB62C343BC63F24AEB1A4AA20B679A94C260E18EC0019FB505B972E01AAB4"
-    },
-    {
-      "name": "brag",
-      "source": "devin-bundle",
-      "purpose": "Turn the current project website into a short, polished, shareable launch video using Hyperframes. Use when someone says \"/brag\", \"let's brag about this\", \"make a launch video\", \"turn this into a video\", or wants to share what they built. Reads the project code directly — no live URL or screenshots needed.",
-      "export_hash": "2556B8F292F7FDD872E4FD414AB87BFF52E63AB0100757B13B9F300AF4413D93"
-    },
-    {
-      "name": "ai-tools",
-      "source": "devin-bundle",
-      "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
-      "export_hash": "E7ED3C58C8699F74E41811C9491969BE511383B606580C24E995111758957760"
-    },
-    {
-      "name": "scan",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants a goal-driven, codebase-wide investigation — \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence.",
-      "export_hash": "17AE7CEABC7D139BE0B81EABFE8E33B05F1E2DFEFC1774B585091C9FC33CA07B"
-    },
-    {
-      "name": "system-control",
-      "source": "devin-bundle",
-      "purpose": "Use when the task needs authorized OS-level control — process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file copies — where native system APIs beat GUI computer-use. Routes to the system-control extension.",
-      "export_hash": "793F0DB5E545EB67E19C2422C9123868B65FDC07E59CD1D0F1CBEB03DDC30988"
-    },
-    {
-      "name": "prompt-compiler",
-      "source": "devin-bundle",
-      "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md.",
-      "export_hash": "78D8A5BEBAED38E517DBD4B96F2235BDCC74EB37788B708D1164E3B77FACD47B"
-    },
-    {
-      "name": "architecture-diagrams",
-      "source": "devin-bundle",
-      "purpose": "Use when the deliverable is a physical diagram artifact (.svg/.png) — C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid there).",
-      "export_hash": "8C276259849AC83F1462FB19534DF03389E68F0D8D93141BD6D793762D25B99C"
-    },
-    {
-      "name": "media-tools",
-      "source": "devin-bundle",
-      "purpose": "Use when generating visual artifacts — ASCII art, halftone, dithering, matrix-rain, VHS, pixel-sort, voronoi, and other image/video FX — from images, GIFs, videos, GLB models, or webcam input. Local, offline-first.",
-      "export_hash": "37D431FEACDA63EAF0FB14E7F5EE73378AF862895D44AFE2309B7E31DB320C66"
-    },
-    {
-      "name": "implement-laya",
-      "source": "devin-bundle",
-      "purpose": "Use when a task needs fast typed decisions — classification, triage, scoring, guardrails, moderation, or model routing — over text/JSON states, or when integrating the 'laya' engine (non-autoregressive decision model) into a user's codebase.",
-      "export_hash": "D20ED14CA6698EC54FC85F57B7B94BA6AC4053B1198C55A4D6E32D4FBF506EA3"
+      "export_hash": "85E9587BDE6A0D17EE1D92AC64F857EB1109BB6EC43F2A169BAA08123CBC101D"
     },
     {
       "name": "laya-orchestrator",
       "source": "devin-bundle",
       "purpose": "Use when a cheap typed check beats reading files into context - batch file classification (contains auth data? has tests?), review risk scoring, or pre-dispatch triage. Laya ranks and abstains, never proves - it is not a substitute for reading primary sources (Rule 12).",
-      "export_hash": "D1853981144F7CE50321D611A71A0C8B5E326C9DEB58725700182E0F5263DFF2"
+      "export_hash": "F2FA8D9585AFF81D84A0B0D584A46C2D934858998D9E6276C15E4677EE1EE280"
+    },
+    {
+      "name": "learn-mode",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to own the design while the agent teaches and implements — unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
+      "export_hash": "1EF7EED23C3BB8B9A352A8FF1DB864F1F78988D841A6F748BD0E4C80F93E31EC"
+    },
+    {
+      "name": "legacy-refactor",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to modernize legacy code incrementally. Covers strangler-fig, seams, characterization tests, safe extraction, and risk reduction.",
+      "original_path": "%APPDATA%\\devin\\skills\\legacy-refactor",
+      "export_hash": "171423CE00C914D8B917F09F7E29C37F77BC7950A5E37B4E201D5712D8CCBF8A",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "leo",
+      "source": "devin-bundle",
+      "purpose": "Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.",
+      "original_path": "%APPDATA%\\devin\\skills\\leo",
+      "export_hash": "A91933AE487EDAF04B7B4186BAE95D997289459B189EE674967F779CE5045B5C",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "mcp-context-audit",
+      "source": "devin-bundle",
+      "purpose": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mcp_config.json. Estimates per-server tool-definition token cost and flags bloat.",
+      "original_path": "%APPDATA%\\devin\\skills\\mcp-context-audit",
+      "export_hash": "DF8BC305A02A2E93A5245A4E72A68D0086BAE8F07A0063FE1EFA87D6A8180E49",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "mcp-governance",
+      "source": "devin-bundle",
+      "purpose": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which servers consume the most context budget, before committing mcp_config.json changes, or when deciding which servers to keep active per task. Estimates per-server tool-definition token cost and guides lazy enablement.",
+      "export_hash": "1FCA840AD7198F6FFBE5F956FB3ACD2FD63EF157DBF69C97002F277F9D519D31"
+    },
+    {
+      "name": "mcp-lazy-enablement",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding which MCP servers to keep active, when context feels bloated from unused MCP tools, when a task only needs one MCP server temporarily, or when auditing which servers to enable/disable per task. Guides selective MCP enablement to minimize context-window tax.",
+      "original_path": "%APPDATA%\\devin\\skills\\mcp-lazy-enablement",
+      "export_hash": "2344992D15E0B86FDA4B72B821892BF755EC6652313A303413E2B37D6B31C4A3",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "media-tools",
+      "source": "devin-bundle",
+      "purpose": "Use when generating visual artifacts — ASCII art, halftone, dithering, matrix-rain, VHS, pixel-sort, voronoi, and other image/video FX — from images, GIFs, videos, GLB models, or webcam input. Local, offline-first.",
+      "export_hash": "4898CFC8926700698B494184A9C6B47F8070EF827A521AD403AE3624C948B54E"
+    },
+    {
+      "name": "memory-hygiene",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or bloated, when preferences leak across unrelated tasks, or when choosing between stateless and memory-equipped operation. Covers memory accumulation, temporal contamination, reasoning drift, and user-authored vs auto-saved preferences.",
+      "original_path": "%APPDATA%\\devin\\skills\\memory-hygiene",
+      "export_hash": "3F3FAFA52E951865B9E51A4200B15B750CD5C8E94B4D296E481D43D63A109CB5",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "memory-management",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only — improving skills/rules/hooks belongs to `self-improvement`.",
+      "export_hash": "C5686B5262E90DF001A5FD846FF00684D76BA82A56EF99A9D8CDC92DFF2E0D60"
+    },
+    {
+      "name": "mesh-utils",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to inspect, convert, clean, or validate mesh/3D scene files (OBJ, STL, GLB, FBX, USD) via trimesh, PyMeshLab, or pxr. Routes to extensions/mesh-utils/meshops.py. Lightweight stdlib CLI; deps are pip-installed only when needed.",
+      "export_hash": "FA6B2FCCA33FD6BEA04E90D7D31B7762D7B0E6238A8A2A0D6F38B3ACFC0380C7"
+    },
+    {
+      "name": "mobile-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools: jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.",
+      "export_hash": "8CC940AFD212613644C29B04DEE0EE7AFCD8423529BBD6C4678C84C6D41BEA40"
+    },
+    {
+      "name": "mutation-testing",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to find testing gaps, mutation test, or identify surviving mutants.",
+      "original_path": "%APPDATA%\\devin\\skills\\mutation-testing",
+      "export_hash": "183F6267A62A5749999FF12DFE383FB41BF8F3EBD8F0A3B08117C17A752A51A9",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "net-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when probing declared hosts or networks under an engagement contract (port/service scan, SMB/AD enumeration, TLS audit, vulnerability scan). Routes to extensions/offsec-tools/wrapper.py tools: nmap, masscan, netexec, enum4linux-ng, testssl.sh, openvas. Verify-not-exploit by default.",
+      "export_hash": "AFA1FAD5FE389852851DA9A7E44435DD5A4B7D334612ECA9193E9A5BFB200863"
+    },
+    {
+      "name": "observability-quality",
+      "source": "created:Devin bundle",
+      "purpose": "Use when adding logging, metrics, distributed tracing, error monitoring, linting, architecture testing, or test infrastructure to a project. Covers OpenTelemetry, Sentry/Datadog/Grafana, Biome/ESLint, ArchUnit, commitlint, Knip, Playwright, and coverage strategy. Infrastructure and tooling quality only; writing feature tests goes to testing or e2e-testing.",
+      "original_path": "%APPDATA%\\devin\\skills\\observability-quality",
+      "exported_at": "2026-09-08T21:39:22.442248",
+      "export_hash": "DDA444BC10DACED5BA81DA4CD86D8402AFCA85B7F0A1B19223BAA318436ED52B"
+    },
+    {
+      "name": "obsidian-workflow",
+      "source": "consolidated from multiple skills (v2.4.0)",
+      "purpose": "Use when the user wants to build or update a local codebase wiki in Obsidian with architecture diagrams, source-linked documentation, hierarchical pages, auto-refresh, effort levels (low/medium/high), Deep Research pass (architecture critique, anti-patterns, tech debt), and conversational Q&A via deep-mode; or reorganize, refactor, or restructure an Obsidian vault, knowledge base, or documentation folder; or audit, validate, or fix Obsidian project wikis (broken wikilinks, source citations, diagrams, sensitive info, language); or compare wiki knowledge by source session or source type to surface cross-session blind spots.",
+      "export_hash": "587CFDDAB3D6F33B0F23693E0E7BF79AB5A1A6A1029103FF8D6E781FE2DAC5AA",
+      "exported_at": "2026-09-08T21:39:22.456881"
+    },
+    {
+      "name": "ontology-validator",
+      "source": "devin-bundle",
+      "purpose": "Use when validating tool outputs or data against a domain ontology or structured knowledge base. Ensures entities, types, and relations are consistent before side effects.",
+      "original_path": "%APPDATA%\\devin\\skills\\ontology-validator",
+      "export_hash": "543F0EBB6CFBCDC8079413D5E8B5C80708B5A4B797060D9BA86332E15A55BE14",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "operate-blender",
@@ -415,28 +682,189 @@
       "export_hash": "26A18DAD93F831196468E1C7D422B2AD34C99A166F09B6D1078D258BA60D49A6"
     },
     {
-      "name": "ai3d-gen",
-      "source": "devin-bundle",
-      "purpose": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, with direct-model fallbacks (TRELLIS, TripoSG, InstantMesh, Hunyuan3D).",
-      "export_hash": "CD1E53FD1F68D75F6091D84ED05A5651DC41DE8BC1322BCE24C23C469DF6218A"
-    },
-    {
       "name": "operate-godot",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks to build, inspect, import assets into, or export a Godot 4 project headlessly (realtime 3D delivery, game scenes). Uses godot --headless --script CLI; no GUI.",
+      "purpose": "Use when the user asks to build, inspect, import assets into, or export a Godot 4 project headlessly (realtime 3D delivery, game scenes, interactive world execution). Uses godot --headless --script CLI; no GUI. Free/MIT engine.",
       "export_hash": "8F4226FBAB9EFDCCE01454984F0BDBECF4EF656DD292513290C973E1DDA6F979"
     },
     {
-      "name": "mesh-utils",
+      "name": "operate-spline",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks to inspect, convert, clean, or validate mesh/3D scene files (OBJ, STL, GLB, FBX, USD) via trimesh, PyMeshLab, or pxr. Routes to extensions/mesh-utils/meshops.py.",
-      "export_hash": "FA6B2FCCA33FD6BEA04E90D7D31B7762D7B0E6238A8A2A0D6F38B3ACFC0380C7"
+      "purpose": "Use when the user asks to launch, drive, build scenes in, export from, or shut down the Spline desktop app (3D/2D design, Electron). Routes to extensions/spline-operator/wrapper.py, which speaks the app's embedded MCP bridge (ws://127.0.0.1:19692) - structured tool calls, not GUI clicking.",
+      "original_path": "%APPDATA%\\devin\\skills\\operate-spline",
+      "export_hash": "08D69CB4D87870CD6FF68C35A92502F718182554488216C1918D46B8C66FA40C",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
-      "name": "creative-engineering",
+      "name": "performance",
+      "source": "created:v2.8.0 skill-coverage",
+      "purpose": "Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure.",
+      "original_path": "%APPDATA%\\devin\\skills\\performance",
+      "export_hash": "0FE2DEF291919F0470E5755B61DA75302E7C9344B242A71234BC5F1A5582AE70",
+      "exported_at": "2026-09-08T21:39:22.459109"
+    },
+    {
+      "name": "planning",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
-      "export_hash": "7247147920BDD9B84D5CCF30339DE694DE56804D8F25C8A0AD908EF3F8A9486A"
+      "purpose": "Use when AUTHORING a spec/PRD, implementation plan, or ticket breakdown from conversation — writing the artifacts, not running them. Hands off to `execution` once the plan exists. Also for decisions needing external input via questionnaire, or work too large for one session mapped as decision tickets (wayfinding).",
+      "export_hash": "10F7A19402345A233529727E1B7941972019E551FA6EF2FF4C46CAAE7160C271"
+    },
+    {
+      "name": "planning-pipeline",
+      "source": "devin-bundle",
+      "purpose": "Use when turning conversation into a written spec, breaking a plan or spec into independent traceable tickets, or when a decision cannot be fully answered and needs input from another person via a questionnaire.",
+      "original_path": "%APPDATA%\\devin\\skills\\planning-pipeline",
+      "export_hash": "FAFF30CDC819337824DC77445992519B5F8CA428CC83C7EDDF7E251E4F7CB096",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "playbook",
+      "source": "devin-bundle (new, replicates cloud Playbook feature)",
+      "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks — a structured prompt template with Procedure, Specifications, Advice, Forbidden Actions, and Required-from-User sections. Replicates Devin cloud's Playbook feature (.devin.md files, macros, team/community library) for the CLI.",
+      "export_hash": "58D271B4D1414ADEFDF480BF85C8DE11863E61EB74CA30CD3895027077C25B7E",
+      "exported_at": "2026-09-08T21:39:22.457423"
+    },
+    {
+      "name": "powershell-safe",
+      "source": "devin-bundle",
+      "purpose": "Use whenever running powershell.exe/pwsh, writing .ps1 scripts, or doing file I/O via shell on Windows. Prevents blanked files, encoding corruption, and accidental deletion: read-modify-write pipeline trap, UTF-16/BOM redirection pitfalls, JSON depth truncation, dangerous aliases, empty-variable deletes, verify-after-write discipline.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\powershell-safe",
+      "export_hash": "45016E4D1CB5B2943CDFC4AA77D888BCC7B9BA8F0491BDD6EBF5A73DF12F5D7F",
+      "exported_at": "2026-10-30T14:43:55.745135"
+    },
+    {
+      "name": "pr",
+      "source": "devin-bundle",
+      "purpose": "Use when writing a PR body or description — a visual Summary (smallest diagram/diff-sketch/tree that makes the point), concrete Evidence (before/after runs), and Merge Danger (one-way vs two-way door + blast radius). Ported and adapted from mattpocock/skills engineering/pr.",
+      "export_hash": "2AF156FD861E9895A89C1217003656FF5190E3E93BD39CFC04007803939D4530"
+    },
+    {
+      "name": "pr-review",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks to review a Pull Request on GitHub with inline comments and code suggestions via the GitHub API. Enforces a repeatable cycle of check -> comment/suggest -> check next, with a gates ledger for evidence.",
+      "original_path": "%APPDATA%\\devin\\skills\\pr-review",
+      "export_hash": "74F387A8338BE80D90DC95058AC2031F4EE58ECDFD8757E5B3A21D5EDE3CE1CB",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "primeagent-reference",
+      "source": "devin-bundle",
+      "purpose": "Use when (1) researching agent harness design patterns, comparing Devin CLI to PrimeAgent/RLM architectures, or evaluating which PrimeAgent features could be adapted to Devin CLI; (2) emulating A2A messaging between subagents or between subagents and the parent agent across time within Devin CLI's ephemeral subagent runtime; (3) capturing recurring failure patterns or reusable tactics as skills/rules/hooks via the Continual Harness /refine self-improvement loop; or (4) deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run (subagent dispatch profile/budget selection).",
+      "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
+      "export_hash": "A84818F38324CC8F05934DD463DF563FC8C13CD41EB9BF32DABFDDBB4146DF8C",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "project-bootstrap",
+      "source": "devin-bundle",
+      "purpose": "Use when starting work on a project that lacks a `.devin/` configuration, when the user wants to add skills/hooks/rules/local tools systematically, when configuring a repo's issue tracker + triage labels + domain docs for the engineering skills, or when setting up Husky pre-commit hooks with lint-staged/typecheck/tests.",
+      "export_hash": "BC97A94564C90F951A96898E3A571644EE5F320394401FAEF8CCE85E428F126E"
+    },
+    {
+      "name": "project-memory",
+      "source": "devin-bundle",
+      "purpose": "Use when the session produces knowledge worth remembering across sessions, such as answered user questions, business rules, project conventions, failed approaches, reusable solutions, or decisions. Captures it with user approval and stores it as plain-text notes inside .devin/ for future retrieval.",
+      "original_path": "%APPDATA%\\devin\\skills\\project-memory",
+      "export_hash": "93174C37C1DE8EA81E1231CCD6096193EFA9A5F4514F53E0FAB9783E6066FCC5",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "project-orchestrator",
+      "source": "devin-bundle",
+      "purpose": "Use when driving a project from an empty folder or a fuzzy idea to a delivered product with CI/CD, coordinating specialist subagents under delegation contracts, producing the methodology documentation that fits the scope (RUP / Scrum / hybrid), with verified research before technology decisions and an excellence gate that reviews screen recordings of the real user path.",
+      "export_hash": "0E5FC9C53EA0682FD3E2AAC5735A775A179EAA9CF5F7B60565CE91D61F72C192"
+    },
+    {
+      "name": "project-setup",
+      "source": "devin-bundle",
+      "purpose": "Use when starting work on a new or existing project that lacks a `.devin/` configuration, or when the user wants to add skills, hooks, rules, and local tools to a project in a systematic, validated way.",
+      "original_path": "%APPDATA%\\devin\\skills\\project-setup",
+      "export_hash": "19290FFC90F7EB06DB84A56AEA8F4A38EB9B99AABFBA330DF62805C85E3F552F",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "prompt-compiler",
+      "source": "devin-bundle",
+      "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md.",
+      "export_hash": "78D8A5BEBAED38E517DBD4B96F2235BDCC74EB37788B708D1164E3B77FACD47B"
+    },
+    {
+      "name": "prototype",
+      "source": "devin-bundle",
+      "purpose": "Use when a throwaway prototype is the fastest way to answer a design question.",
+      "original_path": "%APPDATA%\\devin\\skills\\prototype",
+      "export_hash": "3EC1F49587778FA63E781866A7D9DABB6AEDE08B357580FF0D2379FEEDE4BFA0",
+      "exported_at": "2026-09-08T21:39:22.444266"
+    },
+    {
+      "name": "rag",
+      "source": "devin-bundle",
+      "purpose": "Use when building retrieval over a project corpus (docs, code, notes), when answering chunking/embedding/vector-store questions, when evaluating whether retrieval actually works, or when an agent \"can't find things in the docs\" and grep alone is not cutting it.",
+      "original_path": "%APPDATA%\\devin\\skills\\rag",
+      "export_hash": "23914EF4F9D065B6BDA44D6915E4CCE0CD075301816B67A9E0F92B9450AE551F",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "re-binary",
+      "source": "devin-bundle",
+      "purpose": "Use when reverse-engineering a declared binary, library, APK, firmware image, or script artifact under an engagement contract (native code, .NET, Java/Android, Electron/JS, browser extensions). Routes to extensions/rea-ops/wrapper.py, a whitelist passthrough to the rea-agents CLI (Hopper/Ghidra engines probed via doctor).",
+      "export_hash": "2FE16E13E7602E9286A051B75546B6D7550C160DA317B3FFF3DCB339EC7F5D12"
+    },
+    {
+      "name": "receiving-code-review",
+      "source": "devin-bundle",
+      "purpose": "Use when the user receives code review feedback and needs to decide how to act on it.",
+      "original_path": "%APPDATA%\\devin\\skills\\receiving-code-review",
+      "export_hash": "F82DDF062CCBFB6B1F375363819635E174CA797CD78F108F6AEEADFB02437756",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "red-team",
+      "source": "devin-bundle",
+      "purpose": "Use when running an authorized offensive-security engagement against a declared target (binary, web app, network, wireless, firmware, mobile). Routes to domain skills (re-binary, web-probe, net-probe, wireless-probe, firmware-probe, mobile-probe) and enforces the engagement contract (target/window/ROE) plus evidence discipline.",
+      "export_hash": "7610C2B512FAC8F72C270A1F6657B67AAE95B25479C84F4B63E28BEB1B59CBBE"
+    },
+    {
+      "name": "research",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks a question that needs investigation against primary sources and citations, or says 'deep', 'deep search', 'deep research', 'research this thoroughly', or asks for exhaustive codebase exploration beyond a quick grep. Covers external primary-source research (background agent) and multi-pass deep codebase search with citations.",
+      "original_path": "%APPDATA%\\devin\\skills\\research",
+      "export_hash": "581BC4D19ABA7A9359B96F7F0CF8E27C340C1FBE2F2601431198B8375022A716",
+      "exported_at": "2026-09-08T21:39:22.444591"
+    },
+    {
+      "name": "resolving-merge-conflicts",
+      "source": "devin-bundle",
+      "purpose": "Use when a merge conflict needs to be resolved and verified.",
+      "original_path": "%APPDATA%\\devin\\skills\\resolving-merge-conflicts",
+      "export_hash": "ABF81F7041DA226C554AC91EDBF3A60566B61AA1EA4BAB32DCA3F5FE134C1CB4",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "retro",
+      "source": "devin-bundle",
+      "purpose": "Use when conducting a retrospective on a coding session to improve the agent's environment for future runs — navigation pointers, automated guardrails, reviewer standards, rules-file hygiene, tool economy, information access. Lightweight per-session review; deeper self-improvement loops go to continuous-improvement.",
+      "export_hash": "2003CC132E924C80DB7B77EC5AE25B71B096DAA40FAFA9130DE98F09BCD82667"
+    },
+    {
+      "name": "review-cadence",
+      "source": "devin-bundle",
+      "purpose": "Use when deciding how much human review and upfront planning a task needs based on its size, risk, and blast radius, or when the user asks whether a change can skip grilling and go straight to implementation.",
+      "original_path": "%APPDATA%\\devin\\skills\\review-cadence",
+      "export_hash": "E563A679B7C856F209ED5B68978288C19531A34464D846081E8AE67F7452F53A",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "scan",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants a goal-driven, codebase-wide investigation — \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence.",
+      "export_hash": "92BD8D9F72A0EF6BCD57A4EEB20A3ABCCE79AC0D4D3568C9390FD737C817038F"
+    },
+    {
+      "name": "scheduled-turns",
+      "source": "devin-bundle",
+      "purpose": "Use when a task needs recurring or always-on agent turns (periodic checks, polling workflows, run-this-every-morning jobs) without adding a daemon. OS scheduler plus one-shot headless Devin turns writing to ledgers.",
+      "export_hash": "2316B0B6F00F03A4DCE637B180F656AC240A2E6398E10F3ED55EB24F83B769EA"
     },
     {
       "name": "scrape-tools",
@@ -446,110 +874,48 @@
       "export_hash": "D41DEA519C78530037AF2AC362CB27A95688E6A2A3877F957CCEE9ADD6F79B57"
     },
     {
-      "name": "fact-check",
+      "name": "secure-defaults-check",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks to fact-check, tear apart, nitpick, or pre-publish-review an article, essay, blog post, or any markdown/text draft, verifying every checkable claim against online primary sources via adversarial checker subagents. Do not use for code review, security audits, or proofreading without factual verification.",
-      "export_hash": "CD017F10109BF51D3C085BAF1A817A0D1504334641B16C3E78AB1B4900812F39\n0674986E3E3BEB1E759EA27DE1370DF6B1B7211BB1429A3F122FAA4D8BEAD89E"
+      "purpose": "Use when checking that a project or change follows secure defaults before committing or deploying.",
+      "original_path": "%APPDATA%\\devin\\skills\\secure-defaults-check",
+      "export_hash": "C13C895118FDB3A299A27A16D5C5E662B0397808E5B7EB2AED4EA8D87DBF3854",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
-      "name": "humanizer",
+      "name": "security",
       "source": "devin-bundle",
-      "purpose": "Use when editing or reviewing prose for AI tells and rewriting it so it reads like the writer without changing what it says. Covers not-X-but-Y contrasts, one-line closers, staged openers, forced triads, dashes used everywhere, inflated claims, sales language, stock AI words, bold labels, and filler. Do not use for code, data, or factual verification.",
-      "export_hash": "8EAB93383A1497C27B059E7076BA718DA34FFE682A8BF5FEFBCA3EA1A29881CD\nB5F0613F6045E39A1BB2B4F017AC1DF436049A4EFEA25B55B36B87AE46B70F5C"
+      "purpose": "Use when auditing code, dependencies, or infrastructure for security issues (SAST, dependency scanning, secret leak detection, OWASP-style checks), or when checking that a project or change follows secure defaults before committing or deploying.",
+      "export_hash": "64502F1F8E6DFB0A541513726AC9240048628710D234B066BEF0B1E6FA3FD84D"
     },
     {
-      "name": "project-orchestrator",
+      "name": "security-audit",
       "source": "devin-bundle",
-      "purpose": "Use when driving a project from an empty folder or a fuzzy idea to a delivered product with CI/CD, coordinating specialist subagents under delegation contracts, producing the methodology documentation that fits the scope (RUP / Scrum / hybrid), with verified research before technology decisions and an excellence gate that reviews screen recordings of the real user path.",
-      "export_hash": "CCA9132FBA9524D814702712CFC3FC1C8C551B53BC434FB6A0BA3ACC9D6B2EEB\n306B93DFFF8F9CB3DFB6BF3245A1316119212871AFF09B3014BE183427576676\n40B89D18816453A68DA459CEF632B7776816D85DCC73CC39500B521B3ED06256\n16E451EBE7467D2FF06B3F940E93C1CDE344C2129F88BB235A3DED34138A4DE7\n7F1DEE8C1CF5B56E6A4C4337EAD387248A78B695B683D03070748C46CA83B6B6\nC6E95E025D7F19C079525C3C1DFDBD408F79E6B2BE82BE534BB285B1652215D3\nED7A5D6A2A96CDB0A86C67BAFD1C1FD419345F0081B479E484B43F14CC31E0E9\nD7418EE110D278DB87C451A306D89705A798711B0222FC06C331684A308076C4\nF6CCF0D253138760CA755E702ADC03156D492E8798E7F60E8DB1C06E3145A728\n1444F2799FACA4A2330E0643B23A42568C03F6A9AD93C413E9B473BEF2F86D03\n5835E96530174C1CD0121575BB140493BC87E37DD0BC448F74EC0CF97CCF4A28\nE93DD48D5AB537921638B41B444DCA22CBEE31B629F02064EEDA36D9CC815142\n0537F47F1DC1CA7E5F49776ECD63873436E86CC9BCC5FC5297394ED0A5819A0E\n0F8E049C05FD2C234C13A099B71F9180F985FFF039F86E12BF580C526C295A22\n47F7854CEE18CCB9561A87B10243BB70D816D6BED1AD8FDC942A90ACD4A2A9A8\n355EEBAB568E75E116D0CAFA220E2A52E56B836DDB5111CBD48D4C8D44DF1C8E\n4E709D7A0601B22B41553D5E6470B09F94D70D61255E8B08699FD2A2B452DEBD"
+      "purpose": "Use when the user wants to audit code, dependencies, or infrastructure for security issues. Covers SAST, dependency scanning, secret leak detection, and OWASP-style checks.",
+      "original_path": "%APPDATA%\\devin\\skills\\security-audit",
+      "export_hash": "6730905216D05218A0F2DAD6499B271ED5FCAD9BD86171509B65C85F559F6C7F",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
-      "name": "social-midia",
+      "name": "self-extend",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants to draft, post, schedule, or analyze content on a social network (LinkedIn, X/Twitter, Instagram, Facebook, TikTok, YouTube, Threads, Reddit), asks about a platform official API (auth, scopes, endpoints, rate limits, analytics), or needs cross-network publishing workflows. Routes to the per-network skill; does not execute the work itself.",
-      "export_hash": "B3289A03926EBFD50CA7314DE8816C9B49ABF343E3F640BB6C0F6D8D70581B29\nE3421D12DC921709553F8A47D73AF089159703A79D75FAE7F451E70505406ED0\n319F120849A75E3FB235734CA133703FEC7DAE0FF4836C3377F35C1607055158\nBBF2A25F0513C35BD6751F92F81BB67A50105BEFB026D0DC79A61747D3D7D079\n77D2B35A5E13F93DDA8E67C4255EFCA8DEA3C28808D8902178055F96933E1ACE\n1E808391DE89BC73599CEEED165C5A599335B460DDF9B64ACEB0E67289836EC5\n2E43A1FE3FE8657EE9AA7BA66A6E2973158C05FA87BC4876B4C4656E45D5D8F1\nBB8B9AC06361E51A48A8678E77BDF5439B56EF911623834A4312816BEE37894C\n7EF145BEA3E6C8E7858E36C6454505746F2C11EC93920825201857D3C4E6F8DD\n7EC24D9FEF445F7651A2BE79BD1D4F6A4166810A783E9FD8C447CAEF5987C7FC\n2519794ABFADB47CE36F06D6CE4CCEB6C874E15B58EEACFC2392491A97E4E7C6\n0829535D0492BBBCC8812353210CDF44E33ACECD5246EE7B5EE61739E488771E\n7C6B9AEB0588FBFA50DFEC053B4609BCF9B2E7505FF9084180637B6CB6A92A4F\nA3DA1148EED40E169FF301E87EDC5A02059D811628AE9B7B790349AC419CB47B\n93C1193DA11C6B5A798D4B38D27DDF76A6FF3A69A5ECA9A524062D5EF3756EB3\n6363B30CAC522775B3AA06E115EDE85A6613CC058A810D03F6EEA5CAD8B059F6\n8DC48FA4515D7D54F9B7E97782DD8ED19819F0594B66AD24BD45FE5E3A6FF59B\n2727F63F852F73FF1D5EB5FA803393CB71F1B246C70F0B636DBA20FC9B3E6A37"
+      "purpose": "Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.",
+      "original_path": "%APPDATA%\\devin\\skills\\self-extend",
+      "export_hash": "BF5B6D89E7A5B668C69916DBAEA669032BA94DD4AC38FF4752E4BFD10F96588E",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
-      "name": "cu-realtime",
+      "name": "self-improvement",
       "source": "devin-bundle",
-      "purpose": "Use when computer-use or terminal automation needs the fastest reaction the runtime allows - event waits instead of screenshot polling, text perception instead of image reads, whole perceive-act-verify cycles batched into one exec, or deterministic reflex loops below model latency. Composes with the `computer-use` skill (same extension CLIs)."
+      "purpose": "Use when improving the AGENT/BUNDLE itself: self-improvement sessions (deep research + validated loop), capturing recurring failure patterns as skills/rules/hooks (/refine), researching harness design patterns (PrimeAgent/RLM vs Devin CLI), A2A messaging between subagents, or deciding whether to dispatch a subagent, which profile, and what budget. For remembering user/project facts use `memory-management`.",
+      "export_hash": "710B6D3F390E2900A8D853203356207CFB9163A1BC8713F6208DD1CF676773F6"
     },
     {
-      "name": "scheduled-turns",
+      "name": "setup-engineering-skills",
       "source": "devin-bundle",
-      "purpose": "Use when a task needs recurring or always-on agent turns (periodic checks, polling workflows, run-this-every-morning jobs) without adding a daemon. OS scheduler plus one-shot headless Devin turns writing to ledgers."
-    },
-    {
-      "name": "red-team",
-      "source": "devin-bundle",
-      "purpose": "Use when running an authorized offensive-security engagement against a declared target (binary, web app, network, wireless, firmware, mobile). Routes to domain skills (re-binary, web-probe, net-probe, wireless-probe, firmware-probe, mobile-probe) and enforces the engagement contract (target/window/ROE) plus evidence discipline.",
-      "export_hash": "7610C2B512FAC8F72C270A1F6657B67AAE95B25479C84F4B63E28BEB1B59CBBE"
-    },
-    {
-      "name": "re-binary",
-      "source": "devin-bundle",
-      "purpose": "Use when reverse-engineering a declared binary, library, APK, firmware image, or script artifact under an engagement contract (native code, .NET, Java/Android, Electron/JS, browser extensions). Routes to extensions/rea-ops/wrapper.py, a whitelist passthrough to the rea-agents CLI (Hopper/Ghidra engines probed via doctor).",
-      "export_hash": "47FDE026EFB16D16626A396116DCFBCA67A9997FBEAD93AEC5AB6C4D23F98B5B"
-    },
-    {
-      "name": "web-probe",
-      "source": "devin-bundle",
-      "purpose": "Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools: zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.",
-      "export_hash": "C51BD22CD7D7D202C96D51FA05472CD792C8DE23F640ECD8D482F6AE572DBEB1"
-    },
-    {
-      "name": "net-probe",
-      "source": "devin-bundle",
-      "purpose": "Use when probing declared hosts or networks under an engagement contract (port/service scan, SMB/AD enumeration, TLS audit, vulnerability scan). Routes to extensions/offsec-tools/wrapper.py tools: nmap, masscan, netexec, enum4linux-ng, testssl.sh, openvas. Verify-not-exploit by default.",
-      "export_hash": "AFA1FAD5FE389852851DA9A7E44435DD5A4B7D334612ECA9193E9A5BFB200863"
-    },
-    {
-      "name": "wireless-probe",
-      "source": "devin-bundle",
-      "purpose": "Use when assessing declared wireless/RF targets under an engagement contract (Wi-Fi capture analysis, handshake conversion, BLE/SDR signal review, RFID). Routes to extensions/offsec-tools/wrapper.py tools: aircrack-ng, hcxdumptool, hcxtools, kismet, bettercap, hashcat, urh. Offline analysis needs no hardware; capture/inject needs usbipd-win passthrough.",
-      "export_hash": "606A31A264BDF5C875D03C1B8CBF056CD76E0D208D1B55A4D23A813DDAA1B8AD"
-    },
-    {
-      "name": "firmware-probe",
-      "source": "devin-bundle",
-      "purpose": "Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools: binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.",
-      "export_hash": "5C010E22F75234B036389CB9794ED7F2ECC96BA1F00964823D11A75E34DAAE06"
-    },
-    {
-      "name": "mobile-probe",
-      "source": "devin-bundle",
-      "purpose": "Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools: jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.",
-      "export_hash": "8CC940AFD212613644C29B04DEE0EE7AFCD8423529BBD6C4678C84C6D41BEA40"
-    },
-    {
-      "name": "image-forensics",
-      "source": "devin-bundle",
-      "purpose": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating that ai3d-gen source photos are real captures before splatting. Covers PRNU noise-residual forensics, EXIF/XMP/C2PA first pass, and PCE scoring via extensions/image-forensics.",
-      "export_hash": "C151812073C65A3554B81D84F2F1BC0A470EA921E116A617783F920AF525BFEC"
-    },
-    {
-      "name": "animation-direction",
-      "source": "devin-bundle",
-      "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics — narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
-      "export_hash": "1E87048847CCBA1A3E8C00D85A3F884C1C7682EB1CCAC0538A16EDFDE525574B"
-    },
-    {
-      "name": "learn-mode",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants to own the design while the agent teaches and implements — unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
-      "export_hash": "A13B8AAB58220EF76523CF4596928DABAB7FD0D1F3F1B667388EE0F4F71AA5C7"
-    },
-    {
-      "name": "pr",
-      "source": "devin-bundle",
-      "purpose": "Use when writing a PR body or description — a visual Summary (smallest diagram/diff-sketch/tree that makes the point), concrete Evidence (before/after runs), and Merge Danger (one-way vs two-way door + blast radius). Ported and adapted from mattpocock/skills engineering/pr.",
-      "export_hash": "AE0AC354DCF6130AB3C9B8251E30F23D844411051B99C5CD9B0F44EA29C79CCD"
-    },
-    {
-      "name": "retro",
-      "source": "devin-bundle",
-      "purpose": "Use when conducting a retrospective on a coding session to improve the agent's environment for future runs — navigation pointers, automated guardrails, reviewer standards, rules-file hygiene, tool economy, information access. Lightweight per-session review; deeper self-improvement loops go to continuous-improvement.",
-      "export_hash": "F0AEC461BACED44FA49F4C5D5E164CA39644A23523112CB551820FC693FCC20A"
+      "purpose": "Use when configuring a repo for the engineering skills - set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.",
+      "original_path": "%APPDATA%\\devin\\skills\\setup-engineering-skills",
+      "export_hash": "767628B90FEE90B6EC8D874A3DB8CDAD1B924BD79CF406E591BA54971E47DF07",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "setup-pre-commit",
@@ -558,133 +924,209 @@
       "export_hash": "406E973BADC6D89B4D2F336D4B18EC400866DB9D33646DB1416E71472314B7D1"
     },
     {
-      "name": "ascii-art",
-      "source": "devin-bundle",
-      "purpose": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii.rest library (217 MIT pieces, React components, npx CLI, image-to-ascii).",
-      "export_hash": "E19BCAFE5AC07742F153952D144517A1AC70FBA06F2BF3435236FE048F867E5C"
-    },
-    {
-      "name": "frontend-design",
-      "source": "devin-bundle",
-      "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view"
-    },
-    {
-      "name": "career-ops",
-      "source": "devin-bundle",
-      "purpose": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications"
-    },
-    {
-      "name": "hyperframes",
-      "source": "devin-bundle",
-      "purpose": "Use when turning HTML/data-attribute animations into MP4 video (kinetic text, web-native motion graphics, DOM-driven scenes). Routes to extensions/hyperframes/wrapper.py, a whitelist passthrough to the hyperframes CLI"
-    },
-    {
-      "name": "agent-reach",
-      "source": "devin-bundle",
-      "purpose": "Use when researching trends or public sources across credential-free channels (GitHub, YouTube, Bilibili, V2EX, generic web). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to the agent-reach CLI"
-    },
-    {
-      "name": "tts",
-      "source": "devin-bundle",
-      "purpose": "Use when generating speech, narration, voiceover, or any text-to-speech audio locally. Routes to extensions/voicebox/wrapper.py, an HTTP client for a user-started voicebox backend (jamiepine/voicebox, FastAPI on 127.0.0.1:17493)"
-    },
-    {
-      "name": "agentic-rag",
-      "source": "devin-bundle",
-      "purpose": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture with multimodal index and human-review loop"
-    },
-    {
-      "name": "drift-report",
-      "source": "devin-bundle",
-      "purpose": "Use when checking whether design documents, READMEs, or specs still match the code they describe. Reads each document, locates the referenced source files, and reports only concrete divergences in a dated drift report"
-    },
-    {
-      "name": "brag-slim",
-      "source": "devin-bundle",
-      "purpose": "Turn a project directory or a website URL into a short, shareable launch video with music, motion, and share copy. One file, no bundled assets — built entirely by the model with the tools already on the machine. Use when someone says \"/brag-slim\", \"let's /brag about this\", \"brag about a website\", \"make a launch video\", or wants to show off what they built. If the /brag skill is also installed, let /brag handle those phrases; it hands off here on Opus 5.5."
-    },
-    {
-      "name": "powershell-safe",
-      "source": "devin-bundle",
-      "purpose": "Use whenever running powershell.exe/pwsh, writing .ps1 scripts, or doing file I/O via shell on Windows. Prevents blanked files, encoding corruption, and accidental deletion: read-modify-write pipeline trap, UTF-16/BOM redirection pitfalls, JSON depth truncation, dangerous aliases, empty-variable deletes, verify-after-write discipline.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\powershell-safe",
-      "export_hash": "89133A0CB4C112EE321026500BBDFCCF8FE247935638FDC3BEB8387E343458D4",
-      "exported_at": "2026-10-30T14:43:55.745135"
-    },
-    {
       "name": "shell-safe",
       "source": "devin-bundle",
       "purpose": "Use whenever running shell commands or writing .sh/.bash scripts. Prevents blanked files, wrong-directory deletes, and silent failures: same-file redirect truncation, empty-variable rm -rf, unquoted expansion, pipe exit-code swallowing, cd-then-delete traps, sed -i portability, tarbombs, verify-after-write discipline.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\shell-safe",
-      "export_hash": "15E307A284447CF4DAE4659590B22261826DDCD1E7476676D6269ABB0479528E",
+      "export_hash": "E2406B909079745E2F0369665BB1E37A5571BD25856C263726D6375FE83803A7",
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
-      "name": "edge-cases",
+      "name": "skill-discovery",
       "source": "devin-bundle",
-      "purpose": "Use when implementing a feature or bugfix, and before declaring done. Enumerate inputs/states/failure modes before coding, defend boundaries while coding, adversarially self-review the diff after. Prevents happy-path-only code.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\edge-cases",
-      "export_hash": "C00C463C3F8CBD52498C5FEF67D70014E4B950351CEFCEA905E890A5435950FB",
-      "exported_at": "2026-10-30T14:43:55.745135"
+      "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI.",
+      "export_hash": "13FF72AE015EF600C18BAE5935E871411492306CF79B2E1B492C0C477E496D6F"
     },
     {
-      "name": "dead-wire",
+      "name": "social-midia",
       "source": "devin-bundle",
-      "purpose": "Use when running completeness audits, before declaring \"it works\", or when something looks too implemented to be true. Hunts cut wires: features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\dead-wire",
-      "export_hash": "2C83D1277618F03BD8C00D42AC92053A7A8C5FB7E40C0CFAC64988864570D505",
-      "exported_at": "2026-10-30T14:43:55.745135"
+      "purpose": "Use when the user wants to draft, post, schedule, or analyze content on a social network (LinkedIn, X/Twitter, Instagram, Facebook, TikTok, YouTube, Threads, Reddit), asks about a platform's official API (auth, scopes, endpoints, rate limits, analytics), or needs cross-network publishing workflows. Routes to the per-network skill; does not execute the work itself.",
+      "export_hash": "B3289A03926EBFD50CA7314DE8816C9B49ABF343E3F640BB6C0F6D8D70581B29"
     },
     {
-      "name": "github-actions",
+      "name": "structured-knowledge-extraction",
       "source": "devin-bundle",
-      "purpose": "Use when writing or reviewing .github/workflows YAML files or debugging CI. GitHub Actions security and best practices - SHA-pinned actions, least-privilege permissions, script injection via PR context, pull_request_target dangers, secrets and OIDC, cache poisoning, matrix and artifacts.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\github-actions",
-      "export_hash": "517D476745BFA0F90A4D73EDD333EB60D265BE853CB09D22178AD8D8024125EE",
-      "exported_at": "2026-10-30T14:43:55.745135"
+      "purpose": "Use when extracting entities, relations, evidence, and provenance from Markdown or plain text into a typed, versioned knowledge graph under `.devin/`.",
+      "original_path": "%APPDATA%\\devin\\skills\\structured-knowledge-extraction",
+      "export_hash": "99A77C866BD4C6B2B86E28DFEDC4A3B504EE60B0EE2ED8E6FA8736241A778163",
+      "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
-      "name": "webhooks",
+      "name": "system-control",
       "source": "devin-bundle",
-      "purpose": "Use when building or debugging endpoints that receive third-party callbacks (payments, GitHub, ERP). Webhook receiver discipline - signature verification, idempotency by event id, fast acknowledge with background processing, replay protection.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\webhooks",
-      "export_hash": "A0106239D14DB5DACB8F6E698DA058CC8E357C6596ECA7DB1F5920FBB56CEB94",
-      "exported_at": "2026-10-30T14:43:55.745135"
+      "purpose": "Use when the task needs authorized OS-level control — process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file copies — where native system APIs beat GUI computer-use. Routes to the system-control extension.",
+      "export_hash": "793F0DB5E545EB67E19C2422C9123868B65FDC07E59CD1D0F1CBEB03DDC30988"
+    },
+    {
+      "name": "task-sizer",
+      "source": "devin-bundle",
+      "purpose": "Use when estimating the size of a task or PR and deciding whether to split it into smaller tickets before implementation.",
+      "original_path": "%APPDATA%\\devin\\skills\\task-sizer",
+      "export_hash": "6A262EFD7F3846450D8F68BDC5334AE9F2365A26AFB69FD9BF92FA3092EF82C0",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "tdd",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate.",
+      "original_path": "%APPDATA%\\devin\\skills\\tdd",
+      "export_hash": "70A7F6576C8ECEFC020316BBCABD99FA5B561756709D2D9F62811C53072B412C",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "teach",
+      "source": "devin-bundle",
+      "purpose": "Use when the user wants to learn a skill or concept through a guided, multi-step session.",
+      "original_path": "%APPDATA%\\devin\\skills\\teach",
+      "export_hash": "610D6062FE5AB0535E63A20457B01D213193C58B6FD3C26F71C09DE1AE6D1FF7",
+      "exported_at": "2026-09-08T21:39:22.446414"
+    },
+    {
+      "name": "testing",
+      "source": "devin-bundle",
+      "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate (red-green-refactor, seams-first), or when the user asks to find testing gaps, mutation test, or identify surviving mutants. Unit and integration tests only; browser journeys go to e2e-testing, test infrastructure to observability-quality, completion claims to gates.",
+      "export_hash": "B08C8272168775AF7865727F94FF1D6BD2A035E2B56A19016EDC0E16B19831DD"
+    },
+    {
+      "name": "tool-and-skill-discovery",
+      "source": "devin-bundle",
+      "purpose": "Use when the user asks how to do something, needs the right skill or tool, no skill seems to match the task, or wants to discover, install, or evaluate a new skill for Devin CLI.",
+      "original_path": "%APPDATA%\\devin\\skills\\tool-and-skill-discovery",
+      "export_hash": "68FBF04BB954839399A54870F045A2BA6B94F4B9CF93494F88F3E65ECF4FAB6B",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "triage",
+      "source": "devin-bundle",
+      "purpose": "Use when moving issues and external PRs through a state machine of triage roles - categorise, verify, grill if needed, and write agent-ready briefs.",
+      "original_path": "%APPDATA%\\devin\\skills\\triage",
+      "export_hash": "08F2E6917A0C87D871BD4BF4BB0432D82E76D864AF6545DAD3692963F2CF0EA9",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "tts",
+      "source": "devin-bundle",
+      "purpose": "Use when generating speech, narration, voiceover, or any text-to-speech audio locally. Routes to extensions/voicebox/wrapper.py, an HTTP client for a user-started voicebox backend (jamiepine/voicebox, FastAPI on 127.0.0.1:17493).",
+      "export_hash": "026167D5DA48AE4192CC47027FFAAE4974430481CF53C08E95465762FDCCD2A6"
     },
     {
       "name": "typescript-node",
       "source": "devin-bundle",
       "purpose": "Use when writing or reviewing TypeScript or Node.js code. Strict mode, async/await footguns, error handling, null safety, real types vs any, ESM/CJS interop, npm hygiene (engines, lockfile, scripts, ci).",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\typescript-node",
-      "export_hash": "C746C5689B1E7C6288337BAFC3C30C3F89807439CC24B1C9D43219EC4A0C77E5",
+      "export_hash": "12B2AA217B1C627D705E82995DD3B2884B21479AE2CB28CF5ED1A76F29C11FBC",
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
-      "name": "binary-triage",
+      "name": "unlazy",
       "source": "devin-bundle",
-      "purpose": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers in minutes what would take hours in Ghidra; escalate to re-binary/Ghidra only when static triage cannot close the question.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\binary-triage",
-      "export_hash": "C863C5D39E899463C5D9F159597AA0152122B3E436DE4886C9510645B1D5C45D",
+      "purpose": "Use when a task is at risk of agent laziness (large, multi-step, previously half-done, or with clear acceptance criteria) to force proof of completion through a gates ledger instead of trusting agent reports.",
+      "original_path": "%APPDATA%\\devin\\skills\\unlazy",
+      "export_hash": "B5309D7E035C0E6A811454C3F28CA684D0A4C6EDD35BF8AB188AD9F52A3B107D",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "using-git-worktrees",
+      "source": "devin-bundle",
+      "purpose": "Use when starting feature work that needs isolation from the current workspace.",
+      "original_path": "%APPDATA%\\devin\\skills\\using-git-worktrees",
+      "export_hash": "B0DEFC003DBEBFD25094554C6E2C0B4B6B924ADE75F8354CFB35C69C7D32DC92",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "using-skills",
+      "source": "devin-bundle",
+      "purpose": "Use when starting any conversation and before taking any non-trivial action.",
+      "original_path": "%APPDATA%\\devin\\skills\\using-skills",
+      "export_hash": "B020D2F7A5A734EF8162AF91422099B3893DCC4EEE4D44074AD5650A37F38A16",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "verification-before-completion",
+      "source": "devin-bundle",
+      "purpose": "Use when about to claim work is complete, fixed, or passing.",
+      "original_path": "%APPDATA%\\devin\\skills\\verification-before-completion",
+      "export_hash": "B0323EC8F40B876E003373B744D4D495F8D5D207C0F622A7D8B4D57672211B65",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "wait-what",
+      "source": "devin-bundle",
+      "purpose": "Use when the last message did not land and needs to be re-explained or re-pitched.",
+      "original_path": "%APPDATA%\\devin\\skills\\wait-what",
+      "export_hash": "B11A87B618423BB725C9A27A768AA49CCF4C214360DD9211EB47D85A101DAF8D",
+      "exported_at": "2026-09-08T21:39:22.450931"
+    },
+    {
+      "name": "wayfinder",
+      "source": "devin-bundle",
+      "purpose": "Use when planning work too large for one session as a map of decision tickets.",
+      "original_path": "%APPDATA%\\devin\\skills\\wayfinder",
+      "export_hash": "05B74DF4155D7261EA89982312AD66A8A3EACC5C789EE5FE9B0827B4C9D19965",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "web-probe",
+      "source": "devin-bundle",
+      "purpose": "Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools: zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.",
+      "export_hash": "C51BD22CD7D7D202C96D51FA05472CD792C8DE23F640ECD8D482F6AE572DBEB1"
+    },
+    {
+      "name": "webhooks",
+      "source": "devin-bundle",
+      "purpose": "Use when building or debugging endpoints that receive third-party callbacks (payments, GitHub, ERP). Webhook receiver discipline - signature verification, idempotency by event id, fast acknowledge with background processing, replay protection.",
+      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\webhooks",
+      "export_hash": "87989B7BD81ACCD3E019FB548FF2DC5F95743FE9EBB2C09590BC0B6E915C0924",
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
-      "name": "ghidra",
+      "name": "wireless-probe",
       "source": "devin-bundle",
-      "purpose": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output + xrefs for offline study via Ghidra headless.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ghidra",
-      "export_hash": "986E41C707B6764C486F271B4A172DB18061D57B8893D04BABA106A22A195CAA",
-      "exported_at": "2026-10-30T14:43:55.745135"
+      "purpose": "Use when assessing declared wireless/RF targets under an engagement contract (Wi-Fi capture analysis, handshake conversion, BLE/SDR signal review, RFID). Routes to extensions/offsec-tools/wrapper.py tools: aircrack-ng, hcxdumptool, hcxtools, kismet, bettercap, hashcat, urh. Offline analysis needs no hardware; capture/inject needs usbipd-win passthrough.",
+      "export_hash": "606A31A264BDF5C875D03C1B8CBF056CD76E0D208D1B55A4D23A813DDAA1B8AD"
     },
     {
-      "name": "dma",
+      "name": "wizard",
       "source": "devin-bundle",
-      "purpose": "Use when the user invokes /dma or asks for a pentest, offensive recon, or aggressive audit on an authorized target. Dirty-work pentest agent and recon orchestrator - closes a scope contract with the user, classifies the target type, runs passive/static collection and surface mining, confirms vectors with minimal read-only probes inside the allowlist, and escalates deep testing via web-probe. Every invasive action requires explicit per-batch approval.",
-      "original_path": "%APPDATA%\\\\devin\\\\skills\\\\dma",
-      "export_hash": "193FB3C628BBAB0DCB833B0C04F40E3CBD0B3F89F818AFB2469C4FE75CDA6D4E",
-      "exported_at": "2026-10-30T14:43:55.745135"
+      "purpose": "Use when a human must walk through a manual procedure such as provisioning, credentials, or a one-off cutover.",
+      "original_path": "%APPDATA%\\devin\\skills\\wizard",
+      "export_hash": "2F698AA09A1D9498BE0B362D801183F60DEF07E919CE49336906A4C91C0EA53D",
+      "exported_at": "2026-09-08T21:39:22.451685"
+    },
+    {
+      "name": "writing-for-agents",
+      "source": "devin-bundle",
+      "purpose": "Use when creating or editing skills, `.devin/global_rules.md` / `.devin/rules/*.md` rules, or other docs an agent must read.",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-for-agents",
+      "export_hash": "CBD3315C11CC2C1E937D3F7BA8535C0B48E6AFEC8FACC9A5EBED5FC382E8900B",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "writing-plans",
+      "source": "devin-bundle",
+      "purpose": "Use when turning a spec into a concrete, task-by-task implementation plan.",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-plans",
+      "export_hash": "97F658297C8B6F9272EE0871A6C3B81BA7AC9B5D787A0C0CD6249C3814D8B5CC",
+      "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "writing-skills",
+      "source": "devin-bundle",
+      "purpose": "Use when creating new skills, editing existing skills, verifying skills work before deployment, or when creating/editing any document an agent must read (`.devin/global_rules.md`, `.devin/rules/*.md`, docs reached by pointer).",
+      "original_path": "%APPDATA%\\devin\\skills\\writing-skills",
+      "export_hash": "9909A07A8301C8E2FF1A6A4256A8B44398273FBCFE964C14335450B4EA89F109",
+      "exported_at": "2026-09-08T21:39:22.452693"
+    },
+    {
+      "name": "youtube-fetcher",
+      "source": "adapted:JimmySadek/youtube-fetcher-to-markdown (MIT)",
+      "purpose": "Use when you need to turn a YouTube URL and provider-supplied caption/metadata JSON into a raw, timestamped transcript + metadata Markdown note under `.devin/notes/youtube/` for later structured extraction, without auto-installing dependencies, invoking yt-dlp/Whisper, or calling the network. Not for publishing or posting to YouTube; use social-midia/youtube for that.",
+      "original_path": "%APPDATA%\\devin\\skills\\youtube-fetcher",
+      "export_hash": "BC5D6BAB694ECD73C4AECE39AAF7EA10BE835707272CD95F96AB7A03BAF184BE",
+      "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 101,
+  "skill_count": 155,
   "rule_count": 24,
   "scripts": [
     {

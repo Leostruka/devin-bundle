@@ -103,7 +103,12 @@ strip_config_hooks() {
   else
     return
   fi
-  "$py" -c 'import json,sys; p=sys.argv[1]; d=json.load(open(p,encoding="utf-8-sig")); d["hooks"]={}; open(p,"w",encoding="utf-8",newline="\n").write(json.dumps(d,indent=2)+"\n")' "$file"
+  "$py" -c 'import json,sys,os; p=sys.argv[1]; d=json.load(open(p,encoding="utf-8-sig")); d["hooks"]={}; mp=os.path.join(os.path.dirname(p),"data","bundle-models.json")
+try:
+    dp=json.load(open(mp,encoding="utf-8-sig")).get("default_parent_model")
+    if dp and isinstance(d.get("agent"),dict): d["agent"]["model"]=dp
+except OSError: pass
+open(p,"w",encoding="utf-8",newline="\n").write(json.dumps(d,indent=2)+"\n")' "$file"
 }
 
 # --- Strip BOM from file (if present) ---
@@ -314,6 +319,7 @@ with open(dst, 'w', encoding='utf-8', newline='\n') as f:
 " "$config_src" "$config_dst"
         convert_to_lf "$config_dst"
         normalize_config_paths "$config_dst"
+        strip_config_hooks "$config_dst"
         ok "config.json exported (masked)"
       fi
     else
@@ -551,7 +557,9 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   fi
 
   step "Running pytest"
-  if ( cd "$BUNDLE_DIR" && python -m pytest -q . ); then
+  # no path arg: pytest.ini testpaths=tests is the CI suite; "." would
+  # sweep extensions/ integration tests that hard-fail without a live env
+  if ( cd "$BUNDLE_DIR" && python -m pytest -q ); then
     ok "pytest passed"
   else
     err "pytest failed"
@@ -576,17 +584,29 @@ if [[ $COMMIT -eq 1 && $DRY_RUN -eq 0 ]]; then
   cd "$BUNDLE_ROOT"
   # Stage only the paths export.sh can write -- staging the whole tree
   # would sweep unrelated working-tree changes into the generated commit.
-  git add -- AGENTS.md agents skills config.json hooks.v1.json scripts data mcp_config.json credentials.toml export.sh export.ps1 2>/dev/null
-  if [[ -n "$(git status --porcelain -- AGENTS.md agents skills config.json hooks.v1.json scripts data mcp_config.json credentials.toml export.sh export.ps1)" ]]; then
+  # NOTE: docs land dissolved under .devin/{docs,plans,templates}, not docs/.
+  export_paths=(AGENTS.md agents skills config.json hooks.v1.json scripts data mcp_config.json credentials.toml .devin/docs .devin/plans .devin/templates export.sh export.ps1)
+  existing_paths=()
+  for p in "${export_paths[@]}"; do [[ -e "$BUNDLE_ROOT/$p" ]] && existing_paths+=("$p"); done
+  if ! git add -- "${existing_paths[@]}"; then
+    err "git add failed"
+  fi
+  if [[ -n "$(git status --porcelain -- "${existing_paths[@]}")" ]]; then
     date_str="$(date +%Y-%m-%d)"
-    git commit -m "export: refresh devin bundle ($date_str)
+    if git commit -m "export: refresh devin bundle ($date_str)
 
 Skills: $exported_skills exported, $unchanged_skills unchanged
-Config: AGENTS.md, config.json, mcp_config.json, credentials.toml, scripts/, data/, agents/" 2>/dev/null
-    ok "committed"
-    if [[ $PUSH -eq 1 ]]; then
-      git push 2>&1 | sed 's/^/    /'
-      ok "pushed"
+Config: AGENTS.md, config.json, mcp_config.json, credentials.toml, scripts/, data/, agents/"; then
+      ok "committed"
+      if [[ $PUSH -eq 1 ]]; then
+        if git push 2>&1 | sed 's/^/    /'; then
+          ok "pushed"
+        else
+          err "push failed"
+        fi
+      fi
+    else
+      err "git commit failed"
     fi
   else
     ok "nothing to commit (bundle already up to date)"

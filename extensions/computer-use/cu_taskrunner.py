@@ -25,6 +25,7 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 
@@ -49,10 +50,20 @@ def _read_status(trace_id):
 
 def _write_status(trace_id, st):
     path = os.path.join(_trace_dir(trace_id), "status.json")
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(st, f, indent=1)
-    os.replace(tmp, path)
+    # Unique tmp per writer: stop() and _exec() can race on a shared
+    # status.json.tmp, interleaving partial writes into the final file.
+    fd, tmp = tempfile.mkstemp(
+        dir=os.path.dirname(path), prefix=".status-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(st, f, indent=1)
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def start(command):
