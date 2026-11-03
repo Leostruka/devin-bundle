@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.18.0] - 2026-11-03
+
 ### Fixed
 
 - **`install.sh` Windows split-brain** (#269): on MINGW/MSYS/CYGWIN the installer now targets `%APPDATA%/devin` (where the CLI actually reads) instead of `~/.config/devin`; `audit.py` prefers `%APPDATA%` on Windows and warns when both dirs exist. Previous bash installs had written a shadow config that drift checks validated as "live".
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Phantom tool in skill frontmatter** (#282): `observability-quality` `allowed-tools` listed `glob` (premise corrected in #284) corrected to `find_file_by_name`; new `test_skill_allowed_tools_exist` enforces canonical tool names across all SKILL.md frontmatter.
 - **`glob` tool misclassified as phantom** (#284): `glob` is a real CLI tool (`validate-tool-args` checker + TOOLS-MAP); the session toolset is mode-dependent and not canonical. #282's premise corrected: `observability-quality` restored to `glob` + `find_file_by_name`; `VALID_TOOLS` expanded to the canonical 28-tool set; allowed-tools test now covers YAML-list form and `agents/` + `.devin/agents/` profiles.
 - **Orphaned extension requirements** (#287): `playwright` (craft-bridge), `opencv-python-headless` and `piexif` (image-forensics) were declared but never imported; `ppisp-prep` gained the missing `requirements.txt` (numpy, pillow) for its hard deps; new `test_extension_declared_deps_used` enforces declared->used per extension.
+- **`agent-reach` wrapper desync from upstream CLI**: wrapper forwarded channels as subcommands (`agent-reach youtube ...`), a grammar agent-reach 0.1.0 never shipped; every documented call exited 2 and `doctor` reported `degraded` probing a nonexistent `--version`. Wrapper now translates `<channel>[.<command>]` to `get <target> --json`, `doctor` proxies `doctor --json` per-channel status, whitelist narrowed to the real upstream index (`youtube`, `rss`; `auth:none`), and SKILL.md/manifest purpose synced (previous docs claimed phantom github/bilibili/v2ex/web channels).
 
 ### Added
 

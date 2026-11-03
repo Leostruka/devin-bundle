@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """agent-reach: local wrapper for the agent-reach trend/source CLI.
 
-Drives `agent-reach <channel>` on PATH (or `uv tool run agent-reach`)
-through a whitelist of credential-free channels only.
+Drives `agent-reach get <channel>[.<command>]` on PATH (or
+`uv tool run agent-reach`) through a whitelist of credential-free
+channels only. Upstream grammar (agent-reach 0.1.x): channels are
+installable manifests; reads go through `get`, host readiness through
+`doctor --json`.
 
 Safety contract:
   - Never runs through a shell; subprocess list-form only.
-  - Whitelisted channels only: github, youtube, bilibili, v2ex, web, doctor.
+  - Whitelisted channels only: youtube, rss (upstream index, auth:none).
   - Credential/cookie channels (twitter, x, reddit, instagram,
     xiaohongshu, boss) are explicitly rejected: bundle security policy
     keeps credentialed scraping out of scope.
@@ -18,6 +21,7 @@ duration_s}. Exit 0 = ok, non-zero = error.
 """
 import json
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -27,8 +31,16 @@ AR_BIN = "agent-reach"
 DEFAULT_TIMEOUT = 120
 MAX_OUTPUT = 1024 * 1024  # 1 MiB per stream
 
-# Credential-free channels; safe under the bundle credential policy.
-CHANNELS = ["github", "youtube", "bilibili", "v2ex", "web", "doctor"]
+# Credential-free channels in the upstream agent-reach index
+# (`agent-reach list --all`, auth:none); safe under the bundle
+# credential policy. Host availability is reported by `doctor`.
+CHANNELS = ["youtube", "rss"]
+
+# Standalone commands proxied without `get` translation.
+COMMANDS = ["doctor"]
+
+# `<channel>` or `<channel>.<command>` targets only.
+TARGET_RE = re.compile(r"[a-z0-9_]+(\.[a-z0-9_]+)?")
 
 # Cookie/credential channels: rejected, not merely absent.
 BLOCKED_CHANNELS = {
@@ -111,10 +123,18 @@ def cmd_doctor(_argv):
         report["hint"] = ("install agent-reach on PATH or uv "
                           "(uv tool run agent-reach)")
         emit(report, 1)
-    ver = run_cmd(invoker + ["--version"], "doctor:version")
-    report["agent_reach_version"] = (ver.get("stdout") or "").strip() or None
-    if ver["status"] != "ok":
+    probe = run_cmd(invoker + ["doctor", "--json"], "doctor:probe")
+    report["probe_exit_code"] = probe.get("exit_code")
+    try:
+        report["channels"] = json.loads(probe["stdout"] or "[]")
+    except ValueError:
+        report["channels"] = probe["stdout"]
+        report["probe_stderr"] = probe["stderr"]
+    if probe["status"] != "ok":
         report["status"] = "degraded"
+        report["hint"] = ("agent-reach doctor failed or a channel is "
+                          "down; install channels with "
+                          "`agent-reach install <channel>`")
     emit(report, 0 if report["status"] == "ok" else 1)
 
 
@@ -130,7 +150,7 @@ def cmd_channel(channel, argv):
             emit(envelope("rejected", channel,
                           stderr="flags not forwarded; positional "
                                  "args only: %s" % t), 2)
-    run_argv = invoker + [channel] + extra
+    run_argv = invoker + ["get", channel] + extra + ["--json"]
     result = run_cmd(run_argv, channel)
     emit(result, 0 if result["status"] == "ok" else 1)
 
@@ -138,8 +158,8 @@ def cmd_channel(channel, argv):
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv or argv[0] in ("-h", "--help"):
-        json.dump({"usage": "wrapper.py <channel> [args]",
-                   "channels": CHANNELS,
+        json.dump({"usage": "wrapper.py <channel>[.<command>] [args]",
+                   "channels": CHANNELS + COMMANDS,
                    "blocked_channels": sorted(BLOCKED_CHANNELS)},
                   sys.stdout, indent=2)
         sys.stdout.write("\n")
@@ -150,15 +170,15 @@ def main(argv=None):
                       stderr="channel requires credentials/cookies and is "
                              "out of scope: %s" % BLOCKED_CHANNELS[command],
                       policy="credential-free channels only",
-                      allowed=sorted(CHANNELS)), 2)
-    if command not in CHANNELS:
+                      allowed=sorted(CHANNELS + COMMANDS)), 2)
+    if command in COMMANDS:
+        cmd_doctor(argv[1:])
+    base = command.split(".", 1)[0]
+    if base not in CHANNELS or not TARGET_RE.fullmatch(command):
         emit(envelope("rejected", command,
                       stderr="channel not whitelisted: %s" % command,
-                      allowed=sorted(CHANNELS)), 2)
-    if command == "doctor":
-        cmd_doctor(argv[1:])
-    else:
-        cmd_channel(command, argv[1:])
+                      allowed=sorted(CHANNELS + COMMANDS)), 2)
+    cmd_channel(command, argv[1:])
 
 
 if __name__ == "__main__":
