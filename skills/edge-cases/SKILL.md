@@ -135,3 +135,7 @@ For changes > 3 files or with non-obvious risk, dispatch the `reviewer` subagent
 3. `testing`: run the edge cases for real
 4. `reviewer` subagent: second read of the diff
 5. `git-workflows`: clean commit
+
+Suite-scale construction: when assembling or auditing a whole suite for
+edge completeness, `skills/edge-coverage` is the construction standard
+(mandatory Edge Inventory driving the suite).

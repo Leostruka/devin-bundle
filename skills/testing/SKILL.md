@@ -15,6 +15,9 @@ Two modes; full detail in `modes/<mode>.md`. Reference:
 | **TDD** | Implementing a feature/bugfix test-first | `modes/tdd.md` |
 | **Mutation** | Finding coverage gaps via surviving mutants | `modes/mutation.md` |
 
+Suite-scale assembly/audit (a suite derived from an explicit edge
+inventory, not intuition): use `skills/edge-coverage`.
+
 ## TDD — the contract
 
 ```

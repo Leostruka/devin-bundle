@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Reels-adoption skill wave** (#293): `lean-code` (Ponytail minimal-code port, MIT), `security-audit-cf` (vendored Cloudflare security-audit, MIT, renamed to avoid collision), `shorts-factory` (shorts pipeline composing tts/asr/remotion/ffmpeg) + `extensions/stock-footage` Pexels/Pixabay fetcher (env-key gated, typed JSON); `extensions/voicebox` gained a `--backend voicestudio` OpenAI-compatible path at 127.0.0.1:3900 (voicebox path unchanged); `extensions/media-tools` gained JPEG XL codec `jxl.py` + `jxl_bootstrap.py` (pinned sha256-verified libjxl).
+- **Forensic testkit**: `forensic-debugging` (escalation-tier debugging protocol: mandatory trace ledger, invariant map, hypothesis falsification table, three-axis bisection, probe lattice, root-cause proof) and `edge-coverage` (suite-construction standard: mandatory Edge Inventory driving every test; input/state/error/concurrency/oracle matrices; coverage reported by inventory) with cross-references from `debugging`, `edge-cases`, `testing`.
+
 ### Changed
 
 - **Live config export sync** (#289): manifest re-synced to real live inventory (skill_count 101 -> 155, sorted, `export_hash`/`exported_at` metadata); `config.json` `agent.model` normalized to `swe-2-high` per `data/bundle-models.json`; `export.{ps1,sh}` stages a filtered explicit path list (`git add -- "${existing_paths[@]}"`) instead of atomic adds that silently failed on missing paths, surfaces add/commit/push failures, and runs the CI pytest suite (`testpaths=tests`) instead of sweeping `extensions/` integration tests that hard-fail without a live QEMU env.
