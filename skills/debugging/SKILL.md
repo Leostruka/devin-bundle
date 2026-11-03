@@ -16,6 +16,11 @@ Two modes; full detail in `modes/<mode>.md` — read it when you enter.
 | **Local** | Bug/test failure/slowness in the codebase, fix not obvious | `modes/local.md` |
 | **CI** | Pipeline failing across builds/jobs/environments | `modes/ci.md` |
 
+Escalation tier: when a failure survives an ordinary pass, is
+intermittent, or needs an audit-grade trail of every hypothesis and
+experiment, use `skills/forensic-debugging` (trace ledger, invariant
+map, three-axis bisection).
+
 ## Local — the discipline (summary)
 
 1. **Phase 1 — build a feedback loop FIRST.** A tight pass/fail signal that

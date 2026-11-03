@@ -11,9 +11,8 @@ def desc(path):
     return mm.group(1).strip() if mm else ''
 
 new = [
-    ('lean-code', 'created:v3.18.0 reels-adoption (port of DietrichGebert/ponytail, MIT)', 'skills/lean-code/SKILL.md'),
-    ('security-audit-cf', 'vendored:v3.18.0 cloudflare/security-audit-skill (MIT)', 'skills/security-audit-cf/SKILL.md'),
-    ('shorts-factory', 'created:v3.18.0 reels-adoption (MoneyPrinterTurbo-equivalent assembly)', 'skills/shorts-factory/SKILL.md'),
+    ('forensic-debugging', 'created:v3.19.0 forensic testkit goal', 'skills/forensic-debugging/SKILL.md'),
+    ('edge-coverage', 'created:v3.19.0 forensic testkit goal', 'skills/edge-coverage/SKILL.md'),
 ]
 for name, source, path in new:
     if name in names:

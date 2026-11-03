@@ -366,6 +366,14 @@
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
+      "name": "edge-coverage",
+      "source": "created:v3.19.0 forensic testkit goal",
+      "purpose": "Use when assembling or auditing a test suite for rigorous edge-case coverage, when the user asks for meticulous test construction rules, boundary/equivalence analysis, or a completeness standard before a suite may be called done. Extends `testing`, `tdd`, `edge-cases`, and `mutation-testing` with a mandatory Edge Inventory that drives the suite.",
+      "original_path": "%APPDATA%\\devin\\skills\\edge-coverage",
+      "export_hash": "4FC65600EB1C3648C39AA07C0C392625FC68EDDF6F7FB201B00C1A5364CC858F",
+      "exported_at": "2026-11-03T20:34:50.209077"
+    },
+    {
       "name": "effort-calibration",
       "source": "devin-bundle",
       "purpose": "Use when choosing a reasoning effort level for an LLM coding agent, when a task seems to be over-thinking or spending too many tokens, when deciding whether to raise effort, when writing task specifications that substitute for reasoning budget, or when a simple task is being treated as a codebase audit. Covers overthinking, compute-optimal test-time scaling, prompt-induced waste, and difficulty-matched effort.",
@@ -406,6 +414,14 @@
       "source": "devin-bundle",
       "purpose": "Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools: binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.",
       "export_hash": "5C010E22F75234B036389CB9794ED7F2ECC96BA1F00964823D11A75E34DAAE06"
+    },
+    {
+      "name": "forensic-debugging",
+      "source": "created:v3.19.0 forensic testkit goal",
+      "purpose": "Use when a bug, algorithm failure, or intermittent defect resists normal debugging, when an audit-grade trail of every hypothesis and experiment is required, or when the user asks for millimetric traceability to localize any failure fast. Extends `debugging` with a mandatory trace ledger, invariant map, and falsification protocol.",
+      "original_path": "%APPDATA%\\devin\\skills\\forensic-debugging",
+      "export_hash": "BBB9A5F8274EEC41CD22A31D31640E5DB261B421AFEC3F469052E501569D82EF",
+      "exported_at": "2026-11-03T20:34:50.209077"
     },
     {
       "name": "frontend-design",
@@ -1150,7 +1166,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 158,
+  "skill_count": 160,
   "rule_count": 24,
   "scripts": [
     {
