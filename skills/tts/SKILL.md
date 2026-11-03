@@ -21,6 +21,27 @@ python $W models                                        # list engines/models
 python $W generate --text "..." --voice <id> --out out.wav [--engine <e>]
 ```
 
+## VoiceStudio backend
+
+`--backend voicestudio` (or `VB_BACKEND=voicestudio`) targets the
+VoiceStudio app's OpenAI-compatible API on `127.0.0.1:3900` instead of
+the voicebox backend. `VB_HOST` loopback overrides still apply.
+
+```bash
+python $W --backend voicestudio doctor                  # GET /v1/models probe
+python $W --backend voicestudio models                  # list models
+python $W --backend voicestudio generate --text "..." --voice <v> \
+    --out out.wav [--engine <model>]                    # POST /v1/audio/speech
+```
+
+`generate` posts `{model, voice, input, response_format: "wav"}`;
+`--engine` maps to `model` (default `tts-1`). Missing backend reports
+`status: missing` with a start-the-app hint.
+
+License caveat: the VoiceStudio app is AGPL-3.0. Its default OmniVoice
+engine is non-commercial; per-engine licenses vary, so check the engine
+license before commercial use.
+
 All output is JSON (`status`, `action`, `result|error`, `duration_s`).
 Backend down reports `status: missing` with a start hint; never
 fabricate audio or a voice list.
