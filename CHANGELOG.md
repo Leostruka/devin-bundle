@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Live config export sync** (#289): manifest re-synced to real live inventory (skill_count 101 -> 155, sorted, `export_hash`/`exported_at` metadata); `config.json` `agent.model` normalized to `swe-2-high` per `data/bundle-models.json`; `export.{ps1,sh}` stages a filtered explicit path list (`git add -- "${existing_paths[@]}"`) instead of atomic adds that silently failed on missing paths, surfaces add/commit/push failures, and runs the CI pytest suite (`testpaths=tests`) instead of sweeping `extensions/` integration tests that hard-fail without a live QEMU env.
+
+### Fixed
+
+- **`cu_taskrunner.py` status race** (#289): per-writer status tmp files; shared `status.json.tmp` raced `stop()` vs `_exec()` producing corrupt trailing bytes (caught by `test_cli_surface`).
+
 ## [3.18.0] - 2026-11-03
 
 ### Fixed
