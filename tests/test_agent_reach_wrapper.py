@@ -29,10 +29,10 @@ def _run(capsys, *argv):
 
 def test_missing_binary_reports_missing(capsys, monkeypatch):
     monkeypatch.setattr(wrapper.shutil, "which", lambda n: None)
-    code, env = _run(capsys, "github", "trending")
+    code, env = _run(capsys, "youtube", "trending")
     assert code == 1
     assert env["status"] == "missing"
-    assert env["command"] == "github"
+    assert env["command"] == "youtube"
 
 
 def test_doctor_missing_toolchain(capsys, monkeypatch):
@@ -69,7 +69,7 @@ def test_envelope_keys_present(capsys):
 
 def test_flag_injection_rejected(capsys, monkeypatch):
     monkeypatch.setattr(wrapper.shutil, "which", lambda n: n)
-    code, env = _run(capsys, "web", "http://x", "--cookie", "jar")
+    code, env = _run(capsys, "youtube", "q", "--cookie", "jar")
     assert code == 2
     assert env["status"] == "rejected"
 
@@ -82,3 +82,69 @@ def test_channel_runs_with_fake_invoker(capsys, monkeypatch):
     assert code == 0
     assert env["status"] == "ok"
     assert "trends" in env["stdout"]
+
+
+def test_channel_maps_to_get(capsys, monkeypatch):
+    captured = {}
+
+    def fake_run(argv, command, timeout=wrapper.DEFAULT_TIMEOUT):
+        captured["argv"] = argv
+        return wrapper.envelope("ok", command, stdout="{}")
+
+    monkeypatch.setattr(wrapper, "resolve_invoker", lambda: ["FAKE"])
+    monkeypatch.setattr(wrapper, "run_cmd", fake_run)
+    code, env = _run(capsys, "youtube.transcript", "VID123")
+    assert code == 0
+    assert captured["argv"][:3] == ["FAKE", "get", "youtube.transcript"]
+    assert "VID123" in captured["argv"]
+    assert "--json" in captured["argv"]
+
+
+def test_rss_channel_maps_to_get(capsys, monkeypatch):
+    captured = {}
+
+    def fake_run(argv, command, timeout=wrapper.DEFAULT_TIMEOUT):
+        captured["argv"] = argv
+        return wrapper.envelope("ok", command, stdout="{}")
+
+    monkeypatch.setattr(wrapper, "resolve_invoker", lambda: ["FAKE"])
+    monkeypatch.setattr(wrapper, "run_cmd", fake_run)
+    code, env = _run(capsys, "rss.feed", "https://x/feed")
+    assert code == 0
+    assert captured["argv"][1] == "get"
+    assert captured["argv"][2] == "rss.feed"
+
+
+def test_malformed_target_rejected(capsys):
+    code, env = _run(capsys, "youtube.transcript.extra", "x")
+    assert code == 2
+    assert env["status"] == "rejected"
+
+
+def test_doctor_uses_doctor_probe(capsys, monkeypatch):
+    captured = {}
+
+    def fake_run(argv, command, timeout=wrapper.DEFAULT_TIMEOUT):
+        captured["argv"] = argv
+        return wrapper.envelope("ok", command, stdout="[]")
+
+    monkeypatch.setattr(wrapper, "resolve_invoker", lambda: ["FAKE"])
+    monkeypatch.setattr(wrapper, "run_cmd", fake_run)
+    code, env = _run(capsys, "doctor")
+    assert code == 0
+    assert env["status"] == "ok"
+    assert captured["argv"] == ["FAKE", "doctor", "--json"]
+    assert env["channels"] == []
+
+
+def test_doctor_degraded_when_probe_fails(capsys, monkeypatch):
+    def fake_run(argv, command, timeout=wrapper.DEFAULT_TIMEOUT):
+        return wrapper.envelope("error", command,
+                                stderr="channel down", exit_code=1)
+
+    monkeypatch.setattr(wrapper, "resolve_invoker", lambda: ["FAKE"])
+    monkeypatch.setattr(wrapper, "run_cmd", fake_run)
+    code, env = _run(capsys, "doctor")
+    assert code == 1
+    assert env["status"] == "degraded"
+    assert env["probe_exit_code"] == 1
