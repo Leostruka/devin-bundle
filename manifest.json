@@ -948,6 +948,14 @@
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
+      "name": "shorts-factory",
+      "source": "created:v3.18.0 reels-adoption (MoneyPrinterTurbo-equivalent assembly)",
+      "purpose": "Use when producing short-form vertical or square videos (Shorts, Reels, TikTok) end to end from a topic -- script, narration, alignment, stock b-roll, scene plan, render, and ffmpeg composite with captions. Assembles tts + extensions/asr + extensions/stock-footage + animation-direction/remotion-render into a MoneyPrinterTurbo-equivalent pipeline.",
+      "original_path": "%APPDATA%\\devin\\skills\\shorts-factory",
+      "export_hash": "D5ACE9807743580273E2090DA6B29591EE81D2556C9118B1F58C105EC583DF54",
+      "exported_at": "2026-11-03T20:00:28.745365"
+    },
+    {
       "name": "skill-discovery",
       "source": "devin-bundle",
       "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI.",
@@ -1142,7 +1150,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 157,
+  "skill_count": 158,
   "rule_count": 24,
   "scripts": [
     {
