@@ -66,11 +66,18 @@ def test_invalid_json_fails_open():
     assert e.value.code == 0
 
 
-def test_edit_uses_new_string():
-    # Valid diagram so the assertion holds whether node is present or not.
+def test_edit_uses_new_string(monkeypatch):
+    # Simulate a working validator: node+mermaid may be absent or partial
+    # on the host, so stub the subprocess layer for a deterministic result.
+    class _Ok:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    monkeypatch.setattr(mod, "_run", lambda *a, **kw: _Ok())
     code, _ = _run(_write("```mermaid\ngraph TD\n  A-->B\n```",
                           tool="edit", key="new_string"))
-    assert code == 0  # node unavailable here or parse ok: never crashes
+    assert code == 0
 
 
 def test_node_unavailable_fails_open(monkeypatch):

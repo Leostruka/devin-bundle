@@ -197,11 +197,11 @@ def test_masked_export_without_python_fails(tmp_path):
            'DEVIN_HOME': str(live)}
     if shutil.which('python3') is None and shutil.which('python') is None:
         pytest.skip('no python to remove')
-    # If python lives in /usr/bin this cannot work; check first.
-    for cand in ('python3', 'python'):
-        p = shutil.which(cand)
-        if p and os.path.dirname(os.path.realpath(p)) in ('/usr/bin', '/bin'):
-            pytest.skip('python lives in the minimal PATH')
+    # If a python interpreter exists inside the minimal PATH itself the
+    # strip cannot hide it (CI runners ship /usr/bin/python3).
+    if any(os.path.exists(os.path.join(d, c))
+           for d in ('/usr/bin', '/bin') for c in ('python3', 'python')):
+        pytest.skip('python lives in the minimal PATH')
     r = subprocess.run([BASH, 'export.sh'], cwd=str(bundle), env=env,
                        capture_output=True, text=True, timeout=120)
     assert r.returncode != 0
