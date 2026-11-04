@@ -1,6 +1,6 @@
 # 46 -- TOOLS-MAP hook table describes pre-consolidation wiring
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: documentation
 - **Severity**: P2
 - **File**: .devin/docs/TOOLS-MAP.md:82-110
@@ -28,3 +28,7 @@ stating inner scripts are never bound directly.
 ## Verification
 Diff the table against `python -c "import json;print(json.load(open('hooks.v1.json')))"`
 and each aggregator's script list; every row should resolve.
+
+## Answer
+
+Rewrote the TOOLS-MAP hook table to the post-consolidation reality: 10 entry points in hooks.v1.json mapped to their inner-script lists (verified against each aggregator source), matchers corrected (`notebook_edit` under pre-write-guard), explicit rule that inner scripts are never bound directly.

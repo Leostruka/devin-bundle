@@ -4,7 +4,7 @@ Política de modelos do bundle, nativa SWE-2. O roteamento é por **nível de es
 
 ## Effort levels (SWE-2)
 
-No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é um campo separado na config — a variante escolhida define o esforço. A UI oferece `Alt+T` para alternar.
+No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é um campo separado na config - a variante escolhida define o esforço. A UI oferece `Alt+T` para alternar.
 
 | Nível | model_uid | Quando usar | Custo |
 |---|---|---|---|
@@ -20,7 +20,7 @@ O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bun
 
 | Atributo | Valor | Fonte |
 |---|---|---|
-| model_uid | `{{BUNDLE_DEFAULT_MODEL}}` | `data/bundle-models.json` / `devin models list` |
+| model_uid | `swe-2-high` | `data/bundle-models.json` / `devin models list` |
 | Context window | `context_window` do registro | `data/bundle-models.json` |
 | Effort | definido pelo sufixo do `model_uid` | esta tabela |
 | Tool use | nativo durante inferência | Devin docs |
@@ -54,18 +54,18 @@ Subagents usam os mesmos variantes SWE-2, escolhidos por nível de esforço:
 
 | Campo | Descrição | Effort | Custo | Notas |
 |---|---|---|---|---|
-| `{{BUNDLE_MAX_MODEL}}` | Subagent Max (`swe-2-max`) | max | **Free** | Agents de planejamento/julgamento/review |
-| `{{BUNDLE_MEDIUM_MODEL}}` | Subagent Medium (`swe-2-medium`) | medium | **Free** | Agents de execução bounded |
-| `{{BUNDLE_DEFAULT_MODEL}}` | Parent (`swe-2-high`) | high | **Free** | Orquestração, raciocínio diverso |
+| `swe-2-max` | Subagent Max (`swe-2-max`) | max | **Free** | Agents de planejamento/julgamento/review |
+| `swe-2-medium` | Subagent Medium (`swe-2-medium`) | medium | **Free** | Agents de execução bounded |
+| `swe-2-high` | Parent (`swe-2-high`) | high | **Free** | Orquestração, raciocínio diverso |
 
-**⚠️ CRÍTICO**: aliases não canônicos podem apontar para um modelo pago — **não use** sem verificar `data/bundle-models.json`.
-Os agents/ devem fazer pin com os variantes canônicos (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`) do bundle.
+**⚠️ CRÍTICO**: aliases não canônicos podem apontar para um modelo pago - **não use** sem verificar `data/bundle-models.json`.
+Os agents/ devem fazer pin com os variantes canônicos (`swe-2-max` / `swe-2-medium`) do bundle.
 
-**⚠️ CRÍTICO — `subagent_explore` (built-in) pode ser pago**: o profile built-in
+**⚠️ CRÍTICO - `subagent_explore` (built-in) pode ser pago**: o profile built-in
 `subagent_explore` roda no default router do CLI, que pode cobrar por token.
-Não há override local — apenas enterprise settings podem mudar isso.
+Não há override local - apenas enterprise settings podem mudar isso.
 **NUNCA dispatchar `subagent_explore`.** Usar o profile customizado `researcher`
-(`agents/researcher.md`, pin `model: {{BUNDLE_MAX_MODEL}}`, gratuito, veja `data/bundle-models.json`)
+(`agents/researcher.md`, pin `model: swe-2-max`, gratuito, veja `data/bundle-models.json`)
 que tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
 
 ### Self-compaction (diferencial chave)
@@ -76,7 +76,7 @@ Os subagentes do bundle são treinados para:
 
 Isso significa que os subagentes preservam constraints melhor que modelos genéricos
 durante compaction. Mas Governance Decay (arXiv:2606.22528v2) mostra que compaction
-dropa constraints em TODOS os modelos testados — constraint-pinning ainda é necessário.
+dropa constraints em TODOS os modelos testados - constraint-pinning ainda é necessário.
 
 O hook `constraint-pinning.py` tem heuristic `summary_retains_constraints()` que
 verifica se key phrases sobreviveram. Para subagentes treinados, o summary é mais
@@ -120,7 +120,7 @@ mantém cada loop long-lived sob seu cap. Use subagents para evitar que
 trabalho bulk entre no parent window; use compaction quando o trabalho
 já está no parent e precisa continuar coerente.
 
-Para o parent (`{{BUNDLE_DEFAULT_MODEL}}`) despachando subagents:
+Para o parent (`swe-2-high`) despachando subagents:
 - Pesquisa/exploração extensa → `researcher` (Max, gratuito, retorna só síntese)
 - Implementação bounded → `implementer` (Medium, gratuito)
 - Debugging iterativo que precisa de contexto acumulado → inline + compaction
@@ -130,43 +130,43 @@ Para o parent (`{{BUNDLE_DEFAULT_MODEL}}`) despachando subagents:
 
 | Agent | model: pin | Effort | Racional |
 |---|---|---|---|
-| researcher | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Read-only, gratuito, alto contexto |
-| architect | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Trade-off analysis, gratuito |
-| reviewer | `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | Julgamento independente, gratuito |
-| debugger | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Iteração rápida, gratuito |
-| implementer | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Bounded tasks, gratuito |
-| qa-ci | `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | Gate re-execution, gratuito |
+| researcher | `swe-2-max` (`swe-2-max`) | Max | Read-only, gratuito, alto contexto |
+| architect | `swe-2-max` (`swe-2-max`) | Max | Trade-off analysis, gratuito |
+| reviewer | `swe-2-max` (`swe-2-max`) | Max | Julgamento independente, gratuito |
+| debugger | `swe-2-medium` (`swe-2-medium`) | Medium | Iteração rápida, gratuito |
+| implementer | `swe-2-medium` (`swe-2-medium`) | Medium | Bounded tasks, gratuito |
+| qa-ci | `swe-2-medium` (`swe-2-medium`) | Medium | Gate re-execution, gratuito |
 
 **Por que pin e não alias?** Aliases não canônicos podem apontar para um modelo pago.
-Use os variantes canônicos do bundle (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`)
+Use os variantes canônicos do bundle (`swe-2-max` / `swe-2-medium`)
 que são gratuitos e têm a maior `context_window`. Sem pin, o router pode
 resolver para um modelo pago. Quando novas versões saírem, atualize os agents/
 para os novos modelos listados em `data/bundle-models.json`.
 
-O parent (`{{BUNDLE_DEFAULT_MODEL}}`) faz trabalho complexo inline. Para implementação
+O parent (`swe-2-high`) faz trabalho complexo inline. Para implementação
 que precisa do parent, usar `subagent_general` (herda parent, **gratuito**
-quando parent é free) ou pin `model: {{BUNDLE_DEFAULT_MODEL}}` no agent.
+quando parent é free) ou pin `model: swe-2-high` no agent.
 
 ### Profiles built-in vs custom agents (custo)
 
 | Profile | Modelo | Custo | Quando usar |
 |---|---|---|---|
-| `subagent_general` | Herda parent (`{{BUNDLE_DEFAULT_MODEL}}`) | **Gratuito** (quando parent é free) | Implementação que precisa do parent, contexto isolado |
+| `subagent_general` | Herda parent (`swe-2-high`) | **Gratuito** (quando parent é free) | Implementação que precisa do parent, contexto isolado |
 | `subagent_explore` | Default router do CLI | **PAGO** (possível) | **EVITAR** — usar custom agent `researcher` (gratuito) em vez |
-| Custom agents (researcher, architect, etc.) | `{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}` (pin) | **Gratuito** (quando free no registro) | Pesquisa, arquitetura, review, debug, implementação |
+| Custom agents (researcher, architect, etc.) | `swe-2-max` / `swe-2-medium` (pin) | **Gratuito** (quando free no registro) | Pesquisa, arquitetura, review, debug, implementação |
 
-**⚠️ Nunca usar `subagent_explore`** — ele pode resolver para um modelo pago.
+**⚠️ Nunca usar `subagent_explore`** - ele pode resolver para um modelo pago.
 Os custom agents com os pins canônicos são gratuitos e têm mais contexto.
 Fonte: docs.devin.ai/cli/subagents.
 
-## Modelos pagos — política CONDICIONAL
+## Modelos pagos - política CONDICIONAL
 
 **Gratuitos** na assinatura são definidos em `data/bundle-models.json`
 com `cost_tier: free`:
 
-- `{{BUNDLE_DEFAULT_MODEL}}` — parent (default, High)
-- `{{BUNDLE_MAX_MODEL}}` — subagent Max
-- `{{BUNDLE_MEDIUM_MODEL}}` — subagent Medium
+- `swe-2-high`: parent (default, High)
+- `swe-2-max`: subagent Max
+- `swe-2-medium`: subagent Medium
 
 **Pagos**: quaisquer entradas com `cost_tier: paid` em `data/bundle-models.json`,
 incluindo aliases/short names. Sempre verifique o registro antes de usar um
@@ -174,19 +174,19 @@ modelo não-canônico.
 
 ### Política CONDICIONAL ao modelo do parent
 
-**Caso 1 — Parent FREE (`cost_tier: free`): subagents DEVEM ser FREE.**
+**Caso 1 - Parent FREE (`cost_tier: free`): subagents DEVEM ser FREE.**
 
 Protocolo FREE-ONLY:
-1. Parent (`{{BUNDLE_DEFAULT_MODEL}}`, High) — tentativa inicial
-2. Subagent fan-out (`{{BUNDLE_MAX_MODEL}}` Max / `{{BUNDLE_MEDIUM_MODEL}}` Medium) — paralelismo
-3. Parent com esforço `max` (via `Alt+T` ou `/model swe-2-max`) — mais raciocínio, mesmo modelo gratuito
+1. Parent (`swe-2-high`, High) - tentativa inicial
+2. Subagent fan-out (`swe-2-max` Max / `swe-2-medium` Medium) - paralelismo
+3. Parent com esforço `max` (via `Alt+T` ou `/model swe-2-max`) - mais raciocínio, mesmo modelo gratuito
 4. Repetir com contexto mais limpo (`clear` + recarregar apenas o necessário)
-5. Se todos os gratuitos falharem: **parar e reportar ao usuário** — não escalar para pago
+5. Se todos os gratuitos falharem: **parar e reportar ao usuário** - não escalar para pago
 
 Neste caso: **NUNCA usar `subagent_explore`**, **NUNCA usar aliases pagos não verificados**
 sem verificar `data/bundle-models.json`, **NUNCA usar modelos pagos** para subagents.
 
-**Caso 2 — Parent PAGO (usuário escolheu um modelo pago): subagents podem usar pagos.**
+**Caso 2 - Parent PAGO (usuário escolheu um modelo pago): subagents podem usar pagos.**
 
 O usuário já optou por pagar pelo parent. Neste caso:
 - `subagent_explore` (default router, possivelmente pago) é permitido se for mais barato que o parent
@@ -389,7 +389,7 @@ MCP tool defs (configured)   ~???? tok (medir com mcp-governance)
 Disponível para trabalho     consulte `context_window` em `data/bundle-models.json`
 ```
 
-> Nota: este arquivo (MODEL-GUIDE.md) é leitura opcional — não carrega automaticamente.
+> Nota: este arquivo (MODEL-GUIDE.md) é leitura opcional - não carrega automaticamente.
 
 ## Verificação de fontes (Rule 12)
 

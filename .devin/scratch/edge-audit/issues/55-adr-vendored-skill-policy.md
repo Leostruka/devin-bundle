@@ -1,6 +1,6 @@
 # 55 -- No ADR for vendored/external skill adoption policy
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adr
 - **Severity**: P3
 - **File**: manifest.json
@@ -29,3 +29,7 @@ the ADR to skills only (not extensions).
 ## Verification
 ADR exists; `skill-coverage`/`skill-discovery` SKILL.md references it for
 the "install/avalia externas" flow.
+
+## Answer
+
+Wrote `.devin/adr/008-vendored-skill-policy.md` (Accepted): license whitelist (MIT baseline), attribution via manifest source + NOTICE/header, rename-on-collision, adaptation notes, pre-vendoring secrets/telemetry audit; scoped to skills.

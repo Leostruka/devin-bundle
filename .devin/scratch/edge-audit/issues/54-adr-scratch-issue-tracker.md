@@ -1,6 +1,6 @@
 # 54 -- No ADR for .devin/scratch file-based issue tracker over GitHub Issues
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adr
 - **Severity**: P3
 - **File**: .devin/agents/issue-tracker.md
@@ -29,3 +29,7 @@ across clones; the ADR should accept these costs explicitly.
 ## Verification
 ADR exists; `.devin/agents/issue-tracker.md` links to it; the two issue
 dirs' roles are stated in one sentence each.
+
+## Answer
+
+Wrote `.devin/adr/007-scratch-issue-tracker.md` (Accepted): agent-driven in-repo tracking, scope split scratch=per-effort work items vs .devin/issues/=milestone/design, accepted costs. `.devin/agents/issue-tracker.md` now links the ADR and states both dirs' roles.

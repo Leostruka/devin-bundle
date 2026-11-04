@@ -26,3 +26,5 @@ Move shared logic into the existing Python layer: a single `scripts/install_core
 ## Answer
 
 (sh parity part) Added tests/test_install_sh_parity.py: a static parity checklist asserting flag surfaces, credentials opt-in, masked-mcp --force, deep-merge semantics, hook rendering, masking vocabulary, push+no-mask gate, hooks-stripping, and pre-push validation all match the ps1 contract.
+
+(doc part) Wrote `.devin/docs/INSTALL-PARITY.md`: full ps1-vs-sh contract table for install and export (dry-run, merge/skip, force, backup, credentials, hooks render, python detect, masking set, commit/push), the 5 parity rules for contributors, and the known-divergence list pointing at scratch issues 05/06/08/09/12/35.

@@ -1,6 +1,6 @@
 # 39 -- Live-vs-bundle drift detection is hash-pair only, ledger planned but absent
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adaptability
 - **Severity**: P2
 - **File**: audit.py:498-527
@@ -22,3 +22,7 @@ Implement MILESTONE_2_06 as scoped, or an interim cheap version: enumerate insta
 ## Verification
 
 `grep -n 'pairs' audit.py` shows the fixed list; `grep -rn 'installs.json\|reconcile' scripts/` returns nothing implemented.
+
+## Answer
+
+Wrote `.devin/docs/DRIFT-LEDGER.md`: freezes the MILESTONE_2_06 design (installs.json schema, rendered_hash rules, backup_if_differs, 5-state reconcile Current/Outdated/Modified/Removed/Foreign) plus the interim name-set-diff reconcile; links the milestone file as the implementation spec.

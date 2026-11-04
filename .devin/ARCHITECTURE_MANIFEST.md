@@ -41,6 +41,8 @@
 - **Error model:** informational hooks fail-open (exit 0) on parse/runtime
   errors. Security guards `pre-exec-guard.py` and `pre-write-guard.py` retain
   `fail_closed: true` in `hooks.v1.json`; guard failure blocks the action.
+  Aggregation semantics are decided in `.devin/adr/006-hook-consolidation.md`
+  and detailed in `.devin/docs/HOOKS-PIPELINE.md`.
   Laya daemon unavailability preserves the deterministic policy, never
   overrides a block. Install scripts warn non-blocking and continue;
   agent-facing blocks use `{"decision": "block", "reason": ...}` + exit 2.

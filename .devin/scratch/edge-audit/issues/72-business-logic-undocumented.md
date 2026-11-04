@@ -1,6 +1,6 @@
 # 72 -- Bundle business rules exist only as implicit code, no domain document
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: business-logic
 - **Severity**: P2
 - **File**: n/a (cross-cutting: install.sh/export.*, hooks.v1.json,
@@ -39,3 +39,7 @@ it so checks cite the rule they enforce.
 
 `grep -rn "masking\|install semantics\|routing policy" .devin/adr .devin/docs`
 returns no document stating these rules.
+
+## Answer
+
+Wrote `.devin/docs/BUSINESS-LOGIC.md`: 19 explicit rules (R1-R19) with code anchors covering install merge/backup/credentials semantics, the export masking contract, the hook event map with unbound-event rationale, the model routing/free-follows-free policy, manifest/versioning contracts, and the issue-tracker split.

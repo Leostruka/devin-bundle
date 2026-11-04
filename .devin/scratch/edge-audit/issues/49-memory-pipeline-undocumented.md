@@ -1,6 +1,6 @@
 # 49 -- Memory hook pipeline (retrieval/scoring/storage) undocumented
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: documentation
 - **Severity**: P2
 - **File**: scripts/memory-retrieval.py
@@ -25,3 +25,7 @@ user-approval contract for writes.
 ## Verification
 Reader can predict which hook fires for a given event and where entries
 land; cross-check against the four scripts' stdin handling.
+
+## Answer
+
+Wrote `.devin/docs/MEMORY-PIPELINE.md`: storage/env resolution, frontmatter schema, per-script cue scoring tables (keyword/symbol/path), TOP_K, write triggers, user-approval contract, and Stop-silence rationale.

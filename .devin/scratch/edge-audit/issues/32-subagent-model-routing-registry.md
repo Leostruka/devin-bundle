@@ -1,6 +1,6 @@
 # 32 -- Subagent model routing via bundle-models.json is convention, not enforced
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: devin-cli-limitations
 - **Severity**: P3
 - **File**: data/bundle-models.json:1-44
@@ -22,3 +22,7 @@ Add an `audit.py` check that cross-validates every `model:` pin in `agents/*.md`
 ## Verification
 
 `grep -rn 'model:' agents/*.md` vs `data/bundle-models.json` IDs; `grep -n 'model' audit.py` shows no cross-check.
+
+## Answer
+
+Added the registry contract paragraph to TOOLS-MAP.md (Subagentes section): every `model:` pin must resolve to a `data/bundle-models.json` UID, paid pins need justification, BUNDLE_* overrides must be registry UIDs; noted audit/render enforcement as planned work.
