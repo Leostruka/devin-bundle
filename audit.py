@@ -567,6 +567,11 @@ if os.path.exists(live_cfg) and os.path.exists(bundle_hooks_src):
             s = json.dumps(obj, sort_keys=True)
             if home:
                 s = s.replace(home.replace('\\', '/').rstrip('/'), '')
+            # render-user-hooks.py now emits a resolved interpreter path
+            # (sys.executable / detected python); collapse it to `python`.
+            s = re.sub(r'[A-Za-z]:[\\/][^"\']*?[\\/]pythonw?\.exe',
+                       'python', s)
+            s = re.sub(r'(?<![\w./\\-])pythonw?\.exe', 'python', s)
             s = s.replace('pythonw ', 'python ')
             s = s.replace('python scripts/', 'python /scripts/')
             s = s.replace('\\"', '').replace('"', '')
