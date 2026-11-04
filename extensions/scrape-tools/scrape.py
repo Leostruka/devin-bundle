@@ -12,10 +12,54 @@ JSON out: {"ok": true, "status": int, "url": final_url, "count": N,
 Exit 0 ok / 1 fetch+select error / 2 usage error.
 """
 import argparse
+import ipaddress
 import json
+import socket
 import sys
+from urllib.parse import urlparse
 
 import st_common
+
+
+def _resolve(host):
+    """Resolve host to IP strings; isolated for tests."""
+    return {ai[4][0] for ai in socket.getaddrinfo(host, None)}
+
+
+def check_url_allowed(url, allow_private=False):
+    """Return an error string when `url` must not be fetched, else None.
+
+    SSRF guard for the initial request: http/https only, and the host
+    must not resolve to loopback/link-local/private/reserved space
+    unless --allow-private is passed explicitly.
+    """
+    try:
+        p = urlparse(url)
+    except ValueError as e:
+        return f"unparseable url: {e}"
+    if p.scheme not in ("http", "https"):
+        return f"scheme '{p.scheme or 'none'}' not allowed (http/https only)"
+    host = p.hostname
+    if not host:
+        return "missing host"
+    try:
+        literal = ipaddress.ip_address(host)
+        ips = {str(literal)}  # IP literal: no DNS needed, no rebinding trick
+    except ValueError:
+        try:
+            ips = _resolve(host)
+        except OSError as e:
+            return f"cannot resolve host '{host}': {e}"
+        if not ips:
+            return f"cannot resolve host '{host}'"
+    if not allow_private:
+        for ip in ips:
+            a = ipaddress.ip_address(ip)
+            if (a.is_private or a.is_loopback or a.is_link_local
+                    or a.is_multicast or a.is_reserved or a.is_unspecified):
+                return (f"host '{host}' resolves to non-public address "
+                        f"{ip}; pass --allow-private for intranet targets")
+    return None
 
 
 def main():
@@ -35,7 +79,14 @@ def main():
                     default=None,
                     help="opt-in browser tier; needs prior "
                          "`python -m scrapling.cli.install`")
+    ap.add_argument("--allow-private", action="store_true",
+                    help="permit hosts resolving to loopback/private/"
+                         "link-local addresses (SSRF opt-out)")
     args = ap.parse_args()
+
+    denied = check_url_allowed(args.url, allow_private=args.allow_private)
+    if denied:
+        st_common.fail(f"ssrf_blocked:{denied}", code=2)
 
     if args.browser and not st_common.browser_tier_installed():
         st_common.fail(

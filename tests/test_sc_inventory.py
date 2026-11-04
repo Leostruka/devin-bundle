@@ -208,5 +208,5 @@ def test_run_bounded_timeout_kills_child():
     t0 = time.monotonic()
     with pytest.raises(subprocess.TimeoutExpired):
         run_bounded([sys.executable, "-c",
-                     "import time;time.sleep(60)"], timeout=1)
-    assert time.monotonic() - t0 < 30  # killed+waited, not 60s
+                     "import time;time.sleep(10)"], timeout=1)
+    assert time.monotonic() - t0 < 10  # killed+waited, not the full sleep

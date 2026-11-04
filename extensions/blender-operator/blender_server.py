@@ -21,12 +21,14 @@ its value is JSON-serialized into "result_json" (fallback: repr). stdout/
 stderr of the executed code are captured and truncated to 64KB each.
 """
 import contextlib
+import hmac
 import io
 import json
 import os
 import secrets
 import socket
 import sys
+import tempfile
 import traceback
 
 import bpy  # noqa: F401  (preloaded into the exec namespace)
@@ -64,14 +66,39 @@ def _run_exec(code):
     }
 
 
+def nonce_file_for(port):
+    return os.path.join(tempfile.gettempdir(),
+                        f"blender-operator-{port}.nonce")
+
+
+def _write_nonce_file(path):
+    """Write NONCE to `path` owner-only so only the local spawning
+    account can authenticate exec/shutdown."""
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(NONCE)
+    except BaseException:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        raise
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
+
+
 def _handle(req):
     if not isinstance(req, dict):
         return {"ok": False, "error": "request must be a JSON object"}
     op = req.get("op", "exec")
     if op in ("exec", "shutdown"):
-        n = req.get("nonce")
-        if n is not None and n != NONCE:
-            return {"ok": False, "error": "nonce mismatch"}
+        supplied = req.get("nonce")
+        if not isinstance(supplied, str) \
+                or not hmac.compare_digest(supplied, NONCE):
+            return {"ok": False, "error": "nonce required"}
     if op == "ping":
         return {"ok": True, "blender": bpy.app.version_string,
                 "scene": bpy.context.scene.name if bpy.context.scene else None}
@@ -89,7 +116,8 @@ def _handle(req):
     return {"ok": False, "error": f"unknown op '{op}'"}
 
 
-def serve(port):
+def serve(port, nonce_file=None):
+    _write_nonce_file(nonce_file or nonce_file_for(port))
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     srv.bind(("127.0.0.1", port))
@@ -113,7 +141,6 @@ def serve(port):
                 resp = _handle(req)
                 resp["id"] = req.get("id") if isinstance(req, dict) else None
                 resp["pid"] = PID
-                resp["nonce"] = NONCE
                 f.write(json.dumps(resp, default=repr) + "\n")
                 f.flush()
                 if isinstance(req, dict) \
@@ -131,4 +158,6 @@ def _argv_tail():
 if __name__ == "__main__":
     tail = _argv_tail()
     port = int(tail[tail.index("--port") + 1]) if "--port" in tail else 19693
-    serve(port)
+    nonce_file = (tail[tail.index("--nonce-file") + 1]
+                  if "--nonce-file" in tail else None)
+    serve(port, nonce_file=nonce_file)

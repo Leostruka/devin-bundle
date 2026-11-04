@@ -59,18 +59,43 @@ def test_failed_returncode(store):
 
 
 def test_stop_running_task(store):
-    tid = store.start([sys.executable, "-c", "import time; time.sleep(60)"])
-    deadline = time.time() + 15
-    st = None
-    while time.time() < deadline:
-        st = store.status(tid)
-        if st and st["state"] == "running":
-            break
-        time.sleep(0.2)
-    assert st["state"] == "running", st
-    res = store.stop(tid)
-    assert res["state"] == "stopped"
-    assert store.status(tid)["state"] == "stopped"
+    # Short bounded sleeper: enough to observe "running", self-terminates
+    # quickly if stop() or the test itself fails (no minute-long stray).
+    tid = store.start([sys.executable, "-c", "import time; time.sleep(20)"])
+    try:
+        deadline = time.time() + 15
+        st = None
+        while time.time() < deadline:
+            st = store.status(tid)
+            if st and st["state"] == "running":
+                break
+            time.sleep(0.2)
+        assert st["state"] == "running", st
+        res = store.stop(tid)
+        assert res["state"] == "stopped"
+        assert store.status(tid)["state"] == "stopped"
+    finally:
+        store.stop(tid)  # no-op if already terminal; reaps on failure
+
+
+def test_trace_id_traversal_rejected(store):
+    """status/stop/_trace_dir must not let trace_id escape the store."""
+    for bad in ("../", "../../outside", "..\\win", "a/b", "deadbeef000Z",
+                "deadbeef0000/../x", "", None, "deadbeef0000 "):
+        assert store.status(bad) is None
+        res = store.stop(bad)
+        assert res == {"error": "no such trace_id"}
+    with pytest.raises(ValueError):
+        store._trace_dir("../escape")
+    # a planted status.json outside the store stays untouched
+    outside = os.path.join(os.path.dirname(store.STORE), "victim")
+    os.makedirs(outside, exist_ok=True)
+    assert store.status("../victim") is None
+
+
+def test_trace_dir_containment(store):
+    d = store._trace_dir("0123456789ab")
+    assert os.path.dirname(os.path.realpath(d)) == os.path.realpath(store.STORE)
 
 
 def test_list_and_missing(store):
@@ -89,6 +114,10 @@ def test_cli_surface(tmp_path):
     assert p.returncode == 0
     p = _cli("status", "nosuchid")
     assert p.returncode == 1
+    p = _cli("status", "../")  # traversal must not escape the store
+    assert p.returncode == 1
+    p = _cli("stop", "../x")
+    assert p.returncode == 0 and "no such trace_id" in p.stdout
     p = _cli("list")
     assert p.returncode == 0
     json.loads(p.stdout)

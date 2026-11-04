@@ -288,7 +288,7 @@ def test_client_roundtrip(tmp_path):
 
 
 def test_client_timeout_abstains(tmp_path):
-    c = _client(tmp_path, body="import time; time.sleep(30)",
+    c = _client(tmp_path, body="import time; time.sleep(5)",
                 timeout=0.5)
     try:
         r = c.recommend(REQ)

@@ -95,7 +95,7 @@ def test_unenumerated_method_rejected():
 def test_response_timeout_is_typed():
     class HungReader:
         def readline(self):
-            time.sleep(2)
+            time.sleep(0.5)
             return b""
 
     ch = cu_guest.GuestChannel(HungReader(), io.BytesIO(),
