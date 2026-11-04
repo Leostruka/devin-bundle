@@ -71,12 +71,14 @@ file_hash() {
 # dir_hash ignores __pycache__/ and *.pyc: bytecode caches are runtime
 # artifacts, not payload, and are stripped from installed copies anyway.
 dir_hash() {
+  # shellcheck disable=SC2086  # SHA256_CMD carries flags (e.g. shasum -a 256); splitting is intentional
   ( cd "$1" 2>/dev/null && find . -type f -not -path '*/__pycache__/*' -not -name '*.pyc' -print0 | xargs -0 $SHA256_CMD 2>/dev/null | sort | $SHA256_CMD | awk '{print $1}' )
 }
 
 # Same as dir_hash but skips .venv/ trees, cargo target/ dirs, and staged
 # compiled artifacts (extensions derive these at install time).
 dir_hash_ext() {
+  # shellcheck disable=SC2086  # SHA256_CMD carries flags (e.g. shasum -a 256); splitting is intentional
   ( cd "$1" 2>/dev/null && find . -type f -not -path '*/.venv/*' -not -path '*/target/*' -not -name '*.pyd' -not -name '*.so' -not -name '*.dylib' -not -path '*/__pycache__/*' -not -name '*.pyc' -print0 | xargs -0 $SHA256_CMD 2>/dev/null | sort | $SHA256_CMD | awk '{print $1}' )
 }
 

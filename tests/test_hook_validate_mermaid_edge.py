@@ -67,7 +67,8 @@ def test_invalid_json_fails_open():
 
 
 def test_edit_uses_new_string():
-    code, _ = _run(_write("```mermaid\ngraph TD\n```",
+    # Valid diagram so the assertion holds whether node is present or not.
+    code, _ = _run(_write("```mermaid\ngraph TD\n  A-->B\n```",
                           tool="edit", key="new_string"))
     assert code == 0  # node unavailable here or parse ok: never crashes
 
