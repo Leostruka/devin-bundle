@@ -109,6 +109,27 @@ def main():
         )
         sys.exit(0)
 
+    # Rule 15 evidence: the reminder itself writes to refinements.log.jsonl so
+    # the file exists and the firing is auditable even if the agent adds no
+    # refinement records of its own.
+    try:
+        import time as _time
+        project_dir = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+        log_path = os.path.join(project_dir, ".devin", "refinements.log.jsonl")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        record = {
+            "id": f"refine-reminder-{int(_time.time())}",
+            "timestamp": int(_time.time()),
+            "repro_command": "python scripts/refine-review-prompt.py (Stop hook)",
+            "expected": "refinements logged to .devin/refinements.log.jsonl before stop",
+            "actual": f"refine reminder fired ({detail or 'complex session'})",
+            "verdict": "reminder",
+        }
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except (OSError, IOError):
+        pass
+
     print(json.dumps({
         "decision": "block",
         "reason": REMINDER.format(detail=detail or "3+ todos completed"),

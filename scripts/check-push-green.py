@@ -41,7 +41,11 @@ def block(reason):
 
 
 def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
-    """Run a shell check. Returns (passed, output). Fails open on timeout.
+    """Run a shell check. Returns (status, output).
+
+    status is one of: "pass", "fail", "timeout", "unavailable".
+    The caller decides policy; the main suite treats anything but "pass"
+    as a block (fail-closed) so the gate cannot silently degrade to a no-op.
 
     stdout goes to a temp file, not a pipe: a timed-out `cmd /c` kill
     orphans the grandchild (pytest), which would otherwise hold the pipe
@@ -57,20 +61,62 @@ def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
             proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             # Kill the whole tree; cmd alone dies leaving pytest orphaned.
-            _run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
-                 capture_output=True, timeout=15)
+            try:
+                _run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                     capture_output=True, timeout=15)
+            except (FileNotFoundError, OSError, subprocess.SubprocessError):
+                proc.kill()
             try:
                 proc.wait(timeout=10)
             except subprocess.TimeoutExpired:
                 proc.kill()
             out_file.seek(0)
-            return True, out_file.read() or "check timed out - allowing push"
+            tail = out_file.read() or ""
+            return "timeout", tail + "\ncheck timed out after {}s".format(timeout)
         out_file.seek(0)
-        return proc.returncode == 0, out_file.read()
+        return ("pass" if proc.returncode == 0 else "fail"), out_file.read()
     except (FileNotFoundError, OSError) as e:
-        return True, f"check unavailable: {e} - allowing push"
+        return "unavailable", f"check unavailable: {e}"
     finally:
         out_file.close()
+
+
+def is_git_push(command):
+    """True when the command issues a git push.
+
+    Tokenizes shell segments so whitespace variants (`git  push`),
+    global flags between verb and subcommand (`git -C repo push`,
+    `git -c k=v push`) and command chaining (`x && git push`) are caught.
+    """
+    import shlex
+    # git options that consume the next token as a value.
+    git_opts_with_arg = {"-C", "-c", "--git-dir", "--work-tree",
+                         "--namespace", "--exec-path"}
+    for segment in re.split(r"&&|\|\||;|\|", command):
+        try:
+            tokens = shlex.split(segment, posix=(os.name != "nt"))
+        except ValueError:
+            tokens = segment.split()
+        i = 0
+        while i < len(tokens):
+            tok = tokens[i]
+            base = os.path.basename(tok).lower()
+            if base in ("git", "git.exe") or tok.lower().endswith("\\git.exe"):
+                j = i + 1
+                while j < len(tokens):
+                    t = tokens[j]
+                    if t in git_opts_with_arg:
+                        j += 2
+                        continue
+                    if t.startswith("-"):
+                        j += 1
+                        continue
+                    break
+                if j < len(tokens) and tokens[j].lower() == "push":
+                    return True
+                i = j
+            i += 1
+    return False
 
 
 def detect_test_command(cwd):
@@ -104,28 +150,42 @@ def detect_test_command(cwd):
     return None, False
 
 
+# secret-shaped-key = "value" pairs in a TOML file (single-line strings only).
+TOML_SECRET_RE = re.compile(
+    r'(?im)^\s*([\w.\-]*(?:api_?key|token|secret|password|private_?key'
+    r'|credential)[\w.\-]*)\s*=\s*"([^"]*)"')
+# "secret-shaped-key": "value" pairs in JSON.
+JSON_SECRET_RE = re.compile(
+    r'"(API_KEY|TOKEN|SECRET|PASSWORD|KEY|api_key|token|secret|password|key'
+    r'|apiKey|accessToken|clientSecret|privateKey)"\s*:\s*"([^"]*)"')
+
+
 def check_unmasked_secrets(cwd):
-    """Block if credentials.toml or mcp_config.json contain unmasked secrets."""
+    """Block if credentials.toml or mcp_config.json contain unmasked secrets.
+
+    Per-entry check: every secret-shaped value must equal MASKED. A single
+    MASKED placeholder elsewhere in the file does not clear real secrets.
+    """
     creds = os.path.join(cwd, "credentials.toml")
     mcp = os.path.join(cwd, "mcp_config.json")
 
     if os.path.isfile(creds):
         with open(creds, encoding="utf-8") as f:
             content = f.read()
-        if '"MASKED"' not in content and 'MASKED' not in content:
-            # A credentials.toml with real values has no MASKED placeholder.
-            # This is acceptable locally, but never push it.
-            block(
-                "credentials.toml contains unmasked secrets. "
-                "Export with masking before pushing, or review the file."
-            )
+        for m in TOML_SECRET_RE.finditer(content):
+            if m.group(2).strip() and m.group(2).strip().upper() != "MASKED":
+                block(
+                    "credentials.toml contains unmasked secret values. "
+                    "Every secret-shaped value must be MASKED before pushing, "
+                    "or exclude the file from the commit."
+                )
 
     if os.path.isfile(mcp):
         with open(mcp, encoding="utf-8") as f:
             content = f.read()
-        # Look for non-MASKED secret-like JSON values
-        if re.search(r'"(API_KEY|TOKEN|SECRET|PASSWORD|KEY|api_key|token|secret|password|key)"\s*:\s*"[^"]{4,}"', content):
-            if 'MASKED' not in content:
+        for m in JSON_SECRET_RE.finditer(content):
+            value = m.group(2).strip()
+            if len(value) >= 4 and value.upper() != "MASKED":
                 block(
                     "mcp_config.json contains unmasked secret values. "
                     "Export with masking before pushing."
@@ -136,8 +196,9 @@ def check_held_out_gap(cwd, is_pytest, val_result, held_result):
     """Block when validation tests pass but held-out tests fail (Rule 16)."""
     if val_result is None:
         return  # no held-out split configured / not pytest
-    val_passed, _ = val_result
-    held_passed, held_output = held_result
+    val_passed = val_result[0] == "pass"
+    held_passed = held_result[0] == "pass"
+    held_output = held_result[1]
     if val_passed and not held_passed:
         block(
             "Validation tests pass but held-out tests fail. This gap indicates "
@@ -146,6 +207,67 @@ def check_held_out_gap(cwd, is_pytest, val_result, held_result):
             "Fix the held-out failures before pushing.\n"
             + held_output.strip()[-800:]
         )
+
+
+APPROVAL_MARKERS = (
+    os.path.join(".devin", "test-deletion-approved"),
+    os.path.join(".devin", "approvals", "test-deletion.txt"),
+)
+
+
+def check_test_deletions(cwd):
+    """Block push when the pending diff deletes tests (AGENTS.md Rule 25).
+
+    Flags deleted files under tests/ (git status porcelain D) and removed
+    test-function lines in the HEAD diff. Approved deletions carry a marker:
+    the file .devin/test-deletion-approved or env TEST_DELETION_APPROVED=1
+    (document the reason in the commit message / ledger).
+    """
+    if os.environ.get("TEST_DELETION_APPROVED") == "1":
+        return
+    for rel in APPROVAL_MARKERS:
+        if os.path.isfile(os.path.join(cwd, rel)):
+            return
+    try:
+        status = _run(["git", "status", "--porcelain"], capture_output=True,
+                      text=True, timeout=15, cwd=cwd,
+                      encoding="utf-8", errors="replace")
+    except (FileNotFoundError, OSError, subprocess.SubprocessError):
+        return  # no git: cannot check, allow
+    if status.returncode == 0:
+        for line in status.stdout.splitlines():
+            xy = line[:2]
+            path = line[3:].strip()
+            norm = path.replace("\\", "/")
+            if "D" in xy and (norm.startswith("tests/")
+                              or norm.startswith("test/")
+                              or "/tests/" in norm):
+                block(
+                    f"git push rejected: test file '{path}' is deleted "
+                    "(AGENTS.md Rule 25: no test deletion without approval). "
+                    "Restore it or record approval in "
+                    ".devin/test-deletion-approved with the reason."
+                )
+    try:
+        diff = _run(["git", "diff", "HEAD", "--unified=0", "--", "tests/", "test/"],
+                    capture_output=True, text=True, timeout=15, cwd=cwd,
+                    encoding="utf-8", errors="replace")
+    except (FileNotFoundError, OSError, subprocess.SubprocessError):
+        return
+    if diff.returncode == 0:
+        removed_tests = [
+            ln for ln in diff.stdout.splitlines()
+            if ln.startswith("-") and not ln.startswith("---")
+            and re.search(r"def test_|class Test", ln)
+        ]
+        if removed_tests:
+            block(
+                "git push rejected: the pending diff removes test functions "
+                f"({len(removed_tests)} removed 'def test_'/'class Test' "
+                "lines under tests/). AGENTS.md Rule 25 requires explicit "
+                "approval for test deletion; record the reason in "
+                ".devin/test-deletion-approved before pushing."
+            )
 
 
 def main():
@@ -161,7 +283,7 @@ def main():
 
     tool_input = data.get("tool_input") or {}
     command = tool_input.get("command", "") or ""
-    if "git push" not in command.lower():
+    if not is_git_push(command):
         sys.exit(0)
     # A dry run does not publish anything, so let it through.
     if "--dry-run" in command:
@@ -172,9 +294,21 @@ def main():
     # Defense in depth: block push if secrets are unmasked in bundle files.
     check_unmasked_secrets(cwd)
 
+    # Rule 25: no test deletion without approval.
+    check_test_deletions(cwd)
+
     check_cmd, is_pytest = detect_test_command(cwd)
     if not check_cmd:
-        sys.exit(0)  # no test framework detected: allow
+        if os.path.isdir(os.path.join(cwd, "tests")):
+            block(
+                "git push rejected: a tests/ directory exists but no test "
+                "framework marker was detected (pytest.ini, package.json, "
+                "Cargo.toml, ...). The push gate cannot verify green; add a "
+                "framework marker or remove tests/ (AGENTS.md Rule 5)."
+            )
+        print("check-push-green: no test framework detected; gate skipped",
+              file=sys.stderr)
+        sys.exit(0)
 
     validation_dir = os.path.join(cwd, "tests", "validation")
     heldout_dir = os.path.join(cwd, "tests", "held-out")
@@ -187,13 +321,20 @@ def main():
         f_main = ex.submit(run_check, check_cmd, cwd, MAIN_TIMEOUT)
         f_val = ex.submit(run_check, f'pytest "{validation_dir}" -q', cwd) if gap_active else None
         f_held = ex.submit(run_check, f'pytest "{heldout_dir}" -q', cwd) if gap_active else None
-        passed, output = f_main.result()
+        status, output = f_main.result()
         val_result = f_val.result() if f_val else None
         held_result = f_held.result() if f_held else None
 
-    if not passed:
+    # Fail-closed: any outcome other than a passing run blocks the push, so
+    # a timed-out or unrunnable suite cannot silently degrade the gate.
+    if status != "pass":
+        detail = {
+            "fail": f"'{check_cmd}' is failing",
+            "timeout": f"'{check_cmd}' did not finish within {MAIN_TIMEOUT}s",
+            "unavailable": f"'{check_cmd}' could not be run",
+        }.get(status, f"'{check_cmd}' status: {status}")
         block(
-            f"git push rejected: '{check_cmd}' is failing. Fix the failures in the "
+            f"git push rejected: {detail}. Fix the failures in the "
             "inner loop before pushing (AGENTS.md Rule 5).\n"
             + output.strip()[-800:]
         )

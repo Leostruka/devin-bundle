@@ -32,7 +32,13 @@ Checks (only when success=true and tool is exec or mcp_call_tool):
 
 At most one finding is emitted per call to avoid multi-finding spam.
 """
-import sys, json, re
+import sys, json, re, os
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from _hookrun import emit_metric
+except Exception:
+    emit_metric = None
 
 # High-signal error indicators. Tightened to reduce false positives:
 # - "error" requires a colon (avoids "error handling", "error recovery")
@@ -103,6 +109,11 @@ def signal_lines(text):
                      re.compile(r"\b(?:command not found|no such file or directory)\b", re.IGNORECASE),
                      re.compile(r"\bpermission denied\b", re.IGNORECASE),
                      re.compile(r"\bnpm\s+ERR!", re.IGNORECASE),
+                     # Non-zero failure counts and exit codes are strong even
+                     # on lines that also match noise (e.g. "1 failed, 1 warning").
+                     re.compile(r"\b[1-9]\d*\s+(?:tests?\s+)?fail(?:ed|ures?)?\b", re.IGNORECASE),
+                     re.compile(r"\bexit\s+code\s+[1-9]\d*\b", re.IGNORECASE),
+                     re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b", re.IGNORECASE),
                      re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE)}
     for ln in text.split("\n"):
         is_noise = any(n.search(ln) for n in NOISE_PATTERNS)
@@ -131,6 +142,9 @@ def emit(findings):
     """Emit at most one finding as additionalContext so the agent sees it."""
     if not findings:
         sys.exit(0)
+    if emit_metric is not None:
+        emit_metric("silent-error-review", findings=len(findings),
+                    first=findings[0][:200])
     body = "Silent-error review flagged this tool result:\n- " + findings[0]
     print(json.dumps({
         "hookSpecificOutput": {

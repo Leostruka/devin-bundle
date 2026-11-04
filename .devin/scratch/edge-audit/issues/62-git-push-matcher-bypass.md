@@ -1,6 +1,6 @@
 # 62 -- git push detection is a brittle substring match
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: applied-rules
 - **Severity**: P2
 - **File**: scripts/check-push-green.py:164
@@ -31,3 +31,11 @@ hook instead of string-matching agent commands.
 `python scripts/check-push-green.py` with stdin
 `{"hook_event_name":"PreToolUse","tool_name":"exec","tool_input":{"command":"git -C . push"}}`
 exits 0 without running any tests.
+
+## Answer
+Replaced the substring match with `is_git_push()`: the command is split on
+shell separators (&&, ;, |), shlex-tokenized, and matched positionally -
+`git`/`git.exe` followed by optional global flags (-C, -c, --git-dir,
+--work-tree, --no-pager, ...) then `push`. Catches `git  push`, `git -C repo
+push`, `x && git push`; still ignores `git remote update`/`git pull`.
+Quoted "git push" strings no longer trigger.

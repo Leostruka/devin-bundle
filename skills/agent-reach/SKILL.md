@@ -1,6 +1,6 @@
 ---
 name: agent-reach
-description: Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to the agent-reach CLI (`get` grammar). Credential/cookie channels are out of scope.
+description: Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to the agent-reach CLI (`get` grammar)
 triggers: [user, model]
 ---
 
