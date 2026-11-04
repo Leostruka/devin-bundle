@@ -252,6 +252,14 @@
       "exported_at": "2026-09-08T21:39:22.459508"
     },
     {
+      "name": "de-slop",
+      "source": "created:v3.19.0 composite simplification pass",
+      "purpose": "Use when cleaning a diff before opening a PR, or when asked to simplify, de-slop, or run the full quality pass on current changes.",
+      "original_path": "%APPDATA%\\devin\\skills\\de-slop",
+      "export_hash": "181A73C4E9FA2DBD3ECA1476E17823BAFD244D76569774BE7A09097670C4B075",
+      "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
       "name": "dead-wire",
       "source": "devin-bundle",
       "purpose": "Use when running completeness audits, before declaring \"it works\", or when something looks too implemented to be true. Hunts cut wires: features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.",
@@ -677,6 +685,14 @@
       "export_hash": "AFA1FAD5FE389852851DA9A7E44435DD5A4B7D334612ECA9193E9A5BFB200863"
     },
     {
+      "name": "no-comments",
+      "source": "created:v3.19.0 port of pstack no-comments (MIT)",
+      "purpose": "Use when hunting comment smells, workaround comments, or stale suppressions on a diff, or when asked to delete comments and encode claimed constraints before a PR.",
+      "original_path": "%APPDATA%\\devin\\skills\\no-comments",
+      "export_hash": "714D5BACC30100429D90C92ABAD54A1AF5383513DA512A41BDA77033DEB5FFB6",
+      "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
       "name": "observability-quality",
       "source": "created:Devin bundle",
       "purpose": "Use when adding logging, metrics, distributed tracing, error monitoring, linting, architecture testing, or test infrastructure to a project. Covers OpenTelemetry, Sentry/Datadog/Grafana, Biome/ESLint, ArchUnit, commitlint, Knip, Playwright, and coverage strategy. Infrastructure and tooling quality only; writing feature tests goes to testing or e2e-testing.",
@@ -1028,6 +1044,30 @@
       "export_hash": "B08C8272168775AF7865727F94FF1D6BD2A035E2B56A19016EDC0E16B19831DD"
     },
     {
+      "name": "thermo-nuclear-code-quality-review",
+      "source": "vendored:v3.19.0 cursor/plugins thermos (MIT)",
+      "purpose": "Use when running an extremely strict maintainability review for abstraction quality, giant files, and spaghetti-condition growth, for a thermo-nuclear code quality review, thermonuclear review, deep code quality audit, or especially harsh maintainability review.",
+      "original_path": "%APPDATA%\\devin\\skills\\thermo-nuclear-code-quality-review",
+      "export_hash": "456F9E17D923475590AC9EF5564E0909C605E707FCDB34569DB54373E141E37E",
+      "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
+      "name": "thermo-nuclear-review",
+      "source": "vendored:v3.19.0 cursor/plugins thermos (MIT)",
+      "purpose": "Use when a comprehensive security and correctness audit of a branch's changes is needed, for thermo nuclear, thermonuclear, or deep review requests, or branch/PR diff audits focused on bugs, breaking changes, security issues, devex regressions, and feature-gate leaks.",
+      "original_path": "%APPDATA%\\devin\\skills\\thermo-nuclear-review",
+      "export_hash": "C992E938CB6FB384704B821B8AACEBACE73EAC5FD5A78B21A23C08CA329A6FC0",
+      "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
+      "name": "thermos",
+      "source": "vendored:v3.19.0 cursor/plugins thermos (MIT), adapted to run_subagent",
+      "purpose": "\"Use when launching both thermo-nuclear review subagents in parallel and synthesizing their findings, for thermos, double thermo review, or combined bug/security and code-quality branch audits.\"",
+      "original_path": "%APPDATA%\\devin\\skills\\thermos",
+      "export_hash": "638880829FB4FC34E711E9412DC4B6016401F28CDABC519A3F7A8D30828A5008",
+      "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
       "name": "tool-and-skill-discovery",
       "source": "devin-bundle",
       "purpose": "Use when the user asks how to do something, needs the right skill or tool, no skill seems to match the task, or wants to discover, install, or evaluate a new skill for Devin CLI.",
@@ -1050,6 +1090,14 @@
       "export_hash": "026167D5DA48AE4192CC47027FFAAE4974430481CF53C08E95465762FDCCD2A6"
     },
     {
+      "name": "typescript-best-practices",
+      "source": "vendored:v3.19.0 cursor/plugins pstack (MIT), principle refs inlined",
+      "purpose": "TypeScript best practices. Use when reading or editing any .ts or .tsx file.",
+      "original_path": "%APPDATA%\\devin\\skills\\typescript-best-practices",
+      "export_hash": "A18D38174D1AF422A6330C9B72484D5CE90A1518CA1A63C72C0E81730430A98B",
+      "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
       "name": "typescript-node",
       "source": "devin-bundle",
       "purpose": "Use when writing or reviewing TypeScript or Node.js code. Strict mode, async/await footguns, error handling, null safety, real types vs any, ESM/CJS interop, npm hygiene (engines, lockfile, scripts, ci).",
@@ -1066,6 +1114,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "unslop",
+      "source": "vendored:v3.19.0 cursor/plugins pstack (MIT)",
+      "purpose": "Cut AI tells from any writing. Use when editing or reviewing prose to remove AI writing patterns.",
+      "original_path": "%APPDATA%\\devin\\skills\\unslop",
+      "export_hash": "B31A9A742BFCAA892F76E03B9B89DC365051997694245931445EADD27CBB40E1",
+      "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
       "name": "using-git-worktrees",
       "source": "devin-bundle",
       "purpose": "Use when starting feature work that needs isolation from the current workspace.",
@@ -1080,6 +1136,14 @@
       "original_path": "%APPDATA%\\devin\\skills\\using-skills",
       "export_hash": "B020D2F7A5A734EF8162AF91422099B3893DCC4EEE4D44074AD5650A37F38A16",
       "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "source": "vendored:v3.19.0 vercel-labs/agent-skills (MIT)",
+      "purpose": "React and Next.js performance optimization guidelines from Vercel Engineering. Use when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.",
+      "original_path": "%APPDATA%\\devin\\skills\\vercel-react-best-practices",
+      "export_hash": "EECBFFA888F74892A6701BEE75CF0F4A62B9D757E5D25F8972DFD94995FAE971",
+      "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
       "name": "verification-before-completion",
@@ -1166,7 +1230,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 160,
+  "skill_count": 168,
   "rule_count": 24,
   "scripts": [
     {
@@ -1340,8 +1404,8 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "126ADC67D759F29FB92FC41C2098F022FC70350873E57C24853E96398DE13A97",
-      "exported_at": "2026-09-08T21:39:22.431131"
+      "export_hash": "C0F8288E4D33C004D7DC7360B490688CB5CC3EA31D2A7C472734FF9703FBECA9",
+      "exported_at": "2026-11-03T21:04:06.237841"
     },
     {
       "name": "spec-consistency.py",
@@ -1376,7 +1440,7 @@
   ],
   "script_count": 33,
   "mcp_count": 1,
-  "agent_count": 14,
+  "agent_count": 16,
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
@@ -1396,6 +1460,23 @@
       "exported_at": "2026-09-08T21:39:22.431676"
     },
     {
+      "name": "art-director",
+      "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
+      "export_hash": "082E6CDC22662988066BC416EAC30C1E641E5E8D54D72C39C6A783145D2A0BA5",
+      "exported_at": "2026-10-27T15:18:55.679807"
+    },
+    {
+      "name": "chief-of-staff",
+      "purpose": "Use as the agency pipeline SysAdmin watchdog (Goose tier, node 07); probes tool/inbox environment, applies whitelisted AUTO-FIX, writes docs/07_SysAdmin_Log.md with NOMINAL|DEGRADED|ESCALATE verdict. Never edits specs or code.",
+      "export_hash": "94544A86E9611F024FF7ECD99F8469C841E541DBBF8A10C60F49928E0C133A81",
+      "exported_at": "2026-10-27T15:18:55.679807"
+    },
+    {
+      "name": "copywriter",
+      "purpose": "Use to author README/marketing/doc map (docs/06_Documentation.md). Claims traceability to specs, PAS narrative, Diataxis split, sub-5-minute quickstart.",
+      "export_hash": "458ABC8E9FEE6F9EC2A90A5059144DB52624C5250FE5332CDE7137FFA28B143C"
+    },
+    {
       "name": "debugger",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\debugger.md",
@@ -1410,11 +1491,23 @@
       "exported_at": "2026-09-08T21:39:22.431827"
     },
     {
+      "name": "product-manager",
+      "purpose": "Use to author the product spec (docs/01_Product_Requirements.md) for the file-handoff agency pipeline. Ex-FAANG PM persona: RICE/Kano, user journeys, data inventory, non-goals.",
+      "export_hash": "6882125BC0E4FC1E3F01BB5A836B98A00EAF80CCEEB3B56D63F555FC7E284F9E"
+    },
+    {
       "name": "qa-ci",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\qa-ci.md",
       "export_hash": "9EAA35BA7DE7EC516B978393F2E77B0D592E4786306845D633B432D769041E9E",
       "exported_at": "2026-09-08T21:39:22.431900"
+    },
+    {
+      "name": "red-team-lead",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\red-team-lead.md",
+      "export_hash": "0B97729BF98DDC326859177034F4D20A9943C1FD707B5DB75A11E68FB98AE630",
+      "exported_at": "2026-10-01T00:00:00.000000"
     },
     {
       "name": "researcher",
@@ -1431,27 +1524,9 @@
       "exported_at": "2026-09-08T21:39:22.432096"
     },
     {
-      "name": "red-team-lead",
-      "source": "devin-bundle",
-      "original_path": "%APPDATA%\\devin\\agents\\red-team-lead.md",
-      "export_hash": "0B97729BF98DDC326859177034F4D20A9943C1FD707B5DB75A11E68FB98AE630",
-      "exported_at": "2026-10-01T00:00:00.000000"
-    },
-    {
-      "name": "product-manager",
-      "purpose": "Use to author the product spec (docs/01_Product_Requirements.md) for the file-handoff agency pipeline. Ex-FAANG PM persona: RICE/Kano, user journeys, data inventory, non-goals.",
-      "export_hash": "6882125BC0E4FC1E3F01BB5A836B98A00EAF80CCEEB3B56D63F555FC7E284F9E"
-    },
-    {
-      "name": "tech-lead",
-      "purpose": "Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer: ADRs with rejected alternatives, file-granular tree, interface contracts, NFR budgets.",
-      "export_hash": "3A327B19C4A0B1A96D2B8FF5A7DECFBBC5183F08440B3DD849DD105520924434"
-    },
-    {
-      "name": "art-director",
-      "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
-      "export_hash": "082E6CDC22662988066BC416EAC30C1E641E5E8D54D72C39C6A783145D2A0BA5",
-      "exported_at": "2026-10-27T15:18:55.679807"
+      "name": "scrum-master",
+      "purpose": "Use as the agency pipeline error handler and planner: validates artifact freshness, detects spec conflicts, writes 05_Pipeline_Report + 00_INDEX sprint plan, DONE/REWORK/BLOCKED verdict.",
+      "export_hash": "8E5F71BECC95A8208406E7A0D383BA37206E3A6812E7D206E95664C0E4B2F677"
     },
     {
       "name": "security-auditor",
@@ -1459,20 +1534,23 @@
       "export_hash": "71039BE9DFFBBBABC21DD3A94F30B0E15D586E99A6E61AA0162E751CF80B9323"
     },
     {
-      "name": "scrum-master",
-      "purpose": "Use as the agency pipeline error handler and planner: validates artifact freshness, detects spec conflicts, writes 05_Pipeline_Report + 00_INDEX sprint plan, DONE/REWORK/BLOCKED verdict.",
-      "export_hash": "8E5F71BECC95A8208406E7A0D383BA37206E3A6812E7D206E95664C0E4B2F677"
+      "name": "tech-lead",
+      "purpose": "Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer: ADRs with rejected alternatives, file-granular tree, interface contracts, NFR budgets.",
+      "export_hash": "3A327B19C4A0B1A96D2B8FF5A7DECFBBC5183F08440B3DD849DD105520924434"
     },
     {
-      "name": "copywriter",
-      "purpose": "Use to author README/marketing/doc map (docs/06_Documentation.md). Claims traceability to specs, PAS narrative, Diataxis split, sub-5-minute quickstart.",
-      "export_hash": "458ABC8E9FEE6F9EC2A90A5059144DB52624C5250FE5332CDE7137FFA28B143C"
+      "name": "thermo-nuclear-code-quality-review-subagent",
+      "source": "vendored:v3.19.0 cursor/plugins thermos (MIT)",
+      "original_path": "%APPDATA%\\devin\\agents\\thermo-nuclear-code-quality-review-subagent.md",
+      "export_hash": "D297812F518574CCF322FD1FE5392EA33F54B1058F158D2B5964AE95535D07B3",
+      "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
-      "name": "chief-of-staff",
-      "purpose": "Use as the agency pipeline SysAdmin watchdog (Goose tier, node 07); probes tool/inbox environment, applies whitelisted AUTO-FIX, writes docs/07_SysAdmin_Log.md with NOMINAL|DEGRADED|ESCALATE verdict. Never edits specs or code.",
-      "export_hash": "94544A86E9611F024FF7ECD99F8469C841E541DBBF8A10C60F49928E0C133A81",
-      "exported_at": "2026-10-27T15:18:55.679807"
+      "name": "thermo-nuclear-review-subagent",
+      "source": "vendored:v3.19.0 cursor/plugins thermos (MIT)",
+      "original_path": "%APPDATA%\\devin\\agents\\thermo-nuclear-review-subagent.md",
+      "export_hash": "180AB9723D2E4D348AF82C51F35C20B373D5E1F96DBB21CC68F738C1718F06B7",
+      "exported_at": "2026-11-03T21:03:31.749175"
     }
   ]
 }

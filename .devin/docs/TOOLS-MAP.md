@@ -61,6 +61,8 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 | `security-auditor` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/security-auditor.md` |
 | `scrum-master` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/scrum-master.md` |
 | `copywriter` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/copywriter.md` |
+| `thermo-nuclear-review-subagent` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read-only + exec (verify only) | `agents/thermo-nuclear-review-subagent.md` |
+| `thermo-nuclear-code-quality-review-subagent` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read-only + exec (verify only) | `agents/thermo-nuclear-code-quality-review-subagent.md` |
 
 **Estratégia de modelo:**
 - `subagent_explore` (built-in): default router do CLI — verifique `data/bundle-models.json` aliases; evite em modo free.
@@ -72,7 +74,8 @@ exit_plan_mode) — o tool falha claramente sem validação do hook.**
 architect, art-director, copywriter, debugger, domain, implementer,
 issue-tracker, product-manager, qa-ci, red-team-lead, researcher,
 reviewer, scrum-master, security-auditor, subagent_explore,
-subagent_general, tech-lead, triage-labels. 18 perfis validados.
+subagent_general, tech-lead, thermo-nuclear-code-quality-review-subagent,
+thermo-nuclear-review-subagent, triage-labels. 20 perfis validados.
 
 ## Hooks (8 eventos, 21 scripts)
 
@@ -132,7 +135,7 @@ subagent_general, tech-lead, triage-labels. 18 perfis validados.
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 13 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 160 skills |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 168 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` — GUI automation; `system-control` — OS autorizado; `scrape-tools` — fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` — whisper.cpp local) |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 33 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |
