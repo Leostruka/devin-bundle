@@ -1,5 +1,5 @@
 # 81 -- cu_env_daemon TCP auth token written to ready.json with default file perms
-- **Status**: open
+- **Status**: resolved
 - **Category**: security
 - **Severity**: P3
 - **File**: extensions/computer-use/cu_env_daemon.py:198-204, 236-240

@@ -1,5 +1,5 @@
 # 76 -- blender_server nonce check is optional and nonce is leaked in every response
-- **Status**: open
+- **Status**: resolved
 - **Category**: security
 - **Severity**: P1
 - **File**: extensions/blender-operator/blender_server.py:71-74, 116

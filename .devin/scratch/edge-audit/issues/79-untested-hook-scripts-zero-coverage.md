@@ -1,5 +1,5 @@
 # 79 -- five hook/utility scripts have zero test coverage
-- **Status**: open
+- **Status**: resolved
 - **Category**: test-coverage
 - **Severity**: P2
 - **File**: scripts/architecture-gate.py, scripts/context-budget.py, scripts/memory-post-edit.py, scripts/validate-mermaid.py, scripts/mermaid-parse-check.js

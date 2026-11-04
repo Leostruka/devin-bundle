@@ -1,5 +1,5 @@
 # 83 -- tests spawn real processes with multi-second sleeps and taskkill
-- **Status**: open
+- **Status**: resolved
 - **Category**: test-coverage
 - **Severity**: P3
 - **File**: tests/test_cu_taskrunner.py:62, tests/test_sc_inventory.py:211, tests/test_laya_worker.py:291

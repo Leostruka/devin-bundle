@@ -1,5 +1,5 @@
 # 82 -- scrape.py fetches arbitrary URLs with no scheme/host allowlist
-- **Status**: open
+- **Status**: resolved
 - **Category**: security
 - **Severity**: P3
 - **File**: extensions/scrape-tools/scrape.py:56-57

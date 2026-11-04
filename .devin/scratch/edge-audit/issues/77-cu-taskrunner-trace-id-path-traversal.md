@@ -1,5 +1,5 @@
 # 77 -- cu_taskrunner trace_id used unvalidated in path join (traversal)
-- **Status**: open
+- **Status**: resolved
 - **Category**: security
 - **Severity**: P2
 - **File**: extensions/computer-use/cu_taskrunner.py:38-39, 92-96

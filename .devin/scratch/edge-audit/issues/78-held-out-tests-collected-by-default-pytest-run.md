@@ -1,5 +1,5 @@
 # 78 -- held-out and validation tests are collected by the default pytest run
-- **Status**: open
+- **Status**: resolved
 - **Category**: test-coverage
 - **Severity**: P2
 - **File**: pytest.ini:1-7
