@@ -1,6 +1,6 @@
 # 38 -- CLI version drift: adequacao plans are manual, no runtime version check
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adaptability
 - **Severity**: P2
 - **File**: data/bundle-identity.json, .devin/plans/2026-*.md
@@ -22,3 +22,7 @@ Add a lightweight check in `session-start.py` (or `audit.py`): compare `devin --
 ## Verification
 
 `grep -rn 'devin --version\|validated_cli_version' scripts/` returns no runtime check; `grep -n 'auto_update' config.json`.
+
+## Answer
+
+(install.sh part) After `devin doctor`, the installer reads data/bundle-identity.json validated_cli_version and compares it to `devin --version`; on mismatch it prints a non-blocking warning pointing at the .devin/plans adequacao docs. A session-start hook check remains a candidate for another lane (scripts/ is out of scope here).

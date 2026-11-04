@@ -22,7 +22,10 @@ Usage: ./install.sh [--dry-run] [--force] [--backup] [--restore-secrets] [--help
   --dry-run         Show what would happen without writing anything.
   --force           Overwrite existing files without prompting.
   --backup          Backup existing files before overwriting.
-  --restore-secrets Restore masked values in credentials.toml and mcp_config.json.
+  --restore-secrets Opt in to installing credentials.toml and mcp_config.json
+                    when they contain real (unmasked) values. MASKED values
+                    cannot be restored automatically; restore them manually
+                    from a backup.
   --help            Show this message.
 EOF
 }
@@ -47,31 +50,100 @@ skip() { printf "    \033[33m[~] %s\033[0m\n" "$1"; }
 warn() { printf "    \033[33m[!] %s\033[0m\n" "$1"; }
 err()  { printf "    \033[31m[x] %s\033[0m\n" "$1"; }
 
+# --- sha256 tool detection ---
+# Stock macOS ships shasum, not sha256sum. Without a hasher every hash
+# comparison silently returns "" == "" and reports everything unchanged.
+if command -v sha256sum &>/dev/null; then
+  SHA256_CMD="sha256sum"
+elif command -v shasum &>/dev/null; then
+  SHA256_CMD="shasum -a 256"
+elif command -v openssl &>/dev/null; then
+  SHA256_CMD="openssl dgst -sha256 -r"
+else
+  echo "ERROR: no sha256 tool found (need sha256sum, shasum, or openssl)" >&2
+  exit 1
+fi
+
 file_hash() {
-  sha256sum "$1" 2>/dev/null | cut -d' ' -f1
+  $SHA256_CMD "$1" 2>/dev/null | awk '{print $1}'
 }
 
+# dir_hash ignores __pycache__/ and *.pyc: bytecode caches are runtime
+# artifacts, not payload, and are stripped from installed copies anyway.
 dir_hash() {
-  ( cd "$1" 2>/dev/null && find . -type f -print0 | xargs -0 sha256sum 2>/dev/null | sort | sha256sum | cut -d' ' -f1 )
+  ( cd "$1" 2>/dev/null && find . -type f -not -path '*/__pycache__/*' -not -name '*.pyc' -print0 | xargs -0 $SHA256_CMD 2>/dev/null | sort | $SHA256_CMD | awk '{print $1}' )
 }
 
 # Same as dir_hash but skips .venv/ trees, cargo target/ dirs, and staged
 # compiled artifacts (extensions derive these at install time).
 dir_hash_ext() {
-  ( cd "$1" 2>/dev/null && find . -type f -not -path '*/.venv/*' -not -path '*/target/*' -not -name '*.pyd' -not -name '*.so' -not -name '*.dylib' -print0 | xargs -0 sha256sum 2>/dev/null | sort | sha256sum | cut -d' ' -f1 )
+  ( cd "$1" 2>/dev/null && find . -type f -not -path '*/.venv/*' -not -path '*/target/*' -not -name '*.pyd' -not -name '*.so' -not -name '*.dylib' -not -path '*/__pycache__/*' -not -name '*.pyc' -print0 | xargs -0 $SHA256_CMD 2>/dev/null | sort | $SHA256_CMD | awk '{print $1}' )
 }
+
+# --- Single python interpreter resolution ---
+# One detection point; every inline/child python call goes through `python`
+# so python3-only and python-only hosts behave identically.
+PY=""
+if command -v python3 &>/dev/null; then
+  PY="python3"
+elif command -v python &>/dev/null; then
+  PY="python"
+fi
+python() {
+  if [[ -z "$PY" ]]; then
+    echo "python: interpreter not found" >&2
+    return 127
+  fi
+  "$PY" "$@"
+}
+
+# --- Skipped-step tracking (install receipt + end summary) ---
+# warn-and-continue leaves degraded installs invisible; record each skip so
+# the run ends with a durable receipt and a printed list of what did not happen.
+INSTALL_SKIPS=()
+record_skip() { INSTALL_SKIPS+=("$1"); }
 
 backup_file() {
   local file="$1"
+  local backup
+  backup="${file}.backup.$(date +%Y%m%d_%H%M%S)"
   if [[ -f "$file" ]]; then
-    local backup
-    backup="${file}.backup.$(date +%Y%m%d_%H%M%S)"
     if [[ $DRY_RUN -eq 1 ]]; then
       echo "$file (would backup to $backup)"
     else
       cp "$file" "$backup"
       ok "backed up $file"
     fi
+  elif [[ -d "$file" ]]; then
+    # Directories (skills, docs, extensions) need a recursive backup or
+    # --backup silently does nothing before a destructive rm -rf.
+    if [[ $DRY_RUN -eq 1 ]]; then
+      echo "$file (would backup dir to $backup)"
+    else
+      cp -r "$file" "$backup"
+      ok "backed up $file"
+    fi
+  fi
+}
+
+# Copy a directory tree into place minus runtime bytecode caches
+# (__pycache__/, *.pyc) so stale .pyc files are never shipped to targets.
+copy_tree_clean() {
+  local src="$1" dst="$2"
+  rm -rf "$dst"
+  cp -r "$src" "$dst"
+  find "$dst" -type d -name '__pycache__' -prune -exec rm -rf {} + 2>/dev/null || true
+  find "$dst" -type f -name '*.pyc' -delete 2>/dev/null || true
+}
+
+# Restrict a secrets-bearing file to owner-read/write (0600).
+restrict_secret_mode() {
+  local file="$1"
+  [[ -f "$file" ]] || return
+  if [[ $DRY_RUN -eq 1 ]]; then
+    skip "would chmod 600 $file"
+  else
+    chmod 600 "$file" 2>/dev/null || warn "could not chmod 600 $file"
   fi
 }
 
@@ -90,16 +162,12 @@ expand_devin_home_in_config() {
   if [[ $DRY_RUN -eq 1 ]] || [[ ! -f "$file" ]]; then
     return
   fi
-  local py
-  if command -v python3 &>/dev/null; then
-    py=python3
-  elif command -v python &>/dev/null; then
-    py=python
-  else
+  if [[ -z "$PY" ]]; then
     warn "python not found; config.json may keep {{APPDATA}}/devin placeholder"
+    record_skip "config.json {{APPDATA}}/devin placeholder expansion (python missing)"
     return
   fi
-  DEVIN_HOME="$DEVIN_HOME" "$py" -c 'import os,sys; h=os.environ["DEVIN_HOME"]; sys.stdout.write(sys.stdin.read().replace("{{APPDATA}}/devin", h))' < "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+  DEVIN_HOME="$DEVIN_HOME" python -c 'import os,sys; h=os.environ["DEVIN_HOME"]; sys.stdout.write(sys.stdin.read().replace("{{APPDATA}}/devin", h))' < "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
 }
 
 # --- Strip BOM from file (if present) ---
@@ -113,7 +181,9 @@ strip_bom() {
     if [[ $DRY_RUN -eq 1 ]]; then
       skip "would strip BOM from $(basename "$file")"
     else
-      sed -i '1s/^\xEF\xBB\xBF//' "$file"
+      # Portable BOM strip: GNU `sed -i` syntax fails under BSD sed (macOS)
+      # and BSD sed does not interpret \xEF escapes; tail -c +4 works on both.
+      tail -c +4 "$file" > "${file}.bomtmp" && mv "${file}.bomtmp" "$file"
       ok "stripped BOM from $(basename "$file")"
     fi
   fi
@@ -137,7 +207,7 @@ is_case_sensitive() {
 # --- Dedup AGENTS.md case variants ---
 # On case-sensitive FSs: removes agents.md (lowercase) if it exists as a
 # separate file. On case-insensitive FSs (Windows/WSL /mnt/c, macOS default):
-# AGENTS.md and agents.md are the same file — warns about Devin CLI duplicate
+# AGENTS.md and agents.md are the same file -- warns about Devin CLI duplicate
 # listing (known bug, not fixable from filesystem level).
 dedup_agents_md() {
   local dir="$1"
@@ -149,7 +219,7 @@ dedup_agents_md() {
 
   if is_case_sensitive "$dir"; then
     if [[ -f "$lower" ]]; then
-      warn "$label: found agents.md (lowercase) duplicate — removing"
+      warn "$label: found agents.md (lowercase) duplicate -- removing"
       if [[ $DRY_RUN -eq 1 ]]; then
         skip "would remove agents.md duplicate"
       else
@@ -158,7 +228,7 @@ dedup_agents_md() {
       fi
     fi
   else
-    skip "$label: case-insensitive FS — Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
+    skip "$label: case-insensitive FS -- Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
   fi
 }
 
@@ -289,14 +359,14 @@ if [[ -d "$skills_src" ]]; then
       elif [[ $FORCE -eq 1 ]]; then
         if [[ $BACKUP -eq 1 ]]; then backup_file "$dst_dir"; fi
         if [[ $DRY_RUN -eq 1 ]]; then skip "would update skills/$name"
-        else rm -rf "$dst_dir"; cp -r "$skill_dir" "$dst_dir"; ok "skills/$name updated"; fi
+        else copy_tree_clean "$skill_dir" "$dst_dir"; ok "skills/$name updated"; fi
         updated_skills=$((updated_skills+1))
       else
         warn "skills/$name exists and differs. Use --force to update."
       fi
     else
       if [[ $DRY_RUN -eq 1 ]]; then skip "would install skills/$name"
-      else cp -r "$skill_dir" "$dst_dir"; ok "skills/$name installed"; fi
+      else copy_tree_clean "$skill_dir" "$dst_dir"; ok "skills/$name installed"; fi
       installed_skills=$((installed_skills+1))
     fi
   done
@@ -315,50 +385,28 @@ if [[ -f "$config_src" ]]; then
       if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite config.json"
       else cp "$config_src" "$config_dst"; expand_devin_home_in_config "$config_dst"; ok "config.json installed (force)"; fi
     else
-      # Merge: preserve local org_id and devin.org_id
+      # Merge: recursive deep-merge, local settings win (matches
+      # install.ps1 Merge-Hashtables semantics). jq `*` recurses objects,
+      # so local-only keys (theme, shell prefs, devin.org_id) survive and
+      # bundle values fill the gaps.
       if command -v jq &>/dev/null; then
-        if [[ $DRY_RUN -eq 1 ]]; then skip "would merge config.json (preserve org_id)"
+        if [[ $DRY_RUN -eq 1 ]]; then skip "would merge config.json (deep-merge, local wins)"
         else
-          # Extract local org_id values
-          local_org_id=$(jq -r '.org_id // empty' "$config_dst" 2>/dev/null || echo "")
-          local_devin_org_id=$(jq -r '.devin.org_id // empty' "$config_dst" 2>/dev/null || echo "")
-          # Copy bundle config
-          cp "$config_src" "$config_dst"
-          # Force org_id to MASKED (never inherit bundle's), then override with local if real
-          jq '.org_id = "MASKED" | .devin.org_id = "MASKED"' "$config_dst" > "${config_dst}.tmp" && mv "${config_dst}.tmp" "$config_dst"
-          if [[ -n "$local_org_id" && "$local_org_id" != "MASKED" ]]; then
-            jq --arg org "$local_org_id" '.org_id = $org' "$config_dst" > "${config_dst}.tmp" && mv "${config_dst}.tmp" "$config_dst"
+          if jq -s '.[0] * .[1]' "$config_src" "$config_dst" > "${config_dst}.tmp" 2>/dev/null; then
+            mv "${config_dst}.tmp" "$config_dst"
+            expand_devin_home_in_config "$config_dst"
+            ok "config.json merged (deep-merge, local settings preserved)"
+          else
+            rm -f "${config_dst}.tmp"
+            warn "config.json merge failed (invalid JSON?) - keeping existing file"
+            record_skip "config.json merge (jq merge failed)"
           fi
-          if [[ -n "$local_devin_org_id" && "$local_devin_org_id" != "MASKED" ]]; then
-            jq --arg org "$local_devin_org_id" '.devin.org_id = $org' "$config_dst" > "${config_dst}.tmp" && mv "${config_dst}.tmp" "$config_dst"
-          fi
-          expand_devin_home_in_config "$config_dst"
-          ok "config.json merged (preserved org_id, forced MASKED default)"
         fi
       else
-        # Fallback: simple sed-based merge
-        if [[ $DRY_RUN -eq 1 ]]; then skip "would merge config.json (sed fallback)"
-        else
-          # Extract org_id using sed
-          local_org_id=$(grep -o '"org_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_dst" 2>/dev/null | head -1 | cut -d'"' -f4 || echo "")
-          cp "$config_src" "$config_dst"
-          # Force org_id to MASKED (never inherit bundle's)
-          if [[ "$(uname)" == "Darwin" ]]; then
-            sed -i '' 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "MASKED"/g' "$config_dst"
-          else
-            sed -i 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "MASKED"/g' "$config_dst"
-          fi
-          # Override with local if real
-          if [[ -n "$local_org_id" && "$local_org_id" != "MASKED" ]]; then
-            if [[ "$(uname)" == "Darwin" ]]; then
-              sed -i '' 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "'"$local_org_id"'"/g' "$config_dst"
-            else
-              sed -i 's/"org_id"[[:space:]]*:[[:space:]]*"[^"]*"/"org_id": "'"$local_org_id"'"/g' "$config_dst"
-            fi
-          fi
-          expand_devin_home_in_config "$config_dst"
-          ok "config.json merged (sed fallback, forced MASKED default)"
-        fi
+        # No lossy sed fallback: regex-merging JSON silently corrupts
+        # nested values (e.g. devin.org_id). Skip loudly instead.
+        warn "jq not found; skipping config.json merge (install jq, or re-run with --force to overwrite)"
+        record_skip "config.json merge (jq missing)"
       fi
     fi
   else
@@ -371,19 +419,38 @@ fi
 
 # --- 4a. User hooks rendered from hooks.v1.json (single source) ---
 # hooks.v1.json is authored with project-relative `python scripts/...` commands;
-# user-level hooks need absolute paths — render and inject into config.json.hooks.
+# user-level hooks need absolute paths -- render and inject into config.json.hooks.
 step "Render config.json hooks from hooks.v1.json"
 if [[ -f "$BUNDLE_DIR/hooks.v1.json" && -f "$config_dst" ]]; then
   if [[ $DRY_RUN -eq 1 ]]; then
     skip "would render config.json hooks from hooks.v1.json"
-  elif command -v python &>/dev/null; then
-    if python "$BUNDLE_DIR/scripts/render-user-hooks.py" "$DEVIN_HOME" --merge "$config_dst"; then
+  elif [[ -n "$PY" ]]; then
+    # The Devin CLI is a native process; on Git Bash/MSYS a POSIX /c/...
+    # DEVIN_HOME renders hook commands Windows python cannot open. Pass a
+    # Windows-style home so rendered paths are spawnable.
+    render_home="$DEVIN_HOME"
+    case "$(uname -s)" in
+      MINGW*|MSYS*|CYGWIN*)
+        if command -v cygpath &>/dev/null; then
+          render_home="$(cygpath -w "$DEVIN_HOME")"
+        fi
+        ;;
+    esac
+    if python "$BUNDLE_DIR/scripts/render-user-hooks.py" "$render_home" --merge "$config_dst"; then
       ok "config.json hooks rendered from hooks.v1.json"
+      # Sanity: rendered commands point at $DEVIN_HOME/scripts; a missing
+      # payload there means fail_closed guards would block tool calls.
+      if [[ ! -f "$DEVIN_HOME/scripts/pre-exec-guard.py" ]]; then
+        warn "scripts/pre-exec-guard.py missing at $DEVIN_HOME -- rendered hook commands may not resolve"
+        record_skip "hook command payload check (scripts/pre-exec-guard.py missing)"
+      fi
     else
-      warn "render-user-hooks.py failed — hooks not updated"
+      warn "render-user-hooks.py failed -- hooks not updated"
+      record_skip "config.json hooks render (render-user-hooks.py failed)"
     fi
   else
-    warn "python not found — config.json hooks not rendered"
+    warn "python not found -- config.json hooks not rendered"
+    record_skip "config.json hooks render (python missing)"
   fi
 fi
 
@@ -454,9 +521,19 @@ mcp_src="$BUNDLE_DIR/mcp_config.json"
 mcp_dst="$DEVIN_HOME/mcp_config.json"
 if [[ -f "$mcp_src" ]]; then
   if contains_masked "$mcp_src"; then
-    warn "mcp_config.json contains MASKED values, skipping (cannot restore)"
-    if [[ $RESTORE_SECRETS -eq 1 ]]; then
-      warn "Use --restore-secrets to restore from local file (not implemented yet)"
+    if [[ $FORCE -eq 1 ]]; then
+      # ps1 parity: -Force installs the masked file so server entries/URLs
+      # land; tokens are MASKED placeholders to fill in manually.
+      if [[ -f "$mcp_dst" && $BACKUP -eq 1 ]]; then backup_file "$mcp_dst"; fi
+      if [[ $DRY_RUN -eq 1 ]]; then skip "would install mcp_config.json (MASKED placeholders)"
+      else
+        cp "$mcp_src" "$mcp_dst"
+        restrict_secret_mode "$mcp_dst"
+        ok "mcp_config.json installed with MASKED placeholders -- fill tokens manually"
+      fi
+    else
+      warn "mcp_config.json contains MASKED values, skipping (use --force to install placeholders)"
+      record_skip "mcp_config.json install (MASKED values; needs --force)"
     fi
   else
     if [[ -f "$mcp_dst" ]]; then
@@ -465,13 +542,13 @@ if [[ -f "$mcp_src" ]]; then
       elif [[ $FORCE -eq 1 ]]; then
         if [[ $BACKUP -eq 1 ]]; then backup_file "$mcp_dst"; fi
         if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite mcp_config.json"
-        else cp "$mcp_src" "$mcp_dst"; ok "mcp_config.json installed"; fi
+        else cp "$mcp_src" "$mcp_dst"; restrict_secret_mode "$mcp_dst"; ok "mcp_config.json installed"; fi
       else
         warn "mcp_config.json exists and differs. Use --force to overwrite."
       fi
     else
       if [[ $DRY_RUN -eq 1 ]]; then skip "would install mcp_config.json"
-      else cp "$mcp_src" "$mcp_dst"; ok "mcp_config.json installed"; fi
+      else cp "$mcp_src" "$mcp_dst"; restrict_secret_mode "$mcp_dst"; ok "mcp_config.json installed"; fi
     fi
   fi
 else
@@ -490,6 +567,11 @@ if [[ -f "$creds_src" ]]; then
     else
       warn "credentials.toml contains MASKED values, skipping (use --restore-secrets to attempt restore)"
     fi
+    record_skip "credentials.toml install (MASKED values)"
+  elif [[ $RESTORE_SECRETS -eq 0 ]]; then
+    # Never plant real secrets without explicit opt-in (ps1 parity).
+    warn "credentials.toml contains real values; skipping (use --restore-secrets to install)"
+    record_skip "credentials.toml install (real values; needs --restore-secrets)"
   else
     if [[ -f "$creds_dst" ]]; then
       if diff -q "$creds_src" "$creds_dst" >/dev/null 2>&1; then
@@ -497,13 +579,13 @@ if [[ -f "$creds_src" ]]; then
       elif [[ $FORCE -eq 1 ]]; then
         if [[ $BACKUP -eq 1 ]]; then backup_file "$creds_dst"; fi
         if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite credentials.toml"
-        else cp "$creds_src" "$creds_dst"; ok "credentials.toml installed"; fi
+        else cp "$creds_src" "$creds_dst"; restrict_secret_mode "$creds_dst"; ok "credentials.toml installed"; fi
       else
         warn "credentials.toml exists and differs. Use --force to overwrite."
       fi
     else
       if [[ $DRY_RUN -eq 1 ]]; then skip "would install credentials.toml"
-      else cp "$creds_src" "$creds_dst"; ok "credentials.toml installed"; fi
+      else cp "$creds_src" "$creds_dst"; restrict_secret_mode "$creds_dst"; ok "credentials.toml installed"; fi
     fi
   fi
 else
@@ -542,22 +624,19 @@ if [[ -d "$ext_src" ]]; then
   done
 
   # --- 8c. extension Python deps (isolated venv, no system/user-site) ---
-  py=""
-  for cand in python3 python; do
-    if command -v "$cand" &>/dev/null; then py="$cand"; break; fi
-  done
   for ext_name in computer-use scrape-tools; do
     ext_dir="$ext_dst/$ext_name"
     [[ -f "$ext_dir/requirements.txt" ]] || continue
-    if [[ -z "$py" ]]; then
+    if [[ -z "$PY" ]]; then
       warn "python not found - skipping $ext_name venv (scripts need pip deps)"
+      record_skip "$ext_name venv creation (python missing)"
     elif [[ $DRY_RUN -eq 1 ]]; then
       skip "would create venv at $ext_dir/.venv and pip install -r requirements.txt"
     else
       venv_py="$ext_dir/.venv/bin/python"
       [[ -x "$venv_py" ]] || venv_py="$ext_dir/.venv/Scripts/python.exe"
       if [[ ! -x "$venv_py" ]]; then
-        "$py" -m venv "$ext_dir/.venv"
+        "$PY" -m venv "$ext_dir/.venv"
         venv_py="$ext_dir/.venv/bin/python"
         [[ -x "$venv_py" ]] || venv_py="$ext_dir/.venv/Scripts/python.exe"
       fi
@@ -574,7 +653,8 @@ if [[ -d "$ext_src" ]]; then
   rc_dir="$ext_dst/rust-core"
   if [[ -f "$rc_src/Cargo.toml" ]]; then
     if ! command -v cargo &>/dev/null; then
-      warn "cargo/rustc not found — skipping rust-core build (install Rust toolchain to enable hybrid extensions)"
+      warn "cargo/rustc not found -- skipping rust-core build (install Rust toolchain to enable hybrid extensions)"
+      record_skip "rust-core build (cargo missing)"
     elif [[ $DRY_RUN -eq 1 ]]; then
       skip "would run: cargo build --release in $rc_dir and stage .so artifacts"
     else
@@ -594,7 +674,7 @@ if [[ -d "$ext_src" ]]; then
         done
         [[ $staged -eq 0 ]] && warn "cargo build ok but no cdylib artifacts found in target/release"
       else
-        warn "rust-core cargo build failed — continuing without compiled extensions"
+        warn "rust-core cargo build failed -- continuing without compiled extensions"
       fi
     fi
   fi
@@ -620,13 +700,13 @@ for part in docs plans templates; do
     elif [[ $FORCE -eq 1 ]]; then
       if [[ $BACKUP -eq 1 ]]; then backup_file "$part_dst"; fi
       if [[ $DRY_RUN -eq 1 ]]; then skip "would update docs/$part"
-      else rm -rf "$part_dst"; cp -r "$docs_src" "$part_dst"; ok "docs/$part updated"; fi
+      else copy_tree_clean "$docs_src" "$part_dst"; ok "docs/$part updated"; fi
     else
       warn "docs/$part exists and differs. Use --force to update."
     fi
   else
     if [[ $DRY_RUN -eq 1 ]]; then skip "would install docs/$part"
-    else mkdir -p "$(dirname "$part_dst")"; cp -r "$docs_src" "$part_dst"; ok "docs/$part installed"; fi
+    else mkdir -p "$(dirname "$part_dst")"; copy_tree_clean "$docs_src" "$part_dst"; ok "docs/$part installed"; fi
   fi
 done
 [[ $docs_seen -eq 0 ]] && warn ".devin/{docs,plans,templates} not found in bundle"
@@ -638,6 +718,27 @@ echo "    Skills updated   : $updated_skills"
 echo "    Skills unchanged : $skipped_skills"
 echo "    Config: AGENTS.md, agents/, config.json, scripts/, data/, docs/, extensions/, mcp_config.json, credentials.toml"
 
+# --- Skipped-step report + install receipt ---
+# warn-and-continue is invisible after scrollback; list every degraded step
+# and persist a receipt so a partial install is auditable later.
+if [[ ${#INSTALL_SKIPS[@]} -gt 0 ]]; then
+  step "Skipped steps"
+  for s in "${INSTALL_SKIPS[@]}"; do
+    echo "    - $s"
+  done
+fi
+if [[ $DRY_RUN -eq 0 ]]; then
+  receipt="$DEVIN_HOME/.install-receipt.json"
+  {
+    printf '{\n  "timestamp": "%s",\n  "bundle": "%s",\n  "skipped": [\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%S)" "$BUNDLE_DIR"
+    for i in "${!INSTALL_SKIPS[@]}"; do
+      sep=","; [[ $i -eq $((${#INSTALL_SKIPS[@]} - 1)) ]] && sep=""
+      printf '    "%s"%s\n' "${INSTALL_SKIPS[$i]//\"/}" "$sep"
+    done
+    printf '  ]\n}\n'
+  } > "$receipt" 2>/dev/null || warn "could not write install receipt to $receipt"
+fi
+
 if [[ $DRY_RUN -eq 1 ]]; then
   printf "\n\033[33mDry-run complete. Re-run without --dry-run to apply.\033[0m\n"
 else
@@ -645,5 +746,15 @@ else
   if command -v devin >/dev/null 2>&1; then
     step "devin doctor"
     devin doctor
+    # CLI version drift notice: adequacao plans pin a validated version;
+    # warn (non-blocking) when the installed CLI has moved past it.
+    ident="$BUNDLE_DIR/data/bundle-identity.json"
+    if [[ -f "$ident" && -n "$PY" ]]; then
+      want="$(python -c 'import json,sys; print(json.load(open(sys.argv[1],encoding="utf-8-sig")).get("validated_cli_version",""))' "$ident" 2>/dev/null || true)"
+      have="$(devin --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+      if [[ -n "$want" && -n "$have" && "$want" != "$have" ]]; then
+        warn "devin CLI $have differs from bundle-validated $want -- check the latest .devin/plans adequacao doc"
+      fi
+    fi
   fi
 fi

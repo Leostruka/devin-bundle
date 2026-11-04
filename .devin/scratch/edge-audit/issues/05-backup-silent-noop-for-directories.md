@@ -1,5 +1,5 @@
 # 05 -- --backup silently does nothing for directories (skills, docs, extensions)
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P2
 - **File**: install.sh:64-76, install.ps1:118-129
@@ -27,3 +27,7 @@ Directory backups are larger; acceptable given --backup is opt-in.
 ## Verification
 `install.sh --force --backup` over an existing skill dir; assert
 `<backup>` contains the old SKILL.md, not just an empty dir.
+
+## Answer
+
+backup_file now dispatches on type: `[[ -d ]]` -> `cp -r` recursive backup, so --backup works for skills/docs/extensions dirs before rm -rf. Verified by test_backup_directory_contains_files.

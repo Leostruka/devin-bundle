@@ -1,6 +1,6 @@
 # 40 -- Partial installs: warn-and-continue leaves degraded installs with no record or rollback
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adaptability
 - **Severity**: P2
 - **File**: install.ps1:530-538, install.sh:379-386, 546-558
@@ -22,3 +22,7 @@ Write an install receipt (`%APPDATA%/devin/.install-receipt.json`): steps attemp
 ## Verification
 
 Simulate with `PATH` stripped of python in a redirected-APPDATA dry run; confirm exit code is still success and no record of the skips persists.
+
+## Answer
+
+install.sh now tracks every degraded step via record_skip, prints a 'Skipped steps' section at the end, and writes $DEVIN_HOME/.install-receipt.json (timestamp, bundle, skipped reasons) so partial installs are auditable. Verified by test_install_receipt_written.

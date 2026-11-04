@@ -1,5 +1,5 @@
 # 20 -- __pycache__ trees inside skills/ and scripts/ are shipped to install targets
-- **Status**: open
+- **Status**: resolved
 - **Category**: organization
 - **Severity**: P3
 - **File**: skills/context7/scripts/__pycache__/, skills/brag/scripts/__pycache__/, skills/dma/tools/__pycache__/, skills/context-hygiene/scripts/__pycache__/, skills/devin-manager/scripts/__pycache__/, scripts/__pycache__/, __pycache__/ (root)
@@ -21,3 +21,7 @@ Merits: smaller, cleaner installs; avoids stale-bytecode bugs. Demerits: none.
 
 ## Verification
 `find skills -name __pycache__` lists the dirs; run `./install.ps1 -DryRun` on a fresh target and check `%APPDATA%\devin\skills\brag\scripts\__pycache__` is created by the copy.
+
+## Answer
+
+(install.sh/export.sh parts) Shared copy_tree_clean helper copies skill/docs trees then removes __pycache__ dirs and *.pyc; dir_hash/dir_hash_ext ignore the same artifacts so hashes stay stable. Verified by test_pycache_not_installed / test_pycache_not_exported.

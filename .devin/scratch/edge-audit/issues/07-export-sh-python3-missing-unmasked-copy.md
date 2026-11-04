@@ -1,5 +1,5 @@
 # 07 -- export.sh without python3 exports secrets unmasked or aborts mid-run
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P1
 - **File**: export.sh:304-329, 402-442, 463-485
@@ -33,3 +33,7 @@ secrets-bearing operation.
 ## Verification
 `PATH` without python3: `export.sh` must exit nonzero with an error, and the
 bundle config.json must not contain the source org_id.
+
+## Answer
+
+require_python_for_masking fails closed: with no python interpreter the masked export exits 1 with 'refusing to export unmasked' instead of copying secrets raw, and credentials.toml masking uses the resolved `python` function (no unconditional python3). Single PY resolution prefers python3 then python.

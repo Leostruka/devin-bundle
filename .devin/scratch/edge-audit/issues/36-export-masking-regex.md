@@ -1,6 +1,6 @@
 # 36 -- Export secret masking is regex-based: org_id and token patterns can leak
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: devin-cli-limitations
 - **Severity**: P2
 - **File**: export.ps1:159-165
@@ -22,3 +22,7 @@ Invert the default: for `credentials.toml` and `mcp_config.json` env blocks, mas
 ## Verification
 
 Create a scratch config with `"dsn": "secret123"`, run `export.ps1 -DryRun`, confirm value is not masked today.
+
+## Answer
+
+(export.sh part) mask_json_file broadens the key-name denylist (session|cookie|jwt|dsn|connection_string plus the ps1 set and org_id/user_id/email) and masks ALL values under any `env` object wholesale. A synthetic secret under an unrecognized env key is covered by test_masked_export_hides_all_secret_kinds.

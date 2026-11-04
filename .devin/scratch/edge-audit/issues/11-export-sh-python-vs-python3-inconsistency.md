@@ -1,5 +1,5 @@
 # 11 -- export.sh validation calls `python` while masking required `python3`
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P3
 - **File**: export.sh:552, 562
@@ -26,3 +26,7 @@ None.
 ## Verification
 On a host where `python` is absent and `python3` present: `export.sh --push`
 reaches and passes the audit/pytest steps instead of aborting.
+
+## Answer
+
+One interpreter is resolved once (PY=python3 else python); every call -- masking, json.tool, ast syntax check, audit.py, pytest, credentials masking -- goes through the `python()` wrapper, so python3-only hosts no longer fail at the audit/pytest steps.

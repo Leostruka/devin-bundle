@@ -1,5 +1,5 @@
 # 04 -- strip_bom uses GNU sed -i syntax, fails on macOS (set -e aborts)
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P2
 - **File**: install.sh:116, export.sh:124
@@ -25,3 +25,7 @@ None material; `tail -c +4` is simpler and portable.
 ## Verification
 On macOS: create agent .md with EF BB BF prefix, run export.sh, confirm it
 completes and BOM is stripped.
+
+## Answer
+
+strip_bom no longer uses `sed -i`; it strips via `tail -c +4` to a temp file + mv, which is portable across GNU and BSD (and sidesteps BSD sed not interpreting ï escapes).
