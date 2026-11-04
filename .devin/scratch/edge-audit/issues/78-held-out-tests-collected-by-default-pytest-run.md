@@ -11,3 +11,8 @@ Exclude held-out from default collection: add `norecursedirs = tests/held-out` (
 Validation tests may be intended to run always; only held-out is clearly mis-scoped. Split config or markers, not a second ini file, keeps one suite entry point.
 ## Verification
 Run `python -m pytest --collect-only -q` and confirm `tests/held-out/` items appear in the collected list.
+
+## Answer
+`pytest.ini` gained `norecursedirs = held-out`. Bare `python -m pytest` (and `pytest tests/`) collects 0 held-out items while `pytest tests/held-out -q` still collects 212, matching how check-push-green.py invokes the held-out suite explicitly. Validation tests remain in the default run.
+
+Status: resolved

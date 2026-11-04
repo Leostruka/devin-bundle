@@ -53,12 +53,17 @@ def fake_scrapling(monkeypatch):
     mod.Fetcher = FakeFetcher
     monkeypatch.setitem(sys.modules, "scrapling", mod)
     FakeFetcher.last_kwargs = None
+    orig_get = FakeFetcher.get
     yield
+    FakeFetcher.get = orig_get
 
 
 @pytest.fixture
-def mods():
-    return scrape_load.load("scrape"), scrape_load.load("st_common")
+def mods(monkeypatch):
+    scrape = scrape_load.load("scrape")
+    # t.test does not resolve; pretend it is a public host.
+    monkeypatch.setattr(scrape, "_resolve", lambda host: {"93.184.216.34"})
+    return scrape, scrape_load.load("st_common")
 
 
 def run_main(scrape, argv, capsys):
@@ -134,3 +139,58 @@ def test_selector_error_exit_1(mods, capsys, monkeypatch):
     code, out = run_main(scrape, ["https://t.test", "--css", "x"], capsys)
     assert code == 1
     assert "selector_error" in out["error"]
+
+
+def test_ssrf_scheme_rejected(mods, capsys, monkeypatch):
+    scrape, st_common = mods
+    monkeypatch.setattr(st_common, "browser_tier_installed", lambda: True)
+    for url in ("file:///etc/passwd", "gopher://x/", "ftp://x/"):
+        code, out = run_main(scrape, [url, "--css", "x"], capsys)
+        assert code == 2 and "ssrf_blocked" in out["error"]
+        assert FakeFetcher.last_kwargs is None
+
+
+def test_ssrf_private_ip_rejected(mods, capsys, monkeypatch):
+    scrape, st_common = mods
+    monkeypatch.setattr(st_common, "browser_tier_installed", lambda: True)
+    for url in ("http://127.0.0.1:19693/", "http://169.254.169.254/latest",
+                "http://10.0.0.1/", "http://[::1]/"):
+        code, out = run_main(scrape, [url, "--css", "x"], capsys)
+        assert code == 2, url
+        assert "ssrf_blocked" in out["error"]
+
+
+def test_ssrf_private_host_resolution_rejected(mods, capsys, monkeypatch):
+    scrape, st_common = mods
+    monkeypatch.setattr(st_common, "browser_tier_installed", lambda: True)
+    monkeypatch.setattr(scrape, "_resolve", lambda host: {"192.168.1.10"})
+    code, out = run_main(scrape, ["https://intranet.corp", "--css", "x"],
+                         capsys)
+    assert code == 2 and "allow-private" in out["error"]
+
+
+def test_ssrf_allow_private_flag_passes(mods, capsys, monkeypatch):
+    scrape, st_common = mods
+    monkeypatch.setattr(st_common, "browser_tier_installed", lambda: True)
+    code, out = run_main(
+        scrape, ["http://127.0.0.1:8080/", "--css", "x",
+                 "--allow-private"], capsys)
+    assert code == 0 and out["ok"] is True
+
+
+def test_ssrf_unresolvable_host_rejected(mods, capsys, monkeypatch):
+    scrape, st_common = mods
+    monkeypatch.setattr(st_common, "browser_tier_installed", lambda: True)
+
+    def boom(host):
+        raise OSError("name or service not known")
+    monkeypatch.setattr(scrape, "_resolve", boom)
+    code, out = run_main(scrape, ["https://nope.invalid", "--css", "x"],
+                         capsys)
+    assert code == 2 and "ssrf_blocked" in out["error"]
+
+
+def test_check_url_allowed_unit(mods):
+    scrape, _ = mods
+    assert scrape.check_url_allowed("notaurl") is not None
+    assert scrape.check_url_allowed("https://ok.test") is None

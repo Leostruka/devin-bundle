@@ -182,6 +182,25 @@ def _read_request(conn):
     return json.loads(buf.split(b"\n", 1)[0])
 
 
+def _write_private(path, text):
+    """Write `text` to `path` owner-only (0o600): the file carries the
+    TCP auth token, so default-umask write_text is not acceptable."""
+    fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+    except BaseException:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+        raise
+    try:
+        os.chmod(str(path), 0o600)
+    except OSError:
+        pass
+
+
 def _bind_listener(env_dir):
     """Per-env IPC endpoint. AF_UNIX where available; else loopback TCP
     with a 128-bit token living only in the private env dir — the gate
@@ -237,8 +256,11 @@ def serve(env_dir, spawn=None, poll_s=0.2):
     lsock.listen(4)
     lsock.settimeout(poll_s)
     ready.update({"daemon_pid": os.getpid(), "qemu_pid": proc.pid})
-    (env_dir / "ready.json").write_text(
-        json.dumps(ready), encoding="utf-8")
+    try:
+        os.chmod(str(env_dir), 0o700)
+    except OSError:
+        pass
+    _write_private(env_dir / "ready.json", json.dumps(ready))
 
     journal = Journal(env_dir / "requests.jsonl")
     import threading
@@ -264,8 +286,8 @@ def serve(env_dir, spawn=None, poll_s=0.2):
                     rj = json.loads(
                         (env_dir / "ready.json").read_text("utf-8"))
                     rj["guest_caps"] = guest["caps"]
-                    (env_dir / "ready.json").write_text(
-                        json.dumps(rj), encoding="utf-8")
+                    _write_private(env_dir / "ready.json",
+                                   json.dumps(rj))
                 except (OSError, json.JSONDecodeError):
                     pass
             except Exception:

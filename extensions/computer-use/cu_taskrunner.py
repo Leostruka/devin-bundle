@@ -22,6 +22,7 @@ CLI:
 
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -35,8 +36,19 @@ STORE = os.environ.get(
     "CU_TASKS_DIR", os.path.join(ROOT, ".devin", "scratch", "cu_tasks"))
 
 
+TRACE_ID_RE = re.compile(r"^[0-9a-f]{12}$")
+
+
 def _trace_dir(trace_id):
-    return os.path.join(STORE, trace_id)
+    """Join STORE/trace_id with traversal protection: trace_id must be
+    the uuid4().hex[:12] format start() mints, and the resolved path
+    must stay inside STORE."""
+    if not TRACE_ID_RE.match(trace_id or ""):
+        raise ValueError(f"invalid trace_id: {trace_id!r}")
+    path = os.path.realpath(os.path.join(STORE, trace_id))
+    if os.path.dirname(path) != os.path.realpath(STORE):
+        raise ValueError(f"trace_id escapes store: {trace_id!r}")
+    return path
 
 
 def _read_status(trace_id):
@@ -44,7 +56,7 @@ def _read_status(trace_id):
         with open(os.path.join(_trace_dir(trace_id), "status.json"),
                   encoding="utf-8") as f:
             return json.load(f)
-    except OSError:
+    except (OSError, ValueError):
         return None
 
 
@@ -176,6 +188,9 @@ def main():
         print(__doc__)
         return 2
     if args[0] == "_exec" and "--" in args:
+        if not TRACE_ID_RE.match(args[1]):
+            print(f"invalid trace_id: {args[1]!r}", file=sys.stderr)
+            return 2
         _exec(args[1], args[args.index("--") + 1:])
         return 0
     if args[0] == "start" and "--" in args:

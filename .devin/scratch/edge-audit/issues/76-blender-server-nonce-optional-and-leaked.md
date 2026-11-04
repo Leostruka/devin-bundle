@@ -17,3 +17,8 @@ Require `req.get("nonce") == NONCE` via `hmac.compare_digest` for `exec` and `sh
 Pinning the nonce into a handshake (first message must carry it, server writes it to a file next to the wrapper) is stronger but requires wrapper changes; compare_digest + no echo is a two-line fix that closes the bypass.
 ## Verification
 Connect to 127.0.0.1:PORT, send `{"op":"ping"}` and observe `nonce` in the reply; send `{"op":"exec","code":"1+1"}` with no nonce and observe it executes.
+
+## Answer
+Server now requires the nonce on `exec`/`shutdown` via `hmac.compare_digest`; missing or wrong nonce is rejected. The nonce is never echoed in responses. Instead it is written owner-only (0o600) to `%TEMP%/blender-operator-<port>.nonce` (`--nonce-file` arg, default derived from port) before the listener binds; `wrapper.py` and `camera_blocking.py` pass the path, read it (`wrapper._load_nonce`), and attach it to requests. Stale nonce files are removed at launch and at kill. Ping stays unauthenticated and nonce-free. New socket-level test proves unauthenticated exec is rejected, responses carry no `nonce`, and valid-nonce exec works.
+
+Status: resolved

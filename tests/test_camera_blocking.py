@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 import types
 from pathlib import Path
 
@@ -49,6 +50,77 @@ def test_server_dict_envelope_still_works():
     srv = _load_server()
     resp = srv._handle({"op": "ping"})
     assert resp["ok"] is True and resp["blender"] == "4.3.0"
+
+
+def test_server_exec_requires_nonce():
+    srv = _load_server()
+    for bad in ({}, {"nonce": None}, {"nonce": "wrong"}):
+        resp = srv._handle(dict(bad, op="exec", code="1+1"))
+        assert resp["ok"] is False
+        assert "nonce" in resp["error"]
+
+
+def test_server_shutdown_requires_nonce():
+    srv = _load_server()
+    resp = srv._handle({"op": "shutdown"})
+    assert resp["ok"] is False
+    resp = srv._handle({"op": "shutdown", "nonce": srv.NONCE})
+    assert resp["ok"] is True
+
+
+def test_server_exec_accepts_valid_nonce():
+    srv = _load_server()
+    resp = srv._handle({"op": "exec", "code": "1+1", "nonce": srv.NONCE})
+    assert resp["ok"] is True and resp["result"] == "2"
+
+
+def test_server_nonce_not_echoed_over_socket(tmp_path):
+    """End-to-end: ping/exec replies must not leak the nonce, and an
+    unauthenticated exec is rejected (issue: nonce optional + leaked)."""
+    import socket as _sock
+    import threading
+
+    srv = _load_server()
+    nonce_file = tmp_path / "n.nonce"
+    probe = _sock.socket()
+    probe.bind(("127.0.0.1", 0))
+    port = probe.getsockname()[1]
+    probe.close()
+
+    t = threading.Thread(target=srv.serve,
+                         args=(port,), kwargs={"nonce_file": str(nonce_file)},
+                         daemon=True)
+    t.start()
+    deadline = time.time() + 10
+    while not nonce_file.exists() and time.time() < deadline:
+        time.sleep(0.05)
+    assert nonce_file.exists()
+    if os.name != "nt":
+        assert (nonce_file.stat().st_mode & 0o777) == 0o600
+
+    def call(payload):
+        with _sock.create_connection(("127.0.0.1", port), timeout=5) as s:
+            f = s.makefile("rw", encoding="utf-8", newline="\n")
+            f.write(json.dumps(payload) + "\n")
+            f.flush()
+            return json.loads(f.readline())
+
+    try:
+        r = call({"id": "p", "op": "ping"})
+        assert r["ok"] is True
+        assert "nonce" not in r and r.get("pid")
+        r = call({"id": "e", "op": "exec", "code": "1+1"})
+        assert r["ok"] is False and "nonce" not in r
+        nonce = nonce_file.read_text().strip()
+        r = call({"id": "e2", "op": "exec", "code": "1+1", "nonce": nonce})
+        assert r["ok"] is True and r["result"] == "2" and "nonce" not in r
+    finally:
+        nonce = nonce_file.read_text().strip()
+        try:
+            call({"id": "s", "op": "shutdown", "nonce": nonce})
+        except OSError:
+            pass
+        t.join(timeout=5)
 
 
 def _params(**over):
@@ -140,6 +212,7 @@ def _fake_run_env(monkeypatch, tmp_path, preset_results=None):
         return (calls["n"] > 1, {"blender": "test"})
 
     monkeypatch.setattr(cb.wrapper, "_alive", fake_alive)
+    monkeypatch.setattr(cb.wrapper, "_load_nonce", lambda port: "n1")
 
     def fake_request(port, payload, timeout=30):
         sent.append(payload)
@@ -213,6 +286,7 @@ def test_run_uses_factory_startup_no_blend(monkeypatch, tmp_path):
         return (calls["n"] > 1, {"blender": "test"})
 
     monkeypatch.setattr(cb.wrapper, "_alive", fake_alive)
+    monkeypatch.setattr(cb.wrapper, "_load_nonce", lambda port: "n")
     monkeypatch.setattr(cb.wrapper, "_request",
                         lambda port, pl, timeout=30:
                         {"ok": True, "result_json": None,
@@ -393,6 +467,7 @@ def _ownership_env(monkeypatch, tmp_path, proc, responder):
     monkeypatch.setattr(cb.wrapper, "find_blender", lambda e: "/bin/blender")
     monkeypatch.setattr(cb.subprocess, "Popen", lambda *a, **k: proc)
     monkeypatch.setattr(cb.wrapper, "_alive", lambda port: (False, {}))
+    monkeypatch.setattr(cb.wrapper, "_load_nonce", lambda port: "n1")
 
     def fake_request(port, payload, timeout=30):
         sent.append(payload)

@@ -9,3 +9,8 @@
 Reject any `trace_id` not matching `^[0-9a-f]{12}$` at the entry points (`status`, `stop`, `_exec`) before path use; alternatively resolve and verify `os.path.realpath` stays under `os.path.realpath(STORE)` as sc_files.py already does.
 ## Verification
 `python cu_taskrunner.py status "../"` and `stop "../x"` with a planted `status.json` showing `"state":"running","pid":<victim>` outside STORE; observe the write/kill target escapes `cu_tasks/`.
+
+## Answer
+`_trace_dir` now validates trace_id against `^[0-9a-f]{12}$` plus a realpath containment check under STORE, raising ValueError otherwise. `_read_status` catches it (returns None), so `status`/`stop`/`list` reject traversal ids; the `_exec` CLI entry validates before use. Tests cover `../`, `..\`, embedded separators, trailing space, non-hex, and a planted dir outside the store.
+
+Status: resolved
