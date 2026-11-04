@@ -1,6 +1,6 @@
 # 41 -- Missing extension deps: venvs built at install, never re-validated at use time
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adaptability
 - **Severity**: P2
 - **File**: install.ps1:644-660, extensions/*/requirements.txt
@@ -22,3 +22,6 @@ Add an `audit.py` section `Extensions:` iterating extensions with `requirements.
 ## Verification
 
 `find extensions -name requirements.txt` lists dep-bearing extensions; `grep -n 'venv' audit.py` shows no check; delete one `.venv` and confirm audit stays green today.
+
+## Answer
+install.ps1: after a successful pip install, the requirements.txt SHA256 is written to .venv/.deps.sha256. New section 8a2 re-validates every dep-bearing extension under the target each install: missing venv, missing marker, or marker/requirements hash drift each produce a targeted warn ('re-run install to repair'); verified venvs report skip. Fail-soft, cheap (file hash only, no pip check). Covered by tests/test_install_ps1_edge_audit.py.
