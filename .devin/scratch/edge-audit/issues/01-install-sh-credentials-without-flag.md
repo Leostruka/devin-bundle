@@ -1,5 +1,5 @@
 # 01 -- install.sh installs unmasked credentials.toml without --restore-secrets
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P1
 - **File**: install.sh:485-508
@@ -26,3 +26,7 @@ Adds one flag check; changes behavior for anyone relying on the silent copy
 ## Verification
 `bash install.sh --dry-run` with an unmasked credentials.toml in the bundle:
 expect "use --restore-secrets" skip, not "credentials.toml installed".
+
+## Answer
+
+Unmasked credentials.toml is now gated behind --restore-secrets (`elif [[ $RESTORE_SECRETS -eq 0 ]]` warns and records a skip, no copy). Masked-file messaging and the usage text were corrected (issue 19). Verified by test_unmasked_credentials_skipped_without_flag and test_unmasked_credentials_install_with_flag_mode_600 in tests/test_install_sh_edge_audit.py.

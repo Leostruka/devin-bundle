@@ -1,5 +1,5 @@
 # 06 -- export.sh masks only org_id; ps1 masks all secret-named keys and credentialed URLs
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P2
 - **File**: export.sh:307-319 vs export.ps1:156-167
@@ -29,3 +29,7 @@ for applying it here too.
 Put `"api_token":"secret123"` in a test config.json, run
 `export.sh` masked path, grep exported config.json for "secret123" (expect
 absent) and for `"MASKED"`.
+
+## Answer
+
+config.json masked export now uses the shared mask_json_file routine (same as mcp_config.json): key-name denylist matching ps1 vocabulary plus org_id/user_id/email, credentialed-URL masking, and hooks={} via strip_config_hooks. Verified by test_masked_export_hides_all_secret_kinds.

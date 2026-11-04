@@ -23,4 +23,8 @@ Merits: smaller, cleaner installs; avoids stale-bytecode bugs. Demerits: none.
 `find skills -name __pycache__` lists the dirs; run `./install.ps1 -DryRun` on a fresh target and check `%APPDATA%\devin\skills\brag\scripts\__pycache__` is created by the copy.
 
 ## Answer
-install.ps1: skills Install-SkillDir call now passes -exclude '\__pycache__\|\.pyc$'; the extensions exclude regex also gained \__pycache__\ and .pyc. export.ps1: new Copy-FilteredDir helper; skills export and Copy-DirRecursive (scripts/, data/, docs/) exclude __pycache__/*.pyc by default. Working-tree __pycache__ dirs are untracked build artifacts; the copy filters keep them out of targets regardless. Covered by tests/test_install_ps1_edge_audit.py and tests/test_export_ps1_edge_audit.py.
+install.ps1: skills Install-SkillDir call now passes -exclude '\__pycache__\|\.pyc$'; the extensions exclude regex also gained \__pycache__\ and .pyc. export.ps1: new Copy-FilteredDir helper; skills export and Copy-DirRecursive (scripts/, data/, docs/) exclude __pycache__/*.pyc by default.
+
+install.sh/export.sh: shared copy_tree_clean helper copies skill/docs trees then removes __pycache__ dirs and *.pyc; dir_hash/dir_hash_ext ignore the same artifacts so hashes stay stable.
+
+Working-tree __pycache__ dirs are untracked build artifacts; the copy filters keep them out of targets regardless. Covered by tests/test_install_ps1_edge_audit.py, tests/test_export_ps1_edge_audit.py, test_pycache_not_installed / test_pycache_not_exported.

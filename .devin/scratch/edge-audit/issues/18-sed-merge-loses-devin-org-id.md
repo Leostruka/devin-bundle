@@ -1,5 +1,5 @@
 # 18 -- install.sh sed fallback merge loses devin.org_id
-- **Status**: open
+- **Status**: resolved
 - **Category**: user-experience
 - **Severity**: P2
 - **File**: install.sh:339-361
@@ -17,3 +17,7 @@ Merits of skipping: no silent corruption, explicit failure. Demerits: users with
 
 ## Verification
 Create a local config with `"devin": {"org_id": "real-id"}`, run the sed path (temporarily hide jq), and observe `"org_id": "MASKED"` inside the `devin` block after install.
+
+## Answer
+
+The lossy sed fallback was removed: without jq the merge is skipped loudly ('install jq, or re-run with --force') and recorded, so devin.org_id can no longer be silently replaced by MASKED.

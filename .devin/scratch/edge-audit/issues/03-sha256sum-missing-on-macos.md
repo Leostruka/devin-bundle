@@ -1,5 +1,5 @@
 # 03 -- sha256sum absent on stock macOS makes hashing silently no-op
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P1
 - **File**: install.sh:50-62, export.sh:48-54
@@ -30,3 +30,7 @@ equality. Either is better than empty-string equality.
 `PATH` stripped of coreutils on macOS (or `command -v sha256sum` empty): run
 `bash install.sh --dry-run` and confirm it errors instead of printing
 "unchanged" for every skill.
+
+## Answer
+
+Both scripts detect a hasher at startup: sha256sum, then `shasum -a 256`, then `openssl dgst -sha256 -r`; absent all three they print 'ERROR: no sha256 tool found' and exit 1 instead of comparing empty strings.

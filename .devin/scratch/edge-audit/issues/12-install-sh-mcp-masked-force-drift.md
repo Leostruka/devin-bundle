@@ -1,5 +1,5 @@
 # 12 -- masked mcp_config.json: ps1 -Force installs it, sh never does
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P3
 - **File**: install.sh:455-460 vs install.ps1:566-574
@@ -27,3 +27,7 @@ ps1 -Force path to match sh's always-skip.
 Masked mcp_config.json in bundle + `install.sh --force`: file installed
 with MASKED placeholders (matching ps1) or explicitly skipped by design --
 assert whichever semantic is chosen in both installers.
+
+## Answer
+
+--force now installs the masked mcp_config.json deliberately (with a 'fill tokens manually' warning and chmod 600), matching install.ps1 -Force semantics. Verified by test_masked_mcp_skipped_then_force_installed.
