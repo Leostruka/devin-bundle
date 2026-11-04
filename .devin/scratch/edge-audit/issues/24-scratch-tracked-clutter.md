@@ -1,5 +1,5 @@
 # 24 -- .devin/scratch contains 163 tracked files including one-off probes and gate scripts
-- **Status**: open
+- **Status**: resolved
 - **Category**: organization
 - **Severity**: P3
 - **File**: .devin/scratch/ (root-level files: acp_probe.py, acp_probe_load.py, add_manifest_skills.py, reconcile_manifest.py, gate-parse.ps1, gate-pssa.ps1, gate-res.ps1, verify-p01.ps1 through verify-p04.ps1, prompt_spec*.json x5, maestri-raw.md, optimized_ready.md, cu-perception-ready.md, opendots-gap-analysis.md)
@@ -17,3 +17,14 @@ Merits: scratch becomes navigable; distribution stays clean. Demerits: historica
 
 ## Verification
 `git ls-files .devin/scratch | awk -F/ 'NF==3'` lists the tracked root-level files; `ls .devin/scratch` shows the same set plus untracked logs like `pytest-128.log` (ignored by `.gitignore:54 *.log`).
+
+## Answer
+Moved all 21 loose tracked root files into task-named subdirectories via `git mv` (history preserved):
+
+- `probes/`: acp_probe.py, acp_probe_load.py
+- `gate-scripts/`: gate-parse.ps1, gate-pssa.ps1, gate-res.ps1, verify-p01..p04.ps1
+- `prompt-specs/`: prompt_spec.json + 4 named variants
+- `notes/`: maestri-raw.md, optimized_ready.md, cu-perception-ready.md, opendots-gap-analysis.md
+- `tools/`: add_manifest_skills.py, reconcile_manifest.py, Import-DevinFunctions.ps1
+
+Added a convention line to `.devin/scratch/README.md` forbidding new loose files at the scratch root. `git ls-files .devin/scratch | awk -F/ 'NF==3'` now returns only `README.md`. No .gitignore change needed (debris classes like `*.log` already ignored); remaining references are in historical ledgers/plans, left as-is.

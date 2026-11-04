@@ -1,5 +1,5 @@
 # 17 -- Two identical mcp_config.json files with ambiguous authority
-- **Status**: open
+- **Status**: resolved
 - **Category**: organization
 - **Severity**: P3
 - **File**: mcp_config.json, .devin/mcp_config.json, mcp_config.json.example
@@ -17,3 +17,6 @@ Merits: no silent drift between project and distributed config. Demerits: genera
 
 ## Verification
 `diff mcp_config.json .devin/mcp_config.json`; `grep -rn "mcp_config" audit.py README.md CONTRIBUTING.md` shows no documented ownership.
+
+## Answer
+Documented the ownership contract in `CONTRIBUTING.md` (new "Config File Ownership" section): root `mcp_config.json` is the distribution artifact copied by `install.ps1`/`install.sh` to `$DEVIN_HOME`; `.devin/mcp_config.json` is this repo's runtime copy; `mcp_config.json.example` is a non-installed populated example. Files stay byte-identical today by convention; keeping them in sync is documented as a contributor responsibility. No code/symlink change (Windows symlink privileges; strict JSON forbids a comment in the file itself).

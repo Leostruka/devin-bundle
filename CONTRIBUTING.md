@@ -63,6 +63,15 @@ Hooks in `hooks.v1.json` must:
 - Have a timeout set
 - Be idempotent
 
+### Config File Ownership
+
+The repo carries two `mcp_config.json` files on purpose; they are not interchangeable:
+
+- **`mcp_config.json` (root)**: the distribution artifact. `install.ps1`/`install.sh` copy this file to `$DEVIN_HOME/mcp_config.json` on target machines. Edit it to change what installs elsewhere.
+- **`.devin/mcp_config.json`**: the runtime MCP config for this repository itself (project tooling). Edit it to change what this repo's agent sessions use.
+- The two files are expected to match today but serve different consumers; keep them in sync when editing shared server entries.
+- **`mcp_config.json.example`**: a documented example showing a populated `mcpServers` block. It is not copied by the installers and is not read at runtime.
+
 ### Export Before PR
 
 Before opening a PR, run the exporter to sync the bundle:
