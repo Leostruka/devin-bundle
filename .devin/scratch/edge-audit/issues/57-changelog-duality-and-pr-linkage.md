@@ -1,6 +1,6 @@
 # 57 -- CHANGELOG vs EXECUTION_CHANGELOG duality; PR refs unresolvable locally
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: traceability
 - **Severity**: P3
 - **File**: .devin/EXECUTION_CHANGELOG.md
@@ -30,3 +30,7 @@ research/plan/handoff artifacts.
 For three recent subsystems (thermos, laya-guard, shorts-factory), a
 reader can reach the originating research/plan doc in <=2 hops from
 CHANGELOG or manifest.
+
+## Answer
+
+CONTEXT.md gained a `## Changelog contracts` section: CHANGELOG.md = release notes with GitHub PR refs, EXECUTION_CHANGELOG.md = frozen per-effort artifact (do not append), new per-effort logs under .devin/scratch/. Created `.devin/research/INDEX.md` mapping subsystems (thermos, laya-guard, memory, computer-use, etc.) to research/plan/ADR artifacts.

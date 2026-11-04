@@ -1,6 +1,6 @@
 # 56 -- Release/tag procedure exists only in release.yml, not documented
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: versioning
 - **Severity**: P2
 - **File**: .github/workflows/release.yml
@@ -26,3 +26,7 @@ and creates the GitHub release.
 ## Verification
 Follow the doc on a dry-run basis: each step maps to an existing
 enforcement (audit 32, release.yml checks) with no gaps.
+
+## Answer
+
+Added `## Releasing` to CONTRIBUTING.md: [Unreleased] accumulation -> release PR renaming the section + bumping manifest.json -> tag vX.Y.Z on main -> release.yml verifies ancestry/version/changelog and creates the GitHub release; ordering constraint documented.

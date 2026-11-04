@@ -1,6 +1,6 @@
 # 37 -- Windows/POSIX dual-script parity burden across install and export
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adaptability
 - **Severity**: P2
 - **File**: install.ps1, install.sh, export.ps1, export.sh
@@ -22,3 +22,7 @@ Move shared logic into the existing Python layer: a single `scripts/install_core
 ## Verification
 
 `wc -l install.ps1 install.sh export.ps1 export.sh`; `grep -c 'mask\|MASKED' export.sh` vs export.ps1; `ls tests/pester` vs sh test coverage.
+
+## Answer
+
+Wrote `.devin/docs/INSTALL-PARITY.md`: full ps1-vs-sh contract table for install and export (dry-run, merge/skip, force, backup, credentials, hooks render, python detect, masking set, commit/push), the 5 parity rules for contributors, and the known-divergence list pointing at scratch issues 05/06/08/09/12/35. Lane W adds the parity test.

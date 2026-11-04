@@ -1,6 +1,6 @@
 # 52 -- No ADR for hooks.v1.json as single source over config.json.hooks
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adr
 - **Severity**: P2
 - **File**: .devin/docs/TOOLS-MAP.md:134
@@ -27,3 +27,7 @@ import, the ADR must be superseded rather than silently contradicted.
 
 ## Verification
 ADR file exists, status Accepted, and TOOLS-MAP:134 links to it.
+
+## Answer
+
+Wrote `.devin/adr/005-hooks-single-source.md` (Accepted): live-vs-repo split context, render decision, v1 naming for schema bumps, consequences incl. ephemeral live edits. Linked from TOOLS-MAP config table row.

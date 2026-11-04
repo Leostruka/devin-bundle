@@ -1,6 +1,6 @@
 # 33 -- No native skill versioning: manifest export_hash is the only version signal
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: devin-cli-limitations
 - **Severity**: P3
 - **File**: manifest.json
@@ -22,3 +22,7 @@ Add an optional `version:` (or `x-bundle-version`) key to SKILL.md frontmatter, 
 ## Verification
 
 `grep -n 'version' skills/*/SKILL.md` returns nothing; `grep -n 'export_hash' manifest.json` shows hash-only tracking.
+
+## Answer
+
+Recorded the versioning rule as BUSINESS-LOGIC.md R16-R17: manifest `version` == tag, `export_hash` is the only per-skill ordering signal today, and the accepted improvement (optional frontmatter version + older/newer/equal audit reporting) is documented pending implementation.

@@ -1,6 +1,6 @@
 # 50 -- No diagram of hook event flow and decision merge
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: diagrams
 - **Severity**: P2
 - **File**: hooks.v1.json
@@ -26,3 +26,7 @@ annotation.
 ## Verification
 `validate-mermaid.py` accepts the block; diagram entry points equal the
 10 commands in hooks.v1.json.
+
+## Answer
+
+Added `.devin/docs/diagrams/hook-event-flow.md`: mermaid flowchart of stdin payload -> matchers -> entry points -> _hookrun fan-out -> decision merge -> block/context/exit paths, with fail_closed and fail-open annotations. Validated via scripts/validate-mermaid.py (exit 0).

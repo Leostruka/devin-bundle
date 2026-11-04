@@ -1,6 +1,6 @@
 # 51 -- Composite pipelines (thermos dual-lane, de-slop sequence) lack diagrams
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: diagrams
 - **Severity**: P3
 - **File**: skills/thermos/SKILL.md
@@ -24,3 +24,7 @@ export cycle in TOOLS-MAP or a new EXPORT-CYCLE doc.
 ## Verification
 Diagrams render via `scripts/validate-mermaid.py`; step labels match the
 SKILL.md step names verbatim.
+
+## Answer
+
+Added `.devin/docs/diagrams/thermos-dual-lane.md`, `de-slop-sequence.md`, and `export-cycle.md`; step labels match the SKILL.md step names verbatim; all validate clean via validate-mermaid.py.

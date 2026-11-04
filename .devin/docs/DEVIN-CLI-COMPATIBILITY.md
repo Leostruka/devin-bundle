@@ -2,9 +2,20 @@
 
 ## Validated release
 
-The bundle is validated against Devin CLI `{{VALIDATED_CLI_VERSION}}` (see `data/bundle-identity.json`).
+The bundle is validated against Devin CLI `3000.11.234` (see `data/bundle-identity.json`).
 
 Release notes for the validated version and intermediate CLI versions are tracked in `data/bundle-identity.json` and the Devin CLI changelog.
+
+## Verification cadence
+
+This doc tracks `validated_cli_version` in `data/bundle-identity.json`.
+Every section header is stamped with the CLI version it was checked
+against (`verified <date>, CLI <version>`). Rule of maintenance: whenever
+`validated_cli_version` advances, add a new `## <version> capabilities`
+section covering every intermediate minor, and re-verify that each prior
+adoption decision still holds. Owner: whoever bumps
+`data/bundle-identity.json`; `audit.py` fails if the doc lags a validated
+minor without a section.
 
 ## 3000.10.x capabilities (verified 2026-09-15, CLI 3000.10.27)
 
@@ -127,17 +138,17 @@ Capabilities and runtime contracts verified in `3000.11.234` (`92c83011d113`) si
 
 `config.json` reads the primary model from `BUNDLE_DEFAULT_MODEL` (with `data/bundle-models.json` as the canonical registry). `devin models list` for the validated CLI reports the current free and paid models; the bundle's free-primary policy is enforced by choosing a `cost_tier: free` entry as the parent and matching subagent models from `data/bundle-models.json`.
 
-The bundle default parent model is `{{BUNDLE_DEFAULT_MODEL}}` and the default subagent model is `{{BUNDLE_MAX_MODEL}}`, with `{{BUNDLE_MEDIUM_MODEL}}` as the lighter alternative. Short aliases that resolve to paid entries (see `data/bundle-models.json` aliases) are avoided.
+The bundle default parent model is `swe-2-high` and the default subagent model is `swe-2-max`, with `swe-2-medium` as the lighter alternative. Short aliases that resolve to paid entries (see `data/bundle-models.json` aliases) are avoided.
 
 Alternatives evaluated:
 
 | Alternative | Result |
 |---|---|
 | Keep the CLI's default paid router | Valid model, but contradicts the bundle's explicit free-primary policy. |
-| Pin `{{BUNDLE_DEFAULT_MODEL}}` | Matches the documented policy and the CLI model registry. Selected. |
+| Pin `swe-2-high` | Matches the documented policy and the CLI model registry. Selected. |
 | Omit the model | Delegates selection to local defaults and makes installs nondeterministic. |
 
-Custom subagents remain pinned to `{{BUNDLE_MAX_MODEL}}` (see `data/bundle-models.json`). Since `3000.11.92`, `agent.subagent_model` in `config.json` pins the fallback model for `subagent_explore` and any custom agent without its own `model:`; the template ships `swe-2-max`, matching `default_subagent_model`. The `tools` frontmatter key is accepted as an alias for `allowed-tools` in recent CLI versions, but this bundle keeps `allowed-tools` as its canonical spelling.
+Custom subagents remain pinned to `swe-2-max` (see `data/bundle-models.json`). Since `3000.11.92`, `agent.subagent_model` in `config.json` pins the fallback model for `subagent_explore` and any custom agent without its own `model:`; the template ships `swe-2-max`, matching `default_subagent_model`. The `tools` frontmatter key is accepted as an alias for `allowed-tools` in recent CLI versions, but this bundle keeps `allowed-tools` as its canonical spelling.
 
 ## Lifecycle hooks
 

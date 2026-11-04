@@ -1,4 +1,4 @@
-# Skill Tiers — discovery rápido por domínio
+# Skill Tiers - discovery rápido por domínio
 
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-10-31).
 Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 tok).
@@ -9,12 +9,12 @@ Skills consolidadas são routers: o SKILL.md é caro de entrada; detalhe vive em
 
 | model_uid | Effort | Contexto | Uso | Notas |
 |---|---|---|---|---|
-| `{{BUNDLE_MEDIUM_MODEL}}` (`swe-2-medium`) | Medium | 262K | Tarefas simples, ajustes pontuais, scripts isolados | **gratuito** |
-| `{{BUNDLE_DEFAULT_MODEL}}` (`swe-2-high`) | High | 262K | Primário (parent); multi-arquivo | **gratuito**, default geral |
-| `{{BUNDLE_MAX_MODEL}}` (`swe-2-max`) | Max | 262K | Subagent Max (`model:` pin); aberto/long-horizon | **gratuito** |
+| `BUNDLE_MEDIUM_MODEL` (default `swe-2-medium`) | Medium | 262K | Tarefas simples, ajustes pontuais, scripts isolados | **gratuito** |
+| `BUNDLE_DEFAULT_MODEL` (default `swe-2-high`) | High | 262K | Primário (parent); multi-arquivo | **gratuito**, default geral |
+| `BUNDLE_MAX_MODEL` (default `swe-2-max`) | Max | 262K | Subagent Max (`model:` pin); aberto/long-horizon | **gratuito** |
 
-Subagents customizados usam `model: {{BUNDLE_MAX_MODEL}}` (Max) ou `{{BUNDLE_MEDIUM_MODEL}}` (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. **NÃO usar aliases pagos não verificados** — eles podem apontar para um modelo pago.
-Sem pin, os custom agents usam o default router do CLI (possivelmente pago). `subagent_general` herda o parent (`{{BUNDLE_DEFAULT_MODEL}}`) quando esse for gratuito. **Evitar `subagent_explore`** — pode resolver para um modelo pago; usar o custom `researcher` (gratuito, veja `data/bundle-models.json`).
+Subagents customizados usam `model: swe-2-max` (Max) ou `model: swe-2-medium` (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. **NÃO usar aliases pagos não verificados** - eles podem apontar para um modelo pago.
+Sem pin, os custom agents usam o default router do CLI (possivelmente pago). `subagent_general` herda o parent (`BUNDLE_DEFAULT_MODEL`) quando esse for gratuito. **Evitar `subagent_explore`** - pode resolver para um modelo pago; usar o custom `researcher` (gratuito, veja `data/bundle-models.json`).
 
 ## Núcleo (raciocínio lógico, qualquer trabalho)
 
@@ -120,7 +120,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `project-bootstrap` | Onboarding `.devin/` + repo p/ skills eng + pre-commit (+8.6k defer) | 473 | Setup inicial, primeira configuração |
 | `devin-config` | Adiciona skill/hook/MCP/regra | 993 | Evoluir Devin CLI |
 
-## Artefatos de pesquisa (não uso diário — PrimeAgent/RLM)
+## Artefatos de pesquisa (não uso diário - PrimeAgent/RLM)
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
@@ -186,13 +186,13 @@ Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: 
 ```
 Tarefa → AGENTS.md (~4900 tok, fixo, cache-stable) → leia SKILL-TIERS.md (~1700 tok)
   → identifique domínio → invoque 1-3 skills (~500-3500 tok router; modes/ sob demanda)
-  → trabalho (50k-150k tok no parent `{{BUNDLE_DEFAULT_MODEL}}`; por subagent `{{BUNDLE_MAX_MODEL}}`)
+  → trabalho (50k-150k tok no parent `BUNDLE_DEFAULT_MODEL`; por subagent `BUNDLE_MAX_MODEL`)
   >60% usado? → context-hygiene | dispatching-parallel-agents (paralelo) | clear (tarefa mudou)
   → gates antes de pronto
 ```
 
-O parent (`{{BUNDLE_DEFAULT_MODEL}}`) tem thinking mode (raciocina antes de output) e tool-use during inference
-(decide quando usar ferramentas nativamente). O subagent (`{{BUNDLE_MAX_MODEL}}`) tem self-compaction treinada
+O parent (`BUNDLE_DEFAULT_MODEL`) tem thinking mode (raciocina antes de output) e tool-use during inference
+(decide quando usar ferramentas nativamente). O subagent (`BUNDLE_MAX_MODEL`) tem self-compaction treinada
 (resume + continua do summary) e alto TPS (fan-out barato em wall-clock). Veja `data/bundle-models.json` para janelas e custos.
 
 ## Anti-patterns
@@ -204,5 +204,5 @@ O parent (`{{BUNDLE_DEFAULT_MODEL}}`) tem thinking mode (raciocina antes de outp
 | MCPs sem usar | Só ativar quando preciso |
 | Compact quando precisa do detalhe | `context-hygiene` |
 | `obsidian-workflow` para edição pontual (~17485 tok) | Só para operações Obsidian reais |
-| Subagent general para pesquisa | Use researcher (`{{BUNDLE_MAX_MODEL}}`, gratuito, veja `data/bundle-models.json`) |
-| Pin `model: pago` em agents read-only | Pin `model: {{BUNDLE_MAX_MODEL}}` → subagent Max gratuito (veja `data/bundle-models.json`) |
+| Subagent general para pesquisa | Use researcher (`BUNDLE_MAX_MODEL`, gratuito, veja `data/bundle-models.json`) |
+| Pin `model: pago` em agents read-only | Pin `model: swe-2-max` → subagent Max gratuito (veja `data/bundle-models.json`) |
