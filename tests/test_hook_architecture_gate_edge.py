@@ -95,11 +95,14 @@ def test_redirect_in_quotes_not_false_positive(managed):
 
 
 def test_manifest_escape_hatch_exec(managed):
+    # Edge-audit 65 removed the exec escape hatch: manifest creation goes
+    # through write/edit (already exempt), so any exec naming the manifest
+    # is treated like any other mutating exec.
     payload = {"hook_event_name": "PreToolUse", "tool_name": "exec",
                "tool_input": {"command":
                               "cp template ARCHITECTURE_MANIFEST.md",
                               "workdir": str(managed)}}
-    assert _run(payload).returncode == 0
+    assert _run(payload).returncode == 2
 
 
 def test_invalid_json_fails_open():
