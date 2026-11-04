@@ -88,12 +88,35 @@ function Write-Err($msg)  { Write-Host "    [x] $msg" -ForegroundColor Red }
 
 # --- Helpers ---
 
-function Get-FolderHash($path) {
+function Get-FolderHash($path, $exclude = $null) {
   if (-not (Test-Path $path)) { return $null }
-  $files = Get-ChildItem $path -Recurse -File | Sort-Object FullName
+  $base = (Resolve-Path $path).Path
+  $files = Get-ChildItem $base -Recurse -File | Sort-Object FullName
+  if ($exclude) { $files = $files | Where-Object { $_.FullName -notmatch $exclude } }
   if ($files.Count -eq 0) { return "" }
-  $hashes = $files | ForEach-Object { (Get-FileHash $_.FullName -Algorithm SHA256).Hash }
+  # hash + relative path per line, mirroring `sha256sum` output in the
+  # Bash dir_hash: a pure rename must change the folder hash.
+  $hashes = $files | ForEach-Object {
+    $rel = $_.FullName.Substring($base.Length).TrimStart('\','/') -replace '\\','/'
+    (Get-FileHash256 $_.FullName) + "  ./" + $rel
+  }
   return ($hashes -join "`n")
+}
+
+# Copy a directory tree, skipping paths matching $exclude (regex on FullName).
+# When $exclude is null, falls back to a plain recursive copy.
+function Copy-FilteredDir($src, $dst, $exclude = $null) {
+  if (-not $exclude) {
+    Copy-Item $src $dst -Recurse -Force
+    return
+  }
+  New-Item -ItemType Directory -Force -Path $dst | Out-Null
+  Get-ChildItem $src -Recurse -File | Where-Object { $_.FullName -notmatch $exclude } | ForEach-Object {
+    $rel = $_.FullName.Substring($src.Length).TrimStart('\', '/')
+    $target = Join-Path $dst $rel
+    New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent) | Out-Null
+    Copy-Item $_.FullName $target -Force
+  }
 }
 
 function Get-FileHash256($path) {
@@ -125,18 +148,19 @@ function Copy-TopFiles($src, $dst, $label) {
   return $count
 }
 
-function Copy-DirRecursive($src, $dst, $label) {
+function Copy-DirRecursive($src, $dst, $label, $exclude = '\\__pycache__\\|\.pyc$') {
+  # Python bytecode caches are never exported (default $exclude).
   if (-not (Test-Path $src)) {
     Write-Skip "$label (source not found: $src)"
     return 0
   }
   if ($DryRun) {
-    $count = (Get-ChildItem $src -Recurse -File).Count
+    $count = (Get-ChildItem $src -Recurse -File | Where-Object { $_.FullName -notmatch $exclude }).Count
     Write-Skip "would copy $count files from $src"
     return $count
   }
   if (Test-Path $dst) { Remove-Item $dst -Recurse -Force }
-  Copy-Item $src $dst -Recurse -Force
+  Copy-FilteredDir $src $dst $exclude
   $count = (Get-ChildItem $dst -Recurse -File).Count
   Write-Ok "$label ($count files)"
   return $count
@@ -369,12 +393,14 @@ if (Test-Path $skillsSrc) {
     if (-not $DryRun) { New-Item -ItemType Directory -Force -Path $skillsDst | Out-Null }
   }
   $skillDirs = Get-ChildItem $skillsSrc -Directory -ErrorAction SilentlyContinue
+  # Never ship Python bytecode caches inside skill dirs.
+  $skillExclude = '\\__pycache__\\|\.pyc$'
   $exported = 0; $unchanged = 0; $failed = 0
   foreach ($skill in $skillDirs) {
     $src = $skill.FullName
     $dst = Join-Path $skillsDst $skill.Name
-    $srcHash = Get-FolderHash $src
-    $dstHash = Get-FolderHash $dst
+    $srcHash = Get-FolderHash $src $skillExclude
+    $dstHash = Get-FolderHash $dst $skillExclude
     if ($srcHash -eq $dstHash) {
       $unchanged++
     } else {
@@ -383,7 +409,7 @@ if (Test-Path $skillsSrc) {
       } else {
         try {
           if (Test-Path $dst) { Remove-Item $dst -Recurse -Force }
-          Copy-Item $src $dst -Recurse -Force
+          Copy-FilteredDir $src $dst $skillExclude
           $exported++
         } catch {
           Write-Err "$($skill.Name): $($_.Exception.Message)"

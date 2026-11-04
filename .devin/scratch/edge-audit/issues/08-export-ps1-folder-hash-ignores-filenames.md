@@ -1,5 +1,5 @@
 # 08 -- export.ps1 Get-FolderHash hashes contents only; renames go undetected
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P2
 - **File**: export.ps1:91-97
@@ -28,3 +28,6 @@ None; strictly more accurate change detection.
 ## Verification
 Create skill dir with a.md; export; rename a.md -> b.md in $devinHome skills;
 re-run export.ps1; assert the skill is re-exported (b.md present, a.md gone).
+
+## Answer
+export.ps1 Get-FolderHash now mirrors install.ps1: accepts $exclude, resolves a $base path, and hashes `content-hash + "  ./" + relpath` per file so pure renames change the folder hash. Skills export passes $skillExclude ('\__pycache__\|\.pyc$') to both hash calls. Covered by tests/test_export_ps1_edge_audit.py.

@@ -382,26 +382,37 @@ function Test-CaseSensitive($path) {
 }
 
 # --- Dedup AGENTS.md case variants ---
-# On case-sensitive FSs: removes agents.md (lowercase) if it exists as a
-# separate file. On case-insensitive FSs (Windows/WSL /mnt/c, macOS default):
-# AGENTS.md and agents.md are the same file — warns about Devin CLI duplicate
+# Removes any case-variant file (agents.md, Agents.MD, ...) that is not the
+# exact canonical AGENTS.md, on every filesystem. Enumeration (not Test-Path)
+# catches real second entries on DrvFs/per-dir case-sensitive NTFS, where a
+# case-insensitive probe would report only one file. On plain case-insensitive
+# FSs where no variant exists, still warns about the Devin CLI duplicate
 # listing (known bug, not fixable from filesystem level).
 function Invoke-DedupAgentsMd($dir, $label) {
   $canonical = Join-Path $dir "AGENTS.md"
   if (-not (Test-Path $canonical)) { return }
 
-  if (Test-CaseSensitive $dir) {
-    $lower = Join-Path $dir "agents.md"
-    if (Test-Path $lower) {
-      Write-Warn "${label}: found agents.md (lowercase) duplicate — removing"
-      if ($DryRun) {
-        Write-Skip "would remove agents.md duplicate"
+  # Enumerate real directory entries: DrvFs (/mnt/c) and per-directory
+  # case-sensitive NTFS can hold BOTH agents.md and AGENTS.md as separate
+  # files even when the default Win32 lookup is case-insensitive. Any entry
+  # that is not the exact canonical casing is a duplicate.
+  $variants = @(Get-ChildItem $dir -File -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -ieq 'agents.md' -and $_.Name -cne 'AGENTS.md' })
+  foreach ($v in $variants) {
+    Write-Warn "${label}: found case-variant $($v.Name) duplicate - removing"
+    if ($DryRun) {
+      Write-Skip "would remove case-variant $($v.Name)"
+    } else {
+      Remove-Item $v.FullName -Force -ErrorAction SilentlyContinue
+      if (Test-Path $v.FullName) {
+        Write-Warn "${label}: could not remove case-variant $($v.Name)"
       } else {
-        Remove-Item $lower -Force
-        Write-Ok "${label}: removed agents.md duplicate (kept AGENTS.md)"
+        Write-Ok "${label}: removed case-variant $($v.Name) (kept AGENTS.md)"
       }
     }
-  } else {
+  }
+
+  if (-not (Test-CaseSensitive $dir) -and $variants.Count -eq 0) {
     Write-Skip "${label}: case-insensitive FS — Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
   }
 }
@@ -498,7 +509,8 @@ if (Test-Path $skillsSrc) {
   $skillDirs = Get-ChildItem $skillsSrc -Directory
   $installed = 0; $updated = 0; $skipped = 0; $diff = 0
   foreach ($skill in $skillDirs) {
-    $result = Install-SkillDir -src $skill.FullName -dst (Join-Path $skillsDst $skill.Name) -name $skill.Name
+    # Never ship Python bytecode caches inside skill dirs.
+    $result = Install-SkillDir -src $skill.FullName -dst (Join-Path $skillsDst $skill.Name) -name $skill.Name -exclude '\\__pycache__\\|\.pyc$'
     switch ($result) {
       "installed"      { $installed++; Write-Ok "$($skill.Name) (installed)" }
       "updated"        { $updated++; Write-Ok "$($skill.Name) (updated)" }
@@ -528,11 +540,18 @@ if ((Test-Path $hooksV1) -and (Test-Path $renderHooks) -and (Test-Path $configDs
   if ($DryRun) {
     Write-Skip "would render config.json hooks from hooks.v1.json"
   } elseif (Get-Command python -ErrorAction SilentlyContinue) {
-    & python $renderHooks $devinHome --merge $configDst | Out-Null
+    $renderOut = & python $renderHooks $devinHome --merge $configDst 2>&1
     if ($LASTEXITCODE -eq 0) {
       Write-Ok "config.json hooks rendered from hooks.v1.json"
+      $renderOut | Where-Object { $_ } | ForEach-Object {
+        Write-Host "    $_" -ForegroundColor DarkGray
+      }
     } else {
-      Write-Warn "render-user-hooks.py failed — hooks not updated"
+      Write-Warn "render-user-hooks.py failed (exit $LASTEXITCODE) - hooks not updated"
+      $tail = @($renderOut | Where-Object { $_ } | Select-Object -Last 5)
+      foreach ($line in $tail) {
+        Write-Host "    $line" -ForegroundColor DarkGray
+      }
     }
   } else {
     Write-Warn "python not found — config.json hooks not rendered"
@@ -628,7 +647,7 @@ if (Test-Path $extSrc) {
       Write-Skip "extensions/$($ext.Name) is empty"
       continue
     }
-    $result = Install-SkillDir -src $ext.FullName -dst (Join-Path $extDst $ext.Name) -name $ext.Name -exclude '\.venv\\|\\target\\|\.(pyd|so|dylib)$'
+    $result = Install-SkillDir -src $ext.FullName -dst (Join-Path $extDst $ext.Name) -name $ext.Name -exclude '\.venv\\|\\__pycache__\\|\\target\\|\.(pyd|so|dylib|pyc)$'
     switch ($result) {
       "installed"      { Write-Ok "extensions/$($ext.Name) (installed)" }
       "updated"        { Write-Ok "extensions/$($ext.Name) (updated)" }
@@ -659,9 +678,37 @@ if (Test-Path $extSrc) {
       }
       & $venvPy -m pip install --quiet --disable-pip-version-check -r $extReq
       if ($LASTEXITCODE -eq 0) {
+        # Marker records which requirements.txt content was installed; the
+        # revalidation step below and future installs detect drift cheaply.
+        Set-Content -Path (Join-Path $extDir ".venv\.deps.sha256") -Value (Get-FileHash256 $extReq) -NoNewline
         Write-Ok "$extName deps installed in $extDir\.venv"
       } else {
         Write-Warn "$extName pip install failed (exit $LASTEXITCODE)"
+      }
+    }
+  }
+
+  # --- 8a2. extension venv drift revalidation (fail-soft) ---
+  # Venvs are built at install time only and are gitignored: a deleted,
+  # half-created, or requirements-stale venv otherwise surfaces inside the
+  # extension at call time. Re-check every dep-bearing extension here.
+  if (Test-Path $extDst) {
+    Get-ChildItem $extDst -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+      $req = Join-Path $_.FullName "requirements.txt"
+      if (-not (Test-Path $req)) { return }
+      $venvPy = Join-Path $_.FullName ".venv\Scripts\python.exe"
+      $marker = Join-Path $_.FullName ".venv\.deps.sha256"
+      $reqHash = Get-FileHash256 $req
+      if ($DryRun) {
+        Write-Skip "would re-validate extensions/$($_.Name) venv deps"
+      } elseif (-not (Test-Path $venvPy)) {
+        Write-Warn "extensions/$($_.Name): .venv missing - deps not installed (re-run install to repair)"
+      } elseif (-not (Test-Path $marker)) {
+        Write-Warn "extensions/$($_.Name): venv has no deps marker - installed state unverified (re-run install to repair)"
+      } elseif ((Get-Content $marker -Raw).Trim() -ne $reqHash) {
+        Write-Warn "extensions/$($_.Name): requirements.txt changed since venv build - deps stale (re-run install to repair)"
+      } else {
+        Write-Skip "extensions/$($_.Name): venv deps verified"
       }
     }
   }

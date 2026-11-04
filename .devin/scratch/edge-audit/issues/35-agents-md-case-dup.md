@@ -1,6 +1,6 @@
 # 35 -- AGENTS.md case-variant duplication: install-time dedup only, CLI bug unfixed
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: devin-cli-limitations
 - **Severity**: P3
 - **File**: install.ps1:369-405
@@ -22,3 +22,6 @@ Keep the install dedup; additionally have `audit.py` or `devin rules list` post-
 ## Verification
 
 `install.ps1:405` warn path; run `devin rules list` on a case-insensitive FS with an `agents.md` present to observe double listing.
+
+## Answer
+Invoke-DedupAgentsMd now enumerates real directory entries and removes any case-variant file not exactly 'AGENTS.md' on every filesystem, catching true second entries on DrvFs (/mnt/c) and per-directory case-sensitive NTFS that a Test-Path probe cannot see. The CLI duplicate-listing warning on plain case-insensitive FSs is retained (upstream bug, warn-only). Covered by tests/test_install_ps1_edge_audit.py.
