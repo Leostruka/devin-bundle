@@ -6,6 +6,7 @@
 
 [![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.19.0-orange.svg)](CHANGELOG.md)
+[![Atlas](https://img.shields.io/badge/atlas-github%20pages-33ff66.svg)](https://leostruka.github.io/devin-bundle/)
 
 Ecossistema versionado para o Devin CLI. O bundle sincroniza entre máquinas as regras, skills, perfis de subagentes, hooks, scripts, configuração e metadados que governam todo o ciclo de trabalho: da ideia ao planejamento, implementação, revisão, memória e entrega.
 
