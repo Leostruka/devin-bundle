@@ -28,10 +28,10 @@ def _run(*a, **kw):
     return subprocess.run(*a, **kw)
 
 TEST_TIMEOUT = 120
-# The full suite cannot finish inside a hook budget on a large repo; it
-# still runs (failures block) but is capped lower so the whole gate fits
-# under the PreToolUse timeout even on a session with the old 190s value.
-MAIN_TIMEOUT = 45
+# Fail-closed means a timeout blocks the push, so the cap must exceed real
+# suite time but stay under the pre-exec-guard hook budget (300s here).
+# Repos with bigger suites or tighter budgets tune BUNDLE_PUSH_GATE_TIMEOUT.
+MAIN_TIMEOUT = int(os.environ.get("BUNDLE_PUSH_GATE_TIMEOUT", "250"))
 
 
 def block(reason):
@@ -54,9 +54,14 @@ def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
     import tempfile
     out_file = tempfile.TemporaryFile(mode="w+t", encoding="utf-8",
                                       errors="replace")
+    # Strip hook-injected env: tests that exercise hook scripts in tmp repos
+    # expect cwd isolation; DEVIN_PROJECT_DIR would redirect their scans.
+    env = dict(os.environ)
+    env.pop("DEVIN_PROJECT_DIR", None)
     try:
         proc = subprocess.Popen(cmd, shell=True, cwd=cwd, stdout=out_file,
-                                stderr=subprocess.STDOUT, creationflags=_CF)
+                                stderr=subprocess.STDOUT, creationflags=_CF,
+                                env=env)
         try:
             proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -316,14 +321,32 @@ def main():
 
     # All pytest checks are independent; run them concurrently so the gate
     # fits inside the PreToolUse hook timeout budget (wall time = slowest).
+    # Rule 15 declares tests/validation + tests/held-out as the push-gate
+    # contract; when both exist they ARE the main check (scoped to fit the
+    # budget, fail-closed) instead of re-running them plus the full suite.
+    # CI still runs the full suite.
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=3) as ex:
-        f_main = ex.submit(run_check, check_cmd, cwd, MAIN_TIMEOUT)
-        f_val = ex.submit(run_check, f'pytest "{validation_dir}" -q', cwd) if gap_active else None
-        f_held = ex.submit(run_check, f'pytest "{heldout_dir}" -q', cwd) if gap_active else None
-        status, output = f_main.result()
+        if gap_active:
+            f_main = None
+            f_val = ex.submit(run_check, f'pytest "{validation_dir}" -q',
+                              cwd, MAIN_TIMEOUT)
+            f_held = ex.submit(run_check, f'pytest "{heldout_dir}" -q',
+                               cwd, MAIN_TIMEOUT)
+        else:
+            f_main = ex.submit(run_check, check_cmd, cwd, MAIN_TIMEOUT)
+            f_val = f_held = None
         val_result = f_val.result() if f_val else None
         held_result = f_held.result() if f_held else None
+        if f_main is not None:
+            status, output = f_main.result()
+        else:
+            check_cmd = "validation+held-out"
+            if val_result[0] == "pass" and held_result[0] == "pass":
+                status, output = "pass", ""
+            else:
+                status = "fail"
+                output = val_result[1] + "\n" + held_result[1]
 
     # Fail-closed: any outcome other than a passing run blocks the push, so
     # a timed-out or unrunnable suite cannot silently degrade the gate.
