@@ -1,6 +1,6 @@
 # 42 -- Python version spread (3.11/3.14) with unversioned `python` hook invocations and fail_closed guards
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adaptability
 - **Severity**: P1
 - **File**: hooks.v1.json:6-12, install.ps1:644
@@ -22,3 +22,11 @@ Render hook commands with the resolved interpreter path at install (the render s
 ## Verification
 
 Temporarily rename the python executable in a scratch install; run `devin` and confirm every exec is blocked by the fail_closed guards; check `grep -rn 'version_info' scripts/*.py` for absent version floors.
+
+## Answer
+Fixed together with issue 26: rendered hook commands now use the absolute
+resolved interpreter (sys.executable from the installer's own probe, or
+pythonw.exe beside it on Windows), eliminating the Store-stub / wrong-minor /
+missing-`python` single point of failure for fail_closed guards.
+render-user-hooks.py also warns on stderr when run below the supported
+floor (Python >= 3.11), giving an early degraded-python signal.

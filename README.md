@@ -5,25 +5,40 @@
 [![Skills](https://img.shields.io/badge/skills-168-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
-[![Version](https://img.shields.io/badge/version-3.18.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.19.0-orange.svg)](CHANGELOG.md)
 
 Ecossistema versionado para o Devin CLI. O bundle sincroniza entre máquinas as regras, skills, perfis de subagentes, hooks, scripts, configuração e metadados que governam todo o ciclo de trabalho: da ideia ao planejamento, implementação, revisão, memória e entrega.
+
+## Quick start (English)
+
+```powershell
+git clone https://github.com/Leostruka/devin-bundle.git
+cd devin-bundle
+.\install.ps1 -DryRun    # preview what would change
+.\install.ps1            # fresh install (merges and skips existing config)
+```
+
+Linux, macOS or WSL: use `./install.sh --dry-run` then `./install.sh`.
+
+Use `-Force` / `--force` only to overwrite an existing Devin CLI setup,
+preferably together with `--backup` (`.\install.ps1 -Force -Backup` /
+`./install.sh --force --backup`). Force bypasses the merge-and-skip
+safety that protects your live `config.json` and `mcp_config.json`.
 
 ## Início rápido
 
 ```powershell
 git clone https://github.com/Leostruka/devin-bundle.git
 cd devin-bundle
-.\install.ps1 -Force
+.\install.ps1 -DryRun    # pré-visualiza as mudanças
+.\install.ps1            # instalação nova (mescla e preserva config existente)
 ```
 
-Linux, macOS ou WSL:
+Linux, macOS ou WSL: `./install.sh --dry-run` e depois `./install.sh`.
 
-```bash
-git clone https://github.com/Leostruka/devin-bundle.git
-cd devin-bundle
-./install.sh --force
-```
+> Use `-Force` / `--force` apenas para sobrescrever uma instalação
+> existente, de preferência com `--backup`. O modo force desativa a
+> proteção de merge-and-skip sobre a configuração viva.
 
 > O instalador renderiza os hooks globais a partir de `hooks.v1.json` (fonte única) para o `$DEVIN_HOME` real via `scripts/render-user-hooks.py`; os hooks apontam automaticamente para o diretório `scripts/` instalado.
 

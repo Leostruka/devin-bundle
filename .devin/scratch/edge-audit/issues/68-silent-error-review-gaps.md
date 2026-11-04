@@ -1,6 +1,6 @@
 # 68 -- silent-error-review can drop a real failure line and never closes the loop
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: investigative-cycles
 - **Severity**: P2
 - **File**: scripts/silent-error-review.py:95-116, 134-141
@@ -29,3 +29,10 @@ warnings are detectable.
 
 Feed a PostToolUse payload with `success:true` and output
 `==== 1 failed, 1 warning in 2.0s ====`; the hook prints nothing.
+
+## Answer
+Both gaps closed: the non-zero failure-count and exit-code patterns
+(`N failed`, `exit code N`, `exited with N`) were added to `strong_errors`,
+so a line like `1 failed, 1 warning` survives noise stripping and is
+flagged. Findings are also appended to the metrics sink (issue 67) as
+`silent-error-review` events, making repeat-ignored warnings detectable.

@@ -1,5 +1,5 @@
 # 82 -- scrape.py fetches arbitrary URLs with no scheme/host allowlist
-- **Status**: open
+- **Status**: resolved
 - **Category**: security
 - **Severity**: P3
 - **File**: extensions/scrape-tools/scrape.py:56-57
@@ -11,3 +11,8 @@ Parse with `urllib.parse.urlparse`; require scheme in {http, https}; resolve the
 This is a local agent tool, so full SSRF hardening may be disproportionate; a private-range opt-out flag preserves legitimate intranet scraping.
 ## Verification
 `python scrape.py http://127.0.0.1:<any-listener>/ --css body` succeeds today; add a test asserting it is rejected after the fix.
+
+## Answer
+`check_url_allowed` gates the initial request: scheme must be http/https; IP literals are checked directly; hostnames are resolved and rejected when any answer is loopback/private/link-local/multicast/reserved/unspecified. `--allow-private` is the explicit opt-out. Failure exits code 2 with `ssrf_blocked:...`. Tests cover file/gopher/ftp schemes, 127.0.0.1/169.254.169.254/10.x/::1, DNS-to-private, the opt-out flag, and unresolvable hosts.
+
+Status: resolved

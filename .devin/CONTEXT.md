@@ -87,6 +87,17 @@ The bundle does not own:
 | `.github/workflows/ci.yml` | CI validation source. |
 | `.devin/plans/` | Approved implementation roadmaps and sub-plans. |
 
+## Changelog contracts
+
+- `CHANGELOG.md` (root): release notes, Keep-a-Changelog format, one
+  section per tag. `#NNN` references are GitHub PRs; the in-repo tracker
+  for work items is `.devin/scratch/` (ADR 007).
+- `.devin/EXECUTION_CHANGELOG.md`: frozen per-effort log of the
+  `refactor/bundle-globalization` work. Historical artifact; do not
+  append. New per-effort logs live under `.devin/scratch/<effort>/`.
+- Subsystem archaeology: `.devin/research/INDEX.md` maps major
+  subsystems to their research/plan/handoff artifacts.
+
 ## Vocabulary constraints
 
 - Use **bundle** for repository-distributed resources.

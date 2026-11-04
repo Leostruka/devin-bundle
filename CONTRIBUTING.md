@@ -63,6 +63,15 @@ Hooks in `hooks.v1.json` must:
 - Have a timeout set
 - Be idempotent
 
+### Config File Ownership
+
+The repo carries two `mcp_config.json` files on purpose; they are not interchangeable:
+
+- **`mcp_config.json` (root)**: the distribution artifact. `install.ps1`/`install.sh` copy this file to `$DEVIN_HOME/mcp_config.json` on target machines. Edit it to change what installs elsewhere.
+- **`.devin/mcp_config.json`**: the runtime MCP config for this repository itself (project tooling). Edit it to change what this repo's agent sessions use.
+- The two files are expected to match today but serve different consumers; keep them in sync when editing shared server entries.
+- **`mcp_config.json.example`**: a documented example showing a populated `mcpServers` block. It is not copied by the installers and is not read at runtime.
+
 ### Export Before PR
 
 Before opening a PR, run the exporter to sync the bundle:
@@ -72,6 +81,27 @@ Before opening a PR, run the exporter to sync the bundle:
 ```
 
 This ensures the bundle is in sync with the live config.
+
+## Releasing
+
+Enforced by `.github/workflows/release.yml` and `audit.py` check 32.
+
+1. **Accumulate**: merged PRs add entries under `## [Unreleased]` in
+   `CHANGELOG.md`. Every PR must touch `[Unreleased]` (audit check 32).
+2. **Release PR**: one PR renames `## [Unreleased]` to `## [X.Y.Z]` with
+   the date and bumps `version` in `manifest.json` to `X.Y.Z`. No other
+   content changes; merge it to `main`.
+3. **Tag**: `git tag vX.Y.Z` on the merged commit on `main`, then
+   `git push origin vX.Y.Z`. The tag must be an ancestor of `main`
+   (orphan tags fail the workflow).
+4. **Verify**: `release.yml` checks tag ancestry, that
+   `manifest.json` version equals the tag, and that the `## [X.Y.Z]`
+   CHANGELOG section is non-empty, then creates the GitHub release
+   (adds `--prerelease` when the tag carries a suffix).
+
+Order matters: the CHANGELOG section and manifest bump must be merged
+before the tag is pushed, or the workflow fails and no release is
+created. Tag push rights are limited to maintainers.
 
 ### CI Checks
 

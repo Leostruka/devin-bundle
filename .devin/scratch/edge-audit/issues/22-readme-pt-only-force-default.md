@@ -1,5 +1,5 @@
 # 22 -- README is Portuguese-only and quick-start defaults to -Force
-- **Status**: open
+- **Status**: resolved
 - **Category**: user-experience
 - **Severity**: P3
 - **File**: README.md:9-27
@@ -17,3 +17,7 @@ Merits: lower onboarding friction, fewer accidental overwrites. Demerits: duplic
 
 ## Verification
 `head -30 README.md`; compare with `usage()` output of install.sh and the parameter block of install.ps1.
+
+## Answer
+
+Added an English `## Quick start` section before the Portuguese one: dry-run first, plain install for fresh machines, `-Force`/`--force` + `--backup` only for overwrites, with the same warnings mirrored in the Portuguese block.

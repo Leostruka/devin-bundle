@@ -1,6 +1,6 @@
 # 67 -- Metrics are written to stderr and never read; no per-skill or hook telemetry exists
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: metrics
 - **Severity**: P2
 - **File**: scripts/context-budget.py:1-7, scripts/memory-stop.py:31-32
@@ -37,3 +37,12 @@ gitignored avoids repo noise but loses cross-machine history.
 
 `grep -rn "open(.*a\b\|json.dump" scripts/context-budget.py scripts/memory-stop.py`
 returns nothing; stderr is the only output channel.
+
+## Answer
+Added a durable append-only sink: `emit_metric()` in scripts/_hookrun.py
+writes JSON lines to `.devin/ledgers/metrics.jsonl` (gitignored via
+`.devin/ledgers/*`). It is wired into _hookrun.run (event, scripts, wall
+duration, exit code - makes hook-bench/gate latency derivable),
+context-budget.py (token estimates now persisted), memory-stop.py (memory
+counts), and silent-error-review.py (finding counts). Never raises, so a
+metrics failure cannot break a hook.

@@ -1,5 +1,5 @@
 # 23 -- Near-duplicate skills create ambiguous discovery
-- **Status**: open
+- **Status**: resolved
 - **Category**: organization
 - **Severity**: P3
 - **File**: skills/context-hygiene/SKILL.md, skills/context-window-hygiene/SKILL.md, skills/context-folding/SKILL.md, skills/memory-hygiene/SKILL.md, skills/memory-management/SKILL.md, skills/project-memory/SKILL.md, skills/brag/SKILL.md, skills/brag-slim/SKILL.md
@@ -21,3 +21,16 @@ Merits: deterministic selection, smaller token cost at discovery time. Demerits:
 
 ## Verification
 Compare `description:` frontmatter of the listed files; run scripts/skill-picker.py with prompts like "conversation getting long, agent forgetting instructions" and observe which candidate set it emits.
+
+## Answer
+No skills merged or removed (manifest `original_path` and hook/doc references make renames a larger decision). Reconciliation table of recommended actions:
+
+| Pair / triple | Overlap | Recommended resolution |
+|---|---|---|
+| context-hygiene vs context-window-hygiene | Near-verbatim triggers ("forgetting earlier instructions", "clear vs compact") | Merge into `context-hygiene` (superset: also covers >50k docs and subagent fan-out); redirect context-window-hygiene |
+| context-hygiene vs context-folding | Both trigger on "context growing large" | Keep both; sharpen boundary: folding = RLM-style recursive processing of long documents, hygiene = clear/compact/session budgeting. Differentiate `description:` fields |
+| memory-hygiene vs memory-management | Same triggers verbatim; memory-management self-scopes to "memory hygiene only" | Merge into one skill (`memory-management`); rename survivor to a distinct verb per recommendation |
+| project-memory vs memory-* | Partial: capture-side of memory | Keep `project-memory` as the capture/write skill; scope the merged memory skill to audit/staleness decisions only |
+| brag vs brag-slim | Same "/brag" phrase family; precedence only inside SKILL.md body | Declare precedence in `manifest.json` `purpose` fields (brag-slim handles bare /brag when brag absent); or merge into brag with a slim mode |
+
+Follow-up: apply merges in a dedicated lane (touches `manifest.json`, `SKILL-TIERS.md`, `scripts/skill-picker.py` results).

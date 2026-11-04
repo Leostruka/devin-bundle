@@ -1,6 +1,6 @@
 # 63 -- Partially masked credentials.toml passes the secrets gate
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: applied-rules
 - **Severity**: P2
 - **File**: scripts/check-push-green.py:112-132
@@ -25,3 +25,11 @@ masked or the file excluded from the commit entirely.
 
 Create credentials.toml with `a = "MASKED"` and `b = "real-secret-value"`;
 feed a `git push` payload to the hook; it exits 0.
+
+## Answer
+Per-entry check implemented. credentials.toml: every `key = "value"` whose
+key is secret-shaped (api_key/token/secret/password/private_key/credential)
+must equal MASKED - one masked entry no longer clears real secrets.
+mcp_config.json: each secret-shaped JSON value is inspected individually via
+finditer; any non-MASKED value of length >= 4 blocks, regardless of MASKED
+placeholders elsewhere in the file.

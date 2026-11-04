@@ -1,5 +1,5 @@
 # 09 -- export.sh validation py_compile writes __pycache__ into bundle scripts/
-- **Status**: open
+- **Status**: resolved
 - **Category**: optimization
 - **Severity**: P3
 - **File**: export.sh:529-540
@@ -26,3 +26,7 @@ None.
 
 ## Verification
 `find scripts -name __pycache__` empty after a `--push` validation run.
+
+## Answer
+
+Pre-push script validation now runs `python -c 'ast.parse(...)'` instead of py_compile, so no __pycache__/.pyc is written into bundle scripts/ (same approach as export.ps1 Test-PythonSyntax).

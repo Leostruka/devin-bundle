@@ -22,6 +22,12 @@ count — exact counts require the model provider's tokenizer.
 """
 import sys, os, json, argparse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from _hookrun import emit_metric
+except Exception:
+    emit_metric = None
+
 
 def devin_home():
     """Return the Devin user config home.
@@ -166,6 +172,14 @@ def report(path, as_json=False, simulated_tokens=None):
             pass
 
     total_tok = tok + extra_total_tok
+    if emit_metric is not None:
+        emit_metric(
+            "context-budget",
+            file=path,
+            estimated_tokens=tok,
+            extra_rules_tokens=extra_total_tok,
+            total_rules_tokens=total_tok,
+        )
     smart_zone_share = 100.0 * total_tok / smart_zone_tokens
 
     share_rows = []

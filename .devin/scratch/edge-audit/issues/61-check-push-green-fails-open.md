@@ -1,6 +1,6 @@
 # 61 -- check-push-green fails open on timeout, error, and missing framework
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: applied-rules
 - **Severity**: P1
 - **File**: scripts/check-push-green.py:60-71, 177
@@ -33,3 +33,11 @@ full-suite cost.
 Run `python -c "print(open('scripts/check-push-green.py').read()[1800:2600])"`
 or time `python -m pytest --collect-only -q`; confirm it exceeds 45s, then
 confirm the hook would still allow `git push`.
+
+## Answer
+Fail-closed implemented: `run_check` now returns a status
+("pass"/"fail"/"timeout"/"unavailable") and the main gate blocks on anything
+but "pass", so a timed-out or unrunnable suite can no longer degrade the
+gate to a no-op. The no-framework path now distinguishes the two cases: a
+`tests/` directory without a framework marker blocks with an explanatory
+message; a project with neither logs "gate skipped" to stderr and allows.

@@ -166,6 +166,35 @@ def handle_stop(_data):
                 "stopping (AGENTS.md Rule 2)."
             )
 
+    # Untracked files never appear in a diff; a signature written via exec
+    # redirect (cat > file, heredoc) would otherwise escape the Stop scan.
+    try:
+        result = _run(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            capture_output=True, text=True, timeout=10, cwd=cwd,
+            encoding="utf-8", errors="replace",
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return  # no git or no repo: allow
+    if result.returncode != 0:
+        return
+    for rel in result.stdout.split():
+        if any(rel.replace("\\", "/").endswith(sf) for sf in self_files):
+            continue
+        path = os.path.join(cwd, rel)
+        try:
+            if os.path.getsize(path) > 200_000:
+                continue
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read()
+        except (OSError, IOError):
+            continue
+        if check_text(content):
+            block(
+                f"AI signature detected in untracked file '{rel}'. Remove it "
+                "before stopping (AGENTS.md Rule 2)."
+            )
+
 
 def handle_pre_tool_use(data):
     tool_name = data.get("tool_name", "") or ""

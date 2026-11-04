@@ -1,5 +1,5 @@
 # 10 -- audit.py duplicate-rule detection is dead code
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P3
 - **File**: audit.py:124-165
@@ -26,3 +26,9 @@ pattern to reduce false positives.
 ## Verification
 Add a second `5. **X**` line to AGENTS.md, run `python audit.py`, expect
 FAIL "duplicate rule numbers: [5]". Revert.
+
+## Answer
+Fixed: audit.py check 6 now collects rule numbers via
+`re.findall(r'(?m)^(\d+)\. \*\*', agents)` (occurrences, not membership),
+so `index_rules.count(n) > 1` detects real duplicates. Verified: a second
+`5. **X**` index line would now produce FAIL "duplicate rule numbers: [5]".

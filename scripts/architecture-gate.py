@@ -21,8 +21,9 @@ Scope:
     cp/mv/rm, sed -i, mkdir, touch, Set-Content, etc.). Read-only commands
     (ls, cat, grep, git, pytest, cargo, python) pass — the agent must stay
     free to investigate before proposing an architecture.
-  - Escape hatch: any exec command mentioning ARCHITECTURE_MANIFEST is
-    allowed so the manifest can be created via shell.
+  - The manifest is created via the write/edit tools (exempted above), so
+    exec commands get no escape hatch: mentioning ARCHITECTURE_MANIFEST in a
+    comment must not unblock source mutations.
   - Projects without a .devin/ ancestor are not gated.
   - Fail-open on any error.
 """
@@ -103,8 +104,6 @@ def check_exec(tool_input):
     command = tool_input.get("command", "") or ""
     if not command.strip():
         return
-    if MANIFEST_NAME in command:
-        return  # escape hatch: allow creating the manifest via shell
     # Strip quoted spans so prose inside -m "a > b" does not false-positive.
     scan = DQUOTED_RE.sub('""', SQUOTED_RE.sub("''", command))
     if not MUTATING_RE.search(scan):

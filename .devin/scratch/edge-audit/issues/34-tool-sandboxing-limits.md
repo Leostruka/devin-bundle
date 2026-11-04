@@ -1,6 +1,6 @@
 # 34 -- Per-skill/agent tool sandboxing limited to validate-tool-args plus allowed-tools frontmatter
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: devin-cli-limitations
 - **Severity**: P2
 - **File**: scripts/validate-tool-args.py:1-55
@@ -22,3 +22,13 @@ Use `session_id`-keyed state: when `run_subagent` fires, record the dispatched p
 ## Verification
 
 `grep -n 'profile\|agent' scripts/validate-tool-args.py` shows no per-profile policy table; TOOLS-MAP.md documents 9 tools excluded from validation as "trivial".
+
+## Answer
+Implemented the session-keyed profile approach in scripts/validate-tool-args.py:
+on `run_subagent` the dispatched profile is recorded to
+`<devin_home>/state/subagent-<session_id>.json`, and PROFILE_DENY blocks
+denied tools (researcher/reviewer/issue-tracker/triage-labels lose `exec`).
+Because `session_id` is session-wide in the CLI, enforcement requires the
+payload to identify a subagent context (`agent_id`/`subagent_id`/`is_subagent`)
+so the parent agent's own calls are never denied; where the CLI does not
+surface that field the mechanism is record-only. Tests cover both paths.

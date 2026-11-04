@@ -1,6 +1,6 @@
 # 64 -- AI-signature Stop scan never sees untracked files
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: applied-rules
 - **Severity**: P2
 - **File**: scripts/check-ai-signature.py:140-143
@@ -23,3 +23,9 @@ contents of new files (bounded size) against `PATTERN`.
 
 Write a new file containing a signature line via exec redirect, do not stage
 it, then send a Stop payload; the hook exits 0 instead of blocking.
+
+## Answer
+handle_stop now runs `git ls-files --others --exclude-standard` and scans
+each untracked file (<=200KB) against PATTERN, skipping detector self-files.
+Signatures written via exec redirects (cat > file, heredoc) into
+never-staged files are now caught and block the Stop.

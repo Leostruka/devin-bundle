@@ -1,6 +1,6 @@
 # 31 -- Hook event coverage gap: PreCompact/PostCompact unwired, dual PostCompaction contract
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: devin-cli-limitations
 - **Severity**: P3
 - **File**: hooks.v1.json:1-113
@@ -22,3 +22,7 @@ Add explicit matchers for `PreCompact`/`PostCompact` (even if only logging or de
 ## Verification
 
 `grep -n 'PreCompact\|PostCompact' hooks.v1.json` returns nothing; `grep -n 'PostCompaction' hooks.v1.json` shows the only compaction hook.
+
+## Answer
+
+Documented the dual compaction contract in TOOLS-MAP.md hook notes: `PostCompaction` is the canonical pinning event; `PostCompact`/`PreCompact` are deliberately unwired (double-fire risk on constraint-pinning; migration path = rewire PostCompact with a session_id idempotency marker). Wiring change deferred to CLI deprecation since hooks.v1.json is owned elsewhere.

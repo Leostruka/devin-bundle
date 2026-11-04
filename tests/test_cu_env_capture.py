@@ -4,6 +4,7 @@ path that provably never touches host mss.
 """
 import io
 import json
+import os
 import struct
 import sys
 import threading
@@ -349,3 +350,19 @@ def test_daemon_serves_over_real_socket(env_dir):
         assert bad["ok"] is False
         assert "unauthorized" in bad["error"]
     qemu.kill()
+
+
+def test_write_private_owner_only_perms(tmp_path):
+    """ready.json carries the TCP auth token; it must be owner-only."""
+    p = tmp_path / "ready.json"
+    cu_env_daemon._write_private(p, '{"token": "t0k"}')
+    assert p.read_text() == '{"token": "t0k"}'
+    if os.name != "nt":
+        assert (p.stat().st_mode & 0o777) == 0o600
+    # rewrite over a broader-perm file must tighten it
+    p.write_text("x")
+    if os.name != "nt":
+        p.chmod(0o644)
+    cu_env_daemon._write_private(p, "y")
+    if os.name != "nt":
+        assert (p.stat().st_mode & 0o777) == 0o600

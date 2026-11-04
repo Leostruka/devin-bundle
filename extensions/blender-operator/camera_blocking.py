@@ -115,10 +115,13 @@ class OwnershipError(RuntimeError):
 def _owned_request(port, proc, nonce_box, payload, timeout=30):
     """Send payload only to the responder proven to be our spawned proc.
 
-    Identity = pid match on the Popen object plus a stable server nonce
-    pinned at first verified contact. Any request carries the pinned nonce
-    so a foreign server that races onto the port rejects exec/shutdown.
+    Identity = pid match on the Popen object plus the server nonce
+    pinned from the owner-only nonce file the spawned server writes
+    before it binds. Requests carry the pinned nonce so a foreign
+    server that races onto the port rejects exec/shutdown.
     """
+    if nonce_box[0] is None:
+        nonce_box[0] = wrapper._load_nonce(port)
     if nonce_box[0] is not None:
         payload = dict(payload, nonce=nonce_box[0])
     resp = wrapper._request(port, payload, timeout=timeout)
@@ -128,11 +131,6 @@ def _owned_request(port, proc, nonce_box, payload, timeout=30):
     if pid != proc.pid:
         raise OwnershipError(
             f"foreign responder pid {pid} != owned pid {proc.pid}")
-    nonce = (resp or {}).get("nonce")
-    if nonce_box[0] is None:
-        nonce_box[0] = nonce
-    elif nonce != nonce_box[0]:
-        raise OwnershipError("responder nonce changed mid-session")
     if proc.poll() is not None:
         raise OwnershipError("owned blender process exited")
     return resp
@@ -197,8 +195,13 @@ def run(p):
                 "errors": [f"port {p['port']} already serves a blender; "
                            "refusing to share — pick another --port"]}
 
+    try:
+        os.remove(wrapper.nonce_file_for(p["port"]))
+    except OSError:
+        pass
     argv = [blender, "-b", "--factory-startup", "--python", SERVER,
-            "--", "--port", str(p["port"])]
+            "--", "--port", str(p["port"]),
+            "--nonce-file", wrapper.nonce_file_for(p["port"])]
     kw = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL,
           "stderr": subprocess.DEVNULL}
     if os.name == "nt":

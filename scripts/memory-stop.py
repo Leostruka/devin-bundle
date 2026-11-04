@@ -8,6 +8,12 @@ unconditional reporting on every Stop re-prompts the agent in a loop.
 import json, os, sys
 from datetime import date
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from _hookrun import emit_metric
+except Exception:
+    emit_metric = None
+
 
 def get_memory_dir():
     """Resolve memory directory from env, falling back to project .devin/memory."""
@@ -51,6 +57,10 @@ def main():
     decisions = count_md(os.path.join(BASE, 'decisions'))
     logbook = count_md(os.path.join(BASE, 'logbook'))
     total = notes + decisions + logbook
+
+    if emit_metric is not None:
+        emit_metric('memory-stop', notes=notes, decisions=decisions,
+                    logbook=logbook, total=total)
 
     if total == 0:
         sys.exit(0)

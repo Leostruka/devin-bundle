@@ -1,8 +1,8 @@
-# Tools Map — mapeamento completo do runtime
+# Tools Map - mapeamento completo do runtime
 
 Mapeia TODAS as ferramentas, subagentes, hooks, e configs do Devin CLI
 runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
-(versão validada: `{{VALIDATED_CLI_VERSION}}` em `data/bundle-identity.json`).
+(versão validada: `3000.11.234` em `data/bundle-identity.json`).
 
 ## Ferramentas do runtime (26 ativas + 2 modo-dependentes)
 
@@ -40,35 +40,43 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 **Cobertura: 19/28 ferramentas com validator + hook matcher. 9 excluídas
 (trivial/no-op: get_output, write_to_process, kill_shell, read_subagent,
 close_browser_preview, mcp_list_tools, mcp_list_servers, apply_patch,
-exit_plan_mode) — o tool falha claramente sem validação do hook.**
+exit_plan_mode) - o tool falha claramente sem validação do hook.**
 
 ## Subagentes (13 perfis)
 
 | Perfil | Tipo | Modelo | Tools | Bundle agent file |
 |---|---|---|---|---|
 | `subagent_explore` | Built-in | Default router (veja `data/bundle-models.json` aliases) | Read-only + web_search | — (built-in) |
-| `subagent_general` | Built-in | Herda parent (`{{BUNDLE_DEFAULT_MODEL}}`) | Full (fg) / pre-approved (bg) | — (built-in) |
-| `architect` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
-| `debugger` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
-| `implementer` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
-| `researcher` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
-| `reviewer` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
-| `qa-ci` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read-only + exec (verify only) | `agents/qa-ci.md` |
-| `red-team-lead` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | red-team skills + offsec wrappers | `agents/red-team-lead.md` |
-| `product-manager` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec, web_* | `agents/product-manager.md` |
-| `tech-lead` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec, web_search | `agents/tech-lead.md` |
-| `art-director` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/art-director.md` |
-| `security-auditor` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/security-auditor.md` |
-| `scrum-master` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/scrum-master.md` |
-| `copywriter` | Custom | Medium (`{{BUNDLE_MEDIUM_MODEL}}`) | read, write, edit, grep, glob, exec | `agents/copywriter.md` |
-| `thermo-nuclear-review-subagent` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read-only + exec (verify only) | `agents/thermo-nuclear-review-subagent.md` |
-| `thermo-nuclear-code-quality-review-subagent` | Custom | Max (`{{BUNDLE_MAX_MODEL}}`) | read-only + exec (verify only) | `agents/thermo-nuclear-code-quality-review-subagent.md` |
+| `subagent_general` | Built-in | Herda parent (`BUNDLE_DEFAULT_MODEL` (`swe-2-high`)) | Full (fg) / pre-approved (bg) | — (built-in) |
+| `architect` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
+| `debugger` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
+| `implementer` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
+| `researcher` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
+| `reviewer` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
+| `qa-ci` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/qa-ci.md` |
+| `red-team-lead` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | red-team skills + offsec wrappers | `agents/red-team-lead.md` |
+| `product-manager` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec, web_* | `agents/product-manager.md` |
+| `tech-lead` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec, web_search | `agents/tech-lead.md` |
+| `art-director` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, edit, grep, glob, exec | `agents/art-director.md` |
+| `security-auditor` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec | `agents/security-auditor.md` |
+| `scrum-master` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec | `agents/scrum-master.md` |
+| `copywriter` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, edit, grep, glob, exec | `agents/copywriter.md` |
+| `thermo-nuclear-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-review-subagent.md` |
+| `thermo-nuclear-code-quality-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-code-quality-review-subagent.md` |
 
 **Estratégia de modelo:**
 - `subagent_explore` (built-in): default router do CLI — verifique `data/bundle-models.json` aliases; evite em modo free.
-- Custom agents: pin `{{BUNDLE_MAX_MODEL}}` (Max) ou `{{BUNDLE_MEDIUM_MODEL}}` (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. NÃO usar aliases pagos não verificados (veja `data/bundle-models.json`).
+- Custom agents: pin `BUNDLE_MAX_MODEL` (`swe-2-max`) (Max) ou `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`) (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. NÃO usar aliases pagos não verificados (veja `data/bundle-models.json`).
   - Sem pin, custom agents usam o default router do CLI (possivelmente pago).
-- Para trabalho que precisa do parent: usar `subagent_general` (herda parent) ou pin `model: {{BUNDLE_DEFAULT_MODEL}}` no agent.
+- Para trabalho que precisa do parent: usar `subagent_general` (herda parent) ou pin `model: swe-2-high` no agent.
+
+**Contrato do registro (`data/bundle-models.json`):** todo `model:` pin em
+`agents/*.md` deve resolver para um `model_uid` declarado no registro; pins
+com `cost_tier: paid` exigem justificativa documentada. Overrides por
+instalação vivem nas env vars `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL` /
+`BUNDLE_DEFAULT_MODEL`. Hoje o contrato é convenção (AGENTS.md rule 20 +
+MODEL-GUIDE.md); enforcement via `audit.py` e validação de overrides no
+render está planejado.
 
 **VALID_PROFILES no validate-tool-args.py:**
 architect, art-director, copywriter, debugger, domain, implementer,
@@ -77,40 +85,41 @@ reviewer, scrum-master, security-auditor, subagent_explore,
 subagent_general, tech-lead, thermo-nuclear-code-quality-review-subagent,
 thermo-nuclear-review-subagent, triage-labels. 20 perfis validados.
 
-## Hooks (8 eventos, 21 scripts)
+## Hooks (8 eventos, 10 entry points, 33 scripts)
 
-| Evento | Matcher | Script(s) | Função |
-|---|---|---|---|
-| PreToolUse | `^exec$` | destructive-gate.py | Bloqueia ops destrutivas |
-| PreToolUse | `^exec$` | architecture-gate.py | Bloqueia mutações sem manifesto |
-| PreToolUse | `^(write\|edit\|notebook_edit)$` | architecture-gate.py | Bloqueia edits sem ARCHITECTURE_MANIFEST |
-| PreToolUse | `^exec$` | check-ai-signature.py | Bloqueia assinaturas AI |
-| PreToolUse | `^exec$` | check-push-green.py | Bloqueia push sem green |
-| PreToolUse | `^exec$` | laya-guard.py | Camada 4: laya cmd-risk-v1 em gray-zone (off/shadow/assist, fail-degraded) |
-| PreToolUse | `^(write\|edit)$` | check-ai-signature.py | Bloqueia assinaturas AI em writes |
-| PreToolUse | `^(write\|edit)$` | validate-mermaid.py | Valida Mermaid em writes |
-| PreToolUse | 19 tool names | validate-tool-args.py | Valida argumentos (ALTK SPARC) |
-| PostToolUse | `^(exec\|mcp_call_tool)$` | silent-error-review.py | Revisa erros silenciosos (ALTK scope) |
-| PostToolUse | `^(exec\|mcp_call_tool)$` | context-pressure.py | Reporta context pressure e padrões de tools caras (Rule 18) |
-| PostToolUse | `^exec$` | memory-post-exec.py | Injeta memórias por symbol/keyword após exec |
-| PostToolUse | `^(exec\|mcp_call_tool\|write\|edit)$` | compact-gate.py | Camada 7: decide trigger de compactação (pressão + trajetória via laya) |
-| PostToolUse | `^(write\|edit)$` | memory-post-edit.py | Injeta memórias por path após write/edit |
-| PostCompaction | — | constraint-pinning.py | Detecta constraints dropadas |
-| UserPromptSubmit | — | constraint-pinning.py | Re-injeta constraints |
-| UserPromptSubmit | — | behavioral-nudge.py | Nudge behavioral self-check (Rules 7,8,4,17) |
-| UserPromptSubmit | — | memory-retrieval.py | Recupera memórias de `.devin/memory/` por cues |
-| UserPromptSubmit | — | skill-picker.py | Hints lexicais de skills do manifest (<=3, read-only, nunca invoca) |
-| UserPromptSubmit | — | compact-gate.py | Sonda de escopo: reavalia trigger de compactação em novo prompt |
-| SessionStart | — | constraint-pinning.py | Limpa markers stale |
-| SessionStart | — | context-budget.py | Reporta token cost |
-| SessionEnd | — | memory-stop.py | Log do estado de `.devin/memory/` no fim de sessão |
-| Stop | — | check-ai-signature.py | Verifica assinaturas no fim |
-| Stop | — | refine-review-prompt.py | Prompt de refine review |
-| Stop | — | memory-stop.py | Log do estado de `.devin/memory/` |
+Duas camadas: `hooks.v1.json` liga 10 entry points consolidados; cada
+entry point agregador executa seus scripts internos num único processo
+via `scripts/_hookrun.py` (merge rules em `.devin/docs/HOOKS-PIPELINE.md`,
+fluxo em `.devin/docs/diagrams/hook-event-flow.md`). Scripts internos
+NUNCA são ligados diretamente em `hooks.v1.json` (ver
+`.devin/adr/006-hook-consolidation.md`); a fonte única é `hooks.v1.json`,
+renderizada para `config.json.hooks` no install (ver
+`.devin/adr/005-hooks-single-source.md`).
+
+| Evento | Matcher | Entry point | Scripts internos (ordem) | fail_closed |
+|---|---|---|---|---|
+| PreToolUse | `^exec$` | `pre-exec-guard.py` (300s) | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard | sim |
+| PreToolUse | `^(write\|edit\|notebook_edit)$` | `pre-write-guard.py` (90s) | always: architecture-gate, validate-tool-args, no-em-dash; + check-ai-signature, validate-mermaid apenas em `write`/`edit` | sim |
+| PostToolUse | `^(exec\|mcp_call_tool)$` | `post-exec.py` (30s) | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect | não |
+| PostToolUse | `^(write\|edit)$` | `memory-post-edit.py` (10s) + `compact-gate.py` (15s) | entry points diretos (sem agregador) | não |
+| PostCompaction | (nenhum) | `constraint-pinning.py` (5s) | direto; evento canônico de pinning | não |
+| UserPromptSubmit | (nenhum) | `user-prompt.py` (20s) | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate | não |
+| SessionStart | (nenhum) | `session-start.py` (10s) | constraint-pinning, context-budget | não |
+| Stop | (nenhum) | `stop-guard.py` (25s) | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash | não |
+| SessionEnd | (nenhum) | `memory-stop.py` (5s) | direto | não |
+| PermissionRequest | (nenhum) | (array vazio) | nenhum hook ligado | não |
+
+Merge semantics (`_hookrun.run`): qualquer `decision: block` vence (a
+razão do primeiro blocker é preservada; exit 2 propaga);
+`additionalContext` concatena na ordem; `updatedInput` faz shallow-merge;
+stdout não-JSON vai para stderr; um script interno que falha é fail-open
+(log em stderr, não bloqueia). `fail_closed: true` na entrada do
+hooks.v1.json cobre apenas falha do próprio entry point.
 
 **Eventos disponíveis no runtime mas não utilizados pelo bundle:**
-- `PermissionRequest`: dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`.
-- `PreCompact` / `PostCompact` (3000.11.92): disparam antes/depois da compactação; matchers `manual`/`auto`; falhas não bloqueiam. `PostCompaction` segue suportado e é o evento usado por `constraint-pinning.py`.
+- `PermissionRequest`: dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`. Ligado com array vazio (documenta intenção de não interceptar).
+- `PreCompact` (3000.11.92): dispara antes da compactação; matcher `manual`/`auto`; falhas não bloqueiam. Não ligado: nenhum script do bundle precisa agir antes da compactação; `compact-gate.py` já decide o trigger antes.
+- `PostCompact` (3000.11.92): contrato novo, coexiste com `PostCompaction` (legacy, ainda suportado). `PostCompaction` é o evento canônico do pinning hoje; `PostCompact` fica deliberadamente desligado para não disparar `constraint-pinning.py` duas vezes por compactação. Se o CLI deprecar `PostCompaction`, migrar o matcher para `PostCompact` com um marker por `session_id` para idempotência.
 
 **Campos de hook novos (3000.11.205 / 3000.11.234):**
 - `fail_closed: true` na entrada do hook: falha do próprio hook bloqueia a ação guardada. Adotado nos dois matchers `PreToolUse` (verificado empiricamente); demais hooks seguem fail-open.
@@ -131,7 +140,7 @@ thermo-nuclear-review-subagent, triage-labels. 20 perfis validados.
 | AGENTS.md | `./AGENTS.md` | `~/.config/devin/AGENTS.md` | Regras globais (20 regras) |
 | config.json | `./config.json` | `~/.config/devin/config.json` | Modelo, hooks, theme |
 | mcp_config.json | `./mcp_config.json` | `~/.config/devin/mcp_config.json` | MCP servers |
-| hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks; também template `.devin/` |
+| hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks (`.devin/adr/005-hooks-single-source.md`); também template `.devin/` |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 13 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
@@ -175,7 +184,7 @@ O bundle carrega servidores MCP a partir de `mcp_config.json` no Devin home do u
 
 **Nota:** O modo é controlado pelo usuário na UI, não pelo agente. O agente
 não escolhe o modo. Em `normal` (default), o runtime pede aprovação para
-tools com side effects — não é o agente pedindo, é o runtime.
+tools com side effects - não é o agente pedindo, é o runtime.
 
 ## Comandos do CLI (3000.11.x)
 
@@ -216,13 +225,13 @@ exportam eventos/métricas para um collector OpenTelemetry; não adotado
   e `e` para editar o comando.
 - Steering agora interrompe imediatamente preservando comandos longos.
 
-## Modelos disponíveis (Devin CLI `{{VALIDATED_CLI_VERSION}}`)
+## Modelos disponíveis (Devin CLI `3000.11.234`)
 
 | model_uid | Label | Effort | Context | Custo | Recomendado |
 |---|---|---|---|---|---|
-| `{{BUNDLE_DEFAULT_MODEL}}` | SWE-2 High (parent) | high | 262K | **Free** | ✓ (config.json) |
-| `{{BUNDLE_MEDIUM_MODEL}}` | SWE-2 Medium | medium | 262K | **Free** | Tarefas simples, ajustes pontuais, scripts isolados |
-| `{{BUNDLE_MAX_MODEL}}` | SWE-2 Max | max | 262K | **Free** | Tarefas abertas, refactors globais, long-horizon |
+| `BUNDLE_DEFAULT_MODEL` (`swe-2-high`) | SWE-2 High (parent) | high | 262K | **Free** | ✓ (config.json) |
+| `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`) | SWE-2 Medium | medium | 262K | **Free** | Tarefas simples, ajustes pontuais, scripts isolados |
+| `BUNDLE_MAX_MODEL` (`swe-2-max`) | SWE-2 Max | max | 262K | **Free** | Tarefas abertas, refactors globais, long-horizon |
 | `paid_model_alias` | Paid alias | — | see registry | see registry | NUNCA usar sem confirmar `data/bundle-models.json` |
 | `adaptive` | Paid router | see registry | — | see registry | Não usar em modo free |
 | `opus` | Paid model | Anthropic | — | see registry | Não usar em modo free |
@@ -231,7 +240,7 @@ exportam eventos/métricas para um collector OpenTelemetry; não adotado
 | `codex` | Paid model | OpenAI | — | see registry | Não usar em modo free |
 | `gemini` | Paid model | Google | — | see registry | Não usar em modo free |
 
-**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (lido de `data/bundle-models.json` com `cost_tier: free`), NUNCA usar modelos pagos para subagents. Short names/aliases (`opus`, `sonnet`, `codex`, `gemini` etc.) podem resolver para entradas pagas — verifique `data/bundle-models.json` antes de usar. Use o parent (`{{BUNDLE_DEFAULT_MODEL}}`) e os subagent models (`{{BUNDLE_MAX_MODEL}}` / `{{BUNDLE_MEDIUM_MODEL}}`) do registro. Quando o parent é pago, subagents podem usar pagos.
+**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (lido de `data/bundle-models.json` com `cost_tier: free`), NUNCA usar modelos pagos para subagents. Short names/aliases (`opus`, `sonnet`, `codex`, `gemini` etc.) podem resolver para entradas pagas - verifique `data/bundle-models.json` antes de usar. Use o parent (`BUNDLE_DEFAULT_MODEL` (`swe-2-high`)) e os subagent models (`BUNDLE_MAX_MODEL` (`swe-2-max`) / `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) do registro. Quando o parent é pago, subagents podem usar pagos.
 
 ## Context budget (parent model)
 

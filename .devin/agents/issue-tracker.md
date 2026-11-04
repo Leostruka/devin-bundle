@@ -14,6 +14,10 @@ allowed-tools:
 # Issue tracker: Local Markdown
 
 Issues and specs for this repository live under `.devin/scratch/`.
+Decision record: `.devin/adr/007-scratch-issue-tracker.md`.
+`.devin/scratch/<effort>/` holds per-effort work items;
+`.devin/issues/` holds milestone- and design-level issues
+(`ISSUE_*`, `MILESTONE_*`). GitHub Issues is the external intake only.
 
 ## Conventions
 

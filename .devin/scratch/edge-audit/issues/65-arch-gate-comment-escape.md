@@ -1,6 +1,6 @@
 # 65 -- architecture-gate exec escape is a comment-level bypass
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: applied-rules
 - **Severity**: P2
 - **File**: scripts/architecture-gate.py:106-107
@@ -28,3 +28,9 @@ already exempt, so no legitimate path is lost.
 
 In a .devin project without the manifest, run an exec payload for
 `echo hi > x.py # ARCHITECTURE_MANIFEST`; the hook exits 0.
+
+## Answer
+Removed the exec escape hatch entirely. The manifest is created via the
+write/edit tools, which are already exempt, so no legitimate path is lost;
+`echo x > src/a.py  # ARCHITECTURE_MANIFEST` now correctly blocks. Docstring
+updated to document the removal.

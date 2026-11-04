@@ -1,5 +1,5 @@
 # 02 -- install.sh config merge discards every local key except org_id
-- **Status**: open
+- **Status**: resolved
 - **Category**: code-optimization
 - **Severity**: P2
 - **File**: install.sh:319-336
@@ -28,3 +28,7 @@ the degraded mode, or keep as is.
 ## Verification
 Local config with `"theme":"dark"` + bundle without it; run install.sh
 non-force; assert `jq -r .theme config` still returns "dark".
+
+## Answer
+
+The jq path is now a real deep-merge: `jq -s '.[0] * .[1]' bundle local` (recursive, local wins) matching install.ps1 Merge-Hashtables semantics. All local-only keys survive, not just org_id. Verified by test_jq_deep_merge_preserves_local_keys.

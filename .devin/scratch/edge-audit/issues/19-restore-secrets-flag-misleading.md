@@ -1,5 +1,5 @@
 # 19 -- --restore-secrets flag promises more than it does
-- **Status**: open
+- **Status**: resolved
 - **Category**: user-experience
 - **Severity**: P3
 - **File**: install.sh:25, 451-479, 487-491
@@ -18,3 +18,7 @@ Reword `usage()` to describe actual behavior (e.g. "opt in to installing credent
 
 ## Verification
 Run `./install.sh --restore-secrets --dry-run` with masked files: the only difference vs a plain run is extra warning lines; no restore occurs.
+
+## Answer
+
+usage() now says --restore-secrets opts in to installing files with real values and that MASKED values cannot be restored automatically; the misleading 'not implemented yet' mcp message was replaced by the documented --force-placeholder path.

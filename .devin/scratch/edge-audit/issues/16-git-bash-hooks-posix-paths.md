@@ -1,5 +1,5 @@
 # 16 -- Git Bash install renders hook commands with POSIX paths Windows python cannot open
-- **Status**: open
+- **Status**: resolved
 - **Category**: user-experience
 - **Severity**: P2
 - **File**: install.sh:170-180, 380; scripts/render-user-hooks.py:36-42
@@ -19,3 +19,7 @@ Merits: hooks actually fire on Git Bash installs; fail_closed guards stop bricki
 
 ## Verification
 On Git Bash: `cygpath -u "$APPDATA"` yields `/c/...`; inspect `%APPDATA%\devin\config.json` `hooks` after `./install.sh` and observe `"command": "pythonw \"/c/Users/.../scripts/...\""`. Attempting `python "/c/Users/.../scripts/session-start.py"` in cmd.exe fails with `can't open file`.
+
+## Answer
+
+On MINGW/MSYS/CYGWIN the installer passes `cygpath -w "$DEVIN_HOME"` to render-user-hooks.py so rendered hook commands are valid Win32 paths for the native CLI; a post-render check warns + records a skip if scripts/pre-exec-guard.py is missing at the rendered target.

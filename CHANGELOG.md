@@ -7,19 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.19.0] - 2026-11-04
+
 ### Added
 
+- **Edge-to-edge workspace audit corpus** (#297): 68 verified issues under `.devin/scratch/edge-audit/` (spec + map + issues) covering optimization, UX, code, organization, investigative cycles, traceability, metrics, adaptability, best practices, devin-cli limitations with workaround tradeoffs, documentation, diagrams, business logic, algorithm translation, applied rules, rationale, ADR, versioning.
+- **Subsystem docs and ADRs**: `.devin/docs/HOOKS-PIPELINE.md`, `MEMORY-PIPELINE.md`, `INSTALL-PARITY.md`, `DRIFT-LEDGER.md`, `BUSINESS-LOGIC.md` (rules R1-R19 with code anchors); ADRs 005-008 (hooks.v1.json single-source, hook consolidation, scratch issue tracker, vendored-skill policy); mermaid diagrams under `.devin/docs/diagrams/` (hook event flow, thermos dual-lane, de-slop sequence, export cycle); CONTRIBUTING gained a Releasing section and README an English quick-start.
 - **Reels-adoption skill wave** (#293): `lean-code` (Ponytail minimal-code port, MIT), `security-audit-cf` (vendored Cloudflare security-audit, MIT, renamed to avoid collision), `shorts-factory` (shorts pipeline composing tts/asr/remotion/ffmpeg) + `extensions/stock-footage` Pexels/Pixabay fetcher (env-key gated, typed JSON); `extensions/voicebox` gained a `--backend voicestudio` OpenAI-compatible path at 127.0.0.1:3900 (voicebox path unchanged); `extensions/media-tools` gained JPEG XL codec `jxl.py` + `jxl_bootstrap.py` (pinned sha256-verified libjxl).
 - **Forensic testkit** (#294): `forensic-debugging` (escalation-tier debugging protocol: mandatory trace ledger, invariant map, hypothesis falsification table, three-axis bisection, probe lattice, root-cause proof) and `edge-coverage` (suite-construction standard: mandatory Edge Inventory driving every test; input/state/error/concurrency/oracle matrices; coverage reported by inventory) with cross-references from `debugging`, `edge-cases`, `testing`.
 - **Quality-skills wave** (#295; cursor/plugins MIT vendors, adapted to Devin `run_subagent`): `thermo-nuclear-code-quality-review`, `thermo-nuclear-review`, `thermos` (dual-lane parallel review orchestrator) + `agents/thermo-nuclear-*-subagent.md` profiles; `unslop` (AI-tell cleanup for prose); `typescript-best-practices` (principle refs inlined); `vercel-react-best-practices` (Vercel rulebook, 70 rules); `no-comments` (port: comment-sicko rubric via `reviewer` profile); `de-slop` (composite simplification pass sequencing lean-code/no-comments/unslop/thermo per diff). `VALID_PROFILES` extended to 20.
 
 ### Changed
 
+- **Hook rendering resolves a real interpreter** (edge-audit 26/42): `render-user-hooks.py` emits hook commands with the detected Python (`sys.executable`/python3/python/py chain) and install.sh passes a Windows-native `cygpath -w` home on Git Bash, so `fail_closed` hooks no longer block on POSIX-shaped paths.
+- **install.sh POSIX/macOS hardening** (edge-audit 03,04,05,09,11,16): hasher detection (`sha256sum`/`shasum -a 256`/`openssl dgst`, hard-fail if none), portable `tail -c +4` BOM strip, recursive `backup_file`, `ast.parse` validation instead of `py_compile`, single `PY` resolution for all python calls.
+- **Export masking parity** (edge-audit 06,07,36): shared `mask_json_file` reaches ps1-vocabulary parity (session/cookie/jwt/dsn/connection_string/org_id/user_id/email, `env` blocks masked wholesale), fail-closed when no python3 for masking, masked-mcp placeholders install under `--force`.
+- **Gate scripts fail closed correctly** (edge-audit 61-68): `check-push-green` distinguishes no-framework vs unrun-framework, `git push` matcher no longer substring-bypassable, AI-signature scan covers untracked files, `architecture-gate` comment escape closed, `silent-error-review` gaps fixed, metrics sink persisted to `.devin/ledgers/metrics.jsonl` via `_hookrun.emit_metric`.
+- **Audit checks tightened** (edge-audit 10,70,71): dead duplicate-rule check removed, rule-count check reads bodies not index aliases, purpose-vs-description comparison no longer truncated-prefix-only.
+- **Test infrastructure** (edge-audit 78,79,83): `norecursedirs = held-out` keeps held-out out of default `pytest` while explicit targeting still works; zero-coverage hook scripts gained edge tests; real 30-60s sleeper processes replaced with short controllable ones.
+- **Organization** (edge-audit 17,23,24,25): mcp_config ownership contract documented (root = install artifact, `.devin/` = repo runtime), scratch loose files filed under `probes/`/`gate-scripts/`/`prompt-specs/`/`notes/`/`tools/` subdirs with README rules, skill-overlap reconciliation table recorded in issue 23.
 - **Live config export sync** (#289): manifest re-synced to real live inventory (skill_count 101 -> 155, sorted, `export_hash`/`exported_at` metadata); `config.json` `agent.model` normalized to `swe-2-high` per `data/bundle-models.json`; `export.{ps1,sh}` stages a filtered explicit path list (`git add -- "${existing_paths[@]}"`) instead of atomic adds that silently failed on missing paths, surfaces add/commit/push failures, and runs the CI pytest suite (`testpaths=tests`) instead of sweeping `extensions/` integration tests that hard-fail without a live QEMU env.
 
 ### Fixed
 
+- **`blender_server` unauthenticated localhost exec** (edge-audit 76): nonce required on `exec`/`shutdown` via `hmac.compare_digest`; nonce no longer echoed in responses; delivered via owner-only (0o600) per-port nonce file.
+- **`cu_taskrunner` trace_id path traversal** (edge-audit 77): `^[0-9a-f]{12}$` + realpath containment enforced in `_trace_dir` and the `_exec` CLI; `stop()` can no longer write or kill outside the store.
+- **`scrape.py` SSRF allowlist** (edge-audit 82): `check_url_allowed` enforces http/https only, resolves hostnames, rejects private/loopback/link-local/reserved ranges; `--allow-private` opt-out.
+- **`cu_env_daemon` token exposure** (edge-audit 81): `env_dir` chmod 0o700; `ready.json` and guest-caps written via `_write_private` (0o600).
+- **install.sh credential handling** (edge-audit 01,18,19,80): `credentials.toml` gated behind `--restore-secrets` (opt-in parity with ps1), `chmod 600` on credentials and mcp copies, lossy sed merge fallback removed (merge skipped loudly without jq), usage text corrected.
+- **install.sh config merge** (edge-audit 02,12): jq deep-merge `.[0] * .[1]` keeps local keys; masked mcp placeholders install under `--force`.
+- **export.ps1/install.ps1** (edge-audit 08,20,27,35,41): `Get-FolderHash` detects pure renames (relpath + hash lines), `__pycache__`/`*.pyc` excluded from all copies, render-hooks output no longer swallowed, AGENTS.md case-variant dedup on all filesystems, extension `.deps.sha256` markers with fail-soft revalidation.
+- **install.sh extra hardening** (edge-audit 38,40): `devin --version` vs `validated_cli_version` install-time notice, `record_skip` + `.install-receipt.json` for partial installs.
 - **`cu_taskrunner.py` status race** (#289): per-writer status tmp files; shared `status.json.tmp` raced `stop()` vs `_exec()` producing corrupt trailing bytes (caught by `test_cli_surface`).
+
 
 ## [3.18.0] - 2026-11-03
 

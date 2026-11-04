@@ -1,5 +1,5 @@
 # 27 -- install.ps1 swallows render-user-hooks.py output, leaving a reason-free warning
-- **Status**: open
+- **Status**: resolved
 - **Category**: user-experience
 - **Severity**: P3
 - **File**: install.ps1:527-539
@@ -17,3 +17,6 @@ Merits: actionable failure messages; verifiable success. Demerits: slightly nois
 
 ## Verification
 Force a failure (e.g. temporarily corrupt hooks.v1.json) and run install.ps1: the only diagnostic is the generic warning line.
+
+## Answer
+install.ps1 render step now captures `$renderOut = & python ... 2>&1`. On success it echoes renderer output at DarkGray; on failure the warning includes the exit code and prints the last 5 output lines. Covered by tests/test_install_ps1_edge_audit.py.

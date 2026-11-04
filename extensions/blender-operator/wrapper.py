@@ -88,7 +88,26 @@ def _load_state():
 
 # ---------- protocol ----------
 
+def nonce_file_for(port):
+    """Path where blender_server writes its per-port auth nonce."""
+    return os.path.join(tempfile.gettempdir(),
+                        f"blender-operator-{port}.nonce")
+
+
+def _load_nonce(port):
+    try:
+        with open(nonce_file_for(port), encoding="utf-8") as f:
+            n = f.read().strip()
+        return n or None
+    except OSError:
+        return None
+
+
 def _request(port, payload, timeout=30):
+    if "nonce" not in payload:
+        n = _load_nonce(port)
+        if n:
+            payload = dict(payload, nonce=n)
     with socket.create_connection(("127.0.0.1", port), timeout=timeout) as s:
         f = s.makefile("rw", encoding="utf-8", newline="\n")
         f.write(json.dumps(payload) + "\n")
@@ -173,8 +192,13 @@ def cmd_launch(args):
     alive, info = _alive(args.port)
     if alive:
         return {"ok": True, "already_running": True, "blender": info}
+    try:
+        os.remove(nonce_file_for(args.port))  # stale nonce from a prior run
+    except OSError:
+        pass
     argv = [blender, "-b", "--factory-startup",
-            "--python", SERVER, "--", "--port", str(args.port)]
+            "--python", SERVER, "--", "--port", str(args.port),
+            "--nonce-file", nonce_file_for(args.port)]
     if args.blend:
         argv.insert(4, args.blend)
     log = open(LOG_FILE, "ab")
@@ -260,6 +284,10 @@ def cmd_kill(args):
     for p in leftover:
         _kill_pid(p)
         killed.append(p)
+    try:
+        os.remove(nonce_file_for(args.port))
+    except OSError:
+        pass
     _save_state(pid=None)
     out["killed_pids"] = killed
     out["server"] = "down" if not _alive(args.port)[0] else "still-up"

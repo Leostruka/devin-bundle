@@ -13,7 +13,6 @@ Usage:
 """
 import json
 import os
-import shutil
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,12 +20,25 @@ PREFIX = 'python scripts/'
 
 
 def hook_python():
-    """On Windows use pythonw so hook spawns don't flash a console window
-    that steals focus; stdout/stderr still flow through inherited pipes.
-    POSIX keeps python (pythonw is a Windows-only binary)."""
-    if os.name == 'nt' and shutil.which('pythonw'):
-        return 'pythonw'
-    return 'python'
+    """Resolve the interpreter rendered into hook commands.
+
+    The installers invoke this script with whichever interpreter they found
+    (python / python3 / py), so sys.executable is a known-good interpreter.
+    Rendering its absolute path keeps hooks working on systems where bare
+    `python` is not on PATH (stock macOS, minimal Linux/WSL images), which
+    matters because the PreToolUse guards are fail_closed: a missing
+    interpreter would block every exec/write/edit call.
+
+    On Windows prefer pythonw.exe next to the interpreter so hook spawns
+    don't flash a console window that steals focus; stdout/stderr still
+    flow through inherited pipes.
+    """
+    exe = sys.executable
+    if os.name == 'nt':
+        pythonw = os.path.join(os.path.dirname(exe), 'pythonw.exe')
+        if os.path.isfile(pythonw):
+            exe = pythonw
+    return exe
 
 
 def render(devin_home):
@@ -39,11 +51,16 @@ def render(devin_home):
             for h in entry.get('hooks', []):
                 cmd = h.get('command', '')
                 if cmd.startswith(PREFIX):
-                    h['command'] = '{} "{}/scripts/{}"'.format(hook_python(), home, cmd[len(PREFIX):])
+                    h['command'] = '"{}" "{}/scripts/{}"'.format(hook_python(), home, cmd[len(PREFIX):])
     return hooks
 
 
 def main():
+    # Supported floor: Python >= 3.11 for bundle hook scripts.
+    if sys.version_info < (3, 11):
+        print('render-user-hooks: warning: Python >= 3.11 is the supported '
+              'floor for hook scripts; running on '
+              + sys.version.split()[0], file=sys.stderr)
     args = [a for a in sys.argv[1:] if a != '--merge']
     if len(args) < 1:
         sys.exit('usage: render-user-hooks.py <devin_home> [--merge <config.json>]')

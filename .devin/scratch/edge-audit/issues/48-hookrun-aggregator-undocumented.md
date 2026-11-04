@@ -1,6 +1,6 @@
 # 48 -- _hookrun aggregation layer has no documentation
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: documentation
 - **Severity**: P2
 - **File**: scripts/_hookrun.py
@@ -26,3 +26,7 @@ of `_hookrun.py`.
 ## Verification
 New doc lists every aggregator and its inner list; spot-check three
 against `ALWAYS`/`TEXT_ONLY` constants and `_hookrun.main(...)` calls.
+
+## Answer
+
+Wrote `.devin/docs/HOOKS-PIPELINE.md`: event -> entry point -> inner script list -> merge rules -> exit-code mapping, mirroring `_hookrun.py` semantics; all aggregators and inner lists cross-checked against source.

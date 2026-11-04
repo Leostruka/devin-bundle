@@ -72,6 +72,61 @@ STOPWORDS = frozenset({
 
 _CURRENT_TOOL = ""
 
+# Per-profile tool deny rules (issue: no per-skill/agent sandboxing).
+# When run_subagent dispatches a profile, the mapping is recorded keyed on
+# session_id under the devin home state dir; subsequent tool calls from a
+# session carrying a denied profile are blocked. Read-only profiles lose
+# exec so a prompt-injected or drifted agent cannot mutate the system.
+STATE_DIR = os.path.join(_devin_home(), "state")
+PROFILE_DENY = {
+    "researcher": frozenset({"exec"}),
+    "reviewer": frozenset({"exec"}),
+    "issue-tracker": frozenset({"exec"}),
+    "triage-labels": frozenset({"exec"}),
+}
+
+
+def _profile_state_path(session_id):
+    safe = re.sub(r"[^A-Za-z0-9_.-]", "_", session_id or "unknown")
+    return os.path.join(STATE_DIR, "subagent-{}.json".format(safe))
+
+
+def _record_profile(session_id, profile):
+    try:
+        os.makedirs(STATE_DIR, exist_ok=True)
+        with open(_profile_state_path(session_id), "w", encoding="utf-8") as f:
+            json.dump({"profile": profile, "session_id": session_id}, f)
+    except (OSError, IOError):
+        pass
+
+
+def _session_profile(session_id):
+    try:
+        with open(_profile_state_path(session_id), "r", encoding="utf-8") as f:
+            return (json.load(f).get("profile") or "").strip()
+    except (OSError, IOError, ValueError):
+        return ""
+
+
+def _enforce_profile_deny(session_id, tool_name, data):
+    """Block tools denied for the session's recorded subagent profile.
+
+    Enforcement requires the payload to identify a subagent context
+    (agent_id / subagent_id / is_subagent). session_id is session-wide in
+    the Devin CLI, so a denied profile recorded at dispatch would otherwise
+    also block the parent agent's own calls.
+    """
+    if not (data.get("agent_id") or data.get("subagent_id")
+            or data.get("is_subagent")):
+        return
+    profile = _session_profile(session_id)
+    denied = PROFILE_DENY.get(profile)
+    if denied and tool_name in denied:
+        block(
+            "Tool '{}' is denied for subagent profile '{}' "
+            "(per-profile sandboxing).".format(tool_name, profile)
+        )
+
 
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
@@ -327,6 +382,16 @@ def main():
 
     if not isinstance(tool_input, dict):
         sys.exit(0)
+
+    session_id = data.get("session_id", "") or ""
+
+    # Record the dispatched profile so later calls in this session can be
+    # denied per-profile even though the hook payload has no skill identity.
+    if tool_name == "run_subagent" and isinstance(tool_input, dict):
+        prof = tool_input.get("profile", "") or "subagent_general"
+        _record_profile(session_id, prof)
+
+    _enforce_profile_deny(session_id, tool_name, data)
 
     check = CHECKS.get(tool_name)
     if check is None:

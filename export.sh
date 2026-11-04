@@ -45,12 +45,107 @@ skip() { printf "    \033[33m[~] %s\033[0m\n" "$1"; }
 warn() { printf "    \033[33m[!] %s\033[0m\n" "$1"; }
 err()  { printf "    \033[31m[x] %s\033[0m\n" "$1"; }
 
+# --- sha256 tool detection ---
+# Stock macOS ships shasum, not sha256sum. Without a hasher every hash
+# comparison silently returns "" == "" and reports everything unchanged.
+if command -v sha256sum &>/dev/null; then
+  SHA256_CMD="sha256sum"
+elif command -v shasum &>/dev/null; then
+  SHA256_CMD="shasum -a 256"
+elif command -v openssl &>/dev/null; then
+  SHA256_CMD="openssl dgst -sha256 -r"
+else
+  echo "ERROR: no sha256 tool found (need sha256sum, shasum, or openssl)" >&2
+  exit 1
+fi
+
 file_hash() {
-  sha256sum "$1" 2>/dev/null | cut -d' ' -f1
+  $SHA256_CMD "$1" 2>/dev/null | awk '{print $1}'
 }
 
+# dir_hash ignores __pycache__/ and *.pyc: bytecode caches are runtime
+# artifacts, not payload, and are stripped from exported copies anyway.
 dir_hash() {
-  ( cd "$1" 2>/dev/null && find . -type f -print0 | xargs -0 sha256sum 2>/dev/null | sort | sha256sum | cut -d' ' -f1 )
+  # shellcheck disable=SC2086  # SHA256_CMD carries flags (e.g. shasum -a 256); splitting is intentional
+  ( cd "$1" 2>/dev/null && find . -type f -not -path '*/__pycache__/*' -not -name '*.pyc' -print0 | xargs -0 $SHA256_CMD 2>/dev/null | sort | $SHA256_CMD | awk '{print $1}' )
+}
+
+# --- Single python interpreter resolution ---
+# One detection point; every inline/child python call goes through `python`
+# so python3-only and python-only hosts behave identically.
+PY=""
+if command -v python3 &>/dev/null; then
+  PY="python3"
+elif command -v python &>/dev/null; then
+  PY="python"
+fi
+python() {
+  if [[ -z "$PY" ]]; then
+    echo "python: interpreter not found" >&2
+    return 127
+  fi
+  "$PY" "$@"
+}
+
+# Masked export writes real-file derivatives; without a python interpreter
+# the mask cannot run -- fail closed instead of copying secrets unmasked.
+require_python_for_masking() {
+  if [[ -z "$PY" && $DRY_RUN -eq 0 ]]; then
+    err "python is required to mask secrets; refusing to export unmasked (install python3 or pass --no-mask explicitly)"
+    exit 1
+  fi
+}
+
+# Copy a directory tree into place minus runtime bytecode caches
+# (__pycache__/, *.pyc) so stale .pyc files are never shipped to the bundle.
+copy_tree_clean() {
+  local src="$1" dst="$2"
+  rm -rf "$dst"
+  cp -r "$src" "$dst"
+  find "$dst" -type d -name '__pycache__' -prune -exec rm -rf {} + 2>/dev/null || true
+  find "$dst" -type f -name '*.pyc' -delete 2>/dev/null || true
+}
+
+# Shared JSON secret masking (config.json and mcp_config.json).
+# Key-name denylist matches export.ps1's vocabulary plus generic secret
+# carriers (session/cookie/jwt/dsn/connection_string, org_id, user_id,
+# email); every value under an `env` object is masked wholesale since env
+# blocks are the canonical secret carrier in mcp_config.json.
+mask_json_file() {
+  local src="$1" dst="$2"
+  python -c "
+import json, sys, re
+src, dst = sys.argv[1], sys.argv[2]
+with open(src, 'r', encoding='utf-8-sig') as f:
+    data = json.load(f)
+
+SECRET_KEY = re.compile(r'token|secret|api[_-]?key|key|password|passwd|auth|bearer|credential|private|pat\b|client_secret|session|cookie|jwt|dsn|connection_string|org_id|user_id|email', re.I)
+
+def mask_value(v, key=''):
+    if SECRET_KEY.search(key):
+        return 'MASKED'
+    if key == 'env' and isinstance(v, dict):
+        # env blocks carry secrets under arbitrary names; mask everything
+        return {k: 'MASKED' for k in v}
+    if isinstance(v, str):
+        # Mask URLs with embedded credentials or token-looking strings
+        if re.search(r'://[^/\s:]+:[^@/\s]+@', v):
+            return re.sub(r'://[^/\s:]+:[^@/\s]+@', '://MASKED@', v)
+        if 'token' in v.lower() or 'api_key' in v.lower() or 'apikey' in v.lower():
+            return 'MASKED'
+        return v
+    if isinstance(v, dict):
+        return {k: mask_value(val, k) for k, val in v.items()}
+    if isinstance(v, list):
+        return [mask_value(item, key) for item in v]
+    return v
+
+if isinstance(data, dict):
+    data = {k: ('MASKED' if SECRET_KEY.search(k) else mask_value(v, k)) for k, v in data.items()}
+
+with open(dst, 'w', encoding='utf-8', newline='\n') as f:
+    json.dump(data, f, indent=2)
+" "$src" "$dst"
 }
 
 convert_to_lf() {
@@ -73,18 +168,10 @@ convert_to_lf() {
 # placeholder so the bundle remains shareable across machines/users.
 normalize_config_paths() {
   local file="$1"
-  if [[ $DRY_RUN -eq 1 ]] || [[ ! -f "$file" ]]; then
+  if [[ $DRY_RUN -eq 1 ]] || [[ ! -f "$file" ]] || [[ -z "$PY" ]]; then
     return
   fi
-  local py
-  if command -v python3 &>/dev/null; then
-    py=python3
-  elif command -v python &>/dev/null; then
-    py=python
-  else
-    return
-  fi
-  DEVIN_HOME="$DEVIN_HOME" "$py" -c 'import os,sys; h=os.environ["DEVIN_HOME"]; sys.stdout.write(sys.stdin.read().replace(h, "{{APPDATA}}/devin"))' < "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+  DEVIN_HOME="$DEVIN_HOME" python -c 'import os,sys; h=os.environ["DEVIN_HOME"]; sys.stdout.write(sys.stdin.read().replace(h, "{{APPDATA}}/devin"))' < "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
 }
 
 # --- Strip hooks from exported config.json ---
@@ -92,18 +179,10 @@ normalize_config_paths() {
 # config.json hooks are a rendered artifact and must not round-trip back.
 strip_config_hooks() {
   local file="$1"
-  if [[ $DRY_RUN -eq 1 ]] || [[ ! -f "$file" ]]; then
+  if [[ $DRY_RUN -eq 1 ]] || [[ ! -f "$file" ]] || [[ -z "$PY" ]]; then
     return
   fi
-  local py
-  if command -v python3 &>/dev/null; then
-    py=python3
-  elif command -v python &>/dev/null; then
-    py=python
-  else
-    return
-  fi
-  "$py" -c 'import json,sys,os; p=sys.argv[1]; d=json.load(open(p,encoding="utf-8-sig")); d["hooks"]={}; mp=os.path.join(os.path.dirname(p),"data","bundle-models.json")
+  python -c 'import json,sys,os; p=sys.argv[1]; d=json.load(open(p,encoding="utf-8-sig")); d["hooks"]={}; mp=os.path.join(os.path.dirname(p),"data","bundle-models.json")
 try:
     dp=json.load(open(mp,encoding="utf-8-sig")).get("default_parent_model")
     if dp and isinstance(d.get("agent"),dict): d["agent"]["model"]=dp
@@ -121,7 +200,9 @@ strip_bom() {
     if [[ $DRY_RUN -eq 1 ]]; then
       skip "would strip BOM from $(basename "$file")"
     else
-      sed -i '1s/^\xEF\xBB\xBF//' "$file"
+      # Portable BOM strip: GNU `sed -i` syntax fails under BSD sed (macOS)
+      # and BSD sed does not interpret \xEF escapes; tail -c +4 works on both.
+      tail -c +4 "$file" > "${file}.bomtmp" && mv "${file}.bomtmp" "$file"
       ok "stripped BOM from $(basename "$file")"
     fi
   fi
@@ -162,7 +243,7 @@ report_stale() {
 # --- Dedup AGENTS.md case variants ---
 # On case-sensitive FSs: removes agents.md (lowercase) if it exists as a
 # separate file. On case-insensitive FSs (Windows/WSL /mnt/c, macOS default):
-# AGENTS.md and agents.md are the same file — warns about Devin CLI duplicate
+# AGENTS.md and agents.md are the same file -- warns about Devin CLI duplicate
 # listing (known bug, not fixable from filesystem level).
 dedup_agents_md() {
   local dir="$1"
@@ -174,7 +255,7 @@ dedup_agents_md() {
 
   if is_case_sensitive "$dir"; then
     if [[ -f "$lower" ]]; then
-      warn "$label: found agents.md (lowercase) duplicate — removing"
+      warn "$label: found agents.md (lowercase) duplicate -- removing"
       if [[ $DRY_RUN -eq 1 ]]; then
         skip "would remove agents.md duplicate"
       else
@@ -183,7 +264,7 @@ dedup_agents_md() {
       fi
     fi
   else
-    skip "$label: case-insensitive FS — Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
+    skip "$label: case-insensitive FS -- Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
   fi
 }
 
@@ -283,7 +364,7 @@ if [[ -d "$skills_src" ]]; then
       unchanged_skills=$((unchanged_skills+1))
     else
       if [[ $DRY_RUN -eq 1 ]]; then skip "would export skills/$name"
-      else rm -rf "$dst_dir"; cp -r "$skill_dir" "$dst_dir"; ok "skills/$name exported"; fi
+      else copy_tree_clean "$skill_dir" "$dst_dir"; ok "skills/$name exported"; fi
       exported_skills=$((exported_skills+1))
     fi
   done
@@ -301,31 +382,16 @@ if [[ -f "$config_src" ]]; then
     if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (no mask)"
     else cp "$config_src" "$config_dst"; convert_to_lf "$config_dst"; normalize_config_paths "$config_dst"; strip_config_hooks "$config_dst"; ok "config.json exported (no mask)"; fi
   else
-    if command -v python3 &>/dev/null; then
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (masked)"
-      else
-        python3 -c "
-import json, sys
-src, dst = sys.argv[1], sys.argv[2]
-with open(src, 'r', encoding='utf-8-sig') as f:
-    data = json.load(f)
-if 'org_id' in data:
-    data['org_id'] = 'MASKED'
-if 'devin' in data and 'org_id' in data['devin']:
-    data['devin']['org_id'] = 'MASKED'
-data['hooks'] = {}
-with open(dst, 'w', encoding='utf-8', newline='\n') as f:
-    json.dump(data, f, indent=2)
-" "$config_src" "$config_dst"
-        convert_to_lf "$config_dst"
-        normalize_config_paths "$config_dst"
-        strip_config_hooks "$config_dst"
-        ok "config.json exported (masked)"
-      fi
+    require_python_for_masking
+    if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (masked)"
     else
-      warn "python3 not found, copying config.json without masking"
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would copy config.json (unmasked - no python3)"
-      else cp "$config_src" "$config_dst"; convert_to_lf "$config_dst"; normalize_config_paths "$config_dst"; strip_config_hooks "$config_dst"; ok "config.json exported (unmasked)"; fi
+      # Same mask routine as mcp_config.json: key-name denylist plus
+      # org_id/user_id/email, then hooks stripped below.
+      mask_json_file "$config_src" "$config_dst"
+      convert_to_lf "$config_dst"
+      normalize_config_paths "$config_dst"
+      strip_config_hooks "$config_dst"
+      ok "config.json exported (masked)"
     fi
   fi
 else
@@ -399,47 +465,12 @@ if [[ -f "$mcp_src" ]]; then
     if [[ $DRY_RUN -eq 1 ]]; then skip "would copy mcp_config.json (no mask)"
     else cp "$mcp_src" "$mcp_dst"; convert_to_lf "$mcp_dst"; ok "mcp_config.json exported (no mask)"; fi
   else
-    if command -v python3 &>/dev/null; then
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would copy mcp_config.json (masked)"
-      else
-        python3 -c "
-import json, sys, re
-src, dst = sys.argv[1], sys.argv[2]
-with open(src, 'r', encoding='utf-8-sig') as f:
-    data = json.load(f)
-
-SECRET_KEY = re.compile(r'token|secret|api[_-]?key|password|passwd|auth|bearer|credential|private|pat\b|client_secret', re.I)
-
-def mask_value(v, key=''):
-    if SECRET_KEY.search(key):
-        return 'MASKED'
-    if isinstance(v, str):
-        # Mask URLs with embedded credentials or token-looking strings
-        if re.search(r'://[^/\s:]+:[^@/\s]+@', v):
-            return re.sub(r'://[^/\s:]+:[^@/\s]+@', '://MASKED@', v)
-        if 'token' in v.lower() or 'api_key' in v.lower() or 'apikey' in v.lower():
-            return 'MASKED'
-        return v
-    if isinstance(v, dict):
-        return {k: mask_value(val, k) for k, val in v.items()}
-    if isinstance(v, list):
-        return [mask_value(item, key) for item in v]
-    return v
-
-# Mask env values with API_KEY, TOKEN, etc.
-if isinstance(data, dict):
-    data = {k: ('MASKED' if SECRET_KEY.search(k) else mask_value(v, k)) for k, v in data.items()}
-
-with open(dst, 'w', encoding='utf-8', newline='\n') as f:
-    json.dump(data, f, indent=2)
-" "$mcp_src" "$mcp_dst"
-        convert_to_lf "$mcp_dst"
-        ok "mcp_config.json exported (masked)"
-      fi
+    require_python_for_masking
+    if [[ $DRY_RUN -eq 1 ]]; then skip "would copy mcp_config.json (masked)"
     else
-      warn "python3 not found, copying mcp_config.json without masking"
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would copy mcp_config.json (unmasked - no python3)"
-      else cp "$mcp_src" "$mcp_dst"; convert_to_lf "$mcp_dst"; ok "mcp_config.json exported (unmasked)"; fi
+      mask_json_file "$mcp_src" "$mcp_dst"
+      convert_to_lf "$mcp_dst"
+      ok "mcp_config.json exported (masked)"
     fi
   fi
 else
@@ -455,12 +486,13 @@ if [[ -f "$creds_src" ]]; then
     if [[ $DRY_RUN -eq 1 ]]; then skip "would copy credentials.toml (no mask)"
     else cp "$creds_src" "$creds_dst"; convert_to_lf "$creds_dst"; ok "credentials.toml exported (no mask)"; fi
   else
+    require_python_for_masking
     if [[ $DRY_RUN -eq 1 ]]; then skip "would copy credentials.toml (masked)"
     else
       # Mask all values in TOML, including multiline arrays/strings:
       # `key = [` masks the key line, then continuation lines are dropped
       # until the opening `[`/`"""`/`'''` closes (they would leak raw).
-      python3 -c "
+      python -c "
 import sys, re
 src, dst = sys.argv[1], sys.argv[2]
 out, skip_until = [], None
@@ -507,8 +539,8 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
   for json_file in "$BUNDLE_DIR"/*.json; do
     [[ -f "$json_file" ]] || continue
     name="$(basename "$json_file")"
-    if command -v python3 &>/dev/null; then
-      if ! python3 -m json.tool "$json_file" >/dev/null 2>&1; then
+    if [[ -n "$PY" ]]; then
+      if ! python -m json.tool "$json_file" >/dev/null 2>&1; then
         err "$name: invalid JSON"
         validation_failed=1
       else
@@ -529,8 +561,10 @@ if [[ $PUSH -eq 1 && $DRY_RUN -eq 0 ]]; then
     for py_file in "$scripts_dst"/*.py; do
       [[ -f "$py_file" ]] || continue
       name="$(basename "$py_file")"
-      if command -v python3 &>/dev/null; then
-        if ! python3 -m py_compile "$py_file" >/dev/null 2>&1; then
+      if [[ -n "$PY" ]]; then
+        # ast.parse validates syntax without writing __pycache__/.pyc
+        # artifacts into the bundle (compile-to-bytecode always writes).
+        if ! python -c 'import ast,sys; ast.parse(open(sys.argv[1],encoding="utf-8").read())' "$py_file" >/dev/null 2>&1; then
           err "$name: syntax error"
           validation_failed=1
         else

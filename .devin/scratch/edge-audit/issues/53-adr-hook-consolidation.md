@@ -1,6 +1,6 @@
 # 53 -- No ADR for hook consolidation into aggregator scripts
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: adr
 - **Severity**: P2
 - **File**: scripts/pre-exec-guard.py
@@ -28,3 +28,7 @@ budget; an ADR should record the measured savings if any exist.
 
 ## Verification
 ADR exists and is referenced from ARCHITECTURE_MANIFEST.md hook section.
+
+## Answer
+
+Wrote `.devin/adr/006-hook-consolidation.md` (Accepted): spawn-cost rationale, alternatives (matcher broadening, omnibus guard), merge-semantics pointer to _hookrun/HOOKS-PIPELINE, invariant that inner scripts are never bound directly. Referenced from ARCHITECTURE_MANIFEST.md error-handling section.

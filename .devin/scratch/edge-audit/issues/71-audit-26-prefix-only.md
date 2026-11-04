@@ -1,6 +1,6 @@
 # 71 -- audit check 26 compares only the first 60 chars, and only for "Use when" skills
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: algorithm-translation
 - **Severity**: P2
 - **File**: audit.py:802-824
@@ -29,3 +29,12 @@ skipped set is visible.
 
 Edit a manifest purpose's text after char 60, keep the prefix; `python
 audit.py` check 26 stays OK.
+
+## Answer
+Check 26 now compares whitespace-normalized FULL strings (manifest purpose
+vs SKILL.md description) instead of the 60-char prefix, and emits a warning
+listing skills that lack the `Use when` prefix (6 currently: brag,
+brag-slim, thermos, typescript-best-practices, unslop,
+vercel-react-best-practices) so the skipped set is visible. The one real
+drift found (agent-reach) was fixed by aligning the SKILL.md description
+with the manifest purpose.

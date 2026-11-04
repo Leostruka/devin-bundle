@@ -1,5 +1,5 @@
 # 21 -- SKILL-TIERS.md ships unrendered {{BUNDLE_*_MODEL}} placeholders
-- **Status**: open
+- **Status**: resolved
 - **Category**: organization
 - **Severity**: P3
 - **File**: .devin/docs/SKILL-TIERS.md (model table, ~lines 12-18)
@@ -14,3 +14,7 @@ Either replace `{{BUNDLE_*_MODEL}}` with the resolved values from `data/bundle-m
 
 ## Verification
 `grep -n "{{BUNDLE" .devin/docs/SKILL-TIERS.md`; `grep -rn "BUNDLE_" install.ps1 install.sh export.ps1 export.sh scripts/render-user-hooks.py` shows no substitution step for these tokens.
+
+## Answer
+
+Replaced all `{{BUNDLE_*_MODEL}}` placeholders with literal env-var names plus defaults (`BUNDLE_MEDIUM_MODEL` (default `swe-2-medium`) etc.) in SKILL-TIERS.md; same cleanup applied to TOOLS-MAP.md, MODEL-GUIDE.md, DEVIN-CLI-COMPATIBILITY.md (`{{VALIDATED_CLI_VERSION}}` -> 3000.11.234). `grep -n '{{BUNDLE' .devin/docs/SKILL-TIERS.md` returns 0.
