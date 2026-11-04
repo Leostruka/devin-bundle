@@ -1,5 +1,5 @@
 # 25 -- Root directory mixes distribution artifacts with personal launchers and debris
-- **Status**: open
+- **Status**: resolved
 - **Category**: organization
 - **Severity**: P3
 - **File**: devin-N.cmd, devin-N.ps1, devin-session-launcher.ps1, pytest_full.log, __pycache__/, .worktrees/ (all at repo root)
@@ -21,3 +21,13 @@ Merits: root becomes a clean manifest of installable resources. Demerits: any pe
 
 ## Verification
 `ls` repo root; `grep -rn "devin-N\|session-launcher" install.ps1 install.sh manifest.json export.ps1` returns no references.
+
+## Answer
+Partially applied; remainder documented as intentional:
+
+- `devin-N.cmd` / `devin-N.ps1` / `devin-session-launcher.ps1`: kept at root. They are a documented, tested feature, not personal debris: README section "Launcher multi-instancia (devin-N)" documents them, and `tests/pester/Devin-N.Tests.ps1` loads `devin-N.ps1`/`devin-session-launcher.ps1` from `$repoRoot`. Relocating would break Pester tests and README instructions. Initial move to `.devin/tools/launcher/` was reverted.
+- `pytest_full.log`, `__pycache__/`: already absent from the working tree (gitignored via `*.log`, `__pycache__/`); nothing to delete.
+- `hooks.v1.json`: kept at root. `install.sh` renders hooks from `$BUNDLE_DIR/hooks.v1.json` and CONTRIBUTING hook standards reference it there; it is a distribution artifact.
+- `mcp_config.json` + `.example`: ownership now documented in `CONTRIBUTING.md` (issue 17).
+
+Decision: root now contains only distribution artifacts and repo-standard files (AGENTS/README/manifest/audit/tests dirs).
