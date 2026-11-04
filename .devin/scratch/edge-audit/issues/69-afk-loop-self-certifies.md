@@ -1,6 +1,6 @@
 # 69 -- afk-loop resolution status is self-certified by the agent
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: investigative-cycles
 - **Severity**: P3
 - **File**: skills/afk-loop/SKILL.md (per-issue loop, Verification section)
@@ -33,3 +33,9 @@ then call it.
 
 Manually set `Status: resolved` on any open issue with no Answer section;
 nothing in `python audit.py` or the hooks flags it.
+
+## Answer
+Added audit.py check 33: any `*.md` under .devin/scratch/**/issues/ whose
+Status is `resolved` but lacks an `## Answer` section is an error, listing
+each offending file. Self-certified resolutions without an answer record
+now fail `python audit.py`, giving the afk-loop stop condition a real gate.

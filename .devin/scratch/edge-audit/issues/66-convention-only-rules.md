@@ -1,6 +1,6 @@
 # 66 -- Rules 25, 27, and the Rule 15 log have no enforcement mechanism
 
-- **Status**: open
+- **Status**: resolved
 - **Category**: applied-rules
 - **Severity**: P2
 - **File**: n/a (AGENTS.md rules 25, 27, 15; no matching script)
@@ -36,3 +36,15 @@ agent to state intent when the session has none recorded.
 `grep -rn "tests/" scripts/check-push-green.py` shows no deletion check;
 `ls .devin/refinements.log.jsonl` confirms absence while refine prompts have
 already fired.
+
+## Answer
+Enforcement added on two fronts:
+- Rule 25: check-push-green.py now blocks a push when `git status` shows
+  deleted files under tests/ or the HEAD diff removes `def test_`/`class
+  Test` lines, unless `.devin/test-deletion-approved` (or
+  .devin/approvals/test-deletion.txt, or TEST_DELETION_APPROVED=1) exists.
+- Rule 15 log: refine-review-prompt.py appends a `refine-reminder-*` record
+  (with all required evidence keys) to .devin/refinements.log.jsonl when it
+  fires, so the file exists and the firing is auditable.
+Rule 27 (declare intent) remains behavioral by design - the issue itself
+classifies it as prompt-level at best.

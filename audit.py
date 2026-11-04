@@ -120,24 +120,47 @@ print()
 print('[6] AGENTS.md rules')
 with open('AGENTS.md', encoding='utf-8-sig') as f:
     agents = f.read()
-rules_found = []
-for i in range(1, 30):
-    # Anchor to start of line to avoid false positives (e.g. "6. **" in "16. **")
-    if '\n' + str(i) + '. **' in agents:
-        rules_found.append(i)
+# Index bullets declare rules (merged rules appear as "N. **-> Rule M**");
+# section bodies are "## N." (pinned) and "### N." (non-pinned) headings.
+index_rules = [int(n) for n in re.findall(r'(?m)^(\d+)\. \*\*', agents)]
+alias_targets = {
+    int(n): int(m)
+    for n, m in re.findall(
+        r'(?m)^(\d+)\. \*\*(?:->|→)\s*Rule\s+(\d+)\*\*', agents)
+}
+body_numbers = [int(n) for n in re.findall(r'(?m)^#{2,3} (\d+)\.', agents)]
+body_set = set(body_numbers)
+index_set = set(index_rules)
+rules_found = sorted(index_set)
 print('  Rules found: ' + str(rules_found))
 expected_rules = manifest.get('rule_count', 26)
-if len(rules_found) != expected_rules:
-    errors.append('Expected ' + str(expected_rules) + ' rules, found ' + str(len(rules_found)))
-    print('  FAIL expected ' + str(expected_rules) + ', found ' + str(len(rules_found)))
+if len(index_rules) != expected_rules:
+    errors.append('Expected ' + str(expected_rules) + ' rules, found ' + str(len(index_rules)))
+    print('  FAIL expected ' + str(expected_rules) + ', found ' + str(len(index_rules)))
 else:
-    print('  OK  ' + str(len(rules_found)) + ' rules present')
+    print('  OK  ' + str(len(index_rules)) + ' rules present')
 declared_rule_count = manifest.get('rule_count')
-if declared_rule_count != len(rules_found):
+if declared_rule_count != len(index_rules):
     errors.append('manifest rule_count mismatch')
-    print('  FAIL rule_count declared=' + str(declared_rule_count) + ' actual=' + str(len(rules_found)))
+    print('  FAIL rule_count declared=' + str(declared_rule_count) + ' actual=' + str(len(index_rules)))
 else:
-    print('  OK  rule_count = ' + str(len(rules_found)))
+    print('  OK  rule_count = ' + str(len(index_rules)))
+
+# Every declared rule that is not a merged alias must have a body section;
+# aliases must point at a declared rule number.
+missing_bodies = sorted(n for n in index_set
+                        if n not in alias_targets and n not in body_set)
+if missing_bodies:
+    errors.append('Index rules without a body section: ' + str(missing_bodies))
+    print('  FAIL index rules without bodies: ' + str(missing_bodies))
+else:
+    print('  OK  every non-alias rule has a body section')
+dangling = sorted(n for n, m in alias_targets.items() if m not in index_set)
+if dangling:
+    errors.append('Alias rules pointing at undeclared rules: ' + str(dangling))
+    print('  FAIL dangling aliases: ' + str(dangling))
+else:
+    print('  OK  all index aliases resolve')
 
 # 6c. Warn if AGENTS.md is large (context window budget)
 print()
@@ -157,7 +180,8 @@ all_numbers = set(range(1, 30))
 found_numbers = set(rules_found)
 # A gap is only a problem if it causes the total count to diverge from the manifest.
 # Intentional gaps (e.g. rule 6 omitted) are allowed as long as rule_count matches.
-duplicates = sorted([n for n in rules_found if rules_found.count(n) > 1])
+duplicates = sorted(n for n in set(index_rules)
+                    if index_rules.count(n) > 1)
 if duplicates:
     errors.append('Duplicate rule numbers in AGENTS.md: ' + str(duplicates))
     print('  FAIL duplicate rule numbers: ' + str(duplicates))
@@ -803,7 +827,12 @@ else:
 print()
 print('[26] Manifest purpose vs SKILL.md description sync')
 manifest_data = json.load(open('manifest.json', encoding='utf-8-sig'))
+def _norm_ws(s):
+    return ' '.join(s.split())
+
+
 purpose_mismatches = []
+prefix_missing = []
 for skill in manifest_data.get('skills', []):
     sname = skill['name']
     spurpose = skill.get('purpose', '')
@@ -814,14 +843,20 @@ for skill in manifest_data.get('skills', []):
     desc_match = re.search(r'^description:\s*(.+?)(?:\n[a-z]|\n---)', sm_content, re.MULTILINE | re.DOTALL)
     if desc_match:
         sm_desc = desc_match.group(1).strip()
-        if spurpose.startswith('Use when') and sm_desc.startswith('Use when'):
-            if spurpose[:60] != sm_desc[:60]:
-                purpose_mismatches.append(sname)
+        if not (spurpose.startswith('Use when') and sm_desc.startswith('Use when')):
+            prefix_missing.append(sname)
+        # Full normalized comparison: rewritten or truncated tails are
+        # drift, not a match.
+        if _norm_ws(spurpose) != _norm_ws(sm_desc):
+            purpose_mismatches.append(sname)
 if purpose_mismatches:
     errors.append('manifest purpose stale vs SKILL.md: ' + ', '.join(purpose_mismatches))
     print('  FAIL ' + str(len(purpose_mismatches)) + ' stale purposes: ' + ', '.join(purpose_mismatches))
 else:
     print('  OK  all manifest purposes match SKILL.md descriptions')
+if prefix_missing:
+    warnings.append('skills missing "Use when" prefix: ' + ', '.join(prefix_missing))
+    print('  WARN ' + str(len(prefix_missing)) + ' skills lack "Use when" prefix: ' + ', '.join(prefix_missing))
 
 # 27. No tracked temp artifacts (.zip, .tmp, .bak, ci-logs)
 print()
@@ -1006,6 +1041,30 @@ except Exception as e:
     warnings.append('changelog coverage check skipped: ' + str(e))
     print('  WARN changelog coverage check skipped: ' + str(e))
 
+# 33. Resolved issue files must carry an Answer section
+print()
+print('[33] Resolved issues carry an Answer section')
+import glob
+unanswered = []
+issue_files = glob.glob(os.path.join('.devin', 'scratch', '**', 'issues', '*.md'),
+                        recursive=True)
+for issue_path in issue_files:
+    try:
+        body = open(issue_path, encoding='utf-8-sig').read()
+    except (OSError, IOError):
+        continue
+    if re.search(r'(?im)^\s*-?\s*\*\*status\*\*\s*:\s*resolved\b', body) \
+            and '## Answer' not in body:
+        unanswered.append(issue_path)
+if unanswered:
+    errors.append('issues marked resolved without an Answer section: '
+                  + ', '.join(unanswered))
+    print('  FAIL ' + str(len(unanswered)) + ' resolved issues lack an Answer section')
+elif issue_files:
+    print('  OK  all resolved issues carry an Answer section')
+else:
+    print('  SKIP no issue files under .devin/scratch/**/issues/')
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1022,5 +1081,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 32 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 33 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

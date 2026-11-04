@@ -19,9 +19,29 @@ import io
 import json
 import os
 import sys
+import time
 import traceback
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def metrics_sink_path():
+    """Append-only JSONL metric sink (gitignored via '.devin/ledgers/*')."""
+    project = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+    return os.path.join(project, ".devin", "ledgers", "metrics.jsonl")
+
+
+def emit_metric(event, **fields):
+    """Append one JSON line to the metrics sink. Never raises."""
+    try:
+        path = metrics_sink_path()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        rec = {"t": int(time.time()), "event": event}
+        rec.update(fields)
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, default=str) + "\n")
+    except Exception:
+        pass
 
 
 def _run_one(script_name, payload):
@@ -57,6 +77,7 @@ def run(script_names, payload):
     updated_input = {}
     blocked = None
     final_code = 0
+    t0 = time.time()
     for name in script_names:
         code, out, err = _run_one(name, payload)
         if err:
@@ -107,7 +128,15 @@ def run(script_names, payload):
         result['hookSpecificOutput'] = hso_out
     if result:
         print(json.dumps(result))
-    return 2 if blocked is not None or final_code == 2 else 0
+    rc = 2 if blocked is not None or final_code == 2 else 0
+    emit_metric(
+        'hookrun',
+        hook_event=payload.get('hook_event_name', ''),
+        scripts=','.join(script_names),
+        duration_ms=int((time.time() - t0) * 1000),
+        exit_code=rc,
+    )
+    return rc
 
 
 def main(script_names):
