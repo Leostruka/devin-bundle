@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Push gate made feasible** (#299): `check-push-green.py` now treats `tests/validation` + `tests/held-out` as the main check when both exist (Rule 15 contract, concurrent, `MAIN_TIMEOUT` env `BUNDLE_PUSH_GATE_TIMEOUT` default 250s); full suite stays in CI. Spawned pytest no longer inherits `DEVIN_PROJECT_DIR` (cwd isolation for hook-script tests). `audit.py` `render_norm` collapses resolved `python(w).exe` interpreter paths to `python` for the hooks-render comparison.
+
 ## [3.19.0] - 2026-11-04
 
 ### Added
