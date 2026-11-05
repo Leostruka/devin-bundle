@@ -1,5 +1,7 @@
 # Reels batch-2 execution plan (2026-11-05)
 
+**Status: EXECUTED 2026-11-05** - all 4 waves merged (#311, #313) + polish PRs (#314-#321). All 15 issues resolved with `## Answer` sections.
+
 Source: `.devin/research/2026-11-05-reels-batch2-survey.md` | Issues: `.devin/scratch/reels-2/issues/` | Transcripts: `.devin/scratch/reels-2/transcripts/`
 
 ## Wave structure
