@@ -343,7 +343,8 @@ def main():
         shutil.copy(os.path.join(SRC, asset), os.path.join(DIST, asset))
     open(os.path.join(DIST, "index.html"), "w",
          encoding="utf-8").write(
-        tpl.replace("/*__DATA__*/", json.dumps(data, ensure_ascii=False)))
+        tpl.replace("/*__DATA__*/", json.dumps(data, ensure_ascii=False)
+                    .replace("<", "\\u003c")))
     print(f"dist built: {data['counts']} -> {DIST}")
 
 

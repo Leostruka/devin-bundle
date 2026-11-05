@@ -37,7 +37,7 @@ const LINES = [
   ["dim",""],
   ["dim","$ cat manifest.json | jq '.skill_count, .agent_count'"],
   ["",`${D.counts?.skills ?? 168}`],
-  ["",`${(D.counts?.agents ?? 16) + 5}`],
+  ["",`${D.counts?.agents ?? 16}`],
   ["dim",""],
   ["dim","$ ./install.ps1 -Force"],
   ["ok","  [+] skills        " + `${D.counts?.skills ?? 168} synced   live=bundle`],
@@ -446,8 +446,8 @@ document.addEventListener("keydown", e => {
     e.preventDefault(); palShow(); return;
   }
   if(e.key === "Escape"){ pal.hidden = true; closeModal(); return; }
+  if(e.key === "q" && !typing && !modal.hidden){ closeModal(); return; }
   if(typing || !modal.hidden || !pal.hidden) return;
-  if(e.key === "q"){ closeModal(); return; }
   const n = +e.key;
   if(n >= 1 && n <= SECTIONS.length){ go(SECTIONS[n-1]); return; }
   // type-anywhere: printable chars drop into the repl like a real terminal

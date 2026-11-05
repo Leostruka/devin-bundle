@@ -1484,7 +1484,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "5f0131e422296c69a289003738a0cfc513468ee0ff98860085fb17fcd890c0f7",
+      "export_hash": "4ce4e0deae6dbcab6e53b5d8fbf8e8f9d52e5e0364c705256baea9dd920afeda",
       "exported_at": "2026-11-03T21:04:06.237841"
     },
     {
@@ -1521,7 +1521,7 @@
       "name": "file-size-guard.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
-      "export_hash": "7936902ebb6b06c8d5fec9dbe4ca8b2cddd26b62c71da852f35015280685f332",
+      "export_hash": "58e8c354dc226eb1eb3c005d47eca7c647b90f894afc04d617a3d46e8c89f77f",
       "exported_at": "2026-11-05T07:58:08.569748"
     }
   ],

@@ -59,7 +59,8 @@ def main():
     state[key] = band
     try:
         os.makedirs(os.path.dirname(sp), exist_ok=True)
-        json.dump(state, open(sp, 'w', encoding='utf-8'))
+        with open(sp, 'w', encoding='utf-8') as fh:
+            json.dump(state, fh)
     except OSError:
         pass
 
