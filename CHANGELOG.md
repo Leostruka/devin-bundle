@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- changelog: coverage refs for atlas REPL fix and hooks arithmetic PRs. Covers #330, #334.
+
 - docs: hooks arithmetic corrected (11 entry points / 6 consolidated / 21 inner modules), HOOKS-PIPELINE adds file-size-guard row. Covers #333.
 
 - SKILL-TIERS: honest scope note (curated subset, manifest.json = full index) + 14 high-use rows (afk-loop, autonomous-gates, context-folding, de-slop, lean-code, tdd, etc). Covers #332.
