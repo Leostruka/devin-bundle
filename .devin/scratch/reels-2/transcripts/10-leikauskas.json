@@ -1,0 +1,75 @@
+{
+ "ok": true,
+ "text": "1.3 million downloads last month for a model called this, 14 words, three of them change the model, four are claims, five are just how the file is packed, and two say what it is. Read it left to right and it's the model's whole life story. Quinn 3.8, Alibaba built it and gave it away. 27b is its size, 27 billion numbers it learned in training, called weights. To write each word, it runs your text through every one of them, turbo, acclaim. It says it thinks up to 10 times less, and fable is where it gets strange. Part of its training was answers written by Claude Fable, a closed model from another company. Cold Fusion is just the name of their training recipe. 735 and 882 are its own test scores, stitched into its name. Heretic is a free tool that finds the part of a model that says no, and cuts it out. On their test, refusals went from 99 and 100 to 0, so uncensored. The last five don't change what it knows. They're how it's packed, shrunk, sped up, and saved as a file your own computer can run. So here's how to read any of them. The first word is who built it. The red words are surgery. The rest is packaging and bragging.",
+ "segments": [
+  {
+   "start": 0.0,
+   "end": 5.44,
+   "text": "1.3 million downloads last month for a model called this, 14 words,"
+  },
+  {
+   "start": 5.44,
+   "end": 10.56,
+   "text": "three of them change the model, four are claims, five are just how the file is packed,"
+  },
+  {
+   "start": 10.56,
+   "end": 16.08,
+   "text": "and two say what it is. Read it left to right and it's the model's whole life story."
+  },
+  {
+   "start": 16.08,
+   "end": 24.0,
+   "text": "Quinn 3.8, Alibaba built it and gave it away. 27b is its size, 27 billion numbers it learned in"
+  },
+  {
+   "start": 24.0,
+   "end": 28.96,
+   "text": "training, called weights. To write each word, it runs your text through every one of them,"
+  },
+  {
+   "start": 28.96,
+   "end": 35.44,
+   "text": "turbo, acclaim. It says it thinks up to 10 times less, and fable is where it gets strange."
+  },
+  {
+   "start": 35.44,
+   "end": 40.72,
+   "text": "Part of its training was answers written by Claude Fable, a closed model from another company."
+  },
+  {
+   "start": 40.72,
+   "end": 47.84,
+   "text": "Cold Fusion is just the name of their training recipe. 735 and 882 are its own test scores,"
+  },
+  {
+   "start": 47.84,
+   "end": 52.96,
+   "text": "stitched into its name. Heretic is a free tool that finds the part of a model that says no,"
+  },
+  {
+   "start": 52.96,
+   "end": 59.04,
+   "text": "and cuts it out. On their test, refusals went from 99 and 100 to 0, so uncensored."
+  },
+  {
+   "start": 59.04,
+   "end": 64.32,
+   "text": "The last five don't change what it knows. They're how it's packed, shrunk, sped up,"
+  },
+  {
+   "start": 64.32,
+   "end": 70.4,
+   "text": "and saved as a file your own computer can run. So here's how to read any of them. The first word is"
+  },
+  {
+   "start": 70.4,
+   "end": 77.52,
+   "text": "who built it. The red words are surgery. The rest is packaging and bragging."
+  }
+ ],
+ "model": "base",
+ "source": "https://www.instagram.com/leikauskas.dev/reel/DfSh3kbjQis/",
+ "slug": "10-leikauskas",
+ "url": "https://www.instagram.com/leikauskas.dev/reel/DfSh3kbjQis/"
+}
