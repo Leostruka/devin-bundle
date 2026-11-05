@@ -56,8 +56,9 @@ def _log_hit(tool_name, result):
 VALID_PROFILES = frozenset({
     "architect", "art-director", "chief-of-staff", "copywriter",
     "debugger", "domain", "implementer", "issue-tracker",
-    "product-manager", "qa-ci", "red-team-lead", "researcher",
-    "reviewer", "scrum-master", "security-auditor", "subagent_explore",
+    "product-manager", "qa-ci", "red-team-lead", "repo-reviewer",
+    "researcher", "reviewer", "scrum-master", "security-auditor",
+    "subagent_explore",
     "subagent_general", "tech-lead",
     "thermo-nuclear-code-quality-review-subagent",
     "thermo-nuclear-review-subagent", "triage-labels", "watchdog",
