@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- tests: hooks-pipeline doc parity test (entry points + inner modules). Covers #335.
+
 - changelog: coverage refs for atlas REPL fix and hooks arithmetic PRs. Covers #330, #334.
 
 - docs: hooks arithmetic corrected (11 entry points / 6 consolidated / 21 inner modules), HOOKS-PIPELINE adds file-size-guard row. Covers #333.
