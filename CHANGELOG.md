@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- audit.py check 32 (merge coverage): refs for merges younger than 24h now WARN instead of ERROR - every merge no longer makes the tree red until a changelog-ref PR lands; stale missing refs still fail. Covers #319, #320.
+
+### Fixed
+
 - README extensions table: 8 -> 24 rows, covers every directory under extensions/ (asr, voicebox, offsec-tools, blender-operator, comfyui-operator, craft-bridge, laya-compactor and 9 more were undocumented).
 
 ### Fixed
