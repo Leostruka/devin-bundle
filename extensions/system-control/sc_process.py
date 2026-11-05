@@ -265,20 +265,20 @@ def _reap_posix_group(proc, grace_s) -> bool:
         os.killpg(proc.pid, signal.SIGKILL)
     except (ProcessLookupError, OSError):
         pass
-    _reap_root(proc, grace_s)
+    reaped = _reap_root(proc, grace_s)
     # verify group absence regardless of signal-send errors - a failed
     # syscall does not prove the tree is alive; the truthful answer is
-    # whether a live member remains
+    # root reaped AND no live group member
     deadline = time.time() + 15
     while True:
         try:
             os.killpg(proc.pid, 0)
         except ProcessLookupError:
-            return True  # group fully gone
+            return reaped  # group fully gone
         except OSError:
             pass  # EPERM etc: group state unclear - ask ps instead
         if not _posix_group_has_live_member(proc.pid):
-            return True  # only zombie members left
+            return reaped  # only zombie members left
         if time.time() >= deadline:
             return False
         time.sleep(0.05)
