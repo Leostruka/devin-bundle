@@ -185,7 +185,7 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 
 Com o parent gratuito em `swe-2-high`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
 
-O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os quatorze perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
+O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os dezessete perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
 
 ### 4. Ferramentas e MCP
 
@@ -459,7 +459,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 ```text
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
-├── agents/                    # 14 perfis customizados
+├── agents/                    # 17 perfis customizados
 ├── skills/                    # 83 workflows invocáveis
 
 ├── scripts/                   # hooks, validadores e helper Mermaid
