@@ -141,11 +141,12 @@ main{flex:1;max-width:1200px;width:100%;margin:0 auto;padding:28px 20px 60px}
 
 /* footer prompt + repl */
 .promptline{display:flex;gap:6px;align-items:baseline;padding:10px 16px;border-top:1px solid var(--line);
-  background:var(--panel);color:var(--fg);font-size:.9em}
+  position:sticky;bottom:0;z-index:41;background:var(--panel);color:var(--fg);font-size:.9em}
 .promptline .path{color:var(--cyan)}
 #repl{flex:1;background:none;border:0;color:var(--fg);font:inherit;outline:none;caret-color:var(--green)}
 #repl::placeholder{color:var(--dim)}
 #repl-out{max-height:34vh;overflow-y:auto;padding:8px 16px;border-top:1px solid var(--line);
+  position:sticky;bottom:45px;z-index:40;
   background:#04140a;font-size:.85em;white-space:pre-wrap;line-height:1.5}
 #repl-out .r-cmd{color:var(--green)}
 #repl-out .r-dim{color:var(--dim)}

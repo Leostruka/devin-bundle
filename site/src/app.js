@@ -286,6 +286,7 @@ function rprint(lines){
     d.textContent = txt === "" ? " " : txt;
     replOut.appendChild(d);
   }
+  while(replOut.childElementCount > 200) replOut.firstChild.remove();
   replOut.scrollTop = replOut.scrollHeight;
 }
 const recho = t => rprint([["r-cmd", `visitor@devin-bundle:${curSec === "boot" ? "~" : "~/" + curSec}$ ${t}`]]);
@@ -409,7 +410,8 @@ function replRun(raw){
 }
 
 repl.addEventListener("keydown", e => {
-  if(e.key === "Enter"){ replRun(repl.value); repl.value = ""; }
+  if(e.key === "Escape"){ repl.blur(); e.preventDefault(); }
+  else if(e.key === "Enter"){ replRun(repl.value); repl.value = ""; }
   else if(e.key === "ArrowUp"){ if(histIdx > 0){ repl.value = hist[--histIdx]; } e.preventDefault(); }
   else if(e.key === "ArrowDown"){
     histIdx = Math.min(histIdx+1, hist.length);
@@ -445,12 +447,11 @@ document.addEventListener("keydown", e => {
   }
   if(e.key === "Escape"){ pal.hidden = true; closeModal(); return; }
   if(typing || !modal.hidden || !pal.hidden) return;
-  if(e.key === "q") closeModal();
+  if(e.key === "q"){ closeModal(); return; }
   const n = +e.key;
   if(n >= 1 && n <= SECTIONS.length){ go(SECTIONS[n-1]); return; }
   // type-anywhere: printable chars drop into the repl like a real terminal
-  if(e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey
-     && /[a-zA-Z ]/.test(e.key)){
+  if(e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey){
     repl.focus();
     repl.value += e.key;
     e.preventDefault();
