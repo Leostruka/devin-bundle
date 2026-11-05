@@ -225,6 +225,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "create-verification-skill",
+      "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
+      "purpose": "Use when a project needs a scripted way to drive the real app the way a user does and prove behavior, or when asked to make a control/verification skill for the repo. Generates a project-local verify-<app> skill.",
+      "original_path": "%APPDATA%\\devin\\skills\\create-verification-skill",
+      "export_hash": "ad4408da65221ca52fdd1c1da35ea152e22922e8ff29be0de4ce2c92109f0985",
+      "exported_at": "2026-11-04T21:46:29.980206"
+    },
+    {
       "name": "creative-engineering",
       "source": "devin-bundle",
       "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
@@ -615,6 +623,14 @@
       "original_path": "%APPDATA%\\devin\\skills\\leo",
       "export_hash": "a91933ae487edaf04b7b4186bae95d997289459b189ee674967f779ce5045b5c",
       "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "maintain-verification-skill",
+      "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
+      "purpose": "Use when keeping a project's verification skill and feature map honest as the app changes. Source-reader fan-out per feature plus one live driving pass; ships at most one PR of proven corrections.",
+      "original_path": "%APPDATA%\\devin\\skills\\maintain-verification-skill",
+      "export_hash": "02cb68319bf72403c9800279738a0c99e35247e9c3e36dc4743c050780abd72e",
+      "exported_at": "2026-11-04T21:46:29.980206"
     },
     {
       "name": "mcp-context-audit",
@@ -1230,7 +1246,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 168,
+  "skill_count": 170,
   "rule_count": 24,
   "scripts": [
     {
