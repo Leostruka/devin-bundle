@@ -1,6 +1,6 @@
 # evaluate NVIDIA Personaplex-7B for the voice pipeline
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Eval issue: find the HF repo, check license + hardware requirements (7B realtime
 
 ## Verification
 `.devin/research/` eval note with license + verdict.
+
+## Answer
+
+Verified real: `nvidia/personaplex-7b-v1`, MIT code + gated NVIDIA Open Model License weights, 16.7GB, CUDA GPU. Verdict: BACKLOG doc note (voicebox is TTS-shaped; duplex is different); revisit with GPU target.

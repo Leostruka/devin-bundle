@@ -58,7 +58,7 @@
       "name": "ai-tools",
       "source": "devin-bundle",
       "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
-      "export_hash": "e7ed3c58c8699f74e41811c9491969be511383b606580c24e995111758957760"
+      "export_hash": "3E508E0D2B6A72F6FB5E4AE5E15886EFBBFCD92BDD98A0756E961AAD59EAFD1E"
     },
     {
       "name": "ai3d-gen",
@@ -1516,9 +1516,16 @@
       "purpose": "PostToolUse hook - advisory when the same exec command fails 3x consecutively (deterministic stuck-detector subset of token-economizer mechanism)",
       "export_hash": "58feb125324e394a65d474b00269f6ce644a6ea97deb9982ec3461bf9514b9f2",
       "exported_at": "2026-10-31T21:15:43.544713"
+    },
+    {
+      "name": "file-size-guard.py",
+      "source": "devin-bundle",
+      "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
+      "export_hash": "7936902ebb6b06c8d5fec9dbe4ca8b2cddd26b62c71da852f35015280685f332",
+      "exported_at": "2026-11-05T07:58:08.569748"
     }
   ],
-  "script_count": 33,
+  "script_count": 34,
   "mcp_count": 1,
   "agent_count": 17,
   "tool_count": 28,

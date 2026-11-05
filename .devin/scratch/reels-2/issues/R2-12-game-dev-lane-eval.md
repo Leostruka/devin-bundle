@@ -1,6 +1,6 @@
 # game-dev lane eval: studio agents, Godot/Unreal MCP, game audio
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Backlog eval in `.devin/research/`: per item, license + what it would take (Godo
 
 ## Verification
 `.devin/research/` eval note with 5-row verdict table.
+
+## Answer
+
+Verdict table in `.devin/research/2026-11-05-r2-evals.md`: game-studio pack interesting-later, Godot-MCP backlog, Unreal/audio2face skip, AceStep audio-eval backlog.
