@@ -69,7 +69,7 @@
     {
       "name": "animation-direction",
       "source": "devin-bundle",
-      "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics \u2014 narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
+      "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics — narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
       "export_hash": "c025f3c82a8dae99556cb4e7e2153880a9ec79650b480e1ffb1d0463de16d106"
     },
     {
@@ -103,7 +103,7 @@
     {
       "name": "architecture-diagrams",
       "source": "devin-bundle",
-      "purpose": "Use when the deliverable is a physical diagram artifact (.svg/.png) \u2014 C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid there).",
+      "purpose": "Use when the deliverable is a physical diagram artifact (.svg/.png) — C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid there).",
       "export_hash": "8c276259849ac83f1462fb19534df03389e68f0d8d93141bd6d793762d25b99c"
     },
     {
@@ -115,7 +115,7 @@
     {
       "name": "ask-bundle",
       "source": "devin-bundle",
-      "purpose": "Use when deciding which skill or flow fits your situation \u2014 the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague and needs the quick-start menu. Routes then defers to the chosen specialist \u2014 does not execute the work itself.",
+      "purpose": "Use when deciding which skill or flow fits your situation — the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague and needs the quick-start menu. Routes then defers to the chosen specialist — does not execute the work itself.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\ask-bundle",
       "export_hash": "c25d77b4390fc6bce47f4d753fa27f8a2afa014b06697d09878648dfd409e1e7",
       "exported_at": "2026-09-08T21:39:22.433086"
@@ -227,7 +227,7 @@
     {
       "name": "creative-engineering",
       "source": "devin-bundle",
-      "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code \u2014 frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) \u2014 especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
+      "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
       "export_hash": "7247147920bdd9b84d5ccf30339de694de56804d8f25c8a0ad908ef3f8a9486a"
     },
     {
@@ -239,7 +239,7 @@
     {
       "name": "data-analyst",
       "source": "devin-bundle (new, replicates cloud DANA agent)",
-      "purpose": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA) for the CLI \u2014 SQL-first exploration, schema-aware querying, and seaborn-style visualizations via MCP data sources.",
+      "purpose": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA) for the CLI — SQL-first exploration, schema-aware querying, and seaborn-style visualizations via MCP data sources.",
       "export_hash": "d41ed9b04a29c99dbf37c03368e4792af9f8105401b1412ad7820ffbff0cbb6c",
       "exported_at": "2026-09-08T21:39:22.457280"
     },
@@ -300,7 +300,7 @@
     {
       "name": "devin-config",
       "source": "devin-bundle",
-      "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule \u2014 or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval.",
+      "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval.",
       "export_hash": "320490ff0ff94699c4aaa1016b2580539b8371e1b1f5bd2fd3b7c18d71286bc1"
     },
     {
@@ -541,7 +541,7 @@
     {
       "name": "implement-laya",
       "source": "devin-bundle",
-      "purpose": "Use when a task needs fast typed decisions \u2014 classification, triage, scoring, guardrails, moderation, or model routing \u2014 over text/JSON states, or when integrating the `laya` engine (non-autoregressive decision model) into a user's codebase.",
+      "purpose": "Use when a task needs fast typed decisions — classification, triage, scoring, guardrails, moderation, or model routing — over text/JSON states, or when integrating the `laya` engine (non-autoregressive decision model) into a user's codebase.",
       "export_hash": "4df2dd3986f77d7902e97a8215f01177033b3ccd64e113107d69913c576e3d80"
     },
     {
@@ -569,7 +569,7 @@
     {
       "name": "jira",
       "source": "created:Devin bundle",
-      "purpose": "Use when the user asks to interact with Jira \u2014 search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
+      "purpose": "Use when the user asks to interact with Jira — search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
       "original_path": "%APPDATA%\\devin\\skills\\jira",
       "exported_at": "2026-09-08T21:39:22.441245",
       "export_hash": "2b714ab7b1174afda5269735903768a8c0325679bc6111be66404c0defc08099"
@@ -597,7 +597,7 @@
     {
       "name": "learn-mode",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants to own the design while the agent teaches and implements \u2014 unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
+      "purpose": "Use when the user wants to own the design while the agent teaches and implements — unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
       "export_hash": "1ef7eed23c3bb8b9a352a8ff1db864f1f78988d841a6f748bd0e4c80f93e31ec"
     },
     {
@@ -641,7 +641,7 @@
     {
       "name": "media-tools",
       "source": "devin-bundle",
-      "purpose": "Use when generating visual artifacts \u2014 ASCII art, halftone, dithering, matrix-rain, VHS, pixel-sort, voronoi, and other image/video FX \u2014 from images, GIFs, videos, GLB models, or webcam input. Local, offline-first.",
+      "purpose": "Use when generating visual artifacts — ASCII art, halftone, dithering, matrix-rain, VHS, pixel-sort, voronoi, and other image/video FX — from images, GIFs, videos, GLB models, or webcam input. Local, offline-first.",
       "export_hash": "4898cfc8926700698b494184a9c6b47f8070ef827a521ad403ae3624c948b54e"
     },
     {
@@ -655,7 +655,7 @@
     {
       "name": "memory-management",
       "source": "devin-bundle",
-      "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only \u2014 improving skills/rules/hooks belongs to `self-improvement`.",
+      "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only — improving skills/rules/hooks belongs to `self-improvement`.",
       "export_hash": "c5686b5262e90df001a5fd846ff00684d76ba82a56ef99a9d8cdc92dff2e0d60"
     },
     {
@@ -746,7 +746,7 @@
     {
       "name": "planning",
       "source": "devin-bundle",
-      "purpose": "Use when AUTHORING a spec/PRD, implementation plan, or ticket breakdown from conversation \u2014 writing the artifacts, not running them. Hands off to `execution` once the plan exists. Also for decisions needing external input via questionnaire, or work too large for one session mapped as decision tickets (wayfinding).",
+      "purpose": "Use when AUTHORING a spec/PRD, implementation plan, or ticket breakdown from conversation — writing the artifacts, not running them. Hands off to `execution` once the plan exists. Also for decisions needing external input via questionnaire, or work too large for one session mapped as decision tickets (wayfinding).",
       "export_hash": "10f7a19402345a233529727e1b7941972019e551fa6ef2ff4c46caae7160c271"
     },
     {
@@ -760,7 +760,7 @@
     {
       "name": "playbook",
       "source": "devin-bundle (new, replicates cloud Playbook feature)",
-      "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks \u2014 a structured prompt template with Procedure, Specifications, Advice, Forbidden Actions, and Required-from-User sections. Replicates Devin cloud's Playbook feature (.devin.md files, macros, team/community library) for the CLI.",
+      "purpose": "Use when the user wants to create, refine, or use a reusable playbook for repeated tasks — a structured prompt template with Procedure, Specifications, Advice, Forbidden Actions, and Required-from-User sections. Replicates Devin cloud's Playbook feature (.devin.md files, macros, team/community library) for the CLI.",
       "export_hash": "58d271b4d1414adefdf480bf85c8de11863e61eb74ca30cd3895027077c25b7e",
       "exported_at": "2026-09-08T21:39:22.457423"
     },
@@ -775,7 +775,7 @@
     {
       "name": "pr",
       "source": "devin-bundle",
-      "purpose": "Use when writing a PR body or description \u2014 a visual Summary (smallest diagram/diff-sketch/tree that makes the point), concrete Evidence (before/after runs), and Merge Danger (one-way vs two-way door + blast radius). Ported and adapted from mattpocock/skills engineering/pr.",
+      "purpose": "Use when writing a PR body or description — a visual Summary (smallest diagram/diff-sketch/tree that makes the point), concrete Evidence (before/after runs), and Merge Danger (one-way vs two-way door + blast radius). Ported and adapted from mattpocock/skills engineering/pr.",
       "export_hash": "2af156fd861e9895a89c1217003656ff5190e3e93bd39cfc04007803939d4530"
     },
     {
@@ -825,7 +825,7 @@
     {
       "name": "prompt-compiler",
       "source": "devin-bundle",
-      "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution \u2014 interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md.",
+      "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md.",
       "export_hash": "78d8a5bebaed38e517dbd4b96f2235bdcc74eb37788b708d1164e3b77facd47b"
     },
     {
@@ -883,7 +883,7 @@
     {
       "name": "retro",
       "source": "devin-bundle",
-      "purpose": "Use when conducting a retrospective on a coding session to improve the agent's environment for future runs \u2014 navigation pointers, automated guardrails, reviewer standards, rules-file hygiene, tool economy, information access. Lightweight per-session review; deeper self-improvement loops go to continuous-improvement.",
+      "purpose": "Use when conducting a retrospective on a coding session to improve the agent's environment for future runs — navigation pointers, automated guardrails, reviewer standards, rules-file hygiene, tool economy, information access. Lightweight per-session review; deeper self-improvement loops go to continuous-improvement.",
       "export_hash": "2003cc132e924c80db7b77ec5ae25b71b096daa40fafa9130de98f09bcd82667"
     },
     {
@@ -897,7 +897,7 @@
     {
       "name": "scan",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants a goal-driven, codebase-wide investigation \u2014 \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan \u2192 Shard \u2192 Map \u2192 Reduce, parallel read-only subagents, prioritized findings report with evidence.",
+      "purpose": "Use when the user wants a goal-driven, codebase-wide investigation — \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence.",
       "export_hash": "92bd8d9f72a0ef6bcd57a4eeb20a3abcce79ac0d4d3568c9390fd737c817038f"
     },
     {
@@ -1010,7 +1010,7 @@
     {
       "name": "system-control",
       "source": "devin-bundle",
-      "purpose": "Use when the task needs authorized OS-level control \u2014 process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file copies \u2014 where native system APIs beat GUI computer-use. Routes to the system-control extension.",
+      "purpose": "Use when the task needs authorized OS-level control — process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file copies — where native system APIs beat GUI computer-use. Routes to the system-control extension.",
       "export_hash": "793f0db5e545eb67e19c2422c9123868b65fdc07e59cd1d0f1cbeb03ddc30988"
     },
     {
@@ -1235,91 +1235,91 @@
   "scripts": [
     {
       "name": "_hookrun.py",
-      "purpose": "Shared in-process hook runner \u2014 merges N hook checks into one spawn",
+      "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
       "export_hash": "d2b17db177e4677d921fd6900b2dd559364877d9acfb5862efcf91b27cec02b8",
       "exported_at": "2026-09-18T20:22:05.262464"
     },
     {
       "name": "architecture-gate.py",
-      "purpose": "PreToolUse hook \u2014 blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
+      "purpose": "PreToolUse hook — blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
       "export_hash": "217771eef5f6f4d8d8254107e6a1ca285a70f9042a9dd85615d346eb2747d6fd",
       "exported_at": "2026-09-18T20:22:05.262556"
     },
     {
       "name": "behavioral-nudge.py",
-      "purpose": "PostToolUse hook \u2014 injects behavioral reminders",
+      "purpose": "PostToolUse hook — injects behavioral reminders",
       "export_hash": "0179f74ef1005cf56d6775c0b2d5d5ceb1345270a2ebf27439d4818a4d7f249d",
       "exported_at": "2026-09-08T21:39:22.430127"
     },
     {
       "name": "check-ai-signature.py",
-      "purpose": "PreCommit hook \u2014 blocks AI signatures in commits",
+      "purpose": "PreCommit hook — blocks AI signatures in commits",
       "export_hash": "e6a15e75e7ffb7b6d2528e226a0f358ec908f6af81ec3748d4aebf0263b282f4",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "check-push-green.py",
-      "purpose": "PrePush hook \u2014 blocks push when held-out tests fail",
-      "export_hash": "e21623dfe515432f5c52d95419ab8e006e652843b1dd4b10ee79a2f30a9eadb5",
+      "purpose": "PrePush hook — blocks push when held-out tests fail",
+      "export_hash": "d93ea4446afcfc9d5f26820750e285c1eafbee79c112bf012f9215f01aa95b85",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "constraint-pinning.py",
-      "purpose": "PostCompaction/UserPromptSubmit hook \u2014 re-injects pinned constraints",
+      "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints",
       "export_hash": "c6b2561018a85bec0d20a79df1b4748c3b7de56705876b6c4245175a8675d4c2",
       "exported_at": "2026-09-08T21:39:22.430444"
     },
     {
       "name": "context-budget.py",
-      "purpose": "SessionStart hook \u2014 reports AGENTS.md token cost",
+      "purpose": "SessionStart hook — reports AGENTS.md token cost",
       "export_hash": "d6e788774a320f3784b08ef5883276c9ed62feba93ea4e141e9477d9a8c1a9b8",
       "exported_at": "2026-09-08T21:39:22.430527"
     },
     {
       "name": "context-pressure.py",
-      "purpose": "PostToolUse hook \u2014 estimates cumulative context-window pressure and warns at thresholds",
+      "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
       "export_hash": "9af0986471145e5e131830d6fad793209333db211947d0938f1989e2797e1a27",
       "exported_at": "2026-09-18T20:22:05.262834"
     },
     {
       "name": "destructive-gate.py",
-      "purpose": "PreToolUse hook \u2014 gates destructive operations",
+      "purpose": "PreToolUse hook — gates destructive operations",
       "export_hash": "e6d9f30d4001243e3162ec0fbc0f6ab7e1096e27ef2e4ecfbcffe6ee219e6b59",
       "exported_at": "2026-09-08T21:39:22.430612"
     },
     {
       "name": "gh-pr-assignee.py",
-      "purpose": "PostToolUse hook \u2014 auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
+      "purpose": "PostToolUse hook — auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
       "export_hash": "5a98f97a830ac8e01fdd97a85fd09b36281ebe52fdb1625234f1f22a773ad64f",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "memory-post-edit.py",
-      "purpose": "PostToolUse hook \u2014 injects .devin/memory/ notes after write/edit based on cues.path",
+      "purpose": "PostToolUse hook — injects .devin/memory/ notes after write/edit based on cues.path",
       "export_hash": "07baf5c0e85625e9c0c5d1a91d4dc18eb10be550eb16d75a6bf4d81d5bb8ecb4",
       "exported_at": "2026-09-08T21:39:22.431370"
     },
     {
       "name": "memory-post-exec.py",
-      "purpose": "PostToolUse hook \u2014 injects .devin/memory/ notes after exec based on cues.symbol/keyword",
+      "purpose": "PostToolUse hook — injects .devin/memory/ notes after exec based on cues.symbol/keyword",
       "export_hash": "12a0efd9883e95e555115c6368821e396393758a75821d19f97b0cd27b3ba8b2",
       "exported_at": "2026-09-08T21:39:22.431511"
     },
     {
       "name": "memory-retrieval.py",
-      "purpose": "UserPromptSubmit hook \u2014 cue-anchored retrieval from .devin/memory/ notes",
+      "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes",
       "export_hash": "1e25e3078aad5110bd857f02da796d8ca28d5c3a3b81e429f30ca1bed958a73e",
       "exported_at": "2026-09-08T21:39:22.431296"
     },
     {
       "name": "memory-stop.py",
-      "purpose": "Stop hook \u2014 logs .devin/memory/ state and prompts session capture review",
+      "purpose": "Stop hook — logs .devin/memory/ state and prompts session capture review",
       "export_hash": "475178e02631cb98d42186b8670d1ff933df9708d42c1807227fd70c29cb840f",
       "exported_at": "2026-09-08T21:39:22.431441"
     },
     {
       "name": "mermaid-parse-check.js",
-      "purpose": "Validator \u2014 Node.js Mermaid parser for syntax validation (helper, not counted in script_count)",
+      "purpose": "Validator — Node.js Mermaid parser for syntax validation (helper, not counted in script_count)",
       "export_hash": "5d566d752f74bbc5713a953c21c10ad45f570ea0619e1f58b071ec164a7d4e56",
       "exported_at": "2026-09-08T21:39:22.431582"
     },
@@ -1349,13 +1349,13 @@
     },
     {
       "name": "refine-review-prompt.py",
-      "purpose": "Refine mode \u2014 generates review prompts for self-improvement",
+      "purpose": "Refine mode — generates review prompts for self-improvement",
       "export_hash": "913c2c7e03da85cf1ddc48f3eb89629b9f3b5cd888c41534694e9765dd95e8e0",
       "exported_at": "2026-09-08T21:39:22.430695"
     },
     {
       "name": "render-user-hooks.py",
-      "purpose": "Install-time renderer \u2014 expands hooks.v1.json into user-level config.json hooks",
+      "purpose": "Install-time renderer — expands hooks.v1.json into user-level config.json hooks",
       "export_hash": "790286479738f926ae82161884280ba63a24fd99730d4cb9d162ef1e50cbe6c3",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
@@ -1367,7 +1367,7 @@
     },
     {
       "name": "silent-error-review.py",
-      "purpose": "PostToolUse hook \u2014 detects silent errors in tool output",
+      "purpose": "PostToolUse hook — detects silent errors in tool output",
       "export_hash": "e662c8718edf6008032a1724049e8ed37855cd43b2ee05f9d47303bf691a6441",
       "exported_at": "2026-09-08T21:39:22.430789"
     },
@@ -1385,25 +1385,25 @@
     },
     {
       "name": "validate-mermaid.py",
-      "purpose": "Validator \u2014 checks Mermaid syntax in wiki diagrams",
+      "purpose": "Validator — checks Mermaid syntax in wiki diagrams",
       "export_hash": "7b2facb7aa35b09b1f84eae9b4d80e893d05596249349915d2fd4feaf87300f8",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "validate-refinement-evidence.py",
-      "purpose": "Validator \u2014 checks refinements.log.jsonl for phantom guardrails",
+      "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails",
       "export_hash": "e3a7ddcbb23359226cfb565513711fc115e93a6974badb5144805c5df910b9e5",
       "exported_at": "2026-09-08T21:39:22.430943"
     },
     {
       "name": "validate-skill-format.py",
-      "purpose": "Validator \u2014 checks SKILL.md frontmatter and format",
+      "purpose": "Validator — checks SKILL.md frontmatter and format",
       "export_hash": "10ea11ea662cbce5a2873d9bbca749c7efd1d3b5a8b3ab1fb0c74cb1c51e96d7",
       "exported_at": "2026-09-08T21:39:22.431052"
     },
     {
       "name": "validate-tool-args.py",
-      "purpose": "Validator \u2014 checks tool argument schemas",
+      "purpose": "Validator — checks tool argument schemas",
       "export_hash": "7244b928ae665646145e3dfe8b76e514cc14bea88134dfb396bd256c8502d180",
       "exported_at": "2026-11-03T21:04:06.237841"
     },
@@ -1427,7 +1427,7 @@
     },
     {
       "name": "skill-picker.py",
-      "purpose": "UserPromptSubmit child (JEV-2) \u2014 lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
+      "purpose": "UserPromptSubmit child (JEV-2) — lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
       "export_hash": "a94c45ca663009e7ba663d61178eb226f2185eee5ad2d254e0f0ca575e625e22",
       "exported_at": "2026-10-31T00:00:00.000000"
     },
