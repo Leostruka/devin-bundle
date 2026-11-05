@@ -107,6 +107,14 @@
       "export_hash": "8c276259849ac83f1462fb19534df03389e68f0d8d93141bd6d793762d25b99c"
     },
     {
+      "name": "arena",
+      "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
+      "purpose": "Use when one attempt at a non-trivial artifact would lock in the wrong shape. Spawns N parallel candidates at the same task, cross-judges, picks a base, grafts the strongest parts of the losers into it.",
+      "original_path": "%APPDATA%\\devin\\skills\u0007rena",
+      "export_hash": "082c7aac3c89bd5b10c8270c31c06a5845492926cf90f01dde9e6e140540e823",
+      "exported_at": "2026-11-04T21:54:49.869576"
+    },
+    {
       "name": "ascii-art",
       "source": "devin-bundle",
       "purpose": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii.rest library (217 MIT pieces, React components, npx CLI, image-to-ascii).",
@@ -1254,7 +1262,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 171,
+  "skill_count": 172,
   "rule_count": 24,
   "scripts": [
     {
