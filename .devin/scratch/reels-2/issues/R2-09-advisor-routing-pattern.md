@@ -1,6 +1,6 @@
 # advisor pattern: cheap main + escalation consult for hard calls
 
-status: open
+status: resolved
 priority: P2
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Extend the routing doc (`docs/MODEL-GUIDE.md`) and/or `data/bundle-models.json` 
 
 ## Verification
 Doc/role update lands; devin-config confirmed what CLI supports.
+
+## Answer
+
+`advisor_role_model: swe-2-max` added to `data/bundle-models.json`; MODEL-GUIDE gained the 'Escalonamento pontual + advisor' section (Alt+T one-turn max + architect/reviewer subagent as the consult mechanism).

@@ -1,6 +1,6 @@
 # jtrivard power features: watchdog agent + ultrathink + compact-early
 
-status: open
+status: resolved
 priority: P2
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Three deliverables: (1) `agents/watchdog.md` profile or `skills/watchdog` - runs
 
 ## Verification
 Watchdog artifact exists; both doc edits land; audit clean.
+
+## Answer
+
+`agents/watchdog.md` (swe-2-medium observer: claimed-vs-actual miss-list). Compact-early rationale added to `context-hygiene` Smart Window (threshold fires before the degraded end-of-window zone). Ultrathink one-turn escalation documented in MODEL-GUIDE. /loop + swarm coordination already covered by afk-loop/orchestration.

@@ -214,7 +214,7 @@
       "name": "context-hygiene",
       "source": "devin-bundle",
       "purpose": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent fan-out, when choosing a reasoning effort level, or when reducing token/compute/MCP costs. Covers lost-in-the-middle, context folding (RLM), cost guards, and difficulty-matched effort.",
-      "export_hash": "9818f4892470c8a1a21d0b5e1b1b0b49190808e6f05f830c4d0599f407c8a42a"
+      "export_hash": "822C9538163953167B4D78C73600456809E02BA066AC8711B3B877C6EDE4B88B"
     },
     {
       "name": "context-window-hygiene",
@@ -1284,9 +1284,25 @@
       "original_path": "%APPDATA%\\devin\\skills\\youtube-fetcher",
       "export_hash": "bc5d6bab694ecd73c4aece39aaf7ea10be835707272cd95f96ab7a03baf184be",
       "exported_at": "2026-09-08T21:39:22.462266"
+    },
+    {
+      "name": "web-perf-checklist",
+      "source": "devin-bundle",
+      "purpose": "Use when a web app feels slow, when a PR touches frontend/backend performance, or when asked for the concrete fix-list behind a performance complaint.",
+      "original_path": "%APPDATA%\\devin\\skills\\web-perf-checklist",
+      "export_hash": "1EF704FC00A87C05B59AB84E06664F1AE5DC94DB4B49AE2A32AD45520F71A62F",
+      "exported_at": "2026-11-05T07:49:44.220070"
+    },
+    {
+      "name": "big-file-refactor",
+      "source": "devin-bundle",
+      "purpose": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely.",
+      "original_path": "%APPDATA%\\devin\\skills\\big-file-refactor",
+      "export_hash": "8CF00A6EAF7D029885CCBC4074A204A56D55814A61422F69A9A895EAFBB70A2E",
+      "exported_at": "2026-11-05T07:49:44.220070"
     }
   ],
-  "skill_count": 175,
+  "skill_count": 177,
   "rule_count": 24,
   "scripts": [
     {
@@ -1496,7 +1512,7 @@
   ],
   "script_count": 33,
   "mcp_count": 1,
-  "agent_count": 16,
+  "agent_count": 17,
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
@@ -1607,6 +1623,13 @@
       "original_path": "%APPDATA%\\devin\\agents\\thermo-nuclear-review-subagent.md",
       "export_hash": "180AB9723D2E4D348AF82C51F35C20B373D5E1F96DBB21CC68F738C1718F06B7",
       "exported_at": "2026-11-03T21:03:31.749175"
+    },
+    {
+      "name": "watchdog",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\u0007gents\\watchdog.md",
+      "export_hash": "B4782ED43F739260907C82EAE689AD825F07B940B0FF39917D8F294957EA8EBF",
+      "exported_at": "2026-11-05T07:49:44.220070"
     }
   ]
 }

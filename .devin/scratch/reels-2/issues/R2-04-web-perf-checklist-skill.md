@@ -1,6 +1,6 @@
 # web-perf-checklist: 30-item frontend performance fix-list
 
-status: open
+status: resolved
 priority: P2
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ New skill `skills/web-perf-checklist/SKILL.md`: the 30 items grouped by layer (r
 
 ## Verification
 `ls skills/web-perf-checklist/SKILL.md`; manifest + count bump; audit clean.
+
+## Answer
+
+`skills/web-perf-checklist/SKILL.md` - 30 items grouped by layer (render/network/server/data/hygiene), each with symptom+check; pairs with benchmark-checklist.

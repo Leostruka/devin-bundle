@@ -7,7 +7,8 @@
   "effort_levels": {
     "medium": "Simple tasks, spot fixes, isolated scripts.",
     "high": "Tasks spanning multiple files; default for general work.",
-    "max": "Open-ended tasks, global refactors, long-horizon coding."
+    "max": "Open-ended tasks, global refactors, long-horizon coding.",
+    "advisor": "Escalation consult role: strongest free model, invoked for hard decisions only (architecture, dead-end bugs)."
   },
   "models": [
     {
@@ -39,5 +40,6 @@
   ],
   "aliases": {
     "swe": "swe-2"
-  }
+  },
+  "advisor_role_model": "swe-2-max"
 }

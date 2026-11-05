@@ -14,6 +14,13 @@ No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é u
 
 **Regra prática:** comece no nível que corresponde à forma da tarefa. Suba um nível quando a verificação falhar, não antes. Ver `context-hygiene` para a base empírica.
 
+### Escalonamento pontual (one-turn max) e padrão advisor
+
+Dois padrões da comunidade que o bundle já suporta:
+
+- **"Ultrathink" (escalonamento de um turno):** para uma decisão pontual de alta exigência (arquitetura crítica, bug que resistiu a 2+ hipóteses), suba para `swe-2-max` naquele turno via `Alt+T` e volte ao nível normal em seguida. Não rode a sessão inteira em Max - é desperdício no resto do trabalho.
+- **Advisor (consulta escalonada):** trabalho corrente em High/Medium; subagents rotineiros em `swe-2-medium` (mais barato); e quando aparece decisão difícil (arquitetura, bug estranho, julgamento irreversível), consulte o papel `advisor` (`advisor_role_model: swe-2-max` em `data/bundle-models.json`) - na prática, dispare um subagent `architect`/`reviewer` (Max, gratuito) como segunda opinião em vez de mudar o modelo do parent. O parent continua conversando e implementando; o advisor só decide.
+
 ## Primary model (parent)
 
 O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bundle-models.json.default_parent_model`). Default do bundle: **`swe-2-high`** (High effort, 262K, free).
