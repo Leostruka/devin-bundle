@@ -20,8 +20,13 @@ def _valid_profiles():
 
 
 def _disk_profiles():
-    adir = os.path.join(ROOT, "agents")
-    return {f[:-3] for f in os.listdir(adir) if f.endswith(".md")}
+    names = set()
+    for adir in (os.path.join(ROOT, "agents"),
+                 os.path.join(ROOT, ".devin", "agents")):
+        for f in os.listdir(adir):
+            if f.endswith(".md") and f != "README.md":
+                names.add(f[:-3])
+    return names
 
 
 def test_every_disk_profile_is_dispatchable():
@@ -33,7 +38,10 @@ def test_every_disk_profile_is_dispatchable():
 
 def test_project_agents_have_frontmatter():
     for name in sorted(_disk_profiles()):
-        path = os.path.join(ROOT, "agents", name + ".md")
+        path = next(
+            p for p in (os.path.join(ROOT, "agents", name + ".md"),
+                        os.path.join(ROOT, ".devin", "agents", name + ".md"))
+            if os.path.exists(p))
         head = open(path, encoding="utf-8").read(400)
         assert head.startswith("---"), f"{name}: missing frontmatter"
         assert re.search(r"^name:\s*" + re.escape(name) + r"\s*$", head, re.M), \

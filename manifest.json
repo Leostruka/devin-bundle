@@ -1484,7 +1484,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "5f4c1044bf5b8f7e0cab0697064dbe65e6f934097ea3c88f19bcd59c31f73031",
+      "export_hash": "ec70ba77939d422fba5df428aad7f59ab7dc97c816f95e4096fb77bb33cc0c24",
       "exported_at": "2026-11-03T21:04:06.237841"
     },
     {
