@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- TOOLS-MAP.md subagent counts stale (13 -> 17 disk profiles, table gained chief-of-staff + watchdog rows, .devin/agents note clarified to 4 profiles + README) - covers #316.
+
+### Fixed
+
 - `sc_process._reap_posix_group`: `killpg(pgid, 0)` can transiently raise EPERM on macOS while a killed group is reaped - the probe now falls through to the ps membership check instead of reporting `tree_cleanup=False` for an actually-dead tree (CI flake root cause, macos py3.11/py3.14) (#315).
 
 ### Fixed
