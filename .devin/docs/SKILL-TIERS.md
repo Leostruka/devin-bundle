@@ -1,9 +1,10 @@
 # Skill Tiers - discovery rápido por domínio
 
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-10-31).
-Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 tok).
-Skills consolidadas são routers: o SKILL.md é caro de entrada; detalhe vive em
-`modes/`/`reference/` e só é lido sob demanda (`+defer`).
+Só custam quando invocadas. Use isto (~3800 tok) em vez de `skill list` (~1600 tok).
+Subconjunto curado de alto uso - o índice completo das 178 é `manifest.json`
+(`skills[].name`). Skills consolidadas são routers: o SKILL.md é caro de entrada;
+detalhe vive em `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 
 **Project-local** (`.devin/skills/`, não distribuídas): `verify-atlas` (dogfood do
 GitHub Pages: build, launch, doctor, navegação, evidência - invocação manual),
@@ -124,6 +125,12 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `gates` | Gates p/ modo autônomo | 1127 | "Run unattended" |
 | `create-verification-skill` | Gera verify-* skill: invariants + probes + evidence dir | 1620 | Operação repetida precisa de verificação |
 | `maintain-verification-skill` | Atualiza verify-* quando o sistema muda | 1206 | Probe quebrou após refactor |
+| `afk-loop` | Loop autônomo sobre issues Markdown em DAG (frontier, worktree, TDD) | 975 | Trabalhar issues sem supervisão |
+| `autonomous-gates` | Quality gates p/ tarefas long-horizon com acceptance criteria | 1558 | "Autonomous mode", rodada longa |
+| `agent-cost-guard` | Custo de tokens por loop, token-maxing, limite de fan-out | 595 | Monitorar custo, paralelismo excessivo |
+| `context-folding` | RLM-style folding p/ contexto grande / docs longos | 1552 | Contexto enchendo, compact perde info |
+| `context-window-hygiene` | Lost-in-middle, clear-vs-compact, MCP bloat, effort match | 1413 | Agente esquece instruções, contexto apertado |
+| `executing-plans` | Executa plano escrito por fases com checkpoints | 993 | Plano aprovado para executar |
 
 ## Setup (one-time)
 
@@ -160,6 +167,9 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `i18n` | Traduções, plural, LTR/RTL, formatos | 277 | Multi-idioma |
 | `benchmark-checklist` | Checklist de perfil/benchmark reproduzível (pstack port) | 1239 | Medir antes/depois com rigor |
 | `web-perf-checklist` | Fix-list de ~30 itens de performance web por camada | 1174 | App web lento, audit de perf |
+| `security-audit-cf` | Auditoria de segurança completa (STRIDE-ish, workflow por fases) | 5545 | Audit/pen-test pedido explicitamente |
+| `shorts-factory` | Pipeline vídeo curto: roteiro, TTS, stock, legenda, ffmpeg | 1553 | Shorts/Reels/TikTok end-to-end |
+| `agentic-rag` | RAG agentivo: retrieve -> decision-gate -> answer/escalate | 2015 | Implementar Q&A com evidência |
 
 ## Extensões locais (tools, não-skills)
 
@@ -185,6 +195,11 @@ Utilitários executáveis instalados em `~/.config/devin/extensions/` (Windows: 
 | `binary-triage` | Evidência de binário fechado sem Ghidra: strings, exports, getters, ctypes | Comparar builds/engines de libs |
 | `ghidra` | RE headless de firmware raw (Thumb/TMode, seeds Capstone) | Firmware `.bin` sem símbolos |
 | `dma` | Pentest/recon orquestrado com scope contract + tools stdlib (`/dma`) | Pentest em alvo autorizado |
+| `lean-code` | Menor solução que funciona, minimal-diff, YAGNI, anti-bloat | Escrever/revisar código, escolher dependência |
+| `no-comments` | Caça comment smells e stale suppressions no diff | Limpar comentários antes de PR |
+| `de-slop` | Quality pass completa no diff: simplificar, remover slop | Antes de abrir PR |
+| `edge-coverage` | Edge Inventory obrigatório p/ testes: boundary/equivalence | Montar/auditar suíte de testes |
+| `tdd` | Red-green-refactor com evidência | Feature/bugfix com teste primeiro |
 
 ## Outros
 
