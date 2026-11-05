@@ -1017,8 +1017,26 @@ try:
     manifest_v = json.load(open('manifest.json', encoding='utf-8-sig'))['version']
     tag = 'v' + manifest_v
     subjects = subprocess.check_output(
-        ['git', 'log', tag + '..HEAD', '--format=%s'],
+        ['git', 'log', tag + '..HEAD', '--format=%s|%cI'],
         text=True, stderr=subprocess.DEVNULL, timeout=15)
+    # merges younger than RECENT_MERGE_H can lack refs yet - warn, not fail
+    import time
+    from datetime import datetime
+    RECENT_MERGE_H = 24
+    now = time.time()
+    recent = set()
+    for line in subjects.splitlines():
+        subj, _, iso = line.rpartition('|')
+        m = re.search(r'\(#(\d+)\)\s*$', subj)
+        if not m:
+            continue
+        try:
+            age_h = (now - datetime.fromisoformat(iso.strip()).timestamp()) / 3600
+        except ValueError:
+            age_h = RECENT_MERGE_H + 1
+        if age_h < RECENT_MERGE_H:
+            recent.add(m.group(1))
+    subjects = '\n'.join(l.rpartition('|')[0] for l in subjects.splitlines())
     # docs(changelog) PRs cannot cite their own number pre-merge; skip them
     pr_nums = sorted(set(re.findall(
         r'\(#(\d+)\)\s*$', subjects, re.M))
@@ -1034,12 +1052,20 @@ try:
         print('  OK  no PR merges since ' + tag)
     else:
         missing = [n for n in pr_nums if '#' + n not in m.group(1)]
-        if missing:
+        stale = [n for n in missing if n not in recent]
+        fresh = [n for n in missing if n in recent]
+        if stale:
             errors.append('CHANGELOG [Unreleased] missing PR refs: '
-                          + ', '.join('#' + n for n in missing))
+                          + ', '.join('#' + n for n in stale))
             print('  FAIL missing refs: '
-                  + ', '.join('#' + n for n in missing))
-        else:
+                  + ', '.join('#' + n for n in stale))
+        if fresh:
+            warnings.append('CHANGELOG [Unreleased] missing refs for '
+                            'recent merges (<24h): '
+                            + ', '.join('#' + n for n in fresh))
+            print('  WARN missing refs (recent merges): '
+                  + ', '.join('#' + n for n in fresh))
+        if not missing:
             print('  OK  [Unreleased] covers ' + str(len(pr_nums))
                   + ' merged PRs since ' + tag)
 except Exception as e:

@@ -90,9 +90,9 @@ thermo-nuclear-review-subagent, triage-labels, watchdog. 22 perfis
 validados (parity com `agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
-## Hooks (8 eventos, 10 entry points, 34 scripts)
+## Hooks (8 eventos, 11 entry points, 34 scripts)
 
-Duas camadas: `hooks.v1.json` liga 10 entry points consolidados; cada
+Duas camadas: `hooks.v1.json` liga 11 entry points consolidados; cada
 entry point agregador executa seus scripts internos num único processo
 via `scripts/_hookrun.py` (merge rules em `.devin/docs/HOOKS-PIPELINE.md`,
 fluxo em `.devin/docs/diagrams/hook-event-flow.md`). Scripts internos
@@ -106,7 +106,7 @@ renderizada para `config.json.hooks` no install (ver
 | PreToolUse | `^exec$` | `pre-exec-guard.py` (300s) | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard | sim |
 | PreToolUse | `^(write\|edit\|notebook_edit)$` | `pre-write-guard.py` (90s) | always: architecture-gate, validate-tool-args, no-em-dash; + check-ai-signature, validate-mermaid apenas em `write`/`edit` | sim |
 | PostToolUse | `^(exec\|mcp_call_tool)$` | `post-exec.py` (30s) | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect | não |
-| PostToolUse | `^(write\|edit)$` | `memory-post-edit.py` (10s) + `compact-gate.py` (15s) | entry points diretos (sem agregador) | não |
+| PostToolUse | `^(write\|edit)$` | `memory-post-edit.py` (10s) + `compact-gate.py` (15s) + `file-size-guard.py` (warn) | entry points diretos (sem agregador) | não |
 | PostCompaction | (nenhum) | `constraint-pinning.py` (5s) | direto; evento canônico de pinning | não |
 | UserPromptSubmit | (nenhum) | `user-prompt.py` (20s) | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate | não |
 | SessionStart | (nenhum) | `session-start.py` (10s) | constraint-pinning, context-budget | não |
