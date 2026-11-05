@@ -137,6 +137,14 @@
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
+      "name": "blast-radius",
+      "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
+      "purpose": "Use when asked for the blast radius of a change, what a diff could break elsewhere, or when reviewing a small diff you do not trust. Proves the one safety fact by running real code.",
+      "original_path": "%APPDATA%\\devin\\skills\blast-radius",
+      "export_hash": "db303fab81e8d5ddaf2fa777640499ffdfa43b57184cae122f8425dd13e3d19f",
+      "exported_at": "2026-11-04T21:40:33.392500"
+    },
+    {
       "name": "brag",
       "source": "devin-bundle",
       "purpose": "Use when someone says /brag, let's brag about this, make a launch video, turn this into a video, or wants to share what they built. Turns the current project website into a short, polished, shareable launch video using Hyperframes, reading the project code directly with no live URL or screenshots needed.",
@@ -1230,7 +1238,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 168,
+  "skill_count": 169,
   "rule_count": 24,
   "scripts": [
     {
