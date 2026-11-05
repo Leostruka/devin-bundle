@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- sentinel: report dir renamed to .devin/scratch/sentinel/ for consistency; hooks doc parity test (#336).
+
 - tests: hooks-pipeline doc parity test (entry points + inner modules). Covers #335.
 
 - changelog: coverage refs for atlas REPL fix and hooks arithmetic PRs. Covers #330, #334.
