@@ -45,6 +45,8 @@ Use this before `hf-model-eval`: scores in the name are marketing claims, not me
 ### Notable local-model watchlist
 
 - `nvidia/personaplex-7b` - full-duplex conversational speech-to-speech (real-time voice agent, not TTS). MIT repo; gated weights (NVIDIA Open Model License + HF token), ~16.7GB, GPU required. Different shape from `extensions/voicebox` (one-shot TTS); evaluate only when a GPU target exists.
+- bloc `Dia` - speech-to-speech model with no text stage (hears/reasons/answers speech; preserves emotion, pauses, sarcasm). Trained from scratch on recorded conversation; requires M4 Max-class Apple silicon. Watch only - no integration until an accessible target + license exists.
+- `Bonside-2` 27B (ternary) - 27B reasoning model, 272k ctx, ternary quantization claimed local-capable. Verify open weights/tooling + license before any eval.
 
 ---
 
