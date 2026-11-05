@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- README extensions table: 8 -> 24 rows, covers every directory under extensions/ (asr, voicebox, offsec-tools, blender-operator, comfyui-operator, craft-bridge, laya-compactor and 9 more were undocumented).
+
+### Fixed
+
 - TOOLS-MAP.md subagent counts stale (13 -> 17 disk profiles, table gained chief-of-staff + watchdog rows, .devin/agents note clarified to 4 profiles + README) - covers #316.
 
 ### Fixed
