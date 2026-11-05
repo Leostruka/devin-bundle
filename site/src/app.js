@@ -51,17 +51,70 @@ const LINES = [
   ["",`bundle v${D.version ?? "?"} — atlas ready. cd <section> to explore.`],
 ];
 
+const LOGO_DEVIN = ` ____            _          ____                  _ _
+|  _ \\  _____   _(_)_ __    | __ ) _   _ _ __   __| | | ___
+| | | |/ _ \\ \\ / / | '_ \\   |  _ \\| | | | '_ \\ / _\` | |/ _ \\
+| |_| |  __/\\ V /| | | | |  | |_) | |_| | | | | (_| | |  __/
+|____/ \\___| \\_/ |_|_| |_|  |____/ \\__,_|_| |_|\\__,_|_|\\___|`;
+const LOGO_LEO = ` _        _____   ___   ____   _____  ____   _   _  _  __   _
+| |      | ____| / _ \\ / ___| |_   _||  _ \\ | | | || |/ /  / \\
+| |      |  _|  | | | |\\___ \\   | |  | |_) || | | || ' /  / _ \\
+| |___   | |___ | |_| | ___) |  | |  |  _ < | |_| || . \\ / ___ \\
+|_____|  |_____| \\___/ |____/   |_|  |_| \\_\\ \\___/ |_|\\_\\/_/   \\_\\`;
+
+const NOISE = "\\|/-_<>[]{}=+*#%&";
+function scrambleSwap(pre, from, to){
+  const a = from.split("\n"), b = to.split("\n");
+  const rows = Math.max(a.length, b.length);
+  const out = [];
+  for(let r = 0; r < rows; r++){
+    const fa = a[r] || "", fb = b[r] || "";
+    const len = Math.max(fa.length, fb.length);
+    out.push({fa: fa.padEnd(len), fb: fb.padEnd(len)});
+  }
+  let frame = 0;
+  const frames = 14;
+  const tick = () => {
+    frame++;
+    const prog = frame / frames;
+    pre.textContent = out.map(({fa, fb}) =>
+      [...fa].map((ca, i) => {
+        const reveal = (i / fa.length) < prog * 1.15;
+        if(reveal) return fb[i];
+        if(fb[i] === " " && ca === " ") return " ";
+        return NOISE[(Math.random() * NOISE.length) | 0];
+      }).join("")
+    ).join("\n");
+    if(frame < frames) setTimeout(tick, 40);
+    else pre.textContent = to;
+  };
+  tick();
+}
+function logoSwap(){
+  const pre = $(".logo");
+  if(!pre) return;
+  let cur = LOGO_DEVIN, showDevin = true;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setInterval(() => {
+    const next = showDevin ? LOGO_LEO : LOGO_DEVIN;
+    if(reduced) pre.textContent = next;
+    else scrambleSwap(pre, cur, next);
+    cur = next; showDevin = !showDevin;
+  }, 5000);
+}
+
 function boot(){
   const el = $("#bootlog");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(reduced){
     el.innerHTML = LINES.map(([c,t]) => `<span class="${c}">${esc(t) || " "}</span>`).join("\n");
+    logoSwap();
     return;
   }
   let li = 0, ci = 0, cur;
   const cursor = '<span class="cursor"></span>';
   function step(){
-    if(li >= LINES.length){ el.innerHTML += cursor; return; }
+    if(li >= LINES.length){ el.innerHTML += cursor; setTimeout(logoSwap, 4000); return; }
     const [cls, txt] = LINES[li];
     if(!cur){ cur = document.createElement("div"); cur.className = cls; el.appendChild(cur); }
     if(txt === ""){ el.removeChild(cur); el.innerHTML += "<br>"; cur=null; li++; step(); return; }
