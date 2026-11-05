@@ -166,6 +166,12 @@ quando parent é free) ou pin `model: swe-2-high` no agent.
 Os custom agents com os pins canônicos são gratuitos e têm mais contexto.
 Fonte: docs.devin.ai/cli/subagents.
 
+**Nota de lifecycle:** o registro de profiles é lido no START da sessão.
+Um `agents/*.md` instalado no meio da sessão aparece no `devin doctor` mas
+`run_subagent` falha com "failed to start" até a próxima sessão (observado
+com `watchdog` 2026-11-05; `chief-of-staff`/`researcher`, instalados antes,
+spawnaram normalmente).
+
 ## Modelos pagos - política CONDICIONAL
 
 **Gratuitos** na assinatura são definidos em `data/bundle-models.json`
