@@ -42,7 +42,7 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 close_browser_preview, mcp_list_tools, mcp_list_servers, apply_patch,
 exit_plan_mode) - o tool falha claramente sem validação do hook.**
 
-## Subagentes (13 perfis)
+## Subagentes (17 perfis)
 
 | Perfil | Tipo | Modelo | Tools | Bundle agent file |
 |---|---|---|---|---|
@@ -63,6 +63,8 @@ exit_plan_mode) - o tool falha claramente sem validação do hook.**
 | `copywriter` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, edit, grep, glob, exec | `agents/copywriter.md` |
 | `thermo-nuclear-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-review-subagent.md` |
 | `thermo-nuclear-code-quality-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-code-quality-review-subagent.md` |
+| `chief-of-staff` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, exec, grep, glob, find_file_by_name | `agents/chief-of-staff.md` |
+| `watchdog` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, exec, grep, glob, find_file_by_name | `agents/watchdog.md` |
 
 **Estratégia de modelo:**
 - `subagent_explore` (built-in): default router do CLI — verifique `data/bundle-models.json` aliases; evite em modo free.
@@ -145,8 +147,8 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | mcp_config.json | `./mcp_config.json` | `~/.config/devin/mcp_config.json` | MCP servers |
 | hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks (`.devin/adr/005-hooks-single-source.md`); também template `.devin/` |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
-| agents/ | `./agents/` | `~/.config/devin/agents/` | 13 perfis user-level |
-| .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
+| agents/ | `./agents/` | `~/.config/devin/agents/` | 17 perfis user-level |
+| .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local + README (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 178 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` — GUI automation; `system-control` — OS autorizado; `scrape-tools` — fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` — whisper.cpp local) |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 34 scripts Python + 1 JS |
