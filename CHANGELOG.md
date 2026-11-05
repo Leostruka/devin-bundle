@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `sc_process._reap_posix_group`: `killpg(pgid, 0)` can transiently raise EPERM on macOS while a killed group is reaped - the probe now falls through to the ps membership check instead of reporting `tree_cleanup=False` for an actually-dead tree (CI flake root cause, macos py3.11/py3.14) (#315).
+- `sc_process._reap_posix_group`: `killpg(pgid, 0)` can transiently raise EPERM on macOS while a killed group is reaped - the probe now falls through to the ps membership check instead of reporting `tree_cleanup=False` for an actually-dead tree (CI flake root cause, macos py3.11/py3.14) (#315); deepened: the verification loop now runs unconditionally and is the sole source of the flag - signal-send OSErrors can no longer falsify cleanup.
 
 ### Fixed
 
