@@ -208,3 +208,5 @@ Bias controls (non-negotiable):
 - [S16] Reuters, Brazil coffee-belt frost 2021-07-21 - https://www.reuters.com/world/americas/freak-brazil-frost-hits-heart-coffee-belt-damaging-crops-2021-07-21/
 - [S17] Reuters, coffee prices surge 2021-07-26/27 - https://www.reuters.com/world/americas/coffee-prices-surge-unusual-cold-threatens-brazilian-production-2021-07-26/
 - [S18] ICO coffee market report July 2021 (PDF) - https://www.ico.org/documents/cy2020-21/cmr-0721-e.pdf
+
+- [S19] Reel batch-2 corroborating source (super_invencoes, 2026-11-05) - https://www.instagram.com/super_invencoes/reel/DfSNs9QoD_d/ ; transcript . Same three plays independently described; no new source classes beyond M-02/M-03/M-04.
