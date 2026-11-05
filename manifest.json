@@ -1300,9 +1300,17 @@
       "original_path": "%APPDATA%\\devin\\skills\\big-file-refactor",
       "export_hash": "8CF00A6EAF7D029885CCBC4074A204A56D55814A61422F69A9A895EAFBB70A2E",
       "exported_at": "2026-11-05T07:49:44.220070"
+    },
+    {
+      "name": "cli-adapter",
+      "source": "devin-bundle",
+      "purpose": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path.",
+      "original_path": "%APPDATA%\\devin\\skills\\cli-adapter",
+      "export_hash": "E6D3E0078EAB9DE56C97E68FC373DA3C61A9B31F3CA8EEFD0F84A4373CD8028C",
+      "exported_at": "2026-11-05T07:52:14.166839"
     }
   ],
-  "skill_count": 177,
+  "skill_count": 178,
   "rule_count": 24,
   "scripts": [
     {

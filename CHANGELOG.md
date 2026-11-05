@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `cli-adapter` skill (R2-01): build-a-CLI protocol for tools with no MCP, citing agent-reach wrapper contract. 178 skills.
+
+### Added
+
 - **GitHub Pages atlas** (#301): `site/build.py` + `site/src/` generate a static terminal-style explorer (CRT phosphor aesthetic, typed boot with real stats, grep-filterable skill explorer, agent gallery, hooks pipeline, ADR/docs reader with mermaid, changelog timeline, Ctrl+K palette); `.github/workflows/pages.yml` deploys `site/dist` via SHA-pinned official actions on pushes touching site inputs. Live at https://leostruka.github.io/devin-bundle/, linked from the README atlas badge (#302).
 - **Atlas logo swap** (#303): hero ASCII logo alternates DEVIN BUNDLE / LEOSTRUKA every 5s through a character-scramble transition; respects `prefers-reduced-motion`.
 - **blast-radius skill** (#309): vendored + adapted from pstack (MIT); proves the one safety fact of a risky-looking change by running real code, with a certainty ladder and subagent fan-out per angle.

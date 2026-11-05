@@ -1,6 +1,6 @@
 # cli-adapter: no MCP -> agent builds the CLI itself
 
-status: open
+status: resolved
 priority: P2
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -13,3 +13,7 @@ New skill `skills/cli-adapter/SKILL.md`: decision tree (official MCP -> use it; 
 
 ## Verification
 `ls skills/cli-adapter/SKILL.md`; manifest + count bump; audit.py clean.
+
+## Answer
+
+`skills/cli-adapter/SKILL.md` - decision order (MCP -> wrap CLI -> thin API CLI -> computer-use), wrapper contract (list-form, verb whitelist, JSON envelope, missing->status), smoke-test rule, DAW liability note; cites `extensions/agent-reach/wrapper.py`.
