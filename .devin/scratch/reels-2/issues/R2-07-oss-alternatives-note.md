@@ -1,6 +1,6 @@
 # open-source SaaS alternatives reference (jotabusiness)
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Low value for the bundle itself. Add one line to `.devin/research/` noting the l
 
 ## Verification
 One-liner present in research notes or explicitly skipped with reason.
+
+## Answer
+
+Recorded as standing rule + reference list in `.devin/research/2026-11-05-r2-evals.md`. No skill needed.

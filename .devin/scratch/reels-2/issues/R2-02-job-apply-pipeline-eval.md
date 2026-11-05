@@ -1,6 +1,6 @@
 # evaluate multi-agent job-application pipeline (alvim reel)
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Backlog-eval: locate the repo (AI JobSert or similar), check license, map the 3-
 
 ## Verification
 `.devin/research/` file exists with repo link, license, and verdict.
+
+## Answer
+
+Repo found (`waleedtarbosh/ai-job-search` - matches the reel). Verdict: SKIP vendoring (personal-data workflow); drafter/reviewer chain already covered by copywriter+reviewer profiles. Note in `.devin/research/2026-11-05-r2-evals.md`.

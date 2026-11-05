@@ -46,6 +46,11 @@
           "type": "command",
           "command": "python scripts/compact-gate.py",
           "timeout": 15
+        },
+        {
+          "type": "command",
+          "command": "python scripts/file-size-guard.py",
+          "timeout": 5
         }
       ]
     }

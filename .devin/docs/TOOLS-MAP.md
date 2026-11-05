@@ -85,7 +85,7 @@ reviewer, scrum-master, security-auditor, subagent_explore,
 subagent_general, tech-lead, thermo-nuclear-code-quality-review-subagent,
 thermo-nuclear-review-subagent, triage-labels. 20 perfis validados.
 
-## Hooks (8 eventos, 10 entry points, 33 scripts)
+## Hooks (8 eventos, 10 entry points, 34 scripts)
 
 Duas camadas: `hooks.v1.json` liga 10 entry points consolidados; cada
 entry point agregador executa seus scripts internos num único processo
@@ -146,7 +146,7 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 178 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` — GUI automation; `system-control` — OS autorizado; `scrape-tools` — fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` — whisper.cpp local) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 33 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 34 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |
 | MODEL-GUIDE.md | `./.devin/docs/MODEL-GUIDE.md` | `~/.config/devin/docs/MODEL-GUIDE.md` | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./.devin/docs/SKILL-TIERS.md` | `~/.config/devin/docs/SKILL-TIERS.md` | Discovery por domínio + custos |

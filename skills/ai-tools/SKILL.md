@@ -28,6 +28,20 @@ Covers two surfaces:
 - `abliterator.py`: refusal-direction orthogonalization PoC (Arditi et al. 2024): difference-in-means direction, activation ablation, residual-weight orthogonalization. Dummy tensors by default; `--weights F.safetensors` or `--model <cached>` for real weights.
 - `prompt_compiler.py`: deterministic prompt compilation against `knowledge_bases/`.
 
+### Reading HF model names (decoder)
+
+Long release filenames decode left-to-right as: maker / size / claims / scores / surgical-mod / packaging. Example `Qwen3.8-27B-turbo-fable-coldfusion-735-882-heretic`:
+
+| Segment | Meaning |
+|---|---|
+| `Qwen3.8` / `27B` | vendor + parameter count (weights) |
+| `turbo`, `fable`, `coldfusion` | training claims / distillation source / recipe name |
+| `735`, `882` | benchmark scores stitched into the name |
+| `heretic` | surgical mod - abliteration (refusal direction removed; see `abliterator.py`) |
+| trailing quants (`Q4_K_M`, `gguf`, `awq`) | packaging only - does not change what it knows |
+
+Use this before `hf-model-eval`: scores in the name are marketing claims, not measured facts - verify against the card and pick the quant variant after the eval.
+
 ---
 
 ## 2. Reasoning & Domain Model Post-Training Playbook

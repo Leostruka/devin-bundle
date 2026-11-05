@@ -98,7 +98,17 @@ def test_server_nonce_not_echoed_over_socket(tmp_path):
     if os.name != "nt":
         assert (nonce_file.stat().st_mode & 0o777) == 0o600
 
-    def call(payload):
+    def call(payload, retries=25):
+        last = None
+        for _ in range(retries):
+            try:
+                return _call(payload)
+            except (ConnectionRefusedError, OSError) as exc:
+                last = exc
+                time.sleep(0.2)
+        raise last
+
+    def _call(payload):
         with _sock.create_connection(("127.0.0.1", port), timeout=5) as s:
             f = s.makefile("rw", encoding="utf-8", newline="\n")
             f.write(json.dumps(payload) + "\n")

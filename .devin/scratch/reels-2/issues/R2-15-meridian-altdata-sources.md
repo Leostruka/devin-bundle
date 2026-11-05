@@ -1,6 +1,6 @@
 # MERIDIAN: alternative-data alpha sources (satellite/radar/weather)
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Append to the MERIDIAN alt-data backlog (`.devin/research/2026-11-03-meridian-al
 
 ## Verification
 Backlog file updated or MERIDIAN issue created with the 3 source classes.
+
+## Answer
+
+COVERED already: `.devin/research/2026-11-03-meridian-altdata-backlog.md` (M-02 car counts w/ Katona, M-03 tank shadows w/ Kayrros/Sentinel-1, M-04 frost signals w/ 2021 MG event) predates the reel and is deeper. Added reel URL as corroborating source [S19].
