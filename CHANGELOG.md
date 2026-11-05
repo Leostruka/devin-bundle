@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- README + site meta: stale agent/skill counts corrected to 17 profiles / 178 skills.
+- README + site meta: stale agent/skill counts corrected to 17 profiles / 178 skills. Covers #327.
+- manifest: sentinel original_path mojibake (bell char) fixed.
 
 ### Added
 

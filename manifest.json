@@ -1642,7 +1642,7 @@
     {
       "name": "sentinel",
       "source": "devin-bundle",
-      "original_path": "%APPDATA%\\devin\u0007gents\\sentinel.md",
+      "original_path": "%APPDATA%\\devin\\agents\\sentinel.md",
       "export_hash": "6B52D504AADDE09762F5E11392A2EED67E76AE8DB78569CA9702B1E5627DD337",
       "exported_at": "2026-11-05T07:49:44.220070"
     }
