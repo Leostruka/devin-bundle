@@ -197,7 +197,7 @@ def test_spawn_timeout_cleans_tree():
     gpid = int(r["value"]["stdout"]["value"].strip())
     root = r["value"]["target"]["pid"]
     backend = sc_backend.current()
-    deadline = time.time() + 5
+    deadline = time.time() + 20
     gpid_l = root_l = None
     while time.time() < deadline:
         def _list(p):

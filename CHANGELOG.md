@@ -9,15 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Reels-2 wave 4: `verify-atlas` dogfooded verification skill (R2-06), MERIDIAN backlog corroborating source (R2-15). All 15 reels-2 issues resolved.
+- Reels-2 wave 4: `verify-atlas` dogfooded verification skill (R2-06), MERIDIAN backlog corroborating source (R2-15, #313). All 15 reels-2 issues resolved.
 
 ### Added
 
-- Reels-2 wave 3: `file-size-guard.py` PostToolUse hook (R2-13, 34 scripts), ai-tools HF-name decoder (R2-10), ARCHETYPE-MAP doc (R2-14), consolidated eval notes (R2-02/03/07/08/12).
+- Deflake macOS CI: longer process-tree reap window + socket connect retry in camera-blocking test.
 
 ### Added
 
-- `cli-adapter` skill (R2-01): build-a-CLI protocol for tools with no MCP, citing agent-reach wrapper contract. 178 skills.
+- Reels-2 wave 3: `file-size-guard.py` PostToolUse hook (R2-13, 34 scripts), ai-tools HF-name decoder (R2-10), ARCHETYPE-MAP doc (R2-14), consolidated eval notes (R2-02/03/07/08/12, #313).
+
+### Added
+
+- `cli-adapter` skill (R2-01): build-a-CLI protocol for tools with no MCP, citing agent-reach wrapper contract (R2-01, #311). 178 skills.
 
 ### Added
 
@@ -37,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `web-perf-checklist` + `big-file-refactor` skills, `watchdog` agent, `advisor_role_model` in bundle-models, ultrathink/advisor + compact-early docs (reels-2 wave 1-2 partial, R2-04/05/09/11). 177 skills.
+- `web-perf-checklist` + `big-file-refactor` skills, `watchdog` agent, `advisor_role_model` in bundle-models, ultrathink/advisor + compact-early docs (reels-2 wave 1-2 partial, R2-04/05/09/11, #311). 177 skills.
 
 ### Added
 
