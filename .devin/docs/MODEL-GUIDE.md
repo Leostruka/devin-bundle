@@ -169,7 +169,7 @@ Fonte: docs.devin.ai/cli/subagents.
 **Nota de lifecycle:** o registro de profiles é lido no START da sessão.
 Um `agents/*.md` instalado no meio da sessão aparece no `devin doctor` mas
 `run_subagent` falha com "failed to start" até a próxima sessão (observado
-com `watchdog` 2026-11-05; `chief-of-staff`/`researcher`, instalados antes,
+com `sentinel` 2026-11-05; `chief-of-staff`/`researcher`, instalados antes,
 spawnaram normalmente).
 
 ## Modelos pagos - política CONDICIONAL

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ARCHETYPE-MAP: alvim job-apply drafter/reviewer chain cited in the Grower/Maintainer transit note (R2-02 adopted-as-note). Covers #321.
 - validate-tool-args: repo-reviewer added to VALID_PROFILES; profile parity test now covers .devin/agents project profiles. Covers #322, #323.
 - SKILL-TIERS: project-local section indexes verify-atlas + rts-* skills under .devin/skills. Covers #324, #325.
+- agents: watchdog renamed to sentinel (dispatch-probed; avoids name collision with chief-of-staff SysAdmin watchdog + layad _idle_watchdog). Covers #326.
 
 ### Added
 

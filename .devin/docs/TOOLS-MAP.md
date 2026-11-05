@@ -64,7 +64,7 @@ exit_plan_mode) - o tool falha claramente sem validação do hook.**
 | `thermo-nuclear-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-review-subagent.md` |
 | `thermo-nuclear-code-quality-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-code-quality-review-subagent.md` |
 | `chief-of-staff` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, exec, grep, glob, find_file_by_name | `agents/chief-of-staff.md` |
-| `watchdog` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, exec, grep, glob, find_file_by_name | `agents/watchdog.md` |
+| `sentinel` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, exec, grep, glob, find_file_by_name | `agents/sentinel.md` |
 
 **Estratégia de modelo:**
 - `subagent_explore` (built-in): default router do CLI — verifique `data/bundle-models.json` aliases; evite em modo free.
@@ -86,7 +86,7 @@ domain, implementer,
 issue-tracker, product-manager, qa-ci, red-team-lead, researcher,
 reviewer, scrum-master, security-auditor, subagent_explore,
 subagent_general, tech-lead, thermo-nuclear-code-quality-review-subagent,
-thermo-nuclear-review-subagent, triage-labels, watchdog. 22 perfis
+thermo-nuclear-review-subagent, sentinel, triage-labels. 22 perfis
 validados (parity com `agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
