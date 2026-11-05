@@ -54,12 +54,13 @@ def _log_hit(tool_name, result):
         pass
 
 VALID_PROFILES = frozenset({
-    "architect", "art-director", "copywriter", "debugger", "domain",
-    "implementer", "issue-tracker", "product-manager", "qa-ci",
-    "red-team-lead", "researcher", "reviewer", "scrum-master",
-    "security-auditor", "subagent_explore", "subagent_general",
-    "tech-lead", "thermo-nuclear-code-quality-review-subagent",
-    "thermo-nuclear-review-subagent", "triage-labels",
+    "architect", "art-director", "chief-of-staff", "copywriter",
+    "debugger", "domain", "implementer", "issue-tracker",
+    "product-manager", "qa-ci", "red-team-lead", "researcher",
+    "reviewer", "scrum-master", "security-auditor", "subagent_explore",
+    "subagent_general", "tech-lead",
+    "thermo-nuclear-code-quality-review-subagent",
+    "thermo-nuclear-review-subagent", "triage-labels", "watchdog",
 })
 
 # A query made up only of stopwords carries no search signal.

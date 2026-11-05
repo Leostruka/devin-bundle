@@ -79,11 +79,14 @@ MODEL-GUIDE.md); enforcement via `audit.py` e validação de overrides no
 render está planejado.
 
 **VALID_PROFILES no validate-tool-args.py:**
-architect, art-director, copywriter, debugger, domain, implementer,
+architect, art-director, chief-of-staff, copywriter, debugger,
+domain, implementer,
 issue-tracker, product-manager, qa-ci, red-team-lead, researcher,
 reviewer, scrum-master, security-auditor, subagent_explore,
 subagent_general, tech-lead, thermo-nuclear-code-quality-review-subagent,
-thermo-nuclear-review-subagent, triage-labels. 20 perfis validados.
+thermo-nuclear-review-subagent, triage-labels, watchdog. 22 perfis
+validados (parity com `agents/*.md` garantida por
+`tests/validation/test_profile_parity.py`).
 
 ## Hooks (8 eventos, 10 entry points, 34 scripts)
 

@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `validate-tool-args.py` VALID_PROFILES: `chief-of-staff` and `watchdog` were missing, making both agents undispatchable through `run_subagent`; added `tests/validation/test_profile_parity.py` pinning disk agents to the validator set. Also documents #314.
+
+### Fixed
+
 - Atlas issue board: issues whose resolution is declared via `## Done`/`## Shipped`/`## Landed` sections now count as resolved (egm-laya 3/4 -> 4/4); egm issue 02 status normalized to `resolved`.
 
 ### Added
