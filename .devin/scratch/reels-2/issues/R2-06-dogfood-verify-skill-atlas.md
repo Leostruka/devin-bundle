@@ -1,6 +1,6 @@
 # dogfood create-verification-skill on the Pages atlas
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Run `create-verification-skill` against https://leostruka.github.io/devin-bundle
 
 ## Verification
 `skills/verify-atlas/` exists with SKILL.md + features/; one feature proven end-to-end.
+
+## Answer
+
+`.devin/skills/verify-atlas/` created per create-verification-skill protocol (project-local, correct home for app-specific verify skills). Feature map: boot/tabs/repl/modal/palette. Proven end-to-end: build+serve+doctor+DOM checks+screenshot in `.devin/scratch/verify-atlas/run1/` (boot renders real stats: 178 skills).
