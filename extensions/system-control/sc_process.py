@@ -280,8 +280,7 @@ def _reap_posix_group(proc, grace_s) -> bool:
             except ProcessLookupError:
                 break  # group fully gone
             except OSError:
-                ok = False
-                break
+                pass  # EPERM etc: group state unclear - ask ps instead
             if not _posix_group_has_live_member(proc.pid):
                 break  # only zombie members left
             if time.time() >= deadline:
