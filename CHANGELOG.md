@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- MODEL-GUIDE: profile-registry lifecycle note - agents installed mid-session fail `run_subagent` until session restart (verified: watchdog today, chief-of-staff/researcher spawned fine). Covers #317.
+
+### Added
+
 - SKILL-TIERS.md: 11 rows for the reels-2 and round-2/3/4 skills (web-perf-checklist, big-file-refactor, cli-adapter, correct, blast-radius, arena, benchmark-checklist, technical-writing, create/maintain-verification-skill) so the discovery path covers them.
 
 ### Added
