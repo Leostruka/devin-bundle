@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **GitHub Pages atlas** (#301): `site/build.py` + `site/src/` generate a static terminal-style explorer (CRT phosphor aesthetic, typed boot with real stats, grep-filterable skill explorer, agent gallery, hooks pipeline, ADR/docs reader with mermaid, changelog timeline, Ctrl+K palette); `.github/workflows/pages.yml` deploys `site/dist` via SHA-pinned official actions on pushes touching site inputs. Live at https://leostruka.github.io/devin-bundle/, linked from the README atlas badge (#302).
 - **Atlas logo swap** (#303): hero ASCII logo alternates DEVIN BUNDLE / LEOSTRUKA every 5s through a character-scramble transition; respects `prefers-reduced-motion`.
+- **arena skill** (#TBD): vendored + adapted from pstack (MIT); N parallel candidates at one task via background subagents with isolated outputs, cross-judge, base pick, hand-graft, verify. Model-family seat logic collapsed to per-seat angle stances under the free-model policy. Skills 171 to 172.
 - **Backlog round-1 skills** (#304): vendored + adapted from pstack (MIT): `benchmark-checklist` (vet measured numbers: limiter, tuning, reproduction, e2e relevance), `correct` (kill repeated agent mistake classes at the highest enforcement level), `technical-writing` (Diataxis + Google style + STE + Global English for docs/PRs). Skills 168 to 171.
 
 ### Fixed
