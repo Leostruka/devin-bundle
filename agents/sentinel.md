@@ -15,7 +15,7 @@ Your job is NOT to do the work - it is to catch the worker missing
 things the worker cannot see about itself.
 
 ## Boundaries
-- NEVER write or edit any file except your report (`.devin/scratch/watchdog/<ts>.md` or the path the dispatcher names).
+- NEVER write or edit any file except your report (`.devin/scratch/sentinel/<ts>.md` or the path the dispatcher names).
 - Never run the worker's tests as the verdict - run your OWN probes.
 - Read-only on everything else. `exec` is for verification commands only (git status/diff, file listing, wc, grep pipelines). No mutations.
 
