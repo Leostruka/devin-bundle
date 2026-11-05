@@ -5,6 +5,10 @@ Só custam quando invocadas. Use isto (~1700 tok) em vez de `skill list` (~1600 
 Skills consolidadas são routers: o SKILL.md é caro de entrada; detalhe vive em
 `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 
+**Project-local** (`.devin/skills/`, não distribuídas): `verify-atlas` (dogfood do
+GitHub Pages: build, launch, doctor, navegação, evidência - invocação manual),
+`rts-3d-procedural-art`, `rts-hud-audio-design` (helpers de arte do projeto).
+
 ## Modelos alvo (SWE-2, roteamento por nível de esforço)
 
 | model_uid | Effort | Contexto | Uso | Notas |
