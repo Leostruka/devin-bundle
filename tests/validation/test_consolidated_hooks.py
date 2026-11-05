@@ -72,3 +72,44 @@ def test_stop_guard_passes_clean():
 def test_session_start_passes():
     p = run("session-start.py", {"hook_event_name": "SessionStart", "source": "cli"})
     assert p.returncode == 0
+
+
+def test_file_size_guard_warns_over_threshold(tmp_path, monkeypatch):
+    big = tmp_path / "big.py"
+    big.write_text("x = 1\n" * 900)
+    monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path))
+    p = run("file-size-guard.py", {"hook_event_name": "PostToolUse", "tool_name": "edit",
+                                   "tool_input": {"file_path": str(big)}})
+    assert p.returncode == 0
+    ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
+    assert "900 lines" in ctx and "big-file-refactor" in ctx
+
+
+def test_file_size_guard_silent_below_threshold(tmp_path, monkeypatch):
+    small = tmp_path / "small.py"
+    small.write_text("x = 1\n" * 10)
+    monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path))
+    p = run("file-size-guard.py", {"hook_event_name": "PostToolUse", "tool_name": "edit",
+                                   "tool_input": {"file_path": str(small)}})
+    assert p.returncode == 0
+    assert p.stdout.strip() == ""
+
+
+def test_file_size_guard_skips_non_code(tmp_path):
+    f = tmp_path / "big.txt"
+    f.write_text("line\n" * 9000)
+    p = run("file-size-guard.py", {"hook_event_name": "PostToolUse", "tool_name": "write",
+                                   "tool_input": {"file_path": str(f)}})
+    assert p.returncode == 0
+    assert p.stdout.strip() == ""
+
+
+def test_file_size_guard_band_dedup(tmp_path, monkeypatch):
+    big = tmp_path / "big.py"
+    big.write_text("x = 1\n" * 900)
+    monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path))
+    payload = {"hook_event_name": "PostToolUse", "tool_name": "edit",
+               "tool_input": {"file_path": str(big)}}
+    run("file-size-guard.py", payload)
+    p = run("file-size-guard.py", payload)
+    assert p.stdout.strip() == ""

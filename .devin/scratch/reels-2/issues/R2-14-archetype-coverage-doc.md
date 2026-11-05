@@ -1,6 +1,6 @@
 # map the 5 Anthropic archetypes onto the bundle pipeline
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Short doc `.devin/docs/ARCHETYPE-MAP.md`: rows = archetype, columns = which bund
 
 ## Verification
 `.devin/docs/ARCHETYPE-MAP.md` exists; docs index updated.
+
+## Answer
+
+`.devin/docs/ARCHETYPE-MAP.md` - 5 archetypes mapped; Grower row identified as thinnest coverage.

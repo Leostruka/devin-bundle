@@ -1,6 +1,6 @@
 # HF model-name anatomy decoder micro-skill
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Micro addition to `ai-tools` SKILL.md (or a `model-card-reader` reference file):
 
 ## Verification
 Section exists in ai-tools doc; decode example matches reel anatomy.
+
+## Answer
+
+Decoder table added to `skills/ai-tools/SKILL.md` (maker/size/claims/scores/mod/packaging) with the heretic->abliterator link.

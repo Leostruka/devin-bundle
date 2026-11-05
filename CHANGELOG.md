@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Reels-2 wave 3: `file-size-guard.py` PostToolUse hook (R2-13, 34 scripts), ai-tools HF-name decoder (R2-10), ARCHETYPE-MAP doc (R2-14), consolidated eval notes (R2-02/03/07/08/12).
+
+### Added
+
 - `cli-adapter` skill (R2-01): build-a-CLI protocol for tools with no MCP, citing agent-reach wrapper contract. 178 skills.
 
 ### Added

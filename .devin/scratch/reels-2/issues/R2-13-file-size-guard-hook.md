@@ -1,6 +1,6 @@
 # evaluate a file-size guard hook (warn on >N-line files in diff)
 
-status: open
+status: resolved
 priority: P3
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ Eval issue: add a soft-warning check to `pre-exec-guard` or a pre-commit path th
 
 ## Verification
 Hook change (or documented skip) + a test in tests/validation.
+
+## Answer
+
+IMPLEMENTED: `scripts/file-size-guard.py` on write|edit PostToolUse - warn-only, 800-line threshold, 400-line band dedup, BUNDLE_FILESIZE_WARN override. 4 tests green.
