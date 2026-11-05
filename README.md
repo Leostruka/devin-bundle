@@ -238,6 +238,16 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `scrape-tools` | Scraping/parse de HTML (parser offline, Fetcher com TLS impersonation, tier browser opt-in), JSON stdout |
 | `rust-core` | Extensão híbrida PyO3 (`fast_math.pyd`) — build no install |
 
+### 8. Atlas público (GitHub Pages)
+
+<https://leostruka.github.io/devin-bundle/> - atlas gerado de `site/build.py`
+a cada push na `main` que toca os inputs (skills, agents, hooks, ADRs, docs,
+manifest, changelog, issues). Terminal CRT navegável:
+
+- `~/skills` `~/agents` `~/hooks` `~/scripts` `~/adr` `~/docs` `~/changelog` renderizados das fontes do repo;
+- `~/issues` board: 144 issues de `.devin/scratch/*/issues/` agrupadas por ledger com status resolvido/aberto;
+- REPL real no footer: `cd ls cat open grep doctor install version history`, Tab-completion, `Ctrl+K`/`/` paleta.
+
 ## Fluxo operacional completo
 
 ### Preparação única de um projeto

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- README section 8: Atlas publico - describes the Pages site, issue board, and REPL so the public face is discoverable from the repo front door. Covers #318.
+
+### Added
+
 - MODEL-GUIDE: profile-registry lifecycle note - agents installed mid-session fail `run_subagent` until session restart (verified: watchdog today, chief-of-staff/researcher spawned fine). Covers #317.
 
 ### Added
