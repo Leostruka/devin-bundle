@@ -42,6 +42,10 @@ Long release filenames decode left-to-right as: maker / size / claims / scores /
 
 Use this before `hf-model-eval`: scores in the name are marketing claims, not measured facts - verify against the card and pick the quant variant after the eval.
 
+### Notable local-model watchlist
+
+- `nvidia/personaplex-7b` - full-duplex conversational speech-to-speech (real-time voice agent, not TTS). MIT repo; gated weights (NVIDIA Open Model License + HF token), ~16.7GB, GPU required. Different shape from `extensions/voicebox` (one-shot TTS); evaluate only when a GPU target exists.
+
 ---
 
 ## 2. Reasoning & Domain Model Post-Training Playbook
