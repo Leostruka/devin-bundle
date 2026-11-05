@@ -1,8 +1,8 @@
 # Issue 02: OpenUI Lang adoption
 
-Status: DSL spec in `.devin/rts/openui-lang.md` and local parser/renderer
-implemented in `extensions/craft-bridge/ui_dsl.py` (DSL v1). External
-adapter remains future work.
+Status: resolved - DSL spec in `.devin/rts/openui-lang.md` and local
+parser/renderer implemented in `extensions/craft-bridge/ui_dsl.py` (DSL
+v1). External adapter remains future work (tracked separately).
 
 ## Scope
 

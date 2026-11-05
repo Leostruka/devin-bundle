@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `ai-tools` local-model watchlist entry: nvidia/personaplex-7b (full-duplex S2S, gated weights, GPU-gated) - closes the R2-08 adopted-as-note.
+
+### Fixed
+
+- Atlas issue board: issues whose resolution is declared via `## Done`/`## Shipped`/`## Landed` sections now count as resolved (egm-laya 3/4 -> 4/4); egm issue 02 status normalized to `resolved`.
+
+### Added
+
 - Atlas `~/issues` board: build.py scans `.devin/scratch/*/issues/` into the site data (144 issues, 143 resolved across 12 ledgers), new view + styles in app.js/index.html/style.css (#313).
 
 ### Added

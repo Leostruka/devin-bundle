@@ -273,7 +273,7 @@ def collect_issues():
             status = _field("status").lower()
             done = bool(re.search(
                 r"resolved|done|implemented|landed|merged|complete", status)
-            ) or "## Answer" in text
+            ) or re.search(r"^## (Answer|Done|Shipped|Landed)\b", text, re.M)
             items.append({
                 "file": fn,
                 "title": title.group(1).strip() if title else fn[:-3],
