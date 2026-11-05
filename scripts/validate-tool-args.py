@@ -61,7 +61,7 @@ VALID_PROFILES = frozenset({
     "subagent_explore",
     "subagent_general", "tech-lead",
     "thermo-nuclear-code-quality-review-subagent",
-    "thermo-nuclear-review-subagent", "triage-labels", "watchdog",
+    "sentinel", "thermo-nuclear-review-subagent", "triage-labels",
 })
 
 # A query made up only of stopwords carries no search signal.

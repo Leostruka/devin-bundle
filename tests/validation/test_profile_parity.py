@@ -2,7 +2,7 @@
 
 validate-tool-args.py rejects unknown profiles, so a new agent file that
 ships without a VALID_PROFILES entry is undispatchable. This drift bit
-twice (chief-of-staff, watchdog); pin the parity.
+twice (chief-of-staff, sentinel); pin the parity.
 """
 import os
 import re

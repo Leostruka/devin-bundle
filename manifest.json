@@ -1484,7 +1484,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "ec70ba77939d422fba5df428aad7f59ab7dc97c816f95e4096fb77bb33cc0c24",
+      "export_hash": "5f0131e422296c69a289003738a0cfc513468ee0ff98860085fb17fcd890c0f7",
       "exported_at": "2026-11-03T21:04:06.237841"
     },
     {
@@ -1640,10 +1640,10 @@
       "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
-      "name": "watchdog",
+      "name": "sentinel",
       "source": "devin-bundle",
-      "original_path": "%APPDATA%\\devin\u0007gents\\watchdog.md",
-      "export_hash": "B4782ED43F739260907C82EAE689AD825F07B940B0FF39917D8F294957EA8EBF",
+      "original_path": "%APPDATA%\\devin\u0007gents\\sentinel.md",
+      "export_hash": "6B52D504AADDE09762F5E11392A2EED67E76AE8DB78569CA9702B1E5627DD337",
       "exported_at": "2026-11-05T07:49:44.220070"
     }
   ]
