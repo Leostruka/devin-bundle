@@ -129,6 +129,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "benchmark-checklist",
+      "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
+      "purpose": "Use when running a benchmark, reporting a measured speedup or regression, or vetting a performance number before acting on it.",
+      "original_path": "%APPDATA%\\devin\\skills\\benchmark-checklist",
+      "export_hash": "7f88341a18ddba54e3e5677b5dead5ad9314f46e6e7d9682fabb61de22cbc89c",
+      "exported_at": "2026-11-04T21:35:00.409400"
+    },
+    {
       "name": "binary-triage",
       "source": "devin-bundle",
       "purpose": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers in minutes what would take hours in Ghidra; escalate to re-binary/Ghidra only when static triage cannot close the question.",
@@ -142,7 +150,7 @@
       "purpose": "Use when asked for the blast radius of a change, what a diff could break elsewhere, or when reviewing a small diff you do not trust. Proves the one safety fact by running real code.",
       "original_path": "%APPDATA%\\devin\\skills\blast-radius",
       "export_hash": "db303fab81e8d5ddaf2fa777640499ffdfa43b57184cae122f8425dd13e3d19f",
-      "exported_at": "2026-11-04T21:40:33.392500"
+      "exported_at": "2026-11-04T21:51:57.378473"
     },
     {
       "name": "brag",
@@ -223,6 +231,14 @@
       "original_path": "%APPDATA%\\devin\\skills\\continuous-improvement",
       "export_hash": "8795e13c2fb80d21a6ca1e17f5b46fd8d4719805b6d759685e24bcbe17ae70aa",
       "exported_at": "2026-11-02T20:52:47.097911"
+    },
+    {
+      "name": "correct",
+      "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
+      "purpose": "Use when the operator corrects an agent mistake in the repo, or when hardening the project so a repeated agent mistake class cannot happen again.",
+      "original_path": "%APPDATA%\\devin\\skills\\correct",
+      "export_hash": "1f42ca1bfc9aeab940dbaedd9293e27bc016c56d1233c2b174042551ef25e4a5",
+      "exported_at": "2026-11-04T21:35:00.409400"
     },
     {
       "name": "cost-optimization",
@@ -1046,6 +1062,14 @@
       "exported_at": "2026-09-08T21:39:22.446414"
     },
     {
+      "name": "technical-writing",
+      "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
+      "purpose": "Use when writing or reviewing user-facing docs, RFCs, READMEs, PR descriptions, or commit messages. Layered standard: Diataxis structure, Google developer style, STE instruction rules, Global English.",
+      "original_path": "%APPDATA%\\devin\\skills\\technical-writing",
+      "export_hash": "143a898d44ae5ecf9ed969b5acd8b3778bf8720859ae47ab43fc2d0260f32c48",
+      "exported_at": "2026-11-04T21:35:00.409400"
+    },
+    {
       "name": "testing",
       "source": "devin-bundle",
       "purpose": "Use when implementing any feature or bugfix and a test-driven approach is appropriate (red-green-refactor, seams-first), or when the user asks to find testing gaps, mutation test, or identify surviving mutants. Unit and integration tests only; browser journeys go to e2e-testing, test infrastructure to observability-quality, completion claims to gates.",
@@ -1238,7 +1262,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 169,
+  "skill_count": 172,
   "rule_count": 24,
   "scripts": [
     {
