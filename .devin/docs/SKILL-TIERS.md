@@ -38,6 +38,7 @@ Raramente >3 por tarefa (~5000 tok).
 | `writing-skills` | Criar skills c/ TDD + docs que agentes consomem (+27k defer) | 706 | Escrever/criar skill, regra, doc |
 | `knowledge-modeling` | Glossário, ADRs, bounded contexts, extração e ontologia (+19.8k defer) | 699 | Modelar domínio, estruturar conhecimento |
 | `planning` | Spec + Tickets + Questionnaire (modos) | 765 | Conversa → spec/tickets/quest |
+| `technical-writing` | Prosa técnica: clareza, estrutura, voz (docs/READMEs) | 2224 | Escrever doc para humanos |
 
 ## Programação
 
@@ -45,8 +46,12 @@ Raramente >3 por tarefa (~5000 tok).
 |---|---|---|---|
 | `execution` | Implementa de spec/tickets | 1153 | Spec existe |
 | `code-review` | Review 2-eixos, PR via `gh`, receber feedback (3 modos, +7.8k defer) | 599 | Antes de merge, revisar/receber PR |
+| `blast-radius` | Mapa de impacto do diff: dependentes, contratos, testes afetados | 952 | Antes de merge, mudança em código compartilhado |
 | `architecture` | Módulos profundos, seams, deepening, strangler-fig (+3k defer) | 935 | Designar/refatorar arquitetura, legado |
 | `prototype` | Código descartável p/ design question | 780 | Dúvida de design |
+| `big-file-refactor` | Modularização 3-fases de arquivos >1k linhas | 665 | Arquivo gigante/contexto estourando |
+| `cli-adapter` | Controlar tool sem API/MCP via CLI construído (padrão wrapper) | 602 | Tool externa sem integração oficial |
+| `correct` | Correção mínima e direcionada de bug (fix-loop discipline) | 642 | Bugfix pontual sem refatorar |
 
 ## Debug
 
@@ -85,6 +90,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `grilling` | Stress-test de ideia (3 modos: default, stateless, with-docs, +21.8k defer) | 3508 | Design/plan ser desafiado |
 | `playbook` | Playbook reutilizável c/ Procedure/Specs/Advice (replica cloud) | 1516 | Tarefa repetida, "make this reusable" |
 | `execution` | Decide onde colocar checkpoints de review/planning (cadence) | 1153 | Tarefa pequena pode pular grilling? |
+| `arena` | Torneio: N soluções paralelas, juízes ranqueiam, campeão mergeia | 933 | Decisão aberta com várias opções reais |
 
 ## Pesquisa
 
@@ -112,6 +118,8 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `handoff` | Compacta p/ outro agente | 262 | Passar trabalho |
 | `wait-what` | Re-explica mensagem | 121 | Reexplicar |
 | `gates` | Gates p/ modo autônomo | 1127 | "Run unattended" |
+| `create-verification-skill` | Gera verify-* skill: invariants + probes + evidence dir | 1620 | Operação repetida precisa de verificação |
+| `maintain-verification-skill` | Atualiza verify-* quando o sistema muda | 1206 | Probe quebrou após refactor |
 
 ## Setup (one-time)
 
@@ -146,6 +154,8 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `e2e-testing` | Playwright/Selenium/Cypress journeys | 294 | Testes de jornada crítica |
 | `docker` | Build, run, compose, scan de imagens | 398 | Containers e stacks |
 | `i18n` | Traduções, plural, LTR/RTL, formatos | 277 | Multi-idioma |
+| `benchmark-checklist` | Checklist de perfil/benchmark reproduzível (pstack port) | 1239 | Medir antes/depois com rigor |
+| `web-perf-checklist` | Fix-list de ~30 itens de performance web por camada | 1174 | App web lento, audit de perf |
 
 ## Extensões locais (tools, não-skills)
 
