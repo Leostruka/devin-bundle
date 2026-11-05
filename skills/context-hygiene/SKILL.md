@@ -46,14 +46,14 @@ reach `compact_to`.
 | Param | Value | Basis |
 |---|---|---|
 | `compact_at` | 0.70 x window (SWE-2 262k -> ~183k) | headroom for next tool batch |
-
-Compacting EARLY beats late: the last ~30% of the window is where quality degrades (context pollution), so the threshold fires before the zone, not inside it.
 | `compact_to` | 0.40 x window (~105k) | hysteresis, avoids thrash |
 | `preserve_recent` | 6 messages + first message | upstream port default |
 | `keep_threshold` | 0.5, calibrate on real transcripts | laya confidence is entropy-based |
 | `truncate_head` | 300 chars | upstream port default |
 | `max_state` | ~25k est. tokens | fits laya context |
 | `reduction_floor` | <0.25 -> abort, keep original | avoids pointless churn |
+
+Compacting EARLY beats late: the last ~30% of the window is where quality degrades (context pollution), so the threshold fires before the zone, not inside it.
 
 `assist` mode requires `activation_errors` empty plus a calibrated
 threshold; run shadow first, measure, then promote.

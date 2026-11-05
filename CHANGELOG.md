@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- review pass: context-hygiene table split fixed, atlas q-key/modal-close logic fixed (q now types when no modal), VALID_PROFILES + README, build.py JSON-in-script hardening, file-size-guard handle, bundle-models newline, boot agent-count consistency. Covers #337.
+
 - sentinel: report dir renamed to .devin/scratch/sentinel/ for consistency; hooks doc parity test (#336).
 
 - tests: hooks-pipeline doc parity test (entry points + inner modules). Covers #335.
