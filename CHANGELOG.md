@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- reels batch-3: 10 saved reels enumerated via computer-use, 9 transcribed, survey + evals docs; ai-tools watchlist + Dia/Bonside-2. Covers #331.
+
 - site: REPL terminal sticky-footer fix (input no longer scrolls out of view as scrollback grows), Escape blurs input restoring key shortcuts, q no longer leaks into type-anywhere, all printable chars reach the terminal, scrollback capped at 200 lines. Fixes #329. Covers #328.
 
 - README + site meta: stale agent/skill counts corrected to 17 profiles / 178 skills. Covers #327.
