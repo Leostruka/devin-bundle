@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `cli-adapter` skill (R2-01): build-a-CLI protocol for tools with no MCP, citing agent-reach wrapper contract. 178 skills.
+
+### Added
+
 - **GitHub Pages atlas** (#301): `site/build.py` + `site/src/` generate a static terminal-style explorer (CRT phosphor aesthetic, typed boot with real stats, grep-filterable skill explorer, agent gallery, hooks pipeline, ADR/docs reader with mermaid, changelog timeline, Ctrl+K palette); `.github/workflows/pages.yml` deploys `site/dist` via SHA-pinned official actions on pushes touching site inputs. Live at https://leostruka.github.io/devin-bundle/, linked from the README atlas badge (#302).
 - **Atlas logo swap** (#303): hero ASCII logo alternates DEVIN BUNDLE / LEOSTRUKA every 5s through a character-scramble transition; respects `prefers-reduced-motion`.
 - **blast-radius skill** (#309): vendored + adapted from pstack (MIT); proves the one safety fact of a risky-looking change by running real code, with a certainty ladder and subagent fan-out per angle.
@@ -22,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Push gate race fix** (#309): validation and held-out now run sequentially in `check-push-green.py`: held-out mutation tests rewrite `scripts/*.py` in place, and a concurrent validation audit could read a half-mutated script (the recurring `constraint-pinning.py line 104` SyntaxError flake).
 
 - **Push gate made feasible** (#299): `check-push-green.py` now treats `tests/validation` + `tests/held-out` as the main check when both exist (Rule 15 contract, concurrent, `MAIN_TIMEOUT` env `BUNDLE_PUSH_GATE_TIMEOUT` default 250s); full suite stays in CI. Spawned pytest no longer inherits `DEVIN_PROJECT_DIR` (cwd isolation for hook-script tests). `audit.py` `render_norm` collapses resolved `python(w).exe` interpreter paths to `python` for the hooks-render comparison.
+
+### Added
+
+- `web-perf-checklist` + `big-file-refactor` skills, `watchdog` agent, `advisor_role_model` in bundle-models, ultrathink/advisor + compact-early docs (reels-2 wave 1-2 partial, R2-04/05/09/11). 177 skills.
 
 ### Added
 

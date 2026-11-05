@@ -46,6 +46,8 @@ reach `compact_to`.
 | Param | Value | Basis |
 |---|---|---|
 | `compact_at` | 0.70 x window (SWE-2 262k -> ~183k) | headroom for next tool batch |
+
+Compacting EARLY beats late: the last ~30% of the window is where quality degrades (context pollution), so the threshold fires before the zone, not inside it.
 | `compact_to` | 0.40 x window (~105k) | hysteresis, avoids thrash |
 | `preserve_recent` | 6 messages + first message | upstream port default |
 | `keep_threshold` | 0.5, calibrate on real transcripts | laya confidence is entropy-based |

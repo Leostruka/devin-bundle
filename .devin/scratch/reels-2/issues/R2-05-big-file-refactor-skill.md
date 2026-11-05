@@ -1,6 +1,6 @@
 # big-file-refactor: 3-phase modularization of oversized files
 
-status: open
+status: resolved
 priority: P2
 source: reels batch-2 survey (.devin/research/2026-11-05-reels-batch2-survey.md)
 
@@ -12,3 +12,7 @@ New skill `skills/big-file-refactor/SKILL.md`: the 3-phase protocol. Phase A inv
 
 ## Verification
 `ls skills/big-file-refactor/SKILL.md`; manifest + count; audit clean.
+
+## Answer
+
+`skills/big-file-refactor/SKILL.md` - Phase 0 gate (tests first), inventory, one-move-at-a-time extraction with verbatim moves, verify-per-move.
