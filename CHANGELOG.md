@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Push gate made feasible** (#299): `check-push-green.py` now treats `tests/validation` + `tests/held-out` as the main check when both exist (Rule 15 contract, concurrent, `MAIN_TIMEOUT` env `BUNDLE_PUSH_GATE_TIMEOUT` default 250s); full suite stays in CI. Spawned pytest no longer inherits `DEVIN_PROJECT_DIR` (cwd isolation for hook-script tests). `audit.py` `render_norm` collapses resolved `python(w).exe` interpreter paths to `python` for the hooks-render comparison.
 
+### Added
+
+- Reels batch-2 survey: 16 Instagram reels transcribed via `extensions/asr` (whisper.cpp local), decoded against the 175-skill bundle; 15 systematic issues + execution plan + map under `.devin/scratch/reels-2/` (#310). 4 P2 adopts (web-perf-checklist, big-file-refactor, watchdog/ultrathink, advisor routing), backlog evals for game-dev/voice/alt-data lanes.
+
+
 ## [3.19.0] - 2026-11-04
 
 ### Added

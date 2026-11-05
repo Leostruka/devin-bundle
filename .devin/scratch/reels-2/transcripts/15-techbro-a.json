@@ -1,0 +1,150 @@
+{
+ "ok": true,
+ "text": "These are the AI coding skills I used to ship 30 PRs a day while keeping the code quality high and not bloated. This is video five of seven in my how to become a 10X AI native developer series. And in the first four videos, we talked a lot about the creating verification skills. So that you can create cloud agents that autonomously write tests and verify and merge code for you. And the number one question that I've been getting asked is how do you keep the code quality high when so much code is getting merged? And the way that I do that is with skills. So here are some of the AI coding skills that I use to make sure my code is not bloated simple and clean and easy to read. So my first and favorite skill that I want to talk about is called ponytail. And you can check it out at ponytail.dev and the landing page is actually hilarious because it's all about this little avatar right here. It's that one senior staff engineer that gets paged when things are really bad and broken comes in fixes it with like two lines of code and goes back to sleep. And the skill is essentially a gigantic de bloating tool that will call out design paradigms that are bad. Simplify things down as much as possible refactor into reusable code modules. It's pretty great and really keeps the code quality pretty high. So that's the first one that I want to talk about, but we have two more that I want to call out. So next up is within peacestack. I've talked a lot about peacestack in the first four videos of this series. But essentially peacestack is a plug-in not just an individual skill that a SpaceX engineer created who goes by potato on X. And this is giant engineering system on creating a software factory and shipping code at a really high quality and shipping a lot of it. And it's what powers probably a 90% of the PR that I write on a daily basis. And peacestack itself actually has a lot of great de bloating simplification skills built into it. Such as this no comment skill right here, the typescript best practices and onslaught. And basically every single time I use peacestack it automatically calls these tools. And then I also externally call this pony tail skill. And then last but not least, the third skill that it also calls is this thermonuclear code quality review skill, which is another skill created by the team at cursors. Slash of SpaceX AI. And it pretty much does the same thing as the first two skills that we mentioned with pony tail and some of the other sub skills that the peacestack offers. So essentially with every single PR I write, I condense all this into one single simplified command that will call all the simplification commands within ponytail within peacestack and within the thermonuclear code quality review skill to keep my code changes as minimal as possible and keep the quality high. In the next video in this series, I'm going to be talking about how to write really effective prompts so that you can have full confidence to significantly improve the quality of work that your agents do so that you no longer have to supervise and manage them and instead you can trust that they're actually getting the work done by themselves without you involved.",
+ "segments": [
+  {
+   "start": 0.0,
+   "end": 5.4,
+   "text": "These are the AI coding skills I used to ship 30 PRs a day while keeping the code quality high and not bloated."
+  },
+  {
+   "start": 5.4,
+   "end": 9.5,
+   "text": "This is video five of seven in my how to become a 10X AI native developer series."
+  },
+  {
+   "start": 9.5,
+   "end": 13.5,
+   "text": "And in the first four videos, we talked a lot about the creating verification skills."
+  },
+  {
+   "start": 13.5,
+   "end": 18.6,
+   "text": "So that you can create cloud agents that autonomously write tests and verify and merge code for you."
+  },
+  {
+   "start": 18.6,
+   "end": 24.0,
+   "text": "And the number one question that I've been getting asked is how do you keep the code quality high when so much code is getting merged?"
+  },
+  {
+   "start": 24.0,
+   "end": 26.0,
+   "text": "And the way that I do that is with skills."
+  },
+  {
+   "start": 26.0,
+   "end": 32.5,
+   "text": "So here are some of the AI coding skills that I use to make sure my code is not bloated simple and clean and easy to read."
+  },
+  {
+   "start": 32.5,
+   "end": 35.6,
+   "text": "So my first and favorite skill that I want to talk about is called ponytail."
+  },
+  {
+   "start": 35.6,
+   "end": 41.5,
+   "text": "And you can check it out at ponytail.dev and the landing page is actually hilarious because it's all about this little avatar right here."
+  },
+  {
+   "start": 41.5,
+   "end": 48.3,
+   "text": "It's that one senior staff engineer that gets paged when things are really bad and broken comes in fixes it with like two lines of code and goes back to sleep."
+  },
+  {
+   "start": 48.3,
+   "end": 53.8,
+   "text": "And the skill is essentially a gigantic de bloating tool that will call out design paradigms that are bad."
+  },
+  {
+   "start": 53.8,
+   "end": 58.2,
+   "text": "Simplify things down as much as possible refactor into reusable code modules."
+  },
+  {
+   "start": 58.2,
+   "end": 61.0,
+   "text": "It's pretty great and really keeps the code quality pretty high."
+  },
+  {
+   "start": 61.0,
+   "end": 64.2,
+   "text": "So that's the first one that I want to talk about, but we have two more that I want to call out."
+  },
+  {
+   "start": 64.2,
+   "end": 66.0,
+   "text": "So next up is within peacestack."
+  },
+  {
+   "start": 66.0,
+   "end": 68.8,
+   "text": "I've talked a lot about peacestack in the first four videos of this series."
+  },
+  {
+   "start": 68.8,
+   "end": 76.4,
+   "text": "But essentially peacestack is a plug-in not just an individual skill that a SpaceX engineer created who goes by potato on X."
+  },
+  {
+   "start": 76.4,
+   "end": 82.8,
+   "text": "And this is giant engineering system on creating a software factory and shipping code at a really high quality and shipping a lot of it."
+  },
+  {
+   "start": 82.8,
+   "end": 86.9,
+   "text": "And it's what powers probably a 90% of the PR that I write on a daily basis."
+  },
+  {
+   "start": 86.9,
+   "end": 92.0,
+   "text": "And peacestack itself actually has a lot of great de bloating simplification skills built into it."
+  },
+  {
+   "start": 92.0,
+   "end": 97.2,
+   "text": "Such as this no comment skill right here, the typescript best practices and onslaught."
+  },
+  {
+   "start": 97.2,
+   "end": 100.8,
+   "text": "And basically every single time I use peacestack it automatically calls these tools."
+  },
+  {
+   "start": 100.8,
+   "end": 103.6,
+   "text": "And then I also externally call this pony tail skill."
+  },
+  {
+   "start": 103.6,
+   "end": 112.1,
+   "text": "And then last but not least, the third skill that it also calls is this thermonuclear code quality review skill, which is another skill created by the team at cursors."
+  },
+  {
+   "start": 112.1,
+   "end": 113.7,
+   "text": "Slash of SpaceX AI."
+  },
+  {
+   "start": 113.7,
+   "end": 120.3,
+   "text": "And it pretty much does the same thing as the first two skills that we mentioned with pony tail and some of the other sub skills that the peacestack offers."
+  },
+  {
+   "start": 120.3,
+   "end": 137.6,
+   "text": "So essentially with every single PR I write, I condense all this into one single simplified command that will call all the simplification commands within ponytail within peacestack and within the thermonuclear code quality review skill to keep my code changes as minimal as possible and keep the quality high."
+  },
+  {
+   "start": 137.6,
+   "end": 152.9,
+   "text": "In the next video in this series, I'm going to be talking about how to write really effective prompts so that you can have full confidence to significantly improve the quality of work that your agents do so that you no longer have to supervise and manage them and instead you can trust that they're actually getting the work done by themselves without you involved."
+  }
+ ],
+ "model": "base",
+ "source": "https://www.instagram.com/youraveragetechbro/reel/DePGBFXtswr/",
+ "slug": "15-techbro-a",
+ "url": "https://www.instagram.com/youraveragetechbro/reel/DePGBFXtswr/"
+}
