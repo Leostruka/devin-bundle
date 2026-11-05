@@ -9,15 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- SKILL-TIERS.md: 11 rows for the reels-2 and round-2/3/4 skills (web-perf-checklist, big-file-refactor, cli-adapter, correct, blast-radius, arena, benchmark-checklist, technical-writing, create/maintain-verification-skill) so the discovery path covers them.
+
+### Added
+
 - `ai-tools` local-model watchlist entry: nvidia/personaplex-7b (full-duplex S2S, gated weights, GPU-gated) - closes the R2-08 adopted-as-note.
 
 ### Fixed
 
-- `sc_process._reap_posix_group`: `killpg(pgid, 0)` can transiently raise EPERM on macOS while a killed group is reaped - the probe now falls through to the ps membership check instead of reporting `tree_cleanup=False` for an actually-dead tree (CI flake root cause, macos py3.11/py3.14).
+- `sc_process._reap_posix_group`: `killpg(pgid, 0)` can transiently raise EPERM on macOS while a killed group is reaped - the probe now falls through to the ps membership check instead of reporting `tree_cleanup=False` for an actually-dead tree (CI flake root cause, macos py3.11/py3.14) (#315).
 
 ### Fixed
 
-- `validate-tool-args.py` VALID_PROFILES: `chief-of-staff` and `watchdog` were missing, making both agents undispatchable through `run_subagent`; added `tests/validation/test_profile_parity.py` pinning disk agents to the validator set. Also documents #314.
+- `validate-tool-args.py` VALID_PROFILES: `chief-of-staff` and `watchdog` were missing, making both agents undispatchable through `run_subagent`; added `tests/validation/test_profile_parity.py` pinning disk agents to the validator set (#315). Also documents #314.
 
 ### Fixed
 
