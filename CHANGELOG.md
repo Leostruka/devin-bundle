@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Atlas `~/issues` board: build.py scans `.devin/scratch/*/issues/` into the site data (144 issues, 143 resolved across 12 ledgers), new view + styles in app.js/index.html/style.css (#313).
+
+### Added
+
 - Reels-2 wave 4: `verify-atlas` dogfooded verification skill (R2-06), MERIDIAN backlog corroborating source (R2-15, #313). All 15 reels-2 issues resolved.
 
 ### Added

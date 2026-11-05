@@ -6,7 +6,7 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------------- tabs / router ---------------- */
-const SECTIONS = ["boot","skills","agents","hooks","scripts","adr","docs","changelog"];
+const SECTIONS = ["boot","skills","agents","hooks","scripts","adr","docs","issues","changelog"];
 const tabs = $("#tabs");
 tabs.innerHTML = SECTIONS.map(s =>
   `<button role="tab" data-sec="${s}" aria-selected="${s==="boot"}">~/${s}</button>`).join("");
@@ -200,6 +200,18 @@ $("#changelog-log").innerHTML = (D.changelog||[]).map(r => `
     <span class="rd">${esc(r.date)}</span>
     <span class="rentries">${r.entries} entr(ies)</span>
     <div class="doc">${r.html}</div></div>`).join("");
+
+/* ---------------- issues board ---------------- */
+$("#issues-board").innerHTML = (D.issues||[]).map(g => `
+  <div class="rel"><span class="rv">${esc(g.group)}</span>
+    <span class="rd">${g.resolved}/${g.count} resolved</span>
+    <table class="tbl"><tbody>${g.items.map(i => `
+      <tr><td class="mono">${esc(i.file.replace(/\.md$/,""))}</td>
+      <td>${esc(i.title)}</td>
+      <td>${i.priority ? `<span class="pri p${esc(i.priority)}">${esc(i.priority)}</span>` : ""}</td>
+      <td><span class="st ${i.status==="resolved"?"ok":"op"}">${esc(i.status)||"?"}</span></td>
+      <td class="dim">${i.answered?"answered":""}</td></tr>`).join("")}</tbody></table></div>`).join("") ||
+  `<div class="dim">no issue ledgers under .devin/scratch/*/issues/</div>`;
 
 /* ---------------- modal pager ---------------- */
 const modal = $("#modal");
