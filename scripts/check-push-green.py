@@ -319,34 +319,29 @@ def main():
     heldout_dir = os.path.join(cwd, "tests", "held-out")
     gap_active = os.path.isdir(validation_dir) and os.path.isdir(heldout_dir) and is_pytest
 
-    # All pytest checks are independent; run them concurrently so the gate
-    # fits inside the PreToolUse hook timeout budget (wall time = slowest).
     # Rule 15 declares tests/validation + tests/held-out as the push-gate
     # contract; when both exist they ARE the main check (scoped to fit the
     # budget, fail-closed) instead of re-running them plus the full suite.
     # CI still runs the full suite.
-    from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=3) as ex:
-        if gap_active:
-            f_main = None
-            f_val = ex.submit(run_check, f'pytest "{validation_dir}" -q',
-                              cwd, MAIN_TIMEOUT)
-            f_held = ex.submit(run_check, f'pytest "{heldout_dir}" -q',
-                               cwd, MAIN_TIMEOUT)
+    # NOTE: these suites run SEQUENTIALLY, not concurrently. Held-out
+    # mutation tests rewrite scripts/*.py in place (mutate -> run -> restore),
+    # so a concurrent validation run can read a half-mutated script and fail
+    # audit's compile check — exactly the flake this gate kept hitting.
+    # Sequential cost is ~20s and fits the budget easily.
+    if gap_active:
+        val_result = run_check(f'pytest "{validation_dir}" -q', cwd, MAIN_TIMEOUT)
+        held_result = run_check(f'pytest "{heldout_dir}" -q', cwd, MAIN_TIMEOUT)
+        check_cmd = "validation+held-out"
+        if val_result[0] == "pass" and held_result[0] == "pass":
+            status, output = "pass", ""
         else:
-            f_main = ex.submit(run_check, check_cmd, cwd, MAIN_TIMEOUT)
-            f_val = f_held = None
-        val_result = f_val.result() if f_val else None
-        held_result = f_held.result() if f_held else None
-        if f_main is not None:
-            status, output = f_main.result()
-        else:
-            check_cmd = "validation+held-out"
-            if val_result[0] == "pass" and held_result[0] == "pass":
-                status, output = "pass", ""
-            else:
-                status = "fail"
-                output = val_result[1] + "\n" + held_result[1]
+            status = "fail" if "fail" in (val_result[0], held_result[0]) else \
+                ("timeout" if "timeout" in (val_result[0], held_result[0])
+                 else val_result[0] if val_result[0] != "pass" else held_result[0])
+            output = val_result[1] + "\n" + held_result[1]
+    else:
+        status, output = run_check(check_cmd, cwd, MAIN_TIMEOUT)
+        val_result = held_result = None
 
     # Fail-closed: any outcome other than a passing run blocks the push, so
     # a timed-out or unrunnable suite cannot silently degrade the gate.
