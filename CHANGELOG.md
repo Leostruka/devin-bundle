@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Reels batch-2 survey: 16 Instagram reels transcribed via `extensions/asr` (whisper.cpp local), decoded against the 175-skill bundle; 15 systematic issues + execution plan + map under `.devin/scratch/reels-2/`. 4 P2 adopts (web-perf-checklist, big-file-refactor, watchdog/ultrathink, advisor routing), backlog evals for game-dev/voice/alt-data lanes.
+- Reels batch-2 survey: 16 Instagram reels transcribed via `extensions/asr` (whisper.cpp local), decoded against the 175-skill bundle; 15 systematic issues + execution plan + map under `.devin/scratch/reels-2/` (#310). 4 P2 adopts (web-perf-checklist, big-file-refactor, watchdog/ultrathink, advisor routing), backlog evals for game-dev/voice/alt-data lanes.
 
 
 ## [3.19.0] - 2026-11-04
