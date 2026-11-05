@@ -237,6 +237,22 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `laya-tools` | CLI sobre o motor de decisão `laya` (triage/guardrails/moderation, typed questions, JSON stdout) |
 | `scrape-tools` | Scraping/parse de HTML (parser offline, Fetcher com TLS impersonation, tier browser opt-in), JSON stdout |
 | `rust-core` | Extensão híbrida PyO3 (`fast_math.pyd`) — build no install |
+| `asr` | Transcrição local (yt-dlp fetch + whisper.cpp) — usada no pipeline de reels |
+| `agent-reach` | Wrapper do agent-reach CLI (pesquisa credential-free: YouTube, RSS, web) |
+| `voicebox` | Wrapper do backend TTS jamiepine/voicebox |
+| `remotion-render` | Render Remotion com plan_check do scene-plan v2 |
+| `stock-footage` | Fetcher Pexels + Pixabay para b-roll |
+| `hyperframes` | Wrapper do CLI de animação HTML hyperframes |
+| `image-forensics` | Proveniência de imagem: EXIF/XMP/C2PA |
+| `mesh-utils` | Inspect/convert/clean de meshes e cenas 3D |
+| `offsec-tools` | Dispatcher seguro de ferramentas offsec open-source |
+| `rea-ops` | Wrapper do CLI de reverse-engineering morluto/rea |
+| `rz-ops` | Wrapper estruturado da toolchain rizin |
+| `blender-operator` | exec server dentro do Blender |
+| `comfyui-operator` | Cliente HTTP stdlib para ComfyUI local (gen 3D/imagem) |
+| `craft-bridge` | Dispatch uniforme na suíte storytold craft |
+| `laya-compactor` | CLI de pruning de transcript dirigido pelo laya |
+| `ppisp-prep` | Pré-check fotométrico barato em sets de imagem |
 
 ### 8. Atlas público (GitHub Pages)
 
