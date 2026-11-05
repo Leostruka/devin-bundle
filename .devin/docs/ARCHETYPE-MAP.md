@@ -15,4 +15,4 @@ Source: reel 14 (vicentecondee) describing the Anthropic observation: post-AI te
 - **Grower is the thinnest row** - PM/copywriter are spec-side; nothing tracks metrics/funnels. `data-analyst` is the closest runtime.
 - **Prototyper** relies on external input (reels/research) - fine, that is what the survey pipeline is for.
 - Transit = the meta-skills: `ask-bundle` routes across rows; `afk-loop` keeps a Build row running unattended.
-- Multi-agent parallel runs of different archetypes = `run_subagent` profiles (implementer + reviewer + watchdog is literally Builder+Maintainer+Simplifier in parallel).
+- Multi-agent parallel runs of different archetypes = `run_subagent` profiles (implementer + reviewer + watchdog is literally Builder+Maintainer+Simplifier in parallel). The alvim job-apply reel is the clean public demo of this: a drafter agent writing and a reviewer agent critiquing maps to `copywriter` + `reviewer` (Grower + Maintainer).

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- ARCHETYPE-MAP: alvim job-apply drafter/reviewer chain cited in the Grower/Maintainer transit note (R2-02 adopted-as-note). Covers #321.
+
+### Added
+
 - README section 8: Atlas publico - describes the Pages site, issue board, and REPL so the public face is discoverable from the repo front door. Covers #318.
 
 ### Added
