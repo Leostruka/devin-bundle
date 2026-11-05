@@ -139,11 +139,19 @@ main{flex:1;max-width:1200px;width:100%;margin:0 auto;padding:28px 20px 60px}
 #changelog-log .rentries{color:var(--dim);font-size:.8em;margin-left:10px}
 #changelog-log .doc{padding:8px 0 0;max-height:none;overflow:visible}
 
-/* footer prompt */
-.promptline{padding:10px 16px;border-top:1px solid var(--line);
+/* footer prompt + repl */
+.promptline{display:flex;gap:6px;align-items:baseline;padding:10px 16px;border-top:1px solid var(--line);
   background:var(--panel);color:var(--fg);font-size:.9em}
 .promptline .path{color:var(--cyan)}
-#footer-hint{color:var(--dim)}
+#repl{flex:1;background:none;border:0;color:var(--fg);font:inherit;outline:none;caret-color:var(--green)}
+#repl::placeholder{color:var(--dim)}
+#repl-out{max-height:34vh;overflow-y:auto;padding:8px 16px;border-top:1px solid var(--line);
+  background:#04140a;font-size:.85em;white-space:pre-wrap;line-height:1.5}
+#repl-out .r-cmd{color:var(--green)}
+#repl-out .r-dim{color:var(--dim)}
+#repl-out .r-err{color:#ff6666}
+#repl-out .r-cyan{color:var(--cyan)}
+#repl-out .r-amber{color:var(--amber)}
 
 /* palette + modal */
 #palette,#modal{position:fixed;inset:0;background:rgba(2,6,4,.82);z-index:80;

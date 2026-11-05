@@ -18,6 +18,8 @@ function go(sec){
     $(`button[data-sec="${s}"]`).setAttribute("aria-selected", s===sec);
   });
   location.hash = sec === "boot" ? "" : sec;
+  curSec = sec;
+  const rp = $("#repl-path"); if(rp) rp.textContent = (sec === "boot" ? "~" : "~/" + sec) + "$";
   if(sec === "adr" && !$("#adr-body").innerHTML) openDoc("adr", 0);
   if(sec === "docs" && !$("#docs-body").innerHTML) openDoc("docs", 0);
   if(sec !== "boot") document.title = `devin-bundle // atlas — ${sec}`;
@@ -259,6 +261,170 @@ palIn.addEventListener("keydown", e => {
   }
 });
 
+/* ---------------- repl ---------------- */
+const repl = $("#repl"), replOut = $("#repl-out"), replPath = $("#repl-path");
+const hist = []; let histIdx = -1;
+let curSec = "boot";
+
+function rprint(lines){
+  replOut.hidden = false;
+  for(const [cls, txt] of lines){
+    const d = document.createElement("div");
+    if(cls) d.className = cls;
+    d.textContent = txt === "" ? " " : txt;
+    replOut.appendChild(d);
+  }
+  replOut.scrollTop = replOut.scrollHeight;
+}
+const recho = t => rprint([["r-cmd", `visitor@devin-bundle:${curSec === "boot" ? "~" : "~/" + curSec}$ ${t}`]]);
+
+const DOCTOR_LINES = () => [
+  ["r-cmd","pass  custom subagent profiles   21 profile(s) loaded"],
+  ["r-cmd","pass  otel exporter environment   no unsupported variables"],
+  ["r-cmd","pass  otel export                 off"],
+];
+const INSTALL_LINES = () => [
+  ["r-cmd",`  [+] skills        ${D.counts?.skills ?? "?"} synced   live=bundle`],
+  ["r-cmd",`  [+] agents        ${D.counts?.agents ?? "?"} profiles`],
+  ["r-cmd",`  [+] hooks         ${(D.hooks||[]).reduce((n,e)=>n+e.hooks.length,0)} hooks rendered from hooks.v1.json`],
+  ["r-cmd",`  [+] scripts       ${D.counts?.scripts ?? "?"} hook scripts`],
+  ["r-amber","  [~] credentials.toml  use -RestoreSecrets to install"],
+];
+
+function findThing(q){
+  q = (q||"").toLowerCase();
+  if(!q) return null;
+  const s = (D.skills||[]).find(x => x.dir.toLowerCase()===q || x.name.toLowerCase()===q)
+        || (D.skills||[]).find(x => x.dir.toLowerCase().startsWith(q) || x.name.toLowerCase().startsWith(q))
+        || (D.skills||[]).find(x => x.dir.toLowerCase().includes(q));
+  if(s) return {kind:"skill", s};
+  const a = (D.agents||[]).find(x => x.name.toLowerCase()===q)
+        || (D.agents||[]).find(x => x.name.toLowerCase().startsWith(q));
+  if(a) return {kind:"agent", a};
+  for(const kind of ["adrs","docs"]){
+    const list = D[kind]||[];
+    const i = list.findIndex(x => x.title.toLowerCase().includes(q) || x.file.toLowerCase().includes(q));
+    if(i >= 0) return {kind: kind === "adrs" ? "adr" : "docs", i};
+  }
+  return null;
+}
+function openThing(t){
+  if(!t) return false;
+  if(t.kind === "skill") openModal(`skills/${t.s.dir}/SKILL.md`, t.s.html);
+  else if(t.kind === "agent") openModal(`agents/${t.a.name}.md`, t.a.html);
+  else { go(t.kind === "adr" ? "adr" : "docs"); openDoc(t.kind, t.i); }
+  return true;
+}
+
+const REPL_HELP = [
+  ["","help                    this list"],
+  ["","cd <section>            boot skills agents hooks scripts adr docs changelog"],
+  ["","ls [section]            list sections or items in a section"],
+  ["","cat|open <name>         open a skill, agent, adr, or doc"],
+  ["","grep <pattern>          filter skills and jump there"],
+  ["","doctor                  re-run the boot health check"],
+  ["","install                 print the -Force install summary"],
+  ["","version                 bundle version"],
+  ["","pwd                     current section path"],
+  ["","history                 command history"],
+  ["","clear                   clear this scrollback"],
+  ["",":q                      try it"],
+];
+
+function replRun(raw){
+  const line = raw.trim();
+  if(!line) return;
+  recho(line);
+  hist.push(line); histIdx = hist.length;
+  const [cmd, ...rest] = line.split(/\s+/);
+  const arg = rest.join(" ");
+  const c = cmd.toLowerCase();
+  const secs = SECTIONS;
+  if(c === "help" || c === "?"){ rprint(REPL_HELP); return; }
+  if(c === "cd"){
+    if(!arg || arg === "~" || arg === ".."){ go("boot"); return; }
+    const t = secs.find(s => s === arg) || secs.find(s => s.startsWith(arg));
+    if(t) go(t);
+    else rprint([["r-err",`cd: no such section: ${arg}`]]);
+    return;
+  }
+  if(secs.includes(c)){ go(c); return; }
+  if(c === "ls"){
+    if(!arg){
+      rprint(secs.map(s => ["r-cyan", `${s}/`]));
+      return;
+    }
+    const t = secs.find(s => s === arg || s.startsWith(arg));
+    if(!t){ rprint([["r-err",`ls: no such section: ${arg}`]]); return; }
+    if(t === "skills") rprint((D.skills||[]).map(s => ["", s.dir]));
+    else if(t === "agents") rprint((D.agents||[]).map(a => ["", a.name]));
+    else if(t === "adr" || t === "docs") rprint((D[t === "adr" ? "adrs" : "docs"]||[]).map(x => ["", x.file]));
+    else if(t === "scripts") rprint((D.scripts||[]).map(x => ["", x.name || x]));
+    else if(t === "hooks") rprint((D.hooks||[]).map(e => ["", `${e.event}  (${e.hooks.length} hooks)`]));
+    else rprint([["r-dim","nothing to list; it is a rendered view"]]);
+    return;
+  }
+  if(c === "cat" || c === "open"){
+    if(!arg){ rprint([["r-err",`${c}: missing operand`]]); return; }
+    if(!openThing(findThing(arg))) rprint([["r-err",`${c}: no match: ${arg}`]]);
+    return;
+  }
+  if(c === "grep"){
+    if(!arg){ rprint([["r-err","grep: missing pattern"]]); return; }
+    go("skills");
+    const q = $("#skill-q");
+    q.value = arg; q.dispatchEvent(new Event("input"));
+    return;
+  }
+  if(c === "doctor"){ rprint(DOCTOR_LINES()); return; }
+  if(c === "install"){ rprint(INSTALL_LINES()); return; }
+  if(c === "version" || c === "--version"){
+    rprint([["",`devin-bundle v${D.version ?? "?"} · ${D.counts?.skills ?? "?"} skills · ${D.counts?.agents ?? "?"} agents`]]);
+    return;
+  }
+  if(c === "pwd"){ rprint([["",`~/atlas${curSec === "boot" ? "" : "/" + curSec}`]]); return; }
+  if(c === "history"){ rprint(hist.map((h,i) => ["r-dim",`  ${i+1}  ${h}`])); return; }
+  if(c === "clear"){ replOut.innerHTML = ""; replOut.hidden = true; return; }
+  if(c === ":q" || c === "exit" || c === "quit"){
+    rprint([["r-dim","no escape. there is only the bundle."]]);
+    go("boot"); return;
+  }
+  if(c === "man"){ rprint(REPL_HELP); return; }
+  const cand = [...REPL_HELP.map(l=>l[1].split(/\s+/)[0]), ...secs];
+  const sug = cand.find(x => x.startsWith(c)) || cand.find(x => x.includes(c));
+  rprint([["r-err",`sh: ${cmd}: command not found`]]
+    .concat(sug ? [["r-dim",`did you mean '${sug}'?`]] : []));
+}
+
+repl.addEventListener("keydown", e => {
+  if(e.key === "Enter"){ replRun(repl.value); repl.value = ""; }
+  else if(e.key === "ArrowUp"){ if(histIdx > 0){ repl.value = hist[--histIdx]; } e.preventDefault(); }
+  else if(e.key === "ArrowDown"){
+    histIdx = Math.min(histIdx+1, hist.length);
+    repl.value = hist[histIdx] ?? "";
+    e.preventDefault();
+  }
+  else if(e.key === "Tab"){
+    e.preventDefault();
+    const v = repl.value, parts = v.split(/\s+/);
+    if(parts.length <= 1){
+      const names = ["help","cd","ls","cat","open","grep","doctor","install","version","pwd","history","clear",":q",...SECTIONS];
+      const m = names.filter(n => n.startsWith(v));
+      if(m.length === 1) repl.value = m[0] + " ";
+      else if(m.length) rprint([["r-dim", m.join("   ")]]);
+    } else if(parts[0] === "cd"){
+      const m = SECTIONS.filter(s => s.startsWith(parts[1] || ""));
+      if(m.length === 1) repl.value = `cd ${m[0]}`;
+      else if(m.length) rprint([["r-dim", m.join("   ")]]);
+    } else if(["cat","open"].includes(parts[0])){
+      const q = parts[1] || "";
+      const m = (D.skills||[]).map(s => s.dir).filter(n => n.startsWith(q));
+      if(m.length === 1) repl.value = `${parts[0]} ${m[0]}`;
+      else if(m.length && m.length <= 12) rprint([["r-dim", m.join("   ")]]);
+    }
+  }
+});
+
 /* ---------------- keys ---------------- */
 document.addEventListener("keydown", e => {
   const typing = /input|textarea/i.test(e.target.tagName);
@@ -269,7 +435,14 @@ document.addEventListener("keydown", e => {
   if(typing || !modal.hidden || !pal.hidden) return;
   if(e.key === "q") closeModal();
   const n = +e.key;
-  if(n >= 1 && n <= SECTIONS.length) go(SECTIONS[n-1]);
+  if(n >= 1 && n <= SECTIONS.length){ go(SECTIONS[n-1]); return; }
+  // type-anywhere: printable chars drop into the repl like a real terminal
+  if(e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey
+     && /[a-zA-Z ]/.test(e.key)){
+    repl.focus();
+    repl.value += e.key;
+    e.preventDefault();
+  }
 });
 
 /* ---------------- init ---------------- */
