@@ -356,6 +356,14 @@ def main():
             "timeout": f"'{check_cmd}' did not finish within {MAIN_TIMEOUT}s",
             "unavailable": f"'{check_cmd}' could not be run",
         }.get(status, f"'{check_cmd}' status: {status}")
+        try:
+            dbg = os.path.join(cwd, ".devin", "scratch",
+                               "push-gate-last-failure.log")
+            os.makedirs(os.path.dirname(dbg), exist_ok=True)
+            with open(dbg, "w", encoding="utf-8", errors="replace") as fh:
+                fh.write(f"status={status} cmd={check_cmd}\n" + output)
+        except OSError:
+            pass
         block(
             f"git push rejected: {detail}. Fix the failures in the "
             "inner loop before pushing (AGENTS.md Rule 5).\n"
