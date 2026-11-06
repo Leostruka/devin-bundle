@@ -253,6 +253,7 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `craft-bridge` | Dispatch uniforme na suíte storytold craft |
 | `laya-compactor` | CLI de pruning de transcript dirigido pelo laya |
 | `ppisp-prep` | Pré-check fotométrico barato em sets de imagem |
+| `gcal` | Google Calendar free/busy read-only + roteiro planner + `--ics` dev mode (OAuth refresh via urllib, sem deps) |
 
 ### 8. Atlas público (GitHub Pages)
 
@@ -460,10 +461,10 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 17 perfis customizados
-├── skills/                    # 83 workflows invocáveis
+├── skills/                    # 180 workflows invocáveis
 
 ├── scripts/                   # hooks, validadores e helper Mermaid
-├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools)
+├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools, gcal)
 ├── data/                      # modelos, integrações e metadados versionados
 ├── .devin/                    # configuração e conhecimento deste projeto
 │   ├── docs/                  # mapas, guias (SKILL-TIERS, MODEL-GUIDE, TOOLS-MAP…)
