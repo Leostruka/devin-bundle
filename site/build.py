@@ -289,7 +289,7 @@ def _issue_items(idir):
                 if m:
                     return m.group(1).strip()
             return ""
-        status = _field("status").split("\u00b7")[0].strip().lower()
+        status = _field("status").split("\u00b7")[0].split("(")[0].strip().lower()
         done = bool(re.search(
             r"resolved|done|implemented|landed|merged|complete", status)
         ) or re.search(r"^## (Answer|Done|Shipped|Landed)\b", text, re.M)
