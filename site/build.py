@@ -274,46 +274,59 @@ def collect_scripts():
     return rows
 
 
-def collect_issues():
-    """Scan .devin/scratch/*/issues/*.md -> grouped issue ledger for the atlas."""
-    base = os.path.join(ROOT, ".devin", "scratch")
-    groups = []
-    if not os.path.isdir(base):
-        return groups
-    for grp in sorted(os.listdir(base)):
-        idir = os.path.join(base, grp, "issues")
-        if not os.path.isdir(idir):
+def _issue_items(idir):
+    items = []
+    for fn in sorted(os.listdir(idir)):
+        if not fn.endswith(".md"):
             continue
-        items = []
-        for fn in sorted(os.listdir(idir)):
-            if not fn.endswith(".md"):
-                continue
-            text = open(os.path.join(idir, fn), encoding="utf-8-sig").read()
-            title = re.search(r"^#\s+(.*)$", text, re.M)
-            def _field(*names):
-                for name in names:
-                    m = re.search(
-                        rf"^(?:-\s*)?\*{{0,2}}{name}\*{{0,2}}:\s*(.+?)\s*$",
-                        text, re.M | re.I)
-                    if m:
-                        return m.group(1).strip()
-                return ""
-            status = _field("status").lower()
-            done = bool(re.search(
-                r"resolved|done|implemented|landed|merged|complete", status)
-            ) or re.search(r"^## (Answer|Done|Shipped|Landed)\b", text, re.M)
-            items.append({
-                "file": fn,
-                "title": title.group(1).strip() if title else fn[:-3],
-                "status": "resolved" if done else (status or "open"),
-                "priority": _field("priority", "severity"),
-                "answered": "## Answer" in text,
-            })
+        text = open(os.path.join(idir, fn), encoding="utf-8-sig").read()
+        title = re.search(r"^#\s+(.*)$", text, re.M)
+        def _field(*names):
+            for name in names:
+                m = re.search(
+                    rf"^(?:-\s*)?\*{{0,2}}{name}\*{{0,2}}:\s*(.+?)\s*$",
+                    text, re.M | re.I)
+                if m:
+                    return m.group(1).strip()
+            return ""
+        status = _field("status").split("\u00b7")[0].strip().lower()
+        done = bool(re.search(
+            r"resolved|done|implemented|landed|merged|complete", status)
+        ) or re.search(r"^## (Answer|Done|Shipped|Landed)\b", text, re.M)
+        items.append({
+            "file": fn,
+            "title": title.group(1).strip() if title else fn[:-3],
+            "status": "resolved" if done else (status or "open"),
+            "priority": _field("priority", "severity"),
+            "answered": "## Answer" in text,
+        })
+    return items
+
+
+def collect_issues():
+    """Scan issue dirs -> grouped ledger: .devin/issues (roadmap) +
+    .devin/scratch/*/issues (effort-level execution)."""
+    groups = []
+    macro = os.path.join(ROOT, ".devin", "issues")
+    if os.path.isdir(macro):
+        items = _issue_items(macro)
         if items:
-            groups.append({"group": grp, "count": len(items),
+            groups.append({"group": "roadmap", "count": len(items),
                            "resolved": sum(1 for i in items
                                            if i["status"] == "resolved"),
                            "items": items})
+    base = os.path.join(ROOT, ".devin", "scratch")
+    if os.path.isdir(base):
+        for grp in sorted(os.listdir(base)):
+            idir = os.path.join(base, grp, "issues")
+            if not os.path.isdir(idir):
+                continue
+            items = _issue_items(idir)
+            if items:
+                groups.append({"group": grp, "count": len(items),
+                               "resolved": sum(1 for i in items
+                                               if i["status"] == "resolved"),
+                               "items": items})
     return groups
 
 
