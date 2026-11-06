@@ -6,7 +6,7 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------------- tabs / router ---------------- */
-const SECTIONS = ["boot","skills","agents","hooks","scripts","adr","docs","issues","changelog"];
+const SECTIONS = ["boot","skills","agents","hooks","scripts","adr","docs","issues","changelog","apps"];
 const tabs = $("#tabs");
 tabs.innerHTML = SECTIONS.map(s =>
   `<button role="tab" data-sec="${s}" aria-selected="${s==="boot"}">~/${s}</button>`).join("");
@@ -157,6 +157,14 @@ $("#agent-grid").innerHTML = (D.agents||[]).map(a => `
     <span class="cmeta">${a.model?`<span class="tag am">${esc(a.model)}</span>`:""}</span>
   </button>`).join("");
 
+/* ---------------- apps ---------------- */
+$("#app-grid").innerHTML = (D.apps||[]).map(a => `
+  <button class="card" data-open="app" data-name="${esc(a.name)}">
+    <span class="cname">${esc(a.name)}</span>
+    <span class="cdesc">${esc(a.intent||"")}</span>
+    <span class="cmeta">${a.schedule?`<span class="tag am">${esc(a.schedule)}</span>`:""}</span>
+  </button>`).join("") || `<div class="dim">no apps under .devin/apps/</div>`;
+
 /* ---------------- hooks ---------------- */
 $("#hooks-flow").innerHTML = (D.hooks||[]).map(ev => `
   <div class="evt"><h3>${esc(ev.event)}</h3><div class="lane">
@@ -234,6 +242,9 @@ document.addEventListener("click", e => {
     } else if(kind === "agent"){
       const a = (D.agents||[]).find(x => x.name === name);
       if(a) openModal(`agents/${a.name}.md`, a.html);
+    } else if(kind === "app"){
+      const ap = (D.apps||[]).find(x => x.name === name);
+      if(ap) openModal(ap.file, ap.html);
     }
   }
   if(e.target === modal || e.target.id === "modal-close") closeModal();
@@ -248,6 +259,8 @@ const COMMANDS = [
     run:()=>{ openModal(`skills/${s.dir}/SKILL.md`, s.html); }})),
   ...(D.agents||[]).map(a => ({label:`open agent ${a.name}`, sub:a.desc?.slice(0,70),
     run:()=>{ openModal(`agents/${a.name}.md`, a.html); }})),
+  ...(D.apps||[]).map(a => ({label:`open app ${a.name}`, sub:a.intent?.slice(0,70),
+    run:()=>{ openModal(a.file, a.html); }})),
   {label:"help", sub:"sections: "+SECTIONS.join(", "), run:()=>palIn.value="cd "},
 ];
 function palShow(v){
@@ -301,6 +314,7 @@ const INSTALL_LINES = () => [
   ["r-cmd",`  [+] agents        ${D.counts?.agents ?? "?"} profiles`],
   ["r-cmd",`  [+] hooks         ${(D.hooks||[]).reduce((n,e)=>n+e.hooks.length,0)} hooks rendered from hooks.v1.json`],
   ["r-cmd",`  [+] scripts       ${D.counts?.scripts ?? "?"} hook scripts`],
+  ["r-cmd",`  [+] apps          ${D.counts?.apps ?? 0} registered   .devin/apps/`],
   ["r-amber","  [~] credentials.toml  use -RestoreSecrets to install"],
 ];
 
@@ -314,6 +328,9 @@ function findThing(q){
   const a = (D.agents||[]).find(x => x.name.toLowerCase()===q)
         || (D.agents||[]).find(x => x.name.toLowerCase().startsWith(q));
   if(a) return {kind:"agent", a};
+  const ap = (D.apps||[]).find(x => x.name.toLowerCase()===q)
+        || (D.apps||[]).find(x => x.name.toLowerCase().startsWith(q));
+  if(ap) return {kind:"app", ap};
   for(const kind of ["adrs","docs"]){
     const list = D[kind]||[];
     const i = list.findIndex(x => x.title.toLowerCase().includes(q) || x.file.toLowerCase().includes(q));
@@ -325,15 +342,16 @@ function openThing(t){
   if(!t) return false;
   if(t.kind === "skill") openModal(`skills/${t.s.dir}/SKILL.md`, t.s.html);
   else if(t.kind === "agent") openModal(`agents/${t.a.name}.md`, t.a.html);
+  else if(t.kind === "app") openModal(t.ap.file, t.ap.html);
   else { go(t.kind === "adr" ? "adr" : "docs"); openDoc(t.kind, t.i); }
   return true;
 }
 
 const REPL_HELP = [
   ["","help                    this list"],
-  ["","cd <section>            boot skills agents hooks scripts adr docs changelog"],
+  ["","cd <section>            "+SECTIONS.join(" ")],
   ["","ls [section]            list sections or items in a section"],
-  ["","cat|open <name>         open a skill, agent, adr, or doc"],
+  ["","cat|open <name>         open a skill, agent, app, adr, or doc"],
   ["","grep <pattern>          filter skills and jump there"],
   ["","doctor                  re-run the boot health check"],
   ["","install                 print the -Force install summary"],
@@ -371,8 +389,9 @@ function replRun(raw){
     if(!t){ rprint([["r-err",`ls: no such section: ${arg}`]]); return; }
     if(t === "skills") rprint((D.skills||[]).map(s => ["", s.dir]));
     else if(t === "agents") rprint((D.agents||[]).map(a => ["", a.name]));
+    else if(t === "apps") rprint((D.apps||[]).map(a => ["", a.name]));
     else if(t === "adr" || t === "docs") rprint((D[t === "adr" ? "adrs" : "docs"]||[]).map(x => ["", x.file]));
-    else if(t === "scripts") rprint((D.scripts||[]).map(x => ["", x.name || x]));
+    else if(t === "scripts") rprint((D.scripts||[]).map(x => ["", x.file]));
     else if(t === "hooks") rprint((D.hooks||[]).map(e => ["", `${e.event}  (${e.hooks.length} hooks)`]));
     else rprint([["r-dim","nothing to list; it is a rendered view"]]);
     return;
@@ -449,6 +468,7 @@ document.addEventListener("keydown", e => {
   if(e.key === "q" && !typing && !modal.hidden){ closeModal(); return; }
   if(typing || !modal.hidden || !pal.hidden) return;
   const n = +e.key;
+  if(e.key === "0" && SECTIONS.length >= 10){ go(SECTIONS[9]); return; }
   if(n >= 1 && n <= SECTIONS.length){ go(SECTIONS[n-1]); return; }
   // type-anywhere: printable chars drop into the repl like a real terminal
   if(e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey){

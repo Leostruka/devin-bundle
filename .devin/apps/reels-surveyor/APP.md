@@ -16,4 +16,4 @@ Decode each transcript against the current bundle (manifest.json, skills/, .devi
 
 - 2026-11-05 batch-2: 16 reels -> 15 issues -> all resolved (#310-#322)
 - 2026-11-05 batch-3: 10 slots -> 9 transcribed -> 3 issues resolved (#331)
-- 2026-11-06 batch-4: 5 reels + SWE-2-Flash -> 8 issues -> resolved (#339)
+- 2026-11-06 batch-4: 5 reels + SWE-2-Flash -> 8 issues -> resolved (#339); follow-up evals OpenViking/Artemis (#340)
