@@ -1,6 +1,0 @@
-# Test deletion approvals
-
-## 2026-11-06 - test_gcal.py signature rewrite (not a deletion)
-- What: `test_wrapper_missing_creds_graceful(tmp_path, monkeypatch)` -> `(tmp_path)`; monkeypatch param dropped, body rewritten for hermetic env.
-- Why: the old body could read a real credentials.toml on the host (env override only blanked BUNDLE_GCAL_*); the function itself still exists and asserts the same contract (missing creds -> status "missing").
-- Net test count unchanged (10 tests in the file).
