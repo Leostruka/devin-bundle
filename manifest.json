@@ -284,7 +284,7 @@
       "name": "creative-engineering",
       "source": "devin-bundle",
       "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
-      "export_hash": "7247147920bdd9b84d5ccf30339de694de56804d8f25c8a0ad908ef3f8a9486a"
+      "export_hash": "48bd014939b28ecc9f8632cf6f4ec0d1e5129ac816b0f7e35ad70c6ed7e96d39"
     },
     {
       "name": "criador-de-devin-app",
@@ -1602,7 +1602,7 @@
     {
       "name": "art-director",
       "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
-      "export_hash": "082E6CDC22662988066BC416EAC30C1E641E5E8D54D72C39C6A783145D2A0BA5",
+      "export_hash": "D318C92D74D8C8A58F17041EFCB1D44771499D77CA58F0DF431ED3F07FCF9FD2",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
