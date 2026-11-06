@@ -1564,9 +1564,15 @@
       "purpose": "Stop hook - rate-limit signature in last message writes .devin/rts/intents/ resume_at intent (opt-in, never auto-resumed)",
       "export_hash": "1f90cc6c8582bda021365e911913fb77ee976ca2966ca5c47b08f121905eb161",
       "exported_at": "2026-11-06T11:26:27.124730"
+    },
+    {
+      "name": "install-ledger.py",
+      "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
+      "export_hash": "c96d76a7933eca19f34068952110047ba54734f9a501948bcd56d1c92e07cf4e",
+      "exported_at": "2026-11-06T11:26:27.124730"
     }
   ],
-  "script_count": 37,
+  "script_count": 38,
   "mcp_count": 1,
   "agent_count": 17,
   "tool_count": 28,
