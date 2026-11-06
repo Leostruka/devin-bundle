@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 11: token-saver hooks - output-mode injector + quiet tools + RL auto-resume
 
-Status: planned · Source: github.com/aicodeking/pandacode (MIT+attribution; via YT cCFAIrbt_s8 + goremy.ai coverage) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#10/D.3 · Blocked-by: none · Blocks: none
+Status: resolved · Source: github.com/aicodeking/pandacode (MIT+attribution; via YT cCFAIrbt_s8 + goremy.ai coverage) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#10/D.3 · Blocked-by: none · Blocks: none
 
 ## Contexto & Valor
 
@@ -34,3 +34,31 @@ Status: planned · Source: github.com/aicodeking/pandacode (MIT+attribution; via
 ## Non-goals
 
 Sem modificar AGENTS.md; sem auto-resume real (so agenda); sem filtrar tool output do usuario, so compressao opt-in; sem GUI/approval bar (canon Devin CLI ja tem permissoes proprias).
+
+## Answer
+
+Implemented as consolidated-hook modules (not a new hooks.v1.json entry,
+matching the in-process `_hookrun` architecture):
+
+- `scripts/token-saver.py` (user-prompt.py): reads `.devin/output-mode.json`,
+  injects preset fragment only when mode != state.last; "off" emits a
+  restore notice once; combos `lean+quiet` join fragments from
+  `data/output-modes.json`.
+- `scripts/git-diff-stat.py` (post-exec.py): `diff-stat: N files (+a/-b)`
+  footer after exec when the active preset sets `flags.diff_footer`
+  (caveman, lean), cwd is a repo, and diff is non-empty.
+- `scripts/rl-resume-detect.py` (stop-guard.py): rate-limit signature in
+  `last_assistant_message` writes `.devin/rts/intents/i<ms>.json`
+  `{"kind":"resume_at","when":<ts>,"auto":false}` with parsed retry-after /
+  reset times bounded to 24h.
+- `data/output-modes.json`: caveman/lean/quiet presets + flags.
+- Docs: HOOKS-PIPELINE module lists, context-hygiene "Output modes" table,
+  README/TOOLS-MAP counts (37 scripts, 24 internal modules).
+
+Quiet output compression at the hook layer is impossible (PostToolUse
+hooks emit context, they cannot rewrite tool output) — the quiet preset
+achieves the same effect through the injected style contract; documented
+as such.
+
+Tests: 13 new (test_hook_token_saver/rl_resume_detect/git_diff_stat).
+Gate: pytest green, audit 0 errors.

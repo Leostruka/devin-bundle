@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """UserPromptSubmit consolidated hook — one spawn.
 
-Runs in-process: constraint-pinning, behavioral-nudge, memory-retrieval.
+Runs in-process: constraint-pinning, behavioral-nudge, memory-retrieval,
+skill-picker, compact-gate, token-saver.
 additionalContext outputs merge in order (pinned rules, self-check, memories).
 """
 import os
@@ -17,4 +18,5 @@ if __name__ == '__main__':
         'memory-retrieval.py',
         'skill-picker.py',
         'compact-gate.py',
+        'token-saver.py',
     ])

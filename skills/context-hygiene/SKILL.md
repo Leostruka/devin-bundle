@@ -113,6 +113,25 @@ stale folds at task end to keep the store small.
 | Loops/retries | Bound every loop; each iteration multiplies cost. |
 | Token maxing | Detect effort disproportionate to task difficulty. |
 
+## Output modes (token-saver)
+
+Preset style-of-output fragments injected by `token-saver.py` only when the
+mode changes (state in `.devin/output-mode.json`). Set with
+`{"mode": "off|caveman|lean|quiet"}` in that file; combos like `lean+quiet`
+inject both fragments.
+
+| Mode | Effect |
+|---|---|
+| `off` | Default; no preset (switching back emits one restore notice) |
+| `caveman` | Ultra-telegraphic, bullets only, no preamble |
+| `lean` | Minimal diffs, zero prose around code |
+| `quiet` | No tool-call narration; compact command preference |
+
+Related: `git-diff-stat.py` adds a one-line `diff-stat:` footer after exec
+calls when the active mode's preset sets `flags.diff_footer` (caveman, lean);
+`rl-resume-detect.py` writes a `.devin/rts/intents/` resume intent when a
+Stop fires on a rate-limit signature (opt-in, never auto-resumed).
+
 ## Cost Optimization Protocol
 
 1. Measure current cost (tokens/request, model tier, cache hit rate).

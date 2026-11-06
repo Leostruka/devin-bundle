@@ -1,0 +1,14 @@
+{
+  "caveman": {
+    "context": "Output mode CAVEMAN is active. Respond in ultra-telegraphic style: bullets or one-liners only, no preamble, no narration of tool calls, no prose around code. Extends Rule 8 to its strictest form.",
+    "flags": {"diff_footer": true}
+  },
+  "lean": {
+    "context": "Output mode LEAN is active. Minimal diffs only, zero prose around code, nothing beyond what was asked. Do not narrate tool calls.",
+    "flags": {"diff_footer": true}
+  },
+  "quiet": {
+    "context": "Output mode QUIET is active. No narration of tool calls at all; prefer quiet command invocations (tail, head, --quiet flags); collapse verbose output mentally and report only conclusions.",
+    "flags": {"diff_footer": false}
+  }
+}

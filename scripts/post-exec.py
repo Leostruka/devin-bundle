@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """PostToolUse(^(exec|mcp_call_tool)$) consolidated post-checks — one spawn.
 
-Runs in-process: silent-error-review, context-pressure, memory-post-exec.
+Runs in-process: silent-error-review, context-pressure, compact-gate,
+memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat.
 """
 import os
 import sys
@@ -17,4 +18,5 @@ if __name__ == '__main__':
         'memory-post-exec.py',
         'gh-pr-assignee.py',
         'stuck-detect.py',
+        'git-diff-stat.py',
     ])

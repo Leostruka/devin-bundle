@@ -230,7 +230,7 @@
       "name": "context-hygiene",
       "source": "devin-bundle",
       "purpose": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent fan-out, when choosing a reasoning effort level, or when reducing token/compute/MCP costs. Covers lost-in-the-middle, context folding (RLM), cost guards, and difficulty-matched effort.",
-      "export_hash": "822C9538163953167B4D78C73600456809E02BA066AC8711B3B877C6EDE4B88B"
+      "export_hash": "85b2405e4e12c704068eb500ae9a1704e5e84c881e85c2b04887bd6aef350a84"
     },
     {
       "name": "context-window-hygiene",
@@ -1428,7 +1428,7 @@
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "0161150122eb56d1546710eeb376feb2d497c8b388c7f588b0c015e0a3bdecd6",
+      "export_hash": "7afeedf589e59b4cf55886a8dd5ea764b1ab63a2982e23405766dc3971a015f5",
       "exported_at": "2026-10-31T21:15:43.544713"
     },
     {
@@ -1470,13 +1470,13 @@
     {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
-      "export_hash": "b75e52427dda59aec4ced02f6bf54e0f3da4eee21e931e548dbb4b47604562b3",
+      "export_hash": "9a6fa88fc6aab3b1ebec4d8c32c8e1c8ac16e0a15a3a5d6b736391091cb2dab0",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "user-prompt.py",
       "purpose": "UserPromptSubmit consolidated hook (constraint-pinning+nudge+memory-retrieval)",
-      "export_hash": "38ec889e5af03a618649b7d2143badb59539d87e5d0add312604e6c3d3059eae",
+      "export_hash": "fb9bd12119ff899f7e1e1d900e7409f95368228b346c6e4d16e1c9e6e161550c",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1539,9 +1539,27 @@
       "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
       "export_hash": "58e8c354dc226eb1eb3c005d47eca7c647b90f894afc04d617a3d46e8c89f77f",
       "exported_at": "2026-11-05T07:58:08.569748"
+    },
+    {
+      "name": "token-saver.py",
+      "purpose": "UserPromptSubmit hook - injects output-mode preset fragment only on mode change (PandaCode-style token saver; presets in data/output-modes.json, state in .devin/output-mode.json)",
+      "export_hash": "331f98928a7ea81210bd80a381236064b51002ddfc103b5f30c82d13b3cd6ebe",
+      "exported_at": "2026-11-06T11:26:27.124730"
+    },
+    {
+      "name": "git-diff-stat.py",
+      "purpose": "PostToolUse hook - one-line 'diff-stat:' footer after exec calls when the active output-mode preset flags diff_footer (caveman/lean)",
+      "export_hash": "cfd4a551829e3bd8bdf2323b4367b9541b46a52968a1a903c872f8fbcad544d4",
+      "exported_at": "2026-11-06T11:26:27.124730"
+    },
+    {
+      "name": "rl-resume-detect.py",
+      "purpose": "Stop hook - rate-limit signature in last message writes .devin/rts/intents/ resume_at intent (opt-in, never auto-resumed)",
+      "export_hash": "1f90cc6c8582bda021365e911913fb77ee976ca2966ca5c47b08f121905eb161",
+      "exported_at": "2026-11-06T11:26:27.124730"
     }
   ],
-  "script_count": 34,
+  "script_count": 37,
   "mcp_count": 1,
   "agent_count": 17,
   "tool_count": 28,
