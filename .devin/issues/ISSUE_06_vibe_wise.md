@@ -1,6 +1,6 @@
 # ISSUE 06: Adapt `nykooi1/vibe-wise`, learning-first collaboration mode
 
-Status: planned (research done) · Source: `github.com/nykooi1/vibe-wise` (MIT, 3.3k) · Ledger: `.devin/research/4_fronts_recon.md`
+Status: resolved · Source: `github.com/nykooi1/vibe-wise` (MIT, 3.3k) · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
@@ -30,3 +30,12 @@ Status: planned (research done) · Source: `github.com/nykooi1/vibe-wise` (MIT, 
 ## Non-goals
 
 No plugin packaging copy, no reset-hook cargo-cult if `project-memory` suffices, no forced mode (opt-in only, mirrors Rule 7 execute-first default).
+
+## Answer
+
+- `skills/learn-mode/SKILL.md` shipped in #96 (71a561b): adapted contract - learner owns design, agent asks approach first + waits, checkpoints (Build/Design/Implementation) via ask_user_question, implementation report, opt-in only.
+- Upstream re-read this session (skills/learn/*, hooks/session_start.py): no substantive deltas vs the shipped adaptation; upstream adds a SessionStart restore hook - not ported, issue spec defers it to `project-memory` (state under `.devin/memory/learn/`, skill reads own files on entry).
+- `grilling` cross-reference added: pedagogical counterpart line under Cross-skills (this session).
+- `ask-bundle` routing row present; `wait-what`/`teach` distinctions recorded in Boundaries.
+
+Gate: validate-skill-format passes; behavior contract verified against upstream `behavior.md` (approach-first, proposal marking, checkpoint semantics, state files as data).

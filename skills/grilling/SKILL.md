@@ -228,3 +228,4 @@ Explore context
 - If the topic needs primary-source investigation (current docs, a spec, a paper), invoke `research` first and bring the findings into the grilling session.
 - If the request might be too small for a full grilling session, invoke `execution` before entering grill mode.
 - If the user uses AI-coding jargon loosely, invoke `ai-coding-dictionary` to align terms before the first round.
+- `learn-mode` is the pedagogical counterpart: there the learner proposes first and the agent teaches; here the agent proposes and stress-tests. Keep them distinct, never blend mid-session.

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ISSUE_06+07 closed (were already shipped): `skills/learn-mode` verified against vibe-wise upstream re-read (no deltas; SessionStart restore hook deferred to project-memory per spec); `grilling` Cross-skills gains pedagogical-counterpart line; ISSUE_07 port matrix confirmed complete (.devin/research/pocock_port_matrix.md, #96). Issues marked resolved.
+
 - AGdevin isolation calendar: gcal writes default to dedicated AGdevin calendar - gcal.py list/find/create_calendar + ensure_calendar + resolve_calendar (summary-name -> find-or-create; 'primary' or raw id passthrough); add/apply resolve post-confirm and report calendar_created; roteiro skill + APP.md + README updated; 4 tests.
 
 - gcal event write: extensions/gcal gains write path - gcal.py event_payload + create_event (events.insert, calendar.events scope); wrapper.py `add` (single event) + `apply` (roteiro batch) both gated by --confirm (preview-only "confirm-required" without it, API never called); apply reports created/failed per block; doctor hint notes scope; roteiro skill + agenda-roteiro APP write contract; README/TOOLS-MAP synced; 5 tests.
