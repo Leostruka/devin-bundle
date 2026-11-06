@@ -333,9 +333,35 @@ def test_deleted_test_file_with_approval_ok(tmp_path):
     t = _git_repo(tmp_path)
     t.unlink()
     (tmp_path / ".devin").mkdir()
+    (tmp_path / ".devin" / "test-deletion-approved").write_text(
+        "approved removal: tests/test_x.py (superseded by test_y)")
+    r = run_hook("check-push-green.py", push_payload("git push"),
+                 env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
+    # approval naming the deleted file clears the deletion gate; tests/
+    # exists but no framework marker, so the fail-closed framework check
+    # blocks instead
+    assert "test deletion" not in r.stdout
+
+
+def test_deleted_test_file_approval_without_name_blocks(tmp_path):
+    t = _git_repo(tmp_path)
+    t.unlink()
+    (tmp_path / ".devin").mkdir()
     (tmp_path / ".devin" / "test-deletion-approved").write_text("obsolete")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
-    # approval clears the deletion gate; tests/ exists but no framework
-    # marker, so the fail-closed framework check blocks instead
+    # a marker that does not NAME the deleted test no longer approves it
+    assert r.returncode == 2
+    assert "test deletion" in r.stdout
+
+
+def test_removed_test_def_approval_named_ok(tmp_path):
+    t = _git_repo(tmp_path)
+    # remove the def line from the tracked test file (uncommitted edit)
+    t.write_text("")
+    (tmp_path / ".devin").mkdir()
+    (tmp_path / ".devin" / "test-deletion-approved").write_text(
+        "signature rewrite approved: test_x")
+    r = run_hook("check-push-green.py", push_payload("git push"),
+                 env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     assert "test deletion" not in r.stdout

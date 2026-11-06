@@ -220,19 +220,32 @@ APPROVAL_MARKERS = (
 )
 
 
+def _approval_text(cwd):
+    """Contents of the first approval marker file, or ""."""
+    for rel in APPROVAL_MARKERS:
+        p = os.path.join(cwd, rel)
+        if os.path.isfile(p):
+            try:
+                with open(p, encoding="utf-8", errors="replace") as fh:
+                    return fh.read()
+            except OSError:
+                return ""
+    return ""
+
+
 def check_test_deletions(cwd):
     """Block push when the pending diff deletes tests (AGENTS.md Rule 25).
 
     Flags deleted files under tests/ (git status porcelain D) and removed
-    test-function lines in the HEAD diff. Approved deletions carry a marker:
-    the file .devin/test-deletion-approved or env TEST_DELETION_APPROVED=1
-    (document the reason in the commit message / ledger).
+    test-function lines in the HEAD diff. Approval is scoped, not blanket:
+    the marker file (.devin/test-deletion-approved or
+    .devin/approvals/test-deletion.txt) must NAME each deleted test path
+    or removed test/class, otherwise the push blocks. Env
+    TEST_DELETION_APPROVED=1 remains the manual override.
     """
     if os.environ.get("TEST_DELETION_APPROVED") == "1":
         return
-    for rel in APPROVAL_MARKERS:
-        if os.path.isfile(os.path.join(cwd, rel)):
-            return
+    approved = _approval_text(cwd)
     try:
         status = _run(["git", "status", "--porcelain"], capture_output=True,
                       text=True, timeout=15, cwd=cwd,
@@ -247,11 +260,13 @@ def check_test_deletions(cwd):
             if "D" in xy and (norm.startswith("tests/")
                               or norm.startswith("test/")
                               or "/tests/" in norm):
+                if norm in approved:
+                    continue
                 block(
                     f"git push rejected: test file '{path}' is deleted "
                     "(AGENTS.md Rule 25: no test deletion without approval). "
                     "Restore it or record approval in "
-                    ".devin/test-deletion-approved with the reason."
+                    ".devin/test-deletion-approved naming the file."
                 )
     try:
         diff = _run(["git", "diff", "HEAD", "--unified=0", "--", "tests/", "test/"],
@@ -260,18 +275,22 @@ def check_test_deletions(cwd):
     except (FileNotFoundError, OSError, subprocess.SubprocessError):
         return
     if diff.returncode == 0:
-        removed_tests = [
-            ln for ln in diff.stdout.splitlines()
-            if ln.startswith("-") and not ln.startswith("---")
-            and re.search(r"def test_|class Test", ln)
-        ]
-        if removed_tests:
+        unapproved = []
+        for ln in diff.stdout.splitlines():
+            if not ln.startswith("-") or ln.startswith("---"):
+                continue
+            m = re.search(r"def (test_\w+)|class (Test\w+)", ln)
+            if m:
+                name = m.group(1) or m.group(2)
+                if name not in approved:
+                    unapproved.append(name)
+        if unapproved:
             block(
                 "git push rejected: the pending diff removes test functions "
-                f"({len(removed_tests)} removed 'def test_'/'class Test' "
-                "lines under tests/). AGENTS.md Rule 25 requires explicit "
-                "approval for test deletion; record the reason in "
-                ".devin/test-deletion-approved before pushing."
+                f"({len(unapproved)} unapproved: {', '.join(unapproved[:5])}). "
+                "AGENTS.md Rule 25 requires explicit approval for test "
+                "deletion; record the reason in "
+                ".devin/test-deletion-approved naming each removed test."
             )
 
 
