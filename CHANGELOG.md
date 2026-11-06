@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- extensions/code-graph (M2_10): stdlib SQLite FTS5 structural index (camel/snake tokens, mtime+sha1 incremental); index.py/query.py/detect_changes.py/selftest.py; 1035 files/5964 symbols indexed on bundle corpus; routing doc updates (orchestrator_prompts_v2 + skill-discovery, [GRAPH-DOWN] fallback); 5 tests. Covers M2_10.
+- extensions/code-graph (M2_10): stdlib SQLite FTS5 structural index (camel/snake tokens, mtime+sha1 incremental); index.py/query.py/detect_changes.py/selftest.py; 1035 files/5964 symbols indexed on bundle corpus; routing doc updates (orchestrator_prompts_v2 + skill-discovery, [GRAPH-DOWN] fallback); 5 tests. Covers M2_10, #371.
 
 - tools.json multi-CLI render contract (M2_07): root tools.json (devin enabled; gemini/claude/codex disabled placeholders), scripts/check-tools.py (schema + byte-identical render gate; devin render 3471B deterministic), audit check 35, devin-config doc, 8 tests; 39 scripts. Covers M2_07, #369.
 
