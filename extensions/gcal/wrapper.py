@@ -99,10 +99,18 @@ def cmd_plan(argv):
     if not tasks_file or not os.path.isfile(tasks_file):
         emit({"status": "error",
               "stderr": "--tasks FILE.json required"}, 2)
-    tasks = json.loads(open(tasks_file, encoding="utf-8").read())
+    try:
+        with open(tasks_file, encoding="utf-8") as fh:
+            tasks = json.loads(fh.read())
+    except (OSError, ValueError) as e:
+        emit({"status": "error", "stderr": f"bad tasks file: {e}"}, 2)
     slots_file = _arg(argv, "--slots")
     if slots_file:
-        slots = json.loads(open(slots_file, encoding="utf-8").read())
+        try:
+            with open(slots_file, encoding="utf-8") as fh:
+                slots = json.loads(fh.read())
+        except (OSError, ValueError) as e:
+            emit({"status": "error", "stderr": f"bad slots file: {e}"}, 2)
         if isinstance(slots, dict):
             slots = slots.get("free_slots", [])
     else:
