@@ -45,6 +45,19 @@ slack_min, overcommit}`.
   priority change: re-run `plan` with the updated inputs, don't patch
   the old roteiro by hand.
 
+## Write to the calendar
+
+The agent can write, never silently:
+
+- Preview first: `wrapper.py apply --roteiro <file>` prints the event
+  payloads with `status: confirm-required`, nothing is sent.
+- On explicit user approval, re-run with `--confirm`. Batch result is
+  `created`/`failed` per block; report `partial` honestly.
+- Single ad-hoc event: `wrapper.py add --summary X --start ISO --end
+  ISO [--calendar id] [--tz Zone] --confirm` - same preview-first gate.
+- Writes need the refresh token to carry `calendar.events` scope; a
+  scope/HTTP failure surfaces as `status: error`, never fake success.
+
 ## Done when
 
 Every input task is either in `schedule` with a concrete start/end or

@@ -151,3 +151,57 @@ def test_wrapper_plan(tmp_path):
     assert p.returncode == 0
     r = out["roteiro"]
     assert [s["task"] for s in r["schedule"]][0] == "deep work"
+
+
+def test_event_payload_shape_and_tz():
+    p = gcal.event_payload(
+        "deep work", "2026-11-07T09:00:00Z", "2026-11-07T11:00:00Z",
+        description="roteiro", location="home", tz="America/Sao_Paulo")
+    assert p["summary"] == "deep work"
+    assert p["start"]["timeZone"] == "America/Sao_Paulo"
+    assert p["end"]["dateTime"].endswith("+00:00")
+    assert p["description"] == "roteiro" and p["location"] == "home"
+
+
+def test_add_needs_confirm_before_any_write(tmp_path):
+    env = dict(os.environ)
+    p = subprocess.run(
+        [sys.executable, WRAPPER, "add", "--summary", "x",
+         "--start", "2026-11-07T09:00:00Z",
+         "--end", "2026-11-07T10:00:00Z"],
+        capture_output=True, text=True, env=env)
+    out = json.loads(p.stdout)
+    assert p.returncode == 0 and out["status"] == "confirm-required"
+    assert out["payload"]["summary"] == "x"
+
+
+def test_add_missing_args_is_usage_error():
+    p = subprocess.run([sys.executable, WRAPPER, "add", "--summary", "x"],
+                       capture_output=True, text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 2 and out["status"] == "error"
+
+
+def test_apply_previews_roteiro_without_confirm(tmp_path):
+    roteiro = tmp_path / "r.json"
+    roteiro.write_text(json.dumps({"schedule": [
+        {"task": "deep work", "start": "2026-11-07T09:00:00Z",
+         "end": "2026-11-07T11:00:00Z"},
+        {"task": "email", "start": "2026-11-07T11:30:00Z",
+         "end": "2026-11-07T12:00:00Z"}]}))
+    p = subprocess.run(
+        [sys.executable, WRAPPER, "apply", "--roteiro", str(roteiro),
+         "--prefix", "[r] "],
+        capture_output=True, text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 0 and out["status"] == "confirm-required"
+    assert len(out["events"]) == 2
+    assert out["events"][0]["summary"] == "[r] deep work"
+
+
+def test_apply_missing_file_is_error():
+    p = subprocess.run([sys.executable, WRAPPER, "apply",
+                        "--roteiro", "nope.json"], capture_output=True,
+                       text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 2 and out["status"] == "error"

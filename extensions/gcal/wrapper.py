@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""gcal wrapper: free/busy + roteiro planning CLI.
+"""gcal wrapper: free/busy + roteiro planning + event writer CLI.
 
 Subcommands:
   free-busy --ics FILE | --calendars id[,id] [--from ISO --to ISO]
   plan      --tasks FILE.json (--ics FILE | --slots FILE.json)
             [--from ISO --to ISO]
+  add       --summary X --start ISO --end ISO [--calendar id]
+            [--desc X] [--loc X] [--tz Zone] --confirm
+  apply     --roteiro FILE.json [--calendar id] [--prefix X] --confirm
   doctor    config presence report (never prints secrets)
+
+Writes need --confirm: without it the CLI prints the payload and exits
+0 with status "confirm-required" (never calls the API).
 
 Output: JSON envelope {status, ...}. Exit 0 = ok.
 Defaults: --from today 08:00 local-naive-UTC, --to same day 20:00.
@@ -58,7 +64,9 @@ def cmd_doctor():
         "ics_dev_mode": True,
         "hint": (None if creds else
                  "set BUNDLE_GCAL_CLIENT_ID/SECRET/REFRESH_TOKEN or "
-                 "[gcal] in credentials.toml; --ics works offline"),
+                 "[gcal] in credentials.toml; --ics works offline. "
+                 "writes need the refresh token to carry "
+                 "calendar.events scope"),
     }, 0 if creds else 1)
 
 
@@ -120,11 +128,92 @@ def cmd_plan(argv):
     emit({"status": "ok", "roteiro": plan.pack(tasks, slots)})
 
 
+def _write_creds():
+    creds = gcal.load_credentials()
+    if not creds:
+        emit({"status": "missing",
+              "stderr": "no gcal credentials; set BUNDLE_GCAL_* or "
+                        "credentials.toml [gcal] (refresh token must "
+                        "carry calendar.events scope for writes)"}, 1)
+    return creds
+
+
+def cmd_add(argv):
+    summary = _arg(argv, "--summary")
+    start = _arg(argv, "--start")
+    end = _arg(argv, "--end")
+    if not (summary and start and end):
+        emit({"status": "error",
+              "stderr": "add needs --summary X --start ISO --end ISO"}, 2)
+    calendar = _arg(argv, "--calendar", "primary")
+    try:
+        payload = gcal.event_payload(
+            summary, start, end, description=_arg(argv, "--desc"),
+            location=_arg(argv, "--loc"), tz=_arg(argv, "--tz"))
+    except ValueError as e:
+        emit({"status": "error", "stderr": f"bad datetime: {e}"}, 2)
+    if "--confirm" not in argv:
+        emit({"status": "confirm-required", "calendar": calendar,
+              "payload": payload,
+              "hint": "re-run with --confirm to write"})
+    try:
+        token = gcal.access_token(_write_creds())
+        created = gcal.create_event(token, calendar, payload)
+    except Exception as e:
+        emit({"status": "error", "stderr": f"add failed: {e}"}, 1)
+    emit({"status": "ok", "calendar": calendar, "event": created})
+
+
+def cmd_apply(argv):
+    roteiro_file = _arg(argv, "--roteiro")
+    if not roteiro_file or not os.path.isfile(roteiro_file):
+        emit({"status": "error",
+              "stderr": "--roteiro FILE.json required"}, 2)
+    try:
+        with open(roteiro_file, encoding="utf-8") as fh:
+            data = json.loads(fh.read())
+    except (OSError, ValueError) as e:
+        emit({"status": "error", "stderr": f"bad roteiro file: {e}"}, 2)
+    schedule = data.get("schedule", data) if isinstance(data, dict) \
+        else data
+    calendar = _arg(argv, "--calendar", "primary")
+    prefix = _arg(argv, "--prefix", "")
+    payloads = []
+    for block in schedule:
+        try:
+            payloads.append(gcal.event_payload(
+                prefix + str(block.get("task", "block")),
+                block["start"], block["end"],
+                description="roteiro block"))
+        except (KeyError, ValueError) as e:
+            emit({"status": "error",
+                  "stderr": f"bad block {block}: {e}"}, 2)
+    if "--confirm" not in argv:
+        emit({"status": "confirm-required", "calendar": calendar,
+              "events": payloads,
+              "hint": "re-run with --confirm to write"})
+    try:
+        token = gcal.access_token(_write_creds())
+    except Exception as e:
+        emit({"status": "error", "stderr": f"token failed: {e}"}, 1)
+    created, failed = [], []
+    for p in payloads:
+        try:
+            created.append(gcal.create_event(token, calendar, p))
+        except Exception as e:
+            failed.append({"summary": p["summary"], "stderr": str(e)})
+    emit({"status": "ok" if not failed else "partial",
+          "calendar": calendar, "created": created, "failed": failed},
+         0 if not failed else 1)
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv or argv[0] in ("-h", "--help"):
-        emit({"usage": "wrapper.py <free-busy|plan|doctor> [args]",
-              "subcommands": ["free-busy", "plan", "doctor"]},
+        emit({"usage": "wrapper.py <free-busy|plan|add|apply|doctor> "
+                       "[args]",
+              "subcommands": ["free-busy", "plan", "add", "apply",
+                              "doctor"]},
              0 if argv else 2)
     if argv[0] == "doctor":
         cmd_doctor()
@@ -132,6 +221,10 @@ def main(argv=None):
         cmd_free_busy(argv[1:])
     elif argv[0] == "plan":
         cmd_plan(argv[1:])
+    elif argv[0] == "add":
+        cmd_add(argv[1:])
+    elif argv[0] == "apply":
+        cmd_apply(argv[1:])
     else:
         emit({"status": "rejected",
               "stderr": f"unknown subcommand: {argv[0]}"}, 2)

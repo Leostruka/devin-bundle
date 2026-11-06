@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""gcal: Google Calendar free/busy reader + local .ics dev input.
+"""gcal: Google Calendar free/busy reader + event writer + .ics dev input.
 
-Read-only by design (issue #345): `calendar.readonly` scope equivalent -
-the extension only fetches free/busy, never writes events.
+Reads use `calendar.readonly`; writes (events.insert) require the
+refresh token to carry `calendar.events` scope - doctor reports config
+presence, scope failures surface as API errors. All writes go through
+the wrapper's --confirm gate (real-world side effect).
 
 Credential contract:
   - Env: BUNDLE_GCAL_CLIENT_ID, BUNDLE_GCAL_CLIENT_SECRET,
@@ -25,6 +27,8 @@ except ImportError:  # python < 3.11
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy"
+EVENTS_URL = ("https://www.googleapis.com/calendar/v3/calendars/"
+              "{calendar_id}/events")
 HTTP_TIMEOUT = 30
 
 
@@ -105,6 +109,33 @@ def _parse_dt(s):
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     return dt
+
+
+def event_payload(summary, start, end, description=None, location=None,
+                  tz=None):
+    """Build a Calendar events.insert body. start/end are ISO-8601."""
+    body = {
+        "summary": summary,
+        "start": {"dateTime": _parse_dt(start).isoformat()},
+        "end": {"dateTime": _parse_dt(end).isoformat()},
+    }
+    if tz:
+        body["start"]["timeZone"] = tz
+        body["end"]["timeZone"] = tz
+    if description:
+        body["description"] = description
+    if location:
+        body["location"] = location
+    return body
+
+
+def create_event(token, calendar_id, payload):
+    """events.insert -> created event {id, htmlLink, status}. Raises."""
+    url = EVENTS_URL.format(calendar_id=calendar_id)
+    data = _post_json(url, payload,
+                      headers={"Authorization": "Bearer " + token})
+    return {"id": data.get("id"), "htmlLink": data.get("htmlLink"),
+            "status": data.get("status", "confirmed")}
 
 
 def free_slots(busy, tmin, tmax):
