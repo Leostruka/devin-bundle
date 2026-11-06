@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 10: `extensions/code-graph/` - indice estrutural minimo + doc de roteamento
 
-Status: planned · Source: github.com/DeusData/codebase-memory-mcp (MIT, v0.12.1; padrao SQLite FTS5 + camel tokenizer; claim de economia NAO reproduzido - skillproof.dev +127%) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#7/D · Blocked-by: none · Blocks: none (gate de benchmark separado)
+Status: resolved · Source: github.com/DeusData/codebase-memory-mcp (MIT, v0.12.1; padrao SQLite FTS5 + camel tokenizer; claim de economia NAO reproduzido - skillproof.dev +127%) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#7/D · Blocked-by: none · Blocks: none (gate de benchmark separado)
 
 ## Contexto & Valor
 
@@ -31,3 +31,12 @@ Status: planned · Source: github.com/DeusData/codebase-memory-mcp (MIT, v0.12.1
 ## Non-goals
 
 Sem MCP server, sem tree-sitter/grammars vendored, sem embeddings, sem watch daemon; cbm real so via issue de benchmark futura (lazy-enable em mcp_config.disabled.json se vencer >=30% mediana de economia).
+
+## Answer
+
+- `extensions/code-graph/` stdlib-only: `code_graph.py` core (FTS5 + camel/snake token split, mtime+sha1 incremental, purges vanished), `index.py`, `query.py` (symbols/outline/refs/files + `--limit`/`--json` + `[GRAPH-DOWN]` exit 2 sem indice), `detect_changes.py`, `selftest.py`. DB gitignored em `.devin/code-graph/index.db`.
+- Corpus real: 1035 arquivos / 5964 simbolos / 1.06s index full. Smoke: `symbols reconcile` acha install-ledger; `files install-ledger` acha o arquivo.
+- Routing doc: orchestrator_prompts_v2.md TOOLING RULES (code-graph antes do semble, `[GRAPH-DOWN]` fallback) + skill-discovery category shortcut.
+- 5 testes: camel/snake tokens, outline/refs/files, detect clean/dirty/new, reindex incremental, GRAPH-DOWN sem indice.
+- Bugs achados no loop: FTS nao faz substring (prefix `*` necessario); `-` em query quebra MATCH (sanitize `\w+`); `line` nao existe na tabela fts (join symbols).
+- Non-goals respeitados: sem MCP, sem tree-sitter, sem daemon, sem embeddings.

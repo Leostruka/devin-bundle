@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- extensions/code-graph (M2_10): stdlib SQLite FTS5 structural index (camel/snake tokens, mtime+sha1 incremental); index.py/query.py/detect_changes.py/selftest.py; 1035 files/5964 symbols indexed on bundle corpus; routing doc updates (orchestrator_prompts_v2 + skill-discovery, [GRAPH-DOWN] fallback); 5 tests. Covers M2_10.
+
 - tools.json multi-CLI render contract (M2_07): root tools.json (devin enabled; gemini/claude/codex disabled placeholders), scripts/check-tools.py (schema + byte-identical render gate; devin render 3471B deterministic), audit check 35, devin-config doc, 8 tests; 39 scripts. Covers M2_07, #369.
 
 - install drift ledger (M2_06): scripts/install-ledger.py record-all/record/reconcile/status; .devin/install-ledger/{installs,corpus-index}.json (gitignored runtime data); 5-state reconcile (Current/Outdated/Modified/Removed/Foreign); backup_if_differs stdlib; installers now record-all post-install and ABORT on backup failure (was: silent continue); audit check 34 Ledger; 7 tests; 38 scripts. Covers M2_06, #367, #368.
