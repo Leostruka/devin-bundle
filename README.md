@@ -250,6 +250,8 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `rz-ops` | Wrapper estruturado da toolchain rizin |
 | `blender-operator` | exec server dentro do Blender |
 | `comfyui-operator` | Cliente HTTP stdlib para ComfyUI local (gen 3D/imagem) |
+| `code-graph` | Índice estrutural SQLite FTS5 (símbolos/refs/outline/incremental), fallback rg/glob |
+| `harness-tree` | Árvore de componentes do harness (c1..c8 via SurfaceSpec): snapshot/diff/apply/validate + runs namespaced em `.devin/runs/` |
 | `craft-bridge` | Dispatch uniforme na suíte storytold craft |
 | `laya-compactor` | CLI de pruning de transcript dirigido pelo laya |
 | `ppisp-prep` | Pré-check fotométrico barato em sets de imagem |
