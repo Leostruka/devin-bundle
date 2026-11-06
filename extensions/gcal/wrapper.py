@@ -5,13 +5,17 @@ Subcommands:
   free-busy --ics FILE | --calendars id[,id] [--from ISO --to ISO]
   plan      --tasks FILE.json (--ics FILE | --slots FILE.json)
             [--from ISO --to ISO]
-  add       --summary X --start ISO --end ISO [--calendar id]
+  add       --summary X --start ISO --end ISO [--calendar NAME-or-id]
             [--desc X] [--loc X] [--tz Zone] --confirm
-  apply     --roteiro FILE.json [--calendar id] [--prefix X] --confirm
+  apply     --roteiro FILE.json [--calendar NAME-or-id] [--prefix X]
+            --confirm
   doctor    config presence report (never prints secrets)
 
 Writes need --confirm: without it the CLI prints the payload and exits
 0 with status "confirm-required" (never calls the API).
+Default --calendar is AGdevin: a dedicated agent calendar, created on
+first write and reused after (isolation from the account's other
+calendars). Pass 'primary' or a raw calendar id to override.
 
 Output: JSON envelope {status, ...}. Exit 0 = ok.
 Defaults: --from today 08:00 local-naive-UTC, --to same day 20:00.
@@ -145,7 +149,7 @@ def cmd_add(argv):
     if not (summary and start and end):
         emit({"status": "error",
               "stderr": "add needs --summary X --start ISO --end ISO"}, 2)
-    calendar = _arg(argv, "--calendar", "primary")
+    calendar = _arg(argv, "--calendar", gcal.AGENT_CALENDAR)
     try:
         payload = gcal.event_payload(
             summary, start, end, description=_arg(argv, "--desc"),
@@ -158,10 +162,12 @@ def cmd_add(argv):
               "hint": "re-run with --confirm to write"})
     try:
         token = gcal.access_token(_write_creds())
-        created = gcal.create_event(token, calendar, payload)
+        cid, created_cal = gcal.resolve_calendar(token, calendar)
+        created = gcal.create_event(token, cid, payload)
     except Exception as e:
         emit({"status": "error", "stderr": f"add failed: {e}"}, 1)
-    emit({"status": "ok", "calendar": calendar, "event": created})
+    emit({"status": "ok", "calendar": cid,
+          "calendar_created": created_cal, "event": created})
 
 
 def cmd_apply(argv):
@@ -176,7 +182,7 @@ def cmd_apply(argv):
         emit({"status": "error", "stderr": f"bad roteiro file: {e}"}, 2)
     schedule = data.get("schedule", data) if isinstance(data, dict) \
         else data
-    calendar = _arg(argv, "--calendar", "primary")
+    calendar = _arg(argv, "--calendar", gcal.AGENT_CALENDAR)
     prefix = _arg(argv, "--prefix", "")
     payloads = []
     for block in schedule:
@@ -194,16 +200,18 @@ def cmd_apply(argv):
               "hint": "re-run with --confirm to write"})
     try:
         token = gcal.access_token(_write_creds())
+        cid, created_cal = gcal.resolve_calendar(token, calendar)
     except Exception as e:
-        emit({"status": "error", "stderr": f"token failed: {e}"}, 1)
+        emit({"status": "error", "stderr": f"calendar failed: {e}"}, 1)
     created, failed = [], []
     for p in payloads:
         try:
-            created.append(gcal.create_event(token, calendar, p))
+            created.append(gcal.create_event(token, cid, p))
         except Exception as e:
             failed.append({"summary": p["summary"], "stderr": str(e)})
     emit({"status": "ok" if not failed else "partial",
-          "calendar": calendar, "created": created, "failed": failed},
+          "calendar": cid, "calendar_created": created_cal,
+          "created": created, "failed": failed},
          0 if not failed else 1)
 
 

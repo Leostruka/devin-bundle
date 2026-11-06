@@ -4,7 +4,7 @@ intent: build each day's roteiro from real calendar free/busy + open tasks
 kind: agentic-app
 schedule: daily morning (scheduled-turns) + on-demand re-plan when meetings move
 inputs: Google Calendar via extensions/gcal (free/busy) or --ics dev file; task list from .devin/scratch open issues or user prompt
-outputs: roteiro JSON {schedule, unscheduled, slack_min, overcommit} + a short plan message; on user approval, calendar events via `apply --confirm`
+outputs: roteiro JSON {schedule, unscheduled, slack_min, overcommit} + a short plan message; on user approval, calendar events via `apply --confirm` (writes to dedicated AGdevin calendar, isolated from the rest of the account)
 done-when: every task is scheduled with concrete start/end or named unscheduled, slack reported, overcommit flagged to the user
 
 ## Prompt
