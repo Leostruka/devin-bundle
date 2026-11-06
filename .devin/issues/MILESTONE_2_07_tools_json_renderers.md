@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 07: `tools.json` - contrato de renderizadores multi-CLI (devin primeiro)
 
-Status: planned · Source: github.com/msitarzewski/agency-agents (MIT; `tools.json`, `scripts/convert.sh`, `scripts/lib.sh`, `scripts/check-tools.sh`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#6/E · Blocked-by: M2_06 · Blocks: none
+Status: resolved · Source: github.com/msitarzewski/agency-agents (MIT; `tools.json`, `scripts/convert.sh`, `scripts/lib.sh`, `scripts/check-tools.sh`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#6/E · Blocked-by: M2_06 · Blocks: none
 
 ## Contexto & Valor
 
@@ -28,3 +28,12 @@ Status: planned · Source: github.com/msitarzewski/agency-agents (MIT; `tools.js
 ## Non-goals
 
 Sem renderers reais para gemini/claude/codex (dependem da branch ausente); sem Tauri/GUI; sem converter o catalogo de personas upstream.
+
+## Answer
+
+- `tools.json` na raiz: row `devin` enabled (format `devin-hooks+skills`, renderer `render-user-hooks.py`, dest `%APPDATA%/devin`) + placeholders gemini/claude/codex com `enabled: false`.
+- `scripts/check-tools.py` (stdlib): valida schema (label/format/installKind/dest/enabled + enabled requer renderer) e garante byte-identidade (renderer roda 2x, stdout comparado). Devin PASS: 3471 bytes identicos.
+- `audit.py` check 35 roda check-tools; falha de renderer = erro de audit.
+- devin-config doc: como adicionar tool + regra byte-identical.
+- 8 testes: schema (3), byte-identity (deterministico/nondeterministico/exit!=0), expand_dest, main verde no repo.
+- Desvio do spec: `install-ledger.py record` consome `rendered_hash` ja existente (file sha), sem mudanca de contrato.

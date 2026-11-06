@@ -274,7 +274,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in hooks.v1.json')
@@ -1118,6 +1118,22 @@ try:
 except Exception as _e:
     print('  SKIP ledger check failed to run: ' + str(_e))
 
+# 35. tools.json schema + renderer byte-identity (M2_07)
+print()
+print('[35] tools.json renderers')
+try:
+    _ct_out = subprocess.run(
+        [sys.executable, os.path.join('scripts', 'check-tools.py')],
+        capture_output=True, text=True, timeout=120)
+    if _ct_out.returncode == 0:
+        print('  OK  ' + _ct_out.stdout.strip().splitlines()[-1])
+    else:
+        errors.append('check-tools.py failed: '
+                      + _ct_out.stdout.strip()[-200:])
+        print('  FAIL check-tools.py')
+except Exception as _e:
+    print('  SKIP check-tools failed to run: ' + str(_e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1134,5 +1150,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 34 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 35 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

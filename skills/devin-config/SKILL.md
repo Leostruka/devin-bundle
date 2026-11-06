@@ -100,3 +100,9 @@ Install drift: `python scripts/install-ledger.py status` reconciles the
 live config against the bundle (Current/Outdated/Modified/Removed/
 Foreign); installers snapshot the ledger after each run and abort when a
 pre-overwrite backup fails.
+
+Multi-CLI renders: `tools.json` declares one row per target tool
+(label/format/installKind/dest/renderer/enabled/detect). Adding a tool =
+new row with `enabled: false` until its renderer exists. Gate:
+`python scripts/check-tools.py`: two renders of an enabled tool must be
+byte-identical (no timestamps/env leaks in output).

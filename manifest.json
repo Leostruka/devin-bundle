@@ -1570,9 +1570,15 @@
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
       "export_hash": "c96d76a7933eca19f34068952110047ba54734f9a501948bcd56d1c92e07cf4e",
       "exported_at": "2026-11-06T11:26:27.124730"
+    },
+    {
+      "name": "check-tools.py",
+      "purpose": "tools.json validator - schema check + byte-identical render gate per enabled tool (M2_07 multi-CLI contract)",
+      "export_hash": "676fac28c10c53998240e7b4f4ee48bcb190cca0d28ac4411c1f0f9eadcd460c",
+      "exported_at": "2026-11-06T11:26:27.124730"
     }
   ],
-  "script_count": 38,
+  "script_count": 39,
   "mcp_count": 1,
   "agent_count": 17,
   "tool_count": 28,
