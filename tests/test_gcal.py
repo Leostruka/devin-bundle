@@ -119,16 +119,18 @@ def test_wrapper_ics_free_busy(tmp_path):
     assert out["free_slots"]
 
 
-def test_wrapper_missing_creds_graceful(tmp_path, monkeypatch):
-    for k in ("BUNDLE_GCAL_CLIENT_ID", "BUNDLE_GCAL_CLIENT_SECRET",
-              "BUNDLE_GCAL_REFRESH_TOKEN"):
-        monkeypatch.delenv(k, raising=False)
+def test_wrapper_missing_creds_graceful(tmp_path):
+    # hermetic: blank BUNDLE_GCAL_* + point creds paths at tmp so a real
+    # credentials.toml on the host can never leak into this test
+    env = {**os.environ,
+           "BUNDLE_GCAL_CLIENT_ID": "",
+           "BUNDLE_GCAL_CLIENT_SECRET": "",
+           "BUNDLE_GCAL_REFRESH_TOKEN": "",
+           "APPDATA": str(tmp_path),
+           "USERPROFILE": str(tmp_path),
+           "HOME": str(tmp_path)}
     p = subprocess.run([sys.executable, WRAPPER, "free-busy"],
-                       capture_output=True, text=True,
-                       env={**os.environ,
-                            "BUNDLE_GCAL_CLIENT_ID": "",
-                            "BUNDLE_GCAL_CLIENT_SECRET": "",
-                            "BUNDLE_GCAL_REFRESH_TOKEN": ""})
+                       capture_output=True, text=True, env=env)
     out = json.loads(p.stdout)
     assert p.returncode == 1 and out["status"] == "missing"
 

@@ -15,10 +15,8 @@ Credential contract:
 import json
 import os
 import re
-import sys
 import urllib.request
-import urllib.error
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 try:
     import tomllib
@@ -54,7 +52,8 @@ def load_credentials():
         if not os.path.isfile(p):
             continue
         try:
-            data = tomllib.loads(open(p, encoding="utf-8").read())
+            with open(p, encoding="utf-8") as fh:
+                data = tomllib.loads(fh.read())
         except (OSError, ValueError):
             continue
         g = data.get("gcal", {})
@@ -132,7 +131,7 @@ def _ics_dt(value):
     m = _ICS_DT.match(value.strip())
     if not m:
         return None
-    d, t, z = m.group("d"), m.group("t"), m.group("z")
+    d, t = m.group("d"), m.group("t")
     if t is None:
         return datetime.strptime(d, "%Y%m%d").replace(
             tzinfo=timezone.utc)  # all-day -> date at 00:00Z
