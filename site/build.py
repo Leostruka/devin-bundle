@@ -203,6 +203,34 @@ def collect_docs(subdir):
     return docs
 
 
+def collect_apps():
+    apps = []
+    base = os.path.join(ROOT, ".devin", "apps")
+    if not os.path.isdir(base):
+        return apps
+    for d in sorted(os.listdir(base)):
+        f = os.path.join(base, d, "APP.md")
+        if not os.path.isfile(f):
+            continue
+        text = open(f, encoding="utf-8-sig").read()
+        h = re.search(r"^#\s+(.*)$", text, re.M)
+
+        def _field(name):
+            m = re.search(rf"^{name}:\s*(.+?)\s*$", text, re.M | re.I)
+            return m.group(1).strip() if m else ""
+
+        apps.append({
+            "name": d,
+            "file": f".devin/apps/{d}/APP.md",
+            "title": h.group(1).strip() if h else d,
+            "intent": _field("intent"),
+            "schedule": _field("schedule"),
+            "done_when": _field("done-when"),
+            "html": md_to_html(text),
+        })
+    return apps
+
+
 def collect_hooks():
     raw = json.loads(read("hooks.v1.json") or "{}")
     events = []
@@ -314,6 +342,7 @@ def main():
     scripts = collect_scripts()
     adrs = collect_docs("adr")
     docs = collect_docs("docs")
+    apps = collect_apps()
     data = {
         "version": manifest.get("version"),
         "counts": {
@@ -322,6 +351,7 @@ def main():
             "scripts": len(scripts),
             "adrs": len(adrs),
             "docs": len(docs),
+            "apps": len(apps),
         },
         "skills": skills,
         "agents": agents,
@@ -329,6 +359,7 @@ def main():
         "scripts": scripts,
         "adrs": adrs,
         "docs": docs,
+        "apps": apps,
         "changelog": collect_changelog(),
         "issues": collect_issues(),
         "readme_html": md_to_html(read("README.md") or "")[:8000],
