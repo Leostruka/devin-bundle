@@ -29,6 +29,10 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"
 FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy"
 EVENTS_URL = ("https://www.googleapis.com/calendar/v3/calendars/"
               "{calendar_id}/events")
+CAL_LIST_URL = ("https://www.googleapis.com/calendar/v3/users/me/"
+                "calendarList")
+CAL_CREATE_URL = "https://www.googleapis.com/calendar/v3/calendars"
+AGENT_CALENDAR = "AGdevin"
 HTTP_TIMEOUT = 30
 
 
@@ -75,6 +79,13 @@ def _post_json(url, payload, headers=None, timeout=HTTP_TIMEOUT):
     hdrs.update(headers or {})
     req = urllib.request.Request(url, data=body, headers=hdrs,
                                  method="POST")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def _get_json(url, headers=None, timeout=HTTP_TIMEOUT):
+    req = urllib.request.Request(url, headers=headers or {},
+                                 method="GET")
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
@@ -136,6 +147,46 @@ def create_event(token, calendar_id, payload):
                       headers={"Authorization": "Bearer " + token})
     return {"id": data.get("id"), "htmlLink": data.get("htmlLink"),
             "status": data.get("status", "confirmed")}
+
+
+def list_calendars(token):
+    """calendarList -> [{id, summary, primary}]."""
+    data = _get_json(CAL_LIST_URL,
+                     headers={"Authorization": "Bearer " + token})
+    return [{"id": c.get("id"), "summary": c.get("summary"),
+             "primary": bool(c.get("primary"))}
+            for c in data.get("items", [])]
+
+
+def find_calendar(token, name):
+    """Return calendar id whose summary matches name, else None."""
+    for c in list_calendars(token):
+        if c["summary"] == name:
+            return c["id"]
+    return None
+
+
+def create_calendar(token, name):
+    """calendars.insert {summary} -> new calendar id."""
+    data = _post_json(CAL_CREATE_URL, {"summary": name},
+                      headers={"Authorization": "Bearer " + token})
+    return data.get("id")
+
+
+def ensure_calendar(token, name=AGENT_CALENDAR):
+    """Find-or-create the agent calendar -> (id, created_bool)."""
+    cid = find_calendar(token, name)
+    if cid:
+        return cid, False
+    return create_calendar(token, name), True
+
+
+def resolve_calendar(token, value):
+    """Map a --calendar arg to an id: 'primary'/contains '@' -> id as-is,
+    any other value is a summary name -> find-or-create."""
+    if value in ("primary", None) or "@" in (value or ""):
+        return value or "primary", False
+    return ensure_calendar(token, value)
 
 
 def free_slots(busy, tmin, tmax):

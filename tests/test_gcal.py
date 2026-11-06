@@ -205,3 +205,47 @@ def test_apply_missing_file_is_error():
                        text=True)
     out = json.loads(p.stdout)
     assert p.returncode == 2 and out["status"] == "error"
+
+
+def test_resolve_existing_calendar_reuses_id(monkeypatch):
+    monkeypatch.setattr(gcal, "_get_json", lambda *a, **k: {
+        "items": [{"id": "cal-ag-1", "summary": "AGdevin"},
+                  {"id": "p", "summary": "Agenda", "primary": True}]})
+    cid, created = gcal.resolve_calendar("tok", "AGdevin")
+    assert cid == "cal-ag-1" and created is False
+
+
+def test_resolve_missing_calendar_creates_once(monkeypatch):
+    calls = {"post": 0}
+    monkeypatch.setattr(gcal, "_get_json",
+                        lambda *a, **k: {"items": []})
+    def fake_post(url, payload, **k):
+        calls["post"] += 1
+        assert url == gcal.CAL_CREATE_URL
+        assert payload == {"summary": "AGdevin"}
+        return {"id": "cal-new"}
+    monkeypatch.setattr(gcal, "_post_json", fake_post)
+    cid, created = gcal.resolve_calendar("tok", "AGdevin")
+    assert cid == "cal-new" and created is True and calls["post"] == 1
+
+
+def test_resolve_primary_and_raw_id_passthrough(monkeypatch):
+    monkeypatch.setattr(gcal, "_get_json",
+                        lambda *a, **k: {"items": []})
+    monkeypatch.setattr(gcal, "_post_json",
+                        lambda *a, **k: (_ for _ in ()).throw(
+                            AssertionError("must not create")))
+    assert gcal.resolve_calendar("tok", "primary") == ("primary", False)
+    cid, created = gcal.resolve_calendar("tok", "x@group.calendar.google.com")
+    assert cid == "x@group.calendar.google.com" and created is False
+
+
+def test_add_preview_names_agdevin_default():
+    p = subprocess.run(
+        [sys.executable, WRAPPER, "add", "--summary", "x",
+         "--start", "2026-11-07T09:00:00Z",
+         "--end", "2026-11-07T10:00:00Z"],
+        capture_output=True, text=True)
+    out = json.loads(p.stdout)
+    assert out["status"] == "confirm-required"
+    assert out["calendar"] == "AGdevin"
