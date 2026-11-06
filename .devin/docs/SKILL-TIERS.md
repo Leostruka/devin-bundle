@@ -153,6 +153,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 |---|---|---|---|
 | `impeccable` | Vocabulário de design para interfaces frontend: evita estéticas genéricas, define contexto antes de construir, aplica comandos de design (polish, audit, distill, etc.) | 1593 | Projetar, refatorar, auditar ou polir UI/UX |
 | `brag` | Gera launch video 15-25s do projeto via Hyperframes: inspect → storyboard → compose → render (+refs defer; assets mp3/ogg bundled; needs Node+ffmpeg) | ~2200 | "/brag", launch video, compartilhar o que construiu |
+| `camera-blocking` | Direção de câmera para repaint de vídeo: blockout+rig+playblast em Blender headless -> prompt segundo-a-segundo -> hero scroll-bound | ~1800 | Hero de site com câmera, video-to-hero via Seedance-class |
 
 ## Infra / Quality / Release
 

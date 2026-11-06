@@ -1324,9 +1324,16 @@
       "original_path": "%APPDATA%\\devin\\skills\\youtube-fetcher",
       "export_hash": "bc5d6bab694ecd73c4aece39aaf7ea10be835707272cd95f96ab7a03baf184be",
       "exported_at": "2026-09-08T21:39:22.462266"
+    },
+    {
+      "name": "camera-blocking",
+      "purpose": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt template to a video-repaint model (Seedance-class) and scaffold the result as a scroll-bound web hero.",
+      "export_hash": "84880c5f76405695b82140c3c74820b47d4b6492eb69bf6fec49e5d94fd8cfc8",
+      "exported_at": "2026-11-06T11:47:27.072797",
+      "path": "skills/camera-blocking/SKILL.md"
     }
   ],
-  "skill_count": 180,
+  "skill_count": 181,
   "rule_count": 24,
   "scripts": [
     {

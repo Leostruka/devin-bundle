@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 13: `skills/camera-blocking/` + presets Blender - workflow video-to-hero
 
-Status: planned · Source: youtube.com/watch?v=mvfo3pUiCCA (Kyle Skelly; corroborado via moderncreator.app + qiita reproduction; template de prompt nao publicado - template e design nosso) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#9/G · Blocked-by: none · Blocks: none
+Status: resolved · Source: youtube.com/watch?v=mvfo3pUiCCA (Kyle Skelly; corroborado via moderncreator.app + qiita reproduction; template de prompt nao publicado - template e design nosso) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#9/G · Blocked-by: none · Blocks: none
 
 ## Contexto & Valor
 
@@ -35,3 +35,22 @@ Status: planned · Source: youtube.com/watch?v=mvfo3pUiCCA (Kyle Skelly; corrobo
 ## Non-goals
 
 Sem client Seedance/Higgsfield (SaaS externo = template apenas); sem MCP bridge (exec loop existente basta); sem gerar video real no CI; sem assets pesados no repo.
+
+## Answer
+
+Muscle landed earlier (extensions/blender-operator/camera_blocking.py +
+presets/{blockout,camera_rig,playblast}.py, commit 1f6c7b4). This change
+ships the missing brain: `skills/camera-blocking/SKILL.md` (181 skills).
+
+- Blockout conventions, one-shot orchestrator command, PARAMS contract of
+  each preset (actual names verified against the preset sources; rig has
+  orbit/dolly only - crane/tracking/exploded from the spec were never
+  built, not claimed).
+- Prompt template: named references + hard location map + t=Ns beats
+  copied from real keyframes (no invented camera moves).
+- Scroll scaffold: playhead bound to scrollY, muted, no autoplay.
+- Cross-links operate-blender / creative-engineering / animation-direction.
+
+Gate: validate-skill-format.py 364/364 PASS; manifest 181; counts synced;
+audit 0 errors. No Blender on host - smoke covered by camera_blocking.py's
+own contract tests, not rerun here.
