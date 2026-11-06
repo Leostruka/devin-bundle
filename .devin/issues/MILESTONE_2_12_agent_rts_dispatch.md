@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 12: `agent-rts` dispatch lane - intents->spawn, worktree lanes, resume-argv
 
-Status: planned · Source: github.com/stablyai/orca (MIT; `src/relay/protocol.ts`, `agent-hibernation-planner.ts`, hook-ingest PR#14615) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#8/F · Blocked-by: none · Blocks: none
+Status: blocked · Source: github.com/stablyai/orca (MIT; `src/relay/protocol.ts`, `agent-hibernation-planner.ts`, hook-ingest PR#14615) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#8/F · Blocked-by: extensions/agent-rts removed in #216 - spec requires the extension; would need resurrection decision first · Blocks: none
 
 ## Contexto & Valor
 

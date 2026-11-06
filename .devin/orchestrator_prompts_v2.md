@@ -200,7 +200,7 @@ You are a master of Clean Architecture, DDD and SOLID, and you are hostile to ha
 - upstream_hashes MUST include the exact sha8 of every input read, including 04_BLOCKERS when present.
 
 # TOOLING RULES
-- Codebase exploration: `command -v semble` once. Use `semble search "<concrete technical query>" ./ --limit 20` - bounded top-k, never unbounded; paginate with `--offset` only when a budget of 2 extra pages is justified in <deep_analysis>.
+- Codebase exploration: structural queries (where is X defined/called, file outline) go to `extensions/code-graph` first when `.devin/code-graph/index.db` exists (`python extensions/code-graph/query.py . symbols|outline|refs|files <q> --limit 20`); on absent/stale index mark `[GRAPH-DOWN]` and continue. Then `command -v semble` once. Use `semble search "<concrete technical query>" ./ --limit 20` - bounded top-k, never unbounded; paginate with `--offset` only when a budget of 2 extra pages is justified in <deep_analysis>.
 - If semble is absent or errors, fall back to `rg`/`grep` and mark the section `[SEMBLE-DOWN]` in your output. Never violate the rule silently.
 - `cat` is allowed for known config files and for docs/ inputs only.
 

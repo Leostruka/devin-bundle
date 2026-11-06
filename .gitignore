@@ -71,3 +71,4 @@ extensions/asr/_cache/
 .devin/memory/.*
 site/dist/
 .devin/install-ledger/
+.devin/code-graph/
