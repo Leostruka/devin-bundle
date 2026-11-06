@@ -31,6 +31,7 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 | `stop-guard.py` | Stop | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect |
 | `memory-stop.py` | SessionEnd | direct |
 | `file-size-guard.py` | PostToolUse `^(write\|edit)$` | direct |
+| `design-lint-gate.py` | PostToolUse `^(write\|edit)$` | direct |
 
 ## Merge rules (`_hookrun.run`)
 
