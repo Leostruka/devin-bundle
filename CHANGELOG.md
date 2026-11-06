@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- stale test-deletion approval marker removed (per-push semantics, record kept in history/PR). Covers #343, #347, #358.
+
 - test-deletion gate hardened: approval marker must NAME each removed test/path (scoped, not blanket); _approval_text helper + 3 gate tests; approval file format documented. Covers #356, #357.
 
 - agenda-roteiro (issue #345): extensions/gcal (free/busy API + --ics dev mode, urllib OAuth refresh, no deps) + plan.py roteiro packer + skills/roteiro (180 skills) + agenda-roteiro app dogfood. Covers #345, #348; README/TOOLS-MAP gcal rows + 180 count fix. Covers #345, #348, #349, #350, #351, #352, #353, #354, #355.
