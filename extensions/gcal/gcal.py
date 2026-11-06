@@ -127,7 +127,7 @@ _ICS_DT = re.compile(
     r"^(?P<d>\d{8})(?:T(?P<t>\d{6})(?P<z>Z)?)?$")
 
 
-def _ics_dt(params, value):
+def _ics_dt(value):
     """Return aware datetime or None for DATE/all-day start."""
     m = _ICS_DT.match(value.strip())
     if not m:
@@ -162,7 +162,7 @@ def ics_busy(text):
                              "end": cur["end"].isoformat()})
             in_ev = False
         elif in_ev and prop in ("DTSTART", "DTEND"):
-            dt = _ics_dt(name, val)
+            dt = _ics_dt(val)
             if dt is not None:
                 cur["start" if prop == "DTSTART" else "end"] = dt
     return busy
