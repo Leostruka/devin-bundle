@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 03: `skills/impeccable` upgrade - PRODUCT/DESIGN spec + protocolo huashu + wiring de musculo
 
-Status: planned · Source: github.com/pbakaus/impeccable (Apache-2.0, v4.7.0; `skill/reference/document.md`) + github.com/alchaincyf/huashu-design (MIT; `references/{workflow,directions,design-context}.md`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#4/B#5/C · Blocked-by: M2_01, M2_02 · Blocks: M2_14
+Status: resolved · Source: github.com/pbakaus/impeccable (Apache-2.0; `skill/SKILL.src.md` + `PRODUCT.md` + `DESIGN.md` @ c3bb418) + github.com/alchaincyf/huashu-design (MIT; `references/{workflow,directions,design-context}.md`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#4/B#5/C · Blocked-by: M2_01, M2_02 · Blocks: M2_14
 
 ## Contexto & Valor
 
@@ -32,3 +32,17 @@ Status: planned · Source: github.com/pbakaus/impeccable (Apache-2.0, v4.7.0; `s
 ## Non-goals
 
 Sem novo skill dir; sem alterar comandos alem do sync verificado; sem acoplar a npx (musculo e o port local M2_02).
+
+## Answer
+
+`skills/impeccable/SKILL.md` rewritten in place (128 -> ~120 lines, denser):
+
+- **24-command sync** verified against upstream `skill/SKILL.src.md` @ c3bb418: added `craft` (deprecated alias) and `generate`; upstream table holds exactly 24 rows (PRODUCT.md prose says "23" counting without the deprecated craft - noted, table is source of truth).
+- **PRODUCT.md spec**: 10 fixed sections in upstream order (Platform, Users, Product Purpose, Positioning, Operating Context, Capabilities and Constraints, Brand Commitments, Evidence on Hand, Product Principles, Accessibility & Inclusion) + `impeccable:product-schema 1` marker + no-invented-claims rule.
+- **DESIGN.md spec**: normative YAML frontmatter (name/description/colors oklch map) + 7 fixed sections (Overview, The Kit, Colors, Typography, Elevation and Material, Components, Do and Do Not).
+- **Direction protocol (huashu)**: sec0 fact-verify -> product-facts.md; 5 Form Questions mapped to search.py domains; 6->3+3 direction gate -> direction-approved.md with verbatim exemptions.
+- **Muscle wiring**: audit/critique run design_lint.py --json first (deterministic facts before LLM judgment); colorize/typeset/layout query search.py --domain; React/Next/RN consult vendored frontend-rules.
+- Boundaries kept/added: brief wins over lint warnings (exemption verbatim), refinement-vs-replacement semantics, greenfield inference, loaded-symbols ban.
+- No npx coupling; muscle is the M2_02 local port.
+
+Contract test `tests/test_m2_03_impeccable_upgrade.py`: 7 tests (frontmatter, 24 commands, PRODUCT sections, DESIGN sections, protocol artifacts, muscle wiring, boundaries). validate-skill-format: 365/365.
