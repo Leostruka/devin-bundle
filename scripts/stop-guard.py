@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Stop consolidated guard — one spawn.
 
-Runs in-process: check-ai-signature, refine-review-prompt, memory-stop.
+Runs in-process: check-ai-signature, refine-review-prompt, memory-stop,
+no-em-dash, rl-resume-detect.
 """
 import os
 import sys
@@ -15,4 +16,5 @@ if __name__ == '__main__':
         'refine-review-prompt.py',
         'memory-stop.py',
         'no-em-dash.py',
+        'rl-resume-detect.py',
     ])

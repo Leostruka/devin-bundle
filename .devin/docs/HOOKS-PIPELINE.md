@@ -22,13 +22,13 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 |---|---|---|
 | `pre-exec-guard.py` | PreToolUse `^exec$` | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard |
 | `pre-write-guard.py` | PreToolUse `^(write\|edit\|notebook_edit)$` | ALWAYS: architecture-gate, validate-tool-args, no-em-dash; TEXT_ONLY (write/edit only): check-ai-signature, validate-mermaid |
-| `post-exec.py` | PostToolUse `^(exec\|mcp_call_tool)$` | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect |
+| `post-exec.py` | PostToolUse `^(exec\|mcp_call_tool)$` | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat |
 | `memory-post-edit.py` | PostToolUse `^(write\|edit)$` | direct (no aggregator) |
 | `compact-gate.py` | PostToolUse `^(write\|edit)$` | direct |
-| `user-prompt.py` | UserPromptSubmit | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate |
+| `user-prompt.py` | UserPromptSubmit | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate, token-saver |
 | `session-start.py` | SessionStart | constraint-pinning, context-budget |
 | `constraint-pinning.py` | PostCompaction | direct |
-| `stop-guard.py` | Stop | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash |
+| `stop-guard.py` | Stop | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect |
 | `memory-stop.py` | SessionEnd | direct |
 | `file-size-guard.py` | PostToolUse `^(write\|edit)$` | direct |
 

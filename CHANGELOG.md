@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- token-saver hooks (M2_11): token-saver.py (output-mode presets on change only), git-diff-stat.py (diff footer for caveman/lean), rl-resume-detect.py (rate-limit -> .devin/rts/intents resume intent); data/output-modes.json; 13 tests; 37 scripts / 24 internal hook modules. Covers #363, M2_11.
+
 - atlas issues board gains 'roadmap' group from .devin/issues (macro ISSUE_*/MILESTONE_* items, 21 items/6 resolved); _issue_items refactor + Status ' · ' separator normalization. Covers #360.
 
 - stale test-deletion approval marker removed (per-push semantics, record kept in history/PR). Covers #343, #347, #358.
