@@ -1,6 +1,6 @@
 # ISSUE 07: Port audit, `mattpocock/skills` upstream → our bundle (agnostic)
 
-Status: planned (research done) · Source: `github.com/mattpocock/skills` (MIT, aihero.dev/skills) · Ledger: `.devin/research/4_fronts_recon.md`
+Status: resolved · Source: `github.com/mattpocock/skills` (MIT, aihero.dev/skills) · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
@@ -33,3 +33,12 @@ Status: planned (research done) · Source: `github.com/mattpocock/skills` (MIT, 
 ## Non-goals
 
 No wholesale copy, no claude-specific imports, no new extensions unless a script genuinely needs a home, no skill deletions (Rule 25 analog: deprecations need approval).
+
+## Answer
+
+- Port audit executed upstream@49dd158: `.devin/research/pocock_port_matrix.md` - 21 skills mapped same/already-ported, 3 new ported (pr, retro, setup-pre-commit), 5 skipped with recorded reasons, 7 in-progress upstream skipped as unreleased.
+- Shipped in #96 (71a561b): `skills/pr`, `skills/retro`, `skills/setup-pre-commit`; `ask-bundle` router rows; manifest/README/TOOLS-MAP synced.
+- Agnostic requirement met: ported skills carry no `.claude/` or claude-code-only refs; helper scripts land per ADR-003 (hooks.v1.json + scripts/*.py).
+- Overlap refresh: no drift delta found this session on re-audit of teach/wait-what/grilling (upstream pin unchanged since matrix).
+
+Remaining upstream candidates (teach-mode deltas, grill-with-docs mode) are covered by existing skills; no action.

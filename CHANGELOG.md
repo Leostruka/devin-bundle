@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ISSUE_06+07 closed (were already shipped): `skills/learn-mode` verified against vibe-wise upstream re-read (no deltas; SessionStart restore hook deferred to project-memory per spec); `grilling` Cross-skills gains pedagogical-counterpart line; ISSUE_07 port matrix confirmed complete (.devin/research/pocock_port_matrix.md, #96). Issues marked resolved.
+
 - design-lint gate hook (M2_05): scripts/design-lint-gate.py PostToolUse(write|edit) - 12 inline slop rules (no extension import), [DESIGN-LINT] via additionalContext, fail-open, UI-ext + path filters; hooks.v1.json registered (timeout 10); manifest/script_count 39->40; README/TOOLS-MAP/HOOKS-PIPELINE synced; 7 tests. Covers M2_05.
 
 - impeccable skill upgrade (M2_03): 24-command sync verified vs upstream SKILL.src.md @c3bb418 (added craft+generate); PRODUCT.md spec (10 fixed sections + schema-1 marker + no-invented-claims); DESIGN.md spec (normative YAML frontmatter + 7 fixed sections); huashu direction protocol (sec0 fact-verify->product-facts.md, 5FQ->search.py domains, 6->3+3 gate->direction-approved.md verbatim exemptions); muscle wiring (audit/critique run design_lint.py first; colorize/typeset/layout query search.py --domain; React stacks consult frontend-rules; [DESIGN-LINT] gate noted). 7 contract tests. Covers M2_03, #381.
