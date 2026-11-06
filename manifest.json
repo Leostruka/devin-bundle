@@ -70,7 +70,7 @@
       "name": "animation-direction",
       "source": "devin-bundle",
       "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics — narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
-      "export_hash": "c025f3c82a8dae99556cb4e7e2153880a9ec79650b480e1ffb1d0463de16d106"
+      "export_hash": "82e735f4029dbdd46dc619f5a59d76f51b5b18ca81d00cec76de56a0604980e3"
     },
     {
       "name": "api-context-spec",
@@ -296,7 +296,7 @@
       "source": "created:v3.19.0 composite simplification pass",
       "purpose": "Use when cleaning a diff before opening a PR, or when asked to simplify, de-slop, or run the full quality pass on current changes.",
       "original_path": "%APPDATA%\\devin\\skills\\de-slop",
-      "export_hash": "181a73c4e9fa2dbd3eca1476e17823bafd244d76569774be7a09097670c4b075",
+      "export_hash": "d2ddb57af6c36a4dbe2d19d359f5d30f280e60f8f4310eafb53a27327c204942",
       "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
@@ -475,7 +475,7 @@
       "name": "frontend-design",
       "source": "devin-bundle",
       "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view for this brief.",
-      "export_hash": "63571560e36c5dab335c988113805ee6e2fd1501b50116cf32982b39b3c61ced"
+      "export_hash": "1448501e1cfb32e798859c88992af24c13aa5bc5aad20da4fac11609bbae6d46"
     },
     {
       "name": "gates",

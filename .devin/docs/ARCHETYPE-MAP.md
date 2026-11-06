@@ -16,3 +16,7 @@ Source: reel 14 (vicentecondee) describing the Anthropic observation: post-AI te
 - **Prototyper** relies on external input (reels/research) - fine, that is what the survey pipeline is for.
 - Transit = the meta-skills: `ask-bundle` routes across rows; `afk-loop` keeps a Build row running unattended.
 - Multi-agent parallel runs of different archetypes = `run_subagent` profiles (implementer + reviewer + sentinel is literally Builder+Maintainer+Simplifier in parallel). The alvim job-apply reel is the clean public demo of this: a drafter agent writing and a reviewer agent critiquing maps to `copywriter` + `reviewer` (Grower + Maintainer).
+
+## The harness is the differentiator
+
+External evidence (HF experiment, reported 2026-11): the same model run through 4 different coding agents scored 62% on one and 33% on another - nothing changed but the harness (instructions, context, rules, tool surface). A model mid-trained across all 4 harnesses improved on every one of them. Read: a maintained harness is a compounding asset independent of model releases. This map and the bundle around it are exactly that asset - keep the harness current and model upgrades slot in on top.

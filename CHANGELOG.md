@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- reels batch-4: swe-2-flash model entry + MODEL-GUIDE fast-lane note (free until 2026-11-30); frontend-design micro-interactions spec; animation-direction direction grammar; ARCHETYPE-MAP harness-differentiator note; de-slop codebase mode; 6 issues resolved. Covers #338.
+
+
 - review pass: context-hygiene table split fixed, atlas q-key/modal-close logic fixed (q now types when no modal), VALID_PROFILES + README, build.py JSON-in-script hardening, file-size-guard handle, bundle-models newline, boot agent-count consistency. Covers #337.
 
 - sentinel: report dir renamed to .devin/scratch/sentinel/ for consistency; hooks doc parity test (#336).

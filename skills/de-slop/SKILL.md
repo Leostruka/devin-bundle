@@ -15,6 +15,14 @@ skill only fixes the order and the stop conditions.
 The current diff against the base branch (default `main`), including the
 working tree, or the scope the caller names.
 
+Codebase mode: when the caller names the whole codebase (or a subtree)
+instead of a diff - "untangle this codebase", "clean up the accumulated
+slop" - hunt what long agent-assisted sessions pile up: duplicated logic
+copied instead of shared, wrapper layers that only forward calls,
+temporary workarounds left in past their fix, dead paths kept "just in
+case". Pair with `big-file-refactor` when a file has crossed ~1k lines;
+run the same run order below on the found set, not on a diff.
+
 ## Run order
 
 Apply each skill to the scoped diff, in this order:

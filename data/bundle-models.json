@@ -36,6 +36,15 @@
       "role": "max",
       "effort": "max",
       "is_default_subagent": true
+    },
+    {
+      "id": "swe-2-flash",
+      "name": "SWE-2 Flash",
+      "context_window": null,
+      "cost_tier": "free",
+      "role": "fast",
+      "effort": "medium",
+      "notes": "Launched 2026-11-04: post-train of Inkling-Small (276B/12B MoE, Apache-2.0). Devin Desktop+CLI only; free through 2026-11-30; ~200 tok/s vs SWE-2 60; 1/5 price. No API, no public weights; context window not published. Use for medium/low-effort work while the free window lasts."
     }
   ],
   "aliases": {
