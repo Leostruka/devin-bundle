@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- AGdevin isolation calendar: gcal writes default to dedicated AGdevin calendar - gcal.py list/find/create_calendar + ensure_calendar + resolve_calendar (summary-name -> find-or-create; 'primary' or raw id passthrough); add/apply resolve post-confirm and report calendar_created; roteiro skill + APP.md + README updated; 4 tests.
+
 - gcal event write: extensions/gcal gains write path - gcal.py event_payload + create_event (events.insert, calendar.events scope); wrapper.py `add` (single event) + `apply` (roteiro batch) both gated by --confirm (preview-only "confirm-required" without it, API never called); apply reports created/failed per block; doctor hint notes scope; roteiro skill + agenda-roteiro APP write contract; README/TOOLS-MAP synced; 5 tests.
 
 - orchestrator prompts v4 (M2_14): .devin/orchestrator_prompts_v3.md (content v4) - TEAM pattern 1 architect + <=3 workers with declared guards (silent->FAIL, kill@20min, nudge-then-pause, 20-round cap, pause-free); queue-vs-steer semantics; 03_Art_Director direction contract (5FQ + direction-approved.md + frontend-rules); schema_version 3 preserved; 5 tests. Covers M2_14, #383.

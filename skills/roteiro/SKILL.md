@@ -54,7 +54,12 @@ The agent can write, never silently:
 - On explicit user approval, re-run with `--confirm`. Batch result is
   `created`/`failed` per block; report `partial` honestly.
 - Single ad-hoc event: `wrapper.py add --summary X --start ISO --end
-  ISO [--calendar id] [--tz Zone] --confirm` - same preview-first gate.
+  ISO [--calendar NAME-or-id] [--tz Zone] --confirm` - same
+  preview-first gate.
+- Writes default to the dedicated `AGdevin` calendar: find-or-create
+  on first write, reused after - agent events stay isolated from the
+  account's other calendars. `--calendar primary` or a raw id
+  overrides.
 - Writes need the refresh token to carry `calendar.events` scope; a
   scope/HTTP failure surfaces as `status: error`, never fake success.
 

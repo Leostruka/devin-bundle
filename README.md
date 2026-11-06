@@ -256,7 +256,7 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `craft-bridge` | Dispatch uniforme na suíte storytold craft |
 | `laya-compactor` | CLI de pruning de transcript dirigido pelo laya |
 | `ppisp-prep` | Pré-check fotométrico barato em sets de imagem |
-| `gcal` | Google Calendar free/busy + roteiro planner + event write (`add`/`apply` gated by `--confirm`, needs `calendar.events` scope) + `--ics` dev mode (OAuth refresh via urllib, sem deps) |
+| `gcal` | Google Calendar free/busy + roteiro planner + event write (`add`/`apply` gated by `--confirm`, dedicated `AGdevin` calendar find-or-create, needs `calendar.events` scope) + `--ics` dev mode (OAuth refresh via urllib, sem deps) |
 
 ### 8. Atlas público (GitHub Pages)
 
