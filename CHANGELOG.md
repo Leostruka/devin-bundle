@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- extensions/harness-tree (M2_09): SurfaceSpec devin c1..c8 (specs.py); tree.py read/validate/diff/apply + tree_hash, omitted-is-inherited, RESERVED refuse-in-apply, utf-8 stdout; ns.py .devin/runs/<ts>-<seed>/ snapshot+resume (gitignored); first-wins dedupe for c4 paths under c6; 9 tests; 566 in-spec files validate clean. Covers M2_09.
+- extensions/harness-tree (M2_09): SurfaceSpec devin c1..c8 (specs.py); tree.py read/validate/diff/apply + tree_hash, omitted-is-inherited, RESERVED refuse-in-apply, utf-8 stdout; ns.py .devin/runs/<ts>-<seed>/ snapshot+resume (gitignored); first-wins dedupe for c4 paths under c6; 9 tests; 566 in-spec files validate clean. Covers M2_09, #375.
 
 - self-improvement PPC discipline (M2_08): INV/DOM candidate classes + probe-on-same-task contrast evidence + earlier-only retention; refine log fields class/probe_evidence/contrast; validate-refinement-evidence.py anti-leakage check (future/self ref-id citation = suspect); harness-reference row; 3 tests. Covers M2_08, #373.
 
