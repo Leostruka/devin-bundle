@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- design-lint gate hook (M2_05): scripts/design-lint-gate.py PostToolUse(write|edit) - 12 inline slop rules (no extension import), [DESIGN-LINT] via additionalContext, fail-open, UI-ext + path filters; hooks.v1.json registered (timeout 10); manifest/script_count 39->40; README/TOOLS-MAP/HOOKS-PIPELINE synced; 7 tests. Covers M2_05.
+- orchestrator prompts v4 (M2_14): .devin/orchestrator_prompts_v3.md (content v4) - TEAM pattern 1 architect + <=3 workers with declared guards (silent->FAIL, kill@20min, nudge-then-pause, 20-round cap, pause-free); queue-vs-steer semantics; 03_Art_Director direction contract (5FQ + direction-approved.md + frontend-rules); schema_version 3 preserved; 5 tests. Covers M2_14, #383.
+
+- design-lint gate hook (M2_05): scripts/design-lint-gate.py PostToolUse(write|edit) - 12 inline slop rules (no extension import), [DESIGN-LINT] via additionalContext, fail-open, UI-ext + path filters; hooks.v1.json registered (timeout 10); manifest/script_count 39->40; README/TOOLS-MAP/HOOKS-PIPELINE synced; 7 tests. Covers M2_05, #382.
 
 - impeccable skill upgrade (M2_03): 24-command sync verified vs upstream SKILL.src.md @c3bb418 (added craft+generate); PRODUCT.md spec (10 fixed sections + schema-1 marker + no-invented-claims); DESIGN.md spec (normative YAML frontmatter + 7 fixed sections); huashu direction protocol (sec0 fact-verify->product-facts.md, 5FQ->search.py domains, 6->3+3 gate->direction-approved.md verbatim exemptions); muscle wiring (audit/critique run design_lint.py first; colorize/typeset/layout query search.py --domain; React stacks consult frontend-rules; [DESIGN-LINT] gate noted). 7 contract tests. Covers M2_03, #381.
 
