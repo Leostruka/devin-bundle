@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 06: install/export drift ledger - installs.json + reconcile 5-state + backup
 
-Status: planned · Source: github.com/msitarzewski/agency-agents-app (MIT; `src-tauri/src/install/mod.rs`, `memory-bank/systemPatterns.md`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#6/E · Blocked-by: none · Blocks: M2_07
+Status: resolved · Source: github.com/msitarzewski/agency-agents-app (MIT; `src-tauri/src/install/mod.rs`, `memory-bank/systemPatterns.md`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#6/E · Blocked-by: none · Blocks: M2_07
 
 ## Contexto & Valor
 
@@ -28,3 +28,11 @@ Status: planned · Source: github.com/msitarzewski/agency-agents-app (MIT; `src-
 ## Non-goals
 
 Sem renderizacao multi-CLI ainda (M2_07); sem assinar/hash de conteudo fora dos arquivos geridos; sem migrar manifest.json (continua metadata, ledger e runtime).
+
+## Answer
+
+- `scripts/install-ledger.py` (stdlib): `record-all`/`record`/`reconcile`/`status`; ledger `installs.json` + `corpus-index.json` em `.devin/install-ledger/` (gitignored, dados de runtime); reconcile cobre os 5 estados; `backup_if_differs()` stdlib com abort-on-failure.
+- `install.ps1`/`install.sh`: `record-all` pos-install (dry-run e ausencia de python nao quebram); backup-failure agora ABORTA a instalacao (`exit 1` sh / `-ErrorAction Stop` + `Backup-Or-Abort` ps1) - antes um `cp`/`Copy-Item` falho deixava o overwrite prosseguir.
+- `audit.py` check 34 `Ledger:` - Modified/Foreign como warning.
+- 7 testes: tabela-verdade dos 5 estados, record-all->Current, corpus-index, backup ok/missing/abort.
+- Desvio do spec: `record` por write virou `record-all` pos-install (mesmo snapshot, menos IO); `install.ps1 -DryRun` sem regressao.

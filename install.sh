@@ -113,7 +113,7 @@ backup_file() {
     if [[ $DRY_RUN -eq 1 ]]; then
       echo "$file (would backup to $backup)"
     else
-      cp "$file" "$backup"
+      cp "$file" "$backup" || { warn "backup failed - aborting install: $file"; exit 1; }
       ok "backed up $file"
     fi
   elif [[ -d "$file" ]]; then
@@ -122,7 +122,7 @@ backup_file() {
     if [[ $DRY_RUN -eq 1 ]]; then
       echo "$file (would backup dir to $backup)"
     else
-      cp -r "$file" "$backup"
+      cp -r "$file" "$backup" || { warn "backup failed - aborting install: $file"; exit 1; }
       ok "backed up $file"
     fi
   fi
@@ -729,6 +729,13 @@ if [[ ${#INSTALL_SKIPS[@]} -gt 0 ]]; then
     echo "    - $s"
   done
 fi
+# --- Install drift ledger (M2_06): snapshot managed files post-install ---
+if [[ $DRY_RUN -eq 0 && -n "$PY" && -f "$BUNDLE_DIR/scripts/install-ledger.py" ]]; then
+  step "Install drift ledger"
+  DEVIN_PROJECT_DIR="$BUNDLE_DIR" DEVIN_HOME="$DEVIN_HOME" \
+    python "$BUNDLE_DIR/scripts/install-ledger.py" record-all >/dev/null 2>&1 || true
+fi
+
 if [[ $DRY_RUN -eq 0 ]]; then
   receipt="$DEVIN_HOME/.install-receipt.json"
   {

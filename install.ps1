@@ -119,11 +119,11 @@ function Backup-File($path) {
   if (-not (Test-Path $path)) { return }
   $rel = $path.Replace($env:APPDATA, "").TrimStart('\', '/')
   $bPath = if ($rel) { Join-Path $backupDir $rel } else { $backupDir }
-  New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force | Out-Null
+  New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force -ErrorAction Stop | Out-Null
   if ($DryRun) {
     Write-Skip "backup: $path → $bPath"
   } else {
-    Copy-Item $path $bPath -Force
+    Copy-Item $path $bPath -Force -ErrorAction Stop
   }
   $script:Backed++
 }
@@ -132,13 +132,24 @@ function Backup-Dir($path) {
   if (-not (Test-Path $path)) { return }
   $rel = $path.Replace($env:USERPROFILE, "").TrimStart('\', '/')
   $bPath = if ($rel) { Join-Path $backupDir $rel } else { $backupDir }
-  New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force | Out-Null
+  New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force -ErrorAction Stop | Out-Null
   if ($DryRun) {
     Write-Skip "backup: $path → $bPath"
   } else {
-    Copy-Item $path $bPath -Recurse -Force
+    Copy-Item $path $bPath -Recurse -Force -ErrorAction Stop
   }
   $script:Backed++
+}
+
+function Backup-Or-Abort($path, $label) {
+  if (-not $Backup) { return }
+  try {
+    if ((Test-Path $path -PathType Container)) { Backup-Dir $path } else { Backup-File $path }
+  }
+  catch {
+    Write-Warn "$label - backup failed; aborting install"
+    exit 1
+  }
 }
 
 function Install-File($src, $dst, $label) {
@@ -160,7 +171,7 @@ function Install-File($src, $dst, $label) {
       $script:Skipped++
       return
     }
-    if ($Backup) { Backup-File $dst }
+    Backup-Or-Abort $dst $label
     if ($DryRun) {
       Write-Skip "would overwrite $label"
     } else {
@@ -208,7 +219,7 @@ function Install-SkillDir($src, $dst, $name, $exclude = $null) {
       $script:Skipped++
       return "diff"
     }
-    if ($Backup) { Backup-File $dst }
+    Backup-Or-Abort $dst "skills/$name"
     if ($DryRun) {
       return "would-update"
     }
@@ -305,7 +316,7 @@ function Merge-ConfigJson($src, $dst) {
   }
 
   if ($Force) {
-    if ($Backup) { Backup-File $dst }
+    Backup-Or-Abort $dst "config.json"
     if ($DryRun) { Write-Skip "would overwrite config.json completely" }
     else {
       $content = Get-Content $src -Raw
@@ -326,7 +337,7 @@ function Merge-ConfigJson($src, $dst) {
     return
   }
 
-  if ($Backup) { Backup-File $dst }
+  Backup-Or-Abort $dst "config.json"
 
   $bundleHt = ConvertTo-Hashtable $bundleConfig
   $localHt = ConvertTo-Hashtable $localConfig
@@ -430,7 +441,7 @@ function Remove-LegacyConfig() {
     return
   }
 
-  if ($Backup) { Backup-Dir $legacyConfigHome }
+  Backup-Or-Abort $legacyConfigHome "legacy config dir"
 
   if ($DryRun) {
     Write-Skip "would remove legacy config directory $legacyConfigHome"
@@ -738,6 +749,16 @@ if (Test-Path $extSrc) {
   }
 } else {
   Write-Skip "extensions/ not in bundle"
+}
+
+# --- Install drift ledger (M2_06): snapshot managed files post-install ---
+if (-not $DryRun -and (Test-Path "$bundleRoot\scripts\install-ledger.py")) {
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if ($py) {
+    Write-Step "Install drift ledger"
+    $env:DEVIN_PROJECT_DIR = $bundleRoot
+    python "$bundleRoot\scripts\install-ledger.py" record-all | Out-Null
+  }
 }
 
 # --- Summary ---

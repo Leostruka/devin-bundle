@@ -95,3 +95,8 @@ python skills/devin-config/scripts/devin-manager.py diff [A] [B]
 
 Approval rule: editing `.devin/config.json`, hooks, or memory requires
 explicit user approval — reports are read-only by default.
+
+Install drift: `python scripts/install-ledger.py status` reconciles the
+live config against the bundle (Current/Outdated/Modified/Removed/
+Foreign); installers snapshot the ledger after each run and abort when a
+pre-overwrite backup fails.

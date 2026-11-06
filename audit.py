@@ -274,7 +274,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in hooks.v1.json')
@@ -1096,6 +1096,28 @@ elif issue_files:
 else:
     print('  SKIP no issue files under .devin/scratch/**/issues/')
 
+# 34. Install drift ledger reconcile (M2_06)
+print()
+print('[34] Install drift ledger')
+try:
+    sys.path.insert(0, 'scripts')
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location(
+        'install_ledger', os.path.join('scripts', 'install-ledger.py'))
+    _il = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(_il)
+    _rep = _il.reconcile()
+    _drift = _rep['Modified'] + _rep['Foreign']
+    if _drift:
+        warnings.append('ledger drift: ' + ', '.join(_drift[:20]))
+        print('  WARN drift: Modified=' + str(len(_rep['Modified']))
+              + ' Foreign=' + str(len(_rep['Foreign'])))
+    else:
+        print('  OK  no Modified/Foreign drift ('
+              + str(len(_rep['Current'])) + ' current)')
+except Exception as _e:
+    print('  SKIP ledger check failed to run: ' + str(_e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1112,5 +1134,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 33 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 34 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 
