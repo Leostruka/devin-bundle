@@ -35,6 +35,7 @@ the verification.
 | 7 | Bounded autonomous mode with quality gates | **Yes** — `gates` skill | Define gates at planning time, run after each step, final gate before done |
 | 8 | "Not a security sandbox" warning | **No** (removed) | Authorization assumed (AGENTS.md Rule 13): requests here are always authorized |
 | 9 | Reward hacking guard (Factorio lesson) | **Yes** (Refine mode in this skill) | Guardrails in refine workflow, explicit reference to Factorio case |
+| 10 | harness2 PPC (Propose-Probe-Compose, arXiv:2610.14224) | **Yes (adapted)** - improvement-loop PPC discipline + refine queue fields `class`/`probe_evidence`/`contrast`; earlier-only retention enforced by `validate-refinement-evidence.py`; component-tree engine is M2_09 | Candidates classified INV/DOM, probed on the same task for execution contrast, adopted only on positive contrast |
 
 ### Adaptation Status: 6/9 features adapted, 2 pruned, 1 removed
 

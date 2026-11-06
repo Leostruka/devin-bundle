@@ -374,6 +374,18 @@ Each line is a JSON object:
 | `session` | Brief session description for context |
 | `status` | applied, rolled-back, pending-review |
 | `outcome` | null initially; updated later with "helped", "hurt", "neutral" |
+| `class` | `INV` (harness invariant: rule/gate/hook) or `DOM` (domain lesson); PPC proposal class |
+| `probe_evidence` | Command + output from running the candidate on the SAME target task (contrast vs base) |
+| `contrast` | `+` (candidate beat base on the same task) or `-`/`0` (reject/keep base) |
+
+#### PPC acceptance + anti-leakage retention
+
+A proposal is only `applied` when `contrast: +` is recorded; adoption must be
+supported by execution contrast on the same task, mirroring harness2 PPC
+(probe rollouts on one target task, compose by independent aggregators).
+A refinement may only cite evidence **earlier** than itself: `evidence` must
+not reference a refinement id that appears later in the log;
+`validate-refinement-evidence.py` rejects future/self citations.
 
 #### Updating outcomes
 
