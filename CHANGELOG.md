@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- self-improvement PPC discipline (M2_08): INV/DOM candidate classes + probe-on-same-task contrast evidence + earlier-only retention; refine log fields class/probe_evidence/contrast; validate-refinement-evidence.py anti-leakage check (future/self ref-id citation = suspect); harness-reference row; 3 tests. Covers M2_08.
+- self-improvement PPC discipline (M2_08): INV/DOM candidate classes + probe-on-same-task contrast evidence + earlier-only retention; refine log fields class/probe_evidence/contrast; validate-refinement-evidence.py anti-leakage check (future/self ref-id citation = suspect); harness-reference row; 3 tests. Covers M2_08, #373.
 
 - extensions/code-graph (M2_10): stdlib SQLite FTS5 structural index (camel/snake tokens, mtime+sha1 incremental); index.py/query.py/detect_changes.py/selftest.py; 1035 files/5964 symbols indexed on bundle corpus; routing doc updates (orchestrator_prompts_v2 + skill-discovery, [GRAPH-DOWN] fallback); 5 tests. Covers M2_10, #371.
 
