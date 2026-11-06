@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - reels batch-4: swe-2-flash model entry + MODEL-GUIDE fast-lane note (free until 2026-11-30); frontend-design micro-interactions spec; animation-direction direction grammar; ARCHETYPE-MAP harness-differentiator note; de-slop codebase mode; criador-de-devin-app skill (179 skills); 8 issues resolved. Covers #338, #339.
 - batch-4 follow-up evals: OpenViking + Google Artemis identified and evaluated (R3-02 waitlist resolved); SLEEP framework coverage note; 2 issues resolved. Covers #340.
 - atlas apps section: .devin/apps/*/APP.md rendered as cards + modal + REPL (cd/ls/open apps, key 0); ls scripts object-name fix. Covers #341, #342.
+- atlas section parity test: SECTIONS vs view-* vs build.py data keys; pre-existing issues/changelog view order fixed. Covers #344.
 
 
 - review pass: context-hygiene table split fixed, atlas q-key/modal-close logic fixed (q now types when no modal), VALID_PROFILES + README, build.py JSON-in-script hardening, file-size-guard handle, bundle-models newline, boot agent-count consistency. Covers #337.
