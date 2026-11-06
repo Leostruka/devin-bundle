@@ -1,0 +1,137 @@
+{
+ "name": "aesthetics_kb",
+ "purpose": "Technical anatomy of 15 visual archetypes — visual artifacts, math/algorithm, media (Python/OpenCV/FFmpeg) and web (CSS/GLSL) implementation, real sources. Load the per-archetype .md on demand.",
+ "archetypes": {
+  "crt": "crt.md",
+  "receipt-paper": "receipt-paper.md",
+  "depth-map": "depth-map.md",
+  "blob-tracking": "blob-tracking.md",
+  "datamosh": "datamosh.md",
+  "1-bit-dither": "dither-1bit.md",
+  "night-vision": "night-vision.md",
+  "brutalism": "brutalism.md",
+  "pc98-pixel": "pc98-pixel.md",
+  "wired-cyber-ui": "wired-cyber-ui.md",
+  "constructivism": "constructivism.md",
+  "y2k-deconstructivist": "y2k-deconstructivist.md",
+  "psx-lowpoly": "psx-lowpoly.md",
+  "risograph": "risograph.md",
+  "vaporwave": "vaporwave.md"
+ },
+ "aliases": {
+  "crt": [
+   "scanlines",
+   "vhs",
+   "phosphor",
+   "retro monitor"
+  ],
+  "receipt-paper": [
+   "thermal",
+   "escpos",
+   "ticket",
+   "pos print"
+  ],
+  "depth-map": [
+   "z-buffer",
+   "point cloud",
+   "displacement",
+   "midas"
+  ],
+  "blob-tracking": [
+   "metaballs",
+   "gooey",
+   "contours",
+   "marching squares"
+  ],
+  "datamosh": [
+   "glitch video",
+   "p-frames",
+   "melt",
+   "moshing"
+  ],
+  "1-bit-dither": [
+   "dither",
+   "bayer",
+   "floyd-steinberg",
+   "atkinson",
+   "halftone 1bit"
+  ],
+  "night-vision": [
+   "nvg",
+   "phosphor green",
+   "ir",
+   "thermal look"
+  ],
+  "brutalism": [
+   "neo-brutalism",
+   "raw ui",
+   "exposed grid",
+   "anti-design"
+  ],
+  "pc98-pixel": [
+   "pc98",
+   "pc-98",
+   "retro anime",
+   "visual novel",
+   "16 color",
+   "touhou pixel"
+  ],
+  "wired-cyber-ui": [
+   "cyberpunk ui",
+   "lain",
+   "nerv",
+   "hud",
+   "neon terminal",
+   "wired",
+   "ghost in the shell",
+   "dystopian interface"
+  ],
+  "constructivism": [
+   "soviet",
+   "agitprop",
+   "rodchenko",
+   "propaganda poster",
+   "dystopian poster",
+   "red black diagonal"
+  ],
+  "y2k-deconstructivist": [
+   "y2k",
+   "tdr",
+   "designers republic",
+   "tomato",
+   "emigre",
+   "f1 livery",
+   "racing",
+   "sportswear graphic",
+   "chrome type",
+   "deconstructivist",
+   "maximalist 90s"
+  ],
+  "psx-lowpoly": [
+   "ps1",
+   "psx",
+   "playstation",
+   "vertex jitter",
+   "affine texture",
+   "low poly retro",
+   "wobble"
+  ],
+  "risograph": [
+   "riso",
+   "spot color",
+   "misregistration",
+   "duotone print",
+   "zine print",
+   "halftone print"
+  ],
+  "vaporwave": [
+   "vapor",
+   "synthwave",
+   "aesthetic",
+   "mallsoft",
+   "floral shoppe",
+   "neon grid",
+   "greek bust"
+  ]
+ }
+}

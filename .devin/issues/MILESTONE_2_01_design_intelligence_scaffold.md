@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 01: `extensions/design-intelligence/` - BM25 engine + design corpus
 
-Status: planned · Source: github.com/nextlevelbuilder/ui-ux-pro-max-skill (MIT, v2.15.0) + github.com/vercel-labs/agent-skills (MIT) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#2/B#3/C · Blocked-by: none · Blocks: M2_03, M2_04
+Status: resolved · Source: github.com/nextlevelbuilder/ui-ux-pro-max-skill (MIT, v2.15.0) + github.com/vercel-labs/agent-skills (MIT) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#2/B#3/C · Blocked-by: none · Blocks: M2_03, M2_04
 
 ## Contexto & Valor
 
@@ -35,3 +35,16 @@ Status: planned · Source: github.com/nextlevelbuilder/ui-ux-pro-max-skill (MIT,
 ## Non-goals
 
 Sem embeddings/vetores, sem daemon, sem dependencias externas; nao reescrever `index.json` de aesthetics (camada de alias permanece).
+
+## Answer
+
+Shipped `extensions/design-intelligence/` (stdlib only; upstream pin b7d5353, MIT - UPSTREAM-LICENSE.txt):
+
+- `core.py` - vendored from upstream scripts/core.py (1053 LOC): BM25 k1=1.5/b=0.75, _SYNONYMS + difflib typo recovery, CSV_CONFIG per-domain search/output cols, STACK_CONFIG (22 stacks), UNTRUNCATED_COLS, calibrated thresholds, detect_domain com runner-up, mtime index cache. Local change: DATA_DIR resolves next to file.
+- `search.py` - CLI vendored: `--domain` (12 domains), `--stack` (22), `--max-results`, `--json`, `--rtl`, `--design-system`, `--persist/--force`, `--variance/--motion/--density` dials; auto-domain detect reports runner-up.
+- `design_system.py` + `reasoning_contract.py` - vendored: multi-domain fan-out -> `design-system/<name>/MASTER.md` + `pages/<page>.md`; persist skips existing without `--force` (verified).
+- `data/` - corpus ported: 12 domain CSVs + 22 stack CSVs (34/34 schema-valid via validate_csv.py) + `frontend-rules/` (139 vendored .md from vercel-labs/agent-skills @ 1a2c79d: react-best-practices, composition-patterns, react-native-skills, react-view-transitions, web-design-guidelines, writing-guidelines) + `aesthetics/` alias (index.json snapshot + ALIAS.md -> single source media-tools/knowledge_bases).
+- `validate_csv.py` - new: per-domain schema check (search_cols U output_cols), 34/34 valid, --json.
+- 11 tests: domain stack search, auto-detect, json, BM25 ordering, synonyms, corpus counts, persist + skip-without-force.
+
+Fixes during port: DATA_DIR one-level-too-high for flat extension layout; validate --json mixed non-JSON summary (moved to stderr path); pytest subprocess needed encoding='utf-8' (cp1252 crashed on box-drawing chars). Command per header: `python extensions/design-intelligence/search.py "<query>" --domain <d> [--max-results N]`.
