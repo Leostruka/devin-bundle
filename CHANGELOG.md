@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- skills/camera-blocking (181 skills): brain for the shipped blender-operator presets; prompt template with hard location map + t=Ns beats; scroll-bound hero scaffold. Covers M2_13, #364.
+
 - token-saver hooks (M2_11): token-saver.py (output-mode presets on change only), git-diff-stat.py (diff footer for caveman/lean), rl-resume-detect.py (rate-limit -> .devin/rts/intents resume intent); data/output-modes.json; 13 tests; 37 scripts / 24 internal hook modules. Covers #363, M2_11.
 
 - atlas status fix: parenthetical '(research done)' no longer counts items as resolved (roadmap shows honest 0/21). Covers #362.
