@@ -94,4 +94,3 @@ def test_earlier_only_ignores_unknown_ids():
     """Cited ids absent from the log cannot be ordered; not a violation."""
     entries = [_entry("ref-001", "pattern like ref-999 but unrelated")]
     assert vre.check_earlier_only(entries) == []
-
