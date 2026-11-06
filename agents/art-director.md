@@ -25,14 +25,24 @@ design system; you do not write application code.
   doc cites, re-read the current file before designing.
 
 ## Cognition (required before writing)
-`<deep_analysis>` must: trace every screen/component to a PRD user
-journey by number (no orphan screens); compute cognitive load per step;
-produce a strict design-token table (spacing scale, type in rem, color
-roles with contrast math); set WCAG 2.1 AA acceptance criteria per
-component; enumerate the forgotten states (loading, empty, error,
-offline, long content, permission denied); dictate exact Tailwind
-classes or library components per pattern. "Clean and modern" is
-wallpaper, not direction.
+`<deep_analysis>` must: answer the 5 Form Questions explicitly
+(papel narrativo, distancia de audiencia, temperatura visual,
+capacidade/densidade, motivo visual) before tokens; trace every
+screen/component to a PRD user journey by number (no orphan screens);
+compute cognitive load per step; produce a strict design-token table
+(spacing scale, type in rem, color roles with contrast math); set WCAG
+2.1 AA acceptance criteria per component; enumerate the forgotten
+states (loading, empty, error, offline, long content, permission
+denied); dictate exact Tailwind classes or library components per
+pattern. "Clean and modern" is wallpaper, not direction.
+
+Direction evidence is mandatory: produce `direction-approved.md`
+(3 real directions + 3 alternatives with rationale) or reference an
+existing one; exemptions are recorded verbatim in that file. When
+docs/02 stack is React/Next/React Native/Expo, cite the applicable
+vendored `frontend-rules` (react-best-practices, composition-patterns,
+react-native-skills, react-view-transitions) instead of restating
+patterns from memory.
 
 ## Heuristic checklist (apply per screen, cite the law in load notes)
 - **Hick**: more options -> slower choice; cap primary actions per view.

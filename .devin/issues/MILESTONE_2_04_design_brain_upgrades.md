@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 04: brain upgrades - `creative-engineering` + `agents/art-director.md`
 
-Status: planned · Source: github.com/vercel-labs/agent-skills (MIT) + github.com/alchaincyf/huashu-design (MIT) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#2/B#4/C · Blocked-by: M2_01 · Blocks: M2_14
+Status: resolved · Source: github.com/vercel-labs/agent-skills (MIT) + github.com/alchaincyf/huashu-design (MIT) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#2/B#4/C · Blocked-by: M2_01 · Blocks: M2_14
 
 ## Contexto & Valor
 
@@ -33,3 +33,14 @@ Status: planned · Source: github.com/vercel-labs/agent-skills (MIT) + github.co
 ## Non-goals
 
 Sem mudar persona/modelo dos profiles; sem mover `knowledge_bases/aesthetics/`; sem criar skill nova.
+
+## Answer
+
+Shipped brain-only upgrade (consumes M2_01 muscle):
+
+- `skills/creative-engineering/SKILL.md`: new "Retrieval (step 0)" section - `search.py "<brief>" --domain style` before loading any archetype .md; 5 Form Questions -> corpus dial table (motivo->style, temperatura->colors.csv, capacidade->density dial, distancia->typography.csv, papel->product/stack); web step now queries `data/frontend-rules/` for React/Next/RN targets; index.json kept as alias layer.
+- `agents/art-director.md`: deep_analysis now answers the 5 Form Questions first; mandatory direction evidence (`direction-approved.md`, 3 real + 3 alt, verbatim exemptions); frontend-rules citation when docs/02 stack = React/Next/RN/Expo; v3 contract (schema_version, upstream_hashes, rework_cycle) unchanged.
+- `tests/test_m2_04_brain_contract.py`: 5 contract tests (retrieval step, 5FQ tokens, frontend-rules pointer, direction-approved, v3 frontmatter intact).
+- manifest.json: art-director + creative-engineering export_hash refreshed.
+
+Gates: 365/365 skill format, 5/5 contract tests, audit 0 errors.

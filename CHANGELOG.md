@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - design_lint deterministic linter (M2_02): rules_registry.py ported from impeccable antipatterns.json @c3bb418 (62 rules, upstream now Rust crates not .mjs); checks.py implements ALL 44 static-scope rules (html.parser + CSS regex; 14 browser + 4 designsys marked skipped); design_lint.py CLI (--json/--list-rules/--ignore, exit 0/1/2); look_ledger.py reskin detection (fonts+palette+skeleton hash); seeded fixtures + 9 tests. Covers M2_02.
 
-- extensions/design-intelligence (M2_01): local BM25 design engine vendored from ui-ux-pro-max-skill @b7d5353 (MIT); search.py --domain/--stack/--design-system/--persist with auto-domain detect + runner-up; corpus 12 domain CSVs + 22 stack CSVs (34/34 schema-valid) + 139 vendored vercel frontend-rules .md + aesthetics alias; validate_csv.py; 11 tests. Covers M2_01.
+- design brain upgrades (M2_04): creative-engineering gains retrieval step-0 (search.py --domain style before archetype .md) + 5 Form Questions->corpus dial map + frontend-rules pointer for React/Next/RN; art-director deep_analysis answers 5FQ, requires direction-approved.md evidence (3 real + 3 alt, verbatim exemptions), cites vendored frontend-rules on React stacks; v3 contract intact; 5 contract tests. Covers M2_04, #379.
+
+- extensions/design-intelligence (M2_01): local BM25 design engine vendored from ui-ux-pro-max-skill @b7d5353 (MIT); search.py --domain/--stack/--design-system/--persist with auto-domain detect + runner-up; corpus 12 domain CSVs + 22 stack CSVs (34/34 schema-valid) + 139 vendored vercel frontend-rules .md + aesthetics alias; validate_csv.py; 11 tests. Covers M2_01, #377.
 
 - extensions/harness-tree (M2_09): SurfaceSpec devin c1..c8 (specs.py); tree.py read/validate/diff/apply + tree_hash, omitted-is-inherited, RESERVED refuse-in-apply, utf-8 stdout; ns.py .devin/runs/<ts>-<seed>/ snapshot+resume (gitignored); first-wins dedupe for c4 paths under c6; 9 tests; 566 in-spec files validate clean. Covers M2_09, #375.
 
