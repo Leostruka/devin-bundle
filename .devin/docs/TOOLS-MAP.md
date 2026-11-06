@@ -149,7 +149,7 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 17 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local + README (ver `.devin/agents/README.md`) |
-| skills/ | `./skills/` | `~/.config/devin/skills/` | 179 skills |
+| skills/ | `./skills/` | `~/.config/devin/skills/` | 180 skills |
 | extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` — GUI automation; `system-control` — OS autorizado; `scrape-tools` — fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` — whisper.cpp local) |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 34 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |

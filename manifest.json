@@ -145,6 +145,14 @@
       "exported_at": "2026-11-04T21:35:00.409400"
     },
     {
+      "name": "big-file-refactor",
+      "source": "devin-bundle",
+      "purpose": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely.",
+      "original_path": "%APPDATA%\\devin\\skills\\big-file-refactor",
+      "export_hash": "8CF00A6EAF7D029885CCBC4074A204A56D55814A61422F69A9A895EAFBB70A2E",
+      "exported_at": "2026-11-05T07:49:44.220070"
+    },
+    {
       "name": "binary-triage",
       "source": "devin-bundle",
       "purpose": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers in minutes what would take hours in Ghidra; escalate to re-binary/Ghidra only when static triage cannot close the question.",
@@ -177,6 +185,14 @@
       "source": "devin-bundle",
       "purpose": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications.",
       "export_hash": "8a28a64caba50cb6aff216210781aa3d8761de95421a1fd10ecefec89e4d3da2"
+    },
+    {
+      "name": "cli-adapter",
+      "source": "devin-bundle",
+      "purpose": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path.",
+      "original_path": "%APPDATA%\\devin\\skills\\cli-adapter",
+      "export_hash": "E6D3E0078EAB9DE56C97E68FC373DA3C61A9B31F3CA8EEFD0F84A4373CD8028C",
+      "exported_at": "2026-11-05T07:52:14.166839"
     },
     {
       "name": "code-review",
@@ -269,6 +285,14 @@
       "source": "devin-bundle",
       "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
       "export_hash": "7247147920bdd9b84d5ccf30339de694de56804d8f25c8a0ad908ef3f8a9486a"
+    },
+    {
+      "name": "criador-de-devin-app",
+      "source": "created:reels-batch4 R4-07",
+      "purpose": "Use when turning a recurring intent into a named devin-cli app - a repeatable agent automation with its own name, schedule, prompt and done-when contract. Covers the agentic-app naming framework and the APP.md scaffold.",
+      "original_path": "%APPDATA%\\devin\\skills\\criador-de-devin-app",
+      "export_hash": "b5dc34238f1b23c3f08fb9b8b6acd899df28c9c224562977db963ecd13733668",
+      "exported_at": "2026-11-06T00:00:00"
     },
     {
       "name": "cu-realtime",
@@ -943,6 +967,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "roteiro",
+      "source": "created:issue-345 agenda-roteiro A-03",
+      "purpose": "Use when planning a day against a real calendar: pack tasks into actual free slots, re-plan when meetings move, and flag what fits vs. what slips. Composes with extensions/gcal for free/busy data and scheduled-turns for the recurring morning run.",
+      "original_path": "%APPDATA%\\devin\\skills\\roteiro",
+      "export_hash": "975e1efae8670c042db54d71aedc611f74d90cc90debe56f1cf75760b5480309",
+      "exported_at": "2026-11-06T00:00:00"
+    },
+    {
       "name": "scan",
       "source": "devin-bundle",
       "purpose": "Use when the user wants a goal-driven, codebase-wide investigation — \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence.",
@@ -1226,6 +1258,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "web-perf-checklist",
+      "source": "devin-bundle",
+      "purpose": "Use when a web app feels slow, when a PR touches frontend/backend performance, or when asked for the concrete fix-list behind a performance complaint.",
+      "original_path": "%APPDATA%\\devin\\skills\\web-perf-checklist",
+      "export_hash": "1EF704FC00A87C05B59AB84E06664F1AE5DC94DB4B49AE2A32AD45520F71A62F",
+      "exported_at": "2026-11-05T07:49:44.220070"
+    },
+    {
       "name": "web-probe",
       "source": "devin-bundle",
       "purpose": "Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools: zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.",
@@ -1284,41 +1324,9 @@
       "original_path": "%APPDATA%\\devin\\skills\\youtube-fetcher",
       "export_hash": "bc5d6bab694ecd73c4aece39aaf7ea10be835707272cd95f96ab7a03baf184be",
       "exported_at": "2026-09-08T21:39:22.462266"
-    },
-    {
-      "name": "web-perf-checklist",
-      "source": "devin-bundle",
-      "purpose": "Use when a web app feels slow, when a PR touches frontend/backend performance, or when asked for the concrete fix-list behind a performance complaint.",
-      "original_path": "%APPDATA%\\devin\\skills\\web-perf-checklist",
-      "export_hash": "1EF704FC00A87C05B59AB84E06664F1AE5DC94DB4B49AE2A32AD45520F71A62F",
-      "exported_at": "2026-11-05T07:49:44.220070"
-    },
-    {
-      "name": "big-file-refactor",
-      "source": "devin-bundle",
-      "purpose": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely.",
-      "original_path": "%APPDATA%\\devin\\skills\\big-file-refactor",
-      "export_hash": "8CF00A6EAF7D029885CCBC4074A204A56D55814A61422F69A9A895EAFBB70A2E",
-      "exported_at": "2026-11-05T07:49:44.220070"
-    },
-    {
-      "name": "cli-adapter",
-      "source": "devin-bundle",
-      "purpose": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path.",
-      "original_path": "%APPDATA%\\devin\\skills\\cli-adapter",
-      "export_hash": "E6D3E0078EAB9DE56C97E68FC373DA3C61A9B31F3CA8EEFD0F84A4373CD8028C",
-      "exported_at": "2026-11-05T07:52:14.166839"
-    },
-    {
-      "name": "criador-de-devin-app",
-      "source": "created:reels-batch4 R4-07",
-      "purpose": "Use when turning a recurring intent into a named devin-cli app - a repeatable agent automation with its own name, schedule, prompt and done-when contract. Covers the agentic-app naming framework and the APP.md scaffold.",
-      "original_path": "%APPDATA%\\devin\\skills\\criador-de-devin-app",
-      "export_hash": "b5dc34238f1b23c3f08fb9b8b6acd899df28c9c224562977db963ecd13733668",
-      "exported_at": "2026-11-06T00:00:00"
     }
   ],
-  "skill_count": 179,
+  "skill_count": 180,
   "rule_count": 24,
   "scripts": [
     {
