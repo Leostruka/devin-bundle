@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- atlas issues board gains 'roadmap' group from .devin/issues (macro ISSUE_*/MILESTONE_* items, 21 items/6 resolved); _issue_items refactor + Status ' · ' separator normalization. Covers #360.
+
 - stale test-deletion approval marker removed (per-push semantics, record kept in history/PR). Covers #343, #347, #358.
 
 - test-deletion gate hardened: approval marker must NAME each removed test/path (scoped, not blanket); _approval_text helper + 3 gate tests; approval file format documented. Covers #356, #357.
