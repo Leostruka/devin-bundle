@@ -36,6 +36,33 @@
       "role": "max",
       "effort": "max",
       "is_default_subagent": true
+    },
+    {
+      "id": "swe-2-flash-medium",
+      "name": "SWE-2 Flash Medium",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "fast",
+      "effort": "medium",
+      "notes": "SWE-2 Flash family (2026-11-04): post-train of Inkling-Small 276B/12B MoE (Apache-2.0). ~200 tok/s vs SWE-2 60; free in Devin Desktop+CLI. After the free window ends, 1/5 the price of SWE-2."
+    },
+    {
+      "id": "swe-2-flash-high",
+      "name": "SWE-2 Flash High",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "fast",
+      "effort": "high",
+      "notes": "Flash variant at high effort - fast lane for routine multi-file work."
+    },
+    {
+      "id": "swe-2-flash-max",
+      "name": "SWE-2 Flash Max",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "fast",
+      "effort": "max",
+      "notes": "Flash variant at max effort - cheap escalation while the free window lasts."
     }
   ],
   "aliases": {

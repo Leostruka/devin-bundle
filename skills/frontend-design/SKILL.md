@@ -72,6 +72,23 @@ on each section and hover transitions on every card are the generic
 default and read as generated. Motion that answers a person's action
 (opening, expanding, confirming) is welcome when it shows what changed.
 
+When micro-interactions are used, the details decide whether they feel
+engineered or tweened. Working spec:
+
+- Ease-out for entrances; ease-in-out for on-screen movement; ease-in for
+  exits. No spring bounce for everyday UI.
+- Dropdowns/popovers: 150-250ms, start at scale 0.95, transition to and
+  from the trigger - never from/to the center of the screen.
+- Stagger list rows ~30ms; stagger wider when details settle.
+- Pressed buttons scale to ~0.97; moving knobs stretch ~12% in the
+  direction of travel.
+- Confirm success with a pulse, not a fanfare.
+- Exits run ~20% shorter than entrances; bring the new state in as the
+  old state leaves.
+- Crossfade icons with scale + blur; rubber-band past drag boundaries;
+  reuse the same layoutId across shared objects so the element animates
+  between states instead of unmounting.
+
 Consider written content carefully. A brief may not contain real content,
 so write copy and placeholders yourself. Copy can make a design feel as
 templated as the visuals. See "More on writing in design" below.

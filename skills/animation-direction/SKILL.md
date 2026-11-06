@@ -34,6 +34,12 @@ stage, never post-render.
   (callouts), `none` (cuts). Exits default `fade`, `none` on cut.
 - Timing budgets: entrance <= 0.5s and <= half the beat; holds >= 1.5s
   for text; transitions only between narration cuts.
+- Direction grammar (the part that reads as directed, not tweened):
+  `anticipation` (small counter-move before the main move), `release`
+  (the move itself, faster than the anticipation), `smear frame`
+  (stretch the element along the path of travel for 1-2 frames on fast
+  moves), and negative space as a tool - hold empty space around the
+  subject instead of filling every frame.
 
 ## Beat -> visual mapping
 

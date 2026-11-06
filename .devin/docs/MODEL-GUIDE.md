@@ -64,9 +64,12 @@ Subagents usam os mesmos variantes SWE-2, escolhidos por nível de esforço:
 | `swe-2-max` | Subagent Max (`swe-2-max`) | max | **Free** | Agents de planejamento/julgamento/review |
 | `swe-2-medium` | Subagent Medium (`swe-2-medium`) | medium | **Free** | Agents de execução bounded |
 | `swe-2-high` | Parent (`swe-2-high`) | high | **Free** | Orquestração, raciocínio diverso |
+| `swe-2-flash-*` | Fast lane (`-medium`/`-high`/`-max`) | medium | **Free** | Familia Flash (2026-11-04): ~200 tok/s (3x SWE-2), 262K, post-train de Inkling-Small 276B/12B; gratis na janela de lancamento, depois 1/5 do preco do SWE-2 |
 
 **⚠️ CRÍTICO**: aliases não canônicos podem apontar para um modelo pago - **não use** sem verificar `data/bundle-models.json`.
 Os agents/ devem fazer pin com os variantes canônicos (`swe-2-max` / `swe-2-medium`) do bundle.
+
+**Nota swe-2-flash (2026-11-04):** familia `swe-2-flash-{medium,high,max}` (262K, `devin models list`) - lane rapida para volume: automacoes, code review mecanico, docs, feature dev simples. Free na janela de lancamento; sem API nem pesos publicos; benchmarks sao self-reported. Enquanto a janela free durar, prefira Flash para subagents de execucao bounded; depois da janela, re-avalie custo vs swe-2-medium.
 
 **⚠️ CRÍTICO - `subagent_explore` (built-in) pode ser pago**: o profile built-in
 `subagent_explore` roda no default router do CLI, que pode cobrar por token.
