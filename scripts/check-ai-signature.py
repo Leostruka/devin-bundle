@@ -51,7 +51,7 @@ PATTERN = re.compile("|".join(SIGNATURES), re.IGNORECASE)
 # false positives on documentation and commit messages that mention AI
 # tooling without claiming authorship.
 ALLOWED_CONTEXTS = (
-    re.compile(r"\bAI-assisted\s+(?:tooling|tool|tools|development|review|testing|coding|workflow|workflows|approach|process|pipeline)\b", re.IGNORECASE),
+    re.compile(r"\bAI-assisted\s+(?:tooling|tool|tools|development|review|testing|coding|workflow|workflows|approach|process|pipeline|analysis)\b", re.IGNORECASE),
     re.compile(r"\bAI-generated\s+(?:content|images|art|text|code|data|samples|examples|responses|output|outputs)\b", re.IGNORECASE),
 )
 

@@ -125,6 +125,14 @@ def extract_flag_file(command, flags, short_f=True):
 
 DIFF_FILE_RE = re.compile(r"^\+\+\+ b/(.*)$")
 
+VENDORED_PREFIX_RE = re.compile(r"^extensions/[^/]+/data/")
+
+
+def _is_vendored(path):
+    """Vendored upstream datasets under extensions/<name>/data/ are not
+    authored prose; their text is out of scope for this rule."""
+    return bool(VENDORED_PREFIX_RE.match(path or ""))
+
 
 def added_text_lines(diff_output):
     """Collect added lines from prose files only.
@@ -140,7 +148,8 @@ def added_text_lines(diff_output):
         m = DIFF_FILE_RE.match(line)
         if m:
             path = m.group(1)
-            current_is_text = (SELF_FILE not in path) and is_text_path(path)
+            current_is_text = (SELF_FILE not in path) \
+                and is_text_path(path) and not _is_vendored(path)
             continue
         if current_is_text and line.startswith("+") \
                 and not line.startswith("+++"):
@@ -188,7 +197,8 @@ def scan_untracked(cwd):
     if result.returncode != 0:
         return
     for rel in result.stdout.splitlines():
-        if not rel or SELF_FILE in rel or not is_text_path(rel):
+        if not rel or SELF_FILE in rel or not is_text_path(rel) \
+                or _is_vendored(rel):
             continue
         path = os.path.join(cwd, rel)
         try:

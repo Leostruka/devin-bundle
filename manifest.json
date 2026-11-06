@@ -1357,7 +1357,7 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "e6a15e75e7ffb7b6d2528e226a0f358ec908f6af81ec3748d4aebf0263b282f4",
+      "export_hash": "c68f8ef11675d63d6e43af7b90026b44d6734c054134622a0af5845c59b2cb2a",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1428,8 +1428,8 @@
     },
     {
       "name": "no-em-dash.py",
-      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code and data files exempt",
-      "export_hash": "b55c6eacd2b8a903111001359448a79efa86a62305296ddc0298b6aa9cbfd57a",
+      "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code, vendored extension data and binary files exempt",
+      "export_hash": "76ddddde8b782eed1b4972ca469999137f615885bd6e0d1462148676a5c3cf2b",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
