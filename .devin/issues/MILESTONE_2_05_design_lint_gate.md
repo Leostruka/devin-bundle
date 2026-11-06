@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 05: `scripts/design-lint-gate.py` - hook PostToolUse em writes de UI
 
-Status: planned · Source: padrao `npx impeccable detect` (exit codes) + huashu `design_lint.py` (severities) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec C (gate) · Blocked-by: M2_02 · Blocks: none
+Status: resolved · Source: padrao `npx impeccable detect` (exit codes) + huashu `design_lint.py` (severities) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec C (gate) · Blocked-by: M2_02 · Blocks: none
 
 ## Contexto & Valor
 
@@ -29,3 +29,12 @@ Status: planned · Source: padrao `npx impeccable detect` (exit codes) + huashu 
 ## Non-goals
 
 Sem blocking (decision:block nunca); sem regras pesadas (AST/parse completo fica no M2_02 CLI); sem rodar em paths fora de UI; sem alterar `pre-write-guard.py`.
+
+## Answer
+
+- `scripts/design-lint-gate.py` - PostToolUse(write|edit) hook, stdlib, fail-open. 12 inline rules (no extension import per spec): ai-color-palette (purple+cyan hex in gradient), gradient-text, side-tab (>=4px accent), overused-font (Inter/Roboto/Geist/Fraunces/Poppins), border-accent-on-rounded, em-dash-overuse (>5), marquee, hero-eyebrow-chip, marketing-buzzword, skipped-heading, hard-offset-shadow, pulsing-dot. Path filter: only .html/.css/.tsx/.jsx/.vue/.svelte; skips node_modules/vendor/dist/build/extensions/fixtures; >400KB skipped. Output `[DESIGN-LINT] rule: file:line` via additionalContext; exit always 0.
+- `hooks.v1.json`: added to existing PostToolUse `^(write|edit)$` matcher (timeout 10 <= 15).
+- manifest.json: script entry + script_count 39->40; README/TOOLS-MAP/HOOKS-PIPELINE counts + row synced.
+- 7 contract tests: registered-in-v1, slop warns (additionalContext), clean silent, non-UI silent, fail-open on garbage/missing, fixtures skipped, em-dash+marquee.
+
+Gates: 7/7; verified end-to-end with real subprocess stdin (3 findings on seeded slop css, silent on clean/non-UI/garbage).
