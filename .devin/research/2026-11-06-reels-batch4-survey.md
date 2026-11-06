@@ -19,3 +19,14 @@
 - R4-04 Harness-moat: nota de posicionamento (README/ARCHETYPE-MAP) citando o experimento HF.
 - R4-05 Slop audit: de-slop ganha modo codebase-wide (dup logic, wrappers, temp fixes acumulados) - hoje e diff-scoped.
 - R4-06 LinkedIn: covered por social-midia; apenas registrar.
+
+## Follow-up research (2026-11-06)
+
+R3-02 waitlist items unblocked - both artifacts exist now:
+
+| Item | Real identity | State | Bundle fit |
+|---|---|---|---|
+| "OpenVQ" | volcengine/OpenViking (ByteDance) | Apache OSS, 41.6k stars, v0.5.3, very active | context-DB viking:// (memory+RAG+skills); candidate backend if .devin/memory/ outgrows flat files |
+| Google Artemis | google/artemis | Apache-2.0, 16.7k stars, no tagged releases (pin SHA) | MCP-native Android automation; overlaps cu_adb_backend; needs mcp-governance review if adopted |
+
+Queued input also evaluated: SLEEP framework (Google Research 2026-10-27) = periodic memory consolidation; analogs already in bundle (memory hooks + self-improvement; dreaming ~ create/maintain-verification-skill). PHP/Laravel sources listicle = agent-reach rss feed candidates. criador-de-devin-app skill shipped (R4-07) + reels-surveyor dogfood app.
