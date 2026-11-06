@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ISSUE_06+07 closed (were already shipped): `skills/learn-mode` verified against vibe-wise upstream re-read (no deltas; SessionStart restore hook deferred to project-memory per spec); `grilling` Cross-skills gains pedagogical-counterpart line; ISSUE_07 port matrix confirmed complete (.devin/research/pocock_port_matrix.md, #96). Issues marked resolved.
 
+- gcal event write: extensions/gcal gains write path - gcal.py event_payload + create_event (events.insert, calendar.events scope); wrapper.py `add` (single event) + `apply` (roteiro batch) both gated by --confirm (preview-only "confirm-required" without it, API never called); apply reports created/failed per block; doctor hint notes scope; roteiro skill + agenda-roteiro APP write contract; README/TOOLS-MAP synced; 5 tests.
+
 - orchestrator prompts v4 (M2_14): .devin/orchestrator_prompts_v3.md (content v4) - TEAM pattern 1 architect + <=3 workers with declared guards (silent->FAIL, kill@20min, nudge-then-pause, 20-round cap, pause-free); queue-vs-steer semantics; 03_Art_Director direction contract (5FQ + direction-approved.md + frontend-rules); schema_version 3 preserved; 5 tests. Covers M2_14, #383.
 
 - design-lint gate hook (M2_05): scripts/design-lint-gate.py PostToolUse(write|edit) - 12 inline slop rules (no extension import), [DESIGN-LINT] via additionalContext, fail-open, UI-ext + path filters; hooks.v1.json registered (timeout 10); manifest/script_count 39->40; README/TOOLS-MAP/HOOKS-PIPELINE synced; 7 tests. Covers M2_05, #382.
