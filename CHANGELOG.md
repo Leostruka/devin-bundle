@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- install drift ledger (M2_06): scripts/install-ledger.py record-all/record/reconcile/status; .devin/install-ledger/{installs,corpus-index}.json (gitignored runtime data); 5-state reconcile (Current/Outdated/Modified/Removed/Foreign); backup_if_differs stdlib; installers now record-all post-install and ABORT on backup failure (was: silent continue); audit check 34 Ledger; 7 tests; 38 scripts. Covers M2_06.
+- install drift ledger (M2_06): scripts/install-ledger.py record-all/record/reconcile/status; .devin/install-ledger/{installs,corpus-index}.json (gitignored runtime data); 5-state reconcile (Current/Outdated/Modified/Removed/Foreign); backup_if_differs stdlib; installers now record-all post-install and ABORT on backup failure (was: silent continue); audit check 34 Ledger; 7 tests; 38 scripts. Covers M2_06, #367.
 
 - changelog refs for M2_11 hooks wave. Covers #364, #365.
 
