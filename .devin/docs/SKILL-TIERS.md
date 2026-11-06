@@ -56,6 +56,7 @@ Raramente >3 por tarefa (~5000 tok).
 | `prototype` | Código descartável p/ design question | 780 | Dúvida de design |
 | `big-file-refactor` | Modularização 3-fases de arquivos >1k linhas | 665 | Arquivo gigante/contexto estourando |
 | `cli-adapter` | Controlar tool sem API/MCP via CLI construído (padrão wrapper) | 602 | Tool externa sem integração oficial |
+| `criador-de-devin-app` | Intent recorrente -> app nomeado (APP.md + cadence + done-when) | ~1.1k | Criar automação/agente nomeado para devin-cli |
 | `correct` | Correção mínima e direcionada de bug (fix-loop discipline) | 642 | Bugfix pontual sem refatorar |
 
 ## Debug

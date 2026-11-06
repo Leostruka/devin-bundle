@@ -1308,9 +1308,17 @@
       "original_path": "%APPDATA%\\devin\\skills\\cli-adapter",
       "export_hash": "E6D3E0078EAB9DE56C97E68FC373DA3C61A9B31F3CA8EEFD0F84A4373CD8028C",
       "exported_at": "2026-11-05T07:52:14.166839"
+    },
+    {
+      "name": "criador-de-devin-app",
+      "source": "created:reels-batch4 R4-07",
+      "purpose": "Use when turning a recurring intent into a named devin-cli app - a repeatable agent automation with its own name, schedule, prompt and done-when contract. Covers the agentic-app naming framework and the APP.md scaffold.",
+      "original_path": "%APPDATA%\\devin\\skills\\criador-de-devin-app",
+      "export_hash": "b5dc34238f1b23c3f08fb9b8b6acd899df28c9c224562977db963ecd13733668",
+      "exported_at": "2026-11-06T00:00:00"
     }
   ],
-  "skill_count": 178,
+  "skill_count": 179,
   "rule_count": 24,
   "scripts": [
     {
