@@ -45,3 +45,15 @@ def test_every_section_has_data():
             continue
         key = SECTION_DATA_KEY.get(sec, sec)
         assert key in keys, f"section '{sec}' needs data['{key}'] in build.py"
+
+
+LISTABLE = {"skills", "agents", "apps", "adr", "docs", "scripts", "hooks"}
+
+
+def test_repl_ls_covers_listable_sections():
+    src = open(os.path.join(ROOT, "site", "src", "app.js"), encoding="utf-8").read()
+    ls_block = re.search(r'if\(c === "ls"\)\{(.*?)\n  \}\n', src, re.S)
+    assert ls_block, "ls handler not found"
+    handled = set(re.findall(r't === "([a-z]+)"', ls_block.group(1)))
+    missing = LISTABLE - handled
+    assert not missing, f"ls handler missing sections: {missing}"
