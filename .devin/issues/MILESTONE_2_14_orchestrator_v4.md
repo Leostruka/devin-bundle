@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 14: `orchestrator_prompts` v4 - team guards PandaCode + direction contract
 
-Status: planned · Source: github.com/aicodeking/pandacode (guards: silent->fail, 20min kill, <=20 rounds) + M2_03/04 (direction-approved.md) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#10/F, C · Blocked-by: M2_03, M2_04 · Blocks: none
+Status: resolved · Source: github.com/aicodeking/pandacode (guards: silent->fail, 20min kill, <=20 rounds) + M2_03/04 (direction-approved.md) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#10/F, C · Blocked-by: M2_03, M2_04 · Blocks: none
 
 ## Contexto & Valor
 
@@ -29,3 +29,13 @@ Status: planned · Source: github.com/aicodeking/pandacode (guards: silent->fail
 ## Non-goals
 
 Sem reescrita da DAG; sem novo profile; sem codigo de execucao de guards (declarativos); sem alterar os 7 personas existentes alem do contrato 03.
+
+## Answer
+
+- `.devin/orchestrator_prompts_v3.md` created (content v4, supersedes the v2-named file holding v3). Changelog vs v3 recorded + v2 changelog carried for continuity.
+- TEAM section: 1 architect + <=3 workers; declared guards table - silent-worker->FAIL-to-architect (no blind retry), turn-kill @20min, no-assignment->nudge-once-then-pause, round-cap 20 rounds, pause/stop never consumes retry.
+- Queue-vs-steer documented: CLI enqueues; steer = `.devin/rts/intents/<id>.json` injected for next turn.
+- 03_Art_Director gained DIRECTION CONTRACT block: 5 Form Questions against design-intelligence corpus, `direction-approved.md` (3 real + 3 alternatives, verbatim exemptions), frontend-rules citations for React/Next/RN/Expo - mirrors M2_03/04 contracts, consistent with `agents/art-director.md` (verified same tokens).
+- schema_version 3 + upstream_hashes semantics unchanged; all 7 personas carried verbatim.
+
+Contract: `tests/test_m2_14_orchestrator_v4.py` 5 tests (supersedes, guards, queue/steer, direction contract, schema+personas preserved).
