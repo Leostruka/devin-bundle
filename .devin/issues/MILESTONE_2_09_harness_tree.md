@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 09: `extensions/harness-tree/` - component-tree diff/validate engine (SurfaceSpec)
 
-Status: planned · Source: github.com/google-research/harness2 (Apache-2.0; `core/tree.py`, `SurfaceSpec`, `ns()` em `schedule.py`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#1/E · Blocked-by: M2_08 (spec de componentes) · Blocks: none
+Status: resolved · Source: github.com/google-research/harness2 (Apache-2.0; `core/tree.py`, `SurfaceSpec`, `ns()` em `schedule.py`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#1/E · Blocked-by: M2_08 (spec de componentes) · Blocks: none
 
 ## Contexto & Valor
 
@@ -30,3 +30,14 @@ Status: planned · Source: github.com/google-research/harness2 (Apache-2.0; `cor
 ## Non-goals
 
 Sem mutacao automatica de skills/rules (engine e ferramenta, decisao fica no PPC humano/agente); sem CLI de sweep; sem execucao de rollouts.
+
+## Answer
+
+Shipped `extensions/harness-tree/` (stdlib only):
+
+- `specs.py` - SurfaceSpec devin: c1 system-prompt (AGENTS.md + global_rules.md), c2 guardrails (.devin/rules + hooks.v1.json), c3 memory (.devin/memory), c4 tool-guidance (skill-discovery/ask-bundle/SKILL-TIERS), c5 subagents (.devin/agents), c6 skills/, c7 scripts/, c8 plugins (mcp_config+manifest); `component_of`/`skipped` helpers; noise-dir excludes.
+- `tree.py` - `ComponentTree` = ordered path->content; `read`/`validate`/`diff`/`apply` + `tree_hash`; omitted-is-inherited (diff lists only changes, None=delete); RESERVED set (check-ai-signature, install-ledger, check-push-green, stop-guard) refused in `apply`; CLI snapshot/validate/diff/apply; stdout reconfigured utf-8 (Windows cp1252).
+- `ns.py` - `.devin/runs/<ts>-<seed>/` snapshot (tree.json + meta.json + evidence.log), `create`/`resume`, writes only inside runs dir; `.devin/runs/` gitignored.
+- `selftest.py` + `tests/test_harness_tree.py` - 9 tests: round-trip diff/apply identity, reserved + outside-spec refusal, delete propagation, validate clean/missing, ns create/resume, real-bundle validate.
+
+Real bugs found while building: (a) c4 paths also under c6 `skills/` yielded duplicate entries - `_iter_files` now first-wins dedupe; (b) console cp1252 crashed on `→` in payload - stdout reconfigured utf-8. Real bundle `validate`: 0 problems, 566 in-spec files. README/TOOLS-MAP extension rows added (also filled pre-existing code-graph gap).
