@@ -12,3 +12,6 @@ Eval notes in `.devin/research/2026-11-05-r3-evals.md`: OpenVQ maps to memory la
 
 ## Answer
 DONE - evals doc written, mapped to existing lanes.
+
+
+Update 2026-11-06: artifacts found - OpenViking + Artemis evaluated as R4-09/R4-10 (see reels-4 survey).
