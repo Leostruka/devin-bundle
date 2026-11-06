@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- agenda-roteiro (issue #345): extensions/gcal (free/busy API + --ics dev mode, urllib OAuth refresh, no deps) + plan.py roteiro packer + skills/roteiro (180 skills) + agenda-roteiro app dogfood. Covers #345, #348; README/TOOLS-MAP gcal rows + 180 count fix. Covers #345, #348, #349, #350.
+- agenda-roteiro (issue #345): extensions/gcal (free/busy API + --ics dev mode, urllib OAuth refresh, no deps) + plan.py roteiro packer + skills/roteiro (180 skills) + agenda-roteiro app dogfood. Covers #345, #348; README/TOOLS-MAP gcal rows + 180 count fix. Covers #345, #348, #349, #350, #351, #352.
 
 - reels batch-4: swe-2-flash model entry + MODEL-GUIDE fast-lane note (free until 2026-11-30); frontend-design micro-interactions spec; animation-direction direction grammar; ARCHETYPE-MAP harness-differentiator note; de-slop codebase mode; criador-de-devin-app skill (179 skills); 8 issues resolved. Covers #338, #339.
 - batch-4 follow-up evals: OpenViking + Google Artemis identified and evaluated (R3-02 waitlist resolved); SLEEP framework coverage note; 2 issues resolved. Covers #340.
