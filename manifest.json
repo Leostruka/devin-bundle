@@ -591,7 +591,7 @@
       "name": "impeccable",
       "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
       "purpose": "Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template.",
-      "export_hash": "11c61e54dd834f6277d9b25c5eed5de8c7463c86eb549eaa78bd0b6e3c949260",
+      "export_hash": "357e8e5293997612973bbcff165050f94d8e2f95c87119672f9725cae11e47b8",
       "exported_at": "2026-09-08T21:39:22.458310"
     },
     {
