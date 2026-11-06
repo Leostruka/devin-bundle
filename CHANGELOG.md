@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- design_lint deterministic linter (M2_02): rules_registry.py ported from impeccable antipatterns.json @c3bb418 (62 rules, upstream now Rust crates not .mjs); checks.py implements ALL 44 static-scope rules (html.parser + CSS regex; 14 browser + 4 designsys marked skipped); design_lint.py CLI (--json/--list-rules/--ignore, exit 0/1/2); look_ledger.py reskin detection (fonts+palette+skeleton hash); seeded fixtures + 9 tests. Covers M2_02.
+- design-lint gate hook (M2_05): scripts/design-lint-gate.py PostToolUse(write|edit) - 12 inline slop rules (no extension import), [DESIGN-LINT] via additionalContext, fail-open, UI-ext + path filters; hooks.v1.json registered (timeout 10); manifest/script_count 39->40; README/TOOLS-MAP/HOOKS-PIPELINE synced; 7 tests. Covers M2_05.
+
+- design_lint deterministic linter (M2_02): rules_registry.py ported from impeccable antipatterns.json @c3bb418 (62 rules, upstream now Rust crates not .mjs); checks.py implements ALL 46 static-scope rules (html.parser + CSS regex; 12 browser + 4 designsys marked skipped); design_lint.py CLI (--json/--list-rules/--ignore, exit 0/1/2); look_ledger.py reskin detection (fonts+palette+skeleton hash); seeded fixtures + 9 tests. Covers M2_02, #380.
 
 - design brain upgrades (M2_04): creative-engineering gains retrieval step-0 (search.py --domain style before archetype .md) + 5 Form Questions->corpus dial map + frontend-rules pointer for React/Next/RN; art-director deep_analysis answers 5FQ, requires direction-approved.md evidence (3 real + 3 alt, verbatim exemptions), cites vendored frontend-rules on React stacks; v3 contract intact; 5 contract tests. Covers M2_04, #379.
 
