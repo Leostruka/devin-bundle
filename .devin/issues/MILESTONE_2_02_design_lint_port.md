@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 02: `design_lint.py` - port deterministico das ~62 regras (impeccable + huashu)
 
-Status: planned · Source: github.com/pbakaus/impeccable (Apache-2.0, v4.7.0; `cli/engine/registry/antipatterns.mjs`, `scripts/detector/rules/checks.mjs`) + github.com/alchaincyf/huashu-design (MIT; `scripts/design_lint.py`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#4/B#5/C · Blocked-by: none · Blocks: M2_03, M2_05
+Status: resolved · Source: github.com/pbakaus/impeccable (Apache-2.0; `crates/live/assets/antipatterns.json` @ c3bb418 - upstream moved from .mjs to Rust) + github.com/alchaincyf/huashu-design (MIT; `scripts/design_lint.py`) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#4/B#5/C · Blocked-by: none · Blocks: M2_03, M2_05
 
 ## Contexto & Valor
 
@@ -32,3 +32,15 @@ Status: planned · Source: github.com/pbakaus/impeccable (Apache-2.0, v4.7.0; `c
 ## Non-goals
 
 Sem execucao de browser/CDP; sem servidor npx; sem analise de screenshots; escopo estatico apenas (regras `scope: browser` ficam para issue futura).
+
+## Answer
+
+Shipped inside `extensions/design-intelligence/` (same ext as M2_01 per spec):
+
+- `rules_registry.py` - generated from upstream `antipatterns.json` @ c3bb418 (Apache-2.0); 62 rules (slop+quality) with scope tags: 44 static / 14 browser / 4 designsys. Upstream note: the .mjs registry cited in Evidence no longer exists - impeccable moved to Rust crates; the JSON registry is the current source of truth.
+- `checks.py` - 44 implemented static checks (ALL static-scope rules; zero left unported): html.parser structure scan + CSS regex heuristics covering slop patterns (side-tab, border-accent-rounded, overused-font Inter/Roboto/Geist, gradient-text, ai-color-palette purple+cyan, cream-palette, nested-cards, bounce-easing, pulsing-dot, blinking-cursor, hard-offset-shadow, dark-glow, radial-halo/spotlight, repeating-stripes, codex-grid, thin-border-wide-shadow, marquee, em-dash-overuse, marketing-buzzword, aphoristic-cadence, theater-slop, oversized-h1, extreme-tracking, italic-serif, hero-eyebrow-chip, kicker, numbered-labels, icon-tile-stack, flat-type) + quality (gray-on-color, low-contrast WCAG ratio, line-length, cramped-padding, tight-leading, skipped-heading, justified, tiny-text, undersized-ui, all-caps, wide-tracking, broken-image, content-hidden, monotonous-spacing, repeated-text, shape-assembled).
+- `design_lint.py` - CLI `<dir|file> [--json] [--list-rules] [--ignore FILE]`; exit 0 clean / 1 usage / 2 findings; .designlintignore JSON {files,rules}.
+- `look_ledger.py` - visual signature (fonts+palette+skeleton hash) record/compare/check; reskin detection (same skeleton + different fonts/colors).
+- `tests/fixtures/` - seeded slop files (gradient, side-tab, marquee, contrast) + clean pair; 9 pytest tests covering registry counts, all-static-implemented, fixtures findings + exit codes, per-rule probes, ignore file, ledger reskin.
+
+Gates: 9/9 tests; `--list-rules` reports 62 rules/44 implemented; fixtures exit 2 clean exit 0.

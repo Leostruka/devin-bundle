@@ -1357,7 +1357,7 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "c68f8ef11675d63d6e43af7b90026b44d6734c054134622a0af5845c59b2cb2a",
+      "export_hash": "a4dec330397b0a708065db798cf4cf1d24ddd1fda5ec0db15a5e6a117214d157",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
