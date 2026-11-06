@@ -138,6 +138,34 @@ def validate_entry(entry):
     return ("phantom" if phantom else "suspect"), issues
 
 
+# --- Anti-leakage retention (harness2 lib.retain earlier-only) ---
+
+ID_REF_RE = re.compile(r"\bref-\d+\b")
+
+
+def check_earlier_only(entries):
+    """A refinement may only cite evidence earlier than itself.
+
+    Returns list of (index, ref_id, cited_id) violations: evidence text
+    referencing a refinement id that appears at the same or a later
+    position in the log (future or self citation = temporal leakage).
+    """
+    positions = {}
+    for i, entry in enumerate(entries):
+        rid = entry.get("id")
+        if isinstance(rid, str):
+            positions[rid] = i
+    violations = []
+    for i, entry in enumerate(entries):
+        rid = entry.get("id", "?")
+        evidence = entry.get("evidence", "") or ""
+        for cited in ID_REF_RE.findall(evidence):
+            j = positions.get(cited)
+            if j is not None and j >= i:
+                violations.append((i, rid, cited))
+    return violations
+
+
 # --- Temporal regression gate ---
 
 def _mean(values):
@@ -206,6 +234,7 @@ def main():
     suspect = 0
     valid = 0
 
+    entries = []
     try:
         with open(log_path, "r", encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
@@ -224,6 +253,7 @@ def main():
                 if entry.get("status") == "rolled-back":
                     continue
 
+                entries.append(entry)
                 category, issues = validate_entry(entry)
                 ref_id = entry.get("id", "?")
 
@@ -246,6 +276,16 @@ def main():
     except (OSError, IOError) as e:
         print(f"Error reading log: {e}", file=sys.stderr)
         sys.exit(0)
+
+    # Anti-leakage: evidence may only cite earlier entries
+    for idx, ref_id, cited in check_earlier_only(entries):
+        suspect += 1
+        print(
+            f"SUSPECT (entry {idx + 1}, id={ref_id}): cites later-or-self "
+            f"refinement id '{cited}' - temporal leakage (earlier-only "
+            f"retention violated)",
+            file=sys.stderr,
+        )
 
     print(f"\nRefinement Evidence Validation Summary:", file=sys.stderr)
     print(f"  Total: {total}  Valid: {valid}  Phantom suspects: {phantoms}  Other suspects: {suspect}", file=sys.stderr)

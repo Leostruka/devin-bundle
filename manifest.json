@@ -1494,8 +1494,8 @@
     },
     {
       "name": "validate-refinement-evidence.py",
-      "purpose": "Validator — checks refinements.log.jsonl for phantom guardrails",
-      "export_hash": "e3a7ddcbb23359226cfb565513711fc115e93a6974badb5144805c5df910b9e5",
+      "purpose": "Validator - checks refinements.log.jsonl for phantom guardrails + earlier-only retention (anti-leakage)",
+      "export_hash": "3c2c1ac21b9b72ad3f51cf5040e239c23a153ae7d00d7493affc6d482576ab4d",
       "exported_at": "2026-09-08T21:39:22.430943"
     },
     {

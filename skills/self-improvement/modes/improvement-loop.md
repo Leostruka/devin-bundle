@@ -193,6 +193,23 @@ Cada passo deve registrar `OUTCOME`, `CHECK`, `EXPECT` e `EVIDENCE`. O passo 4
 não pode alterar arquivo fora de `SCOPE`; o passo 9 não pode usar checkout
 amplo nem apagar alterações não relacionadas.
 
+### Disciplina PPC (Propose-Probe-Compose)
+
+Candidatos do Passo 3 carregam classe `CANDIDATE_CLASS`:
+- `INV` - invariante do harness (regra/gate/hook; vale para qualquer tarefa)
+- `DOM` - lição de domínio (conhecimento sobre esta codebase/tarefa)
+
+- **Propose**: gerar k candidatos INV + k DOM (cobertura, não consenso).
+- **Probe**: rodar os candidatos na MESMA tarefa-alvo e registrar evidência
+  comportamental por candidato (`probe_evidence`: comando + saída). Probe não
+  usa ground truth; mede contraste observável entre candidato e base.
+- **Compose**: agregadores independentes consomem o pool (cada um vê apenas
+  evidência, não a decisão do outro). Adoção exige `contrast: +`:
+  candidato superou a base na mesma tarefa; empate/negativo = manter base.
+- **Retenção anti-leakage**: uma lição/refinamento só pode citar evidência
+  ANTERIOR a si (ver `validate-refinement-evidence.py`; citação de entrada
+  posterior no log = violação).
+
 ### Passo 1 — OBSERVAR (Verify, não deduzir)
 Identificar uma falha **concreta e reproduzível** usando ferramentas.
 - `OUTCOME`: falha observada em estado real, com escopo e impacto.

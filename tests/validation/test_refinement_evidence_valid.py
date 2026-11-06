@@ -62,3 +62,35 @@ def test_temporal_regression_inconclusive_when_underpowered():
     verdict = vre.evaluate_batch_against_retained(current, retained, min_trials=3)
     assert verdict["verdict"] == "inconclusive", verdict
     assert "underpowered" in verdict["reason"].lower()
+
+
+def _entry(rid, evidence):
+    return {"id": rid, "evidence": evidence, "status": "applied"}
+
+
+def test_earlier_only_accepts_backward_citation():
+    """Citing an earlier refinement id is legal retention."""
+    entries = [
+        _entry("ref-001", "pytest failed: tests/test_a.py"),
+        _entry("ref-002", "same failure as ref-001; fix applied"),
+    ]
+    assert vre.check_earlier_only(entries) == []
+
+
+def test_earlier_only_rejects_future_and_self_citation():
+    """Citing a later entry or itself is temporal leakage."""
+    entries = [
+        _entry("ref-001", "see follow-up ref-003 for the fix"),
+        _entry("ref-002", "evidence points to ref-002 itself"),
+        _entry("ref-003", "pytest ok: tests/test_a.py"),
+    ]
+    violations = vre.check_earlier_only(entries)
+    assert (0, "ref-001", "ref-003") in violations
+    assert (1, "ref-002", "ref-002") in violations
+    assert len(violations) == 2
+
+
+def test_earlier_only_ignores_unknown_ids():
+    """Cited ids absent from the log cannot be ordered; not a violation."""
+    entries = [_entry("ref-001", "pattern like ref-999 but unrelated")]
+    assert vre.check_earlier_only(entries) == []

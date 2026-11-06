@@ -1,6 +1,6 @@
 # MILESTONE 2 / ISSUE 08: `self-improvement` PPC upgrade - Propose-Probe-Compose + anti-leakage
 
-Status: planned · Source: github.com/google-research/harness2 (Apache-2.0; `core/{recursion,schedule,tree,library_store}.py`, arXiv:2610.14224) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#1/E · Blocked-by: none · Blocks: M2_09
+Status: resolved · Source: github.com/google-research/harness2 (Apache-2.0; `core/{recursion,schedule,tree,library_store}.py`, arXiv:2610.14224) · Matrix: `.devin/research/MILESTONE_NEXTGEN_MATRIX.md` sec B#1/E · Blocked-by: none · Blocks: M2_09
 
 ## Contexto & Valor
 
@@ -29,3 +29,11 @@ Status: planned · Source: github.com/google-research/harness2 (Apache-2.0; `cor
 ## Non-goals
 
 Sem execucao de rollouts automaticos (probe e humano/agente guiado); sem sweep CLI; sem mudar `check-push-green.py`.
+
+## Answer
+
+- improvement-loop.md += "Disciplina PPC" entre o contrato e o Passo 1: candidatos `CANDIDATE_CLASS` INV|DOM; Propose (k INV + k DOM), Probe (mesma tarefa-alvo, probe_evidence = cmd+output, sem ground truth), Compose (agregadores independentes; adocao so com `contrast: +`); retencao earlier-only.
+- refine.md: campos `class`/`probe_evidence`/`contrast` na tabela do log + secao "PPC acceptance + anti-leakage retention".
+- harness-reference.md: row 10 - harness2 PPC adapted (arXiv:2610.14224).
+- scripts/validate-refinement-evidence.py += `check_earlier_only`: cita ref-id posterior ou a si mesmo = SUSPECT "temporal leakage"; desconhecidos ignorados.
+- 3 testes novos em test_refinement_evidence_valid.py: backward-citation OK; future+self citations violam; unknown ids tolerados. 7/7 verde; skill-format 365/365.
