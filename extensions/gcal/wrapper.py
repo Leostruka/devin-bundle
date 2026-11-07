@@ -2,14 +2,19 @@
 """gcal wrapper: free/busy + roteiro planning + event writer CLI.
 
 Subcommands:
-  free-busy --ics FILE | --calendars id[,id] [--from ISO --to ISO]
-  plan      --tasks FILE.json (--ics FILE | --slots FILE.json)
+  free-busy --ics FILE | --ics-url URL | --caldav | [--calendars id[,id]] [--from ISO --to ISO]
+  plan      --tasks FILE.json (--ics FILE | --ics-url URL | --slots FILE.json | --caldav)
             [--from ISO --to ISO]
   add       --summary X --start ISO --end ISO [--calendar NAME-or-id]
-            [--desc X] [--loc X] [--tz Zone] --confirm
+            [--desc X] [--loc X] [--tz Zone] [--caldav] --confirm
   apply     --roteiro FILE.json [--calendar NAME-or-id] [--prefix X]
-            --confirm
+            [--caldav] --confirm
   doctor    config presence report (never prints secrets)
+
+Backends: default Google Calendar (BUNDLE_GCAL_* / credentials.toml
+[gcal]); --caldav selects CalDAV (BUNDLE_CALDAV_URL/USER/PASSWORD or
+[caldav] in credentials.toml) - app-password servers like iCloud,
+Fastmail, Nextcloud, Radicale. --ics stays the offline dev path.
 
 Writes need --confirm: without it the CLI prints the payload and exits
 0 with status "confirm-required" (never calls the API).
@@ -23,9 +28,11 @@ Defaults: --from today 08:00 local-naive-UTC, --to same day 20:00.
 import json
 import os
 import sys
+import urllib.request
 from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import caldav  # noqa: E402
 import gcal  # noqa: E402
 import plan  # noqa: E402
 
@@ -58,52 +65,92 @@ def _day_range(argv):
 
 def cmd_doctor():
     creds = gcal.load_credentials()
+    dav = caldav.load_credentials()
+    gcal_env = bool(os.environ.get("BUNDLE_GCAL_CLIENT_ID"))
+    caldav_env = bool(os.environ.get("BUNDLE_CALDAV_URL"))
     emit({
-        "status": "ok" if creds else "missing",
+        "status": "ok" if (creds or dav) else "missing",
         "credentials": {
-            "env": bool(os.environ.get("BUNDLE_GCAL_CLIENT_ID")),
-            "credentials_toml": bool(
-                creds and not os.environ.get("BUNDLE_GCAL_CLIENT_ID")),
+            "gcal": {"env": gcal_env,
+                     "credentials_toml": bool(creds and not gcal_env)},
+            "caldav": {"env": caldav_env,
+                       "credentials_toml": bool(dav and not caldav_env)},
         },
         "ics_dev_mode": True,
-        "hint": (None if creds else
-                 "set BUNDLE_GCAL_CLIENT_ID/SECRET/REFRESH_TOKEN or "
-                 "[gcal] in credentials.toml; --ics works offline. "
-                 "writes need the refresh token to carry "
-                 "calendar.events scope"),
-    }, 0 if creds else 1)
+        "hint": (None if (creds or dav) else
+                 "set BUNDLE_GCAL_* / [gcal] for Google Calendar, or "
+                 "BUNDLE_CALDAV_URL/USER/PASSWORD / [caldav] for CalDAV "
+                 "(app-password servers); --ics works offline. "
+                 "writes need --confirm"),
+    }, 0 if (creds or dav) else 1)
 
 
 def _busy_from_source(argv):
-    """Return (busy, source) or emit missing."""
+    """Return (busy, source, all_day) or emit missing."""
     ics = _arg(argv, "--ics")
     if ics:
         if not os.path.isfile(ics):
             emit({"status": "error",
                   "stderr": f"ics file not found: {ics}"}, 2)
-        return gcal.ics_busy(
-            open(ics, encoding="utf-8", errors="replace").read()), "ics"
+        return (gcal.ics_busy(
+            open(ics, encoding="utf-8", errors="replace").read()),
+            "ics", None)
+    ics_url = _arg(argv, "--ics-url")
+    if ics_url:
+        if not ics_url.startswith(("http://", "https://")):
+            emit({"status": "error",
+                  "stderr": "--ics-url must be http(s)"}, 2)
+        try:
+            with urllib.request.urlopen(
+                    ics_url, timeout=gcal.HTTP_TIMEOUT) as resp:
+                text = resp.read().decode("utf-8", "replace")
+        except Exception as e:
+            emit({"status": "error",
+                  "stderr": f"ics-url fetch failed: {e}"}, 1)
+        return gcal.ics_busy(text), "ics-url", None
+    if "--caldav" in argv:
+        creds = caldav.load_credentials()
+        if not creds:
+            emit({"status": "missing",
+                  "stderr": "no caldav credentials; set "
+                            "BUNDLE_CALDAV_URL/USER/PASSWORD or "
+                            "credentials.toml [caldav]"}, 1)
+        names = [c.strip() for c in
+                 (_arg(argv, "--calendars") or "").split(",") if c.strip()]
+        tmin, tmax = _day_range(argv)
+        try:
+            return (caldav.free_busy(creds, calendars=names or None,
+                                     tmin=tmin, tmax=tmax),
+                    "caldav", None)
+        except Exception as e:
+            emit({"status": "error",
+                  "stderr": f"caldav free-busy failed: {e}"}, 1)
     creds = gcal.load_credentials()
     if not creds:
         emit({"status": "missing",
-              "stderr": "no gcal credentials; use --ics for dev mode or "
-                        "set BUNDLE_GCAL_* / credentials.toml [gcal]"}, 1)
+              "stderr": "no gcal credentials; use --ics for dev mode, "
+                        "--caldav for CalDAV, or set BUNDLE_GCAL_* / "
+                        "credentials.toml [gcal]"}, 1)
     cals = (_arg(argv, "--calendars", "primary") or "primary").split(",")
     tmin, tmax = _day_range(argv)
     try:
         token = gcal.access_token(creds)
-        return gcal.free_busy(token, [c.strip() for c in cals],
-                              tmin, tmax), "api"
+        res = gcal.free_busy(token, [c.strip() for c in cals],
+                             tmin, tmax)
+        return res["busy"], "api", res["all_day"]
     except Exception as e:  # network/HTTP/JSON failures -> error env
         emit({"status": "error", "stderr": f"free-busy failed: {e}"}, 1)
 
 
 def cmd_free_busy(argv):
     tmin, tmax = _day_range(argv)
-    busy, src = _busy_from_source(argv)
-    emit({"status": "ok", "source": src, "from": tmin, "to": tmax,
-          "busy": busy,
-          "free_slots": gcal.free_slots(busy, tmin, tmax)})
+    busy, src, all_day = _busy_from_source(argv)
+    out = {"status": "ok", "source": src, "from": tmin, "to": tmax,
+           "busy": busy,
+           "free_slots": gcal.free_slots(busy, tmin, tmax)}
+    if all_day:
+        out["all_day"] = all_day
+    emit(out)
 
 
 def cmd_plan(argv):
@@ -127,7 +174,7 @@ def cmd_plan(argv):
             slots = slots.get("free_slots", [])
     else:
         tmin, tmax = _day_range(argv)
-        busy, _ = _busy_from_source(argv)
+        busy, _, _ = _busy_from_source(argv)
         slots = gcal.free_slots(busy, tmin, tmax)
     emit({"status": "ok", "roteiro": plan.pack(tasks, slots)})
 
@@ -142,6 +189,76 @@ def _write_creds():
     return creds
 
 
+def _caldav_creds_or_emit():
+    creds = caldav.load_credentials()
+    if not creds:
+        emit({"status": "missing",
+              "stderr": "no caldav credentials; set BUNDLE_CALDAV_* or "
+                        "credentials.toml [caldav]"}, 1)
+    return creds
+
+
+def _cmd_add_caldav(argv, summary, start, end, calendar):
+    try:
+        ics = caldav.event_ics(
+            summary, start, end, description=_arg(argv, "--desc"),
+            location=_arg(argv, "--loc"))
+    except Exception as e:
+        emit({"status": "error", "stderr": f"bad datetime: {e}"}, 2)
+    if "--confirm" not in argv:
+        emit({"status": "confirm-required", "backend": "caldav",
+              "calendar": calendar,
+              "events": [{"summary": summary, "start": start,
+                          "end": end, "ics": ics}],
+              "hint": "re-run with --confirm to write"})
+    creds = _caldav_creds_or_emit()
+    try:
+        href, created_cal = caldav.ensure_calendar(creds, calendar)
+        created = caldav.create_event(creds, href, ics)
+    except Exception as e:
+        emit({"status": "error", "stderr": f"caldav add failed: {e}"}, 1)
+    emit({"status": "ok", "backend": "caldav", "calendar": href,
+          "calendar_created": created_cal, "event": created})
+
+
+def _cmd_apply_caldav(argv, schedule, calendar, prefix):
+    events = []
+    for block in schedule:
+        try:
+            ics = caldav.event_ics(
+                prefix + str(block.get("task", "block")),
+                block["start"], block["end"],
+                description="roteiro block")
+        except (KeyError, TypeError, ValueError) as e:
+            emit({"status": "error",
+                  "stderr": f"bad block {block}: {e}"}, 2)
+        events.append({"task": prefix + str(block.get("task", "block")),
+                       "start": block["start"], "end": block["end"],
+                       "ics": ics})
+    if "--confirm" not in argv:
+        emit({"status": "confirm-required", "backend": "caldav",
+              "calendar": calendar, "events": events,
+              "hint": "re-run with --confirm to write"})
+    creds = _caldav_creds_or_emit()
+    try:
+        href, created_cal = caldav.ensure_calendar(creds, calendar)
+    except Exception as e:
+        emit({"status": "error",
+              "stderr": f"caldav calendar failed: {e}"}, 1)
+    created, failed = [], []
+    for ev in events:
+        try:
+            created.append({"task": ev["task"],
+                            **caldav.create_event(creds, href, ev["ics"])})
+        except Exception as e:
+            failed.append({"summary": ev["task"], "stderr": str(e)})
+    emit({"status": "ok" if not failed else "partial",
+          "backend": "caldav", "calendar": href,
+          "calendar_created": created_cal,
+          "created": created, "failed": failed},
+         0 if not failed else 1)
+
+
 def cmd_add(argv):
     summary = _arg(argv, "--summary")
     start = _arg(argv, "--start")
@@ -150,6 +267,8 @@ def cmd_add(argv):
         emit({"status": "error",
               "stderr": "add needs --summary X --start ISO --end ISO"}, 2)
     calendar = _arg(argv, "--calendar", gcal.AGENT_CALENDAR)
+    if "--caldav" in argv:
+        return _cmd_add_caldav(argv, summary, start, end, calendar)
     try:
         payload = gcal.event_payload(
             summary, start, end, description=_arg(argv, "--desc"),
@@ -180,10 +299,16 @@ def cmd_apply(argv):
             data = json.loads(fh.read())
     except (OSError, ValueError) as e:
         emit({"status": "error", "stderr": f"bad roteiro file: {e}"}, 2)
-    schedule = data.get("schedule", data) if isinstance(data, dict) \
-        else data
+    if isinstance(data, dict):
+        inner = data.get("roteiro")
+        schedule = (inner.get("schedule") if isinstance(inner, dict)
+                    else data.get("schedule", []))
+    else:
+        schedule = data
     calendar = _arg(argv, "--calendar", gcal.AGENT_CALENDAR)
     prefix = _arg(argv, "--prefix", "")
+    if "--caldav" in argv:
+        return _cmd_apply_caldav(argv, schedule, calendar, prefix)
     payloads = []
     for block in schedule:
         try:

@@ -17,6 +17,7 @@ Credential contract:
 import json
 import os
 import re
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 
@@ -26,7 +27,6 @@ except ImportError:  # python < 3.11
     tomllib = None
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
-FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy"
 EVENTS_URL = ("https://www.googleapis.com/calendar/v3/calendars/"
               "{calendar_id}/events")
 CAL_LIST_URL = ("https://www.googleapis.com/calendar/v3/users/me/"
@@ -102,16 +102,42 @@ def access_token(creds):
 
 
 def free_busy(token, calendars, tmin, tmax):
-    """Return merged busy [{start,end}] across calendars (ISO strs)."""
-    data = _post_json(FREEBUSY_URL, {
-        "timeMin": tmin,
-        "timeMax": tmax,
-        "items": [{"id": c} for c in calendars],
-    }, headers={"Authorization": "Bearer " + token})
-    busy = []
-    for cal in data.get("calendars", {}).values():
-        busy.extend(cal.get("busy", []))
-    return busy
+    """-> {"busy": [{start,end}], "all_day": [{summary,start}]}.
+
+    events.list per calendar (timed events only block slots; all-day
+    events are informational - reminders/holidays must not zero out a
+    planning day). Transparent + cancelled events excluded."""
+    busy, all_day = [], []
+    for cal in calendars:
+        page_token = None
+        for _ in range(5):  # pagination cap
+            params = {
+                "timeMin": tmin, "timeMax": tmax,
+                "singleEvents": "true", "orderBy": "startTime",
+                "maxResults": 250,
+            }
+            if page_token:
+                params["pageToken"] = page_token
+            url = ("https://www.googleapis.com/calendar/v3/calendars/"
+                   + urllib.parse.quote(cal, safe="") + "/events?"
+                   + urllib.parse.urlencode(params))
+            data = _get_json(url,
+                             headers={"Authorization": "Bearer " + token})
+            for e in data.get("items", []):
+                if e.get("status") == "cancelled" \
+                        or e.get("transparency") == "transparent":
+                    continue
+                start, end = e.get("start", {}), e.get("end", {})
+                if "dateTime" in start and "dateTime" in end:
+                    busy.append({"start": start["dateTime"],
+                                 "end": end["dateTime"]})
+                elif "date" in start:
+                    all_day.append({"summary": e.get("summary"),
+                                    "start": start["date"]})
+            page_token = data.get("nextPageToken")
+            if not page_token:
+                break
+    return {"busy": busy, "all_day": all_day}
 
 
 def _parse_dt(s):
@@ -238,10 +264,13 @@ def ics_busy(text):
             in_ev, cur = True, {}
         elif prop == "END" and val.upper() == "VEVENT":
             if cur.get("start") and cur.get("end") \
-                    and cur["end"] > cur["start"]:
+                    and cur["end"] > cur["start"] \
+                    and cur.get("transp") != "TRANSPARENT":
                 busy.append({"start": cur["start"].isoformat(),
                              "end": cur["end"].isoformat()})
             in_ev = False
+        elif in_ev and prop == "TRANSP":
+            cur["transp"] = val.upper()
         elif in_ev and prop in ("DTSTART", "DTEND"):
             dt = _ics_dt(val)
             if dt is not None:

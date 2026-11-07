@@ -52,6 +52,17 @@ def test_ics_busy_skips_malformed_and_inverted():
     assert gcal.ics_busy(bad) == []
 
 
+def test_ics_busy_skips_transparent_events():
+    ics = "BEGIN:VCALENDAR\n" \
+          "BEGIN:VEVENT\nDTSTART:20261106T090000Z\n" \
+          "DTEND:20261106T100000Z\nSUMMARY:busy\nEND:VEVENT\n" \
+          "BEGIN:VEVENT\nDTSTART:20261106T110000Z\n" \
+          "DTEND:20261106T120000Z\nSUMMARY:free-marked\n" \
+          "TRANSP:TRANSPARENT\nEND:VEVENT\nEND:VCALENDAR\n"
+    busy = gcal.ics_busy(ics)
+    assert len(busy) == 1 and busy[0]["start"].startswith("2026-11-06T09")
+
+
 def test_free_slots_gaps_and_edges():
     busy = [{"start": "2026-11-06T10:00:00+00:00",
              "end": "2026-11-06T11:00:00+00:00"},
@@ -117,6 +128,39 @@ def test_wrapper_ics_free_busy(tmp_path):
     assert p.returncode == 0 and out["status"] == "ok"
     assert out["source"] == "ics" and len(out["busy"]) == 4
     assert out["free_slots"]
+
+
+def test_wrapper_ics_url_free_busy():
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    class H(BaseHTTPRequestHandler):
+        def do_GET(self):
+            body = ICS.encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/calendar")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *a):
+            pass
+
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        port = srv.server_address[1]
+        p = subprocess.run(
+            [sys.executable, WRAPPER, "free-busy",
+             "--ics-url", f"http://127.0.0.1:{port}/cal.ics",
+             "--from", "2026-11-06T08:00:00Z",
+             "--to", "2026-11-06T18:00:00Z"],
+            capture_output=True, text=True)
+        out = json.loads(p.stdout)
+        assert p.returncode == 0 and out["status"] == "ok"
+        assert out["source"] == "ics-url" and len(out["busy"]) == 4
+    finally:
+        srv.shutdown()
 
 
 def test_wrapper_missing_creds_graceful(tmp_path):
