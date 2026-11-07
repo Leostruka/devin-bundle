@@ -1582,9 +1582,23 @@
       "source": "devin-bundle",
       "purpose": "PostToolUse(write|edit): warns on AI-UI slop at write time - 12 inline regex rules (no extension import); [DESIGN-LINT] via additionalContext; fail-open, never blocks (M2_05)",
       "export_hash": "63949177f719f0d6f66485f0831aff8365394bef58546793fbbbc0dbd3b431df"
+    },
+    {
+      "name": "dep-audit.py",
+      "source": "devin-bundle",
+      "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
+      "export_hash": "75e08d61e7e5dd9753d14bc0eab9b754482c4242db5851fc4266694ce3978630",
+      "exported_at": "2026-11-07T14:17:08.896323"
+    },
+    {
+      "name": "dep-audit-gate.py",
+      "source": "devin-bundle",
+      "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
+      "export_hash": "2df1eb88de3e90c37022c896e19cc6558bd86fc79247e8d902d4e8c948a8d21d",
+      "exported_at": "2026-11-07T14:17:08.896323"
     }
   ],
-  "script_count": 40,
+  "script_count": 42,
   "mcp_count": 1,
   "agent_count": 17,
   "tool_count": 28,

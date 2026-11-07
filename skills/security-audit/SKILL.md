@@ -19,7 +19,7 @@ Defensive security analysis of code, dependencies, and configuration.
 
 1. **Scope the surface.** Identify code paths, inputs, auth, secrets, and network boundaries.
 2. **Run static analysis.** Use project linters and SAST tools if available.
-3. **Check dependencies.** Look for known CVEs, outdated packages, suspicious licenses.
+3. **Check dependencies.** Run `python scripts/dep-audit.py` (auto-detects ecosystems; shells to installed pip-audit/npm audit/cargo audit/osv-scanner). Missing scanners are reported as skipped, never installed. `dep-audit-gate.py` (PostToolUse on `^exec$`) already surfaces `[DEP-AUDIT]` findings after install commands.
 4. **Hunt for secrets.** Run secret-scanning tools or grep for high-risk patterns.
 5. **Review auth and input.** Verify auth checks, input validation, output encoding, and least privilege.
 6. **Document findings.** Rank by severity; do not exploit, only detect.
