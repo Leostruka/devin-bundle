@@ -1596,9 +1596,16 @@
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
       "export_hash": "2df1eb88de3e90c37022c896e19cc6558bd86fc79247e8d902d4e8c948a8d21d",
       "exported_at": "2026-11-07T14:17:08.896323"
+    },
+    {
+      "name": "roadmap-board.py",
+      "source": "devin-bundle",
+      "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
+      "export_hash": "cb492dff64896aa8617b9ad179f2fb81cb14df16b971c70afeac55e824d83123",
+      "exported_at": "2026-11-07T15:46:30.089176"
     }
   ],
-  "script_count": 42,
+  "script_count": 43,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,
