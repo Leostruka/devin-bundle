@@ -59,7 +59,8 @@ VALID_PROFILES = frozenset({
     "product-manager", "qa-ci", "README", "red-team-lead", "repo-reviewer",
     "researcher", "reviewer", "scrum-master", "security-auditor",
     "subagent_explore",
-    "subagent_general", "tech-lead",
+    "subagent_general", "tech-lead", "data-analyst", "sre",
+    "ux-researcher", "performance-engineer",
     "thermo-nuclear-code-quality-review-subagent",
     "sentinel", "thermo-nuclear-review-subagent", "triage-labels",
 })
