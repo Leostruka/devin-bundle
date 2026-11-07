@@ -66,3 +66,16 @@ All output is JSON (`status`, `command`, `stdout`, `stderr`,
 - No flags forwarded to the CLI; positional args only (the wrapper adds
   `--json` itself for deterministic output).
 - Output bounded at 1 MiB per stream; 120s timeout.
+
+## Curated source candidates
+
+Verified or candidate feeds worth `rss.feed` queries (recorded from
+reels batch-5 research; re-verify before citing):
+
+- `https://airesearches.tech/feed` - AI Research newsletter (beehiiv);
+  candidate(unverified): HTTP 403 Cloudflare challenge to curl on
+  2026-11-07, reachable via browser/session only.
+- `github.com/airesearch-official/AI-Weekly-News` - weekly "HUGE AI NEWS"
+  archive with summaries + YouTube links (verified repo, 2026-11-07).
+- YouTube "AI Research" channel - weekly roundup videos matching the
+  carousel format; use `youtube.transcript`.

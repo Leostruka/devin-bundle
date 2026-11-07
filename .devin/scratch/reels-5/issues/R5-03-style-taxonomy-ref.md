@@ -1,6 +1,6 @@
 # design-intelligence: visual-style taxonomy reference
 
-status: ready-for-agent
+status: resolved
 priority: P3
 source: reels batch-5 survey, talhaxcodes DdMUB4kskYv
 
@@ -23,6 +23,10 @@ Record the decision + rejected alternative in the issue Answer. Do NOT scrape/mi
 
 ## Acceptance
 
-- [ ] One canonical source cited in the chosen surface
-- [ ] No bulk vendored content
-- [ ] `python audit.py` green
+- [x] One canonical source cited in the chosen surface
+- [x] No bulk vendored content
+- [x] `python audit.py` green
+
+## Answer
+
+Option A taken (smallest): pointer block added to `skills/frontend-design/SKILL.md` citing the canonical source - filtercoffee.dev "field guide to web design styles" (22 styles, 5 groups). Rejected Option B (vendored styles CSV into design-intelligence corpus): licensing/drift risk + schema fit unverified; pointer achieves retrieval without bulk content. No vendored list added.

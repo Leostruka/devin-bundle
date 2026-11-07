@@ -1,6 +1,6 @@
 # docs: SLEEP framework pointer (Google continual-learning paper)
 
-status: ready-for-agent
+status: resolved
 priority: P3
 source: reels batch-5 survey, parthknowsai DfZuDIUOGJZ; eval already done in batch-4 follow-up
 
@@ -18,5 +18,9 @@ Doc-only cross-link: wherever the batch-4 follow-up SLEEP row lives, add the ree
 
 ## Acceptance
 
-- [ ] Reel->eval cross-reference recorded in the appropriate existing doc
-- [ ] arXiv:2606.03979 cited (not the 2605.26099 collision)
+- [x] Reel->eval cross-reference recorded in the appropriate existing doc
+- [x] arXiv:2606.03979 cited (not the 2605.26099 collision)
+
+## Answer
+
+Cross-link added in `.devin/research/2026-11-06-reels-batch4-survey.md` SLEEP row: reel citation parthknowsai DfZuDIUOGJZ + batch-5 survey path; arXiv:2606.03979 cited (2605.26099 collision avoided). No new analysis - eval already existed.
