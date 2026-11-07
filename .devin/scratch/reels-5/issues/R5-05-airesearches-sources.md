@@ -13,7 +13,7 @@ Carousel post ("Another huge week in AI and tech. Swipe through...", ~20 clips, 
 - YouTube "AI Research" channel: weekly roundups matching the carousel format.
 - X `@airesearch_ai`, Threads `@airesearches`. NOT affiliated with the unrelated "AI Search" (@theaisearch) entity.
 
-beehiiv exposes `/feed` by default, `https://airesearches.tech/feed` likely works but unverified.
+beehiiv exposes `/feed` by default. VERIFIED 2026-11-07: `https://airesearches.tech/feed` returns HTTP 403 Cloudflare challenge to curl; RSS likely exists but is bot-gated; treat as candidate(unverified), reachable only via browser/session.
 
 Bundle surface: `skills/agent-reach` (credential-free channels: YouTube transcripts/metadata, RSS/Atom) and `skills/research` source lists. Prior batch queued "PHP/Laravel sources listicle = agent-reach rss feed candidates" - same pattern.
 
