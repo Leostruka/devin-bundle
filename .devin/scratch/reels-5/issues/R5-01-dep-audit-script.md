@@ -1,6 +1,6 @@
 # dep-audit: dependency vulnerability scanner (script + optional hook)
 
-status: ready-for-agent
+status: resolved
 priority: P2
 source: reels batch-5 survey (.devin/research/2026-11-07-reels-batch5-survey.md), matheusgomes DcUOPkPzorX
 
@@ -21,6 +21,18 @@ Add a deterministic dep-audit capability:
 
 ## Acceptance
 
-- [ ] `python scripts/dep-audit.py` on a fixture project returns structured findings without network when scanners absent
-- [ ] hook fires only on install-like commands; fail-open on error
-- [ ] `python audit.py` + `python -m pytest` green
+- [x] `python scripts/dep-audit.py` on a fixture project returns structured findings without network when scanners absent
+- [x] hook fires only on install-like commands; fail-open on error
+- [x] `python audit.py` + `python -m pytest` green
+
+## Answer
+
+Shipped in reels-5 wave-1 (commit db0747b, branch reels-5-wave1):
+
+- `scripts/dep-audit.py`: detects py/node/rust/go/php/ruby/elixir manifests; dispatches to first available scanner per ecosystem (pip-audit, npm audit --json, cargo audit, govulncheck, osv-scanner). Missing scanners -> `skipped[]` with reason, never installed. JSON contract `{ok, detected, scanned[{ecosystem,scanner,findings[]}], skipped, errors}`; exit 1 only on internal error.
+- `scripts/dep-audit-gate.py`: PostToolUse(^exec$) hook; INSTALL_RE pre-filter (pip/uv/poetry/pipenv install|add|sync|update, npm/pnpm/yarn/bun install|i|add|ci|update|up, cargo add|install|update, go get|install|mod tidy, composer require|install|update); scanner-presence check before running audit; emits `[DEP-AUDIT]` additionalContext listing pkg:id findings (max 5 + overflow count); fail-open on every error path. Registered in hooks.v1.json timeout 35.
+- `skills/security-audit/SKILL.md` step 3 now points at dep-audit.py.
+- manifest.json script_count 40->42; README + TOOLS-MAP counts and hook table synced; CHANGELOG entry added.
+- `tests/test_dep_audit.py`: 10 tests (detection, scanner-absent skip, pip-audit/npm-audit JSON parsing, gate pre-filter/fail-open/findings paths). All stubbed, no network.
+
+Verification: `python audit.py` 0 errors (warnings all pre-existing live-drift/ledger); `pytest tests/test_dep_audit.py` 10 passed; full `python -m pytest` green (2202 collected).

@@ -1,6 +1,6 @@
 # frontend-design: upload & file-state UX checklist
 
-status: ready-for-agent
+status: resolved
 priority: P2
 source: reels batch-5 survey, kairozmind DfZdE8plZ0A (adapted from designmotionhq.com/patterns/file-upload-ux)
 
@@ -23,6 +23,14 @@ Add a compact "Upload & file states" subsection to `skills/frontend-design/SKILL
 
 ## Acceptance
 
-- [ ] Section present, <=15 lines, checklist form
-- [ ] Source URL cited
-- [ ] `python audit.py` green (skill structure checks)
+- [x] Section present, <=15 lines, checklist form
+- [x] Source URL cited
+- [x] `python audit.py` green (skill structure checks)
+
+## Answer
+
+Shipped in reels-5 wave-1 (commit db0747b, branch reels-5-wave1):
+
+`skills/frontend-design/SKILL.md` gained an "Upload & file states" section after the motion block (~lines 92-105): drag-over border/glow/copy response, honest progress with percent+ETA, inline retry retaining selection, thumbnail/type/size preview, per-file progress+retry for queues; anti-patterns listed (spinner-only, silent dropzone, forced reselect, missing per-file state). Source cited: https://designmotionhq.com/patterns/file-upload-ux.
+
+Verification: `python audit.py` 0 errors; section is checklist form, 14 lines.
