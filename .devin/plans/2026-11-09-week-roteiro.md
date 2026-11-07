@@ -23,6 +23,5 @@ Notes:
 - Free-time protocol (day-run-2026-11-08.md) applies to ALL gaps:
   explore -> research -> architect -> file issues. No idle time.
 - Sunday 11-08 blocks already on AGdevin calendar (4 events confirmed).
-- Week events NOT yet written to calendar - `apply --confirm` pending
-  explicit approval (preview: `wrapper.py apply --roteiro
-  .devin/scratch/dev-org-ladder/roteiro-week.json --prefix "[week] "`).
+- Week events WRITTEN to AGdevin 2026-11-07 ~21:05 (10 created, 0
+  failed, prefix "[week] ").
