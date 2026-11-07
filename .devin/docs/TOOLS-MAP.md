@@ -133,6 +133,11 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 - `hookSpecificOutput.updatedToolOutput` (PostToolUse): reescreve o resultado da tool antes do modelo ler (redaction).
 - `session_id` e `prompt_id` no stdin de todos os eventos (`prompt_id` rotaciona a cada prompt do usuário e fica ausente antes do primeiro prompt, ex.: `SessionStart`).
 
+**Campos/superfícies de hook novos (3000.12.17):**
+- `ContextInput`: hooks podem observar texto repassado ao contexto (ex.: relatórios de subagentes). Changelog-only até agora; sem consumer no bundle.
+- `PostToolUse`: quando o resultado é truncado, o payload passa a incluir o path do output completo; candidato para `post-exec.py`/`silent-error-review` lerem o arquivo em vez do texto inline.
+- `UserPromptSubmit` agora dispara também em transferência de task via `/handoff`; `constraint-pinning.py` cobre o canal cloud.
+
 **Scripts manuais (não-hooks):**
 - validate-refinement-evidence.py — verifica refinements.log.jsonl
 - validate-skill-format.py — valida formato de skills
@@ -210,6 +215,13 @@ tools com side effects - não é o agente pedindo, é o runtime.
 | `--verbosity <0..3>` (`DEVIN_VERBOSITY`) | CLI flag | Sobrescreve `agent.verbosity` apenas na execução atual (`0` quiet .. `3` verbose) |
 | `/billing on\|off` | REPL | Liga/desliga provider billing (modelos com `*` no picker cobram via plano do provider) |
 | `Alt+Enter` no `/model` picker | REPL | Troca modelo só na sessão atual (`model_picker.confirm_for_session` rebinda) |
+| `/vim` | REPL | Edição Vim no prompt (Esc = Normal mode) (3000.12.17) |
+| `Alt+P` / `Alt+N` no `/model` picker | REPL | Pina modelos; pins aparecem primeiro e `Alt+N` cicla sem reabrir o picker (3000.12.17) |
+| `permission_mode` em `/config` | REPL | Modo de permissão inicial de novas sessões locais; `--permission-mode` sobrescreve por launch (3000.12.17) |
+| `devin mcp list --json` | CLI | Inventário machine-readable de MCP servers (estado, transport, tools desabilitadas) (3000.12.17) |
+| `Alt+V` (Windows) / `Ctrl+V`,`Alt+V` (WSL) | REPL | Cola imagens do clipboard (3000.12.17) |
+| `/resume` com projeto+idade; `Alt+G` | REPL | Busca por projeto; alterna dir atual vs todos os projetos (3000.12.17) |
+| `1`/`2`/`3`/`4` no approval prompt | REPL | Once/Session/Project/Always sem setas (3000.12.17) |
 | `devin rules`, `devin skills`, `devin plugins`, `devin doctor` | Config | Gerência nativa de rules/skills/plugins e diagnóstico |
 
 **Nota 3000.11.1:** bloco `otel` no `config.json` ou `OTEL_EXPORTER_OTLP_*`
@@ -230,13 +242,23 @@ exportam eventos/métricas para um collector OpenTelemetry; não adotado
   e `e` para editar o comando.
 - Steering agora interrompe imediatamente preservando comandos longos.
 
-## Modelos disponíveis (Devin CLI `3000.11.234`)
+**Notas 3000.12.17:**
+- `/config` salva mudanças sem restart (valem em `/clear`, `/resume`, `/cloud`).
+- `UserPromptSubmit` cobre `/handoff`; `PostToolUse` recebe path do output
+  completo quando truncado; `ContextInput` observa texto repassado
+  (subagent reports); changelog-only até os docs de hooks listarem.
+- Fixes relevantes: approvals de plan mostram resumo+path; Accept Edits/Smart
+  reconhecem edits em network shares Windows/WSL; `devin -p` continua após
+  tool call negada; imagens indecodificáveis não derrubam o turn.
+
+## Modelos disponíveis (Devin CLI `3000.12.17`)
 
 | model_uid | Label | Effort | Context | Custo | Recomendado |
 |---|---|---|---|---|---|
 | `BUNDLE_DEFAULT_MODEL` (`swe-2-high`) | SWE-2 High (parent) | high | 262K | **Free** | ✓ (config.json) |
 | `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`) | SWE-2 Medium | medium | 262K | **Free** | Tarefas simples, ajustes pontuais, scripts isolados |
 | `BUNDLE_MAX_MODEL` (`swe-2-max`) | SWE-2 Max | max | 262K | **Free** | Tarefas abertas, refactors globais, long-horizon |
+| `swe-2-flash-{medium,high,max}` | SWE-2 Flash | medium/high/max | 262K | **Free** (janela) | Fast lane ~200 tok/s; ver `data/bundle-models.json` + MODEL-GUIDE |
 | `paid_model_alias` | Paid alias | — | see registry | see registry | NUNCA usar sem confirmar `data/bundle-models.json` |
 | `adaptive` | Paid router | see registry | — | see registry | Não usar em modo free |
 | `opus` | Paid model | Anthropic | — | see registry | Não usar em modo free |

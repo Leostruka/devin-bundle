@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- reels batch-5 survey + issues: 11 Instagram links deep-reviewed (3 batch-4 overlap); transcripts via local ASR; survey `.devin/research/2026-11-07-reels-batch5-survey.md`; issues `.devin/scratch/reels-5/issues/R5-01..08` + map + plan. Highlights: dep-audit scanner gap (matheusgomes), upload-trust UX checklist (kairozmind/designmotionhq), craft-anything + WiCi One + SLEEP evals.
+
+- adequacao Devin CLI 3000.11.234 -> 3000.12.17: `validated_cli_version` bump; new capabilities section in DEVIN-CLI-COMPATIBILITY.md (/vim, model pinning, permission_mode, `devin mcp list --json`, ContextInput hooks, PostToolUse truncated-output path, UserPromptSubmit-on-handoff); TOOLS-MAP hook-fields + REPL/CLI rows + models table (adds swe-2-flash row); README version sync.
+
 - ISSUE_06+07 closed (were already shipped): `skills/learn-mode` verified against vibe-wise upstream re-read (no deltas; SessionStart restore hook deferred to project-memory per spec); `grilling` Cross-skills gains pedagogical-counterpart line; ISSUE_07 port matrix confirmed complete (.devin/research/pocock_port_matrix.md, #96). Issues marked resolved.
 
 - AGdevin isolation calendar: gcal writes default to dedicated AGdevin calendar - gcal.py list/find/create_calendar + ensure_calendar + resolve_calendar (summary-name -> find-or-create; 'primary' or raw id passthrough); add/apply resolve post-confirm and report calendar_created; roteiro skill + APP.md + README updated; 4 tests.

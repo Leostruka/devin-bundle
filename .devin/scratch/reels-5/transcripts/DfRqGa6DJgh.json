@@ -1,0 +1,1 @@
+{"ok": false, "error": "fetch_failed:Command '['yt-dlp', '-x', '--audio-format', 'wav', '-o', 'C:\\\\Users\\\\leand\\\\AppData\\\\Local\\\\Temp\\\\tmpibuv8ifg\\\\audio.wav', 'https://www.instagram.com/airesearches/p/DfRqGa6DJgh/']' returned non-zero exit status 1."}
