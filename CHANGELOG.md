@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - adequacao Devin CLI 3000.11.234 -> 3000.12.17: `validated_cli_version` bump; new capabilities section in DEVIN-CLI-COMPATIBILITY.md (/vim, model pinning, permission_mode, `devin mcp list --json`, ContextInput hooks, PostToolUse truncated-output path, UserPromptSubmit-on-handoff); TOOLS-MAP hook-fields + REPL/CLI rows + models table (adds swe-2-flash row); README version sync.
 
+- dep-audit + PostToolUse gate (reels-5 R5-01): scripts/dep-audit.py - ecosystem detection (py/node/rust/go/php/ruby/elixir) + scanner dispatch (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs, missing scanners reported as skipped; scripts/dep-audit-gate.py - PostToolUse(^exec$) install-command pre-filter, scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open; hooks.v1.json registered (timeout 35); manifest/script_count 40->42; README/TOOLS-MAP/HOOKS-PIPELINE synced; 10 tests. Covers R5-01.
+
 - ISSUE_06+07 closed (were already shipped): `skills/learn-mode` verified against vibe-wise upstream re-read (no deltas; SessionStart restore hook deferred to project-memory per spec); `grilling` Cross-skills gains pedagogical-counterpart line; ISSUE_07 port matrix confirmed complete (.devin/research/pocock_port_matrix.md, #96). Issues marked resolved.
 
 - AGdevin isolation calendar: gcal writes default to dedicated AGdevin calendar - gcal.py list/find/create_calendar + ensure_calendar + resolve_calendar (summary-name -> find-or-create; 'primary' or raw id passthrough); add/apply resolve post-confirm and report calendar_created; roteiro skill + APP.md + README updated; 4 tests.

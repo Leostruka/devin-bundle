@@ -89,6 +89,21 @@ engineered or tweened. Working spec:
   reuse the same layoutId across shared objects so the element animates
   between states instead of unmounting.
 
+Upload and file-transfer states deserve the same care as clicks. The five
+signals that make an upload feel safe instead of broken (source:
+designmotionhq.com/patterns/file-upload-ux):
+
+- Dropzone reacts to drag-over: border, glow, copy shift - three signals
+  before the drop, not silence.
+- Honest progress: percent + ETA, not a bare spinner.
+- Inline retry that keeps the file loaded; never force re-select after a
+  failure at 90%.
+- Preview (thumbnail/type/size) as proof of receipt.
+- Per-file progress and per-file retry in multi-file queues.
+
+Anti-patterns: spinner-only progress, silent dropzones, re-select after
+failure, no per-file state in batches.
+
 Consider written content carefully. A brief may not contain real content,
 so write copy and placeholders yourself. Copy can make a design feel as
 templated as the visuals. See "More on writing in design" below.
