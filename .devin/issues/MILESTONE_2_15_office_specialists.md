@@ -1,6 +1,6 @@
 # MILESTONE_2_15 - office specialists wave (agent coverage gaps)
 
-status: in-progress
+status: resolved
 priority: P2
 source: `.devin/research/2026-11-07-office-gap-analysis.md`
 
@@ -28,4 +28,4 @@ profiles (agents 17 -> 21): `data-analyst`, `sre`, `ux-researcher`,
 
 ## Answer
 
-(pending merge)
+Merged via #392 (squash a46c883). Evidence: `python audit.py` 0 errors, 21 agents disk-vs-manifest consistent; `pytest tests/validation/test_profile_parity.py` + `test_consolidated_hooks.py` green; `test_egm_upgrade_contract.py` 25 passed (caught+fixed stale export_hash after em-dash sweep); full pytest 2193 passed. CI all-green pre-merge.
