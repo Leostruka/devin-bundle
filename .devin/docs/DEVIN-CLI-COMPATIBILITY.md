@@ -2,7 +2,7 @@
 
 ## Validated release
 
-The bundle is validated against Devin CLI `3000.11.234` (see `data/bundle-identity.json`).
+The bundle is validated against Devin CLI `3000.12.17` (see `data/bundle-identity.json`).
 
 Release notes for the validated version and intermediate CLI versions are tracked in `data/bundle-identity.json` and the Devin CLI changelog.
 
@@ -133,6 +133,26 @@ Capabilities and runtime contracts verified in `3000.11.234` (`92c83011d113`) si
 | `keymap` strict `-`-separated key-spec validation at startup | adopted | Modifiers use `-` (`ctrl-4`, `ctrl-shift-k`); unknown contexts/actions, malformed specs, or intra-context collisions emit startup warnings and fall back to built-in defaults (`global.cancel` `Ctrl+C` cannot be unbound). Aligned in `config.json` (`"queue_message": "ctrl-4"`). |
 | `devin desktop [ARGS]...` subcommand and positional `[PATH]...` | adopted (docs) | Launches Devin Desktop matching the CLI channel and forwards path arguments. Mapped in `TOOLS-MAP.md`. |
 | `devin acp --agent-type <summarizer\|review>` and `--refusal-fallback <MODEL>` | not adopted | ACP-specific flags (`DEVIN_REFUSAL_FALLBACK` env var remains outside `config.json`). |
+
+## 3000.12.17 capabilities (verified 2026-11-07, CLI 3000.12.17)
+
+Capabilities and runtime contracts verified in `3000.12.17` (`d23bb600ed8f`) since `3000.11.234`:
+
+| Capability | Decision | Rationale |
+|---|---|---|
+| `/vim` Vim editing in the prompt box (Esc -> Normal mode) | adopted (docs) | UX; no config surface. |
+| Model pinning: `Alt+P` in `/model`, `Alt+N` cycles pins | adopted (docs) | Complements the bundle model policy: pin the free `swe-2-*` entries per machine so they surface first in the picker. |
+| `permission_mode` settable via `/config`; `--permission-mode` overrides per launch | documented | New persistent config key for the starting permission mode. Bundle `config.json` does not ship it: the CLI default (`auto`) stays the validated surface; pin per-machine via `/config` if wanted. |
+| `devin mcp list --json` | adopted (docs) | Machine-readable MCP inventory (enabled state, transport, disabled tools); verified locally (returns `[]` with no servers). Useful for `mcp-governance` audits. |
+| Clipboard images: `Alt+V` on Windows, `Ctrl+V`/`Alt+V` in WSL | adopted (docs) | UX; no config. |
+| `/resume` shows project + age; `Alt+G` toggles current-dir vs all-projects | documented | UX; no config. |
+| Approval prompt `1`/`2`/`3`/`4` = Once/Session/Project/Always | adopted (passive) | Keyboard equivalent of the arrow-key grant picker shipped in 3000.11.205. |
+| `/clear` type-ahead prompt queue | documented | UX; no config. |
+| `ContextInput` hooks observe relayed text (e.g. subagent reports) | documented | New hook surface per changelog; not yet listed on the lifecycle-hooks docs page. No bundle consumer wired yet. |
+| `PostToolUse` hooks receive path to complete output when result is truncated | documented | New payload field per changelog. Candidate for `post-exec.py`/`silent-error-review` to read full output instead of the truncated inline copy; no consumer switched yet. |
+| `UserPromptSubmit` hooks run on `/handoff` task transfer | adopted (passive) | Closes a constraint-drop channel: `constraint-pinning.py` now re-injects pinned constraints when a task moves to a cloud session. |
+| `/config` changes apply on `/clear`, `/resume`, `/cloud` without restart | adopted (passive) | Reliability fix. |
+| Fixes: plan-approval summary+path, follow-up during pending edit approval, Accept Edits/Smart on Windows network shares + WSL folders, rapid config-save loss, undecodable images no longer fail the turn, `devin -p` continues after denied tool call, log-file failure warns instead of breaking, PowerShell non-ASCII output | adopted (passive) | Upstream fixes; several hit Windows/WSL paths the bundle supports. No workarounds existed to remove. |
 
 ## Model policy
 
