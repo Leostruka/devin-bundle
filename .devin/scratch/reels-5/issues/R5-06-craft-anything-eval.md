@@ -1,6 +1,6 @@
 # research note: craft-anything eval (clone-app pipeline)
 
-status: ready-for-agent
+status: resolved
 priority: P3
 source: reels batch-5 survey, noxprojectsx DfXQwlbz13S
 
@@ -18,6 +18,10 @@ Write an eval note at `.devin/research/craft-anything-eval.md` (follow the forma
 
 ## Acceptance
 
-- [ ] Eval note exists with verified repo facts (stars/license/activity dated)
-- [ ] Explicit adopt/track/reject recommendation with rationale
-- [ ] INDEX.md updated if applicable
+- [x] Eval note exists with verified repo facts (stars/license/activity dated)
+- [x] Explicit adopt/track/reject recommendation with rationale
+- [x] INDEX.md updated if applicable
+
+## Answer
+
+Eval note written: `.devin/research/craft-anything-eval.md` - verified repo facts (storytold/craft-anything, v0.5.0 alpha, MIT/Apache, Rust, Study->Build->Check pipeline, Claude Code dependency), reel claims checked, maturity risks, bundle fit vs rea-ops/re-binary/cli-adapter. Recommendation: **track, do not adopt**. INDEX.md row added for reels-batch evals.

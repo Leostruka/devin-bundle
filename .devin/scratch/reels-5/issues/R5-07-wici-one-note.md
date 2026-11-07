@@ -1,6 +1,6 @@
 # research note: WiCi One wireless GPU + inferssd
 
-status: ready-for-agent
+status: resolved
 priority: P3
 source: reels batch-5 survey, subtil DfYM2PORDDg
 
@@ -18,5 +18,9 @@ Write `.devin/research/wici-one-eval.md`: product facts vs reel claims, inferssd
 
 ## Acceptance
 
-- [ ] Eval note with dated facts and explicit recommendation
-- [ ] inferssd fit analysis against actual bundle inference surfaces (cite skill/extension names)
+- [x] Eval note with dated facts and explicit recommendation
+- [x] inferssd fit analysis against actual bundle inference surfaces (cite skill/extension names)
+
+## Answer
+
+Eval note written: `.devin/research/wici-one-eval.md` - product facts vs reel claims (client-side apps + local GPU driver correction), Wi-Fi 7 bandwidth caveat, company/coverage signals, inferssd (~350 stars, Apache-2.0, llama.cpp SSD-offloaded MoE) assessed against `skills/ai-tools`/laya local-inference surfaces. Recommendation: track hardware; evaluate inferssd only if local-inference need materializes. INDEX.md row added.

@@ -1,6 +1,6 @@
 # frontend-design: editable dashboard-grid (spring reflow) pattern note
 
-status: ready-for-agent
+status: resolved
 priority: P3
 source: reels batch-5 survey, moxen.studio DfYMlgrBQiy
 
@@ -16,5 +16,9 @@ Add 3-5 lines to the frontend-design motion/layout guidance noting the pattern: 
 
 ## Acceptance
 
-- [ ] Pattern note added, source verified live (or fallback citation recorded)
-- [ ] `python audit.py` green
+- [x] Pattern note added, source verified live (or fallback citation recorded)
+- [x] `python audit.py` green
+
+## Answer
+
+Added to `skills/frontend-design/SKILL.md` motion block: user-editable grids animate neighbor displacement with spring physics and snap resizes to grid steps; cites https://moxen.cl/recursos/parrilla/ (verified live 2026-11-07).

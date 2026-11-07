@@ -1507,7 +1507,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "4ce4e0deae6dbcab6e53b5d8fbf8e8f9d52e5e0364c705256baea9dd920afeda",
+      "export_hash": "317edfceb59d7c4da1ca77c129a3cd7a93f392723322aa8b2807615be5b6b14e",
       "exported_at": "2026-11-03T21:04:06.237841"
     },
     {
@@ -1600,7 +1600,7 @@
   ],
   "script_count": 42,
   "mcp_count": 1,
-  "agent_count": 17,
+  "agent_count": 21,
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
@@ -1718,6 +1718,34 @@
       "original_path": "%APPDATA%\\devin\\agents\\sentinel.md",
       "export_hash": "F2597E6578F617843B7F952CC99C1AA3CE161D158E6B6B470E6955EF6075A663",
       "exported_at": "2026-11-05T07:49:44.220070"
+    },
+    {
+      "name": "data-analyst",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\data-analyst.md",
+      "export_hash": "41A7D8F5885480C08E958CE635813DF49D070E113D2FD2AF0F49D0CF72D6BBE1",
+      "exported_at": "2026-11-07T14:50:12.871979"
+    },
+    {
+      "name": "sre",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\sre.md",
+      "export_hash": "62AAB39CD267C878E8BB59A45E33E3837709FC17D8BBE80A0280F1BEF906E04C",
+      "exported_at": "2026-11-07T14:50:12.871979"
+    },
+    {
+      "name": "ux-researcher",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\ux-researcher.md",
+      "export_hash": "AA7F0511C10EEF921D870B84C6417D92A0389B0A2EDB570BE822057C62DC1400",
+      "exported_at": "2026-11-07T14:50:12.871979"
+    },
+    {
+      "name": "performance-engineer",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\performance-engineer.md",
+      "export_hash": "3CA7ED3F172E5947F0B97124C6EFF9EAAFBDAFE2FE6AB7023A6A96098F12FE71",
+      "exported_at": "2026-11-07T14:50:12.871979"
     }
   ]
 }
