@@ -20,4 +20,5 @@ a research doc spawns one.
 | media/3d extensions | `.devin/research/3d-tools-comparison.md`, `pocock_port_matrix.md`, `rizin-*.md` |
 | red-team / security skills | `.devin/research/red-team-domains.md` |
 | spec-driven development flow | `.devin/research/spec-driven-development.md` |
+| reels-batch evals & external-tool notes | `.devin/research/heyclicky-eval.md`, `craft-anything-eval.md`, `wici-one-eval.md`, `2026-11-0*-reels-batch*-survey.md` |
 | milestone planning (M2_*) | `.devin/research/MILESTONE_NEXTGEN_MATRIX.md`, `.devin/research/bundle-capability-map.md` |

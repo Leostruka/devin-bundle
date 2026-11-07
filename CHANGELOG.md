@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- reels batch-5 wave-2 (R5-03..08): frontend-design gains dashboard-grid spring-reflow note (moxen.cl/recursos/parrilla verified) + style-taxonomy pointer (filtercoffee.dev field guide, Option A - no vendored list); agent-reach SKILL.md "Curated source candidates" (airesearches feed candidate-unverified 403, AI-Weekly-News GitHub archive, AI Research YT); eval notes `.devin/research/craft-anything-eval.md` (track, do not adopt) + `wici-one-eval.md` (track hw, inferssd deferred); INDEX.md evals row; batch-4 survey SLEEP row cross-links parthknowsai DfZuDIUOGJZ + arXiv:2606.03979. Covers R5-03..R5-08.
+
 - reels batch-5 survey + issues: 11 Instagram links deep-reviewed (3 batch-4 overlap); transcripts via local ASR; survey `.devin/research/2026-11-07-reels-batch5-survey.md`; issues `.devin/scratch/reels-5/issues/R5-01..08` + map + plan. Highlights: dep-audit scanner gap (matheusgomes), upload-trust UX checklist (kairozmind/designmotionhq), craft-anything + WiCi One + SLEEP evals.
 
 - adequacao Devin CLI 3000.11.234 -> 3000.12.17: `validated_cli_version` bump; new capabilities section in DEVIN-CLI-COMPATIBILITY.md (/vim, model pinning, permission_mode, `devin mcp list --json`, ContextInput hooks, PostToolUse truncated-output path, UserPromptSubmit-on-handoff); TOOLS-MAP hook-fields + REPL/CLI rows + models table (adds swe-2-flash row); README version sync.

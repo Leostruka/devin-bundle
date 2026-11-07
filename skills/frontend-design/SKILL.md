@@ -89,6 +89,14 @@ engineered or tweened. Working spec:
   reuse the same layoutId across shared objects so the element animates
   between states instead of unmounting.
 
+User-editable layouts (dashboards, widget grids) need layout-reflow
+motion, not just micro-interactions: when a widget is dragged or resized,
+animate neighbor displacement with spring physics and snap resizes to
+grid steps so the grid reads as physical, not teleporting. Working
+vanilla-JS reference: moxen.cl/recursos/parrilla/ (verified live
+2026-11-07; drag aside + spring return + grid-step resize + persisted
+layout data).
+
 Upload and file-transfer states deserve the same care as clicks. The five
 signals that make an upload feel safe instead of broken (source:
 designmotionhq.com/patterns/file-upload-ux):
@@ -103,6 +111,12 @@ designmotionhq.com/patterns/file-upload-ux):
 
 Anti-patterns: spinner-only progress, silent dropzones, re-select after
 failure, no per-file state in batches.
+
+For visual-style vocabulary (neo-brutalism, claymorphism, bento-grid,
+wabi-sabi, etc.) the canonical grouped taxonomy is the filtercoffee.dev
+"field guide to web design styles" (22 styles in 5 groups,
+filtercoffee.dev/blog/a-field-guide-to-web-design-styles/). Use it when
+naming or retrieving a style; do not vendor the list.
 
 Consider written content carefully. A brief may not contain real content,
 so write copy and placeholders yourself. Copy can make a design feel as
