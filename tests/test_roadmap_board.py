@@ -95,3 +95,56 @@ def test_empty_root(tmp_path):
     issues = rb.build_model(str(tmp_path))
     assert issues == []
     assert rb.summarize(issues)["total"] == 0
+
+
+def test_capacity_view(tmp_path):
+    _fixture(tmp_path)
+    _mk(tmp_path, ".devin/scratch/eff1/issues/R1-03-wip.md",
+        "# scratch wip\n\nstatus: in-progress\n")
+    _mk(tmp_path, ".devin/scratch/eff1/issues/R1-04-blk.md",
+        "# scratch blocked\n\nstatus: blocked\n")
+    issues = rb.build_model(str(tmp_path))
+    cap = rb.capacity(issues)
+    eff1 = cap["by_group"]["eff1"]
+    # eff1: R1-01 done, R1-02 ready, R1-03 in-progress, R1-04 blocked
+    assert eff1["total"] == 4 and eff1["done"] == 1
+    assert eff1["open"] == 3
+    assert eff1["ready"] == 1      # R1-02 only - in-flight is claimed
+    assert eff1["blocked"] == 1    # R1-04 explicit blocked status
+    assert eff1["in_flight"] == 1
+    assert cap["totals"]["in_flight"] == 1
+    assert cap["frontier"] == cap["totals"]["ready"]
+    assert cap["wip"]["over"] is None
+    cap2 = rb.capacity(issues, wip_limit=0)
+    assert cap2["wip"]["limit"] == 0 and cap2["wip"]["over"] is True
+
+
+def test_capacity_blocked_by_undone(tmp_path):
+    _mk(tmp_path, ".devin/issues/A.md",
+        "# A\n\nStatus: open · Blocked-by: none · Blocks: B.md\n")
+    _mk(tmp_path, ".devin/issues/B.md",
+        "# B\n\nStatus: open · Blocked-by: A · Blocks: none\n")
+    issues = rb.build_model(str(tmp_path))
+    cap = rb.capacity(issues)
+    # B's blocker "A" matches key "A" via alias? key is "A" (stem) -
+    # blocked_by ref "A" lower -> "a"; alias set has "a". resolves.
+    b = {i["key"]: i for i in issues}["B"]
+    assert b["ready"] is False
+    assert cap["totals"]["blocked"] == 1
+    assert cap["totals"]["ready"] == 1
+
+
+def test_capacity_in_json_and_md(tmp_path, capsys):
+    _fixture(tmp_path)
+    out = io.StringIO()
+    with redirect_stdout(out):
+        rb.main(["--root", str(tmp_path), "--json", "--wip-limit", "2"])
+    data = json.loads(out.getvalue())
+    assert "capacity" in data
+    assert data["capacity"]["wip"]["limit"] == 2
+    assert "by_group" in data["capacity"]
+
+    out = io.StringIO()
+    with redirect_stdout(out):
+        rb.main(["--root", str(tmp_path)])
+    assert "## Capacity" in out.getvalue()

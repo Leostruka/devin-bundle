@@ -22,6 +22,8 @@ PRIORITY_RE = re.compile(r"(?im)^\s*priority\s*[:=]\s*([\w-]+)")
 BLOCKED_BY_RE = re.compile(r"(?i)blocked[-_ ]by\s*[:=]\s*([^\n·|]+)")
 BLOCKS_RE = re.compile(r"(?i)(?<![-\w])blocks\s*[:=]\s*([^\n·|]+)")
 DONE = {"resolved", "done", "completed", "closed", "merged", "shipped"}
+IN_FLIGHT = {"in-progress", "claimed", "wip", "doing", "active"}
+BLOCKED_STATUS = {"blocked"}
 
 
 def _iter_issue_files(root):
@@ -122,6 +124,46 @@ def summarize(issues):
                     not b["known"] for b in i["blockers"]))}
 
 
+def _cap_bucket():
+    return {"total": 0, "done": 0, "open": 0, "ready": 0,
+            "blocked": 0, "in_flight": 0}
+
+
+def capacity(issues, wip_limit=None):
+    """Meso capacity/WIP view (issue #417): per-effort load vs frontier.
+
+    open = not done; ready = claimable now (unblocked, not in-flight,
+    not explicit blocked status); blocked = open and (not ready or
+    blocked status); in_flight = status in IN_FLIGHT (vocabulary lands
+    with #405/#407 - currently usually 0). An in-flight issue with an
+    undone blocker counts in both in_flight and blocked.
+    """
+    groups = {}
+    for i in issues:
+        g = groups.setdefault(i["group"], _cap_bucket())
+        g["total"] += 1
+        if i["done"]:
+            g["done"] += 1
+            continue
+        g["open"] += 1
+        if i["status"] in IN_FLIGHT:
+            g["in_flight"] += 1
+        if i["status"] in BLOCKED_STATUS or not i["ready"]:
+            g["blocked"] += 1
+        elif i["status"] not in IN_FLIGHT:
+            g["ready"] += 1
+    totals = _cap_bucket()
+    for g in groups.values():
+        for k in totals:
+            totals[k] += g[k]
+    return {"by_group": groups, "totals": totals,
+            "frontier": totals["ready"],
+            "wip": {"in_flight": totals["in_flight"],
+                    "limit": wip_limit,
+                    "over": (totals["in_flight"] > wip_limit
+                             if wip_limit is not None else None)}}
+
+
 def render_md(issues, root):
     s = summarize(issues)
     lines = [
@@ -152,6 +194,22 @@ def render_md(issues, root):
         for i in sorted(ready, key=lambda x: x["key"]):
             lines.append(f"- {i['title']} ({i['group']}/{i['key']})")
         lines.append("")
+    cap = capacity(issues)
+    lines.append("## Capacity")
+    lines.append("")
+    lines.append("| Group | Open | Ready | Blocked | In-flight |")
+    lines.append("|---|---|---|---|---|")
+    for g in sorted(cap["by_group"]):
+        b = cap["by_group"][g]
+        lines.append(f"| {g} | {b['open']} | {b['ready']} | "
+                     f"{b['blocked']} | {b['in_flight']} |")
+    t = cap["totals"]
+    lines.append(f"| **total** | {t['open']} | {t['ready']} | "
+                 f"{t['blocked']} | {t['in_flight']} |")
+    lines.append("")
+    lines.append(f"Frontier: {cap['frontier']} claimable - "
+                 f"WIP in-flight: {cap['wip']['in_flight']}")
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -164,11 +222,15 @@ def main(argv=None):
     ap.add_argument("--root", default=None,
                     help="repo root (default: DEVIN_PROJECT_DIR or cwd)")
     ap.add_argument("--json", action="store_true", help="emit JSON model")
+    ap.add_argument("--wip-limit", type=int, default=None,
+                    help="in-flight WIP ceiling; capacity.wip.over flags "
+                         "when in_flight exceeds it")
     args = ap.parse_args(argv)
     root = args.root or os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
     issues = build_model(root)
     if args.json:
         print(json.dumps({"summary": summarize(issues),
+                          "capacity": capacity(issues, args.wip_limit),
                           "issues": issues}, ensure_ascii=False, indent=1))
     else:
         print(render_md(issues, root))
