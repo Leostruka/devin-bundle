@@ -325,3 +325,108 @@ def test_composite_ffmpeg_missing(tmp_path, monkeypatch):
     monkeypatch.setattr(composite, "find_ffmpeg", lambda: None)
     out = composite.composite(src, ov, tmp_path / "x.mp4", dry=False)
     assert out["ok"] is False and out["error"] == "ffmpeg_missing"
+
+
+# --- transcribe.fetch_audio: video-container extraction (mp4 bug) ---
+
+def test_fetch_audio_wav_passthrough(tmp_path):
+    w = tmp_path / "a.wav"
+    w.write_bytes(b"x")
+    assert transcribe.fetch_audio(str(w), tmp_path) == w
+
+
+def test_fetch_audio_mp4_uses_ffmpeg(tmp_path, monkeypatch):
+    v = tmp_path / "narrated.mp4"
+    v.write_bytes(b"x")
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        Path(cmd[-1]).write_bytes(b"wav")
+        class R: returncode = 0
+        return R()
+    monkeypatch.setattr(transcribe.shutil, "which",
+                        lambda n: "/ffmpeg" if n == "ffmpeg" else None)
+    monkeypatch.setattr(transcribe.os, "environ", {})
+    monkeypatch.setattr(transcribe.subprocess, "run", fake_run)
+    out = transcribe.fetch_audio(str(v), tmp_path)
+    assert out.name == "audio.wav" and out.exists()
+    cmd = calls[0]
+    assert cmd[0] == "/ffmpeg" and "-vn" in cmd and "-ar" in cmd
+    assert "16000" in cmd
+
+
+def test_fetch_audio_mp4_no_ffmpeg_errors(tmp_path, monkeypatch):
+    v = tmp_path / "n.mp4"
+    v.write_bytes(b"x")
+    monkeypatch.setattr(transcribe.shutil, "which", lambda n: None)
+    monkeypatch.setattr(transcribe.os, "environ", {})
+    import pytest
+    with pytest.raises(RuntimeError, match="ffmpeg"):
+        transcribe.fetch_audio(str(v), tmp_path)
+
+
+def test_fetch_audio_ffmpeg_exe_env(tmp_path, monkeypatch):
+    v = tmp_path / "n.mkv"
+    v.write_bytes(b"x")
+    fake = tmp_path / "ffmpeg.exe"
+    fake.write_bytes(b"x")
+    monkeypatch.setattr(transcribe.os, "environ",
+                        {"FFMPEG_EXE": str(fake)})
+    monkeypatch.setattr(transcribe.shutil, "which", lambda n: None)
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append(cmd)
+        Path(cmd[-1]).write_bytes(b"wav")
+        class R: returncode = 0
+        return R()
+    monkeypatch.setattr(transcribe.subprocess, "run", fake_run)
+    out = transcribe.fetch_audio(str(v), tmp_path)
+    assert calls[0][0] == str(fake) and out.exists()
+
+
+# --- plan_check visual prop contract (counter crash regression) ---
+
+def _plan_with_visual(vtype, props):
+    p = _plan()
+    p["beats"] = [{"id": "x", "sync_range": [0.5, 3.0],
+                   "visual": {"type": vtype, "props": props}}]
+    return p
+
+
+def test_plan_check_counter_requires_numeric_to():
+    out = plan_check.check(_plan_with_visual("counter", {"value": 1}))
+    assert any("props.to missing" in e for e in out["errors"])
+    out = plan_check.check(_plan_with_visual("counter", {"to": "5"}))
+    assert any("props.to" in e for e in out["errors"])
+    out = plan_check.check(_plan_with_visual("counter", {"to": True}))
+    assert any("props.to" in e for e in out["errors"])
+
+
+def test_plan_check_counter_valid():
+    out = plan_check.check(_plan_with_visual("counter",
+                                             {"to": 42, "label": "n"}))
+    assert not [e for e in out["errors"] if "props" in e]
+
+
+def test_plan_check_kinetic_text_requires_text():
+    out = plan_check.check(_plan_with_visual("kinetic_text", {}))
+    assert any("props.text" in e for e in out["errors"])
+
+
+def test_plan_check_diagram_nodes_label_contract():
+    out = plan_check.check(_plan_with_visual(
+        "diagram_nodes", {"nodes": [{"label": "a"}, {"name": "b"}]}))
+    assert any("nodes[1]" in e for e in out["errors"])
+
+
+def test_plan_check_pan_zoom_requires_src():
+    out = plan_check.check(_plan_with_visual("pan_zoom", {"zoom": 1.1}))
+    assert any("props.src" in e for e in out["errors"])
+
+
+def test_plan_check_unknown_visual_type_allowed():
+    # template falls back to KineticText for unknown types - not an error
+    out = plan_check.check(_plan_with_visual("hologram", {}))
+    assert not [e for e in out["errors"] if "props" in e]

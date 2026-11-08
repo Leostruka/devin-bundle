@@ -48,12 +48,16 @@ stage, never post-render.
 
 ## Beat -> visual mapping
 
-| Beat | visual.type | Notes |
+| Beat | visual.type | props contract |
 |---|---|---|
-| Claim / definition | `kinetic_text` | <= ~12 words on screen |
-| Process / sequence | `diagram_nodes` | stagger 6f per node |
-| Number / metric | `counter` | count up over ~1s + label |
-| Screenshot / asset | `pan_zoom` | slow zoom 1.0->~1.15 |
+| Claim / definition | `kinetic_text` | `{text: str, size?: num}` - <= ~12 words |
+| Process / sequence | `diagram_nodes` | `{nodes: [{label: str}, ...]}` - stagger 6f |
+| Number / metric | `counter` | `{to: num, label?: str}` - count up ~1s |
+| Screenshot / asset | `pan_zoom` | `{src: str, zoom?: num}` - slow zoom 1.0->~1.15 |
+
+`plan_check.py` enforces this contract (missing/wrong-typed required
+props = error before the gate); unknown types fall back to
+KineticText. Bool is not a number - `to: true` fails the check.
 
 Sync rules: beat duration >= read time (160 WPM); one visual on screen
 unless `overlay: true`; no motion during narration cuts.

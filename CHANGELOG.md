@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- asr transcribe local-video fix: `fetch_audio` passed any existing local file straight to whisper.cpp, which demuxes wav/mp3 only - mp4/mov/mkv inputs returned `ok:true` with empty segments (silent failure, reproduced live on a narrated mp4). Non-{wav,mp3} local files are now extracted to 16kHz mono wav via ffmpeg (`FFMPEG_EXE` override, clear error when ffmpeg absent); URLs still go through yt-dlp. 4 new tests.
+
+- plan_check visual-prop contract: the pre-gate validator checked timing/overlap/readability but not `visual.props` against the template's prop types - a `counter` beat with `{value: 1}` instead of `{to: 1}` passed the gate then crashed Remotion mid-render (frame 375, cryptic interpolate TypeError). `VISUAL_PROPS` now mirrors PlanComposition.tsx (kinetic_text.text, diagram_nodes.nodes[].label, counter.to, pan_zoom.src; bool rejected as number); unknown visual types still fall back to KineticText; SKILL.md mapping table now documents the props contract; 6 new tests.
+
+- animation-direction narrated-clip e2e: full pipeline proven end to end - SAPI-generated narration + testsrc -> narrated.mp4 -> transcribe (8 segments) -> plan synced to real timestamps -> plan_check -> Remotion render (822 frames) -> composite.py -> final-narrated.mp4 with narration audio preserved. Artifacts in `.devin/scratch/anim-e2e/`.
+
 - animation-direction composite step (ISSUE_04 step 6): `extensions/remotion-render/composite.py` - ffmpeg overlay of a rendered plan onto the source video; narration-first audio (source track wins, `--mix` amixes overlay audio in, silent source falls back to overlay track), `--fit frame|contain` (frame = exact-cover for alpha .mov renders, contain = AR-fit PiP/lower-third with `--pos x:y`), duration-mismatch warnings (overlay shorter -> last frame holds, longer -> trimmed by -shortest), ffprobe-based stream/dims validation, FFPROBE_EXE/FFMPEG_EXE overrides; live-verified with lavfi-generated src+overlay -> h264/aac mp4, overlay confirmed in output pixels; 11 new tests (30 total pipeline tests); SKILL.md step 6 + Files updated.
 
 - site changelog entry count honesty: `collect_changelog` counted only `- **bold**` bullets (9 shown for Unreleased vs 90 actual) - now counts all top-level bullets.

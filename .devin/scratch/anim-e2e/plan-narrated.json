@@ -1,0 +1,156 @@
+{
+  "version": 2,
+  "audio_duration_s": 28.0,
+  "fps": 30,
+  "size": [
+    640,
+    360
+  ],
+  "beats": [
+    {
+      "id": "b1",
+      "sync_range": [
+        0.0,
+        2.76
+      ],
+      "visual": {
+        "type": "kinetic_text",
+        "props": {
+          "text": "animation pipeline"
+        }
+      },
+      "motion_spec": {
+        "enter": "slideUp",
+        "enter_s": 0.4
+      }
+    },
+    {
+      "id": "b2",
+      "sync_range": [
+        2.76,
+        5.64
+      ],
+      "visual": {
+        "type": "kinetic_text",
+        "props": {
+          "text": "how a queue works"
+        }
+      },
+      "motion_spec": {
+        "enter": "fade"
+      }
+    },
+    {
+      "id": "b3",
+      "sync_range": [
+        5.64,
+        9.28
+      ],
+      "visual": {
+        "type": "diagram_nodes",
+        "props": {
+          "nodes": [
+            {
+              "label": "request"
+            },
+            {
+              "label": "front door"
+            }
+          ]
+        }
+      },
+      "motion_spec": {
+        "enter": "fade"
+      }
+    },
+    {
+      "id": "b4",
+      "sync_range": [
+        9.28,
+        12.52
+      ],
+      "visual": {
+        "type": "diagram_nodes",
+        "props": {
+          "nodes": [
+            {
+              "label": "waiting"
+            },
+            {
+              "label": "worker free"
+            }
+          ]
+        }
+      },
+      "motion_spec": {
+        "enter": "fade"
+      }
+    },
+    {
+      "id": "b5",
+      "sync_range": [
+        12.52,
+        16.96
+      ],
+      "visual": {
+        "type": "counter",
+        "props": {
+          "to": 1,
+          "label": "result sent"
+        }
+      },
+      "motion_spec": {
+        "enter": "scale"
+      }
+    },
+    {
+      "id": "b6",
+      "sync_range": [
+        16.96,
+        20.28
+      ],
+      "visual": {
+        "type": "kinetic_text",
+        "props": {
+          "text": "every task system"
+        }
+      },
+      "motion_spec": {
+        "enter": "slideUp",
+        "enter_s": 0.4
+      }
+    },
+    {
+      "id": "b7",
+      "sync_range": [
+        20.28,
+        24.2
+      ],
+      "visual": {
+        "type": "kinetic_text",
+        "props": {
+          "text": "clear beginning, clear end"
+        }
+      },
+      "motion_spec": {
+        "enter": "fade"
+      }
+    },
+    {
+      "id": "b8",
+      "sync_range": [
+        24.2,
+        27.4
+      ],
+      "visual": {
+        "type": "kinetic_text",
+        "props": {
+          "text": "beat structure"
+        }
+      },
+      "motion_spec": {
+        "enter": "fade"
+      }
+    }
+  ]
+}

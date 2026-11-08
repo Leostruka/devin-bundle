@@ -3,7 +3,7 @@
 Deterministic, offline, no paid APIs. Pipeline proven in recon:
 yt-dlp -> wav -> whisper.cpp (win-x64) + ggml model -> segments.
 
-  python transcribe.py <url|audio-file> [--model base] [--lang auto]
+  python transcribe.py <url|audio-or-video-file> [--model base] [--lang auto]
     -> {"ok": true, "text": "...", "segments": [{start, end, text}],
         "model": "base", "source": "..."}
 
@@ -94,16 +94,43 @@ def parse_lang_detection(stderr):
     return (code_only, None) if code_only else (None, None)
 
 
+def _ffmpeg():
+    exe = os.environ.get("FFMPEG_EXE")
+    if exe and os.path.isfile(exe):
+        return exe
+    return shutil.which("ffmpeg")
+
+
 def fetch_audio(source, workdir):
-    """URL -> wav via yt-dlp; local file -> pass through."""
-    if Path(source).exists():
-        return Path(source)
-    if not shutil.which("yt-dlp"):
-        raise RuntimeError("yt-dlp not on PATH")
+    """URL -> wav via yt-dlp; local file -> wav path for whisper.cpp.
+
+    whisper.cpp demuxes wav/mp3 only - video containers (mp4/mov/mkv)
+    and other audio formats are silently empty, so anything outside
+    {wav,mp3} is extracted to 16kHz mono wav via ffmpeg first.
+    """
+    src = Path(source)
+    if not src.exists():
+        if not shutil.which("yt-dlp"):
+            raise RuntimeError("yt-dlp not on PATH")
+        out = Path(workdir) / "audio.wav"
+        subprocess.run(
+            ["yt-dlp", "-x", "--audio-format", "wav", "-o", str(out),
+             source], check=True, capture_output=True, timeout=600,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        return out
+    if src.suffix.lower() in (".wav", ".mp3"):
+        return src
+    ffmpeg = _ffmpeg()
+    if not ffmpeg:
+        raise RuntimeError(
+            f"{src.suffix or 'file'} input needs ffmpeg to extract "
+            "audio (install ffmpeg or pass .wav/.mp3)")
     out = Path(workdir) / "audio.wav"
     subprocess.run(
-        ["yt-dlp", "-x", "--audio-format", "wav", "-o", str(out),
-         source], check=True, capture_output=True, timeout=600, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        [ffmpeg, "-y", "-v", "error", "-i", str(src),
+         "-vn", "-ac", "1", "-ar", "16000", str(out)],
+        check=True, capture_output=True, timeout=600,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return out
 
 

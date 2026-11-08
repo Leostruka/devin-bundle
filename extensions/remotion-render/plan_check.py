@@ -23,6 +23,50 @@ READ_WPM = 160.0
 RENDER_MS_PER_FRAME = 120.0
 OVERLAY_TOLERANCE = 0.0
 
+# Visual prop contract - mirrors PlanComposition.tsx prop types.
+# Missing/wrong-typed required props crash Remotion mid-render with a
+# cryptic interpolate TypeError; catching them here is the point of
+# the gate. Unknown types fall back to KineticText in the template.
+_NUM = (int, float)
+VISUAL_PROPS = {
+    "kinetic_text": {"required": {"text": str},
+                     "optional": {"size": _NUM}},
+    "diagram_nodes": {"required": {"nodes": list},
+                      "optional": {}},
+    "counter": {"required": {"to": _NUM},
+                "optional": {"label": str}},
+    "pan_zoom": {"required": {"src": str},
+                 "optional": {"zoom": _NUM}},
+}
+
+
+def _type_ok(v, types):
+    # bool is an int subclass - True must not pass as a number
+    return isinstance(v, types) and not isinstance(v, bool)
+
+
+def _check_visual_props(bid, vtype, props, errors):
+    spec = VISUAL_PROPS.get(vtype)
+    if spec is None:
+        return  # unknown type: template falls back to KineticText
+    for key, types in spec["required"].items():
+        if not _type_ok(props.get(key), types):
+            errors.append(f"{bid}: visual.props.{key} missing or "
+                          f"wrong type for {vtype}")
+    for key, types in spec["optional"].items():
+        v = props.get(key)
+        if v is not None and not _type_ok(v, types):
+            errors.append(f"{bid}: visual.props.{key} wrong type "
+                          f"for {vtype}")
+    if vtype == "diagram_nodes":
+        nodes = props.get("nodes")
+        if isinstance(nodes, list):
+            for ni, n in enumerate(nodes):
+                if not isinstance(n, dict) or \
+                        not isinstance(n.get("label"), str):
+                    errors.append(f"{bid}: nodes[{ni}] needs "
+                                  "{label: string}")
+
 
 def _words(text):
     return len(str(text or "").split())
@@ -67,6 +111,7 @@ def check(plan):
         props = vis.get("props", {})
         if not isinstance(props, dict):
             props = {}
+        _check_visual_props(bid, vis.get("type"), props, errors)
         words = _words(props.get("text") or props.get("label"))
         min_len = words / (READ_WPM / 60.0)
         if words and beat_len < min_len:
