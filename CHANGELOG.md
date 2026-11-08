@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- _hookrun resilience (issue #408): metrics.jsonl rotates at 512KB keeping newest half (was unbounded - 10k lines/2.2MB observed); per-script timings_ms in hookrun metric + stderr warning over 5s; docstring documents the non-blocking sub-script contract (outer hook timeout is the only hang bound); 2 tests.
+
 - dep-audit gate coverage + hook-budget fix (issue #404): INSTALL_RE now matches `python -m pip`, `pipx`, `uv pip`, `poetry/pipenv/conda/mamba`, `gem install`, `bundle install`, `mix deps.get`, `dotnet add/tool install/restore`, `composer global require` - ruby/elixir/dotnet install commands previously never triggered the gate; dep-audit.py gains `--max-seconds` total-scan budget (_Deadline caps each scanner subprocess to remaining wall time, exhausted ecosystems skipped 'budget-exhausted'); gate calls with --max-seconds 28 + hard timeout 32 under the 35s hook budget (was 300s - could never finish, orphaned mid-scan); 28 new tests.
 
 - PS5.1-safe export/install (issue #412): export.ps1 Get-FileHash256 switched to .NET SHA256 (parity with install.ps1) removing the Get-FileHash cmdlet dependency that dies on broken PS5.1 module sets; both scripts preflight core cmdlets and exit 1 with a clear message before touching anything; verified `export.ps1 -DryRun` + `install.ps1 -DryRun` complete on Windows PowerShell 5.1.26100.
