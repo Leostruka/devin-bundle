@@ -210,3 +210,118 @@ def test_beat_visual_non_dict_typed_error():
     p["beats"][0]["visual"] = "kinetic"
     out = plan_check.check(p)
     assert any("visual must be an object" in e for e in out["errors"])
+
+
+# --- composite.py (step 6: ffmpeg overlay) ---
+import composite             # noqa: E402
+
+
+def _info(w=1920, h=1080, audio=True, dur=10.0):
+    streams = [{"codec_type": "video", "width": w, "height": h}]
+    if audio:
+        streams.append({"codec_type": "audio"})
+    return {"streams": streams,
+            "format": {"duration": str(dur)}}
+
+
+def test_build_filter_frame_exact_dims():
+    fc, label = composite.build_filter(1920, 1080, 640, 360, "frame")
+    assert "scale=1920:1080" in fc
+    assert "overlay=0:0" in fc
+    assert label == "[v]"
+
+
+def test_build_filter_contain_centers_with_offset():
+    fc, _ = composite.build_filter(1920, 1080, 640, 360, "contain",
+                                   (40, -20))
+    assert "force_original_aspect_ratio=decrease" in fc
+    assert "overlay=(W-w)/2+40:(H-h)/2+-20" in fc
+
+
+def test_build_filter_bad_fit():
+    import pytest
+    with pytest.raises(ValueError):
+        composite.build_filter(100, 100, 50, 50, "stretch")
+
+
+def test_parse_pos_valid_and_invalid():
+    assert composite._parse_pos("10:-5") == (10, -5)
+    assert composite._parse_pos(None) == (0, 0)
+    for bad in ("10", "a:b", "1:2:3", ""):
+        import pytest
+        with pytest.raises(ValueError):
+            composite._parse_pos(bad)
+
+
+def test_audio_mode_source_wins_without_mix():
+    assert composite.audio_mode(_info(audio=True),
+                                _info(audio=True)) == "source"
+    assert composite.audio_mode(_info(audio=True),
+                                _info(audio=True), mix=True) == "mix"
+    assert composite.audio_mode(_info(audio=False),
+                                _info(audio=True)) == "overlay"
+    assert composite.audio_mode(_info(audio=False),
+                                _info(audio=False)) == "none"
+
+
+def _fake_probe(monkeypatch, src=None, ov=None):
+    def fake(path, ffprobe=None):
+        return ov if str(path).endswith(".mov") else src
+    monkeypatch.setattr(composite, "probe", fake)
+
+
+def test_composite_missing_input(tmp_path):
+    out = composite.composite(tmp_path / "no.mp4", tmp_path / "o.mov",
+                              tmp_path / "x.mp4", dry=True)
+    assert out["ok"] is False and out["error"] == "source_missing"
+
+
+def test_composite_dry_builds_cmd(tmp_path, monkeypatch):
+    src, ov = tmp_path / "src.mp4", tmp_path / "ov.mov"
+    src.write_bytes(b"x"); ov.write_bytes(b"x")
+    _fake_probe(monkeypatch, src=_info(), ov=_info(w=640, h=360))
+    out = composite.composite(src, ov, tmp_path / "x.mp4",
+                              fit="contain", pos="10:20", dry=True)
+    assert out["ok"] and out["note"] == "dry_run:cmd_built"
+    joined = " ".join(out["cmd"])
+    assert "overlay=(W-w)/2+10:(H-h)/2+20" in joined
+    assert "-map" in out["cmd"] and "0:a:0" in out["cmd"]
+
+
+def test_composite_pos_ignored_warning_on_frame_fit(tmp_path,
+                                                    monkeypatch):
+    src, ov = tmp_path / "s.mp4", tmp_path / "o.mov"
+    src.write_bytes(b"x"); ov.write_bytes(b"x")
+    _fake_probe(monkeypatch, src=_info(), ov=_info())
+    out = composite.composite(src, ov, tmp_path / "x.mp4", pos="5:5",
+                              dry=True)
+    assert any("pos_ignored" in w for w in out["warnings"])
+
+
+def test_composite_overlay_shorter_warns(tmp_path, monkeypatch):
+    src, ov = tmp_path / "s.mp4", tmp_path / "o.mov"
+    src.write_bytes(b"x"); ov.write_bytes(b"x")
+    _fake_probe(monkeypatch, src=_info(dur=30.0),
+                ov=_info(w=640, h=360, dur=10.0))
+    out = composite.composite(src, ov, tmp_path / "x.mp4", dry=True)
+    assert any("overlay_shorter" in w for w in out["warnings"])
+
+
+def test_composite_mix_adds_amix_chain(tmp_path, monkeypatch):
+    src, ov = tmp_path / "s.mp4", tmp_path / "o.mov"
+    src.write_bytes(b"x"); ov.write_bytes(b"x")
+    _fake_probe(monkeypatch, src=_info(), ov=_info(w=640, h=360))
+    out = composite.composite(src, ov, tmp_path / "x.mp4", mix=True,
+                              dry=True)
+    fc = out["cmd"][out["cmd"].index("-filter_complex") + 1]
+    assert "amix=inputs=2:duration=first" in fc
+    assert "[a]" in out["cmd"]
+
+
+def test_composite_ffmpeg_missing(tmp_path, monkeypatch):
+    src, ov = tmp_path / "s.mp4", tmp_path / "o.mov"
+    src.write_bytes(b"x"); ov.write_bytes(b"x")
+    _fake_probe(monkeypatch, src=_info(), ov=_info())
+    monkeypatch.setattr(composite, "find_ffmpeg", lambda: None)
+    out = composite.composite(src, ov, tmp_path / "x.mp4", dry=False)
+    assert out["ok"] is False and out["error"] == "ffmpeg_missing"

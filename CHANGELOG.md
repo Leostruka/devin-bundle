@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- animation-direction composite step (ISSUE_04 step 6): `extensions/remotion-render/composite.py` - ffmpeg overlay of a rendered plan onto the source video; narration-first audio (source track wins, `--mix` amixes overlay audio in, silent source falls back to overlay track), `--fit frame|contain` (frame = exact-cover for alpha .mov renders, contain = AR-fit PiP/lower-third with `--pos x:y`), duration-mismatch warnings (overlay shorter -> last frame holds, longer -> trimmed by -shortest), ffprobe-based stream/dims validation, FFPROBE_EXE/FFMPEG_EXE overrides; live-verified with lavfi-generated src+overlay -> h264/aac mp4, overlay confirmed in output pixels; 11 new tests (30 total pipeline tests); SKILL.md step 6 + Files updated.
+
 - site changelog entry count honesty: `collect_changelog` counted only `- **bold**` bullets (9 shown for Unreleased vs 90 actual) - now counts all top-level bullets.
 
 - site issue ledger archived-effort parity (follow-up to #406/#407): `status_vocab` gains `effort_archived`/`archived_efforts` (moved from roadmap-board, single source); `site/build.py collect_issues` now skips ARCHIVED efforts - site was counting all 20 archived efforts (190 issues/184 resolved) while the board showed 97; both surfaces now agree (97 issues, 4 groups); roadmap-board keeps `archived_efforts` alias; 1 new test.
