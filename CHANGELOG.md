@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- asr/bootstrap.py supply-chain hardening (matches jxl_bootstrap pattern): sha256 pins for the whisper.cpp v1.7.6 Windows binary (GitHub release asset digest) and ggml-tiny/base/small models (HF LFS oid via paths-info API). Unpinned --model values now refused with `unpinned_model` instead of fetching unverified bytes. Cached artifacts are hash-verified: matching model/binary marker skips re-download, corrupt cache auto-refetches. Existing _cache contents verified MATCH against the pins. +5 tests (13 total).
+
 - scripts/ sweep + audit scope extension: checks [36]/[37]/[38] now scan `scripts/` alongside `extensions/` via shared `_scan_py_files()` generator. Found + fixed: check-tools renderer determinism check had no timeout (hung renderer = hung audit; now 120s with clean FAIL), dep-audit + dep-audit-gate `text=True` calls missing utf-8 pins (cp1252 on pip-audit/npm output). Manifest export_hash refreshed for the 3 touched scripts.
 
 - file-I/O decode sweep + audit check [38]: Path.read_text()/write_text() and text-mode open() without an encoding pin now flagged by audit (same cp1252 class as [37], for file content). Fixed 8 sites: cu_qmp_backend/cu_env_daemon heartbeat pair, abliterator safetensors index read, heldout_batch --out write, blender state json.load/dump, code-graph selftest fixtures, guest worker boot_id read. ASCII-guaranteed sites (ensure_ascii JSON, kernel boot_id) pinned anyway for convention uniformity. Summary now reads "ALL 38 CHECKS".
