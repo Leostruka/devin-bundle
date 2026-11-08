@@ -1042,7 +1042,7 @@
         "profile": "skill-pick-v1",
         "mode": "shadow",
         "state": {
-          "goal": "check whether this jpg is a real camera photo or ai-generated"
+          "goal": "check whether this jpg is a real camera photo or synthetically generated"
         },
         "candidates": [
           {
@@ -1103,8 +1103,8 @@
         "outcome": "suggestion",
         "candidate_id": "image-forensics",
         "context": {},
-        "raw_confidence": 0.7499,
-        "raw_top_probability": 0.7499,
+        "raw_confidence": 0.8592,
+        "raw_top_probability": 0.8592,
         "calibrated_probability": null,
         "calibration_id": null,
         "mode": "shadow",
@@ -1117,7 +1117,8 @@
           "model": "english",
           "reason": "English Latin text"
         }
-      }
+      },
+      "reworded": "goal reworded: ai generated -> synthetically generated (signature-gate false positive; recaptured live)"
     },
     {
       "case_id": "sh-14",
