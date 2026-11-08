@@ -1,0 +1,56 @@
+{
+  "_comment": "PROPOSAL ONLY - not applied. Activation checklist issue #431 items 1-4 pre-staged; items 5-7 remain deliberate decisions. Apply by merging the 'delta' block into .devin/laya/profile.json only after review.",
+  "issue": "https://github.com/Leostruka/devin-bundle/issues/431",
+  "evidence": {
+    "heldout_adopted_accuracy_at_0.9": 0.9565,
+    "heldout_cases": 40,
+    "combined_decided_accuracy": 0.966,
+    "sole_wrong_adoption": "complaint/observation phrasing -> stylize_video",
+    "manifests": ".devin/evals/laya/media-intent-v1/"
+  },
+  "checkpoint": {
+    "hf_repo": "convaiinnovations/laya",
+    "hf_revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
+    "local_snapshot": "%USERPROFILE%\\.cache\\huggingface\\hub\\models--convaiinnovations--laya\\snapshots\\7b928d828b7b0e022f929d9bd2e44165aa270148",
+    "artifact_sha256": "54f695651fcf10da8a23003899ba646932c877b87e8b69d88d63ee92e1c58aab",
+    "model_safetensors_sha256": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
+    "identity_observed_in_manifests": "english",
+    "vendoring_note": "HF cache path is fragile (cache clean = model_path_missing). Before activation, copy the snapshot to a stable path (e.g. .devin/laya/models/english/) preserving relative layout - _artifact_sha256 is content+relpath based so the digest is unchanged by the move."
+  },
+  "delta": {
+    "models": {
+      "english": {
+        "path": "<stable vendored path - see vendoring_note>",
+        "sha256": "54f695651fcf10da8a23003899ba646932c877b87e8b69d88d63ee92e1c58aab",
+        "identity": "english"
+      }
+    },
+    "profiles_add": ["media-intent-v1"],
+    "calibration": {
+      "id": "media-intent-v1-platt-2026-11-09",
+      "checkpoint_sha256": "54f695651fcf10da8a23003899ba646932c877b87e8b69d88d63ee92e1c58aab",
+      "profile": "media-intent-v1",
+      "locale": "en",
+      "data_source": "maintainer-authored frozen manifests, real worker captures",
+      "evaluation_id": "media-intent-v1-heldout-40",
+      "threshold": 0.9,
+      "cardinality": 5,
+      "map": {"kind": "platt", "a": 23.1982, "b": -13.1611}
+    }
+  },
+  "activation_semantics": {
+    "mode_transition": "off -> shadow -> assist (reviewed, tested each step)",
+    "adoptable_requires": "request.mode == 'assist' AND calibrated_p >= threshold AND effective_mode == 'assist'",
+    "per_consumer_optin": "intent.suggest(mode=...) is a per-call parameter defaulting to 'shadow' - only consumers explicitly requesting assist can adopt; other profiles stay suggestion-only even under global mode=assist",
+    "calibration_is_global": "single calibration block applies to every request that reaches adoptable; binding to media-intent-v1 relies on per-consumer mode opt-in, not per-profile gating"
+  },
+  "open_decisions": [
+    "item5 residual-risk: complaint->stylize_video mitigation (consumer-side imperative-only guard vs non-saturating table map) - trade-off documented in media-intent-v1 README; guard NOT shipped",
+    "item6 deliberate mode transition with review",
+    "item7 re-run held-out batch after any map/state change (warm_engine now absorbs cold-start deadline misses)"
+  ],
+  "known_corrections_since_issue_filed": [
+    "deadline_exceeded misses were cold-start artifact - fixed by laya_worker.warm_engine (b69c878); coverage in existing manifests understated by ~1 case each",
+    "skill-pick engine_error:TypeError root-caused to cp1252 stdio mojibake - fixed by pin_stdio_utf8, not transient"
+  ]
+}
