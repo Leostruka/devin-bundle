@@ -64,6 +64,20 @@ Windows UIA targets (Explorer, Settings, our own tools) before touching
 the perception pipeline. Not a replacement for web automation
 (agent-browser remains that layer).
 
+## Decision (issue #429, 2026-11-09)
+
+**Option A - tree-native.** `DesktopBackend` in `cu_agent_desktop.py`
+implements the `cu_backend` contract (`capabilities`/`observe`/
+`dispatch`/`release_all`/`close`); `observe()` returns
+`{"tree","meta"}` rather than the `(img, meta)` frame tuple -
+frame-pipeline consumers must not receive it (documented divergence,
+consumers branch on `kind == "agent-desktop"`). Selection goes through
+`cu_backend.open_backend` target kinds `"desktop"`/`"agent-desktop"`
+rather than a `CU_BACKEND` env var - matches the existing provider
+architecture; binary selection stays `$CU_AGENT_DESKTOP` → PATH →
+`npx`. Screenshot remains the escape hatch for canvas/Electron-no-AX
+(option C deferred until a real target needs it - YAGNI).
+
 ## Evidence
 
 - Repo: github.com/vercel-labs/agent-desktop (Apache-2.0)

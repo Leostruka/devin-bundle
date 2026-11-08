@@ -138,3 +138,88 @@ def test_verify_exhausts():
                         run=lambda a, t: _env({"tree": {"ready": False}}))
     ok, _ = c.verify(lambda d: d["tree"]["ready"], attempts=2, delay=0)
     assert ok is False
+
+
+# -- DesktopBackend contract adapter (issue #429) --------------------------
+
+
+class _FakeAD:
+    """AgentDesktop-shaped stub for DesktopBackend tests."""
+
+    def __init__(self):
+        self.calls = []
+
+    def _rec(self, name, *a, **k):
+        self.calls.append((name, a, k))
+        return {"ok": True, "name": name}
+
+    def status(self):
+        return {"platform": "windows", "surfaces": ["window"]}
+
+    def snapshot(self, **kw):
+        self.calls.append(("snapshot", kw, {}))
+        return {"snapshot_id": "snap9", "tree": {"role": "window"}}
+
+    def click(self, ref):
+        return self._rec("click", ref)
+
+    def type_text(self, ref, text):
+        return self._rec("type", ref, text)
+
+    def set_value(self, ref, value):
+        return self._rec("set_value", ref, value)
+
+    def press(self, combo):
+        return self._rec("press", combo)
+
+    def scroll(self, ref, direction="down", amount=None):
+        return self._rec("scroll", ref, direction, amount)
+
+
+def test_backend_observe_returns_tree_dict():
+    b = ad.DesktopBackend(client=_FakeAD())
+    obs = b.observe({"app": "WindowsTerminal"})
+    assert obs["tree"]["snapshot_id"] == "snap9"
+    assert obs["meta"]["backend"] == "agent-desktop"
+    assert obs["meta"]["monotonic_ns"] > 0
+
+
+def test_backend_dispatch_maps_ops():
+    fake = _FakeAD()
+    b = ad.DesktopBackend(client=fake)
+    r = b.dispatch({"op": "click", "ref": "@s1:e3"})
+    assert r["status"] == "dispatched" and r["op"] == "click"
+    assert fake.calls[-1][0] == "click"
+    r = b.dispatch({"op": "type", "ref": "@s1:e4", "text": "hi"})
+    assert r["status"] == "dispatched"
+    assert fake.calls[-1][1] == ("@s1:e4", "hi")
+
+
+def test_backend_dispatch_rejects_unknown_and_errors():
+    b = ad.DesktopBackend(client=_FakeAD())
+    assert b.dispatch({"op": "teleport"})["status"] == "rejected"
+    assert b.dispatch("not-a-dict")["status"] == "rejected"
+
+    class Boom(_FakeAD):
+        def click(self, ref):
+            raise ad.AgentDesktopError("boom")
+    r = ad.DesktopBackend(client=Boom()).dispatch(
+        {"op": "click", "ref": "@e1"})
+    assert r["status"] == "error" and "boom" in r["error"]
+
+
+def test_backend_capabilities_and_lifecycle():
+    b = ad.DesktopBackend(client=_FakeAD())
+    caps = b.capabilities()
+    assert caps["available"] and caps["observe"] == "tree"
+    assert "click" in caps["verbs"] and "set_value" in caps["verbs"]
+    assert b.release_all()["released"] == []
+    b.close()  # no-op, must not raise
+
+
+def test_open_backend_desktop_kind():
+    import cu_backend
+    b = cu_backend.open_backend({"kind": "desktop"})
+    assert isinstance(b, ad.DesktopBackend)
+    assert cu_backend.open_backend({"kind": "agent-desktop"}).kind == \
+        "agent-desktop"

@@ -98,3 +98,29 @@ def test_safe_zip_extracts(monkeypatch, tmp_path, capsys):
     assert (tmp_path / "_cache" / "Release" / "main.exe").exists()
     assert (tmp_path / "_cache" / "ggml-base.bin").read_bytes() == \
         b"model-bytes"
+
+
+def test_transcribe_model_path_variants(tmp_path, monkeypatch):
+    """Issue #430: ggml filenames + medium/large resolve; bare names map."""
+    import transcribe
+    monkeypatch.setattr(transcribe, "CACHE", tmp_path)
+    (tmp_path / "ggml-medium.bin").write_bytes(b"x")
+    (tmp_path / "ggml-custom.bin").write_bytes(b"x")
+    assert transcribe._model_path("medium").endswith("ggml-medium.bin")
+    assert transcribe._model_path("ggml-medium.bin").endswith("ggml-medium.bin")
+    assert transcribe._model_path("ggml-custom.bin").endswith("ggml-custom.bin")
+    assert transcribe._model_path("nonexistent") is None
+
+
+def test_parse_lang_detection():
+    """Issue #430: stderr detection lines -> (lang, prob)."""
+    import transcribe
+    assert transcribe.parse_lang_detection("") == (None, None)
+    assert transcribe.parse_lang_detection(
+        "whisper_full: detected language: Portuguese (p = 0.97)") == \
+        ("portuguese", 0.97)
+    assert transcribe.parse_lang_detection(
+        "... lang pt (p = 0.42) ... lang en (p = 0.55)") == \
+        ("en", 0.55)
+    assert transcribe.parse_lang_detection("detected language: pt") == \
+        ("pt", None)

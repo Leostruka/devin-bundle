@@ -27,6 +27,11 @@ def open_backend(target):
         import cu_adb_backend
         return cu_adb_backend.AdbBackend(target["env_id"],
                                          target.get("spec"))
+    if kind in ("desktop", "agent-desktop"):
+        # tree-native backend over the local accessibility tree (issue
+        # #429) - no env_id; target {"kind": "desktop"} suffices
+        import cu_agent_desktop
+        return cu_agent_desktop.DesktopBackend()
     raise BackendUnavailable(f"backend_unavailable:{kind}")
 
 

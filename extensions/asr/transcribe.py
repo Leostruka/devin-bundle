@@ -26,10 +26,19 @@ from pathlib import Path
 CACHE = Path(os.environ.get("ASR_CACHE",
                             Path(__file__).parent / "_cache"))
 MODELS = {"base": "ggml-base.bin", "small": "ggml-small.bin",
-          "tiny": "ggml-tiny.bin"}
+          "tiny": "ggml-tiny.bin", "medium": "ggml-medium.bin",
+          "large": "ggml-large-v3-turbo.bin"}
+# issue #430: PT-BR and other non-EN speech garbles on `base` - prefer
+# small+ and an explicit --lang when the source language is known.
 SEG_RE = re.compile(
     r"\[(\d+):(\d+):(\d+)[.,](\d+)\s*-->\s*(\d+):(\d+):(\d+)[.,](\d+)\]"
     r"\s*(.*)")
+# whisper.cpp stderr reports auto-detection, e.g.
+# "whisper_full_with_state: ... lang pt (p = 0.98)" / "detected language: Portuguese"
+_LANG_RE = re.compile(
+    r"(?:detected language|lang(?:uage)?)\s*[:=]?\s*"
+    r"(?:([A-Za-z]+)\s*\(p\s*=\s*([\d.]+)\)|([a-z]{2}))",
+    re.IGNORECASE)
 
 
 def parse_segments(text):
@@ -61,10 +70,28 @@ def _find_binary():
 
 
 def _model_path(model):
-    # accept "base" and "ggml-base(.bin)" spellings
+    # accept "base", "ggml-base.bin" and bare filenames
     key = str(model).removeprefix("ggml-").removesuffix(".bin")
-    f = CACHE / MODELS.get(key, model)
+    fname = MODELS.get(key, model if str(model).endswith(".bin")
+                       else f"ggml-{key}.bin")
+    f = CACHE / fname
     return str(f) if f.exists() else None
+
+
+def parse_lang_detection(stderr):
+    """whisper.cpp stderr -> (lang, prob) from auto-detection lines."""
+    best, code_only = None, None
+    for m in _LANG_RE.finditer(stderr or ""):
+        name, prob, code = m.groups()
+        if name and prob:
+            p = float(prob)
+            if best is None or p > best[1]:
+                best = (name.lower(), p)
+        elif code:
+            code_only = code.lower()
+    if best:
+        return best
+    return (code_only, None) if code_only else (None, None)
 
 
 def fetch_audio(source, workdir):
@@ -106,8 +133,24 @@ def transcribe(source, model="base", lang="auto", timeout=600):
         return {"ok": False, "error": "whisper_failed",
                 "stderr": p.stderr[-2000:]}
     segs = parse_segments(p.stdout)
-    return {"ok": True, "text": " ".join(s["text"] for s in segs),
-            "segments": segs, "model": model, "source": source}
+    out = {"ok": True, "text": " ".join(s["text"] for s in segs),
+           "segments": segs, "model": model, "source": source}
+    det_lang, det_prob = parse_lang_detection(p.stderr)
+    if det_lang:
+        out["detected_lang"] = det_lang
+        if det_prob is not None:
+            out["lang_confidence"] = det_prob
+        warnings = []
+        if lang != "auto" and det_lang != lang:
+            warnings.append(
+                f"lang_mismatch: --lang {lang} but detected {det_lang}")
+        if det_prob is not None and det_prob < 0.5:
+            warnings.append(
+                f"low_lang_confidence:{det_prob:.2f} - pass --lang "
+                "explicitly or use a larger model")
+        if warnings:
+            out["warnings"] = warnings
+    return out
 
 
 def main(argv=None):
