@@ -112,7 +112,8 @@ def stop(trace_id):
     try:
         if os.name == "nt":
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(st["pid"])],
-                           capture_output=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                           capture_output=True, timeout=10,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         else:
             os.kill(st["pid"], signal.SIGTERM)
     except OSError:

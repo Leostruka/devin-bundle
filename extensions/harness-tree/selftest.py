@@ -12,7 +12,8 @@ PY = sys.executable
 
 def run(script, *argv, cwd=None):
     return subprocess.run([PY, os.path.join(HERE, script), *argv],
-                          capture_output=True, text=True, cwd=cwd)
+                          capture_output=True, text=True, cwd=cwd,
+                          encoding="utf-8", errors="replace", timeout=60)
 
 
 def make_root(tmp):

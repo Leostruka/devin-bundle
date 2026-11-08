@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- subprocess timeout + decode sweep round 2: AST scan found the last `subprocess.run` calls without `timeout=` - harness-tree selftest helper (timeout=60, matching code-graph), taskkill calls in cu_browser `_kill_pid` and cu_taskrunner stop (timeout=10, best-effort kill). Also 4 `text=True` calls the earlier count-based sweep missed (blender --version probe, remotion npm install + render, ppisp_runner) now pin `encoding="utf-8", errors="replace"`. audit.py check [37] rewritten AST-precise (per-call text=True without encoding= kwarg) after the count heuristic proved it could mask per-call gaps.
+
 - audit.py check [37] subprocess utf-8 decode: warns when a file has more `text=True` subprocess calls than `encoding=` pins (the cp1252 regression class fixed this session); warning-level heuristic. Summary now reads "ALL 37 CHECKS".
 
 - audit.py check [36] CLI exit-code contract: AST-scans extensions/ mains for the `print(json.dumps(envelope))` + bare `return 0` shape that let `{"ok": false}` exit 0 (the bug class fixed in 9 mains this session); warning-level, skips ok-aware/can-fail/sys.exit paths. Summary now reads "ALL 36 CHECKS".

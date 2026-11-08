@@ -96,6 +96,7 @@ def run(images_dir, out_dir, steps=None, extra=None):
         timeout = 3600
     try:
         p = subprocess.run(argv, cwd=up, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace",
                            timeout=timeout,
                            creationflags=getattr(
                                subprocess, "CREATE_NO_WINDOW", 0))

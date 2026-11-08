@@ -61,7 +61,8 @@ def render(plan, workdir, dry=True, comp="Plan", out_name="out.mp4",
                     "workdir": str(workdir)}
         inst = subprocess.run(
             [npm, "install", "--no-audit", "--no-fund"], cwd=workdir,
-            capture_output=True, text=True, timeout=900,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=900,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         if inst.returncode != 0:
             return {"ok": False, "error": "npm_install_failed",
@@ -69,6 +70,7 @@ def render(plan, workdir, dry=True, comp="Plan", out_name="out.mp4",
                     "workdir": str(workdir)}
         result["deps_installed"] = True
     p = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace",
                        timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     result.update({"rendered": p.returncode == 0,
                    "stdout": p.stdout[-2000:],

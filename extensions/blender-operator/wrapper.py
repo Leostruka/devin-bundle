@@ -307,7 +307,8 @@ def cmd_self_test(args):
     if blender:
         try:
             v = subprocess.run([blender, "--version"], capture_output=True,
-                               text=True, timeout=20, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.splitlines()
+                               text=True, encoding="utf-8", errors="replace",
+                               timeout=20, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.splitlines()
             out["checks"]["blender_version"] = v[0] if v else None
         except (OSError, subprocess.TimeoutExpired) as e:
             out["checks"]["blender_version_error"] = str(e)

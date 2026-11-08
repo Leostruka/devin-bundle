@@ -1195,11 +1195,13 @@ except Exception as _e:
 
 # 37. subprocess text decode: text=True without encoding= decodes with the
 # Windows locale codepage (cp1252) - UTF-8 output with non-ASCII mojibakes
-# or crashes on undefined bytes. Every text=True call needs
-# encoding="utf-8", errors="replace".
+# or crashes on undefined bytes. Every subprocess text=True call needs an
+# encoding= kwarg on the same call (count heuristics mask per-call gaps).
 print()
 print('[37] subprocess utf-8 decode')
 try:
+    import ast as _ast37
+    _SUB = ('run', 'call', 'check_output', 'check_call')
     _bad_enc = []
     for _dirpath, _dirnames, _filenames in os.walk('extensions'):
         _dirnames[:] = [d for d in _dirnames
@@ -1209,16 +1211,37 @@ try:
                 continue
             _fp = os.path.join(_dirpath, _fn)
             try:
-                _src = open(_fp, encoding='utf-8').read()
-            except (OSError, UnicodeDecodeError):
+                _tree = _ast37.parse(
+                    open(_fp, encoding='utf-8').read())
+            except (OSError, UnicodeDecodeError, SyntaxError):
                 continue
-            _tt = _src.count('text=True')
-            if _tt and _src.count('encoding=') < _tt:
-                _bad_enc.append(_fp)
+            for _node in _ast37.walk(_tree):
+                if not isinstance(_node, _ast37.Call):
+                    continue
+                _f = _node.func
+                _is_sub = False
+                if (isinstance(_f, _ast37.Attribute)
+                        and _f.attr in _SUB
+                        and isinstance(_f.value, _ast37.Name)
+                        and _f.value.id == 'subprocess'):
+                    _is_sub = True
+                if not _is_sub:
+                    continue
+                _tk = next((k for k in _node.keywords
+                            if k.arg == 'text'), None)
+                if _tk is None:
+                    continue
+                if (isinstance(_tk.value, _ast37.Constant)
+                        and _tk.value.value is not True):
+                    continue
+                if not any(k.arg and k.arg.startswith('encoding')
+                           for k in _node.keywords):
+                    _bad_enc.append('%s:%d' % (_fp, _node.lineno))
+                    break
     if _bad_enc:
-        warnings.append('text=True without encoding=: '
+        warnings.append('subprocess text=True without encoding=: '
                         + ', '.join(_bad_enc[:10]))
-        print('  WARN ' + str(len(_bad_enc)) + ' file(s): '
+        print('  WARN ' + str(len(_bad_enc)) + ' call(s): '
               + ', '.join(_bad_enc[:5]))
     else:
         print('  OK  all text=True subprocess calls pin utf-8')
