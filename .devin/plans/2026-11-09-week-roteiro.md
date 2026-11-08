@@ -75,8 +75,15 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   caught + fixed a real em-dash violation (stop-guard).
 
 **Remaining for the week** (frontier, not scheduled):
-- #429 agent-desktop Backend contract decision (design + wiring)
-- #423-#426 evals are commented; adoption decisions pending user
+- ~~#429 agent-desktop Backend contract~~ DONE Mon AM: DesktopBackend
+  (option A tree-native) + open_backend kinds desktop/agent-desktop,
+  live-verified, 16 tests (4cc80bd). Issue closed.
+- ~~#423-#426 evals~~ DECIDED + closed: #423 adopted (via #427/#429),
+  #424/#425/#426 track-as-pattern. #428 landed + closed.
+- ~~#430 ASR PT-BR~~ DONE + closed: model resolution + lang detection +
+  warnings; verified live (--model small --lang pt = clean PT-BR).
+- Review-hardening batch on PR #422 (3cb348c): all 9 reviewer findings
+  fixed + 8 regression tests; PR comment posted.
 - Local frontier: 5 ready issues (ISSUE_02-05 media/AI epics,
   MILESTONE_2_12 agent_rts) + 1 egm-laya open - sprint-scale, pick per
   capacity view
