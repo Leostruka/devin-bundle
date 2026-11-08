@@ -113,3 +113,14 @@ first, deterministic fallback when the daemon is down.
   mutating/abstain (never irreversible), id_rsa -> mutating,
   git push -> benign. Deterministic feats vector stays authoritative.
   Artifacts: `.devin/evals/laya/cmd-risk-v1/` (+invalid-goal manifest).
+  **knowledge-label-v1 runs same day** (8 labels, live consumer
+  knowledge_labels.py): run01 exposed the THIRD instance of the
+  bare-list-criteria defect - ontology jargon produced content-free
+  criteria, model confidently abstained 16/16 (p 0.47-0.99). Fixed to
+  dict-labels with ontology glosses; run02: accuracy 1.000 on 4
+  decided / coverage 0.25 - perfect precision, conservative recall,
+  SAFE failure direction (abstain = span stays unlabelled, never
+  wrong). First profile shaped like a viable high-precision assist
+  candidate - still needs the standard calibration block (threshold,
+  checkpoint digest, eval id); NOT enabled by this run.
+  Artifacts: `.devin/evals/laya/knowledge-label-v1/`.

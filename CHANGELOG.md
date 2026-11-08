@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- laya knowledge-label-v1 criteria fix + calibration: third instance of the bare-list-criteria defect - ontology jargon (`entity`/`concept`/...) produced content-free criteria and the model confidently abstained 16/16 (p 0.47-0.99). Converted to dict-labels with ontology glosses (candidate ids unchanged, `ONTOLOGY` now frozenset of dict keys). Run02: accuracy 1.000 on 4 decided / coverage 0.25 - perfect precision, conservative recall, safe failure direction (abstain leaves span unlabelled). First high-precision assist candidate shape; still requires the standard calibration block, NOT enabled.
+
 - laya cmd-risk-v1 calibration + laya-guard dead-lane fix: guard sent `"goal": ""` which the contract rejects (`state_goal_invalid`) - every production request abstained since authoring; goal now carries the classification intent. Post-fix eval (20 cases): acc 0.231 / cov 0.65 with disqualifying severity under-classification (irreversible->mutating, id_rsa->mutating, git push->benign). Deterministic feats vector remains authoritative; assist stays gated.
 
 - laya review-risk-v1 calibration + state-modality finding: 16 cases over the exact review_gate hint-JSON shape -> 16/16 abstain, coverage 0.0. Root cause is state modality, not labels: structured flag-JSON/digest state is opaque to the semantic matcher while prose state decides. Across all 7 evaluated profiles only issue-category-v1 (0.684) approaches viability; assist gate stays closed.
