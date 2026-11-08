@@ -34,6 +34,13 @@ Route: `extensions/image-forensics/verdict.py` — JSON contract
 - Never claim provenance from a single signal: combine metadata flags +
   residual + PCE. For publication, pair with `fact-check`.
 - No camera reference available -> `no_reference`; build one or abstain.
+- JPEG-domain caveat (measured 2026-11-09, see
+  `.devin/research/2026-11-09-if-heldout-eval.md`): a ref built from
+  camera JPEGs cannot reliably distinguish OTHER JPEGs - the shared
+  quantization signature dominates the residual and synthetic JPEGs
+  score real_capture at default thresholds. Prefer lossless camera
+  originals (PNG/TIFF) for refs; when only JPEGs exist, raise
+  `--pce-real` per-domain and validate with `eval_set.py` first.
 
 ## Commands
 

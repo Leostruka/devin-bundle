@@ -137,3 +137,66 @@ def test_metadata_unreadable(tmp_path):
     bad.write_bytes(b"not an image")
     rep = md.report(bad)
     assert any(f.startswith("unreadable") for f in rep["flags"])
+
+
+# --- eval_set held-out harness -----------------------------------------------
+import eval_set as ev          # noqa: E402
+
+
+def _img_dir(tmp_path, name, arrays):
+    d = tmp_path / name
+    d.mkdir()
+    for i, a in enumerate(arrays):
+        _save(a, d / f"{i}.png")
+    return d
+
+
+def test_eval_set_separates_classes(tmp_path):
+    reals, _ = make_set(6, stamp=True)
+    ref = prnu.build_reference(reals[:4])
+    ref_path = tmp_path / "ref.npy"
+    np.save(ref_path, ref)
+    real_dir = _img_dir(tmp_path, "real", reals[4:])
+    synth, _ = make_set(4, stamp=False)
+    synth_dir = _img_dir(tmp_path, "synth", synth)
+    out = ev.evaluate(str(real_dir), str(synth_dir), str(ref_path),
+                      pce_real=100.0, pce_synth=50.0)
+    assert out["ok"]
+    assert out["classes"]["real"]["verdicts"]["real_capture"] == 2
+    assert out["classes"]["synthetic"]["verdicts"]["synthetic"] == 4
+    assert out["decided_accuracy"] == 1.0
+    assert out["coverage"] == 1.0
+
+
+def test_eval_set_empty_dirs_error(tmp_path):
+    out = ev.evaluate(str(tmp_path / "nope"), str(tmp_path / "nah"))
+    assert out["ok"] is False and len(out["errors"]) == 2
+
+
+def test_eval_set_limit_caps_per_class(tmp_path):
+    reals, _ = make_set(6, stamp=True)
+    ref = prnu.build_reference(reals[:4])
+    ref_path = tmp_path / "ref.npy"
+    np.save(ref_path, ref)
+    real_dir = _img_dir(tmp_path, "real", reals[4:])
+    synth, _ = make_set(4, stamp=False)
+    synth_dir = _img_dir(tmp_path, "synth", synth)
+    out = ev.evaluate(str(real_dir), str(synth_dir), str(ref_path),
+                      pce_real=100.0, pce_synth=50.0, limit=1)
+    assert out["classes"]["real"]["n"] == 1
+    assert out["classes"]["synthetic"]["n"] == 1
+
+
+def test_eval_set_ref_error_bucket(tmp_path):
+    # image with energy but wrong shape vs ref -> ref_error, not
+    # inconclusive
+    reals, _ = make_set(4, stamp=True)
+    ref = prnu.build_reference(reals)
+    ref_path = tmp_path / "ref.npy"
+    np.save(ref_path, ref)
+    big = rng.normal(0.5, 0.05, (48, 48))
+    real_dir = _img_dir(tmp_path, "real", [big])
+    synth_dir = _img_dir(tmp_path, "synth", make_set(1, stamp=False)[0])
+    out = ev.evaluate(str(real_dir), str(synth_dir), str(ref_path),
+                      pce_real=100.0, pce_synth=50.0)
+    assert out["classes"]["real"]["verdicts"]["ref_error"] == 1

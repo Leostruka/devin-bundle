@@ -40,7 +40,7 @@ Status: in-progress · Source: IG `DeRX9KpJPlT` (@plattipusofficial) + Lukáš/F
 ## Progress (2026-11-09 audit)
 
 - Landed: `extensions/image-forensics/` (metadata.py, prnu.py, verdict.py) + `skills/image-forensics/SKILL.md` + tests/test_image_forensics.py (10 tests, green)
-- Pending: step 4 held-out validation metrics (Rule 15) - fresh image set, no calibration leakage
+- DONE 2026-11-09 (partial): `eval_set.py` held-out harness shipped (labeled real/synth dirs -> per-class verdict distribution + decided accuracy + coverage; thresholds stay CLI inputs so calibration and held-out never share constants). First real-data run: webcam JPEG ref (4 imgs) vs held-out frames - real 3/3 correct BUT synth JPEG frames false-positive (PCE 130-187 > default 50) - ref residual dominated by shared JPEG quant signature, not isolating sensor PRNU. Full writeup: `.devin/research/2026-11-09-if-heldout-eval.md`. Still pending: larger multi-session/device dataset for threshold calibration
 
 ## Non-goals
 
