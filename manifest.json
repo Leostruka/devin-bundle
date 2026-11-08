@@ -1530,8 +1530,8 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "17EAF6ADFA30689BC8B3A4644FE7058E0056CA414466C73DDD37C590880AFF1B",
-      "exported_at": "2026-11-08T09:25:24.978371"
+      "export_hash": "283B3754BF819B607FEA22511C1955F6C020EA37C799D0B3B63308C39D453072",
+      "exported_at": "2026-11-08T09:30:04.578799"
     },
     {
       "name": "session-start.py",

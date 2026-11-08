@@ -298,6 +298,27 @@ def test_bold_status_field_variants(tmp_path):
     assert by_key["C"]["status"] == "open"
 
 
+def test_estimate_actual_fields(tmp_path):
+    """Issue #418: estimate_min/actual_min frontmatter -> JSON fields
+    and capacity est_open_min rollup."""
+    _mk(tmp_path, ".devin/issues/A.md",
+        "# A\n\nStatus: open\nestimate_min: 90\nactual_min: 45\n")
+    _mk(tmp_path, ".devin/issues/B.md",
+        "# B\n\nStatus: resolved\nestimate_min: 30\n")
+    _mk(tmp_path, ".devin/issues/C.md",
+        "# C\n\nStatus: open\n**Estimate-min**: 60\n")
+    issues = rb.build_model(str(tmp_path))
+    by_key = {i["key"]: i for i in issues}
+    assert by_key["A"]["estimate_min"] == 90
+    assert by_key["A"]["actual_min"] == 45
+    assert by_key["B"]["estimate_min"] == 30
+    assert by_key["C"]["estimate_min"] == 60  # bold + dash variant
+    cap = rb.capacity(issues)
+    # only OPEN issues' estimates roll up: A(90) + C(60) = 150
+    assert cap["by_group"]["issues"]["est_open_min"] == 150
+    assert cap["totals"]["est_open_min"] == 150
+
+
 def test_capacity_in_json_and_md(tmp_path, capsys):
     _fixture(tmp_path)
     out = io.StringIO()

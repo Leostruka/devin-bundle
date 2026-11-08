@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- micro timeboxing fields (issue #418): issues accept `estimate_min:`/`actual_min:` frontmatter (bold/dash variants tolerated); roadmap-board exposes both per issue + capacity `est_open_min` rollup (open issues only) + markdown "Est min" column; agents/issue-tracker.md documents the convention (roteiro task `minutes` <- estimate_min); first real use: egm-laya 04-laya-jev-rollout estimate_min=120; 1 test.
+
 - roadmap-board parser corrections + effort archiving (issues #402 #406): status/priority fields now parse `- **Status**: x`, `**Status:** x` and plain forms (bold residue previously left issues falsely open - live board corrected 190->97 issues, done 184); archived-effort mechanism - scratch/<effort>/README.md `Status: ARCHIVED` excludes that effort's issues from the live board, reported as summary.archived_efforts/archived_issues + markdown note; sweep archived 17 dead efforts (audit-r1..r6, reels-2..5, computer-use-staged-upgrades, agentcraft-rts(+v2), general-audit, 3d_sources, cu-perception, cu-realtime) covering 93 resolved issues; site/build.py field regex aligned to same bold-status variants; live frontier now 5 claimable + 1 egm-laya open; 2 new tests.
 
 - _hookrun resilience (issue #408): metrics.jsonl rotates at 512KB keeping newest half (was unbounded - 10k lines/2.2MB observed); per-script timings_ms in hookrun metric + stderr warning over 5s; docstring documents the non-blocking sub-script contract (outer hook timeout is the only hang bound); 2 tests.

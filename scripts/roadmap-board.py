@@ -26,6 +26,10 @@ _FIELD = (r"^\s*(?:[-*]\s*)?\*{{0,2}}{}\*{{0,2}}:?\*{{0,2}}"
 TITLE_RE = re.compile(r"^#\s+(.+?)\s*$", re.M)
 STATUS_RE = re.compile(r"(?im)" + _FIELD.format("status") + r"([\w-]+)")
 PRIORITY_RE = re.compile(r"(?im)" + _FIELD.format("priority") + r"([\w-]+)")
+ESTIMATE_RE = re.compile(
+    r"(?im)" + _FIELD.format("estimate[_-]?min") + r"(\d+)")
+ACTUAL_RE = re.compile(
+    r"(?im)" + _FIELD.format("actual[_-]?min") + r"(\d+)")
 # blocked-by/blocks appear inline in milestone meta lines
 # ("Status: x · Blocked-by: y") AND as markdown field lines - keep
 # unanchored; _split_ids strips any '**' residue from captures.
@@ -125,11 +129,15 @@ def parse_issue(path, group):
         m = re.search(r"(?im)^\s*blocked[_-]by\s*[:=]\s*(.+)$", text)
         blocked_by = _split_ids(m.group(1)) if m else []
     blocks = _split_ids(_first(BLOCKS_RE, text))
+    est = _first(ESTIMATE_RE, text)
+    act = _first(ACTUAL_RE, text)
     stem = os.path.splitext(os.path.basename(path))[0]
     return {
         "key": stem, "title": title, "group": group, "path": path,
         "status": status, "done": status_vocab.is_terminal(status),
         "priority": (_first(PRIORITY_RE, text) or "").upper() or None,
+        "estimate_min": int(est) if est else None,
+        "actual_min": int(act) if act else None,
         "blocked_by": blocked_by, "blocks": blocks,
     }
 
@@ -210,7 +218,7 @@ def summarize(issues):
 
 def _cap_bucket():
     return {"total": 0, "done": 0, "open": 0, "ready": 0,
-            "blocked": 0, "in_flight": 0}
+            "blocked": 0, "in_flight": 0, "est_open_min": 0}
 
 
 def capacity(issues, wip_limit=None):
@@ -230,6 +238,8 @@ def capacity(issues, wip_limit=None):
             g["done"] += 1
             continue
         g["open"] += 1
+        if i.get("estimate_min"):
+            g["est_open_min"] += i["estimate_min"]
         if i["ready"]:
             g["ready"] += 1
         else:
@@ -288,15 +298,17 @@ def render_md(issues, root):
     cap = capacity(issues)
     lines.append("## Capacity")
     lines.append("")
-    lines.append("| Group | Open | Ready | Not ready | In-flight |")
-    lines.append("|---|---|---|---|---|")
+    lines.append("| Group | Open | Ready | Not ready | In-flight | Est min |")
+    lines.append("|---|---|---|---|---|---|")
     for g in sorted(cap["by_group"]):
         b = cap["by_group"][g]
         lines.append(f"| {g} | {b['open']} | {b['ready']} | "
-                     f"{b['blocked']} | {b['in_flight']} |")
+                     f"{b['blocked']} | {b['in_flight']} | "
+                     f"{b['est_open_min'] or '-'} |")
     t = cap["totals"]
     lines.append(f"| **total** | {t['open']} | {t['ready']} | "
-                 f"{t['blocked']} | {t['in_flight']} |")
+                 f"{t['blocked']} | {t['in_flight']} | "
+                 f"{t['est_open_min'] or '-'} |")
     lines.append("")
     lines.append(f"Frontier: {cap['frontier']} claimable - "
                  f"WIP in-flight: {cap['wip']['in_flight']}")

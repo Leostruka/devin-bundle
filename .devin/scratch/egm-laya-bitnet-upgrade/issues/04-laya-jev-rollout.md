@@ -4,6 +4,8 @@ Status: runtime lanes implemented per `LAYA_MASTER_ARCHITECTURE.md` §12;
 adoption gated on calibration (G5) - `.devin/laya/profile.json` mode is
 `off`, so every lane abstains `feature_off` until enabled.
 
+estimate_min: 120
+
 ## Landed
 
 - JEV-1: `compact_gate.eval_floor = 0.25` in `profile.json` and

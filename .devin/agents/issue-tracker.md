@@ -26,6 +26,10 @@ Decision record: `.devin/adr/007-scratch-issue-tracker.md`.
 - Tickets are separate files at `.devin/scratch/<effort-slug>/issues/<NN>-<slug>.md`.
 - Number tickets from `01`.
 - Record triage state with a `Status:` line near the top.
+- Timeboxing (issue #418): estimate work in minutes with an
+  `estimate_min: <int>` field near the top; record effort spent with
+  `actual_min: <int>` when resolving. The roteiro planner consumes
+  `estimate_min` as the task `minutes` when packing the day.
 - Append discussion under `## Comments`.
 
 ## Operations
