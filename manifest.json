@@ -1407,8 +1407,8 @@
       "name": "dep-audit.py",
       "source": "devin-bundle",
       "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
-      "export_hash": "63751AB25441291944347CBFFB97E7AC37E54D859A57ECAC3701B95DB1B60437",
-      "exported_at": "2026-11-08T09:25:41.154386"
+      "export_hash": "5797B6F48559F79A2F7E92F0450AD1FBDD115F401D57841746AF107A36A07B7A",
+      "exported_at": "2026-11-08T10:18:51.569042"
     },
     {
       "name": "design-lint-gate.py",
@@ -1536,8 +1536,8 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "F436F941005F0F3D7131E2A28433D504BB08D1DC6449E05DD06280F33C7C4E29",
-      "exported_at": "2026-11-08T09:32:41.476239"
+      "export_hash": "14E7DA697BA277AC857756A58433FBFE71F9F33A682528717D5EBD859BB35818",
+      "exported_at": "2026-11-08T10:18:51.569605"
     },
     {
       "name": "session-start.py",

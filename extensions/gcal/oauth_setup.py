@@ -20,6 +20,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import secrets
 import sys
 import threading
@@ -72,7 +73,7 @@ def _write_gcal_section(client_id, client_secret, refresh_token,
     if os.path.isfile(path):
         with open(path, encoding="utf-8") as fh:
             existing = fh.read()
-        if "[gcal]" in existing:
+        if re.search(r"(?m)^\s*\[gcal\]\s*$", existing):
             if not force:
                 raise SystemExit(f"[gcal] already present in {path} - "
                                  "re-run with --force to replace it")
@@ -88,12 +89,18 @@ def _write_gcal_section(client_id, client_secret, refresh_token,
                     out.append(ln)
             existing = "".join(out).rstrip() + "\n"
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write(existing)
-        fh.write("\n[gcal]\n")
-        fh.write(f'client_id = "{client_id}"\n')
-        fh.write(f'client_secret = "{client_secret}"\n')
-        fh.write(f'refresh_token = "{refresh_token}"\n')
+
+    def _toml_str(v):
+        return '"' + str(v).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+    # write with 0o600 from creation - no default-perms window (review)
+    content = (existing + "\n[gcal]\n"
+               + f"client_id = {_toml_str(client_id)}\n"
+               + f"client_secret = {_toml_str(client_secret)}\n"
+               + f"refresh_token = {_toml_str(refresh_token)}\n")
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(content)
     try:
         os.chmod(path, 0o600)
     except OSError:
@@ -139,6 +146,14 @@ def main():
                 got["code"] = q["code"][0]
             elif "error" in q:
                 got["error"] = q["error"][0]
+            else:
+                # stray request (favicon, prefetch) - not the consent
+                # callback; keep waiting instead of exiting early
+                self.send_response(400)
+                self.send_header("Content-Type", "text/html")
+                self.end_headers()
+                self.wfile.write(b"<h3>missing code/error params</h3>")
+                return
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
             self.end_headers()

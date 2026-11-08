@@ -244,3 +244,12 @@ def test_deadline_caps_scanner_timeout():
     dl = audit._Deadline(5)
     assert dl.cap(300) <= 5
     assert audit._Deadline(None).cap(300) == 300
+
+
+def test_main_root_after_max_seconds(tmp_path, monkeypatch, capsys):
+    """Review regression: --root honored in any argv position."""
+    (tmp_path / "package.json").write_text("{}")
+    monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path / "wrong"))
+    audit.main(["--max-seconds", "30", "--root", str(tmp_path)])
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is True

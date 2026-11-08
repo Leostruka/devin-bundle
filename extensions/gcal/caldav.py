@@ -20,7 +20,7 @@ import urllib.error
 import urllib.request
 import uuid
 from datetime import datetime, timezone
-from urllib.parse import quote, urljoin
+from urllib.parse import quote, urljoin, urlsplit
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape
 
@@ -41,12 +41,26 @@ class CalDAVError(Exception):
     pass
 
 
+def _check_url(url):
+    """CalDAV endpoints must be https - credentials ride Basic auth.
+    Loopback (127.0.0.1/localhost/::1) is exempt: private test/dev
+    servers never leave the host (project rule: private endpoints)."""
+    u = url.lower()
+    if u.startswith("https://"):
+        return
+    host = urlsplit(url).hostname or ""
+    if host in ("127.0.0.1", "localhost", "::1"):
+        return
+    raise CalDAVError(f"caldav url must be https: {url!r}")
+
+
 def load_credentials():
     """Return {url, username, password} or None."""
     url = os.environ.get("BUNDLE_CALDAV_URL")
     user = os.environ.get("BUNDLE_CALDAV_USER")
     pw = os.environ.get("BUNDLE_CALDAV_PASSWORD")
     if url and user and pw:
+        _check_url(url)
         return {"url": url, "username": user, "password": pw}
     if tomllib is None:
         return None
@@ -60,6 +74,7 @@ def load_credentials():
             continue
         c = data.get("caldav", {})
         if c.get("url") and c.get("username") and c.get("password"):
+            _check_url(c["url"])
             return {"url": c["url"], "username": c["username"],
                     "password": c["password"]}
     return None
@@ -96,7 +111,13 @@ def _request(creds, method, url, body=None, content_type=None,
         except urllib.error.HTTPError as e:
             if e.code in (301, 302, 303, 307, 308) \
                     and e.headers.get("Location"):
-                url = urljoin(url, e.headers["Location"])
+                nxt = urljoin(url, e.headers["Location"])
+                # never forward Basic auth off-origin or to plaintext
+                if urlsplit(nxt).netloc != urlsplit(url).netloc \
+                        or not nxt.lower().startswith("https://"):
+                    raise CalDAVError(
+                        f"refusing cross-origin/insecure redirect: {nxt}")
+                url = nxt
                 continue
             text = ""
             try:
@@ -160,9 +181,13 @@ def _resolve(base, href):
 
 
 def discover(creds):
-    """Principal URL: well-known first, base fallback. Raises."""
+    """Principal URL: well-known first, base fallback. Raises.
+    RFC 6764: .well-known lives at the host root, not under the base
+    path (review: path-bearing bases probed a wrong URL first)."""
     base = _base(creds)
-    for url in (base + ".well-known/caldav", base):
+    parts = urlsplit(base)
+    origin = f"{parts.scheme}://{parts.netloc}"
+    for url in (origin + "/.well-known/caldav", base):
         code, _, text = _propfind(
             creds, url, "<D:current-user-principal/>", depth=0)
         if code == 207:
@@ -297,6 +322,22 @@ def _ics_escape(s):
         .replace(",", "\\,").replace(";", "\\;")
 
 
+def _fold_ics_line(line):
+    """RFC 5545 3.1: content lines <=75 octets; folds insert CRLF+space.
+    Continuation lines carry the leading space inside the 75 budget."""
+    chunks, cur, curlen = [], "", 0
+    for ch in line:
+        clen = len(ch.encode("utf-8"))
+        cap = 75 if not chunks else 74
+        if curlen + clen > cap:
+            chunks.append(cur)
+            cur, curlen = "", 0
+        cur += ch
+        curlen += clen
+    chunks.append(cur)
+    return "\r\n ".join(chunks) if len(chunks) > 1 else line
+
+
 def event_ics(summary, start, end, description=None, location=None,
               uid=None):
     """VCALENDAR/VEVENT text. start/end ISO-8601 (any tz -> UTC)."""
@@ -314,7 +355,7 @@ def event_ics(summary, start, end, description=None, location=None,
     if location:
         lines.append("LOCATION:" + _ics_escape(location))
     lines += ["END:VEVENT", "END:VCALENDAR"]
-    return "\r\n".join(lines) + "\r\n"
+    return "\r\n".join(_fold_ics_line(l) for l in lines) + "\r\n"
 
 
 def create_event(creds, calendar_href, ics_text):
@@ -329,5 +370,7 @@ def create_event(creds, calendar_href, ics_text):
         extra_headers={"If-None-Match": "*"})
     if code not in (200, 201, 204):
         raise CalDAVError(f"PUT event -> {code}")
-    return {"href": url, "etag": headers.get("ETag"),
+    etag = next((v for k, v in headers.items()
+                 if k.lower() == "etag"), None)
+    return {"href": url, "etag": etag,
             "status": code}

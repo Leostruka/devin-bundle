@@ -396,3 +396,40 @@ def test_add_preview_names_agdevin_default():
     out = json.loads(p.stdout)
     assert out["status"] == "confirm-required"
     assert out["calendar"] == "AGdevin"
+
+
+def test_bool_flag_rejects_value_assignment(tmp_path):
+    """Review regression: --confirm=false must error, not silently apply."""
+    p = subprocess.run(
+        [sys.executable, WRAPPER, "add", "--summary", "x",
+         "--start", "2026-11-07T09:00:00Z",
+         "--end", "2026-11-07T10:00:00Z",
+         "--confirm=false"],
+        capture_output=True, text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 2 and out["status"] == "error"
+    assert "takes no value" in out["stderr"]
+
+
+def test_calendar_id_quoted_in_events_url(monkeypatch):
+    """Review regression: ids with # ? @ must be percent-encoded so the
+    fragment/query chars can't truncate or split the path."""
+    calls = []
+    monkeypatch.setattr(
+        gcal, "_post_json",
+        lambda url, *a, **k: calls.append(url) or {"id": "e1", "status": "confirmed"})
+    gcal.create_event("tok", "weird#id@group.calendar.google.com",
+                      {"summary": "t", "start": "2026-11-07T09:00:00Z",
+                       "end": "2026-11-07T10:00:00Z"})
+    assert calls, "expected a POST"
+    url = calls[0]
+    assert "weird%23id%40group.calendar.google.com" in url
+    assert "#" not in url.split("calendars/")[-1]
+
+    get_calls = []
+    monkeypatch.setattr(
+        gcal, "_get_json",
+        lambda url, *a, **k: get_calls.append(url) or {"items": []})
+    gcal.find_events_by_key("tok", "weird#id@group.calendar.google.com",
+                            "k1")
+    assert "weird%23id%40group.calendar.google.com" in get_calls[0]

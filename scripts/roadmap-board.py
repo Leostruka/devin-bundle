@@ -40,9 +40,12 @@ _PREFIX_REF = re.compile(r"[0-9A-Za-z]+")
 
 
 # effort-level archive marker (issue #406): scratch/<effort>/README.md
-# carrying 'Status: ARCHIVED' or a bare uppercase ARCHIVED token
+# carrying a 'Status: ARCHIVED' field line. A bare ARCHIVED word anywhere
+# in prose must NOT archive the effort (review finding: false positives
+# silently dropped open issues from the board).
 _ARCHIVED_RE = re.compile(
-    r"(?im)^\s*status\s*[:=]\s*archived\b|\bARCHIVED\b")
+    r"(?im)^\s*(?:[-*]\s*)?\*{0,2}status\*{0,2}:?\*{0,2}"
+    r"\s*[:=]?\s*archived\b")
 
 
 def _effort_archived(root, effort):
@@ -109,11 +112,13 @@ def _split_ids(raw):
         t = _MD_CHARS.sub("", t).strip().strip("`.").rstrip(".")
         if not t or t.lower() in ("none", "n/a", "-", ""):
             continue
-        # prose tails like "None - can start immediately" -> none
+        # prose tails like "None - can start immediately" -> none;
+        # append the stripped head, not the raw token (review: tails
+        # like "M2-01 - pending" never resolved -> inflated unknowns)
         head = re.split(r"\s+[—–-]\s+|\s{2,}", t)[0].strip()
         if head.lower() in ("none", "n/a", "-"):
             continue
-        out.append(t)
+        out.append(head)
     return out
 
 

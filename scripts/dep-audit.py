@@ -265,10 +265,12 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
     max_seconds = None
-    if argv and argv[0] == "--root" and len(argv) > 1:
-        root = argv[1]
+    # --root/--max-seconds accepted in any position (review: --root was
+    # only honored at argv[0], silently scanning cwd otherwise)
     for i, a in enumerate(argv):
-        if a == "--max-seconds" and i + 1 < len(argv):
+        if a == "--root" and i + 1 < len(argv):
+            root = argv[i + 1]
+        elif a == "--max-seconds" and i + 1 < len(argv):
             try:
                 max_seconds = float(argv[i + 1])
             except ValueError:

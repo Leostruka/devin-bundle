@@ -178,7 +178,8 @@ def event_payload(summary, start, end, description=None, location=None,
 
 def create_event(token, calendar_id, payload):
     """events.insert -> created event {id, htmlLink, status}. Raises."""
-    url = EVENTS_URL.format(calendar_id=calendar_id)
+    url = EVENTS_URL.format(
+        calendar_id=urllib.parse.quote(calendar_id, safe=""))
     data = _post_json(url, payload,
                       headers={"Authorization": "Bearer " + token})
     return {"id": data.get("id"), "htmlLink": data.get("htmlLink"),
@@ -208,8 +209,9 @@ def find_events_by_key(token, calendar_id, key, tmin=None, tmax=None):
         params["timeMin"] = tmin
     if tmax:
         params["timeMax"] = tmax
-    url = (EVENTS_URL.format(calendar_id=calendar_id) + "?"
-           + urllib.parse.urlencode(params))
+    url = (EVENTS_URL.format(
+        calendar_id=urllib.parse.quote(calendar_id, safe="")) + "?"
+        + urllib.parse.urlencode(params))
     data = _get_json(url,
                      headers={"Authorization": "Bearer " + token})
     return data.get("items", [])

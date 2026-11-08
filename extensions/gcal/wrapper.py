@@ -65,6 +65,9 @@ def _normalize(argv):
             if k not in KNOWN_FLAGS:
                 emit({"status": "error",
                       "stderr": f"unknown flag: {k}"}, 2)
+            if k in BOOL_FLAGS:
+                emit({"status": "error",
+                      "stderr": f"flag {k} takes no value"}, 2)
             out += [k, v]
         elif tok.startswith("--"):
             if tok not in KNOWN_FLAGS:

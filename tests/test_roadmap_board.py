@@ -374,3 +374,26 @@ def test_capacity_in_json_and_md(tmp_path, capsys):
     with redirect_stdout(out):
         rb.main(["--root", str(tmp_path)])
     assert "## Capacity" in out.getvalue()
+
+
+def test_archived_word_in_prose_not_status(tmp_path):
+    """Review regression: 'ARCHIVED' inside README prose must not archive
+    the effort - only a real Status field counts."""
+    _mk(tmp_path, ".devin/scratch/someday/README.md",
+        "# someday\n\nNotes: older audits were ARCHIVED in batch-6.\n")
+    _mk(tmp_path, ".devin/scratch/someday/issues/S1.md",
+        "# s one\n\nstatus: open\n")
+    issues = rb.build_model(str(tmp_path))
+    assert [i["key"] for i in issues] == ["S1"]
+    assert rb.archived_efforts(str(tmp_path)) == []
+
+
+def test_split_ids_strips_prose_tail(tmp_path):
+    """Review regression: 'M2-01 - pending' must resolve M2-01, not the raw
+    token with the prose tail."""
+    _mk(tmp_path, ".devin/scratch/e/issues/M2-01.md",
+        "# blocker\n\nstatus: open\n")
+    _mk(tmp_path, ".devin/scratch/e/issues/X9.md",
+        "# x\n\nstatus: open\nblocked_by: M2-01 - pending review\n")
+    issues = {i["key"]: i for i in rb.build_model(str(tmp_path))}
+    assert "M2-01" in issues["X9"]["blocked_by"]

@@ -420,3 +420,73 @@ def test_wrapper_caldav_e2e_freebusy_add_apply():
         os.unlink(rfile)
     finally:
         srv.shutdown()
+
+
+def test_redirect_cross_origin_refused(monkeypatch):
+    """Review regression: CalDAV redirect to another host must not forward
+    Basic credentials."""
+    import urllib.error
+    import urllib.request
+    import caldav as cd
+    creds = {"url": "https://cal.example.com/dav/", "username": "u",
+             "password": "p"}
+
+    def fake_urlopen(req, timeout=None):
+        raise urllib.error.HTTPError(
+            req.full_url, 302, "Found",
+            {"Location": "https://evil.example.net/x"}, None)
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    with pytest.raises(cd.CalDAVError, match="redirect"):
+        cd._request(creds, "GET", "https://cal.example.com/dav/x")
+
+
+def test_redirect_same_origin_allowed(monkeypatch):
+    """Same-origin https redirect is followed (body re-sent by caller)."""
+    import urllib.error
+    import urllib.request
+    import caldav as cd
+    creds = {"url": "https://cal.example.com/dav/", "username": "u",
+             "password": "p"}
+    seen = []
+
+    class Resp:
+        status = 200
+        headers = {}
+        def __enter__(self):
+            return self
+        def __exit__(self, *a):
+            return False
+        def read(self):
+            return b"ok"
+
+    def fake_urlopen(req, timeout=None):
+        seen.append(req.full_url)
+        if len(seen) == 1:
+            raise urllib.error.HTTPError(
+                req.full_url, 301, "Moved",
+                {"Location": "/dav/moved"}, None)
+        return Resp()
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    code, _, text = cd._request(creds, "GET", "https://cal.example.com/dav/x")
+    assert code == 200 and text == "ok"
+    assert seen[-1] == "https://cal.example.com/dav/moved"
+
+
+def test_event_ics_folds_long_lines():
+    """Review regression: RFC 5545 - content lines <=75 octets, folded
+    with CRLF+space; unfold round-trips the summary."""
+    import caldav as cd
+    import gcal
+    long_summary = "reunião " + "ç" * 80 + " fim"
+    text = cd.event_ics(long_summary, "2026-11-09T12:00:00Z",
+                        "2026-11-09T13:00:00Z",
+                        description="x" * 120)
+    for raw in text.replace("\r\n", "\n").split("\n"):
+        if raw:
+            assert len(raw.encode("utf-8")) <= 75, raw[:60]
+    assert "\r\n " in text  # at least one fold happened
+    # unfolded parse recovers the summary
+    busy = gcal.ics_busy(text)
+    assert busy["busy"], "expected busy interval"
