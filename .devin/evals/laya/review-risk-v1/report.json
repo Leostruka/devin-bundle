@@ -1,0 +1,112 @@
+{
+  "name": "review-risk-v1-cal-01",
+  "total": 16,
+  "correct": 0,
+  "wrong": 0,
+  "abstained": 16,
+  "correct_abstain": 0,
+  "shortlist_miss": 0,
+  "decided": 0,
+  "accuracy": null,
+  "wilson_accuracy_low": null,
+  "coverage": 0.0,
+  "abstain_precision": 0.0,
+  "cases": [
+    {
+      "case_id": "rr-001",
+      "outcome": "abstained",
+      "gold": "low",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-002",
+      "outcome": "abstained",
+      "gold": "low",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-003",
+      "outcome": "abstained",
+      "gold": "low",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-004",
+      "outcome": "abstained",
+      "gold": "low",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-005",
+      "outcome": "abstained",
+      "gold": "medium",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-006",
+      "outcome": "abstained",
+      "gold": "medium",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-007",
+      "outcome": "abstained",
+      "gold": "medium",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-008",
+      "outcome": "abstained",
+      "gold": "medium",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-009",
+      "outcome": "abstained",
+      "gold": "medium",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-010",
+      "outcome": "abstained",
+      "gold": "high",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-011",
+      "outcome": "abstained",
+      "gold": "high",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-012",
+      "outcome": "abstained",
+      "gold": "high",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-013",
+      "outcome": "abstained",
+      "gold": "critical",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-014",
+      "outcome": "abstained",
+      "gold": "critical",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-015",
+      "outcome": "abstained",
+      "gold": "critical",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "rr-016",
+      "outcome": "abstained",
+      "gold": "medium",
+      "picked": "__none__"
+    }
+  ]
+}

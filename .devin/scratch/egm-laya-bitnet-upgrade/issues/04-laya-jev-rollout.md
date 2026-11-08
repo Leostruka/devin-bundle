@@ -94,3 +94,13 @@ first, deterministic fallback when the daemon is down.
   not more cases on this one.
   Artifacts: `.devin/evals/laya/{compact-item-v1,filebool-v1,
   compact-boundary-v1}/`.
+  **review-risk-v1 run same day** (4th <=3-label-adjacent profile,
+  dict criteria, live consumer review_gate.py): 16 cases, coverage
+  0.0 - total abstention. Root cause is STATE MODALITY, not labels:
+  the hint-JSON flag vector is opaque to a semantic text matcher.
+  Meta-pattern refined across all 7 evaluated profiles: engagement
+  tracks state shape - prose state (issue text, file heads,
+  transcripts) decides; structured state (flag JSON, digests)
+  abstains uniformly. If structured signals are ever routed to laya,
+  serialize them as descriptive prose in `snippets` first.
+  Artifacts: `.devin/evals/laya/review-risk-v1/`.
