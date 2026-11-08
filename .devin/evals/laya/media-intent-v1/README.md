@@ -179,3 +179,23 @@ consumer-side (imperative-only routing guard) or accept the ~4%
 wrong-adoption rate. The isotonic table is the best structural
 candidate if activation proceeds (graded probabilities, rejects
 borderline picks).
+
+## Guard trade-off analysis (2026-11-09, on frozen held-out data)
+
+Question: would a deterministic pre-filter have prevented the
+wrong adoption without losing correct ones? Tested an
+imperative-only heuristic (request-verb regex, reject "?") against
+all 40 held-out cases:
+
+- Catches mi-h14 "the video looks weird" (the ONLY wrong adoption
+  at cal_p>=0.9) - non-imperative complaint.
+- Also blocks mi-h17 "promo clip for the kickstarter campaign" - a
+  CORRECT adopted launch_video suggestion phrased as a noun phrase.
+- mi-h16 (also non-imperative) was not adopted anyway - no effect.
+
+Net effect: adopted 23->21, correct 22->21 -> adopted accuracy
+0.9565 -> 1.000, coverage 0.575 -> 0.525. A narrower
+complaint/observation regex (stative openings, "weird|broken|slow|
+fails") could catch mi-h14 alone, but tuning on n=1 is
+overfitting - recorded as analysis for the activation decision,
+no guard shipped.
