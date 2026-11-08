@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- file-I/O decode sweep + audit check [38]: Path.read_text()/write_text() and text-mode open() without an encoding pin now flagged by audit (same cp1252 class as [37], for file content). Fixed 8 sites: cu_qmp_backend/cu_env_daemon heartbeat pair, abliterator safetensors index read, heldout_batch --out write, blender state json.load/dump, code-graph selftest fixtures, guest worker boot_id read. ASCII-guaranteed sites (ensure_ascii JSON, kernel boot_id) pinned anyway for convention uniformity. Summary now reads "ALL 38 CHECKS".
+
 - subprocess timeout + decode sweep round 2: AST scan found the last `subprocess.run` calls without `timeout=` - harness-tree selftest helper (timeout=60, matching code-graph), taskkill calls in cu_browser `_kill_pid` and cu_taskrunner stop (timeout=10, best-effort kill). Also 4 `text=True` calls the earlier count-based sweep missed (blender --version probe, remotion npm install + render, ppisp_runner) now pin `encoding="utf-8", errors="replace"`. audit.py check [37] rewritten AST-precise (per-call text=True without encoding= kwarg) after the count heuristic proved it could mask per-call gaps.
 
 - audit.py check [37] subprocess utf-8 decode: warns when a file has more `text=True` subprocess calls than `encoding=` pins (the cp1252 regression class fixed this session); warning-level heuristic. Summary now reads "ALL 37 CHECKS".

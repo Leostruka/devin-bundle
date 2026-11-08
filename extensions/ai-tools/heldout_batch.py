@@ -231,7 +231,7 @@ def main():
     text = json.dumps(res, indent=2)
     if args.out:
         try:
-            Path(args.out).write_text(text)
+            Path(args.out).write_text(text, encoding="utf-8")
         except OSError as e:
             print(json.dumps({"ok": False,
                               "error": f"write_failed:{e}"}))

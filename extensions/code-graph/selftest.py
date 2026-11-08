@@ -19,11 +19,11 @@ def run(script, *argv, cwd=None):
 def main():
     with tempfile.TemporaryDirectory() as root:
         os.makedirs(os.path.join(root, "src"), exist_ok=True)
-        with open(os.path.join(root, "src", "alpha.py"), "w") as fh:
+        with open(os.path.join(root, "src", "alpha.py"), "w", encoding="utf-8") as fh:
             fh.write("import beta.gamma\n"
                      "def myCamelFunc():\n    pass\n"
                      "class Snake_case:\n    pass\n")
-        with open(os.path.join(root, "src", "beta.py"), "w") as fh:
+        with open(os.path.join(root, "src", "beta.py"), "w", encoding="utf-8") as fh:
             fh.write("def helper():\n    pass\n")
 
         r = run("index.py", root)
@@ -43,7 +43,7 @@ def main():
         # change detection
         r = run("detect_changes.py", root)
         assert '"changed": []' in r.stdout, r.stdout
-        with open(os.path.join(root, "src", "alpha.py"), "a") as fh:
+        with open(os.path.join(root, "src", "alpha.py"), "a", encoding="utf-8") as fh:
             fh.write("\ndef added():\n    pass\n")
         r = run("detect_changes.py", root)
         assert "alpha.py" in r.stdout, r.stdout

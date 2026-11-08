@@ -300,7 +300,7 @@ def serve(env_dir, spawn=None, poll_s=0.2):
         hb = env_dir / "hb"
         while not hb_stop.is_set() and proc.poll() is None:
             try:
-                hb.write_text(str(time.time()))
+                hb.write_text(str(time.time()), encoding="utf-8")
             except OSError:
                 pass
             hb_stop.wait(1.0)

@@ -79,7 +79,7 @@ def load_safetensors(path):
     from safetensors.numpy import load_file
     path = Path(path)
     if path.name.endswith(".index.json"):
-        idx = json.loads(path.read_text())
+        idx = json.loads(path.read_text(encoding="utf-8"))
         out = {}
         for shard in sorted(set(idx["weight_map"].values())):
             out.update(load_file(str(path.parent / shard)))

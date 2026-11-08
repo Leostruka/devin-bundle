@@ -21,7 +21,7 @@ METHODS = frozenset({"ping", "text.insert", "clipboard.get",
 
 def _boot_id():
     try:
-        with open("/proc/sys/kernel/random/boot_id") as f:
+        with open("/proc/sys/kernel/random/boot_id", encoding="utf-8") as f:
             return f.read().strip()
     except OSError:
         return "unknown"

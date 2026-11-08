@@ -230,7 +230,7 @@ class QmpBackend:
         hb = self.env_dir / "hb"
         if hb.exists():
             try:
-                age = time.time() - float(hb.read_text().strip())
+                age = time.time() - float(hb.read_text("utf-8").strip())
             except (OSError, ValueError):
                 age = float("inf")
             if age > 4.0:

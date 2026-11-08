@@ -1248,6 +1248,68 @@ try:
 except Exception as _e:
     print('  SKIP decode check failed: ' + str(_e))
 
+# 38. file-I/O text decode: Path.read_text()/write_text() and builtin
+# open() in text mode without an encoding pin decode with the Windows
+# locale codepage (cp1252) - same mojibake/crash class as check [37]
+# but for file content. Binary modes ('b' in mode) are exempt.
+print()
+print('[38] file-I/O utf-8 decode')
+try:
+    _bad_io = []
+    for _dirpath, _dirnames, _filenames in os.walk('extensions'):
+        _dirnames[:] = [d for d in _dirnames
+                        if d not in ('.venv', '__pycache__', 'tests')]
+        for _fn in _filenames:
+            if not _fn.endswith('.py'):
+                continue
+            _fp = os.path.join(_dirpath, _fn)
+            try:
+                _tree = _ast37.parse(
+                    open(_fp, encoding='utf-8').read())
+            except (OSError, UnicodeDecodeError, SyntaxError):
+                continue
+            for _node in _ast37.walk(_tree):
+                if not isinstance(_node, _ast37.Call):
+                    continue
+                _f = _node.func
+                if isinstance(_f, _ast37.Attribute) \
+                        and _f.attr in ('read_text', 'write_text'):
+                    # encoding is positional arg 0 for Path text methods
+                    _ok = len(_node.args) >= 1 or any(
+                        k.arg == 'encoding' for k in _node.keywords
+                        if k.arg)
+                elif isinstance(_f, _ast37.Name) and _f.id == 'open':
+                    _mode = None
+                    for _k in _node.keywords:
+                        if _k.arg == 'mode':
+                            _mode = _k.value
+                    if _mode is None and len(_node.args) >= 2:
+                        _mode = _node.args[1]
+                    if isinstance(_mode, _ast37.Constant) \
+                            and isinstance(_mode.value, str) \
+                            and 'b' in _mode.value:
+                        continue
+                    if not isinstance(_mode, _ast37.Constant) \
+                            and _mode is not None:
+                        continue  # dynamic mode - cannot prove text
+                    _ok = len(_node.args) >= 4 or any(
+                        k.arg == 'encoding' for k in _node.keywords
+                        if k.arg)
+                else:
+                    continue
+                if not _ok:
+                    _bad_io.append('%s:%d' % (_fp, _node.lineno))
+                    break
+    if _bad_io:
+        warnings.append('text file I/O without encoding=: '
+                        + ', '.join(_bad_io[:10]))
+        print('  WARN ' + str(len(_bad_io)) + ' call(s): '
+              + ', '.join(_bad_io[:5]))
+    else:
+        print('  OK  all text file I/O pins utf-8')
+except Exception as _e:
+    print('  SKIP file-decode check failed: ' + str(_e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1264,5 +1326,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 37 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 38 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

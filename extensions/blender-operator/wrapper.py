@@ -72,16 +72,16 @@ def _save_state(**kw):
     state = {}
     if os.path.exists(STATE_FILE):
         try:
-            state = json.load(open(STATE_FILE))
+            state = json.load(open(STATE_FILE, encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             pass
     state.update(kw)
-    json.dump(state, open(STATE_FILE, "w"), indent=1)
+    json.dump(state, open(STATE_FILE, "w", encoding="utf-8"), indent=1)
 
 
 def _load_state():
     try:
-        return json.load(open(STATE_FILE))
+        return json.load(open(STATE_FILE, encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
 
