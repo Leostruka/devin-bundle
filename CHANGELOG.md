@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- site changelog entry count honesty: `collect_changelog` counted only `- **bold**` bullets (9 shown for Unreleased vs 90 actual) - now counts all top-level bullets.
+
 - site issue ledger archived-effort parity (follow-up to #406/#407): `status_vocab` gains `effort_archived`/`archived_efforts` (moved from roadmap-board, single source); `site/build.py collect_issues` now skips ARCHIVED efforts - site was counting all 20 archived efforts (190 issues/184 resolved) while the board showed 97; both surfaces now agree (97 issues, 4 groups); roadmap-board keeps `archived_efforts` alias; 1 new test.
 
 - agent-desktop Backend contract integration (issue #429): `DesktopBackend` in `cu_agent_desktop.py` adapts the CLI wrapper to the `cu_backend` contract - `capabilities()`/`observe()`/`dispatch({"op",...})`/`release_all()`/`close()`; option A tree-native chosen (observe returns `{"tree","meta"}`, documented divergence from the `(img,meta)` frame contract - frame consumers must not receive it); `cu_backend.open_backend` accepts target kinds `desktop`/`agent-desktop` (no env_id needed); live-verified observe on WindowsTerminal; 5 new tests (16 total).

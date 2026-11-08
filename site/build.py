@@ -348,7 +348,8 @@ def collect_changelog():
         start = m.end()
         nxt = text.find("\n## ", start)
         body = text[start:nxt if nxt > 0 else len(text)]
-        feats = len(re.findall(r"^- \*\*", body, re.M))
+        # count top-level bullets - entries aren't required to be bold
+        feats = len(re.findall(r"^- ", body, re.M))
         rels.append({"version": m.group(1), "date": m.group(2) or "",
                      "entries": feats,
                      "html": md_to_html(body)[:6000]})
