@@ -104,3 +104,12 @@ first, deterministic fallback when the daemon is down.
   abstains uniformly. If structured signals are ever routed to laya,
   serialize them as descriptive prose in `snippets` first.
   Artifacts: `.devin/evals/laya/review-risk-v1/`.
+  **cmd-risk-v1 run same day** (5 labels, dict criteria, the ONLY
+  consumer that can BLOCK in assist - laya-guard.py): exposed a real
+  contract bug first - guard sent goal:"" so every request was
+  invalid_request:state_goal_invalid (lane silently dead since
+  authoring). Fixed goal text; recaptured: acc 0.231 / cov 0.65.
+  Failure mode is disqualifying for a safety gate: irreversible ->
+  mutating/abstain (never irreversible), id_rsa -> mutating,
+  git push -> benign. Deterministic feats vector stays authoritative.
+  Artifacts: `.devin/evals/laya/cmd-risk-v1/` (+invalid-goal manifest).

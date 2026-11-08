@@ -1457,7 +1457,7 @@
     {
       "name": "laya-guard.py",
       "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
-      "export_hash": "8a178c18295ba03f29b486ec214e21d352862152eca5fc1e93da7269cfe4e95a",
+      "export_hash": "81b35c036645524592c2f881b59687f53789caf3a14b9f6a716ee9b5b64ea19b",
       "exported_at": "2026-10-10T15:45:25.322611"
     },
     {
