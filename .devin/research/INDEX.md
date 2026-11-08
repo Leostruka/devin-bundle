@@ -22,3 +22,9 @@ a research doc spawns one.
 | spec-driven development flow | `.devin/research/spec-driven-development.md` |
 | reels-batch evals & external-tool notes | `.devin/research/heyclicky-eval.md`, `craft-anything-eval.md`, `wici-one-eval.md`, `2026-11-0*-reels-batch*-survey.md` |
 | milestone planning (M2_*) | `.devin/research/MILESTONE_NEXTGEN_MATRIX.md`, `.devin/research/bundle-capability-map.md` |
+| ISSUE_01-07 epic origins | `.devin/research/4_fronts_recon.md` |
+| office specialists wave (M2_15) | `.devin/research/2026-11-07-office-gap-analysis.md` |
+| agent-desktop computer-use backend | `.devin/research/2026-11-09-agent-desktop-eval.md` -> `extensions/computer-use/cu_agent_desktop.py` |
+| yt-batch1 video survey + evals | `.devin/research/2026-11-09-yt-batch1-survey.md` -> issues #423-#426 |
+| external evals (track decisions) | `.devin/research/2026-11-08-roon-eval.md`, `2026-11-08-mirofish-eval.md`, `2026-11-09-stageshow-eval.md`, `2026-11-09-dropstone-eval.md`, `2026-11-09-pr-agent-eval.md` |
+| dated survey/eval notes (context, no subsystem) | `2026-11-0*-reels-batch*-survey.md`, `2026-11-03-*-survey.md`, `2026-11-03-meridian-altdata-backlog.md`, `2026-11-03-pstack-backlog-eval.md`, `2026-11-05-r*-evals.md` |
