@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- code-graph selftest: `run()` helper now has a 60s timeout (was unbounded - a hung sibling script would hang the self-test forever); verified live `selftest: PASS`.
+
 - diagram-tools plantuml renderer hardening: server moved to https (was plaintext http - MITM could inject scriptable SVG); response body capped at 32 MiB (was unbounded read); explicit `-o` refuses to overwrite an existing file (default derived `<src>.<fmt>` stays overwritable for idempotent re-renders); 4 new tests.
 - mesh-utils meshops: `clean` now checks src exists (was the only command missing it - missing file crashed with a traceback instead of typed `{"ok": false}`); `convert`/`clean` refuse to overwrite an existing dst; 3 new tests.
 
