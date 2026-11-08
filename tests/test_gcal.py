@@ -4,12 +4,27 @@ import os
 import subprocess
 import sys
 
+import pytest
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "extensions", "gcal"))
 import gcal  # noqa: E402
 import plan  # noqa: E402
 
 WRAPPER = os.path.join(ROOT, "extensions", "gcal", "wrapper.py")
+
+
+def _tz_available():
+    try:
+        from zoneinfo import ZoneInfo
+        ZoneInfo("America/Sao_Paulo")
+        return True
+    except Exception:
+        return False
+
+
+needs_tzdata = pytest.mark.skipif(
+    not _tz_available(), reason="zoneinfo tzdata unavailable")
 
 ICS = """BEGIN:VCALENDAR
 VERSION:2.0
@@ -38,18 +53,66 @@ END:VCALENDAR
 """
 
 
+@needs_tzdata
 def test_ics_busy_parses_utc_tzid_folded_allday():
-    busy = gcal.ics_busy(ICS)
-    assert len(busy) == 4
+    res = gcal.ics_busy(ICS)
+    busy = res["busy"]
+    assert len(busy) == 3  # 2 timed + all-day moved out of busy
     starts = sorted(b["start"] for b in busy)
     assert starts[0] == "2026-11-06T09:00:00+00:00"
-    assert starts[3] == "2026-11-07T00:00:00+00:00"
+    # TZID America/Sao_Paulo 14:00-03:00 -> 17:00Z
+    assert any(b["start"] == "2026-11-06T17:00:00+00:00"
+               for b in busy)
+    assert res["all_day"] == [
+        {"summary": "all day", "start": "2026-11-07",
+         "end": "2026-11-08"}]
+    assert res["recurring"] == 0
+
+
+@needs_tzdata
+def test_ics_busy_tzid_sao_paulo_issue396():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART;TZID=America/Sao_Paulo:20261108T090000\n"
+           "DTEND;TZID=America/Sao_Paulo:20261108T100000\n"
+           "END:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert res["busy"] == [
+        {"start": "2026-11-08T12:00:00+00:00",
+         "end": "2026-11-08T13:00:00+00:00"}]
+
+
+def test_ics_busy_all_day_not_full_day_busy_issue397():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART;VALUE=DATE:20261108\nDTEND;VALUE=DATE:20261109\n"
+           "SUMMARY:holiday\nEND:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert res["busy"] == []
+    assert res["all_day"][0]["start"] == "2026-11-08"
+
+
+def test_ics_busy_rrule_counted_not_expanded_issue398():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART:20261109T130000Z\nDTEND:20261109T133000Z\n"
+           "RRULE:FREQ=WEEKLY;BYDAY=MO\nEND:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert len(res["busy"]) == 1
+    assert res["recurring"] == 1
+
+
+def test_ics_busy_unknown_tzid_warns_assumes_utc():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART;TZID=Mars/Olympus:20261108T090000\n"
+           "DTEND;TZID=Mars/Olympus:20261108T100000\n"
+           "END:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert res["busy"][0]["start"] == "2026-11-08T09:00:00+00:00"
+    assert any("TZID" in w for w in res["warnings"])
 
 
 def test_ics_busy_skips_malformed_and_inverted():
     bad = "BEGIN:VEVENT\nDTSTART:20261106T100000Z\n" \
           "DTEND:20261106T090000Z\nEND:VEVENT\n"
-    assert gcal.ics_busy(bad) == []
+    assert gcal.ics_busy(bad)["busy"] == []
 
 
 def test_ics_busy_skips_transparent_events():
@@ -59,7 +122,7 @@ def test_ics_busy_skips_transparent_events():
           "BEGIN:VEVENT\nDTSTART:20261106T110000Z\n" \
           "DTEND:20261106T120000Z\nSUMMARY:free-marked\n" \
           "TRANSP:TRANSPARENT\nEND:VEVENT\nEND:VCALENDAR\n"
-    busy = gcal.ics_busy(ics)
+    busy = gcal.ics_busy(ics)["busy"]
     assert len(busy) == 1 and busy[0]["start"].startswith("2026-11-06T09")
 
 
@@ -126,8 +189,8 @@ def test_wrapper_ics_free_busy(tmp_path):
         capture_output=True, text=True)
     out = json.loads(p.stdout)
     assert p.returncode == 0 and out["status"] == "ok"
-    assert out["source"] == "ics" and len(out["busy"]) == 4
-    assert out["free_slots"]
+    assert out["source"] == "ics" and len(out["busy"]) == 3
+    assert out["all_day"] and out["free_slots"]
 
 
 def test_wrapper_ics_url_free_busy():
@@ -158,7 +221,7 @@ def test_wrapper_ics_url_free_busy():
             capture_output=True, text=True)
         out = json.loads(p.stdout)
         assert p.returncode == 0 and out["status"] == "ok"
-        assert out["source"] == "ics-url" and len(out["busy"]) == 4
+        assert out["source"] == "ics-url" and len(out["busy"]) == 3
     finally:
         srv.shutdown()
 

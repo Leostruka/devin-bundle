@@ -16,10 +16,14 @@ Usage:
   python oauth_setup.py --client-id ID --client-secret SECRET
 """
 import argparse
+import base64
+import hashlib
 import json
 import os
+import secrets
 import sys
 import threading
+import urllib.error
 import urllib.parse
 import urllib.request
 import webbrowser
@@ -33,7 +37,7 @@ TOKEN_URL = "https://oauth2.googleapis.com/token"
 SCOPES = ("https://www.googleapis.com/auth/calendar.readonly "
           "https://www.googleapis.com/auth/calendar.events "
           "https://www.googleapis.com/auth/calendar.calendars")
-WAIT_SECONDS = 300
+WAIT_SECONDS = 900
 
 
 def _load_client(args):
@@ -90,6 +94,10 @@ def _write_gcal_section(client_id, client_secret, refresh_token,
         fh.write(f'client_id = "{client_id}"\n')
         fh.write(f'client_secret = "{client_secret}"\n')
         fh.write(f'refresh_token = "{refresh_token}"\n')
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass  # Windows / FS without POSIX perms
     return path
 
 
@@ -100,8 +108,19 @@ def main():
     ap.add_argument("--client-secret-value")
     ap.add_argument("--force", action="store_true",
                     help="replace an existing [gcal] section")
+    ap.add_argument("--timeout", type=int, default=WAIT_SECONDS,
+                    help="seconds to wait for browser consent "
+                         f"(default {WAIT_SECONDS})")
     args = ap.parse_args()
     client_id, client_secret = _load_client(args)
+
+    # OAuth hardening (issue #411): state binds the callback to this
+    # flow; PKCE protects the code on the loopback channel.
+    state = secrets.token_urlsafe(16)
+    verifier = secrets.token_urlsafe(64)
+    challenge = base64.urlsafe_b64encode(
+        hashlib.sha256(verifier.encode()).digest()
+    ).rstrip(b"=").decode()
 
     got = {}
     done = threading.Event()
@@ -110,6 +129,12 @@ def main():
         def do_GET(self):
             q = urllib.parse.parse_qs(
                 urllib.parse.urlparse(self.path).query)
+            if q.get("state", [None])[0] != state:
+                self.send_response(400)
+                self.send_header("Content-Type", "text/html")
+                self.end_headers()
+                self.wfile.write(b"<h3>state mismatch - restart setup.</h3>")
+                return
             if "code" in q:
                 got["code"] = q["code"][0]
             elif "error" in q:
@@ -130,7 +155,9 @@ def main():
     auth = (AUTH_URL + "?" + urllib.parse.urlencode({
         "client_id": client_id, "redirect_uri": redirect,
         "response_type": "code", "scope": SCOPES,
-        "access_type": "offline", "prompt": "consent"}))
+        "access_type": "offline", "prompt": "consent",
+        "state": state, "code_challenge": challenge,
+        "code_challenge_method": "S256"}))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     print("Open this URL in your browser and approve:\n")
     print(auth + "\n")
@@ -138,9 +165,10 @@ def main():
         webbrowser.open(auth)
     except Exception:
         pass
-    if not done.wait(WAIT_SECONDS):
+    if not done.wait(args.timeout):
         srv.shutdown()
-        raise SystemExit("timed out waiting for consent")
+        raise SystemExit(f"timed out waiting for consent "
+                         f"({args.timeout}s)")
     srv.shutdown()
     if "error" in got:
         raise SystemExit(f"consent failed: {got['error']}")
@@ -150,12 +178,20 @@ def main():
     body = urllib.parse.urlencode({
         "code": got["code"], "client_id": client_id,
         "client_secret": client_secret, "redirect_uri": redirect,
-        "grant_type": "authorization_code"}).encode()
+        "grant_type": "authorization_code",
+        "code_verifier": verifier}).encode()
     req = urllib.request.Request(TOKEN_URL, data=body,
                                  headers={"Content-Type":
                                           "application/x-www-form-urlencoded"})
-    with urllib.request.urlopen(req, timeout=gcal.HTTP_TIMEOUT) as resp:
-        tokens = json.loads(resp.read().decode())
+    try:
+        with urllib.request.urlopen(req, timeout=gcal.HTTP_TIMEOUT) as resp:
+            tokens = json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", "replace")[:300]
+        raise SystemExit(f"token exchange failed (HTTP {e.code}): "
+                         f"{detail}")
+    except (urllib.error.URLError, ValueError) as e:
+        raise SystemExit(f"token exchange failed: {e}")
     refresh = tokens.get("refresh_token")
     if not refresh:
         raise SystemExit("no refresh_token in response - re-run and "

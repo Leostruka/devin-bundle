@@ -44,6 +44,45 @@ def emit(payload, code=0):
     sys.exit(code)
 
 
+VALUE_FLAGS = {
+    "--ics", "--ics-url", "--calendars", "--from", "--to", "--tasks",
+    "--slots", "--summary", "--start", "--end", "--calendar", "--desc",
+    "--loc", "--tz", "--roteiro", "--prefix",
+}
+BOOL_FLAGS = {"--caldav", "--confirm"}
+KNOWN_FLAGS = VALUE_FLAGS | BOOL_FLAGS
+
+
+def _normalize(argv):
+    """Split --flag=value into --flag value; reject unknown --* tokens
+    and flags missing a value (issue #413: silent wrong-window bugs)."""
+    out = []
+    i = 0
+    while i < len(argv):
+        tok = argv[i]
+        if tok.startswith("--") and "=" in tok:
+            k, v = tok.split("=", 1)
+            if k not in KNOWN_FLAGS:
+                emit({"status": "error",
+                      "stderr": f"unknown flag: {k}"}, 2)
+            out += [k, v]
+        elif tok.startswith("--"):
+            if tok not in KNOWN_FLAGS:
+                emit({"status": "error",
+                      "stderr": f"unknown flag: {tok}"}, 2)
+            out.append(tok)
+        else:
+            out.append(tok)
+        i += 1
+    # value flags must be followed by a non-flag token
+    for j, tok in enumerate(out):
+        if tok in VALUE_FLAGS:
+            if j + 1 >= len(out) or out[j + 1].startswith("--"):
+                emit({"status": "error",
+                      "stderr": f"flag {tok} needs a value"}, 2)
+    return out
+
+
 def _arg(argv, flag, default=None):
     if flag in argv:
         i = argv.index(flag)
@@ -85,16 +124,31 @@ def cmd_doctor():
     }, 0 if (creds or dav) else 1)
 
 
+def _ics_result(text, src):
+    """ics_busy dict -> (busy, all_day, extras) for _busy_from_source."""
+    res = gcal.ics_busy(text)
+    extras = {}
+    if res["recurring"]:
+        extras["recurring_events"] = res["recurring"]
+        extras["hint"] = ("RRULE not expanded: recurring events "
+                          "contribute only their first instance")
+    if res["warnings"]:
+        extras["warnings"] = res["warnings"]
+    if res["all_day"]:
+        extras["all_day"] = res["all_day"]
+    return res["busy"], extras
+
+
 def _busy_from_source(argv):
-    """Return (busy, source, all_day) or emit missing."""
+    """Return (busy, source, all_day, extras) or emit missing."""
     ics = _arg(argv, "--ics")
     if ics:
         if not os.path.isfile(ics):
             emit({"status": "error",
                   "stderr": f"ics file not found: {ics}"}, 2)
-        return (gcal.ics_busy(
-            open(ics, encoding="utf-8", errors="replace").read()),
-            "ics", None)
+        busy, extras = _ics_result(
+            open(ics, encoding="utf-8", errors="replace").read(), "ics")
+        return busy, "ics", extras.get("all_day"), extras
     ics_url = _arg(argv, "--ics-url")
     if ics_url:
         if not ics_url.startswith(("http://", "https://")):
@@ -107,7 +161,8 @@ def _busy_from_source(argv):
         except Exception as e:
             emit({"status": "error",
                   "stderr": f"ics-url fetch failed: {e}"}, 1)
-        return gcal.ics_busy(text), "ics-url", None
+        busy, extras = _ics_result(text, "ics-url")
+        return busy, "ics-url", extras.get("all_day"), extras
     if "--caldav" in argv:
         creds = caldav.load_credentials()
         if not creds:
@@ -121,7 +176,7 @@ def _busy_from_source(argv):
         try:
             return (caldav.free_busy(creds, calendars=names or None,
                                      tmin=tmin, tmax=tmax),
-                    "caldav", None)
+                    "caldav", None, None)
         except Exception as e:
             emit({"status": "error",
                   "stderr": f"caldav free-busy failed: {e}"}, 1)
@@ -137,19 +192,23 @@ def _busy_from_source(argv):
         token = gcal.access_token(creds)
         res = gcal.free_busy(token, [c.strip() for c in cals],
                              tmin, tmax)
-        return res["busy"], "api", res["all_day"]
+        return res["busy"], "api", res["all_day"], None
     except Exception as e:  # network/HTTP/JSON failures -> error env
         emit({"status": "error", "stderr": f"free-busy failed: {e}"}, 1)
 
 
 def cmd_free_busy(argv):
     tmin, tmax = _day_range(argv)
-    busy, src, all_day = _busy_from_source(argv)
+    busy, src, all_day, extras = _busy_from_source(argv)
     out = {"status": "ok", "source": src, "from": tmin, "to": tmax,
            "busy": busy,
            "free_slots": gcal.free_slots(busy, tmin, tmax)}
     if all_day:
         out["all_day"] = all_day
+    if extras:
+        for k in ("recurring_events", "hint", "warnings"):
+            if k in extras:
+                out[k] = extras[k]
     emit(out)
 
 
@@ -164,6 +223,7 @@ def cmd_plan(argv):
     except (OSError, ValueError) as e:
         emit({"status": "error", "stderr": f"bad tasks file: {e}"}, 2)
     slots_file = _arg(argv, "--slots")
+    extras = None
     if slots_file:
         try:
             with open(slots_file, encoding="utf-8") as fh:
@@ -174,9 +234,18 @@ def cmd_plan(argv):
             slots = slots.get("free_slots", [])
     else:
         tmin, tmax = _day_range(argv)
-        busy, _, _ = _busy_from_source(argv)
+        busy, _, _, extras = _busy_from_source(argv)
         slots = gcal.free_slots(busy, tmin, tmax)
-    emit({"status": "ok", "roteiro": plan.pack(tasks, slots)})
+    try:
+        roteiro = plan.pack(tasks, slots)
+    except ValueError as e:
+        emit({"status": "error", "stderr": f"bad plan input: {e}"}, 2)
+    out = {"status": "ok", "roteiro": roteiro}
+    if extras:
+        for k in ("recurring_events", "hint", "warnings"):
+            if k in extras:
+                out[k] = extras[k]
+    emit(out)
 
 
 def _write_creds():
@@ -221,7 +290,23 @@ def _cmd_add_caldav(argv, summary, start, end, calendar):
           "calendar_created": created_cal, "event": created})
 
 
+def _validated_schedule(schedule):
+    """Ensure schedule is a list of dicts with start/end (issue #395:
+    non-dict blocks used to crash with AttributeError tracebacks)."""
+    if not isinstance(schedule, list):
+        emit({"status": "error",
+              "stderr": "schedule must be a list of blocks"}, 2)
+    for n, block in enumerate(schedule):
+        if (not isinstance(block, dict)
+                or "start" not in block or "end" not in block):
+            emit({"status": "error",
+                  "stderr": f"bad block #{n}: need dict with "
+                            f"start/end, got {block!r}"}, 2)
+    return schedule
+
+
 def _cmd_apply_caldav(argv, schedule, calendar, prefix):
+    schedule = _validated_schedule(schedule)
     events = []
     for block in schedule:
         try:
@@ -305,6 +390,7 @@ def cmd_apply(argv):
                     else data.get("schedule", []))
     else:
         schedule = data
+    schedule = _validated_schedule(schedule)
     calendar = _arg(argv, "--calendar", gcal.AGENT_CALENDAR)
     prefix = _arg(argv, "--prefix", "")
     if "--caldav" in argv:
@@ -316,7 +402,7 @@ def cmd_apply(argv):
                 prefix + str(block.get("task", "block")),
                 block["start"], block["end"],
                 description="roteiro block"))
-        except (KeyError, ValueError) as e:
+        except (KeyError, TypeError, ValueError) as e:
             emit({"status": "error",
                   "stderr": f"bad block {block}: {e}"}, 2)
     if "--confirm" not in argv:
@@ -348,6 +434,7 @@ def main(argv=None):
               "subcommands": ["free-busy", "plan", "add", "apply",
                               "doctor"]},
              0 if argv else 2)
+    argv = [argv[0]] + _normalize(argv[1:])
     if argv[0] == "doctor":
         cmd_doctor()
     elif argv[0] == "free-busy":

@@ -19,7 +19,7 @@ import os
 import re
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 try:
     import tomllib
@@ -233,46 +233,127 @@ def free_slots(busy, tmin, tmax):
 _ICS_DT = re.compile(
     r"^(?P<d>\d{8})(?:T(?P<t>\d{6})(?P<z>Z)?)?$")
 
+try:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+except ImportError:  # pragma: no cover - py<3.9
+    ZoneInfo = None
+    ZoneInfoNotFoundError = KeyError
 
-def _ics_dt(value):
-    """Return aware datetime or None for DATE/all-day start."""
+_tz_cache = {}
+
+
+def _tz(name, warnings):
+    if name in _tz_cache:
+        return _tz_cache[name]
+    try:
+        tz = ZoneInfo(name) if ZoneInfo else None
+        if tz is None:
+            raise ZoneInfoNotFoundError(name)
+    except Exception:
+        warnings.append(f"TZID {name!r} unresolved; assumed UTC")
+        tz = timezone.utc
+    _tz_cache[name] = tz
+    return tz
+
+
+def _ics_dt(value, params, warnings):
+    """Parse an ICS DATE/DATE-TIME property.
+
+    params: raw ';'-separated parameter string (TZID=, VALUE=).
+    Returns (all_day, dt) - all_day True for VALUE=DATE or bare
+    YYYYMMDD; dt is an aware UTC datetime (floating times assumed UTC
+    with a warning; TZID resolved via zoneinfo/tzdata when present).
+    """
     m = _ICS_DT.match(value.strip())
     if not m:
-        return None
-    d, t = m.group("d"), m.group("t")
-    if t is None:
-        return datetime.strptime(d, "%Y%m%d").replace(
-            tzinfo=timezone.utc)  # all-day -> date at 00:00Z
+        return False, None
+    d, t, z = m.group("d"), m.group("t"), m.group("z")
+    p = {}
+    for seg in params.split(";"):
+        k, _, v = seg.partition("=")
+        if v:
+            p[k.strip().upper()] = v.strip()
+    if t is None or p.get("VALUE") == "DATE":
+        return True, datetime.strptime(d, "%Y%m%d").replace(
+            tzinfo=timezone.utc)
     dt = datetime.strptime(d + t, "%Y%m%d%H%M%S")
-    return dt.replace(tzinfo=timezone.utc)
+    if z:
+        return False, dt.replace(tzinfo=timezone.utc)
+    tzid = p.get("TZID")
+    if tzid:
+        return False, dt.replace(tzinfo=_tz(tzid, warnings)
+                                 ).astimezone(timezone.utc)
+    warnings.append("floating time (no Z/TZID) assumed UTC")
+    return False, dt.replace(tzinfo=timezone.utc)
 
 
-def ics_busy(text):
-    """Parse VEVENT DTSTART/DTEND pairs from unfolded .ics text."""
+def _unfold(text):
     lines = []
     for raw in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
         if raw[:1] in (" ", "\t") and lines:
             lines[-1] += raw[1:]
         else:
             lines.append(raw)
-    busy, cur = [], {}
+    return lines
+
+
+def ics_busy(text):
+    """Parse VEVENTs from unfolded .ics text.
+
+    Returns {"busy": [{start,end}], "all_day": [{summary,start,end}],
+    "recurring": <RRULE count>, "warnings": [...]}.
+
+    Semantics aligned with the api path (issue #397): all-day VEVENTs
+    are informational, never full-day busy. TZID parameters convert via
+    zoneinfo (#396). RRULE/EXDATE are NOT expanded (stdlib-only): each
+    recurring VEVENT contributes only its DTSTART instance and is
+    counted in "recurring" so callers can warn (#398).
+    """
+    busy, all_day, warnings = [], [], []
+    recurring = 0
+    cur = {}
     in_ev = False
-    for line in lines:
-        name, _, val = line.partition(":")
-        prop = name.split(";", 1)[0].upper()
+    for line in _unfold(text):
+        head, _, val = line.partition(":")
+        parts = head.split(";")
+        prop = parts[0].upper()
+        params = ";".join(parts[1:])
         if prop == "BEGIN" and val.upper() == "VEVENT":
             in_ev, cur = True, {}
         elif prop == "END" and val.upper() == "VEVENT":
-            if cur.get("start") and cur.get("end") \
-                    and cur["end"] > cur["start"] \
-                    and cur.get("transp") != "TRANSPARENT":
-                busy.append({"start": cur["start"].isoformat(),
-                             "end": cur["end"].isoformat()})
+            if cur.get("transp") != "TRANSPARENT":
+                if cur.get("all_day") and cur.get("start"):
+                    end = cur.get("end") or (
+                        cur["start"] + timedelta(days=1))
+                    all_day.append({
+                        "summary": cur.get("summary"),
+                        "start": cur["start"].date().isoformat(),
+                        "end": end.date().isoformat()})
+                elif cur.get("start") and cur.get("end") \
+                        and cur["end"] > cur["start"]:
+                    busy.append({"start": cur["start"].isoformat(),
+                                 "end": cur["end"].isoformat()})
             in_ev = False
-        elif in_ev and prop == "TRANSP":
+        elif not in_ev:
+            continue
+        elif prop == "RRULE":
+            recurring += 1
+        elif prop == "TRANSP":
             cur["transp"] = val.upper()
-        elif in_ev and prop in ("DTSTART", "DTEND"):
-            dt = _ics_dt(val)
+        elif prop == "SUMMARY":
+            cur["summary"] = val
+        elif prop in ("DTSTART", "DTEND"):
+            all_day_flag, dt = _ics_dt(val, params, warnings)
             if dt is not None:
-                cur["start" if prop == "DTSTART" else "end"] = dt
-    return busy
+                key = ("start" if prop == "DTSTART" else "end")
+                cur[key] = dt
+                if prop == "DTSTART":
+                    cur["all_day"] = all_day_flag
+    # de-duplicate identical floating-time warnings
+    seen, uniq = set(), []
+    for w in warnings:
+        if w not in seen:
+            seen.add(w)
+            uniq.append(w)
+    return {"busy": busy, "all_day": all_day, "recurring": recurring,
+            "warnings": uniq}

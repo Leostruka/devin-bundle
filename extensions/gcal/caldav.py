@@ -272,7 +272,7 @@ def free_busy(creds, calendars=None, tmin=None, tmax=None):
         for r in _parse_multistatus(text):
             data = r["props"].get("calendar-data")
             if data:
-                busy.extend(gcal.ics_busy(data))
+                busy.extend(gcal.ics_busy(data)["busy"])
     return busy
 
 

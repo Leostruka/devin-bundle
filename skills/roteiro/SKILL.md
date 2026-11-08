@@ -24,7 +24,11 @@ Radicale), or `--ics FILE` / `--ics-url URL` for iCal feeds when
 credentials are absent (Google Calendar "secret address in iCal
 format" works read-only). `all_day` lists informational all-day events
 (reminders/holidays) that do NOT block slots - only `busy` (timed,
-non-transparent) does.
+non-transparent) does. ics sources may under-report recurring events:
+RRULE is counted (`recurring_events` + `hint` in output) but not
+expanded - each recurring VEVENT contributes only its first instance.
+TZID parameters are honored via zoneinfo (needs system tzdata or
+`pip install tzdata`; unresolved TZIDs warn and assume UTC).
 
 ## Run
 
