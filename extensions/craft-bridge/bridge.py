@@ -187,15 +187,17 @@ def main(argv=None):
     pr.add_argument("--file", action="append", default=[])
     args = ap.parse_args(argv)
     if args.cmd == "doctor":
-        print(json.dumps(doctor(), indent=2))
+        res = doctor()
+        print(json.dumps(res, indent=2))
     elif args.cmd == "commands":
-        r = list_commands(args.app)
-        print(r.get("stdout", json.dumps(r)))
+        res = list_commands(args.app)
+        print(res.get("stdout", json.dumps(res)))
     elif args.cmd == "run":
         params = json.loads(args.params) if args.params else None
-        print(json.dumps(run_command(args.app, args.command_id, params,
-                                     files=args.file), indent=2))
-    return 0
+        res = run_command(args.app, args.command_id, params,
+                          files=args.file)
+        print(json.dumps(res, indent=2))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

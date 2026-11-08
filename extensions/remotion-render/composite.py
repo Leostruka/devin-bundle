@@ -137,6 +137,10 @@ def composite(source, overlay, out, fit="frame", pos=None, mix=False,
         if not p.is_file():
             return {"ok": False, "error": f"{name}_missing",
                     "path": str(p)}
+    if out.exists():
+        return {"ok": False,
+                "error": f"out_exists:{out} (refusing to overwrite; "
+                         "pick another -o or delete it first)"}
     try:
         src_i, ov_i = probe(source, ffprobe), probe(overlay, ffprobe)
     except (ValueError, FileNotFoundError) as e:
@@ -152,6 +156,8 @@ def composite(source, overlay, out, fit="frame", pos=None, mix=False,
 
     try:
         dx, dy = _parse_pos(pos)
+        fchain, vlabel = build_filter(src_w, src_h, ov_w, ov_h, fit,
+                                      (dx, dy))
     except ValueError as e:
         return {"ok": False, "error": str(e)}
     if fit == "frame" and pos:
@@ -171,8 +177,6 @@ def composite(source, overlay, out, fit="frame", pos=None, mix=False,
         warnings.append(f"overlay_longer:{ov_d:.1f}s>{src_d:.1f}s"
                         "_trimmed_by_shortest")
 
-    fchain, vlabel = build_filter(src_w, src_h, ov_w, ov_h, fit,
-                                  (dx, dy))
     mode = audio_mode(src_i, ov_i, mix=mix)
     exe = ffmpeg or find_ffmpeg() or "ffmpeg"
     cmd = [exe, "-y", "-i", str(source), "-i", str(overlay)]
@@ -230,11 +234,12 @@ def main(argv=None):
     ap.add_argument("--preset", default="veryfast")
     ap.add_argument("--dry", action="store_true")
     args = ap.parse_args(argv)
-    print(json.dumps(composite(
+    result = composite(
         args.source, args.overlay, args.out, fit=args.fit,
         pos=args.pos, mix=args.mix, crf=args.crf, preset=args.preset,
-        dry=args.dry), indent=2))
-    return 0
+        dry=args.dry)
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
 
 
 if __name__ == "__main__":

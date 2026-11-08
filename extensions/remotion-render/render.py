@@ -91,10 +91,10 @@ def main(argv=None):
         print(json.dumps({"ok": False,
                           "error": f"plan unreadable: {e}"}))
         return 2
-    print(json.dumps(render(plan, args.workdir, dry=args.dry,
-                            comp=args.comp, out_name=args.out),
-                     indent=2))
-    return 0
+    res = render(plan, args.workdir, dry=args.dry,
+                 comp=args.comp, out_name=args.out)
+    print(json.dumps(res, indent=2))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

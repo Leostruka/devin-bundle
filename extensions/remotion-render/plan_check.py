@@ -16,6 +16,7 @@ never post-render. Checks:
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -40,9 +41,16 @@ VISUAL_PROPS = {
 }
 
 
+def _num(v):
+    # bool is an int subclass; NaN/Infinity are not finite numbers
+    return (isinstance(v, _NUM) and not isinstance(v, bool)
+            and math.isfinite(v))
+
+
 def _type_ok(v, types):
-    # bool is an int subclass - True must not pass as a number
-    return isinstance(v, types) and not isinstance(v, bool)
+    if not (isinstance(v, types) and not isinstance(v, bool)):
+        return False
+    return not (isinstance(v, float) and not math.isfinite(v))
 
 
 def _check_visual_props(bid, vtype, props, errors):
@@ -82,9 +90,12 @@ def check(plan):
         beats = []
     if plan.get("version") != 2:
         errors.append("version must be 2 (motion scene-plan)")
-    if not isinstance(dur, (int, float)) or dur <= 0:
+    if not _num(dur) or dur <= 0:
         errors.append("audio_duration_s missing or non-positive")
         dur = float("inf")
+    if not _num(fps) or fps <= 0:
+        errors.append("fps missing or non-positive")
+        fps = 30
     ranges = []
     total_frames = 0
     for i, b in enumerate(beats):
@@ -94,7 +105,7 @@ def check(plan):
         bid = b.get("id", f"beat{i}")
         sr = b.get("sync_range")
         if not (isinstance(sr, list) and len(sr) == 2
-                and all(isinstance(x, (int, float)) for x in sr)):
+                and all(_num(x) for x in sr)):
             errors.append(f"{bid}: sync_range missing/malformed")
             continue
         s, e = sr
@@ -161,8 +172,9 @@ def main(argv=None):
         return _fail(f"json_error:{exc}")
     if not isinstance(plan, dict):
         return _fail("plan must be a JSON object")
-    print(json.dumps(check(plan), indent=2, ensure_ascii=False))
-    return 0
+    res = check(plan)
+    print(json.dumps(res, indent=2, ensure_ascii=False))
+    return 0 if res["ok"] else 1
 
 
 if __name__ == "__main__":

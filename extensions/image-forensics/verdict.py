@@ -110,14 +110,14 @@ def main(argv=None):
     ap.add_argument("--out")
     args = ap.parse_args(argv)
     if args.build_ref:
-        print(json.dumps(build_ref(args.build_ref, args.out or "ref.npy"),
-                         ensure_ascii=False))
-        return 0
+        res = build_ref(args.build_ref, args.out or "ref.npy")
+        print(json.dumps(res, ensure_ascii=False))
+        return 0 if res.get("ok") else 1
     if not args.image:
         ap.error("image path required (or --build-ref)")
-    print(json.dumps(judge(args.image, args.ref, args.pce_real,
-                           args.pce_synth), ensure_ascii=False))
-    return 0
+    res = judge(args.image, args.ref, args.pce_real, args.pce_synth)
+    print(json.dumps(res, ensure_ascii=False))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

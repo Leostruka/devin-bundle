@@ -96,11 +96,10 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, default=None,
                     help="max images per class (smoke runs)")
     args = ap.parse_args(argv)
-    print(json.dumps(evaluate(args.real, args.synth, args.ref,
-                              args.pce_real, args.pce_synth,
-                              args.limit), indent=2,
-                     ensure_ascii=False))
-    return 0
+    res = evaluate(args.real, args.synth, args.ref,
+                   args.pce_real, args.pce_synth, args.limit)
+    print(json.dumps(res, indent=2, ensure_ascii=False))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

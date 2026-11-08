@@ -187,9 +187,9 @@ def main(argv=None):
     ap.add_argument("--model", default="base")
     ap.add_argument("--lang", default="auto")
     args = ap.parse_args(argv)
-    print(json.dumps(transcribe(args.source, args.model, args.lang),
-                     ensure_ascii=False))
-    return 0
+    res = transcribe(args.source, args.model, args.lang)
+    print(json.dumps(res, ensure_ascii=False))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

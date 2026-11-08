@@ -97,9 +97,9 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="photometric QC")
     ap.add_argument("target", help="dir or glob")
     args = ap.parse_args(argv)
-    print(json.dumps(scan(collect_paths(args.target)),
-                     ensure_ascii=False))
-    return 0
+    res = scan(collect_paths(args.target))
+    print(json.dumps(res, ensure_ascii=False))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

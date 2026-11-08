@@ -430,3 +430,85 @@ def test_plan_check_unknown_visual_type_allowed():
     # template falls back to KineticText for unknown types - not an error
     out = plan_check.check(_plan_with_visual("hologram", {}))
     assert not [e for e in out["errors"] if "props" in e]
+
+
+def test_fps_string_no_crash_typed_error():
+    """fps:"30" must error, not TypeError inside check()."""
+    p = _plan()
+    p["fps"] = "30"
+    out = plan_check.check(p)
+    assert not out["ok"]
+    assert any("fps" in e for e in out["errors"])
+
+
+def test_nan_duration_and_props_rejected():
+    p = _plan()
+    p["audio_duration_s"] = float("nan")
+    p["beats"][0]["visual"]["props"]["to"] = float("nan")
+    out = plan_check.check(p)
+    assert not out["ok"]
+    assert any("audio_duration_s" in e for e in out["errors"])
+
+
+def test_bool_sync_range_rejected():
+    p = _plan()
+    p["beats"][0]["sync_range"] = [False, True]
+    out = plan_check.check(p)
+    assert not out["ok"]
+    assert any("sync_range" in e for e in out["errors"])
+
+
+def test_composite_refuses_out_overwrite(tmp_path, monkeypatch):
+    src, ov = tmp_path / "s.mp4", tmp_path / "o.mov"
+    src.write_bytes(b"x"); ov.write_bytes(b"x")
+    out = tmp_path / "x.mp4"
+    out.write_bytes(b"old")
+    _fake_probe(monkeypatch, src=_info(), ov=_info())
+    res = composite.composite(src, ov, out, dry=True)
+    assert res["ok"] is False and "out_exists" in res["error"]
+    assert out.read_bytes() == b"old"
+
+
+def test_composite_bad_fit_typed_error(tmp_path, monkeypatch):
+    src, ov = tmp_path / "s.mp4", tmp_path / "o.mov"
+    src.write_bytes(b"x"); ov.write_bytes(b"x")
+    _fake_probe(monkeypatch, src=_info(), ov=_info())
+    res = composite.composite(src, ov, tmp_path / "x.mp4", fit="bogus",
+                              dry=True)
+    assert res["ok"] is False and "fit" in res["error"]
+
+
+def test_composite_main_exit_code_on_failure(tmp_path, monkeypatch,
+                                             capsys):
+    monkeypatch.setattr(sys, "argv",
+                        ["composite.py", str(tmp_path / "no.mp4"),
+                         str(tmp_path / "o.mov"),
+                         "-o", str(tmp_path / "x.mp4")])
+    rc = composite.main()
+    assert rc == 1
+    env = json.loads(capsys.readouterr().out)
+    assert env["ok"] is False
+
+
+def test_plan_check_main_exit_codes(tmp_path, capsys):
+    """Invalid plan -> exit 1; valid -> 0 (gate must fail CI)."""
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({"version": 2,
+                               "audio_duration_s": -5, "beats": []}))
+    rc = plan_check.main([str(bad)])
+    assert rc == 1
+    capsys.readouterr()
+    good = tmp_path / "good.json"
+    good.write_text(json.dumps(_plan()))
+    rc = plan_check.main([str(good)])
+    assert rc == 0
+
+
+def test_transcribe_main_exit_code_on_failure(tmp_path, monkeypatch,
+                                              capsys):
+    monkeypatch.setattr(sys, "argv",
+                        ["transcribe.py", str(tmp_path / "nope.wav")])
+    rc = transcribe.main()
+    assert rc == 1
+    env = json.loads(capsys.readouterr().out)
+    assert env["ok"] is False
