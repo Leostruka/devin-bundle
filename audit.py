@@ -1193,6 +1193,38 @@ try:
 except Exception as _e:
     print('  SKIP exit-code check failed: ' + str(_e))
 
+# 37. subprocess text decode: text=True without encoding= decodes with the
+# Windows locale codepage (cp1252) - UTF-8 output with non-ASCII mojibakes
+# or crashes on undefined bytes. Every text=True call needs
+# encoding="utf-8", errors="replace".
+print()
+print('[37] subprocess utf-8 decode')
+try:
+    _bad_enc = []
+    for _dirpath, _dirnames, _filenames in os.walk('extensions'):
+        _dirnames[:] = [d for d in _dirnames
+                        if d not in ('.venv', '__pycache__', 'tests')]
+        for _fn in _filenames:
+            if not _fn.endswith('.py'):
+                continue
+            _fp = os.path.join(_dirpath, _fn)
+            try:
+                _src = open(_fp, encoding='utf-8').read()
+            except (OSError, UnicodeDecodeError):
+                continue
+            _tt = _src.count('text=True')
+            if _tt and _src.count('encoding=') < _tt:
+                _bad_enc.append(_fp)
+    if _bad_enc:
+        warnings.append('text=True without encoding=: '
+                        + ', '.join(_bad_enc[:10]))
+        print('  WARN ' + str(len(_bad_enc)) + ' file(s): '
+              + ', '.join(_bad_enc[:5]))
+    else:
+        print('  OK  all text=True subprocess calls pin utf-8')
+except Exception as _e:
+    print('  SKIP decode check failed: ' + str(_e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1209,5 +1241,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 36 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 37 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

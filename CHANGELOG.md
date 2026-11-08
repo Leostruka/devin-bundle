@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- audit.py check [37] subprocess utf-8 decode: warns when a file has more `text=True` subprocess calls than `encoding=` pins (the cp1252 regression class fixed this session); warning-level heuristic. Summary now reads "ALL 37 CHECKS".
+
 - audit.py check [36] CLI exit-code contract: AST-scans extensions/ mains for the `print(json.dumps(envelope))` + bare `return 0` shape that let `{"ok": false}` exit 0 (the bug class fixed in 9 mains this session); warning-level, skips ok-aware/can-fail/sys.exit paths. Summary now reads "ALL 36 CHECKS".
 
 - CLI exit-code contract sweep: 9 mains emitted `{"ok": false}` envelopes but always exited 0 - scripts/CI could not detect failure. Fixed: composite, plan_check (the pre-render gate), render, transcribe, verdict (judge+build-ref), eval_set, photo_qc, ppisp_runner, craft-bridge. Also: plan_check now rejects non-finite fps/duration/sync_range/props (NaN/Infinity/bool slipped through - `fps:"30"` crashed the validator itself); composite refuses `--out` overwrite (ffmpeg -y), catches bad-fit ValueError, exits non-zero on failure. 6 new tests.
