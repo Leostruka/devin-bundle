@@ -341,6 +341,13 @@ def reset():
 
 def main():
     global SELECTED_MODEL
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     # Hot path: hook invocation has no CLI args — skip argparse construction
     # entirely (~20ms of pure startup on every PostToolUse).
     if not sys.argv[1:]:

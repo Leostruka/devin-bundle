@@ -1304,6 +1304,42 @@ try:
 except Exception as _e:
     print('  SKIP file-decode check failed: ' + str(_e))
 
+# 39. stdio decode: text-mode sys.stdin readers (JSON-lines workers,
+# piped-content CLIs) decode with the Windows locale codepage (cp1252)
+# unless the process pins UTF-8 - non-ASCII input mojibakes into lone
+# surrogates (laya engine_error:TypeError) or silently corrupts.
+# Binary readers (sys.stdin.buffer) and pinned streams are exempt.
+print()
+print('[39] stdio utf-8 decode')
+try:
+    import re as _re39
+    _STDIN_TXT = _re39.compile(
+        r'sys\.stdin\.(read|readline)\s*\(|'
+        r'for\s+\w+\s+in\s+sys\.stdin\s*:')
+    _bad_stdio = []
+    for _fp in _scan_py_files():
+        try:
+            _src39 = open(_fp, encoding='utf-8').read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if 'sys.stdin' not in _src39:
+            continue
+        if 'reconfigure' in _src39 or 'pin_stdio_utf8' in _src39:
+            continue
+        if 'sys.stdin.buffer' in _src39 and not _STDIN_TXT.search(_src39):
+            continue
+        if _STDIN_TXT.search(_src39):
+            _bad_stdio.append(_fp)
+    if _bad_stdio:
+        warnings.append('text-mode sys.stdin without utf-8 pin: '
+                        + ', '.join(_bad_stdio[:10]))
+        print('  WARN ' + str(len(_bad_stdio)) + ' file(s): '
+              + ', '.join(_bad_stdio[:5]))
+    else:
+        print('  OK  all text-mode stdin readers pin utf-8')
+except Exception as _e:
+    print('  SKIP stdio check failed: ' + str(_e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1320,5 +1356,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 38 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 39 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

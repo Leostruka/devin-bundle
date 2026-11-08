@@ -205,3 +205,14 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   ui_dsl, scrape parse, prompt_compiler, review_gate.
 - Issue #431 filed: media-intent activation checklist.
 - Commits: 73387f9, d9daf04, 0f0fe21, aa06cb1, e03abc1, 62a19bc.
+
+## Sun PM addendum 6 - audit check [39] closes the stdio class (16:00-16:20)
+- New audit check [39] flags text-mode sys.stdin readers without a
+  utf-8 pin (reconfigure/pin_stdio_utf8); binary buffer exempt.
+- First run caught 4 un-pinned scripts: context-budget,
+  context-pressure, file-size-guard, design-lint-gate - the two
+  JSON-payload hooks were the real exposure. All pinned with the
+  established reconfigure block; live copies + ledger + manifest
+  export_hash synced.
+- Audit now 39 checks, 0 errors / 0 warnings. Full suite re-run
+  before push.

@@ -230,6 +230,13 @@ def report(path, as_json=False, simulated_tokens=None):
 
 
 def main():
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     ap = argparse.ArgumentParser(description="Context budget reporter")
     ap.add_argument("path", nargs="?", help="path to AGENTS.md (auto-located if omitted)")
     ap.add_argument("--json", action="store_true", help="emit JSON to stdout")

@@ -1387,14 +1387,14 @@
     {
       "name": "context-budget.py",
       "purpose": "SessionStart hook — reports AGENTS.md token cost",
-      "export_hash": "d6e788774a320f3784b08ef5883276c9ed62feba93ea4e141e9477d9a8c1a9b8",
-      "exported_at": "2026-09-08T21:39:22.430527"
+      "export_hash": "DF4DF228A7906342111078FA7AF87FE4976638C17C48927A18F822BEC4593BF1",
+      "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "9af0986471145e5e131830d6fad793209333db211947d0938f1989e2797e1a27",
-      "exported_at": "2026-09-18T20:22:05.262834"
+      "export_hash": "21FE24A1B95FB04EBD912A073953FD1B55ED327BE4992C776B30ABE4020CCF44",
+      "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
       "name": "dep-audit-gate.py",
@@ -1414,8 +1414,8 @@
       "name": "design-lint-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(write|edit): warns on AI-UI slop at write time - 12 inline regex rules (no extension import); [DESIGN-LINT] via additionalContext; fail-open, never blocks (M2_05)",
-      "export_hash": "7D8F99526E4EA21D25CBF5B5D6FF7F0EBE0CC5E448A2A5A1F4B96AFEE224EA76",
-      "exported_at": "2026-11-08T08:50:55.845199"
+      "export_hash": "966F8E7E115F0EC286DD40406E206C96669DFD7EC79BF28C5F982676FEDAA5A4",
+      "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
       "name": "destructive-gate.py",
@@ -1427,8 +1427,8 @@
       "name": "file-size-guard.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
-      "export_hash": "58e8c354dc226eb1eb3c005d47eca7c647b90f894afc04d617a3d46e8c89f77f",
-      "exported_at": "2026-11-05T07:58:08.569748"
+      "export_hash": "A1512ABFE21B849F6550621C7CCF84E1062C205BBA36EBCFF477FB92874A2A09",
+      "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
       "name": "focus.py",

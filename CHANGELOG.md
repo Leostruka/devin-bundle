@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- audit check [39] stdio utf-8 decode + 4 script fixes: files reading text-mode `sys.stdin` (JSON-lines workers, piped-content hooks) decode with the Windows locale codepage unless pinned - same mojibake/lone-surrogate class as the laya worker bug. Check flags `sys.stdin.read/readline` and `for line in sys.stdin` without `reconfigure`/`pin_stdio_utf8` (binary `sys.stdin.buffer` exempt). First run caught 4 un-pinned sites now fixed with the established `reconfigure(encoding="utf-8", errors="replace")` block: `scripts/context-budget.py`, `scripts/context-pressure.py`, `scripts/file-size-guard.py`, `scripts/design-lint-gate.py` (the two JSON-payload hooks were the real exposure). Live copies synced, ledger + manifest export_hash refreshed. Summary now reads "ALL 39 CHECKS".
+
 - laya held-out sweep complete: issue-category-v1 held-out 0.833/0.75 (beats run01's 0.684; compressed confidences 0.11-0.76 leave room for a real calibration map - solid 2nd-tier triage); media-preset-v1 held-out 1.000/0.3125 (perfect precision, poetic phrasings abstain - conservative-suggester only). Every evaluated profile now carries held-out evidence.
 
 - laya held-out corrections: knowledge-label-v1 held-out (16 fresh spans) acc 0.000/cov 0.0625 - run02 perfect-precision was small-sample artifact, DOWNGRADED not viable; skill-pick-v1 held-out (16 fresh goals, post-UTF8-fix) acc 0.667/cov 0.375, combined 46-case evidence 0.826 decided acc with gate-rejectable errors - borderline viable second-tier. media-intent-v1 remains the only strong assist candidate.
