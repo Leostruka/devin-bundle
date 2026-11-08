@@ -88,3 +88,27 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   MILESTONE_2_12 agent_rts) + 1 egm-laya open - sprint-scale, pick per
   capacity view
 - Fri 13 stays buffer/overflow as planned
+
+## Revised 2026-11-09 midday (Sunday continuation)
+
+- **GitHub tracker cleaned**: 26 completed issues closed with evidence
+  comments (#395-#413, #415-#420, #427) - only umbrella #346 remains
+  open. `.devin/research/INDEX.md` drift fixed (eval notes + epic
+  origins + office wave now indexed).
+- **ISSUE_04 COMPLETE e2e**: composite.py (ffmpeg overlay step 6) +
+  narrated-clip proof - SAPI narration -> transcribe -> plan ->
+  plan_check -> Remotion 822f -> composite -> final-narrated.mp4.
+  Two real bugs found+fixed en route: mp4 silent-empty in transcribe
+  (whisper demuxes wav/mp3 only), plan_check prop-contract gap
+  (counter `to` vs `value` crashed render mid-flight).
+- **ISSUE_02 partial**: eval_set.py held-out harness + FIRST real-data
+  eval - real 3/3, synth JPEG false-positives at default thresholds
+  (JPEG quant signature dominates ref residual). Documented; needs
+  bigger dataset for calibration.
+- **ISSUE_05 partial**: photo_qc live-verified on real webcam set -
+  go/correct verdicts correct on consistent vs mixed captures.
+- **egm BitNet measured**: i2_s = 35.4 tok/s but degenerate quality
+  (3/3 repetition loops) - NOT viable as decision backend; options
+  recorded in issue.
+- Commits this block: 1ebd2ab, aa30f1b, 61c8046, 2cdc837, 2ff8fc0,
+  360d3d5 on fix/gcal-validation-ics (PR #422).
