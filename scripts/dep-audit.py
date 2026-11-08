@@ -20,6 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 try:
     _CF = subprocess.CREATE_NO_WINDOW
@@ -56,6 +57,29 @@ def _which(*names):
     return None, None
 
 
+class _Deadline:
+    """Total-scan budget (issue #404): caps each scanner subprocess to
+    the remaining wall time so a hook-bounded caller never gets orphaned
+    mid-scan. None = unbounded (manual CLI runs)."""
+
+    def __init__(self, seconds):
+        self.end = (time.monotonic() + seconds
+                    if seconds is not None else None)
+
+    def left(self):
+        if self.end is None:
+            return None
+        return max(0.0, self.end - time.monotonic())
+
+    def cap(self, default):
+        left = self.left()
+        return default if left is None else max(1.0, min(default, left))
+
+    def expired(self):
+        left = self.left()
+        return left is not None and left <= 0.5
+
+
 def _detect(root):
     found = []
     for eco, pats in DETECT.items():
@@ -71,12 +95,14 @@ def _detect(root):
     return found
 
 
-def _run(argv, cwd, timeout=120):
+def _run(argv, cwd, timeout=120, dl=None):
+    if dl is not None:
+        timeout = dl.cap(timeout)
     return subprocess.run(argv, cwd=cwd, capture_output=True, text=True,
                           timeout=timeout, creationflags=_CF)
 
 
-def _pip_audit(root):
+def _pip_audit(root, dl=None):
     reqs = []
     for f in sorted(os.listdir(root)):
         if f.startswith("requirements") and f.endswith(".txt"):
@@ -86,8 +112,10 @@ def _pip_audit(root):
     if reqs:
         mode = "requirements"
         for req in reqs:
+            if dl is not None and dl.expired():
+                break
             p = _run(["pip-audit", "-r", req, "--format", "json",
-                      "--progress-spinner", "off"], root)
+                      "--progress-spinner", "off"], root, dl=dl)
             if p.returncode not in (0, 1):
                 return None, f"pip-audit exit {p.returncode}: {p.stderr[-300:]}"
             try:
@@ -103,7 +131,7 @@ def _pip_audit(root):
                         "fixed_in": v.get("fix_versions") or None})
     else:
         p = _run(["pip-audit", "--format", "json",
-                  "--progress-spinner", "off"], root)
+                  "--progress-spinner", "off"], root, dl=dl)
         if p.returncode not in (0, 1):
             return None, f"pip-audit exit {p.returncode}: {p.stderr[-300:]}"
         try:
@@ -120,8 +148,8 @@ def _pip_audit(root):
     return {"findings": findings, "mode": mode}, None
 
 
-def _npm_audit(root):
-    p = _run(["npm", "audit", "--json"], root, timeout=180)
+def _npm_audit(root, dl=None):
+    p = _run(["npm", "audit", "--json"], root, timeout=180, dl=dl)
     try:
         data = json.loads(p.stdout or "{}")
     except json.JSONDecodeError:
@@ -149,8 +177,8 @@ _RUSTSEC_RE = re.compile(r"RUSTSEC-\d{4}-\d{4}")
 _CRATE_RE = re.compile(r"Crate:\s*(\S+)")
 
 
-def _cargo_audit(root):
-    p = _run(["cargo", "audit"], root, timeout=180)
+def _cargo_audit(root, dl=None):
+    p = _run(["cargo", "audit"], root, timeout=180, dl=dl)
     text = p.stdout + "\n" + p.stderr
     findings = []
     for m in _RUSTSEC_RE.finditer(text):
@@ -165,9 +193,9 @@ def _cargo_audit(root):
     return {"findings": out}, None
 
 
-def _osv_scanner(root):
+def _osv_scanner(root, dl=None):
     p = _run(["osv-scanner", "scan", "source", "--recursive", ".",
-              "--format", "json"], root, timeout=300)
+              "--format", "json"], root, timeout=300, dl=dl)
     try:
         data = json.loads(p.stdout or "{}")
     except json.JSONDecodeError:
@@ -186,10 +214,15 @@ def _osv_scanner(root):
     return {"findings": findings}, None
 
 
-def scan(root):
+def scan(root, max_seconds=None):
     detected = _detect(root)
+    dl = _Deadline(max_seconds)
     scanned, skipped, errors = [], [], []
     for eco in detected:
+        if dl.expired():
+            skipped.append({"ecosystem": eco,
+                            "reason": "budget-exhausted"})
+            continue
         tool, path = _which(*SCANNERS.get(eco, []))
         if not tool:
             skipped.append({"ecosystem": eco,
@@ -197,13 +230,13 @@ def scan(root):
             continue
         try:
             if tool == "pip-audit":
-                res, err = _pip_audit(root)
+                res, err = _pip_audit(root, dl)
             elif tool == "npm":
-                res, err = _npm_audit(root)
+                res, err = _npm_audit(root, dl)
             elif tool in ("cargo-audit", "cargo"):
-                res, err = _cargo_audit(root)
+                res, err = _cargo_audit(root, dl)
             elif tool == "osv-scanner":
-                res, err = _osv_scanner(root)
+                res, err = _osv_scanner(root, dl)
             else:
                 skipped.append({"ecosystem": eco,
                                 "reason": f"scanner-not-implemented ({tool})"})
@@ -231,10 +264,17 @@ def main(argv=None):
     root = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
     if argv is None:
         argv = sys.argv[1:]
+    max_seconds = None
     if argv and argv[0] == "--root" and len(argv) > 1:
         root = argv[1]
+    for i, a in enumerate(argv):
+        if a == "--max-seconds" and i + 1 < len(argv):
+            try:
+                max_seconds = float(argv[i + 1])
+            except ValueError:
+                pass
     try:
-        out = scan(root)
+        out = scan(root, max_seconds=max_seconds)
     except Exception as e:  # noqa: BLE001
         out = {"ok": False, "error": str(e)}
         print(json.dumps(out))
