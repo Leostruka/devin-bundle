@@ -150,3 +150,21 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
 - Learned: never chain `git push` with other commands in one exec -
   the PreToolUse push-gate evaluates pending diff and blocks the
   whole command pre-execution. Commit first, push separately.
+
+## Sun PM addendum 3 - laya G5 calibration evidence (14:30-16:20)
+- First real calibration runs for the laya decision backend (issue
+  04-laya-jev-rollout, the only "ready" board item). Pipeline was
+  built but never executed: authored drafts -> capture_eval (real
+  worker, shadow config) -> eval_decisions -> frozen manifests.
+- Production profile.json stays mode:off; captures ran against
+  .devin/laya/profile.calibration.json (mode:shadow only).
+- Results: issue-category-v1 acc 0.684/cov 0.792; output-context-v1
+  acc 0.563 (runtime_failure collapse); skill-family-v1 acc 0.421
+  cross-domain (0.125 on dev-flavored draft - eval-design flaw
+  caught and corrected with v2).
+- Cross-profile pattern: accuracy degrades with label cardinality
+  (3-way 0.68 / 5-way 0.56 / 7-way 0.42). All below assist
+  threshold - no calibration block written, gate stays closed WITH
+  evidence. Viable paths documented: <=3-label sets, binary
+  reformulations, or different checkpoint.
+- Commits: d4cdab5, a4e9324, ce66b1b on fix/gcal-validation-ics.
