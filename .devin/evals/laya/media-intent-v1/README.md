@@ -157,3 +157,25 @@ reduce it; neither is applied.
 
 Verdict unchanged: strongest assist candidate by far, still
 shadow-only pending the deliberate activation checklist above.
+
+## Calibration-map bake-off (fit_calibration.py, 2026-11-09)
+
+`extensions/laya-tools/fit_calibration.py` fits platt + isotonic
+table maps on the 29 train decided cases (runs 01+02) and scores
+adoption curves on both held-out batches. Report:
+`calibration-fit.json`.
+
+| map @ thr 0.9 | adopted | correct | acc | notes |
+|---|---|---|---|---|
+| platt a=23.1982 b=-13.1611 (earlier fit) | 23 | 22 | 0.9565 | saturates ~1.0 above p~0.79 |
+| platt a=186.5 b=-107.9 (NR refit) | 27 | 25 | 0.9259 | near-separable train -> step at p~0.58 |
+| table (PAVA isotonic) | 24 | 23 | **0.9583** | non-saturating, graded |
+
+All maps land within Wilson noise; none separates the wrong
+adoptions (mi-h14 p=0.945, mi-h40 p=0.594 sit inside every adopt
+region). Conclusion: the residual risk is a MODEL limitation, not a
+calibration limitation - no map fixes it. Mitigation must be
+consumer-side (imperative-only routing guard) or accept the ~4%
+wrong-adoption rate. The isotonic table is the best structural
+candidate if activation proceeds (graded probabilities, rejects
+borderline picks).

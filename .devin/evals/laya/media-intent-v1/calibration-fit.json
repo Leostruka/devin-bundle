@@ -1,0 +1,427 @@
+{
+ "ok": true,
+ "train": {
+  "decided": 29,
+  "cases": 40
+ },
+ "maps": {
+  "platt": {
+   "map": {
+    "kind": "platt",
+    "a": 186.500209,
+    "b": -107.877954
+   },
+   "train_curve": [
+    {
+     "threshold": 0.5,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.6,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.7,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.8,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.9,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.95,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    }
+   ],
+   "heldout": [
+    {
+     "manifest": "../../.devin/evals/laya/media-intent-v1/manifest.heldout.frozen.json",
+     "decided": 14,
+     "cases": 20,
+     "curve": [
+      {
+       "threshold": 0.5,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.6,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.7,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.8,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.9,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.95,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      }
+     ]
+    },
+    {
+     "manifest": "../../.devin/evals/laya/media-intent-v1/manifest.heldout2.frozen.json",
+     "decided": 14,
+     "cases": 20,
+     "curve": [
+      {
+       "threshold": 0.5,
+       "adopted": 14,
+       "adopted_correct": 13,
+       "adopted_accuracy": 0.9286,
+       "coverage": 0.7
+      },
+      {
+       "threshold": 0.6,
+       "adopted": 14,
+       "adopted_correct": 13,
+       "adopted_accuracy": 0.9286,
+       "coverage": 0.7
+      },
+      {
+       "threshold": 0.7,
+       "adopted": 14,
+       "adopted_correct": 13,
+       "adopted_accuracy": 0.9286,
+       "coverage": 0.7
+      },
+      {
+       "threshold": 0.8,
+       "adopted": 14,
+       "adopted_correct": 13,
+       "adopted_accuracy": 0.9286,
+       "coverage": 0.7
+      },
+      {
+       "threshold": 0.9,
+       "adopted": 14,
+       "adopted_correct": 13,
+       "adopted_accuracy": 0.9286,
+       "coverage": 0.7
+      },
+      {
+       "threshold": 0.95,
+       "adopted": 13,
+       "adopted_correct": 13,
+       "adopted_accuracy": 1.0,
+       "coverage": 0.65
+      }
+     ]
+    }
+   ]
+  },
+  "table": {
+   "map": {
+    "kind": "table",
+    "points": [
+     [
+      0.5183,
+      0.0
+     ],
+     [
+      0.6374,
+      1.0
+     ],
+     [
+      0.7177,
+      1.0
+     ],
+     [
+      0.7378,
+      1.0
+     ],
+     [
+      0.7789,
+      1.0
+     ],
+     [
+      0.8186,
+      1.0
+     ],
+     [
+      0.8356,
+      1.0
+     ],
+     [
+      0.9153,
+      1.0
+     ],
+     [
+      0.9362,
+      1.0
+     ],
+     [
+      0.937,
+      1.0
+     ],
+     [
+      0.9401,
+      1.0
+     ],
+     [
+      0.9432,
+      1.0
+     ],
+     [
+      0.9505,
+      1.0
+     ],
+     [
+      0.9717,
+      1.0
+     ],
+     [
+      0.9733,
+      1.0
+     ],
+     [
+      0.9806,
+      1.0
+     ],
+     [
+      0.9808,
+      1.0
+     ],
+     [
+      0.9821,
+      1.0
+     ],
+     [
+      0.9913,
+      1.0
+     ],
+     [
+      0.9934,
+      1.0
+     ],
+     [
+      0.9938,
+      1.0
+     ],
+     [
+      0.9944,
+      1.0
+     ],
+     [
+      0.9955,
+      1.0
+     ],
+     [
+      0.9956,
+      1.0
+     ],
+     [
+      0.9968,
+      1.0
+     ],
+     [
+      0.9976,
+      1.0
+     ],
+     [
+      0.9977,
+      1.0
+     ],
+     [
+      0.9998,
+      1.0
+     ],
+     [
+      1.0,
+      1.0
+     ]
+    ]
+   },
+   "train_curve": [
+    {
+     "threshold": 0.5,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.6,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.7,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.8,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.9,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    },
+    {
+     "threshold": 0.95,
+     "adopted": 28,
+     "adopted_correct": 28,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.7
+    }
+   ],
+   "heldout": [
+    {
+     "manifest": "../../.devin/evals/laya/media-intent-v1/manifest.heldout.frozen.json",
+     "decided": 14,
+     "cases": 20,
+     "curve": [
+      {
+       "threshold": 0.5,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.6,
+       "adopted": 13,
+       "adopted_correct": 12,
+       "adopted_accuracy": 0.9231,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.7,
+       "adopted": 12,
+       "adopted_correct": 11,
+       "adopted_accuracy": 0.9167,
+       "coverage": 0.6
+      },
+      {
+       "threshold": 0.8,
+       "adopted": 11,
+       "adopted_correct": 10,
+       "adopted_accuracy": 0.9091,
+       "coverage": 0.55
+      },
+      {
+       "threshold": 0.9,
+       "adopted": 11,
+       "adopted_correct": 10,
+       "adopted_accuracy": 0.9091,
+       "coverage": 0.55
+      },
+      {
+       "threshold": 0.95,
+       "adopted": 11,
+       "adopted_correct": 10,
+       "adopted_accuracy": 0.9091,
+       "coverage": 0.55
+      }
+     ]
+    },
+    {
+     "manifest": "../../.devin/evals/laya/media-intent-v1/manifest.heldout2.frozen.json",
+     "decided": 14,
+     "cases": 20,
+     "curve": [
+      {
+       "threshold": 0.5,
+       "adopted": 14,
+       "adopted_correct": 13,
+       "adopted_accuracy": 0.9286,
+       "coverage": 0.7
+      },
+      {
+       "threshold": 0.6,
+       "adopted": 14,
+       "adopted_correct": 13,
+       "adopted_accuracy": 0.9286,
+       "coverage": 0.7
+      },
+      {
+       "threshold": 0.7,
+       "adopted": 13,
+       "adopted_correct": 13,
+       "adopted_accuracy": 1.0,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.8,
+       "adopted": 13,
+       "adopted_correct": 13,
+       "adopted_accuracy": 1.0,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.9,
+       "adopted": 13,
+       "adopted_correct": 13,
+       "adopted_accuracy": 1.0,
+       "coverage": 0.65
+      },
+      {
+       "threshold": 0.95,
+       "adopted": 13,
+       "adopted_correct": 13,
+       "adopted_accuracy": 1.0,
+       "coverage": 0.65
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
