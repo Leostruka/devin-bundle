@@ -230,3 +230,13 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   path fragile, move snapshot before activation. Commit eb8ac74.
 - Audit now 39 checks (added [39] stdio decode; caught+fixed 4
   script stdin readers). Suite 2361 green. Commits 6c8af75, b69c878.
+
+## Sun PM addendum 8 - checkpoint vendored + proposal verified (16:35-16:50)
+- english checkpoint vendored HF cache -> .devin/laya/models/english/
+  (gitignored, ~843MB); digest-identical 54f69565...; live-verified
+  load_engine + warm_engine + real prediction end-to-end.
+- Shadow-mode dry run of full delta: mode=assist request ->
+  suggestion + calibrated_p 0.99995 + adoptable=false held by
+  effective_mode=shadow. Delta mechanically sound; only the
+  deliberate mode flip remains (#431 items 5-7).
+- Commits: c1c0fdf (+ earlier 904bcdd, eb8ac74, b69c878, 6c8af75).
