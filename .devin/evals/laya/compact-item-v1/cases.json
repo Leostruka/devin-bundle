@@ -1,0 +1,327 @@
+{
+ "version": 1,
+ "eval": "compact-item-v1-cal-01",
+ "profile": "compact-item-v1",
+ "cases": [
+  {
+   "case_id": "ci-001",
+   "gold": "keep",
+   "request": {
+    "version": 1,
+    "request_id": "ci-001",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "fix gcal apply crash on non-dict schedule blocks",
+     "snippets": "[kind=tool_result name=exec msg=41 note=error, 912 chars]\nTraceback (most recent call last):\n  File \"wrapper.py\", line 210, in apply\nAttributeError: 'str' object has no attribute 'get'\nFAIL: 1 failed, 33 passed - the fix must handle string blocks before .get()"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-002",
+   "gold": "keep",
+   "request": {
+    "version": 1,
+    "request_id": "ci-002",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "port roadmap-board capacity view to scripts/",
+     "snippets": "[kind=message name=user msg=17 note=message, 240 chars]\nDecision: keep the markdown table output stable - downstream site/build.py parses the '## Capacity' heading. Do not rename columns."
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-003",
+   "gold": "keep",
+   "request": {
+    "version": 1,
+    "request_id": "ci-003",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "add utf-8 encoding to subprocess calls",
+     "snippets": "[kind=tool_result name=edit msg=88 note=ok, 312 chars]\nSuccessfully edited extensions/laya-tools/laya_worker.py - added encoding=\"utf-8\", errors=\"replace\" at line 142 (subprocess.Popen stdout decode site)"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-004",
+   "gold": "truncate",
+   "request": {
+    "version": 1,
+    "request_id": "ci-004",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "verify full test suite still passes",
+     "snippets": "[kind=tool_result name=exec msg=203 note=ok, 48210 chars]\n============================= test session starts =============================\nplatform win32 -- Python 3.12.1, pytest-8.3.2\ncollected 2353 items\ntests/test_a.py::test_one PASSED\ntests/test_a.py::test_two PASSED\n...[1842 more PASSED lines]...\n================== 2345 passed, 8 skipped in 298.85s =================="
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-005",
+   "gold": "truncate",
+   "request": {
+    "version": 1,
+    "request_id": "ci-005",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "find all files touched in the encoding sweep",
+     "snippets": "[kind=tool_result name=exec msg=156 note=ok, 12400 chars]\nextensions/computer-use/cu_browser.py\nextensions/computer-use/cu_taskrunner.py\nextensions/blender-operator/wrapper.py\nextensions/code-graph/selftest.py\n...[612 more paths]...\ntotal 634 lines"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-006",
+   "gold": "truncate",
+   "request": {
+    "version": 1,
+    "request_id": "ci-006",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "install remotion deps for ISSUE_04 render",
+     "snippets": "[kind=tool_result name=exec msg=91 note=ok, 22100 chars]\nnpm install\nadded 718 packages, and audited 719 packages in 2m\n47 packages are looking for funding\n  run `npm fund` for details\nfound 0 vulnerabilities\nDone in 2m."
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-007",
+   "gold": "truncate",
+   "request": {
+    "version": 1,
+    "request_id": "ci-007",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "audit which extension files exceed 800 lines",
+     "snippets": "[kind=tool_result name=exec msg=140 note=ok, 8600 chars]\n1097 extensions/computer-use/cu_browser.py\n934 extensions/design-intelligence/bm25.py\n871 extensions/ai-tools/abliterator.py\n...[44 more files]...\nwc: 58 files total"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-008",
+   "gold": "truncate",
+   "request": {
+    "version": 1,
+    "request_id": "ci-008",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "check PR #422 merge status",
+     "snippets": "[kind=tool_result name=exec msg=210 note=ok, 3400 chars]\ngh pr view 422 --json state,mergeStateStatus,mergeable\n{\"state\":\"OPEN\",\"mergeStateStatus\":\"BLOCKED\",\"mergeable\":\"MERGEABLE\"}\n[full JSON blob repeated 3x in scrollback]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-009",
+   "gold": "drop",
+   "request": {
+    "version": 1,
+    "request_id": "ci-009",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "find the right ffmpeg filter for overlay positioning",
+     "snippets": "[kind=tool_result name=exec msg=64 note=error, 2100 chars]\nffmpeg -i in.mp4 -vf \"overlay=10:10\" out.mp4\n[Parsed_overlay_0 @ 0x...] No such filter: 'overlay=10:10'\nError : Invalid argument\n[agent then ran corrected syntax on msg=65 - this error already resolved]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-010",
+   "gold": "drop",
+   "request": {
+    "version": 1,
+    "request_id": "ci-010",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "locate the laya calibration artifacts",
+     "snippets": "[kind=tool_result name=exec msg=77 note=error, 800 chars]\nls .devin/evals/laya/wrong-dir/\nls: cannot access '.devin/evals/laya/wrong-dir/': No such file or directory\n[correct path found on msg=78 two turns ago; this probe never referenced again]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-011",
+   "gold": "drop",
+   "request": {
+    "version": 1,
+    "request_id": "ci-011",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "decide whether to refactor cu_browser.py",
+     "snippets": "[kind=tool_result name=exec msg=132 note=ok, 5000 chars]\nwc -l on every extension file, alphabetical listing, full output dumped to scrollback. File already known at 1097 lines; nothing in this listing is referenced by later steps."
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-012",
+   "gold": "drop",
+   "request": {
+    "version": 1,
+    "request_id": "ci-012",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "verify pytest collects the new test file",
+     "snippets": "[kind=tool_result name=exec msg=95 note=ok, 1200 chars]\ncollected 6 items\ntests/laya/test_compact_item.py::test_a PASSED\n...[5 more PASSED]...\n6 passed in 0.4s\n[identical run repeated on msg=97 after a no-op edit; first result already confirmed]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-013",
+   "gold": "keep",
+   "request": {
+    "version": 1,
+    "request_id": "ci-013",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "update week roteiro calendar events",
+     "snippets": "[kind=tool_result name=exec msg=118 note=ok, 640 chars]\ngcal apply --confirm returned: {\"written\": 3, \"failed\": 0, \"skipped\": 1}\nskipped event 'Mensalidade united' (all-day, non-actionable) - do NOT retry it"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-014",
+   "gold": "keep",
+   "request": {
+    "version": 1,
+    "request_id": "ci-014",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "port status vocab to site/build.py",
+     "snippets": "[kind=message name=assistant msg=76 note=message, 380 chars]\nConstraint discovered: site _field() anchors Status to line-start but issues use inline '**Status:** resolved' - the regex must tolerate bold markers around the colon or 20 archived efforts stay invisible."
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-015",
+   "gold": "truncate",
+   "request": {
+    "version": 1,
+    "request_id": "ci-015",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "transcribe 4 instagram reels locally",
+     "snippets": "[kind=tool_result name=exec msg=180 note=ok, 15600 chars]\n[00:00] speaker: hoje vou mostrar como...\n[00:04] speaker: primeiro passo e abrir...\n...[transcript continues 4 reels, 92 min total]...\n[final word of reel 4]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-016",
+   "gold": "truncate",
+   "request": {
+    "version": 1,
+    "request_id": "ci-016",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "verify manifest hashes after script edits",
+     "snippets": "[kind=tool_result name=exec msg=171 note=ok, 9800 chars]\nmanifest refresh: 45 scripts hashed\nsha256 a1b2... scripts/status_vocab.py\nsha256 c3d4... scripts/roadmap-board.py\n...[42 more lines]...\nall hashes current"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-017",
+   "gold": "drop",
+   "request": {
+    "version": 1,
+    "request_id": "ci-017",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "check whether node_modules is gitignored",
+     "snippets": "[kind=tool_result name=exec msg=150 note=ok, 300 chars]\ngrep node_modules .gitignore\nnode_modules/\n[agent checked again on msg=152 with git check-ignore - same answer, first result sufficient]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-018",
+   "gold": "keep",
+   "request": {
+    "version": 1,
+    "request_id": "ci-018",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "close GitHub issues for landed work",
+     "snippets": "[kind=tool_result name=exec msg=189 note=ok, 2100 chars]\ngh issue close 423 - comment cites eval decision artifact .devin/research/2026-11-09-if-heldout-eval.md\ngh issue close 424 ... [19 issues closed total, each with evidence comment] - #346 remains open as umbrella"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-019",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "ci-019",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "refactor the auth module",
+     "snippets": "[kind=tool_result name=exec msg=33 note=ok, 150 chars]\nok\n[no content, no paths, no signal - bare success marker]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "ci-020",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "ci-020",
+    "profile": "compact-item-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "investigate intermittent test failure",
+     "snippets": "[kind=tool_result name=exec msg=58 note=error, 700 chars]\nFAILED tests/test_flaky.py::test_race - AssertionError\n[rerun pending on msg=59; outcome unknown at decision time]"
+    },
+    "candidates": [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}],
+    "deadline_ms": 1000
+   }
+  }
+ ]
+}

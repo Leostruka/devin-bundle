@@ -74,3 +74,23 @@ first, deterministic fallback when the daemon is down.
     latency, but this model size/quant is NOT viable as a decision
     backend. Options: larger BitNet variant (i2_m?), or keep laya as
     the only decision model and drop the BitNet lane.
+  **<=3-label sweep completed same day** (the documented viable path):
+  compact-item-v1, filebool-v1, compact-boundary-v1 - 52 cases total.
+  - compact-item-v1: exposed a real contract defect - list labels
+    produced content-free criteria ({"keep":"keep"}), model abstained
+    20/20. Fixed to dict-labels (sibling pattern); engagement
+    recovered (8 decided) but accuracy 0.125, keep-attractor. NOT
+    viable: retention triage needs session-dependency reasoning.
+  - filebool-v1: acc 0.444 / cov 0.5625 - yes-collapse (all 9
+    suggestions "yes"; every no-gold abstained or erred). Code
+    comprehension beyond checkpoint.
+  - compact-boundary-v1: 16/16 abstain, coverage 0.0 - trajectory
+    classification needs temporal reasoning.
+  Meta-pattern across ALL 6 evaluated profiles: only
+  issue-category-v1 (surface-feature triage, 0.684) approaches
+  viability. Cardinality matters less than task type - anything
+  requiring comprehension, session state, or fine taxonomy fails.
+  Assist gate stays closed; next lever is a different checkpoint,
+  not more cases on this one.
+  Artifacts: `.devin/evals/laya/{compact-item-v1,filebool-v1,
+  compact-boundary-v1}/`.

@@ -1,0 +1,423 @@
+{
+ "version": 1,
+ "eval": "compact-boundary-v1-cal-01",
+ "profile": "compact-boundary-v1",
+ "cases": [
+  {
+   "case_id": "cb-001",
+   "gold": "mid_task",
+   "request": {
+    "version": 1,
+    "request_id": "cb-001",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: fix gcal apply crash\nactions: read wrapper.py -> edit apply() -> run pytest (1 failed) -> edit again -> run pytest (still running, no result yet)\npending: test batch in flight"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-002",
+   "gold": "mid_task",
+   "request": {
+    "version": 1,
+    "request_id": "cb-002",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: port status vocab\nactions: read roadmap-board.py -> grep statuses -> write status_vocab.py -> run tests (6 passed) -> now editing site/build.py _field regex\npending: next edit not yet applied"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-003",
+   "gold": "mid_task",
+   "request": {
+    "version": 1,
+    "request_id": "cb-003",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: evaluate roon for agent UI\nactions: fetched repo README -> cloned shallow -> listed src/ -> opened main view file -> mid-read when context filled"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-004",
+   "gold": "stage_resolved",
+   "request": {
+    "version": 1,
+    "request_id": "cb-004",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: close completed GitHub issues\nactions: listed 21 open issues -> verified fixes in source -> closed 19 with evidence comments -> posted umbrella update\nsub-goal complete; trajectory at natural pause before next queue item"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-005",
+   "gold": "stage_resolved",
+   "request": {
+    "version": 1,
+    "request_id": "cb-005",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: write week roteiro to calendar\nactions: computed free/busy -> built schedule blocks -> gcal apply --confirm -> 10 events confirmed, 0 failed\nsub-goal complete; next step is documenting the plan"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-006",
+   "gold": "stage_resolved",
+   "request": {
+    "version": 1,
+    "request_id": "cb-006",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: run laya calibration for issue-category-v1\nactions: authored 24 cases -> froze manifest -> scored report acc=0.684 -> wrote README + updated rollout issue\neval stage done; awaiting decision on assist gate"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-007",
+   "gold": "task_shifted",
+   "request": {
+    "version": 1,
+    "request_id": "cb-007",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: was debugging ASR empty transcript on mp4\nactions: repro failed -> checked ffmpeg path -> NEW USER MSG: 'actually forget the video, focus on the calendar plan for tomorrow' -> switched entirely to gcal wrapper\nearlier task abandoned"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-008",
+   "gold": "task_shifted",
+   "request": {
+    "version": 1,
+    "request_id": "cb-008",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: was evaluating mirofish personas\nactions: cloned repo -> read README -> NEW USER MSG: 'drop that, the reels batch matters more' -> deleted scratch notes, opened reels survey instead\nearlier task abandoned"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-009",
+   "gold": "mid_task",
+   "request": {
+    "version": 1,
+    "request_id": "cb-009",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: add timeout to subprocess calls\nactions: grep found 3 sites -> edited harness-tree selftest -> running targeted pytest -> 104 passed -> continuing sweep on computer-use files"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-010",
+   "gold": "stage_resolved",
+   "request": {
+    "version": 1,
+    "request_id": "cb-010",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: fix composite.py exit codes\nactions: found ok:false+exit0 in 3 mains -> patched composite/plan_check/render -> added regression tests -> 48 green\nfix batch complete; commit is the natural pause"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-011",
+   "gold": "task_shifted",
+   "request": {
+    "version": 1,
+    "request_id": "cb-011",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: was scoping issue #418 timeboxing\nactions: read issue -> listed fields -> NEW USER MSG: 'prioritize the laya calibration evidence first' -> shelved #418 notes, opened eval artifacts instead\nearlier task deprioritized"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-012",
+   "gold": "mid_task",
+   "request": {
+    "version": 1,
+    "request_id": "cb-012",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: refresh manifest hashes after script edits\nactions: ran manifest update -> saw 7 stale hashes -> investigating which script changed -> diff in progress, not yet resolved"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-013",
+   "gold": "stage_resolved",
+   "request": {
+    "version": 1,
+    "request_id": "cb-013",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: provision devin-linux VM env for cu test\nactions: checked ready.json -> missing -> ran env bootstrap -> ready.json written -> integration test now passes\nsetup sub-goal done; returning to main queue"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-014",
+   "gold": "task_shifted",
+   "request": {
+    "version": 1,
+    "request_id": "cb-014",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: was writing eval for dropstone\nactions: fetched SKILL.md -> drafted cases -> NEW USER MSG: 'stop evals, ship the PR review fixes' -> pivoted to review-hardening branch\nearlier task abandoned mid-draft"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-015",
+   "gold": "mid_task",
+   "request": {
+    "version": 1,
+    "request_id": "cb-015",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: implement capacity view in roadmap-board\nactions: designed function -> wrote capacity() -> added tests -> 6 green -> NOW writing markdown section renderer, halfway through"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cb-016",
+   "gold": "stage_resolved",
+   "request": {
+    "version": 1,
+    "request_id": "cb-016",
+    "profile": "compact-boundary-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "continue the current session task",
+     "snippets": "[digest]\ngoal: sync live install copies + ledger\nactions: copied 6 touched files to %APPDATA%/devin -> ran install-ledger record -> verified live==bundle hashes\nsync complete; returning to issue queue"
+    },
+    "candidates": [
+     {
+      "id": "mid_task"
+     },
+     {
+      "id": "stage_resolved"
+     },
+     {
+      "id": "task_shifted"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  }
+ ]
+}
