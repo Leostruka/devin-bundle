@@ -207,6 +207,39 @@ def test_apply_missing_file_is_error():
     assert p.returncode == 2 and out["status"] == "error"
 
 
+def test_apply_non_dict_block_is_error(tmp_path):
+    roteiro = tmp_path / "bad.json"
+    roteiro.write_text(json.dumps({"schedule": ["not-a-dict"]}))
+    p = subprocess.run([sys.executable, WRAPPER, "apply",
+                        "--roteiro", str(roteiro)], capture_output=True,
+                       text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 2 and out["status"] == "error"
+    assert "expected dict" in out["stderr"]
+
+
+def test_apply_missing_start_or_end_is_error(tmp_path):
+    roteiro = tmp_path / "bad.json"
+    roteiro.write_text(json.dumps({"schedule": [{"task": "missing dates"}]}))
+    p = subprocess.run([sys.executable, WRAPPER, "apply",
+                        "--roteiro", str(roteiro)], capture_output=True,
+                       text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 2 and out["status"] == "error"
+    assert "missing start or end" in out["stderr"]
+
+
+def test_apply_non_list_schedule_is_error(tmp_path):
+    roteiro = tmp_path / "bad.json"
+    roteiro.write_text(json.dumps({"schedule": "not-a-list"}))
+    p = subprocess.run([sys.executable, WRAPPER, "apply",
+                        "--roteiro", str(roteiro)], capture_output=True,
+                       text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 2 and out["status"] == "error"
+    assert "expected list" in out["stderr"]
+
+
 def test_resolve_existing_calendar_reuses_id(monkeypatch):
     monkeypatch.setattr(gcal, "_get_json", lambda *a, **k: {
         "items": [{"id": "cal-ag-1", "summary": "AGdevin"},

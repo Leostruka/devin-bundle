@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- gcal wrapper apply non-dict block guard (#395): validate schedule blocks are dicts with start and end before payload creation; return JSON error envelope with exit code 2 on malformed or non-dict blocks instead of unhandled AttributeError; 3 tests in test_gcal.py.
+
 - roadmap-board.py (issue #346 macro layer): stdlib parser over `.devin/issues/*.md` + `.devin/scratch/*/issues/*.md` - extracts title/status/priority/blocked-by/blocks, renders Markdown board per effort + frontier-ready list + burndown counts, `--json` model; milestone alias map (M2_XX/ISSUE_NN); manifest/script_count 42->43; README/TOOLS-MAP synced; 5 tests. Covers #346 macro end.
 
 - office specialists wave (M2_15): 4 new agent profiles closing skill-without-agent gaps - data-analyst (swe-2-max, SQL-first + viz), sre (swe-2-max, incident/deploy-verify/postmortem), ux-researcher (swe-2-max, heuristic/journey/a11y evidence), performance-engineer (swe-2-medium, measured before/after only); VALID_PROFILES +4; manifest agent_count 17->21; README/TOOLS-MAP synced; gap analysis `.devin/research/2026-11-07-office-gap-analysis.md`. Covers M2_15.

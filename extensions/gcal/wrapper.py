@@ -182,16 +182,25 @@ def cmd_apply(argv):
         emit({"status": "error", "stderr": f"bad roteiro file: {e}"}, 2)
     schedule = data.get("schedule", data) if isinstance(data, dict) \
         else data
+    if not isinstance(schedule, list):
+        emit({"status": "error",
+              "stderr": f"bad schedule: expected list, got {type(schedule).__name__}"}, 2)
     calendar = _arg(argv, "--calendar", gcal.AGENT_CALENDAR)
     prefix = _arg(argv, "--prefix", "")
     payloads = []
     for block in schedule:
+        if not isinstance(block, dict):
+            emit({"status": "error",
+                  "stderr": f"bad block {block}: expected dict"}, 2)
+        if "start" not in block or "end" not in block:
+            emit({"status": "error",
+                  "stderr": f"bad block {block}: missing start or end"}, 2)
         try:
             payloads.append(gcal.event_payload(
                 prefix + str(block.get("task", "block")),
                 block["start"], block["end"],
                 description="roteiro block"))
-        except (KeyError, ValueError) as e:
+        except (KeyError, TypeError, ValueError, AttributeError) as e:
             emit({"status": "error",
                   "stderr": f"bad block {block}: {e}"}, 2)
     if "--confirm" not in argv:
