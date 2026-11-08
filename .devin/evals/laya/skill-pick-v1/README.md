@@ -16,7 +16,7 @@ ran against `.devin/laya/profile.calibration.json` (mode: shadow).
   `capture_eval.py`.
 - `report.json` - `eval_decisions.py` metrics.
 
-## Result
+## Result (CORRECTED 2026-11-09 - see UTF-8 bug below)
 
 | metric | value |
 |---|---|
@@ -27,6 +27,36 @@ ran against `.devin/laya/profile.calibration.json` (mode: shadow).
 | accuracy (decided) | **1.000** |
 | coverage | **0.133** |
 
+## UTF-8 stdio bug - original capture was corrupted
+
+The run-01 manifest recorded 25/30 `engine_error:TypeError` (not
+the 4 transient errors first reported - the frozen evidence shows
+25). Root cause found 2026-11-09: the worker's `sys.stdin` used
+the Windows locale encoding (cp1252) while clients write UTF-8.
+Skill-purpose texts contain em-dashes; UTF-8 bytes decoded as
+cp1252 + surrogateescape produced lone surrogates (`\udc9d`)
+that the Rust tokenizer rejects with TypeError. Requests with
+pure-ASCII candidates (sp-026..030) were unaffected - hence the
+clean 26-boundary. Fix: `decision_contract.pin_stdio_utf8()`
+called from `laya_worker.main()` and `laya_cli.main()`.
+
+Post-fix recapture (`manifest.utf8.frozen.json` /
+`report.utf8.json`):
+
+| metric | value |
+|---|---|
+| total | 30 |
+| accuracy (decided) | **0.882** (15/17) |
+| coverage | **0.567** |
+
+The "extreme abstention" verdict was an artifact of the encoding
+bug - the engine engages fine on 8-candidate skill shortlists.
+Remaining failure: sp-022 "control the local screen" ->
+system-control at p=0.935 (gold computer-use) - a high-confidence
+wrong between genuinely overlapping skills; sp-012 wrong at
+p=0.337 (gate-rejectable). Verdict upgraded: borderline viable,
+second-tier behind media-intent-v1; assist still gated.
+
 ## Failure modes observed
 
 - **Extreme abstention on 8-candidate sets** - decided only 4/30
@@ -34,14 +64,10 @@ ran against `.devin/laya/profile.calibration.json` (mode: shadow).
   development/investigation/operations/visual shortlists produced
   `no_match` nearly always. Long purpose texts as criteria do not
   engage the matcher.
-- **Transient engine_error** - 4 cases returned
-  `engine_error:TypeError` (sp-008/014/020/025). Re-running sp-008
-  standalone reproduces a clean `__none__` distribution - the error
-  is flaky inside the resident worker, not request-deterministic.
-  Fail-safe held: typed abstain, never a wrong suggestion. Worth a
-  worker-stability note; the broad `except` hides the real
-  traceback on stderr.
-- **Verdict: not viable as-is** - perfect precision but 13% coverage
-  means the routing lane would almost never suggest. Combined with
-  skill-family-v1's 0.42 accuracy, the two-stage routing assist
-  stays shadow.
+- **engine_error:TypeError x25** - originally misreported as 4
+  transient errors; actually the stdio encoding bug above. Fixed
+  by `pin_stdio_utf8()`; see corrected results.
+- **Verdict (superseded)** - the 13% coverage was encoding-bug
+  artifact; corrected run shows 0.882/0.567. Still shadow: one
+  high-confidence wrong on overlapping skills (sp-022) plus the
+  standard activation checklist applies.

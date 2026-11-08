@@ -262,6 +262,7 @@ def serve(reader, writer, engine, config):
 
 
 def main(config_path=None):
+    dc.pin_stdio_utf8()
     cfg = dc.load_config(config_path)
     if not dc.enabled(cfg):
         print(json.dumps({"ok": True, "mode": "off",

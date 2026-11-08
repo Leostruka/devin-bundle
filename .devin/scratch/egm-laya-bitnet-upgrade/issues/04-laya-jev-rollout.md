@@ -169,3 +169,16 @@ first, deterministic fallback when the daemon is down.
   strictly held-out. Activation checklist unchanged; mode stays
   off/shadow. Artifacts: manifest.heldout2.frozen.json,
   report.heldout2.json, cases.heldout2.json.
+  **UTF-8 stdio bug found + fixed (major)**: worker sys.stdin used
+  Windows locale cp1252 while clients write UTF-8 - non-ASCII text
+  became mojibake+lone surrogates that the Rust tokenizer rejects
+  (engine_error:TypeError). Explained skill-pick-v1's "25 transient
+  errors" (actually deterministic per-case) and silently degraded
+  filebool-v1's 7 non-ASCII cases. Fix: dc.pin_stdio_utf8() in
+  laya_worker.main + laya_cli.main. Recaptures: skill-pick-v1
+  acc 0.882/cov 0.567 (was corrupted 1.000/0.133 - "extreme
+  abstention" was bug artifact; now borderline viable, 2nd tier);
+  filebool-v1 0.500/0.500 (verdict unchanged). Production
+  decision_client path was equally affected - any non-ASCII state
+  errored. Artifacts: manifest.utf8.frozen.json + report.utf8.json
+  in both profiles.

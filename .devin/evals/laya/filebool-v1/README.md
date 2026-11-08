@@ -35,3 +35,14 @@ against `.devin/laya/profile.calibration.json` (mode: shadow).
   subprocesses?" require reading imports/usage across the head; the
   model pattern-matches surface tokens instead.
 - **Verdict: not viable** with this checkpoint. Assist stays gated.
+
+## UTF-8 recapture (2026-11-09)
+
+7/16 cases carried non-ASCII file-head text; under the pre-fix
+worker (cp1252 stdio) those decoded to mojibake without crashing
+(cp1252-representable chars) - silently degraded, not errored.
+Post-fix recapture (`manifest.utf8.frozen.json` /
+`report.utf8.json`): accuracy 0.500 / coverage 0.500 - yes-collapse
+persists (all 8 suggestions still `yes`). Verdict unchanged: not
+viable; the recapture makes the evidence clean rather than
+mojibake-contaminated.

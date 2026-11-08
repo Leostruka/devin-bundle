@@ -21,6 +21,9 @@ import os
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import decision_contract as dc  # noqa: E402
+
 PRESETS = ["triage", "email", "guard", "moderation", "router"]
 MODELS = ["auto", "english", "multilingual", "typed-decisions"]
 QTYPES = {"choice", "score", "noul"}
@@ -193,6 +196,7 @@ def self_test():
 
 
 def main():
+    dc.pin_stdio_utf8()
     p = argparse.ArgumentParser(description="Agent CLI over the laya decision engine.")
     sub = p.add_subparsers(dest="cmd")
     pr = sub.add_parser("predict", help="Answer typed questions over a state")

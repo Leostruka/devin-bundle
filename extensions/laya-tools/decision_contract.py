@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import sys
 from pathlib import Path
 
 VERSION = 1
@@ -518,3 +519,20 @@ def enabled(cfg):
     """The ONLY feature gate. Anything but an explicit shadow/assist
     mode is off — no subprocess, no weight reads, no engine import."""
     return effective_mode(cfg) != "off"
+
+
+def pin_stdio_utf8():
+    """Force UTF-8 on process stdio. The JSON-lines protocol is UTF-8
+    on the wire (clients pin encoding="utf-8"), but Windows stdio
+    defaults to cp1252: non-ASCII request text decodes into mojibake
+    with lone surrogates that the engine tokenizer rejects
+    (engine_error:TypeError), and non-ASCII replies fail to encode.
+    errors="replace" keeps a corrupt byte from killing the worker."""
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass

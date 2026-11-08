@@ -237,3 +237,32 @@ def test_mode_off_never_spawns(tmp_path):
     assert dc.enabled(cfg) is False
     assert dc.enabled({"mode": "shadow"}) is True
     assert dc.enabled({"mode": "bogus"}) is False
+
+
+# --- stdio encoding: JSON-lines protocol is UTF-8 ----------------------------
+
+def test_pin_stdio_utf8_reconfigures(monkeypatch):
+    calls = []
+
+    class Fake:
+        def reconfigure(self, **kw):
+            calls.append(kw)
+
+    fake_in, fake_out = Fake(), Fake()
+    monkeypatch.setattr(dc.sys, "stdin", fake_in)
+    monkeypatch.setattr(dc.sys, "stdout", fake_out)
+    dc.pin_stdio_utf8()
+    assert calls == [{"encoding": "utf-8", "errors": "replace"}] * 2
+
+
+def test_pin_stdio_utf8_tolerates_bad_streams(monkeypatch):
+    class Bad:
+        def reconfigure(self, **kw):
+            raise OSError("closed")
+
+    class NoReconf:
+        pass
+
+    monkeypatch.setattr(dc.sys, "stdin", Bad())
+    monkeypatch.setattr(dc.sys, "stdout", NoReconf())
+    dc.pin_stdio_utf8()  # must not raise
