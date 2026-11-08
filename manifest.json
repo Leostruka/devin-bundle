@@ -1493,8 +1493,8 @@
     {
       "name": "no-em-dash.py",
       "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code, vendored extension data and binary files exempt",
-      "export_hash": "76ddddde8b782eed1b4972ca469999137f615885bd6e0d1462148676a5c3cf2b",
-      "exported_at": "2026-10-27T15:18:55.679807"
+      "export_hash": "A4226B88741AD5B33B2C1A588FA88824D5F997860B46A8F3B5680CBBC7BCC875",
+      "exported_at": "2026-11-08T11:13:31.781111"
     },
     {
       "name": "post-exec.py",
