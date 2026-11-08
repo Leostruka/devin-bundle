@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- devin-cli alignment 3000.12.17 -> 3000.12.28: latest promoted build confirmed via `static.devin.ai/cli/current/manifest.json`; public changelog ends at 12.17 so the delta was probed on the binary. New documented capabilities: `devin sandbox` subcommand (`sandbox setup` prints platform prereqs - WSL-2 constraint unchanged on Windows), `--respect-workspace-trust` flag (non-interactive `-p` fails in untrusted dirs without it), manual `irm` update path on Windows. `validated_cli_version` bumped in bundle-identity.json + README; doctor 3/3, compat tests 6/6, audit 0/0.
+
 - laya checkpoint vendored + activation proposal completed: english checkpoint (convaiinnovations/laya rev 7b928d82) copied from HF cache to `.devin/laya/models/english/` (gitignored, ~843MB) - re-hashes to identical artifact_sha256 54f69565... and live-verified end-to-end (load_engine digest check + warm_engine + real media-intent prediction: stylize_video @ 0.996). Proposal JSON now carries the concrete path; #431 items 1-4 fully pre-staged, items 5-7 remain deliberate.
 
 - laya worker warmup fix (deadline_exceeded root cause): frozen manifests showed 20 deadline misses, 16 at case index 0 - first-request cold CPU latency (~>1s) eats the 1000ms deadline_ms budget while steady state is ~200ms. New `laya_worker.warm_engine()` runs one throwaway prediction before serving, wired into both entry points (`serve-stdio` main and `layad serve_socket`); diag reports warmup ms. Live-verified: post-warmup first request returns suggestion instead of deadline_exceeded abstention. Residual misses on large dynamic candidate sets documented in rollout issue 04. +2 tests.
