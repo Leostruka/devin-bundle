@@ -216,6 +216,77 @@ def summarize(issues):
                     not b["known"] for b in i["blockers"]))}
 
 
+def _goal_field(text, name):
+    m = re.search(r"(?im)" + _FIELD.format(name) + r"([^\n]+)", text)
+    return m.group(1).strip() if m else None
+
+
+def _goal_list(text, name):
+    val = _goal_field(text, name)
+    return [t for t in re.split(r"[,\s]+", val) if t] if val else []
+
+
+def load_goals(root, issues):
+    """Macro goal rollup (issue #420): read .devin/goals/*.md.
+
+    Goal files declare Status/Horizon/Objective plus link sets:
+    Efforts: <group,...> scores every issue in those groups, Issues:
+    <key,...> scores explicit keys (group/key accepted), Refs: <tokens>
+    is traceability only (e.g. GitHub '#417') and never scored.
+    Coverage = done/linked over resolvable local issues.
+    """
+    gdir = os.path.join(root, ".devin", "goals")
+    if not os.path.isdir(gdir):
+        return []
+    by_key = {}
+    for i in issues:
+        by_key.setdefault(i["key"], []).append(i)
+        by_key.setdefault(i["group"] + "/" + i["key"], []).append(i)
+    goals = []
+    for fn in sorted(os.listdir(gdir)):
+        if not fn.endswith(".md") or fn == "README.md":
+            continue
+        path = os.path.join(gdir, fn)
+        try:
+            text = open(path, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        title = TITLE_RE.search(text)
+        efforts = _goal_list(text, "efforts")
+        ikeys = _goal_list(text, "issues")
+        refs = _goal_list(text, "refs")
+        linked, unresolved, seen = [], [], set()
+        for e in efforts:
+            for i in issues:
+                if i["group"] == e and (i["group"], i["key"]) not in seen:
+                    seen.add((i["group"], i["key"]))
+                    linked.append(i)
+        for k in ikeys:
+            hit = by_key.get(k)
+            if hit:
+                for i in hit:
+                    if (i["group"], i["key"]) not in seen:
+                        seen.add((i["group"], i["key"]))
+                        linked.append(i)
+            else:
+                unresolved.append(k)
+        raw_title = title.group(1).strip() if title else fn
+        raw_title = re.sub(r"^goal\s*:\s*", "", raw_title, flags=re.I)
+        done = sum(1 for i in linked if i["done"])
+        goals.append({
+            "name": os.path.splitext(fn)[0],
+            "title": raw_title or fn,
+            "status": (_goal_field(text, "status") or "active").lower(),
+            "horizon": _goal_field(text, "horizon"),
+            "objective": _goal_field(text, "objective"),
+            "efforts": efforts, "refs": refs,
+            "linked": len(linked), "done": done,
+            "coverage": (round(done / len(linked), 3)
+                         if linked else None),
+            "unresolved": unresolved})
+    return goals
+
+
 def _cap_bucket():
     return {"total": 0, "done": 0, "open": 0, "ready": 0,
             "blocked": 0, "in_flight": 0, "est_open_min": 0}
@@ -313,6 +384,18 @@ def render_md(issues, root):
     lines.append(f"Frontier: {cap['frontier']} claimable - "
                  f"WIP in-flight: {cap['wip']['in_flight']}")
     lines.append("")
+    goals = load_goals(root, issues)
+    if goals:
+        lines.append("## Goals")
+        lines.append("")
+        lines.append("| Goal | Status | Horizon | Coverage |")
+        lines.append("|---|---|---|---|")
+        for g in goals:
+            cov = (f"{g['done']}/{g['linked']}"
+                   if g["linked"] else "-")
+            lines.append(f"| {g['title']} | {g['status']} | "
+                         f"{g['horizon'] or '-'} | {cov} |")
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -339,6 +422,7 @@ def main(argv=None):
                                           _count_issue_files(root, e)
                                           for e in archived)},
                           "capacity": capacity(issues, args.wip_limit),
+                          "goals": load_goals(root, issues),
                           "issues": issues}, ensure_ascii=False, indent=1))
     else:
         print(render_md(issues, root))

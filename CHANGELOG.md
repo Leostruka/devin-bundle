@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- macro goal rollup (issue #420): `.devin/goals/*.md` files (Status/Horizon/Objective + Efforts:/Issues:/Refs: link sets, same tolerant field syntax) roll up read-only in roadmap-board - `goals[]` in --json + `## Goals` coverage table in markdown; coverage = done/linked over resolvable local issues, unresolved tokens reported not scored, Refs: traceability-only; format doc `.devin/goals/README.md` + first real goal `dev-org-ladder-2026-11` (#346 umbrella, live coverage 71/71); 2 tests.
+
 - micro focus-session tracker (issue #419): `scripts/focus.py start|stop|report|status` - append-only JSONL ledger `.devin/ledgers/focus.jsonl` (gitignored, metrics.jsonl pattern); sessions pair start->stop FIFO with stale-close on unclosed start; report aggregates focus minutes per day and per issue + `--json` + `--day` filter; refuses double-start, offline stdlib-only; documented in agents/issue-tracker.md; audit manual_scripts + counts 44->45 synced; 6 tests.
 
 - micro timeboxing fields (issue #418): issues accept `estimate_min:`/`actual_min:` frontmatter (bold/dash variants tolerated); roadmap-board exposes both per issue + capacity `est_open_min` rollup (open issues only) + markdown "Est min" column; agents/issue-tracker.md documents the convention (roteiro task `minutes` <- estimate_min); first real use: egm-laya 04-laya-jev-rollout estimate_min=120; 1 test.

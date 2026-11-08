@@ -319,6 +319,47 @@ def test_estimate_actual_fields(tmp_path):
     assert cap["totals"]["est_open_min"] == 150
 
 
+def test_goals_rollup(tmp_path):
+    """Issue #420: .devin/goals/*.md -> coverage over linked issues."""
+    _fixture(tmp_path)
+    gdir = tmp_path / ".devin" / "goals"
+    gdir.mkdir(parents=True)
+    (gdir / "g1.md").write_text(
+        "# Goal: Test goal\n\nStatus: active\n"
+        "Horizon: 2026-11-09..2026-11-15\n"
+        "Objective: verify rollup\n"
+        "Efforts: eff1\nIssues: missing-key\nRefs: #346 #999\n",
+        encoding="utf-8")
+    (gdir / "README.md").write_text("# not a goal\n", encoding="utf-8")
+    issues = rb.build_model(str(tmp_path))
+    goals = rb.load_goals(str(tmp_path), issues)
+    assert len(goals) == 1
+    g = goals[0]
+    assert g["name"] == "g1" and g["status"] == "active"
+    assert g["horizon"] == "2026-11-09..2026-11-15"
+    assert g["linked"] == 2 and g["done"] == 1  # eff1: 1 done + 1 open
+    assert g["coverage"] == 0.5
+    assert g["unresolved"] == ["missing-key"]
+    assert g["refs"] == ["#346", "#999"]
+    # group/key form resolves too
+    (gdir / "g2.md").write_text(
+        "# Goal: keyed\nIssues: eff1/R1-01-one\n", encoding="utf-8")
+    goals = rb.load_goals(str(tmp_path), issues)
+    g2 = [x for x in goals if x["name"] == "g2"][0]
+    assert g2["linked"] == 1
+    # markdown section renders
+    out = io.StringIO()
+    with redirect_stdout(out):
+        rb.main(["--root", str(tmp_path)])
+    assert "## Goals" in out.getvalue() and "Test goal" in out.getvalue()
+
+
+def test_goals_empty_dir(tmp_path):
+    _fixture(tmp_path)
+    issues = rb.build_model(str(tmp_path))
+    assert rb.load_goals(str(tmp_path), issues) == []
+
+
 def test_capacity_in_json_and_md(tmp_path, capsys):
     _fixture(tmp_path)
     out = io.StringIO()
