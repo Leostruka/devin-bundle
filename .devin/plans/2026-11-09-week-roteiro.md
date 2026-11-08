@@ -168,3 +168,20 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   evidence. Viable paths documented: <=3-label sets, binary
   reformulations, or different checkpoint.
 - Commits: d4cdab5, a4e9324, ce66b1b on fix/gcal-validation-ics.
+
+## Sun PM addendum 4 - laya campaign COMPLETE (14:05-16:05)
+- All 14 decision profiles now carry frozen real-worker evidence
+  (~250 cases). Continued the <=3-label sweep into every remaining
+  profile incl. dynamic-candidate ones (ui-target, skill-pick,
+  media-preset built from the real manifest catalog shortlists).
+- Contract fixes landed: compact-item-v1 + knowledge-label-v1
+  bare-list criteria -> dict-labels (defect class x2); laya-guard
+  empty-goal dead lane (every request invalid_request since
+  authoring - cmd-risk lane was silently dead).
+- Breakthrough: media-intent-v1 is the only viable assist candidate
+  (0.966 decided acc; held-out adopted 0.90 @ platt thr 0.9). Fit
+  was optimistic vs held-out - documented honestly; shadow-only.
+- Meta-laws for future checkpoints: prose/natural-language state
+  decides; structured JSON/digest state abstains uniformly;
+  distinct intents match, comprehension/trajectory fails.
+- Commits: 9928d27, d9091ac, 6b72684, f6a895d, b28ba9d, 8b38bd7.
