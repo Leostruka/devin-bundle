@@ -35,8 +35,18 @@ first, deterministic fallback when the daemon is down.
 
 - Calibration evidence (G5) before enabling `shadow`/`assist`.
 - Adding `review-risk-v1` to `profile.json.profiles` when calibrated.
-- BitNet adapter evaluation as a decision backend (`ai-tools/`). A real
-  native run (`devin-cache/egm-runtime-install/cli_proof2.json`) returned
-  `ok:true` with clean output but a semantically wrong completion:
-  pipeline executes, model quality and latency NOT established. The older
-  240s-timeout smoke is historical, not the current verdict.
+- BitNet adapter evaluation as a decision backend (`ai-tools/`).
+  Measured 2026-11-09 (runtime at
+  `~/AppData/Local/devin-cache/egm-runtime-install/`, binary
+  `BitNet/build/bin/llama-cli.exe` - the prebuilt `llama-bin/` binary
+  cannot read the ternary model: TYPE_IQ4_NL_4_4 removed):
+  - Latency: generation **35.4 tok/s**, prompt 113.8 t/s, 8 threads,
+    ggml-model-i2_s.gguf (1.58-bit ~2B).
+  - Quality: **FAIL** - 3/3 probes degenerate into repetition loops
+    ("The capital of France is a capital of France...", prompt
+    echo loops); never produces a coherent answer. Consistent with
+    cli_proof2's semantically-wrong completion.
+  - Verdict: pipeline executes and is fast enough for suggestion-tier
+    latency, but this model size/quant is NOT viable as a decision
+    backend. Options: larger BitNet variant (i2_m?), or keep laya as
+    the only decision model and drop the BitNet lane.
