@@ -13,7 +13,7 @@ Roteiro: `.devin/scratch/dev-org-ladder/roteiro-week.json`
 | Mon 09 | 09:00-11:30 gcal crash/validation (#395,#409,#413); 14:00-16:30 ics correctness (#396,#397,#398); 16:30-18:00 oauth #411 |
 | Tue 10 | 09:00-12:00 write-path (#399,#400,#401,#410); 14:00-17:00 status vocab (#402,#403,#405,#407) |
 | Wed 11 | 09:00-10:30 scratch hygiene #406; 10:30-12:00 PS preflight #412; 14:00-16:00 infra hooks (#404,#408); 16:00-18:00 closeout PRs/audit/#346 |
-| Thu 12 | ~~09:00-11:30 meso capacity/WIP view~~ DONE Sun → **09:00-11:30 yt-batch1** (6 YT links → transcripts → survey → issues); **14:00-16:00 evals #415/#416**; **16:00-18:00 overflow + ladder scoping #418/#419/#420** |
+| Thu 12 | ~~09:00-11:30 meso capacity/WIP view~~ DONE Sun -> **09:00-11:30 yt-batch1** (6 YT links -> transcripts -> survey -> issues); **14:00-16:00 evals #415/#416**; **16:00-18:00 overflow + ladder scoping #418/#419/#420** |
 | Fri 13 | overflow/buffer + spillover from earlier blocks + #418-#420 implementation pick |
 
 Notes:
@@ -38,13 +38,46 @@ Notes:
 - **Capacity insight**: `edge-audit` effort alone holds 61 open/ready
   issues (of 190 total) - largest frontier concentration; triage
   candidate, not this week's scope.
-- **Thursday re-planned on AGdevin**: capacity event patched → yt-batch1;
+- **Thursday re-planned on AGdevin**: capacity event patched -> yt-batch1;
   2 events added (evals #415/#416, overflow+ladder scoping).
 - **scheduled-turns wired**: `.devin/scheduled/agenda-roteiro.md` prompt
   ready; user registers `devin-agenda-roteiro` task (09:00 daily) - agent
   never self-registers per skill guards. Monday roteiro already run:
   `.devin/scratch/dev-org-ladder/roteiro-2026-11-09.json`.
 - **yt-batch1 status**: 5/6 video metadata in `.devin/scratch/yt-batch1/
-  meta.txt` (missing g_NgCLTibiM); transcripts+survey pending → Thursday.
+  meta.txt` (missing g_NgCLTibiM); transcripts+survey pending -> Thursday.
 - Ladder children #418/#419/#420 are NEXT-week candidates (Fri buffer or
   following week); #417 proved the pattern.
+
+## Revised 2026-11-09 AM (Sunday execution, ahead of schedule)
+
+Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
+(+ #421 for capacity). Week blocks Mon-Wed are effectively DONE:
+
+- **gcal**: #395-#401, #409-#411, #413 (267884c, 4104308) - validation,
+  ICS TZID/all-day/RRULE, OAuth state+PKCE, idempotent writes, CalDAV
+  parity, --flag=value normalization.
+- **status vocab / roadmap**: #402,#403,#405,#407 (cb550fb) +
+  #406 archive sweep (547400e) - board now 97 live issues, frontier 5.
+- **infra**: #404 dep-audit budget (7165cb4), #408 metrics rotation
+  (b1e57c6), #412 PS5.1 preflight (3e1c0d7).
+- **ladder children**: #418 estimate/actual fields (e173777), #419
+  focus.py tracker (0099185 + --root fix), #420 .devin/goals rollup
+  (19f81c5) - micro/meso/macro ladder complete end-to-end.
+- **evals**: #415 Rune note, #416 MiroFish note (e09139e).
+- **yt-batch1 DONE early**: 6 transcripts, survey
+  `.devin/research/2026-11-09-yt-batch1-survey.md`, 4 eval issues
+  #423-#426. Evals executed same day: agent-desktop ADOPT-EVAL (live
+  UIA verified -> spike #427 -> module landed 2cde8aa -> contract follow-up
+  #429), stageshow TRACK+pattern (#428 done), dropstone TRACK (cadence
+  note in MODEL-GUIDE.md), pr-agent TRACK (no provider key).
+- **Verification**: pytest 2273+8skip, audit 0/0 at each push; push-gate
+  caught + fixed a real em-dash violation (stop-guard).
+
+**Remaining for the week** (frontier, not scheduled):
+- #429 agent-desktop Backend contract decision (design + wiring)
+- #423-#426 evals are commented; adoption decisions pending user
+- Local frontier: 5 ready issues (ISSUE_02-05 media/AI epics,
+  MILESTONE_2_12 agent_rts) + 1 egm-laya open - sprint-scale, pick per
+  capacity view
+- Fri 13 stays buffer/overflow as planned
