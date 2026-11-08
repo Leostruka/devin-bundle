@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- stock-footage fetch hardening: `--out` now refuses to overwrite an existing file (was silent truncation of any path); non-dict JSON API responses return typed `bad_json:not_an_object` instead of crashing with AttributeError outside the envelope; 2 new tests.
+
 - image-forensics held-out harness + first real-data eval (ISSUE_02 step 4 partial): `eval_set.py` runs verdict.judge over labeled --real/--synth dirs and reports per-class verdict distribution, decided accuracy, and coverage (thresholds stay CLI inputs - calibration and held-out never share constants); `ref_error` bucket separates shape-mismatched images from inconclusive. First real run (webcam JPEG ref vs held-out frames + Remotion-render synth): real 3/3 correct, but synth JPEGs false-positive at default PCE_REAL=50 (scores 130-187) - ref residual dominated by shared JPEG quantization signature, documented in `.devin/research/2026-11-09-if-heldout-eval.md` + SKILL.md JPEG-domain caveat; 4 new tests. Eval artifacts (personal camera frames) gitignored under `.devin/scratch/if-eval/`.
 
 - asr transcribe local-video fix: `fetch_audio` passed any existing local file straight to whisper.cpp, which demuxes wav/mp3 only - mp4/mov/mkv inputs returned `ok:true` with empty segments (silent failure, reproduced live on a narrated mp4). Non-{wav,mp3} local files are now extracted to 16kHz mono wav via ffmpeg (`FFMPEG_EXE` override, clear error when ffmpeg absent); URLs still go through yt-dlp. 4 new tests.
