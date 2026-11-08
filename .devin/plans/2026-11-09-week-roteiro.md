@@ -112,3 +112,12 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   recorded in issue.
 - Commits this block: 1ebd2ab, aa30f1b, 61c8046, 2cdc837, 2ff8fc0,
   360d3d5 on fix/gcal-validation-ics (PR #422).
+
+## Sun PM addendum - extension audit sweep (12:00-12:30)
+- Full first-party surface scan: 28 extensions + 45 scripts. 6 real
+  fixes shipped (overwrite guards x4, https+size-cap, missing
+  exists-check, unbounded subprocess) - commits fc89926..6096e0c.
+- Verified-clean list in self-improvement ledger iter 9.
+- Suite: 2337 passed / 8 skipped; audit 0/0 at every push.
+- Frontier unchanged: held-out datasets (ISSUE_02/05), craft CLIs
+  (ISSUE_03), PR merges + scheduled-task registration (user actions).
