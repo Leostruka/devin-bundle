@@ -1,0 +1,112 @@
+{
+  "name": "compact-gate-v1-cal-01",
+  "total": 16,
+  "correct": 0,
+  "wrong": 0,
+  "abstained": 16,
+  "correct_abstain": 0,
+  "shortlist_miss": 0,
+  "decided": 0,
+  "accuracy": null,
+  "wilson_accuracy_low": null,
+  "coverage": 0.0,
+  "abstain_precision": 0.0,
+  "cases": [
+    {
+      "case_id": "cg-001",
+      "outcome": "abstained",
+      "gold": "continue",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-002",
+      "outcome": "abstained",
+      "gold": "prune",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-003",
+      "outcome": "abstained",
+      "gold": "fold",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-004",
+      "outcome": "abstained",
+      "gold": "handoff",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-005",
+      "outcome": "abstained",
+      "gold": "clear",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-006",
+      "outcome": "abstained",
+      "gold": "continue",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-007",
+      "outcome": "abstained",
+      "gold": "prune",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-008",
+      "outcome": "abstained",
+      "gold": "fold",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-009",
+      "outcome": "abstained",
+      "gold": "handoff",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-010",
+      "outcome": "abstained",
+      "gold": "clear",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-011",
+      "outcome": "abstained",
+      "gold": "continue",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-012",
+      "outcome": "abstained",
+      "gold": "prune",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-013",
+      "outcome": "abstained",
+      "gold": "fold",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-014",
+      "outcome": "abstained",
+      "gold": "handoff",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-015",
+      "outcome": "abstained",
+      "gold": "clear",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "cg-016",
+      "outcome": "abstained",
+      "gold": "continue",
+      "picked": "__none__"
+    }
+  ]
+}

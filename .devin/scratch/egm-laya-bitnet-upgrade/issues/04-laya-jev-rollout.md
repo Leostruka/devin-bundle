@@ -137,3 +137,25 @@ first, deterministic fallback when the daemon is down.
   only viable assist candidate, shadow-only pending more held-out
   evidence + non-saturating map + deliberate activation steps.
   Artifacts: `.devin/evals/laya/media-intent-v1/` (3 runs).
+  **CAMPAIGN COMPLETE same day - all 14 profiles evaluated**
+  (~250 frozen cases through the real worker):
+  - media-intent-v1: 0.966 decided acc, held-out adopted 0.90 -
+    ONLY viable assist candidate (shadow-only pending evidence).
+  - media-preset-v1: 0.875/0.50 - borderline, thin n.
+  - issue-category-v1: 0.684/0.79 - best fixed-label triage.
+  - knowledge-label-v1: 1.000/0.25 - perfect precision, low recall.
+  - skill-pick-v1: 1.000/0.133 - extreme abstention + flaky
+    engine_error:TypeError (transient, fail-safe held).
+  - ui-target-v1: 0.714/0.70 - DANGEROUS __none__ commits for a
+    click gate.
+  - filebool-v1: 0.444 yes-collapse; output-context-v1: 0.563
+    collapse; skill-family-v1: 0.421 cardinality; cmd-risk-v1:
+    0.231 unsafe direction; compact-item-v1: 0.125;
+    compact-boundary-v1 + compact-gate-v1 + review-risk-v1: 0/0
+    abstention (trajectory/structured state).
+  Contract fixes landed: compact-item + knowledge-label dict-labels
+  (bare-list criteria defect, 2 more instances), laya-guard empty-goal
+  dead lane. Meta-laws: prose state decides, structured abstains;
+  natural-language intents match, comprehension/trajectory fails.
+  Assist remains OFF everywhere; only media-intent has a credible
+  path (more held-out + non-saturating map + deliberate activation).

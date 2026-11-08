@@ -1,0 +1,535 @@
+{
+ "version": 1,
+ "eval": "compact-gate-v1-cal-01",
+ "profile": "compact-gate-v1",
+ "cases": [
+  {
+   "case_id": "cg-001",
+   "gold": "continue",
+   "request": {
+    "version": 1,
+    "request_id": "cg-001",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "fix gcal crash\n\nLATEST: still editing wrapper.py apply()",
+     "snippets": "{\"tool_hist\": {\"read\": 12, \"edit\": 4, \"exec\": 8}, \"files\": [\"wrapper.py\", \"test_gcal.py\"], \"recent_errors\": [], \"turns_since_last_compact\": 14}",
+     "confidence_hint": "{\"p\": 0.35, \"calls\": 40}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-002",
+   "gold": "prune",
+   "request": {
+    "version": 1,
+    "request_id": "cg-002",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "audit extensions\n\nLATEST: sweeping for encoding gaps",
+     "snippets": "{\"tool_hist\": {\"grep\": 30, \"read\": 22, \"exec\": 15}, \"files\": [\"cu_browser.py\", \"render.py\"], \"recent_errors\": [\"2 timeouts fixed\"], \"turns_since_last_compact\": 45}",
+     "confidence_hint": "{\"p\": 0.62, \"calls\": 120}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-003",
+   "gold": "fold",
+   "request": {
+    "version": 1,
+    "request_id": "cg-003",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "render narrated video\n\nLATEST: compositing final mp4",
+     "snippets": "{\"tool_hist\": {\"read\": 40, \"exec\": 25, \"edit\": 10}, \"files\": [\"plan.json\", \"final-narrated.mp4\", \"composite.py\"], \"recent_errors\": [], \"turns_since_last_compact\": 60}",
+     "confidence_hint": "{\"p\": 0.71, \"calls\": 150}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-004",
+   "gold": "handoff",
+   "request": {
+    "version": 1,
+    "request_id": "cg-004",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "migrate database schema\n\nLATEST: still mid-migration on table 3 of 8",
+     "snippets": "{\"tool_hist\": {\"read\": 55, \"exec\": 40, \"edit\": 20}, \"files\": [\"schema.sql\", \"migration_03.py\"], \"recent_errors\": [\"deadlock retry x3\"], \"turns_since_last_compact\": 90}",
+     "confidence_hint": "{\"p\": 0.93, \"calls\": 220}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-005",
+   "gold": "clear",
+   "request": {
+    "version": 1,
+    "request_id": "cg-005",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "was debugging ASR mp4\n\nLATEST: user pivoted to calendar planning",
+     "snippets": "{\"tool_hist\": {\"exec\": 10, \"read\": 5}, \"files\": [\"transcribe.py\"], \"recent_errors\": [], \"turns_since_last_compact\": 8}",
+     "confidence_hint": "{\"p\": 0.55, \"calls\": 30}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-006",
+   "gold": "continue",
+   "request": {
+    "version": 1,
+    "request_id": "cg-006",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "write unit tests\n\nLATEST: midway through test file",
+     "snippets": "{\"tool_hist\": {\"read\": 8, \"edit\": 6}, \"files\": [\"test_new.py\"], \"recent_errors\": [], \"turns_since_last_compact\": 10}",
+     "confidence_hint": "{\"p\": 0.3, \"calls\": 25}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-007",
+   "gold": "prune",
+   "request": {
+    "version": 1,
+    "request_id": "cg-007",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "self-improvement loop\n\nLATEST: filing verified issues",
+     "snippets": "{\"tool_hist\": {\"exec\": 35, \"read\": 18}, \"files\": [\"issue_12.md\", \"issue_13.md\"], \"recent_errors\": [], \"turns_since_last_compact\": 50}",
+     "confidence_hint": "{\"p\": 0.66, \"calls\": 110}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-008",
+   "gold": "fold",
+   "request": {
+    "version": 1,
+    "request_id": "cg-008",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "transcribe 4 reels\n\nLATEST: whisper batch running",
+     "snippets": "{\"tool_hist\": {\"exec\": 20, \"read\": 30}, \"files\": [\"reel1.mp4\", \"reel2.mp4\", \"transcript_batch.txt\"], \"recent_errors\": [], \"turns_since_last_compact\": 55}",
+     "confidence_hint": "{\"p\": 0.74, \"calls\": 140}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-009",
+   "gold": "handoff",
+   "request": {
+    "version": 1,
+    "request_id": "cg-009",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "port roadmap-board\n\nLATEST: capacity view half done at 0.95 pressure",
+     "snippets": "{\"tool_hist\": {\"read\": 60, \"edit\": 35, \"exec\": 45}, \"files\": [\"roadmap-board.py\", \"status_vocab.py\"], \"recent_errors\": [\"merge conflict resolved\"], \"turns_since_last_compact\": 110}",
+     "confidence_hint": "{\"p\": 0.95, \"calls\": 260}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-010",
+   "gold": "clear",
+   "request": {
+    "version": 1,
+    "request_id": "cg-010",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "was evaluating roon\n\nLATEST: user said drop it focus on laya",
+     "snippets": "{\"tool_hist\": {\"exec\": 8, \"read\": 4}, \"files\": [\"roon_eval.md\"], \"recent_errors\": [], \"turns_since_last_compact\": 6}",
+     "confidence_hint": "{\"p\": 0.58, \"calls\": 28}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-011",
+   "gold": "continue",
+   "request": {
+    "version": 1,
+    "request_id": "cg-011",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "small typo fix\n\nLATEST: one-line change remaining",
+     "snippets": "{\"tool_hist\": {\"read\": 3, \"edit\": 1}, \"files\": [\"wrapper.py\"], \"recent_errors\": [], \"turns_since_last_compact\": 5}",
+     "confidence_hint": "{\"p\": 0.22, \"calls\": 12}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-012",
+   "gold": "prune",
+   "request": {
+    "version": 1,
+    "request_id": "cg-012",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "extension audit sweep\n\nLATEST: 28 files reviewed, 6 fixed",
+     "snippets": "{\"tool_hist\": {\"read\": 50, \"exec\": 30, \"edit\": 12}, \"files\": [\"fetch.py\", \"voicebox.py\", \"meshops.py\"], \"recent_errors\": [], \"turns_since_last_compact\": 70}",
+     "confidence_hint": "{\"p\": 0.68, \"calls\": 130}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-013",
+   "gold": "fold",
+   "request": {
+    "version": 1,
+    "request_id": "cg-013",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "laya calibration runs\n\nLATEST: 3 eval manifests frozen",
+     "snippets": "{\"tool_hist\": {\"exec\": 25, \"read\": 20}, \"files\": [\"cases.json\", \"manifest.frozen.json\", \"report.json\"], \"recent_errors\": [], \"turns_since_last_compact\": 48}",
+     "confidence_hint": "{\"p\": 0.72, \"calls\": 135}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-014",
+   "gold": "handoff",
+   "request": {
+    "version": 1,
+    "request_id": "cg-014",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "full repo hardening\n\nLATEST: encoding sweep done, exit codes pending",
+     "snippets": "{\"tool_hist\": {\"read\": 70, \"exec\": 55, \"edit\": 40}, \"files\": [\"audit.py\", \"global_rules.md\"], \"recent_errors\": [\"38 checks green\"], \"turns_since_last_compact\": 130}",
+     "confidence_hint": "{\"p\": 0.94, \"calls\": 280}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-015",
+   "gold": "clear",
+   "request": {
+    "version": 1,
+    "request_id": "cg-015",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "was scoping timeboxing\n\nLATEST: pivoted to held-out validations",
+     "snippets": "{\"tool_hist\": {\"read\": 6, \"exec\": 3}, \"files\": [\"ISSUE_418.md\"], \"recent_errors\": [], \"turns_since_last_compact\": 7}",
+     "confidence_hint": "{\"p\": 0.52, \"calls\": 26}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "cg-016",
+   "gold": "continue",
+   "request": {
+    "version": 1,
+    "request_id": "cg-016",
+    "profile": "compact-gate-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "verify PR checks\n\nLATEST: waiting on CI status",
+     "snippets": "{\"tool_hist\": {\"exec\": 4}, \"files\": [\"pr422.json\"], \"recent_errors\": [], \"turns_since_last_compact\": 6}",
+     "confidence_hint": "{\"p\": 0.28, \"calls\": 15}"
+    },
+    "candidates": [
+     {
+      "id": "continue"
+     },
+     {
+      "id": "prune"
+     },
+     {
+      "id": "fold"
+     },
+     {
+      "id": "handoff"
+     },
+     {
+      "id": "clear"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  }
+ ]
+}
