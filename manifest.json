@@ -1431,6 +1431,12 @@
       "exported_at": "2026-11-05T07:58:08.569748"
     },
     {
+      "name": "focus.py",
+      "purpose": "Focus-session tracker (start/stop/report) over gitignored .devin/ledgers/focus.jsonl - issue #419",
+      "export_hash": "288B7989413543321358A440BC996DBC0A1B164D43C6C3BDEE1EF39005DC7FDB",
+      "exported_at": "2026-11-08T09:30:51.744127"
+    },
+    {
       "name": "gh-pr-assignee.py",
       "purpose": "PostToolUse hook — auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
       "export_hash": "5a98f97a830ac8e01fdd97a85fd09b36281ebe52fdb1625234f1f22a773ad64f",
@@ -1612,7 +1618,7 @@
       "exported_at": "2026-11-03T21:04:06.237841"
     }
   ],
-  "script_count": 44,
+  "script_count": 45,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,

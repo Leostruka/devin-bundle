@@ -40,3 +40,7 @@ Decision record: `.devin/adr/007-scratch-issue-tracker.md`.
 - Block: record dependencies with `Blocked by: NN, NN`.
 - Claim: set `Status: claimed` before work.
 - Resolve: append `## Answer`, set `Status: resolved`, and update the map.
+- Focus sessions (issue #419): `python scripts/focus.py start
+  --issue <KEY> [--effort <slug>]` before a work block, `stop` after,
+  `report [--day YYYY-MM-DD] [--json]` for per-day/per-issue focus
+  minutes. Ledger: `.devin/ledgers/focus.jsonl` (gitignored).

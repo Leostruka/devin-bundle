@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- micro focus-session tracker (issue #419): `scripts/focus.py start|stop|report|status` - append-only JSONL ledger `.devin/ledgers/focus.jsonl` (gitignored, metrics.jsonl pattern); sessions pair start->stop FIFO with stale-close on unclosed start; report aggregates focus minutes per day and per issue + `--json` + `--day` filter; refuses double-start, offline stdlib-only; documented in agents/issue-tracker.md; audit manual_scripts + counts 44->45 synced; 6 tests.
+
 - micro timeboxing fields (issue #418): issues accept `estimate_min:`/`actual_min:` frontmatter (bold/dash variants tolerated); roadmap-board exposes both per issue + capacity `est_open_min` rollup (open issues only) + markdown "Est min" column; agents/issue-tracker.md documents the convention (roteiro task `minutes` <- estimate_min); first real use: egm-laya 04-laya-jev-rollout estimate_min=120; 1 test.
 
 - roadmap-board parser corrections + effort archiving (issues #402 #406): status/priority fields now parse `- **Status**: x`, `**Status:** x` and plain forms (bold residue previously left issues falsely open - live board corrected 190->97 issues, done 184); archived-effort mechanism - scratch/<effort>/README.md `Status: ARCHIVED` excludes that effort's issues from the live board, reported as summary.archived_efforts/archived_issues + markdown note; sweep archived 17 dead efforts (audit-r1..r6, reels-2..5, computer-use-staged-upgrades, agentcraft-rts(+v2), general-audit, 3d_sources, cu-perception, cu-realtime) covering 93 resolved issues; site/build.py field regex aligned to same bold-status variants; live frontier now 5 claimable + 1 egm-laya open; 2 new tests.
