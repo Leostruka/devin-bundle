@@ -1,0 +1,5 @@
+[
+  {"name": "gcal crash/validation fixes #395 #409 #413", "minutes": 150, "priority": 1},
+  {"name": "ics correctness #396 #397 #398", "minutes": 150, "priority": 2},
+  {"name": "oauth hardening #411", "minutes": 90, "priority": 3}
+]
