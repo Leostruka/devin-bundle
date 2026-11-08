@@ -1134,6 +1134,65 @@ try:
 except Exception as _e:
     print('  SKIP check-tools failed to run: ' + str(_e))
 
+# 36. CLI exit-code contract: mains that can emit {"ok": false} must not
+# exit 0 unconditionally (scripts/CI cannot detect failure otherwise).
+print()
+print('[36] CLI exit-code contract')
+try:
+    import ast as _ast
+    _suspects = []
+    for _dirpath, _dirnames, _filenames in os.walk('extensions'):
+        _dirnames[:] = [d for d in _dirnames
+                        if d not in ('.venv', '__pycache__', 'tests')]
+        for _fn in _filenames:
+            if not _fn.endswith('.py'):
+                continue
+            _fp = os.path.join(_dirpath, _fn)
+            try:
+                _src = open(_fp, encoding='utf-8').read()
+                _tree = _ast.parse(_src)
+            except (OSError, SyntaxError, UnicodeDecodeError):
+                continue
+            if '"ok": False' not in _src and "'ok': False" not in _src:
+                continue
+            for _node in _ast.walk(_tree):
+                if not (isinstance(_node, _ast.FunctionDef)
+                        and _node.name == 'main'):
+                    continue
+                _seg = _ast.get_source_segment(_src, _node) or ''
+                # Bug shape: print(json.dumps(<call>)) then bare return 0
+                # while the printed envelope can carry ok:false and main
+                # shows no ok-awareness (literal "ok" key, .get("ok"),
+                # nonzero literal returns, or sys.exit paths).
+                if 'print(json.dumps(' not in _seg:
+                    continue
+                _has_bare0 = any(
+                    isinstance(r, _ast.Return)
+                    and isinstance(r.value, _ast.Constant)
+                    and r.value.value == 0
+                    for r in _ast.walk(_node))
+                _ok_aware = ('"ok"' in _seg or "'ok'" in _seg
+                             or '.get(' in _seg and 'ok' in _seg)
+                _can_fail = any(
+                    isinstance(r, _ast.Return)
+                    and isinstance(r.value, _ast.Constant)
+                    and isinstance(r.value.value, int)
+                    and r.value.value != 0
+                    for r in _ast.walk(_node))
+                _exits = ('sys.exit' in _seg or 'SystemExit' in _seg
+                          or '_fail(' in _seg or '_out(' in _seg)
+                if _has_bare0 and not (_ok_aware or _can_fail or _exits):
+                    _suspects.append(_fp + ':' + str(_node.lineno))
+    if _suspects:
+        warnings.append('cli mains may exit 0 on ok:false: '
+                        + ', '.join(_suspects[:10]))
+        print('  WARN ' + str(len(_suspects)) + ' suspect main(s): '
+              + ', '.join(_suspects[:5]))
+    else:
+        print('  OK  no ok-envelope mains with unguarded exit 0')
+except Exception as _e:
+    print('  SKIP exit-code check failed: ' + str(_e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1150,5 +1209,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 35 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 36 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

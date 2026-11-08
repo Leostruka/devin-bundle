@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- audit.py check [36] CLI exit-code contract: AST-scans extensions/ mains for the `print(json.dumps(envelope))` + bare `return 0` shape that let `{"ok": false}` exit 0 (the bug class fixed in 9 mains this session); warning-level, skips ok-aware/can-fail/sys.exit paths. Summary now reads "ALL 36 CHECKS".
+
 - CLI exit-code contract sweep: 9 mains emitted `{"ok": false}` envelopes but always exited 0 - scripts/CI could not detect failure. Fixed: composite, plan_check (the pre-render gate), render, transcribe, verdict (judge+build-ref), eval_set, photo_qc, ppisp_runner, craft-bridge. Also: plan_check now rejects non-finite fps/duration/sync_range/props (NaN/Infinity/bool slipped through - `fps:"30"` crashed the validator itself); composite refuses `--out` overwrite (ffmpeg -y), catches bad-fit ValueError, exits non-zero on failure. 6 new tests.
 
 - Windows cp1252 decode sweep: every first-party `text=True` subprocess call now passes `encoding="utf-8", errors="replace"` (21 call sites across extensions/: asr, remotion-render, craft-bridge, laya-tools x4, media-tools x2, computer-use x5, agent-reach, rea-ops, rz-ops, offsec-tools, hyperframes, blender-operator, code-graph). On Windows, `text=True` alone decodes with the locale codepage - UTF-8 output containing non-ASCII (PT-BR filenames, accented window titles, JSON envelopes) could mojibake or crash on cp1252-undefined bytes. Matches the pattern already used in cu_agent_desktop/mcp_server/offsec-tools; one test fake signature updated.
