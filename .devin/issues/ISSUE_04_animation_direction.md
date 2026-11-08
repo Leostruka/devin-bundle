@@ -39,7 +39,7 @@ Status: in-progress · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) · Ledger: `.
 ## Progress (2026-11-09 audit)
 
 - Landed: `extensions/asr/` (transcribe.py + bootstrap.py, #430 hardened), `extensions/remotion-render/` (render.py, plan_check.py, templates), `skills/animation-direction/SKILL.md`, tests/test_animation_pipeline.py (19 tests, green)
-- Pending: step 5 end-to-end proof - real 30s narrated clip -> plan -> approve -> rendered composite
+- DONE 2026-11-08: step 5 render path proven e2e - plan v2 JSON -> plan_check ok -> render.py materialize -> `npx remotion render` -> real h264 mp4 (270 frames, 89KB) at `.devin/scratch/anim-e2e/render-proof.mp4` (synthetic 12s plan; narrated-clip variant + human approve gate still the usage path)
 
 ## Non-goals
 
