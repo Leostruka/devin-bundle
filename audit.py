@@ -1134,6 +1134,18 @@ try:
 except Exception as _e:
     print('  SKIP check-tools failed to run: ' + str(_e))
 
+# Shared scanner for checks 36-38: yields .py files under extensions/
+# and scripts/, skipping vendored/runtime dirs.
+def _scan_py_files():
+    for _root in ('extensions', 'scripts'):
+        for _dirpath, _dirnames, _filenames in os.walk(_root):
+            _dirnames[:] = [d for d in _dirnames
+                            if d not in ('.venv', '__pycache__', 'tests')]
+            for _fn in _filenames:
+                if _fn.endswith('.py'):
+                    yield os.path.join(_dirpath, _fn)
+
+
 # 36. CLI exit-code contract: mains that can emit {"ok": false} must not
 # exit 0 unconditionally (scripts/CI cannot detect failure otherwise).
 print()
@@ -1141,48 +1153,42 @@ print('[36] CLI exit-code contract')
 try:
     import ast as _ast
     _suspects = []
-    for _dirpath, _dirnames, _filenames in os.walk('extensions'):
-        _dirnames[:] = [d for d in _dirnames
-                        if d not in ('.venv', '__pycache__', 'tests')]
-        for _fn in _filenames:
-            if not _fn.endswith('.py'):
+    for _fp in _scan_py_files():
+        try:
+            _src = open(_fp, encoding='utf-8').read()
+            _tree = _ast.parse(_src)
+        except (OSError, SyntaxError, UnicodeDecodeError):
+            continue
+        if '"ok": False' not in _src and "'ok': False" not in _src:
+            continue
+        for _node in _ast.walk(_tree):
+            if not (isinstance(_node, _ast.FunctionDef)
+                    and _node.name == 'main'):
                 continue
-            _fp = os.path.join(_dirpath, _fn)
-            try:
-                _src = open(_fp, encoding='utf-8').read()
-                _tree = _ast.parse(_src)
-            except (OSError, SyntaxError, UnicodeDecodeError):
+            _seg = _ast.get_source_segment(_src, _node) or ''
+            # Bug shape: print(json.dumps(<call>)) then bare return 0
+            # while the printed envelope can carry ok:false and main
+            # shows no ok-awareness (literal "ok" key, .get("ok"),
+            # nonzero literal returns, or sys.exit paths).
+            if 'print(json.dumps(' not in _seg:
                 continue
-            if '"ok": False' not in _src and "'ok': False" not in _src:
-                continue
-            for _node in _ast.walk(_tree):
-                if not (isinstance(_node, _ast.FunctionDef)
-                        and _node.name == 'main'):
-                    continue
-                _seg = _ast.get_source_segment(_src, _node) or ''
-                # Bug shape: print(json.dumps(<call>)) then bare return 0
-                # while the printed envelope can carry ok:false and main
-                # shows no ok-awareness (literal "ok" key, .get("ok"),
-                # nonzero literal returns, or sys.exit paths).
-                if 'print(json.dumps(' not in _seg:
-                    continue
-                _has_bare0 = any(
-                    isinstance(r, _ast.Return)
-                    and isinstance(r.value, _ast.Constant)
-                    and r.value.value == 0
-                    for r in _ast.walk(_node))
-                _ok_aware = ('"ok"' in _seg or "'ok'" in _seg
-                             or '.get(' in _seg and 'ok' in _seg)
-                _can_fail = any(
-                    isinstance(r, _ast.Return)
-                    and isinstance(r.value, _ast.Constant)
-                    and isinstance(r.value.value, int)
-                    and r.value.value != 0
-                    for r in _ast.walk(_node))
-                _exits = ('sys.exit' in _seg or 'SystemExit' in _seg
-                          or '_fail(' in _seg or '_out(' in _seg)
-                if _has_bare0 and not (_ok_aware or _can_fail or _exits):
-                    _suspects.append(_fp + ':' + str(_node.lineno))
+            _has_bare0 = any(
+                isinstance(r, _ast.Return)
+                and isinstance(r.value, _ast.Constant)
+                and r.value.value == 0
+                for r in _ast.walk(_node))
+            _ok_aware = ('"ok"' in _seg or "'ok'" in _seg
+                         or '.get(' in _seg and 'ok' in _seg)
+            _can_fail = any(
+                isinstance(r, _ast.Return)
+                and isinstance(r.value, _ast.Constant)
+                and isinstance(r.value.value, int)
+                and r.value.value != 0
+                for r in _ast.walk(_node))
+            _exits = ('sys.exit' in _seg or 'SystemExit' in _seg
+                      or '_fail(' in _seg or '_out(' in _seg)
+            if _has_bare0 and not (_ok_aware or _can_fail or _exits):
+                _suspects.append(_fp + ':' + str(_node.lineno))
     if _suspects:
         warnings.append('cli mains may exit 0 on ok:false: '
                         + ', '.join(_suspects[:10]))
@@ -1203,41 +1209,35 @@ try:
     import ast as _ast37
     _SUB = ('run', 'call', 'check_output', 'check_call')
     _bad_enc = []
-    for _dirpath, _dirnames, _filenames in os.walk('extensions'):
-        _dirnames[:] = [d for d in _dirnames
-                        if d not in ('.venv', '__pycache__', 'tests')]
-        for _fn in _filenames:
-            if not _fn.endswith('.py'):
+    for _fp in _scan_py_files():
+        try:
+            _tree = _ast37.parse(
+                open(_fp, encoding='utf-8').read())
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+        for _node in _ast37.walk(_tree):
+            if not isinstance(_node, _ast37.Call):
                 continue
-            _fp = os.path.join(_dirpath, _fn)
-            try:
-                _tree = _ast37.parse(
-                    open(_fp, encoding='utf-8').read())
-            except (OSError, UnicodeDecodeError, SyntaxError):
+            _f = _node.func
+            _is_sub = False
+            if (isinstance(_f, _ast37.Attribute)
+                    and _f.attr in _SUB
+                    and isinstance(_f.value, _ast37.Name)
+                    and _f.value.id == 'subprocess'):
+                _is_sub = True
+            if not _is_sub:
                 continue
-            for _node in _ast37.walk(_tree):
-                if not isinstance(_node, _ast37.Call):
-                    continue
-                _f = _node.func
-                _is_sub = False
-                if (isinstance(_f, _ast37.Attribute)
-                        and _f.attr in _SUB
-                        and isinstance(_f.value, _ast37.Name)
-                        and _f.value.id == 'subprocess'):
-                    _is_sub = True
-                if not _is_sub:
-                    continue
-                _tk = next((k for k in _node.keywords
-                            if k.arg == 'text'), None)
-                if _tk is None:
-                    continue
-                if (isinstance(_tk.value, _ast37.Constant)
-                        and _tk.value.value is not True):
-                    continue
-                if not any(k.arg and k.arg.startswith('encoding')
-                           for k in _node.keywords):
-                    _bad_enc.append('%s:%d' % (_fp, _node.lineno))
-                    break
+            _tk = next((k for k in _node.keywords
+                        if k.arg == 'text'), None)
+            if _tk is None:
+                continue
+            if (isinstance(_tk.value, _ast37.Constant)
+                    and _tk.value.value is not True):
+                continue
+            if not any(k.arg and k.arg.startswith('encoding')
+                       for k in _node.keywords):
+                _bad_enc.append('%s:%d' % (_fp, _node.lineno))
+                break
     if _bad_enc:
         warnings.append('subprocess text=True without encoding=: '
                         + ', '.join(_bad_enc[:10]))
@@ -1256,50 +1256,44 @@ print()
 print('[38] file-I/O utf-8 decode')
 try:
     _bad_io = []
-    for _dirpath, _dirnames, _filenames in os.walk('extensions'):
-        _dirnames[:] = [d for d in _dirnames
-                        if d not in ('.venv', '__pycache__', 'tests')]
-        for _fn in _filenames:
-            if not _fn.endswith('.py'):
+    for _fp in _scan_py_files():
+        try:
+            _tree = _ast37.parse(
+                open(_fp, encoding='utf-8').read())
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+        for _node in _ast37.walk(_tree):
+            if not isinstance(_node, _ast37.Call):
                 continue
-            _fp = os.path.join(_dirpath, _fn)
-            try:
-                _tree = _ast37.parse(
-                    open(_fp, encoding='utf-8').read())
-            except (OSError, UnicodeDecodeError, SyntaxError):
+            _f = _node.func
+            if isinstance(_f, _ast37.Attribute) \
+                    and _f.attr in ('read_text', 'write_text'):
+                # encoding is positional arg 0 for Path text methods
+                _ok = len(_node.args) >= 1 or any(
+                    k.arg == 'encoding' for k in _node.keywords
+                    if k.arg)
+            elif isinstance(_f, _ast37.Name) and _f.id == 'open':
+                _mode = None
+                for _k in _node.keywords:
+                    if _k.arg == 'mode':
+                        _mode = _k.value
+                if _mode is None and len(_node.args) >= 2:
+                    _mode = _node.args[1]
+                if isinstance(_mode, _ast37.Constant) \
+                        and isinstance(_mode.value, str) \
+                        and 'b' in _mode.value:
+                    continue
+                if not isinstance(_mode, _ast37.Constant) \
+                        and _mode is not None:
+                    continue  # dynamic mode - cannot prove text
+                _ok = len(_node.args) >= 4 or any(
+                    k.arg == 'encoding' for k in _node.keywords
+                    if k.arg)
+            else:
                 continue
-            for _node in _ast37.walk(_tree):
-                if not isinstance(_node, _ast37.Call):
-                    continue
-                _f = _node.func
-                if isinstance(_f, _ast37.Attribute) \
-                        and _f.attr in ('read_text', 'write_text'):
-                    # encoding is positional arg 0 for Path text methods
-                    _ok = len(_node.args) >= 1 or any(
-                        k.arg == 'encoding' for k in _node.keywords
-                        if k.arg)
-                elif isinstance(_f, _ast37.Name) and _f.id == 'open':
-                    _mode = None
-                    for _k in _node.keywords:
-                        if _k.arg == 'mode':
-                            _mode = _k.value
-                    if _mode is None and len(_node.args) >= 2:
-                        _mode = _node.args[1]
-                    if isinstance(_mode, _ast37.Constant) \
-                            and isinstance(_mode.value, str) \
-                            and 'b' in _mode.value:
-                        continue
-                    if not isinstance(_mode, _ast37.Constant) \
-                            and _mode is not None:
-                        continue  # dynamic mode - cannot prove text
-                    _ok = len(_node.args) >= 4 or any(
-                        k.arg == 'encoding' for k in _node.keywords
-                        if k.arg)
-                else:
-                    continue
-                if not _ok:
-                    _bad_io.append('%s:%d' % (_fp, _node.lineno))
-                    break
+            if not _ok:
+                _bad_io.append('%s:%d' % (_fp, _node.lineno))
+                break
     if _bad_io:
         warnings.append('text file I/O without encoding=: '
                         + ', '.join(_bad_io[:10]))

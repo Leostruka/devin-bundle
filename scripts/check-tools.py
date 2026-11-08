@@ -57,7 +57,11 @@ def check_byte_identity(renderer, dest):
         argv.append(_expand_dest(dest))
     outputs = []
     for _ in range(2):
-        proc = subprocess.run(argv, capture_output=True, cwd=ROOT)
+        try:
+            proc = subprocess.run(argv, capture_output=True, cwd=ROOT,
+                                  timeout=120)
+        except subprocess.TimeoutExpired:
+            return False, "renderer timeout after 120s"
         if proc.returncode != 0:
             return False, f"renderer exit {proc.returncode}"
         outputs.append(proc.stdout)

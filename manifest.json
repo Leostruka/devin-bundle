@@ -1369,7 +1369,7 @@
     {
       "name": "check-tools.py",
       "purpose": "tools.json validator - schema check + byte-identical render gate per enabled tool (M2_07 multi-CLI contract)",
-      "export_hash": "DCB2496A485EBED93C8F06643563B0265FD5898BEA50CA3370CB3676AEBF42BB",
+      "export_hash": "80F5C07F815752E403718C766FCCE153CE5FF3049281265DE618F25C96D033E0",
       "exported_at": "2026-11-08T08:50:55.845199"
     },
     {
@@ -1400,14 +1400,14 @@
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "477F844DB2C1D274247869B16EC77A2A798F86861928F51F4AE0A0BFE854D572",
+      "export_hash": "B626D7A11015BE9FACB40EAF06CFA7F822CB6410E98C79F91ADFD13187DC0051",
       "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
       "name": "dep-audit.py",
       "source": "devin-bundle",
       "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
-      "export_hash": "5797B6F48559F79A2F7E92F0450AD1FBDD115F401D57841746AF107A36A07B7A",
+      "export_hash": "24E621559A4D40CF5159B79B557AE6AEBAC37626AD5889C03703A220A7B0C925",
       "exported_at": "2026-11-08T10:18:51.569042"
     },
     {

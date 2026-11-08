@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- scripts/ sweep + audit scope extension: checks [36]/[37]/[38] now scan `scripts/` alongside `extensions/` via shared `_scan_py_files()` generator. Found + fixed: check-tools renderer determinism check had no timeout (hung renderer = hung audit; now 120s with clean FAIL), dep-audit + dep-audit-gate `text=True` calls missing utf-8 pins (cp1252 on pip-audit/npm output). Manifest export_hash refreshed for the 3 touched scripts.
+
 - file-I/O decode sweep + audit check [38]: Path.read_text()/write_text() and text-mode open() without an encoding pin now flagged by audit (same cp1252 class as [37], for file content). Fixed 8 sites: cu_qmp_backend/cu_env_daemon heartbeat pair, abliterator safetensors index read, heldout_batch --out write, blender state json.load/dump, code-graph selftest fixtures, guest worker boot_id read. ASCII-guaranteed sites (ensure_ascii JSON, kernel boot_id) pinned anyway for convention uniformity. Summary now reads "ALL 38 CHECKS".
 
 - subprocess timeout + decode sweep round 2: AST scan found the last `subprocess.run` calls without `timeout=` - harness-tree selftest helper (timeout=60, matching code-graph), taskkill calls in cu_browser `_kill_pid` and cu_taskrunner stop (timeout=10, best-effort kill). Also 4 `text=True` calls the earlier count-based sweep missed (blender --version probe, remotion npm install + render, ppisp_runner) now pin `encoding="utf-8", errors="replace"`. audit.py check [37] rewritten AST-precise (per-call text=True without encoding= kwarg) after the count heuristic proved it could mask per-call gaps.

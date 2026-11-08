@@ -76,7 +76,8 @@ def main():
         p = subprocess.run(
             [sys.executable, script, "--root", root,
              "--max-seconds", "28"],
-            capture_output=True, text=True, timeout=32,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=32,
             creationflags=_CF)
         data = json.loads(p.stdout or "{}")
     except Exception:

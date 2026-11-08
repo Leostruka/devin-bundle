@@ -99,6 +99,7 @@ def _run(argv, cwd, timeout=120, dl=None):
     if dl is not None:
         timeout = dl.cap(timeout)
     return subprocess.run(argv, cwd=cwd, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace",
                           timeout=timeout, creationflags=_CF)
 
 
