@@ -44,6 +44,13 @@ first, deterministic fallback when the daemon is down.
   `.devin/evals/laya/issue-category-v1/`. No calibration block
   written; mode stays `off`. Next: second annotator pass on the
   needs_info golds + more cases per profile before re-eval.
+  **Second run same day**: output-context-v1, 20 cases - accuracy
+  0.563 / coverage 0.80. Failure mode: runtime_failure collapse
+  (7/9 misses) - engine keys on error-shaped surface text and cannot
+  separate compile/test/warning classes. Combined evidence: coarse
+  intent OK, fine-grained taxonomy NOT viable. Options recorded:
+  more cases, simplified label sets, or different checkpoint.
+  Artifacts: `.devin/evals/laya/{issue-category-v1,output-context-v1}/`.
 - Adding `review-risk-v1` to `profile.json.profiles` when calibrated.
 - BitNet adapter evaluation as a decision backend (`ai-tools/`).
   Measured 2026-11-09 (runtime at
