@@ -1,45 +1,45 @@
-BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//devin-bundle//agenda-roteiro//EN
-CALSCALE:GREGORIAN
-BEGIN:VEVENT
-UID:devorg-1-20261108@devin-bundle
-DTSTAMP:20261107T203000Z
-DTSTART:20261108T120000Z
-DTEND:20261108T123000Z
-SUMMARY:Human: configure [gcal] credentials in credentials.toml
-DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
-END:VEVENT
-BEGIN:VEVENT
-UID:devorg-2-20261108@devin-bundle
-DTSTAMP:20261107T203000Z
-DTSTART:20261108T123000Z
-DTEND:20261108T140000Z
-SUMMARY:Agent: file ISSUE tickets under #346 (capacity/WIP, timeboxing, focus tracker, goal tracker)
-DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
-END:VEVENT
-BEGIN:VEVENT
-UID:devorg-3-20261108@devin-bundle
-DTSTAMP:20261107T203000Z
-DTSTART:20261108T170000Z
-DTEND:20261108T200000Z
-SUMMARY:Agent: implement meso capacity/WIP view over roadmap-board --json
-DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
-END:VEVENT
-BEGIN:VEVENT
-UID:devorg-4-20261108@devin-bundle
-DTSTAMP:20261107T203000Z
-DTSTART:20261108T140000Z
-DTEND:20261108T150000Z
-SUMMARY:Agent: first real agenda-roteiro run + scheduled-turns wiring + APP.md log
-DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
-END:VEVENT
-BEGIN:VEVENT
-UID:devorg-5-20261108@devin-bundle
-DTSTAMP:20261107T203000Z
-DTSTART:20261108T200000Z
-DTEND:20261108T210000Z
-SUMMARY:Agent: audit + pytest + PR + #346 update
-DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
-END:VEVENT
-END:VCALENDAR
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//devin-bundle//agenda-roteiro//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:devorg-1-20261108@devin-bundle
+DTSTAMP:20261107T203000Z
+DTSTART:20261108T120000Z
+DTEND:20261108T123000Z
+SUMMARY:Human: configure [gcal] credentials in credentials.toml
+DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
+END:VEVENT
+BEGIN:VEVENT
+UID:devorg-2-20261108@devin-bundle
+DTSTAMP:20261107T203000Z
+DTSTART:20261108T123000Z
+DTEND:20261108T140000Z
+SUMMARY:Agent: file ISSUE tickets under #346 (capacity/WIP, timeboxing, focus tracker, goal tracker)
+DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
+END:VEVENT
+BEGIN:VEVENT
+UID:devorg-3-20261108@devin-bundle
+DTSTAMP:20261107T203000Z
+DTSTART:20261108T170000Z
+DTEND:20261108T200000Z
+SUMMARY:Agent: implement meso capacity/WIP view over roadmap-board --json
+DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
+END:VEVENT
+BEGIN:VEVENT
+UID:devorg-4-20261108@devin-bundle
+DTSTAMP:20261107T203000Z
+DTSTART:20261108T140000Z
+DTEND:20261108T150000Z
+SUMMARY:Agent: first real agenda-roteiro run + scheduled-turns wiring + APP.md log
+DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
+END:VEVENT
+BEGIN:VEVENT
+UID:devorg-5-20261108@devin-bundle
+DTSTAMP:20261107T203000Z
+DTSTART:20261108T200000Z
+DTEND:20261108T210000Z
+SUMMARY:Agent: audit + pytest + PR + #346 update
+DESCRIPTION:Plan: .devin/plans/2026-11-08-dev-org-ladder-plan.md - issue #346
+END:VEVENT
+END:VCALENDAR
