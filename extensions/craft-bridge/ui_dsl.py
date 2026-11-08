@@ -607,6 +607,13 @@ def _write_output(path, text, force):
 
 
 def main(argv=None):
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     ap = argparse.ArgumentParser(description="ui_dsl — line UI DSL v%d" %
                                  DSL_VERSION)
     sub = ap.add_subparsers(dest="cmd", required=True)

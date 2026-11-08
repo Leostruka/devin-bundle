@@ -65,6 +65,13 @@ def _run_op(cmd):
 def worker_main():
     """stdin/stdout JSON-line worker (parent-managed lifetime)."""
     os.environ.pop("CU_SESSION", None)  # ops must not re-route
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     for line in sys.stdin:
         try:
             env = json.loads(line)

@@ -243,6 +243,13 @@ def _handle(msg):
 
 
 def main():
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     for line in sys.stdin:
         line = line.strip()
         if not line:
