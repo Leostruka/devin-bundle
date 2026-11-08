@@ -397,3 +397,23 @@ def test_split_ids_strips_prose_tail(tmp_path):
         "# x\n\nstatus: open\nblocked_by: M2-01 - pending review\n")
     issues = {i["key"]: i for i in rb.build_model(str(tmp_path))}
     assert "M2-01" in issues["X9"]["blocked_by"]
+
+
+def test_site_issues_excludes_archived_efforts(tmp_path):
+    """Site issue ledger applies the same ARCHIVED exclusion as
+    roadmap-board (was counting all 20 archived efforts - 190 vs 97)."""
+    _mk(tmp_path, ".devin/scratch/dead-effort/README.md",
+        "# dead\n\nStatus: ARCHIVED\n")
+    _mk(tmp_path, ".devin/scratch/dead-effort/issues/D1.md",
+        "# d\n\nstatus: open\n")
+    _mk(tmp_path, ".devin/scratch/live-effort/issues/L1.md",
+        "# l\n\nstatus: open\n")
+    spec = importlib.util.spec_from_file_location(
+        "site_build_x", os.path.join(
+            os.path.dirname(__file__), "..", "site", "build.py"))
+    site = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site)
+    site.ROOT = str(tmp_path)
+    groups = site.collect_issues()
+    keys = [i["file"] for g in groups for i in g["items"]]
+    assert keys == ["L1.md"]

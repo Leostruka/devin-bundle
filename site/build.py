@@ -322,8 +322,11 @@ def collect_issues():
                                            if i["status"] == "resolved"),
                            "items": items})
     base = os.path.join(ROOT, ".devin", "scratch")
+    archived = set(status_vocab.archived_efforts(ROOT))
     if os.path.isdir(base):
         for grp in sorted(os.listdir(base)):
+            if grp in archived:
+                continue
             idir = os.path.join(base, grp, "issues")
             if not os.path.isdir(idir):
                 continue

@@ -13,6 +13,9 @@ Layers:
   IN_FLIGHT  - claimed/in-progress (excluded from claimable frontier)
 """
 
+import os
+import re
+
 DONE = {
     "resolved", "done", "completed", "complete", "closed", "merged",
     "shipped", "implemented", "landed",
@@ -49,6 +52,40 @@ def is_claimable(status):
     if is_terminal(n) or n in NON_ACTIONABLE or n in IN_FLIGHT:
         return False
     return True
+
+
+# Archived-effort detection (issue #406): scratch/<effort>/README.md
+# must carry a real `Status: ARCHIVED` field - the word ARCHIVED
+# in prose must NOT archive the effort (review finding: false
+# positives silently dropped open issues from the board).
+_ARCHIVED_RE = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?\*{0,2}status\*{0,2}:?\*{0,2}"
+    r"\s*[:=]?\s*archived\b")
+
+
+def effort_archived(root, effort):
+    if effort == "issues":
+        return False
+    readme = os.path.join(root, ".devin", "scratch", effort, "README.md")
+    try:
+        text = open(readme, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return False
+    return bool(_ARCHIVED_RE.search(text))
+
+
+def archived_efforts(root):
+    """Scratch efforts marked ARCHIVED - their issues are excluded from
+    live surfaces (roadmap-board, site issue ledger) so completed
+    rounds stop inflating counts."""
+    out = []
+    scratch = os.path.join(root, ".devin", "scratch")
+    if not os.path.isdir(scratch):
+        return out
+    for effort in sorted(os.listdir(scratch)):
+        if effort_archived(root, effort):
+            out.append(effort)
+    return out
 
 
 if __name__ == "__main__":

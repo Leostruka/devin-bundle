@@ -1536,8 +1536,8 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "14E7DA697BA277AC857756A58433FBFE71F9F33A682528717D5EBD859BB35818",
-      "exported_at": "2026-11-08T10:18:51.569605"
+      "export_hash": "CDE5B4C2F85D268CF04FDB7E40629C9956A34B124705CC663F5F8C9D6F7DFB01",
+      "exported_at": "2026-11-08T10:42:48.417376"
     },
     {
       "name": "session-start.py",
@@ -1566,8 +1566,8 @@
     {
       "name": "status_vocab.py",
       "purpose": "Shared issue-status vocabulary (done/terminal/non-actionable/in-flight) for roadmap-board and site/build - issues #405/#407",
-      "export_hash": "2A95692697F821E0856FBF0BA69A6162B79DA02D61C82FAD80A36275B4173CFF",
-      "exported_at": "2026-11-08T08:50:55.845199"
+      "export_hash": "AA30EA49C9C635AE7E21CDAA3ABF7E405EB9E102083FE463FFFD93E69F20B118",
+      "exported_at": "2026-11-08T10:42:48.418088"
     },
     {
       "name": "stop-guard.py",
