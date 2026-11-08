@@ -216,3 +216,15 @@ first, deterministic fallback when the daemon is down.
     uniform abstention on trajectory/structured state).
   Production mode remains OFF everywhere; deterministic checks
   stay authoritative.
+
+  ## deadline_exceeded root cause + warmup fix (2026-11-09 PM)
+  Frozen manifests show 20 deadline misses across 16 manifests -
+  16/20 at case index 0: first-request cold latency (~>1s CPU)
+  eats the 1000ms deadline_ms budget; steady state ~200ms.
+  New laya_worker.warm_engine() runs one throwaway prediction at
+  startup (serve-stdio AND layad serve_socket), absorbing cold
+  cost before serving; diag reports warmup ms. Live-verified:
+  post-warmup first request -> suggestion (was deadline_exceeded).
+  Residual misses (ui-target idx 1/6/10, filebool idx 14) are
+  large-candidate-set outliers, not cold start - watch if they
+  recur in production captures.

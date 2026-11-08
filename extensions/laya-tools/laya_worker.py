@@ -261,6 +261,27 @@ def serve(reader, writer, engine, config):
         writer.flush()
 
 
+def warm_engine(engine, config):
+    """Run one throwaway prediction so first-request cold latency
+    (~>1s on CPU) does not eat a consumer's deadline_ms budget.
+    Best-effort: never raises, never blocks serving on failure."""
+    started = time.monotonic()
+    try:
+        recommend({
+            "version": dc.VERSION,
+            "request_id": "warmup",
+            "profile": "issue-category-v1",
+            "mode": "off",
+            "state": {"goal": "warmup"},
+            "candidates": [{"id": "warmup"}],
+            "deadline_ms": 60000,
+        }, engine, ((config or {}).get("calibration") or None),
+            assist_ok=False, model=((config or {}).get("model") or None))
+    except Exception:
+        pass
+    return (time.monotonic() - started) * 1000
+
+
 def main(config_path=None):
     dc.pin_stdio_utf8()
     cfg = dc.load_config(config_path)
@@ -279,7 +300,10 @@ def main(config_path=None):
     except RuntimeError as e:
         print(json.dumps({"ok": False, "error": str(e)}))
         return 1
-    _diag("engine loaded; serving stdio")
+    # Warm the engine once so the first real request does not eat
+    # cold-start latency inside its deadline_ms budget.
+    warm_ms = warm_engine(engine, cfg)
+    _diag("engine loaded; warmup %.0fms; serving stdio" % warm_ms)
     serve(sys.stdin, sys.stdout, engine, cfg)
     return 0
 
