@@ -12,15 +12,16 @@
     "hf_repo": "convaiinnovations/laya",
     "hf_revision": "7b928d828b7b0e022f929d9bd2e44165aa270148",
     "local_snapshot": "%USERPROFILE%\\.cache\\huggingface\\hub\\models--convaiinnovations--laya\\snapshots\\7b928d828b7b0e022f929d9bd2e44165aa270148",
+    "vendored_path": "D:\\Programing\\ai_workspace\\devin-bundle\\.devin\\laya\\models\\english",
     "artifact_sha256": "54f695651fcf10da8a23003899ba646932c877b87e8b69d88d63ee92e1c58aab",
     "model_safetensors_sha256": "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c",
     "identity_observed_in_manifests": "english",
-    "vendoring_note": "HF cache path is fragile (cache clean = model_path_missing). Before activation, copy the snapshot to a stable path (e.g. .devin/laya/models/english/) preserving relative layout - _artifact_sha256 is content+relpath based so the digest is unchanged by the move."
+    "vendoring_note": "DONE 2026-11-09: snapshot copied (symlinks dereferenced) to .devin/laya/models/english/ (gitignored, ~843MB). Vendored dir re-hashes to the identical artifact_sha256 - content+relpath digest is move-invariant. Re-vendor from the HF snapshot if the dir is ever cleaned."
   },
   "delta": {
     "models": {
       "english": {
-        "path": "<stable vendored path - see vendoring_note>",
+        "path": "D:\\Programing\\ai_workspace\\devin-bundle\\.devin\\laya\\models\\english",
         "sha256": "54f695651fcf10da8a23003899ba646932c877b87e8b69d88d63ee92e1c58aab",
         "identity": "english"
       }
