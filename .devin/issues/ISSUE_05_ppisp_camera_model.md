@@ -35,7 +35,8 @@ Status: in-progress · Source: transcript (user-provided) + NVIDIA `nv-tlabs/ppi
 ## Progress (2026-11-09 audit)
 
 - Landed: `extensions/ppisp-prep/` (photo_qc.py, ppisp_runner.py) + tests/test_ppisp_prep.py (10 tests, green) + ai3d-gen SKILL.md intake wiring (step 3)
-- Pending: step 4 held-out check (Rule 15) - fresh capture set, reconstruction-quality delta
+- DONE 2026-11-09 (partial): `photo_qc.py` live-verified on real captures - scan series `_scan_h*.jpg` (7 same-session webcam frames) -> verdict `go` (exposure spread 0.005, wb 0.0, vignette 0.004); mixed 30-image dir -> `correct` (exposure 0.137, vignette 0.131 - moderate drift correctly flagged). Thresholds behave as documented on real data
+- Pending: step 4 held-out check (Rule 15) - fresh capture set, reconstruction-quality delta; ppisp_runner end-to-end needs upstream nv-tlabs/ppisp clone + env
 
 ## Non-goals
 
