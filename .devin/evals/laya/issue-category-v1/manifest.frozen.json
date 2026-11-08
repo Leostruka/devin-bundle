@@ -1,0 +1,1349 @@
+{
+  "version": 1,
+  "frozen": true,
+  "eval": "issue-category-v1-cal-01",
+  "profile": "issue-category-v1",
+  "captured_at": "2026-11-08T16:27:03Z",
+  "config_sha256": "82bc6c0312f906a2bbf176c15730cbb4173c0457b9ee34f1673b53930fa6bd00",
+  "cases": [
+    {
+      "case_id": "ic-001",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-001",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "gcal apply crashes with AttributeError when a schedule block is a string instead of a dict - traceback at block.get('task')"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-001",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": null,
+        "raw_top_probability": null,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "deadline_exceeded",
+        "model_identity": "none",
+        "profile_version": "issue-category-v1"
+      }
+    },
+    {
+      "case_id": "ic-002",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-002",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "free-busy counts all-day events as busy for the whole day, blocking every free slot calculation"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-002",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.197,
+        "raw_top_probability": 0.197,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-003",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-003",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "transcribe.py returns ok:true with empty segments for mp4 input - whisper.cpp only demuxes wav/mp3 directly"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-003",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.2624,
+        "raw_top_probability": 0.2624,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-004",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-004",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "composite.py exits 0 even when ffmpeg fails and the output file is never written"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-004",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.1967,
+        "raw_top_probability": 0.1967,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-005",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-005",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "plan_check accepts counter visual with prop 'value' instead of 'to', then remotion render crashes mid-composition"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-005",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.7228,
+        "raw_top_probability": 0.7228,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-006",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-006",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "on Windows, subprocess output with accented filenames mojibakes because text=True decodes cp1252"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-006",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1513,
+        "raw_top_probability": 0.1513,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-007",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-007",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "stock-footage --out silently truncates an existing file instead of refusing the overwrite"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-007",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.2421,
+        "raw_top_probability": 0.2421,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-008",
+      "gold": "bug",
+      "request": {
+        "version": 1,
+        "request_id": "ic-008",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "audit.py reports ALL CHECKS PASSED but check [9] crashed internally and was skipped"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-008",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.5291,
+        "raw_top_probability": 0.5291,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-009",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-009",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "add a --wip-limit flag to roadmap-board capacity view to cap in-flight issues per effort"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-009",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.5845,
+        "raw_top_probability": 0.5845,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-010",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-010",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "support CalDAV backend for gcal apply so users without Google OAuth can still write events"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-010",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.469,
+        "raw_top_probability": 0.469,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-011",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-011",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "add focus-session tracking: start/stop timer that logs intervals to a jsonl ledger for later review"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-011",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.6261,
+        "raw_top_probability": 0.6261,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-012",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-012",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "photo_qc should suggest recapture when EXIF shows the image came from a screen capture not a camera"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-012",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.2621,
+        "raw_top_probability": 0.2621,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-013",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-013",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "composite.py could accept a --mix option to blend overlay audio with narration instead of dropping it"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-013",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.7015,
+        "raw_top_probability": 0.7015,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-014",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-014",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "eval_set.py should report per-class precision/recall, not just overall accuracy"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-014",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.5083,
+        "raw_top_probability": 0.5083,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-015",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-015",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "roadmap-board markdown output should include a weekly burndown section"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-015",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.4114,
+        "raw_top_probability": 0.4114,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-016",
+      "gold": "enhancement",
+      "request": {
+        "version": 1,
+        "request_id": "ic-016",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "add PT-BR language detection warning to transcribe output when lang is auto-detected"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-016",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.4824,
+        "raw_top_probability": 0.4824,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-017",
+      "gold": "needs_info",
+      "request": {
+        "version": 1,
+        "request_id": "ic-017",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "the tool is broken, please fix"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-017",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.6976,
+        "raw_top_probability": 0.6976,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-018",
+      "gold": "needs_info",
+      "request": {
+        "version": 1,
+        "request_id": "ic-018",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "calendar sync doesn't work sometimes"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-018",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.6018,
+        "raw_top_probability": 0.6018,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-019",
+      "gold": "needs_info",
+      "request": {
+        "version": 1,
+        "request_id": "ic-019",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "render is slow on my machine"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-019",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.3517,
+        "raw_top_probability": 0.3517,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-020",
+      "gold": "needs_info",
+      "request": {
+        "version": 1,
+        "request_id": "ic-020",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "audit fails for me but works for you"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-020",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.5565,
+        "raw_top_probability": 0.5565,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-021",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "ic-021",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "should we add dark mode to the site? also the build is failing on my branch"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-021",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.3569,
+        "raw_top_probability": 0.3569,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-022",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "ic-022",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "how do I install the bundle on Linux?"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-022",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.303,
+        "raw_top_probability": 0.303,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-023",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "ic-023",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "the overwrite guard broke my script that relied on --out replacing files - is that intended?"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-023",
+        "outcome": "suggestion",
+        "candidate_id": "bug",
+        "context": {},
+        "raw_confidence": 0.5878,
+        "raw_top_probability": 0.5878,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "ic-024",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "ic-024",
+        "profile": "issue-category-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "feature request: make everything faster and also fix the crash when input is empty"
+        },
+        "candidates": [
+          {
+            "id": "bug",
+            "role": "defect",
+            "name": "Bug",
+            "scope": "existing behavior is broken, crashes, produces wrong output, or violates its contract"
+          },
+          {
+            "id": "enhancement",
+            "role": "feature",
+            "name": "Enhancement",
+            "scope": "new capability, improvement, or additional option for working behavior"
+          },
+          {
+            "id": "needs_info",
+            "role": "triage",
+            "name": "Needs info",
+            "scope": "report lacks repro, expected vs actual, environment, or enough detail to act"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "ic-024",
+        "outcome": "suggestion",
+        "candidate_id": "enhancement",
+        "context": {},
+        "raw_confidence": 0.7359,
+        "raw_top_probability": 0.7359,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "issue-category-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    }
+  ]
+}

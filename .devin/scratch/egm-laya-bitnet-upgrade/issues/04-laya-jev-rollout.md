@@ -34,6 +34,16 @@ first, deterministic fallback when the daemon is down.
 ## Open
 
 - Calibration evidence (G5) before enabling `shadow`/`assist`.
+  **First run landed 2026-11-09**: issue-category-v1, 24 maintainer-
+  labeled cases through the real worker (shadow config, production
+  profile untouched). Result: accuracy 0.684 / coverage 0.792 /
+  abstain_precision 0.20 - BELOW assist threshold. Failure modes:
+  abstain bias on terse technical text, needs_info blindness
+  (surface bug semantics beat triage convention), __none__ misses on
+  multi-intent text. Evidence + reproduce steps:
+  `.devin/evals/laya/issue-category-v1/`. No calibration block
+  written; mode stays `off`. Next: second annotator pass on the
+  needs_info golds + more cases per profile before re-eval.
 - Adding `review-risk-v1` to `profile.json.profiles` when calibrated.
 - BitNet adapter evaluation as a decision backend (`ai-tools/`).
   Measured 2026-11-09 (runtime at
