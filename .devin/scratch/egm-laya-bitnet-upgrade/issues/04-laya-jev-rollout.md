@@ -124,3 +124,16 @@ first, deterministic fallback when the daemon is down.
   candidate - still needs the standard calibration block (threshold,
   checkpoint digest, eval id); NOT enabled by this run.
   Artifacts: `.devin/evals/laya/knowledge-label-v1/`.
+  **media-intent-v1 BREAKTHROUGH same day** (5 labels, live consumer
+  media-tools/intent.py): first genuinely viable profile - run01
+  acc 1.000/cov 0.813, run02 acc 0.938/cov 0.667 (28/29 decided
+  correct). Works because intents are distinct workflow destinations
+  matched on natural-language state - the checkpoint's strength.
+  Platt fit on frozen replies: a=23.1982 b=-13.1611, thr 0.9 ->
+  27/29 adopted at 1.000 (same-data). HELD-OUT run03 (20 fresh
+  cases): acc 0.857, adopted@0.9 = 9/10 (0.90) - fit was optimistic;
+  one complaint ("the video looks weird") adopted wrongly at conf
+  0.945 and platt saturates so no threshold separates it. Verdict:
+  only viable assist candidate, shadow-only pending more held-out
+  evidence + non-saturating map + deliberate activation steps.
+  Artifacts: `.devin/evals/laya/media-intent-v1/` (3 runs).
