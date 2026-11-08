@@ -13,3 +13,8 @@ Each subdirectory is an archived or pending effort. If an effort is no longer ac
 - `akita-harness-loop-simplification` — archived idea stub.
 - `devin-cli-3000.6.14-alignment` — archived alignment notes.
 - `modular-atomic-action-modes` — archived design stub.
+
+Completed efforts carry `Status: ARCHIVED` in their own README.md;
+`roadmap-board.py` excludes them from the live frontier. Sweep
+2026-11-08 archived: audit-r1..r6, reels-2..5, computer-use-staged-upgrades,
+agentcraft-rts(+v2), general-audit, 3d_sources, cu-perception, cu-realtime.

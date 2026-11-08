@@ -288,7 +288,8 @@ def _issue_items(idir):
         def _field(*names):
             for name in names:
                 m = re.search(
-                    rf"^(?:-\s*)?\*{{0,2}}{name}\*{{0,2}}:\s*(.+?)\s*$",
+                    rf"^(?:-\s*)?\*{{0,2}}{name}\*{{0,2}}:?\*{{0,2}}"
+                    rf"\s*[:=]?\s*(.+?)\s*$",
                     text, re.M | re.I)
                 if m:
                     return m.group(1).strip()

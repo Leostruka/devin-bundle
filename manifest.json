@@ -1339,8 +1339,8 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "d2b17db177e4677d921fd6900b2dd559364877d9acfb5862efcf91b27cec02b8",
-      "exported_at": "2026-09-18T20:22:05.262464"
+      "export_hash": "FA787E2C738057E7CD12522121FE1B1FAC715731C39604D873DBBFC2DF5D7ECB",
+      "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
       "name": "architecture-gate.py",
@@ -1400,15 +1400,15 @@
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "2df1eb88de3e90c37022c896e19cc6558bd86fc79247e8d902d4e8c948a8d21d",
-      "exported_at": "2026-11-07T14:17:08.896323"
+      "export_hash": "477F844DB2C1D274247869B16EC77A2A798F86861928F51F4AE0A0BFE854D572",
+      "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
       "name": "dep-audit.py",
       "source": "devin-bundle",
       "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
-      "export_hash": "75e08d61e7e5dd9753d14bc0eab9b754482c4242db5851fc4266694ce3978630",
-      "exported_at": "2026-11-07T14:17:08.896323"
+      "export_hash": "63751AB25441291944347CBFFB97E7AC37E54D859A57ECAC3701B95DB1B60437",
+      "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
       "name": "design-lint-gate.py",
@@ -1530,8 +1530,8 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "C5F2802E16490EAE553071C412AE17901DC793F21A58B626E7DC040C1798EB5C",
-      "exported_at": "2026-11-08T08:50:55.845199"
+      "export_hash": "17EAF6ADFA30689BC8B3A4644FE7058E0056CA414466C73DDD37C590880AFF1B",
+      "exported_at": "2026-11-08T09:25:24.978371"
     },
     {
       "name": "session-start.py",

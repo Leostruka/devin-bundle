@@ -255,6 +255,49 @@ def test_status_vocab_parity_with_site(tmp_path):
     assert j["status"] != "resolved"
 
 
+def test_archived_effort_excluded(tmp_path, capsys):
+    """Issue #406: scratch/<effort>/README.md 'Status: ARCHIVED'
+    removes that effort's issues from the live board."""
+    _mk(tmp_path, ".devin/scratch/dead-effort/README.md",
+        "# dead-effort\n\nStatus: ARCHIVED\n\nDone.\n")
+    _mk(tmp_path, ".devin/scratch/dead-effort/issues/D1.md",
+        "# dead one\n\nstatus: open\n")
+    _mk(tmp_path, ".devin/scratch/live-effort/issues/L1.md",
+        "# live one\n\nstatus: open\n")
+    issues = rb.build_model(str(tmp_path))
+    assert [i["key"] for i in issues] == ["L1"]
+    assert rb.archived_efforts(str(tmp_path)) == ["dead-effort"]
+
+    out = io.StringIO()
+    with redirect_stdout(out):
+        rb.main(["--root", str(tmp_path), "--json"])
+    data = json.loads(out.getvalue())
+    assert data["summary"]["archived_efforts"] == ["dead-effort"]
+    assert data["summary"]["archived_issues"] == 1
+    assert data["summary"]["total"] == 1
+
+    out = io.StringIO()
+    with redirect_stdout(out):
+        rb.main(["--root", str(tmp_path)])
+    assert "Archived efforts excluded: 1 issues" in out.getvalue()
+
+
+def test_bold_status_field_variants(tmp_path):
+    """'- **Status**: x' and '**Status:** x' parse like 'Status: x'."""
+    _mk(tmp_path, ".devin/issues/A.md",
+        "# A\n\n- **Status**: resolved\n")
+    _mk(tmp_path, ".devin/issues/B.md",
+        "# B\n\n**Status:** resolved\n")
+    _mk(tmp_path, ".devin/issues/C.md",
+        "# C\n\n- **Status**: open\n")
+    issues = rb.build_model(str(tmp_path))
+    by_key = {i["key"]: i for i in issues}
+    assert by_key["A"]["done"] is True
+    assert by_key["B"]["done"] is True
+    assert by_key["C"]["done"] is False
+    assert by_key["C"]["status"] == "open"
+
+
 def test_capacity_in_json_and_md(tmp_path, capsys):
     _fixture(tmp_path)
     out = io.StringIO()
