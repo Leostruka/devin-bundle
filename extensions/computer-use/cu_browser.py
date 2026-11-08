@@ -955,7 +955,8 @@ def _kill_pid(pid):
     effort success; False when the kill itself failed."""
     if os.name == "nt":
         r = subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"],
-                           capture_output=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                           capture_output=True, timeout=10,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         return r.returncode == 0
     try:
         os.kill(pid, 15)

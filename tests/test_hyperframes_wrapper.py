@@ -97,3 +97,12 @@ def test_render_runs_with_fake_invoker(capsys, monkeypatch):
     assert code == 0
     assert env["status"] == "ok"
     assert "rendered" in env["stdout"]
+
+
+def test_flag_value_starting_with_dash_rejected(capsys):
+    """`--fps --output x` must not swallow --output as the fps value."""
+    code, env = _run(capsys, "render", "proj/", "--fps", "--output",
+                     "out.mp4")
+    assert code == 2
+    assert env["status"] == "rejected"
+    assert "missing value" in env["stderr"]

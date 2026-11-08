@@ -222,6 +222,21 @@ def test_response_is_valid_recommendation():
     assert dc.validate_recommendation(replies[0], REQ) == []
 
 
+# --- warm_engine ---------------------------------------------------------------
+
+def test_warm_engine_returns_ms_and_never_raises():
+    class BrokenEngine:
+        def predict(self, *a, **k):
+            raise RuntimeError("boom")
+    ms = laya_worker.warm_engine(BrokenEngine(), {"mode": "shadow"})
+    assert isinstance(ms, float) and ms >= 0
+
+
+def test_warm_engine_swallows_missing_predict():
+    ms = laya_worker.warm_engine(object(), {})
+    assert isinstance(ms, float) and ms >= 0
+
+
 # --- load_engine ---------------------------------------------------------------
 
 def test_load_engine_missing_model_path(tmp_path):

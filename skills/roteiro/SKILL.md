@@ -18,16 +18,32 @@ Tasks JSON: `[{"name": "...", "minutes": N, "priority": 1..5}]`
 `.devin/apps/*/APP.md` prompts, or the user's explicit list.
 
 Calendar: `python extensions/gcal/wrapper.py free-busy` returns
-`{busy, free_slots}` from Google Calendar (read-only), or `--ics FILE`
-for local iCal files when credentials are absent.
+`{status, source, busy, free_slots, all_day?}` - Google Calendar by
+default, `--caldav` for CalDAV servers (iCloud, Fastmail, Nextcloud,
+Radicale), or `--ics FILE` / `--ics-url URL` for iCal feeds when
+credentials are absent (Google Calendar "secret address in iCal
+format" works read-only). `all_day` lists informational all-day events
+(reminders/holidays) that do NOT block slots - only `busy` (timed,
+non-transparent) does. ics sources may under-report recurring events:
+RRULE is counted (`recurring_events` + `hint` in output) but not
+expanded - each recurring VEVENT contributes only its first instance.
+TZID parameters are honored via zoneinfo (needs system tzdata or
+`pip install tzdata`; unresolved TZIDs warn and assume UTC).
 
 ## Run
 
 ```sh
 python extensions/gcal/wrapper.py free-busy --ics cal.ics \
   --from 2026-11-06T08:00:00Z --to 2026-11-06T20:00:00Z
+python extensions/gcal/wrapper.py free-busy --caldav \
+  --from 2026-11-08T12:00:00Z --to 2026-11-08T21:00:00Z
 python extensions/gcal/wrapper.py plan --tasks tasks.json --ics cal.ics
 ```
+
+`--caldav` reads all calendars via calendar-query REPORT (busy =
+non-TRANSPARENT VEVENTs); `--calendars name[,name]` filters by
+display-name. CalDAV credentials: `BUNDLE_CALDAV_URL/USER/PASSWORD` env
+or `[caldav]` in credentials.toml - app passwords, no OAuth.
 
 `plan` prints `roteiro`: `{schedule:[{task,start,end}], unscheduled,
 slack_min, overcommit}`.
@@ -35,8 +51,8 @@ slack_min, overcommit}`.
 ## Rules
 
 - **Never fabricate availability.** If `free-busy` returns `missing`
-  (no credentials), say so and offer the `--ics` path or ask the user
-  for the day's constraints manually.
+  (no credentials on any backend), say so and offer the `--ics` path
+  or ask the user for the day's constraints manually.
 - **Atomic blocks.** A task fits whole or goes to `unscheduled`; do not
   hand-split tasks to make the plan look fuller.
 - **Overcommit is a finding, not a failure.** Report what slips and by
@@ -59,9 +75,13 @@ The agent can write, never silently:
 - Writes default to the dedicated `AGdevin` calendar: find-or-create
   on first write, reused after - agent events stay isolated from the
   account's other calendars. `--calendar primary` or a raw id
-  overrides.
-- Writes need the refresh token to carry `calendar.events` scope; a
-  scope/HTTP failure surfaces as `status: error`, never fake success.
+  overrides (Google); on CalDAV, `--calendar` matches a display-name
+  or creates the collection.
+- Backend flag: `--caldav` routes free-busy/add/apply to the CalDAV
+  client (same `--confirm` gate, same AGdevin default).
+- Google writes need the refresh token to carry `calendar.events`
+  scope; CalDAV writes use the app password. Auth/scope/HTTP failures
+  surface as `status: error`, never fake success.
 
 ## Done when
 

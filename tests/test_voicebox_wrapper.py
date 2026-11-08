@@ -115,3 +115,25 @@ def test_vb_host_allows_localhost_override(monkeypatch, capsys):
     code, env = run_main(["doctor"], capsys)
     assert code == 0
     assert captured["url"].startswith("http://localhost:9999")
+
+
+def test_generate_refuses_overwrite(monkeypatch, capsys, tmp_path):
+    out_file = tmp_path / "exists.wav"
+    out_file.write_bytes(b"old")
+    called = []
+
+    def fake_urlopen(req, timeout=None):
+        called.append(req.full_url)
+        return FakeResp(status=200, body=b"RIFF")
+
+    monkeypatch.setattr(wrapper.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.delenv("VB_HOST", raising=False)
+
+    code, env = run_main(
+        ["generate", "--text", "hi", "--voice", "n",
+         "--out", str(out_file)], capsys)
+    assert code == 2
+    assert env["status"] == "error"
+    assert "out_exists" in env["error"]
+    assert called == []  # fails before the synthesis call
+    assert out_file.read_bytes() == b"old"

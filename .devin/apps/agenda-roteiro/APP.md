@@ -13,4 +13,6 @@ Fetch free/busy: `python extensions/gcal/wrapper.py free-busy [--calendars ids] 
 
 ## Run log
 
+- 2026-11-08 first REAL run: Google OAuth (oauth_setup.py -> credentials.toml [gcal], 3 scopes incl. calendar.calendars) -> Calendar API enabled -> `free-busy` source=api (all-day "Mensalidade united" reported informational, timed busy=[]) -> `plan` over slots.json -> `apply --confirm` created AGdevin calendar + 4 events, all confirmed, 0 failed. Roteiro: .devin/scratch/dev-org-ladder/roteiro.json. Found+fixed: freeBusy endpoint counted all-day events as full-day busy -> switched to events.list; apply crashed on plan envelope -> unwrap fix.
+- 2026-11-08 PM first MONDAY run (for 2026-11-09): `free-busy` api source=ok, busy=[] -> slots-2026-11-09.json (09-12 + 14-18 BRT work windows) -> `plan --slots` over tasks-2026-11-09.json (3 tasks: #395/#409/#413, #396/#397/#398, #411) -> roteiro-2026-11-09.json: all scheduled, 0 unscheduled, slack 30min, overcommit=false. Scheduled-turns prompt written: `.devin/scheduled/agenda-roteiro.md` (OS registration is user-run per skill guards).
 - (first real run pending credentials; --ics dev mode verified 2026-11-06)

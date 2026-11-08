@@ -96,6 +96,7 @@ def run(images_dir, out_dir, steps=None, extra=None):
         timeout = 3600
     try:
         p = subprocess.run(argv, cwd=up, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace",
                            timeout=timeout,
                            creationflags=getattr(
                                subprocess, "CREATE_NO_WINDOW", 0))
@@ -118,11 +119,11 @@ def main(argv=None):
     pr.add_argument("--steps", type=int)
     args = ap.parse_args(argv)
     if args.cmd == "doctor":
-        print(json.dumps(doctor(), indent=2))
+        res = doctor()
     else:
-        print(json.dumps(run(args.images_dir, args.out, args.steps),
-                         indent=2))
-    return 0
+        res = run(args.images_dir, args.out, args.steps)
+    print(json.dumps(res, indent=2))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

@@ -52,11 +52,27 @@ turn — prune harder than the body.
    (separate file behind a pointer). Inline what every branch needs; disclose
    what only some branches reach.
 
+## Rehearsal gate (visual artifacts)
+
+Skills that produce visual output (animations, mockups, UI stills)
+verify by artifact, not only by tests. Declare before building:
+
+- a deterministic fault checklist the deliverable must pass
+  (per-frame contact sheet, loop seam, target widths, contrast rules);
+- a mandatory handover artifact naming the source example copied,
+  what changed, and what was NOT checked;
+- a fresh-eye review pass before declaring done.
+
+Prior art: `stageshow` in benjitaylor/skills (external install via
+`npx skills add`; unvendored - no license). Issue #428.
+
 ## Quality checklist (before commit)
 
 - `name`/`description` per spec; discovery keywords in description.
 - Devin-native tools and paths only; no non-Devin platform leakage.
 - Subagent profiles per Rule 20 (`researcher`, never `subagent_explore`).
 - Python for cross-platform helper scripts.
+- Visual-output skills declare their artifact gate (fault checklist +
+  handover doc + fresh-eye pass).
 - No AI signatures.
 - Pressure-tested with subagents where compliance matters.

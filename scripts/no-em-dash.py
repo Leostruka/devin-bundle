@@ -125,7 +125,8 @@ def extract_flag_file(command, flags, short_f=True):
 
 DIFF_FILE_RE = re.compile(r"^\+\+\+ b/(.*)$")
 
-VENDORED_PREFIX_RE = re.compile(r"^extensions/[^/]+/data/")
+VENDORED_PREFIX_RE = re.compile(
+    r"^(?:extensions/[^/]+/data/|.*/node_modules/|node_modules/)")
 
 
 def _is_vendored(path):

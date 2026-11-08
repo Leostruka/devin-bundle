@@ -40,7 +40,8 @@ def probe(mp4, ffprobe=None):
         out = subprocess.run(
             [exe, "-v", "error", "-print_format", "json",
              "-show_streams", "-show_format", mp4],
-            capture_output=True, text=True, timeout=60)
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=60)
     except subprocess.TimeoutExpired:
         raise ValueError("ffprobe timed out after 60s")
     if out.returncode != 0:

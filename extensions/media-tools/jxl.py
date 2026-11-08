@@ -78,6 +78,7 @@ def _missing(what):
 
 def _run(argv, timeout=300):
     p = subprocess.run(argv, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace",
                        timeout=timeout, creationflags=_NO_WINDOW)
     return p
 

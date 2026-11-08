@@ -181,7 +181,7 @@ def main():
         sys.exit(0)
 
     state = {
-        "goal": "",
+        "goal": "classify the risk class of this shell command",
         "snippets": cmd + "\n\ncwd: " + os.getcwd()
                     + "\nshell: " + ("powershell" if os.name == "nt"
                                    else "bash"),

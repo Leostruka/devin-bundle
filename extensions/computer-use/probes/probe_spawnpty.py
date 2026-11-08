@@ -79,7 +79,8 @@ me = os.getpid()
 out = subprocess.run(
     ["powershell", "-NoProfile", "-Command",
      f"Get-CimInstance Win32_Process -Filter \"ParentProcessId={me}\" | Select-Object ProcessId,Name | Format-Table -HideTableHeaders | Out-String"],
-    capture_output=True, text=True, timeout=15)
+    capture_output=True, text=True, encoding="utf-8", errors="replace",
+    timeout=15)
 print("children of python:", out.stdout.strip())
 
 # NOTA: mantemos os ends do lado do pty abertos nesta build —

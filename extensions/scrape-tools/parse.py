@@ -43,6 +43,13 @@ def node_to_dict(el):
 
 
 def main():
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     ap = argparse.ArgumentParser(prog="parse.py")
     ap.add_argument("source", help="HTML file path, or '-' for stdin")
     sel = ap.add_mutually_exclusive_group(required=True)

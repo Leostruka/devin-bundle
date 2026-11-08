@@ -36,17 +36,41 @@ def materialize(plan, workdir):
 def render(plan, workdir, dry=True, comp="Plan", out_name="out.mp4",
            timeout=1800):
     workdir = materialize(plan, workdir)
-    cmd = ["npx", "--yes", "remotion", "render", comp,
+    # Windows: npx/npm are .cmd shims - bare names resolve to the
+    # extensionless sh scripts which CreateProcess cannot exec
+    npx = shutil.which("npx.cmd") or shutil.which("npx")
+    cmd = [npx or "npx", "--yes", "remotion", "render", comp,
            str(Path("out") / out_name)]
     result = {"ok": True, "workdir": str(workdir), "cmd": cmd,
               "rendered": False}
     if dry:
         result["note"] = "dry_run:project_materialized"
         return result
-    if not shutil.which("npx"):
+    if not npx:
         return {"ok": False, "error": "npx_missing",
                 "hint": "install Node.js", "workdir": str(workdir)}
+    # fresh workdir has no node_modules - npx remotion render fails
+    # without deps; install once (verified: 244 pkgs ~1min)
+    if not (workdir / "node_modules").is_dir():
+        # Windows: npm is a .cmd shim - bare "npm" resolves to the
+        # extensionless sh script which CreateProcess cannot exec
+        npm = shutil.which("npm.cmd") or shutil.which("npm")
+        if not npm:
+            return {"ok": False, "error": "npm_missing",
+                    "hint": "install Node.js (npm required for deps)",
+                    "workdir": str(workdir)}
+        inst = subprocess.run(
+            [npm, "install", "--no-audit", "--no-fund"], cwd=workdir,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=900,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        if inst.returncode != 0:
+            return {"ok": False, "error": "npm_install_failed",
+                    "stderr": inst.stderr[-2000:],
+                    "workdir": str(workdir)}
+        result["deps_installed"] = True
     p = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace",
                        timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     result.update({"rendered": p.returncode == 0,
                    "stdout": p.stdout[-2000:],
@@ -69,10 +93,10 @@ def main(argv=None):
         print(json.dumps({"ok": False,
                           "error": f"plan unreadable: {e}"}))
         return 2
-    print(json.dumps(render(plan, args.workdir, dry=args.dry,
-                            comp=args.comp, out_name=args.out),
-                     indent=2))
-    return 0
+    res = render(plan, args.workdir, dry=args.dry,
+                 comp=args.comp, out_name=args.out)
+    print(json.dumps(res, indent=2))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

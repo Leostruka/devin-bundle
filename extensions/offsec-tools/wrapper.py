@@ -168,6 +168,7 @@ def run_cmd(argv, timeout=DEFAULT_TIMEOUT):
     t0 = time.time()
     try:
         proc = subprocess.run(argv, capture_output=True, text=True,
+                              encoding="utf-8",
                               timeout=timeout, errors="replace", creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except FileNotFoundError as e:
         return {"ok": False, "status": "missing", "error": str(e),

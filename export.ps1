@@ -86,6 +86,16 @@ function Write-Skip($msg) { Write-Host "    [~] $msg" -ForegroundColor Yellow }
 function Write-Warn($msg) { Write-Host "    [!] $msg" -ForegroundColor Yellow }
 function Write-Err($msg)  { Write-Host "    [x] $msg" -ForegroundColor Red }
 
+# Preflight: fail fast on hosts missing core cmdlets (broken PS5.1 module
+# sets) instead of dying mid-copy (issue #412).
+$requiredCmdlets = 'Get-ChildItem','Copy-Item','Get-Content','Set-Content','Join-Path','Test-Path','Resolve-Path','Get-Date','Write-Host','Get-Command'
+$missingCmdlets = $requiredCmdlets | Where-Object { -not (Get-Command $_ -ErrorAction SilentlyContinue) }
+if ($missingCmdlets) {
+  Write-Host "[x] missing required cmdlets: $($missingCmdlets -join ', ')" -ForegroundColor Red
+  Write-Host "    export.ps1 requires Windows PowerShell 5.1+ or pwsh 7+ with working inbox modules." -ForegroundColor Red
+  exit 1
+}
+
 # --- Helpers ---
 
 function Get-FolderHash($path, $exclude = $null) {
@@ -121,7 +131,10 @@ function Copy-FilteredDir($src, $dst, $exclude = $null) {
 
 function Get-FileHash256($path) {
   if (-not (Test-Path $path)) { return $null }
-  return (Get-FileHash $path -Algorithm SHA256).Hash
+  $sha = [Security.Cryptography.SHA256]::Create()
+  try {
+    return ([BitConverter]::ToString($sha.ComputeHash([IO.File]::ReadAllBytes($path))) -replace '-','')
+  } finally { $sha.Dispose() }
 }
 
 function Write-FileLF($path, $content) {

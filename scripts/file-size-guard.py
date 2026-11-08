@@ -27,6 +27,13 @@ def _state_path(project_dir):
 
 
 def main():
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     try:
         payload = json.loads(sys.stdin.read() or '{}')
     except Exception:

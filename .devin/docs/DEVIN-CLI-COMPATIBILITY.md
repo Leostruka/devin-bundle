@@ -154,6 +154,17 @@ Capabilities and runtime contracts verified in `3000.12.17` (`d23bb600ed8f`) sin
 | `/config` changes apply on `/clear`, `/resume`, `/cloud` without restart | adopted (passive) | Reliability fix. |
 | Fixes: plan-approval summary+path, follow-up during pending edit approval, Accept Edits/Smart on Windows network shares + WSL folders, rapid config-save loss, undecodable images no longer fail the turn, `devin -p` continues after denied tool call, log-file failure warns instead of breaking, PowerShell non-ASCII output | adopted (passive) | Upstream fixes; several hit Windows/WSL paths the bundle supports. No workarounds existed to remove. |
 
+## 3000.12.28 capabilities (verified 2026-11-08, CLI 3000.12.28)
+
+Capabilities and runtime contracts verified in `3000.12.28` (`91c3aec41579`) since `3000.12.17`. The public stable changelog tops out at `3000.12.17`; the delta was probed directly on the installed binary.
+
+| Capability | Decision | Rationale |
+|---|---|---|
+| `devin sandbox` subcommand (`sandbox setup` prints platform prerequisites) | documented | Sandboxing is now a subcommand alongside the `--sandbox` flag/`DEVIN_SANDBOX` env. On Windows it still refuses outside WSL 2 - the constraint the compat doc already records stands. |
+| `--respect-workspace-trust [true|false]` | documented | New launch flag: non-interactive (`-p`) mode cannot show the trust prompt and fails in untrusted directories unless `false` is passed; `--cloud` never checks trust. Relevant for scripted `devin -p` invocations in fresh dirs. |
+| `devin doctor` passes 3/3 against the live bundle | adopted (passive) | Verified post-upgrade: custom subagent profiles (26), OTEL env, OTEL export. |
+| `devin update` on Windows prints manual `irm ... install.ps1` instruction | documented | No in-binary self-update on Windows; the manifest at `static.devin.ai/cli/current/manifest.json` confirmed `3000.12.28` is the latest promoted build. |
+
 ## Model policy
 
 `config.json` reads the primary model from `BUNDLE_DEFAULT_MODEL` (with `data/bundle-models.json` as the canonical registry). `devin models list` for the validated CLI reports the current free and paid models; the bundle's free-primary policy is enforced by choosing a `cost_tier: free` entry as the parent and matching subagent models from `data/bundle-models.json`.

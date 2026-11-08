@@ -1,0 +1,1642 @@
+{
+  "version": 1,
+  "frozen": true,
+  "eval": "media-intent-v1-cal-02",
+  "profile": "media-intent-v1",
+  "captured_at": "2026-11-08T17:31:32Z",
+  "config_sha256": "82bc6c0312f906a2bbf176c15730cbb4173c0457b9ee34f1673b53930fa6bd00",
+  "cases": [
+    {
+      "case_id": "mi-017",
+      "gold": "stylize_image",
+      "request": {
+        "version": 1,
+        "request_id": "mi-017",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "convert this selfie into a sketch style"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-017",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.6079,
+        "raw_top_probability": 0.6079,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-018",
+      "gold": "stylize_image",
+      "request": {
+        "version": 1,
+        "request_id": "mi-018",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "make the photo look like a renaissance painting"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-018",
+        "outcome": "suggestion",
+        "candidate_id": "stylize_image",
+        "context": {},
+        "raw_confidence": 0.9432,
+        "raw_top_probability": 0.9432,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-019",
+      "gold": "stylize_image",
+      "request": {
+        "version": 1,
+        "request_id": "mi-019",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "apply the cyberpunk look to this image"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-019",
+        "outcome": "suggestion",
+        "candidate_id": "stylize_image",
+        "context": {},
+        "raw_confidence": 0.9362,
+        "raw_top_probability": 0.9362,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-020",
+      "gold": "stylize_video",
+      "request": {
+        "version": 1,
+        "request_id": "mi-020",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "give this clip a cartoon style"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-020",
+        "outcome": "suggestion",
+        "candidate_id": "stylize_video",
+        "context": {},
+        "raw_confidence": 0.8356,
+        "raw_top_probability": 0.8356,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-021",
+      "gold": "stylize_video",
+      "request": {
+        "version": 1,
+        "request_id": "mi-021",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "turn the footage into a watercolor animation style"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-021",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.5789,
+        "raw_top_probability": 0.5789,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-022",
+      "gold": "diagram",
+      "request": {
+        "version": 1,
+        "request_id": "mi-022",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "show me a class diagram of the extension modules"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-022",
+        "outcome": "suggestion",
+        "candidate_id": "diagram",
+        "context": {},
+        "raw_confidence": 0.9977,
+        "raw_top_probability": 0.9977,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-023",
+      "gold": "diagram",
+      "request": {
+        "version": 1,
+        "request_id": "mi-023",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "visualize the request flow as a diagram"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-023",
+        "outcome": "suggestion",
+        "candidate_id": "diagram",
+        "context": {},
+        "raw_confidence": 0.9938,
+        "raw_top_probability": 0.9938,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-024",
+      "gold": "launch_video",
+      "request": {
+        "version": 1,
+        "request_id": "mi-024",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "produce a launch video for the new feature"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-024",
+        "outcome": "suggestion",
+        "candidate_id": "launch_video",
+        "context": {},
+        "raw_confidence": 1.0,
+        "raw_top_probability": 1.0,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-025",
+      "gold": "launch_video",
+      "request": {
+        "version": 1,
+        "request_id": "mi-025",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "I need a hype video for the beta release"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-025",
+        "outcome": "suggestion",
+        "candidate_id": "launch_video",
+        "context": {},
+        "raw_confidence": 0.9976,
+        "raw_top_probability": 0.9976,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-026",
+      "gold": "ui_design",
+      "request": {
+        "version": 1,
+        "request_id": "mi-026",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "mock up a dashboard UI"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-026",
+        "outcome": "suggestion",
+        "candidate_id": "ui_design",
+        "context": {},
+        "raw_confidence": 0.9808,
+        "raw_top_probability": 0.9808,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-027",
+      "gold": "ui_design",
+      "request": {
+        "version": 1,
+        "request_id": "mi-027",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "design the onboarding screen"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-027",
+        "outcome": "suggestion",
+        "candidate_id": "ui_design",
+        "context": {},
+        "raw_confidence": 0.9968,
+        "raw_top_probability": 0.9968,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-028",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "mi-028",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "make it look cooler"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-028",
+        "outcome": "suggestion",
+        "candidate_id": "ui_design",
+        "context": {},
+        "raw_confidence": 0.5183,
+        "raw_top_probability": 0.5183,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-029",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "mi-029",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "edit this file for me"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-029",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.9009,
+        "raw_top_probability": 0.9009,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-030",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "mi-030",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "do something with the media"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-030",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.8678,
+        "raw_top_probability": 0.8678,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-031",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "mi-031",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "can you fix the render?"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-031",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.9898,
+        "raw_top_probability": 0.9898,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-032",
+      "gold": "stylize_image",
+      "request": {
+        "version": 1,
+        "request_id": "mi-032",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "restyle this product photo as a flat illustration"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-032",
+        "outcome": "suggestion",
+        "candidate_id": "stylize_image",
+        "context": {},
+        "raw_confidence": 0.7789,
+        "raw_top_probability": 0.7789,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-033",
+      "gold": "diagram",
+      "request": {
+        "version": 1,
+        "request_id": "mi-033",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "er diagram for the issue tracker schema"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-033",
+        "outcome": "suggestion",
+        "candidate_id": "diagram",
+        "context": {},
+        "raw_confidence": 0.9934,
+        "raw_top_probability": 0.9934,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-034",
+      "gold": "launch_video",
+      "request": {
+        "version": 1,
+        "request_id": "mi-034",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "video for the youtube channel intro"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-034",
+        "outcome": "suggestion",
+        "candidate_id": "launch_video",
+        "context": {},
+        "raw_confidence": 0.9717,
+        "raw_top_probability": 0.9717,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-035",
+      "gold": "ui_design",
+      "request": {
+        "version": 1,
+        "request_id": "mi-035",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "wireframe for the settings page"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-035",
+        "outcome": "suggestion",
+        "candidate_id": "ui_design",
+        "context": {},
+        "raw_confidence": 0.8186,
+        "raw_top_probability": 0.8186,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-036",
+      "gold": "stylize_video",
+      "request": {
+        "version": 1,
+        "request_id": "mi-036",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "apply the same stylization to all clips in the folder"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-036",
+        "outcome": "suggestion",
+        "candidate_id": "stylize_video",
+        "context": {},
+        "raw_confidence": 0.7177,
+        "raw_top_probability": 0.7177,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-037",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "mi-037",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "what presets do we have?"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-037",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.6123,
+        "raw_top_probability": 0.6123,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-038",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "mi-038",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "thanks, that worked"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-038",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.9901,
+        "raw_top_probability": 0.9901,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-039",
+      "gold": "stylize_image",
+      "request": {
+        "version": 1,
+        "request_id": "mi-039",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "make this meme image look like a oil painting"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-039",
+        "outcome": "suggestion",
+        "candidate_id": "stylize_image",
+        "context": {},
+        "raw_confidence": 0.9806,
+        "raw_top_probability": 0.9806,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "mi-040",
+      "gold": "diagram",
+      "request": {
+        "version": 1,
+        "request_id": "mi-040",
+        "profile": "media-intent-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "gantt chart of the sprint tasks"
+        },
+        "candidates": [
+          {
+            "id": "stylize_image",
+            "role": "intent",
+            "name": "stylize_image",
+            "scope": "media"
+          },
+          {
+            "id": "stylize_video",
+            "role": "intent",
+            "name": "stylize_video",
+            "scope": "media"
+          },
+          {
+            "id": "diagram",
+            "role": "intent",
+            "name": "diagram",
+            "scope": "media"
+          },
+          {
+            "id": "launch_video",
+            "role": "intent",
+            "name": "launch_video",
+            "scope": "media"
+          },
+          {
+            "id": "ui_design",
+            "role": "intent",
+            "name": "ui_design",
+            "scope": "media"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "mi-040",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.5327,
+        "raw_top_probability": 0.5327,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "media-intent-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    }
+  ]
+}

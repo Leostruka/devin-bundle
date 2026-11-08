@@ -19,12 +19,31 @@ except AttributeError:
 
 INSTALL_RE = re.compile(
     r"(?:^|[;&|]\s*)(?:sudo\s+)?"
-    r"(?:pip3?|uv|poetry|pipenv)\s+(?:install|add|sync|update)\b"
-    r"|(?:^|[;&|]\s*)(?:npm|pnpm|yarn|bun)\s+"
-    r"(?:install|i|add|ci|update|up)\b"
-    r"|(?:^|[;&|]\s*)cargo\s+(?:add|install|update)\b"
-    r"|(?:^|[;&|]\s*)go\s+(?:get|install|mod\s+tidy)\b"
-    r"|(?:^|[;&|]\s*)composer\s+(?:require|install|update)\b",
+    # python family: pip/pip3 (incl. `python -m pip`), uv, poetry,
+    # pipenv, pipx, conda/mamba (issue #404 coverage gaps)
+    r"(?:(?:python3?(?:\.\d+)?|py)\s+-m\s+)?pip3?\s+"
+    r"(?:install|add|sync|update|upgrade)\b"
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?"
+    r"uv\s+(?:pip\s+)?(?:install|add|sync|update|upgrade)\b"
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?"
+    r"(?:poetry|pipenv|pipx|conda|mamba)\s+"
+    r"(?:install|add|sync|update|upgrade)\b"
+    # node family
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?"
+    r"(?:npm|pnpm|yarn|bun)\s+"
+    r"(?:install|i|add|ci|update|up|upgrade)\b"
+    # rust / go / php
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?cargo\s+(?:add|install|update)\b"
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?go\s+(?:get|install|mod\s+tidy)\b"
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?composer\s+"
+    r"(?:global\s+)?(?:require|install|update)\b"
+    # ruby / elixir / dotnet (issue #404: detected ecosystems whose
+    # install commands never triggered the gate)
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?gem\s+install\b"
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?(?:bundle|bundler)\s+install\b"
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?mix\s+deps\.(?:get|update)\b"
+    r"|(?:^|[;&|]\s*)(?:sudo\s+)?dotnet\s+"
+    r"(?:add\b|tool\s+install\b|restore\b)",
     re.IGNORECASE)
 
 SCANNER_HINTS = ("pip-audit", "osv-scanner", "npm", "cargo-audit",
@@ -51,9 +70,14 @@ def main():
     script = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "dep-audit.py")
     try:
+        # hook budget is 35s (hooks.v1.json): keep the child scan under
+        # it - dep-audit self-limits via --max-seconds, this is the
+        # hard kill (issue #404: 300s timeout could never finish).
         p = subprocess.run(
-            [sys.executable, script, "--root", root],
-            capture_output=True, text=True, timeout=300,
+            [sys.executable, script, "--root", root,
+             "--max-seconds", "28"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=32,
             creationflags=_CF)
         data = json.loads(p.stdout or "{}")
     except Exception:

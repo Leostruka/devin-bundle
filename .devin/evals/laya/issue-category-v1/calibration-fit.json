@@ -1,0 +1,289 @@
+{
+ "ok": true,
+ "train": {
+  "decided": 19,
+  "cases": 24
+ },
+ "maps": {
+  "platt": {
+   "map": {
+    "kind": "platt",
+    "a": -3.517314,
+    "b": 2.559431
+   },
+   "train_curve": [
+    {
+     "threshold": 0.5,
+     "adopted": 18,
+     "adopted_correct": 13,
+     "adopted_accuracy": 0.7222,
+     "coverage": 0.75
+    },
+    {
+     "threshold": 0.6,
+     "adopted": 14,
+     "adopted_correct": 10,
+     "adopted_accuracy": 0.7143,
+     "coverage": 0.5833
+    },
+    {
+     "threshold": 0.7,
+     "adopted": 9,
+     "adopted_correct": 7,
+     "adopted_accuracy": 0.7778,
+     "coverage": 0.375
+    },
+    {
+     "threshold": 0.8,
+     "adopted": 4,
+     "adopted_correct": 4,
+     "adopted_accuracy": 1.0,
+     "coverage": 0.1667
+    },
+    {
+     "threshold": 0.9,
+     "adopted": 0,
+     "adopted_correct": 0,
+     "adopted_accuracy": null,
+     "coverage": 0.0
+    },
+    {
+     "threshold": 0.95,
+     "adopted": 0,
+     "adopted_correct": 0,
+     "adopted_accuracy": null,
+     "coverage": 0.0
+    }
+   ],
+   "heldout": [
+    {
+     "manifest": "../../.devin/evals/laya/issue-category-v1/manifest.heldout.frozen.json",
+     "decided": 12,
+     "cases": 16,
+     "curve": [
+      {
+       "threshold": 0.5,
+       "adopted": 11,
+       "adopted_correct": 9,
+       "adopted_accuracy": 0.8182,
+       "coverage": 0.6875
+      },
+      {
+       "threshold": 0.6,
+       "adopted": 11,
+       "adopted_correct": 9,
+       "adopted_accuracy": 0.8182,
+       "coverage": 0.6875
+      },
+      {
+       "threshold": 0.7,
+       "adopted": 9,
+       "adopted_correct": 7,
+       "adopted_accuracy": 0.7778,
+       "coverage": 0.5625
+      },
+      {
+       "threshold": 0.8,
+       "adopted": 5,
+       "adopted_correct": 4,
+       "adopted_accuracy": 0.8,
+       "coverage": 0.3125
+      },
+      {
+       "threshold": 0.9,
+       "adopted": 0,
+       "adopted_correct": 0,
+       "adopted_accuracy": null,
+       "coverage": 0.0
+      },
+      {
+       "threshold": 0.95,
+       "adopted": 0,
+       "adopted_correct": 0,
+       "adopted_accuracy": null,
+       "coverage": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  "table": {
+   "map": {
+    "kind": "table",
+    "points": [
+     [
+      0.1967,
+      0.666667
+     ],
+     [
+      0.197,
+      0.666667
+     ],
+     [
+      0.2421,
+      0.666667
+     ],
+     [
+      0.2624,
+      0.666667
+     ],
+     [
+      0.3517,
+      0.666667
+     ],
+     [
+      0.3569,
+      0.666667
+     ],
+     [
+      0.4114,
+      0.692308
+     ],
+     [
+      0.469,
+      0.692308
+     ],
+     [
+      0.4824,
+      0.692308
+     ],
+     [
+      0.5083,
+      0.692308
+     ],
+     [
+      0.5291,
+      0.692308
+     ],
+     [
+      0.5845,
+      0.692308
+     ],
+     [
+      0.5878,
+      0.692308
+     ],
+     [
+      0.6018,
+      0.692308
+     ],
+     [
+      0.6261,
+      0.692308
+     ],
+     [
+      0.6976,
+      0.692308
+     ],
+     [
+      0.7015,
+      0.692308
+     ],
+     [
+      0.7228,
+      0.692308
+     ],
+     [
+      0.7359,
+      0.692308
+     ]
+    ]
+   },
+   "train_curve": [
+    {
+     "threshold": 0.5,
+     "adopted": 19,
+     "adopted_correct": 13,
+     "adopted_accuracy": 0.6842,
+     "coverage": 0.7917
+    },
+    {
+     "threshold": 0.6,
+     "adopted": 19,
+     "adopted_correct": 13,
+     "adopted_accuracy": 0.6842,
+     "coverage": 0.7917
+    },
+    {
+     "threshold": 0.7,
+     "adopted": 0,
+     "adopted_correct": 0,
+     "adopted_accuracy": null,
+     "coverage": 0.0
+    },
+    {
+     "threshold": 0.8,
+     "adopted": 0,
+     "adopted_correct": 0,
+     "adopted_accuracy": null,
+     "coverage": 0.0
+    },
+    {
+     "threshold": 0.9,
+     "adopted": 0,
+     "adopted_correct": 0,
+     "adopted_accuracy": null,
+     "coverage": 0.0
+    },
+    {
+     "threshold": 0.95,
+     "adopted": 0,
+     "adopted_correct": 0,
+     "adopted_accuracy": null,
+     "coverage": 0.0
+    }
+   ],
+   "heldout": [
+    {
+     "manifest": "../../.devin/evals/laya/issue-category-v1/manifest.heldout.frozen.json",
+     "decided": 12,
+     "cases": 16,
+     "curve": [
+      {
+       "threshold": 0.5,
+       "adopted": 12,
+       "adopted_correct": 10,
+       "adopted_accuracy": 0.8333,
+       "coverage": 0.75
+      },
+      {
+       "threshold": 0.6,
+       "adopted": 12,
+       "adopted_correct": 10,
+       "adopted_accuracy": 0.8333,
+       "coverage": 0.75
+      },
+      {
+       "threshold": 0.7,
+       "adopted": 0,
+       "adopted_correct": 0,
+       "adopted_accuracy": null,
+       "coverage": 0.0
+      },
+      {
+       "threshold": 0.8,
+       "adopted": 0,
+       "adopted_correct": 0,
+       "adopted_accuracy": null,
+       "coverage": 0.0
+      },
+      {
+       "threshold": 0.9,
+       "adopted": 0,
+       "adopted_correct": 0,
+       "adopted_accuracy": null,
+       "coverage": 0.0
+      },
+      {
+       "threshold": 0.95,
+       "adopted": 0,
+       "adopted_correct": 0,
+       "adopted_accuracy": null,
+       "coverage": 0.0
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

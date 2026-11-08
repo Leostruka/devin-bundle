@@ -319,6 +319,7 @@ def _laya_suggestion(questions, files, n_lines, has_tests, *,
 
 
 def main(argv=None):
+    dc.pin_stdio_utf8()
     ap = argparse.ArgumentParser(
         description="JEV-4 seven-question diff triage")
     src = ap.add_mutually_exclusive_group()

@@ -78,6 +78,7 @@ def _rg_candidates(root, keywords, excludes):
     argv += ["--", root]
     try:
         cp = subprocess.run(argv, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace",
                             timeout=RG_TIMEOUT_S,
                             creationflags=getattr(
                                 subprocess, "CREATE_NO_WINDOW", 0))

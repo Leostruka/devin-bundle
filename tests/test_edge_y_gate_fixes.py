@@ -305,6 +305,30 @@ def test_hookrun_emits_metric(tmp_path):
     rec = json.loads(metrics.read_text().splitlines()[-1])
     assert rec["event"] == "hookrun"
     assert "duration_ms" in rec and "exit_code" in rec
+    assert "timings_ms" in rec  # per-script timing, issue #408
+
+
+def test_metrics_sink_rotates(tmp_path, monkeypatch):
+    """Issue #408: metrics.jsonl must not grow unbounded - emit_metric
+    rotates at METRICS_MAX_BYTES keeping the newest half."""
+    mod = load_mod("hookrun_rot", "_hookrun.py")
+    monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path))
+    sink = tmp_path / ".devin" / "ledgers" / "metrics.jsonl"
+    sink.parent.mkdir(parents=True)
+    # prefill beyond the cap with parseable old lines
+    old = ('{"t": 1, "event": "old", "pad": "'
+           + "x" * 200 + '"}\n')
+    sink.write_text(old * (mod.METRICS_MAX_BYTES // len(old) + 10),
+                    encoding="utf-8")
+    assert sink.stat().st_size > mod.METRICS_MAX_BYTES
+    mod.emit_metric("probe", k=1)
+    size = sink.stat().st_size
+    assert size <= mod.METRICS_MAX_BYTES
+    lines = sink.read_text(encoding="utf-8").splitlines()
+    assert lines, "sink emptied by rotation"
+    for ln in lines:
+        json.loads(ln)  # every surviving line still parses
+    assert json.loads(lines[-1])["event"] == "probe"
 
 
 # --- issue 66: test deletion gate (Rule 25) ---

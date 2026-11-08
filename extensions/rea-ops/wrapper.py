@@ -64,6 +64,7 @@ def run_cmd(argv, timeout=DEFAULT_TIMEOUT):
             argv,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=timeout,
             errors="replace",
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))

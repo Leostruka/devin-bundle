@@ -65,6 +65,13 @@ def _run_op(cmd):
 def worker_main():
     """stdin/stdout JSON-line worker (parent-managed lifetime)."""
     os.environ.pop("CU_SESSION", None)  # ops must not re-route
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     for line in sys.stdin:
         try:
             env = json.loads(line)
@@ -143,7 +150,8 @@ class Worker:
     def _spawn(self):
         self._proc = subprocess.Popen(
             self.argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL, text=True, bufsize=1,
+            stderr=subprocess.DEVNULL, text=True, encoding="utf-8",
+            errors="replace", bufsize=1,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         self.generation += 1
         self.session = uuid.uuid4().hex[:12]

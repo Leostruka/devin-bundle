@@ -1,6 +1,6 @@
 # ISSUE 04, Animation Direction: narration → scene plan → code-rendered motion
 
-Status: planned (research done) · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) · Ledger: `.devin/research/4_fronts_recon.md`
+Status: in-progress · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
@@ -35,6 +35,13 @@ Status: planned (research done) · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) �
 4. `plan_check` + gate wiring; then ffmpeg composite path (Issue 03 `timeline.py`).
 5. End-to-end: 30s narrated clip → plan → approve → rendered composite.
 6. Write `animation-direction` SKILL.md.
+
+## Progress (2026-11-09 audit)
+
+- Landed: `extensions/asr/` (transcribe.py + bootstrap.py, #430 hardened), `extensions/remotion-render/` (render.py, plan_check.py, templates), `skills/animation-direction/SKILL.md`, tests/test_animation_pipeline.py (19 tests, green)
+- DONE 2026-11-08: step 5 render path proven e2e - plan v2 JSON -> plan_check ok -> render.py materialize -> `npx remotion render` -> real h264 mp4 (270 frames, 89KB) at `.devin/scratch/anim-e2e/render-proof.mp4` (synthetic 12s plan; narrated-clip variant + human approve gate still the usage path)
+- DONE 2026-11-09: step 6 composite path - `extensions/remotion-render/composite.py` (ffmpeg overlay, narration-first audio, `--fit frame|contain`, `--pos`, `--mix`, duration warnings). Live-verified: lavfi src+overlay -> out.mp4 640x360 h264+aac 3.0s, red overlay confirmed in pixels. 11 new tests (30 total pipeline tests green)
+- DONE 2026-11-09: full narrated-clip e2e - SAPI narration (27.5s) + testsrc -> narrated.mp4 -> transcribe.py small/en (8 segments; fixed silent-empty on mp4 input - whisper.cpp demuxes wav/mp3 only, ffmpeg extraction added) -> plan-narrated.json synced to real segment times -> plan_check ok (added visual-prop contract: counter `to`, kinetic_text `text`, diagram_nodes `nodes[].label`, pan_zoom `src` - missing/wrong-typed props now error pre-gate instead of crashing Remotion mid-render) -> render.py 822 frames -> composite.py -> final-narrated.mp4 (27.5s, narration audio preserved, visuals confirmed in frame pixels). Artifact: `.devin/scratch/anim-e2e/final-narrated.mp4`
 
 ## Non-goals
 

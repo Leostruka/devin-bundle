@@ -16,12 +16,64 @@ never post-render. Checks:
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 
 READ_WPM = 160.0
 RENDER_MS_PER_FRAME = 120.0
 OVERLAY_TOLERANCE = 0.0
+
+# Visual prop contract - mirrors PlanComposition.tsx prop types.
+# Missing/wrong-typed required props crash Remotion mid-render with a
+# cryptic interpolate TypeError; catching them here is the point of
+# the gate. Unknown types fall back to KineticText in the template.
+_NUM = (int, float)
+VISUAL_PROPS = {
+    "kinetic_text": {"required": {"text": str},
+                     "optional": {"size": _NUM}},
+    "diagram_nodes": {"required": {"nodes": list},
+                      "optional": {}},
+    "counter": {"required": {"to": _NUM},
+                "optional": {"label": str}},
+    "pan_zoom": {"required": {"src": str},
+                 "optional": {"zoom": _NUM}},
+}
+
+
+def _num(v):
+    # bool is an int subclass; NaN/Infinity are not finite numbers
+    return (isinstance(v, _NUM) and not isinstance(v, bool)
+            and math.isfinite(v))
+
+
+def _type_ok(v, types):
+    if not (isinstance(v, types) and not isinstance(v, bool)):
+        return False
+    return not (isinstance(v, float) and not math.isfinite(v))
+
+
+def _check_visual_props(bid, vtype, props, errors):
+    spec = VISUAL_PROPS.get(vtype)
+    if spec is None:
+        return  # unknown type: template falls back to KineticText
+    for key, types in spec["required"].items():
+        if not _type_ok(props.get(key), types):
+            errors.append(f"{bid}: visual.props.{key} missing or "
+                          f"wrong type for {vtype}")
+    for key, types in spec["optional"].items():
+        v = props.get(key)
+        if v is not None and not _type_ok(v, types):
+            errors.append(f"{bid}: visual.props.{key} wrong type "
+                          f"for {vtype}")
+    if vtype == "diagram_nodes":
+        nodes = props.get("nodes")
+        if isinstance(nodes, list):
+            for ni, n in enumerate(nodes):
+                if not isinstance(n, dict) or \
+                        not isinstance(n.get("label"), str):
+                    errors.append(f"{bid}: nodes[{ni}] needs "
+                                  "{label: string}")
 
 
 def _words(text):
@@ -38,9 +90,12 @@ def check(plan):
         beats = []
     if plan.get("version") != 2:
         errors.append("version must be 2 (motion scene-plan)")
-    if not isinstance(dur, (int, float)) or dur <= 0:
+    if not _num(dur) or dur <= 0:
         errors.append("audio_duration_s missing or non-positive")
         dur = float("inf")
+    if not _num(fps) or fps <= 0:
+        errors.append("fps missing or non-positive")
+        fps = 30
     ranges = []
     total_frames = 0
     for i, b in enumerate(beats):
@@ -50,7 +105,7 @@ def check(plan):
         bid = b.get("id", f"beat{i}")
         sr = b.get("sync_range")
         if not (isinstance(sr, list) and len(sr) == 2
-                and all(isinstance(x, (int, float)) for x in sr)):
+                and all(_num(x) for x in sr)):
             errors.append(f"{bid}: sync_range missing/malformed")
             continue
         s, e = sr
@@ -67,6 +122,7 @@ def check(plan):
         props = vis.get("props", {})
         if not isinstance(props, dict):
             props = {}
+        _check_visual_props(bid, vis.get("type"), props, errors)
         words = _words(props.get("text") or props.get("label"))
         min_len = words / (READ_WPM / 60.0)
         if words and beat_len < min_len:
@@ -116,8 +172,9 @@ def main(argv=None):
         return _fail(f"json_error:{exc}")
     if not isinstance(plan, dict):
         return _fail("plan must be a JSON object")
-    print(json.dumps(check(plan), indent=2, ensure_ascii=False))
-    return 0
+    res = check(plan)
+    print(json.dumps(res, indent=2, ensure_ascii=False))
+    return 0 if res["ok"] else 1
 
 
 if __name__ == "__main__":

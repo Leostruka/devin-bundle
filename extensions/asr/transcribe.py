@@ -3,7 +3,7 @@
 Deterministic, offline, no paid APIs. Pipeline proven in recon:
 yt-dlp -> wav -> whisper.cpp (win-x64) + ggml model -> segments.
 
-  python transcribe.py <url|audio-file> [--model base] [--lang auto]
+  python transcribe.py <url|audio-or-video-file> [--model base] [--lang auto]
     -> {"ok": true, "text": "...", "segments": [{start, end, text}],
         "model": "base", "source": "..."}
 
@@ -26,10 +26,19 @@ from pathlib import Path
 CACHE = Path(os.environ.get("ASR_CACHE",
                             Path(__file__).parent / "_cache"))
 MODELS = {"base": "ggml-base.bin", "small": "ggml-small.bin",
-          "tiny": "ggml-tiny.bin"}
+          "tiny": "ggml-tiny.bin", "medium": "ggml-medium.bin",
+          "large": "ggml-large-v3-turbo.bin"}
+# issue #430: PT-BR and other non-EN speech garbles on `base` - prefer
+# small+ and an explicit --lang when the source language is known.
 SEG_RE = re.compile(
     r"\[(\d+):(\d+):(\d+)[.,](\d+)\s*-->\s*(\d+):(\d+):(\d+)[.,](\d+)\]"
     r"\s*(.*)")
+# whisper.cpp stderr reports auto-detection, e.g.
+# "whisper_full_with_state: ... lang pt (p = 0.98)" / "detected language: Portuguese"
+_LANG_RE = re.compile(
+    r"(?:detected language|lang(?:uage)?)\s*[:=]?\s*"
+    r"(?:([A-Za-z]+)\s*\(p\s*=\s*([\d.]+)\)|([a-z]{2}))",
+    re.IGNORECASE)
 
 
 def parse_segments(text):
@@ -61,22 +70,67 @@ def _find_binary():
 
 
 def _model_path(model):
-    # accept "base" and "ggml-base(.bin)" spellings
+    # accept "base", "ggml-base.bin" and bare filenames
     key = str(model).removeprefix("ggml-").removesuffix(".bin")
-    f = CACHE / MODELS.get(key, model)
+    fname = MODELS.get(key, model if str(model).endswith(".bin")
+                       else f"ggml-{key}.bin")
+    f = CACHE / fname
     return str(f) if f.exists() else None
 
 
+def parse_lang_detection(stderr):
+    """whisper.cpp stderr -> (lang, prob) from auto-detection lines."""
+    best, code_only = None, None
+    for m in _LANG_RE.finditer(stderr or ""):
+        name, prob, code = m.groups()
+        if name and prob:
+            p = float(prob)
+            if best is None or p > best[1]:
+                best = (name.lower(), p)
+        elif code:
+            code_only = code.lower()
+    if best:
+        return best
+    return (code_only, None) if code_only else (None, None)
+
+
+def _ffmpeg():
+    exe = os.environ.get("FFMPEG_EXE")
+    if exe and os.path.isfile(exe):
+        return exe
+    return shutil.which("ffmpeg")
+
+
 def fetch_audio(source, workdir):
-    """URL -> wav via yt-dlp; local file -> pass through."""
-    if Path(source).exists():
-        return Path(source)
-    if not shutil.which("yt-dlp"):
-        raise RuntimeError("yt-dlp not on PATH")
+    """URL -> wav via yt-dlp; local file -> wav path for whisper.cpp.
+
+    whisper.cpp demuxes wav/mp3 only - video containers (mp4/mov/mkv)
+    and other audio formats are silently empty, so anything outside
+    {wav,mp3} is extracted to 16kHz mono wav via ffmpeg first.
+    """
+    src = Path(source)
+    if not src.exists():
+        if not shutil.which("yt-dlp"):
+            raise RuntimeError("yt-dlp not on PATH")
+        out = Path(workdir) / "audio.wav"
+        subprocess.run(
+            ["yt-dlp", "-x", "--audio-format", "wav", "-o", str(out),
+             source], check=True, capture_output=True, timeout=600,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        return out
+    if src.suffix.lower() in (".wav", ".mp3"):
+        return src
+    ffmpeg = _ffmpeg()
+    if not ffmpeg:
+        raise RuntimeError(
+            f"{src.suffix or 'file'} input needs ffmpeg to extract "
+            "audio (install ffmpeg or pass .wav/.mp3)")
     out = Path(workdir) / "audio.wav"
     subprocess.run(
-        ["yt-dlp", "-x", "--audio-format", "wav", "-o", str(out),
-         source], check=True, capture_output=True, timeout=600, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        [ffmpeg, "-y", "-v", "error", "-i", str(src),
+         "-vn", "-ac", "1", "-ar", "16000", str(out)],
+        check=True, capture_output=True, timeout=600,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return out
 
 
@@ -101,13 +155,30 @@ def transcribe(source, model="base", lang="auto", timeout=600):
         if lang != "auto":
             argv += ["-l", lang]
         p = subprocess.run(argv, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace",
                            timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if p.returncode != 0:
         return {"ok": False, "error": "whisper_failed",
                 "stderr": p.stderr[-2000:]}
     segs = parse_segments(p.stdout)
-    return {"ok": True, "text": " ".join(s["text"] for s in segs),
-            "segments": segs, "model": model, "source": source}
+    out = {"ok": True, "text": " ".join(s["text"] for s in segs),
+           "segments": segs, "model": model, "source": source}
+    det_lang, det_prob = parse_lang_detection(p.stderr)
+    if det_lang:
+        out["detected_lang"] = det_lang
+        if det_prob is not None:
+            out["lang_confidence"] = det_prob
+        warnings = []
+        if lang != "auto" and det_lang != lang:
+            warnings.append(
+                f"lang_mismatch: --lang {lang} but detected {det_lang}")
+        if det_prob is not None and det_prob < 0.5:
+            warnings.append(
+                f"low_lang_confidence:{det_prob:.2f} - pass --lang "
+                "explicitly or use a larger model")
+        if warnings:
+            out["warnings"] = warnings
+    return out
 
 
 def main(argv=None):
@@ -116,9 +187,9 @@ def main(argv=None):
     ap.add_argument("--model", default="base")
     ap.add_argument("--lang", default="auto")
     args = ap.parse_args(argv)
-    print(json.dumps(transcribe(args.source, args.model, args.lang),
-                     ensure_ascii=False))
-    return 0
+    res = transcribe(args.source, args.model, args.lang)
+    print(json.dumps(res, ensure_ascii=False))
+    return 0 if res.get("ok") else 1
 
 
 if __name__ == "__main__":

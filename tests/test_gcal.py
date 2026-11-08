@@ -4,12 +4,27 @@ import os
 import subprocess
 import sys
 
+import pytest
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "extensions", "gcal"))
 import gcal  # noqa: E402
 import plan  # noqa: E402
 
 WRAPPER = os.path.join(ROOT, "extensions", "gcal", "wrapper.py")
+
+
+def _tz_available():
+    try:
+        from zoneinfo import ZoneInfo
+        ZoneInfo("America/Sao_Paulo")
+        return True
+    except Exception:
+        return False
+
+
+needs_tzdata = pytest.mark.skipif(
+    not _tz_available(), reason="zoneinfo tzdata unavailable")
 
 ICS = """BEGIN:VCALENDAR
 VERSION:2.0
@@ -38,18 +53,117 @@ END:VCALENDAR
 """
 
 
+@needs_tzdata
 def test_ics_busy_parses_utc_tzid_folded_allday():
-    busy = gcal.ics_busy(ICS)
-    assert len(busy) == 4
+    res = gcal.ics_busy(ICS)
+    busy = res["busy"]
+    assert len(busy) == 3  # 2 timed + all-day moved out of busy
     starts = sorted(b["start"] for b in busy)
     assert starts[0] == "2026-11-06T09:00:00+00:00"
-    assert starts[3] == "2026-11-07T00:00:00+00:00"
+    # TZID America/Sao_Paulo 14:00-03:00 -> 17:00Z
+    assert any(b["start"] == "2026-11-06T17:00:00+00:00"
+               for b in busy)
+    assert res["all_day"] == [
+        {"summary": "all day", "start": "2026-11-07",
+         "end": "2026-11-08"}]
+    assert res["recurring"] == 0
+
+
+@needs_tzdata
+def test_ics_busy_tzid_sao_paulo_issue396():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART;TZID=America/Sao_Paulo:20261108T090000\n"
+           "DTEND;TZID=America/Sao_Paulo:20261108T100000\n"
+           "END:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert res["busy"] == [
+        {"start": "2026-11-08T12:00:00+00:00",
+         "end": "2026-11-08T13:00:00+00:00"}]
+
+
+def test_ics_busy_all_day_not_full_day_busy_issue397():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART;VALUE=DATE:20261108\nDTEND;VALUE=DATE:20261109\n"
+           "SUMMARY:holiday\nEND:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert res["busy"] == []
+    assert res["all_day"][0]["start"] == "2026-11-08"
+
+
+def test_ics_busy_rrule_counted_not_expanded_issue398():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART:20261109T130000Z\nDTEND:20261109T133000Z\n"
+           "RRULE:FREQ=WEEKLY;BYDAY=MO\nEND:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert len(res["busy"]) == 1
+    assert res["recurring"] == 1
+
+
+def test_ics_busy_unknown_tzid_warns_assumes_utc():
+    ics = ("BEGIN:VCALENDAR\nBEGIN:VEVENT\n"
+           "DTSTART;TZID=Mars/Olympus:20261108T090000\n"
+           "DTEND;TZID=Mars/Olympus:20261108T100000\n"
+           "END:VEVENT\nEND:VCALENDAR")
+    res = gcal.ics_busy(ics)
+    assert res["busy"][0]["start"] == "2026-11-08T09:00:00+00:00"
+    assert any("TZID" in w for w in res["warnings"])
 
 
 def test_ics_busy_skips_malformed_and_inverted():
     bad = "BEGIN:VEVENT\nDTSTART:20261106T100000Z\n" \
           "DTEND:20261106T090000Z\nEND:VEVENT\n"
-    assert gcal.ics_busy(bad) == []
+    assert gcal.ics_busy(bad)["busy"] == []
+
+
+def test_ics_busy_skips_transparent_events():
+    ics = "BEGIN:VCALENDAR\n" \
+          "BEGIN:VEVENT\nDTSTART:20261106T090000Z\n" \
+          "DTEND:20261106T100000Z\nSUMMARY:busy\nEND:VEVENT\n" \
+          "BEGIN:VEVENT\nDTSTART:20261106T110000Z\n" \
+          "DTEND:20261106T120000Z\nSUMMARY:free-marked\n" \
+          "TRANSP:TRANSPARENT\nEND:VEVENT\nEND:VCALENDAR\n"
+    busy = gcal.ics_busy(ics)["busy"]
+    assert len(busy) == 1 and busy[0]["start"].startswith("2026-11-06T09")
+
+
+def test_find_calendar_case_insensitive(monkeypatch):
+    monkeypatch.setattr(gcal, "list_calendars",
+                        lambda token: [{"id": "cal1", "summary": "AGdevin",
+                                        "primary": False}])
+    assert gcal.find_calendar("t", "agdevin") == "cal1"
+    assert gcal.find_calendar("t", "  AGDEVIN ") == "cal1"
+    assert gcal.find_calendar("t", "other") is None
+
+
+def test_event_dedupe_key_stable_and_stamped():
+    k1 = gcal.event_dedupe_key("sum", "2026-11-09T09:00:00-03:00",
+                             "2026-11-09T10:00:00-03:00")
+    k2 = gcal.event_dedupe_key("sum", "2026-11-09T09:00:00-03:00",
+                             "2026-11-09T10:00:00-03:00")
+    k3 = gcal.event_dedupe_key("sum", "2026-11-09T09:00:00-03:00",
+                             "2026-11-09T11:00:00-03:00")
+    assert k1 == k2 and k1 != k3 and len(k1) == 24
+    p = gcal.stamp_event({"summary": "x"}, k1)
+    assert p["extendedProperties"]["private"]["bundle_key"] == k1
+
+
+def test_free_busy_requests_fields_and_paginates(monkeypatch):
+    urls = []
+
+    def fake_get(url, headers=None, timeout=None):
+        urls.append(url)
+        if "pageToken" not in url:
+            return {"items": [{"status": "confirmed",
+                               "start": {"dateTime": "2026-11-06T09:00:00Z"},
+                               "end": {"dateTime": "2026-11-06T10:00:00Z"}}],
+                    "nextPageToken": "p2"}
+        return {"items": []}
+    monkeypatch.setattr(gcal, "_get_json", fake_get)
+    res = gcal.free_busy("tok", ["primary"],
+                         "2026-11-06T00:00:00Z", "2026-11-07T00:00:00Z")
+    assert len(urls) == 2
+    assert "fields=" in urls[0] and "pageToken=p2" in urls[1]
+    assert len(res["busy"]) == 1
 
 
 def test_free_slots_gaps_and_edges():
@@ -115,8 +229,41 @@ def test_wrapper_ics_free_busy(tmp_path):
         capture_output=True, text=True)
     out = json.loads(p.stdout)
     assert p.returncode == 0 and out["status"] == "ok"
-    assert out["source"] == "ics" and len(out["busy"]) == 4
-    assert out["free_slots"]
+    assert out["source"] == "ics" and len(out["busy"]) == 3
+    assert out["all_day"] and out["free_slots"]
+
+
+def test_wrapper_ics_url_free_busy():
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    class H(BaseHTTPRequestHandler):
+        def do_GET(self):
+            body = ICS.encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/calendar")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *a):
+            pass
+
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        port = srv.server_address[1]
+        p = subprocess.run(
+            [sys.executable, WRAPPER, "free-busy",
+             "--ics-url", f"http://127.0.0.1:{port}/cal.ics",
+             "--from", "2026-11-06T08:00:00Z",
+             "--to", "2026-11-06T18:00:00Z"],
+            capture_output=True, text=True)
+        out = json.loads(p.stdout)
+        assert p.returncode == 0 and out["status"] == "ok"
+        assert out["source"] == "ics-url" and len(out["busy"]) == 3
+    finally:
+        srv.shutdown()
 
 
 def test_wrapper_missing_creds_graceful(tmp_path):
@@ -249,3 +396,40 @@ def test_add_preview_names_agdevin_default():
     out = json.loads(p.stdout)
     assert out["status"] == "confirm-required"
     assert out["calendar"] == "AGdevin"
+
+
+def test_bool_flag_rejects_value_assignment(tmp_path):
+    """Review regression: --confirm=false must error, not silently apply."""
+    p = subprocess.run(
+        [sys.executable, WRAPPER, "add", "--summary", "x",
+         "--start", "2026-11-07T09:00:00Z",
+         "--end", "2026-11-07T10:00:00Z",
+         "--confirm=false"],
+        capture_output=True, text=True)
+    out = json.loads(p.stdout)
+    assert p.returncode == 2 and out["status"] == "error"
+    assert "takes no value" in out["stderr"]
+
+
+def test_calendar_id_quoted_in_events_url(monkeypatch):
+    """Review regression: ids with # ? @ must be percent-encoded so the
+    fragment/query chars can't truncate or split the path."""
+    calls = []
+    monkeypatch.setattr(
+        gcal, "_post_json",
+        lambda url, *a, **k: calls.append(url) or {"id": "e1", "status": "confirmed"})
+    gcal.create_event("tok", "weird#id@group.calendar.google.com",
+                      {"summary": "t", "start": "2026-11-07T09:00:00Z",
+                       "end": "2026-11-07T10:00:00Z"})
+    assert calls, "expected a POST"
+    url = calls[0]
+    assert "weird%23id%40group.calendar.google.com" in url
+    assert "#" not in url.split("calendars/")[-1]
+
+    get_calls = []
+    monkeypatch.setattr(
+        gcal, "_get_json",
+        lambda url, *a, **k: get_calls.append(url) or {"items": []})
+    gcal.find_events_by_key("tok", "weird#id@group.calendar.google.com",
+                            "k1")
+    assert "weird%23id%40group.calendar.google.com" in get_calls[0]

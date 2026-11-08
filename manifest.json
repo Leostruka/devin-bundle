@@ -1339,8 +1339,8 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "d2b17db177e4677d921fd6900b2dd559364877d9acfb5862efcf91b27cec02b8",
-      "exported_at": "2026-09-18T20:22:05.262464"
+      "export_hash": "FA787E2C738057E7CD12522121FE1B1FAC715731C39604D873DBBFC2DF5D7ECB",
+      "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
       "name": "architecture-gate.py",
@@ -1367,6 +1367,18 @@
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
+      "name": "check-tools.py",
+      "purpose": "tools.json validator - schema check + byte-identical render gate per enabled tool (M2_07 multi-CLI contract)",
+      "export_hash": "80F5C07F815752E403718C766FCCE153CE5FF3049281265DE618F25C96D033E0",
+      "exported_at": "2026-11-08T08:50:55.845199"
+    },
+    {
+      "name": "compact-gate.py",
+      "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
+      "export_hash": "06248b2ae2a308fcf5b5f677a1891719887736d74b913302e2304ca505267eab",
+      "exported_at": "2026-10-31T00:00:00.000000"
+    },
+    {
       "name": "constraint-pinning.py",
       "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints",
       "export_hash": "c6b2561018a85bec0d20a79df1b4748c3b7de56705876b6c4245175a8675d4c2",
@@ -1375,14 +1387,35 @@
     {
       "name": "context-budget.py",
       "purpose": "SessionStart hook — reports AGENTS.md token cost",
-      "export_hash": "d6e788774a320f3784b08ef5883276c9ed62feba93ea4e141e9477d9a8c1a9b8",
-      "exported_at": "2026-09-08T21:39:22.430527"
+      "export_hash": "DF4DF228A7906342111078FA7AF87FE4976638C17C48927A18F822BEC4593BF1",
+      "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "9af0986471145e5e131830d6fad793209333db211947d0938f1989e2797e1a27",
-      "exported_at": "2026-09-18T20:22:05.262834"
+      "export_hash": "21FE24A1B95FB04EBD912A073953FD1B55ED327BE4992C776B30ABE4020CCF44",
+      "exported_at": "2026-11-08T15:58:15.329079"
+    },
+    {
+      "name": "dep-audit-gate.py",
+      "source": "devin-bundle",
+      "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
+      "export_hash": "B626D7A11015BE9FACB40EAF06CFA7F822CB6410E98C79F91ADFD13187DC0051",
+      "exported_at": "2026-11-08T09:25:41.154386"
+    },
+    {
+      "name": "dep-audit.py",
+      "source": "devin-bundle",
+      "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
+      "export_hash": "24E621559A4D40CF5159B79B557AE6AEBAC37626AD5889C03703A220A7B0C925",
+      "exported_at": "2026-11-08T10:18:51.569042"
+    },
+    {
+      "name": "design-lint-gate.py",
+      "source": "devin-bundle",
+      "purpose": "PostToolUse(write|edit): warns on AI-UI slop at write time - 12 inline regex rules (no extension import); [DESIGN-LINT] via additionalContext; fail-open, never blocks (M2_05)",
+      "export_hash": "966F8E7E115F0EC286DD40406E206C96669DFD7EC79BF28C5F982676FEDAA5A4",
+      "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
       "name": "destructive-gate.py",
@@ -1391,10 +1424,41 @@
       "exported_at": "2026-09-08T21:39:22.430612"
     },
     {
+      "name": "file-size-guard.py",
+      "source": "devin-bundle",
+      "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
+      "export_hash": "A1512ABFE21B849F6550621C7CCF84E1062C205BBA36EBCFF477FB92874A2A09",
+      "exported_at": "2026-11-08T15:58:15.329079"
+    },
+    {
+      "name": "focus.py",
+      "purpose": "Focus-session tracker (start/stop/report) over gitignored .devin/ledgers/focus.jsonl - issue #419",
+      "export_hash": "E487EAF83A9F292C2E08DBDA92C52E3DB735E6C58ED332AE8C9A17A4CAEF49BF",
+      "exported_at": "2026-11-08T09:45:01.894092"
+    },
+    {
       "name": "gh-pr-assignee.py",
       "purpose": "PostToolUse hook — auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
       "export_hash": "5a98f97a830ac8e01fdd97a85fd09b36281ebe52fdb1625234f1f22a773ad64f",
       "exported_at": "2026-10-27T15:18:55.679807"
+    },
+    {
+      "name": "git-diff-stat.py",
+      "purpose": "PostToolUse hook - one-line 'diff-stat:' footer after exec calls when the active output-mode preset flags diff_footer (caveman/lean)",
+      "export_hash": "61BFBE1363C14B6B68A1113DF227655FA6E449ED0C35DC80961FCE4BCD712754",
+      "exported_at": "2026-11-08T08:50:55.845199"
+    },
+    {
+      "name": "install-ledger.py",
+      "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
+      "export_hash": "4A4A3AA8BFDA961888BFAC3E1210685462E810F43F16D4C59C998FEB14593DA8",
+      "exported_at": "2026-11-08T08:50:55.845199"
+    },
+    {
+      "name": "laya-guard.py",
+      "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
+      "export_hash": "81b35c036645524592c2f881b59687f53789caf3a14b9f6a716ee9b5b64ea19b",
+      "exported_at": "2026-10-10T15:45:25.322611"
     },
     {
       "name": "memory-post-edit.py",
@@ -1429,8 +1493,8 @@
     {
       "name": "no-em-dash.py",
       "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code, vendored extension data and binary files exempt",
-      "export_hash": "76ddddde8b782eed1b4972ca469999137f615885bd6e0d1462148676a5c3cf2b",
-      "exported_at": "2026-10-27T15:18:55.679807"
+      "export_hash": "A4226B88741AD5B33B2C1A588FA88824D5F997860B46A8F3B5680CBBC7BCC875",
+      "exported_at": "2026-11-08T11:13:31.781111"
     },
     {
       "name": "post-exec.py",
@@ -1463,6 +1527,19 @@
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
+      "name": "rl-resume-detect.py",
+      "purpose": "Stop hook - rate-limit signature in last message writes .devin/rts/intents/ resume_at intent (opt-in, never auto-resumed)",
+      "export_hash": "6C99F9BD5E15AEF495267D9D01E5FF322DC28A0887061B7AC2B9110EC82F926D",
+      "exported_at": "2026-11-08T08:50:55.845199"
+    },
+    {
+      "name": "roadmap-board.py",
+      "source": "devin-bundle",
+      "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
+      "export_hash": "CDE5B4C2F85D268CF04FDB7E40629C9956A34B124705CC663F5F8C9D6F7DFB01",
+      "exported_at": "2026-11-08T10:42:48.417376"
+    },
+    {
       "name": "session-start.py",
       "purpose": "SessionStart consolidated hook (constraint-pinning+context-budget)",
       "export_hash": "aee9e3084057b17b58b825004b3eb4fb6b0da8088bbb53da5ecb552dac68d4b1",
@@ -1475,10 +1552,40 @@
       "exported_at": "2026-09-08T21:39:22.430789"
     },
     {
+      "name": "skill-picker.py",
+      "purpose": "UserPromptSubmit child (JEV-2) — lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
+      "export_hash": "a94c45ca663009e7ba663d61178eb226f2185eee5ad2d254e0f0ca575e625e22",
+      "exported_at": "2026-10-31T00:00:00.000000"
+    },
+    {
+      "name": "spec-consistency.py",
+      "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
+      "export_hash": "956bdd2b91211da7e98f94b79e98e85857a3c2cf48e96f89983ba2c1625f2ea1",
+      "exported_at": "2026-09-26T18:26:15.829557"
+    },
+    {
+      "name": "status_vocab.py",
+      "purpose": "Shared issue-status vocabulary (done/terminal/non-actionable/in-flight) for roadmap-board and site/build - issues #405/#407",
+      "export_hash": "AA30EA49C9C635AE7E21CDAA3ABF7E405EB9E102083FE463FFFD93E69F20B118",
+      "exported_at": "2026-11-08T10:42:48.418088"
+    },
+    {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
       "export_hash": "9a6fa88fc6aab3b1ebec4d8c32c8e1c8ac16e0a15a3a5d6b736391091cb2dab0",
       "exported_at": "2026-10-27T15:18:55.679807"
+    },
+    {
+      "name": "stuck-detect.py",
+      "purpose": "PostToolUse hook - advisory when the same exec command fails 3x consecutively (deterministic stuck-detector subset of token-economizer mechanism)",
+      "export_hash": "58feb125324e394a65d474b00269f6ce644a6ea97deb9982ec3461bf9514b9f2",
+      "exported_at": "2026-10-31T21:15:43.544713"
+    },
+    {
+      "name": "token-saver.py",
+      "purpose": "UserPromptSubmit hook - injects output-mode preset fragment only on mode change (PandaCode-style token saver; presets in data/output-modes.json, state in .devin/output-mode.json)",
+      "export_hash": "50C675DBECC92D0013F1DD74A7E3A760482148B45AF2608C7C404D4CA7640F6B",
+      "exported_at": "2026-11-08T08:50:55.845199"
     },
     {
       "name": "user-prompt.py",
@@ -1509,103 +1616,9 @@
       "purpose": "Validator — checks tool argument schemas",
       "export_hash": "317EDFCEB59D7C4DA1CA77C129A3CD7A93F392723322AA8B2807615BE5B6B14E",
       "exported_at": "2026-11-03T21:04:06.237841"
-    },
-    {
-      "name": "spec-consistency.py",
-      "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
-      "export_hash": "956bdd2b91211da7e98f94b79e98e85857a3c2cf48e96f89983ba2c1625f2ea1",
-      "exported_at": "2026-09-26T18:26:15.829557"
-    },
-    {
-      "name": "laya-guard.py",
-      "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
-      "export_hash": "8a178c18295ba03f29b486ec214e21d352862152eca5fc1e93da7269cfe4e95a",
-      "exported_at": "2026-10-10T15:45:25.322611"
-    },
-    {
-      "name": "compact-gate.py",
-      "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
-      "export_hash": "06248b2ae2a308fcf5b5f677a1891719887736d74b913302e2304ca505267eab",
-      "exported_at": "2026-10-31T00:00:00.000000"
-    },
-    {
-      "name": "skill-picker.py",
-      "purpose": "UserPromptSubmit child (JEV-2) — lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
-      "export_hash": "a94c45ca663009e7ba663d61178eb226f2185eee5ad2d254e0f0ca575e625e22",
-      "exported_at": "2026-10-31T00:00:00.000000"
-    },
-    {
-      "name": "stuck-detect.py",
-      "purpose": "PostToolUse hook - advisory when the same exec command fails 3x consecutively (deterministic stuck-detector subset of token-economizer mechanism)",
-      "export_hash": "58feb125324e394a65d474b00269f6ce644a6ea97deb9982ec3461bf9514b9f2",
-      "exported_at": "2026-10-31T21:15:43.544713"
-    },
-    {
-      "name": "file-size-guard.py",
-      "source": "devin-bundle",
-      "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
-      "export_hash": "58e8c354dc226eb1eb3c005d47eca7c647b90f894afc04d617a3d46e8c89f77f",
-      "exported_at": "2026-11-05T07:58:08.569748"
-    },
-    {
-      "name": "token-saver.py",
-      "purpose": "UserPromptSubmit hook - injects output-mode preset fragment only on mode change (PandaCode-style token saver; presets in data/output-modes.json, state in .devin/output-mode.json)",
-      "export_hash": "331f98928a7ea81210bd80a381236064b51002ddfc103b5f30c82d13b3cd6ebe",
-      "exported_at": "2026-11-06T11:26:27.124730"
-    },
-    {
-      "name": "git-diff-stat.py",
-      "purpose": "PostToolUse hook - one-line 'diff-stat:' footer after exec calls when the active output-mode preset flags diff_footer (caveman/lean)",
-      "export_hash": "cfd4a551829e3bd8bdf2323b4367b9541b46a52968a1a903c872f8fbcad544d4",
-      "exported_at": "2026-11-06T11:26:27.124730"
-    },
-    {
-      "name": "rl-resume-detect.py",
-      "purpose": "Stop hook - rate-limit signature in last message writes .devin/rts/intents/ resume_at intent (opt-in, never auto-resumed)",
-      "export_hash": "1f90cc6c8582bda021365e911913fb77ee976ca2966ca5c47b08f121905eb161",
-      "exported_at": "2026-11-06T11:26:27.124730"
-    },
-    {
-      "name": "install-ledger.py",
-      "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "c96d76a7933eca19f34068952110047ba54734f9a501948bcd56d1c92e07cf4e",
-      "exported_at": "2026-11-06T11:26:27.124730"
-    },
-    {
-      "name": "check-tools.py",
-      "purpose": "tools.json validator - schema check + byte-identical render gate per enabled tool (M2_07 multi-CLI contract)",
-      "export_hash": "676fac28c10c53998240e7b4f4ee48bcb190cca0d28ac4411c1f0f9eadcd460c",
-      "exported_at": "2026-11-06T11:26:27.124730"
-    },
-    {
-      "name": "design-lint-gate.py",
-      "source": "devin-bundle",
-      "purpose": "PostToolUse(write|edit): warns on AI-UI slop at write time - 12 inline regex rules (no extension import); [DESIGN-LINT] via additionalContext; fail-open, never blocks (M2_05)",
-      "export_hash": "63949177f719f0d6f66485f0831aff8365394bef58546793fbbbc0dbd3b431df"
-    },
-    {
-      "name": "dep-audit.py",
-      "source": "devin-bundle",
-      "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
-      "export_hash": "75e08d61e7e5dd9753d14bc0eab9b754482c4242db5851fc4266694ce3978630",
-      "exported_at": "2026-11-07T14:17:08.896323"
-    },
-    {
-      "name": "dep-audit-gate.py",
-      "source": "devin-bundle",
-      "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "2df1eb88de3e90c37022c896e19cc6558bd86fc79247e8d902d4e8c948a8d21d",
-      "exported_at": "2026-11-07T14:17:08.896323"
-    },
-    {
-      "name": "roadmap-board.py",
-      "source": "devin-bundle",
-      "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "cb492dff64896aa8617b9ad179f2fb81cb14df16b971c70afeac55e824d83123",
-      "exported_at": "2026-11-07T15:46:30.089176"
     }
   ],
-  "script_count": 43,
+  "script_count": 45,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,

@@ -255,6 +255,13 @@ def interactive(draft_arg=None):
 
 
 def main():
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
     p = argparse.ArgumentParser(description="Golden Template prompt assembler.")
     p.add_argument("--draft", help="Spec JSON file path, or '-' for stdin")
     p.add_argument("--spec", help="Inline spec JSON string")

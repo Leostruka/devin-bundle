@@ -36,6 +36,7 @@ extensions/*/.venv/
 .devin/laya/daemon.*
 .devin/laya/shadow.jsonl
 .devin/laya/*.lock
+.devin/laya/models/
 
 # OS files
 Thumbs.db
@@ -73,3 +74,5 @@ extensions/asr/_cache/
 site/dist/
 .devin/install-ledger/
 .devin/code-graph/
+node_modules/
+.devin/scratch/if-eval/

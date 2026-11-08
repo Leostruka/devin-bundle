@@ -23,8 +23,13 @@ stage, never post-render.
    `plan_check.py` output + `ask_user_question`/ledger sign-off.
 5. **Render** — `extensions/remotion-render/render.py plan.json
    --workdir out/` -> Remotion project -> `npx remotion render`.
-6. **Composite** — overlay on source via ffmpeg
-   (`extensions/craft-bridge` filmcraft commands or media-tools path).
+6. **Composite** - `extensions/remotion-render/composite.py source
+   overlay -o out.mp4 [--fit frame|contain] [--pos x:y] [--mix]`:
+   source audio (narration) preserved by default, `--mix` amixes
+   overlay audio; alpha `.mov` renders overlay full-frame, mp4
+   renders use `--fit contain` PiP/lower-third. Per-beat `sync_range`
+   timing: render each beat clip separately and concat, or one
+   full-length plan - composite handles whole inputs only.
 
 ## Motion vocabulary
 
@@ -43,12 +48,16 @@ stage, never post-render.
 
 ## Beat -> visual mapping
 
-| Beat | visual.type | Notes |
+| Beat | visual.type | props contract |
 |---|---|---|
-| Claim / definition | `kinetic_text` | <= ~12 words on screen |
-| Process / sequence | `diagram_nodes` | stagger 6f per node |
-| Number / metric | `counter` | count up over ~1s + label |
-| Screenshot / asset | `pan_zoom` | slow zoom 1.0->~1.15 |
+| Claim / definition | `kinetic_text` | `{text: str, size?: num}` - <= ~12 words |
+| Process / sequence | `diagram_nodes` | `{nodes: [{label: str}, ...]}` - stagger 6f |
+| Number / metric | `counter` | `{to: num, label?: str}` - count up ~1s |
+| Screenshot / asset | `pan_zoom` | `{src: str, zoom?: num}` - slow zoom 1.0->~1.15 |
+
+`plan_check.py` enforces this contract (missing/wrong-typed required
+props = error before the gate); unknown types fall back to
+KineticText. Bool is not a number - `to: true` fails the check.
 
 Sync rules: beat duration >= read time (160 WPM); one visual on screen
 unless `overlay: true`; no motion during narration cuts.
@@ -64,7 +73,8 @@ AE. No paid TTS/ASR services; plan approval is a hard gate, always.
 - `extensions/asr/` — transcribe + bootstrap.
 - `extensions/remotion-render/` — `plan_check.py` (pre-gate validator:
   sync_range vs audio, overlap collisions, read-time + budget warnings),
-  `render.py` (materialize template + render), `templates/remotion-project/`
+  `render.py` (materialize template + render), `composite.py` (ffmpeg
+  overlay onto source, narration-first audio), `templates/remotion-project/`
   (Root + PlanComposition + primitives).
 - Plan contract extends `craft-bridge` scene_manifest v1 with
   `motion_spec` + `sync_range` (v2).

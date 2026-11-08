@@ -1,0 +1,112 @@
+{
+  "name": "eval",
+  "total": 16,
+  "correct": 0,
+  "wrong": 1,
+  "abstained": 15,
+  "correct_abstain": 0,
+  "shortlist_miss": 0,
+  "decided": 1,
+  "accuracy": 0.0,
+  "wilson_accuracy_low": 0.0,
+  "coverage": 0.0625,
+  "abstain_precision": 0.0,
+  "cases": [
+    {
+      "case_id": "kl-h01",
+      "outcome": "abstained",
+      "gold": "entity",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h02",
+      "outcome": "abstained",
+      "gold": "entity",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h03",
+      "outcome": "abstained",
+      "gold": "concept",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h04",
+      "outcome": "abstained",
+      "gold": "concept",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h05",
+      "outcome": "abstained",
+      "gold": "relation",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h06",
+      "outcome": "abstained",
+      "gold": "relation",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h07",
+      "outcome": "abstained",
+      "gold": "event",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h08",
+      "outcome": "abstained",
+      "gold": "event",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h09",
+      "outcome": "abstained",
+      "gold": "preference",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h10",
+      "outcome": "abstained",
+      "gold": "preference",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h11",
+      "outcome": "abstained",
+      "gold": "procedure",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h12",
+      "outcome": "wrong",
+      "gold": "procedure",
+      "picked": "event"
+    },
+    {
+      "case_id": "kl-h13",
+      "outcome": "abstained",
+      "gold": "definition",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h14",
+      "outcome": "abstained",
+      "gold": "definition",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h15",
+      "outcome": "abstained",
+      "gold": "claim",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "kl-h16",
+      "outcome": "abstained",
+      "gold": "claim",
+      "picked": "__none__"
+    }
+  ]
+}

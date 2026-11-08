@@ -157,6 +157,8 @@ def serve_socket(engine, config, *, host="127.0.0.1", port=0,
     threading.Thread(target=_idle_watchdog,
                      args=(server, state, idle_ttl_s),
                      daemon=True).start()
+    warm_ms = laya_worker.warm_engine(engine, config)
+    _diag(f"engine warm; warmup {warm_ms:.0f}ms")
     try:
         server.serve_forever(poll_interval=0.5)
     finally:

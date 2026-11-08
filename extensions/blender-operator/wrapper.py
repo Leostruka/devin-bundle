@@ -72,16 +72,16 @@ def _save_state(**kw):
     state = {}
     if os.path.exists(STATE_FILE):
         try:
-            state = json.load(open(STATE_FILE))
+            state = json.load(open(STATE_FILE, encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             pass
     state.update(kw)
-    json.dump(state, open(STATE_FILE, "w"), indent=1)
+    json.dump(state, open(STATE_FILE, "w", encoding="utf-8"), indent=1)
 
 
 def _load_state():
     try:
-        return json.load(open(STATE_FILE))
+        return json.load(open(STATE_FILE, encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
 
@@ -142,13 +142,14 @@ def _find_pids(image=None, cmdline_contains=None):
         q += " | Select-Object -ExpandProperty ProcessId"
         out = subprocess.run(
             ["powershell", "-NoProfile", "-Command", q],
-            capture_output=True, text=True, timeout=15,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=15,
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
         pids = [int(x) for x in out.split() if x.strip().isdigit()]
     else:
         out = subprocess.run(
             ["ps", "-axo", "pid,comm,args"], capture_output=True,
-            text=True, timeout=15
+            text=True, encoding="utf-8", errors="replace", timeout=15
         , creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
         for line in out.splitlines():
             parts = line.split(None, 2)
@@ -306,7 +307,8 @@ def cmd_self_test(args):
     if blender:
         try:
             v = subprocess.run([blender, "--version"], capture_output=True,
-                               text=True, timeout=20, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.splitlines()
+                               text=True, encoding="utf-8", errors="replace",
+                               timeout=20, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout.splitlines()
             out["checks"]["blender_version"] = v[0] if v else None
         except (OSError, subprocess.TimeoutExpired) as e:
             out["checks"]["blender_version_error"] = str(e)

@@ -1,0 +1,1402 @@
+{
+  "version": 1,
+  "frozen": true,
+  "eval": "knowledge-label-v1-cal-02-heldout",
+  "profile": "knowledge-label-v1",
+  "captured_at": "2026-11-08T18:33:57Z",
+  "config_sha256": "82bc6c0312f906a2bbf176c15730cbb4173c0457b9ee34f1673b53930fa6bd00",
+  "cases": [
+    {
+      "case_id": "kl-h01",
+      "gold": "entity",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h01",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "extensions/laya-tools/fit_calibration.py emits adoption curves over frozen manifests"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h01",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.942,
+        "raw_top_probability": 0.942,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h02",
+      "gold": "entity",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h02",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "issue #431 tracks the media-intent-v1 activation checklist"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h02",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.9186,
+        "raw_top_probability": 0.9186,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h03",
+      "gold": "concept",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h03",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "calibration maps translate raw model confidence into adoptable probabilities"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h03",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.8839,
+        "raw_top_probability": 0.8839,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h04",
+      "gold": "concept",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h04",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "abstention is the safe failure direction: the span simply stays unlabeled"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h04",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.5925,
+        "raw_top_probability": 0.5925,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h05",
+      "gold": "relation",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h05",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "capture_eval.py freezes worker replies so eval_decisions.py never calls the engine"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h05",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.6862,
+        "raw_top_probability": 0.6862,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h06",
+      "gold": "relation",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h06",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "skill-pick-v1 shortlist generation depends on workflow_routing family matching"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h06",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.5938,
+        "raw_top_probability": 0.5938,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h07",
+      "gold": "event",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h07",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "the UTF-8 stdio fix landed in commit e03abc1 and unblocked 25 corrupted eval cases"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h07",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.6388,
+        "raw_top_probability": 0.6388,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h08",
+      "gold": "event",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h08",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "held-out batch 2 captured 20 fresh media-intent cases"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h08",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.7745,
+        "raw_top_probability": 0.7745,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h09",
+      "gold": "preference",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h09",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "commits must carry no AI signatures or co-author trailers"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h09",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.5318,
+        "raw_top_probability": 0.5318,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h10",
+      "gold": "preference",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h10",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "run audit.py and the platform exporter dry-run before pushing"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h10",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.8622,
+        "raw_top_probability": 0.8622,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h11",
+      "gold": "procedure",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h11",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "to activate a laya profile: record checkpoint sha256, configure models, add calibration block, flip mode deliberately"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h11",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.6692,
+        "raw_top_probability": 0.6692,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h12",
+      "gold": "procedure",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h12",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "when a worker returns engine_error, reproduce the request standalone before classifying it transient"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h12",
+        "outcome": "suggestion",
+        "candidate_id": "event",
+        "context": {},
+        "raw_confidence": 0.4761,
+        "raw_top_probability": 0.4761,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h13",
+      "gold": "definition",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h13",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "PAVA isotonic regression pools adjacent violating blocks into non-decreasing fitted values"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h13",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.9063,
+        "raw_top_probability": 0.9063,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h14",
+      "gold": "definition",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h14",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "the Wilson interval bounds the true accuracy estimate for small evaluation samples"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h14",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.8923,
+        "raw_top_probability": 0.8923,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h15",
+      "gold": "claim",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h15",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "natural-language intent state decides while structured JSON digests abstain uniformly"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h15",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.7516,
+        "raw_top_probability": 0.7516,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "kl-h16",
+      "gold": "claim",
+      "request": {
+        "version": 1,
+        "request_id": "kl-h16",
+        "profile": "knowledge-label-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "label this extracted span",
+          "element_text": "the complaint-to-stylize_video failure is a model limitation no calibration map can fix"
+        },
+        "candidates": [
+          {
+            "id": "entity",
+            "role": "label",
+            "name": "entity",
+            "scope": "knowledge"
+          },
+          {
+            "id": "concept",
+            "role": "label",
+            "name": "concept",
+            "scope": "knowledge"
+          },
+          {
+            "id": "relation",
+            "role": "label",
+            "name": "relation",
+            "scope": "knowledge"
+          },
+          {
+            "id": "event",
+            "role": "label",
+            "name": "event",
+            "scope": "knowledge"
+          },
+          {
+            "id": "preference",
+            "role": "label",
+            "name": "preference",
+            "scope": "knowledge"
+          },
+          {
+            "id": "procedure",
+            "role": "label",
+            "name": "procedure",
+            "scope": "knowledge"
+          },
+          {
+            "id": "definition",
+            "role": "label",
+            "name": "definition",
+            "scope": "knowledge"
+          },
+          {
+            "id": "claim",
+            "role": "label",
+            "name": "claim",
+            "scope": "knowledge"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "kl-h16",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.6704,
+        "raw_top_probability": 0.6704,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "knowledge-label-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    }
+  ]
+}

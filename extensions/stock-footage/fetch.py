@@ -29,6 +29,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 MAX_JSON = 4 * 1024 * 1024        # 4 MiB cap on API responses
 MAX_FILE = 200 * 1024 * 1024      # 200 MiB cap on downloads
@@ -86,9 +87,12 @@ def _get_json(url, headers=None, timeout=TIMEOUT):
     if len(body) > MAX_JSON:
         raise _FetchError("response_too_large")
     try:
-        return json.loads(body)
+        data = json.loads(body)
     except ValueError:
         raise _FetchError("bad_json")
+    if not isinstance(data, dict):
+        raise _FetchError("bad_json:not_an_object")
+    return data
 
 
 def _key(provider):
@@ -213,7 +217,11 @@ def download(args):
         raise _FetchError("fetch_error:%s" % exc)
     if len(body) > MAX_FILE:
         raise _FetchError("file_too_large")
-    with open(args.out, "wb") as fh:
+    out = Path(args.out)
+    if out.exists():
+        raise _FetchError(f"out_exists:{args.out} (refusing to "
+                          "overwrite; pick another --out)")
+    with open(out, "wb") as fh:
         fh.write(body)
     return envelope("download", "ok", time.time() - t0,
                     result={"out": args.out, "bytes": len(body),

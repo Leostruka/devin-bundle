@@ -10,8 +10,12 @@ import json
 import os
 import re
 import shutil
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import status_vocab  # noqa: E402  (shared done/terminal vocabulary,
+                     # issues #405/#407)
 SRC = os.path.join(ROOT, "site", "src")
 DIST = os.path.join(ROOT, "site", "dist")
 
@@ -284,15 +288,17 @@ def _issue_items(idir):
         def _field(*names):
             for name in names:
                 m = re.search(
-                    rf"^(?:-\s*)?\*{{0,2}}{name}\*{{0,2}}:\s*(.+?)\s*$",
+                    rf"^(?:-\s*)?\*{{0,2}}{name}\*{{0,2}}:?\*{{0,2}}"
+                    rf"\s*[:=]?\s*(.+?)\s*$",
                     text, re.M | re.I)
                 if m:
                     return m.group(1).strip()
             return ""
         status = _field("status").split("\u00b7")[0].split("(")[0].strip().lower()
-        done = bool(re.search(
-            r"resolved|done|implemented|landed|merged|complete", status)
-        ) or re.search(r"^## (Answer|Done|Shipped|Landed)\b", text, re.M)
+        # shared vocabulary (#407): same done-set as roadmap-board;
+        # heading match exact-line only - "## Done when" is NOT done
+        done = status_vocab.is_terminal(status) or bool(re.search(
+            r"^## (Answer|Done|Shipped|Landed)\s*$", text, re.M))
         items.append({
             "file": fn,
             "title": title.group(1).strip() if title else fn[:-3],
@@ -316,8 +322,11 @@ def collect_issues():
                                            if i["status"] == "resolved"),
                            "items": items})
     base = os.path.join(ROOT, ".devin", "scratch")
+    archived = set(status_vocab.archived_efforts(ROOT))
     if os.path.isdir(base):
         for grp in sorted(os.listdir(base)):
+            if grp in archived:
+                continue
             idir = os.path.join(base, grp, "issues")
             if not os.path.isdir(idir):
                 continue
@@ -339,7 +348,8 @@ def collect_changelog():
         start = m.end()
         nxt = text.find("\n## ", start)
         body = text[start:nxt if nxt > 0 else len(text)]
-        feats = len(re.findall(r"^- \*\*", body, re.M))
+        # count top-level bullets - entries aren't required to be bold
+        feats = len(re.findall(r"^- ", body, re.M))
         rels.append({"version": m.group(1), "date": m.group(2) or "",
                      "entries": feats,
                      "html": md_to_html(body)[:6000]})

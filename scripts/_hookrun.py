@@ -13,6 +13,12 @@ Merge semantics:
   - `hookSpecificOutput.updatedInput` objects shallow-merge
   - non-JSON stdout is routed to stderr (hook stdout stays clean JSON)
   - a crashing script fails open (logged to stderr, does not block)
+
+Sub-script contract (issue #408): scripts run in-process and MUST be
+non-blocking - bounded CPU/regex work only, no network calls or unbounded
+disk scans. A hung script hangs the whole consolidated phase until the
+outer hook timeout kills everything; hooks.v1.json `timeout` is the only
+bound. Keep each script well under its phase budget.
 """
 import importlib.util
 import io
@@ -23,6 +29,8 @@ import time
 import traceback
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+METRICS_MAX_BYTES = 512 * 1024
+SLOW_SCRIPT_MS = 5000
 
 
 def metrics_sink_path():
@@ -32,14 +40,29 @@ def metrics_sink_path():
 
 
 def emit_metric(event, **fields):
-    """Append one JSON line to the metrics sink. Never raises."""
+    """Append one JSON line to the metrics sink. Never raises.
+    Rotates at METRICS_MAX_BYTES keeping the newest half (issue #408 -
+    the sink grew unbounded, ~10k lines / 2.2MB on one machine)."""
     try:
         path = metrics_sink_path()
         os.makedirs(os.path.dirname(path), exist_ok=True)
         rec = {"t": int(time.time()), "event": event}
         rec.update(fields)
+        line = json.dumps(rec, default=str) + "\n"
+        try:
+            if os.path.getsize(path) > METRICS_MAX_BYTES:
+                with open(path, "rb") as f:
+                    f.seek(-METRICS_MAX_BYTES // 2, os.SEEK_END)
+                    tail = f.read()
+                nl = tail.find(b"\n")
+                if nl >= 0:
+                    tail = tail[nl + 1:]
+                with open(path, "wb") as f:
+                    f.write(tail)
+        except OSError:
+            pass
         with open(path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(rec, default=str) + "\n")
+            f.write(line)
     except Exception:
         pass
 
@@ -78,8 +101,15 @@ def run(script_names, payload):
     blocked = None
     final_code = 0
     t0 = time.time()
+    timings = {}
     for name in script_names:
+        ts = time.time()
         code, out, err = _run_one(name, payload)
+        ms = int((time.time() - ts) * 1000)
+        timings[name] = ms
+        if ms > SLOW_SCRIPT_MS:
+            sys.stderr.write(
+                f"[hookrun] slow script {name}: {ms}ms\n")
         if err:
             sys.stderr.write(err)
         if code == 2 and final_code != 2:
@@ -135,6 +165,7 @@ def run(script_names, payload):
         scripts=','.join(script_names),
         duration_ms=int((time.time() - t0) * 1000),
         exit_code=rc,
+        timings_ms=timings,
     )
     return rc
 

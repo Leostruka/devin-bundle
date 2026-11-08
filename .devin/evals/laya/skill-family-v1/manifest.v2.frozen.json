@@ -1,0 +1,1925 @@
+{
+  "version": 1,
+  "frozen": true,
+  "eval": "skill-family-v1-cal-02",
+  "profile": "skill-family-v1",
+  "captured_at": "2026-11-08T16:38:51Z",
+  "config_sha256": "82bc6c0312f906a2bbf176c15730cbb4173c0457b9ee34f1673b53930fa6bd00",
+  "cases": [
+    {
+      "case_id": "sf-101",
+      "gold": "development",
+      "request": {
+        "version": 1,
+        "request_id": "sf-101",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "implement a REST endpoint that returns paginated issues and add unit tests for it"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-101",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": null,
+        "raw_top_probability": null,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "deadline_exceeded",
+        "model_identity": "none",
+        "profile_version": "skill-family-v1"
+      }
+    },
+    {
+      "case_id": "sf-102",
+      "gold": "development",
+      "request": {
+        "version": 1,
+        "request_id": "sf-102",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "fix the null-pointer crash in the payment handler and cover it with a regression test"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-102",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.8718,
+        "raw_top_probability": 0.8718,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-103",
+      "gold": "development",
+      "request": {
+        "version": 1,
+        "request_id": "sf-103",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "write a Python script that migrates the sqlite schema from v1 to v2"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-103",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.7672,
+        "raw_top_probability": 0.7672,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-104",
+      "gold": "investigation",
+      "request": {
+        "version": 1,
+        "request_id": "sf-104",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "figure out why the staging deploy started failing after last night's dependency bump"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-104",
+        "outcome": "suggestion",
+        "candidate_id": "investigation",
+        "context": {},
+        "raw_confidence": 0.6051,
+        "raw_top_probability": 0.6051,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-105",
+      "gold": "investigation",
+      "request": {
+        "version": 1,
+        "request_id": "sf-105",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "compare three charting libraries for bundle size and rendering speed, recommend one"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-105",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.4809,
+        "raw_top_probability": 0.4809,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-106",
+      "gold": "investigation",
+      "request": {
+        "version": 1,
+        "request_id": "sf-106",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "trace where the memory leak comes from in the worker process using the heap snapshot"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-106",
+        "outcome": "suggestion",
+        "candidate_id": "operations",
+        "context": {},
+        "raw_confidence": 0.35,
+        "raw_top_probability": 0.35,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-107",
+      "gold": "operations",
+      "request": {
+        "version": 1,
+        "request_id": "sf-107",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "restart the nightly backup job and verify last night's archive completed"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-107",
+        "outcome": "suggestion",
+        "candidate_id": "operations",
+        "context": {},
+        "raw_confidence": 0.7045,
+        "raw_top_probability": 0.7045,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-108",
+      "gold": "operations",
+      "request": {
+        "version": 1,
+        "request_id": "sf-108",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "rotate the API keys and update the vault entries"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-108",
+        "outcome": "suggestion",
+        "candidate_id": "operations",
+        "context": {},
+        "raw_confidence": 0.7001,
+        "raw_top_probability": 0.7001,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-109",
+      "gold": "operations",
+      "request": {
+        "version": 1,
+        "request_id": "sf-109",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "schedule the cert renewal and confirm the monitoring alert is wired"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-109",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.4038,
+        "raw_top_probability": 0.4038,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-110",
+      "gold": "data",
+      "request": {
+        "version": 1,
+        "request_id": "sf-110",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "analyze last quarter's sales CSV and find which regions declined most"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-110",
+        "outcome": "suggestion",
+        "candidate_id": "data",
+        "context": {},
+        "raw_confidence": 0.3237,
+        "raw_top_probability": 0.3237,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-111",
+      "gold": "data",
+      "request": {
+        "version": 1,
+        "request_id": "sf-111",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "build a dashboard of weekly active users from the events table"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-111",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.507,
+        "raw_top_probability": 0.507,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-112",
+      "gold": "data",
+      "request": {
+        "version": 1,
+        "request_id": "sf-112",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "clean the survey responses export and compute response-rate by cohort"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-112",
+        "outcome": "suggestion",
+        "candidate_id": "operations",
+        "context": {},
+        "raw_confidence": 0.2532,
+        "raw_top_probability": 0.2532,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-113",
+      "gold": "visual",
+      "request": {
+        "version": 1,
+        "request_id": "sf-113",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "design a logo for the new product line with three color directions"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-113",
+        "outcome": "suggestion",
+        "candidate_id": "visual",
+        "context": {},
+        "raw_confidence": 0.5233,
+        "raw_top_probability": 0.5233,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-114",
+      "gold": "visual",
+      "request": {
+        "version": 1,
+        "request_id": "sf-114",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "storyboard a 30-second product teaser video shot by shot"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-114",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.6694,
+        "raw_top_probability": 0.6694,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-115",
+      "gold": "visual",
+      "request": {
+        "version": 1,
+        "request_id": "sf-115",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "mock up the onboarding flow as a set of high-fidelity screens"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-115",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.8633,
+        "raw_top_probability": 0.8633,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-116",
+      "gold": "knowledge",
+      "request": {
+        "version": 1,
+        "request_id": "sf-116",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "explain how HTTP/2 multiplexing works compared to HTTP/1.1 pipelining"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-116",
+        "outcome": "suggestion",
+        "candidate_id": "knowledge",
+        "context": {},
+        "raw_confidence": 0.1909,
+        "raw_top_probability": 0.1909,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-117",
+      "gold": "knowledge",
+      "request": {
+        "version": 1,
+        "request_id": "sf-117",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "what are the tax implications of RSUs vesting in two jurisdictions? summarize the rules"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-117",
+        "outcome": "suggestion",
+        "candidate_id": "investigation",
+        "context": {},
+        "raw_confidence": 0.6648,
+        "raw_top_probability": 0.6648,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-118",
+      "gold": "knowledge",
+      "request": {
+        "version": 1,
+        "request_id": "sf-118",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "find the official docs for the Stripe webhook signature verification and summarize them"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-118",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.3777,
+        "raw_top_probability": 0.3777,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-119",
+      "gold": "assistance",
+      "request": {
+        "version": 1,
+        "request_id": "sf-119",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "help me write a cover letter for a product manager role"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-119",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.4967,
+        "raw_top_probability": 0.4967,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-120",
+      "gold": "assistance",
+      "request": {
+        "version": 1,
+        "request_id": "sf-120",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "plan a 3-day itinerary for Lisbon on a mid-range budget"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-120",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.9332,
+        "raw_top_probability": 0.9332,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-121",
+      "gold": "assistance",
+      "request": {
+        "version": 1,
+        "request_id": "sf-121",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "suggest a workout routine for someone returning from a knee injury"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-121",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.5535,
+        "raw_top_probability": 0.5535,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-122",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "sf-122",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "hi"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-122",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.6715,
+        "raw_top_probability": 0.6715,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-123",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "sf-123",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "fix the login bug and also design the new homepage hero image"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-123",
+        "outcome": "suggestion",
+        "candidate_id": "development",
+        "context": {},
+        "raw_confidence": 0.8567,
+        "raw_top_probability": 0.8567,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "sf-124",
+      "gold": "__none__",
+      "request": {
+        "version": 1,
+        "request_id": "sf-124",
+        "profile": "skill-family-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "what should I eat for dinner tonight and also help me debug this python error"
+        },
+        "candidates": [
+          {
+            "id": "development",
+            "role": "family",
+            "name": "development",
+            "scope": "routing"
+          },
+          {
+            "id": "investigation",
+            "role": "family",
+            "name": "investigation",
+            "scope": "routing"
+          },
+          {
+            "id": "operations",
+            "role": "family",
+            "name": "operations",
+            "scope": "routing"
+          },
+          {
+            "id": "data",
+            "role": "family",
+            "name": "data",
+            "scope": "routing"
+          },
+          {
+            "id": "visual",
+            "role": "family",
+            "name": "visual",
+            "scope": "routing"
+          },
+          {
+            "id": "knowledge",
+            "role": "family",
+            "name": "knowledge",
+            "scope": "routing"
+          },
+          {
+            "id": "assistance",
+            "role": "family",
+            "name": "assistance",
+            "scope": "routing"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "sf-124",
+        "outcome": "suggestion",
+        "candidate_id": "assistance",
+        "context": {},
+        "raw_confidence": 0.6076,
+        "raw_top_probability": 0.6076,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "uncalibrated",
+        "model_identity": "english",
+        "profile_version": "skill-family-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    }
+  ]
+}

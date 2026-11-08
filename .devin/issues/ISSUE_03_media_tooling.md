@@ -1,6 +1,6 @@
 # ISSUE 03: Advanced Media Tooling, consume storytold engines (MCP/CLI/crates), build only gaps
 
-Status: planned (research done) · Source: `github.com/storytold` (44 repos) · Ledger: `.devin/research/4_fronts_recon.md`
+Status: in-progress · Source: `github.com/storytold` (44 repos) · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
@@ -66,6 +66,11 @@ Todo app craft expõe o mesmo trio: **CLI + JSON control channel + MCP server**.
 4. `scene_manifest` schema v1 + mapper to filmcraft/photocraft command sequences; golden-output tests.
 5. `spark-view` preview for splat assets.
 6. Update skills (`media-tools`, `creative-engineering`, `mcp-lazy-enablement` entry).
+
+## Progress (2026-11-09 audit)
+
+- Landed: `extensions/craft-bridge/` (bridge.py, ops_matrix.md, scene_manifest.py, spark-view) + tests/test_craft_bridge.py (13 tests, green); media-tools skill references craft engines
+- Pending: verify steps 3-6 against live craft CLIs (smoke open->edit->export, golden-output tests, spark-view preview check on this machine)
 
 ## Non-goals
 

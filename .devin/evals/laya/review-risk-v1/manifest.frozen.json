@@ -1,0 +1,842 @@
+{
+  "version": 1,
+  "frozen": true,
+  "eval": "review-risk-v1-cal-01",
+  "profile": "review-risk-v1",
+  "captured_at": "2026-11-08T17:06:32Z",
+  "config_sha256": "82bc6c0312f906a2bbf176c15730cbb4173c0457b9ee34f1673b53930fa6bd00",
+  "cases": [
+    {
+      "case_id": "rr-001",
+      "gold": "low",
+      "request": {
+        "version": 1,
+        "request_id": "rr-001",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 3, \"diff_lines\": 45, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-001",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1479,
+        "raw_top_probability": 0.1479,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-002",
+      "gold": "low",
+      "request": {
+        "version": 1,
+        "request_id": "rr-002",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 1, \"diff_lines\": 12, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-002",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1431,
+        "raw_top_probability": 0.1431,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-003",
+      "gold": "low",
+      "request": {
+        "version": 1,
+        "request_id": "rr-003",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 5, \"diff_lines\": 120, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-003",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1463,
+        "raw_top_probability": 0.1463,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-004",
+      "gold": "low",
+      "request": {
+        "version": 1,
+        "request_id": "rr-004",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 2, \"diff_lines\": 30, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-004",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.152,
+        "raw_top_probability": 0.152,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-005",
+      "gold": "medium",
+      "request": {
+        "version": 1,
+        "request_id": "rr-005",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 4, \"diff_lines\": 60, \"has_tests\": false, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-005",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1674,
+        "raw_top_probability": 0.1674,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-006",
+      "gold": "medium",
+      "request": {
+        "version": 1,
+        "request_id": "rr-006",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 3, \"diff_lines\": 55, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-006",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.149,
+        "raw_top_probability": 0.149,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-007",
+      "gold": "medium",
+      "request": {
+        "version": 1,
+        "request_id": "rr-007",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 8, \"diff_lines\": 900, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-007",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1549,
+        "raw_top_probability": 0.1549,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-008",
+      "gold": "medium",
+      "request": {
+        "version": 1,
+        "request_id": "rr-008",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 2, \"diff_lines\": 25, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": false}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-008",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1403,
+        "raw_top_probability": 0.1403,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-009",
+      "gold": "medium",
+      "request": {
+        "version": 1,
+        "request_id": "rr-009",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 6, \"diff_lines\": 400, \"has_tests\": false, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": false}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-009",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1571,
+        "raw_top_probability": 0.1571,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-010",
+      "gold": "high",
+      "request": {
+        "version": 1,
+        "request_id": "rr-010",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 2, \"diff_lines\": 80, \"has_tests\": true, \"q1\": true, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-010",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1556,
+        "raw_top_probability": 0.1556,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-011",
+      "gold": "high",
+      "request": {
+        "version": 1,
+        "request_id": "rr-011",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 1, \"diff_lines\": 15, \"has_tests\": true, \"q1\": false, \"q2\": true, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-011",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.143,
+        "raw_top_probability": 0.143,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-012",
+      "gold": "high",
+      "request": {
+        "version": 1,
+        "request_id": "rr-012",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 3, \"diff_lines\": 200, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": true, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-012",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1533,
+        "raw_top_probability": 0.1533,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-013",
+      "gold": "critical",
+      "request": {
+        "version": 1,
+        "request_id": "rr-013",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 4, \"diff_lines\": 300, \"has_tests\": true, \"q1\": true, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-013",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1668,
+        "raw_top_probability": 0.1668,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-014",
+      "gold": "critical",
+      "request": {
+        "version": 1,
+        "request_id": "rr-014",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 2, \"diff_lines\": 150, \"has_tests\": true, \"q1\": true, \"q2\": true, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-014",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1528,
+        "raw_top_probability": 0.1528,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-015",
+      "gold": "critical",
+      "request": {
+        "version": 1,
+        "request_id": "rr-015",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 5, \"diff_lines\": 800, \"has_tests\": true, \"q1\": false, \"q2\": true, \"q3\": true, \"q5\": true, \"q6\": true, \"q7\": true}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-015",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1547,
+        "raw_top_probability": 0.1547,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    },
+    {
+      "case_id": "rr-016",
+      "gold": "medium",
+      "request": {
+        "version": 1,
+        "request_id": "rr-016",
+        "profile": "review-risk-v1",
+        "mode": "shadow",
+        "state": {
+          "goal": "classify review risk of this diff",
+          "snippets": "{\"files_changed\": 7, \"diff_lines\": 250, \"has_tests\": false, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": false}",
+          "confidence_hint": "0.0"
+        },
+        "candidates": [
+          {
+            "id": "low"
+          },
+          {
+            "id": "medium"
+          },
+          {
+            "id": "high"
+          },
+          {
+            "id": "critical"
+          }
+        ],
+        "deadline_ms": 1000
+      },
+      "reply": {
+        "ok": true,
+        "version": 1,
+        "request_id": "rr-016",
+        "outcome": "abstain",
+        "candidate_id": "__none__",
+        "context": {},
+        "raw_confidence": 0.1604,
+        "raw_top_probability": 0.1604,
+        "calibrated_probability": null,
+        "calibration_id": null,
+        "mode": "shadow",
+        "adoptable": false,
+        "reason": "no_match",
+        "model_identity": "english",
+        "profile_version": "review-risk-v1",
+        "device": "cpu",
+        "routing": {
+          "model": "english",
+          "reason": "English Latin text"
+        }
+      }
+    }
+  ]
+}

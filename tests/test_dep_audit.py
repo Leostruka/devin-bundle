@@ -153,3 +153,103 @@ def test_gate_silent_on_clean():
         with contextlib.suppress(SystemExit):
             gate.main()
     assert out.getvalue() == ""
+
+
+# --- issue #404: INSTALL_RE coverage + hook-budget timeout ---
+
+@pytest.mark.parametrize("cmd", [
+    "python -m pip install requests",
+    "python3.11 -m pip install -r req.txt",
+    "py -m pip install requests",
+    "pipx install httpie",
+    "uv add requests",
+    "uv pip install requests",
+    "poetry add requests",
+    "pipenv install",
+    "conda install numpy",
+    "bundle install",
+    "gem install rails",
+    "mix deps.get",
+    "dotnet add package Foo",
+    "dotnet tool install -g dotnet-ef",
+    "composer global require phpunit/phpunit",
+    "sudo npm install lodash",
+    "cd app && cargo add serde",
+])
+def test_install_re_matches(cmd):
+    assert gate.INSTALL_RE.search(cmd), cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "pip list",
+    "pip freeze",
+    "gem list",
+    "bundle exec rspec",
+    "mix test",
+    "dotnet build",
+    "dotnet run",
+    "npm ls",
+    "cargo build",
+    "git status",
+])
+def test_install_re_ignores_non_install(cmd):
+    assert not gate.INSTALL_RE.search(cmd), cmd
+
+
+def test_gate_scan_bounded_by_hook_budget():
+    """Gate must pass --max-seconds and stay under the 35s hook timeout
+    (issue #404: 300s child timeout could never finish inside budget)."""
+    out = io.StringIO()
+    payload = {"tool_name": "exec",
+               "tool_input": {"command": "pip install requests"}}
+    clean = {"ok": True, "scanned": [{"findings": []}],
+             "skipped": [], "errors": []}
+
+    class P:
+        stdout = json.dumps(clean)
+        stderr = ""
+        returncode = 0
+
+    with patch.object(sys, "stdin", io.StringIO(json.dumps(payload))), \
+         patch.object(sys, "stdout", out), \
+         patch.dict(os.environ, {"DEVIN_PROJECT_DIR": os.getcwd()}), \
+         patch.object(gate.shutil, "which", lambda n: "/x"), \
+         patch.object(gate.subprocess, "run") as run:
+        run.return_value = P()
+        import contextlib
+        with contextlib.suppress(SystemExit):
+            gate.main()
+    argv = run.call_args[0][0]
+    assert "--max-seconds" in argv
+    assert argv[argv.index("--max-seconds") + 1] == "28"
+    assert run.call_args[1]["timeout"] <= 33
+
+
+def test_dep_audit_max_seconds_skips_exhausted(tmp_path, monkeypatch):
+    """--max-seconds=0 exhausts budget immediately: detected ecosystems
+    are skipped 'budget-exhausted', never scanned."""
+    (tmp_path / "requirements.txt").write_text("requests\n")
+    (tmp_path / "package.json").write_text("{}")
+    monkeypatch.setattr(audit.shutil, "which",
+                        lambda n: "/x" if n in ("pip-audit", "npm") else None)
+    out = audit.scan(str(tmp_path), max_seconds=0)
+    assert out["ok"] is True
+    assert out["scanned"] == []
+    reasons = {s["ecosystem"]: s["reason"] for s in out["skipped"]}
+    assert reasons.get("python") == "budget-exhausted"
+    assert reasons.get("node") == "budget-exhausted"
+
+
+def test_deadline_caps_scanner_timeout():
+    dl = audit._Deadline(5)
+    assert dl.cap(300) <= 5
+    assert audit._Deadline(None).cap(300) == 300
+
+
+def test_main_root_after_max_seconds(tmp_path, monkeypatch, capsys):
+    """Review regression: --root honored in any argv position."""
+    (tmp_path / "package.json").write_text("{}")
+    monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path / "wrong"))
+    audit.main(["--max-seconds", "30", "--root", str(tmp_path)])
+    out = json.loads(capsys.readouterr().out)
+    assert out["ok"] is True

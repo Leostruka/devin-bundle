@@ -14,11 +14,13 @@ Credential contract:
   - Secrets are never printed; absence -> status "missing", never fake.
   - --ics <file> works fully offline for dev/tests.
 """
+import hashlib
 import json
 import os
 import re
+import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 try:
     import tomllib
@@ -26,7 +28,6 @@ except ImportError:  # python < 3.11
     tomllib = None
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
-FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy"
 EVENTS_URL = ("https://www.googleapis.com/calendar/v3/calendars/"
               "{calendar_id}/events")
 CAL_LIST_URL = ("https://www.googleapis.com/calendar/v3/users/me/"
@@ -102,16 +103,51 @@ def access_token(creds):
 
 
 def free_busy(token, calendars, tmin, tmax):
-    """Return merged busy [{start,end}] across calendars (ISO strs)."""
-    data = _post_json(FREEBUSY_URL, {
-        "timeMin": tmin,
-        "timeMax": tmax,
-        "items": [{"id": c} for c in calendars],
-    }, headers={"Authorization": "Bearer " + token})
-    busy = []
-    for cal in data.get("calendars", {}).values():
-        busy.extend(cal.get("busy", []))
-    return busy
+    """-> {"busy": [{start,end}], "all_day": [{summary,start}]}.
+
+    events.list per calendar (timed events only block slots; all-day
+    events are informational - reminders/holidays must not zero out a
+    planning day). Transparent + cancelled events excluded."""
+    busy, all_day = [], []
+    truncated = False
+    for cal in calendars:
+        page_token = None
+        for _ in range(40):  # 40 x 250 = 10k events safety cap
+            params = {
+                "timeMin": tmin, "timeMax": tmax,
+                "singleEvents": "true", "orderBy": "startTime",
+                "maxResults": 250,
+                # only the fields we consume - no attendee PII over-fetch
+                "fields": ("items(status,transparency,start,end,"
+                           "summary),nextPageToken"),
+            }
+            if page_token:
+                params["pageToken"] = page_token
+            url = ("https://www.googleapis.com/calendar/v3/calendars/"
+                   + urllib.parse.quote(cal, safe="") + "/events?"
+                   + urllib.parse.urlencode(params))
+            data = _get_json(url,
+                             headers={"Authorization": "Bearer " + token})
+            for e in data.get("items", []):
+                if e.get("status") == "cancelled" \
+                        or e.get("transparency") == "transparent":
+                    continue
+                start, end = e.get("start", {}), e.get("end", {})
+                if "dateTime" in start and "dateTime" in end:
+                    busy.append({"start": start["dateTime"],
+                                 "end": end["dateTime"]})
+                elif "date" in start:
+                    all_day.append({"summary": e.get("summary"),
+                                    "start": start["date"]})
+            page_token = data.get("nextPageToken")
+            if not page_token:
+                break
+        else:
+            truncated = True
+    out = {"busy": busy, "all_day": all_day}
+    if truncated:
+        out["truncated"] = True
+    return out
 
 
 def _parse_dt(s):
@@ -142,11 +178,43 @@ def event_payload(summary, start, end, description=None, location=None,
 
 def create_event(token, calendar_id, payload):
     """events.insert -> created event {id, htmlLink, status}. Raises."""
-    url = EVENTS_URL.format(calendar_id=calendar_id)
+    url = EVENTS_URL.format(
+        calendar_id=urllib.parse.quote(calendar_id, safe=""))
     data = _post_json(url, payload,
                       headers={"Authorization": "Bearer " + token})
     return {"id": data.get("id"), "htmlLink": data.get("htmlLink"),
             "status": data.get("status", "confirmed")}
+
+
+def event_dedupe_key(*parts):
+    """Stable idempotency key for a calendar event (issue #399)."""
+    return hashlib.sha256(
+        "|".join(str(p) for p in parts).encode("utf-8")
+    ).hexdigest()[:24]
+
+
+def stamp_event(payload, key):
+    """Attach extendedProperties.private.bundle_key for dedupe lookup."""
+    payload.setdefault("extendedProperties", {}) \
+        .setdefault("private", {})["bundle_key"] = key
+    return payload
+
+
+def find_events_by_key(token, calendar_id, key, tmin=None, tmax=None):
+    """events.list filtered by private extended property bundle_key.
+    -> list of matching event items (usually 0 or 1)."""
+    params = {"privateExtendedProperty": f"bundle_key={key}",
+              "maxResults": 10, "singleEvents": "true"}
+    if tmin:
+        params["timeMin"] = tmin
+    if tmax:
+        params["timeMax"] = tmax
+    url = (EVENTS_URL.format(
+        calendar_id=urllib.parse.quote(calendar_id, safe="")) + "?"
+        + urllib.parse.urlencode(params))
+    data = _get_json(url,
+                     headers={"Authorization": "Bearer " + token})
+    return data.get("items", [])
 
 
 def list_calendars(token):
@@ -159,9 +227,11 @@ def list_calendars(token):
 
 
 def find_calendar(token, name):
-    """Return calendar id whose summary matches name, else None."""
+    """Return calendar id whose summary matches name (case-insensitive,
+    stripped - Google summaries are display strings, not ids)."""
+    want = (name or "").strip().lower()
     for c in list_calendars(token):
-        if c["summary"] == name:
+        if (c["summary"] or "").strip().lower() == want:
             return c["id"]
     return None
 
@@ -207,43 +277,127 @@ def free_slots(busy, tmin, tmax):
 _ICS_DT = re.compile(
     r"^(?P<d>\d{8})(?:T(?P<t>\d{6})(?P<z>Z)?)?$")
 
+try:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+except ImportError:  # pragma: no cover - py<3.9
+    ZoneInfo = None
+    ZoneInfoNotFoundError = KeyError
 
-def _ics_dt(value):
-    """Return aware datetime or None for DATE/all-day start."""
+_tz_cache = {}
+
+
+def _tz(name, warnings):
+    if name in _tz_cache:
+        return _tz_cache[name]
+    try:
+        tz = ZoneInfo(name) if ZoneInfo else None
+        if tz is None:
+            raise ZoneInfoNotFoundError(name)
+    except Exception:
+        warnings.append(f"TZID {name!r} unresolved; assumed UTC")
+        tz = timezone.utc
+    _tz_cache[name] = tz
+    return tz
+
+
+def _ics_dt(value, params, warnings):
+    """Parse an ICS DATE/DATE-TIME property.
+
+    params: raw ';'-separated parameter string (TZID=, VALUE=).
+    Returns (all_day, dt) - all_day True for VALUE=DATE or bare
+    YYYYMMDD; dt is an aware UTC datetime (floating times assumed UTC
+    with a warning; TZID resolved via zoneinfo/tzdata when present).
+    """
     m = _ICS_DT.match(value.strip())
     if not m:
-        return None
-    d, t = m.group("d"), m.group("t")
-    if t is None:
-        return datetime.strptime(d, "%Y%m%d").replace(
-            tzinfo=timezone.utc)  # all-day -> date at 00:00Z
+        return False, None
+    d, t, z = m.group("d"), m.group("t"), m.group("z")
+    p = {}
+    for seg in params.split(";"):
+        k, _, v = seg.partition("=")
+        if v:
+            p[k.strip().upper()] = v.strip()
+    if t is None or p.get("VALUE") == "DATE":
+        return True, datetime.strptime(d, "%Y%m%d").replace(
+            tzinfo=timezone.utc)
     dt = datetime.strptime(d + t, "%Y%m%d%H%M%S")
-    return dt.replace(tzinfo=timezone.utc)
+    if z:
+        return False, dt.replace(tzinfo=timezone.utc)
+    tzid = p.get("TZID")
+    if tzid:
+        return False, dt.replace(tzinfo=_tz(tzid, warnings)
+                                 ).astimezone(timezone.utc)
+    warnings.append("floating time (no Z/TZID) assumed UTC")
+    return False, dt.replace(tzinfo=timezone.utc)
 
 
-def ics_busy(text):
-    """Parse VEVENT DTSTART/DTEND pairs from unfolded .ics text."""
+def _unfold(text):
     lines = []
     for raw in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
         if raw[:1] in (" ", "\t") and lines:
             lines[-1] += raw[1:]
         else:
             lines.append(raw)
-    busy, cur = [], {}
+    return lines
+
+
+def ics_busy(text):
+    """Parse VEVENTs from unfolded .ics text.
+
+    Returns {"busy": [{start,end}], "all_day": [{summary,start,end}],
+    "recurring": <RRULE count>, "warnings": [...]}.
+
+    Semantics aligned with the api path (issue #397): all-day VEVENTs
+    are informational, never full-day busy. TZID parameters convert via
+    zoneinfo (#396). RRULE/EXDATE are NOT expanded (stdlib-only): each
+    recurring VEVENT contributes only its DTSTART instance and is
+    counted in "recurring" so callers can warn (#398).
+    """
+    busy, all_day, warnings = [], [], []
+    recurring = 0
+    cur = {}
     in_ev = False
-    for line in lines:
-        name, _, val = line.partition(":")
-        prop = name.split(";", 1)[0].upper()
+    for line in _unfold(text):
+        head, _, val = line.partition(":")
+        parts = head.split(";")
+        prop = parts[0].upper()
+        params = ";".join(parts[1:])
         if prop == "BEGIN" and val.upper() == "VEVENT":
             in_ev, cur = True, {}
         elif prop == "END" and val.upper() == "VEVENT":
-            if cur.get("start") and cur.get("end") \
-                    and cur["end"] > cur["start"]:
-                busy.append({"start": cur["start"].isoformat(),
-                             "end": cur["end"].isoformat()})
+            if cur.get("transp") != "TRANSPARENT":
+                if cur.get("all_day") and cur.get("start"):
+                    end = cur.get("end") or (
+                        cur["start"] + timedelta(days=1))
+                    all_day.append({
+                        "summary": cur.get("summary"),
+                        "start": cur["start"].date().isoformat(),
+                        "end": end.date().isoformat()})
+                elif cur.get("start") and cur.get("end") \
+                        and cur["end"] > cur["start"]:
+                    busy.append({"start": cur["start"].isoformat(),
+                                 "end": cur["end"].isoformat()})
             in_ev = False
-        elif in_ev and prop in ("DTSTART", "DTEND"):
-            dt = _ics_dt(val)
+        elif not in_ev:
+            continue
+        elif prop == "RRULE":
+            recurring += 1
+        elif prop == "TRANSP":
+            cur["transp"] = val.upper()
+        elif prop == "SUMMARY":
+            cur["summary"] = val
+        elif prop in ("DTSTART", "DTEND"):
+            all_day_flag, dt = _ics_dt(val, params, warnings)
             if dt is not None:
-                cur["start" if prop == "DTSTART" else "end"] = dt
-    return busy
+                key = ("start" if prop == "DTSTART" else "end")
+                cur[key] = dt
+                if prop == "DTSTART":
+                    cur["all_day"] = all_day_flag
+    # de-duplicate identical floating-time warnings
+    seen, uniq = set(), []
+    for w in warnings:
+        if w not in seen:
+            seen.add(w)
+            uniq.append(w)
+    return {"busy": busy, "all_day": all_day, "recurring": recurring,
+            "warnings": uniq}
