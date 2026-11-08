@@ -199,3 +199,20 @@ first, deterministic fallback when the daemon is down.
   EVERY evaluated profile now has held-out evidence except the
   three trajectory/structured-state abstainers (compact-boundary,
   compact-gate, review-risk) whose run01 0/0 already settles them.
+  issue-category-v1 calibration fit: maps cap at ~0.67 calibrated
+  p (platt slope negative - confidence anti-correlates with
+  correctness on train). Calibration cannot help; shadow-only.
+
+  ## FINAL STANDINGS (2026-11-09, all evidence frozen)
+  - media-intent-v1: STRONG - 0.9565 held-out adopted acc; only
+    activation candidate, checklist in GH issue #431.
+  - issue-category-v1: 2nd-tier triage ~0.74-0.83; confidence has
+    no signal, calibration useless.
+  - skill-pick-v1: borderline ~0.83 combined; one high-conf wrong
+    on overlapping skills.
+  - media-preset-v1: 0.92 acc / 0.41 cov - conservative suggester.
+  - knowledge-label-v1: DOWNGRADED (held-out 0.000/0.0625).
+  - All others: not viable (collapse, unsafe direction, or
+    uniform abstention on trajectory/structured state).
+  Production mode remains OFF everywhere; deterministic checks
+  stay authoritative.
