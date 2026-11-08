@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- hyperframes render arg parsing: a flag value starting with `--` (e.g. `--fps --output x`) is now rejected as "flag missing value" instead of silently consuming the next flag as the value; 1 new test.
+
 - voicebox generate `--out` overwrite guard: refuses to truncate an existing file and fails before the synthesis call (both voicebox and voicestudio backends); 1 new test.
 
 - stock-footage fetch hardening: `--out` now refuses to overwrite an existing file (was silent truncation of any path); non-dict JSON API responses return typed `bad_json:not_an_object` instead of crashing with AttributeError outside the envelope; 2 new tests.

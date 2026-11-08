@@ -151,7 +151,7 @@ def parse_render_args(argv):
                 fwd.append(tok)
                 i += 1
             else:
-                if i + 1 >= len(argv):
+                if i + 1 >= len(argv) or argv[i + 1].startswith("--"):
                     emit(envelope("rejected", "render",
                                   stderr="flag missing value: %s" % flag), 2)
                 fwd.extend([tok, argv[i + 1]])
