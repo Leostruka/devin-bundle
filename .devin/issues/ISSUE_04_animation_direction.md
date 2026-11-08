@@ -1,6 +1,6 @@
 # ISSUE 04, Animation Direction: narration → scene plan → code-rendered motion
 
-Status: planned (research done) · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) · Ledger: `.devin/research/4_fronts_recon.md`
+Status: in-progress · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
@@ -35,6 +35,11 @@ Status: planned (research done) · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) �
 4. `plan_check` + gate wiring; then ffmpeg composite path (Issue 03 `timeline.py`).
 5. End-to-end: 30s narrated clip → plan → approve → rendered composite.
 6. Write `animation-direction` SKILL.md.
+
+## Progress (2026-11-09 audit)
+
+- Landed: `extensions/asr/` (transcribe.py + bootstrap.py, #430 hardened), `extensions/remotion-render/` (render.py, plan_check.py, templates), `skills/animation-direction/SKILL.md`, tests/test_animation_pipeline.py (19 tests, green)
+- Pending: step 5 end-to-end proof - real 30s narrated clip -> plan -> approve -> rendered composite
 
 ## Non-goals
 

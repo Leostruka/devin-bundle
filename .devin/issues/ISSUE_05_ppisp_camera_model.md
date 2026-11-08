@@ -1,6 +1,6 @@
 # ISSUE 05: PPISP camera-model inversion for clean 3D reconstruction
 
-Status: planned (research done) · Source: transcript (user-provided) + NVIDIA `nv-tlabs/ppisp` (research.nvidia.com/labs/sil/projects/ppisp) · Ledger: `.devin/research/4_fronts_recon.md`
+Status: in-progress · Source: transcript (user-provided) + NVIDIA `nv-tlabs/ppisp` (research.nvidia.com/labs/sil/projects/ppisp) · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
@@ -31,6 +31,11 @@ Status: planned (research done) · Source: transcript (user-provided) + NVIDIA `
 2. `ppisp_runner.py` end-to-end on the same set; gate: corrected render vs raw render floaters visible diff + upstream metrics.
 3. Wire into `ai3d-gen` intake (skill edit); document camera-mix guidance.
 4. Held-out check (Rule 15): fresh capture set, measure reconstruction-quality delta.
+
+## Progress (2026-11-09 audit)
+
+- Landed: `extensions/ppisp-prep/` (photo_qc.py, ppisp_runner.py) + tests/test_ppisp_prep.py (10 tests, green) + ai3d-gen SKILL.md intake wiring (step 3)
+- Pending: step 4 held-out check (Rule 15) - fresh capture set, reconstruction-quality delta
 
 ## Non-goals
 

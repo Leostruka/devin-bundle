@@ -1,6 +1,6 @@
 # ISSUE 02: Cognitive Vision (image provenance & PRNU forensics)
 
-Status: planned (research done) · Source: IG `DeRX9KpJPlT` (@plattipusofficial) + Lukáš/Fridrich/Goljan 2006 + Corvi et al. ICASSP 2023 · Ledger: `.devin/research/4_fronts_recon.md`
+Status: in-progress · Source: IG `DeRX9KpJPlT` (@plattipusofficial) + Lukáš/Fridrich/Goljan 2006 + Corvi et al. ICASSP 2023 · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
@@ -36,6 +36,11 @@ Status: planned (research done) · Source: IG `DeRX9KpJPlT` (@plattipusofficial)
 3. `verdict.py` combine signals; abstain when residual energy below noise floor.
 4. Held-out validation per Rule 15: fresh image set, no calibration leakage; record metrics in refinement log.
 5. Write `image-forensics` SKILL.md; link from `ai3d-gen` preflight + `fact-check`.
+
+## Progress (2026-11-09 audit)
+
+- Landed: `extensions/image-forensics/` (metadata.py, prnu.py, verdict.py) + `skills/image-forensics/SKILL.md` + tests/test_image_forensics.py (10 tests, green)
+- Pending: step 4 held-out validation metrics (Rule 15) - fresh image set, no calibration leakage
 
 ## Non-goals
 
