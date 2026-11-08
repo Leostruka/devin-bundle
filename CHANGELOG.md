@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- diagram-tools plantuml renderer hardening: server moved to https (was plaintext http - MITM could inject scriptable SVG); response body capped at 32 MiB (was unbounded read); explicit `-o` refuses to overwrite an existing file (default derived `<src>.<fmt>` stays overwritable for idempotent re-renders); 4 new tests.
+- mesh-utils meshops: `clean` now checks src exists (was the only command missing it - missing file crashed with a traceback instead of typed `{"ok": false}`); `convert`/`clean` refuse to overwrite an existing dst; 3 new tests.
+
 - hyperframes render arg parsing: a flag value starting with `--` (e.g. `--fps --output x`) is now rejected as "flag missing value" instead of silently consuming the next flag as the value; 1 new test.
 
 - voicebox generate `--out` overwrite guard: refuses to truncate an existing file and fails before the synthesis call (both voicebox and voicestudio backends); 1 new test.

@@ -23,7 +23,8 @@ import urllib.request
 import zlib
 from pathlib import Path
 
-SERVER = "http://www.plantuml.com/plantuml"
+SERVER = "https://www.plantuml.com/plantuml"
+MAX_BYTES = 32 * 1024 * 1024  # 32 MiB cap on rendered artifacts
 _ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
 
 START_RE = re.compile(r"@start\w+", re.IGNORECASE)
@@ -80,9 +81,11 @@ def render(src_path, fmt, out_path=None, server=SERVER):
     req = urllib.request.Request(url, headers={"User-Agent": "devin-bundle-plantuml/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
-            body = r.read()
+            body = r.read(MAX_BYTES + 1)
     except Exception as e:
         emit({"ok": False, "error": f"render request failed: {e}"}, 1)
+    if len(body) > MAX_BYTES:
+        emit({"ok": False, "error": "response exceeds %d bytes" % MAX_BYTES}, 1)
     if fmt == "svg" and b"<svg" not in body[:2000]:
         emit({"ok": False, "error": "server returned non-SVG (syntax error in source?)",
               "preview": body[:300].decode("utf-8", "replace")}, 1)
@@ -125,6 +128,10 @@ def main():
         errors = check_source(text)
         emit({"ok": not errors, "source": args.source, "errors": errors}, 0 if not errors else 2)
 
+    if args.out and Path(args.out).exists():
+        emit({"ok": False,
+              "error": f"out exists: {args.out} (refusing to overwrite; "
+                       "pick another -o or delete it first)"}, 2)
     out = render(args.source, args.format, args.out)
     emit({"ok": True, "path": str(out.resolve()), "bytes": out.stat().st_size})
 

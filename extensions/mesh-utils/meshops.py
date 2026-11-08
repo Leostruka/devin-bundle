@@ -102,9 +102,16 @@ def cmd_info(path):
     _out({"ok": True, "file": path, "engine": engine, **info})
 
 
+def _check_dst(dst):
+    if os.path.exists(dst):
+        _fail(f"dst exists: {dst} (refusing to overwrite; "
+              "pick another path or delete it first)")
+
+
 def cmd_convert(src, dst):
     if not os.path.exists(src):
         _fail(f"file not found: {src}")
+    _check_dst(dst)
     engine, obj = _load(src)
     if engine == "pxr":
         obj.Export(dst)
@@ -117,6 +124,9 @@ def cmd_convert(src, dst):
 
 def cmd_clean(src, dst):
     """Remove unreferenced vertices, merge duplicates, fix normals."""
+    if not os.path.exists(src):
+        _fail(f"file not found: {src}")
+    _check_dst(dst)
     engine, obj = _load(src)
     if engine == "pymeshlab":
         ms = obj
