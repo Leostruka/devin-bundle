@@ -165,6 +165,18 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | manifest.json | `./manifest.json` | — | Manifesto de export |
 | .mcp.json | — (deny rule) | `~/.config/devin/.mcp.json` | MCP config alternativo |
 
+**Ferramentas externas verificadas (não vendored - evals #423-#426):**
+- `agent-desktop` (vercel-labs, Apache-2.0, v1.2.0): `npx agent-desktop`
+  - percepção UIA/AX-tree p/ desktop apps, refs estáveis, JSON envelopes;
+  spike de backend p/ computer-use em #427.
+- `stageshow` (benjitaylor/skills, sem licença): `npx skills add
+  benjitaylor/skills --skill stageshow` - faux-UI p/ marketing; padrão
+  rehearsal-gate documentado em #428.
+- `pr-agent` (The-PR-Agent, Apache-2.0/MIT): `pip install pr-agent` -
+  reviewer externo via litellm; TRACK até existir provider key (#426).
+- `dropstone` (dropstone.io): agente CLI em open weights com lineup
+  rotativo; TRACK - lições aplicadas em MODEL-GUIDE.md (#425).
+
 **Configs do runtime NÃO no bundle (não bundleable):**
 - System prompt (Devin CLI runtime, injetado pelo CLI)
 - Sandbox config (runtime, não persistente)

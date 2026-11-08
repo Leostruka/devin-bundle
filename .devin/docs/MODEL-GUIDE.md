@@ -407,6 +407,19 @@ Disponível para trabalho     consulte `context_window` em `data/bundle-models.j
 
 > Nota: este arquivo (MODEL-GUIDE.md) é leitura opcional - não carrega automaticamente.
 
+## Revisão de lineup (cadência)
+
+`data/bundle-models.json` é uma tabela estática; eval #425 (Dropstone)
+mostrou o valor de tratar slots de modelo como lineup revisável. Cadência:
+
+- **Trimestral** (ou quando `devin models list` mostrar nova variante):
+  revisar cada papel (parent, advisor, subagents) contra as variantes
+  disponíveis; registrar promoções/rebaixamentos neste arquivo.
+- Slots são positions, não modelos fixos - uma variante pode ser
+  promovida a Max e outra rebaixada a Medium sem mudar o contrato.
+- Segurança permanece **fora** do modelo (hooks.v1.json); nunca mover
+  guardrails para dentro de prompts - lição registrada do eval #425.
+
 ## Verificação de fontes (Rule 12)
 
 Especificações de modelos devem ser verificadas contra
