@@ -51,6 +51,13 @@ first, deterministic fallback when the daemon is down.
   intent OK, fine-grained taxonomy NOT viable. Options recorded:
   more cases, simplified label sets, or different checkpoint.
   Artifacts: `.devin/evals/laya/{issue-category-v1,output-context-v1}/`.
+  **Third run**: skill-family-v1, two drafts - run01 dev-flavored
+  goals acc 0.125 (eval-design flaw: dev vocabulary legitimately
+  reads as development), run02 cross-domain goals acc 0.421. Cross-
+  profile pattern: accuracy degrades with label cardinality
+  (3-way 0.68 / 5-way 0.56 / 7-way 0.42). Viable paths: shrink label
+  sets to <=3, binary reformulations, or different checkpoint.
+  Artifacts: `.devin/evals/laya/skill-family-v1/`.
 - Adding `review-risk-v1` to `profile.json.profiles` when calibrated.
 - BitNet adapter evaluation as a decision backend (`ai-tools/`).
   Measured 2026-11-09 (runtime at
