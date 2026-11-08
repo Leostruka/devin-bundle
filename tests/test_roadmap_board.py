@@ -110,7 +110,8 @@ def test_capacity_view(tmp_path):
     assert eff1["total"] == 4 and eff1["done"] == 1
     assert eff1["open"] == 3
     assert eff1["ready"] == 1      # R1-02 only - in-flight is claimed
-    assert eff1["blocked"] == 1    # R1-04 explicit blocked status
+    assert eff1["blocked"] == 2    # R1-03 in-flight + R1-04 blocked:
+                                  # open and not claimable (#405/#417)
     assert eff1["in_flight"] == 1
     assert cap["totals"]["in_flight"] == 1
     assert cap["frontier"] == cap["totals"]["ready"]
@@ -132,6 +133,126 @@ def test_capacity_blocked_by_undone(tmp_path):
     assert b["ready"] is False
     assert cap["totals"]["blocked"] == 1
     assert cap["totals"]["ready"] == 1
+
+
+def test_blocked_by_markdown_residue(tmp_path):
+    """Issue #402: '**Blocked by:** `X`**' captures must not leak
+    markdown chars into refs."""
+    _mk(tmp_path, ".devin/issues/A.md",
+        "# A\n\nStatus: resolved\n")
+    _mk(tmp_path, ".devin/issues/B.md",
+        "# B\n\nStatus: open\n\n**Blocked by:** `A` and **C**\n")
+    _mk(tmp_path, ".devin/issues/C.md",
+        "# C\n\nStatus: resolved\n")
+    issues = rb.build_model(str(tmp_path))
+    b = {i["key"]: i for i in issues}["B"]
+    assert [r["ref"] for r in b["blockers"]] == ["A", "C"]
+    assert all(r["known"] and r["done"] for r in b["blockers"])
+    assert b["ready"] is True
+
+
+def test_blocked_by_prose_none(tmp_path):
+    """Issue #402: 'None - can start immediately' is not a blocker."""
+    _mk(tmp_path, ".devin/issues/A.md",
+        "# A\n\nStatus: open\nBlocked-by: None - can start immediately\n")
+    issues = rb.build_model(str(tmp_path))
+    assert issues[0]["blockers"] == []
+    assert issues[0]["ready"] is True
+
+
+def test_group_prefix_blocker_ref(tmp_path):
+    """Issue #403: scratch DAGs reference siblings as '01', '02' -
+    resolved within the same effort group only."""
+    _mk(tmp_path, ".devin/scratch/effX/issues/01-alpha.md",
+        "# alpha\n\nstatus: resolved\n")
+    _mk(tmp_path, ".devin/scratch/effX/issues/02-beta.md",
+        "# beta\n\nstatus: open\nblocked_by: 01\n")
+    _mk(tmp_path, ".devin/scratch/effY/issues/01-other.md",
+        "# other effort, same prefix\n\nstatus: open\n")
+    issues = rb.build_model(str(tmp_path))
+    by_key = {i["key"]: i for i in issues}
+    b = by_key["02-beta"]
+    assert b["blockers"][0]["known"] is True
+    assert b["blockers"][0]["via"] == "group-prefix"
+    assert b["blockers"][0]["done"] is True
+    assert b["ready"] is True
+    # effY's 01-other must NOT satisfy effX's refs (group-scoped)
+    other = by_key["01-other"]
+    assert other["ready"] is True
+
+
+def test_group_prefix_blocks_when_undone(tmp_path):
+    _mk(tmp_path, ".devin/scratch/effX/issues/01-alpha.md",
+        "# alpha\n\nstatus: open\n")
+    _mk(tmp_path, ".devin/scratch/effX/issues/02-beta.md",
+        "# beta\n\nstatus: open\nblocked_by: 01\n")
+    issues = rb.build_model(str(tmp_path))
+    b = {i["key"]: i for i in issues}["02-beta"]
+    assert b["blockers"][0]["known"] is True
+    assert b["blockers"][0]["done"] is False
+    assert b["ready"] is False
+
+
+def test_non_actionable_statuses_not_ready(tmp_path):
+    """Issue #405: implemented/landed/wontfix/archived/superseded-*
+    are terminal; blocked/needs-*/in-flight are not claimable."""
+    terminal = ["implemented", "landed", "wontfix", "archived",
+                "superseded-by-x"]
+    deferred = ["blocked", "needs-triage", "needs-info", "on-hold",
+                "in-progress", "claimed"]
+    for n, st in enumerate(terminal):
+        _mk(tmp_path, f".devin/issues/T{n}.md",
+            f"# t{n}\n\nStatus: {st}\n")
+    for n, st in enumerate(deferred):
+        _mk(tmp_path, f".devin/issues/D{n}.md",
+            f"# d{n}\n\nStatus: {st}\n")
+    issues = rb.build_model(str(tmp_path))
+    for i in issues:
+        assert i["ready"] is False, i["key"]
+    by_key = {i["key"]: i for i in issues}
+    for n in range(len(terminal)):
+        assert by_key[f"T{n}"]["done"] is True
+    for n in range(len(deferred)):
+        assert by_key[f"D{n}"]["done"] is False
+
+
+def test_status_vocab_parity_with_site(tmp_path):
+    """Issue #407: roadmap-board and site/build.py share
+    status_vocab - same status must classify identically."""
+    spec = importlib.util.spec_from_file_location(
+        "site_build", os.path.join(
+            os.path.dirname(__file__), "..", "site", "build.py"))
+    site = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(site)
+
+    idir = tmp_path / "issues"
+    idir.mkdir()
+    statuses = ["resolved", "implemented", "landed", "closed",
+                "shipped", "wontfix", "archived", "superseded-by-9",
+                "blocked", "needs-triage", "in-progress", "open"]
+    for n, st in enumerate(statuses):
+        (idir / f"I{n}.md").write_text(
+            f"# i{n}\n\nStatus: {st}\n", encoding="utf-8")
+    # generic '## Done when' section must NOT mark resolved
+    (idir / "J.md").write_text(
+        "# j\n\nStatus: open\n\n## Done when\n\ncriteria\n",
+        encoding="utf-8")
+
+    rb_issues = []
+    for p in sorted(idir.glob("*.md")):
+        rb_issues.append(rb.parse_issue(str(p), "g"))
+    rb_closed = {i["status"]: i["done"] for i in rb_issues}
+    site_items = {i["file"]: i for i in site._issue_items(str(idir))}
+    mismatches = []
+    for n, st in enumerate(statuses):
+        fn = f"I{n}.md"
+        site_closed = site_items[fn]["status"] == "resolved"
+        if site_closed != rb_closed[st]:
+            mismatches.append((st, site_closed, rb_closed[st]))
+    assert not mismatches, mismatches
+    # '## Done when' is a checklist heading, not a resolution marker
+    j = site_items["J.md"]
+    assert j["status"] != "resolved"
 
 
 def test_capacity_in_json_and_md(tmp_path, capsys):

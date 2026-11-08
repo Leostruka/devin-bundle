@@ -10,8 +10,12 @@ import json
 import os
 import re
 import shutil
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import status_vocab  # noqa: E402  (shared done/terminal vocabulary,
+                     # issues #405/#407)
 SRC = os.path.join(ROOT, "site", "src")
 DIST = os.path.join(ROOT, "site", "dist")
 
@@ -290,9 +294,10 @@ def _issue_items(idir):
                     return m.group(1).strip()
             return ""
         status = _field("status").split("\u00b7")[0].split("(")[0].strip().lower()
-        done = bool(re.search(
-            r"resolved|done|implemented|landed|merged|complete", status)
-        ) or re.search(r"^## (Answer|Done|Shipped|Landed)\b", text, re.M)
+        # shared vocabulary (#407): same done-set as roadmap-board;
+        # heading match exact-line only - "## Done when" is NOT done
+        done = status_vocab.is_terminal(status) or bool(re.search(
+            r"^## (Answer|Done|Shipped|Landed)\s*$", text, re.M))
         items.append({
             "file": fn,
             "title": title.group(1).strip() if title else fn[:-3],

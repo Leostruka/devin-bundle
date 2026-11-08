@@ -16,14 +16,16 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import status_vocab  # noqa: E402
+
 TITLE_RE = re.compile(r"^#\s+(.+?)\s*$", re.M)
 STATUS_RE = re.compile(r"(?im)^\s*(?:status|Status)\s*[:=]\s*([\w-]+)")
 PRIORITY_RE = re.compile(r"(?im)^\s*priority\s*[:=]\s*([\w-]+)")
 BLOCKED_BY_RE = re.compile(r"(?i)blocked[-_ ]by\s*[:=]\s*([^\n·|]+)")
 BLOCKS_RE = re.compile(r"(?i)(?<![-\w])blocks\s*[:=]\s*([^\n·|]+)")
-DONE = {"resolved", "done", "completed", "closed", "merged", "shipped"}
-IN_FLIGHT = {"in-progress", "claimed", "wip", "doing", "active"}
-BLOCKED_STATUS = {"blocked"}
+_MD_CHARS = re.compile(r"[*`\[\]()]")  # not '_': keys use it (MILESTONE_2_01)
+_PREFIX_REF = re.compile(r"[0-9A-Za-z]+")
 
 
 def _iter_issue_files(root):
@@ -51,10 +53,19 @@ def _split_ids(raw):
     if not raw:
         return []
     raw = raw.strip().strip("`.").rstrip(".")
-    if raw.lower() in ("none", "-", "n/a", ""):
-        return []
-    return [t.strip().strip("`") for t in re.split(r"[,;]|\band\b", raw)
-            if t.strip().strip("`")]
+    out = []
+    for t in re.split(r"[,;]|\band\b", raw):
+        # strip markdown emphasis/links residue (**Blocked by:** lines
+        # capture the closing ** - issue #402)
+        t = _MD_CHARS.sub("", t).strip().strip("`.").rstrip(".")
+        if not t or t.lower() in ("none", "n/a", "-", ""):
+            continue
+        # prose tails like "None - can start immediately" -> none
+        head = re.split(r"\s+[—–-]\s+|\s{2,}", t)[0].strip()
+        if head.lower() in ("none", "n/a", "-"):
+            continue
+        out.append(t)
+    return out
 
 
 def parse_issue(path, group):
@@ -72,7 +83,7 @@ def parse_issue(path, group):
     stem = os.path.splitext(os.path.basename(path))[0]
     return {
         "key": stem, "title": title, "group": group, "path": path,
-        "status": status, "done": status in DONE,
+        "status": status, "done": status_vocab.is_terminal(status),
         "priority": (_first(PRIORITY_RE, text) or "").upper() or None,
         "blocked_by": blocked_by, "blocks": blocks,
     }
@@ -93,6 +104,24 @@ def _aliases(issue):
     return out
 
 
+def _group_prefix_match(ref, group, issues):
+    """Same-effort numeric-prefix resolution (issue #403): scratch DAGs
+    reference siblings as '01', '02' etc. Only matches within the same
+    group - many efforts have their own 01-*.md."""
+    ref_l = ref.strip().lower()
+    if (not ref_l or not ref_l[0].isdigit()
+            or not _PREFIX_REF.fullmatch(ref_l) or len(ref_l) > 12):
+        return None
+    for cand in issues:
+        if cand["group"] != group:
+            continue
+        k = cand["key"].lower()
+        first = k.split("-", 1)[0]
+        if k == ref_l or first == ref_l or k.startswith(ref_l + "-"):
+            return cand
+    return None
+
+
 def build_model(root):
     issues = [parse_issue(p, g) for p, g in _iter_issue_files(root)]
     by_alias = {}
@@ -102,15 +131,23 @@ def build_model(root):
     for i in issues:
         resolved = []
         for b in i["blocked_by"]:
-            hit = by_alias.get(b.lower().strip())
+            ref = b.lower().strip()
+            hit = by_alias.get(ref)
+            via = "alias" if hit else None
+            if hit is None:
+                hit = _group_prefix_match(ref, i["group"], issues)
+                via = "group-prefix" if hit else None
             resolved.append({
                 "ref": b,
                 "known": hit is not None,
                 "done": bool(hit and hit["done"]),
+                "via": via,
             })
         i["blockers"] = resolved
         i["ready"] = (not i["done"]
-                      and all(b["done"] or not b["known"] for b in resolved))
+                      and status_vocab.is_claimable(i["status"])
+                      and all(b["done"] or not b["known"]
+                              for b in resolved))
     return issues
 
 
@@ -132,11 +169,11 @@ def _cap_bucket():
 def capacity(issues, wip_limit=None):
     """Meso capacity/WIP view (issue #417): per-effort load vs frontier.
 
-    open = not done; ready = claimable now (unblocked, not in-flight,
-    not explicit blocked status); blocked = open and (not ready or
-    blocked status); in_flight = status in IN_FLIGHT (vocabulary lands
-    with #405/#407 - currently usually 0). An in-flight issue with an
-    undone blocker counts in both in_flight and blocked.
+    open = not done; ready = claimable now (status claimable + blockers
+    satisfied); blocked = open and not ready (includes blocked status,
+    undone blockers, non-actionable and in-flight work); in_flight =
+    status in status_vocab.IN_FLIGHT (subset marker, may overlap
+    blocked). Status vocabulary is shared with site/build.py (#407).
     """
     groups = {}
     for i in issues:
@@ -146,12 +183,12 @@ def capacity(issues, wip_limit=None):
             g["done"] += 1
             continue
         g["open"] += 1
-        if i["status"] in IN_FLIGHT:
-            g["in_flight"] += 1
-        if i["status"] in BLOCKED_STATUS or not i["ready"]:
-            g["blocked"] += 1
-        elif i["status"] not in IN_FLIGHT:
+        if i["ready"]:
             g["ready"] += 1
+        else:
+            g["blocked"] += 1
+        if i["status"] in status_vocab.IN_FLIGHT:
+            g["in_flight"] += 1
     totals = _cap_bucket()
     for g in groups.values():
         for k in totals:
@@ -197,7 +234,7 @@ def render_md(issues, root):
     cap = capacity(issues)
     lines.append("## Capacity")
     lines.append("")
-    lines.append("| Group | Open | Ready | Blocked | In-flight |")
+    lines.append("| Group | Open | Ready | Not ready | In-flight |")
     lines.append("|---|---|---|---|---|")
     for g in sorted(cap["by_group"]):
         b = cap["by_group"][g]
