@@ -185,3 +185,23 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   decides; structured JSON/digest state abstains uniformly;
   distinct intents match, comprehension/trajectory fails.
 - Commits: 9928d27, d9091ac, 6b72684, f6a895d, b28ba9d, 8b38bd7.
+
+## Sun PM addendum 5 - held-out batch 2 + UTF-8 root cause (14:52-16:40)
+- media-intent-v1 held-out batch 2 (+20 fresh): adopted 13/13.
+  Combined held-out 40 cases: 0.9565 adopted acc. Failure mode
+  pinned to complaint/observation phrasing.
+- fit_calibration.py: platt + PAVA-isotonic map fitting over
+  frozen manifests with separate held-out scoring (7 tests).
+  Bake-off: table 0.9583 best; no map separates wrong adoptions -
+  residual risk is model-side, needs consumer guard.
+- Guard trade-off analyzed on frozen data: imperative-only filter
+  catches the wrong adoption but also blocks a correct noun-phrase
+  request (acc->1.000, cov->0.525). Documented, not shipped.
+- ROOT CAUSE: engine_error:TypeError = cp1252 stdio mojibake ->
+  lone surrogates -> tokenizer reject. pin_stdio_utf8() fix;
+  skill-pick-v1 recaptured 0.882/0.567 (was corrupted 0.133 cov -
+  'extreme abstention' was bug artifact); filebool recaptured
+  0.500/0.500. Same class swept: mcp_server, cu_session,
+  ui_dsl, scrape parse, prompt_compiler, review_gate.
+- Issue #431 filed: media-intent activation checklist.
+- Commits: 73387f9, d9daf04, 0f0fe21, aa06cb1, e03abc1, 62a19bc.
