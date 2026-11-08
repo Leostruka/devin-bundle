@@ -79,3 +79,20 @@ confidences are compressed (0.11-0.76) - unlike media-intent's
 saturated 0.6-1.0, this profile's probabilities leave room for a
 meaningful calibration map. Combined evidence: ~0.74 decided acc
 over 40 cases - best fixed-label triage profile, still shadow.
+
+## Calibration fit (fit_calibration.py, 2026-11-09)
+
+`calibration-fit.json` - platt + isotonic table fit on run01
+(19 decided), scored on held-out.
+
+| map @ thr | adopted | held-out acc |
+|---|---|---|
+| platt @0.5-0.6 | 11 | 0.818 |
+| table @0.5-0.6 | 12 | 0.833 |
+| any @>=0.7 | 0-9 | - |
+
+The fitted maps never exceed ~0.67 calibrated probability -
+raw confidence carries almost no correctness signal for this
+profile (platt slope even went negative: higher conf -> lower
+acc on train). Calibration cannot manufacture accuracy; at usable
+thresholds it adopts ~everything at ~0.82. Confirms shadow-only.
