@@ -172,6 +172,15 @@ def cmd_models(args):
                           "models": try_json(body)}), 0)
 
 
+def _check_out(args, action):
+    """Refuse to overwrite an existing --out path (fail before the
+    potentially slow synthesis call)."""
+    if os.path.exists(args.out):
+        emit(envelope(action, "error", 0.0,
+                      error="out_exists:%s (refusing to overwrite; "
+                            "pick another --out)" % args.out), 2)
+
+
 def cmd_generate(args):
     backend = resolve_backend(args)
     if backend == "voicestudio":
@@ -181,6 +190,7 @@ def cmd_generate(args):
     if base is None:
         emit(envelope("generate", "error", time.time() - t0,
                       error="VB_HOST must be a localhost http URL"), 2)
+    _check_out(args, "generate")
     payload = {"text": args.text, "voice": args.voice}
     if args.engine:
         payload["engine"] = args.engine
@@ -236,6 +246,7 @@ def vs_models():
 def vs_generate(args):
     t0 = time.time()
     base = vs_base("generate")
+    _check_out(args, "generate")
     payload = {"model": args.engine or "tts-1", "voice": args.voice,
                "input": args.text, "response_format": "wav"}
     try:
