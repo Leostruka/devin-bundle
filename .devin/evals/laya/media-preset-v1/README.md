@@ -38,3 +38,23 @@ capture ran against `.devin/laya/profile.calibration.json`.
   correct intent decision, so end-to-end assist quality compounds;
   shadow evidence is consistent but thin (n=16). Same activation
   contract applies; NOT enabled.
+
+## Held-out run (2026-11-09 - 16 fresh phrasings)
+
+`cases.heldout.json` / `manifest.heldout.frozen.json` /
+`report.heldout.json`.
+
+| metric | value |
+|---|---|
+| total | 16 |
+| accuracy (decided) | **1.000** (5/5) |
+| coverage | **0.3125** |
+
+Perfect precision but coverage collapsed vs run01 (0.50 -> 0.31):
+poetic preset phrasings ("digital rain of falling green code
+columns" for matrix, "scanlines and screen curvature" for
+retro-crt) abstain while literal ones ("flat clean design",
+"ultra sharp") decide correctly. Combined: ~0.92 decided acc,
+~0.41 coverage - high-precision/low-recall, same shape as
+knowledge-label but with real engagement. Borderline: viable only
+as a conservative suggester, not a router.

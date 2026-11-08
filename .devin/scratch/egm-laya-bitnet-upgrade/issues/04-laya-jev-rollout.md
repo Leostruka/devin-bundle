@@ -189,3 +189,13 @@ first, deterministic fallback when the daemon is down.
   46-case evidence 0.826 decided acc, errors gate-rejectable;
   borderline viable 2nd tier. Standing: media-intent-v1 remains
   the ONLY strong assist candidate (0.9565 held-out adopted).
+  issue-category-v1 held-out (16 fresh): 0.833/0.75 - beats run01;
+  confidences compressed (0.11-0.76) so a calibration map could
+  actually help here. Combined ~0.74/40 cases - solid 2nd-tier
+  fixed-label candidate.
+  media-preset-v1 held-out (16 fresh): 1.000/0.3125 - perfect
+  precision, coverage halved; poetic phrasings abstain. Combined
+  ~0.92/~0.41 - conservative-suggester shape only.
+  EVERY evaluated profile now has held-out evidence except the
+  three trajectory/structured-state abstainers (compact-boundary,
+  compact-gate, review-risk) whose run01 0/0 already settles them.

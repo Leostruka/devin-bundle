@@ -59,3 +59,23 @@ cd extensions/laya-tools
   --mode evaluate \
   --out ../../.devin/evals/laya/issue-category-v1/report.json
 ```
+
+## Held-out run (2026-11-09 - 16 fresh issue texts)
+
+`cases.heldout.json` / `manifest.heldout.frozen.json` /
+`report.heldout.json` - fresh bug/enhancement/needs_info/__none__
+texts, none reused from run01.
+
+| metric | value |
+|---|---|
+| total | 16 |
+| accuracy (decided) | **0.833** (10/12) |
+| coverage | **0.75** |
+
+Held-out beats run01 (0.684): the fresh set has clearer defect-vs-
+feature language. Both errors are gate-rejectable (needs_info->bug
+p=0.42, __none__->bug p=0.33 on a thank-you note). Notable: raw
+confidences are compressed (0.11-0.76) - unlike media-intent's
+saturated 0.6-1.0, this profile's probabilities leave room for a
+meaningful calibration map. Combined evidence: ~0.74 decided acc
+over 40 cases - best fixed-label triage profile, still shadow.

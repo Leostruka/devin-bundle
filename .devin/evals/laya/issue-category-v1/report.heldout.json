@@ -1,0 +1,112 @@
+{
+  "name": "eval",
+  "total": 16,
+  "correct": 10,
+  "wrong": 2,
+  "abstained": 3,
+  "correct_abstain": 1,
+  "shortlist_miss": 0,
+  "decided": 12,
+  "accuracy": 0.8333333333333334,
+  "wilson_accuracy_low": 0.6007701549569141,
+  "coverage": 0.75,
+  "abstain_precision": 0.25,
+  "cases": [
+    {
+      "case_id": "ic-h01",
+      "outcome": "abstained",
+      "gold": "bug",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-h02",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-h03",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-h04",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-h05",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-h06",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-h07",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-h08",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-h09",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-h10",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-h11",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-h12",
+      "outcome": "abstained",
+      "gold": "needs_info",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-h13",
+      "outcome": "wrong",
+      "gold": "needs_info",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-h14",
+      "outcome": "abstained",
+      "gold": "needs_info",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-h15",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-h16",
+      "outcome": "wrong",
+      "gold": "__none__",
+      "picked": "bug"
+    }
+  ]
+}

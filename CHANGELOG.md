@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- laya held-out sweep complete: issue-category-v1 held-out 0.833/0.75 (beats run01's 0.684; compressed confidences 0.11-0.76 leave room for a real calibration map - solid 2nd-tier triage); media-preset-v1 held-out 1.000/0.3125 (perfect precision, poetic phrasings abstain - conservative-suggester only). Every evaluated profile now carries held-out evidence.
+
 - laya held-out corrections: knowledge-label-v1 held-out (16 fresh spans) acc 0.000/cov 0.0625 - run02 perfect-precision was small-sample artifact, DOWNGRADED not viable; skill-pick-v1 held-out (16 fresh goals, post-UTF8-fix) acc 0.667/cov 0.375, combined 46-case evidence 0.826 decided acc with gate-rejectable errors - borderline viable second-tier. media-intent-v1 remains the only strong assist candidate.
 
 - stdio UTF-8 sweep (same cp1252 class as the laya fix): pinned `reconfigure(encoding="utf-8", errors="replace")` on stdin/stdout in `computer-use/mcp_server.py` (MCP JSON-RPC - spec mandates UTF-8), `computer-use/cu_session.py` worker_main (JSON-lines worker), `craft-bridge/ui_dsl.py`, `scrape-tools/parse.py`, `ai-tools/prompt_compiler.py` (piped-content readers matching their file-path utf-8 siblings), and `laya-tools/review_gate.py` via `dc.pin_stdio_utf8()`. Non-ASCII piped input no longer mojibakes; non-ASCII JSON output no longer fails to encode on Windows.
