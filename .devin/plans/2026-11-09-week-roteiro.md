@@ -216,3 +216,17 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
   export_hash synced.
 - Audit now 39 checks, 0 errors / 0 warnings. Full suite re-run
   before push.
+
+## Sun PM addendum 7 - deadline root cause + activation pre-staging (16:18-16:35)
+- deadline_exceeded analysis: 20 misses across frozen manifests,
+  16 at case idx 0 = cold-start artifact (~>1s first-request CPU vs
+  1000ms budget; steady ~200ms). Residual 4 = heavy-prompt jitter.
+- Fix: laya_worker.warm_engine() throwaway predict at startup, wired
+  into serve-stdio main + layad serve_socket; live-verified first
+  request now returns suggestion. +2 tests. Commit b69c878.
+- #431 items 1-4 pre-staged: proposal JSON pins english checkpoint
+  (HF rev 7b928d82, artifact sha256 54f69565...) + exact config
+  delta; activation_errors dry-run clean. Vendoring note: HF cache
+  path fragile, move snapshot before activation. Commit eb8ac74.
+- Audit now 39 checks (added [39] stdio decode; caught+fixed 4
+  script stdin readers). Suite 2361 green. Commits 6c8af75, b69c878.
