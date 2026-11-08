@@ -27,7 +27,7 @@ production `profile.json` stays `mode: off`; capture ran against
 ## Failure mode
 
 **runtime_failure collapse** — 7 of 9 misses picked `runtime_failure`
-for source_or_documentation (tsc/mypy/py_compile/eslint), 
+for source_or_documentation (tsc/mypy/py_compile/eslint),
 expected_test_failure (pytest/jest/unittest), and needs_inspection.
 The engine keys on error-shaped surface text ("error", "FAILED",
 "warning") and cannot separate compile/test/warning classes from
