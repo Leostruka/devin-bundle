@@ -71,3 +71,21 @@ second-tier behind media-intent-v1; assist still gated.
   artifact; corrected run shows 0.882/0.567. Still shadow: one
   high-confidence wrong on overlapping skills (sp-022) plus the
   standard activation checklist applies.
+
+## Held-out run (2026-11-09 - 16 fresh goals, post-UTF8-fix)
+
+`cases.heldout.json` / `manifest.heldout.frozen.json` /
+`report.heldout.json` - fresh goals over the same real family
+shortlists; 3 __none__ controls.
+
+| metric | value |
+|---|---|
+| total | 16 |
+| accuracy (decided) | **0.667** (4/6) |
+| coverage | **0.375** |
+
+Combined evidence (utf8 run + heldout, 46 cases): decided 23,
+correct 19 -> 0.826 acc; both held-out errors sit at p<=0.49
+(gate-rejectable at thr 0.9); the only high-conf wrong remains
+sp-022 (system-control vs computer-use, genuinely overlapping).
+Verdict: borderline viable, second-tier; assist still gated.

@@ -53,3 +53,21 @@ invalidate.
   probability gate could adopt suggestions safely. Still requires
   the standard calibration block (id, checkpoint digest, threshold,
   eval id); NOT enabled by this run alone.
+
+## Held-out run (2026-11-09 - 16 fresh spans)
+
+`cases.heldout.json` / `manifest.heldout.frozen.json` /
+`report.heldout.json` - fresh spans across all 8 ontology labels,
+none reused from run02.
+
+| metric | value |
+|---|---|
+| total | 16 |
+| accuracy (decided) | **0.000** (0/1) |
+| coverage | **0.0625** |
+
+The run02 "perfect precision, conservative recall" verdict was a
+small-sample artifact: on held-out data the profile abstains 15/16
+and its single decision was WRONG (procedure -> event at p=0.48).
+Downgraded: NOT viable - the ontology labels do not engage this
+checkpoint beyond near-total abstention.

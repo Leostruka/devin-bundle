@@ -182,3 +182,10 @@ first, deterministic fallback when the daemon is down.
   decision_client path was equally affected - any non-ASCII state
   errored. Artifacts: manifest.utf8.frozen.json + report.utf8.json
   in both profiles.
+  **Held-out corrections (same day)**: knowledge-label-v1 held-out
+  (16 fresh spans) -> 0.000/0.0625, the run02 perfect-precision
+  was small-sample artifact; DOWNGRADED not viable. skill-pick-v1
+  held-out (16 fresh goals, post-UTF8-fix) -> 0.667/0.375; combined
+  46-case evidence 0.826 decided acc, errors gate-rejectable;
+  borderline viable 2nd tier. Standing: media-intent-v1 remains
+  the ONLY strong assist candidate (0.9565 held-out adopted).
