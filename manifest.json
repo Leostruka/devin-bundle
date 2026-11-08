@@ -1433,8 +1433,8 @@
     {
       "name": "focus.py",
       "purpose": "Focus-session tracker (start/stop/report) over gitignored .devin/ledgers/focus.jsonl - issue #419",
-      "export_hash": "288B7989413543321358A440BC996DBC0A1B164D43C6C3BDEE1EF39005DC7FDB",
-      "exported_at": "2026-11-08T09:30:51.744127"
+      "export_hash": "E487EAF83A9F292C2E08DBDA92C52E3DB735E6C58ED332AE8C9A17A4CAEF49BF",
+      "exported_at": "2026-11-08T09:45:01.894092"
     },
     {
       "name": "gh-pr-assignee.py",

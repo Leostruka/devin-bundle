@@ -87,3 +87,16 @@ def test_unclosed_session_reported_open(proj):
 def test_empty_report(proj):
     rc, out = _run(["report"])
     assert rc == 0 and "no focus sessions" in out
+
+
+def test_root_flag_overrides_env(tmp_path, monkeypatch):
+    """--root DIR targets that project's ledger regardless of cwd/env."""
+    monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path / "envproj"))
+    other = tmp_path / "other"
+    f._ROOT = None
+    rc, _ = _run(["--root", str(other), "start", "--issue", "X"])
+    assert rc == 0
+    led = other / ".devin" / "ledgers" / "focus.jsonl"
+    assert led.exists()
+    assert not (tmp_path / "envproj").exists()
+    f._ROOT = None

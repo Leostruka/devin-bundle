@@ -6,10 +6,13 @@ pattern as metrics.jsonl). Records pair start->stop into sessions; report
 aggregates focus minutes per day and per issue. Offline, stdlib only.
 
 Usage:
-  python scripts/focus.py start [--issue KEY] [--effort SLUG] [--note TXT]
-  python scripts/focus.py stop [--note TXT]
-  python scripts/focus.py report [--day YYYY-MM-DD] [--json]
-  python scripts/focus.py status
+  python scripts/focus.py [--root DIR] start [--issue KEY]
+      [--effort SLUG] [--note TXT]
+  python scripts/focus.py [--root DIR] stop [--note TXT]
+  python scripts/focus.py [--root DIR] report [--day YYYY-MM-DD] [--json]
+  python scripts/focus.py [--root DIR] status
+
+--root defaults to DEVIN_PROJECT_DIR or cwd (same as roadmap-board).
 """
 import argparse
 import json
@@ -17,9 +20,11 @@ import os
 import sys
 import time
 
+_ROOT = None
+
 
 def ledger_path():
-    project = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+    project = _ROOT or os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
     return os.path.join(project, ".devin", "ledgers", "focus.jsonl")
 
 
@@ -154,7 +159,10 @@ def cmd_status(_a):
 
 
 def main(argv=None):
+    global _ROOT
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--root", default=None,
+                    help="project root (default: DEVIN_PROJECT_DIR or cwd)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("start")
     p.add_argument("--issue"); p.add_argument("--effort")
@@ -164,6 +172,7 @@ def main(argv=None):
     p.add_argument("--day"); p.add_argument("--json", action="store_true")
     sub.add_parser("status")
     a = ap.parse_args(argv)
+    _ROOT = a.root
     return {"start": cmd_start, "stop": cmd_stop,
             "report": cmd_report, "status": cmd_status}[a.cmd](a)
 
