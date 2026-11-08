@@ -4,6 +4,8 @@ import os
 import subprocess
 import sys
 import threading
+
+import pytest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -194,6 +196,43 @@ def test_free_busy_calendar_filter(monkeypatch):
         raise AssertionError(url)
     monkeypatch.setattr(caldav, "_request", fake)
     caldav.free_busy(CREDS, calendars=["Work"],
+                     tmin="2026-11-08T00:00:00Z",
+                     tmax="2026-11-09T00:00:00Z")
+    assert reports == ["http://127.0.0.1:1/dav/calendars/user/work/"]
+
+
+def test_free_busy_unmatched_filter_fails_loud(monkeypatch):
+    def fake(creds, method, url, **kw):
+        if url.endswith("/.well-known/caldav"):
+            return 207, {}, PRINCIPAL_MS
+        if url.endswith("/dav/principal/user/"):
+            return 207, {}, HOME_MS
+        if url.endswith("/dav/calendars/user/"):
+            return 207, {}, CALS_MS
+        raise AssertionError(url)
+    monkeypatch.setattr(caldav, "_request", fake)
+    with pytest.raises(caldav.CalDAVError, match="not found"):
+        caldav.free_busy(CREDS, calendars=["NoSuchCalendar"],
+                         tmin="2026-11-08T00:00:00Z",
+                         tmax="2026-11-09T00:00:00Z")
+
+
+def test_free_busy_calendar_filter_case_insensitive(monkeypatch):
+    reports = []
+
+    def fake(creds, method, url, **kw):
+        if method == "REPORT":
+            reports.append(url)
+            return 207, {}, EMPTY_MS
+        if url.endswith("/.well-known/caldav"):
+            return 207, {}, PRINCIPAL_MS
+        if url.endswith("/dav/principal/user/"):
+            return 207, {}, HOME_MS
+        if url.endswith("/dav/calendars/user/"):
+            return 207, {}, CALS_MS
+        raise AssertionError(url)
+    monkeypatch.setattr(caldav, "_request", fake)
+    caldav.free_busy(CREDS, calendars=["work"],
                      tmin="2026-11-08T00:00:00Z",
                      tmax="2026-11-09T00:00:00Z")
     assert reports == ["http://127.0.0.1:1/dav/calendars/user/work/"]

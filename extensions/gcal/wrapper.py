@@ -192,7 +192,8 @@ def _busy_from_source(argv):
         token = gcal.access_token(creds)
         res = gcal.free_busy(token, [c.strip() for c in cals],
                              tmin, tmax)
-        return res["busy"], "api", res["all_day"], None
+        extras = {"truncated": True} if res.get("truncated") else None
+        return res["busy"], "api", res["all_day"], extras
     except Exception as e:  # network/HTTP/JSON failures -> error env
         emit({"status": "error", "stderr": f"free-busy failed: {e}"}, 1)
 
@@ -206,7 +207,7 @@ def cmd_free_busy(argv):
     if all_day:
         out["all_day"] = all_day
     if extras:
-        for k in ("recurring_events", "hint", "warnings"):
+        for k in ("recurring_events", "hint", "warnings", "truncated"):
             if k in extras:
                 out[k] = extras[k]
     emit(out)
@@ -242,7 +243,7 @@ def cmd_plan(argv):
         emit({"status": "error", "stderr": f"bad plan input: {e}"}, 2)
     out = {"status": "ok", "roteiro": roteiro}
     if extras:
-        for k in ("recurring_events", "hint", "warnings"):
+        for k in ("recurring_events", "hint", "warnings", "truncated"):
             if k in extras:
                 out[k] = extras[k]
     emit(out)
@@ -367,6 +368,20 @@ def cmd_add(argv):
     try:
         token = gcal.access_token(_write_creds())
         cid, created_cal = gcal.resolve_calendar(token, calendar)
+        # idempotency (issue #399): skip when an event with the same
+        # content key already exists on the target calendar
+        key = gcal.event_dedupe_key(summary, start, end)
+        gcal.stamp_event(payload, key)
+        existing = gcal.find_events_by_key(
+            token, cid, key,
+            tmin=payload["start"]["dateTime"],
+            tmax=payload["end"]["dateTime"])
+        if existing:
+            emit({"status": "ok", "calendar": cid,
+                  "calendar_created": created_cal,
+                  "deduplicated": True,
+                  "event": {"id": existing[0].get("id"),
+                            "status": existing[0].get("status")}})
         created = gcal.create_event(token, cid, payload)
     except Exception as e:
         emit({"status": "error", "stderr": f"add failed: {e}"}, 1)
@@ -398,31 +413,43 @@ def cmd_apply(argv):
     payloads = []
     for block in schedule:
         try:
-            payloads.append(gcal.event_payload(
-                prefix + str(block.get("task", "block")),
-                block["start"], block["end"],
-                description="roteiro block"))
+            final_summary = prefix + str(block.get("task", "block"))
+            payloads.append((final_summary, block["start"],
+                             block["end"], gcal.event_payload(
+                                 final_summary, block["start"],
+                                 block["end"],
+                                 description="roteiro block")))
         except (KeyError, TypeError, ValueError) as e:
             emit({"status": "error",
                   "stderr": f"bad block {block}: {e}"}, 2)
     if "--confirm" not in argv:
         emit({"status": "confirm-required", "calendar": calendar,
-              "events": payloads,
+              "events": [p for _, _, _, p in payloads],
               "hint": "re-run with --confirm to write"})
     try:
         token = gcal.access_token(_write_creds())
         cid, created_cal = gcal.resolve_calendar(token, calendar)
     except Exception as e:
         emit({"status": "error", "stderr": f"calendar failed: {e}"}, 1)
-    created, failed = [], []
-    for p in payloads:
+    created, failed, skipped = [], [], []
+    for summary, bstart, bend, p in payloads:
         try:
+            key = gcal.event_dedupe_key(summary, bstart, bend)
+            gcal.stamp_event(p, key)
+            existing = gcal.find_events_by_key(
+                token, cid, key, tmin=p["start"]["dateTime"],
+                tmax=p["end"]["dateTime"])
+            if existing:
+                skipped.append({"summary": summary,
+                                "id": existing[0].get("id")})
+                continue
             created.append(gcal.create_event(token, cid, p))
         except Exception as e:
-            failed.append({"summary": p["summary"], "stderr": str(e)})
-    emit({"status": "ok" if not failed else "partial",
+            failed.append({"summary": summary, "stderr": str(e)})
+    emit({"status": ("ok" if not failed else "partial"),
           "calendar": cid, "calendar_created": created_cal,
-          "created": created, "failed": failed},
+          "created": created, "failed": failed,
+          "skipped_existing": skipped},
          0 if not failed else 1)
 
 

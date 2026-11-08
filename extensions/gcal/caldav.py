@@ -212,9 +212,13 @@ def list_calendars(creds):
 
 
 def find_calendar(creds, name):
-    """Calendar href whose display-name or href tail matches name."""
+    """Calendar href whose display-name or href tail matches name
+    (case-insensitive, stripped)."""
+    want = (name or "").strip().lower()
     for c in list_calendars(creds):
-        if c["name"] == name or c["href"].rstrip("/").endswith("/" + name):
+        cname = (c["name"] or "").strip().lower()
+        if cname == want or c["href"].rstrip("/").lower() \
+                .endswith("/" + want):
             return c["href"]
     return None
 
@@ -250,9 +254,21 @@ def free_busy(creds, calendars=None, tmin=None, tmax=None):
     names or hrefs; None/empty -> all."""
     _, cals = _calendars(creds)
     if calendars:
-        wanted = set(calendars)
-        cals = [c for c in cals
-                if c["name"] in wanted or c["href"] in wanted]
+        wanted = {c.strip().lower() for c in calendars}
+
+        def _match(c):
+            cn = (c["name"] or "").strip().lower()
+            href = c["href"].rstrip("/").lower()
+            return (cn in wanted or href in wanted
+                    or any(href.endswith("/" + w) for w in wanted))
+
+        matched = [c for c in cals if _match(c)]
+        if not matched:
+            avail = ", ".join(c["name"] for c in cals) or "(none)"
+            raise CalDAVError(
+                f"calendar(s) not found: {sorted(wanted)}; "
+                f"available: {avail}")
+        cals = matched
     body_t = ('<?xml version="1.0" encoding="utf-8"?>'
               f'<C:calendar-query xmlns:D="{DAV}" xmlns:C="{CAL}">'
               "<D:prop><D:getetag/><C:calendar-data/></D:prop>"

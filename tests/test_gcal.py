@@ -126,6 +126,46 @@ def test_ics_busy_skips_transparent_events():
     assert len(busy) == 1 and busy[0]["start"].startswith("2026-11-06T09")
 
 
+def test_find_calendar_case_insensitive(monkeypatch):
+    monkeypatch.setattr(gcal, "list_calendars",
+                        lambda token: [{"id": "cal1", "summary": "AGdevin",
+                                        "primary": False}])
+    assert gcal.find_calendar("t", "agdevin") == "cal1"
+    assert gcal.find_calendar("t", "  AGDEVIN ") == "cal1"
+    assert gcal.find_calendar("t", "other") is None
+
+
+def test_event_dedupe_key_stable_and_stamped():
+    k1 = gcal.event_dedupe_key("sum", "2026-11-09T09:00:00-03:00",
+                             "2026-11-09T10:00:00-03:00")
+    k2 = gcal.event_dedupe_key("sum", "2026-11-09T09:00:00-03:00",
+                             "2026-11-09T10:00:00-03:00")
+    k3 = gcal.event_dedupe_key("sum", "2026-11-09T09:00:00-03:00",
+                             "2026-11-09T11:00:00-03:00")
+    assert k1 == k2 and k1 != k3 and len(k1) == 24
+    p = gcal.stamp_event({"summary": "x"}, k1)
+    assert p["extendedProperties"]["private"]["bundle_key"] == k1
+
+
+def test_free_busy_requests_fields_and_paginates(monkeypatch):
+    urls = []
+
+    def fake_get(url, headers=None, timeout=None):
+        urls.append(url)
+        if "pageToken" not in url:
+            return {"items": [{"status": "confirmed",
+                               "start": {"dateTime": "2026-11-06T09:00:00Z"},
+                               "end": {"dateTime": "2026-11-06T10:00:00Z"}}],
+                    "nextPageToken": "p2"}
+        return {"items": []}
+    monkeypatch.setattr(gcal, "_get_json", fake_get)
+    res = gcal.free_busy("tok", ["primary"],
+                         "2026-11-06T00:00:00Z", "2026-11-07T00:00:00Z")
+    assert len(urls) == 2
+    assert "fields=" in urls[0] and "pageToken=p2" in urls[1]
+    assert len(res["busy"]) == 1
+
+
 def test_free_slots_gaps_and_edges():
     busy = [{"start": "2026-11-06T10:00:00+00:00",
              "end": "2026-11-06T11:00:00+00:00"},

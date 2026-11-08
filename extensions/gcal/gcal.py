@@ -14,6 +14,7 @@ Credential contract:
   - Secrets are never printed; absence -> status "missing", never fake.
   - --ics <file> works fully offline for dev/tests.
 """
+import hashlib
 import json
 import os
 import re
@@ -108,13 +109,17 @@ def free_busy(token, calendars, tmin, tmax):
     events are informational - reminders/holidays must not zero out a
     planning day). Transparent + cancelled events excluded."""
     busy, all_day = [], []
+    truncated = False
     for cal in calendars:
         page_token = None
-        for _ in range(5):  # pagination cap
+        for _ in range(40):  # 40 x 250 = 10k events safety cap
             params = {
                 "timeMin": tmin, "timeMax": tmax,
                 "singleEvents": "true", "orderBy": "startTime",
                 "maxResults": 250,
+                # only the fields we consume - no attendee PII over-fetch
+                "fields": ("items(status,transparency,start,end,"
+                           "summary),nextPageToken"),
             }
             if page_token:
                 params["pageToken"] = page_token
@@ -137,7 +142,12 @@ def free_busy(token, calendars, tmin, tmax):
             page_token = data.get("nextPageToken")
             if not page_token:
                 break
-    return {"busy": busy, "all_day": all_day}
+        else:
+            truncated = True
+    out = {"busy": busy, "all_day": all_day}
+    if truncated:
+        out["truncated"] = True
+    return out
 
 
 def _parse_dt(s):
@@ -175,6 +185,36 @@ def create_event(token, calendar_id, payload):
             "status": data.get("status", "confirmed")}
 
 
+def event_dedupe_key(*parts):
+    """Stable idempotency key for a calendar event (issue #399)."""
+    return hashlib.sha256(
+        "|".join(str(p) for p in parts).encode("utf-8")
+    ).hexdigest()[:24]
+
+
+def stamp_event(payload, key):
+    """Attach extendedProperties.private.bundle_key for dedupe lookup."""
+    payload.setdefault("extendedProperties", {}) \
+        .setdefault("private", {})["bundle_key"] = key
+    return payload
+
+
+def find_events_by_key(token, calendar_id, key, tmin=None, tmax=None):
+    """events.list filtered by private extended property bundle_key.
+    -> list of matching event items (usually 0 or 1)."""
+    params = {"privateExtendedProperty": f"bundle_key={key}",
+              "maxResults": 10, "singleEvents": "true"}
+    if tmin:
+        params["timeMin"] = tmin
+    if tmax:
+        params["timeMax"] = tmax
+    url = (EVENTS_URL.format(calendar_id=calendar_id) + "?"
+           + urllib.parse.urlencode(params))
+    data = _get_json(url,
+                     headers={"Authorization": "Bearer " + token})
+    return data.get("items", [])
+
+
 def list_calendars(token):
     """calendarList -> [{id, summary, primary}]."""
     data = _get_json(CAL_LIST_URL,
@@ -185,9 +225,11 @@ def list_calendars(token):
 
 
 def find_calendar(token, name):
-    """Return calendar id whose summary matches name, else None."""
+    """Return calendar id whose summary matches name (case-insensitive,
+    stripped - Google summaries are display strings, not ids)."""
+    want = (name or "").strip().lower()
     for c in list_calendars(token):
-        if c["summary"] == name:
+        if (c["summary"] or "").strip().lower() == want:
             return c["id"]
     return None
 
