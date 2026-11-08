@@ -121,3 +121,32 @@ Everything below landed Sunday on `fix/gcal-validation-ics` -> PR #422
 - Suite: 2337 passed / 8 skipped; audit 0/0 at every push.
 - Frontier unchanged: held-out datasets (ISSUE_02/05), craft CLIs
   (ISSUE_03), PR merges + scheduled-task registration (user actions).
+
+## Sun PM addendum 2 - bug-class sweep exhausted + supply-chain (12:30-14:15)
+- AST-driven sweeps across extensions/ AND scripts/ (9 bug classes):
+  network timeouts, output overwrites, subprocess timeouts, subprocess
+  + file-I/O encoding, exit-code contract, pickle/yaml/eval/shell=True/
+  verify=False/mktemp/bare-except, httpx/requests timeouts, archive
+  extraction, destructive file ops. All either fixed, verified clean,
+  or guarded by new audit checks.
+- audit.py checks [36] exit-code contract, [37] subprocess utf-8,
+  [38] file-I/O utf-8 - all AST-precise, now scan extensions+scripts
+  via shared _scan_py_files(). Summary: ALL 38 CHECKS.
+- Fixes this block: last 3 subprocess-without-timeout (harness-tree
+  selftest, 2x taskkill), 4 missed text=True decode sites, 8 file-I/O
+  decode sites, check-tools renderer timeout (120s + clean FAIL),
+  dep-audit x2 utf-8 pins.
+- asr/bootstrap.py supply-chain: sha256 pins for whisper.cpp binary
+  (GH release digest) + ggml tiny/base/small (HF LFS oid); unpinned
+  models refused; cache hash-verified (corrupt auto-refetch, good
+  skips download). Live+bundle _cache contents verified MATCH.
+- PR bookkeeping: #414 superseded-by-#422 comment (verified
+  _validated_schedule covers all cases, both apply paths);
+  #421 ancestor-of-#422 comment. All 3 PRs OPEN/MERGEABLE/BLOCKED,
+  0 reviews - merge remains user action.
+- Suite: 2345 passed / 8 skipped; audit 0/0 at every push.
+- Commits: d0aa303, a44098c, 50d1274, 491aa97, 62de03f, 745cf73,
+  eab4a14 on fix/gcal-validation-ics (PR #422).
+- Learned: never chain `git push` with other commands in one exec -
+  the PreToolUse push-gate evaluates pending diff and blocks the
+  whole command pre-execution. Commit first, push separately.
