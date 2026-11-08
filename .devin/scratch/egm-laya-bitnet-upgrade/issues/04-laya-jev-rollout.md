@@ -159,3 +159,13 @@ first, deterministic fallback when the daemon is down.
   natural-language intents match, comprehension/trajectory fails.
   Assist remains OFF everywhere; only media-intent has a credible
   path (more held-out + non-saturating map + deliberate activation).
+  **Held-out batch 2 (run 04, +20 fresh cases)**: acc 0.929
+  decided, adopted@0.9 = 13/13 (1.000 this batch; the one wrong
+  pick p=0.594 correctly rejected by the gate). Combined held-out
+  (40 cases never in the fit): adopted 23, correct 22 -> 0.9565;
+  sole wrong adoption still mi-h14 complaint->stylize_video.
+  Failure mode pinned: media complaints/observations phrased as
+  non-imperatives. Evidence now: 80 decided cases total, 40
+  strictly held-out. Activation checklist unchanged; mode stays
+  off/shadow. Artifacts: manifest.heldout2.frozen.json,
+  report.heldout2.json, cases.heldout2.json.

@@ -117,3 +117,43 @@ viable assist candidate, shadow-only for now. Before any mode flip:
 threshold to 0.95+ AND/OR a table map that does not saturate, plus
 the deliberate activation steps (models sha256, profiles +=
 media-intent-v1, mode assist). NOT enabled.
+
+## Held-out batch 2 (run 04, 2026-11-09 - 20 more fresh cases)
+
+`cases.heldout2.json` / `manifest.heldout2.frozen.json` /
+`report.heldout2.json` - second batch of phrasings never used in the
+Platt fit; includes complaint/question/ambiguous `__none__` traps
+("the export is taking forever", "why did the render fail?",
+"make it pop").
+
+| metric | value |
+|---|---|
+| total | 20 |
+| accuracy (decided) | 0.929 (13/14) |
+| coverage | 0.70 |
+| adopted @ cal_p>=0.9 | 13 |
+| adopted correct | 13 |
+| **adopted accuracy (this batch)** | **1.000** |
+
+The single wrong decision (mi-h40 "make it pop" -> ui_design, raw
+p 0.594) is correctly rejected by the gate (cal_p ~0.65 < 0.9).
+
+## Combined held-out evidence (40 fresh cases)
+
+| metric | value |
+|---|---|
+| adopted @ cal_p>=0.9 | 23 |
+| adopted correct | 22 |
+| **adopted accuracy** | **0.9565** |
+| wrong adoptions | 1 (mi-h14 complaint -> stylize_video) |
+| adopted coverage | 23/40 = 0.575 |
+
+Failure mode is now precisely characterized: media complaints /
+observations ("the video looks weird") get mapped to stylize_video.
+Requests phrased as observations rather than imperatives are the
+residual risk. A consumer-side guard (only route imperative user
+requests) or a table map with a non-saturating shoulder would both
+reduce it; neither is applied.
+
+Verdict unchanged: strongest assist candidate by far, still
+shadow-only pending the deliberate activation checklist above.
