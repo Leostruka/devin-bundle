@@ -35,6 +35,7 @@ _VERSION_RE = re.compile(r"version (\d+\.\d+\.\d+)")
 def _default_run(argv, timeout_s=10):
     try:
         proc = subprocess.run(argv, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace",
                               timeout=timeout_s, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         return {"returncode": proc.returncode, "stdout": proc.stdout,
                 "stderr": proc.stderr, "timed_out": False}

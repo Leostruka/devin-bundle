@@ -51,7 +51,8 @@ def probe(path, ffprobe=None):
         out = subprocess.run(
             [exe, "-v", "error", "-print_format", "json",
              "-show_streams", "-show_format", str(path)],
-            capture_output=True, text=True, timeout=60)
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=60)
     except subprocess.TimeoutExpired:
         raise ValueError("ffprobe timed out after 60s")
     if out.returncode != 0:
@@ -201,6 +202,7 @@ def composite(source, overlay, out, fit="frame", pos=None, mix=False,
     cmd[0] = exe
     try:
         p = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace",
                            timeout=1800,
                            creationflags=getattr(
                                subprocess, "CREATE_NO_WINDOW", 0))

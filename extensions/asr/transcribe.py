@@ -155,6 +155,7 @@ def transcribe(source, model="base", lang="auto", timeout=600):
         if lang != "auto":
             argv += ["-l", lang]
         p = subprocess.run(argv, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace",
                            timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     if p.returncode != 0:
         return {"ok": False, "error": "whisper_failed",

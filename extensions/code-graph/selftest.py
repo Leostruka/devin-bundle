@@ -11,8 +11,9 @@ PY = sys.executable
 
 def run(script, *argv, cwd=None):
     return subprocess.run([PY, os.path.join(HERE, script), *argv],
-                          capture_output=True, text=True, cwd=cwd,
-                          timeout=60)
+                          capture_output=True, text=True,
+                          encoding="utf-8", errors="replace",
+                          cwd=cwd, timeout=60)
 
 
 def main():

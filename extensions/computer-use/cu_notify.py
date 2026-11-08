@@ -47,7 +47,8 @@ def _notify_toast(title, message, _level):
         "$n::CreateToastNotifier('Cu-Talk').Show($t);")
     r = subprocess.run(
         ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
-        capture_output=True, text=True, timeout=15,
+        capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=15,
         creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
     return r.returncode == 0, (r.stderr or "").strip() or "toast sent"
 
@@ -71,7 +72,8 @@ def _notify_script(title, message, level):
     import shlex
     r = subprocess.run(
         shlex.split(hook, posix=(os.name != "nt")) + [title, message, level],
-                       capture_output=True, text=True, timeout=15, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                       capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", timeout=15, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     return r.returncode == 0, (r.stderr or "").strip() or "hook ran"
 
 

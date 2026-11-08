@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Windows cp1252 decode sweep: every first-party `text=True` subprocess call now passes `encoding="utf-8", errors="replace"` (21 call sites across extensions/: asr, remotion-render, craft-bridge, laya-tools x4, media-tools x2, computer-use x5, agent-reach, rea-ops, rz-ops, offsec-tools, hyperframes, blender-operator, code-graph). On Windows, `text=True` alone decodes with the locale codepage - UTF-8 output containing non-ASCII (PT-BR filenames, accented window titles, JSON envelopes) could mojibake or crash on cp1252-undefined bytes. Matches the pattern already used in cu_agent_desktop/mcp_server/offsec-tools; one test fake signature updated.
+
 - code-graph selftest: `run()` helper now has a 60s timeout (was unbounded - a hung sibling script would hang the self-test forever); verified live `selftest: PASS`.
 
 - diagram-tools plantuml renderer hardening: server moved to https (was plaintext http - MITM could inject scriptable SVG); response body capped at 32 MiB (was unbounded read); explicit `-o` refuses to overwrite an existing file (default derived `<src>.<fmt>` stays overwritable for idempotent re-renders); 4 new tests.

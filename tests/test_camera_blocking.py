@@ -353,7 +353,7 @@ def _ffprobe_json(fps="24/1", n=48, w=640, h=360, dur=2.0):
 
 
 def _fake_ffprobe(payload):
-    def fake(exe_args, capture_output, text, timeout):
+    def fake(exe_args, **kw):
         class R:
             returncode = 0
             stdout = json.dumps(payload)
