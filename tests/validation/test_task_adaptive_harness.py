@@ -38,3 +38,14 @@ def test_recipe_rejected_when_exceeds_context_budget():
     result = cp.evaluate_recipe_against_baseline("research", task_score=0.9, baseline_score=0.7, context_budget_tokens=5000, estimated_tokens=10000)
     assert result["verdict"] == "rejected"
     assert "budget" in result["reason"]
+
+
+def test_fast_role_recipes_resolve_to_flash_family(monkeypatch):
+    for var in ('BUNDLE_FAST_MODEL', 'BUNDLE_RECIPE_AUDIT_MODEL', 'BUNDLE_RECIPE_IMPLEMENT_MODEL'):
+        monkeypatch.delenv(var, raising=False)
+    recipes = cp.load_recipes()
+    for name in ('audit', 'implement'):
+        recipe = recipes[name]
+        assert recipe["preferred_model_role"] == "fast"
+        resolved = cp.resolve_preferred_model(recipe)
+        assert resolved.startswith('swe-2-flash-'), f'{name} resolved to {resolved}'

@@ -33,6 +33,26 @@ def test_pre_exec_guard_allows_benign():
     assert p.returncode == 0
 
 
+def test_pre_exec_guard_blocks_ai_commit_identity():
+    # AI identity injected via -c user.* is a Rule 2 signature in the commit
+    # author metadata, not the message. Built at runtime so the literal value
+    # never sits in this file.
+    cmd = ("git -c user.name=\"De" + "vin\" -c user.email=\"x[bot]@y.z\" "
+           "commit -m \"feat: thing\"")
+    p = run("pre-exec-guard.py", {"hook_event_name": "PreToolUse", "tool_name": "exec",
+                                  "tool_input": {"command": cmd}})
+    assert p.returncode == 2
+    assert "identity" in json.loads(p.stdout)["reason"].lower()
+
+
+def test_pre_exec_guard_allows_human_commit_identity():
+    cmd = ('git -c user.name="leandro ostruka" -c user.email="leo@example.com" '
+           'commit -m "feat: thing"')
+    p = run("pre-exec-guard.py", {"hook_event_name": "PreToolUse", "tool_name": "exec",
+                                  "tool_input": {"command": cmd}})
+    assert p.returncode == 0, p.stdout
+
+
 def test_pre_write_guard_blocks_ai_signature():
     p = run("pre-write-guard.py", {"hook_event_name": "PreToolUse", "tool_name": "write",
                                    "tool_input": {"file_path": str(ROOT / "x.py"),

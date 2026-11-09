@@ -269,7 +269,7 @@
       "source": "devin-bundle",
       "purpose": "Use when the user wants to reduce token, compute, or infrastructure costs. Covers context window budget, MCP selection, caching, model routing, and query optimization.",
       "original_path": "%APPDATA%\\devin\\skills\\cost-optimization",
-      "export_hash": "5a7baad1b714ad4563c302ac7cf957f860ad960fb5bcf782d5e03870ee858add",
+      "export_hash": "FC2220F534D53FDDFF702EF150E6C53A7BA7401DAA7B369917FAC791589E6683",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -365,7 +365,7 @@
       "name": "devin-config",
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval.",
-      "export_hash": "320490ff0ff94699c4aaa1016b2580539b8371e1b1f5bd2fd3b7c18d71286bc1"
+      "export_hash": "363C05CA238FBC2D68642F4AE242A9E8867CDA98A0DC7C169636634F4F3D1BA6"
     },
     {
       "name": "devin-manager",
@@ -388,7 +388,7 @@
       "source": "devin-bundle",
       "purpose": "Use when facing two or more independent tasks with no shared state or ordering, OR when executing a multi-task plan by dispatching a fresh subagent per task.",
       "original_path": "%APPDATA%\\devin\\skills\\dispatching-parallel-agents",
-      "export_hash": "6e4934f41630c88dfb966439a6b9ab998fa707a1c048424dc51e0c0854dba433",
+      "export_hash": "73E81D431C9C094BF56BB4D2095189C1FDD3808200A5F95957E744CE82DBD2FA",
       "exported_at": "2026-09-08T21:39:22.437929"
     },
     {
@@ -458,14 +458,14 @@
       "source": "devin-bundle",
       "purpose": "Use when executing a written implementation plan with checkpoints and reviews.",
       "original_path": "%APPDATA%\\devin\\skills\\executing-plans",
-      "export_hash": "1b38261f1881865bfcc071f872fd68c12675a4e9726607c3e821a7765e3092f4",
+      "export_hash": "9327FF098596A9FB6EF74AA77B790EF1DDA59B1FB6E1F4EA1750AF175DA5EC8C",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "execution",
       "source": "devin-bundle",
       "purpose": "Use when RUNNING an already-written plan/spec/tickets with checkpoints, implementing a feature/fix per spec, deciding how much human review a task needs, or working unattended through local Markdown issues in a blocking DAG (AFK loop). Plans get authored upstream in `planning`/`intake`.",
-      "export_hash": "565890bf6eca6e33060823429635349beacd3f8ca3e7b638536f68ba22ae767d"
+      "export_hash": "850B8F1D1D7BD580682F313C7E65AA5EFF36D3C1774C09CB4E6511FB04CD6B35"
     },
     {
       "name": "fact-check",
@@ -677,7 +677,7 @@
       "source": "devin-bundle",
       "purpose": "Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.",
       "original_path": "%APPDATA%\\devin\\skills\\leo",
-      "export_hash": "a91933ae487edaf04b7b4186bae95d997289459b189ee674967f779ce5045b5c",
+      "export_hash": "2C79E0AE710CE2CB3919F5EAAC398587B73B126F5CBCB53840D3271C376BE1E0",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -863,7 +863,7 @@
       "source": "devin-bundle",
       "purpose": "Use when (1) researching agent harness design patterns, comparing Devin CLI to PrimeAgent/RLM architectures, or evaluating which PrimeAgent features could be adapted to Devin CLI; (2) emulating A2A messaging between subagents or between subagents and the parent agent across time within Devin CLI's ephemeral subagent runtime; (3) capturing recurring failure patterns or reusable tactics as skills/rules/hooks via the Continual Harness /refine self-improvement loop; or (4) deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run (subagent dispatch profile/budget selection).",
       "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
-      "export_hash": "a84818f38324cc8f05934dd463df563fc8c13cd41eb9bf32dabfddbb4146df8c",
+      "export_hash": "5FD790B8371AF71FEC181B44D0CB29F14A30A61427A50A430F60198BB7462A18",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -898,7 +898,7 @@
       "name": "prompt-compiler",
       "source": "devin-bundle",
       "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md.",
-      "export_hash": "78d8a5bebaed38e517dbd4b96f2235bdcc74eb37788b708d1164e3b77facd47b"
+      "export_hash": "AB783A7A3FDBD626984E94D3E9BA1289F2ED6D0E790A82E5E3B4723DE1F3DD40"
     },
     {
       "name": "prototype",
@@ -1028,7 +1028,7 @@
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.",
       "original_path": "%APPDATA%\\devin\\skills\\self-extend",
-      "export_hash": "bf5b6d89e7a5b668c69916dbaea669032ba94dd4ac38ff4752e4bfd10f96588e",
+      "export_hash": "0A113327C00857C15E7AB3F8E1A6BD525502705401279673F5DD6D8A99A42F07",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -1357,7 +1357,7 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "a4dec330397b0a708065db798cf4cf1d24ddd1fda5ec0db15a5e6a117214d157",
+      "export_hash": "d5610771363a3354bafd595afdcb7b9ec6a5d70a5f31f61f84bd60a2f55c3419",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1381,7 +1381,7 @@
     {
       "name": "constraint-pinning.py",
       "purpose": "PostCompaction/UserPromptSubmit hook — re-injects pinned constraints",
-      "export_hash": "c6b2561018a85bec0d20a79df1b4748c3b7de56705876b6c4245175a8675d4c2",
+      "export_hash": "754a3c6d0eecdf105894cf8b8fdca6738998ecc69ae4e45718ad28b9c1972363",
       "exported_at": "2026-09-08T21:39:22.430444"
     },
     {
@@ -1393,7 +1393,7 @@
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "21FE24A1B95FB04EBD912A073953FD1B55ED327BE4992C776B30ABE4020CCF44",
+      "export_hash": "A4B462A731A560C1BE1428D068BA2282A3694472295F213881FD30796E419D9F",
       "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
@@ -1642,32 +1642,32 @@
     {
       "name": "art-director",
       "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
-      "export_hash": "D318C92D74D8C8A58F17041EFCB1D44771499D77CA58F0DF431ED3F07FCF9FD2",
+      "export_hash": "1D08930931123202A5DA2D6DAD82B3EEDF7FB799C6D9F8D99ABDF1EA1E48C4F5",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "chief-of-staff",
       "purpose": "Use as the agency pipeline SysAdmin watchdog (Goose tier, node 07); probes tool/inbox environment, applies whitelisted AUTO-FIX, writes docs/07_SysAdmin_Log.md with NOMINAL|DEGRADED|ESCALATE verdict. Never edits specs or code.",
-      "export_hash": "94544A86E9611F024FF7ECD99F8469C841E541DBBF8A10C60F49928E0C133A81",
+      "export_hash": "D648D284BDA94D9F68B1915E261507313D47E957BF5E8B0B5B5981B7266EF760",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
       "name": "copywriter",
       "purpose": "Use to author README/marketing/doc map (docs/06_Documentation.md). Claims traceability to specs, PAS narrative, Diataxis split, sub-5-minute quickstart.",
-      "export_hash": "458ABC8E9FEE6F9EC2A90A5059144DB52624C5250FE5332CDE7137FFA28B143C"
+      "export_hash": "F673432CD61A80A6A3AF1AFD908F472A5A20A34E04BD20DE209D73709726B3C1"
     },
     {
       "name": "debugger",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\debugger.md",
-      "export_hash": "3FD508AAF8EB88B9E5476DCA9D5DCD9659CDD4AF84C322D5CBD199ABD8DFC65D",
+      "export_hash": "F93617C76CCCFF9CA3E02E155CC46C488F6AB92ACA25C88EFFC6E10728A39CB8",
       "exported_at": "2026-09-08T21:39:22.431753"
     },
     {
       "name": "implementer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\implementer.md",
-      "export_hash": "7F3DD8F1B52503727A23708AB1495F5A8877E7CEFB8CE7D0F3D624510A4ECB1C",
+      "export_hash": "1566EA69E188711DAE50F25327A511D48DAD518728CF72D71B5D0D4AC05B2793",
       "exported_at": "2026-09-08T21:39:22.431827"
     },
     {
@@ -1679,7 +1679,7 @@
       "name": "qa-ci",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\qa-ci.md",
-      "export_hash": "9EAA35BA7DE7EC516B978393F2E77B0D592E4786306845D633B432D769041E9E",
+      "export_hash": "6496E488C475FD1FFA54D9B1330B9858E14CF33DDF9B6C023775B32999AF2995",
       "exported_at": "2026-09-08T21:39:22.431900"
     },
     {
@@ -1736,14 +1736,14 @@
       "name": "sentinel",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\sentinel.md",
-      "export_hash": "F2597E6578F617843B7F952CC99C1AA3CE161D158E6B6B470E6955EF6075A663",
+      "export_hash": "76FBAFF7805C891C329EEF03B7A9E507E97510032C8C9E11B29B989CFD01E2F4",
       "exported_at": "2026-11-05T07:49:44.220070"
     },
     {
       "name": "data-analyst",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\data-analyst.md",
-      "export_hash": "41A7D8F5885480C08E958CE635813DF49D070E113D2FD2AF0F49D0CF72D6BBE1",
+      "export_hash": "F413759135E3A67FF7CAA0789D0EAA68D970C8B7FAFB6673AD9033E3F181BE3B",
       "exported_at": "2026-11-07T15:10:32.216367"
     },
     {
@@ -1764,7 +1764,7 @@
       "name": "performance-engineer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\performance-engineer.md",
-      "export_hash": "3CA7ED3F172E5947F0B97124C6EFF9EAAFBDAFE2FE6AB7023A6A96098F12FE71",
+      "export_hash": "97CF71936D7BFA9B10F0ACADAF0D4654FD5066473F32FEBBC506E69EAF7C5234",
       "exported_at": "2026-11-07T15:10:32.216367"
     }
   ]

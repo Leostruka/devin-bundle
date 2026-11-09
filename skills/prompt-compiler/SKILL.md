@@ -61,8 +61,9 @@ writes.
 
    The script validates all blocks and renders the exact Golden Template.
    Invalid specs return `{ok: false, errors: [...]}` — fix and re-run.
-   When `model` is a variant family (`swe-2`), the JSON output includes
-   `recommended_model` (e.g. `swe-2-max` for effort `max`).
+   When `model` is a variant family (`swe-2` or `swe-2-flash`), the JSON
+   output includes `recommended_model` (e.g. `swe-2-max` for effort `max`,
+   `swe-2-flash-high` for family `swe-2-flash` + effort `high`).
 
 4. **Iterate with the user.** Present the rendered prompt; on feedback, edit
    the spec JSON and re-run. Loop until the user says `APPROVE`.

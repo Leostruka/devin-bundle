@@ -34,7 +34,7 @@ description: Use when [specific triggering conditions]
 ```
 
 Optional frontmatter: `allowed-tools`, `subagent: true`, `agent: <profile>`,
-`model` (free variants only — `swe-2-max`/`swe-2-medium`, never paid),
+`model` (free variants only: `swe-2-max`/`swe-2-flash-high`/`swe-2-flash-medium`, never paid),
 `permissions` (`allow`/`deny`), `triggers` (default `[user, model]`).
 
 Discover: `skill list --path .`, `skill search --path . --keywords "..."`.

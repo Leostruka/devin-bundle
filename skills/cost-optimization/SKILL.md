@@ -19,7 +19,7 @@ Reduce token, compute, and infrastructure spend.
 
 1. **Measure current cost.** Tokens per request, model tier, cache hit rate.
 2. **Audit context usage.** Use `mcp-context-audit` to find heavy MCP tool definitions.
-3. **Right-size effort.** Use `swe-2-max`/`swe-2-medium` for subagents and `swe-2-high` for the free primary model; use paid models only when explicitly approved.
+3. **Right-size effort.** Use `swe-2-max`/`swe-2-flash-high`/`swe-2-flash-medium` for subagents and `swe-2-high` for the free primary model; use paid models only when explicitly approved. After the SWE-2 free window closes (2026-11-30), `swe-2-flash-medium` is the only permanent-free variant.
 4. **Add caching.** Reuse previous tool outputs and summaries where safe.
 5. **Shorten prompts.** Remove unused context, prefer file snippets over full reads.
 6. **Re-measure.** Compare cost before and after.

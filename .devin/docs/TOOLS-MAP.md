@@ -42,52 +42,61 @@ runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
 close_browser_preview, mcp_list_tools, mcp_list_servers, apply_patch,
 exit_plan_mode) - o tool falha claramente sem validação do hook.**
 
-## Subagentes (17 perfis)
+## Subagentes (23 perfis: 2 built-in + 21 custom)
 
 | Perfil | Tipo | Modelo | Tools | Bundle agent file |
 |---|---|---|---|---|
-| `subagent_explore` | Built-in | Default router (veja `data/bundle-models.json` aliases) | Read-only + web_search | — (built-in) |
-| `subagent_general` | Built-in | Herda parent (`BUNDLE_DEFAULT_MODEL` (`swe-2-high`)) | Full (fg) / pre-approved (bg) | — (built-in) |
-| `architect` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
-| `debugger` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
-| `implementer` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
-| `researcher` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
-| `reviewer` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
-| `qa-ci` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/qa-ci.md` |
-| `red-team-lead` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | red-team skills + offsec wrappers | `agents/red-team-lead.md` |
-| `product-manager` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec, web_* | `agents/product-manager.md` |
-| `tech-lead` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec, web_search | `agents/tech-lead.md` |
-| `art-director` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, edit, grep, glob, exec | `agents/art-director.md` |
-| `security-auditor` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec | `agents/security-auditor.md` |
-| `scrum-master` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read, write, edit, grep, glob, exec | `agents/scrum-master.md` |
-| `copywriter` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, edit, grep, glob, exec | `agents/copywriter.md` |
-| `thermo-nuclear-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-review-subagent.md` |
-| `thermo-nuclear-code-quality-review-subagent` | Custom | Max (`BUNDLE_MAX_MODEL` (`swe-2-max`)) | read-only + exec (verify only) | `agents/thermo-nuclear-code-quality-review-subagent.md` |
-| `chief-of-staff` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, write, exec, grep, glob, find_file_by_name | `agents/chief-of-staff.md` |
-| `sentinel` | Custom | Medium (`BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) | read, exec, grep, glob, find_file_by_name | `agents/sentinel.md` |
+| `subagent_explore` | Built-in | Default router (veja `data/bundle-models.json` aliases) | Read-only + web_search | - (built-in) |
+| `subagent_general` | Built-in | Herda parent (`BUNDLE_DEFAULT_MODEL` (`swe-2-max`)) | Full (fg) / pre-approved (bg) | - (built-in) |
+| `architect` | Custom | Max (`swe-2-max`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/architect.md` |
+| `art-director` | Custom | Flash High (`swe-2-flash-high`) | read, write, edit, grep, glob, exec | `agents/art-director.md` |
+| `chief-of-staff` | Custom | Flash Medium (`swe-2-flash-medium`) | read, write, exec, grep, glob, find_file_by_name | `agents/chief-of-staff.md` |
+| `copywriter` | Custom | Flash Medium (`swe-2-flash-medium`) | read, write, edit, grep, glob, exec | `agents/copywriter.md` |
+| `data-analyst` | Custom | Flash High (`swe-2-flash-high`) | read, grep, glob, exec, mcp_* | `agents/data-analyst.md` |
+| `debugger` | Custom | Flash High (`swe-2-flash-high`) | read, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write | `agents/debugger.md` |
+| `implementer` | Custom | Flash High (`swe-2-flash-high`) | read, write, edit, grep, glob, exec, get_output, write_to_process, kill_shell, todo_write, notebook_*, mcp_* | `agents/implementer.md` |
+| `performance-engineer` | Custom | Flash High (`swe-2-flash-high`) | read, write, edit, grep, glob, exec | `agents/performance-engineer.md` |
+| `product-manager` | Custom | Max (`swe-2-max`) | read, write, edit, grep, glob, exec, web_* | `agents/product-manager.md` |
+| `qa-ci` | Custom | Flash High (`swe-2-flash-high`) | read-only + exec (verify only) | `agents/qa-ci.md` |
+| `red-team-lead` | Custom | Max (`swe-2-max`) | red-team skills + offsec wrappers | `agents/red-team-lead.md` |
+| `researcher` | Custom | Max (`swe-2-max`) | read, grep, glob, web_search, webfetch, mcp_* | `agents/researcher.md` |
+| `reviewer` | Custom | Max (`swe-2-max`) | read, grep, glob, exec, get_output | `agents/reviewer.md` |
+| `scrum-master` | Custom | Max (`swe-2-max`) | read, write, edit, grep, glob, exec | `agents/scrum-master.md` |
+| `security-auditor` | Custom | Max (`swe-2-max`) | read, write, edit, grep, glob, exec | `agents/security-auditor.md` |
+| `sentinel` | Custom | Flash Medium (`swe-2-flash-medium`) | read, exec, grep, glob, find_file_by_name | `agents/sentinel.md` |
+| `sre` | Custom | Max (`swe-2-max`) | read, exec, grep, glob, web_* | `agents/sre.md` |
+| `tech-lead` | Custom | Max (`swe-2-max`) | read, write, edit, grep, glob, exec, web_search | `agents/tech-lead.md` |
+| `thermo-nuclear-review-subagent` | Custom | Max (`swe-2-max`) | read-only + exec (verify only) | `agents/thermo-nuclear-review-subagent.md` |
+| `thermo-nuclear-code-quality-review-subagent` | Custom | Max (`swe-2-max`) | read-only + exec (verify only) | `agents/thermo-nuclear-code-quality-review-subagent.md` |
+| `ux-researcher` | Custom | Max (`swe-2-max`) | read, grep, glob, web_* | `agents/ux-researcher.md` |
+
+Project-local (só neste repo, `.devin/agents/`): `domain` (`swe-2-max`),
+`issue-tracker` (`swe-2-flash-medium`), `repo-reviewer` (`swe-2-max`),
+`triage-labels` (`swe-2-flash-medium`).
 
 **Estratégia de modelo:**
-- `subagent_explore` (built-in): default router do CLI — verifique `data/bundle-models.json` aliases; evite em modo free.
-- Custom agents: pin `BUNDLE_MAX_MODEL` (`swe-2-max`) (Max) ou `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`) (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. NÃO usar aliases pagos não verificados (veja `data/bundle-models.json`).
+- `subagent_explore` (built-in): default router do CLI - verifique `data/bundle-models.json` aliases; evite em modo free.
+- Custom agents: alto julgamento (exploração/auditoria) faz pin `swe-2-max`; execução bounded faz pin `swe-2-flash-high`; volume mecânico faz pin `swe-2-flash-medium`, conforme `data/bundle-models.json`. Overrides por instalação via `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL` / `BUNDLE_FAST_MODEL` / `BUNDLE_DEFAULT_MODEL`. NÃO usar aliases pagos não verificados (veja `data/bundle-models.json`).
   - Sem pin, custom agents usam o default router do CLI (possivelmente pago).
-- Para trabalho que precisa do parent: usar `subagent_general` (herda parent) ou pin `model: swe-2-high` no agent.
+- Para trabalho que precisa do parent: usar `subagent_general` (herda parent) ou pin `model: swe-2-max` no agent.
 
 **Contrato do registro (`data/bundle-models.json`):** todo `model:` pin em
 `agents/*.md` deve resolver para um `model_uid` declarado no registro; pins
 com `cost_tier: paid` exigem justificativa documentada. Overrides por
 instalação vivem nas env vars `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL` /
-`BUNDLE_DEFAULT_MODEL`. Hoje o contrato é convenção (AGENTS.md rule 20 +
-MODEL-GUIDE.md); enforcement via `audit.py` e validação de overrides no
-render está planejado.
+`BUNDLE_FAST_MODEL` / `BUNDLE_DEFAULT_MODEL`. Enforcement do contrato
+(pin ∈ registry ids) roda em `tests/validation/test_model_pin_contract.py`
+e nos gap checks held-out; validação de overrides no render está planejada.
 
 **VALID_PROFILES no validate-tool-args.py:**
-architect, art-director, chief-of-staff, copywriter, debugger,
-domain, implementer,
-issue-tracker, product-manager, qa-ci, red-team-lead, researcher,
-reviewer, scrum-master, security-auditor, subagent_explore,
-subagent_general, tech-lead, thermo-nuclear-code-quality-review-subagent,
-thermo-nuclear-review-subagent, sentinel, triage-labels. 22 perfis
-validados (parity com `agents/*.md` garantida por
+architect, art-director, chief-of-staff, copywriter, data-analyst,
+debugger, domain, implementer, issue-tracker, performance-engineer,
+product-manager, qa-ci, README, red-team-lead, repo-reviewer,
+researcher, reviewer, scrum-master, security-auditor, sentinel, sre,
+subagent_explore, subagent_general, tech-lead,
+thermo-nuclear-code-quality-review-subagent,
+thermo-nuclear-review-subagent, triage-labels, ux-researcher. 27 perfis
+validados (parity com `agents/*.md` + `.devin/agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
 ## Hooks (8 eventos, 12 entry points, 45 scripts)
@@ -268,10 +277,12 @@ exportam eventos/métricas para um collector OpenTelemetry; não adotado
 
 | model_uid | Label | Effort | Context | Custo | Recomendado |
 |---|---|---|---|---|---|
-| `BUNDLE_DEFAULT_MODEL` (`swe-2-high`) | SWE-2 High (parent) | high | 262K | **Free** | ✓ (config.json) |
-| `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`) | SWE-2 Medium | medium | 262K | **Free** | Tarefas simples, ajustes pontuais, scripts isolados |
-| `BUNDLE_MAX_MODEL` (`swe-2-max`) | SWE-2 Max | max | 262K | **Free** | Tarefas abertas, refactors globais, long-horizon |
-| `swe-2-flash-{medium,high,max}` | SWE-2 Flash | medium/high/max | 262K | **Free** (janela) | Fast lane ~200 tok/s; ver `data/bundle-models.json` + MODEL-GUIDE |
+| `BUNDLE_DEFAULT_MODEL` (`swe-2-max`) | SWE-2 Max (parent) | max | 262K | **Free até 2026-11-30** | ✓ (config.json) |
+| `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`) | SWE-2 Medium | medium | 262K | **Free até 2026-11-30** | Tarefas simples, ajustes pontuais, scripts isolados |
+| `BUNDLE_MAX_MODEL` (`swe-2-max`) | SWE-2 Max | max | 262K | **Free até 2026-11-30** | Julgamento, exploração profunda, auditoria |
+| `BUNDLE_FAST_MODEL` (`swe-2-flash-high`) | SWE-2 Flash High | high | 262K | **Free até 2026-12-04 18:00 UTC** | Execução técnica bounded ~200 tok/s; depois ~$0.10/1M in, $0.50/1M out |
+| `swe-2-flash-medium` | SWE-2 Flash Medium | medium | 262K | **Free permanente** | Volume mecânico, triagem; único free após 2026-12-04 |
+| `swe-2-flash-max` | SWE-2 Flash Max | max | 262K | **Free até 2026-12-04 18:00 UTC** | Escalonamento barato dentro da janela |
 | `paid_model_alias` | Paid alias | — | see registry | see registry | NUNCA usar sem confirmar `data/bundle-models.json` |
 | `adaptive` | Paid router | see registry | — | see registry | Não usar em modo free |
 | `opus` | Paid model | Anthropic | — | see registry | Não usar em modo free |
@@ -280,7 +291,7 @@ exportam eventos/métricas para um collector OpenTelemetry; não adotado
 | `codex` | Paid model | OpenAI | — | see registry | Não usar em modo free |
 | `gemini` | Paid model | Google | — | see registry | Não usar em modo free |
 
-**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (lido de `data/bundle-models.json` com `cost_tier: free`), NUNCA usar modelos pagos para subagents. Short names/aliases (`opus`, `sonnet`, `codex`, `gemini` etc.) podem resolver para entradas pagas - verifique `data/bundle-models.json` antes de usar. Use o parent (`BUNDLE_DEFAULT_MODEL` (`swe-2-high`)) e os subagent models (`BUNDLE_MAX_MODEL` (`swe-2-max`) / `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`)) do registro. Quando o parent é pago, subagents podem usar pagos.
+**⚠️ Política CONDICIONAL:** quando o parent está em modelo FREE (lido de `data/bundle-models.json` com `cost_tier: free`), NUNCA usar modelos pagos para subagents. Short names/aliases (`opus`, `sonnet`, `codex`, `gemini` etc.) podem resolver para entradas pagas - verifique `data/bundle-models.json` antes de usar. Use o parent (`BUNDLE_DEFAULT_MODEL` (`swe-2-max`)) e os subagent models (`BUNDLE_MAX_MODEL` (`swe-2-max`) / `BUNDLE_MEDIUM_MODEL` (`swe-2-medium`) / `BUNDLE_FAST_MODEL` (`swe-2-flash-high`)) do registro. Quando o parent é pago, subagents podem usar pagos. **Virada de custo:** `swe-2-*` sai do free em 2026-11-30; após 2026-12-04 18:00 UTC só `swe-2-flash-medium` permanece free (`free_tier_permanent`) - matriz de decisão FREE-ONLY em MODEL-GUIDE.md.
 
 ## Context budget (parent model)
 

@@ -29,3 +29,31 @@ def test_get_thresholds():
     assert warn == 60
     assert critical == 75
     assert clear == 80
+
+
+def test_get_model_window_flash_models():
+    assert context_pressure.get_model_window('swe-2-flash-medium') == 262144
+    assert context_pressure.get_model_window('swe-2-flash-high') == 262144
+    assert context_pressure.get_model_window('swe-2-flash-max') == 262144
+
+
+def test_resolve_preferred_model_fast_role(monkeypatch):
+    for var in ('BUNDLE_RECIPE_IMPLEMENT_MODEL', 'BUNDLE_FAST_MODEL',
+                'BUNDLE_DEFAULT_MODEL', 'BUNDLE_MAX_MODEL',
+                'BUNDLE_MEDIUM_MODEL', 'BUNDLE_DEFAULT_SUBAGENT_MODEL'):
+        monkeypatch.delenv(var, raising=False)
+    recipe = {'name': 'implement', 'preferred_model_role': 'fast', 'preferred_model': None}
+    assert context_pressure.resolve_preferred_model(recipe) == 'swe-2-flash-high'
+
+
+def test_resolve_preferred_model_fast_env_override(monkeypatch):
+    monkeypatch.setenv('BUNDLE_FAST_MODEL', 'swe-2-flash-medium')
+    recipe = {'name': 'implement', 'preferred_model_role': 'fast', 'preferred_model': None}
+    assert context_pressure.resolve_preferred_model(recipe) == 'swe-2-flash-medium'
+
+
+def test_resolve_preferred_model_recipe_override_beats_role(monkeypatch):
+    monkeypatch.setenv('BUNDLE_RECIPE_IMPLEMENT_MODEL', 'swe-2-max')
+    monkeypatch.setenv('BUNDLE_FAST_MODEL', 'swe-2-flash-medium')
+    recipe = {'name': 'implement', 'preferred_model_role': 'fast', 'preferred_model': None}
+    assert context_pressure.resolve_preferred_model(recipe) == 'swe-2-max'

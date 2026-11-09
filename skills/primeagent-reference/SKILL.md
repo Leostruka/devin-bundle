@@ -787,9 +787,9 @@ PARALLEL → multiple independent subagents in parallel (dispatching-parallel-ag
 |---|---|---|---|
 | Codebase reconnaissance, doc lookup, web research | `researcher` | Max (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
 | Code review, spec compliance, verification | `reviewer` | Max (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
-| Bounded implementation from spec | `implementer` | Medium (`BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`) | free |
+| Bounded implementation from spec | `implementer` | Flash High (`BUNDLE_FAST_MODEL` / `data/bundle-models.json`) | free |
 | Architecture, trade-offs, deep module design | `architect` | Max (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
-| Systematic debugging, root cause analysis | `debugger` | Medium (`BUNDLE_MEDIUM_MODEL` / `data/bundle-models.json`) | free |
+| Systematic debugging, root cause analysis | `debugger` | Flash High (`BUNDLE_FAST_MODEL` / `data/bundle-models.json`) | free |
 | Read-only exploration | `researcher` (custom) | Max (`BUNDLE_MAX_MODEL` / `data/bundle-models.json`) | free |
 | General-purpose with full tools (built-in) | `subagent_general` | inherits parent (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`) | free |
 

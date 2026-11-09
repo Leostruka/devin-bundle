@@ -1,7 +1,7 @@
 ---
 name: performance-engineer
 description: Use for performance budgets, profiling, bundle/latency regression triage, and optimization with measured before/after evidence. Read + exec access. Optimize what profiling shows, never guesses.
-model: swe-2-medium
+model: swe-2-flash-high
 allowed-tools:
   - read
   - write

@@ -1,6 +1,6 @@
 ---
 name: sentinel
-model: swe-2-medium
+model: swe-2-flash-medium
 description: Use as a parallel observer while a work session runs - diffs the worker's claimed output against actual repository state and reports misses the worker did not notice. Read-only with exec for verification commands only. Never edits code.
 allowed-tools:
   - read

@@ -1,6 +1,6 @@
 ---
 name: triage-labels
-model: swe-2-medium
+model: swe-2-flash-medium
 description: Use when mapping canonical triage roles to local issue status values.
 allowed-tools:
   - read

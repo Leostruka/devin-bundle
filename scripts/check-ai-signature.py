@@ -2,7 +2,9 @@
 """Blocks AI signatures in git commits, file writes, and uncommitted changes.
 
 Handles two events, dispatched on `hook_event_name`:
-  PreToolUse - exec (git commit message, including -F/--file), write, edit
+  PreToolUse - exec (git commit message, including -F/--file, and git
+              author/committer identity injection via -c/--author/GIT_*),
+              write, edit
   Stop       - scans staged changes for AI signatures before the agent stops
 
 Stdin payloads (per /cli/extensibility/hooks/lifecycle-hooks):
@@ -53,6 +55,48 @@ PATTERN = re.compile("|".join(SIGNATURES), re.IGNORECASE)
 ALLOWED_CONTEXTS = (
     re.compile(r"\bAI-assisted\s+(?:tooling|tool|tools|development|review|testing|coding|workflow|workflows|approach|process|pipeline|analysis)\b", re.IGNORECASE),
     re.compile(r"\bAI-generated\s+(?:content|images|art|text|code|data|samples|examples|responses|output|outputs|uis?|interfaces?)\b", re.IGNORECASE),
+)
+
+# AI service markers in a git author/committer identity value. The commit
+# author is part of the deliverable: `git -c user.name="Devin" ... commit`
+# embeds an AI signature in history even when the message is clean (Rule 2).
+# `[bot]` catches GitHub App bot emails (devin-ai-integration[bot], copilot[bot]).
+AI_IDENTITY = re.compile(
+    r"\[bot\]"
+    r"|devin[\s_-]*ai|devin-ai-integration|\bdevin\b"
+    r"|\bclaude\b|\banthropic\b|\bcopilot\b|\bchatgpt\b|\bopenai\b|\bgpt-\w+"
+    r"|\bgemini\b|\bdeepmind\b|\bcursor\b|\bwindsurf\b|\bcodeium\b"
+    r"|\baider\b|\bcody\b|\bsweep\b|\bcodex\b|\btabnine\b"
+    r"|\bai[\s_-]?(?:assistant|agent|integration)\b",
+    re.IGNORECASE,
+)
+
+# Each pattern captures the identity VALUE being injected in group 1:
+#   git -c user.name=X / -c "user.email=X"     (per-invocation override)
+#   git commit --author=X / --author "X"
+#   GIT_AUTHOR_*/GIT_COMMITTER_* env vars on the command line
+#   git config [--global|--local] user.name X  (persistent injection)
+IDENTITY_VALUE_PATTERNS = (
+    re.compile(
+        r"-c\s*['\"]?user\.(?:name|email)\s*=\s*"
+        r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"--author\s*=\s*('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+        re.IGNORECASE,
+    ),
+    re.compile(r"--author\s+('[^']*'|\"[^\"]*\")", re.IGNORECASE),
+    re.compile(
+        r"GIT_(?:AUTHOR|COMMITTER)_(?:NAME|EMAIL)\s*=\s*"
+        r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\bconfig\s+[^;&|]*?user\.(?:name|email)\s+"
+        r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+        re.IGNORECASE,
+    ),
 )
 
 
@@ -196,6 +240,27 @@ def handle_stop(_data):
             )
 
 
+def check_identity(command):
+    """Block git commands that inject an AI identity as author/committer.
+
+    Runs on any exec command (not just `git commit`): identity can be staged
+    via `git config` or env vars without a commit in the same command.
+    """
+    if "git" not in command.lower():
+        return
+    for pattern in IDENTITY_VALUE_PATTERNS:
+        for m in pattern.finditer(command):
+            value = m.group(1).strip("'\"")
+            if AI_IDENTITY.search(value):
+                block(
+                    "AI identity injected into git author/committer "
+                    f"('{value}'). The commit identity is a deliverable "
+                    "signature (AGENTS.md Rule 2). Commit without "
+                    "-c/--author/GIT_* flags so the configured identity is "
+                    "used, or ask the user which identity to use."
+                )
+
+
 def handle_pre_tool_use(data):
     tool_name = data.get("tool_name", "") or ""
     tool_input = data.get("tool_input") or {}
@@ -204,7 +269,10 @@ def handle_pre_tool_use(data):
 
     if tool_name == "exec":
         command = tool_input.get("command", "") or ""
-        if "git commit" not in command.lower():
+        check_identity(command)
+        # `git -c key=val commit` / `git -C dir commit` place flags between
+        # "git" and "commit"; the adjacent substring gate missed them.
+        if not re.search(r"\bgit\b[^;&|]*\bcommit\b", command, re.IGNORECASE):
             return
         # For -m "message": extract the message portion and check only that.
         # For -F file: read the file and check its content.

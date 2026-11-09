@@ -53,7 +53,7 @@ execute tasks **atomically, one at a time**:
    stop, raise the gap — don't start without a gate.
 3. Follow steps exactly; run the gate yourself, capture output + exit code.
 4. **Independent QA/CI (anti-gaming):** dispatch `qa-ci` subagent
-   (`swe-2-medium`, no write tools) to re-run the gate on a clean checkout,
+   (`swe-2-flash-high`, no write tools) to re-run the gate on a clean checkout,
    run `tests/held-out/` if present, and audit the diff for overfitting
    (hard-coded constants, mocked gates, skipped tests, phantom guardrails).
    QA/CI sees only diff + spec — never your report.
