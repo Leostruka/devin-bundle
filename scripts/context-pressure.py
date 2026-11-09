@@ -562,13 +562,15 @@ def resolve_preferred_model(recipe):
         data = load_model_data()
         if data:
             if role == "parent":
-                return data.get("default_parent_model", get_parent_model() or "")
+                return os.environ.get("BUNDLE_DEFAULT_MODEL") or data.get("default_parent_model", get_parent_model() or "")
             if role == "max":
-                return data.get("max_role_model", data.get("default_subagent_model", ""))
+                return os.environ.get("BUNDLE_MAX_MODEL") or data.get("max_role_model", data.get("default_subagent_model", ""))
             if role == "medium":
-                return data.get("medium_role_model", "")
+                return os.environ.get("BUNDLE_MEDIUM_MODEL") or data.get("medium_role_model", "")
+            if role == "fast":
+                return os.environ.get("BUNDLE_FAST_MODEL") or data.get("fast_role_model", "")
             if role == "subagent":
-                return data.get("default_subagent_model", "")
+                return os.environ.get("BUNDLE_DEFAULT_SUBAGENT_MODEL") or data.get("default_subagent_model", "")
             for m in data.get("models", []):
                 if m.get("role") == role and m.get("is_default_parent"):
                     return m.get("id", "")

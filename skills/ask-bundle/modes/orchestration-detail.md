@@ -185,9 +185,9 @@ When the user wants unattended work but there are no local tickets yet:
 
 ## Advice
 
-- Subagents: use custom profiles pinned to bundle effort variants (`swe-2-max` / `swe-2-medium`, free). Never use `subagent_explore` or other paid aliases when the parent is free.
+- Subagents: use custom profiles pinned to bundle effort variants (`swe-2-max` / `swe-2-flash-high` / `swe-2-flash-medium`, free). Never use `subagent_explore` or other paid aliases when the parent is free.
 - Deep search: use the `researcher` subagent profile (`swe-2-max`).
-- Models: parent is `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`); subagents are `BUNDLE_MAX_MODEL` (`max_role_model`) or `BUNDLE_MEDIUM_MODEL` (`medium_role_model`). Don't use paid aliases unless the parent is paid.
+- Models: parent is `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json` (`default_parent_model`); subagents are `BUNDLE_MAX_MODEL` (`max_role_model`), `BUNDLE_MEDIUM_MODEL` (`medium_role_model`) or `BUNDLE_FAST_MODEL` (`fast_role_model`). Don't use paid aliases unless the parent is paid.
 - Context: prefer `clear` between unrelated tasks; don't paste large documents into chat.
 - Secrets: never display `.env`/`credentials.toml` values; name the variable and symptom only.
 - Fact doubt → research (`web_search`, `webfetch`, `grep`, `exec`).

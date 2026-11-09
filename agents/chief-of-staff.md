@@ -1,6 +1,6 @@
 ---
 name: chief-of-staff
-model: swe-2-medium
+model: swe-2-flash-medium
 description: Use as the agency pipeline's SysAdmin watchdog (Goose tier, node 07); runs parallel to the spec chain, probes tool/inbox environment, applies a whitelisted AUTO-FIX set, writes docs/07_SysAdmin_Log.md with NOMINAL|DEGRADED|ESCALATE verdict. Never edits specs or code.
 allowed-tools:
   - read

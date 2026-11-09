@@ -1,6 +1,6 @@
 ---
 name: qa-ci
-model: swe-2-medium
+model: swe-2-flash-high
 description: Use for independent step-level verification that resists agent gaming. Read-only with exec for real test/build/lint runs. Dispatched by ask-bundle (or any orchestrator) to verify each atomic step before it is marked completed. Never edits code, never trusts self-report, re-executes every gate on a clean checkout.
 allowed-tools:
   - read

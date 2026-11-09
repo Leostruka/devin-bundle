@@ -183,9 +183,9 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 | `subagent_explore` | Exploração built-in | Não |
 | `subagent_general` | Trabalho geral built-in | Sim |
 
-Com o parent gratuito em `swe-2-high`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
+Com o parent gratuito em `swe-2-max`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
 
-O bundle roteia por **nível de esforço SWE-2**: `swe-2-medium` (Medium: tarefas simples e ajustes pontuais), `swe-2-high` (High: default, multi-arquivo) e `swe-2-max` (Max: tarefas abertas e long-horizon). Os dezessete perfis customizados estão em `agents/` com pin em `swe-2-medium` ou `swe-2-max`. O parent usa `swe-2-high`. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
+O bundle roteia por **nível de esforço SWE-2** mais a **fast lane Flash**: `swe-2-max` (Max: parent default, julgamento, exploração profunda, auditoria), `swe-2-flash-high` (execução bounded ~200 tok/s) e `swe-2-flash-medium` (volume mecânico, free permanente). Os vinte e um perfis customizados estão em `agents/` com pin em `swe-2-max`, `swe-2-flash-high` ou `swe-2-flash-medium`. O parent usa `swe-2-max`. SWE-2 sai do tier free em 2026-11-30; a família Flash é free até 2026-12-04 18:00 UTC e só `swe-2-flash-medium` permanece free depois. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
 
 ### 4. Ferramentas e MCP
 

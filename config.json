@@ -5,11 +5,12 @@
   },
   "theme_mode": "dark",
   "agent": {
-    "model": "swe-2-high",
+    "model": "swe-2-max",
     "subagent_model": "swe-2-max",
     "verbosity": 3,
     "preferred_family_models": {
-      "swe-2": "swe-2-max"
+      "swe-2": "swe-2-max",
+      "swe-2-flash": "swe-2-flash-high"
     }
   },
   "attribution": false,

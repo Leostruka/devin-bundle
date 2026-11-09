@@ -151,9 +151,9 @@ sensitivity:
 |---|---|---|
 | Codebase research, doc lookup | `researcher` (`swe-2-max`) | Read-only, free, fast |
 | Code review, spec compliance | `reviewer` (`swe-2-max`) | Needs judgment, free |
-| Bounded implementation | `implementer` (`swe-2-medium`) | Needs full tools + coding strength; Medium effort suffices for spec'd work |
+| Bounded implementation | `implementer` (`swe-2-flash-high`) | Needs full tools + coding strength; fast lane suffices for spec'd work |
 | Architecture, trade-offs | `architect` (`swe-2-max`) | Needs judgment, read-only, free |
-| Debugging, root cause | `debugger` (`swe-2-medium`) | Needs exec + iterative hypothesis testing |
+| Debugging, root cause | `debugger` (`swe-2-flash-high`) | Needs exec + iterative hypothesis testing |
 | Complex reasoning, context isolation | `subagent_general` (parent model) | Inherits parent model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`), free, for tasks needing the parent model's reasoning mode |
 
 Don't dispatch `implementer` for a research task — `researcher` is 10x cheaper
@@ -456,7 +456,7 @@ conflicts that only emerge from implementation.
 
 In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the CLI default router (possibly paid). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: swe-2-max`, free) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin SWE-2 effort variants to stay within the bundle's free tier.
 
-**Effort-level routing:** pick the effort level that matches the task shape (see `context-hygiene`): **Medium** (`swe-2-medium`) for simple/bounded execution, **High** (`swe-2-high`) for multi-file work, **Max** (`swe-2-max`) for open-ended or judgment-heavy work.
+**Effort-level routing:** pick the effort level that matches the task shape (see `context-hygiene`): **Fast** (`swe-2-flash-high` bounded / `swe-2-flash-medium` mechanical) for bounded execution, **High** (`swe-2-high`) for multi-file work, **Max** (`swe-2-max`) for open-ended or judgment-heavy work.
 
 **Use `subagent_general` (inherits parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free) for:**
 - Final whole-branch review — the judgment task that needs the most capability.
@@ -466,8 +466,8 @@ In Devin CLI, a `subagent_general` subagent inherits the parent session's model 
 
 **Use custom profiles (free, context per `data/bundle-models.json`) for:**
 - `researcher` — codebase research and fact-finding (read-only, `swe-2-max`).
-- `implementer` — bounded coding tasks (`swe-2-medium`).
-- `debugger` — root cause analysis and debugging (`swe-2-medium`).
+- `implementer`: bounded coding tasks (`swe-2-flash-high`).
+- `debugger`: root cause analysis and debugging (`swe-2-flash-high`).
 - `architect` — routine architecture and trade-off analysis (read-only, `swe-2-max`).
 - `reviewer` — code review and spec compliance (read-only + exec for tests, `swe-2-max`).
 
