@@ -39,6 +39,7 @@ survive compaction; merged rules keep their number as an alias.
 
 - NEVER add `Generated with [Devin](...)` or any AI service signature to commits, files, releases, PRs, documentation, source code, or any user-facing artifact.
 - NEVER add `Co-Authored-By: Devin <...>` or any `Co-Authored-By` trailer from an AI tool to git commits.
+- NEVER set an AI service as git author/committer identity: no `git -c user.name="<AI>"`, `-c user.email=<AI bot>`, `--author=`, `GIT_AUTHOR_*`/`GIT_COMMITTER_*` env vars, or `git config user.*`. If a commit fails for missing identity, commit plainly (the configured identity is used) or ask the user which identity to use. An AI identity is never the fallback.
 - Detected → remove immediately. Committed/pushed → rewrite history (filter-branch/filter-repo), force-push, recreate affected releases.
 - Clean, neutral commit messages without signatures.
 
@@ -135,7 +136,7 @@ Routing by effort level — `data/bundle-models.json` maps roles to SWE-2 varian
 - **Medium** = simple/spot fixes; **High** = multi-file (default); **Max** = open-ended/long-horizon.
 - SWE-2 plans natively — no forced chain-of-thought. State WHAT + acceptance criteria; leave HOW to the model.
 - **Never dispatch `subagent_explore`** (CLI default router, possibly paid) — use `researcher` (`swe-2-max`, free).
-- Model policy follows the parent: parent free → subagents free (`swe-2-max`/`swe-2-medium`) or stop; parent paid → paid allowed.
+- Model policy follows the parent: parent free → subagents free (`swe-2-max`/`swe-2-flash-high`/`swe-2-flash-medium`) or stop; parent paid → paid allowed.
 - Keep AGENTS.md and system-prompt prefixes cache-stable.
 
 ### 25. No test deletion without approval

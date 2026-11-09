@@ -28,7 +28,7 @@ import sys, json, os, re, hashlib, tempfile
 
 PINNED_CONSTRAINTS = """Pinned governance constraints (re-injected after context compaction):
 
-- Rule 2: No AI signatures in deliverables (commits, files, PRs, docs).
+- Rule 2: No AI signatures in deliverables (commits, files, PRs, docs), incl. AI author/committer identity via -c/--author/GIT_* env vars.
 - Rule 5: No push without green - run local checks before committing.
 - Rule 7: Execute-first, opinion-silent - don't reframe, suggest alternatives, or critique clear tasks.
 - Rule 12: Maximum precision - every claim verified against its primary source by reading it directly.
