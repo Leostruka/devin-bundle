@@ -99,3 +99,48 @@ def test_bad_messages_rejected():
         assert e.value.code == 400
     finally:
         httpd.shutdown()
+
+
+def test_unknown_model_400_with_hint():
+    httpd, base = _server()
+    try:
+        body = json.dumps({"model": "nope-1",
+                           "messages": [{"role": "user",
+                                         "content": "hi"}]}).encode()
+        req = urllib.request.Request(base + "/v1/chat/completions",
+                                     data=body)
+        with pytest.raises(urllib.error.HTTPError) as e:
+            urllib.request.urlopen(req)
+        assert e.value.code == 400
+        d = json.loads(e.value.read())
+        assert d["error"]["param"] == "model"
+        assert "v1/models" in d["error"]["hint"]
+    finally:
+        httpd.shutdown()
+
+
+def test_usage_estimated_nonzero():
+    c = mod._completion("ponte" * 40, "m", prompt="translate this")
+    assert c["usage"]["prompt_tokens"] >= 1
+    assert c["usage"]["completion_tokens"] >= 10
+    assert (c["usage"]["total_tokens"]
+            == c["usage"]["prompt_tokens"]
+            + c["usage"]["completion_tokens"])
+
+
+def test_upstream_error_taxonomy():
+    with patch.object(mod, "_run_devin",
+                      return_value=(None, ("timeout", "slow"))):
+        httpd, base = _server()
+        try:
+            body = json.dumps({"messages": [{"role": "user",
+                                             "content": "hi"}]}).encode()
+            req = urllib.request.Request(
+                base + "/v1/chat/completions", data=body)
+            with pytest.raises(urllib.error.HTTPError) as e:
+                urllib.request.urlopen(req)
+            assert e.value.code == 504
+            assert json.loads(e.value.read()
+                              )["error"]["type"] == "timeout_error"
+        finally:
+            httpd.shutdown()
