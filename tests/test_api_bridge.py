@@ -45,7 +45,7 @@ def test_completion_shape():
 def _server(token=None):
     from http.server import ThreadingHTTPServer
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), mod.Handler)
-    httpd.devin, httpd.workdir = "devin", "."
+    httpd.devin, httpd.workdir = sys.executable, "."
     httpd.timeout, httpd.token = 30, token
     httpd.models = ["m1"]
     httpd.concurrency = 4
@@ -218,5 +218,22 @@ def test_root_self_describing():
         assert d["service"] == "devin-api-bridge"
         assert "POST /v1/chat/completions" in d["endpoints"]
         assert d["models"] == 1 and d["concurrency"] == 4
+    finally:
+        httpd.shutdown()
+
+
+def test_health_reports_backend_reachability():
+    httpd, base = _server()
+    try:
+        with urllib.request.urlopen(base + "/health") as r:
+            d = json.loads(r.read())
+        assert d["ok"] is True and d["backend"]["found"] is True
+        httpd.devin = "nonexistent-binary-xyz"
+        try:
+            urllib.request.urlopen(base + "/health")
+            assert False, "expected 503"
+        except urllib.error.HTTPError as e:
+            assert e.code == 503
+            assert json.loads(e.read())["backend"]["found"] is False
     finally:
         httpd.shutdown()
