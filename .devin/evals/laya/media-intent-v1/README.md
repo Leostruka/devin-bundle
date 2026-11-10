@@ -199,3 +199,17 @@ complaint/observation regex (stative openings, "weird|broken|slow|
 fails") could catch mi-h14 alone, but tuning on n=1 is
 overfitting - recorded as analysis for the activation decision,
 no guard shipped.
+
+## Runner-up margin evidence (2026-11-10, worker #458)
+
+`raw_runner_up_probability` now ships in worker replies; both frozen
+heldouts recaptured into `the evals dir (manifest.*.ru.json)`. Margin = top - runner-up:
+
+- mi-h14 (wrong adoption): margin 0.9365 (top 0.9446, ru 0.0312)
+- correct neighbors mi-h17/h18/h30/h33/h34: margins 0.909-0.938
+
+The wrong pick's margin sits INSIDE the correct band - margin gating
+rejected as an activation discriminator, same conclusion as the map
+bake-off: the failure is model ranking, not score shape. Reproduced by
+a standalone PAVA fit (train 29 decided: step 0.0 at p=0.518 then flat
+1.0; mi-h14 calibrates to 1.000 alongside every correct neighbor).
