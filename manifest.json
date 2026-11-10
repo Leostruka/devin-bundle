@@ -1592,8 +1592,8 @@
     {
       "name": "simplify-scan.py",
       "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
-      "export_hash": "FCAF11CC761E98A66257C41B0FDDA00CF28CB3BA336CE8222F2BA080392BDB5E",
-      "exported_at": "2026-11-10T09:46:44.133798"
+      "export_hash": "1BF0AFE35A96508A1C2FADDF72F56616A02264BD3BD177A83F087F9DA01BAF03",
+      "exported_at": "2026-11-10T10:53:36.465416"
     },
     {
       "name": "skill-picker.py",
