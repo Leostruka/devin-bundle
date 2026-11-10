@@ -246,6 +246,41 @@ def test_silent_error_clean_output_silent(tmp_path):
     assert r.stdout.strip() == ""
 
 
+def test_silent_error_overflow_path_scanned(tmp_path):
+    # Truncated results carry overflow_path to the complete output (12.17+);
+    # the hook must scan that file so errors at the cut-off tail are caught.
+    overflow = tmp_path / "full.txt"
+    overflow.write_text(
+        "X" * 30000 + "\nTraceback (most recent call last):\n"
+        "ValueError: boom\n", encoding="utf-8")
+    r = run_hook("silent-error-review.py", {
+        "hook_event_name": "PostToolUse",
+        "tool_name": "exec",
+        "tool_input": {"command": "big"},
+        "tool_response": {"success": True,
+                          "output": "X" * 20440,
+                          "error": None,
+                          "overflow_path": str(overflow)},
+        "session_id": "s",
+    }, env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
+    assert r.returncode == 0
+    assert "additionalContext" in r.stdout
+    assert "ValueError" in r.stdout
+
+
+def test_silent_error_missing_overflow_fails_soft(tmp_path):
+    r = run_hook("silent-error-review.py", {
+        "hook_event_name": "PostToolUse",
+        "tool_name": "exec",
+        "tool_input": {"command": "ls"},
+        "tool_response": {"success": True, "output": "ok", "error": None,
+                          "overflow_path": str(tmp_path / "absent.txt")},
+        "session_id": "s",
+    }, env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
+    assert r.returncode == 0
+    assert r.stdout.strip() == ""
+
+
 # --- issue 34: per-profile deny ---
 
 def _vta_env(tmp_path):
