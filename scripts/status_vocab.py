@@ -32,7 +32,7 @@ def norm(status):
     return (status or "").strip().lower()
 
 
-def is_done(status):
+def is_done(status):  # public-api: vocab predicate, siblings is_terminal/is_claimable
     return norm(status) in DONE
 
 

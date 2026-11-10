@@ -1592,7 +1592,7 @@
     {
       "name": "simplify-scan.py",
       "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
-      "export_hash": "6E505F2019B171456EA3A94396874441DAEA4BEF83D3C89CB44AED28CCB7CE7A",
+      "export_hash": "a80bccbe110d35488899e29f0fe3fc5b9803671de00dc756b9a4633242f7fd38",
       "exported_at": "2026-11-10T10:53:36.465416"
     },
     {
@@ -1610,7 +1610,7 @@
     {
       "name": "status_vocab.py",
       "purpose": "Shared issue-status vocabulary (done/terminal/non-actionable/in-flight) for roadmap-board and site/build - issues #405/#407",
-      "export_hash": "AA30EA49C9C635AE7E21CDAA3ABF7E405EB9E102083FE463FFFD93E69F20B118",
+      "export_hash": "6ca45b696ec6603935be0acea6e4c6e979d8dcc35047550b7eb5e11b226cd80b",
       "exported_at": "2026-11-08T10:42:48.418088"
     },
     {
@@ -1664,7 +1664,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "317EDFCEB59D7C4DA1CA77C129A3CD7A93F392723322AA8B2807615BE5B6B14E",
+      "export_hash": "af915ef065e3bc003a17988eb69db3f1cfba966db2f9462264f2b25f0636822b",
       "exported_at": "2026-11-03T21:04:06.237841"
     }
   ],

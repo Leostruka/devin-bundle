@@ -467,7 +467,7 @@ def cdp_click(hwnd, x, y, timeout=10.0):
     return _wrap(res, err)
 
 
-def cdp_type(hwnd, x, y, text, timeout=10.0):
+def cdp_type(hwnd, x, y, text, timeout=10.0):  # public-api: cdp_* input family
     import cu_browser
     res, err = cu_browser.dom_action(hwnd, x, y, "type", text=text,
                                      timeout=timeout)
