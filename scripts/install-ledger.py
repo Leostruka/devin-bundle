@@ -84,9 +84,24 @@ def _save_ledger(data):
     os.replace(tmp, path)
 
 
+# installer remaps (install.ps1 §7b): live dirs whose sources are
+# dissolved under .devin/ in the bundle repo
+_BUNDLE_REMAP = (("docs/plans/", ".devin/plans/"),
+                 ("docs/templates/", ".devin/templates/"),
+                 ("docs/", ".devin/docs/"))
+
+
+def _bundle_rel(rel):
+    """Live-side relative path -> bundle-side relative path."""
+    for pre, bundle_pre in _BUNDLE_REMAP:
+        if rel.startswith(pre):
+            return bundle_pre + rel[len(pre):]
+    return rel
+
+
 def _bundle_hash(root, rel):
     """Hash of the bundle-side source bytes for a managed relative path."""
-    src = os.path.join(root, rel)
+    src = os.path.join(root, *_bundle_rel(rel).split("/"))
     return _sha256(src) if os.path.isfile(src) else None
 
 
@@ -94,11 +109,9 @@ def _record_file(root, live, rel, files):
     dst = os.path.join(live, rel)
     if not os.path.isfile(dst):
         return
-    src = os.path.join(root, rel)
     files[rel] = {
         "dest": dst,
-        "source_hash": _sha256(src) if os.path.isfile(src) else
-        _bundle_hash(root, rel),
+        "source_hash": _bundle_hash(root, rel),
         "rendered_hash": _sha256(dst),
         "installed_at": datetime.datetime.now(
             datetime.timezone.utc).isoformat(timespec="seconds"),
@@ -242,6 +255,23 @@ def _write_corpus_index(root):
                     p = os.path.join(dirpath, n)
                     files[os.path.relpath(p, root).replace(
                         "\\", "/")] = _sha256(p)
+    # remapped sources (.devin/* -> live docs/*) keyed under live rels;
+    # a live rel claimed by a more specific prefix (docs/plans ->
+    # .devin/plans) is skipped by the generic docs/ walk
+    for pre, bundle_pre in _BUNDLE_REMAP:
+        base = os.path.join(root, *bundle_pre.split("/"))
+        if not os.path.isdir(base):
+            continue
+        for dirpath, _dirs, names in os.walk(base):
+            for n in names:
+                if n.endswith(".pyc") or "__pycache__" in dirpath:
+                    continue
+                p = os.path.join(dirpath, n)
+                rel = pre + os.path.relpath(p, base).replace("\\", "/")
+                if any(len(other) > len(pre) and rel.startswith(other)
+                       for other, _bp in _BUNDLE_REMAP):
+                    continue
+                files[rel] = _sha256(p)
     path = os.path.join(
         root, ".devin", "install-ledger", "corpus-index.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
