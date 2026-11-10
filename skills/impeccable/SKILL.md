@@ -88,6 +88,28 @@ When the user says "fix the design" without naming a command, run in order and s
 7. `harden` - reduced motion, keyboard nav, screen-reader labels, error states, long text, small viewports, dark mode.
 8. `polish` - shadows, transitions, radius consistency, icon sizing.
 
+### Bounded iteration (eval R7-13)
+
+Loop `critique` -> fix -> re-lint until the gate passes or the budget
+is spent, whichever first. Gate: `design_lint.py` exits 0, or every
+finding is waived verbatim in `direction-approved.md`, plus the full
+verification checklist below. Max 3 critique-fix cycles per surface.
+Each cycle must close at least one finding or checklist item; a
+no-progress cycle ends the loop. If a cycle grows the file >20%
+without closing findings, stop and `distill`. Gate unmet at 3:
+write remaining findings to the audit plan file and stop.
+
+### State and motion coverage (eval R7-12)
+
+During `audit`/`harden`, verify interactive components cover seven
+states: default, hover (pointer only, never on touch), focus (visible
+ring, never suppress outline), pressed (feedback <= 100ms), loading
+(in-control indicator, label preserved), disabled (visibly inert),
+and checked/toggled where applicable. Motion checks: transform over
+layout properties, translate over scaleX-stretch, ease-out
+(exponential preferred, no bounce/elastic per lint), <= 150ms hover,
+and a `prefers-reduced-motion` fallback for every animation.
+
 ## Output rule
 
 After each pass that produces code changes: run the project's tests/build; commit with a focused message.
