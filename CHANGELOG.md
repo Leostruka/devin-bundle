@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- dead-code removal + `# public-api` def-line convention + install-ledger rendered-currency/artifact exclusion (#473); state snapshot wave update (#475).
+- push-gate green cache (#476): verified-green verdict cached per HEAD+tree fingerprint in .git/push-green.json; repeat pushes on an unchanged surface skip the ~150s suite phase.
+
 - simplify-scan unreferenced_def restricted to module top-level defs + `@pytest.fixture` exclusion (#471): findings 30 -> 13.
 - install-ledger `.devin/` remap (#472): live `docs/`, `docs/plans/`, `docs/templates/` now compare against `.devin/docs`, `.devin/plans`, `.devin/templates` sources; corpus index covers remapped docs. False Outdated drift 75 -> 0.
 - dead-code removal: `find_binary` (bitnet_adapter), `_search_csv` compat shim (design-intelligence), `SECURITY_ATTRIBUTES` (probe_spawnpty), unused test helpers (`_channel_pair`, `_spawn_ok`, `_evs`, `_lines_with`). Scan unreferenced_def 9 -> 6 (remaining = dispatch stubs/public API).
