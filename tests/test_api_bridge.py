@@ -48,6 +48,7 @@ def _server(token=None):
     httpd.devin, httpd.workdir = "devin", "."
     httpd.timeout, httpd.token = 30, token
     httpd.models = ["m1"]
+    httpd.concurrency = 4
     httpd.sem = threading.BoundedSemaphore(4)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd, f"http://127.0.0.1:{httpd.server_address[1]}"
@@ -205,5 +206,17 @@ def test_ignored_params_surfaced():
                     base + "/v1/chat/completions", data=body)) as r:
                 d = json.loads(r.read())
             assert d["x-ignored-params"] == ["temperature", "max_tokens"]
+    finally:
+        httpd.shutdown()
+
+
+def test_root_self_describing():
+    httpd, base = _server()
+    try:
+        with urllib.request.urlopen(base + "/") as r:
+            d = json.loads(r.read())
+        assert d["service"] == "devin-api-bridge"
+        assert "POST /v1/chat/completions" in d["endpoints"]
+        assert d["models"] == 1 and d["concurrency"] == 4
     finally:
         httpd.shutdown()

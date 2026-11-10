@@ -193,6 +193,18 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self._auth_ok():
             return self._unauth()
+        if self.path == "/":
+            sv = self.server
+            return self._json(200, {
+                "service": "devin-api-bridge",
+                "backend": f"{sv.devin} -p",
+                "endpoints": {"GET /health": "liveness",
+                              "GET /v1/models": "model inventory",
+                              "POST /v1/chat/completions":
+                                  "OpenAI-compatible chat (stream via SSE)"},
+                "models": len(sv.models),
+                "concurrency": sv.concurrency,
+                "unsupported-params": list(_UNSUPPORTED)})
         if self.path == "/health":
             return self._json(200, {"ok": True})
         if self.path == "/v1/models":
@@ -274,7 +286,8 @@ def serve(args):
     httpd.devin, httpd.workdir = devin, workdir
     httpd.timeout, httpd.token = args.timeout, args.token
     httpd.models = _list_models(devin, workdir)
-    httpd.sem = threading.BoundedSemaphore(max(1, args.concurrency))
+    httpd.concurrency = max(1, args.concurrency)
+    httpd.sem = threading.BoundedSemaphore(httpd.concurrency)
     sys.stderr.write(f"[bridge] http://{args.bind}:{args.port} "
                      f"backend={devin} models={len(httpd.models)} "
                      f"auth={'token' if args.token else 'loopback'}\n")
