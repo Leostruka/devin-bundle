@@ -74,7 +74,7 @@ def test_pidfd_wait_preferred(linux, tmp_path, monkeypatch):
         linux.wait_process({"pid": 1, "start_time": start},
                            timeout_s=0.05)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     assert calls["pidfd"] >= 1
 
 

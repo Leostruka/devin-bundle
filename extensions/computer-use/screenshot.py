@@ -80,7 +80,7 @@ def _write_shot_state(sha, path, scope=None):
             json.dump({"sha256": sha, "path": path}, f)
         os.replace(p + ".tmp", p)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
 
 
 def _img_hash(img):
@@ -420,7 +420,7 @@ def main():
                                           "path": st["path"]}))
                         return
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
         result = {"ok": True, "path": out, "width": img.width,
                   "height": img.height, "monitor": args.monitor,
                   "origin_px": origin,

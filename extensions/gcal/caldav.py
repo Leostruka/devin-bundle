@@ -123,7 +123,7 @@ def _request(creds, method, url, body=None, content_type=None,
             try:
                 text = e.read().decode("utf-8", "replace")
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             return e.code, dict(e.headers or {}), text
     raise CalDAVError(f"too many redirects for {url}")
 

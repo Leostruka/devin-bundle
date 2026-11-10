@@ -57,4 +57,4 @@ def record(entry):
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, separators=(",", ":")) + "\n")
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error

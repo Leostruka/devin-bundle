@@ -384,7 +384,7 @@ class _ConOut:
                     self._k.CloseHandle(self._h_in)
                 self._k.FreeConsole()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
 
 
 def _focus_hwnd(hwnd):
@@ -996,7 +996,7 @@ def close_session(sid):
     try:
         s.pty.terminate()
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     s.alive = False
     try:
         path = _sessions_path()
@@ -1005,7 +1005,7 @@ def close_session(sid):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(reg, f)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     return {"ok": True}
 
 

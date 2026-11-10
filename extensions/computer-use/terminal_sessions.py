@@ -102,7 +102,7 @@ def daemon_main():
                     c.sendall(json.dumps(resp).encode() + b"\n")
                     last = time.time()
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
     finally:
         srv.close()
         for sid in list(cu_terminal._SESSIONS):

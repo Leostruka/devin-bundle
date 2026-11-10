@@ -180,7 +180,7 @@ def _notify_done(trace_id, st):
         mod.notify(f"cu task {st['state']}: {trace_id}", cmd,
                    level="error" if st["state"] == "failed" else "info")
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
 
 
 def main():

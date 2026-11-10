@@ -29,12 +29,12 @@ def set_dpi_awareness():
                     _DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)):
             return "pmv2"
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(2)
         return "shcore"
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     try:
         ctypes.windll.user32.SetProcessDPIAware()
         return "user32"
@@ -56,7 +56,7 @@ def physical_window_bounds(hwnd):
         if hr == 0:
             return r.left, r.top, r.right, r.bottom
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     if not ctypes.windll.user32.GetWindowRect(int(hwnd), ctypes.byref(r)):
         raise OSError(f"no_rect:{hwnd}")
     return r.left, r.top, r.right, r.bottom

@@ -130,7 +130,7 @@ def _existing(key):
                 if m:
                     return m.group(1).strip()
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     return None
 
 
@@ -195,7 +195,7 @@ def set_secret(name, value):
                 print(f"  {GREEN}✓ set{RESET} GitHub secret {name}")
                 return
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     _skipped.append(f"GitHub secret {name} (set it manually: gh secret set {name})")
     warn(f"skipped GitHub secret {name} — gh not ready; set it later")
 
@@ -213,7 +213,7 @@ def set_var(name, value):
                 print(f"  {GREEN}✓ set{RESET} GitHub variable {name}")
                 return
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     _skipped.append(f"GitHub variable {name}")
     warn(f"skipped GitHub variable {name} — gh not ready; set it later")
 

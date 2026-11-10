@@ -59,7 +59,7 @@ class OwnedInputs:
             try:
                 c.release(k)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
 
     def __enter__(self):
         return self
@@ -96,7 +96,7 @@ def emergency_release():
         try:
             kb.release(k)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     ms = mouse.Controller()
     buttons = (mouse.Button.left, mouse.Button.right, mouse.Button.middle)
     # A stray button-UP fires WM_CONTEXTMENU even with no prior DOWN —
@@ -112,7 +112,7 @@ def emergency_release():
         try:
             ms.release(b)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
 
 
 def result(status, backend, extra=None, **kw):
@@ -139,7 +139,7 @@ def result(status, backend, extra=None, **kw):
                          "backend": backend, "extra": kw or None,
                          "timings_ms": kw.get("timings_ms")})
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     return out
 
 

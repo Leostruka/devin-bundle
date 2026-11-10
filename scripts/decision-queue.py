@@ -98,7 +98,7 @@ def main(argv):
     try:
         _hook(payload)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     return 0
 
 

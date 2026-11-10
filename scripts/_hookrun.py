@@ -64,7 +64,7 @@ def emit_metric(event, **fields):
         with open(path, "a", encoding="utf-8") as f:
             f.write(line)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
 
 
 def _run_one(script_name, payload):

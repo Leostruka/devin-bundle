@@ -1347,7 +1347,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "FA787E2C738057E7CD12522121FE1B1FAC715731C39604D873DBBFC2DF5D7ECB",
+      "export_hash": "C72F8C50C1535173EC71B19FAAF1766DBD50ACEC59D67DBEA25D110968C293C6",
       "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
@@ -1407,7 +1407,7 @@
     {
       "name": "decision-queue.py",
       "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
-      "export_hash": "3e9f89fe890f2bf83c02bb6e4b8060fac4623e110f73f57da822050ab371c20b",
+      "export_hash": "13DDBB9230819FB87F8D8ACB43EF17F9B2EB9CABEFFFC4F7CCC01D29F748B0B6",
       "exported_at": "2026-11-10T06:59:34.745097"
     },
     {
@@ -1434,7 +1434,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "e6d9f30d4001243e3162ec0fbc0f6ab7e1096e27ef2e4ecfbcffe6ee219e6b59",
+      "export_hash": "CC978E8A72BA8CC37CE7D6C1B63B043F991197C4D952127FA7C37930CBB88406",
       "exported_at": "2026-09-08T21:39:22.430612"
     },
     {
@@ -1568,7 +1568,7 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "43101791129bad5831d389c96aed3020c9997ebf60377f2d0f4acc4567ecb36b",
+      "export_hash": "ECC4744AA45C91E58A0B3538E7E6EB42FE3AFDEAC39B4A103E7C0BAFD24F56FA",
       "exported_at": "2026-11-10T07:00:01.776085"
     },
     {

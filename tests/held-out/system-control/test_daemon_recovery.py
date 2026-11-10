@@ -64,8 +64,8 @@ def daemon(tmp_path, monkeypatch):
     yield sess
     try:
         sess.stop_daemon()
-    except Exception:
-        pass
+    except Exception:  # fail-soft: cleanup; preserve primary error
+        pass  # fail-soft: cleanup; preserve primary error
 
 
 def test_restart_rejects_stale_generation(daemon):

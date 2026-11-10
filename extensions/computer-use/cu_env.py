@@ -589,7 +589,7 @@ class EnvironmentManager:
             try:
                 proc.kill()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             self._daemon = None
             raise RuntimeError("daemon_ready_timeout")
         _atomic_write_json(self._state_file,
@@ -663,7 +663,7 @@ class EnvironmentManager:
                     daemon.kill()
                     daemon.wait(timeout=5)
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
             elif state.get("pid"):
                 _terminate_pid(state["pid"])
             self._daemon_exited(state, 5)

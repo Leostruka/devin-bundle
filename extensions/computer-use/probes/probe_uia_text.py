@@ -35,7 +35,7 @@ def walk(el, depth, path):
         for i in range(kids.Length):
             walk(kids.GetElement(i), depth + 1, f"{path}.{i}")
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
 
 
 walk(root, 0, "r")

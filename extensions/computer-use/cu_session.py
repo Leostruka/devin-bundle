@@ -125,7 +125,7 @@ def daemon_main():
                     conn.sendall(json.dumps(resp).encode() + b"\n")
                     last = time.time()
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
     finally:
         srv.close()
         try:
@@ -191,7 +191,7 @@ class Worker:
                 self._proc.kill()
                 self._proc.wait(timeout=5)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             self._proc = None
             # a killed worker can't run its own finally — modifiers/buttons
             # it left held are OS-global, so release them from HERE
@@ -199,7 +199,7 @@ class Worker:
                 import cu_actions
                 cu_actions.emergency_release()
             except Exception:
-                pass
+                pass  # fail-soft: probe fallback
         if not kill_only:
             self._pending.clear()
 

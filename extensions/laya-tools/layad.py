@@ -126,7 +126,7 @@ def _idle_watchdog(server, state, ttl_s):
             try:
                 server.shutdown()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             return
 
 

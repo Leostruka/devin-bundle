@@ -402,7 +402,7 @@ def main(argv=None):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--root", default=None,
                     help="repo root (default: DEVIN_PROJECT_DIR or cwd)")

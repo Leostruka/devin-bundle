@@ -417,14 +417,14 @@ def _uia_call(hwnd, action, name=None, value=None, direction=None,
             try:
                 comtypes.CoInitialize()
             except Exception:
-                pass
+                pass  # fail-soft: probe fallback
             try:
                 q.put(impl())
             finally:
                 try:
                     comtypes.CoUninitialize()
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
         except Exception as exc:
             q.put((None, f"error:{type(exc).__name__}:{exc}"))
 

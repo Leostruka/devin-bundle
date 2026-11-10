@@ -311,7 +311,7 @@ def main():
                 file=sys.stderr,
             )
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
 
     sys.exit(0)
 
