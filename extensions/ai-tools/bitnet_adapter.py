@@ -58,20 +58,6 @@ class BitNetConfig:
     extra_flags: list = field(default_factory=list)
 
 
-def find_binary(build_dir):
-    """Locate the compiled llama-cli inside a bitnet.cpp build tree."""
-    build_dir = Path(build_dir)
-    candidates = [
-        build_dir / "bin" / "llama-cli",
-        build_dir / "bin" / "Release" / "llama-cli.exe",
-        build_dir / "bin" / "llama-cli.exe",
-    ]
-    for c in candidates:
-        if c.is_file():
-            return c
-    return None
-
-
 def _check_bound(name, value, lo, hi):
     if not isinstance(value, int) or isinstance(value, bool) \
             or not (lo <= value <= hi):

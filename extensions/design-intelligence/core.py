@@ -485,12 +485,6 @@ def _search_csv_detailed(filepath, search_cols, output_cols, query, max_results,
     return results, bm25, diagnostic
 
 
-def _search_csv(filepath, search_cols, output_cols, query, max_results):
-    """Backward-compatible internal search tuple used by existing callers/tests."""
-    results, index, _ = _search_csv_detailed(
-        filepath, search_cols, output_cols, query, max_results)
-    return results, index
-
 
 def _passes_threshold(index, query, threshold):
     ranked = index.score(query)

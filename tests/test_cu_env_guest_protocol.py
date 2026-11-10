@@ -55,18 +55,6 @@ def test_malformed_handshake_rejected():
 
 # --- channel framing -----------------------------------------------------------------
 
-def _channel_pair():
-    """GuestChannel bound to an in-memory duplex (no virtio needed)."""
-    a_in, a_out = io.BytesIO(), io.BytesIO()
-
-    class Duplex:
-        """read returns what the peer wrote."""
-        def __init__(self):
-            self.r, self.w = io.BytesIO(), io.BytesIO()
-
-    return a_in, a_out
-
-
 def test_request_reply_roundtrip():
     srv_in, srv_out = io.BytesIO(), io.BytesIO()
     ch = cu_guest.GuestChannel(io.BytesIO(b'{"ok": true, "pong": 1}\n'),

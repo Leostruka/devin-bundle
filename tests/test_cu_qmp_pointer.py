@@ -13,10 +13,6 @@ from cu_load import load  # noqa: E402
 cu_qmp_backend = load("cu_qmp_backend")
 
 
-def _evs(events):
-    return [(e["type"], e["data"]) for e in events]
-
-
 # --- strict axis bounds -----------------------------------------------------------
 
 def test_out_of_frame_is_not_clamped():
