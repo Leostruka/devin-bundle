@@ -32,3 +32,28 @@ NOTE-only: Project Nomad (DfgwiprT5DN), login-bots interview (DejYAGbxOAM),
 audit-moat discourse (DcCoPrCxPT_), backprop explainer (De12iBYTUNB),
 seasonal-forecast explainer (DfXRHe9s8kZ), music reel (DfHOBy6gCye),
 cyberspace edit showcase (DdXZrIMIYXM), JEPA PRH eval (DffOrNAByFw - deferred).
+
+## Outcome status (2026-11-10, in-flight)
+
+| GH | Status | Deliverable |
+|---|---|---|
+| #434 | CLOSED | scripts/pulse.py - RTS intents drained to afk-loop frontier |
+| #435 | CLOSED | scripts/subagent-trace.py + dispatch contract |
+| #436 | CLOSED | scripts/decision-queue.py + roadmap-board pending_decisions |
+| #437 | CLOSED | scripts/done-evaluator.py + afk-loop writer-is-not-grader gate |
+| #438 | CLOSED | task-brief.py --require-done-when (exit 4) |
+| #439 | CLOSED | scripts/rules-coverage.py - 74.3% rule->control coverage |
+| #440 | CLOSED | extensions/ai-tools/weight_patch.py PoC - defect induction works, iterative repair converges slowly, control regresses |
+| #441 | RUNNING | Dory1.0-4B k={1,2,4} sweep on laya heldout - fork-built llama.cpp (PR #30306), CPU |
+| #442 | CLOSED | scripts/graph-query.py - 5/5 top-2 vs grep 11-248 unranked |
+| #443 | CLOSED | .devin/evals/raea-vs-remotion - verified, hybrid recommendation |
+| #444 | CLOSED | .devin/evals/jev-cloud-tier - verified, spike deferred |
+| #445 | CLOSED | impeccable SKILL state x motion coverage |
+| #446 | CLOSED | impeccable SKILL converge-by-gate bounded iteration |
+| #447 | CLOSED | scripts/simplify-scan.py rot scan |
+| #448 | CLOSED | skills/lgpd-questionnaire skeleton (skill 182) |
+| #449 | CLOSED | audit check [40] skills-debt + persona->process note |
+| #450 | CLOSED | extensions/busybar/push.py skeleton + eval doc |
+| #451 | CLOSED | .devin/docs/DEVICE-AUTOMATION-LANE.md |
+
+Result: 17/18 closed with shipped deliverables or documented decisions.
