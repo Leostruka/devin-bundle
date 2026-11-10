@@ -202,6 +202,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `scripts/simplify-scan.py` (#447): rot scan (TODO/FIXME, oversized, unreferenced defs, except:pass); audit check [40] skills-debt staleness (#449).
   - `scripts/graph-query.py` (#442): graph-before-grep retrieval fusing code-graph FTS + memory cues; spike evidence 5/5 top-2 vs grep-OR 11-248 unranked hits.
   - `extensions/ai-tools/weight_patch.py` (#440): activation-guided weight patching PoC - contrast direction extraction, planted-defect repair on down_proj, honest negative control.
+  - `extensions/ai-tools/dory_sweep.py` (#441): Dory1.0-4B loop sweep on laya heldout - k={1,2,4} table, flat 0.688 skill-pick / 0.438-0.562 issue-cat at 20-110x latency, defer verdict; requires dory-enabled llama.cpp fork (PR ggml-org/llama.cpp#30306).
   - `skills/impeccable` (#445/#446): state x motion coverage matrix + converge-by-gate bounded iteration (gate=lint+waivers, N=3, plateau/distill kill-switch).
   - `skills/lgpd-questionnaire` (#448): compliance questionnaire skeleton - data inventory, legal basis, subject rights, breach response.
   - `.devin/docs/DEVICE-AUTOMATION-LANE.md` (#451): 4 access classes (HTTP API > structured > GUI > bridge), device sketches, 6 safety boundaries.
