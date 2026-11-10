@@ -24,10 +24,12 @@ import time
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-STATUS_RE = re.compile(r"^\s*(?:[-*]\s*)?(?:\*\*)?Status(?:\*\*)?\s*:\s*(\w+)",
-                       re.I | re.M)
+STATUS_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:\*\*)?Status(?:\*\*)?\s*:\s*(?:\*\*)?\s*(\w+)",
+    re.I | re.M)
 BLOCKED_RE = re.compile(
-    r"^\s*(?:[-*]\s*)?(?:\*\*)?Blocked by(?:\*\*)?\s*:\s*(.+)$", re.I | re.M)
+    r"^\s*(?:[-*]\s*)?(?:\*\*)?Blocked by(?:\*\*)?\s*:\s*(?:\*\*)?\s*(.+)$",
+    re.I | re.M)
 KEY_RE = re.compile(r"([#\w-]*\d[\w-]*)")
 
 

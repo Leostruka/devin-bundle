@@ -79,3 +79,25 @@ def test_blocked_frontier_skips_blocked(tmp_path):
             "--issues-glob", str(issues / "*.md"))
     d = json.loads(r.stdout)
     assert d["next_issue"] == "02-a"
+
+
+def test_bold_colon_status_and_blockers(tmp_path):
+    issues = tmp_path / "issues"
+    issues.mkdir()
+    (issues / "01-done.md").write_text(
+        "# done\n**Status:** resolved\n", encoding="utf-8")
+    (issues / "02-blocked.md").write_text(
+        "# blocked\n**Status:** open\n**Blocked by:** 03-gate\n",
+        encoding="utf-8")
+    (issues / "03-gate.md").write_text(
+        "# gate\n**Status:** open\n", encoding="utf-8")
+    (issues / "04-ready.md").write_text(
+        "# ready\n**Status:** open\n", encoding="utf-8")
+    intents = tmp_path / "intents"
+    intents.mkdir()
+    mk_intent(intents, "i1", int(time.time()) - 100, True)
+    r = run("--dry-run", "--intents-dir", str(intents),
+            "--issues-glob", str(issues / "*.md"))
+    d = json.loads(r.stdout)
+    # resolved 01 excluded, 02 blocked by open 03 -> next ready is 03
+    assert d["next_issue"] == "03-gate"
