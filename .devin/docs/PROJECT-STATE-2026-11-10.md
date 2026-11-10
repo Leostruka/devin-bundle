@@ -22,10 +22,15 @@ bundle validated against it (`validated_cli_version` bumped in #457).
 | #462 | DRS blueprint spec draft (live verify platform-blocked) |
 | #463 | laya margin evidence: runner-up recapture, margin gate rejected (#431 item 5) |
 | #464 | CLI 12.43 compat doc: ACP modes + client fs-gateway verified |
+| #479 | **api-bridge v0.1** (#478): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions`+`/v1/models`, LAN-token gate, E2E "bridge"->"ponte" |
+| #480 | api-bridge v0.2: model validation, error taxonomy (400/502/504), estimated usage |
+| #481 | api-bridge v0.3: `--concurrency` backend semaphore, CORS preflight, `x-ignored-params` honesty field, self-describing `GET /`, `devin`-alias bug fix (live-verified) |
 
-All PRs merged; 0 open. New debt tracker: **#474** (7 oversized files +
-push-gate 150s wall time — `pytest -n 4` measured: no speedup, long-tail
-bound). Open issues: #431 (deliberate Laya gate), #474.
+All PRs merged except #481 (auto-merge armed, CI running). New debt
+tracker: **#474** (7 oversized files + push-gate 150s wall time —
+`pytest -n 4` measured: no speedup, long-tail bound). Open issues:
+#431 (deliberate Laya gate), #474, #478 (bridge tracking — ACP
+backend + true streaming deferred there).
 
 ## Verified findings worth remembering
 
