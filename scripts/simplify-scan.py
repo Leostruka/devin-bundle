@@ -56,7 +56,12 @@ def scan(root):
                           "line": 0, "lines": len(lines),
                           "limit": SIZE_LIMIT})
         for i, line in enumerate(lines, 1):
+            hashpos = line.find("#")
             for m in MARKER_RE.finditer(line):
+                # comments only - docstrings/strings/regex literals
+                # produce noise (incl. this scanner's own docstring)
+                if hashpos < 0 or m.start() < hashpos:
+                    continue
                 items.append({"type": "marker", "file": rel,
                               "line": i, "tag": m.group(1),
                               "text": line.strip()[:120]})
@@ -73,8 +78,13 @@ def scan(root):
                 bare = node.type is None
                 exc_e = (isinstance(node.type, ast.Name)
                          and node.type.id == "Exception")
+                annotated = (len(node.body) == 1
+                             and isinstance(node.body[0], ast.Pass)
+                             and node.body[0].lineno <= len(lines)
+                             and "#" in lines[node.body[0].lineno - 1])
                 if (bare or exc_e) and len(node.body) == 1 \
-                        and isinstance(node.body[0], ast.Pass):
+                        and isinstance(node.body[0], ast.Pass) \
+                        and not annotated:
                     items.append({"type": "except_pass", "file": rel,
                                   "line": node.lineno,
                                   "kind": "bare" if bare else "Exception"})
@@ -86,6 +96,9 @@ def scan(root):
             counts[w] = counts.get(w, 0) + 1
     for name, rel, lineno, kind in defs:
         if name.startswith("__") and name.endswith("__"):
+            continue
+        # pytest collects test_*/Test* by name; they are never referenced
+        if name.startswith("test_") or name.startswith("Test"):
             continue
         if counts.get(name, 0) <= 1:
             items.append({"type": "unreferenced_def", "file": rel,
