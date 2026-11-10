@@ -558,8 +558,8 @@
       "source": "devin-bundle",
       "purpose": "Use when the user needs to compact the current conversation into a document for another agent to continue.",
       "original_path": "%APPDATA%\\devin\\skills\\handoff",
-      "export_hash": "43ad4bdc553670f8be9605e2b67daee35d0f33d5d7fefe81baa326b82cc85b08",
-      "exported_at": "2026-09-08T21:39:22.440680"
+      "export_hash": "19E40CD2381A7A3D7E0442DE28E6ABF034167EC76E1A567B90488464F51DA431",
+      "exported_at": "2026-11-10T09:52:40.729492"
     },
     {
       "name": "humanizer",
@@ -1592,8 +1592,8 @@
     {
       "name": "simplify-scan.py",
       "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
-      "export_hash": "b4c52abc8303134d5421d120a783fac321d0e6975518b4a3981f27cb4fb446b2",
-      "exported_at": "2026-11-10T07:19:30.736758"
+      "export_hash": "9BB2AEDDB5BE45F3F56AE92B65FC1F4F078E2A0C254E9D6FA24584889B068F71",
+      "exported_at": "2026-11-10T09:53:41.572708"
     },
     {
       "name": "skill-picker.py",
