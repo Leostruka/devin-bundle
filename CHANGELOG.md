@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- pulse frontier fix (#461): `**Status:**`/`**Blocked by:**` bold-colon forms now parsed; frontier consumes `status_vocab` canonical statuses + archived-effort exclusion. Phantom claimable backlog 168 -> 0; issue 04-jev triaged resolved.
+- simplify-scan sibling-reraise pass (#466): `except X: raise` sibling marks `except: pass` as intentional fail-open. except_pass findings 110 -> 103.
+- handoff skill adopts acp-summarizer schema (#460): Overview / Key Details & Breadcrumbs / Current State; breadcrumbs = re-readable paths.
+- margin evidence for laya media-intent (#463, #431 item 5): runner-up recapture on frozen heldouts; margin gate rejected (error inside correct band).
+- ACP session modes + client fs-gateway documented (#464): ask/plan modes delegate fs reads to client; silent deadlock if capability undeclared.
 - simplify-scan precision pass (#459): TODO/FIXME/HACK/XXX markers restricted to comment text; annotated `except: pass` fail-open suppressed; pytest `test_*`/`Test*` defs no longer counted unreferenced. Scan noise 2612 -> 149 actionable items.
 
 - laya worker emits `raw_runner_up_probability` alongside `raw_top_probability` from `distribution` or `probabilities` keys (#458, feeds #431 item 5): held-out margin evidence showed confident-wrong failure (mi-h14 margin 0.9365), so margin gating was rejected as an activation discriminator.
