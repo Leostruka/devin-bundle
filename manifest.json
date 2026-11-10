@@ -1592,7 +1592,7 @@
     {
       "name": "simplify-scan.py",
       "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
-      "export_hash": "1BF0AFE35A96508A1C2FADDF72F56616A02264BD3BD177A83F087F9DA01BAF03",
+      "export_hash": "6E505F2019B171456EA3A94396874441DAEA4BEF83D3C89CB44AED28CCB7CE7A",
       "exported_at": "2026-11-10T10:53:36.465416"
     },
     {

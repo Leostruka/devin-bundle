@@ -98,3 +98,30 @@ def test_clean_fixture_no_items(tmp_path):
     data = json.loads(r.stdout)
     assert data["ok"] is True
     assert data["items"] == []
+
+
+def test_methods_and_fixtures_not_unreferenced(tmp_path):
+    (tmp_path / "disp.py").write_text(
+        "import pytest\n"
+        "class H:\n"
+        "    def do_PROPFIND(self):\n"
+        "        pass\n"
+        "    def handle_x(self):\n"
+        "        pass\n"
+        "@pytest.fixture(autouse=True)\n"
+        "def _setup(monkeypatch):\n"
+        "    pass\n"
+        "def outer():\n"
+        "    def inner():\n"
+        "        pass\n"
+        "    return inner()\n",
+        encoding="utf-8")
+    r = run(["--root", str(tmp_path)])
+    data = json.loads(r.stdout)
+    names = {it["name"] for it in data["items"]
+             if it["type"] == "unreferenced_def"}
+    assert "do_PROPFIND" not in names
+    assert "handle_x" not in names
+    assert "_setup" not in names
+    assert "inner" not in names
+    assert "outer" in names  # module-level, never called
