@@ -294,6 +294,58 @@ def check_test_deletions(cwd):
             )
 
 
+def _tree_fingerprint(cwd):
+    """HEAD sha + hash of `git status --porcelain` — the exact test surface.
+
+    A green run only proves the surface it ran against; keying the cache to
+    HEAD alone would wrongly accept a dirty-tree green for a clean push,
+    and to HEAD+tree it carries precisely. Returns None outside a repo.
+    """
+    import hashlib
+    try:
+        head = _run(["git", "rev-parse", "HEAD"], capture_output=True,
+                    text=True, cwd=cwd, timeout=15,
+                    encoding="utf-8", errors="replace")
+        stat = _run(["git", "status", "--porcelain=v1"],
+                    capture_output=True, text=True, cwd=cwd, timeout=15,
+                    encoding="utf-8", errors="replace")
+    except (FileNotFoundError, OSError, subprocess.SubprocessError):
+        return None
+    if head.returncode != 0 or stat.returncode != 0:
+        return None
+    return head.stdout.strip() + "|" + hashlib.sha256(
+        stat.stdout.encode("utf-8")).hexdigest()[:16]
+
+
+def _gate_cache_path(cwd):
+    """Per-repo cache under .git — never committed, never exported."""
+    gitdir = _run(["git", "rev-parse", "--git-dir"], capture_output=True,
+                  text=True, cwd=cwd, timeout=15,
+                  encoding="utf-8", errors="replace")
+    if gitdir.returncode != 0:
+        return None
+    p = gitdir.stdout.strip()
+    if not os.path.isabs(p):
+        p = os.path.join(cwd, p)
+    return os.path.join(p, "push-green.json")
+
+
+def _cache_read(path, fp):
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return json.load(fh).get("fp") == fp
+    except (OSError, ValueError):
+        return False
+
+
+def _cache_write(path, fp):
+    try:
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump({"fp": fp}, fh)
+    except OSError:
+        pass  # fail-soft: cache miss next time is just slower
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -331,6 +383,16 @@ def main():
                 "framework marker or remove tests/ (AGENTS.md Rule 5)."
             )
         print("check-push-green: no test framework detected; gate skipped",
+              file=sys.stderr)
+        sys.exit(0)
+
+    # Cache: a previously verified green covers an identical push surface.
+    # Keyed to HEAD+tree fingerprint so dirty-tree greens never bless a
+    # different surface; on hit the cheap checks above still ran.
+    fp = _tree_fingerprint(cwd)
+    cache_path = _gate_cache_path(cwd)
+    if fp and cache_path and _cache_read(cache_path, fp):
+        print("check-push-green: cached green for this HEAD+tree surface",
               file=sys.stderr)
         sys.exit(0)
 
@@ -385,6 +447,9 @@ def main():
         )
 
     check_held_out_gap(cwd, is_pytest, val_result, held_result)
+
+    if fp and cache_path:
+        _cache_write(cache_path, fp)
 
     sys.exit(0)
 

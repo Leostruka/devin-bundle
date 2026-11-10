@@ -424,3 +424,59 @@ def test_removed_test_def_approval_named_ok(tmp_path):
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     assert "test deletion" not in r.stdout
+
+
+# --- push-gate green cache (HEAD+tree fingerprint) ---
+
+def _git_repo_pytest(tmp_path):
+    t = _git_repo(tmp_path)
+    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    (tmp_path / ".gitignore").write_text(
+        "__pycache__/\n.pytest_cache/\n")
+    subprocess.run(["git", "add", "-A"], cwd=tmp_path, capture_output=True)
+    subprocess.run(["git", "-c", "user.email=a@b", "-c", "user.name=t",
+                    "commit", "-m", "cfg"], cwd=tmp_path, capture_output=True)
+    return t
+
+
+def test_tree_fingerprint_changes_on_dirty(tmp_path):
+    mod = load_mod("cpg", "check-push-green.py")
+    _git_repo_pytest(tmp_path)
+    fp1 = mod._tree_fingerprint(str(tmp_path))
+    assert fp1 and "|" in fp1
+    (tmp_path / "dirty.txt").write_text("x")
+    fp2 = mod._tree_fingerprint(str(tmp_path))
+    assert fp1 != fp2  # untracked change shifts the test surface
+
+
+def test_tree_fingerprint_none_outside_repo(tmp_path):
+    mod = load_mod("cpg", "check-push-green.py")
+    assert mod._tree_fingerprint(str(tmp_path)) is None
+
+
+def test_push_gate_cache_hit_skips_suite(tmp_path):
+    """Second identical push reuses the verified green (no suite re-run)."""
+    _git_repo_pytest(tmp_path)
+    env = {"DEVIN_PROJECT_DIR": str(tmp_path)}
+    r1 = run_hook("check-push-green.py", push_payload("git push"),
+                  env_extra=env, timeout=60)
+    assert r1.returncode == 0, r1.stdout + r1.stderr
+    assert (tmp_path / ".git" / "push-green.json").exists()
+    r2 = run_hook("check-push-green.py", push_payload("git push"),
+                  env_extra=env, timeout=60)
+    assert r2.returncode == 0
+    assert "cached green" in r2.stderr
+
+
+def test_push_gate_cache_miss_on_dirty_tree(tmp_path):
+    """Uncommitted changes alter the surface -> suite re-runs."""
+    _git_repo_pytest(tmp_path)
+    env = {"DEVIN_PROJECT_DIR": str(tmp_path)}
+    r1 = run_hook("check-push-green.py", push_payload("git push"),
+                  env_extra=env, timeout=60)
+    assert r1.returncode == 0
+    (tmp_path / "newfile.txt").write_text("dirty")
+    r2 = run_hook("check-push-green.py", push_payload("git push"),
+                  env_extra=env, timeout=60)
+    assert r2.returncode == 0
+    assert "cached green" not in r2.stderr
