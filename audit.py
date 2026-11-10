@@ -274,7 +274,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py', 'simplify-scan.py', 'graph-query.py', 'subagent-trace.py', 'done-evaluator.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in hooks.v1.json')
@@ -1340,6 +1340,42 @@ try:
 except Exception as _e:
     print('  SKIP stdio check failed: ' + str(_e))
 
+# 40. Skills debt: warn on stale SKILL.md (>180 days since mtime) or a
+# skill directory that lacks SKILL.md. Warnings, not errors - staleness
+# is a signal to review, not a defect.
+print()
+print('[40] Skills debt (staleness)')
+try:
+    import time as _time40
+    _stale_days = 180
+    _now40 = _time40.time()
+    _stale = []
+    _missing = []
+    for _sk in sorted(os.listdir(skills_dir)):
+        _sp = os.path.join(skills_dir, _sk)
+        _sm = os.path.join(_sp, 'SKILL.md')
+        if not os.path.isdir(_sp):
+            continue
+        if not os.path.exists(_sm):
+            _missing.append(_sk)
+            continue
+        _age = (_now40 - os.path.getmtime(_sm)) / 86400
+        if _age > _stale_days:
+            _stale.append('%s (%dd)' % (_sk, int(_age)))
+    for _sk in _missing:
+        warnings.append('skill dir lacks SKILL.md: ' + _sk)
+        print('  WARN ' + _sk + ': no SKILL.md')
+    if _stale:
+        warnings.append('stale SKILL.md (>' + str(_stale_days) + 'd): '
+                        + ', '.join(_stale[:10]))
+        print('  WARN ' + str(len(_stale)) + ' stale SKILL.md: '
+              + ', '.join(_stale[:5]))
+    elif not _missing:
+        print('  OK  all SKILL.md files touched within '
+              + str(_stale_days) + ' days')
+except Exception as _e:
+    print('  SKIP skills-debt check failed: ' + str(_e))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1356,5 +1392,5 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 39 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    print('ALL 40 CHECKS PASSED - NO ERRORS, NO WARNINGS')
 

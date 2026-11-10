@@ -191,6 +191,15 @@ Do NOT just increase timeouts - find the real issue.
 Return: Summary of what you found and what you fixed.
 ```
 
+### Process over persona
+
+When delegating, the persona label ("you are a senior reviewer") is not
+the contract - the process is. Specify the steps to follow and the
+acceptance criteria to hit: what to read first, which commands verify
+the work, what the return must contain. A prompt that only names a role
+lets the agent invent its own bar; a prompt that names the process makes
+the bar checkable. Persona sets posture, process sets the done-line.
+
 ## Common Mistakes
 
 **❌ Too broad:** "Fix all the tests" - agent gets lost
@@ -259,6 +268,28 @@ worker:
   still running or their results are unreconciled.
 - When splitting work into phases, split on dependencies and natural
   delivery boundaries; never split merely to shrink a review's scope.
+
+## Dispatch trace and abort contract
+
+Every dispatch leaves a record so burn and status survive compaction, and
+a human can kill a runaway subagent. The helper is
+`scripts/subagent-trace.py` (fail-open, JSON envelopes, state under
+`.devin/`):
+
+- **At launch:** record the dispatch before/while dispatching —
+  `echo '{"agent":"implementer","title":"...","profile":"swe-2-medium"}' | python scripts/subagent-trace.py record`
+  It appends a line to `.devin/subagent-trace.jsonl`
+  (`{id, ts, agent, title, profile, status, notes}`, status starts
+  `running`). Reuse the dispatch's real ID via `--id` when you have one.
+- **On return:** update the same record in place —
+  `... record --id <id> --status done --notes "summary"` (also `killed` /
+  `timeout`). Records update, never duplicate.
+- **Between polls:** check the abort flag —
+  `python scripts/subagent-trace.py check-abort <id>` exits 0 when a kill
+  was requested (`.devin/subagent-abort/<id>` exists); stop polling that
+  dispatch and mark it `killed`.
+- **Human side:** `--abort <id>` sets the flag, `--clear-abort <id>`
+  clears it, `--pending` lists open dispatches, `--list` lists all.
 
 ## Cross-skills
 
