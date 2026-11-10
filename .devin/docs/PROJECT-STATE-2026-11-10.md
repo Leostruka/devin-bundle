@@ -2,13 +2,18 @@
 
 ## Position
 
-Main `aebff80` (origin synced). CLI `3000.12.43` installed = latest;
+Main `51e8ab0` (origin synced). CLI `3000.12.43` installed = latest;
 bundle validated against it (`validated_cli_version` bumped in #457).
 
 ## Merged today (post-reels-7)
 
 | PR | What |
 |---|---|
+| #469 | fail-soft annotation wave: 103 `except: pass` sites annotated -> except_pass 0 |
+| #470 | silent-error-review scans `tool_response.overflow_path` (field verified on 12.43); <=8 MB, fail-soft |
+| #471 | simplify-scan: module-level defs only + pytest-fixture skip (unreferenced_def 30->13) |
+| #472 | install-ledger: `.devin/` path remap for live docs/plans/templates (false drift 75->0) |
+| #473 | dead-code removal + def-line `# public-api` annotation convention; install-ledger rendered-file currency (source_hash compare) + build-artifact exclusion (.pyd/.so/.dll) |
 | #458 | laya worker: `raw_runner_up_probability` (distribution OR probabilities keys) |
 | #459 | simplify-scan precision: comments-only markers, annotated-pass, pytest-def skip (2612->149 items) |
 | #460 | handoff skill: acp-summarizer 3-section schema (Overview/Breadcrumbs/Current State) |
@@ -17,7 +22,9 @@ bundle validated against it (`validated_cli_version` bumped in #457).
 | #463 | laya margin evidence: runner-up recapture, margin gate rejected (#431 item 5) |
 | #464 | CLI 12.43 compat doc: ACP modes + client fs-gateway verified |
 
-Pending auto-merge: #465 (issue triage), #466 (simplify-scan sibling-reraise suppression).
+All PRs merged; 0 open. New debt tracker: **#474** (7 oversized files +
+push-gate 150s wall time — `pytest -n 4` measured: no speedup, long-tail
+bound). Open issues: #431 (deliberate Laya gate), #474.
 
 ## Verified findings worth remembering
 
@@ -40,10 +47,14 @@ Pending auto-merge: #465 (issue triage), #466 (simplify-scan sibling-reraise sup
 
 ## Baselines
 
-- `python audit.py`: 0 errors; warnings only for <24h changelog-ref grace
-- pytest: 2397 passed / 8 skipped (post-batch); targeted suites green since
-- install-ledger: Modified=0 Foreign=0
-- simplify-scan: 149 items -> 103 after sibling-reraise suppression (#466)
+- `python audit.py`: 40/40 checks, 0 errors, 0 warnings
+- pytest: 2420 passed / 8 skipped (2428 collected)
+- install-ledger: **1407/1407 Current, 0 drift** (rendered-file currency
+  fix + artifact exclusion; config.json re-rendered via render-user-hooks)
+- simplify-scan: **9 items** — unreferenced_def 0, except_pass 0,
+  7 oversized files (#474), 2 fixture markers
+- `overflow_path` adopted: silent-error-review scans full PostToolUse
+  output (empirically verified field on 12.43)
 
 ## Calendar
 
