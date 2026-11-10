@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- simplify-scan precision pass (#459): TODO/FIXME/HACK/XXX markers restricted to comment text; annotated `except: pass` fail-open suppressed; pytest `test_*`/`Test*` defs no longer counted unreferenced. Scan noise 2612 -> 149 actionable items.
+
 - laya worker emits `raw_runner_up_probability` alongside `raw_top_probability` from `distribution` or `probabilities` keys (#458, feeds #431 item 5): held-out margin evidence showed confident-wrong failure (mi-h14 margin 0.9365), so margin gating was rejected as an activation discriminator.
 
 - devin-cli alignment 3000.12.28 -> 3000.12.43 (#457): acp server agent-types (summarizer/review/codemap) + --cloud relay, DEVIN_MODEL/DEVIN_REFUSAL_FALLBACK env, desktop/forward/migrate/setup/uninstall commands, cloud drs blueprints. Eval issues #453-#456 filed for acp-review/codemap/summarizer/drs.

@@ -1,8 +1,12 @@
 # Issue 04: JEV operational patterns rollout
 
-Status: runtime lanes implemented per `LAYA_MASTER_ARCHITECTURE.md` §12;
-adoption gated on calibration (G5) - `.devin/laya/profile.json` mode is
-`off`, so every lane abstains `feature_off` until enabled.
+Status: resolved
+
+Runtime lanes implemented per `LAYA_MASTER_ARCHITECTURE.md` §12; the
+G5 calibration campaign completed 2026-11-09 (all 14 profiles, held-out
+evidence, FINAL STANDINGS below). Residual activation decisions are
+tracked on GitHub issue #431 - production mode stays `off`, every lane
+abstains `feature_off` until enabled.
 
 estimate_min: 120
 

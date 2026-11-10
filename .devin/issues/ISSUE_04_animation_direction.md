@@ -1,6 +1,6 @@
 # ISSUE 04, Animation Direction: narration → scene plan → code-rendered motion
 
-Status: in-progress · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) · Ledger: `.devin/research/4_fronts_recon.md`
+Status: resolved · Source: IG `DeNUYLkRWsz` (@matheusolivsilv) · Ledger: `.devin/research/4_fronts_recon.md`
 
 ## Contexto & Valor
 
