@@ -31,10 +31,6 @@ _COLOR_BG = re.compile(r"bg-(?!gray|slate|zinc|neutral|white|black)"
                        r"[a-z]+-(?:[4-9]\d{2})")
 
 
-def _lines_with(text, needle):
-    return [i + 1 for i, l in enumerate(text.split("\n")) if needle in l]
-
-
 def _finding(rule, path, line, evidence):
     return {"rule": rule, "file": path, "line": line,
             "evidence": evidence[:120]}

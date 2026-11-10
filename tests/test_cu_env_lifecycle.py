@@ -91,15 +91,6 @@ class FakeProc:
         self.killed = True
 
 
-def _spawn_ok(argv, **kw):
-    p = FakeProc()
-    p.argv = argv
-    return p
-
-
-
-
-
 def _run_ok(argv, timeout_s=60, **kw):
     return {"returncode": 0, "stdout": "", "stderr": "", "timed_out": False}
 

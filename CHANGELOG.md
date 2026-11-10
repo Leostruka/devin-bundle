@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- simplify-scan unreferenced_def restricted to module top-level defs + `@pytest.fixture` exclusion (#471): findings 30 -> 13.
+- install-ledger `.devin/` remap (#472): live `docs/`, `docs/plans/`, `docs/templates/` now compare against `.devin/docs`, `.devin/plans`, `.devin/templates` sources; corpus index covers remapped docs. False Outdated drift 75 -> 0.
+- dead-code removal: `find_binary` (bitnet_adapter), `_search_csv` compat shim (design-intelligence), `SECURITY_ATTRIBUTES` (probe_spawnpty), unused test helpers (`_channel_pair`, `_spawn_ok`, `_evs`, `_lines_with`). Scan unreferenced_def 9 -> 6 (remaining = dispatch stubs/public API).
 - fail-soft annotation wave (#469): all 103 unannotated `except: pass` sites across system-control/computer-use/laya/gcal/design-intelligence + hooks/scripts/tests annotated with `# fail-soft:` reason; scan except_pass 103 -> 0.
 - silent-error-review `overflow_path` adoption (#470): PostToolUse truncated results carry `tool_response.overflow_path` to the complete output (field verified empirically on 3000.12.43); hook now scans full file <=8 MB so tail errors are caught; finding snippets prefer error lines.
 - pulse frontier fix (#461): `**Status:**`/`**Blocked by:**` bold-colon forms now parsed; frontier consumes `status_vocab` canonical statuses + archived-effort exclusion. Phantom claimable backlog 168 -> 0; issue 04-jev triaged resolved.

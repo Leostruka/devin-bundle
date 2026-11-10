@@ -136,6 +136,9 @@ def scan(root):
         if name.startswith("test_") or name.startswith("Test"):
             continue
         if counts.get(name, 0) <= 1:
+            src_lines = sources[rel].splitlines()
+            if lineno <= len(src_lines) and "#" in src_lines[lineno - 1]:
+                continue  # annotated on the def line, e.g. `# public-api`
             items.append({"type": "unreferenced_def", "file": rel,
                           "line": lineno, "name": name, "kind": kind})
     totals = {"files_scanned": files_seen, "items": len(items)}

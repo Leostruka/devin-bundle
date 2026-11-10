@@ -200,7 +200,7 @@ def set_secret(name, value):
     warn(f"skipped GitHub secret {name} — gh not ready; set it later")
 
 
-def set_var(name, value):
+def set_var(name, value):  # public-api: wizard helper
     """Set a GitHub Actions repo variable (non-secret)."""
     if _gh_available():
         try:

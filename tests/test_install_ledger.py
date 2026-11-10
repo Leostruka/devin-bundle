@@ -174,3 +174,38 @@ def test_corpus_index_covers_remapped_docs(env):
         root / ".devin" / "docs" / "guide.md")
     assert idx["files"]["docs/plans/p.md"] == mod._sha256(
         root / ".devin" / "plans" / "p.md")
+
+
+def test_rendered_file_current_when_source_recorded(env):
+    """Rendered managed files (config.json) can never equal their raw
+    bundle source — currency must compare rec.source_hash, not live bytes."""
+    root, live = env
+    h = mod._sha256
+    _write(root / "config.json", "src")
+    _write(live / "config.json", "rendered-abs-paths")
+    ledger = {"version": 1, "files": {"config.json": {
+        "dest": "", "source_hash": h(root / "config.json"),
+        "rendered_hash": h(live / "config.json"),
+        "installed_at": "t", "corpus_version": "1.0.0"}}}
+    (root / ".devin" / "install-ledger" / "installs.json").write_text(
+        json.dumps(ledger))
+    rep = mod.reconcile()
+    assert rep["Current"] == ["config.json"]
+    # source moves -> same live bytes become Outdated
+    _write(root / "config.json", "src v2")
+    rep = mod.reconcile()
+    assert rep["Outdated"] == ["config.json"]
+
+
+def test_build_artifacts_never_drift(env):
+    """Install-time artifacts (.pyd/.so/.dll/.pyc) aren't shipped sources."""
+    root, live = env
+    _write(live / "extensions" / "rust-core" / "fast_math.pyd", "bin")
+    ledger = {"version": 1, "files": {
+        "extensions/rust-core/fast_math.pyd": {
+            "dest": "", "source_hash": None, "rendered_hash": "stale",
+            "installed_at": "t", "corpus_version": "1.0.0"}}}
+    (root / ".devin" / "install-ledger" / "installs.json").write_text(
+        json.dumps(ledger))
+    rep = mod.reconcile()
+    assert all("fast_math.pyd" not in v for v in rep.values())

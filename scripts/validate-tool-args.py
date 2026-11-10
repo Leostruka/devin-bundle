@@ -293,11 +293,11 @@ def check_request_scope(ti):
         block("request_scope requires a path.")
 
 
-def check_mcp_list_tools(ti):
+def check_mcp_list_tools(ti):  # dispatch stub via check_<tool> table
     pass  # server_name is optional; no required args — kept for documentation
 
 
-def check_mcp_list_servers(ti):
+def check_mcp_list_servers(ti):  # dispatch stub via check_<tool> table
     pass  # no required args — kept for documentation
 
 

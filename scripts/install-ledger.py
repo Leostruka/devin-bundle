@@ -6,13 +6,19 @@ managed file with slug, dest, source_hash (bundle), rendered_hash (sha256
 of the bytes on disk), installed_at, corpus_version (bundle version).
 
 Reconcile reports five states per managed file:
-  Current   live exists, live hash == bundle hash
-  Outdated  live exists, live hash == last recorded rendered_hash, differs
-            from bundle (bundle moved forward, install not yet refreshed)
+  Current   live == bundle hash, OR live == recorded rendered_hash and the
+            record's source_hash matches the current bundle source
+            (rendered files never equal their raw source)
+  Outdated  live == recorded rendered_hash but the recorded source_hash
+            differs from the current bundle source — or is absent
+            (bundle moved forward, install not yet refreshed)
   Modified  live exists, live hash != rendered_hash (local edit or
             never-recorded content) — local drift
   Removed   file recorded but missing on disk
   Foreign   file exists in a managed dir but is not in the ledger/manifest
+
+Install-time build artifacts (.pyc/.pyd/.so/.dll, ADR 003) are not
+shipped sources and never drift — excluded from iteration and reconcile.
 
 backup_if_differs is already covered by the installers (Backup-File /
 byte-identical skip); this module is the missing drift detection +
@@ -132,6 +138,11 @@ _NOISE_DIRS = ("__pycache__", ".venv", "venv", "target",
                "node_modules", ".git", ".backups")
 
 
+def _is_artifact(rel):
+    """Install-time build artifacts (ADR 003) — never shipped sources."""
+    return rel.endswith((".pyc", ".pyd", ".so", ".dll"))
+
+
 def _iter_live_files(live):
     """Yield relative paths of files under managed live dirs."""
     for top in MANAGED_TOP:
@@ -141,7 +152,7 @@ def _iter_live_files(live):
         for dirpath, dirs, names in os.walk(base):
             dirs[:] = [d for d in dirs if d not in _NOISE_DIRS]
             for n in names:
-                if n.endswith(".pyc"):
+                if _is_artifact(n):
                     continue
                 yield os.path.relpath(
                     os.path.join(dirpath, n), live).replace("\\", "/")
@@ -181,6 +192,8 @@ def reconcile():
     out = {"Current": [], "Outdated": [], "Modified": [],
            "Removed": [], "Foreign": []}
     for rel in sorted(set(_iter_live_files(live)) | set(ledger)):
+        if _is_artifact(rel):
+            continue  # stale records for build artifacts don't drift
         dst = os.path.join(live, rel)
         rec = ledger.get(rel)
         if not os.path.isfile(dst):
@@ -196,10 +209,17 @@ def reconcile():
                 out["Foreign"].append(rel)
             continue
         rendered = rec.get("rendered_hash")
+        rec_src = rec.get("source_hash")
         if bundle_hash is not None and live_hash == bundle_hash:
             out["Current"].append(rel)
         elif rendered and live_hash == rendered:
-            out["Outdated"].append(rel)
+            # live is the recorded render/copy; it is stale only when the
+            # bundle source moved since the record (rendered files like
+            # config.json can never equal their raw source)
+            if rec_src is not None and rec_src == bundle_hash:
+                out["Current"].append(rel)
+            else:
+                out["Outdated"].append(rel)
         else:
             out["Modified"].append(rel)
     return out

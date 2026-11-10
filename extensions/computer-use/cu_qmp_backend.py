@@ -47,7 +47,7 @@ def axis_to_qmp(v, size):
     return round(v * QMP_AXIS_MAX / (size - 1))
 
 
-def qmp_to_axis(v, size):
+def qmp_to_axis(v, size):  # public-api: diagnostic inverse map
     """Inverse mapping — for tests/diagnostics."""
     return round(v * (size - 1) / QMP_AXIS_MAX) if size > 1 else 0
 
