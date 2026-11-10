@@ -66,6 +66,19 @@ def test_swallow_detects_bare_except(tmp_path):
     assert len(kinds) == 1 and kinds[0]["kind"] == "bare"
 
 
+def test_swallow_sibling_reraise_is_intentional(tmp_path):
+    (tmp_path / "gate.py").write_text(
+        "try:\n    risky()\nexcept SystemExit:\n    raise\n"
+        "except Exception:\n    pass\n", encoding="utf-8")
+    (tmp_path / "still.py").write_text(
+        "try:\n    risky()\nexcept Exception:\n    pass\n", encoding="utf-8")
+    r = run(["--root", str(tmp_path)])
+    data = json.loads(r.stdout)
+    kinds = [it["file"] for it in data["items"]
+             if it["type"] == "except_pass"]
+    assert kinds == [os_path("still.py")]
+
+
 def test_bad_root_exits_nonzero(tmp_path):
     r = run(["--root", str(tmp_path / "nope")])
     assert r.returncode != 0
