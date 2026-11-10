@@ -165,6 +165,20 @@ Capabilities and runtime contracts verified in `3000.12.28` (`91c3aec41579`) sin
 | `devin doctor` passes 3/3 against the live bundle | adopted (passive) | Verified post-upgrade: custom subagent profiles (26), OTEL env, OTEL export. |
 | `devin update` on Windows prints manual `irm ... install.ps1` instruction | documented | No in-binary self-update on Windows; the manifest at `static.devin.ai/cli/current/manifest.json` confirmed `3000.12.28` is the latest promoted build. |
 
+## 3000.12.43 capabilities (verified 2026-11-10, CLI 3000.12.43)
+
+Capabilities and runtime contracts verified in `3000.12.43` (`517d03d73926`) since `3000.12.28`. Delta probed directly on the installed binary.
+
+| Capability | Decision | Rationale |
+|---|---|---|
+| `devin acp` ACP server over stdio | eval pending | Agent Client Protocol host for IDE integration. Three `--agent-type` modes: `summarizer` (no tools, writes `~/.local/share/devin/summaries/<id>.md`), `review` (read-only + shell, diff review), `codemap` (read-only, emits `<CODEMAP>` blocks for the Windsurf code map viewer). `--cloud` relays stdio to the cloud ACP WebSocket. Bundle mapping: `review` overlaps reviewer/qa-ci dispatches, `codemap` overlaps `scripts/graph-query.py` code-graph, `summarizer` overlaps compact/handoff tooling - evaluation issues filed instead of blind adoption. |
+| `--model` / `DEVIN_MODEL`, `--refusal-fallback` / `DEVIN_REFUSAL_FALLBACK` | documented | `acp` exposes model override + an ordered fallback chain for provider policy refusals (Anthropic content/cyber, OpenAI cyber). Env vars propagate to the ACP child the REPL spawns, so they also govern `devin` and `devin -p`. Orthogonal to `BUNDLE_*` model routing - refusal fallback is a provider-policy path, not a cost tier. |
+| `devin desktop` | adopted (passive) | Launches the Devin Desktop app matching the CLI channel; passthrough args. |
+| `devin forward` | documented | SSH tunnel from a cloud session box forwarding each port to localhost - cloud dev servers reachable at `http://localhost:<port>`. Cloud-lane only. |
+| `devin migrate hooks` / `migrate workflows` | documented | Imports `.windsurf/hooks.json` into `.devin/hooks.v1.json` and converts workflow files into skills. Useful when onboarding Windsurf-era projects; no bundle action needed (hooks already canonical). |
+| `devin cloud drs` | eval pending | Declarative Repo Setup - environment blueprints, sandbox sessions and builds for cloud sessions. Candidate: emit a DRS config so cloud sessions reproduce the local bundle install. |
+| `devin setup` wizard, `devin uninstall` | adopted (passive) | Interactive onboarding / full removal flows. |
+
 ## Model policy
 
 `config.json` reads the primary model from `BUNDLE_DEFAULT_MODEL` (with `data/bundle-models.json` as the canonical registry). `devin models list` for the validated CLI reports the current free and paid models; the bundle's free-primary policy is enforced by choosing a `cost_tier: free` entry as the parent and matching subagent models from `data/bundle-models.json`.
