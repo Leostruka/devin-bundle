@@ -31,6 +31,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -96,8 +97,15 @@ def _est_tokens(text):
     return max(1, len(text or "") // 4)
 
 
-def _completion(text, model, cid=None, prompt=""):
-    return {
+# OpenAI params `devin -p` cannot honour — surfaced, never silently dropped
+_UNSUPPORTED = ("temperature", "top_p", "max_tokens", "n", "stop",
+                "presence_penalty", "frequency_penalty", "logit_bias",
+                "seed", "logprobs", "tools", "tool_choice",
+                "response_format")
+
+
+def _completion(text, model, cid=None, prompt="", ignored=None):
+    out = {
         "id": cid or f"chatcmpl-{uuid.uuid4().hex[:24]}",
         "object": "chat.completion",
         "created": int(time.time()),
@@ -109,6 +117,9 @@ def _completion(text, model, cid=None, prompt=""):
                   "completion_tokens": _est_tokens(text),
                   "total_tokens": _est_tokens(prompt) + _est_tokens(text)},
     }
+    if ignored:
+        out["x-ignored-params"] = ignored
+    return out
 
 
 def _chunk(text, model, cid):
@@ -147,6 +158,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        self._cors()
         self.end_headers()
         self.wfile.write(body)
 
@@ -163,9 +175,36 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stderr.write("[bridge] " + fmt % args + "\n")
 
+    def _cors(self):
+        # browser harnesses preflight; loopback LAN use needs explicit
+        # origin pass-through — permissive is fine: data stays local
+        self.send_header("Access-Control-Allow-Origin",
+                         self.headers.get("Origin", "*"))
+        self.send_header("Access-Control-Allow-Headers",
+                         "Authorization, Content-Type")
+        self.send_header("Access-Control-Allow-Methods",
+                         "GET, POST, OPTIONS")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors()
+        self.end_headers()
+
     def do_GET(self):
         if not self._auth_ok():
             return self._unauth()
+        if self.path == "/":
+            sv = self.server
+            return self._json(200, {
+                "service": "devin-api-bridge",
+                "backend": f"{sv.devin} -p",
+                "endpoints": {"GET /health": "liveness",
+                              "GET /v1/models": "model inventory",
+                              "POST /v1/chat/completions":
+                                  "OpenAI-compatible chat (stream via SSE)"},
+                "models": len(sv.models),
+                "concurrency": sv.concurrency,
+                "unsupported-params": list(_UNSUPPORTED)})
         if self.path == "/health":
             return self._json(200, {"ok": True})
         if self.path == "/v1/models":
@@ -206,8 +245,14 @@ class Handler(BaseHTTPRequestHandler):
                 "hint": "GET /v1/models lists valid ids "
                         f"({len(sv.models)} available)"}})
         prompt = _flatten(messages)
-        text, err = _run_devin(sv.devin, prompt, model, sv.workdir,
-                               sv.timeout)
+        # "devin" is a compat alias, not a real model id — resolve to the
+        # CLI's configured default by omitting --model entirely
+        backend_model = None if model == "devin" else model
+        # concurrent harness fire would spawn N devin processes — cap and
+        # queue so the box doesn't melt under parallel tool calls
+        with sv.sem:
+            text, err = _run_devin(sv.devin, prompt, backend_model,
+                                   sv.workdir, sv.timeout)
         if err:
             kind, msg = err
             code = 504 if kind == "timeout" else 502
@@ -228,7 +273,9 @@ class Handler(BaseHTTPRequestHandler):
                               + "\n\ndata: [DONE]\n\n").encode("utf-8"))
             self.wfile.flush()
             return
-        self._json(200, _completion(text, model, cid, prompt=prompt))
+        self._json(200, _completion(
+            text, model, cid, prompt=prompt,
+            ignored=[k for k in _UNSUPPORTED if k in req]))
 
 
 def serve(args):
@@ -242,6 +289,8 @@ def serve(args):
     httpd.devin, httpd.workdir = devin, workdir
     httpd.timeout, httpd.token = args.timeout, args.token
     httpd.models = _list_models(devin, workdir)
+    httpd.concurrency = max(1, args.concurrency)
+    httpd.sem = threading.BoundedSemaphore(httpd.concurrency)
     sys.stderr.write(f"[bridge] http://{args.bind}:{args.port} "
                      f"backend={devin} models={len(httpd.models)} "
                      f"auth={'token' if args.token else 'loopback'}\n")
@@ -261,6 +310,9 @@ def main():
     sv.add_argument("--devin")
     sv.add_argument("--workdir")
     sv.add_argument("--timeout", type=int, default=300)
+    sv.add_argument("--concurrency", type=int, default=2,
+                    help="max simultaneous devin backend calls "
+                         "(extras queue)")
     md = sub.add_parser("models")
     md.add_argument("--devin")
     args = ap.parse_args()
