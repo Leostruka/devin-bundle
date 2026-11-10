@@ -206,7 +206,15 @@ class Handler(BaseHTTPRequestHandler):
                 "concurrency": sv.concurrency,
                 "unsupported-params": list(_UNSUPPORTED)})
         if self.path == "/health":
-            return self._json(200, {"ok": True})
+            sv = self.server
+            # depth over liveness: bridge alive != backend reachable —
+            # harnesses should be able to tell which half is down
+            backend = os.path.isfile(sv.devin) or \
+                shutil.which(sv.devin) is not None
+            return self._json(200 if backend else 503, {
+                "ok": backend,
+                "backend": {"path": sv.devin, "found": backend,
+                            "models": len(sv.models)}})
         if self.path == "/v1/models":
             ids = self.server.models or ["devin"]
             return self._json(200, {
