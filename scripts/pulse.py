@@ -24,6 +24,9 @@ import time
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import status_vocab  # noqa: E402
+
 STATUS_RE = re.compile(
     r"^\s*(?:[-*]\s*)?(?:\*\*)?Status(?:\*\*)?\s*:\s*(?:\*\*)?\s*(\w+)",
     re.I | re.M)
@@ -61,14 +64,20 @@ def frontier(issues_glob):
     tickets = {}
     for path in sorted(glob.glob(issues_glob, recursive=True)):
         key = os.path.splitext(os.path.basename(path))[0]
+        parts = path.replace("\\", "/").split("/")
+        if "scratch" in parts:
+            effort = parts[parts.index("scratch") + 1]
+            if status_vocab.effort_archived(".", effort):
+                continue
         status, blockers = issue_status(path)
         if status is None:
             continue
         tickets[key] = {"status": status, "blockers": blockers,
                         "path": path}
-    resolved = {k for k, t in tickets.items() if t["status"] == "resolved"}
+    resolved = {k for k, t in tickets.items()
+                if status_vocab.is_terminal(t["status"])}
     ready = [k for k, t in tickets.items()
-             if t["status"] not in ("resolved", "claimed")
+             if status_vocab.is_claimable(t["status"])
              and all(b in resolved or b not in tickets for b in t["blockers"])]
     def num(k):
         m = re.search(r"\d+", k)

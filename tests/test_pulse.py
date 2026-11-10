@@ -93,6 +93,8 @@ def test_bold_colon_status_and_blockers(tmp_path):
         "# gate\n**Status:** open\n", encoding="utf-8")
     (issues / "04-ready.md").write_text(
         "# ready\n**Status:** open\n", encoding="utf-8")
+    (issues / "05-shipped.md").write_text(
+        "# shipped\n**Status:** implemented locally.\n", encoding="utf-8")
     intents = tmp_path / "intents"
     intents.mkdir()
     mk_intent(intents, "i1", int(time.time()) - 100, True)
