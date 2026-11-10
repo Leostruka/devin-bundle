@@ -245,11 +245,14 @@ class Handler(BaseHTTPRequestHandler):
                 "hint": "GET /v1/models lists valid ids "
                         f"({len(sv.models)} available)"}})
         prompt = _flatten(messages)
+        # "devin" is a compat alias, not a real model id — resolve to the
+        # CLI's configured default by omitting --model entirely
+        backend_model = None if model == "devin" else model
         # concurrent harness fire would spawn N devin processes — cap and
         # queue so the box doesn't melt under parallel tool calls
         with sv.sem:
-            text, err = _run_devin(sv.devin, prompt, model, sv.workdir,
-                                   sv.timeout)
+            text, err = _run_devin(sv.devin, prompt, backend_model,
+                                   sv.workdir, sv.timeout)
         if err:
             kind, msg = err
             code = 504 if kind == "timeout" else 502
