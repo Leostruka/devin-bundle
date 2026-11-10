@@ -143,3 +143,34 @@ def test_empty_dirs_clean(env):
     rep = mod.reconcile()
     assert rep == {"Current": [], "Outdated": [], "Modified": [],
                    "Removed": [], "Foreign": []}
+
+
+def test_docs_remap_to_devin_dir(env):
+    """live docs/* resolves to bundle .devin/docs/* (install.ps1 §7b)."""
+    root, live = env
+    _write(root / ".devin" / "docs" / "guide.md", "guide")
+    _write(root / ".devin" / "plans" / "p.md", "plan")
+    _write(live / "docs" / "guide.md", "guide")
+    _write(live / "docs" / "plans" / "p.md", "plan")
+    rep = mod.reconcile()
+    assert "docs/guide.md" in rep["Current"]
+    assert "docs/plans/p.md" in rep["Current"]
+    # drift on the bundle source shows as Outdated once recorded
+    _cli(["record-all"], env)
+    _write(root / ".devin" / "docs" / "guide.md", "guide v2")
+    rep = mod.reconcile()
+    assert "docs/guide.md" in rep["Outdated"]
+
+
+def test_corpus_index_covers_remapped_docs(env):
+    root, live = env
+    _write(root / ".devin" / "docs" / "guide.md", "guide")
+    _write(root / ".devin" / "plans" / "p.md", "plan")
+    _cli(["record-all"], env)
+    idx = json.loads(
+        (root / ".devin" / "install-ledger" / "corpus-index.json")
+        .read_text())
+    assert idx["files"]["docs/guide.md"] == mod._sha256(
+        root / ".devin" / "docs" / "guide.md")
+    assert idx["files"]["docs/plans/p.md"] == mod._sha256(
+        root / ".devin" / "plans" / "p.md")
