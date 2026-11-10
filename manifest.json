@@ -1586,7 +1586,7 @@
     {
       "name": "silent-error-review.py",
       "purpose": "PostToolUse hook — detects silent errors in tool output",
-      "export_hash": "e662c8718edf6008032a1724049e8ed37855cd43b2ee05f9d47303bf691a6441",
+      "export_hash": "60BD74ECB40FF9210B31D09985FF036C840078D583165527A6104A22EFFBF052",
       "exported_at": "2026-09-08T21:39:22.430789"
     },
     {
