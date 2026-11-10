@@ -1331,9 +1331,17 @@
       "export_hash": "84880c5f76405695b82140c3c74820b47d4b6492eb69bf6fec49e5d94fd8cfc8",
       "exported_at": "2026-11-06T11:47:27.072797",
       "path": "skills/camera-blocking/SKILL.md"
+    },
+    {
+      "name": "lgpd-questionnaire",
+      "source": "created:reels-7-eval #448",
+      "purpose": "Use when the user asks for an LGPD/data-protection compliance review of an app or service - data inventory, legal basis, third-party sharing, subject rights, breach response. Produces an evidence-cited compliance matrix, not legal advice.",
+      "original_path": "%APPDATA%\\devin\\skills\\lgpd-questionnaire",
+      "export_hash": "bd23da85440a35ab089d10e3b592265dc0ef96b41bb21253f45d5e2e16122cc0",
+      "exported_at": "2026-11-10T07:33:38.105749"
     }
   ],
-  "skill_count": 181,
+  "skill_count": 182,
   "rule_count": 24,
   "scripts": [
     {
@@ -1430,6 +1438,12 @@
       "exported_at": "2026-09-08T21:39:22.430612"
     },
     {
+      "name": "done-evaluator.py",
+      "purpose": "grades a claimed done against transcript evidence - writer is not the grader (issue #437)",
+      "export_hash": "199234a618f5c898354d5b5d718818c2b8228d5202dbeaafccd7b65ce61e1cf8",
+      "exported_at": "2026-11-10T07:19:30.736758"
+    },
+    {
       "name": "file-size-guard.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
@@ -1453,6 +1467,12 @@
       "purpose": "PostToolUse hook - one-line 'diff-stat:' footer after exec calls when the active output-mode preset flags diff_footer (caveman/lean)",
       "export_hash": "61BFBE1363C14B6B68A1113DF227655FA6E449ED0C35DC80961FCE4BCD712754",
       "exported_at": "2026-11-08T08:50:55.845199"
+    },
+    {
+      "name": "graph-query.py",
+      "purpose": "graph-before-grep retrieval - fuses code-graph FTS + memory cues into ranked file results (issue #442)",
+      "export_hash": "07c0cd3e05582c99418b4690bbf1f30fa7e4d19a252f928731ff208ddbf201f0",
+      "exported_at": "2026-11-10T07:41:35.131974"
     },
     {
       "name": "install-ledger.py",
@@ -1570,6 +1590,12 @@
       "exported_at": "2026-09-08T21:39:22.430789"
     },
     {
+      "name": "simplify-scan.py",
+      "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
+      "export_hash": "b4c52abc8303134d5421d120a783fac321d0e6975518b4a3981f27cb4fb446b2",
+      "exported_at": "2026-11-10T07:19:30.736758"
+    },
+    {
       "name": "skill-picker.py",
       "purpose": "UserPromptSubmit child (JEV-2) — lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
       "export_hash": "a94c45ca663009e7ba663d61178eb226f2185eee5ad2d254e0f0ca575e625e22",
@@ -1598,6 +1624,12 @@
       "purpose": "PostToolUse hook - advisory when the same exec command fails 3x consecutively (deterministic stuck-detector subset of token-economizer mechanism)",
       "export_hash": "58feb125324e394a65d474b00269f6ce644a6ea97deb9982ec3461bf9514b9f2",
       "exported_at": "2026-10-31T21:15:43.544713"
+    },
+    {
+      "name": "subagent-trace.py",
+      "purpose": "per-dispatch trace records (.devin/subagent-trace.jsonl) + abort flag channel for orchestrated subagents",
+      "export_hash": "9688a49d1618ef3c866ce3afc35b61cfcbee0ba5186fff59e2523bce7c58e948",
+      "exported_at": "2026-11-10T07:19:30.736758"
     },
     {
       "name": "token-saver.py",
@@ -1636,7 +1668,7 @@
       "exported_at": "2026-11-03T21:04:06.237841"
     }
   ],
-  "script_count": 48,
+  "script_count": 52,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,

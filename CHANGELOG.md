@@ -196,6 +196,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - manifest: sentinel original_path mojibake (bell char) fixed.
 
 ### Added
+- **Reels-7/YouTube eval batch closeout (#434-#451)**: 18 research-driven eval issues resolved - 11 shipped, 7 documented decisions.
+  - `scripts/done-evaluator.py` (#437): writer-is-not-the-grader gate - deterministic contradiction scan (test-run state, unchecked acceptance, admitted skips) + `--emit-brief` for separate-tier grading; wired into `skills/afk-loop` verification step.
+  - `scripts/subagent-trace.py` (#435): per-dispatch trace JSONL + `.devin/subagent-abort/<id>` kill channel; contract in `skills/dispatching-parallel-agents`.
+  - `scripts/simplify-scan.py` (#447): rot scan (TODO/FIXME, oversized, unreferenced defs, except:pass); audit check [40] skills-debt staleness (#449).
+  - `scripts/graph-query.py` (#442): graph-before-grep retrieval fusing code-graph FTS + memory cues; spike evidence 5/5 top-2 vs grep-OR 11-248 unranked hits.
+  - `extensions/ai-tools/weight_patch.py` (#440): activation-guided weight patching PoC - contrast direction extraction, planted-defect repair on down_proj, honest negative control.
+  - `skills/impeccable` (#445/#446): state x motion coverage matrix + converge-by-gate bounded iteration (gate=lint+waivers, N=3, plateau/distill kill-switch).
+  - `skills/lgpd-questionnaire` (#448): compliance questionnaire skeleton - data inventory, legal basis, subject rights, breach response.
+  - `.devin/docs/DEVICE-AUTOMATION-LANE.md` (#451): 4 access classes (HTTP API > structured > GUI > bridge), device sketches, 6 safety boundaries.
+  - Eval docs: `.devin/evals/{graphify-query,design-state-motion,design-iteration-loop,raea-vs-remotion,lgpd-questionnaire,jev-cloud-tier,busybar-integration}/` - raea = verified Rust+Bevy Remotion alternative (hybrid recommendation); Jev = verified TypeSafe AI decision API (spike deferred); Busy Bar = verified busylib HTTP device (spec + `extensions/busybar/push.py` skeleton).
+
 - **decision-queue.py (#436)**: stop-hook module + CLI recording human-blocking stops to `.devin/decisions.jsonl` (fail-open); `roadmap-board.py` surfaces `pending_decisions` count in JSON and Markdown board output. `stop-guard.py` `_hookrun` chain updated. Closes the "agent stopped for a decision overnight" blind spot.
 
 
