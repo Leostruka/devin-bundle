@@ -97,8 +97,15 @@ def _est_tokens(text):
     return max(1, len(text or "") // 4)
 
 
-def _completion(text, model, cid=None, prompt=""):
-    return {
+# OpenAI params `devin -p` cannot honour — surfaced, never silently dropped
+_UNSUPPORTED = ("temperature", "top_p", "max_tokens", "n", "stop",
+                "presence_penalty", "frequency_penalty", "logit_bias",
+                "seed", "logprobs", "tools", "tool_choice",
+                "response_format")
+
+
+def _completion(text, model, cid=None, prompt="", ignored=None):
+    out = {
         "id": cid or f"chatcmpl-{uuid.uuid4().hex[:24]}",
         "object": "chat.completion",
         "created": int(time.time()),
@@ -110,6 +117,9 @@ def _completion(text, model, cid=None, prompt=""):
                   "completion_tokens": _est_tokens(text),
                   "total_tokens": _est_tokens(prompt) + _est_tokens(text)},
     }
+    if ignored:
+        out["x-ignored-params"] = ignored
+    return out
 
 
 def _chunk(text, model, cid):
@@ -248,7 +258,9 @@ class Handler(BaseHTTPRequestHandler):
                               + "\n\ndata: [DONE]\n\n").encode("utf-8"))
             self.wfile.flush()
             return
-        self._json(200, _completion(text, model, cid, prompt=prompt))
+        self._json(200, _completion(
+            text, model, cid, prompt=prompt,
+            ignored=[k for k in _UNSUPPORTED if k in req]))
 
 
 def serve(args):

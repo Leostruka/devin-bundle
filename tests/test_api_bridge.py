@@ -190,3 +190,20 @@ def test_concurrency_cap_serializes_backend():
             assert __import__("time").time() - t0 < 1.2
     finally:
         httpd.shutdown()
+
+
+def test_ignored_params_surfaced():
+    httpd, base = _server()
+    try:
+        with patch.object(mod, "_run_devin",
+                          lambda d, p, m, w, t: ("resposta", None)):
+            body = json.dumps({"messages": [{"role": "user",
+                                             "content": "oi"}],
+                               "temperature": 0.1,
+                               "max_tokens": 5}).encode()
+            with urllib.request.urlopen(urllib.request.Request(
+                    base + "/v1/chat/completions", data=body)) as r:
+                d = json.loads(r.read())
+            assert d["x-ignored-params"] == ["temperature", "max_tokens"]
+    finally:
+        httpd.shutdown()
