@@ -1540,6 +1540,12 @@
       "exported_at": "2026-11-08T10:42:48.417376"
     },
     {
+      "name": "rules-coverage.py",
+      "purpose": "Manual-run audit - maps NL rules to deterministic controls (hooks/audit/permissions), reports unenforced",
+      "export_hash": "1918f79120139e1706a5d6f2a9c86098e306ab9da03f51425f6045f458250260",
+      "exported_at": "2026-11-10T06:51:06.217969"
+    },
+    {
       "name": "session-start.py",
       "purpose": "SessionStart consolidated hook (constraint-pinning+context-budget)",
       "export_hash": "aee9e3084057b17b58b825004b3eb4fb6b0da8088bbb53da5ecb552dac68d4b1",
@@ -1618,7 +1624,7 @@
       "exported_at": "2026-11-03T21:04:06.237841"
     }
   ],
-  "script_count": 45,
+  "script_count": 46,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,
