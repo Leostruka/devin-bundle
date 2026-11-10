@@ -74,20 +74,26 @@ def scan(root):
                 defs.append((node.name, rel, node.lineno, "function"))
             elif isinstance(node, ast.ClassDef):
                 defs.append((node.name, rel, node.lineno, "class"))
-            elif isinstance(node, ast.ExceptHandler):
-                bare = node.type is None
-                exc_e = (isinstance(node.type, ast.Name)
-                         and node.type.id == "Exception")
-                annotated = (len(node.body) == 1
-                             and isinstance(node.body[0], ast.Pass)
-                             and node.body[0].lineno <= len(lines)
-                             and "#" in lines[node.body[0].lineno - 1])
-                if (bare or exc_e) and len(node.body) == 1 \
-                        and isinstance(node.body[0], ast.Pass) \
-                        and not annotated:
-                    items.append({"type": "except_pass", "file": rel,
-                                  "line": node.lineno,
-                                  "kind": "bare" if bare else "Exception"})
+            elif isinstance(node, ast.Try):
+                # a sibling handler that re-raises (except X: raise) makes
+                # an `except Exception/bare: pass` self-documenting intent
+                sibling_reraise = any(
+                    len(h.body) == 1 and isinstance(h.body[0], ast.Raise)
+                    for h in node.handlers)
+                for h in node.handlers:
+                    bare = h.type is None
+                    exc_e = (isinstance(h.type, ast.Name)
+                             and h.type.id == "Exception")
+                    annotated = (len(h.body) == 1
+                                 and isinstance(h.body[0], ast.Pass)
+                                 and h.body[0].lineno <= len(lines)
+                                 and "#" in lines[h.body[0].lineno - 1])
+                    if (bare or exc_e) and len(h.body) == 1 \
+                            and isinstance(h.body[0], ast.Pass) \
+                            and not annotated and not sibling_reraise:
+                        items.append({"type": "except_pass", "file": rel,
+                                      "line": h.lineno,
+                                      "kind": "bare" if bare else "Exception"})
     counts = {}
     word_re = re.compile(r"\b\w+\b")
     for src in sources.values():

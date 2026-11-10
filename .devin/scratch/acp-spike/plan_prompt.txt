@@ -1,0 +1,1 @@
+Plan how to add a --stale-days flag to scripts/pulse.py that skips issues whose Status line was modified more than N days ago. Do not write code - output the plan only.
