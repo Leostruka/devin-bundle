@@ -512,6 +512,12 @@ and fix-round diffs need it.
   (5) the report-file path and report contract. Exact values (numbers,
   magic strings, signatures, test cases) appear only in the brief. Never
   make a subagent read the whole plan file.
+- **Done-when contract:** every task should carry a runnable acceptance
+  check (`Done when:`/`Acceptance:`/`Verify:`/`Check:` section). Pass
+  `--require-done-when` to `task-brief.py` to reject briefs missing one
+  (exit 4); without the flag the extractor warns but proceeds. When the
+  implementer returns, re-run the brief's check yourself before accepting
+  the report - never trust the worker's self-declared "done" alone.
 - **Report file:** name the implementer's report file after the brief
   (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
   the dispatch prompt. The implementer writes the full report there and

@@ -38,6 +38,8 @@ def main():
     parser.add_argument("plan_file", help="Path to the plan markdown file")
     parser.add_argument("task_number", type=int, help="Task number to extract")
     parser.add_argument("outfile", nargs="?", help="Optional output file path")
+    parser.add_argument("--require-done-when", action="store_true",
+                        help="exit 4 if the task lacks a runnable Done-when/acceptance check")
     args = parser.parse_args()
 
     if not os.path.isfile(args.plan_file):
@@ -51,6 +53,18 @@ def main():
     if not task_text:
         print(f"task {args.task_number} not found in {args.plan_file} (no heading matching 'Task {args.task_number}')", file=sys.stderr)
         sys.exit(3)
+
+    # Done-when contract (Omega pattern): a brief is only self-verifying if it
+    # carries a check the orchestrator can re-run before accepting the report.
+    has_done_when = bool(re.search(
+        r"(done[ -]?when|acceptance|verify:|check:)", task_text, re.I))
+    if not has_done_when:
+        msg = (f"task {args.task_number}: no runnable 'Done when'/"
+               "acceptance check found in extracted text")
+        if args.require_done_when:
+            print(msg, file=sys.stderr)
+            sys.exit(4)
+        print(f"warn: {msg}", file=sys.stderr)
 
     if args.outfile:
         out = args.outfile
