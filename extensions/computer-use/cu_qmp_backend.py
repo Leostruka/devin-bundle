@@ -402,7 +402,7 @@ class QmpBackend:
                              "arguments": {"events": ups}}, 5,
                       token=token)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
 
 
 # -- keyboard encoding (pure; zero IO) ---------------------------------------------

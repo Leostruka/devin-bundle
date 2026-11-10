@@ -25,7 +25,7 @@ def walk(el, path, depth):
         if el.GetCurrentPattern(uia_tlb.UIA_TextPatternId):
             has_text = " [TEXT]"
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     print(f"{path} [{cn}] ct={ct} {name[:40]!r}{has_text}")
     try:
         cond = uia.CreateTrueCondition()

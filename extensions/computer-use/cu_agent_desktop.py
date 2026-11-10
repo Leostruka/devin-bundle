@@ -253,7 +253,7 @@ class AgentDesktop:
                 if predicate(last):
                     return True, last
             except Exception:
-                pass
+                pass  # fail-soft: probe fallback
             time.sleep(delay)
         return False, last
 

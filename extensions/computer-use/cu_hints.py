@@ -78,14 +78,14 @@ def _com_thread(fn):
         try:
             comtypes.CoInitialize()
         except Exception:
-            pass
+            pass  # fail-soft: probe fallback
         try:
             return fn()
         finally:
             try:
                 comtypes.CoUninitialize()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
     except Exception:
         return None
 
@@ -130,7 +130,7 @@ def _enum_elements(core, target):
             arr = target.FindAllBuildCache(_SCOPE_DESCENDANTS, cond, req)
             cached = True
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     if arr is None:
         arr = target.FindAll(_SCOPE_DESCENDANTS, cond)
     out = []
@@ -292,7 +292,7 @@ def _perform_impl(entry, action, text):
             if pat.CurrentIsReadOnly:
                 return {"x": cx, "y": cy}, "readonly"
         except Exception:
-            pass
+            pass  # fail-soft: probe fallback
         pat.SetValue(text)
         return {"x": cx, "y": cy, "pattern": "Value"}, None
     return None, "bad_action"
@@ -371,7 +371,7 @@ def session_id(scope=None):
         if sid:
             return sid
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     sid = uuid.uuid4().hex[:12]
     try:
         if scope is not None:
@@ -379,7 +379,7 @@ def session_id(scope=None):
         with open(_session_file(scope), "w", encoding="utf-8") as f:
             json.dump({"session_id": sid}, f)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     return sid
 
 
@@ -411,7 +411,7 @@ def _next_generation(scope=None):
             json.dump(d, f)
         os.replace(tmp, _session_file(scope))
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     return gen
 
 

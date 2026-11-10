@@ -77,23 +77,23 @@ def _reader(sess):
                      "text": text})
                 sess["cond"].notify_all()
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     finally:
         try:
             proc.stdout.close()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         try:
             proc.wait(timeout=30)
         except Exception:
             try:
                 proc.kill()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             try:
                 proc.wait(timeout=5)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         with sess["cond"]:
             sess["exited"] = True
             sess["exit_code"] = proc.returncode
@@ -143,7 +143,7 @@ def _spawn(arg):
             proc.kill()
             proc.wait(timeout=5)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         return {"ok": False, "error": f"tree assign failed: {exc}"}
     sess = {"id": uuid.uuid4().hex[:12],
             "token": secrets.token_hex(16), "proc": proc,
@@ -166,7 +166,7 @@ def _spawn(arg):
         try:
             sc_process._reap_tree(sess["handle"], 1)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         return {"ok": False, "error": f"reader start failed: {exc}"}
     with _LOCK:
         _SESSIONS[sess["id"]] = sess
@@ -261,7 +261,7 @@ def _cancel(sess):
     try:
         sc_process._reap_tree(sess["handle"], 1)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     with sess["cond"]:
         sess["exited"] = True
         sess["exit_code"] = sess["proc"].returncode
@@ -280,7 +280,7 @@ def _close(sess):
     try:
         sc_process._reap_tree(sess["handle"], 2)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     if t is not None:
         t.join(timeout=5)
     with sess["cond"]:
@@ -332,7 +332,7 @@ def _stream_poller(entry):
                     severity="error",
                     attrs={"message": str(exc)})])
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         stop.wait(stream.interval_s)
 
 
@@ -411,7 +411,7 @@ def _reap_streams():
             try:
                 _stream_close(sid)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
 
 
 def _op(env):
@@ -499,7 +499,7 @@ def _reap_idle_sessions():
                 try:
                     _close(sess)
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
         elif now - sess["last_activity"] > sess["idle_ttl_s"]:
             _cancel(sess)
 
@@ -579,7 +579,7 @@ def daemon_main(pidfile=None, idle_ttl_s=None):
                     resp, stopping = _handle_conn(c)
                     c.sendall(json.dumps(resp).encode() + b"\n")
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
             last = time.time()
     finally:
         srv.close()
@@ -587,12 +587,12 @@ def daemon_main(pidfile=None, idle_ttl_s=None):
             try:
                 _stream_close(sid)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         for sess in list(_SESSIONS.values()):
             try:
                 _close(sess)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         try:
             os.remove(PIDFILE)
         except OSError:
@@ -609,7 +609,7 @@ def _read_pidfile():
                 and isinstance(d.get("port"), int)):
             return d
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     return None
 
 

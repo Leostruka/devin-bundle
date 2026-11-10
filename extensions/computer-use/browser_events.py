@@ -135,7 +135,7 @@ class EventBuffer:
             try:
                 self._respond_dialog(True, p)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         else:
             self.dialogs.append({"type": t, "message": p.get("message"),
                                  "context": p.get("context"),
@@ -236,7 +236,7 @@ def _connect(timeout=10.0):
                 try:
                     ws.call(dom)
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
             return ws, "cdp", target, ep
         ws, target = cu_browser._connect_bidi(ep, timeout, target_id=tid)
         ws.call("session.subscribe", {"events": [
@@ -297,7 +297,7 @@ def daemon_main():
                     c.sendall(json.dumps(resp).encode() + b"\n")
                     last = time.time()
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
     finally:
         srv.close()
         ws.close()

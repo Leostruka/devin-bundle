@@ -242,7 +242,7 @@ def serve(env_dir, spawn=None, poll_s=0.2):
         try:
             proc.kill()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         for f in (sock_path, env_dir / "ready.json"):
             try:
                 f.unlink()

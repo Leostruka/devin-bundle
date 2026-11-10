@@ -281,7 +281,7 @@ def warm_engine(engine, config):
         }, engine, ((config or {}).get("calibration") or None),
             assist_ok=False, model=((config or {}).get("model") or None))
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     return (time.monotonic() - started) * 1000
 
 

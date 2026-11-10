@@ -221,11 +221,11 @@ def _reap_root(proc, grace_s) -> bool:
         try:
             proc.kill()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         try:
             proc.wait(timeout=5)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     return proc.returncode is not None
 
 
@@ -260,7 +260,7 @@ def _reap_posix_group(proc, grace_s) -> bool:
     try:
         proc.wait(timeout=grace_s)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     try:
         os.killpg(proc.pid, signal.SIGKILL)
     except (ProcessLookupError, OSError):
@@ -374,7 +374,7 @@ def _reader_run(stream, state):
         try:
             stream.close()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         if state["spill_fh"] is not None:
             try:
                 state["spill_fh"].close()
@@ -404,7 +404,7 @@ def _start_readers(proc, limit, spill_dir, out):
             try:
                 stream.close()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             raise
 
 
@@ -420,7 +420,7 @@ def _join_reader(r) -> bool:
         try:
             r["stream"].close()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         t.join(timeout=_JOIN_TIMEOUT_S)
     return not t.is_alive()
 
@@ -524,11 +524,11 @@ def spawn(argv: list, *, cwd=None, env_allow=None, timeout_s=30,
         try:
             proc.kill()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         try:
             proc.wait(timeout=5)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         raise
     if os.name == "nt":
         try:
@@ -540,21 +540,21 @@ def spawn(argv: list, *, cwd=None, env_allow=None, timeout_s=30,
             try:
                 proc.kill()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             try:
                 proc.wait(timeout=5)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             job = tree.get("job")
             if job is not None:
                 try:
                     _kernel32().TerminateJobObject(job, 1)
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
                 try:
                     _kernel32().CloseHandle(job)
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
                 tree["closed"] = True
             raise
     handle = {"process": proc, "pid": proc.pid, "start_time": start_ns,
@@ -579,12 +579,12 @@ def spawn(argv: list, *, cwd=None, env_allow=None, timeout_s=30,
         try:
             _reap_tree(handle, 2)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         for stream in (proc.stdout, proc.stderr):
             try:
                 stream.close()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         for r in handle["readers"]:
             _join_reader(r)
         for r in handle["readers"]:

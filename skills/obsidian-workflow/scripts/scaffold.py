@@ -47,7 +47,7 @@ def git_name(project_dir):
         if result.returncode == 0:
             return Path(result.stdout.strip()).name
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     return None
 
 
@@ -1172,7 +1172,7 @@ views:
         if result.returncode == 0:
             indexed_branch = result.stdout.strip()
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     manifest = {
         "project_name": project_name,
         "project_dir": str(project_dir),

@@ -91,7 +91,7 @@ def collect(html):
     try:
         d.feed(html or "")
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     return d
 
 

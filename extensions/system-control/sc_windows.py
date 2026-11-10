@@ -341,19 +341,19 @@ def _terminate_process(proc):
     try:
         k32.TerminateProcess(wintypes.HANDLE(proc["process"]), 1)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     try:
         k32.WaitForSingleObject(
             wintypes.HANDLE(proc["process"]), 5000)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     for key in ("thread", "process"):
         h = proc.get(key)
         if h:
             try:
                 k32.CloseHandle(wintypes.HANDLE(h))
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             # Clear so spawn_owned's finally cannot double-close a
             # handle value that may have been reused.
             proc[key] = None
@@ -389,7 +389,7 @@ def spawn_owned(argv, *, cwd=None):
                 sc_process._kernel32().CloseHandle(
                     wintypes.HANDLE(job))
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         _terminate_process(proc)
         raise
     finally:
@@ -397,7 +397,7 @@ def spawn_owned(argv, *, cwd=None):
             try:
                 k32.CloseHandle(wintypes.HANDLE(proc["thread"]))
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             proc["thread"] = None
 
 
@@ -412,17 +412,17 @@ def close_owned(s):
         try:
             k32.TerminateJobObject(wintypes.HANDLE(job), 1)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
         try:
             k32.CloseHandle(wintypes.HANDLE(job))
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     proc_h = s.get("process")
     if proc_h:
         try:
             _kernel32().CloseHandle(wintypes.HANDLE(proc_h))
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     return {"ok": True}
 
 

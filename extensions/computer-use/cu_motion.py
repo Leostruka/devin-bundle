@@ -51,7 +51,7 @@ def get_profile(flag=None, scope=None):
         if v in PROFILES:
             return v
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     return "fast"
 
 

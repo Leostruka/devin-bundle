@@ -179,7 +179,7 @@ def main():
     try:
         webbrowser.open(auth)
     except Exception:
-        pass
+        pass  # fail-soft: cleanup; preserve primary error
     if not done.wait(args.timeout):
         srv.shutdown()
         raise SystemExit(f"timed out waiting for consent "

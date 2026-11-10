@@ -32,7 +32,7 @@ def main():
             try:
                 p.terminate()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         sys.exit(1)
 
     signal.signal(signal.SIGTERM, _die)

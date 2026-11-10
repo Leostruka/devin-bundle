@@ -59,7 +59,7 @@ def command_has_server_id(pid, expected_id):
             )
             return result.returncode == 0 and expected_arg in result.stdout
     except Exception:
-        pass
+        pass  # fail-soft: probe fallback
     return False
 
 
@@ -182,7 +182,7 @@ def main():
             if resolved_session.is_relative_to(temp_root) or resolved_session.is_relative_to(linux_tmp):
                 shutil.rmtree(session_dir, ignore_errors=True)
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
 
         print('{"status": "stopped"}')
     else:

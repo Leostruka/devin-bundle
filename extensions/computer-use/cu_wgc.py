@@ -86,7 +86,7 @@ class _WgcSession:
             try:
                 setattr(self.session, attr, False)
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
         self._frame_ev = threading.Event()
         self._tok = self.pool.add_frame_arrived(
             lambda s, a: self._frame_ev.set())
@@ -106,7 +106,7 @@ class _WgcSession:
             try:
                 f.close()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
             n += 1
 
     def next_frame(self, timeout=4.0, fresh=False):
@@ -130,7 +130,7 @@ class _WgcSession:
                 try:
                     frame.close()
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
             frame = f
         return frame
 
@@ -187,7 +187,7 @@ class _WgcSession:
             try:
                 fn()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
 
 
 class WgcWindow(_WgcSession):
@@ -269,7 +269,7 @@ def wait_change(timeout=10.0, monitor=None):
                             try:
                                 frame.close()
                             except Exception:
-                                pass
+                                pass  # fail-soft: cleanup; preserve primary error
                     return {"changed": True, "monitor": idx,
                             "elapsed_s": round(time.monotonic() - t0, 3),
                             "frame_array": arr}, None
@@ -297,7 +297,7 @@ def shot(hwnd, timeout=4.0, wait=False):
             try:
                 frame.close()
             except Exception:
-                pass
+                pass  # fail-soft: cleanup; preserve primary error
     except RuntimeError as e:
         return None, str(e)
     except Exception as e:

@@ -330,7 +330,7 @@ class _WSClient:
         try:
             self.ws.close()
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
 
 
 def _http_json(url, timeout=5.0):
@@ -723,7 +723,7 @@ def _cdp_client(timeout=10.0):
                 try:
                     ws.call(dom)
                 except Exception:
-                    pass
+                    pass  # fail-soft: cleanup; preserve primary error
             cli = BrowserClient(ws, "cdp", tid)
             cli.endpoint = ep
             return cli
@@ -1088,7 +1088,7 @@ def watch_frames(cli, seconds, out_dir, max_frames=100, last_only=False):
         try:
             ws.call("Page.stopScreencast")
         except Exception:
-            pass
+            pass  # fail-soft: cleanup; preserve primary error
     if last_only and latest is not None:
         with open(os.path.join(out_dir, "latest.jpg"), "wb") as f:
             f.write(latest)
