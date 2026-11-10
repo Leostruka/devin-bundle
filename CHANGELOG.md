@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- reels-7/yt-batch2 eval batch (#434-#451, milestone 14): 28 unique links deep-dived (transcripts + captions + 7 researcher waves) -> survey + 18 eval issues. Executed same-day: `scripts/rules-coverage.py` NL-rule->control audit (#439, 74.3% coverage, all security rules backed), `task-brief.py --require-done-when` + SKILL.md orchestrator re-verify contract (#438), `scripts/pulse.py` rts-intents drainer -> afk-loop frontier (#434).
+
 - devin-cli alignment 3000.12.17 -> 3000.12.28: latest promoted build confirmed via `static.devin.ai/cli/current/manifest.json`; public changelog ends at 12.17 so the delta was probed on the binary. New documented capabilities: `devin sandbox` subcommand (`sandbox setup` prints platform prereqs - WSL-2 constraint unchanged on Windows), `--respect-workspace-trust` flag (non-interactive `-p` fails in untrusted dirs without it), manual `irm` update path on Windows. `validated_cli_version` bumped in bundle-identity.json + README; doctor 3/3, compat tests 6/6, audit 0/0.
 
 - laya checkpoint vendored + activation proposal completed: english checkpoint (convaiinnovations/laya rev 7b928d82) copied from HF cache to `.devin/laya/models/english/` (gitignored, ~843MB) - re-hashes to identical artifact_sha256 54f69565... and live-verified end-to-end (load_engine digest check + warm_engine + real media-intent prediction: stylize_video @ 0.996). Proposal JSON now carries the concrete path; #431 items 1-4 fully pre-staged, items 5-7 remain deliberate.
