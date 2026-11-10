@@ -1,0 +1,141 @@
+{
+ "ok": true,
+ "loops": 4,
+ "cases": 16,
+ "acc": 0.5625,
+ "correct": 9,
+ "ms_p50": 9982,
+ "ms_p95": 10381,
+ "ms_mean": 10046,
+ "laya_budget_ms": 200,
+ "rows": [
+  {
+   "case_id": "ic-h01",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 9840,
+   "raw": " bug\nExplanation: The crash indicates a defect"
+  },
+  {
+   "case_id": "ic-h02",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 9877,
+   "raw": " bug\nExplain the issue. The issue is"
+  },
+  {
+   "case_id": "ic-h03",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 9734,
+   "raw": " bug\nExplanation of reasoning: The user reports"
+  },
+  {
+   "case_id": "ic-h04",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 9795,
+   "raw": " bug\nExplain the reasoning behind your choice and"
+  },
+  {
+   "case_id": "ic-h05",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 9778,
+   "raw": " bug\nExplain the reasoning behind your choice."
+  },
+  {
+   "case_id": "ic-h06",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 10099,
+   "raw": " bug\nExplain the reasoning behind your choice."
+  },
+  {
+   "case_id": "ic-h07",
+   "gold": "enhancement",
+   "pred": "enhancement",
+   "ok": true,
+   "ms": 9982,
+   "raw": " enhancement\nExplain what you mean by this candidate"
+  },
+  {
+   "case_id": "ic-h08",
+   "gold": "enhancement",
+   "pred": "enhancement",
+   "ok": true,
+   "ms": 11116,
+   "raw": " enhancement\n- bug: existing behavior is broken,"
+  },
+  {
+   "case_id": "ic-h09",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 10381,
+   "raw": " bug\nExplanation: The report states that the"
+  },
+  {
+   "case_id": "ic-h10",
+   "gold": "enhancement",
+   "pred": "needs_info",
+   "ok": false,
+   "ms": 10267,
+   "raw": " needs_info\nExplanation: The user is asking"
+  },
+  {
+   "case_id": "ic-h11",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 9991,
+   "raw": " bug\nExplain why this is the best candidate"
+  },
+  {
+   "case_id": "ic-h12",
+   "gold": "needs_info",
+   "pred": "bug",
+   "ok": false,
+   "ms": 9924,
+   "raw": " bug\nExplanation: The user reports a specific"
+  },
+  {
+   "case_id": "ic-h13",
+   "gold": "needs_info",
+   "pred": "__none__",
+   "ok": false,
+   "ms": 9935,
+   "raw": " __none__\nAnswer:\n__none__</think>__"
+  },
+  {
+   "case_id": "ic-h14",
+   "gold": "needs_info",
+   "pred": "needs_info",
+   "ok": true,
+   "ms": 10011,
+   "raw": " needs_info\nJustification: The user reports that"
+  },
+  {
+   "case_id": "ic-h15",
+   "gold": "__none__",
+   "pred": "bug",
+   "ok": false,
+   "ms": 9982,
+   "raw": " bug\nExplanation: The user is asking for"
+  },
+  {
+   "case_id": "ic-h16",
+   "gold": "__none__",
+   "pred": "bug",
+   "ok": false,
+   "ms": 10032,
+   "raw": " bug\nExplain why: The user reports that"
+  }
+ ]
+}

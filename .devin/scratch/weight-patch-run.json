@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "n_layers": 24,
+  "beta": 8.0,
+  "topk": 2,
+  "seed": 0,
+  "implicated_layers": [
+    23,
+    22
+  ],
+  "diff_norms_top": {
+    "23": 48.70107650756836,
+    "22": 33.980712890625
+  },
+  "loop_rate_base": 0.25,
+  "loop_rate_defected": 1.0,
+  "r_cosines": {
+    "23": -0.729499340057373,
+    "22": 1.0000001192092896
+  },
+  "loop_rate_repaired": 1.0,
+  "control_loop_rate_before": 0.25,
+  "control_loop_rate_after": 0.25,
+  "control_sample_before": [
+    "\nSelect your answer from the options. Do these sentences mean the same thing?\nYes.\nOptions are:\na). no;\nb). yes;\n\nA) Yes B) No\n\nTo determine if these sentences ",
+    " go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go go",
+    " monday tuesday... and so on. What is the day of the week that will be 100 days after Tuesday?\nTo determine the day of the week 100 days after Tuesday, we need "
+  ]
+}

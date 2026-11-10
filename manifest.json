@@ -1331,9 +1331,17 @@
       "export_hash": "84880c5f76405695b82140c3c74820b47d4b6492eb69bf6fec49e5d94fd8cfc8",
       "exported_at": "2026-11-06T11:47:27.072797",
       "path": "skills/camera-blocking/SKILL.md"
+    },
+    {
+      "name": "lgpd-questionnaire",
+      "source": "created:reels-7-eval #448",
+      "purpose": "Use when the user asks for an LGPD/data-protection compliance review of an app or service - data inventory, legal basis, third-party sharing, subject rights, breach response. Produces an evidence-cited compliance matrix, not legal advice.",
+      "original_path": "%APPDATA%\\devin\\skills\\lgpd-questionnaire",
+      "export_hash": "bd23da85440a35ab089d10e3b592265dc0ef96b41bb21253f45d5e2e16122cc0",
+      "exported_at": "2026-11-10T07:33:38.105749"
     }
   ],
-  "skill_count": 181,
+  "skill_count": 182,
   "rule_count": 24,
   "scripts": [
     {
@@ -1397,6 +1405,12 @@
       "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
+      "name": "decision-queue.py",
+      "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
+      "export_hash": "3e9f89fe890f2bf83c02bb6e4b8060fac4623e110f73f57da822050ab371c20b",
+      "exported_at": "2026-11-10T06:59:34.745097"
+    },
+    {
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
@@ -1424,6 +1438,12 @@
       "exported_at": "2026-09-08T21:39:22.430612"
     },
     {
+      "name": "done-evaluator.py",
+      "purpose": "grades a claimed done against transcript evidence - writer is not the grader (issue #437)",
+      "export_hash": "199234a618f5c898354d5b5d718818c2b8228d5202dbeaafccd7b65ce61e1cf8",
+      "exported_at": "2026-11-10T07:19:30.736758"
+    },
+    {
       "name": "file-size-guard.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(write|edit): warn when an edited code file crosses the big-file threshold (800 lines, banded dedup); points at big-file-refactor",
@@ -1447,6 +1467,12 @@
       "purpose": "PostToolUse hook - one-line 'diff-stat:' footer after exec calls when the active output-mode preset flags diff_footer (caveman/lean)",
       "export_hash": "61BFBE1363C14B6B68A1113DF227655FA6E449ED0C35DC80961FCE4BCD712754",
       "exported_at": "2026-11-08T08:50:55.845199"
+    },
+    {
+      "name": "graph-query.py",
+      "purpose": "graph-before-grep retrieval - fuses code-graph FTS + memory cues into ranked file results (issue #442)",
+      "export_hash": "07c0cd3e05582c99418b4690bbf1f30fa7e4d19a252f928731ff208ddbf201f0",
+      "exported_at": "2026-11-10T07:41:35.131974"
     },
     {
       "name": "install-ledger.py",
@@ -1515,6 +1541,12 @@
       "exported_at": "2026-09-18T20:17:52.988013"
     },
     {
+      "name": "pulse.py",
+      "purpose": "Manual-run - drains due .devin/rts/intents/*.json into one afk-loop frontier step (refuses auto:false)",
+      "export_hash": "7eb8eb84c7cf60724c7e6d4efe66308ec7974fff38f7010886a48a8214d876b4",
+      "exported_at": "2026-11-10T06:54:21.953318"
+    },
+    {
       "name": "refine-review-prompt.py",
       "purpose": "Refine mode — generates review prompts for self-improvement",
       "export_hash": "913c2c7e03da85cf1ddc48f3eb89629b9f3b5cd888c41534694e9765dd95e8e0",
@@ -1536,8 +1568,14 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "CDE5B4C2F85D268CF04FDB7E40629C9956A34B124705CC663F5F8C9D6F7DFB01",
-      "exported_at": "2026-11-08T10:42:48.417376"
+      "export_hash": "43101791129bad5831d389c96aed3020c9997ebf60377f2d0f4acc4567ecb36b",
+      "exported_at": "2026-11-10T07:00:01.776085"
+    },
+    {
+      "name": "rules-coverage.py",
+      "purpose": "Manual-run audit - maps NL rules to deterministic controls (hooks/audit/permissions), reports unenforced",
+      "export_hash": "1918f79120139e1706a5d6f2a9c86098e306ab9da03f51425f6045f458250260",
+      "exported_at": "2026-11-10T06:51:06.217969"
     },
     {
       "name": "session-start.py",
@@ -1550,6 +1588,12 @@
       "purpose": "PostToolUse hook — detects silent errors in tool output",
       "export_hash": "e662c8718edf6008032a1724049e8ed37855cd43b2ee05f9d47303bf691a6441",
       "exported_at": "2026-09-08T21:39:22.430789"
+    },
+    {
+      "name": "simplify-scan.py",
+      "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
+      "export_hash": "b4c52abc8303134d5421d120a783fac321d0e6975518b4a3981f27cb4fb446b2",
+      "exported_at": "2026-11-10T07:19:30.736758"
     },
     {
       "name": "skill-picker.py",
@@ -1572,14 +1616,20 @@
     {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
-      "export_hash": "9a6fa88fc6aab3b1ebec4d8c32c8e1c8ac16e0a15a3a5d6b736391091cb2dab0",
-      "exported_at": "2026-10-27T15:18:55.679807"
+      "export_hash": "2cf15b3d7894818e1126381a4dd75c9343782da70b3c0bdb1d45a2419b273037",
+      "exported_at": "2026-11-10T07:00:01.776161"
     },
     {
       "name": "stuck-detect.py",
       "purpose": "PostToolUse hook - advisory when the same exec command fails 3x consecutively (deterministic stuck-detector subset of token-economizer mechanism)",
       "export_hash": "58feb125324e394a65d474b00269f6ce644a6ea97deb9982ec3461bf9514b9f2",
       "exported_at": "2026-10-31T21:15:43.544713"
+    },
+    {
+      "name": "subagent-trace.py",
+      "purpose": "per-dispatch trace records (.devin/subagent-trace.jsonl) + abort flag channel for orchestrated subagents",
+      "export_hash": "9688a49d1618ef3c866ce3afc35b61cfcbee0ba5186fff59e2523bce7c58e948",
+      "exported_at": "2026-11-10T07:19:30.736758"
     },
     {
       "name": "token-saver.py",
@@ -1618,7 +1668,7 @@
       "exported_at": "2026-11-03T21:04:06.237841"
     }
   ],
-  "script_count": 45,
+  "script_count": 52,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,

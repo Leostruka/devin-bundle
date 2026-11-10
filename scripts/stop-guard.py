@@ -17,4 +17,5 @@ if __name__ == '__main__':
         'memory-stop.py',
         'no-em-dash.py',
         'rl-resume-detect.py',
+        'decision-queue.py',
     ])

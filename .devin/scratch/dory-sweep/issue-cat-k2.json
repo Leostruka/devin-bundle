@@ -1,0 +1,141 @@
+{
+ "ok": true,
+ "loops": 2,
+ "cases": 16,
+ "acc": 0.5625,
+ "correct": 9,
+ "ms_p50": 5892,
+ "ms_p95": 5979,
+ "ms_mean": 5912,
+ "laya_budget_ms": 200,
+ "rows": [
+  {
+   "case_id": "ic-h01",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 5893,
+   "raw": " bug\nExplanation: The crash indicates a failure"
+  },
+  {
+   "case_id": "ic-h02",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 5950,
+   "raw": " bug\nExplain the issue. Fix it."
+  },
+  {
+   "case_id": "ic-h03",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 5975,
+   "raw": " bug\nExplanation of reasoning: The user reports"
+  },
+  {
+   "case_id": "ic-h04",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 5979,
+   "raw": " bug\nExplanation: The crash indicates a real"
+  },
+  {
+   "case_id": "ic-h05",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 5924,
+   "raw": " bug\nExplain the reasoning: The bug is"
+  },
+  {
+   "case_id": "ic-h06",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 5864,
+   "raw": " bug\nExplanation: The TTS call is"
+  },
+  {
+   "case_id": "ic-h07",
+   "gold": "enhancement",
+   "pred": "enhancement",
+   "ok": true,
+   "ms": 5901,
+   "raw": " enhancement\nExplain the reasoning behind the choice.\n"
+  },
+  {
+   "case_id": "ic-h08",
+   "gold": "enhancement",
+   "pred": "enhancement",
+   "ok": true,
+   "ms": 5864,
+   "raw": " enhancement\n- bug: existing behavior is broken,"
+  },
+  {
+   "case_id": "ic-h09",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 5892,
+   "raw": " bug\nExplanation: The report states that the"
+  },
+  {
+   "case_id": "ic-h10",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 5861,
+   "raw": " bug\nExplanation of desired final answer: The"
+  },
+  {
+   "case_id": "ic-h11",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 5884,
+   "raw": " bug\nExplanation for bug: The gcal"
+  },
+  {
+   "case_id": "ic-h12",
+   "gold": "needs_info",
+   "pred": "bug",
+   "ok": false,
+   "ms": 5840,
+   "raw": " bug\nExplanation: The user reports a specific"
+  },
+  {
+   "case_id": "ic-h13",
+   "gold": "needs_info",
+   "pred": "enhancement",
+   "ok": false,
+   "ms": 5955,
+   "raw": " enhancement\nExplanation: The user is asking to"
+  },
+  {
+   "case_id": "ic-h14",
+   "gold": "needs_info",
+   "pred": "needs_info",
+   "ok": true,
+   "ms": 5853,
+   "raw": " needs_info\nJustification: The user reports that"
+  },
+  {
+   "case_id": "ic-h15",
+   "gold": "__none__",
+   "pred": "bug",
+   "ok": false,
+   "ms": 6081,
+   "raw": " bug, enhancement, needs_info, __none__\n"
+  },
+  {
+   "case_id": "ic-h16",
+   "gold": "__none__",
+   "pred": "bug",
+   "ok": false,
+   "ms": 5870,
+   "raw": " bug\nExplain why: The user reports that"
+  }
+ ]
+}
