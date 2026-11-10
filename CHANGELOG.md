@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- reels-7/yt-batch2 eval batch (#434-#451, milestone 14): 28 unique links deep-dived (transcripts + captions + 7 researcher waves) -> survey + 18 eval issues. Executed same-day: `scripts/rules-coverage.py` NL-rule->control audit (#439, 74.3% coverage, all security rules backed), `task-brief.py --require-done-when` + SKILL.md orchestrator re-verify contract (#438), `scripts/pulse.py` rts-intents drainer -> afk-loop frontier (#434).
+- devin-cli alignment 3000.12.28 -> 3000.12.43 (#457): acp server agent-types (summarizer/review/codemap) + --cloud relay, DEVIN_MODEL/DEVIN_REFUSAL_FALLBACK env, desktop/forward/migrate/setup/uninstall commands, cloud drs blueprints. Eval issues #453-#456 filed for acp-review/codemap/summarizer/drs.
+
+- reels-7/yt-batch2 eval batch (#434-#451, milestone 14; PR #452): 28 unique links deep-dived (transcripts + captions + 7 researcher waves) -> survey + 18 eval issues. Executed same-day: `scripts/rules-coverage.py` NL-rule->control audit (#439, 74.3% coverage, all security rules backed), `task-brief.py --require-done-when` + SKILL.md orchestrator re-verify contract (#438), `scripts/pulse.py` rts-intents drainer -> afk-loop frontier (#434).
 
 - **Reels-7/YouTube eval batch closeout (#434-#451)**: 18 research-driven eval issues resolved - 11 shipped, 7 documented decisions.
   - `scripts/done-evaluator.py` (#437): writer-is-not-the-grader gate - deterministic contradiction scan (test-run state, unchecked acceptance, admitted skips) + `--emit-brief` for separate-tier grading; wired into `skills/afk-loop` verification step.
