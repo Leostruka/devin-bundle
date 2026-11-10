@@ -1,6 +1,6 @@
 ---
 name: issue-tracker
-model: swe-2-medium
+model: swe-2-flash-medium
 description: Use when reading, creating, claiming, or resolving local Markdown issues for this repository.
 allowed-tools:
   - read

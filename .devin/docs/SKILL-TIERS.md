@@ -10,15 +10,17 @@ detalhe vive em `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 GitHub Pages: build, launch, doctor, navegação, evidência - invocação manual),
 `rts-3d-procedural-art`, `rts-hud-audio-design` (helpers de arte do projeto).
 
-## Modelos alvo (SWE-2, roteamento por nível de esforço)
+## Modelos alvo (SWE-2 + Flash, roteamento por nível de esforço)
 
 | model_uid | Effort | Contexto | Uso | Notas |
 |---|---|---|---|---|
-| `BUNDLE_MEDIUM_MODEL` (default `swe-2-medium`) | Medium | 262K | Tarefas simples, ajustes pontuais, scripts isolados | **gratuito** |
-| `BUNDLE_DEFAULT_MODEL` (default `swe-2-high`) | High | 262K | Primário (parent); multi-arquivo | **gratuito**, default geral |
-| `BUNDLE_MAX_MODEL` (default `swe-2-max`) | Max | 262K | Subagent Max (`model:` pin); aberto/long-horizon | **gratuito** |
+| `BUNDLE_MEDIUM_MODEL` (default `swe-2-medium`) | Medium | 262K | Tarefas simples, ajustes pontuais, scripts isolados | **gratuito até 2026-11-30** |
+| `BUNDLE_DEFAULT_MODEL` (default `swe-2-max`) | Max | 262K | Primário (parent); julgamento, multi-arquivo | **gratuito até 2026-11-30**, default geral |
+| `BUNDLE_MAX_MODEL` (default `swe-2-max`) | Max | 262K | Subagent Max (`model:` pin); julgamento, exploração profunda | **gratuito até 2026-11-30** |
+| `BUNDLE_FAST_MODEL` (default `swe-2-flash-high`) | High (fast lane) | 262K | Subagent execução bounded (`model:` pin); ~200 tok/s | **gratuito até 2026-12-04 18:00 UTC** |
+| `swe-2-flash-medium` | Medium (fast lane) | 262K | Subagent volume mecânico/triagem (`model:` pin) | **gratuito permanente** (`free_tier_permanent`) |
 
-Subagents customizados usam `model: swe-2-max` (Max) ou `model: swe-2-medium` (Medium), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL`. **NÃO usar aliases pagos não verificados** - eles podem apontar para um modelo pago.
+Subagents customizados usam `model: swe-2-max` (julgamento/auditoria), `model: swe-2-flash-high` (execução bounded) ou `model: swe-2-flash-medium` (volume mecânico), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL` / `BUNDLE_FAST_MODEL`. **NÃO usar aliases pagos não verificados** - eles podem apontar para um modelo pago.
 Sem pin, os custom agents usam o default router do CLI (possivelmente pago). `subagent_general` herda o parent (`BUNDLE_DEFAULT_MODEL`) quando esse for gratuito. **Evitar `subagent_explore`** - pode resolver para um modelo pago; usar o custom `researcher` (gratuito, veja `data/bundle-models.json`).
 
 ## Núcleo (raciocínio lógico, qualquer trabalho)

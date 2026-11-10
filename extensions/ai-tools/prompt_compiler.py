@@ -11,7 +11,7 @@ Spec input is JSON with keys:
 
   effort      "medium" | "high" | "max"          (required — decided by agent)
   persona     "Staff Engineer", "SecOps", ...    (required)
-  model       "swe-2", "claude", ...             (optional; resolves variant id
+  model       "swe-2", "swe-2-flash", ...        (optional; resolves variant id
                                                 from bundle-models.json)
   goal        1-2 paragraph goal statement       (required)
   context     architecture/tool/current state    (required)
@@ -96,7 +96,9 @@ def load_variant_map():
                 variants[alias] = variants[fam]
         if variants:
             return variants
-    return {"swe-2": {"medium": "swe-2-medium", "high": "swe-2-high", "max": "swe-2-max"}}
+    return {"swe-2": {"medium": "swe-2-medium", "high": "swe-2-high", "max": "swe-2-max"},
+            "swe-2-flash": {"medium": "swe-2-flash-medium", "high": "swe-2-flash-high",
+                            "max": "swe-2-flash-max"}}
 
 
 def variant_for(model, effort, variants=None):
@@ -212,7 +214,7 @@ def finalize(spec, dry_run):
 FIELD_PROMPTS = {
     "effort": "Effort level (medium/high/max)",
     "persona": "Operational persona (e.g. Staff Engineer, SecOps Lead)",
-    "model": "Target model family (optional, e.g. swe-2)",
+    "model": "Target model family (optional, e.g. swe-2 or swe-2-flash)",
     "goal": "Goal (1-2 paragraphs)",
     "context": "Context (architecture, tools, current state)",
 }
@@ -285,9 +287,14 @@ def main():
                   "# Execution Hints & Checkpoints", "1. **Fase 1:**"):
             assert h in out, f"missing: {h}"
         assert validate_spec({"effort": "huge"}) and validate_spec({"effort": "high"})
-        fam = {"swe-2": {"medium": "m", "high": "h", "max": "x"}}
+        fam = {"swe-2": {"medium": "m", "high": "h", "max": "x"},
+               "swe-2-flash": {"medium": "fm", "high": "fh", "max": "fx"}}
         assert variant_for("swe-2", "max", fam) == "x"
+        assert variant_for("swe-2-flash", "high", fam) == "fh"
         assert variant_for("claude", "max", fam) is None
+        real = load_variant_map()
+        if "swe-2-flash" in real:
+            assert real["swe-2-flash"]["high"] == "swe-2-flash-high"
         emit({"ok": True, "self_test": "passed", "models": list_models()})
 
     if args.list_models:

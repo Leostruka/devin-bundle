@@ -85,3 +85,15 @@ def test_hooks_v1_json_has_known_events():
              'UserPromptSubmit', 'SessionStart', 'SessionEnd', 'Stop', 'PermissionRequest'}
     for event in hooks:
         assert event in known, f'unknown event {event} in hooks.v1.json'
+
+
+def test_preferred_family_models_resolve_to_registry_ids():
+    config = load_json('config.json')
+    registry = load_json(os.path.join('data', 'bundle-models.json'))
+    ids = {m['id'] for m in registry['models']}
+    preferred = config['agent'].get('preferred_family_models', {})
+    assert 'swe-2-flash' in preferred, 'missing swe-2-flash family preference'
+    for family, model_id in preferred.items():
+        assert model_id in ids, f'{family} -> {model_id} not in bundle-models.json'
+    assert config['agent']['model'] == 'swe-2-max'
+    assert config['agent']['subagent_model'] == 'swe-2-max'
