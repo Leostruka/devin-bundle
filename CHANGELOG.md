@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - reels-7/yt-batch2 eval batch (#434-#451, milestone 14): 28 unique links deep-dived (transcripts + captions + 7 researcher waves) -> survey + 18 eval issues. Executed same-day: `scripts/rules-coverage.py` NL-rule->control audit (#439, 74.3% coverage, all security rules backed), `task-brief.py --require-done-when` + SKILL.md orchestrator re-verify contract (#438), `scripts/pulse.py` rts-intents drainer -> afk-loop frontier (#434).
 
+- **Reels-7/YouTube eval batch closeout (#434-#451)**: 18 research-driven eval issues resolved - 11 shipped, 7 documented decisions.
+  - `scripts/done-evaluator.py` (#437): writer-is-not-the-grader gate - deterministic contradiction scan (test-run state, unchecked acceptance, admitted skips) + `--emit-brief` for separate-tier grading; wired into `skills/afk-loop` verification step.
+  - `scripts/subagent-trace.py` (#435): per-dispatch trace JSONL + `.devin/subagent-abort/<id>` kill channel; contract in `skills/dispatching-parallel-agents`.
+  - `scripts/simplify-scan.py` (#447): rot scan (TODO/FIXME, oversized, unreferenced defs, except:pass); audit check [40] skills-debt staleness (#449).
+  - `scripts/graph-query.py` (#442): graph-before-grep retrieval fusing code-graph FTS + memory cues; spike evidence 5/5 top-2 vs grep-OR 11-248 unranked hits.
+  - `extensions/ai-tools/weight_patch.py` (#440): activation-guided weight patching PoC - contrast direction extraction, planted-defect repair on down_proj, honest negative control.
+  - `extensions/ai-tools/dory_sweep.py` (#441): Dory1.0-4B loop sweep on laya heldout - k={1,2,4} table, flat 0.688 skill-pick / 0.438-0.562 issue-cat at 20-110x latency, defer verdict; requires dory-enabled llama.cpp fork (PR ggml-org/llama.cpp#30306).
+  - `skills/impeccable` (#445/#446): state x motion coverage matrix + converge-by-gate bounded iteration (gate=lint+waivers, N=3, plateau/distill kill-switch).
+  - `skills/lgpd-questionnaire` (#448): compliance questionnaire skeleton - data inventory, legal basis, subject rights, breach response.
+  - `.devin/docs/DEVICE-AUTOMATION-LANE.md` (#451): 4 access classes (HTTP API > structured > GUI > bridge), device sketches, 6 safety boundaries.
+  - Eval docs: `.devin/evals/{graphify-query,design-state-motion,design-iteration-loop,raea-vs-remotion,lgpd-questionnaire,jev-cloud-tier,busybar-integration}/` - raea = verified Rust+Bevy Remotion alternative (hybrid recommendation); Jev = verified TypeSafe AI decision API (spike deferred); Busy Bar = verified busylib HTTP device (spec + `extensions/busybar/push.py` skeleton).
+
+- **decision-queue.py (#436)**: stop-hook module + CLI recording human-blocking stops to `.devin/decisions.jsonl` (fail-open); `roadmap-board.py` surfaces `pending_decisions` count in JSON and Markdown board output. `stop-guard.py` `_hookrun` chain updated. Closes the "agent stopped for a decision overnight" blind spot.
+
 ## [3.20.0] - 2026-11-09
 
 - check-ai-signature.py: git author/committer identity is now checked, not just the commit message. `git -c user.name=<AI>`, `-c user.email=<bot>`, `--author=`, `GIT_AUTHOR_*`/`GIT_COMMITTER_*` env vars and `git config user.*` with AI service identities (devin/claude/copilot/gemini/etc., `[bot]` emails) are blocked; human identity overrides stay allowed. Commit gate widened: `git -c ... commit` / `git -C dir commit` now reach the message check (adjacent "git commit" substring previously required). AGENTS.md Rule 2 + constraint-pinning updated: an AI identity is never the commit fallback. New held-out `test_check_ai_signature_identity.py` (17 cases incl. the incident command) + 2 consolidated-guard cases.
@@ -202,20 +216,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - manifest: sentinel original_path mojibake (bell char) fixed.
 
 ### Added
-- **Reels-7/YouTube eval batch closeout (#434-#451)**: 18 research-driven eval issues resolved - 11 shipped, 7 documented decisions.
-  - `scripts/done-evaluator.py` (#437): writer-is-not-the-grader gate - deterministic contradiction scan (test-run state, unchecked acceptance, admitted skips) + `--emit-brief` for separate-tier grading; wired into `skills/afk-loop` verification step.
-  - `scripts/subagent-trace.py` (#435): per-dispatch trace JSONL + `.devin/subagent-abort/<id>` kill channel; contract in `skills/dispatching-parallel-agents`.
-  - `scripts/simplify-scan.py` (#447): rot scan (TODO/FIXME, oversized, unreferenced defs, except:pass); audit check [40] skills-debt staleness (#449).
-  - `scripts/graph-query.py` (#442): graph-before-grep retrieval fusing code-graph FTS + memory cues; spike evidence 5/5 top-2 vs grep-OR 11-248 unranked hits.
-  - `extensions/ai-tools/weight_patch.py` (#440): activation-guided weight patching PoC - contrast direction extraction, planted-defect repair on down_proj, honest negative control.
-  - `extensions/ai-tools/dory_sweep.py` (#441): Dory1.0-4B loop sweep on laya heldout - k={1,2,4} table, flat 0.688 skill-pick / 0.438-0.562 issue-cat at 20-110x latency, defer verdict; requires dory-enabled llama.cpp fork (PR ggml-org/llama.cpp#30306).
-  - `skills/impeccable` (#445/#446): state x motion coverage matrix + converge-by-gate bounded iteration (gate=lint+waivers, N=3, plateau/distill kill-switch).
-  - `skills/lgpd-questionnaire` (#448): compliance questionnaire skeleton - data inventory, legal basis, subject rights, breach response.
-  - `.devin/docs/DEVICE-AUTOMATION-LANE.md` (#451): 4 access classes (HTTP API > structured > GUI > bridge), device sketches, 6 safety boundaries.
-  - Eval docs: `.devin/evals/{graphify-query,design-state-motion,design-iteration-loop,raea-vs-remotion,lgpd-questionnaire,jev-cloud-tier,busybar-integration}/` - raea = verified Rust+Bevy Remotion alternative (hybrid recommendation); Jev = verified TypeSafe AI decision API (spike deferred); Busy Bar = verified busylib HTTP device (spec + `extensions/busybar/push.py` skeleton).
-
-- **decision-queue.py (#436)**: stop-hook module + CLI recording human-blocking stops to `.devin/decisions.jsonl` (fail-open); `roadmap-board.py` surfaces `pending_decisions` count in JSON and Markdown board output. `stop-guard.py` `_hookrun` chain updated. Closes the "agent stopped for a decision overnight" blind spot.
-
 
 - ARCHETYPE-MAP: alvim job-apply drafter/reviewer chain cited in the Grower/Maintainer transit note (R2-02 adopted-as-note). Covers #321.
 - validate-tool-args: repo-reviewer added to VALID_PROFILES; profile parity test now covers .devin/agents project profiles. Covers #322, #323.
