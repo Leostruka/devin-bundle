@@ -4,8 +4,13 @@
 Stdin payload (per Devin CLI docs /cli/extensibility/hooks/lifecycle-hooks):
   {"hook_event_name": "PostToolUse", "tool_name": "exec",
    "tool_input": {...},
-   "tool_response": {"success": true, "output": "...", "error": null},
+   "tool_response": {"success": true, "output": "...", "error": null,
+                     "overflow_path": "..."},
    "session_id": "...", "prompt_id": "..."}
+
+  `overflow_path` is present only when the runtime truncated the result
+  (v3000.12.17+); it points at the complete output file. Verified
+  empirically on 3000.12.43.
 
 Never blocks. Emits findings via hookSpecificOutput.additionalContext, which
 PostToolUse supports (per /cli/extensibility/hooks/overview#output-format), so
@@ -171,6 +176,18 @@ def main():
     success = response.get("success", True)
     output = response.get("output") or ""
     error = response.get("error") or ""
+
+    # A truncated result hides its tail — where errors usually sit. The
+    # runtime ships the complete output at overflow_path; scan that instead.
+    overflow = response.get("overflow_path")
+    if isinstance(overflow, str) and overflow:
+        try:
+            if os.path.getsize(overflow) <= 8 * 1024 * 1024:
+                with open(overflow, encoding="utf-8", errors="replace") as fh:
+                    output = fh.read()
+        except OSError:
+            pass  # fail-soft: keep the truncated inline copy
+
     if not isinstance(output, str):
         output = str(output)
     if not isinstance(error, str):
@@ -186,7 +203,10 @@ def main():
                 f"{error.strip()[:200]}"
             )
         elif has_real_error(output):
-            snippet = signal_lines(output)[:200]
+            signal = signal_lines(output)
+            err_lines = [ln for ln in signal.split("\n")
+                         if any(p.search(ln) for p in ERROR_INDICATORS)]
+            snippet = ("\n".join(err_lines) or signal)[:200]
             findings.append(
                 f"{tool_name} reported success but the output contains error "
                 f"indicators: {snippet}"
