@@ -1397,6 +1397,12 @@
       "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
+      "name": "decision-queue.py",
+      "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
+      "export_hash": "3e9f89fe890f2bf83c02bb6e4b8060fac4623e110f73f57da822050ab371c20b",
+      "exported_at": "2026-11-10T06:59:34.745097"
+    },
+    {
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
@@ -1542,8 +1548,8 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "CDE5B4C2F85D268CF04FDB7E40629C9956A34B124705CC663F5F8C9D6F7DFB01",
-      "exported_at": "2026-11-08T10:42:48.417376"
+      "export_hash": "43101791129bad5831d389c96aed3020c9997ebf60377f2d0f4acc4567ecb36b",
+      "exported_at": "2026-11-10T07:00:01.776085"
     },
     {
       "name": "rules-coverage.py",
@@ -1584,8 +1590,8 @@
     {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
-      "export_hash": "9a6fa88fc6aab3b1ebec4d8c32c8e1c8ac16e0a15a3a5d6b736391091cb2dab0",
-      "exported_at": "2026-10-27T15:18:55.679807"
+      "export_hash": "2cf15b3d7894818e1126381a4dd75c9343782da70b3c0bdb1d45a2419b273037",
+      "exported_at": "2026-11-10T07:00:01.776161"
     },
     {
       "name": "stuck-detect.py",
@@ -1630,7 +1636,7 @@
       "exported_at": "2026-11-03T21:04:06.237841"
     }
   ],
-  "script_count": 47,
+  "script_count": 48,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,

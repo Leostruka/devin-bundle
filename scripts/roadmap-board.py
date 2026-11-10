@@ -307,6 +307,23 @@ def capacity(issues, wip_limit=None):
                              if wip_limit is not None else None)}}
 
 
+def pending_decisions(root):
+    """Unresolved human-blocking stops recorded by decision-queue.py."""
+    path = os.path.join(root, ".devin", "decisions.jsonl")
+    n = 0
+    try:
+        for line in open(path, encoding="utf-8", errors="replace"):
+            if line.strip():
+                try:
+                    if not json.loads(line).get("resolved"):
+                        n += 1
+                except ValueError:
+                    continue
+    except OSError:
+        pass
+    return n
+
+
 def render_md(issues, root):
     s = summarize(issues)
     archived = status_vocab.archived_efforts(root)
@@ -317,8 +334,12 @@ def render_md(issues, root):
         f"- Issues: {s['total']} total, {s['done']} done, "
         f"{s['open']} open, {s['ready']} frontier-ready, "
         f"{s['blocked_unknown']} with unresolved blocker refs",
-        "",
     ]
+    pd = pending_decisions(root)
+    if pd:
+        lines.append(f"- Pending decisions (human-blocking): {pd} "
+                     "(.devin/decisions.jsonl)")
+    lines.append("")
     if archived:
         lines.append(
             f"- Archived efforts excluded: {arch_n} issues across "
@@ -400,6 +421,7 @@ def main(argv=None):
                                           _count_issue_files(root, e)
                                           for e in archived)},
                           "capacity": capacity(issues, args.wip_limit),
+                          "pending_decisions": pending_decisions(root),
                           "goals": load_goals(root, issues),
                           "issues": issues}, ensure_ascii=False, indent=1))
     else:

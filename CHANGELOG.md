@@ -196,6 +196,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - manifest: sentinel original_path mojibake (bell char) fixed.
 
 ### Added
+- **decision-queue.py (#436)**: stop-hook module + CLI recording human-blocking stops to `.devin/decisions.jsonl` (fail-open); `roadmap-board.py` surfaces `pending_decisions` count in JSON and Markdown board output. `stop-guard.py` `_hookrun` chain updated. Closes the "agent stopped for a decision overnight" blind spot.
+
 
 - ARCHETYPE-MAP: alvim job-apply drafter/reviewer chain cited in the Grower/Maintainer transit note (R2-02 adopted-as-note). Covers #321.
 - validate-tool-args: repo-reviewer added to VALID_PROFILES; profile parity test now covers .devin/agents project profiles. Covers #322, #323.
