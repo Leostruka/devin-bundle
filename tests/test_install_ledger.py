@@ -209,3 +209,18 @@ def test_build_artifacts_never_drift(env):
         json.dumps(ledger))
     rep = mod.reconcile()
     assert all("fast_math.pyd" not in v for v in rep.values())
+
+
+def test_corpus_index_excludes_noise_dirs_and_artifacts(env):
+    """site-packages/.venv/build artifacts never enter the corpus index."""
+    root, live = env
+    _write(root / "extensions" / "x" / ".venv" / "Lib" / "junk.py", "j")
+    _write(root / "extensions" / "x" / "fast.pyd", "bin")
+    _write(root / "extensions" / "x" / "real.py", "r")
+    _cli(["record-all"], env)
+    idx = json.loads(
+        (root / ".devin" / "install-ledger" / "corpus-index.json")
+        .read_text())
+    keys = idx["files"]
+    assert "extensions/x/real.py" in keys
+    assert not any(".venv" in k or k.endswith(".pyd") for k in keys)

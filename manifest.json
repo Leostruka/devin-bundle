@@ -1371,7 +1371,7 @@
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "087da92969fdd9e9a351ee26a9aaf89a1b8af2b4583b952fa71e7e76cf352f35",
+      "export_hash": "e145f2264fbd08da87eace43afd7facdb017453e530ee5ec8e5ca382728f4db9",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1477,7 +1477,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "7e037f34630f2ae920d3a2d02d613c7adf6acc0629c9086326e8a55e8d1aad70",
+      "export_hash": "5405c0d3e9d350feb591eb751879e4f43d681d280d40844c04c07bee79d2731d",
       "exported_at": "2026-11-08T08:50:55.845199"
     },
     {

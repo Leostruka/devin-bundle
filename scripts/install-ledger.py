@@ -268,9 +268,10 @@ def _write_corpus_index(root):
         if os.path.isfile(base):
             files[top] = _sha256(base)
         elif os.path.isdir(base):
-            for dirpath, _dirs, names in os.walk(base):
+            for dirpath, dirs, names in os.walk(base):
+                dirs[:] = [d for d in dirs if d not in _NOISE_DIRS]
                 for n in names:
-                    if n.endswith(".pyc") or "__pycache__" in dirpath:
+                    if _is_artifact(n) or "__pycache__" in dirpath:
                         continue
                     p = os.path.join(dirpath, n)
                     files[os.path.relpath(p, root).replace(
@@ -282,9 +283,10 @@ def _write_corpus_index(root):
         base = os.path.join(root, *bundle_pre.split("/"))
         if not os.path.isdir(base):
             continue
-        for dirpath, _dirs, names in os.walk(base):
+        for dirpath, dirs, names in os.walk(base):
+            dirs[:] = [d for d in dirs if d not in _NOISE_DIRS]
             for n in names:
-                if n.endswith(".pyc") or "__pycache__" in dirpath:
+                if _is_artifact(n) or "__pycache__" in dirpath:
                     continue
                 p = os.path.join(dirpath, n)
                 rel = pre + os.path.relpath(p, base).replace("\\", "/")
