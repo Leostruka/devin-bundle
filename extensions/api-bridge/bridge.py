@@ -31,6 +31,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -147,6 +148,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        self._cors()
         self.end_headers()
         self.wfile.write(body)
 
@@ -162,6 +164,21 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt, *args):
         sys.stderr.write("[bridge] " + fmt % args + "\n")
+
+    def _cors(self):
+        # browser harnesses preflight; loopback LAN use needs explicit
+        # origin pass-through — permissive is fine: data stays local
+        self.send_header("Access-Control-Allow-Origin",
+                         self.headers.get("Origin", "*"))
+        self.send_header("Access-Control-Allow-Headers",
+                         "Authorization, Content-Type")
+        self.send_header("Access-Control-Allow-Methods",
+                         "GET, POST, OPTIONS")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors()
+        self.end_headers()
 
     def do_GET(self):
         if not self._auth_ok():
@@ -206,8 +223,11 @@ class Handler(BaseHTTPRequestHandler):
                 "hint": "GET /v1/models lists valid ids "
                         f"({len(sv.models)} available)"}})
         prompt = _flatten(messages)
-        text, err = _run_devin(sv.devin, prompt, model, sv.workdir,
-                               sv.timeout)
+        # concurrent harness fire would spawn N devin processes — cap and
+        # queue so the box doesn't melt under parallel tool calls
+        with sv.sem:
+            text, err = _run_devin(sv.devin, prompt, model, sv.workdir,
+                                   sv.timeout)
         if err:
             kind, msg = err
             code = 504 if kind == "timeout" else 502
@@ -242,6 +262,7 @@ def serve(args):
     httpd.devin, httpd.workdir = devin, workdir
     httpd.timeout, httpd.token = args.timeout, args.token
     httpd.models = _list_models(devin, workdir)
+    httpd.sem = threading.BoundedSemaphore(max(1, args.concurrency))
     sys.stderr.write(f"[bridge] http://{args.bind}:{args.port} "
                      f"backend={devin} models={len(httpd.models)} "
                      f"auth={'token' if args.token else 'loopback'}\n")
@@ -261,6 +282,9 @@ def main():
     sv.add_argument("--devin")
     sv.add_argument("--workdir")
     sv.add_argument("--timeout", type=int, default=300)
+    sv.add_argument("--concurrency", type=int, default=2,
+                    help="max simultaneous devin backend calls "
+                         "(extras queue)")
     md = sub.add_parser("models")
     md.add_argument("--devin")
     args = ap.parse_args()

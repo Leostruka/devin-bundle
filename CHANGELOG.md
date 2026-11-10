@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- api-bridge extension (#478): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions` + `/v1/models` on loopback/LAN (token-required off-loopback); isolated workdir per request; E2E-verified translation ("bridge" -> "ponte").
+- api-bridge extension (#478, #479, #480): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions` + `/v1/models` on loopback/LAN (token-required off-loopback); isolated workdir per request; E2E-verified translation ("bridge" -> "ponte"). v0.2 hardening: model validation against `/v1/models` (`devin` alias kept), OpenAI-style error taxonomy (400/502/504), estimated usage object; v0.3: `--concurrency` backend semaphore + CORS preflight for browser harnesses.
+- state snapshot wave update + final (#475, #477).
 
 - dead-code removal + `# public-api` def-line convention + install-ledger rendered-currency/artifact exclusion (#473); state snapshot wave update (#475).
 - push-gate green cache (#476): verified-green verdict cached per HEAD+tree fingerprint in .git/push-green.json; repeat pushes on an unchanged surface skip the ~150s suite phase.
