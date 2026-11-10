@@ -14,6 +14,7 @@ bundle validated against it (`validated_cli_version` bumped in #457).
 | #471 | simplify-scan: module-level defs only + pytest-fixture skip (unreferenced_def 30->13) |
 | #472 | install-ledger: `.devin/` path remap for live docs/plans/templates (false drift 75->0) |
 | #473 | dead-code removal + def-line `# public-api` annotation convention; install-ledger rendered-file currency (source_hash compare) + build-artifact exclusion (.pyd/.so/.dll) |
+| #476 | push-gate green cache (HEAD+tree fingerprint, `.git/push-green.json`) + corpus-index noise exclusion (24k venv entries -> 1411 real) |
 | #458 | laya worker: `raw_runner_up_probability` (distribution OR probabilities keys) |
 | #459 | simplify-scan precision: comments-only markers, annotated-pass, pytest-def skip (2612->149 items) |
 | #460 | handoff skill: acp-summarizer 3-section schema (Overview/Breadcrumbs/Current State) |
