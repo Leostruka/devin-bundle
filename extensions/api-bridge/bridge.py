@@ -80,15 +80,23 @@ def _run_devin(devin, prompt, model, workdir, timeout):
                               cwd=workdir, timeout=timeout,
                               creationflags=_CF)
     except subprocess.TimeoutExpired:
-        return None, f"devin timed out after {timeout}s"
+        return None, ("timeout", f"devin timed out after {timeout}s")
     except OSError as e:
-        return None, f"devin spawn failed: {e}"
+        return None, ("upstream", f"devin spawn failed: {e}")
     if proc.returncode != 0:
-        return None, (proc.stderr or proc.stdout or "devin failed")[-400:]
+        msg = (proc.stderr or proc.stdout or "devin failed")[-400:]
+        kind = ("model_error" if "model" in msg.lower()
+                else "upstream")
+        return None, (kind, msg)
     return proc.stdout.strip(), None
 
 
-def _completion(text, model, cid=None):
+def _est_tokens(text):
+    """~4 chars/token estimate — devin -p exposes no usage surface."""
+    return max(1, len(text or "") // 4)
+
+
+def _completion(text, model, cid=None, prompt=""):
     return {
         "id": cid or f"chatcmpl-{uuid.uuid4().hex[:24]}",
         "object": "chat.completion",
@@ -97,8 +105,9 @@ def _completion(text, model, cid=None):
         "choices": [{"index": 0,
                      "message": {"role": "assistant", "content": text},
                      "finish_reason": "stop"}],
-        "usage": {"prompt_tokens": 0, "completion_tokens": 0,
-                  "total_tokens": 0},
+        "usage": {"prompt_tokens": _est_tokens(prompt),
+                  "completion_tokens": _est_tokens(text),
+                  "total_tokens": _est_tokens(prompt) + _est_tokens(text)},
     }
 
 
@@ -187,13 +196,23 @@ class Handler(BaseHTTPRequestHandler):
                 "message": "messages must be a non-empty array",
                 "type": "invalid_request_error"}})
         model = req.get("model")
-        prompt = _flatten(messages)
         sv = self.server
+        if model and sv.models and model not in sv.models \
+                and model != "devin":
+            return self._json(400, {"error": {
+                "message": f"unknown model '{model}'",
+                "type": "invalid_request_error",
+                "param": "model",
+                "hint": "GET /v1/models lists valid ids "
+                        f"({len(sv.models)} available)"}})
+        prompt = _flatten(messages)
         text, err = _run_devin(sv.devin, prompt, model, sv.workdir,
                                sv.timeout)
         if err:
-            return self._json(502, {"error": {"message": err,
-                                       "type": "upstream_error"}})
+            kind, msg = err
+            code = 504 if kind == "timeout" else 502
+            return self._json(code, {"error": {"message": msg,
+                                               "type": kind + "_error"}})
         cid = f"chatcmpl-{uuid.uuid4().hex[:24]}"
         if req.get("stream"):
             self.send_response(200)
@@ -209,7 +228,7 @@ class Handler(BaseHTTPRequestHandler):
                               + "\n\ndata: [DONE]\n\n").encode("utf-8"))
             self.wfile.flush()
             return
-        self._json(200, _completion(text, model, cid))
+        self._json(200, _completion(text, model, cid, prompt=prompt))
 
 
 def serve(args):
