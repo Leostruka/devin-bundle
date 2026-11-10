@@ -172,7 +172,7 @@ def recommend(request, engine, calibration=None, assist_ok=False,
 
     choice = ans.get("choice")
     conf = ans.get("confidence")
-    dist = ans.get("distribution") or {}
+    dist = ans.get("distribution") or ans.get("probabilities") or {}
     routing = result.get("routing") or {}
     rec["model_identity"] = str(
         getattr(engine, "identity", None)
@@ -188,6 +188,9 @@ def recommend(request, engine, calibration=None, assist_ok=False,
     top = dist.get(choice)
     rec["raw_confidence"] = float(conf)
     rec["raw_top_probability"] = float(top) if dc._is_num(top) else float(conf)
+    others = [v for k, v in dist.items() if k != choice and dc._is_num(v)]
+    if others:
+        rec["raw_runner_up_probability"] = float(max(others))
 
     if choice == dc.NONE_ID:
         rec["reason"] = "no_match"

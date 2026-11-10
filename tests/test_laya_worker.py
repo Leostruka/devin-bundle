@@ -135,6 +135,31 @@ def test_deadline_exceeded_abstains():
     assert replies[0]["reason"] == "deadline_exceeded"
 
 
+def test_runner_up_probability_from_probabilities_key():
+    e = FakeEngine({"answers": {"target": {
+        "choice": "as", "confidence": 0.85,
+        "probabilities": {"as": 0.80, "ad": 0.15, "__none__": 0.05}}}})
+    [r] = run_worker(e, [env(REQ)])
+    assert r["outcome"] == "suggestion"
+    assert r["raw_top_probability"] == 0.80
+    assert r["raw_runner_up_probability"] == 0.15
+
+
+def test_runner_up_probability_from_distribution_key():
+    [r] = run_worker(FakeEngine(), [env(REQ)])
+    assert r["raw_top_probability"] == 0.9
+    assert r["raw_runner_up_probability"] == 0.1
+
+
+def test_runner_up_absent_without_distribution():
+    e = FakeEngine({"answers": {"target": {"choice": "as",
+                                           "confidence": 0.9}}})
+    [r] = run_worker(e, [env(REQ)])
+    assert r["outcome"] == "suggestion"
+    assert r["raw_top_probability"] == 0.9
+    assert r.get("raw_runner_up_probability") is None
+
+
 def test_unknown_label_abstains():
     e = FakeEngine({"answers": {"target": {"choice": "invented",
                                            "confidence": 0.99}}})

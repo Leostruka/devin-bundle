@@ -356,6 +356,8 @@ def validate_recommendation(value, request):
         _err(errs, "context_mismatch")
     _prob("raw_confidence", value.get("raw_confidence"), errs)
     _prob("raw_top_probability", value.get("raw_top_probability"), errs)
+    _prob("raw_runner_up_probability",
+          value.get("raw_runner_up_probability"), errs)
     _prob("calibrated_probability",
           value.get("calibrated_probability"), errs)
     cal = value.get("calibration_id")
@@ -417,6 +419,7 @@ def make_abstention(request_id, reason):
         "context": {},
         "raw_confidence": None,
         "raw_top_probability": None,
+        "raw_runner_up_probability": None,
         "calibrated_probability": None,
         "calibration_id": None,
         "mode": "off",
