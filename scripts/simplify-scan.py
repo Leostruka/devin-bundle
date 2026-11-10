@@ -69,12 +69,41 @@ def scan(root):
             tree = ast.parse(src)
         except SyntaxError:
             continue
+        def _collect_defs(node, top_level):
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                      ast.ClassDef)):
+                    # only module top-level defs are meaningful for the
+                    # name-count heuristic; methods are dispatched via
+                    # getattr/reflection (http do_*, HTMLParser handle_*,
+                    # hook check_*) and can't be resolved textually
+                    if top_level:
+                        # pytest fixtures resolve by autouse/parameter name,
+                        # never by direct call — not dead code
+                        fixture = any(
+                            (isinstance(d, ast.Attribute)
+                             and d.attr == "fixture")
+                            or (isinstance(d, ast.Name)
+                                and d.id == "fixture")
+                            or (isinstance(d, ast.Call)
+                                and isinstance(d.func, ast.Attribute)
+                                and d.func.attr == "fixture")
+                            or (isinstance(d, ast.Call)
+                                and isinstance(d.func, ast.Name)
+                                and d.func.id == "fixture")
+                            for d in getattr(child, "decorator_list", []))
+                        if not fixture:
+                            kind = "class" if isinstance(child, ast.ClassDef) \
+                                else "function"
+                            defs.append((child.name, rel, child.lineno, kind))
+                    _collect_defs(child, False)
+                else:
+                    _collect_defs(child, top_level)
+
+        _collect_defs(tree, True)
+
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                defs.append((node.name, rel, node.lineno, "function"))
-            elif isinstance(node, ast.ClassDef):
-                defs.append((node.name, rel, node.lineno, "class"))
-            elif isinstance(node, ast.Try):
+            if isinstance(node, ast.Try):
                 # a sibling handler that re-raises (except X: raise) makes
                 # an `except Exception/bare: pass` self-documenting intent
                 sibling_reraise = any(

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fail-soft annotation wave (#469): all 103 unannotated `except: pass` sites across system-control/computer-use/laya/gcal/design-intelligence + hooks/scripts/tests annotated with `# fail-soft:` reason; scan except_pass 103 -> 0.
+- silent-error-review `overflow_path` adoption (#470): PostToolUse truncated results carry `tool_response.overflow_path` to the complete output (field verified empirically on 3000.12.43); hook now scans full file <=8 MB so tail errors are caught; finding snippets prefer error lines.
 - pulse frontier fix (#461): `**Status:**`/`**Blocked by:**` bold-colon forms now parsed; frontier consumes `status_vocab` canonical statuses + archived-effort exclusion. Phantom claimable backlog 168 -> 0; issue 04-jev triaged resolved.
 - simplify-scan sibling-reraise pass (#466): `except X: raise` sibling marks `except: pass` as intentional fail-open. except_pass findings 110 -> 103.
 - handoff skill adopts acp-summarizer schema (#460): Overview / Key Details & Breadcrumbs / Current State; breadcrumbs = re-readable paths.
