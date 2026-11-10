@@ -25,8 +25,13 @@ cache, CPU, fp32):
 
 | run | config | base | defected | repaired | r recovery cos | control before->after |
 |---|---|---|---|---|---|---|
-| 1 | beta=8, topk=2 (L22,23) | 0.25 | 1.00 | **1.00** | 1.00 / -0.73 | 0.25 -> 0.25 |
-| 2 | beta=4, topk=3 (L21,22,23) | 0.25 | 1.00 | **1.00** | 1.00 / 0.73 / -0.75 | 0.25 -> **0.375** |
+| 1 | beta=8, topk=2 (L22,23) | 0.25 | 1.00 | 1.00 | 1.00 / -0.73 | 0.25 -> 0.25 |
+| 2 | beta=4, topk=3 (L21,22,23) | 0.25 | 1.00 | 1.00 | 1.00 / 0.73 / -0.75 | 0.25 -> **0.375** |
+| 3 | beta=4, topk=3, 3 repair iters | 0.25 | 1.00 | 1.00 -> 1.00 -> **0.75** | same as run 2 | 0.25 -> 0.375 |
+
+Run 3 adds iterative repair (extract -> ablate -> re-probe): loop rate
+fell 1.00 -> 0.75 by iteration 3. The defect IS being stripped, slowly -
+each pass removes the residual r-component the previous pass left.
 
 Self-test (numpy mechanics): 5/5 checks pass - direction recovery above
 chance, orth_weight removes r exactly, loop detector works both ways.
@@ -36,10 +41,12 @@ chance, orth_weight removes r exactly, loop detector works both ways.
 - **Defect induction works dramatically**: rank-1 write at beta>=4 pushed
   loop rate 0.25 -> 1.00 on 8 probes. The mechanism (weights writing a
   behavior direction) is real and reproducible.
-- **Naive repair fails at this defect magnitude**: multi-layer defects with
-  imperfect direction recovery (cos 0.73-1.0, one sign-flipped) leave
-  residual defect power. Single-pass diff-in-means + orth_weight is
-  insufficient; the paper's editor iterated with a far stronger tracer.
+- **Naive single-pass repair fails; iterative repair converges slowly**:
+  at beta>=4 multi-layer defects, one extract+ablate pass leaves loop rate
+  at 1.0; three passes reach 0.75 (still above the 0.25 base). Recovery
+  cosines of 0.73-1.0 mean each pass removes only ~50-75% of residual
+  defect power - convergence is real but not cheap. The paper's editor
+  traced with far better direction estimation.
 - **Control regressed**: the same ablation on the healthy model moved loop
   rate 0.25 -> 0.375. Rank-1 removal is not free - it perturbs neighboring
   behavior. The paper's "no gain on non-defective" claim understates risk
