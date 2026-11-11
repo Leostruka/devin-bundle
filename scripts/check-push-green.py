@@ -626,7 +626,9 @@ def main():
         _cache_write(cache_path, fp)
 
     if deferred:
-        print(json.dumps({"hookSpecificOutput": {"additionalContext":
+        print(json.dumps({"hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "additionalContext":
             "push-gate deferred to required CI: "
             + ", ".join(deferred)}}))
     sys.exit(0)
