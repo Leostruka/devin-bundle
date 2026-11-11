@@ -345,3 +345,78 @@ def test_acp_prompt_session_timeout_is_typed_error():
     text, usage, err = b.prompt("hi")
     assert text == "" and usage is None
     assert err[0] == "timeout"
+
+
+def _frame(payload: bytes) -> bytes:
+    return b"\x00" + len(payload).to_bytes(4, "big") + payload
+
+
+def _resp_frame(fields: bytes) -> bytes:
+    return _frame(fields)
+
+
+def test_internal_build_encodes_tools_and_messages():
+    b = mod.InternalBackend("devin-session-token$k", "https://x.test")
+    b._user = "user-abc"  # skip live fetch
+    body = b._build(
+        [{"role": "system", "content": "sys"},
+         {"role": "user", "content": "hi"}],
+        [{"type": "function",
+          "function": {"name": "calc", "description": "d",
+                       "parameters": {"type": "object"}}}],
+        "swe-2-max")
+    assert body[0] == 0
+    ln = int.from_bytes(body[1:5], "big")
+    msg = body[5:5 + ln]
+    assert ln == len(msg)
+    fns = [fn for fn, wt, v in mod._pb_fields(msg)]
+    assert 1 in fns and 10 in fns and 21 in fns and 28 in fns
+    assert b"swe-2-max" in msg and b"calc" in msg and b"hi" in msg
+
+
+def test_internal_prompt_parses_tool_call_and_usage():
+    call = (mod._pb_s(1, "calc:0#ab") + mod._pb_s(2, "calc")
+            + mod._pb_s(3, '{"expr":"1+1"}'))
+    frame = (mod._pb_s(1, "bot-x") + mod._pb_s(3, "calling")
+             + mod._pb_m(6, call)
+             + mod._pb_m(7, mod._pb_vi(2, 150) + mod._pb_vi(3, 77)))
+    seal = mod._pb_s(1, "bot-x") + mod._pb_s(10, "sealed.v1.XXX")
+    raw = _resp_frame(frame) + _resp_frame(seal) + b"\x02" + \
+        (2).to_bytes(4, "big") + b"{}"
+    b = mod.InternalBackend("k", "https://x.test")
+    b._user = "u"
+    b._post = lambda *a, **k: (200, raw)
+    text, tcs, usage, err = b.prompt(
+        [{"role": "user", "content": "compute"}],
+        [{"type": "function", "function": {"name": "calc"}}], "m")
+    assert err is None and text == "calling"
+    assert tcs[0]["id"] == "calc:0#ab"
+    assert tcs[0]["function"]["name"] == "calc"
+    assert usage == {"prompt_tokens": 150, "completion_tokens": 77,
+                     "total_tokens": 227}
+    assert b.seals["calc:0#ab"]["seal"] == "sealed.v1.XXX"
+
+
+def test_internal_assistant_msg_reinjects_seal():
+    b = mod.InternalBackend("k", "https://x.test")
+    b._user = "u"
+    b.seals["calc:0#ab"] = {"seal": "sealed.v1.XXX",
+                           "reasoning": "r", "model": "swe-2-max"}
+    out = b._msg({"role": "assistant", "content": "",
+                  "tool_calls": [{"id": "calc:0#ab", "type": "function",
+                                  "function": {"name": "calc",
+                                               "arguments": "{}"}}]})
+    assert b"sealed.v1.XXX" in out and b"sealed" in out
+    tool_out = b._msg({"role": "tool", "tool_call_id": "calc:0#ab",
+                       "content": "42"})
+    assert b"calc:0#ab" in tool_out and b"42" in tool_out
+
+
+def test_internal_http_error_trailer_maps_to_upstream():
+    raw = b"\x02" + (70).to_bytes(4, "big") + \
+        b'{"error":{"code":"unknown","message":"capacity issues"}}'
+    b = mod.InternalBackend("k", "https://x.test")
+    b._user = "u"
+    b._post = lambda *a, **k: (200, raw)
+    text, tcs, usage, err = b.prompt([{"role": "user", "content": "x"}])
+    assert err and err[0] == "upstream" and "capacity" in err[1]
