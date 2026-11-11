@@ -111,6 +111,92 @@ def _session_profile(session_id):
         return ""
 
 
+# --- Subagent dispatch budgets (optional, opt-in) ---
+# Policy file: <state>/subagent-budget.json. All knobs optional; absent or
+# invalid file = uncapped (default behavior). Knobs:
+#   max_dispatches:       max run_subagent calls per session_id (block)
+#   session_max_minutes:  max wall minutes since first dispatch (block new)
+#   max_cost_usd/spent_usd: block when spent_usd >= max_cost_usd. spent_usd is
+#                         updated by an external recorder — the hook cannot
+#                         observe token spend.
+# Not enforceable: per-agent wall-clock kill (no subagent lifecycle events in
+# hook payloads), real-time cost (no token telemetry). See agent-cost-guard.
+LEDGER = os.path.join(
+    os.environ.get("DEVIN_STATE_DIR") or STATE_DIR, "subagent-ledger.jsonl")
+BUDGET_POLICY = os.path.join(
+    os.environ.get("DEVIN_STATE_DIR") or STATE_DIR, "subagent-budget.json")
+
+
+def _ledger_records(session_id):
+    recs = []
+    try:
+        with open(LEDGER, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                if r.get("session_id") == session_id:
+                    recs.append(r)
+    except (OSError, IOError):
+        pass
+    return recs
+
+
+def _record_dispatch(session_id, tool_input):
+    try:
+        os.makedirs(os.path.dirname(LEDGER), exist_ok=True)
+        with open(LEDGER, "a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "ts": int(time.time()), "session_id": session_id,
+                "profile": tool_input.get("profile", "") or "subagent_general",
+                "title": tool_input.get("title", "")[:80],
+            }) + "\n")
+    except (OSError, IOError):
+        pass
+
+
+def _enforce_budget(session_id, tool_input):
+    try:
+        with open(BUDGET_POLICY, "r", encoding="utf-8") as f:
+            policy = json.load(f)
+    except (OSError, IOError, ValueError):
+        return  # no policy = uncapped
+    if not isinstance(policy, dict):
+        return
+
+    max_cost = policy.get("max_cost_usd")
+    spent = policy.get("spent_usd")
+    if (isinstance(max_cost, (int, float)) and isinstance(spent, (int, float))
+            and spent >= max_cost):
+        block(
+            "run_subagent blocked: session budget spent_usd {} >= max_cost_usd {} "
+            "(subagent-budget.json).".format(spent, max_cost)
+        )
+
+    max_disp = policy.get("max_dispatches")
+    max_min = policy.get("session_max_minutes")
+    if not (isinstance(max_disp, int) or isinstance(max_min, (int, float))):
+        _record_dispatch(session_id, tool_input)
+        return
+
+    recs = _ledger_records(session_id)
+    if isinstance(max_disp, int) and len(recs) >= max_disp:
+        block(
+            "run_subagent blocked: {} dispatches this session >= max_dispatches "
+            "{} (subagent-budget.json).".format(len(recs), max_disp)
+        )
+    if isinstance(max_min, (int, float)) and recs:
+        elapsed_min = (time.time() - min(r.get("ts", 0) for r in recs)) / 60.0
+        if elapsed_min > max_min:
+            block(
+                "run_subagent blocked: {:.1f}min since first dispatch exceeds "
+                "session_max_minutes {} (subagent-budget.json).".format(
+                    elapsed_min, max_min)
+            )
+    _record_dispatch(session_id, tool_input)
+
+
 def _enforce_profile_deny(session_id, tool_name, data):
     """Block tools denied for the session's recorded subagent profile.
 
@@ -393,6 +479,7 @@ def main():
     if tool_name == "run_subagent" and isinstance(tool_input, dict):
         prof = tool_input.get("profile", "") or "subagent_general"
         _record_profile(session_id, prof)
+        _enforce_budget(session_id, tool_input)
 
     _enforce_profile_deny(session_id, tool_name, data)
 
