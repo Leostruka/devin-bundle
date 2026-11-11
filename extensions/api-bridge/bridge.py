@@ -566,6 +566,16 @@ def doctor(args):
         checks["port_free"] = False
     finally:
         s.close()
+    # informational: does `devin acp` answer initialize? (the --backend
+    # acp path). ~2-4s spawn; not part of `ok` — cli backend is default.
+    if checks["devin"]:
+        try:
+            b = AcpBackend(devin, tempfile.gettempdir(), 15)
+            b._spawn()
+            checks["acp"] = b._proc.poll() is None
+            b._proc.terminate()
+        except (OSError, subprocess.SubprocessError):
+            checks["acp"] = False
     ok = checks["devin"] and checks["models"] and checks["port_free"]
     print(json.dumps({"ok": ok, **checks,
                       "verdict": ("ready" if ok else "fix above")}))
