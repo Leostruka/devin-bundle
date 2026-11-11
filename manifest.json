@@ -181,6 +181,13 @@
       "export_hash": "946135372a6076b71c1fedb8b3e8ee099c135a4cdcb97e82f36d644ee88bd6d7"
     },
     {
+      "name": "camera-blocking",
+      "purpose": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt template to a video-repaint model (Seedance-class) and scaffold the result as a scroll-bound web hero.",
+      "export_hash": "84880c5f76405695b82140c3c74820b47d4b6492eb69bf6fec49e5d94fd8cfc8",
+      "exported_at": "2026-11-06T11:47:27.072797",
+      "path": "skills/camera-blocking/SKILL.md"
+    },
+    {
       "name": "career-ops",
       "source": "devin-bundle",
       "purpose": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications.",
@@ -362,10 +369,26 @@
       "exported_at": "2026-09-08T21:39:22.458845"
     },
     {
+      "name": "device-repurpose",
+      "source": "created:yt-batch2 #513",
+      "purpose": "Use when repurposing an existing device (TV, Kindle, iPad, AC, router, printer, embedded board) into agent-driven use — strip vendor services, deploy a custom controller/UI, verify. Encodes the recon -> strip -> redeploy -> verify pipeline on top of firmware-probe, devin-integrate, and computer-use ADB.",
+      "original_path": "%APPDATA%\\devin\\skills\\device-repurpose",
+      "export_hash": "ed3891a26008c9f5b2f920c02f6ba5e0ee51e9bfe8dd345f43af700dde39c4f1",
+      "exported_at": "2026-11-11T13:25:38.996513"
+    },
+    {
       "name": "devin-config",
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval.",
       "export_hash": "363C05CA238FBC2D68642F4AE242A9E8867CDA98A0DC7C169636634F4F3D1BA6"
+    },
+    {
+      "name": "devin-integrate",
+      "source": "created:link-eval #490 (huwprosser Busy Bar reel)",
+      "purpose": "Use when embedding the Devin agent into an external surface — a device (Busy Bar), an LLM harness (opencode/hermes), a service, an IDE, or a cron. Covers direction (devin-as-callee vs caller vs bidirectional), the transport ladder, the verified surface inventory, and the integration contract checklist. Complements cli-adapter (outbound agent->app); this skill is inbound/integration.",
+      "original_path": "%APPDATA%\\devin\\skills\\devin-integrate",
+      "export_hash": "c58c853697a37e1ab9a123c93732d29d5b69f160d6252c4911c0de4200e09590",
+      "exported_at": "2026-11-11T06:36:31.795"
     },
     {
       "name": "devin-manager",
@@ -681,6 +704,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "lgpd-questionnaire",
+      "source": "created:reels-7-eval #448",
+      "purpose": "Use when the user asks for an LGPD/data-protection compliance review of an app or service - data inventory, legal basis, third-party sharing, subject rights, breach response. Produces an evidence-cited compliance matrix, not legal advice.",
+      "original_path": "%APPDATA%\\devin\\skills\\lgpd-questionnaire",
+      "export_hash": "bd23da85440a35ab089d10e3b592265dc0ef96b41bb21253f45d5e2e16122cc0",
+      "exported_at": "2026-11-10T07:33:38.105749"
+    },
+    {
       "name": "maintain-verification-skill",
       "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
       "purpose": "Use when keeping a project's verification skill and feature map honest as the app changes. Source-reader fan-out per feature plus one live driving pass; ships at most one PR of proven corrections.",
@@ -973,6 +1004,14 @@
       "original_path": "%APPDATA%\\devin\\skills\\roteiro",
       "export_hash": "975e1efae8670c042db54d71aedc611f74d90cc90debe56f1cf75760b5480309",
       "exported_at": "2026-11-06T00:00:00"
+    },
+    {
+      "name": "saas-replacer",
+      "source": "created:yt-batch2 #514",
+      "purpose": "Use when auditing paid subscriptions and replacing the replaceable ones with minimal self-hosted clones — inventory -> rank -> clone -> maintain. The cheap sibling of device-repurpose: pure software, zero hardware risk.",
+      "original_path": "%APPDATA%\\devin\\skills\\saas-replacer",
+      "export_hash": "44024c1e9921fad1bec2e43f843dcda917f4cca89077227e94684ebebd35ea37",
+      "exported_at": "2026-11-11T13:25:38.996584"
     },
     {
       "name": "scan",
@@ -1324,32 +1363,9 @@
       "original_path": "%APPDATA%\\devin\\skills\\youtube-fetcher",
       "export_hash": "bc5d6bab694ecd73c4aece39aaf7ea10be835707272cd95f96ab7a03baf184be",
       "exported_at": "2026-09-08T21:39:22.462266"
-    },
-    {
-      "name": "camera-blocking",
-      "purpose": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt template to a video-repaint model (Seedance-class) and scaffold the result as a scroll-bound web hero.",
-      "export_hash": "84880c5f76405695b82140c3c74820b47d4b6492eb69bf6fec49e5d94fd8cfc8",
-      "exported_at": "2026-11-06T11:47:27.072797",
-      "path": "skills/camera-blocking/SKILL.md"
-    },
-    {
-      "name": "lgpd-questionnaire",
-      "source": "created:reels-7-eval #448",
-      "purpose": "Use when the user asks for an LGPD/data-protection compliance review of an app or service - data inventory, legal basis, third-party sharing, subject rights, breach response. Produces an evidence-cited compliance matrix, not legal advice.",
-      "original_path": "%APPDATA%\\devin\\skills\\lgpd-questionnaire",
-      "export_hash": "bd23da85440a35ab089d10e3b592265dc0ef96b41bb21253f45d5e2e16122cc0",
-      "exported_at": "2026-11-10T07:33:38.105749"
-    },
-    {
-      "name": "devin-integrate",
-      "source": "created:link-eval #490 (huwprosser Busy Bar reel)",
-      "purpose": "Use when embedding the Devin agent into an external surface — a device (Busy Bar), an LLM harness (opencode/hermes), a service, an IDE, or a cron. Covers direction (devin-as-callee vs caller vs bidirectional), the transport ladder, the verified surface inventory, and the integration contract checklist. Complements cli-adapter (outbound agent->app); this skill is inbound/integration.",
-      "original_path": "%APPDATA%\\devin\\skills\\devin-integrate",
-      "export_hash": "c58c853697a37e1ab9a123c93732d29d5b69f160d6252c4911c0de4200e09590",
-      "exported_at": "2026-11-11T06:36:31.795"
     }
   ],
-  "skill_count": 183,
+  "skill_count": 185,
   "rule_count": 24,
   "scripts": [
     {
