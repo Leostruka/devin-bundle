@@ -19,7 +19,7 @@ Sources:
   Kernel-Bench and 46.8% ALE-Bench optimizations show proxy gains without real
   gains, so agent-chosen tests alone are not evidence of improvement.
 """
-import sys, json, subprocess, os, re
+import sys, json, subprocess, os, re, time
 
 _CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
