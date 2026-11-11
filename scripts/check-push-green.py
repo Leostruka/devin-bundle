@@ -321,6 +321,7 @@ _DOC_ONLY_PREFIXES = (
     "docs/", ".devin/docs/", ".devin/issues/", ".devin/scratch/",
     ".devin/research/", ".devin/ledgers/", ".devin/plans/",
     ".devin/evals/", ".devin/goals/", ".devin/metrics/",
+    ".devin/approvals/", ".devin/test-deletion-approved",
 )
 
 
@@ -331,9 +332,48 @@ def _is_doc_path(path):
         p = p[2:]
     if not p:
         return False
-    if p.endswith(".md") or p in ("CHANGELOG.md", "CHANGELOG"):
+    if p.endswith(".md") or p in ("CHANGELOG.md", "CHANGELOG",
+                                 "manifest.json"):
         return True
     return p.startswith(_DOC_ONLY_PREFIXES)
+
+
+def _scoped_tests(cwd, paths):
+    """Map changed code paths to their validation tests.
+
+    Returns a deduped list of existing test files, or None when any
+    path is outside the known code surface (fail-safe: caller runs the
+    full validation dir). Always includes tests/held-out — the
+    anti-gaming contract is small (~12s) and runs on every code push.
+    """
+    known_prefixes = ("scripts/", "extensions/", "tests/")
+    out = set()
+    for p in paths:
+        p = p.strip().replace("\\", "/")
+        if not any(p.startswith(k) for k in known_prefixes):
+            return None
+        stem = p.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+        cand = set()
+        if p.startswith("tests/"):
+            cand.add(p)
+        stem_pat = stem.replace("-", "_")
+        for d in ("tests/validation", "tests/held-out"):
+            root = os.path.join(cwd, d)
+            if not os.path.isdir(root):
+                continue
+            for dirpath, _dirs, files in os.walk(root):
+                for f in files:
+                    if f.startswith("test_") and f.endswith(".py") \
+                            and stem_pat in f:
+                        cand.add(os.path.join(
+                            dirpath, f).replace(cwd + os.sep, ""))
+        out.update(cand)
+    held = os.path.join(cwd, "tests", "held-out")
+    if os.path.isdir(held):
+        out.add("tests/held-out")
+    # deletions/renames in the delta must not become pytest args
+    return sorted(p for p in out
+                  if os.path.exists(os.path.join(cwd, p)))
 
 
 def _changed_paths(cwd):
@@ -344,7 +384,15 @@ def _changed_paths(cwd):
                 encoding="utf-8", errors="replace")
     if stat.returncode != 0:
         return None
-    paths = {ln[3:].strip() for ln in stat.stdout.splitlines() if ln.strip()}
+    paths = set()
+    for ln in stat.stdout.splitlines():
+        if not ln.strip():
+            continue
+        p = ln[3:].strip()
+        if " -> " in p:  # rename: the pushed surface is the new path
+            p = p.split(" -> ", 1)[1].strip()
+        if p:
+            paths.add(p)
     base = _run(["git", "merge-base", "origin/main", "HEAD"],
                 capture_output=True, text=True, cwd=cwd, timeout=15,
                 encoding="utf-8", errors="replace")
@@ -458,6 +506,8 @@ def main():
 
     validation_dir = os.path.join(cwd, "tests", "validation")
     heldout_dir = os.path.join(cwd, "tests", "held-out")
+    code_paths = {p for p in (paths or ()) if not _is_doc_path(p)}
+    scoped = _scoped_tests(cwd, code_paths) if code_paths else None
     gap_active = os.path.isdir(validation_dir) and os.path.isdir(heldout_dir) and is_pytest
 
     # Rule 15 declares tests/validation + tests/held-out as the push-gate
@@ -469,7 +519,14 @@ def main():
     # so a concurrent validation run can read a half-mutated script and fail
     # audit's compile check — exactly the flake this gate kept hitting.
     # Sequential cost is ~20s and fits the budget easily.
-    if gap_active:
+    if gap_active and scoped:
+        # scoped tier: changed code surfaces map to their tests; the full
+        # validation dir no longer fits the outer hook budget (~150s).
+        # held-out always runs — mutation coverage on the gate itself.
+        check_cmd = "pytest " + " ".join(f'"{t}"' for t in scoped) + " -q"
+        status, output = run_check(check_cmd, cwd, MAIN_TIMEOUT)
+        val_result = held_result = None
+    elif gap_active:
         val_result = run_check(f'pytest "{validation_dir}" -q', cwd, MAIN_TIMEOUT)
         held_result = run_check(f'pytest "{heldout_dir}" -q', cwd, MAIN_TIMEOUT)
         check_cmd = "validation+held-out"
