@@ -1,8 +1,9 @@
-"""ci.yml contract — path filter exists and classifies correctly (#487)."""
+"""ci.yml contract — path filter exists and classifies correctly (#487).
+
+Text/regex checks only: the runner image has no PyYAML, and the
+contract under test is structural (job blocks + needs/if lines)."""
 import os
 import re
-
-import yaml
 
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 WF = os.path.join(ROOT, ".github", "workflows", "ci.yml")
@@ -11,18 +12,25 @@ DOC_RE = re.compile(
     r"^docs/|^\.devin/(docs|issues|scratch|research|ledgers|plans|evals"
     r"|goals|metrics|approvals)/|\.md$|^manifest\.json$")
 
+def _job_block(text, name):
+    m = re.search(
+        r"^  %s:\n(?:    .*\n|      .*\n|        .*\n|          .*\n)+"
+        % re.escape(name), text, re.M)
+    return m.group(0) if m else ""
+
 
 def _doc_only(paths):
     return all(DOC_RE.search(p) for p in paths)
 
 
-def test_workflow_parses_and_has_changes_job():
-    wf = yaml.safe_load(open(WF, encoding="utf-8"))
-    assert "changes" in wf["jobs"]
+def test_workflow_has_changes_job_and_gates():
+    text = open(WF, encoding="utf-8").read()
+    assert re.search(r"^  changes:\n", text, re.M)
+    assert "changes.outputs.code" in text
     for job in ("test", "rust", "install"):
-        j = wf["jobs"][job]
-        assert j.get("needs") == "changes"
-        assert "changes.outputs.code" in (j.get("if") or "")
+        block = _job_block(text, job)
+        assert "needs: changes" in block, job
+        assert re.search(r"if:.*changes\.outputs\.code", block), job
 
 
 def test_doc_filter_classification():
