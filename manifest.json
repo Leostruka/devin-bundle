@@ -1379,7 +1379,7 @@
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "941EDC882C240090B001CF8BE495652F2FF2E6F01C15A3C2D2A95FB5FB4C2CE3",
+      "export_hash": "4B4FA442483BF3C7F0EB71D08C643166C7979E2952B081474E98FA13F6F5B84C",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1674,9 +1674,15 @@
       "purpose": "Validator — checks tool argument schemas",
       "export_hash": "af915ef065e3bc003a17988eb69db3f1cfba966db2f9462264f2b25f0636822b",
       "exported_at": "2026-11-03T21:04:06.237841"
+    },
+    {
+      "name": "ship-metrics.py",
+      "purpose": "DORA lead-time log — .devin/metrics/ships.jsonl + report (#486)",
+      "export_hash": "B5A6FEE8C83E9476B91A135F9E4E01E28EB07BDAEF5FEE4E654C0DFBAAF2BDA6",
+      "exported_at": "2026-11-11T07:20:20.702571"
     }
   ],
-  "script_count": 52,
+  "script_count": 53,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,
