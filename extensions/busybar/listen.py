@@ -12,7 +12,9 @@ Sources:
 
 Event map (advisory by default — prints the action; --exec runs it):
   star/pause switch toggle -> `python scripts/focus.py start|stop`
-  dial position 1..3       -> effort preset note (S/M/L)
+  dial position 1..3       -> effort preset S/M/L persisted to
+                             .devin/busybar-effort.txt (read it from a
+                             wrapper to export BUNDLE_*_MODEL env)
   everything else          -> ignored (v0)
 
 Fail-soft everywhere: unreadable frames skip with a stderr note;
@@ -74,7 +76,17 @@ def run_action(action, exec_mode):
     cmd = {"focus-start": FOCUS + ["start"],
            "focus-stop": FOCUS + ["stop"]}.get(action)
     if action.startswith("effort-"):
-        print(f"[busybar] effort preset -> {action.split('-')[1]}")
+        preset = action.split("-")[1]
+        try:
+            import os
+            state = os.path.join(".devin", "busybar-effort.txt")
+            os.makedirs(os.path.dirname(state), exist_ok=True)
+            with open(state, "w", encoding="utf-8") as fh:
+                fh.write(preset)
+        except OSError as e:
+            print(f"[busybar] effort state write failed: {e}",
+                  file=sys.stderr)
+        print(f"[busybar] effort preset -> {preset} (persisted)")
         return
     if cmd is None:
         return

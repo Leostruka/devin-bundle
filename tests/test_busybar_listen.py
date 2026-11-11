@@ -33,7 +33,9 @@ def test_unknown_frames_ignored():
     assert mod.map_event({}) is None
 
 
-def test_replay_counts_actions_and_skips_bad(tmp_path, capsys):
+def test_replay_counts_actions_and_skips_bad(tmp_path, capsys,
+                                             monkeypatch):
+    monkeypatch.chdir(tmp_path)  # effort preset writes .devin/ here
     f = tmp_path / "f.jsonl"
     f.write_text('\n'.join([
         json.dumps({"switch": "star", "pressed": True}),
@@ -52,7 +54,9 @@ def _frame(payload: bytes) -> bytes:
     return bytes([0x81, len(payload)]) + payload
 
 
-def test_ws_loopback_receives_bundled_frame(capsys):
+def test_ws_loopback_receives_bundled_frame(capsys, tmp_path,
+                                            monkeypatch):
+    monkeypatch.chdir(tmp_path)  # effort preset writes .devin/ here
     """Loopback ws:// server: handshake + text frame in ONE packet —
     the regression case for the post-handshake leftover buffer."""
     import socket
@@ -83,4 +87,6 @@ def test_ws_loopback_receives_bundled_frame(capsys):
     t.join(timeout=5)
     out = capsys.readouterr().out
     assert "focus-start" in out
-    assert "effort preset -> L" in out
+    assert "effort preset -> L (persisted)" in out
+    assert (tmp_path / ".devin" / "busybar-effort.txt").read_text(
+        encoding="utf-8") == "L"
