@@ -42,18 +42,21 @@ and builds. This skill is that loop, codified.
 |---|---|---|
 | `devin -p` | callee | full agent run, seconds latency, stdout text |
 | `devin acp [--agent-type]` | bidir | summarizer/review/codemap agents verified; default agent heavy |
-| api-bridge | callee | OpenAI-compat; `x-ignored-params` honest field; usage = ~4ch/tok estimate |
+| api-bridge | callee | OpenAI-compat; `x-ignored-params` honest field; `--backend acp` = real deltas + real usage |
 | hooks | caller | `tool_response.overflow_path` exists on truncation (12.17+) |
 | `devin cloud/forward` | callee | org API; DRS needs entitlement; forward=tunnel ports |
 | busybar push | caller | `display/draw`+`display/clear`, USB no-auth, LAN token |
+| busybar listen | bidir | ws state stream -> focus/effort; dial persists `.devin/busybar-effort.txt` |
 
 ## Playbook (working examples in-repo)
 
-1. `extensions/api-bridge/bridge.py` — full callee integration.
+1. `extensions/api-bridge/bridge.py` — full callee integration
+   (`bridge.py setup opencode|codex|hermes|generic` prints harness stanzas).
 2. `extensions/busybar/push.py` — minimal caller: 2 endpoints, fail-soft.
-3. `extensions/gcal/wrapper.py` — service adapter, ok-envelope contract.
-4. `.devin/scratch/acp-spike/client.py` — bidirectional session client.
-5. `scripts/focus.py` — ledger emitter, zero-dep integration surface.
+3. `extensions/busybar/listen.py` — bidir: stdlib ws client, event->action map.
+4. `extensions/gcal/wrapper.py` — service adapter, ok-envelope contract.
+5. `.devin/scratch/acp-spike/client.py` — bidirectional session client.
+6. `scripts/focus.py` — ledger emitter, zero-dep integration surface.
 
 ## Contract checklist (every integration)
 
