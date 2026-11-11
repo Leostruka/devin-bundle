@@ -412,6 +412,22 @@ def test_internal_assistant_msg_reinjects_seal():
     assert b"calc:0#ab" in tool_out and b"42" in tool_out
 
 
+def test_internal_multipart_content_flattens_to_text():
+    b = mod.InternalBackend("k", "https://x.test")
+    b._user = "u"
+    out = b._msg({"role": "user", "content": [
+        {"type": "text", "text": "part A"},
+        {"type": "image_url", "image_url": {"url": "data:x"}},
+        {"type": "text", "text": " part B"}]})
+    assert b"part A part B" in out and b"image_url" not in out
+    out = b._msg({"role": "tool", "tool_call_id": "t:1",
+                  "content": [{"type": "text", "text": "res"}]})
+    assert b"res" in out and b"type" not in out.replace(b"res", b"")
+    body = b._build([{"role": "system", "content": [
+        {"type": "text", "text": "sys multipart"}]}], None, "m")
+    assert b"sys multipart" in body
+
+
 def test_internal_http_error_trailer_maps_to_upstream():
     raw = b"\x02" + (70).to_bytes(4, "big") + \
         b'{"error":{"code":"unknown","message":"capacity issues"}}'
