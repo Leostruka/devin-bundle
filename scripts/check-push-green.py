@@ -440,6 +440,23 @@ def _cache_write(path, fp):
         pass  # fail-soft: cache miss next time is just slower
 
 
+def _auto_merge_armed(cwd):
+    """True when the current branch's open PR has auto-merge armed.
+    Fail-soft: no gh / no PR / any error -> False (never blocks)."""
+    try:
+        p = _run(["gh", "pr", "view", "--json", "autoMergeRequest,state"],
+                 capture_output=True, text=True, cwd=cwd, timeout=10,
+                 encoding="utf-8", errors="replace")
+        if p.returncode != 0:
+            return False
+        d = json.loads(p.stdout or "{}")
+        return (d.get("state") == "OPEN"
+                and bool((d.get("autoMergeRequest") or {})
+                         .get("enabledAt")))
+    except (OSError, ValueError):
+        return False
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -568,6 +585,14 @@ def main():
     if fp and cache_path:
         _cache_write(cache_path, fp)
 
+    # #485: pushing onto a branch whose PR already has auto-merge armed
+    # orphans the commit (merge fires on the old head) or restarts CI.
+    # Warn, don't block — pushes to fix failing checks must still pass.
+    if _auto_merge_armed(cwd):
+        print(json.dumps({"hookSpecificOutput": {"additionalContext":
+            "auto-merge is ARMED on this branch's PR — this push will "
+            "race the squash (orphaned commit) or restart CI. Prefer "
+            "pushing before arming, or wait for the merge to land."}}))
     sys.exit(0)
 
 
