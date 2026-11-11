@@ -476,6 +476,16 @@ def _opencode_block(port, model, token):
         "models": {model or "devin": {"name": "devin"}}}}}
 
 
+def _codex_block(port, model):
+    return (f'model_provider = "devin-local"\n'
+            f'model = "{model or "devin"}"\n\n'
+            '[model_providers.devin-local]\n'
+            'name = "Devin (local bridge)"\n'
+            f'base_url = "http://127.0.0.1:{port}/v1"\n'
+            'env_key = "DEVIN_LOCAL_API_KEY"\n'
+            'wire_api = "chat"')
+
+
 def setup(args):
     """Print harness config stanzas; --write merges opencode.json (#492)."""
     port = getattr(args, "port", 8787)
@@ -483,7 +493,13 @@ def setup(args):
         tok = args.token or "<token-if-LAN>"
         print(f'export OPENAI_BASE_URL="http://127.0.0.1:{port}/v1"\n'
               f'export OPENAI_API_KEY="{tok}"\n'
-              f'# model id: devin (or any id from GET /v1/models)')
+              f'# model id: devin (or any id from GET /v1/models)\n'
+              '# aider: OPENAI_API_BASE instead of OPENAI_BASE_URL')
+        return
+    if args.harness == "codex":
+        print(_codex_block(port, args.model)
+              + "\n# append into ~/.codex/config.toml; LAN token goes in "
+              "DEVIN_LOCAL_API_KEY env")
         return
     block = _opencode_block(port, args.model, args.token)
     out = json.dumps(block, indent=2)
@@ -584,7 +600,7 @@ def main():
     md.add_argument("--devin")
     st = sub.add_parser("setup")
     st.add_argument("harness", choices=("opencode", "hermes", "generic",
-                                       "env"))
+                                       "env", "codex"))
     st.add_argument("--write", metavar="PATH",
                     help="merge provider block into this opencode.json")
     st.add_argument("--model")
