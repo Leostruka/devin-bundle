@@ -16,6 +16,11 @@ python extensions/api-bridge/bridge.py serve --bind 0.0.0.0 \
 Options: `--port`, `--bind`, `--token`, `--devin` (CLI path),
 `--workdir` (isolated cwd for prompts), `--timeout` (s, default 300),
 `--concurrency` (max parallel backend calls, default 2 — extras queue).
+`bridge.py doctor` verifies the backend one-shot (devin binary, model
+inventory, port free) — non-zero exit on failure.
+`bridge.py setup opencode|hermes|generic` prints the exact harness
+config stanza; `--write PATH` merges provider.devin-local into an
+opencode.json and refuses to clobber an existing block.
 `--backend acp` upgrades the backend to a warm `devin acp` process:
 `stream:true` then yields REAL incremental deltas and responses carry
 real token usage (verified live: chunks arrive as the agent generates).
