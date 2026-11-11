@@ -25,14 +25,17 @@ Usage:
   bridge.py models [--devin PATH]
 """
 import argparse
+import base64
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import threading
 import time
+import urllib.parse
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -240,6 +243,304 @@ class AcpBackend:
             pass
 
 
+# ---- internal backend (undocumented Connect+proto endpoint) ----
+# Contract: INTERNAL-PROTOCOL.md — unstable, may break on CLI updates.
+
+def _pb_v(n):
+    out = bytearray()
+    while True:
+        b = n & 0x7F
+        n >>= 7
+        out.append(b | 0x80 if n else b)
+        if not n:
+            return bytes(out)
+
+
+def _pb_key(num, wt):
+    return _pb_v((num << 3) | wt)
+
+
+def _pb_s(num, text):
+    b = text.encode("utf-8")
+    return _pb_key(num, 2) + _pb_v(len(b)) + b
+
+
+def _pb_m(num, body):
+    return _pb_key(num, 2) + _pb_v(len(body)) + body
+
+
+def _pb_vi(num, val):
+    return _pb_key(num, 0) + _pb_v(val)
+
+
+def _pb_varint(b, i):
+    v = 0
+    s = 0
+    while True:
+        x = b[i]
+        i += 1
+        v |= (x & 0x7F) << s
+        if not (x & 0x80):
+            return v, i
+        s += 7
+
+
+def _pb_fields(b):
+    """Yields (field_num, wire_type, value)."""
+    i = 0
+    while i < len(b):
+        key, i = _pb_varint(b, i)
+        fn, wt = key >> 3, key & 7
+        if wt == 0:
+            val, i = _pb_varint(b, i)
+            yield fn, wt, val
+        elif wt == 2:
+            ln, i = _pb_varint(b, i)
+            yield fn, wt, b[i:i + ln]
+            i += ln
+        elif wt == 1:
+            yield fn, wt, b[i:i + 8]
+            i += 8
+        elif wt == 5:
+            yield fn, wt, b[i:i + 4]
+            i += 4
+        else:
+            return
+
+
+def _connect_frames(b):
+    """Yields (flags, payload); gunzips flag&1."""
+    import gzip
+    i = 0
+    while i + 5 <= len(b):
+        flags = b[i]
+        ln = int.from_bytes(b[i + 1:i + 5], "big")
+        payload = b[i + 5:i + 5 + ln]
+        if flags & 1:
+            try:
+                payload = gzip.decompress(payload)
+            except Exception:
+                pass
+        yield flags, payload
+        i += 5 + ln
+
+
+def _credentials():
+    """(api_key, api_server_url) from credentials.toml or env."""
+    key = os.environ.get("DEVIN_API_TOKEN")
+    base = os.environ.get("WINDSURF_API_SERVER_URL")
+    if not key or not base:
+        import re
+        home = os.path.expanduser("~")
+        toml = os.path.join(home, "AppData", "Roaming", "devin",
+                            "credentials.toml")
+        if not os.path.isfile(toml):
+            toml = os.path.join(home, ".config", "devin",
+                                "credentials.toml")
+        try:
+            txt = open(toml, encoding="utf-8").read()
+        except OSError:
+            return key, base
+        if not key:
+            m = re.search(r'windsurf_api_key\s*=\s*"([^"]+)"', txt)
+            key = m.group(1) if m else None
+        if not base:
+            m = re.search(r'api_server_url\s*=\s*"([^"]+)"', txt)
+            base = m.group(1) if m else None
+    return key, (base or "https://server.codeium.com")
+
+
+class InternalBackend:
+    """Direct Connect+proto client to the CLI's inference endpoint.
+
+    Unlike -p/acp, this returns raw inference: tool_calls deltas reach
+    the harness, which drives its own tool loop. Server-sealed state is
+    stored and re-injected on follow-up turns (INTERNAL-PROTOCOL.md).
+    """
+
+    SERVICE = "/exa.api_server_pb.ApiServerService/GetChatMessage"
+
+    def __init__(self, api_key, base, model_default="swe-2-max",
+                 timeout=300):
+        self.key = api_key
+        self.base = base.rstrip("/")
+        self.model_default = model_default
+        self.timeout = timeout
+        self.seals = {}          # tool_call_id -> {seal, reasoning, model}
+        self._slug = "bridge-" + uuid.uuid4().hex[:8]
+        self._user = None        # 'user-<id>' fetched once via GetUserStatus
+
+    # -- wire --
+
+    def _post(self, path, body, connect=True):
+        import http.client
+        auth = base64.b64encode(self.key.encode()).decode()
+        host = urllib.parse.urlsplit(self.base).netloc
+        scheme = urllib.parse.urlsplit(self.base).scheme
+        conn = (http.client.HTTPSConnection if scheme == "https"
+                else http.client.HTTPConnection)(host, timeout=self.timeout)
+        hdrs = {"authorization": f"Basic {auth}",
+                "connect-protocol-version": "1",
+                "content-type": ("application/connect+proto" if connect
+                                 else "application/proto")}
+        conn.request("POST", path, body=body, headers=hdrs)
+        resp = conn.getresponse()
+        status, data = resp.status, resp.read()
+        conn.close()
+        return status, data
+
+    def _meta(self):
+        inner = b"".join([
+            _pb_s(1, "devin-cli"), _pb_s(2, "3000.12.43"),
+            _pb_s(3, self.key), _pb_s(4, "en"), _pb_s(5, "windows"),
+            _pb_s(7, "3000.12.43"), _pb_s(12, "chisel"),
+            _pb_s(28, "chisel")])
+        return _pb_m(1, inner)
+
+    def _user_slug(self):
+        if self._user is None:
+            try:
+                st, data = self._post(
+                    "/exa.seat_management_pb.SeatManagementService/"
+                    "GetUserStatus", self._meta(), connect=False)
+                m = re.search(rb"user-[0-9a-f]{32}", data)
+                self._user = m.group(0).decode() if st == 200 and m else ""
+            except OSError:
+                self._user = ""
+        return (_pb_s(28, f"{self._user}:{self._slug}")
+                if self._user else b"")
+
+    # -- translation --
+
+    def _msg(self, m_):
+        role, out = m_.get("role", "user"), b""
+        out += _pb_s(1, str(uuid.uuid4()))
+        if role == "assistant":
+            out += _pb_vi(2, 2)
+            if m_.get("content"):
+                out += _pb_s(3, m_["content"])
+            for tc in m_.get("tool_calls") or []:
+                fn = tc.get("function", {})
+                call = (_pb_s(1, tc["id"]) + _pb_s(2, fn.get("name", ""))
+                        + _pb_s(3, fn.get("arguments", "") or ""))
+                out += _pb_m(6, call)
+            seal = None
+            for tc in m_.get("tool_calls") or []:
+                seal = self.seals.get(tc["id"])
+            if seal:
+                out += _pb_s(11, seal.get("reasoning") or "")
+                out += _pb_s(12, seal["seal"])
+                out += _pb_s(18, "sealed")
+                out += _pb_s(22, seal.get("model") or self.model_default)
+            return _pb_m(3, out)
+        if role == "tool":
+            out += _pb_vi(2, 4)
+            out += _pb_s(3, str(m_.get("content") or ""))
+            if m_.get("tool_call_id"):
+                out += _pb_s(7, m_["tool_call_id"])
+            out += _pb_m(8, b"\x08\x01")
+            return _pb_m(3, out)
+        out += _pb_vi(2, 1)
+        out += _pb_s(3, str(m_.get("content") or ""))
+        out += _pb_m(8, b"\x08\x01")
+        return _pb_m(3, out)
+
+    def _build(self, messages, tools, model):
+        parts = [self._meta()]
+        sys_txt = "\n\n".join(str(m_.get("content") or "")
+                              for m_ in messages if m_.get("role") == "system")
+        if sys_txt:
+            parts.append(_pb_s(2, sys_txt))
+        for m_ in messages:
+            if m_.get("role") == "system":
+                continue
+            parts.append(self._msg(m_))
+        import struct
+        cfg = (_pb_vi(1, 1) + _pb_vi(2, 128000) + _pb_vi(3, 400)
+               + _pb_key(5, 1) + struct.pack("<d", 1.0) + _pb_vi(7, 40)
+               + _pb_key(8, 1) + struct.pack("<d", 0.93))
+        parts += [_pb_vi(7, 5), _pb_m(8, cfg)]
+        for t in tools or []:
+            fn = t.get("function", {})
+            schema = json.dumps(fn.get("parameters") or {})
+            parts.append(_pb_m(10, _pb_s(1, fn.get("name", ""))
+                               + _pb_s(2, fn.get("description", ""))
+                               + _pb_s(3, schema)))
+        parts.append(_pb_m(15, _pb_s(1, str(uuid.uuid4()))
+                           + _pb_vi(2, 1) + _pb_vi(3, 4)))
+        parts += [_pb_s(16, str(uuid.uuid4())), _pb_vi(20, 1),
+                  _pb_s(21, model or self.model_default),
+                  self._user_slug()]
+        req = b"".join(parts)
+        return b"\x00" + len(req).to_bytes(4, "big") + req
+
+    # -- public API --
+
+    def prompt(self, messages, tools=None, model=None, on_delta=None):
+        """-> (text, tool_calls, usage, err); on_delta(kind,obj) streams."""
+        try:
+            body = self._build(messages, tools, model)
+        except Exception as e:  # noqa: BLE001
+            return None, None, None, ("bridge", f"encode failed: {e}")
+        try:
+            status, raw = self._post(self.SERVICE, body)
+        except OSError as e:
+            return None, None, None, ("upstream", f"connect failed: {e}")
+        text_parts, tcs, usage = [], {}, None
+        reasoning_parts = []
+        for flags, fr in _connect_frames(raw):
+            if flags & 0x82:
+                try:
+                    err = json.loads(fr)
+                    msg = err.get("error", {}).get("message", "")
+                    if msg:
+                        return None, None, None, ("upstream", msg[:300])
+                except ValueError:
+                    pass
+                continue
+            seal_blob = None
+            for fn, wt, val in _pb_fields(fr):
+                if fn == 3 and wt == 2:
+                    d = val.decode("utf-8", "replace")
+                    text_parts.append(d)
+                    if on_delta:
+                        on_delta("text", d)
+                elif fn == 6 and wt == 2:
+                    tc = {"id": "", "name": "", "args": ""}
+                    for cn, cw, cv in _pb_fields(val):
+                        if cn in (1, 2, 3) and cw == 2:
+                            tc[{1: "id", 2: "name", 3: "args"}[cn]] = \
+                                cv.decode("utf-8", "replace")
+                    tcs[tc["id"]] = {"id": tc["id"], "type": "function",
+                                     "function": {"name": tc["name"],
+                                                  "arguments": tc["args"]}}
+                    if on_delta:
+                        on_delta("tool_call", tcs[tc["id"]])
+                elif fn == 7 and wt == 2:
+                    u = {fn2: v2 for fn2, wt2, v2 in _pb_fields(val)
+                         if wt2 == 0}
+                    usage = {
+                        "prompt_tokens": u.get(2, 0),
+                        "completion_tokens": u.get(3, 0),
+                        "total_tokens": u.get(2, 0) + u.get(3, 0)}
+                elif fn == 9 and wt == 2:
+                    reasoning_parts.append(
+                        val.decode("utf-8", "replace"))
+                elif fn == 10 and wt == 2 and \
+                        val.startswith(b"sealed.v1."):
+                    seal_blob = val.decode("utf-8", "replace")
+            if seal_blob and tcs:
+                last = list(tcs.values())[-1]
+                self.seals[last["id"]] = {
+                    "seal": seal_blob,
+                    "reasoning": "".join(reasoning_parts),
+                    "model": model or self.model_default}
+        if status != 200:
+            return None, None, None, ("upstream", f"http {status}")
+        out = list(tcs.values())
+        return "".join(text_parts), out or None, usage, None
+
+
 # OpenAI params `devin -p` cannot honour — surfaced, never silently dropped
 _UNSUPPORTED = ("temperature", "top_p", "max_tokens", "n", "stop",
                 "presence_penalty", "frequency_penalty", "logit_bias",
@@ -412,6 +713,9 @@ class Handler(BaseHTTPRequestHandler):
         # CLI's configured default by omitting --model entirely
         backend_model = None if model == "devin" else model
         cid = f"chatcmpl-{uuid.uuid4().hex[:24]}"
+        internal = getattr(sv, "internal", None)
+        if internal:
+            return self._internal(sv, internal, req, messages, model, cid)
         if getattr(sv, "acp", None):
             if req.get("stream"):
                 want_usage = bool((req.get("stream_options") or {})
@@ -444,6 +748,72 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, _completion(
             text, model, cid, prompt=prompt, usage=usage,
             ignored=[k for k in _UNSUPPORTED if k in req]))
+
+    def _internal(self, sv, internal, req, messages, model, cid):
+        """internal backend: raw inference with tool_calls round-trip."""
+        tools = req.get("tools")
+        model_uid = model if model != "devin" else None
+        if req.get("stream"):
+            want_usage = bool((req.get("stream_options") or {})
+                              .get("include_usage"))
+            deltas, err_box = [], [None]
+
+            def feed(kind, obj):
+                if kind == "text":
+                    deltas.append(obj)
+                    line = "data: " + json.dumps(
+                        _chunk(obj, model, cid)) + "\n\n"
+                else:  # tool_call
+                    ch = _chunk("", model, cid)
+                    ch["choices"][0]["delta"] = {"tool_calls": [
+                        {"index": 0, **obj}]}
+                    line = "data: " + json.dumps(ch) + "\n\n"
+                self.wfile.write(line.encode("utf-8"))
+                self.wfile.flush()
+            with sv.sem:
+                self._sse_head()
+                text, tcs, usage, err_box[0] = internal.prompt(
+                    messages, tools, model_uid, on_delta=feed)
+            if err_box[0]:
+                kind, msg = err_box[0]
+                self.wfile.write(("data: " + json.dumps(
+                    {"error": {"message": msg, "type": kind + "_error"}})
+                    + "\n\n").encode("utf-8"))
+            tail = _chunk("", model, cid)
+            tail["choices"][0]["finish_reason"] = \
+                "tool_calls" if tcs else "stop"
+            tail["choices"][0]["delta"] = {}
+            self.wfile.write(("data: " + json.dumps(tail) + "\n\n")
+                             .encode("utf-8"))
+            if want_usage:
+                u = _chunk("", model, cid)
+                u["choices"] = []
+                u["usage"] = usage or _usage_block(
+                    json.dumps(messages), "".join(deltas))
+                self.wfile.write(("data: " + json.dumps(u) + "\n\n")
+                                 .encode("utf-8"))
+            self.wfile.write(b"data: [DONE]\n\n")
+            self.wfile.flush()
+            return
+        with sv.sem:
+            text, tcs, usage, err = internal.prompt(
+                messages, tools, model_uid)
+        if err:
+            kind, msg = err
+            code = 504 if kind == "timeout" else 502
+            return self._json(code, {"error": {"message": msg,
+                                               "type": kind + "_error"}})
+        out = _completion(text, model, cid, usage=usage,
+                          prompt=json.dumps(messages))
+        if tcs:
+            m_ = out["choices"][0]["message"]
+            m_["tool_calls"] = tcs
+            m_["content"] = m_["content"] or ""
+            out["choices"][0]["finish_reason"] = "tool_calls"
+        ignored = [k for k in _UNSUPPORTED if k in req and k != "tools"]
+        if ignored:
+            out["x-ignored-params"] = ignored
+        return self._json(200, out)
 
     def _sse_head(self):
         self.send_response(200)
@@ -599,6 +969,13 @@ def serve(args):
     # effective concurrency 1 regardless of --concurrency
     httpd.acp = (AcpBackend(devin, workdir, args.timeout)
                  if args.backend == "acp" else None)
+    httpd.internal = None
+    if args.backend == "internal":
+        key, base = _credentials()
+        if not key:
+            sys.exit("internal backend needs windsurf_api_key in "
+                     "credentials.toml or DEVIN_API_TOKEN env")
+        httpd.internal = InternalBackend(key, base, timeout=args.timeout)
     sys.stderr.write(f"[bridge] http://{args.bind}:{args.port} "
                      f"backend={args.backend}:{devin} "
                      f"models={len(httpd.models)} "
@@ -625,10 +1002,13 @@ def main():
     sv.add_argument("--concurrency", type=int, default=2,
                     help="max simultaneous devin backend calls "
                          "(extras queue)")
-    sv.add_argument("--backend", choices=("cli", "acp"), default="cli",
+    sv.add_argument("--backend", choices=("cli", "acp", "internal"),
+                    default="cli",
                     help="cli=`devin -p` per request; acp=warm ACP "
                          "process — real incremental streaming + real "
-                         "token usage (#489)")
+                         "token usage (#489); internal=direct Connect "
+                         "endpoint — real tool_calls round-trip "
+                         "(undocumented, INTERNAL-PROTOCOL.md)")
     md = sub.add_parser("models")
     md.add_argument("--devin")
     st = sub.add_parser("setup")

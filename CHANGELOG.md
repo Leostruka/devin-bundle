@@ -6,6 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- api-bridge: stream_options.include_usage contract (#509)
+- changelog: backfill merged-PR refs #503-#507 (#508)
 - devin-integrate doc refresh + gitignore metrics (#507)
 - busybar ws: post-handshake frame buffer fix + loopback test (#505)
 - api-bridge setup: codex harness stanza (#506)

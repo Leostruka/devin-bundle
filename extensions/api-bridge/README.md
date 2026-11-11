@@ -27,6 +27,21 @@ real token usage (verified live: chunks arrive as the agent generates).
 One process = serialized prompts; a fresh `session/new` per request
 keeps the OpenAI contract stateless.
 
+`--backend internal` talks directly to the CLI's inference endpoint
+(Connect+proto, `exa.api_server_pb.ApiServerService/GetChatMessage`) —
+the same call `devin` itself makes. Unlike `-p`/`acp` it returns the
+raw completion: **real `tool_calls` deltas** reach the harness, which
+drives its own tool loop, plus incremental text streaming and real
+usage. Server-sealed assistant state is stored and re-injected on
+tool-result turns (see `INTERNAL-PROTOCOL.md`).
+
+  - Auth: `windsurf_api_key` from `credentials.toml` (or
+    `DEVIN_API_TOKEN` env); never logged.
+  - **Fragility**: the protocol is undocumented and can break on any
+    CLI update; product credential on a non-public endpoint —
+    account/ToS risk is documented and accepted for local use only.
+  - `--backend cli|acp` remain untouched fallbacks.
+
 Endpoints:
 
 - `POST /v1/chat/completions` — `{model, messages[], stream}`; each
@@ -61,5 +76,8 @@ Limits: devin is an agent, not a raw model — latencies are seconds,
 not milliseconds; `usage` token counts are ~4-chars/token estimates
 (no token surface on `-p`); multi-turn is flattened into a
 transcript prompt. `cli` mode is honest about flushing once;
-`--backend acp` (#489) delivers real incremental SSE + real usage.
-Conversation-keyed session reuse remains deferred (#478).
+`--backend acp` (#489) delivers real incremental SSE + real usage;
+`--backend internal` additionally delivers real `tool_calls`
+round-trip (verified live: call proposed -> harness executes ->
+sealed result turn -> final answer) at the cost of protocol
+fragility. Conversation-keyed session reuse remains deferred (#478).
