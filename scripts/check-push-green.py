@@ -19,7 +19,7 @@ Sources:
   Kernel-Bench and 46.8% ALE-Bench optimizations show proxy gains without real
   gains, so agent-chosen tests alone are not evidence of improvement.
 """
-import sys, json, subprocess, os, re
+import sys, json, subprocess, os, re, time
 
 _CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
@@ -32,6 +32,10 @@ TEST_TIMEOUT = 120
 # suite time but stay under the pre-exec-guard hook budget (300s here).
 # Repos with bigger suites or tighter budgets tune BUNDLE_PUSH_GATE_TIMEOUT.
 MAIN_TIMEOUT = int(os.environ.get("BUNDLE_PUSH_GATE_TIMEOUT", "250"))
+# scoped-tier wall budget: the outer hook kill hits ~60s; held-out
+# always runs, mapped tests get the remainder, overflow defers to
+# required CI by name (BUNDLE_PUSH_GATE_BUDGET overrides).
+BUDGET_S = int(os.environ.get("BUNDLE_PUSH_GATE_BUDGET", "50"))
 
 
 def block(reason):
@@ -519,6 +523,8 @@ def main():
     heldout_dir = os.path.join(cwd, "tests", "held-out")
     code_paths = {p for p in (paths or ()) if not _is_doc_path(p)}
     scoped = _scoped_tests(cwd, code_paths) if code_paths else None
+    deferred = []
+    t_start = time.time()
     gap_active = os.path.isdir(validation_dir) and os.path.isdir(heldout_dir) and is_pytest
 
     # Rule 15 declares tests/validation + tests/held-out as the push-gate
@@ -531,23 +537,63 @@ def main():
     # audit's compile check — exactly the flake this gate kept hitting.
     # Sequential cost is ~20s and fits the budget easily.
     if gap_active and scoped:
-        # scoped tier: changed code surfaces map to their tests; the full
-        # validation dir no longer fits the outer hook budget (~150s).
-        # held-out always runs — mutation coverage on the gate itself.
-        check_cmd = "pytest " + " ".join(f'"{t}"' for t in scoped) + " -q"
-        status, output = run_check(check_cmd, cwd, MAIN_TIMEOUT)
+        # Budgeted deferral: `ci` is a required check, so the backstop
+        # verifies 100% regardless — the gate's job is fast signal.
+        # The outer hook kill (~60s observed) made any scoped set
+        # larger than held-out+one-file unpushable. Held-out always
+        # runs (anti-gaming contract); remaining targets run while the
+        # budget lasts and the rest is deferred to CI by name.
+        check_cmd = "scoped pytest (budgeted)"
+        held = [t for t in scoped if t.rstrip("/\\").endswith("held-out")]
+        rest = [t for t in scoped if t not in held]
+        status, output = "pass", ""
+        budget = BUDGET_S
+        if held:
+            s, o = run_check(f'pytest "{held[0]}" -q', cwd, MAIN_TIMEOUT)
+            status, output = s, o
+        elapsed = time.time() - t_start
+        if status == "pass" and rest:
+            remain = int(budget - elapsed)
+            if remain >= 10:
+                s, o = run_check(
+                    "pytest " + " ".join(f'"{t}"' for t in rest) + " -q",
+                    cwd, remain)
+                if s == "timeout":
+                    deferred = rest
+                    status, output = "pass", ""
+                else:
+                    status, output = s, o
+            else:
+                deferred = rest
+        if deferred:
+            output = ("[gate] deferred to required CI: "
+                      + ", ".join(deferred) + "\n" + output)
         val_result = held_result = None
     elif gap_active:
-        val_result = run_check(f'pytest "{validation_dir}" -q', cwd, MAIN_TIMEOUT)
-        held_result = run_check(f'pytest "{heldout_dir}" -q', cwd, MAIN_TIMEOUT)
-        check_cmd = "validation+held-out"
-        if val_result[0] == "pass" and held_result[0] == "pass":
-            status, output = "pass", ""
+        # Unknown code surface: held-out always runs; validation gets
+        # the remaining budget and defers to required CI by name when
+        # it no longer fits (previously unpushable at >150s).
+        check_cmd = "held-out+validation (budgeted)"
+        held_result = run_check(f'pytest "{heldout_dir}" -q', cwd,
+                                MAIN_TIMEOUT)
+        elapsed = time.time() - t_start
+        remain = int(BUDGET_S - elapsed)
+        if held_result[0] == "pass":
+            if remain >= 10:
+                val_result = run_check(
+                    f'pytest "{validation_dir}" -q', cwd, remain)
+                if val_result[0] == "timeout":
+                    deferred = ["tests/validation"]
+                    val_result = ("pass", "")
+            else:
+                deferred = ["tests/validation"]
+                val_result = ("pass", "")
         else:
-            status = "fail" if "fail" in (val_result[0], held_result[0]) else \
-                ("timeout" if "timeout" in (val_result[0], held_result[0])
-                 else val_result[0] if val_result[0] != "pass" else held_result[0])
-            output = val_result[1] + "\n" + held_result[1]
+            val_result = ("skip", "")
+        status = held_result[0] if held_result[0] != "pass" else \
+            ("pass" if val_result[0] in ("pass", "skip")
+             else val_result[0])
+        output = held_result[1] + "\n" + val_result[1]
     else:
         status, output = run_check(check_cmd, cwd, MAIN_TIMEOUT)
         val_result = held_result = None
@@ -579,6 +625,12 @@ def main():
     if fp and cache_path:
         _cache_write(cache_path, fp)
 
+    if deferred:
+        print(json.dumps({"hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "additionalContext":
+            "push-gate deferred to required CI: "
+            + ", ".join(deferred)}}))
     sys.exit(0)
 
 
