@@ -6,8 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- ship-metrics: DORA lead-time log + push-gate audit scoping (#486 #484) (#495)
 - changelog-refs: auto-append missing merged-PR refs to [Unreleased] (#488)
+- push-gate: budgeted deferral — held-out always, mapped tests get remaining ~50s budget, overflow defers to required CI by name (#484)
 - ship-metrics: DORA lead-time log `.devin/metrics/ships.jsonl` + report (#486)
 - push-gate: `audit.py` root-file scoping slimmed to fast audit check (#484)
 - merged: devin-integrate skill + push-gate risk tiers (#493)
