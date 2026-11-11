@@ -346,10 +346,21 @@ def _scoped_tests(cwd, paths):
     full validation dir). Always includes tests/held-out — the
     anti-gaming contract is small (~12s) and runs on every code push.
     """
-    known_prefixes = ("scripts/", "extensions/", "tests/")
+    known_prefixes = ("scripts/", "extensions/", "tests/",
+                      ".github/")
+    # root-level files with known, fast test coverage
+    root_scoped = {
+        # audit exits-clean check (~17s); egm_upgrade_contract (~92s)
+        # stays in the full-validation tier + CI — the hook budget
+        # cannot absorb it per push
+        "audit.py": ("tests/validation/test_audit_passes.py",),
+    }
     out = set()
     for p in paths:
         p = p.strip().replace("\\", "/")
+        if p in root_scoped:
+            out.update(root_scoped[p])
+            continue
         if not any(p.startswith(k) for k in known_prefixes):
             return None
         stem = p.rsplit("/", 1)[-1].rsplit(".", 1)[0]
