@@ -227,3 +227,23 @@ def test_filebool_maps_replies(tmp_path, monkeypatch):
     monkeypatch.setattr(lc, "batch", fake_batch)
     out = fb.ask_laya_filebool([str(f)], "q", config=str(prof))
     assert out[str(f)]["answer"] == "no"
+
+
+def test_ensure_daemon_fails_fast_on_dead_spawn(tmp_path, monkeypatch):
+    """Spawned daemon dying at startup must not burn spawn_timeout_s
+    (CI regression: missing model hung pre-exec-guard 60s, #522)."""
+    cfg = tmp_path / "profile.json"
+    cfg.write_text(json.dumps({"version": 1, "mode": "shadow",
+                               "profiles": [], "models": {}}),
+                   encoding="utf-8")
+
+    class DeadProc:
+        def poll(self):
+            return 1
+
+    monkeypatch.setattr(lc, "_spawn_daemon",
+                        lambda *a, **k: DeadProc())
+    monkeypatch.setattr(lc, "read_daemon_info", lambda *a, **k: None)
+    t0 = time.time()
+    assert lc.ensure_daemon(str(cfg), spawn_timeout_s=60.0) is None
+    assert time.time() - t0 < 10
