@@ -6,6 +6,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- feat(skills): device-repurpose + saas-replacer playbooks (#513 #514) (#520)
+- eval: design-iteration-loop contract cases + runner (#516) (#519)
+- feat(hooks): optional subagent dispatch budgets (#515) (#518)
+- fix(scripts): decision-queue main(argv) crashes _hookrun Stop chain (#512)
+- docs: yt-batch2 deep-dive survey + issues #513-#516 (#517)
 - feat(api-bridge): internal backend — real tool_calls round-trip (#511)
 - api-bridge doctor: acp handshake probe (#510)
 - api-bridge: stream_options.include_usage contract (#509)
