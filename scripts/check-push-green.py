@@ -317,6 +317,52 @@ def _tree_fingerprint(cwd):
         stat.stdout.encode("utf-8")).hexdigest()[:16]
 
 
+_DOC_ONLY_PREFIXES = (
+    "docs/", ".devin/docs/", ".devin/issues/", ".devin/scratch/",
+    ".devin/research/", ".devin/ledgers/", ".devin/plans/",
+    ".devin/evals/", ".devin/goals/", ".devin/metrics/",
+)
+
+
+def _is_doc_path(path):
+    """Content surfaces that cannot break runtime code paths."""
+    p = path.strip().replace("\\", "/")
+    if p.startswith("./"):
+        p = p[2:]
+    if not p:
+        return False
+    if p.endswith(".md") or p in ("CHANGELOG.md", "CHANGELOG"):
+        return True
+    return p.startswith(_DOC_ONLY_PREFIXES)
+
+
+def _changed_paths(cwd):
+    """Files the push would publish: committed delta vs merge-base
+    plus dirty/untracked working-tree paths. None on failure."""
+    stat = _run(["git", "status", "--porcelain=v1"], capture_output=True,
+                text=True, cwd=cwd, timeout=15,
+                encoding="utf-8", errors="replace")
+    if stat.returncode != 0:
+        return None
+    paths = {ln[3:].strip() for ln in stat.stdout.splitlines() if ln.strip()}
+    base = _run(["git", "merge-base", "origin/main", "HEAD"],
+                capture_output=True, text=True, cwd=cwd, timeout=15,
+                encoding="utf-8", errors="replace")
+    if base.returncode != 0 or not base.stdout.strip():
+        base = _run(["git", "rev-parse", "HEAD~1"], capture_output=True,
+                    text=True, cwd=cwd, timeout=15,
+                    encoding="utf-8", errors="replace")
+    if base.returncode == 0 and base.stdout.strip():
+        diff = _run(["git", "diff", "--name-only",
+                     base.stdout.strip(), "HEAD"], capture_output=True,
+                    text=True, cwd=cwd, timeout=15,
+                    encoding="utf-8", errors="replace")
+        if diff.returncode == 0:
+            paths.update(ln.strip() for ln in diff.stdout.splitlines()
+                         if ln.strip())
+    return paths
+
+
 def _gate_cache_path(cwd):
     """Per-repo cache under .git — never committed, never exported."""
     gitdir = _run(["git", "rev-parse", "--git-dir"], capture_output=True,
@@ -394,6 +440,20 @@ def main():
     if fp and cache_path and _cache_read(cache_path, fp):
         print("check-push-green: cached green for this HEAD+tree surface",
               file=sys.stderr)
+        sys.exit(0)
+
+    # Risk tier: a push carrying only docs/scratch content cannot break
+    # the suite — cheap checks (secrets, test deletions) already ran, so
+    # verify-green without paying the full-suite wall time. This also
+    # keeps docs pushes under the outer hook budget (~150s), which the
+    # suite now exceeds — a mid-run kill never writes the cache, which
+    # is why every push went cold.
+    paths = _changed_paths(cwd)
+    if paths is not None and paths and all(_is_doc_path(p) for p in paths):
+        print("check-push-green: docs-only surface — suite skipped "
+              f"({len(paths)} doc paths)", file=sys.stderr)
+        if fp and cache_path:
+            _cache_write(cache_path, fp)
         sys.exit(0)
 
     validation_dir = os.path.join(cwd, "tests", "validation")
