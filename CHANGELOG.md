@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- push-gate: warn when pushing onto a branch with auto-merge armed (orphan-commit guard, #485)
 - api-bridge: `doctor` backend sanity + `setup` harness stanzas (opencode/generic) (#492)
 - CI path filter: docs-only PRs skip test/rust/install matrices via `changes` job (#487)
 - changelog-refs: auto-append missing merged-PR refs to [Unreleased] (#488)
