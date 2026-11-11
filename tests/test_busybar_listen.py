@@ -45,3 +45,42 @@ def test_replay_counts_actions_and_skips_bad(tmp_path, capsys):
     out = capsys.readouterr()
     assert '"actions": 2' in out.out
     assert "unreadable frame skipped" in out.err
+
+
+def _frame(payload: bytes) -> bytes:
+    """RFC6455 unmasked server text frame, small payloads only."""
+    return bytes([0x81, len(payload)]) + payload
+
+
+def test_ws_loopback_receives_bundled_frame(capsys):
+    """Loopback ws:// server: handshake + text frame in ONE packet —
+    the regression case for the post-handshake leftover buffer."""
+    import socket
+    import threading
+
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(1)
+    port = srv.getsockname()[1]
+
+    def serve():
+        conn, _ = srv.accept()
+        conn.recv(4096)  # the upgrade request
+        conn.sendall(
+            b"HTTP/1.1 101 Switching Protocols\r\n"
+            b"Upgrade: websocket\r\nConnection: Upgrade\r\n\r\n"
+            + _frame(json.dumps(
+                {"switch": "star", "pressed": True}).encode())
+            + _frame(b"garbage{")
+            + _frame(json.dumps({"dial": 3}).encode())
+            + bytes([0x88, 0]))  # close frame
+        conn.close()
+        srv.close()
+
+    t = threading.Thread(target=serve, daemon=True)
+    t.start()
+    mod.listen_ws(f"ws://127.0.0.1:{port}/stream", exec_mode=False)
+    t.join(timeout=5)
+    out = capsys.readouterr().out
+    assert "focus-start" in out
+    assert "effort preset -> L" in out

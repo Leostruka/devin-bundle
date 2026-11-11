@@ -124,25 +124,36 @@ def _ws_client(url):
                f"Sec-WebSocket-Key: {key}\r\n"
                "Sec-WebSocket-Version: 13\r\n\r\n").encode())
     buf = s.recv(4096)
-    if b"101" not in buf.split(b"\r\n", 1)[0]:
+    head, _, pending = buf.partition(b"\r\n\r\n")
+    if b"101" not in head.split(b"\r\n", 1)[0]:
         s.close()
         raise OSError("ws upgrade refused")
+
+    def _read(n):
+        nonlocal pending
+        while len(pending) < n:
+            chunk = s.recv(n - len(pending))
+            if not chunk:
+                raise OSError("ws closed")
+            pending += chunk
+        out, pending = pending[:n], pending[n:]
+        return out
+
     while True:
-        hdr = s.recv(2)
-        if len(hdr) < 2:
+        try:
+            hdr = _read(2)
+        except OSError:
             return
         opcode = hdr[0] & 0x0F
         ln = hdr[1] & 0x7F
         if ln == 126:
-            ln = int.from_bytes(s.recv(2), "big")
+            ln = int.from_bytes(_read(2), "big")
         elif ln == 127:
-            ln = int.from_bytes(s.recv(8), "big")
-        payload = b""
-        while len(payload) < ln:
-            chunk = s.recv(ln - len(payload))
-            if not chunk:
-                return
-            payload += chunk
+            ln = int.from_bytes(_read(8), "big")
+        try:
+            payload = _read(ln) if ln else b""
+        except OSError:
+            return
         if opcode == 1:  # text
             yield payload.decode("utf-8", errors="replace")
         elif opcode == 8:  # close
