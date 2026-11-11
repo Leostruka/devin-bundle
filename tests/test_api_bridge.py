@@ -261,3 +261,49 @@ def test_setup_generic_prints_env(capsys):
                                  port=8787, model=None, write=None))
     out = capsys.readouterr().out
     assert "OPENAI_BASE_URL" in out and "OPENAI_API_KEY" in out
+
+
+def test_acp_prompt_collects_chunks_and_real_usage():
+    """AcpBackend.prompt joins agent_message_chunks and surfaces the
+    real usage block from the prompt result — faked stdio, CI-safe."""
+    import queue
+    import tempfile
+    lines = queue.Queue()
+    lines.put(json.dumps({"jsonrpc": "2.0", "id": 3,
+                          "result": {"sessionId": "s1"}}) + "\n")
+    for i, t in enumerate(("trans", "miss", "ão")):
+        lines.put(json.dumps({"jsonrpc": "2.0", "method": "session/update",
+            "params": {"update": {"sessionUpdate": "agent_message_chunk",
+                                  "content": {"type": "text",
+                                              "text": t}}}}) + "\n")
+    lines.put(json.dumps({"jsonrpc": "2.0", "id": 4, "result": {
+        "stopReason": "end_turn",
+        "usage": {"inputTokens": 100, "outputTokens": 9,
+                  "totalTokens": 109}}}) + "\n")
+
+    class FakeProc:
+        stdin = type("S", (), {"write": lambda s, x: None,
+                               "flush": lambda s: None})()
+        def poll(self): return None
+    b = mod.AcpBackend("devin", tempfile.gettempdir(), 10)
+    b._proc, b._q, b._seq = FakeProc(), lines, 2
+
+    deltas = []
+    text, usage, err = b.prompt("hi", on_delta=deltas.append)
+    assert err is None and text == "transmissão"
+    assert deltas == ["trans", "miss", "ão"]
+    assert usage == {"prompt_tokens": 100, "completion_tokens": 9,
+                     "total_tokens": 109}
+
+
+def test_acp_prompt_session_timeout_is_typed_error():
+    import queue
+    import tempfile
+    b = mod.AcpBackend("devin", tempfile.gettempdir(), 2)
+    b._proc = type("P", (), {"poll": lambda s: None,
+        "stdin": type("S", (), {"write": lambda s, x: None,
+                                "flush": lambda s: None})()})()
+    b._q, b._seq = queue.Queue(), 0
+    text, usage, err = b.prompt("hi")
+    assert text == "" and usage is None
+    assert err[0] == "timeout"

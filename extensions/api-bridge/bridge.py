@@ -97,6 +97,149 @@ def _est_tokens(text):
     return max(1, len(text or "") // 4)
 
 
+class AcpBackend:
+    """Warm `devin acp` stdio process (#489).
+
+    Real wins over `-p`: incremental agent_message_chunk deltas (true
+    streaming) and real token usage in the prompt result. One process,
+    serialized — an ACP session is a single conversation so parallel
+    prompts would interleave; a fresh session/new per request keeps the
+    bridge stateless like the OpenAI contract. Session reuse (keyed
+    pooling) stays deferred.
+    """
+
+    def __init__(self, devin, workdir, timeout, model=None):
+        self.devin, self.workdir = devin, workdir
+        self.timeout, self.model = timeout, model
+        self._lock = threading.Lock()
+        self._proc = self._q = self._seq = None
+
+    def _spawn(self):
+        import queue
+        cmd = [self.devin, "acp"]
+        if self.model:
+            cmd += ["--model", self.model]
+        self._proc = subprocess.Popen(
+            cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, text=True, encoding="utf-8",
+            errors="replace", bufsize=1, cwd=self.workdir,
+            creationflags=_CF)
+        self._q, self._seq = queue.Queue(), 0
+        threading.Thread(
+            target=lambda: [self._q.put(l) for l in self._proc.stdout],
+            daemon=True).start()
+        rid = self._rpc("initialize", {"protocolVersion": 1,
+                                       "clientCapabilities": {"fs": {
+                                           "readTextFile": True,
+                                           "writeTextFile": False}}})
+        for m in self._read(15):
+            if m.get("id") == rid:
+                break
+        self._rpc("initialized", {}, notify=True)
+
+    def _rpc(self, method, params=None, notify=False):
+        self._seq += 1
+        msg = {"jsonrpc": "2.0", "method": method}
+        if not notify:
+            msg["id"] = self._seq
+        if params is not None:
+            msg["params"] = params
+        self._proc.stdin.write(json.dumps(msg) + "\n")
+        self._proc.stdin.flush()
+        return msg.get("id")
+
+    def _read(self, timeout):
+        """Lines until timeout; yields parsed dicts, skipping blanks."""
+        t0 = time.time()
+        import queue as _q
+        while time.time() - t0 < timeout:
+            try:
+                ln = self._q.get(
+                    timeout=max(1, timeout - (time.time() - t0))).strip()
+            except _q.Empty:
+                return
+            if not ln:
+                continue
+            try:
+                yield json.loads(ln)
+            except ValueError:
+                continue
+
+    def _answer_fs(self, msg):
+        """Agent may request fs/read_text_file mid-prompt — answer it
+        or the session deadlocks (verified live)."""
+        rid = msg.get("id")
+        if msg.get("method") == "fs/read_text_file" and rid:
+            path = (msg.get("params") or {}).get("path", "")
+            try:
+                body = open(path, encoding="utf-8",
+                            errors="replace").read()
+                res = {"content": body}
+            except OSError:
+                res = {"error": {"code": -32603, "message": "unreadable"}}
+            self._proc.stdin.write(json.dumps(
+                {"jsonrpc": "2.0", "id": rid, "result": res}) + "\n")
+            self._proc.stdin.flush()
+
+    def prompt(self, text, on_delta=None):
+        """Returns (full_text, usage, err). on_delta(str) streams live."""
+        with self._lock:
+            try:
+                if self._proc is None or self._proc.poll() is not None:
+                    self._spawn()
+            except OSError as e:
+                return "", None, ("upstream", f"acp spawn failed: {e}")
+            try:
+                sid_r = self._rpc("session/new", {
+                    "cwd": self.workdir, "mcpServers": []})
+                sid = None
+                for m in self._read(30):
+                    if m.get("id") == sid_r:
+                        sid = ((m.get("result") or {})
+                               .get("sessionId"))
+                        break
+                if not sid:
+                    return "", None, ("timeout", "acp session/new timeout")
+                rid = self._rpc("session/prompt", {
+                    "sessionId": sid,
+                    "prompt": [{"type": "text", "text": text}]})
+                parts, usage, stop = [], None, "end_turn"
+                for m in self._read(self.timeout):
+                    self._answer_fs(m)
+                    upd = (m.get("params") or {}).get("update") or {}
+                    if upd.get("sessionUpdate") == "agent_message_chunk":
+                        delta = (upd.get("content") or {}).get("text", "")
+                        parts.append(delta)
+                        if on_delta and delta:
+                            on_delta(delta)
+                    if m.get("id") == rid:
+                        res = m.get("result") or {}
+                        u = res.get("usage") or {}
+                        usage = {
+                            "prompt_tokens": u.get("inputTokens", 0),
+                            "completion_tokens": u.get("outputTokens", 0),
+                            "total_tokens": u.get("totalTokens", 0)}
+                        stop = res.get("stopReason", "end_turn")
+                        break
+                else:
+                    return "", None, ("timeout",
+                                      f"acp prompt >{self.timeout}s")
+                full = "".join(parts)
+                if not full:
+                    return "", None, ("upstream", "acp empty response")
+                return full, usage, None
+            except (BrokenPipeError, OSError) as e:
+                self._proc = None
+                return "", None, ("upstream", f"acp pipe died: {e}")
+
+    def close(self):
+        try:
+            if self._proc:
+                self._proc.kill()
+        except OSError:
+            pass
+
+
 # OpenAI params `devin -p` cannot honour — surfaced, never silently dropped
 _UNSUPPORTED = ("temperature", "top_p", "max_tokens", "n", "stop",
                 "presence_penalty", "frequency_penalty", "logit_bias",
@@ -104,7 +247,8 @@ _UNSUPPORTED = ("temperature", "top_p", "max_tokens", "n", "stop",
                 "response_format")
 
 
-def _completion(text, model, cid=None, prompt="", ignored=None):
+def _completion(text, model, cid=None, prompt="", ignored=None,
+                usage=None):
     out = {
         "id": cid or f"chatcmpl-{uuid.uuid4().hex[:24]}",
         "object": "chat.completion",
@@ -113,9 +257,10 @@ def _completion(text, model, cid=None, prompt="", ignored=None):
         "choices": [{"index": 0,
                      "message": {"role": "assistant", "content": text},
                      "finish_reason": "stop"}],
-        "usage": {"prompt_tokens": _est_tokens(prompt),
-                  "completion_tokens": _est_tokens(text),
-                  "total_tokens": _est_tokens(prompt) + _est_tokens(text)},
+        "usage": usage or {
+            "prompt_tokens": _est_tokens(prompt),
+            "completion_tokens": _est_tokens(text),
+            "total_tokens": _est_tokens(prompt) + _est_tokens(text)},
     }
     if ignored:
         out["x-ignored-params"] = ignored
@@ -197,7 +342,8 @@ class Handler(BaseHTTPRequestHandler):
             sv = self.server
             return self._json(200, {
                 "service": "devin-api-bridge",
-                "backend": f"{sv.devin} -p",
+                "backend": ("acp" if getattr(sv, "acp", None)
+                            else f"{sv.devin} -p"),
                 "endpoints": {"GET /health": "liveness",
                               "GET /v1/models": "model inventory",
                               "POST /v1/chat/completions":
@@ -256,34 +402,69 @@ class Handler(BaseHTTPRequestHandler):
         # "devin" is a compat alias, not a real model id — resolve to the
         # CLI's configured default by omitting --model entirely
         backend_model = None if model == "devin" else model
-        # concurrent harness fire would spawn N devin processes — cap and
-        # queue so the box doesn't melt under parallel tool calls
-        with sv.sem:
-            text, err = _run_devin(sv.devin, prompt, backend_model,
-                                   sv.workdir, sv.timeout)
+        cid = f"chatcmpl-{uuid.uuid4().hex[:24]}"
+        if getattr(sv, "acp", None):
+            if req.get("stream"):
+                return self._sse_acp(sv, prompt, model, cid)
+            with sv.sem:
+                text, usage, err = sv.acp.prompt(prompt)
+        else:
+            usage = None
+            # concurrent harness fire would spawn N devin processes —
+            # cap and queue so the box doesn't melt
+            with sv.sem:
+                text, err = _run_devin(sv.devin, prompt, backend_model,
+                                       sv.workdir, sv.timeout)
         if err:
             kind, msg = err
             code = 504 if kind == "timeout" else 502
             return self._json(code, {"error": {"message": msg,
                                                "type": kind + "_error"}})
-        cid = f"chatcmpl-{uuid.uuid4().hex[:24]}"
         if req.get("stream"):
-            self.send_response(200)
-            self.send_header("Content-Type", "text/event-stream")
-            self.send_header("Cache-Control", "no-cache")
-            self.end_headers()
+            self._sse_head()
             line = "data: " + json.dumps(_chunk(text, model, cid)) + "\n\n"
             self.wfile.write(line.encode("utf-8"))
-            end = _chunk("", model, cid)
-            end["choices"][0]["finish_reason"] = "stop"
-            end["choices"][0]["delta"] = {}
-            self.wfile.write(("data: " + json.dumps(end)
-                              + "\n\ndata: [DONE]\n\n").encode("utf-8"))
-            self.wfile.flush()
+            self._sse_tail(model, cid)
             return
         self._json(200, _completion(
-            text, model, cid, prompt=prompt,
+            text, model, cid, prompt=prompt, usage=usage,
             ignored=[k for k in _UNSUPPORTED if k in req]))
+
+    def _sse_head(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+
+    def _sse_tail(self, model, cid):
+        end = _chunk("", model, cid)
+        end["choices"][0]["finish_reason"] = "stop"
+        end["choices"][0]["delta"] = {}
+        self.wfile.write(("data: " + json.dumps(end)
+                          + "\n\ndata: [DONE]\n\n").encode("utf-8"))
+        self.wfile.flush()
+
+    def _sse_acp(self, sv, prompt, model, cid):
+        """True incremental SSE: each agent_message_chunk becomes a
+        delta as it arrives (#489)."""
+        deltas, err_box = [], [None]
+
+        def feed(d):
+            deltas.append(d)
+            line = "data: " + json.dumps(
+                _chunk(d, model, cid)) + "\n\n"
+            self.wfile.write(line.encode("utf-8"))
+            self.wfile.flush()
+
+        with sv.sem:
+            self._sse_head()
+            _, _, err_box[0] = sv.acp.prompt(prompt, on_delta=feed)
+        if err_box[0]:
+            kind, msg = err_box[0]
+            self.wfile.write(("data: " + json.dumps(
+                {"error": {"message": msg, "type": kind + "_error"}})
+                + "\n\n").encode("utf-8"))
+        self._sse_tail(model, cid)
 
 
 def _opencode_block(port, model, token):
@@ -365,13 +546,21 @@ def serve(args):
     httpd.models = _list_models(devin, workdir)
     httpd.concurrency = max(1, args.concurrency)
     httpd.sem = threading.BoundedSemaphore(httpd.concurrency)
+    # acp = warm process, real streaming + real usage; one process means
+    # effective concurrency 1 regardless of --concurrency
+    httpd.acp = (AcpBackend(devin, workdir, args.timeout)
+                 if args.backend == "acp" else None)
     sys.stderr.write(f"[bridge] http://{args.bind}:{args.port} "
-                     f"backend={devin} models={len(httpd.models)} "
+                     f"backend={args.backend}:{devin} "
+                     f"models={len(httpd.models)} "
                      f"auth={'token' if args.token else 'loopback'}\n")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         pass
+    finally:
+        if httpd.acp:
+            httpd.acp.close()
 
 
 def main():
@@ -387,6 +576,10 @@ def main():
     sv.add_argument("--concurrency", type=int, default=2,
                     help="max simultaneous devin backend calls "
                          "(extras queue)")
+    sv.add_argument("--backend", choices=("cli", "acp"), default="cli",
+                    help="cli=`devin -p` per request; acp=warm ACP "
+                         "process — real incremental streaming + real "
+                         "token usage (#489)")
     md = sub.add_parser("models")
     md.add_argument("--devin")
     st = sub.add_parser("setup")
