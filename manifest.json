@@ -1379,7 +1379,7 @@
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "941EDC882C240090B001CF8BE495652F2FF2E6F01C15A3C2D2A95FB5FB4C2CE3",
+      "export_hash": "7C4513C4ED698551D6E63B2F36B38DB10E39073678AB875F0E8B7903262C3492",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {

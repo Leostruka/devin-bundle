@@ -14,6 +14,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Path filter (#487): docs-only PRs skip the test/rust/install
+  # matrices — the same doc-tier the local push gate uses. Skipped
+  # jobs report 'skipped' which counts neutral for the ci aggregator.
+  changes:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.f.outputs.code }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - id: f
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if git diff --name-only "${{ github.event.pull_request.base.sha }}...HEAD" \
+              | grep -vqE '^docs/|^\.devin/(docs|issues|scratch|research|ledgers|plans|evals|goals|metrics|approvals)/|\.md$|^manifest\.json$'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # Fast static gate. audit.py covers JSON validity + py_compile of
   # every *.py in the repo, superseding a scripts/-only compile check.
   static:
@@ -184,6 +208,8 @@ jobs:
   # Linux procfs/pidfd seams. 3.11 + 3.14 catches version skew.
   test:
     name: Tests (${{ matrix.os }}, py${{ matrix.python }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -214,6 +240,8 @@ jobs:
   # CI must prove it compiles and its tests pass.
   rust:
     name: Rust workspace
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -228,6 +256,8 @@ jobs:
   # the rust rebuild.
   install:
     name: Installer (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -282,7 +312,8 @@ jobs:
           python -c "
           import json, os, sys
           needs = json.loads(os.environ['NEEDS'])
-          bad = {k: v['result'] for k, v in needs.items() if v['result'] != 'success'}
+          bad = {k: v['result'] for k, v in needs.items()
+               if v['result'] not in ('success', 'skipped')}
           for k, v in needs.items():
               print(f'{k}: {v[\"result\"]}')
           if bad:

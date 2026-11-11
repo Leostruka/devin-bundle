@@ -346,7 +346,8 @@ def _scoped_tests(cwd, paths):
     full validation dir). Always includes tests/held-out — the
     anti-gaming contract is small (~12s) and runs on every code push.
     """
-    known_prefixes = ("scripts/", "extensions/", "tests/")
+    known_prefixes = ("scripts/", "extensions/", "tests/",
+                      ".github/")
     out = set()
     for p in paths:
         p = p.strip().replace("\\", "/")
