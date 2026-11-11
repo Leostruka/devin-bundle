@@ -1,0 +1,138 @@
+{
+  "eval": "design-iteration-loop",
+  "total": 10,
+  "passed": 10,
+  "failures": [],
+  "results": [
+    {
+      "id": "converge-early",
+      "expect": {
+        "verdict": "pass",
+        "stop_cycle": 2
+      },
+      "got": {
+        "verdict": "pass",
+        "stop_cycle": 2,
+        "reason": "gate met (open==0 or all waived)"
+      },
+      "ok": true
+    },
+    {
+      "id": "converge-at-limit",
+      "expect": {
+        "verdict": "pass",
+        "stop_cycle": 3
+      },
+      "got": {
+        "verdict": "pass",
+        "stop_cycle": 3,
+        "reason": "gate met (open==0 or all waived)"
+      },
+      "ok": true
+    },
+    {
+      "id": "waived-gate",
+      "expect": {
+        "verdict": "pass",
+        "stop_cycle": 1
+      },
+      "got": {
+        "verdict": "pass",
+        "stop_cycle": 1,
+        "reason": "gate met (open==0 or all waived)"
+      },
+      "ok": true
+    },
+    {
+      "id": "plateau-r32",
+      "expect": {
+        "verdict": "plateau",
+        "stop_cycle": 2
+      },
+      "got": {
+        "verdict": "plateau",
+        "stop_cycle": 2,
+        "reason": "cycle closed nothing"
+      },
+      "ok": true
+    },
+    {
+      "id": "accretion-opus",
+      "expect": {
+        "verdict": "accretion",
+        "stop_cycle": 2
+      },
+      "got": {
+        "verdict": "accretion",
+        "stop_cycle": 2,
+        "reason": "growth >20% without closing findings"
+      },
+      "ok": true
+    },
+    {
+      "id": "accretion-beats-plateau",
+      "expect": {
+        "verdict": "accretion",
+        "stop_cycle": 1
+      },
+      "got": {
+        "verdict": "accretion",
+        "stop_cycle": 1,
+        "reason": "growth >20% without closing findings"
+      },
+      "ok": true
+    },
+    {
+      "id": "escalate-exhausted",
+      "expect": {
+        "verdict": "escalate",
+        "stop_cycle": 3
+      },
+      "got": {
+        "verdict": "escalate",
+        "stop_cycle": 3,
+        "reason": "max cycles reached with open findings"
+      },
+      "ok": true
+    },
+    {
+      "id": "checklist-only-progress",
+      "expect": {
+        "verdict": "pass",
+        "stop_cycle": 2
+      },
+      "got": {
+        "verdict": "pass",
+        "stop_cycle": 2,
+        "reason": "gate met (open==0 or all waived)"
+      },
+      "ok": true
+    },
+    {
+      "id": "growth-with-progress-ok",
+      "expect": {
+        "verdict": "pass",
+        "stop_cycle": 2
+      },
+      "got": {
+        "verdict": "pass",
+        "stop_cycle": 2,
+        "reason": "gate met (open==0 or all waived)"
+      },
+      "ok": true
+    },
+    {
+      "id": "unbounded-counterexample",
+      "expect": {
+        "verdict": "escalate",
+        "stop_cycle": 3
+      },
+      "got": {
+        "verdict": "escalate",
+        "stop_cycle": 3,
+        "reason": "max cycles reached with open findings"
+      },
+      "ok": true
+    }
+  ]
+}
