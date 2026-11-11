@@ -418,7 +418,7 @@ class InternalBackend:
         if role == "assistant":
             out += _pb_vi(2, 2)
             if m_.get("content"):
-                out += _pb_s(3, m_["content"])
+                out += _pb_s(3, _msg_text(m_["content"]))
             for tc in m_.get("tool_calls") or []:
                 fn = tc.get("function", {})
                 call = (_pb_s(1, tc["id"]) + _pb_s(2, fn.get("name", ""))
@@ -435,19 +435,19 @@ class InternalBackend:
             return _pb_m(3, out)
         if role == "tool":
             out += _pb_vi(2, 4)
-            out += _pb_s(3, str(m_.get("content") or ""))
+            out += _pb_s(3, _msg_text(m_.get("content")))
             if m_.get("tool_call_id"):
                 out += _pb_s(7, m_["tool_call_id"])
             out += _pb_m(8, b"\x08\x01")
             return _pb_m(3, out)
         out += _pb_vi(2, 1)
-        out += _pb_s(3, str(m_.get("content") or ""))
+        out += _pb_s(3, _msg_text(m_.get("content")))
         out += _pb_m(8, b"\x08\x01")
         return _pb_m(3, out)
 
     def _build(self, messages, tools, model):
         parts = [self._meta()]
-        sys_txt = "\n\n".join(str(m_.get("content") or "")
+        sys_txt = "\n\n".join(_msg_text(m_.get("content"))
                               for m_ in messages if m_.get("role") == "system")
         if sys_txt:
             parts.append(_pb_s(2, sys_txt))
@@ -539,6 +539,15 @@ class InternalBackend:
             return None, None, None, ("upstream", f"http {status}")
         out = list(tcs.values())
         return "".join(text_parts), out or None, usage, None
+
+
+def _msg_text(content):
+    """OpenAI content -> plain text. Multipart lists join text parts;
+    non-text parts are dropped (never str()-repr'd into the request)."""
+    if isinstance(content, list):
+        return "".join(p.get("text", "") for p in content
+                       if isinstance(p, dict))
+    return str(content or "")
 
 
 # OpenAI params `devin -p` cannot honour — surfaced, never silently dropped
