@@ -6,6 +6,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(api-bridge): internal backend flatten multipart message content (#523)
+- laya: media-intent-v1 shadow activation (#431) (#522)
+- changelog: backfill refs #512-#520 (#521)
 - feat(skills): device-repurpose + saas-replacer playbooks (#513 #514) (#520)
 - eval: design-iteration-loop contract cases + runner (#516) (#519)
 - feat(hooks): optional subagent dispatch budgets (#515) (#518)
