@@ -589,7 +589,9 @@ def main():
     # orphans the commit (merge fires on the old head) or restarts CI.
     # Warn, don't block — pushes to fix failing checks must still pass.
     if _auto_merge_armed(cwd):
-        print(json.dumps({"hookSpecificOutput": {"additionalContext":
+        print(json.dumps({"hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "additionalContext":
             "auto-merge is ARMED on this branch's PR — this push will "
             "race the squash (orphaned commit) or restart CI. Prefer "
             "pushing before arming, or wait for the merge to land."}}))
