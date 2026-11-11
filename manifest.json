@@ -32,7 +32,7 @@
       "source": "devin-bundle",
       "purpose": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure.",
       "original_path": "%APPDATA%\\devin\\skills\\agent-cost-guard",
-      "export_hash": "9a55b4c8f5b28ea408cce8f15bc3e285cca1c47abd0da63ac02b990470328099",
+      "export_hash": "12e2e7e8ee04cc99d0ef034782b76108cf14907d7a5dbd90c138a35b3aec87a2",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -1415,7 +1415,7 @@
     {
       "name": "decision-queue.py",
       "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
-      "export_hash": "13DDBB9230819FB87F8D8ACB43EF17F9B2EB9CABEFFFC4F7CCC01D29F748B0B6",
+      "export_hash": "8A00CA664F25AEE4A14C8D2086AAB66C83769FCD7BE23EF97CFC8E5D289BFC27",
       "exported_at": "2026-11-10T06:59:34.745097"
     },
     {
@@ -1672,7 +1672,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "af915ef065e3bc003a17988eb69db3f1cfba966db2f9462264f2b25f0636822b",
+      "export_hash": "C0E7B62B26D6EE8510088B8FFC1EBED697F7E26EA7A46E43A2BF0CE07ACDDBC1",
       "exported_at": "2026-11-03T21:04:06.237841"
     },
     {

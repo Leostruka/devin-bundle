@@ -65,7 +65,8 @@ def _hook(payload):
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
-def main(argv):
+def main(argv=None):
+    argv = argv or []
     path = _queue_path()
     if "--pending" in argv:
         recs = [r for r in _load(path) if not r.get("resolved")]
