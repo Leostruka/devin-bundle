@@ -62,6 +62,25 @@ for attempt in range(3):
 - Using maximum effort for trivial tasks.
 - Ignoring token cost when the parent model is paid.
 
+## Dispatch budgets (opt-in)
+
+`validate-tool-args.py` enforces optional caps when
+`<devin-home>/state/subagent-budget.json` exists (absent = uncapped):
+
+| Knob | Effect |
+|---|---|
+| `max_dispatches` | Block dispatch when session's recorded dispatches reach cap. |
+| `session_max_minutes` | Block new dispatches when minutes since session's first dispatch exceed cap. |
+| `max_cost_usd` + `spent_usd` | Block when `spent_usd >= max_cost_usd`. `spent_usd` must be updated by an external recorder — the hook cannot observe token spend. |
+
+Every dispatch appends to `state/subagent-ledger.jsonl` (ts, session_id,
+profile, title) once a policy exists. Override the state dir with
+`DEVIN_STATE_DIR` (used by tests).
+
+Honest limits: no per-agent wall-clock kill (hooks see no subagent
+lifecycle events), no real-time cost (no token telemetry) — enforcement
+is at dispatch time only.
+
 ## Cross-skills
 
 - `effort-calibration` - chooses the right effort level for the task.
