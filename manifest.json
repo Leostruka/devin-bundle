@@ -1680,9 +1680,15 @@
       "purpose": "DORA lead-time log — .devin/metrics/ships.jsonl + report (#486)",
       "export_hash": "B5A6FEE8C83E9476B91A135F9E4E01E28EB07BDAEF5FEE4E654C0DFBAAF2BDA6",
       "exported_at": "2026-11-11T07:20:20.702571"
+    },
+    {
+      "name": "changelog-refs.py",
+      "purpose": "append missing merged-PR refs to CHANGELOG [Unreleased] (#488)",
+      "export_hash": "8068B71B97C80CF950CBB24F683491EE614CF032376E1A71B9BF7BE3B6C999FE",
+      "exported_at": "2026-11-11T07:34:53.641356"
     }
   ],
-  "script_count": 53,
+  "script_count": 54,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,
