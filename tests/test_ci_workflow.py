@@ -47,3 +47,10 @@ def test_doc_filter_classification():
 def test_ci_aggregator_accepts_skipped():
     s = open(WF, encoding="utf-8").read()
     assert "'skipped'" in s  # docs-only PRs leave needs skipped, not failed
+
+
+def test_merge_group_trigger_present():
+    """Merge queue (#502) runs the required `ci` check on merge_group
+    events — without this trigger queued merges stall forever."""
+    s = open(WF, encoding="utf-8").read()
+    assert re.search(r"^  merge_group:\s*$", s, re.M)
