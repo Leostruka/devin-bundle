@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- changelog: backfill refs #521-#523 (#524)
 - fix(api-bridge): internal backend flatten multipart message content (#523)
 - laya: media-intent-v1 shadow activation (#431) (#522)
 - changelog: backfill refs #512-#520 (#521)
