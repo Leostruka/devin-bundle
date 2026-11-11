@@ -275,6 +275,15 @@ def _chunk(text, model, cid):
                          "finish_reason": None}]}
 
 
+def _usage_block(prompt, text, real=None):
+    """OpenAI usage object: real ACP counters when present, else the
+    documented ~4ch/tok estimate."""
+    return real or {
+        "prompt_tokens": _est_tokens(prompt),
+        "completion_tokens": _est_tokens(text),
+        "total_tokens": _est_tokens(prompt) + _est_tokens(text)}
+
+
 def _list_models(devin, workdir, timeout=30):
     try:
         proc = subprocess.run([devin, "models"], capture_output=True,
@@ -405,7 +414,9 @@ class Handler(BaseHTTPRequestHandler):
         cid = f"chatcmpl-{uuid.uuid4().hex[:24]}"
         if getattr(sv, "acp", None):
             if req.get("stream"):
-                return self._sse_acp(sv, prompt, model, cid)
+                want_usage = bool((req.get("stream_options") or {})
+                                  .get("include_usage"))
+                return self._sse_acp(sv, prompt, model, cid, want_usage)
             with sv.sem:
                 text, usage, err = sv.acp.prompt(prompt)
         else:
@@ -421,10 +432,14 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(code, {"error": {"message": msg,
                                                "type": kind + "_error"}})
         if req.get("stream"):
+            want_usage = bool((req.get("stream_options") or {})
+                              .get("include_usage"))
             self._sse_head()
             line = "data: " + json.dumps(_chunk(text, model, cid)) + "\n\n"
             self.wfile.write(line.encode("utf-8"))
-            self._sse_tail(model, cid)
+            self._sse_tail(model, cid,
+                           _usage_block(prompt, text, usage)
+                           if want_usage else None)
             return
         self._json(200, _completion(
             text, model, cid, prompt=prompt, usage=usage,
@@ -436,15 +451,22 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
 
-    def _sse_tail(self, model, cid):
+    def _sse_tail(self, model, cid, usage=None):
         end = _chunk("", model, cid)
         end["choices"][0]["finish_reason"] = "stop"
         end["choices"][0]["delta"] = {}
-        self.wfile.write(("data: " + json.dumps(end)
-                          + "\n\ndata: [DONE]\n\n").encode("utf-8"))
+        tail = "data: " + json.dumps(end) + "\n\n"
+        if usage is not None:
+            # stream_options.include_usage contract: a final chunk with
+            # empty choices carrying the usage block
+            u = _chunk("", model, cid)
+            u["choices"] = []
+            u["usage"] = usage
+            tail += "data: " + json.dumps(u) + "\n\n"
+        self.wfile.write((tail + "data: [DONE]\n\n").encode("utf-8"))
         self.wfile.flush()
 
-    def _sse_acp(self, sv, prompt, model, cid):
+    def _sse_acp(self, sv, prompt, model, cid, want_usage):
         """True incremental SSE: each agent_message_chunk becomes a
         delta as it arrives (#489)."""
         deltas, err_box = [], [None]
@@ -455,16 +477,17 @@ class Handler(BaseHTTPRequestHandler):
                 _chunk(d, model, cid)) + "\n\n"
             self.wfile.write(line.encode("utf-8"))
             self.wfile.flush()
-
         with sv.sem:
             self._sse_head()
-            _, _, err_box[0] = sv.acp.prompt(prompt, on_delta=feed)
+            _, usage, err_box[0] = sv.acp.prompt(prompt, on_delta=feed)
         if err_box[0]:
             kind, msg = err_box[0]
             self.wfile.write(("data: " + json.dumps(
                 {"error": {"message": msg, "type": kind + "_error"}})
                 + "\n\n").encode("utf-8"))
-        self._sse_tail(model, cid)
+        self._sse_tail(model, cid,
+                       _usage_block(prompt, "".join(deltas), usage)
+                       if want_usage else None)
 
 
 def _opencode_block(port, model, token):

@@ -90,6 +90,33 @@ def test_token_enforced_when_set():
         httpd.shutdown()
 
 
+def test_stream_options_include_usage_emits_usage_chunk():
+    """stream_options.include_usage -> final chunk with choices=[] and
+    a usage block before [DONE] (OpenAI streaming contract)."""
+    httpd, base = _server()
+    try:
+        with patch.object(mod, "_run_devin",
+                          return_value=("ok", None)):
+            body = json.dumps({
+                "messages": [{"role": "user", "content": "hi"}],
+                "stream": True,
+                "stream_options": {"include_usage": True}}).encode()
+            req = urllib.request.Request(
+                base + "/v1/chat/completions", data=body,
+                headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req) as r:
+                raw = r.read().decode()
+        chunks = [json.loads(l[6:]) for l in raw.splitlines()
+                  if l.startswith("data: {")]
+        uchunk = [c for c in chunks if c.get("choices") == []
+                  and c.get("usage")]
+        assert uchunk, f"no usage chunk in {chunks}"
+        assert uchunk[0]["usage"]["total_tokens"] > 0
+        assert raw.rstrip().endswith("data: [DONE]")
+    finally:
+        httpd.shutdown()
+
+
 def test_bad_messages_rejected():
     httpd, base = _server()
     try:
