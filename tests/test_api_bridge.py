@@ -255,6 +255,17 @@ def test_setup_opencode_write_merges_and_refuses_clobber(tmp_path):
         pass
 
 
+def test_setup_codex_prints_valid_toml(capsys):
+    import argparse
+    import tomllib
+    mod.setup(argparse.Namespace(harness="codex", model=None,
+                                 port=8787, write=None, token=None))
+    body = capsys.readouterr().out.split("# append")[0]
+    d = tomllib.loads(body)
+    assert d["model_provider"] == "devin-local"
+    assert d["model_providers"]["devin-local"]["wire_api"] == "chat"
+
+
 def test_setup_generic_prints_env(capsys):
     import argparse
     mod.setup(argparse.Namespace(harness="generic", token="k",
