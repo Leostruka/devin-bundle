@@ -1415,7 +1415,7 @@
     {
       "name": "decision-queue.py",
       "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
-      "export_hash": "13DDBB9230819FB87F8D8ACB43EF17F9B2EB9CABEFFFC4F7CCC01D29F748B0B6",
+      "export_hash": "8A00CA664F25AEE4A14C8D2086AAB66C83769FCD7BE23EF97CFC8E5D289BFC27",
       "exported_at": "2026-11-10T06:59:34.745097"
     },
     {
