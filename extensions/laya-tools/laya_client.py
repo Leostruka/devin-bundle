@@ -97,7 +97,7 @@ def _spawn_daemon(config_path, laya_dir):
         "Scripts/python.exe" if os.name == "nt" else "bin/python")
     py = str(venv_py) if venv_py.is_file() else sys.executable
     cli = here.parent / "laya_cli.py"
-    subprocess.Popen(
+    return subprocess.Popen(
         [py, str(cli), "serve-daemon", "--config", config_path],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         creationflags=getattr(subprocess, "DETACHED_PROCESS", 0)
@@ -171,12 +171,16 @@ def ensure_daemon(config_path=None, *, spawn_timeout_s=60.0):
                 and _pid_alive(info.get("pid", -1)) \
                 and _port_open("127.0.0.1", int(info["port"])):
             return info
-        _spawn_daemon(config_path, laya_dir)
+        proc = _spawn_daemon(config_path, laya_dir)
         deadline = time.time() + spawn_timeout_s
         while time.time() < deadline:
             info = read_daemon_info(laya_dir)
             if info and _port_open("127.0.0.1", int(info["port"])):
                 return info
+            # daemon died during startup (e.g. missing model) — fail fast
+            # instead of burning the full spawn timeout in the caller hook
+            if proc is not None and proc.poll() is not None:
+                break
             time.sleep(0.5)
         return None
     finally:
