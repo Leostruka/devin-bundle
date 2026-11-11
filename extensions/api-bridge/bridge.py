@@ -286,6 +286,72 @@ class Handler(BaseHTTPRequestHandler):
             ignored=[k for k in _UNSUPPORTED if k in req]))
 
 
+def _opencode_block(port, model, token):
+    return {"provider": {"devin-local": {
+        "npm": "@ai-sdk/openai-compatible",
+        "name": "Devin (local bridge)",
+        "options": {"baseURL": f"http://127.0.0.1:{port}/v1",
+                    "apiKey": token or ""},
+        "models": {model or "devin": {"name": "devin"}}}}}
+
+
+def setup(args):
+    """Print harness config stanzas; --write merges opencode.json (#492)."""
+    port = getattr(args, "port", 8787)
+    if args.harness in ("hermes", "generic", "env"):
+        tok = args.token or "<token-if-LAN>"
+        print(f'export OPENAI_BASE_URL="http://127.0.0.1:{port}/v1"\n'
+              f'export OPENAI_API_KEY="{tok}"\n'
+              f'# model id: devin (or any id from GET /v1/models)')
+        return
+    block = _opencode_block(port, args.model, args.token)
+    out = json.dumps(block, indent=2)
+    if not args.write:
+        print(out + "\n# merge into opencode.json "
+              "(project) or ~/.config/opencode/opencode.json (global)")
+        return
+    path = args.write
+    if os.path.exists(path):
+        cfg = json.load(open(path, encoding="utf-8"))
+        if (cfg.get("provider") or {}).get("devin-local"):
+            sys.exit(f"{path} already has provider.devin-local — "
+                     "refusing to clobber")
+    else:
+        cfg = {}
+    cfg.setdefault("provider", {}).update(
+        block["provider"])
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(cfg, f, indent=2)
+        f.write("\n")
+    os.replace(tmp, path)
+    print(f"merged provider.devin-local into {path}")
+
+
+def doctor(args):
+    """One-shot backend sanity: binary, model inventory, port (#492)."""
+    devin = _devin_path(args.devin)
+    port = getattr(args, "port", 8787)
+    checks = {"devin": os.path.isfile(devin)
+              or shutil.which(devin) is not None}
+    models = _list_models(devin, tempfile.gettempdir()) \
+        if checks["devin"] else []
+    checks["models"] = len(models)
+    import socket
+    s = socket.socket()
+    try:
+        s.bind(("127.0.0.1", port))
+        checks["port_free"] = True
+    except OSError:
+        checks["port_free"] = False
+    finally:
+        s.close()
+    ok = checks["devin"] and checks["models"] and checks["port_free"]
+    print(json.dumps({"ok": ok, **checks,
+                      "verdict": ("ready" if ok else "fix above")}))
+    sys.exit(0 if ok else 1)
+
+
 def serve(args):
     devin = _devin_path(args.devin)
     loopback = args.bind in ("127.0.0.1", "localhost", "::1")
@@ -323,8 +389,23 @@ def main():
                          "(extras queue)")
     md = sub.add_parser("models")
     md.add_argument("--devin")
+    st = sub.add_parser("setup")
+    st.add_argument("harness", choices=("opencode", "hermes", "generic",
+                                       "env"))
+    st.add_argument("--write", metavar="PATH",
+                    help="merge provider block into this opencode.json")
+    st.add_argument("--model")
+    st.add_argument("--token")
+    st.add_argument("--port", type=int, default=8787)
+    dr = sub.add_parser("doctor")
+    dr.add_argument("--devin")
+    dr.add_argument("--port", type=int, default=8787)
     args = ap.parse_args()
-    if args.cmd == "models":
+    if args.cmd == "setup":
+        setup(args)
+    elif args.cmd == "doctor":
+        doctor(args)
+    elif args.cmd == "models":
         devin = _devin_path(args.devin)
         print(json.dumps({"ok": True, "models": _list_models(
             devin, tempfile.gettempdir())}))

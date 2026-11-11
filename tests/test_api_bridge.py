@@ -237,3 +237,27 @@ def test_health_reports_backend_reachability():
             assert json.loads(e.read())["backend"]["found"] is False
     finally:
         httpd.shutdown()
+
+
+def test_setup_opencode_write_merges_and_refuses_clobber(tmp_path):
+    import argparse
+    cfg = tmp_path / "opencode.json"
+    a = argparse.Namespace(harness="opencode", write=str(cfg),
+                           model=None, token="t", port=8787)
+    mod.setup(a)
+    d = json.loads(cfg.read_text(encoding="utf-8"))
+    assert d["provider"]["devin-local"]["options"]["baseURL"].endswith(
+        ":8787/v1")
+    try:
+        mod.setup(a)
+        assert False, "expected refusal"
+    except SystemExit:
+        pass
+
+
+def test_setup_generic_prints_env(capsys):
+    import argparse
+    mod.setup(argparse.Namespace(harness="generic", token="k",
+                                 port=8787, model=None, write=None))
+    out = capsys.readouterr().out
+    assert "OPENAI_BASE_URL" in out and "OPENAI_API_KEY" in out
