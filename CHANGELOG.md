@@ -6,6 +6,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- push-gate: warn on push to auto-merge-armed branch (#485) (#496)
+- api-bridge: setup + doctor subcommands (#492) (#499)
+- CI: docs-only PRs skip test/rust/install matrices (#487) (#497)
+- changelog-refs: auto-append missing merged-PR refs (#488) (#498)
+- busybar listen: input events -> agent triggers (#491) (#500)
+- push-gate: budgeted deferral — held-out always, rest defers to required CI (#484) (#501)
+- api-bridge: --backend acp — real incremental streaming + real usage (#489) (#494)
+- ship-metrics: DORA lead-time log + push-gate audit scoping (#486 #484) (#495)
+- skills: devin-integrate + push-gate risk tiers (#490 #484) (#493)
 - push-gate: warn when pushing onto a branch with auto-merge armed (orphan-commit guard, #485)
 - api-bridge: `doctor` backend sanity + `setup` harness stanzas (opencode/generic) (#492)
 - CI path filter: docs-only PRs skip test/rust/install matrices via `changes` job (#487)
