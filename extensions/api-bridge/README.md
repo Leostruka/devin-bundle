@@ -16,6 +16,11 @@ python extensions/api-bridge/bridge.py serve --bind 0.0.0.0 \
 Options: `--port`, `--bind`, `--token`, `--devin` (CLI path),
 `--workdir` (isolated cwd for prompts), `--timeout` (s, default 300),
 `--concurrency` (max parallel backend calls, default 2 — extras queue).
+`--backend acp` upgrades the backend to a warm `devin acp` process:
+`stream:true` then yields REAL incremental deltas and responses carry
+real token usage (verified live: chunks arrive as the agent generates).
+One process = serialized prompts; a fresh `session/new` per request
+keeps the OpenAI contract stateless.
 
 Endpoints:
 
@@ -50,5 +55,6 @@ opencode --model local/devin --base-url http://127.0.0.1:8787/v1
 Limits: devin is an agent, not a raw model — latencies are seconds,
 not milliseconds; `usage` token counts are ~4-chars/token estimates
 (no token surface on `-p`); multi-turn is flattened into a
-transcript prompt. True incremental streaming + session reuse are
-deferred to the `devin acp` backend (#478 future work).
+transcript prompt. `cli` mode is honest about flushing once;
+`--backend acp` (#489) delivers real incremental SSE + real usage.
+Conversation-keyed session reuse remains deferred (#478).
