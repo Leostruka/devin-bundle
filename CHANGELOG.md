@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- api-bridge extension (#478, #479, #480): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions` + `/v1/models` on loopback/LAN (token-required off-loopback); isolated workdir per request; E2E-verified translation ("bridge" -> "ponte"). v0.2 hardening: model validation against `/v1/models` (`devin` alias kept), OpenAI-style error taxonomy (400/502/504), estimated usage object; v0.3: `--concurrency` backend semaphore + CORS preflight for browser harnesses.
+- api-bridge extension (#478, #479, #480, #481, #482, #483): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions` + `/v1/models` on loopback/LAN (token-required off-loopback); isolated workdir per request; E2E-verified translation ("bridge" -> "ponte"). v0.2: model validation, error taxonomy (400/502/504), estimated usage; v0.3: `--concurrency` semaphore, CORS preflight, `x-ignored-params`, self-describing `GET /`, `devin`-alias fix, deep `/health` (503 on missing backend).
+- skill `devin-integrate` (#490): embed-Devin-anything playbook — direction matrix, transport ladder, verified surface inventory, contract checklist (origin: Busy Bar reel evaluation).
+- push-gate docs-only risk tier (#484): pushes whose changed paths are all doc surfaces (`*.md`, docs/, .devin content dirs) skip the full suite — the suite now exceeds the outer hook budget (~150s), so a mid-run kill never wrote the green cache and every push ran cold; cheap checks (secrets, test deletions) still run on every push.
 - state snapshot wave update + final (#475, #477).
 
 - dead-code removal + `# public-api` def-line convention + install-ledger rendered-currency/artifact exclusion (#473); state snapshot wave update (#475).

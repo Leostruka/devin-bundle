@@ -1339,9 +1339,17 @@
       "original_path": "%APPDATA%\\devin\\skills\\lgpd-questionnaire",
       "export_hash": "bd23da85440a35ab089d10e3b592265dc0ef96b41bb21253f45d5e2e16122cc0",
       "exported_at": "2026-11-10T07:33:38.105749"
+    },
+    {
+      "name": "devin-integrate",
+      "source": "created:link-eval #490 (huwprosser Busy Bar reel)",
+      "purpose": "Use when embedding the Devin agent into an external surface — a device (Busy Bar), an LLM harness (opencode/hermes), a service, an IDE, or a cron. Covers direction (devin-as-callee vs caller vs bidirectional), the transport ladder, the verified surface inventory, and the integration contract checklist. Complements cli-adapter (outbound agent->app); this skill is inbound/integration.",
+      "original_path": "%APPDATA%\\devin\\skills\\devin-integrate",
+      "export_hash": "c58c853697a37e1ab9a123c93732d29d5b69f160d6252c4911c0de4200e09590",
+      "exported_at": "2026-11-11T06:36:31.795"
     }
   ],
-  "skill_count": 182,
+  "skill_count": 183,
   "rule_count": 24,
   "scripts": [
     {
@@ -1371,7 +1379,7 @@
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "e145f2264fbd08da87eace43afd7facdb017453e530ee5ec8e5ca382728f4db9",
+      "export_hash": "941EDC882C240090B001CF8BE495652F2FF2E6F01C15A3C2D2A95FB5FB4C2CE3",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
