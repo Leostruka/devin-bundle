@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - merged: devin-integrate skill + push-gate risk tiers + manifest sync (#493)
 - CI path filter: docs-only PRs skip test/rust/install matrices via `changes` job (#487)
+- ship-metrics: DORA lead-time log `.devin/metrics/ships.jsonl` + report (#486)
+- push-gate: `audit.py` root-file scoping slimmed to fast audit check (#484)
+- api-bridge `--backend acp`: warm ACP process — real incremental SSE deltas + real token usage (#489)
 
 - api-bridge extension (#478, #479, #480, #481, #482, #483): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions` + `/v1/models` on loopback/LAN (token-required off-loopback); isolated workdir per request; E2E-verified translation ("bridge" -> "ponte"). v0.2: model validation, error taxonomy (400/502/504), estimated usage; v0.3: `--concurrency` semaphore, CORS preflight, `x-ignored-params`, self-describing `GET /`, `devin`-alias fix, deep `/health` (503 on missing backend).
 - skill `devin-integrate` (#490): embed-Devin-anything playbook — direction matrix, transport ladder, verified surface inventory, contract checklist (origin: Busy Bar reel evaluation).
