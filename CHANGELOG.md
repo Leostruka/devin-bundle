@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - push-gate: warn when pushing onto a branch with auto-merge armed (orphan-commit guard, #485)
+- api-bridge: `doctor` backend sanity + `setup` harness stanzas (opencode/generic) (#492)
+- CI path filter: docs-only PRs skip test/rust/install matrices via `changes` job (#487)
+- changelog-refs: auto-append missing merged-PR refs to [Unreleased] (#488)
+- busybar listen: device input events -> focus/effort triggers, --replay/--ws, fail-soft (#491)
 - push-gate: budgeted deferral — held-out always, mapped tests get remaining ~50s budget, overflow defers to required CI by name (#484)
 - ship-metrics: DORA lead-time log `.devin/metrics/ships.jsonl` + report (#486)
 - push-gate: `audit.py` root-file scoping slimmed to fast audit check (#484)
-- merged: devin-integrate skill + push-gate risk tiers (#493)
 - api-bridge `--backend acp`: warm ACP process — real incremental SSE deltas + real token usage (#489)
 
 - api-bridge extension (#478, #479, #480, #481, #482, #483): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions` + `/v1/models` on loopback/LAN (token-required off-loopback); isolated workdir per request; E2E-verified translation ("bridge" -> "ponte"). v0.2: model validation, error taxonomy (400/502/504), estimated usage; v0.3: `--concurrency` semaphore, CORS preflight, `x-ignored-params`, self-describing `GET /`, `devin`-alias fix, deep `/health` (503 on missing backend).
