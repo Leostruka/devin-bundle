@@ -468,7 +468,7 @@ def _auto_merge_armed(cwd):
         return (d.get("state") == "OPEN"
                 and bool((d.get("autoMergeRequest") or {})
                          .get("enabledAt")))
-    except (OSError, ValueError):
+    except (OSError, ValueError, subprocess.SubprocessError):
         return False
 
 

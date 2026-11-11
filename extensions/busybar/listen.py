@@ -12,7 +12,9 @@ Sources:
 
 Event map (advisory by default — prints the action; --exec runs it):
   star/pause switch toggle -> `python scripts/focus.py start|stop`
-  dial position 1..3       -> effort preset note (S/M/L)
+  dial position 1..3       -> effort preset S/M/L persisted to
+                             .devin/busybar-effort.txt (read it from a
+                             wrapper to export BUNDLE_*_MODEL env)
   everything else          -> ignored (v0)
 
 Fail-soft everywhere: unreadable frames skip with a stderr note;
@@ -74,7 +76,17 @@ def run_action(action, exec_mode):
     cmd = {"focus-start": FOCUS + ["start"],
            "focus-stop": FOCUS + ["stop"]}.get(action)
     if action.startswith("effort-"):
-        print(f"[busybar] effort preset -> {action.split('-')[1]}")
+        preset = action.split("-")[1]
+        try:
+            import os
+            state = os.path.join(".devin", "busybar-effort.txt")
+            os.makedirs(os.path.dirname(state), exist_ok=True)
+            with open(state, "w", encoding="utf-8") as fh:
+                fh.write(preset)
+        except OSError as e:
+            print(f"[busybar] effort state write failed: {e}",
+                  file=sys.stderr)
+        print(f"[busybar] effort preset -> {preset} (persisted)")
         return
     if cmd is None:
         return
@@ -124,25 +136,36 @@ def _ws_client(url):
                f"Sec-WebSocket-Key: {key}\r\n"
                "Sec-WebSocket-Version: 13\r\n\r\n").encode())
     buf = s.recv(4096)
-    if b"101" not in buf.split(b"\r\n", 1)[0]:
+    head, _, pending = buf.partition(b"\r\n\r\n")
+    if b"101" not in head.split(b"\r\n", 1)[0]:
         s.close()
         raise OSError("ws upgrade refused")
+
+    def _read(n):
+        nonlocal pending
+        while len(pending) < n:
+            chunk = s.recv(n - len(pending))
+            if not chunk:
+                raise OSError("ws closed")
+            pending += chunk
+        out, pending = pending[:n], pending[n:]
+        return out
+
     while True:
-        hdr = s.recv(2)
-        if len(hdr) < 2:
+        try:
+            hdr = _read(2)
+        except OSError:
             return
         opcode = hdr[0] & 0x0F
         ln = hdr[1] & 0x7F
         if ln == 126:
-            ln = int.from_bytes(s.recv(2), "big")
+            ln = int.from_bytes(_read(2), "big")
         elif ln == 127:
-            ln = int.from_bytes(s.recv(8), "big")
-        payload = b""
-        while len(payload) < ln:
-            chunk = s.recv(ln - len(payload))
-            if not chunk:
-                return
-            payload += chunk
+            ln = int.from_bytes(_read(8), "big")
+        try:
+            payload = _read(ln) if ln else b""
+        except OSError:
+            return
         if opcode == 1:  # text
             yield payload.decode("utf-8", errors="replace")
         elif opcode == 8:  # close
