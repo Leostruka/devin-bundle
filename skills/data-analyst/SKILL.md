@@ -66,6 +66,28 @@ on-the-fly:
 
 Output: schema doc with table names, columns, types, and relationships.
 
+### Step 1b: Business glossary (term -> definition)
+
+Schema says what exists, not what it means. A correct-looking query
+still returns the wrong number when "revenue" should exclude
+cancelled orders. Maintain `.devin/db-glossary.md`:
+
+```markdown
+| term | definition (SQL-ready) | certified_by | source |
+|------|----------------------|--------------|--------|
+| revenue | sum(orders.total) WHERE status != 'cancelled' | @user | ticket #123 |
+```
+
+1. `read` `.devin/db-glossary.md` before formulating queries; if a
+   business term in the question has no row, ask the user once and
+   record the answer.
+2. Definitions are SQL-ready fragments, not prose: they must map to
+   filters/joins you can paste into the query.
+3. New terms only enter the glossary after user confirmation
+   (`certified_by`); never invent definitions.
+4. When the user corrects a number ("that's not our churn"), fix the
+   glossary row first, then re-run; the correction persists.
+
 ### Step 2 — Query formulation
 
 1. Translate the user's natural-language question into SQL
@@ -157,10 +179,11 @@ If the user asks about a specific pandas, seaborn, matplotlib, SQLAlchemy, or pl
   CLI outputs to the terminal; use `write` for large results.
 - MCP-dependent: this skill only works if a data MCP server is
   configured. Check `mcp_config.json` and `mcp_list_servers` first.
-- No auto-feedback learning: cloud DANA learns from user corrections
-  ("remember that 'active user' means logged in within 7 days"). The
-  CLI requires the user to update `.devin/db-schema.md` manually or
-  tell the agent in-session.
+- Auto-feedback learning via glossary: cloud DANA learns from user
+  corrections ("remember that 'active user' means logged in within 7
+  days"). The CLI persists them in `.devin/db-glossary.md` (Step 1b):
+  corrections become certified, SQL-ready definitions that survive
+  across sessions.
 - Schema safety: never run `DROP`, `DELETE`, `UPDATE`, `INSERT`, or
   any mutating SQL unless the user explicitly asks. DANA is
   read-only by design; this skill follows the same constraint.

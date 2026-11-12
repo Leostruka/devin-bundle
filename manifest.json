@@ -149,7 +149,7 @@
       "source": "devin-bundle",
       "purpose": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely.",
       "original_path": "%APPDATA%\\devin\\skills\\big-file-refactor",
-      "export_hash": "8CF00A6EAF7D029885CCBC4074A204A56D55814A61422F69A9A895EAFBB70A2E",
+      "export_hash": "8cf00a6eaf7d029885ccbc4074a204a56d55814a61422f69a9a895eafbb70a2e",
       "exported_at": "2026-11-05T07:49:44.220070"
     },
     {
@@ -198,7 +198,7 @@
       "source": "devin-bundle",
       "purpose": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path.",
       "original_path": "%APPDATA%\\devin\\skills\\cli-adapter",
-      "export_hash": "E6D3E0078EAB9DE56C97E68FC373DA3C61A9B31F3CA8EEFD0F84A4373CD8028C",
+      "export_hash": "e6d3e0078eab9de56c97e68fc373da3c61a9b31f3ca8eefd0f84a4373cd8028c",
       "exported_at": "2026-11-05T07:52:14.166839"
     },
     {
@@ -276,7 +276,7 @@
       "source": "devin-bundle",
       "purpose": "Use when the user wants to reduce token, compute, or infrastructure costs. Covers context window budget, MCP selection, caching, model routing, and query optimization.",
       "original_path": "%APPDATA%\\devin\\skills\\cost-optimization",
-      "export_hash": "FC2220F534D53FDDFF702EF150E6C53A7BA7401DAA7B369917FAC791589E6683",
+      "export_hash": "fc2220f534d53fddff702ef150e6c53a7ba7401daa7b369917fac791589e6683",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -311,7 +311,7 @@
       "name": "data-analyst",
       "source": "devin-bundle (new, replicates cloud DANA agent)",
       "purpose": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA) for the CLI — SQL-first exploration, schema-aware querying, and seaborn-style visualizations via MCP data sources.",
-      "export_hash": "d41ed9b04a29c99dbf37c03368e4792af9f8105401b1412ad7820ffbff0cbb6c",
+      "export_hash": "86c5de7cdd1cf2ef285e54b6fc0085ef0321b8cc2bc1f7ddd295300e17cc69eb",
       "exported_at": "2026-09-08T21:39:22.457280"
     },
     {
@@ -380,7 +380,7 @@
       "name": "devin-config",
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule — or when auditing/managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references/duplicates/divergences, and generating plans that persist under `.devin/` only after approval.",
-      "export_hash": "363C05CA238FBC2D68642F4AE242A9E8867CDA98A0DC7C169636634F4F3D1BA6"
+      "export_hash": "363c05ca238fbc2d68642f4ae242a9e8867cda98a0dc7c169636634f4f3d1ba6"
     },
     {
       "name": "devin-integrate",
@@ -481,14 +481,14 @@
       "source": "devin-bundle",
       "purpose": "Use when executing a written implementation plan with checkpoints and reviews.",
       "original_path": "%APPDATA%\\devin\\skills\\executing-plans",
-      "export_hash": "9327FF098596A9FB6EF74AA77B790EF1DDA59B1FB6E1F4EA1750AF175DA5EC8C",
+      "export_hash": "9327ff098596a9fb6ef74aa77b790ef1dda59b1fb6e1f4ea1750af175da5ec8c",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "execution",
       "source": "devin-bundle",
       "purpose": "Use when RUNNING an already-written plan/spec/tickets with checkpoints, implementing a feature/fix per spec, deciding how much human review a task needs, or working unattended through local Markdown issues in a blocking DAG (AFK loop). Plans get authored upstream in `planning`/`intake`.",
-      "export_hash": "850B8F1D1D7BD580682F313C7E65AA5EFF36D3C1774C09CB4E6511FB04CD6B35"
+      "export_hash": "850b8f1d1d7bd580682f313c7e65aa5eff36d3c1774c09cb4e6511fb04cd6b35"
     },
     {
       "name": "fact-check",
@@ -581,7 +581,7 @@
       "source": "devin-bundle",
       "purpose": "Use when the user needs to compact the current conversation into a document for another agent to continue.",
       "original_path": "%APPDATA%\\devin\\skills\\handoff",
-      "export_hash": "19E40CD2381A7A3D7E0442DE28E6ABF034167EC76E1A567B90488464F51DA431",
+      "export_hash": "19e40cd2381a7a3d7e0442de28e6abf034167ec76e1a567b90488464f51da431",
       "exported_at": "2026-11-10T09:52:40.729492"
     },
     {
@@ -700,7 +700,7 @@
       "source": "devin-bundle",
       "purpose": "Use when routing and orchestrating any work across this Devin bundle through one universal entry point, including direct specialist skills, multi-skill flows, and local AFK issues.",
       "original_path": "%APPDATA%\\devin\\skills\\leo",
-      "export_hash": "2C79E0AE710CE2CB3919F5EAAC398587B73B126F5CBCB53840D3271C376BE1E0",
+      "export_hash": "2c79e0ae710ce2cb3919f5eaac398587b73b126f5cbcb53840d3271c376be1e0",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -835,7 +835,7 @@
       "source": "created:v2.8.0 skill-coverage",
       "purpose": "Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure.",
       "original_path": "%APPDATA%\\devin\\skills\\performance",
-      "export_hash": "0fe2def291919f0470e5755b61da75302e7c9344b242a71234bc5f1a5582ae70",
+      "export_hash": "dbd27d4c8d7960b4b05c18ee5881717d69f2d7b45e55acb5f7367ec12314eded",
       "exported_at": "2026-09-08T21:39:22.459109"
     },
     {
@@ -886,7 +886,7 @@
       "source": "devin-bundle",
       "purpose": "Use when (1) researching agent harness design patterns, comparing Devin CLI to PrimeAgent/RLM architectures, or evaluating which PrimeAgent features could be adapted to Devin CLI; (2) emulating A2A messaging between subagents or between subagents and the parent agent across time within Devin CLI's ephemeral subagent runtime; (3) capturing recurring failure patterns or reusable tactics as skills/rules/hooks via the Continual Harness /refine self-improvement loop; or (4) deciding whether to dispatch a subagent, which profile to use, and how many concurrent agents to run (subagent dispatch profile/budget selection).",
       "original_path": "%APPDATA%\\devin\\skills\\primeagent-reference",
-      "export_hash": "5FD790B8371AF71FEC181B44D0CB29F14A30A61427A50A430F60198BB7462A18",
+      "export_hash": "5fd790b8371af71fec181b44d0cb29f14a30a61427a50a430f60198bb7462a18",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -921,7 +921,7 @@
       "name": "prompt-compiler",
       "source": "devin-bundle",
       "purpose": "Use when the user invokes /prompt or asks to compile, refine, or optimize a prompt before execution — interactive pre-flight optimizer that produces an approved super-prompt saved to .devin/scratch/optimized_ready.md.",
-      "export_hash": "AB783A7A3FDBD626984E94D3E9BA1289F2ED6D0E790A82E5E3B4723DE1F3DD40"
+      "export_hash": "ab783a7a3fdbd626984e94d3e9ba1289f2ed6d0e790a82e5e3b4723de1f3dd40"
     },
     {
       "name": "prototype",
@@ -1059,7 +1059,7 @@
       "source": "devin-bundle",
       "purpose": "Use when evolving the agent's own capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule.",
       "original_path": "%APPDATA%\\devin\\skills\\self-extend",
-      "export_hash": "0A113327C00857C15E7AB3F8E1A6BD525502705401279673F5DD6D8A99A42F07",
+      "export_hash": "0a113327c00857c15e7ab3f8e1a6bd525502705401279673f5dd6d8a99a42f07",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
@@ -1293,7 +1293,7 @@
       "source": "devin-bundle",
       "purpose": "Use when a web app feels slow, when a PR touches frontend/backend performance, or when asked for the concrete fix-list behind a performance complaint.",
       "original_path": "%APPDATA%\\devin\\skills\\web-perf-checklist",
-      "export_hash": "1EF704FC00A87C05B59AB84E06664F1AE5DC94DB4B49AE2A32AD45520F71A62F",
+      "export_hash": "1ef704fc00a87c05b59ab84e06664f1ae5dc94db4b49ae2a32ad45520f71a62f",
       "exported_at": "2026-11-05T07:49:44.220070"
     },
     {
