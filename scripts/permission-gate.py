@@ -129,7 +129,8 @@ def _gh_ok(parts):
     if verbs is None:
         return False
     return bool(args) and args[0].lower() in verbs and \
-        all(not a.startswith("-X") for a in args)
+        all(not a.startswith("-X") and a not in ("-w", "--web")
+            for a in args)
 
 
 def _exec_verdict(command):
