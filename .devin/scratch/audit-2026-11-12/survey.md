@@ -169,3 +169,16 @@ Reviewer over all 42 commits found real residuals:
   correctly
 - residual nits filed as tracking issue #565
 - gate probe matrix final: 18 approve / 9 silent on representative commands
+
+## Round 11 - permission-gate 4th-pass review (#566)
+Critical residuals found live and fixed:
+- `git branch -u<up>` bundled upstream-write via prefix-match -> anchored
+  bundle pattern ^-[avlrqf]+$ (mutating letters dropped)
+- `ls-remote -u<cmd>` attached upload-pack exec -> ^-u prefix
+- brace expansion `{--output=x,--stat}` smuggles flags inside one token ->
+  {} added to UNSAFE_CHARS
+- `hostname -F<f>`/`--file=<f>` attached -> prefix block
+- `./cat.ps1`/`ls.bat` script-exec-as-safe-binary -> ext-strip .exe only
+- `gh auth status -t`/`--show-token` credential print -> blocked
+- `ls-files --resolve-undo`, `rg -z/--search-zip` -> blocked
+- _hookrun non-dict JSON payload crashed to real stderr under fail_closed
