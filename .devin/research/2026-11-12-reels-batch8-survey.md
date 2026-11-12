@@ -22,3 +22,12 @@ Pipeline: extensions/asr/transcribe.py --lang pt.
 
 Achado infra no recon: transcribe.py nao pinna stdout UTF-8 no Windows ->
 JSON saiu cp1252 (mojibake em transcricoes PT). Issue #573.
+
+## Outcomes (fechamento 14:35)
+
+- Resolvidos: #567 (PR #575), #569 (PR #575), #573 (PR #574 + #577 audit[42]), #570 (spike validado)
+- Covered: #571 (web-perf-checklist), #568 (cu_agent_desktop)
+- Backlog: #572 (GPU eval; torch local cpu-only)
+- NOTEs viraram pointers duraveis: ai3d-gen/Seacore, red-team/WRNeo, ai-tools/Minimite+TaskMon, devin-integrate/OpenWorker (PR #576)
+- Achado infra: transcribe stdout pin -> [42] novo check + 39 arquivos pinados total
+- PRs: #574, #575, #576, #577 merged
