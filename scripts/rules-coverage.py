@@ -116,7 +116,8 @@ def controls_for(text):
     return sorted(set(hits))
 
 
-def main(argv):
+def main(argv=None):
+    argv = argv if argv is not None else sys.argv
     files = argv[1:]
     if not files:
         files = list(DEFAULT_RULE_FILES)

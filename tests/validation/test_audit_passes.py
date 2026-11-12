@@ -33,10 +33,16 @@ def test_audit_exits_zero():
 
 
 def test_audit_check_count():
-    """audit.py should report 26 checks (updates when new checks added)."""
+    """Every numbered check section in audit.py must appear in the output."""
+    import re
+    src = (ROOT / "audit.py").read_text(encoding="utf-8")
+    declared = sorted({int(m) for m in
+                       re.findall(r"^print\('\[(\d+)\]", src, re.M)})
+    assert len(declared) >= 40, f"expected >=40 check sections, found {len(declared)}"
     result = run_audit()
-    assert "31 CHECKS PASSED" in result.stdout or "Errors:   0" in result.stdout, \
-        f"audit.py check count mismatch\n{result.stdout[-300:]}"
+    missing = [n for n in declared if f"[{n}]" not in result.stdout]
+    assert not missing, f"checks missing from output: {missing}"
+
 
 
 def test_audit_validates_declared_counts():

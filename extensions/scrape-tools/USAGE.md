@@ -11,6 +11,7 @@ structured data out of web pages. All tools print JSON to stdout.
 | `parse.py` | Offline HTML parsing: file/stdin + `--css`/`--xpath` + `--first`. Zero network. |
 | `scrape.py` | HTTP fetch via `Fetcher` (curl_cffi): `--impersonate`, `--adaptive`, `--browser`. |
 | `st_common.py` | Shared: JSON contract, node extraction, storage root, browser-tier check. |
+| `dom_elements.py` | Adapts parse/scrape node JSON into `cu_dom_picker` elements (stdlib only). |
 | `requirements.txt` | `scrapling[fetchers]==0.4.15` (pinned: 0.x breaks across releases). |
 
 ## Interpreter

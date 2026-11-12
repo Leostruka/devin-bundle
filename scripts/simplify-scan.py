@@ -148,7 +148,8 @@ def scan(root):
     return {"ok": True, "totals": totals, "items": items}
 
 
-def main(argv):
+def main(argv=None):
+    argv = argv if argv is not None else sys.argv
     root = Path(__file__).resolve().parent.parent
     args = argv[1:]
     for i, a in enumerate(args):

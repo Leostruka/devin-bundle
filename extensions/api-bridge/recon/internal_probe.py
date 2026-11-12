@@ -126,7 +126,10 @@ def fields(b: bytes):
 
 
 def main() -> None:
-    creds = tomllib.load(open(Path.home() / "AppData/Roaming/devin/credentials.toml", "rb"))
+    _creds = os.environ.get("DEVIN_CREDENTIALS") or (
+        Path(os.environ.get("APPDATA", Path.home() / "AppData/Roaming"))
+        / "devin" / "credentials.toml")
+    creds = tomllib.load(open(_creds, "rb"))
     key = creds["windsurf_api_key"]
     base = creds["api_server_url"].rstrip("/")
     tools = [tool("calculator", "Evaluate an arithmetic expression",
