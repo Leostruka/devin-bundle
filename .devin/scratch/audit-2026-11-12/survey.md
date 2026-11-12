@@ -77,3 +77,18 @@
 - Ledger reconciled: 0 Outdated/Modified/Removed/Foreign; live audit.py,
   TOOLS-MAP, manifest synced; stale operate-spline live dir removed.
 - Result: audit 41 checks, 0 errors, 0 warnings — first fully clean run.
+
+## Round 4 - stdin utf-8 sweep + doc drift guards
+
+- #557 RESOLVED: check [39] missed json.load(sys.stdin); 26 hook scripts
+  unpinned for cp1252 mojibake. All pinned via guarded reconfigure;
+  [39] extended to flag the pattern (#558 gate + #559 mass-pin).
+- TOOLS-MAP drift: 6 stale entries (decision-queue, design-lint-gate,
+  permission-gate, git-diff-stat, token-saver, rl-resume-detect). Fixed +
+  new test_tools_map_hooks.py mechanically guards inner-module and
+  entry-point rows (#556).
+- #555 filed: type:prompt hooks = undocumented LLM-evaluated gate surface;
+  spike only, no contract in bundled docs.
+- False-positive fix: [39] regex restricted to real call forms after
+  cu_actions.py docstring match (#560).
+- Live resynced; ledger clean; audit 0 errors.
