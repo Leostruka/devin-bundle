@@ -72,26 +72,33 @@ def test_invalid_json_fail_open():
     assert result.returncode == 0
 
 
-def test_mutation_remove_exit_code():
-    """Mutating exit(2)→exit(0) must be detected: the gate no longer blocks."""
-    with mutation(PUSH_SCRIPT, mut_remove_exit_code) as result:
-        # With the mutation, even a blocking scenario should exit 0
-        # We can't easily create a failing test scenario in CI, but we can
-        # verify the mutation changes behavior by checking the script still runs
-        code = run_push_check("git push --dry-run origin main")
-        # With mutation, dry-run still passes (exit 0), but a real block
-        # scenario would also pass — that's the bug we're detecting.
-        # The mutation is "killed" if we can demonstrate the gate is broken.
-        # For this test, we verify the mutation was applied and restored.
-        killed = True  # structural verification: mutation context ran without error
-        assert killed, "mut_remove_exit_code mutation survived"
+def _secrets_block_dir(tmp_path):
+    """Project dir that deterministically triggers the unmasked-secrets block."""
+    (tmp_path / "credentials.toml").write_text(
+        'api_key = "definitely-a-real-secret-value"\n', encoding="utf-8"
+    )
+    return str(tmp_path)
 
 
-def test_mutation_empty_function():
-    """Emptying main() must be detected: the hook does nothing."""
-    with mutation(PUSH_SCRIPT, mut_empty_function) as result:
-        code = run_push_check("git push origin main")
-        # With empty main(), it should exit 0 (no blocking) even for push
-        # The mutation is detected if we can verify the behavior changed
-        killed = code == 0  # empty function allows everything
-        assert killed, "mut_empty_function mutation survived"
+def test_unmasked_secrets_block(tmp_path):
+    """credentials.toml with a real secret must block the push (exit 2)."""
+    code = run_push_check("git push origin main", cwd=_secrets_block_dir(tmp_path))
+    assert code == 2, f"unmasked secret should block, got exit {code}"
+
+
+def test_mutation_remove_exit_code(tmp_path):
+    """Mutating exit(2)→exit(0) must be detected: blocks print but don't stop."""
+    with mutation(PUSH_SCRIPT, mut_remove_exit_code):
+        code = run_push_check("git push origin main",
+                              cwd=_secrets_block_dir(tmp_path))
+        killed = code != 2
+        assert killed, "mut_remove_exit_code survived: secrets scenario still blocked"
+
+
+def test_mutation_empty_function(tmp_path):
+    """Emptying main() must be detected: no checks run at all."""
+    with mutation(PUSH_SCRIPT, mut_empty_function):
+        code = run_push_check("git push origin main",
+                              cwd=_secrets_block_dir(tmp_path))
+        killed = code != 2
+        assert killed, "mut_empty_function survived: secrets scenario still blocked"

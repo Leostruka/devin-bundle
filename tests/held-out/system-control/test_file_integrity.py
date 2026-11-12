@@ -18,10 +18,7 @@ def load(name):
 
 @pytest.fixture
 def files():
-    try:
-        return load("sc_files")
-    except ModuleNotFoundError:
-        pytest.skip("sc_files not implemented yet")
+    return load("sc_files")
 
 
 def sha(b):
