@@ -43,3 +43,11 @@
 - #546 fixed (PR #548): compact-gate's own _ensure_daemon lacked the #522 fail-fast (that fix covered extensions/laya-tools lc.ensure_daemon only). Now returns Popen, breaks poll on dead spawn, hook call site caps wait at LAYA_SPAWN_WAIT_S=8s (daemon detached, abstains this turn, boots for next). Installers provisioned laya-tools venv (was hardcoded computer-use/scrape-tools only — actual root cause of "daemon never starts").
 - #547 test-half fixed (PR #549): egm test now asserts the mutated entry's name in the mismatch list — unrelated drift no longer fails serial merges. Verified live: first clean `git push` through the gate post-#544-fix.
 - #531 closed via PR #550: audit check [41] pins compat-doc version vs bundle-identity; summary count self-derives.
+
+## Loop close 16:40
+
+- #546 closed: laya-tools venv now EXISTS live; registered daemon healthy; orphan killed.
+- #547 closed: serial merges no longer gate on unrelated export_hash drift (egm test asserts per-entry).
+- #531 closed: audit check [41] live; dynamic count.
+- Open remainder: #541 (PermissionRequest gate design), #431 (user decision).
+- Final: 0 PRs, audit 0 errors/1 benign warn, changelog backfilled, live fully synced.
