@@ -86,7 +86,8 @@ def frontier(issues_glob):
     return ready[0] if ready else None, tickets
 
 
-def main(argv):
+def main(argv=None):
+    argv = argv if argv is not None else sys.argv
     dry = "--dry-run" in argv
     intents_dir = ".devin/rts/intents"
     issues_glob = ".devin/scratch/*/issues/*.md"

@@ -108,7 +108,8 @@ def _record(args, piped=None):
     return 0
 
 
-def main(argv):
+def main(argv=None):
+    argv = argv if argv is not None else sys.argv
     p = argparse.ArgumentParser(prog="subagent-trace")
     p.add_argument("mode", nargs="?", default=None,
                    choices=["record", "check-abort"])
