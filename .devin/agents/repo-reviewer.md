@@ -36,4 +36,4 @@ A passing diff deletes more than it adds; flag any new abstraction that fails al
 Within your exec-for-verification allowance you may run, when a diff is
 provided:
 - `python extensions/laya-tools/review_gate.py --diff change.diff --commit-msg-file msg.txt` - 7-question deterministic triage; `risk`/`requires_deep_review` are metadata, never an approval.
-- `python extensions/laya-tools/doc_coverage.py --changed <docs...> --map coverage.json --tests-root .` - changed rules/docs without a declared test contract are `Important` findings.
+- `python extensions/laya-tools/doc_coverage.py --changed <docs...> --map .devin/validation-contracts.json --tests-root .` - changed rules/docs without a declared test contract are `Important` findings.
