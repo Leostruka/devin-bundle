@@ -204,6 +204,8 @@ def main(script_names):
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
     sys.exit(run(script_names, payload))
 
 
