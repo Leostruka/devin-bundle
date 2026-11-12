@@ -35,3 +35,9 @@
 - .devin/agents + apps audit via researcher: clean; "README in VALID_PROFILES"
   flagged but is a real runtime profile -> no defect
 - install.sh/install.ps1 laya-tools venv parity confirmed
+
+## Rounds 8-9 (14:00-15:15) - residual vectors + holistic review
+- #563 gh -w/--web side-effect blocked; README extensions table 30/30
+- #564 whole-day-diff review: hookrun stderr gating, hostname/date
+  positional sets, [39] exemption scope, ledger guard boundary, mcp content
+- verify: audit 48/48 clean, live probe all vectors, ledger 0 drift
