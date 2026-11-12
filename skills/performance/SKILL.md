@@ -24,6 +24,30 @@ Measure, profile, and optimize speed, throughput, and resource usage.
 5. **Re-measure.** Confirm improvement with the same workload.
 6. **Set guardrails.** Add budgets, alerts, or regression tests.
 
+## Load-test + DB tuning playbook
+
+The "projecto real" loop (compose -> carga -> medir -> ajustar):
+
+1. **Reproduzir deps com docker-compose.** Todo projeto deve ter
+   Dockerfile + compose das dependencias (db, cache, proxy). Rode a
+   app e o banco como servicos separados; prefira Docker em Linux -
+   em Mac/Windows o daemon numa VM distorce medidas.
+2. **Isolar gargalos de rede.** `network_mode: host` no compose remove
+   o overhead da bridge NAT do Docker; se a latencia muda com host
+   mode, o gargalo era rede, nao app.
+3. **Gerar carga real.** Gatling (simulacao em Scala, relatorio HTML)
+   ou Vegeta (CLI, `attack | report`) batendo no endpoint real.
+   Meça p50/p95/p99 e throughput, nao media.
+4. **Verificar se o banco e o gargalo.** `EXPLAIN ANALYZE` na query
+   lenta mostra custo real por plano (seq scan vs index). Full-text
+   search: compare `LIKE '%x%'` vs `tsvector` antes de trocar de db.
+5. **Dimensionar pool de conexoes.** Observe `pg_stat_activity`
+   (pgAdmin) sob carga: pool maior que conexoes usadas e desperdicio;
+   fila de espera = pool pequeno demais. Formula inicial:
+   `pool = (cores * 2) + spindle_count`.
+6. **Threads vs fibers.** Linguagens/IO model mudam quantas conexoes
+   e quanta RAM cada worker precisa; ajuste pool e limits juntos.
+
 ## See also
 
 - `debugging` — failure and root-cause analysis.

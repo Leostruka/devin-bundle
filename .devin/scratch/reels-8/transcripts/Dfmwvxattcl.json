@@ -1,0 +1,89 @@
+{
+ "ok": true,
+ "text": "Existe uma IA Hacker sem censura? Pergunte ao Chat GPT como testar a segurança da sua própria RedWi-Fi e ele recusa. Mas criminoso, não pede permissão. Segundo a própria OpenAI, hackers ligados ao Irã já usaram o Chat GPT pra estudar ataques a sistemas industriais. Pra equilibrar o jogo, nasceu o White Rabbit Neil, uma IA de código aberto, feita pra saber segurança sem travas. Ela conhece o Mitre ATT, CK, CVS e táticas de ataque e ajuda a montar pen tests, relatórios e análises. A versão 3 tem um modelo aberto que roda no seu próprio computador. Hoje, ela também aparece com o nome Deep Hat. Mas atenção, sem censura, não é sem lei. Atacar sistemas sem autorização é crime. Use só no seu laboratório. E aí, você usaria o MyAis sem travas? Comenta aí.",
+ "segments": [
+  {
+   "start": 0.0,
+   "end": 3.0,
+   "text": "Existe uma IA Hacker sem censura?"
+  },
+  {
+   "start": 3.0,
+   "end": 8.84,
+   "text": "Pergunte ao Chat GPT como testar a segurança da sua própria RedWi-Fi e ele recusa."
+  },
+  {
+   "start": 8.84,
+   "end": 11.2,
+   "text": "Mas criminoso, não pede permissão."
+  },
+  {
+   "start": 11.2,
+   "end": 15.76,
+   "text": "Segundo a própria OpenAI, hackers ligados ao Irã já usaram o Chat GPT"
+  },
+  {
+   "start": 15.76,
+   "end": 18.44,
+   "text": "pra estudar ataques a sistemas industriais."
+  },
+  {
+   "start": 18.44,
+   "end": 21.6,
+   "text": "Pra equilibrar o jogo, nasceu o White Rabbit Neil,"
+  },
+  {
+   "start": 21.6,
+   "end": 25.8,
+   "text": "uma IA de código aberto, feita pra saber segurança sem travas."
+  },
+  {
+   "start": 25.8,
+   "end": 30.48,
+   "text": "Ela conhece o Mitre ATT, CK, CVS e táticas de ataque"
+  },
+  {
+   "start": 30.48,
+   "end": 34.08,
+   "text": "e ajuda a montar pen tests, relatórios e análises."
+  },
+  {
+   "start": 34.08,
+   "end": 37.8,
+   "text": "A versão 3 tem um modelo aberto que roda no seu próprio computador."
+  },
+  {
+   "start": 37.8,
+   "end": 40.8,
+   "text": "Hoje, ela também aparece com o nome Deep Hat."
+  },
+  {
+   "start": 40.8,
+   "end": 44.0,
+   "text": "Mas atenção, sem censura, não é sem lei."
+  },
+  {
+   "start": 44.0,
+   "end": 46.8,
+   "text": "Atacar sistemas sem autorização é crime."
+  },
+  {
+   "start": 46.8,
+   "end": 48.68,
+   "text": "Use só no seu laboratório."
+  },
+  {
+   "start": 48.68,
+   "end": 51.4,
+   "text": "E aí, você usaria o MyAis sem travas?"
+  },
+  {
+   "start": 51.4,
+   "end": 52.2,
+   "text": "Comenta aí."
+  }
+ ],
+ "model": "base",
+ "source": "https://www.instagram.com/linuxparahackers/reel/Dfmwvxattcl/",
+ "detected_lang": "pt"
+}
