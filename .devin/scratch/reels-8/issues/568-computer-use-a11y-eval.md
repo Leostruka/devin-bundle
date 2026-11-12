@@ -3,4 +3,4 @@
 verdict: ADAPT
 gh: #568
 source: .devin/research/2026-11-12-reels-batch8-survey.md
-status: open
+status: covered (cu_agent_desktop, eval #423)

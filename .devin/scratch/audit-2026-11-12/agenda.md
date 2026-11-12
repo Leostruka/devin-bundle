@@ -54,3 +54,14 @@
   -u attached, brace-expansion, -F<file>, ext-strip, auth -t)
 - live probe: 8 bypasses silent, reads intactos
 - fim do expediente de auditoria
+
+## Bloco 4 — deep-dive 14 links (13:30-18:00)
+
+- [x] 13:30-14:00 agenda + recon: reels-surveyor, batch-8 dir
+- [x] 14:00-14:30 transcricao 12/12 (asr --lang pt, stdout fix meio-caminho)
+- [x] 14:30-14:45 fetch 2 web links (odyssey, akita) + map
+- [x] 14:45-15:00 survey .devin/research/2026-11-12-reels-batch8-survey.md
+- [x] 15:00-15:15 issues #567-#573 + locais
+- [x] 15:15-16:30 exec: #573 pins (36 ext, PR #574), #567+#569 (PR #575 merged), #568/#571 covered
+- [ ] 16:30-17:30 #574 merge + live sync + close-out; spikes #570/#572 se couber
+- [ ] 17:30-18:00 buffer final + report
