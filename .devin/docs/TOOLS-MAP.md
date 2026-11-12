@@ -114,15 +114,15 @@ renderizada para `config.json.hooks` no install (ver
 |---|---|---|---|---|
 | PreToolUse | `^exec$` | `pre-exec-guard.py` (300s) | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard | sim |
 | PreToolUse | `^(write\|edit\|notebook_edit)$` | `pre-write-guard.py` (90s) | always: architecture-gate, validate-tool-args, no-em-dash; + check-ai-signature, validate-mermaid apenas em `write`/`edit` | sim |
-| PostToolUse | `^(exec\|mcp_call_tool)$` | `post-exec.py` (30s) | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect | não |
+| PostToolUse | `^(exec\|mcp_call_tool)$` | `post-exec.py` (30s) | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat | não |
 | PostToolUse | `^exec$` | `dep-audit-gate.py` (35s) | dep-audit install pre-filter + scanner check; [DEP-AUDIT] additionalContext em findings; fail-open | não |
-| PostToolUse | `^(write\|edit)$` | `memory-post-edit.py` (10s) + `compact-gate.py` (15s) + `file-size-guard.py` (warn) | entry points diretos (sem agregador) | não |
+| PostToolUse | `^(write\|edit)$` | `memory-post-edit.py` (10s) + `compact-gate.py` (15s) + `file-size-guard.py` (warn) + `design-lint-gate.py` (10s) | entry points diretos (sem agregador) | não |
 | PostCompaction | (nenhum) | `constraint-pinning.py` (5s) | direto; evento canônico de pinning | não |
-| UserPromptSubmit | (nenhum) | `user-prompt.py` (20s) | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate | não |
+| UserPromptSubmit | (nenhum) | `user-prompt.py` (20s) | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate, token-saver | não |
 | SessionStart | (nenhum) | `session-start.py` (10s) | constraint-pinning, context-budget | não |
-| Stop | (nenhum) | `stop-guard.py` (25s) | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash | não |
+| Stop | (nenhum) | `stop-guard.py` (25s) | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect, decision-queue | não |
 | SessionEnd | (nenhum) | `memory-stop.py` (5s) | direto | não |
-| PermissionRequest | (nenhum) | (array vazio) | nenhum hook ligado | não |
+| PermissionRequest | `^exec$` | `permission-gate.py` (15s) | direto; approve-only em read-only estrito, silêncio = humano decide | não |
 
 Merge semantics (`_hookrun.run`): qualquer `decision: block` vence (a
 razão do primeiro blocker é preservada; exit 2 propaga);
@@ -132,7 +132,6 @@ stdout não-JSON vai para stderr; um script interno que falha é fail-open
 hooks.v1.json cobre apenas falha do próprio entry point.
 
 **Eventos disponíveis no runtime mas não utilizados pelo bundle:**
-- `PermissionRequest`: dispara quando o agente precisa de decisão de permissão. Matcher em `tool_name`. Ligado com array vazio (documenta intenção de não interceptar).
 - `PreCompact` (3000.11.92): dispara antes da compactação; matcher `manual`/`auto`; falhas não bloqueiam. Não ligado: nenhum script do bundle precisa agir antes da compactação; `compact-gate.py` já decide o trigger antes.
 - `PostCompact` (3000.11.92): contrato novo, coexiste com `PostCompaction` (legacy, ainda suportado). `PostCompaction` é o evento canônico do pinning hoje; `PostCompact` fica deliberadamente desligado para não disparar `constraint-pinning.py` duas vezes por compactação. Se o CLI deprecar `PostCompaction`, migrar o matcher para `PostCompact` com um marker por `session_id` para idempotência.
 
