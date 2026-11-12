@@ -51,3 +51,16 @@
 - #531 closed: audit check [41] live; dynamic count.
 - Open remainder: #541 (PermissionRequest gate design), #431 (user decision).
 - Final: 0 PRs, audit 0 errors/1 benign warn, changelog backfilled, live fully synced.
+
+## Loop continuation (post-merge queue)
+
+- #541 RESOLVED: PermissionRequest now wired. Contract verified from bundled
+  CLI docs (stdin tool_name/tool_input, decision approve|block). Implemented
+  scripts/permission-gate.py - approve-only on provably read-only single-
+  invocation exec commands (no shell composition chars, allowlist git/gh/
+  rg/fd/ls/...); silent on everything else so the human prompt proceeds.
+  Never emits block; fail_closed:false. PR #551 merged, 8 tests.
+- #552 merged: stale .gitattributes agent-rts rule removed; laya
+  *.proposal.json ignored (transient calibration artifacts).
+- Counts updated: 55 scripts, 14 hook entry points (6 consolidated + 8 direct).
+- Remaining open issues: #431 only (user decision on shadow->assist).
