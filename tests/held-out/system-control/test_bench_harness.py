@@ -17,10 +17,7 @@ def load(name):
 
 @pytest.fixture
 def bench():
-    try:
-        return load("sc_bench")
-    except ModuleNotFoundError:
-        pytest.skip("sc_bench not implemented yet")
+    return load("sc_bench")
 
 
 class FakeClock:
