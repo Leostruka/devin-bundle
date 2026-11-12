@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(cli-contract): spec-consistency + install-ledger exit non-zero on ok:false (#533) (#545)
+- fix(skills): remove dead operate-spline skill — spline-operator removed in #72 (#540)
+- fix: script argv convention main(argv=None) + recon probe path (#539)
+- fix: subagent profile contradictions — sentinel write, reviewer exec (#538)
+- fix(audit): context-pressure cascade + manifest/pointer hygiene + hookrun stderr-under-fail_closed (#534, #544)
+- test: repair vacuous mutation/audit checks (#542) (#543)
+- fix: audit exit code + ci aggregator needs:[changes] coverage (#536)
+- docs: audit staleness batch — 184/185 counts, 3000.12.43 (#537)
 - changelog: ref #524 (#525)
 - fix(ignore): recon/*.jsonl never matched inside own dir — credential captures unignored (#526)
 - changelog: backfill refs #521-#523 (#524)
