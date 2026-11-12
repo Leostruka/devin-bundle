@@ -1423,7 +1423,7 @@
     {
       "name": "decision-queue.py",
       "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
-      "export_hash": "8a00ca664f25aee4a14c8d2086aab66c83769fcd7be23ef97cfc8e5d289bfc27",
+      "export_hash": "28449CBF29D7224AB068747C5C9C72FDE553F23A0DC95CC0379811645AB0895C",
       "exported_at": "2026-11-10T06:59:34.745097"
     },
     {
@@ -1493,7 +1493,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "3c914f552399d9315e1ff5c886ee1fba674bdadcf1e4d8b82ef1ae69f08bb4d5",
+      "export_hash": "99E7C56E501384041D3F5961162D6A03A9F8C44C817227F6720F4ED4826382FF",
       "exported_at": "2026-11-08T08:50:55.845199"
     },
     {
@@ -1644,7 +1644,7 @@
     {
       "name": "subagent-trace.py",
       "purpose": "per-dispatch trace records (.devin/subagent-trace.jsonl) + abort flag channel for orchestrated subagents",
-      "export_hash": "7adc78f455f3d07b868a8957156e4a5defd5ec74de6a8b4d443125ae83ba4147",
+      "export_hash": "000957B801A7417B48DE30DDB8F4B9231DB6C0AF8BAD4196A51B83E4692F5383",
       "exported_at": "2026-11-10T07:19:30.736758"
     },
     {
@@ -1699,7 +1699,7 @@
       "name": "permission-gate.py",
       "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
       "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
-      "export_hash": "2c5205553072713a729ae654e319ad96cae7ed1ed138e746b2662a572c1752f1"
+      "export_hash": "EFF3A5263553153B3F505269DE31B0FBA0F3D077785B5E4C876251BA8491DFD6"
     }
   ],
   "script_count": 55,

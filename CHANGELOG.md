@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix(permission-gate): deny-by-default arg shapes; stdin pins; ledger prune guard (#561)
 - fix(audit): [39] restrict to real json.load call forms - docstring false positive (#560)
 - fix(scripts): stdin utf-8 pins across 26 hooks + audit [39] json.load coverage (#557, #558, #559)
 - docs+test: TOOLS-MAP hooks resynced + mechanical drift guard (#556)
