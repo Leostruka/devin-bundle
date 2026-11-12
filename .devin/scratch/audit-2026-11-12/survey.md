@@ -138,3 +138,12 @@ install.sh already provisions laya-tools - parity confirmed.
   verified today's stdin pin now stores UTF-8 correctly (probe record added
   and removed)
 - post-exec mcp payload, pre-exec layering, data/*.json refs - all clean
+
+## Round 8 - residual gate vector + README coverage (#563)
+- gh non-api reads approved `view --web` (opens browser = side effect) ->
+  -w/--web now rejected; 9 tests green; #563 merged
+- README extensions table: claimed "com venv proprio" but mixed venv/non-venv
+  rows; now covers all 30 dirs on disk (added api-bridge, busybar, ppisp-prep)
+- manifest: extensions intentionally not tracked (install handles dir-level)
+- audit [9c] already verifies agent hashes - manual recheck confirmed clean
+- Full suite after all gate work: 2491 pass / 8 skip
