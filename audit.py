@@ -569,7 +569,10 @@ if os.path.exists(live_cfg) and os.path.exists(bundle_hooks_src):
                 s = s.replace(home.replace('\\', '/').rstrip('/'), '')
             # render-user-hooks.py now emits a resolved interpreter path
             # (sys.executable / detected python); collapse it to `python`.
-            s = re.sub(r'[A-Za-z]:[\\/][^"\']*?[\\/]pythonw?\.exe',
+            # Scoop shims resolve to `...\current\python` (no .exe). In the
+            # serialized JSON the trailing quote arrives escaped as `\"`, so
+            # the next char may be a backslash — require only "not a path char".
+            s = re.sub(r'[A-Za-z]:[\\/][^"\']*?[\\/]pythonw?(?:\.exe)?(?=(?:\\[\'"])|[\s\'"]|$)',
                        'python', s)
             s = re.sub(r'(?<![\w./\\-])pythonw?\.exe', 'python', s)
             s = s.replace('pythonw ', 'python ')
