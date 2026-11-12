@@ -10,9 +10,11 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 1. **Event**: Devin CLI lifecycle event (`PreToolUse`, `PostToolUse`,
    `UserPromptSubmit`, `SessionStart`, `PostCompaction`, `Stop`,
    `SessionEnd`; `PermissionRequest` wired empty).
-2. **Entry point**: one `command` per matcher in `hooks.v1.json`. Ten
-   commands total, each `python scripts/<entry>.py`. Inner scripts are
-   never bound directly.
+2. **Entry point**: `command`s per matcher in `hooks.v1.json`. Thirteen
+   commands total (six consolidated `_hookrun` entry points plus seven
+   direct single-script commands; the write/edit PostToolUse matcher
+   carries four direct commands). Inner scripts are never bound directly
+   under consolidated entry points.
 3. **Inner scripts**: the entry point imports `_hookrun` and lists the
    check scripts to run in-process, in order.
 

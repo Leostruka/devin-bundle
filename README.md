@@ -122,7 +122,7 @@ flowchart TD
 
 ### 1. Regras globais
 
-`AGENTS.md` (~11KB) é carregado em toda sessão e contém 28 entradas de regra — 20 corpos consolidados + 8 aliases de regras fundidas — formuladas principalmente como restrições e complementadas por procedimentos verificáveis. As regras centrais determinam que o agente:
+`AGENTS.md` (~11KB) é carregado em toda sessão e contém 24 entradas de regra — 19 corpos consolidados + 5 aliases de regras fundidas — formuladas principalmente como restrições e complementadas por procedimentos verificáveis. As regras centrais determinam que o agente:
 
 - descubra e invoque skills antes de ações não triviais;
 - execute pedidos claros sem reformular ou oferecer opinião não solicitada;
@@ -208,7 +208,7 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 54 scripts Python em `scripts/`: 11 entry points de hooks (6 consolidados que executam 24 módulos de check in-process via `_hookrun`, 5 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
+Há 54 scripts Python em `scripts/`: 13 entry points de hooks (6 consolidados que executam 27 módulos de check in-process via `_hookrun`, 7 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
 
 ### 6. Configuração e distribuição
 

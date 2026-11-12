@@ -2,7 +2,7 @@
 
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-10-31).
 Só custam quando invocadas. Use isto (~3800 tok) em vez de `skill list` (~1600 tok).
-Subconjunto curado de alto uso - o índice completo das 178 é `manifest.json`
+Subconjunto curado de alto uso - o índice completo das 185 é `manifest.json`
 (`skills[].name`). Skills consolidadas são routers: o SKILL.md é caro de entrada;
 detalhe vive em `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 
@@ -66,7 +66,7 @@ Raramente >3 por tarefa (~5000 tok).
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
-| `debugging` | Pipeline 6-fases unificado + diagnóstico跨 builds/jobs/envs (+8.8k defer) | 615 | "Debug this", bug não óbvio, CI failing |
+| `debugging` | Pipeline 6-fases unificado + diagnóstico cross builds/jobs/envs (+8.8k defer) | 615 | "Debug this", bug não óbvio, CI failing |
 
 ## Git/GitHub
 
