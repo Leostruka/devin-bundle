@@ -101,7 +101,7 @@ validados (parity com `agents/*.md` + `.devin/agents/*.md` garantida por
 
 ## Hooks (8 eventos, 14 entry points, 55 scripts)
 
-Duas camadas: `hooks.v1.json` liga 13 comandos (6 entry points consolidados + 7 diretos); cada
+Duas camadas: `hooks.v1.json` liga 14 comandos (6 entry points consolidados + 8 diretos); cada
 entry point agregador executa seus scripts internos num único processo
 via `scripts/_hookrun.py` (merge rules em `.devin/docs/HOOKS-PIPELINE.md`,
 fluxo em `.devin/docs/diagrams/hook-event-flow.md`). Scripts internos
