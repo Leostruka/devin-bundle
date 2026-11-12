@@ -117,3 +117,13 @@ Second reviewer pass on hardened gate found quote-collapse bypass class:
 Live probe: all attack vectors silent, reads approve. 41/41 audit clean.
 Also: install.ps1 header comment updated (laya-tools venv was missing);
 install.sh already provisions laya-tools - parity confirmed.
+
+## Round 6b - residuals verified clean
+- .devin/agents/ (4 profiles) + .devin/apps/ (agenda-roteiro, reels-surveyor):
+  all referenced paths/subcommands exist; VALID_PROFILES "README" = real
+  runtime profile (not a defect)
+- data/*.json: 7 files valid, all referenced (9-75 refs each)
+- post-exec.py handles exec + mcp_call_tool payloads silently, rc=0
+- Flag-injection probes on live gate: git -c/-C/--git-dir, gh -XPOST space/
+  concat forms -> all silent; tag -n5 + positional -> silent (conservative)
+- install.sh/bash -n + export.sh syntax OK; validation suite 332/332 pass
