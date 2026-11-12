@@ -50,15 +50,20 @@ GIT_SUBVERBS = {
 # git arg shapes that turn a read verb into a side effect.
 GIT_DANGEROUS_ARG = re.compile(
     r"^ext::|"                       # ext:: transport executes the payload
-    r"^(-o|--output(=|$))|"          # arbitrary file write
-    r"^(--prune|-p$)|"               # fetch/remote prune deletes refs
-    r"^(--exec(ute)?|--receive-pack|--upload-pack)=",  # protocol exec
+    r"^--output(=|$)|"               # arbitrary file write
+    r"^(--exec(ute)?|--receive-pack|--upload-pack)(=|$)|"  # protocol exec
+    r"^(--open-files-in-pager|--ext-diff|--textconv)(=|$)",  # exec helpers
     re.I)
+# git grep -O<pager> executes the pager; case-sensitive (-o is --others).
+GIT_GREP_PAGER = re.compile(r"^-O")
+# -p/--prune only mutates under `git remote`; -u is --upload-pack on ls-remote.
+GIT_REMOTE_DANGEROUS = re.compile(r"^(-p|--prune)$", re.I)
+GIT_LSREMOTE_DANGEROUS = re.compile(r"^-u$")
 
 # gh: commands are `gh <noun> <verb>`.
 GH_NOUN_READS = {
     "pr": {"view", "list", "diff", "checks", "status"},
-    "issue": {"view", "list", "status", "develop"},
+    "issue": {"view", "list", "status"},
     "repo": {"view", "list"},
     "run": {"view", "list"},
     "workflow": {"view", "list"},
@@ -89,17 +94,25 @@ def _git_ok(parts):
     if verb in GIT_LIST_ONLY:
         pat = GIT_LIST_ONLY[verb]
         return all(pat.match(a) for a in args)
+    if verb == "remote":
+        if not args or args[0] in ("-v", "--verbose"):
+            return len(args) <= 1  # `git remote` / `remote -v` list only
+        return args[0].lower() in GIT_SUBVERBS["remote"] and \
+            all(not GIT_REMOTE_DANGEROUS.match(a)
+                and not GIT_DANGEROUS_ARG.match(a) for a in args[1:])
     if verb in GIT_SUBVERBS:
         subs = GIT_SUBVERBS[verb]
-        # `git reflog` bare defaults to `show`; `git stash`/`remote` bare
-        # are write/no-op and stay silent.
+        # `git reflog` bare defaults to `show`; `git stash` bare mutates.
         if verb == "reflog" and not args:
             return True
         return bool(args) and args[0].lower() in subs and \
             all(not GIT_DANGEROUS_ARG.match(a) for a in args[1:])
     if verb not in GIT_READONLY:
         return False
-    return all(not GIT_DANGEROUS_ARG.match(a) for a in args)
+    extra = GIT_LSREMOTE_DANGEROUS if verb == "ls-remote" else None
+    return all(not GIT_DANGEROUS_ARG.match(a)
+               and not GIT_GREP_PAGER.match(a)
+               and not (extra and extra.match(a)) for a in args)
 
 
 def _gh_ok(parts):
@@ -123,7 +136,9 @@ def _exec_verdict(command):
     cmd = command.strip()
     if not cmd or UNSAFE_CHARS.search(cmd):
         return False
-    parts = [p.strip("'\"") for p in cmd.split()]
+    # Quote removal: the shell strips ALL quotes after tokenization, so
+    # `--out""put` runs as `--output`. Normalize the same way per token.
+    parts = [p.replace("'", "").replace('"', "") for p in cmd.split()]
     exe = parts[0].rsplit("/", 1)[-1].rsplit("\\", 1)[-1].lower()
     exe = re.sub(r"\.(exe|bat|cmd|ps1)$", "", exe)
     if exe in SAFE_BINARIES:
