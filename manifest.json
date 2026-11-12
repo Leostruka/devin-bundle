@@ -1493,7 +1493,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "c5c221c8627a09445dc7f89f1a2c71fc1873cb1c8d6f17087c46f1c57a76614b",
+      "export_hash": "ea2ccafd4eec4e9c18a225a278addc6a777bf5da93de8d42c72eb617045839c8",
       "exported_at": "2026-11-08T08:50:55.845199"
     },
     {
