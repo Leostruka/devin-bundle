@@ -129,7 +129,10 @@ def run(script_names, payload):
         if ms > SLOW_SCRIPT_MS and os.environ.get("DEVIN_HOOKRUN_DEBUG"):
             sys.stderr.write(
                 f"[hookrun] slow script {name}: {ms}ms\n")
-        if err:
+        # Same rule as the slow-script note above: child stderr (incl.
+        # crash tracebacks) must not reach the hook's stderr under
+        # fail_closed, or the CLI rejects the tool call.
+        if err and os.environ.get("DEVIN_HOOKRUN_DEBUG"):
             sys.stderr.write(err)
         if code == 2 and final_code != 2:
             final_code = 2
@@ -140,7 +143,8 @@ def run(script_names, payload):
             try:
                 obj = json.loads(line)
             except ValueError:
-                sys.stderr.write('[{}] {}\n'.format(name, line))
+                if os.environ.get("DEVIN_HOOKRUN_DEBUG"):
+                    sys.stderr.write('[{}] {}\n'.format(name, line))
                 continue
             if not isinstance(obj, dict):
                 continue

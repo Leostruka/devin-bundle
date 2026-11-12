@@ -19,7 +19,7 @@ UNSAFE_CHARS = re.compile(r"[;&|`$<>\\\r\n]|\(|\)")
 # Binaries that can only read/print — every arg form is safe.
 SAFE_BINARIES = {
     "ls", "dir", "pwd", "cat", "head", "tail", "wc", "file", "which",
-    "whereis", "uname", "hostname", "whoami", "printenv", "echo",
+    "whereis", "uname", "whoami", "printenv", "echo",
 }
 
 # git verbs that cannot mutate (given the arg rules below). Positionals are
@@ -129,8 +129,8 @@ def _gh_ok(parts):
     if verbs is None:
         return False
     return bool(args) and args[0].lower() in verbs and \
-        all(not a.startswith("-X") and a not in ("-w", "--web")
-            for a in args)
+        all(not a.startswith("-X")
+            and not re.match(r"^(-w|--web)", a) for a in args)
 
 
 def _exec_verdict(command):
@@ -153,7 +153,13 @@ def _exec_verdict(command):
     if exe == "rg":
         return not any(RG_DANGEROUS.match(a) for a in parts[1:])
     if exe == "date":
-        return not any(DATE_DANGEROUS.match(a) for a in parts[1:])
+        # args must be flags or +format; a bare MMDDhhmm positional sets time.
+        return all(a.startswith("-") or a.startswith("+") for a in parts[1:]) \
+            and not any(DATE_DANGEROUS.match(a) for a in parts[1:])
+    if exe == "hostname":
+        # positional or -F/--file sets the name; flag-only forms are reads.
+        return all(a.startswith("-") and a not in ("-F", "--file")
+                   for a in parts[1:])
     return False
 
 

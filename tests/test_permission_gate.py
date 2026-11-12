@@ -38,7 +38,8 @@ def test_approves_readonly_misc():
               "gh pr view 123", "gh issue list", "gh run view 456",
               "gh pr checks 78", "gh search prs foo", "gh auth status",
               "git log -p file", "git diff -p", "git stash show -p",
-              "git remote -v", "git remote", "git ls-files -o"):
+              "git remote -v", "git remote", "git ls-files -o",
+              "hostname", "hostname -s", "date", "date +%F", "date -u"):
         out = gate(c)
         assert json.loads(out)["decision"] == "approve", c
 
@@ -70,7 +71,10 @@ def test_silent_on_exec_vectors():
               "fd . -\"\"x calc", "rg --pre\"\"=cat x",
               "git diff --output=ops.txt", "git log --output=ops.txt",
               "gh issue develop 5 --checkout",
-              "date -s 01:01"):
+              "gh pr view 1 --web", "gh pr view 1 --web=true",
+              "gh pr view 1 -wfoo",
+              "hostname pwned", "hostname -F /tmp/x",
+              "date 0101120001", "date -s 01:01"):
         assert gate(c) == "", c
 
 
