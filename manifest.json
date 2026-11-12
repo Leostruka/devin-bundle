@@ -291,7 +291,7 @@
       "name": "creative-engineering",
       "source": "devin-bundle",
       "purpose": "Use when the user asks to apply a visual \"style\", \"theme\", or \"effect\" to code — frontend (CSS/GLSL), native shaders, or media processing (Python/OpenCV/FFmpeg) — especially CRT, dither, datamosh, night-vision, brutalist, receipt-print, depth-map, blob/metaball aesthetics. Loads a technical-anatomy knowledge base before writing code.",
-      "export_hash": "01cdc9e348dfad9f2af75a56d1112f4b095f8db44c3f01e0bdd965e06ab21872"
+      "export_hash": "a8284b9aff3528e7cf60cba12433ab27fea7fcbe9392e107101c07a7eeb77635"
     },
     {
       "name": "criador-de-devin-app",
@@ -1567,7 +1567,7 @@
     {
       "name": "pulse.py",
       "purpose": "Manual-run - drains due .devin/rts/intents/*.json into one afk-loop frontier step (refuses auto:false)",
-      "export_hash": "9A290CDE61DA619ADFDFA5BC31E602E9C121CF238852CEC61FFB8D5908133741",
+      "export_hash": "9f7d253931a8c8b3110a1f760b0521f44baa03126758919d36a246da213cc411",
       "exported_at": "2026-11-10T10:02:44.420863"
     },
     {
@@ -1598,7 +1598,7 @@
     {
       "name": "rules-coverage.py",
       "purpose": "Manual-run audit - maps NL rules to deterministic controls (hooks/audit/permissions), reports unenforced",
-      "export_hash": "8ac300133cf76f9ea7ccb961dd0af2b09fa5f1dcf4a2e166f8e862e7021615e3",
+      "export_hash": "2e16eb9a89de175994dff95778d075fd56363549b9f424b75aecd8c2579adb56",
       "exported_at": "2026-11-10T06:51:06.217969"
     },
     {
@@ -1616,7 +1616,7 @@
     {
       "name": "simplify-scan.py",
       "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
-      "export_hash": "a80bccbe110d35488899e29f0fe3fc5b9803671de00dc756b9a4633242f7fd38",
+      "export_hash": "2f35db5258ea9933149947599bbb519e0d2007f883bb5be6eb351fcce06dfb84",
       "exported_at": "2026-11-10T10:53:36.465416"
     },
     {
@@ -1652,7 +1652,7 @@
     {
       "name": "subagent-trace.py",
       "purpose": "per-dispatch trace records (.devin/subagent-trace.jsonl) + abort flag channel for orchestrated subagents",
-      "export_hash": "e72bbb3f5bfb4bf2933972eb249db1c3595d585b7385ee77fa7c3a54cb14809c",
+      "export_hash": "7adc78f455f3d07b868a8957156e4a5defd5ec74de6a8b4d443125ae83ba4147",
       "exported_at": "2026-11-10T07:19:30.736758"
     },
     {
