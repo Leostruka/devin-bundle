@@ -174,7 +174,8 @@ def cmd_record_all(_args):
     # Guard: a degenerate live scan (missing dir, ACL, mid-install) must not
     # wipe the recorded set — pruning >25% of records or all of them means
     # the scan is suspect, not that every file vanished at once.
-    if files and len(pruned) > max(50, len(files) // 4):
+    if files and (len(pruned) == len(files)
+                  or len(pruned) > max(50, len(files) // 4)):
         print(json.dumps({"ok": False,
                           "error": "prune refused: would drop %d/%d records"
                                    % (len(pruned), len(files))}))
@@ -191,6 +192,10 @@ def cmd_record(args):
     root, live = _root(), _live()
     data = _load_ledger()
     rel = args.name.replace("\\", "/")
+    if not os.path.isfile(os.path.join(live, rel)):
+        print(json.dumps({"ok": False,
+                          "error": "live file not found: " + rel}))
+        return 1
     _record_file(root, live, rel, data.setdefault("files", {}))
     _save_ledger(data)
     print(json.dumps({"ok": True, "recorded": rel}))

@@ -252,7 +252,10 @@ def process_hook(payload_str):
 
     resp = payload.get("tool_response") or payload.get("tool_output") or {}
     if isinstance(resp, dict):
-        tool_output = resp.get("output") or resp.get("stdout") or ""
+        tool_output = (resp.get("output") or resp.get("stdout")
+                       or resp.get("content") or "")
+        if not isinstance(tool_output, str):
+            tool_output = json.dumps(tool_output, ensure_ascii=False)
     else:
         tool_output = str(resp)
 

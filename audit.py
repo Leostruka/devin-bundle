@@ -1333,7 +1333,7 @@ try:
         # 'reconfigure' may pin stdout and leave stdin on cp1252.
         if 'pin_stdio_utf8' in _src39 or _re39.search(
                 r'sys\.stdin\.reconfigure|'
-                r'\(sys\.stdin\b|sys\.stdin,|'
+                r'\(sys\.stdin\s*,|'
                 r'getattr\(sys\.stdin,\s*[\'"]reconfigure', _src39):
             continue
         if 'sys.stdin.buffer' in _src39 and not _STDIN_TXT.search(_src39):
@@ -1424,7 +1424,7 @@ if warnings:
 if not errors and not warnings:
     print()
     _n_checks = len(set(re.findall(
-        r"^print\('\[(\d+)\]",
+        r"^print\('\[(\d+[a-z]?)\]",
         open(__file__, encoding='utf-8').read(), re.M)))
     print('ALL ' + str(_n_checks) + ' CHECKS PASSED - NO ERRORS, NO WARNINGS')
 sys.exit(1 if errors else 0)
