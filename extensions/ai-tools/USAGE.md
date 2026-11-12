@@ -47,6 +47,13 @@ pip install -r requirements.txt
 ## Layout
 
 - `abliterator.py` — the PoC described above
+- `bitnet_adapter.py` — CPU-first bitnet.cpp subprocess adapter
+- `dory_sweep.py` — Dory loop-sweep eval runner (issue #441)
+- `heldout_batch.py` — frozen held-out manifest batch runner (Rule 15)
+- `offload_plan.py` — backend-specific weight/expert offloading argv builder
+- `prompt_compiler.py` — Golden Template prompt assembler
+- `vllm_tpu_runner.py` — vLLM TPU held-out batch runner + local serving wrapper
+- `weight_patch.py` — weight-space defect patching PoC (issue #440)
 - `requirements.txt` — pinned deps
 - `USAGE.md` — this file
 
