@@ -36,6 +36,7 @@ extensions/*/.venv/
 .devin/laya/daemon.*
 .devin/laya/shadow.jsonl
 .devin/laya/*.lock
+.devin/laya/*.proposal.json
 .devin/laya/models/
 
 # OS files
