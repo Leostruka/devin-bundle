@@ -1329,7 +1329,12 @@ try:
             continue
         if 'sys.stdin' not in _src39:
             continue
-        if 'reconfigure' in _src39 or 'pin_stdio_utf8' in _src39:
+        # Exempt only when stdin itself is the reconfigure target — a bare
+        # 'reconfigure' may pin stdout and leave stdin on cp1252.
+        if 'pin_stdio_utf8' in _src39 or _re39.search(
+                r'sys\.stdin\.reconfigure|'
+                r'\(sys\.stdin\b|sys\.stdin,|'
+                r'getattr\(sys\.stdin,\s*[\'"]reconfigure', _src39):
             continue
         if 'sys.stdin.buffer' in _src39 and not _STDIN_TXT.search(_src39):
             continue

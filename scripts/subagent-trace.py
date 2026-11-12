@@ -71,6 +71,12 @@ def _save(path, recs):
 
 def _record(args, piped=None):
     try:
+        _recfg = getattr(sys.stdin, "reconfigure", None)
+        if _recfg:
+            try:
+                _recfg(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
         if piped is not None:
             payload = json.loads(piped)
         elif not sys.stdin.isatty():
@@ -169,6 +175,12 @@ def _main(args):
         return _record(args)
     # no args: treat piped non-empty stdin as a record payload
     try:
+        _recfg = getattr(sys.stdin, "reconfigure", None)
+        if _recfg:
+            try:
+                _recfg(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
         if not sys.stdin.isatty():
             data = sys.stdin.read()
             if data.strip():
