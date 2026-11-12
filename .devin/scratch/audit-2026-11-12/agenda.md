@@ -107,3 +107,15 @@
 - Fix: shortcut rendered so vale p/ _RENDERED_FILES (config.json/hooks);
   regression test adicionado. Live sync real feito: 1446 Current/0 drift
 - PR #582 em CI
+
+### Bloco 4 - smoke sweep + [43] (16:10)
+
+- #582 merged. Smoke sweep `--help` em TODOS os skill scripts achou:
+  - refresh.py (vault template extraido): NameError sys - pin orfao dentro
+    da literal; invisivel p/ py_compile enquanto string (#583)
+  - scan estatico AST como check [43] -> pegou internal_probe.py (os
+    sem import - crash em runtime)
+- Audit agora 50 checks; teste e2e scaffold adicionado (roda vault real +
+  --help nos 5 scripts gerados - cobre ambos os bugs) - PR #584
+- fold_store RC=2 = CLI manual sem --help (documentado, nao bug);
+  librosa = dep opcional; templates interativos = esperado
