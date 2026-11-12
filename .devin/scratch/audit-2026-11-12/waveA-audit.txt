@@ -1,0 +1,2304 @@
+=== FULL REPO AUDIT ===
+
+[1] JSON files validation
+  OK  .\.devin\computer-use\envs\devin-linux.json
+  OK  .\.devin\computer-use\envs\phone.json
+  OK  .\.devin\evals\design-iteration-loop\cases.json
+  OK  .\.devin\evals\design-iteration-loop\report.json
+  OK  .\.devin\evals\laya\cmd-risk-v1\cases.json
+  OK  .\.devin\evals\laya\cmd-risk-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\cmd-risk-v1\manifest.invalid-goal.frozen.json
+  OK  .\.devin\evals\laya\cmd-risk-v1\report.json
+  OK  .\.devin\evals\laya\compact-boundary-v1\cases.json
+  OK  .\.devin\evals\laya\compact-boundary-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\compact-boundary-v1\report.json
+  OK  .\.devin\evals\laya\compact-gate-v1\cases.json
+  OK  .\.devin\evals\laya\compact-gate-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\compact-gate-v1\report.json
+  OK  .\.devin\evals\laya\compact-item-v1\cases.json
+  OK  .\.devin\evals\laya\compact-item-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\compact-item-v1\manifest.pre-criteria.frozen.json
+  OK  .\.devin\evals\laya\compact-item-v1\report.json
+  OK  .\.devin\evals\laya\compact-item-v1\report.pre-criteria.json
+  OK  .\.devin\evals\laya\filebool-v1\cases.json
+  OK  .\.devin\evals\laya\filebool-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\filebool-v1\manifest.utf8.frozen.json
+  OK  .\.devin\evals\laya\filebool-v1\report.json
+  OK  .\.devin\evals\laya\filebool-v1\report.utf8.json
+  OK  .\.devin\evals\laya\issue-category-v1\calibration-fit.json
+  OK  .\.devin\evals\laya\issue-category-v1\cases.heldout.json
+  OK  .\.devin\evals\laya\issue-category-v1\cases.json
+  OK  .\.devin\evals\laya\issue-category-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\issue-category-v1\manifest.heldout.frozen.json
+  OK  .\.devin\evals\laya\issue-category-v1\report.heldout.json
+  OK  .\.devin\evals\laya\issue-category-v1\report.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\cases.heldout.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\cases.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\manifest.heldout.frozen.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\manifest.pre-criteria.frozen.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\report.heldout.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\report.json
+  OK  .\.devin\evals\laya\knowledge-label-v1\report.pre-criteria.json
+  OK  .\.devin\evals\laya\media-intent-v1\calibration-fit.json
+  OK  .\.devin\evals\laya\media-intent-v1\cases.heldout.json
+  OK  .\.devin\evals\laya\media-intent-v1\cases.heldout2.json
+  OK  .\.devin\evals\laya\media-intent-v1\cases.json
+  OK  .\.devin\evals\laya\media-intent-v1\cases.v2.json
+  OK  .\.devin\evals\laya\media-intent-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\media-intent-v1\manifest.heldout.frozen.json
+  OK  .\.devin\evals\laya\media-intent-v1\manifest.heldout.ru.json
+  OK  .\.devin\evals\laya\media-intent-v1\manifest.heldout2.frozen.json
+  OK  .\.devin\evals\laya\media-intent-v1\manifest.heldout2.ru.json
+  OK  .\.devin\evals\laya\media-intent-v1\manifest.v2.frozen.json
+  OK  .\.devin\evals\laya\media-intent-v1\report.heldout.json
+  OK  .\.devin\evals\laya\media-intent-v1\report.heldout2.json
+  OK  .\.devin\evals\laya\media-intent-v1\report.json
+  OK  .\.devin\evals\laya\media-intent-v1\report.post-activation.json
+  OK  .\.devin\evals\laya\media-intent-v1\report.v2.json
+  OK  .\.devin\evals\laya\media-preset-v1\cases.heldout.json
+  OK  .\.devin\evals\laya\media-preset-v1\cases.json
+  OK  .\.devin\evals\laya\media-preset-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\media-preset-v1\manifest.heldout.frozen.json
+  OK  .\.devin\evals\laya\media-preset-v1\report.heldout.json
+  OK  .\.devin\evals\laya\media-preset-v1\report.json
+  OK  .\.devin\evals\laya\output-context-v1\cases.json
+  OK  .\.devin\evals\laya\output-context-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\output-context-v1\report.json
+  OK  .\.devin\evals\laya\review-risk-v1\cases.json
+  OK  .\.devin\evals\laya\review-risk-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\review-risk-v1\report.json
+  OK  .\.devin\evals\laya\skill-family-v1\cases.json
+  OK  .\.devin\evals\laya\skill-family-v1\cases.v2.json
+  OK  .\.devin\evals\laya\skill-family-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\skill-family-v1\manifest.v2.frozen.json
+  OK  .\.devin\evals\laya\skill-family-v1\report.json
+  OK  .\.devin\evals\laya\skill-family-v1\report.v2.json
+  OK  .\.devin\evals\laya\skill-pick-v1\cases.heldout.json
+  OK  .\.devin\evals\laya\skill-pick-v1\cases.json
+  OK  .\.devin\evals\laya\skill-pick-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\skill-pick-v1\manifest.heldout.frozen.json
+  OK  .\.devin\evals\laya\skill-pick-v1\manifest.rerun.frozen.json
+  OK  .\.devin\evals\laya\skill-pick-v1\manifest.utf8.frozen.json
+  OK  .\.devin\evals\laya\skill-pick-v1\report.heldout.json
+  OK  .\.devin\evals\laya\skill-pick-v1\report.json
+  OK  .\.devin\evals\laya\skill-pick-v1\report.rerun.json
+  OK  .\.devin\evals\laya\skill-pick-v1\report.utf8.json
+  OK  .\.devin\evals\laya\ui-target-v1\cases.json
+  OK  .\.devin\evals\laya\ui-target-v1\manifest.frozen.json
+  OK  .\.devin\evals\laya\ui-target-v1\report.json
+  OK  .\.devin\install-ledger\corpus-index.json
+  OK  .\.devin\install-ledger\installs.json
+  OK  .\.devin\laya\daemon.json
+  OK  .\.devin\laya\gate-state.json
+  OK  .\.devin\laya\models\english\encoder\config.json
+  OK  .\.devin\laya\models\english\rl_agent_config.json
+  OK  .\.devin\laya\models\english\tokenizer\tokenizer.json
+  OK  .\.devin\laya\models\english\tokenizer\tokenizer_config.json
+  OK  .\.devin\laya\profile.calibration.json
+  OK  .\.devin\laya\profile.json
+  OK  .\.devin\laya\profile.media-intent-assist.proposal.json
+  OK  .\.devin\ledgers\batch-smoke-results.json
+  OK  .\.devin\ledgers\batch-smoke.manifest.json
+  OK  .\.devin\ledgers\general-audit-reproductions.json
+  OK  .\.devin\mailboxes\2a8c8844\inbox\msg-1792283218012.json
+  OK  .\.devin\mcp_config.json
+  OK  .\.devin\memory\.file-size-guard.json
+  OK  .\.devin\memory\.stuck-detect.json
+  OK  .\.devin\notes\hook-bench-baseline.json
+  OK  .\.devin\notes\hook-bench-post.json
+  OK  .\.devin\notes\structured-knowledge-extraction\knowledge.json
+  OK  .\.devin\notes\youtube\HtsFKx9mAu8\metadata.json
+  OK  .\.devin\research\cu-benchmark-baseline.json
+  OK  .\.devin\research\system-control-benchmark.json
+  OK  .\.devin\scratch\anim-e2e\plan-narrated.json
+  OK  .\.devin\scratch\anim-e2e\plan.json
+  OK  .\.devin\scratch\cu_tasks\0168e1a3b71d\status.json
+  OK  .\.devin\scratch\cu_tasks\05c2e8645890\status.json
+  OK  .\.devin\scratch\cu_tasks\08167810af20\status.json
+  OK  .\.devin\scratch\cu_tasks\0a350efb0460\status.json
+  OK  .\.devin\scratch\cu_tasks\0cc43a1fa60f\status.json
+  OK  .\.devin\scratch\cu_tasks\0d87d501920b\status.json
+  OK  .\.devin\scratch\cu_tasks\204ff166c22f\status.json
+  OK  .\.devin\scratch\cu_tasks\214e68c5427a\status.json
+  OK  .\.devin\scratch\cu_tasks\2421af433985\status.json
+  OK  .\.devin\scratch\cu_tasks\34ab1f774af5\status.json
+  OK  .\.devin\scratch\cu_tasks\4030f86c9b1e\status.json
+  OK  .\.devin\scratch\cu_tasks\457f652e6c70\status.json
+  OK  .\.devin\scratch\cu_tasks\49832099c068\status.json
+  OK  .\.devin\scratch\cu_tasks\507b6879c4ac\status.json
+  OK  .\.devin\scratch\cu_tasks\51af79c1929e\status.json
+  OK  .\.devin\scratch\cu_tasks\5308e7ffaa1c\status.json
+  OK  .\.devin\scratch\cu_tasks\56d1cd0776cb\status.json
+  OK  .\.devin\scratch\cu_tasks\57158a0d460d\status.json
+  OK  .\.devin\scratch\cu_tasks\584c917a15cd\status.json
+  OK  .\.devin\scratch\cu_tasks\5882ff277ebf\status.json
+  OK  .\.devin\scratch\cu_tasks\5bef90554407\status.json
+  OK  .\.devin\scratch\cu_tasks\5da3da05f568\status.json
+  OK  .\.devin\scratch\cu_tasks\62f4a757e24a\status.json
+  OK  .\.devin\scratch\cu_tasks\632241968045\status.json
+  OK  .\.devin\scratch\cu_tasks\65ff8a66a5a1\status.json
+  OK  .\.devin\scratch\cu_tasks\6609a7071a89\status.json
+  OK  .\.devin\scratch\cu_tasks\67f1de7fc393\status.json
+  OK  .\.devin\scratch\cu_tasks\691db85f39b1\status.json
+  OK  .\.devin\scratch\cu_tasks\6af620228351\status.json
+  OK  .\.devin\scratch\cu_tasks\72c6c5ca5439\status.json
+  OK  .\.devin\scratch\cu_tasks\737c80c82bde\status.json
+  OK  .\.devin\scratch\cu_tasks\75982532d812\status.json
+  OK  .\.devin\scratch\cu_tasks\766f547e4dcb\status.json
+  OK  .\.devin\scratch\cu_tasks\76d1306f4dff\status.json
+  OK  .\.devin\scratch\cu_tasks\78983c2e85e5\status.json
+  OK  .\.devin\scratch\cu_tasks\795fea7abc3f\status.json
+  OK  .\.devin\scratch\cu_tasks\79e5a6e6eeda\status.json
+  OK  .\.devin\scratch\cu_tasks\7c57a57da85e\status.json
+  OK  .\.devin\scratch\cu_tasks\7ed389f10f6c\status.json
+  OK  .\.devin\scratch\cu_tasks\8268f6a33a42\status.json
+  OK  .\.devin\scratch\cu_tasks\828ee0a6716b\status.json
+  OK  .\.devin\scratch\cu_tasks\82a13a9d80df\status.json
+  OK  .\.devin\scratch\cu_tasks\8349c3754847\status.json
+  OK  .\.devin\scratch\cu_tasks\840a24a8352c\status.json
+  OK  .\.devin\scratch\cu_tasks\8b0955939caf\status.json
+  OK  .\.devin\scratch\cu_tasks\8c912c76f9a3\status.json
+  OK  .\.devin\scratch\cu_tasks\8de9deb10e9c\status.json
+  OK  .\.devin\scratch\cu_tasks\91952ae41465\status.json
+  OK  .\.devin\scratch\cu_tasks\9645fb4c4d59\status.json
+  OK  .\.devin\scratch\cu_tasks\96bf297277df\status.json
+  OK  .\.devin\scratch\cu_tasks\9c1da8d8d563\status.json
+  OK  .\.devin\scratch\cu_tasks\9c568a670474\status.json
+  OK  .\.devin\scratch\cu_tasks\a37bd93a9761\status.json
+  OK  .\.devin\scratch\cu_tasks\a76f9404aaf7\status.json
+  OK  .\.devin\scratch\cu_tasks\a85d36ce24f9\status.json
+  OK  .\.devin\scratch\cu_tasks\aa181b8408a0\status.json
+  OK  .\.devin\scratch\cu_tasks\ab56145b45af\status.json
+  OK  .\.devin\scratch\cu_tasks\aeee4a4b28d3\status.json
+  OK  .\.devin\scratch\cu_tasks\ba04498dfb19\status.json
+  OK  .\.devin\scratch\cu_tasks\ba2c17271ec5\status.json
+  OK  .\.devin\scratch\cu_tasks\ba8715b35906\status.json
+  OK  .\.devin\scratch\cu_tasks\baa9e45bd5ec\status.json
+  OK  .\.devin\scratch\cu_tasks\babb3ba4a5eb\status.json
+  OK  .\.devin\scratch\cu_tasks\bb8107eee4d3\status.json
+  OK  .\.devin\scratch\cu_tasks\bc5fc0439117\status.json
+  OK  .\.devin\scratch\cu_tasks\bd639608693e\status.json
+  OK  .\.devin\scratch\cu_tasks\c146fdb4adc1\status.json
+  OK  .\.devin\scratch\cu_tasks\c1a9e6e53a1c\status.json
+  OK  .\.devin\scratch\cu_tasks\c1c68db03598\status.json
+  OK  .\.devin\scratch\cu_tasks\c25e11a716a5\status.json
+  OK  .\.devin\scratch\cu_tasks\ca2c0700b240\status.json
+  OK  .\.devin\scratch\cu_tasks\ca986d8577ad\status.json
+  OK  .\.devin\scratch\cu_tasks\cb2178bf7aaa\status.json
+  OK  .\.devin\scratch\cu_tasks\d774dd915666\status.json
+  OK  .\.devin\scratch\cu_tasks\d7f434bcf2fe\status.json
+  OK  .\.devin\scratch\cu_tasks\edb296d9b6fb\status.json
+  OK  .\.devin\scratch\cu_tasks\f2bca7963413\status.json
+  OK  .\.devin\scratch\cu_tasks\f39d93cf7382\status.json
+  OK  .\.devin\scratch\cu_tasks\fa9fe7ad6346\status.json
+  OK  .\.devin\scratch\cu_tasks\fcfd0cd6cbad\status.json
+  OK  .\.devin\scratch\cu_tasks\fd00417025e8\status.json
+  OK  .\.devin\scratch\dev-org-ladder\roteiro-2026-11-09.json
+  OK  .\.devin\scratch\dev-org-ladder\roteiro-2026-11-11.json
+  OK  .\.devin\scratch\dev-org-ladder\roteiro-week.json
+  OK  .\.devin\scratch\dev-org-ladder\roteiro.json
+  OK  .\.devin\scratch\dev-org-ladder\slots-2026-11-09.json
+  OK  .\.devin\scratch\dev-org-ladder\slots-2026-11-11.json
+  OK  .\.devin\scratch\dev-org-ladder\slots.json
+  OK  .\.devin\scratch\dev-org-ladder\tasks-2026-11-09.json
+  OK  .\.devin\scratch\dev-org-ladder\tasks-2026-11-11.json
+  OK  .\.devin\scratch\dev-org-ladder\tasks.json
+  OK  .\.devin\scratch\dev-org-ladder\week-fb.json
+  OK  .\.devin\scratch\dev-org-ladder\week-slots.json
+  OK  .\.devin\scratch\dev-org-ladder\week-tasks.json
+  OK  .\.devin\scratch\dory-sweep\issue-cat-k1.json
+  OK  .\.devin\scratch\dory-sweep\issue-cat-k2.json
+  OK  .\.devin\scratch\dory-sweep\issue-cat-k4.json
+  OK  .\.devin\scratch\dory-sweep\skill-pick-k1.json
+  OK  .\.devin\scratch\dory-sweep\skill-pick-k2.json
+  OK  .\.devin\scratch\dory-sweep\skill-pick-k4.json
+  OK  .\.devin\scratch\egm-smoke-controller\shot.camera.json
+  OK  .\.devin\scratch\egm-smoke-controller\shot.handoff.json
+  OK  .\.devin\scratch\egm-smoke-l4\smoke.camera.json
+  OK  .\.devin\scratch\egm-smoke-l4\smoke.handoff.json
+  OK  .\.devin\scratch\egm-smoke-l4b\shot.camera.json
+  OK  .\.devin\scratch\egm-smoke-l4b\shot.handoff.json
+  OK  .\.devin\scratch\margin\manifest.heldout.json
+  OK  .\.devin\scratch\margin\manifest.heldout2.json
+  OK  .\.devin\scratch\prompt-specs\prompt_spec.json
+  OK  .\.devin\scratch\prompt-specs\prompt_spec_agentcraft_rts.json
+  OK  .\.devin\scratch\prompt-specs\prompt_spec_akita.json
+  OK  .\.devin\scratch\prompt-specs\prompt_spec_cu_realtime.json
+  OK  .\.devin\scratch\prompt-specs\prompt_spec_social_midia.json
+  OK  .\.devin\scratch\rea-repo\.jscpd.json
+  OK  .\.devin\scratch\rea-repo\.oxfmtrc.json
+  OK  .\.devin\scratch\rea-repo\.oxlintrc.json
+  OK  .\.devin\scratch\rea-repo\.release-please-manifest.json
+  OK  .\.devin\scratch\rea-repo\docs\error-contract.schema.json
+  OK  .\.devin\scratch\rea-repo\docs\product-catalog.json
+  OK  .\.devin\scratch\rea-repo\docs\verification\managed-conformance-ledger.json
+  OK  .\.devin\scratch\rea-repo\docs\verification\managed-conformance-manifest.json
+  OK  .\.devin\scratch\rea-repo\knip.json
+  OK  .\.devin\scratch\rea-repo\package-lock.json
+  OK  .\.devin\scratch\rea-repo\package.json
+  OK  .\.devin\scratch\rea-repo\release-please-config.json
+  OK  .\.devin\scratch\rea-repo\scripts\fixtures\android-apidemos.json
+  OK  .\.devin\scratch\rea-repo\server.json
+  OK  .\.devin\scratch\rea-repo\tests\conformance\native\Assets.xcassets\Contents.json
+  OK  .\.devin\scratch\rea-repo\tests\conformance\native\Assets.xcassets\FixtureColor.colorset\Contents.json
+  OK  .\.devin\scratch\rea-repo\tests\conformance\readiness\electron\package.json
+  OK  .\.devin\scratch\rea-repo\tests\conformance\readiness\javascript-cli\package.json
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\golden\assetutil.json
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\golden\keyed-archive\graph.json
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\golden\mcp-initialize.json
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\golden\provenance.json
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\native-macos\plist.json
+  OK  .\.devin\scratch\rea-repo\tsconfig.build.json
+  OK  .\.devin\scratch\rea-repo\tsconfig.json
+  OK  .\.devin\scratch\rea-repo\turbo.json
+  OK  .\.devin\scratch\reels-2\transcripts\01-catlabs.json
+  OK  .\.devin\scratch\reels-2\transcripts\02-alvim.json
+  OK  .\.devin\scratch\reels-2\transcripts\03-guilhermemorais.json
+  OK  .\.devin\scratch\reels-2\transcripts\04-breakingbreach.json
+  OK  .\.devin\scratch\reels-2\transcripts\05-matheusgomes-a.json
+  OK  .\.devin\scratch\reels-2\transcripts\06-techbro-b.json
+  OK  .\.devin\scratch\reels-2\transcripts\07-jotabusiness.json
+  OK  .\.devin\scratch\reels-2\transcripts\08-eduardocavalcanti.json
+  OK  .\.devin\scratch\reels-2\transcripts\09-rodrigotadewald.json
+  OK  .\.devin\scratch\reels-2\transcripts\10-leikauskas.json
+  OK  .\.devin\scratch\reels-2\transcripts\11-jtrivard.json
+  OK  .\.devin\scratch\reels-2\transcripts\12-fabianocarvalho.json
+  OK  .\.devin\scratch\reels-2\transcripts\13-matheusgomes-b.json
+  OK  .\.devin\scratch\reels-2\transcripts\14-vicentecondee.json
+  OK  .\.devin\scratch\reels-2\transcripts\15-techbro-a.json
+  OK  .\.devin\scratch\reels-2\transcripts\16-superinvencoes.json
+  OK  .\.devin\scratch\reels-3\transcripts\augustoiago.json
+  OK  .\.devin\scratch\reels-3\transcripts\buildingdots.json
+  OK  .\.devin\scratch\reels-3\transcripts\dododididaw.json
+  OK  .\.devin\scratch\reels-3\transcripts\eduardojcruz.json
+  OK  .\.devin\scratch\reels-3\transcripts\fabiano2.json
+  OK  .\.devin\scratch\reels-3\transcripts\igorcarvalho.json
+  OK  .\.devin\scratch\reels-3\transcripts\lowcodepedro.json
+  OK  .\.devin\scratch\reels-3\transcripts\matheusgomes3.json
+  OK  .\.devin\scratch\reels-3\transcripts\tecajudabr.json
+  OK  .\.devin\scratch\reels-5\transcripts\DcUOPkPzorX.json
+  OK  .\.devin\scratch\reels-5\transcripts\DcUOPkPzorX.pt.json
+  OK  .\.devin\scratch\reels-5\transcripts\DdMUB4kskYv.json
+  OK  .\.devin\scratch\reels-5\transcripts\DfRqGa6DJgh.json
+  OK  .\.devin\scratch\reels-5\transcripts\DfXQwlbz13S.json
+  OK  .\.devin\scratch\reels-5\transcripts\DfYM2PORDDg.json
+  OK  .\.devin\scratch\reels-5\transcripts\DfYMlgrBQiy.es.json
+  OK  .\.devin\scratch\reels-5\transcripts\DfYMlgrBQiy.json
+  OK  .\.devin\scratch\reels-5\transcripts\DfZdE8plZ0A.json
+  OK  .\.devin\scratch\reels-5\transcripts\DfZuDIUOGJZ.json
+  OK  .\.devin\scratch\reels-6\transcripts\DfA1mcmPRnB.json
+  OK  .\.devin\scratch\reels-6\transcripts\DfcSO5Cj3Su.json
+  OK  .\.devin\scratch\reels-6\transcripts\DfcYqoux0CH.json
+  OK  .\.devin\scratch\reels-6\transcripts\DfeIuzRMHn5.json
+  OK  .\.devin\scratch\reels-7\transcripts\DcCoPrCxPT_.json
+  OK  .\.devin\scratch\reels-7\transcripts\DcEBQNPNPzs.json
+  OK  .\.devin\scratch\reels-7\transcripts\DcjkR2PSkml.json
+  OK  .\.devin\scratch\reels-7\transcripts\DdXZrIMIYXM.json
+  OK  .\.devin\scratch\reels-7\transcripts\De12iBYTUNB.json
+  OK  .\.devin\scratch\reels-7\transcripts\DeK0AFcIRhf.json
+  OK  .\.devin\scratch\reels-7\transcripts\DeWwjvyiV2_.json
+  OK  .\.devin\scratch\reels-7\transcripts\DejYAGbxOAM.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfHOBy6gCye.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfUdibshw3A.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfWJElGNZDz.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfXFwwCDFMD.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfXRHe9s8kZ.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfXwuL0izsO.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfYRPKEDSDJ.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfbKtE6iabf.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfcaHjbEYtq.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfdYAW1xcHk.json
+  OK  .\.devin\scratch\reels-7\transcripts\Dff39V1vpj7.json
+  OK  .\.devin\scratch\reels-7\transcripts\DffOrNAByFw.json
+  OK  .\.devin\scratch\reels-7\transcripts\DffnUDcDBCL.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfgQMGEKGJG.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfgwiprT5DN.json
+  OK  .\.devin\scratch\reels-7\transcripts\DfieBCtlK5q.json
+  OK  .\.devin\scratch\tmp-roteiro-2026-11-10.json
+  OK  .\.devin\scratch\weight-patch-run.json
+  OK  .\.devin\scratch\weight-patch-run2.json
+  OK  .\.devin\scratch\weight-patch-run3.json
+  OK  .\.devin\scratch\yt-batch1\transcripts\anqN-iDO3uw.json
+  OK  .\.devin\scratch\yt-batch1\transcripts\anqN-iDO3uw.small-pt-verify.json
+  OK  .\.devin\scratch\yt-batch1\transcripts\gEJ26rECifc.json
+  OK  .\.devin\scratch\yt-batch1\transcripts\g_NgCLTibiM.json
+  OK  .\.devin\scratch\yt-batch1\transcripts\iEhCLn9utDU.json
+  OK  .\.devin\scratch\yt-batch1\transcripts\of628n5754g.json
+  OK  .\.devin\scratch\yt-batch1\transcripts\z5kcsAmoZRo.json
+  OK  .\.devin\templates\computer-use\container-profile.json
+  OK  .\.devin\templates\laya\profile.example.json
+  OK  .\.devin\validation-contracts.json
+  OK  .\config.json
+  OK  .\data\bundle-identity.json
+  OK  .\data\bundle-integrations.json
+  OK  .\data\bundle-models.json
+  OK  .\data\context-budget.json
+  OK  .\data\model-context-windows.json
+  OK  .\data\output-modes.json
+  OK  .\data\recipes.json
+  OK  .\extensions\ai-tools\knowledge_bases\generic.json
+  OK  .\extensions\ai-tools\knowledge_bases\swe-2-flash.json
+  OK  .\extensions\ai-tools\knowledge_bases\swe-2.json
+  OK  .\extensions\computer-use\integration\live-report.json
+  OK  .\extensions\craft-bridge\benchmark-results.json
+  OK  .\extensions\craft-bridge\ops_map.json
+  OK  .\extensions\design-intelligence\data\aesthetics\index.json
+  OK  .\extensions\design-intelligence\data\catalog-summary.json
+  OK  .\extensions\design-intelligence\data\data-provenance.json
+  OK  .\extensions\design-intelligence\data\frontend-rules\composition-patterns\metadata.json
+  OK  .\extensions\design-intelligence\data\frontend-rules\react-best-practices\metadata.json
+  OK  .\extensions\design-intelligence\data\frontend-rules\react-native-skills\metadata.json
+  OK  .\extensions\design-intelligence\data\frontend-rules\react-view-transitions\metadata.json
+  OK  .\extensions\design-intelligence\data\google-font-licenses.json
+  OK  .\extensions\design-intelligence\data\phosphor-icons-upstream.json
+  OK  .\extensions\laya-compactor\questions.json
+  OK  .\extensions\media-tools\knowledge_bases\aesthetics\index.json
+  OK  .\extensions\media-tools\knowledge_bases\creative_tooooools.json
+  OK  .\extensions\remotion-render\templates\remotion-project\package.json
+  OK  .\extensions\remotion-render\templates\remotion-project\tsconfig.json
+  OK  .\extensions\system-control\schemas\v1.json
+  OK  .\hooks.v1.json
+  OK  .\manifest.json
+  OK  .\mcp_config.json
+  OK  .\skills\brag\assets\music\cues\happy-beats-business-moves-vol-1-by-ende-dot-app.music-cues.json
+  OK  .\skills\brag\assets\music\cues\happy-beats-business-moves-vol-10-by-ende-dot-app.music-cues.json
+  OK  .\skills\brag\assets\music\cues\happy-beats-business-moves-vol-11-by-ende-dot-app.music-cues.json
+  OK  .\skills\brag\assets\music\cues\happy-beats-business-moves-vol-12-by-ende-dot-app.music-cues.json
+  OK  .\skills\brag\assets\music\cues\happy-beats-business-moves-vol-9-by-ende-dot-app.music-cues.json
+  OK  .\skills\brag\assets\sfx\sfx-analysis.json
+  OK  .\skills\security-audit-cf\report-schema.json
+  OK  .\skills\vercel-react-best-practices\metadata.json
+  OK  .\tests\fixtures\cu_qmp_transcripts.json
+  OK  .\tests\fixtures\devin-config\project\.devin\config.json
+  OK  .\tests\fixtures\devin-config\project\.devin\hooks.v1.json
+  OK  .\tests\fixtures\devin-config\project\.devin\manifest.json
+  OK  .\tests\fixtures\devin-config\project\mcp_config.json
+  OK  .\tests\fixtures\devin-plugin-prototype\.devin-plugin\plugin.json
+  OK  .\tests\fixtures\grilling-frontier\dependent.json
+  OK  .\tests\fixtures\grilling-frontier\independent.json
+  OK  .\tests\fixtures\grilling-frontier\mixed.json
+  OK  .\tests\fixtures\youtube-fetcher\auto_generated.json
+  OK  .\tests\fixtures\youtube-fetcher\no_captions.json
+  OK  .\tests\fixtures\youtube-fetcher\valid_captions.json
+  OK  .\tools.json
+
+[2] Python scripts validation
+  OK  .\.devin\evals\design-iteration-loop\run_eval.py
+  OK  .\.devin\notes\hook-bench.py
+  OK  .\.devin\notes\sync-skill-meta.py
+  OK  .\.devin\research\swe2_action_models.py
+  OK  .\.devin\research\verify_swe2_research.py
+  OK  .\.devin\scratch\acp-spike\client.py
+  OK  .\.devin\scratch\acp-spike\listen.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\GUID.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_comobject.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_memberspec.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_meta.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_npsupport.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_post_coinit\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_post_coinit\_cominterface_meta_patcher.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_post_coinit\activeobj.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_post_coinit\bstr.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_post_coinit\instancemethod.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_post_coinit\misc.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_post_coinit\unknwn.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_safearray.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_tlib_version_checker.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\_vtbl.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\automation.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\clear_cache.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\_activeobj.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\_code_cache.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\_constants.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\_create.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\_events.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\_generate.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\_managing.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\dynamic.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\client\lazybind.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\connectionpoints.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\errorinfo.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\git.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\hresult.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\logutil.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\malloc.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\messageloop.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\patcher.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\persist.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\safearray.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\server\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\server\automation.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\server\connectionpoints.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\server\inprocserver.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\server\localserver.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\server\register.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\server\w_getopt.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\shelllink.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\stream.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\TestComServer.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\TestDispServer.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\find_memleak.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\gdi_helper.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\monikers_helper.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\runtests.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\setup.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_BSTR.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_DISPPARAMS.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_GUID.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_QueryService.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_agilent.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_avmc.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_basic.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_bctx.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_casesensitivity.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_classfactory.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_clear_cache.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_client.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_client_dynamic.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_client_regenerate_modules.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_collections.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_comobject.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_comserver.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_connectionpoints.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_createwrappers.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_dict.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_dispifc_records.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_dispifc_safearrays.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_dispinterface.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_dyndispatch.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_errorinfo.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_eventinterface.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_excel.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_findgendir.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_getactiveobj.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_git.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_hresult.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_ienum.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_imfattributes.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_inout_args.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_logutil.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_malloc.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_messageloop.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_midl_safearray_create.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_moniker.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_msscript.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_npsupport.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_outparam.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_packing.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_persist.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_pump_events.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_puredispatch.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_recordinfo.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_rot.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_safearray.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_sapi.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_server.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_server_automation.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_server_register.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_shelllink.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_showevents.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_storage.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_stream.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_subinterface.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_typeannotator.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_typeinfo.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_typeinfo_create.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_urlhistory.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_util.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_variant.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_variant_outparam.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_viewobject.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_w_getopt.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_win32com_interop.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\test_word.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\test\time_structs_helper.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\codegenerator.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\comments.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\heads.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\helpers.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\modulenamer.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\namespaces.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\packing.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\codegenerator\typeannotator.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\tlbparser.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\typedesc.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\tools\typedesc_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\typeinfo.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\util.py
+  OK  .\.devin\scratch\cu-perception\_deps\comtypes\viewobject.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\_libs\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\_libs\d3d11.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\_libs\dxgi.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\_libs\user32.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\backend.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\capture_loop.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\capture_runtime.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\device.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\display_recovery.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\duplicator.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\dxgi_duplicator.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\dxgi_errors.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\output.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\output_recovery.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\stagesurf.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\core\winrt_duplicator.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\dxcam.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\processor\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\processor\base.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\processor\cv2_processor.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\processor\numpy_processor.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\types.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\util\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\util\io.py
+  OK  .\.devin\scratch\cu-perception\_deps\dxcam\util\timer.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\__config__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_array_api_info.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_configtool.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_add_newdocs.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_add_newdocs_scalars.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_asarray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_dtype.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_dtype_ctypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_exceptions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_internal.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_methods.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_string_helpers.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_type_aliases.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\_ufunc_config.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\arrayprint.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\cversions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\defchararray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\einsumfunc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\fromnumeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\function_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\getlimits.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\memmap.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\multiarray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\numeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\numerictypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\overrides.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\printoptions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\records.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\shape_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\strings.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\_locales.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\_natype.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\examples\cython\setup.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\examples\limited_api\setup.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test__exceptions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_abc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_api.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_argparse.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_array_api_info.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_array_coercion.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_array_interface.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_arraymethod.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_arrayobject.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_arrayprint.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_casting_floatingpoint_errors.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_casting_unittests.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_conversion_utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_cpu_dispatcher.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_cpu_features.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_custom_dtypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_cython.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_datetime.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_defchararray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_deprecations.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_dlpack.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_dtype.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_einsum.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_errstate.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_extint128.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_finfo.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_function_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_getlimits.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_half.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_hashtable.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_indexerrors.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_indexing.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_item_selection.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_limited_api.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_longdouble.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_mem_overlap.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_mem_policy.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_memmap.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_multiarray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_multiprocessing.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_multithreading.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_nditer.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_nep50_promotions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_numeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_numerictypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_overrides.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_print.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_protocols.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_records.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_scalar_ctors.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_scalar_methods.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_scalarbuffer.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_scalarinherit.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_scalarmath.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_scalarprint.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_shape_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_simd.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_simd_module.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_stringdtype.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_strings.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_ufunc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_umath.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_umath_accuracy.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_umath_complex.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\tests\test_unicode.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_core\umath.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_distributor_init.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_expired_attrs_2_0.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_globals.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_pyinstaller\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_pyinstaller\hook-numpy.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_pyinstaller\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_pyinstaller\tests\pyinstaller-smoke.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_pyinstaller\tests\test_pyinstaller.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_pytesttester.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_add_docstring.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_array_like.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_char_codes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_dtype_like.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_extended_precision.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_nbit.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_nbit_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_nested_sequence.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_scalars.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_shape.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_typing\_ufunc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_utils\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_utils\_conversions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_utils\_inspect.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\_utils\_pep440.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\char\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\conftest.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\_dtype.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\_dtype_ctypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\_internal.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\_multiarray_umath.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\_utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\arrayprint.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\defchararray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\einsumfunc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\fromnumeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\function_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\getlimits.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\multiarray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\numeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\numerictypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\overrides.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\records.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\shape_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\core\umath.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ctypeslib\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ctypeslib\_ctypeslib.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\doc\ufuncs.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\dtypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\exceptions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\__main__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\__version__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\_backends\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\_backends\_backend.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\_backends\_meson.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\_isocbind.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\_src_pyf.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\auxfuncs.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\capi_maps.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\cb_rules.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\cfuncs.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\common_rules.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\crackfortran.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\diagnose.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\f2py2e.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\f90mod_rules.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\func2subr.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\rules.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\symbolic.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_abstract_interface.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_array_from_pyobj.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_assumed_shape.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_block_docstring.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_callback.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_capi_maps.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_character.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_common.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_crackfortran.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_data.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_docs.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_f2cmap.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_f2py2e.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_inplace.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_isoc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_kind.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_mixed.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_modules.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_parameter.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_pyf_src.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_quoted_character.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_return_character.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_return_complex.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_return_integer.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_return_logical.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_return_real.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_routines.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_semicolon_split.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_size.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_string.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_symbolic.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\test_value_attrspec.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\tests\util.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\f2py\use_rules.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\fft\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\fft\_helper.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\fft\_pocketfft.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\fft\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\fft\tests\test_helper.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\fft\tests\test_pocketfft.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_array_utils_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_arraypad_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_arraysetops_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_arrayterator_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_datasource.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_format_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_function_base_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_histograms_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_index_tricks_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_iotools.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_nanfunctions_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_npyio_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_polynomial_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_scimath_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_shape_base_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_stride_tricks_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_twodim_base_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_type_check_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_ufunclike_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_user_array_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_utils_impl.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\_version.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\array_utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\format.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\introspect.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\mixins.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\npyio.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\recfunctions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\scimath.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\stride_tricks.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test__datasource.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test__iotools.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test__version.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_array_utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_arraypad.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_arraysetops.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_arrayterator.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_format.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_function_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_histograms.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_index_tricks.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_io.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_loadtxt.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_mixins.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_nanfunctions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_packbits.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_polynomial.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_recfunctions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_shape_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_stride_tricks.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_twodim_base.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_type_check.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_ufunclike.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\tests\test_utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\lib\user_array.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\linalg\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\linalg\_linalg.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\linalg\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\linalg\tests\test_deprecations.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\linalg\tests\test_linalg.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\linalg\tests\test_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\core.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\extras.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\mrecords.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_arrayobject.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_core.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_deprecations.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_extras.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_mrecords.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_old_ma.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\tests\test_subclassing.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\ma\testutils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matlib.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\defmatrix.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\test_defmatrix.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\test_interaction.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\test_masked_matrix.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\test_matrix_linalg.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\test_multiarray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\test_numeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\matrixlib\tests\test_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\_polybase.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\chebyshev.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\hermite.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\hermite_e.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\laguerre.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\legendre.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\polynomial.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\polyutils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_chebyshev.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_classes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_hermite.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_hermite_e.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_laguerre.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_legendre.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_polynomial.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_polyutils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_printing.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\polynomial\tests\test_symbol.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\_examples\cffi\extending.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\_examples\cffi\parse.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\_examples\numba\extending.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\_examples\numba\extending_distributions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\_pickle.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\data\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_direct.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_extending.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_generator_mt19937.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_generator_mt19937_regressions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_random.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_randomstate.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_randomstate_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_regression.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_seed_sequence.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\random\tests\test_smoke.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\rec\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\strings\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\_private\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\_private\extbuild.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\_private\utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\overrides.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\print_coercion_tables.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\testing\tests\test_utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test__all__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_configtool.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_ctypeslib.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_lazyloading.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_matlib.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_numpy_config.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_numpy_version.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_public_api.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_reloading.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_scripts.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\tests\test_warnings.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\mypy_plugin.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\arithmetic.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\array_constructors.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\array_like.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\arrayprint.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\arrayterator.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\bitwise_ops.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\comparisons.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\dtype.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\einsumfunc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\flatiter.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\fromnumeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\index_tricks.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\lib_user_array.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\lib_utils.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\lib_version.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\literal.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\ma.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\mod.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\modules.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\multiarray.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\ndarray_conversion.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\ndarray_misc.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\ndarray_shape_manipulation.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\nditer.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\numeric.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\numerictypes.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\random.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\recfunctions.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\scalars.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\shape.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\simple.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\ufunc_config.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\ufunclike.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\ufuncs.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\data\pass\warnings_and_errors.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\test_isfile.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\test_runtime.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\typing\tests\test_typing.py
+  OK  .\.devin\scratch\cu-perception\_deps\numpy\version.py
+  OK  .\.devin\scratch\cu-perception\_deps\typing_extensions.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\runtime\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\runtime\_internals.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\runtime\interop.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\system\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\system\hresult.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\foundation\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\foundation\collections\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\graphics\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\graphics\capture\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\graphics\capture\interop\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\graphics\directx\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\graphics\directx\direct3d11\__init__.py
+  OK  .\.devin\scratch\cu-perception\_deps\winrt\windows\graphics\directx\direct3d11\interop\__init__.py
+  OK  .\.devin\scratch\cu-perception\p11_daemon.py
+  OK  .\.devin\scratch\cu-perception\p1_rename.py
+  OK  .\.devin\scratch\cu-perception\p1_target.py
+  OK  .\.devin\scratch\cu-perception\p1_winevents.py
+  OK  .\.devin\scratch\cu-perception\p2_uia_events.py
+  OK  .\.devin\scratch\cu-perception\p3_dpi.py
+  OK  .\.devin\scratch\cu-perception\p4_ocr.py
+  OK  .\.devin\scratch\cu-perception\p5_dxgi.py
+  OK  .\.devin\scratch\cu-perception\p6_wgc.py
+  OK  .\.devin\scratch\cu-perception\p7_template.py
+  OK  .\.devin\scratch\cu-realtime\p4_laya.py
+  OK  .\.devin\scratch\cu-realtime\p4_probe.py
+  OK  .\.devin\scratch\cu-realtime\s1_probe.py
+  OK  .\.devin\scratch\general-audit\reproduce.py
+  OK  .\.devin\scratch\hook-probe\dump.py
+  OK  .\.devin\scratch\probes\acp_probe.py
+  OK  .\.devin\scratch\probes\acp_probe_load.py
+  OK  .\.devin\scratch\rea-repo\bridge\hopper_bridge.py
+  OK  .\.devin\scratch\rea-repo\scripts\hopper-demo-x11.py
+  OK  .\.devin\scratch\rea-repo\scripts\lib\generate-firmware-fixture.py
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\bridgeSearchProbe.py
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\hopperBridgeFacadeProbe.py
+  OK  .\.devin\scratch\rea-repo\tests\fixtures\x11ProbeHang.py
+  OK  .\.devin\scratch\tmp\r7_issues.py
+  OK  .\.devin\scratch\tools\add_manifest_skills.py
+  OK  .\.devin\scratch\tools\reconcile_manifest.py
+  OK  .\audit.py
+  OK  .\extensions\agent-reach\wrapper.py
+  OK  .\extensions\ai-tools\abliterator.py
+  OK  .\extensions\ai-tools\bitnet_adapter.py
+  OK  .\extensions\ai-tools\dory_sweep.py
+  OK  .\extensions\ai-tools\heldout_batch.py
+  OK  .\extensions\ai-tools\offload_plan.py
+  OK  .\extensions\ai-tools\prompt_compiler.py
+  OK  .\extensions\ai-tools\vllm_tpu_runner.py
+  OK  .\extensions\ai-tools\weight_patch.py
+  OK  .\extensions\api-bridge\bridge.py
+  OK  .\extensions\api-bridge\recon\capture.py
+  OK  .\extensions\api-bridge\recon\forward.py
+  OK  .\extensions\api-bridge\recon\internal_probe.py
+  OK  .\extensions\api-bridge\recon\pbdump.py
+  OK  .\extensions\asr\bootstrap.py
+  OK  .\extensions\asr\transcribe.py
+  OK  .\extensions\blender-operator\blender_server.py
+  OK  .\extensions\blender-operator\camera_blocking.py
+  OK  .\extensions\blender-operator\presets\blockout.py
+  OK  .\extensions\blender-operator\presets\camera_rig.py
+  OK  .\extensions\blender-operator\presets\playblast.py
+  OK  .\extensions\blender-operator\wrapper.py
+  OK  .\extensions\busybar\listen.py
+  OK  .\extensions\busybar\push.py
+  OK  .\extensions\code-graph\code_graph.py
+  OK  .\extensions\code-graph\detect_changes.py
+  OK  .\extensions\code-graph\index.py
+  OK  .\extensions\code-graph\query.py
+  OK  .\extensions\code-graph\selftest.py
+  OK  .\extensions\comfyui-operator\wrapper.py
+  OK  .\extensions\computer-use\browser.py
+  OK  .\extensions\computer-use\browser_events.py
+  OK  .\extensions\computer-use\cu_actions.py
+  OK  .\extensions\computer-use\cu_adb_backend.py
+  OK  .\extensions\computer-use\cu_agent_desktop.py
+  OK  .\extensions\computer-use\cu_audit.py
+  OK  .\extensions\computer-use\cu_backend.py
+  OK  .\extensions\computer-use\cu_bench.py
+  OK  .\extensions\computer-use\cu_browser.py
+  OK  .\extensions\computer-use\cu_capture.py
+  OK  .\extensions\computer-use\cu_container.py
+  OK  .\extensions\computer-use\cu_decision.py
+  OK  .\extensions\computer-use\cu_devices.py
+  OK  .\extensions\computer-use\cu_dom_picker.py
+  OK  .\extensions\computer-use\cu_dpi.py
+  OK  .\extensions\computer-use\cu_env.py
+  OK  .\extensions\computer-use\cu_env_daemon.py
+  OK  .\extensions\computer-use\cu_events.py
+  OK  .\extensions\computer-use\cu_guest.py
+  OK  .\extensions\computer-use\cu_guest_worker.py
+  OK  .\extensions\computer-use\cu_hints.py
+  OK  .\extensions\computer-use\cu_motion.py
+  OK  .\extensions\computer-use\cu_notify.py
+  OK  .\extensions\computer-use\cu_ocr.py
+  OK  .\extensions\computer-use\cu_overlay.py
+  OK  .\extensions\computer-use\cu_probe.py
+  OK  .\extensions\computer-use\cu_qmp.py
+  OK  .\extensions\computer-use\cu_qmp_backend.py
+  OK  .\extensions\computer-use\cu_scope.py
+  OK  .\extensions\computer-use\cu_session.py
+  OK  .\extensions\computer-use\cu_session_dispatch.py
+  OK  .\extensions\computer-use\cu_target.py
+  OK  .\extensions\computer-use\cu_taskrunner.py
+  OK  .\extensions\computer-use\cu_terminal.py
+  OK  .\extensions\computer-use\cu_wgc.py
+  OK  .\extensions\computer-use\env.py
+  OK  .\extensions\computer-use\guest\__init__.py
+  OK  .\extensions\computer-use\guest\container-entry.py
+  OK  .\extensions\computer-use\guest\worker.py
+  OK  .\extensions\computer-use\integration\fixtures\cu_input_probe.py
+  OK  .\extensions\computer-use\integration\test_cu_env_live.py
+  OK  .\extensions\computer-use\mcp_server.py
+  OK  .\extensions\computer-use\mouse.py
+  OK  .\extensions\computer-use\probes\probe_clip.py
+  OK  .\extensions\computer-use\probes\probe_conpty.py
+  OK  .\extensions\computer-use\probes\probe_inject.py
+  OK  .\extensions\computer-use\probes\probe_input.py
+  OK  .\extensions\computer-use\probes\probe_patterns.py
+  OK  .\extensions\computer-use\probes\probe_selcopy.py
+  OK  .\extensions\computer-use\probes\probe_spawnpty.py
+  OK  .\extensions\computer-use\probes\probe_uia_dump.py
+  OK  .\extensions\computer-use\probes\probe_uia_text.py
+  OK  .\extensions\computer-use\probes\probe_wins.py
+  OK  .\extensions\computer-use\profile.py
+  OK  .\extensions\computer-use\record.py
+  OK  .\extensions\computer-use\screenshot.py
+  OK  .\extensions\computer-use\terminal.py
+  OK  .\extensions\computer-use\terminal_sessions.py
+  OK  .\extensions\computer-use\type_text.py
+  OK  .\extensions\craft-bridge\bridge.py
+  OK  .\extensions\craft-bridge\scene_manifest.py
+  OK  .\extensions\craft-bridge\ui_dsl.py
+  OK  .\extensions\design-intelligence\checks.py
+  OK  .\extensions\design-intelligence\core.py
+  OK  .\extensions\design-intelligence\design_lint.py
+  OK  .\extensions\design-intelligence\design_system.py
+  OK  .\extensions\design-intelligence\look_ledger.py
+  OK  .\extensions\design-intelligence\reasoning_contract.py
+  OK  .\extensions\design-intelligence\rules_registry.py
+  OK  .\extensions\design-intelligence\search.py
+  OK  .\extensions\design-intelligence\validate_csv.py
+  OK  .\extensions\diagram-tools\plantuml_renderer.py
+  OK  .\extensions\gcal\caldav.py
+  OK  .\extensions\gcal\gcal.py
+  OK  .\extensions\gcal\oauth_setup.py
+  OK  .\extensions\gcal\plan.py
+  OK  .\extensions\gcal\wrapper.py
+  OK  .\extensions\harness-tree\ns.py
+  OK  .\extensions\harness-tree\selftest.py
+  OK  .\extensions\harness-tree\specs.py
+  OK  .\extensions\harness-tree\tree.py
+  OK  .\extensions\hyperframes\wrapper.py
+  OK  .\extensions\image-forensics\eval_set.py
+  OK  .\extensions\image-forensics\metadata.py
+  OK  .\extensions\image-forensics\prnu.py
+  OK  .\extensions\image-forensics\verdict.py
+  OK  .\extensions\laya-compactor\compact.py
+  OK  .\extensions\laya-compactor\state.py
+  OK  .\extensions\laya-compactor\transcript.py
+  OK  .\extensions\laya-tools\bootstrap.py
+  OK  .\extensions\laya-tools\capture_eval.py
+  OK  .\extensions\laya-tools\decision_client.py
+  OK  .\extensions\laya-tools\decision_contract.py
+  OK  .\extensions\laya-tools\doc_coverage.py
+  OK  .\extensions\laya-tools\eval_decisions.py
+  OK  .\extensions\laya-tools\explore.py
+  OK  .\extensions\laya-tools\filebool.py
+  OK  .\extensions\laya-tools\fit_calibration.py
+  OK  .\extensions\laya-tools\knowledge_labels.py
+  OK  .\extensions\laya-tools\laya_cli.py
+  OK  .\extensions\laya-tools\laya_client.py
+  OK  .\extensions\laya-tools\laya_worker.py
+  OK  .\extensions\laya-tools\layad.py
+  OK  .\extensions\laya-tools\output_context.py
+  OK  .\extensions\laya-tools\review_gate.py
+  OK  .\extensions\laya-tools\workflow_routing.py
+  OK  .\extensions\media-tools\ascii_mancer.py
+  OK  .\extensions\media-tools\fx\__init__.py
+  OK  .\extensions\media-tools\fx\ascii_fx.py
+  OK  .\extensions\media-tools\fx\blockify.py
+  OK  .\extensions\media-tools\fx\charsets.py
+  OK  .\extensions\media-tools\fx\contour.py
+  OK  .\extensions\media-tools\fx\crosshatch.py
+  OK  .\extensions\media-tools\fx\dithering.py
+  OK  .\extensions\media-tools\fx\dots.py
+  OK  .\extensions\media-tools\fx\edge_detection.py
+  OK  .\extensions\media-tools\fx\fonts.py
+  OK  .\extensions\media-tools\fx\halftone.py
+  OK  .\extensions\media-tools\fx\matrix_rain.py
+  OK  .\extensions\media-tools\fx\noise_field.py
+  OK  .\extensions\media-tools\fx\palettes.py
+  OK  .\extensions\media-tools\fx\pipeline.py
+  OK  .\extensions\media-tools\fx\pixel_sort.py
+  OK  .\extensions\media-tools\fx\threshold.py
+  OK  .\extensions\media-tools\fx\vhs.py
+  OK  .\extensions\media-tools\fx\voronoi.py
+  OK  .\extensions\media-tools\fx\wave_lines.py
+  OK  .\extensions\media-tools\glb_input.py
+  OK  .\extensions\media-tools\grainrad.py
+  OK  .\extensions\media-tools\intent.py
+  OK  .\extensions\media-tools\jxl.py
+  OK  .\extensions\media-tools\jxl_bootstrap.py
+  OK  .\extensions\media-tools\media_io.py
+  OK  .\extensions\media-tools\playblast_ingest.py
+  OK  .\extensions\media-tools\presets.py
+  OK  .\extensions\media-tools\tests\test_ascii.py
+  OK  .\extensions\media-tools\tests\test_cli.py
+  OK  .\extensions\media-tools\tests\test_dithering.py
+  OK  .\extensions\media-tools\tests\test_export.py
+  OK  .\extensions\media-tools\tests\test_fx.py
+  OK  .\extensions\media-tools\tests\test_generative.py
+  OK  .\extensions\media-tools\tests\test_media_io.py
+  OK  .\extensions\media-tools\tests\test_pipeline.py
+  OK  .\extensions\media-tools\tests\test_pixel_fx.py
+  OK  .\extensions\media-tools\tests\test_presets.py
+  OK  .\extensions\media-tools\tests\test_stretch.py
+  OK  .\extensions\media-tools\update_tooooools_db.py
+  OK  .\extensions\media-tools\webcam.py
+  OK  .\extensions\mesh-utils\meshops.py
+  OK  .\extensions\offsec-tools\wrapper.py
+  OK  .\extensions\ppisp-prep\photo_qc.py
+  OK  .\extensions\ppisp-prep\ppisp_runner.py
+  OK  .\extensions\rea-ops\wrapper.py
+  OK  .\extensions\remotion-render\composite.py
+  OK  .\extensions\remotion-render\plan_check.py
+  OK  .\extensions\remotion-render\render.py
+  OK  .\extensions\rz-ops\wrapper.py
+  OK  .\extensions\scrape-tools\dom_elements.py
+  OK  .\extensions\scrape-tools\parse.py
+  OK  .\extensions\scrape-tools\scrape.py
+  OK  .\extensions\scrape-tools\st_common.py
+  OK  .\extensions\stock-footage\fetch.py
+  OK  .\extensions\system-control\backends\__init__.py
+  OK  .\extensions\system-control\backends\linux.py
+  OK  .\extensions\system-control\backends\macos.py
+  OK  .\extensions\system-control\backends\windows.py
+  OK  .\extensions\system-control\sc_backend.py
+  OK  .\extensions\system-control\sc_bench.py
+  OK  .\extensions\system-control\sc_broker.py
+  OK  .\extensions\system-control\sc_cli.py
+  OK  .\extensions\system-control\sc_contract.py
+  OK  .\extensions\system-control\sc_files.py
+  OK  .\extensions\system-control\sc_policy.py
+  OK  .\extensions\system-control\sc_process.py
+  OK  .\extensions\system-control\sc_sessions.py
+  OK  .\extensions\system-control\sc_telemetry.py
+  OK  .\extensions\system-control\sc_windows.py
+  OK  .\extensions\voicebox\wrapper.py
+  OK  .\scripts\_hookrun.py
+  OK  .\scripts\architecture-gate.py
+  OK  .\scripts\behavioral-nudge.py
+  OK  .\scripts\changelog-refs.py
+  OK  .\scripts\check-ai-signature.py
+  OK  .\scripts\check-push-green.py
+  OK  .\scripts\check-tools.py
+  OK  .\scripts\compact-gate.py
+  OK  .\scripts\constraint-pinning.py
+  OK  .\scripts\context-budget.py
+  OK  .\scripts\context-pressure.py
+  OK  .\scripts\decision-queue.py
+  OK  .\scripts\dep-audit-gate.py
+  OK  .\scripts\dep-audit.py
+  OK  .\scripts\design-lint-gate.py
+  OK  .\scripts\destructive-gate.py
+  OK  .\scripts\done-evaluator.py
+  OK  .\scripts\file-size-guard.py
+  OK  .\scripts\focus.py
+  OK  .\scripts\gh-pr-assignee.py
+  OK  .\scripts\git-diff-stat.py
+  OK  .\scripts\graph-query.py
+  OK  .\scripts\install-ledger.py
+  OK  .\scripts\laya-guard.py
+  OK  .\scripts\memory-post-edit.py
+  OK  .\scripts\memory-post-exec.py
+  OK  .\scripts\memory-retrieval.py
+  OK  .\scripts\memory-stop.py
+  OK  .\scripts\no-em-dash.py
+  OK  .\scripts\post-exec.py
+  OK  .\scripts\pre-exec-guard.py
+  OK  .\scripts\pre-write-guard.py
+  OK  .\scripts\pulse.py
+  OK  .\scripts\refine-review-prompt.py
+  OK  .\scripts\render-user-hooks.py
+  OK  .\scripts\rl-resume-detect.py
+  OK  .\scripts\roadmap-board.py
+  OK  .\scripts\rules-coverage.py
+  OK  .\scripts\session-start.py
+  OK  .\scripts\ship-metrics.py
+  OK  .\scripts\silent-error-review.py
+  OK  .\scripts\simplify-scan.py
+  OK  .\scripts\skill-picker.py
+  OK  .\scripts\spec-consistency.py
+  OK  .\scripts\status_vocab.py
+  OK  .\scripts\stop-guard.py
+  OK  .\scripts\stuck-detect.py
+  OK  .\scripts\subagent-trace.py
+  OK  .\scripts\token-saver.py
+  OK  .\scripts\user-prompt.py
+  OK  .\scripts\validate-mermaid.py
+  OK  .\scripts\validate-refinement-evidence.py
+  OK  .\scripts\validate-skill-format.py
+  OK  .\scripts\validate-tool-args.py
+  OK  .\site\build.py
+  OK  .\skills\brag\scripts\analyze_music_cues.py
+  OK  .\skills\context-hygiene\scripts\fold_store.py
+  OK  .\skills\context7\scripts\context7.py
+  OK  .\skills\debugging\scripts\hitl-loop.template.py
+  OK  .\skills\devin-config\scripts\devin-manager.py
+  OK  .\skills\devin-manager\scripts\devin-manager.py
+  OK  .\skills\diagnosing-bugs\scripts\hitl-loop.template.py
+  OK  .\skills\dispatching-parallel-agents\scripts\review-package.py
+  OK  .\skills\dispatching-parallel-agents\scripts\sdd-workspace.py
+  OK  .\skills\dispatching-parallel-agents\scripts\task-brief.py
+  OK  .\skills\dma\tools\audit.py
+  OK  .\skills\dma\tools\common.py
+  OK  .\skills\dma\tools\gql_probe.py
+  OK  .\skills\dma\tools\init.py
+  OK  .\skills\dma\tools\jwt_tool.py
+  OK  .\skills\dma\tools\mine.py
+  OK  .\skills\dma\tools\oracle.py
+  OK  .\skills\dma\tools\probe.py
+  OK  .\skills\dma\tools\recon.py
+  OK  .\skills\dma\tools\ws_probe.py
+  OK  .\skills\grilling\scripts\start-server.py
+  OK  .\skills\grilling\scripts\stop-server.py
+  OK  .\skills\intake\scripts\estimate.py
+  OK  .\skills\knowledge-modeling\scripts\extract.py
+  OK  .\skills\knowledge-modeling\scripts\validate.py
+  OK  .\skills\mcp-context-audit\scripts\mcp-context-audit.py
+  OK  .\skills\mcp-governance\scripts\mcp-context-audit.py
+  OK  .\skills\memory-management\scripts\audit-memory.py
+  OK  .\skills\memory-management\scripts\capture-memory.py
+  OK  .\skills\memory-management\scripts\query-memory.py
+  OK  .\skills\obsidian-workflow\scripts\audit.py
+  OK  .\skills\obsidian-workflow\scripts\find_orphan_pages.py
+  OK  .\skills\obsidian-workflow\scripts\fix_templates.py
+  OK  .\skills\obsidian-workflow\scripts\scaffold.py
+  OK  .\skills\obsidian-workflow\scripts\scan_secrets.py
+  OK  .\skills\obsidian-workflow\scripts\validate_links.py
+  OK  .\skills\obsidian-workflow\scripts\validate_mermaid.py
+  OK  .\skills\obsidian-workflow\scripts\validate_wiki_content.py
+  OK  .\skills\obsidian-workflow\scripts\validate_wiki_structure.py
+  OK  .\skills\ontology-validator\scripts\validate.py
+  OK  .\skills\project-memory\scripts\audit-memory.py
+  OK  .\skills\project-memory\scripts\capture-memory.py
+  OK  .\skills\project-memory\scripts\query-memory.py
+  OK  .\skills\secure-defaults-check\scripts\check.py
+  OK  .\skills\security\scripts\check.py
+  OK  .\skills\structured-knowledge-extraction\scripts\extract.py
+  OK  .\skills\task-sizer\scripts\estimate.py
+  OK  .\skills\wizard\template.py
+  OK  .\skills\youtube-fetcher\scripts\fetch.py
+  OK  .\tests\cu_load.py
+  OK  .\tests\fake_adb.py
+  OK  .\tests\fake_gh.py
+  OK  .\tests\fixtures\devin-config\project\.devin\scripts\validate-tool-args.py
+  OK  .\tests\fixtures\devin-config\project\src\main.py
+  OK  .\tests\held-out\__init__.py
+  OK  .\tests\held-out\_helpers\__init__.py
+  OK  .\tests\held-out\_helpers\_mutation.py
+  OK  .\tests\held-out\_helpers\_stochastic.py
+  OK  .\tests\held-out\_helpers\_trajectory.py
+  OK  .\tests\held-out\behavioral\__init__.py
+  OK  .\tests\held-out\behavioral\test_rule17_verify_with_tools.py
+  OK  .\tests\held-out\behavioral\test_rule7_opinion_silent.py
+  OK  .\tests\held-out\compositional\__init__.py
+  OK  .\tests\held-out\compositional\test_scope_and_verify.py
+  OK  .\tests\held-out\compositional\test_telegraphic_and_opinion_silent.py
+  OK  .\tests\held-out\conftest.py
+  OK  .\tests\held-out\mutation\__init__.py
+  OK  .\tests\held-out\mutation\test_check_ai_signature_expanded.py
+  OK  .\tests\held-out\mutation\test_check_ai_signature_identity.py
+  OK  .\tests\held-out\mutation\test_check_push_green_blocks.py
+  OK  .\tests\held-out\mutation\test_constraint_pinning_survives_compaction.py
+  OK  .\tests\held-out\mutation\test_destructive_gate_new_gates.py
+  OK  .\tests\held-out\mutation\test_hook_false_positive_fixes.py
+  OK  .\tests\held-out\mutation\test_hook_fires_on_violation.py
+  OK  .\tests\held-out\mutation\test_silent_error_new_indicators.py
+  OK  .\tests\held-out\mutation\test_validate_tool_args_new.py
+  OK  .\tests\held-out\paraphrase\__init__.py
+  OK  .\tests\held-out\paraphrase\test_rule17_paraphrased.py
+  OK  .\tests\held-out\paraphrase\test_rule7_paraphrased.py
+  OK  .\tests\held-out\system-control\test_bench_harness.py
+  OK  .\tests\held-out\system-control\test_broker_contract.py
+  OK  .\tests\held-out\system-control\test_daemon_recovery.py
+  OK  .\tests\held-out\system-control\test_event_integrity.py
+  OK  .\tests\held-out\system-control\test_file_integrity.py
+  OK  .\tests\held-out\system-control\test_identity_and_confirmation.py
+  OK  .\tests\held-out\system-control\test_linux_adapter.py
+  OK  .\tests\held-out\system-control\test_macos_adapter.py
+  OK  .\tests\held-out\system-control\test_paths_and_output.py
+  OK  .\tests\held-out\system-control\test_windows_adapter.py
+  OK  .\tests\held-out\test_cu_env_boundaries.py
+  OK  .\tests\held-out\test_cu_scope_boundaries.py
+  OK  .\tests\held-out\test_cu_workflows.py
+  OK  .\tests\held-out\test_swe2_flash_contract.py
+  OK  .\tests\held-out\trajectory\__init__.py
+  OK  .\tests\held-out\trajectory\test_invokes_skill_before_action.py
+  OK  .\tests\held-out\trajectory\test_uses_exec_not_deduce.py
+  OK  .\tests\held-out\trajectory\test_uses_read_before_edit.py
+  OK  .\tests\scrape_load.py
+  OK  .\tests\test_agent_reach_wrapper.py
+  OK  .\tests\test_animation_pipeline.py
+  OK  .\tests\test_api_bridge.py
+  OK  .\tests\test_asr_bootstrap.py
+  OK  .\tests\test_busybar_listen.py
+  OK  .\tests\test_caldav.py
+  OK  .\tests\test_camera_blocking.py
+  OK  .\tests\test_changelog_refs.py
+  OK  .\tests\test_check_push_green_tiers.py
+  OK  .\tests\test_check_tools.py
+  OK  .\tests\test_ci_workflow.py
+  OK  .\tests\test_code_graph.py
+  OK  .\tests\test_comfyui_wrapper.py
+  OK  .\tests\test_craft_bridge.py
+  OK  .\tests\test_cu_action_results.py
+  OK  .\tests\test_cu_adb_backend.py
+  OK  .\tests\test_cu_adb_e2e.py
+  OK  .\tests\test_cu_agent_desktop.py
+  OK  .\tests\test_cu_audit.py
+  OK  .\tests\test_cu_browser_cli.py
+  OK  .\tests\test_cu_browser_contract.py
+  OK  .\tests\test_cu_browser_events.py
+  OK  .\tests\test_cu_browser_launch.py
+  OK  .\tests\test_cu_browser_observe.py
+  OK  .\tests\test_cu_browser_routing.py
+  OK  .\tests\test_cu_browser_watch.py
+  OK  .\tests\test_cu_capture_frames.py
+  OK  .\tests\test_cu_dpi.py
+  OK  .\tests\test_cu_env_bindings.py
+  OK  .\tests\test_cu_env_capture.py
+  OK  .\tests\test_cu_env_consent.py
+  OK  .\tests\test_cu_env_container.py
+  OK  .\tests\test_cu_env_device_leases.py
+  OK  .\tests\test_cu_env_doctor.py
+  OK  .\tests\test_cu_env_guest_protocol.py
+  OK  .\tests\test_cu_env_lifecycle.py
+  OK  .\tests\test_cu_env_recovery.py
+  OK  .\tests\test_cu_env_reset.py
+  OK  .\tests\test_cu_env_routing.py
+  OK  .\tests\test_cu_env_state.py
+  OK  .\tests\test_cu_env_text.py
+  OK  .\tests\test_cu_env_verification.py
+  OK  .\tests\test_cu_events.py
+  OK  .\tests\test_cu_laya_shadow.py
+  OK  .\tests\test_cu_mcp_server.py
+  OK  .\tests\test_cu_motion_profiles.py
+  OK  .\tests\test_cu_mouse_swap.py
+  OK  .\tests\test_cu_notify.py
+  OK  .\tests\test_cu_observation_contract.py
+  OK  .\tests\test_cu_ocr.py
+  OK  .\tests\test_cu_probe.py
+  OK  .\tests\test_cu_qmp_keyboard.py
+  OK  .\tests\test_cu_qmp_pointer.py
+  OK  .\tests\test_cu_qmp_protocol.py
+  OK  .\tests\test_cu_record.py
+  OK  .\tests\test_cu_scope.py
+  OK  .\tests\test_cu_screenshot.py
+  OK  .\tests\test_cu_session_isolation.py
+  OK  .\tests\test_cu_stateful.py
+  OK  .\tests\test_cu_taskrunner.py
+  OK  .\tests\test_cu_terminal_bind.py
+  OK  .\tests\test_cu_terminal_cli.py
+  OK  .\tests\test_cu_terminal_conhost.py
+  OK  .\tests\test_cu_terminal_detect.py
+  OK  .\tests\test_cu_terminal_exec.py
+  OK  .\tests\test_cu_terminal_link.py
+  OK  .\tests\test_cu_terminal_ocr.py
+  OK  .\tests\test_cu_terminal_spawn.py
+  OK  .\tests\test_cu_terminal_uia.py
+  OK  .\tests\test_cu_uia_actions.py
+  OK  .\tests\test_cu_wgc.py
+  OK  .\tests\test_decision_queue.py
+  OK  .\tests\test_dep_audit.py
+  OK  .\tests\test_design_intelligence.py
+  OK  .\tests\test_design_iteration_eval.py
+  OK  .\tests\test_design_lint.py
+  OK  .\tests\test_design_lint_gate.py
+  OK  .\tests\test_done_evaluator.py
+  OK  .\tests\test_edge_y_gate_fixes.py
+  OK  .\tests\test_export_ps1_edge_audit.py
+  OK  .\tests\test_export_sh_edge_audit.py
+  OK  .\tests\test_focus.py
+  OK  .\tests\test_fold_store.py
+  OK  .\tests\test_gcal.py
+  OK  .\tests\test_graph_query.py
+  OK  .\tests\test_harness_tree.py
+  OK  .\tests\test_hook_architecture_gate_edge.py
+  OK  .\tests\test_hook_context_budget_edge.py
+  OK  .\tests\test_hook_gh_pr_assignee.py
+  OK  .\tests\test_hook_git_diff_stat.py
+  OK  .\tests\test_hook_laya_gate.py
+  OK  .\tests\test_hook_memory_post_edit_edge.py
+  OK  .\tests\test_hook_memory_post_exec.py
+  OK  .\tests\test_hook_mermaid_parse_check_edge.py
+  OK  .\tests\test_hook_rl_resume_detect.py
+  OK  .\tests\test_hook_stuck_detect.py
+  OK  .\tests\test_hook_token_saver.py
+  OK  .\tests\test_hook_validate_mermaid_edge.py
+  OK  .\tests\test_hyperframes_wrapper.py
+  OK  .\tests\test_image_forensics.py
+  OK  .\tests\test_install_ledger.py
+  OK  .\tests\test_install_ps1_edge_audit.py
+  OK  .\tests\test_install_sh_edge_audit.py
+  OK  .\tests\test_install_sh_parity.py
+  OK  .\tests\test_jev_review_dom.py
+  OK  .\tests\test_jev_routing.py
+  OK  .\tests\test_jxl.py
+  OK  .\tests\test_laya_activation.py
+  OK  .\tests\test_laya_cli_contract.py
+  OK  .\tests\test_laya_compactor.py
+  OK  .\tests\test_laya_daemon.py
+  OK  .\tests\test_laya_decision_contract.py
+  OK  .\tests\test_laya_eval_metrics.py
+  OK  .\tests\test_laya_fit_calibration.py
+  OK  .\tests\test_laya_knowledge_labels.py
+  OK  .\tests\test_laya_output_context.py
+  OK  .\tests\test_laya_worker.py
+  OK  .\tests\test_laya_workflow_routing.py
+  OK  .\tests\test_local_inference.py
+  OK  .\tests\test_m2_03_impeccable_upgrade.py
+  OK  .\tests\test_m2_04_brain_contract.py
+  OK  .\tests\test_m2_14_orchestrator_v4.py
+  OK  .\tests\test_media_intent.py
+  OK  .\tests\test_meshops.py
+  OK  .\tests\test_openui_runtime.py
+  OK  .\tests\test_plantuml_renderer.py
+  OK  .\tests\test_ppisp_prep.py
+  OK  .\tests\test_pulse.py
+  OK  .\tests\test_roadmap_board.py
+  OK  .\tests\test_rules_coverage.py
+  OK  .\tests\test_sc_bench.py
+  OK  .\tests\test_sc_broker.py
+  OK  .\tests\test_sc_cli.py
+  OK  .\tests\test_sc_contract.py
+  OK  .\tests\test_sc_event_streams.py
+  OK  .\tests\test_sc_files.py
+  OK  .\tests\test_sc_inventory.py
+  OK  .\tests\test_sc_linux.py
+  OK  .\tests\test_sc_macos.py
+  OK  .\tests\test_sc_policy.py
+  OK  .\tests\test_sc_process_exec.py
+  OK  .\tests\test_sc_session_daemon.py
+  OK  .\tests\test_sc_sessions.py
+  OK  .\tests\test_sc_telemetry.py
+  OK  .\tests\test_sc_windows.py
+  OK  .\tests\test_sc_windows_events.py
+  OK  .\tests\test_scheduled_turns_skill.py
+  OK  .\tests\test_scrape_parse.py
+  OK  .\tests\test_scrape_scrape.py
+  OK  .\tests\test_self_improvement_publish_gate.py
+  OK  .\tests\test_ship_metrics.py
+  OK  .\tests\test_simplify_scan.py
+  OK  .\tests\test_skill_scripts_r6.py
+  OK  .\tests\test_spec_consistency.py
+  OK  .\tests\test_stock_footage_fetch.py
+  OK  .\tests\test_subagent_budget.py
+  OK  .\tests\test_subagent_trace.py
+  OK  .\tests\test_task_brief_done_when.py
+  OK  .\tests\test_voicebox_wrapper.py
+  OK  .\tests\validation\__init__.py
+  OK  .\tests\validation\test_akita_gapfill_contract.py
+  OK  .\tests\validation\test_ask_bundle_router.py
+  OK  .\tests\validation\test_atlas_sections.py
+  OK  .\tests\validation\test_audit_passes.py
+  OK  .\tests\validation\test_bidirectional_patch_verification.py
+  OK  .\tests\validation\test_brag_skill.py
+  OK  .\tests\validation\test_cli_3000_6_14_compatibility.py
+  OK  .\tests\validation\test_config_schema.py
+  OK  .\tests\validation\test_consolidated_hooks.py
+  OK  .\tests\validation\test_context_pressure.py
+  OK  .\tests\validation\test_continuous_improvement_contract.py
+  OK  .\tests\validation\test_cu_workflows.py
+  OK  .\tests\validation\test_devin_manager.py
+  OK  .\tests\validation\test_durable_session_log.py
+  OK  .\tests\validation\test_egm_upgrade_contract.py
+  OK  .\tests\validation\test_grilling_frontier_rounds.py
+  OK  .\tests\validation\test_hooks_pipeline_doc.py
+  OK  .\tests\validation\test_install_export_scripts.py
+  OK  .\tests\validation\test_jev_runtime_contracts.py
+  OK  .\tests\validation\test_mcp_code_mode.py
+  OK  .\tests\validation\test_model_interface_preflight.py
+  OK  .\tests\validation\test_model_pin_contract.py
+  OK  .\tests\validation\test_no_em_dash_hook.py
+  OK  .\tests\validation\test_profile_parity.py
+  OK  .\tests\validation\test_project_orchestrator.py
+  OK  .\tests\validation\test_prompt_bloat_gate.py
+  OK  .\tests\validation\test_red_team_skills.py
+  OK  .\tests\validation\test_refinement_evidence_valid.py
+  OK  .\tests\validation\test_rz_ops.py
+  OK  .\tests\validation\test_skill_format_passes.py
+  OK  .\tests\validation\test_structured_knowledge_extraction.py
+  OK  .\tests\validation\test_system_control_workflow.py
+  OK  .\tests\validation\test_task_adaptive_harness.py
+  OK  .\tests\validation\test_youtube_fetcher.py
+
+[2b] Hook script __main__ guard validation
+  OK  .\scripts\_hookrun.py
+  OK  .\scripts\architecture-gate.py
+  OK  .\scripts\behavioral-nudge.py
+  OK  .\scripts\changelog-refs.py
+  OK  .\scripts\check-ai-signature.py
+  OK  .\scripts\check-push-green.py
+  OK  .\scripts\check-tools.py
+  OK  .\scripts\compact-gate.py
+  OK  .\scripts\constraint-pinning.py
+  OK  .\scripts\context-budget.py
+  OK  .\scripts\context-pressure.py
+  OK  .\scripts\decision-queue.py
+  OK  .\scripts\dep-audit-gate.py
+  OK  .\scripts\dep-audit.py
+  OK  .\scripts\design-lint-gate.py
+  OK  .\scripts\destructive-gate.py
+  OK  .\scripts\done-evaluator.py
+  OK  .\scripts\file-size-guard.py
+  OK  .\scripts\focus.py
+  OK  .\scripts\gh-pr-assignee.py
+  OK  .\scripts\git-diff-stat.py
+  OK  .\scripts\graph-query.py
+  OK  .\scripts\install-ledger.py
+  OK  .\scripts\laya-guard.py
+  OK  .\scripts\memory-post-edit.py
+  OK  .\scripts\memory-post-exec.py
+  OK  .\scripts\memory-retrieval.py
+  OK  .\scripts\memory-stop.py
+  OK  .\scripts\no-em-dash.py
+  OK  .\scripts\post-exec.py
+  OK  .\scripts\pre-exec-guard.py
+  OK  .\scripts\pre-write-guard.py
+  OK  .\scripts\pulse.py
+  OK  .\scripts\refine-review-prompt.py
+  OK  .\scripts\render-user-hooks.py
+  OK  .\scripts\rl-resume-detect.py
+  OK  .\scripts\roadmap-board.py
+  OK  .\scripts\rules-coverage.py
+  OK  .\scripts\session-start.py
+  OK  .\scripts\ship-metrics.py
+  OK  .\scripts\silent-error-review.py
+  OK  .\scripts\simplify-scan.py
+  OK  .\scripts\skill-picker.py
+  OK  .\scripts\spec-consistency.py
+  OK  .\scripts\status_vocab.py
+  OK  .\scripts\stop-guard.py
+  OK  .\scripts\stuck-detect.py
+  OK  .\scripts\subagent-trace.py
+  OK  .\scripts\token-saver.py
+  OK  .\scripts\user-prompt.py
+  OK  .\scripts\validate-mermaid.py
+  OK  .\scripts\validate-refinement-evidence.py
+  OK  .\scripts\validate-skill-format.py
+  OK  .\scripts\validate-tool-args.py
+
+[3] Skill frontmatter validation
+  OK  a11y-audit
+  OK  afk-loop
+  OK  agent-cost-guard
+  OK  agent-reach
+  OK  agentic-rag
+  OK  ai-coding-dictionary
+  OK  ai-tools
+  OK  ai3d-gen
+  OK  animation-direction
+  OK  api-context-spec
+  OK  api-design
+  OK  api-spec
+  OK  architecture
+  OK  architecture-diagrams
+  OK  arena
+  OK  ascii-art
+  OK  ask-bundle
+  OK  autonomous-gates
+  OK  benchmark-checklist
+  OK  big-file-refactor
+  OK  binary-triage
+  OK  blast-radius
+  OK  brag
+  OK  brag-slim
+  OK  camera-blocking
+  OK  career-ops
+  OK  cli-adapter
+  OK  code-review
+  OK  codebase-design
+  OK  computer-use
+  OK  context-folding
+  OK  context-hygiene
+  OK  context-window-hygiene
+  OK  context7
+  OK  continuous-improvement
+  OK  correct
+  OK  cost-optimization
+  OK  create-verification-skill
+  OK  creative-engineering
+  OK  criador-de-devin-app
+  OK  cu-realtime
+  OK  data-analyst
+  OK  database
+  OK  de-slop
+  OK  dead-wire
+  OK  debug-ci-failures
+  OK  debugging
+  OK  deep-mode
+  OK  deploy
+  OK  device-repurpose
+  OK  devin-config
+  OK  devin-integrate
+  OK  devin-manager
+  OK  diagnosing-bugs
+  OK  dispatching-parallel-agents
+  OK  dma
+  OK  docker
+  OK  domain-modeling
+  OK  drift-report
+  OK  e2e-testing
+  OK  edge-cases
+  OK  edge-coverage
+  OK  effort-calibration
+  OK  executing-plans
+  OK  execution
+  OK  fact-check
+  OK  finishing-a-development-branch
+  OK  firmware-probe
+  OK  forensic-debugging
+  OK  frontend-design
+  OK  gates
+  OK  gh
+  OK  ghidra
+  OK  git-helper
+  OK  git-workflows
+  OK  github-actions
+  OK  grilling
+  OK  handoff
+  OK  humanizer
+  OK  hyperframes
+  OK  i18n
+  OK  image-forensics
+  OK  impeccable
+  OK  implement
+  OK  implement-laya
+  OK  improve-codebase-architecture
+  OK  intake
+  OK  intention-capture
+  OK  jira
+  OK  knowledge-modeling
+  OK  laya-orchestrator
+  OK  lean-code
+  OK  learn-mode
+  OK  legacy-refactor
+  OK  leo
+  OK  lgpd-questionnaire
+  OK  maintain-verification-skill
+  OK  mcp-context-audit
+  OK  mcp-governance
+  OK  mcp-lazy-enablement
+  OK  media-tools
+  OK  memory-hygiene
+  OK  memory-management
+  OK  mesh-utils
+  OK  mobile-probe
+  OK  mutation-testing
+  OK  net-probe
+  OK  no-comments
+  OK  observability-quality
+  OK  obsidian-workflow
+  OK  ontology-validator
+  OK  operate-blender
+  OK  operate-godot
+  OK  operate-spline
+  OK  performance
+  OK  planning
+  OK  planning-pipeline
+  OK  playbook
+  OK  powershell-safe
+  OK  pr
+  OK  pr-review
+  OK  primeagent-reference
+  OK  project-bootstrap
+  OK  project-memory
+  OK  project-orchestrator
+  OK  project-setup
+  OK  prompt-compiler
+  OK  prototype
+  OK  rag
+  OK  re-binary
+  OK  receiving-code-review
+  OK  red-team
+  OK  research
+  OK  resolving-merge-conflicts
+  OK  retro
+  OK  review-cadence
+  OK  roteiro
+  OK  saas-replacer
+  OK  scan
+  OK  scheduled-turns
+  OK  scrape-tools
+  OK  secure-defaults-check
+  OK  security
+  OK  security-audit
+  OK  security-audit-cf
+  OK  self-extend
+  OK  self-improvement
+  OK  setup-engineering-skills
+  OK  setup-pre-commit
+  OK  shell-safe
+  OK  shorts-factory
+  OK  skill-discovery
+  OK  social-midia
+  OK  structured-knowledge-extraction
+  OK  system-control
+  OK  task-sizer
+  OK  tdd
+  OK  teach
+  OK  technical-writing
+  OK  testing
+  OK  thermo-nuclear-code-quality-review
+  OK  thermo-nuclear-review
+  OK  thermos
+  OK  tool-and-skill-discovery
+  OK  triage
+  OK  tts
+  OK  typescript-best-practices
+  OK  typescript-node
+  OK  unlazy
+  OK  unslop
+  OK  using-git-worktrees
+  OK  using-skills
+  OK  vercel-react-best-practices
+  OK  verification-before-completion
+  OK  wait-what
+  OK  wayfinder
+  OK  web-perf-checklist
+  OK  web-probe
+  OK  webhooks
+  OK  wireless-probe
+  OK  wizard
+  OK  writing-for-agents
+  OK  writing-plans
+  OK  writing-skills
+  OK  youtube-fetcher
+  Total: 185 skills
+
+[4] Manifest sync
+  OK  185 skills = 185 on disk
+  OK  skill_count = 185
+
+[5] Manifest version
+  version: 3.20.0
+
+[6] AGENTS.md rules
+  Rules found: [1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 25, 27, 28, 29]
+  OK  24 rules present
+  OK  rule_count = 24
+  OK  every non-alias rule has a body section
+  OK  all index aliases resolve
+
+[6c] AGENTS.md context budget
+  AGENTS.md size: 10492 chars (~2623 tokens)
+  OK  AGENTS.md within budget
+  OK  no duplicate rule numbers
+
+[7] hooks.v1.json script references
+  OK  architecture-gate.py exists
+  OK  behavioral-nudge.py exists
+  OK  check-ai-signature.py exists
+  OK  check-push-green.py exists
+  OK  compact-gate.py exists
+  OK  constraint-pinning.py exists
+  OK  context-budget.py exists
+  OK  context-pressure.py exists
+  OK  decision-queue.py exists
+  OK  dep-audit-gate.py exists
+  OK  dep-audit.py exists
+  OK  design-lint-gate.py exists
+  OK  destructive-gate.py exists
+  OK  file-size-guard.py exists
+  OK  gh-pr-assignee.py exists
+  OK  git-diff-stat.py exists
+  OK  laya-guard.py exists
+  OK  memory-post-edit.py exists
+  OK  memory-post-exec.py exists
+  OK  memory-retrieval.py exists
+  OK  memory-stop.py exists
+  OK  no-em-dash.py exists
+  OK  post-exec.py exists
+  OK  pre-exec-guard.py exists
+  OK  pre-write-guard.py exists
+  OK  refine-review-prompt.py exists
+  OK  rl-resume-detect.py exists
+  OK  session-start.py exists
+  OK  silent-error-review.py exists
+  OK  skill-picker.py exists
+  OK  stop-guard.py exists
+  OK  stuck-detect.py exists
+  OK  token-saver.py exists
+  OK  user-prompt.py exists
+  OK  validate-mermaid.py exists
+  OK  validate-tool-args.py exists
+
+[7b] config.json / hooks.v1.json schema validation
+  OK  config.json schema valid
+
+[8] Scripts directory
+  Scripts: ['architecture-gate.py', 'behavioral-nudge.py', 'check-ai-signature.py', 'check-push-green.py', 'compact-gate.py', 'constraint-pinning.py', 'context-budget.py', 'context-pressure.py', 'destructive-gate.py', 'gh-pr-assignee.py', 'laya-guard.py', 'memory-post-edit.py', 'memory-post-exec.py', 'memory-retrieval.py', 'memory-stop.py', 'no-em-dash.py', 'post-exec.py', 'pre-exec-guard.py', 'pre-write-guard.py', 'refine-review-prompt.py', 'render-user-hooks.py', 'session-start.py', 'silent-error-review.py', 'skill-picker.py', 'spec-consistency.py', 'stop-guard.py', 'stuck-detect.py', 'user-prompt.py', 'validate-mermaid.py', 'validate-refinement-evidence.py', 'validate-skill-format.py', 'validate-tool-args.py', '_hookrun.py', 'file-size-guard.py', 'git-diff-stat.py', 'rl-resume-detect.py', 'token-saver.py', 'install-ledger.py', 'check-tools.py', 'design-lint-gate.py', 'dep-audit-gate.py', 'dep-audit.py', 'roadmap-board.py', 'decision-queue.py', 'done-evaluator.py', 'focus.py', 'graph-query.py', 'pulse.py', 'rules-coverage.py', 'simplify-scan.py', 'status_vocab.py', 'subagent-trace.py', 'ship-metrics.py', 'changelog-refs.py']
+  OK  render-user-hooks.py (manual-run, not a hook)
+  OK  spec-consistency.py (manual-run, not a hook)
+  OK  validate-refinement-evidence.py (manual-run, not a hook)
+  OK  validate-skill-format.py (manual-run, not a hook)
+  OK  _hookrun.py (manual-run, not a hook)
+  OK  install-ledger.py (manual-run, not a hook)
+  OK  check-tools.py (manual-run, not a hook)
+  OK  roadmap-board.py (manual-run, not a hook)
+  OK  done-evaluator.py (manual-run, not a hook)
+  OK  focus.py (manual-run, not a hook)
+  OK  graph-query.py (manual-run, not a hook)
+  OK  pulse.py (manual-run, not a hook)
+  OK  rules-coverage.py (manual-run, not a hook)
+  OK  simplify-scan.py (manual-run, not a hook)
+  OK  status_vocab.py (manual-run, not a hook)
+  OK  subagent-trace.py (manual-run, not a hook)
+  OK  ship-metrics.py (manual-run, not a hook)
+  OK  changelog-refs.py (manual-run, not a hook)
+
+[9] README counts vs reality
+  OK 185 skills
+  OK rules-24 badge
+  OK 21 agents (disk vs manifest)
+  OK 54 scripts
+
+[9b] manifest.json scripts list
+  OK  manifest.json scripts list consistent (54 .py + 1 other)
+  OK  manifest script hashes match
+
+[9c] manifest.json agents
+  OK  manifest agents consistent (21 agents)
+
+[10] Secrets check
+  OK  credentials.toml masked
+  OK  config.json org_id masked
+  OK  mcp_config.json no secret-like fields
+
+[10b] mcp_config.json schema validation
+  OK  mcp_config.json schema valid
+  OK  mcp_count = 1 (bundle-integrations.json)
+
+[11] .gitignore coverage
+  OK  __pycache__
+  OK  .devin/brainstorm/
+  OK  .devin/heartbeats/
+  OK  .devin/mailboxes/
+  OK  .devin/checkpoints/
+  OK  .devin/.refine-pending
+  OK  no tracked __pycache__ files
+
+[12] CI workflow
+  OK  step: Validate JSON
+  OK  step: Validate Python
+  OK  step: Validate skill frontmatter
+  OK  step: Check for AI signatures
+  OK  step: Verify manifest sync
+
+[13] GitHub templates
+  OK  .github/ISSUE_TEMPLATE/bug_report.md
+  OK  .github/ISSUE_TEMPLATE/feature_request.md
+  OK  .github/PULL_REQUEST_TEMPLATE.md
+
+[14] Repo docs
+  OK  LICENSE
+  OK  SECURITY.md
+  OK  CONTRIBUTING.md
+  OK  CHANGELOG.md
+
+[15] Live vs bundle sync
+  OK  AGENTS.md (live=bundle)
+  OK  mcp_config.json (live=bundle)
+  OK  config.json hooks (live=render of hooks.v1.json)
+  OK  scripts/architecture-gate.py (live=bundle)
+  OK  scripts/behavioral-nudge.py (live=bundle)
+  OK  scripts/check-ai-signature.py (live=bundle)
+  OK  scripts/check-push-green.py (live=bundle)
+  OK  scripts/compact-gate.py (live=bundle)
+  OK  scripts/constraint-pinning.py (live=bundle)
+  OK  scripts/context-budget.py (live=bundle)
+  OK  scripts/context-pressure.py (live=bundle)
+  OK  scripts/destructive-gate.py (live=bundle)
+  OK  scripts/gh-pr-assignee.py (live=bundle)
+  OK  scripts/laya-guard.py (live=bundle)
+  OK  scripts/memory-post-edit.py (live=bundle)
+  OK  scripts/memory-post-exec.py (live=bundle)
+  OK  scripts/memory-retrieval.py (live=bundle)
+  OK  scripts/memory-stop.py (live=bundle)
+  OK  scripts/no-em-dash.py (live=bundle)
+  OK  scripts/post-exec.py (live=bundle)
+  OK  scripts/pre-exec-guard.py (live=bundle)
+  OK  scripts/pre-write-guard.py (live=bundle)
+  OK  scripts/refine-review-prompt.py (live=bundle)
+  OK  scripts/render-user-hooks.py (live=bundle)
+  OK  scripts/session-start.py (live=bundle)
+  OK  scripts/silent-error-review.py (live=bundle)
+  OK  scripts/skill-picker.py (live=bundle)
+  OK  scripts/spec-consistency.py (live=bundle)
+  OK  scripts/stop-guard.py (live=bundle)
+  OK  scripts/stuck-detect.py (live=bundle)
+  OK  scripts/user-prompt.py (live=bundle)
+  OK  scripts/validate-mermaid.py (live=bundle)
+  OK  scripts/validate-refinement-evidence.py (live=bundle)
+  OK  scripts/validate-skill-format.py (live=bundle)
+  OK  scripts/validate-tool-args.py (live=bundle)
+  OK  scripts/_hookrun.py (live=bundle)
+  OK  scripts/file-size-guard.py (live=bundle)
+  OK  scripts/git-diff-stat.py (live=bundle)
+  OK  scripts/rl-resume-detect.py (live=bundle)
+  OK  scripts/token-saver.py (live=bundle)
+  OK  scripts/install-ledger.py (live=bundle)
+  OK  scripts/check-tools.py (live=bundle)
+  OK  scripts/design-lint-gate.py (live=bundle)
+  OK  scripts/dep-audit-gate.py (live=bundle)
+  OK  scripts/dep-audit.py (live=bundle)
+  OK  scripts/roadmap-board.py (live=bundle)
+  OK  scripts/decision-queue.py (live=bundle)
+  OK  scripts/done-evaluator.py (live=bundle)
+  OK  scripts/focus.py (live=bundle)
+  OK  scripts/graph-query.py (live=bundle)
+  OK  scripts/pulse.py (live=bundle)
+  OK  scripts/rules-coverage.py (live=bundle)
+  OK  scripts/simplify-scan.py (live=bundle)
+  OK  scripts/status_vocab.py (live=bundle)
+  OK  scripts/subagent-trace.py (live=bundle)
+  OK  scripts/ship-metrics.py (live=bundle)
+  OK  scripts/changelog-refs.py (live=bundle)
+
+[16] Skills live vs bundle sync
+  OK  skills/a11y-audit (live=bundle)
+  OK  skills/afk-loop (live=bundle)
+  OK  skills/agent-cost-guard (live=bundle)
+  OK  skills/agent-reach (live=bundle)
+  OK  skills/agentic-rag (live=bundle)
+  OK  skills/ai-coding-dictionary (live=bundle)
+  OK  skills/ai-tools (live=bundle)
+  OK  skills/ai3d-gen (live=bundle)
+  OK  skills/animation-direction (live=bundle)
+  OK  skills/api-context-spec (live=bundle)
+  OK  skills/api-design (live=bundle)
+  OK  skills/api-spec (live=bundle)
+  OK  skills/architecture (live=bundle)
+  OK  skills/architecture-diagrams (live=bundle)
+  OK  skills/arena (live=bundle)
+  OK  skills/ascii-art (live=bundle)
+  OK  skills/ask-bundle (live=bundle)
+  OK  skills/autonomous-gates (live=bundle)
+  OK  skills/benchmark-checklist (live=bundle)
+  OK  skills/big-file-refactor (live=bundle)
+  OK  skills/binary-triage (live=bundle)
+  OK  skills/blast-radius (live=bundle)
+  OK  skills/brag (live=bundle)
+  OK  skills/brag-slim (live=bundle)
+  OK  skills/camera-blocking (live=bundle)
+  OK  skills/career-ops (live=bundle)
+  OK  skills/cli-adapter (live=bundle)
+  OK  skills/code-review (live=bundle)
+  OK  skills/codebase-design (live=bundle)
+  OK  skills/computer-use (live=bundle)
+  OK  skills/context-folding (live=bundle)
+  OK  skills/context-hygiene (live=bundle)
+  OK  skills/context-window-hygiene (live=bundle)
+  OK  skills/context7 (live=bundle)
+  OK  skills/continuous-improvement (live=bundle)
+  OK  skills/correct (live=bundle)
+  OK  skills/cost-optimization (live=bundle)
+  OK  skills/create-verification-skill (live=bundle)
+  OK  skills/creative-engineering (live=bundle)
+  OK  skills/criador-de-devin-app (live=bundle)
+  OK  skills/cu-realtime (live=bundle)
+  OK  skills/data-analyst (live=bundle)
+  OK  skills/database (live=bundle)
+  OK  skills/de-slop (live=bundle)
+  OK  skills/dead-wire (live=bundle)
+  OK  skills/debug-ci-failures (live=bundle)
+  OK  skills/debugging (live=bundle)
+  OK  skills/deep-mode (live=bundle)
+  OK  skills/deploy (live=bundle)
+  OK  skills/device-repurpose (live=bundle)
+  OK  skills/devin-config (live=bundle)
+  OK  skills/devin-integrate (live=bundle)
+  OK  skills/devin-manager (live=bundle)
+  OK  skills/diagnosing-bugs (live=bundle)
+  OK  skills/dispatching-parallel-agents (live=bundle)
+  OK  skills/dma (live=bundle)
+  OK  skills/docker (live=bundle)
+  OK  skills/domain-modeling (live=bundle)
+  OK  skills/drift-report (live=bundle)
+  OK  skills/e2e-testing (live=bundle)
+  OK  skills/edge-cases (live=bundle)
+  OK  skills/edge-coverage (live=bundle)
+  OK  skills/effort-calibration (live=bundle)
+  OK  skills/executing-plans (live=bundle)
+  OK  skills/execution (live=bundle)
+  OK  skills/fact-check (live=bundle)
+  OK  skills/finishing-a-development-branch (live=bundle)
+  OK  skills/firmware-probe (live=bundle)
+  OK  skills/forensic-debugging (live=bundle)
+  OK  skills/frontend-design (live=bundle)
+  OK  skills/gates (live=bundle)
+  OK  skills/gh (live=bundle)
+  OK  skills/ghidra (live=bundle)
+  OK  skills/git-helper (live=bundle)
+  OK  skills/git-workflows (live=bundle)
+  OK  skills/github-actions (live=bundle)
+  OK  skills/grilling (live=bundle)
+  OK  skills/handoff (live=bundle)
+  OK  skills/humanizer (live=bundle)
+  OK  skills/hyperframes (live=bundle)
+  OK  skills/i18n (live=bundle)
+  OK  skills/image-forensics (live=bundle)
+  OK  skills/impeccable (live=bundle)
+  OK  skills/implement (live=bundle)
+  OK  skills/implement-laya (live=bundle)
+  OK  skills/improve-codebase-architecture (live=bundle)
+  OK  skills/intake (live=bundle)
+  OK  skills/intention-capture (live=bundle)
+  OK  skills/jira (live=bundle)
+  OK  skills/knowledge-modeling (live=bundle)
+  OK  skills/laya-orchestrator (live=bundle)
+  OK  skills/lean-code (live=bundle)
+  OK  skills/learn-mode (live=bundle)
+  OK  skills/legacy-refactor (live=bundle)
+  OK  skills/leo (live=bundle)
+  OK  skills/lgpd-questionnaire (live=bundle)
+  OK  skills/maintain-verification-skill (live=bundle)
+  OK  skills/mcp-context-audit (live=bundle)
+  OK  skills/mcp-governance (live=bundle)
+  OK  skills/mcp-lazy-enablement (live=bundle)
+  OK  skills/media-tools (live=bundle)
+  OK  skills/memory-hygiene (live=bundle)
+  OK  skills/memory-management (live=bundle)
+  OK  skills/mesh-utils (live=bundle)
+  OK  skills/mobile-probe (live=bundle)
+  OK  skills/mutation-testing (live=bundle)
+  OK  skills/net-probe (live=bundle)
+  OK  skills/no-comments (live=bundle)
+  OK  skills/observability-quality (live=bundle)
+  OK  skills/obsidian-workflow (live=bundle)
+  OK  skills/ontology-validator (live=bundle)
+  OK  skills/operate-blender (live=bundle)
+  OK  skills/operate-godot (live=bundle)
+  OK  skills/operate-spline (live=bundle)
+  OK  skills/performance (live=bundle)
+  OK  skills/planning (live=bundle)
+  OK  skills/planning-pipeline (live=bundle)
+  OK  skills/playbook (live=bundle)
+  OK  skills/powershell-safe (live=bundle)
+  OK  skills/pr (live=bundle)
+  OK  skills/pr-review (live=bundle)
+  OK  skills/primeagent-reference (live=bundle)
+  OK  skills/project-bootstrap (live=bundle)
+  OK  skills/project-memory (live=bundle)
+  OK  skills/project-orchestrator (live=bundle)
+  OK  skills/project-setup (live=bundle)
+  OK  skills/prompt-compiler (live=bundle)
+  OK  skills/prototype (live=bundle)
+  OK  skills/rag (live=bundle)
+  OK  skills/re-binary (live=bundle)
+  OK  skills/receiving-code-review (live=bundle)
+  OK  skills/red-team (live=bundle)
+  OK  skills/research (live=bundle)
+  OK  skills/resolving-merge-conflicts (live=bundle)
+  OK  skills/retro (live=bundle)
+  OK  skills/review-cadence (live=bundle)
+  OK  skills/roteiro (live=bundle)
+  OK  skills/saas-replacer (live=bundle)
+  OK  skills/scan (live=bundle)
+  OK  skills/scheduled-turns (live=bundle)
+  OK  skills/scrape-tools (live=bundle)
+  OK  skills/secure-defaults-check (live=bundle)
+  OK  skills/security (live=bundle)
+  OK  skills/security-audit (live=bundle)
+  OK  skills/security-audit-cf (live=bundle)
+  OK  skills/self-extend (live=bundle)
+  OK  skills/self-improvement (live=bundle)
+  OK  skills/setup-engineering-skills (live=bundle)
+  OK  skills/setup-pre-commit (live=bundle)
+  OK  skills/shell-safe (live=bundle)
+  OK  skills/shorts-factory (live=bundle)
+  OK  skills/skill-discovery (live=bundle)
+  OK  skills/social-midia (live=bundle)
+  OK  skills/structured-knowledge-extraction (live=bundle)
+  OK  skills/system-control (live=bundle)
+  OK  skills/task-sizer (live=bundle)
+  OK  skills/tdd (live=bundle)
+  OK  skills/teach (live=bundle)
+  OK  skills/technical-writing (live=bundle)
+  OK  skills/testing (live=bundle)
+  OK  skills/thermo-nuclear-code-quality-review (live=bundle)
+  OK  skills/thermo-nuclear-review (live=bundle)
+  OK  skills/thermos (live=bundle)
+  OK  skills/tool-and-skill-discovery (live=bundle)
+  OK  skills/triage (live=bundle)
+  OK  skills/tts (live=bundle)
+  OK  skills/typescript-best-practices (live=bundle)
+  OK  skills/typescript-node (live=bundle)
+  OK  skills/unlazy (live=bundle)
+  OK  skills/unslop (live=bundle)
+  OK  skills/using-git-worktrees (live=bundle)
+  OK  skills/using-skills (live=bundle)
+  OK  skills/vercel-react-best-practices (live=bundle)
+  OK  skills/verification-before-completion (live=bundle)
+  OK  skills/wait-what (live=bundle)
+  OK  skills/wayfinder (live=bundle)
+  OK  skills/web-perf-checklist (live=bundle)
+  OK  skills/web-probe (live=bundle)
+  OK  skills/webhooks (live=bundle)
+  OK  skills/wireless-probe (live=bundle)
+  OK  skills/wizard (live=bundle)
+  OK  skills/writing-for-agents (live=bundle)
+  OK  skills/writing-plans (live=bundle)
+  OK  skills/writing-skills (live=bundle)
+  OK  skills/youtube-fetcher (live=bundle)
+
+[17] Version consistency
+  OK  CHANGELOG and manifest both at 3.20.0
+
+[18] README badges
+  OK  skills badge = 185
+  OK  rules badge = 24
+  OK  version badge = 3.20.0
+
+[19] Subagent profiles
+  Found: ['architect.md', 'art-director.md', 'chief-of-staff.md', 'copywriter.md', 'data-analyst.md', 'debugger.md', 'implementer.md', 'performance-engineer.md', 'product-manager.md', 'qa-ci.md', 'red-team-lead.md', 'researcher.md', 'reviewer.md', 'scrum-master.md', 'security-auditor.md', 'sentinel.md', 'sre.md', 'tech-lead.md', 'thermo-nuclear-code-quality-review-subagent.md', 'thermo-nuclear-review-subagent.md', 'ux-researcher.md']
+  OK  architect.md
+  OK  art-director.md
+  OK  chief-of-staff.md
+  OK  copywriter.md
+  OK  data-analyst.md
+  OK  debugger.md
+  OK  implementer.md
+  OK  performance-engineer.md
+  OK  product-manager.md
+  OK  qa-ci.md
+  OK  red-team-lead.md
+  OK  researcher.md
+  OK  reviewer.md
+  OK  scrum-master.md
+  OK  security-auditor.md
+  OK  sentinel.md
+  OK  sre.md
+  OK  tech-lead.md
+  OK  thermo-nuclear-code-quality-review-subagent.md
+  OK  thermo-nuclear-review-subagent.md
+  OK  ux-researcher.md
+
+[20] Temp files check
+  OK  no temp files
+
+[21] Git tag vs manifest version
+  Tags: ['3.0.0', 'archive-bugfix-audit-config-improvements', 'archive-chore-experimental-branch-policy', 'archive-docs-continuous-improvement-roadmap', 'archive-experiment-reference-trajectory-refinement', 'archive-feat-model-catalog-drift-audit', 'archive-fix-afk-containment-preflight', 'archive-release-v2.8.0', 'archive-video-matt-pocock-ai-coding-plans', 'v2.1.0', 'v2.2.1', 'v2.2.2', 'v2.2.3', 'v2.4.0', 'v2.5.1', 'v2.5.2', 'v2.5.3', 'v2.6.0', 'v2.7.0', 'v2.8.0', 'v2.8.1', 'v2.9.0', 'v3.1.0', 'v3.1.1', 'v3.10.0', 'v3.11.0', 'v3.11.1', 'v3.12.0', 'v3.13.0', 'v3.14.0', 'v3.15.0', 'v3.16.0', 'v3.17.0', 'v3.18.0', 'v3.19.0', 'v3.2.0', 'v3.20.0', 'v3.3.0', 'v3.4.0', 'v3.5.0', 'v3.6.0', 'v3.7.0', 'v3.8.0', 'v3.9.0']
+  OK  v3.20.0 tag exists
+
+[22] Export/install scripts
+  OK  export.ps1
+  OK  export.sh
+  OK  install.ps1
+  OK  install.sh
+
+[22b] Export/install script structural validation
+  OK  export.ps1 structure
+  OK  export.sh structure
+  OK  install.ps1 structure
+  OK  install.sh structure
+
+[23] .gitattributes
+  OK  line endings configured
+
+[24] Doc count consistency (TOOLS-MAP.md, SKILL-TIERS.md)
+  OK TOOLS-MAP.md skills count (expected: 185 skills)
+  OK TOOLS-MAP.md scripts count (expected: 54 scripts)
+  OK TOOLS-MAP.md hook events (8) (expected: 8 eventos)
+  OK TOOLS-MAP.md tool count (28) (expected: 28 in TOOLS-MAP)
+  OK TOOLS-MAP.md excluded tools (9) (expected: 9 in TOOLS-MAP)
+  OK README.md diagram skills count (expected: 185 skills)
+  OK README.md diagram hook events (8) (expected: 8 events)
+
+[25] Refinement log ID uniqueness
+  SKIP refinements.log.jsonl not found
+
+[26] Manifest purpose vs SKILL.md description sync
+  OK  all manifest purposes match SKILL.md descriptions
+
+[27] No tracked temp artifacts
+  OK  no tracked temp artifacts
+
+[28] No tracked credential/secret files
+  OK  no tracked credential files
+
+[29] arXiv refs in scripts/ and tests/ tracked in MODEL-GUIDE.md
+  OK  all 11 arXiv refs in scripts/tests are in MODEL-GUIDE source table
+
+[30] Hook events match Devin CLI lifecycle docs
+  OK  hooks.v1.json has all 8 Devin CLI events
+  OK  config.json.hooks empty (single source: hooks.v1.json)
+  OK  no .devin/hooks.v1.json duplicate
+
+[31] Model context windows data file
+  OK  data/model-context-windows.json has required SWE-2 (262K) entries
+
+[32] CHANGELOG [Unreleased] merge coverage
+  OK  [Unreleased] covers 50 merged PRs since v3.20.0
+
+[33] Resolved issues carry an Answer section
+  OK  all resolved issues carry an Answer section
+
+[34] Install drift ledger
+  WARN drift: Modified=1 Foreign=0
+
+[35] tools.json renderers
+  OK  check-tools: all enabled renderers deterministic
+
+[36] CLI exit-code contract
+  OK  no ok-envelope mains with unguarded exit 0
+
+[37] subprocess utf-8 decode
+  OK  all text=True subprocess calls pin utf-8
+
+[38] file-I/O utf-8 decode
+  OK  all text file I/O pins utf-8
+
+[39] stdio utf-8 decode
+  OK  all text-mode stdin readers pin utf-8
+
+[40] Skills debt (staleness)
+  OK  all SKILL.md files touched within 180 days
+
+=== SUMMARY ===
+Errors:   0
+Warnings: 1
+
+WARNINGS:
+  - ledger drift: config.json

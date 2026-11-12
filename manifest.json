@@ -1715,7 +1715,8 @@
     "TOOLS-MAP.md",
     "CHANGELOG.md",
     "README.md",
-    "AI-CODING-DICTIONARY.md"
+    "AI-CODING-DICTIONARY.md",
+    "DEVIN-CLI-COMPATIBILITY.md"
   ],
   "agents": [
     {
