@@ -191,6 +191,12 @@ def run(script_names, payload):
 
 def main(script_names):
     try:
+        _recfg = getattr(sys.stdin, "reconfigure", None)
+        if _recfg:
+            try:
+                _recfg(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         payload = {}
