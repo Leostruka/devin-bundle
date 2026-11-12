@@ -127,3 +127,14 @@ install.sh already provisions laya-tools - parity confirmed.
 - Flag-injection probes on live gate: git -c/-C/--git-dir, gh -XPOST space/
   concat forms -> all silent; tag -n5 + positional -> silent (conservative)
 - install.sh/bash -n + export.sh syntax OK; validation suite 332/332 pass
+
+## Round 7 - .devin state internals
+- .devin/rules/ empty with .gitkeep: README.md removed deliberately in #60
+  (cli-alignment) - AUDIT_REPORT.md claim is historical, not a defect
+- .devin/issues/: 22 milestone/issue files all resolved
+- .devin/laya/: shadow.jsonl 278 entries valid, collecting (last 11:58);
+  mode=shadow consistent with open #431
+- .devin/decisions.jsonl: 2 historical records contain cp1252-era mojibake;
+  verified today's stdin pin now stores UTF-8 correctly (probe record added
+  and removed)
+- post-exec mcp payload, pre-exec layering, data/*.json refs - all clean
