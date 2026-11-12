@@ -48,6 +48,10 @@ MANAGED_TOP = ("skills", "scripts", "agents", "docs", "data",
                "extensions")
 MANAGED_FILES = ("AGENTS.md", "config.json", "hooks.v1.json")
 
+# Managed files whose live bytes legitimately differ from bundle source
+# (merged/rendered at install: config.json keeps local org_id etc.).
+_RENDERED_FILES = ("config.json", "hooks.v1.json")
+
 
 def _sha256(path):
     h = hashlib.sha256()
@@ -231,9 +235,12 @@ def reconcile():
             out["Current"].append(rel)
         elif rendered and live_hash == rendered:
             # live is the recorded render/copy; it is stale only when the
-            # bundle source moved since the record (rendered files like
-            # config.json can never equal their raw source)
-            if rec_src is not None and rec_src == bundle_hash:
+            # bundle source moved since the record. Only rendered files
+            # (config.json, hooks.v1.json) may legitimately differ from
+            # source bytes; for byte-copy paths reaching this branch at
+            # all means the record burned an unsynced live state.
+            if (rel in _RENDERED_FILES and rec_src is not None
+                    and rec_src == bundle_hash):
                 out["Current"].append(rel)
             else:
                 out["Outdated"].append(rel)
