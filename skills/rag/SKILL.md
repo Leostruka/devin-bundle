@@ -7,8 +7,9 @@ triggers: [user, model]
 # RAG
 
 Build retrieval over arbitrary project corpora, offline-first and
-provider-neutral. Evidence base: `.devin/research/rag-practices.md` (claims
-cited as C-numbers); tier model: `.devin/adr/004-rag-skill-tier-model.md`.
+provider-neutral. Evidence base: research dispatched via
+`.devin/ledgers/agent-docs-rag.md` but the output doc was never committed;
+treat C-number claims as unverified secondary sources (#530).
 
 ## The tier ladder
 
