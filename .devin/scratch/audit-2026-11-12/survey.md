@@ -20,3 +20,10 @@
 - #544 root cause found + fixed: stderr under fail_closed=true = rejection. Warn now env-gated (DEVIN_HOOKRUN_DEBUG); timings already in metrics. Live _hookrun patched.
 - Smoke: dep-audit-gate, memory-post-edit, memory-stop, constraint-pinning all rc=0. All 8 lifecycle events now have verified coverage.
 - Audit H dispatched: .devin internals + root files.
+
+## Audit H verdicts (13:00)
+
+- .gitattributes:5 agent-rts rule: inert, dir incoming per MILESTONE_2_12 -> keep.
+- laya proposal.json: authored decision artifact, correctly tracked -> non-defect.
+- ledgers/ root: 45-file legacy archive, deliberate -> non-defect (documented).
+- .devin internals otherwise CLEAN: apps/evals/rules/templates/gitignore/secrets/ci-refs all verified.
