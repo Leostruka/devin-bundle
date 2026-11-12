@@ -267,6 +267,8 @@ def print_table(results):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description='Audit Obsidian project wikis')
     parser.add_argument('--wiki', help='Path to a single _wiki directory')
     parser.add_argument('--base', help='Base directory to search for _wiki directories')

@@ -30,6 +30,8 @@ def gql_get(url, query, timeout):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="dma gql_probe (GET read-only)")
     ap.add_argument("--scope", required=True)
     ap.add_argument("--url", required=True, help="endpoint graphql")

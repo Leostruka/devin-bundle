@@ -999,6 +999,8 @@ def serve(args):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(prog="api-bridge")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sv = sub.add_parser("serve")

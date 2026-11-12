@@ -64,6 +64,8 @@ def run(img, effect, eff_params, adj_params, proc_params, post_params, fmt=None)
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser(description="grainrad effects CLI")
     p.add_argument("--input", help="image/gif/mp4/webm/glb path, or 'webcam[:N]'")
     p.add_argument("--webcam", action="store_true", help="capture frame from webcam 0")

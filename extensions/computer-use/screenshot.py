@@ -278,6 +278,8 @@ def _remote_main(target):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
         _remote_main(target)
