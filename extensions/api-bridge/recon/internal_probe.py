@@ -9,6 +9,7 @@ Usage: python recon/internal_probe.py
 
 import base64
 import json
+import os
 import tomllib
 import urllib.request
 import uuid
