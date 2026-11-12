@@ -28,6 +28,8 @@ _URL_RX = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     try:
         _recfg = getattr(sys.stdin, "reconfigure", None)
         if _recfg:

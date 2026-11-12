@@ -139,6 +139,8 @@ def find_unreferenced(wiki_dir: Path) -> list:
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(
         description="Find orphan pages in an Obsidian codebase wiki"
     )

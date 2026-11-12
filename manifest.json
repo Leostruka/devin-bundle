@@ -1387,7 +1387,7 @@
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "187474e5db5efa0a909e80d5e28961f27fb0be48c41b8ac1d53a75f7b1c28cb9",
+      "export_hash": "0ce076fbff9d464fa303fe5784c14a14bc46441f21bbf49bd7790d231ae826bf",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1475,7 +1475,7 @@
     {
       "name": "gh-pr-assignee.py",
       "purpose": "PostToolUse hook — auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
-      "export_hash": "c8e5890a2b4209ed8defd57c835321d17346253e7824b5bdfb699c3139aba2ab",
+      "export_hash": "27fb23fac50793c48591d3664f239634c3e3e038adbd639332980198ecf52944",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1614,7 +1614,7 @@
     {
       "name": "skill-picker.py",
       "purpose": "UserPromptSubmit child (JEV-2) — lexical manifest skill hints, max 3 read-hints, stdlib-only, no network, never auto-invokes",
-      "export_hash": "4794f4c00b4017c7eea8df28a66925936e843c8384ca0bdd1921dc91dc56e155",
+      "export_hash": "2eae4ed4ea306f7b599f82f0027a79ca5d544985f75ed5b8a1b1588d1b30503e",
       "exported_at": "2026-10-31T00:00:00.000000"
     },
     {

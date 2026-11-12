@@ -52,6 +52,8 @@ def git_ignored(root, path):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="dma init (scaffold Passo 0)")
     ap.add_argument("--root", default=".", help="raiz do projeto alvo")
     a = ap.parse_args()

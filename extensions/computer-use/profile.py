@@ -26,6 +26,8 @@ def fail(msg, code=1):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     target = cu_target.cli_guard(sys.argv[1:])
     if target is not None:
         cu_target.reject_remote(

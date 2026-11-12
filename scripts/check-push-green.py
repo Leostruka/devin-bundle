@@ -473,6 +473,8 @@ def _auto_merge_armed(cwd):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     try:
         _recfg = getattr(sys.stdin, "reconfigure", None)
         if _recfg:

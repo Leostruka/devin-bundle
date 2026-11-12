@@ -92,6 +92,8 @@ def _b_dispatch(ctl):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--runs", type=int, default=20)
     ap.add_argument("--warmup", type=int, default=3)
