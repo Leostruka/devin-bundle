@@ -6,6 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- chore: drop stale agent-rts gitattributes rule; ignore laya *.proposal.json (#552)
+- fix(audit): hooks-render compare collapses no-.exe scoop python shim (#551 follow-up)
 - feat(hooks): permission-gate — auto-approve provably read-only exec PermissionRequests (#541, #551)
 - feat(audit): check [41] compat doc pins validated_cli_version + dynamic check count (#550)
 - test(egm): per-entry hash mismatch assertion — unblocks serial merges (#549)
