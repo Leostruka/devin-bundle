@@ -6,6 +6,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(scripts): stdin utf-8 pins across 26 hooks + audit [39] json.load coverage (#557, #558, #559)
+- docs+test: TOOLS-MAP hooks resynced + mechanical drift guard (#556)
+- fix(ledger): record-all prunes stale records (#554)
 - fix(audit): hooks live-render compare collapses scoop python shim without .exe (#553)
 - chore: drop stale agent-rts gitattributes rule; ignore laya *.proposal.json (#552)
 - fix(audit): hooks-render compare collapses no-.exe scoop python shim (#551 follow-up)
