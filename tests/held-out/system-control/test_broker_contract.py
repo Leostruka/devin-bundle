@@ -16,10 +16,7 @@ def load(name):
 
 @pytest.fixture
 def broker():
-    try:
-        return load("sc_broker")
-    except ModuleNotFoundError:
-        pytest.skip("sc_broker not implemented yet")
+    return load("sc_broker")
 
 
 def request(cap="service.restart", **args):
