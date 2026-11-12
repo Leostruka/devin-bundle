@@ -1318,7 +1318,8 @@ try:
     import re as _re39
     _STDIN_TXT = _re39.compile(
         r'sys\.stdin\.(read|readline)\s*\(|'
-        r'json\.loads?\s*\(\s*sys\.stdin\b|'
+        r'json\.load\s*\(\s*sys\.stdin\s*\)|'
+        r'json\.loads\s*\(\s*sys\.stdin\.read|'
         r'for\s+\w+\s+in\s+sys\.stdin\s*:')
     _bad_stdio = []
     for _fp in _scan_py_files():
