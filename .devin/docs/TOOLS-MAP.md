@@ -99,7 +99,7 @@ thermo-nuclear-review-subagent, triage-labels, ux-researcher. 28 perfis
 validados (parity com `agents/*.md` + `.devin/agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
-## Hooks (8 eventos, 13 entry points, 55 scripts)
+## Hooks (8 eventos, 14 entry points, 55 scripts)
 
 Duas camadas: `hooks.v1.json` liga 13 comandos (6 entry points consolidados + 7 diretos); cada
 entry point agregador executa seus scripts internos num único processo
