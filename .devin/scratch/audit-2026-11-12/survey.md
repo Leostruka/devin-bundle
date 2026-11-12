@@ -102,3 +102,18 @@ Fresh-eyes reviewer on permission-gate found real vulns. Fixes shipped:
 - audit [39] exemption scoped to stdin-targeted pin - caught stdout-only pins in decision-queue + subagent-trace (now pinned)
 - install-ledger record-all: prune guard refuses degenerate scans (>25% or total wipe) + 2 regression tests
 Live gate probed: 7/7 vectors correct. Audit 41/41 clean. Ledger 0 drift.
+
+## Round 6 - permission-gate 2nd-pass review + fix (#562)
+
+Second reviewer pass on hardened gate found quote-collapse bypass class:
+- `--out""put=x`, `e'xt::`, `-""p`, `--pre""=cat` defeated anchored regexes
+- Fix: strip ALL quotes per token (shell-equivalent) before matching
+- New blocked vectors: ls-remote -u, --upload-pack/--exec space-form, grep
+  --open-files-in-pager, -O<pager> (case-sensitive), --ext-diff, --textconv,
+  gh issue develop --checkout (verb dropped), remote show -p
+- False negatives fixed: git log/diff/stash show -p, remote -v, bare remote,
+  ls-files -o now approve
+- -p/--prune scoped to `remote` only; -u scoped to ls-remote only
+Live probe: all attack vectors silent, reads approve. 41/41 audit clean.
+Also: install.ps1 header comment updated (laya-tools venv was missing);
+install.sh already provisions laya-tools - parity confirmed.

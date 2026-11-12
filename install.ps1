@@ -11,7 +11,7 @@
     - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
     - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
     - scripts\*          → %APPDATA%\devin\scripts\
-    - extensions\*       → %APPDATA%\devin\extensions\ (+ .venv for computer-use/scrape-tools, + rust-core cargo build)
+    - extensions\*       → %APPDATA%\devin\extensions\ (+ .venv for computer-use/scrape-tools/laya-tools, + rust-core cargo build)
     - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
     - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
 
