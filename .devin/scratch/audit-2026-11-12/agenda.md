@@ -83,3 +83,11 @@
 - PRs do bloco: #574 #575 #576 #577 #578 - todos merged
 - Estado: audit 49/49 limpo, pytest 2491, ledger 0 drift, live sync
 - Restam: #431 (decisao usuario), #565 (tracking intencional)
+
+### Bloco 4 - round skills-utf8 (15:10)
+
+- Gap pos-review: scan [36]-[42] cobria so extensions/+scripts/; estendido p/ skills/
+- 16 violacoes reais corrigidas: dma emitters (stdout pin), 5 stdin readers, 8 subprocess encodings, file io em scaffold/memory
+- review-package.py:63 foi a ultima warning
+- audit 49/49 limpo; pytest 2491/8skip; ledger 1427/0 drift
+- PR #579 auto-merge armado (aguardando CI)
