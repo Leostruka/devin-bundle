@@ -91,3 +91,11 @@ Use this playbook when building, adapting, or distilling a custom reasoning or d
 - `arXiv:2501.12948`: DeepSeek-AI 2025, *DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning*.
 - `arXiv:2501.19393`: Muennighoff et al. 2025, *s1: Simple test-time scaling* (`s1K` curation & budget forcing).
 - `arXiv:2503.14476`: Yu et al. 2025, *DAPO: An Open-Source LLM Reinforcement Learning System at Scale*.
+
+### External tools worth knowing
+
+- Minimite: trains a mini model from scratch in ~2min for <$0.50
+  (nanoGPT-class); useful for teaching/demos before real post-training.
+- TaskMon GPU (Microsoft, OSS): GPU task manager showing per-process
+  VRAM/AI usage on NVIDIA/AMD/Intel/Apple; quick observability when
+  local inference competes for VRAM.

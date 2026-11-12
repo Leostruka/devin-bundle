@@ -58,13 +58,13 @@
       "name": "ai-tools",
       "source": "devin-bundle",
       "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
-      "export_hash": "cc267dbc0ddb10aa862d838caa1e06db13929b47c38c2a5e2855dd21bbf61a9b"
+      "export_hash": "25cff25002de8e0abd38aa7924c4e0d2fb8586350da005f6eca617b0d72c4198"
     },
     {
       "name": "ai3d-gen",
       "source": "devin-bundle",
       "purpose": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, with direct-model fallbacks (TRELLIS, TripoSG, InstantMesh, Hunyuan3D). All free/open weights, no paid SaaS.",
-      "export_hash": "21ee4b7b63d8b6019357ee9ba8d66e846f85a249991253207a5264fc4f848a41"
+      "export_hash": "f9a100717e06e80d7ab0e1a562ffb6f0c9048c8c854e0de49297e9d7e94c5a6a"
     },
     {
       "name": "animation-direction",
@@ -957,7 +957,7 @@
       "name": "red-team",
       "source": "devin-bundle",
       "purpose": "Use when running an authorized offensive-security engagement against a declared target (binary, web app, network, wireless, firmware, mobile). Routes to domain skills (re-binary, web-probe, net-probe, wireless-probe, firmware-probe, mobile-probe) and enforces the engagement contract (target/window/ROE) plus evidence discipline.",
-      "export_hash": "7610c2b512fac8f72c270a1f6657b67aae95b25479c84f4b63e28beb1b59cbbe"
+      "export_hash": "6a88432460a59621b88ae24f919288a8c8c1b97f64b60e0225704ffd93c9eb6a"
     },
     {
       "name": "research",

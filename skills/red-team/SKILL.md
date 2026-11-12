@@ -62,3 +62,9 @@ or the engagement workdir, never in target scope.
 - No credential harvesting, exfiltration of real secrets, or persistence.
 - Active/destructive tool modes are gated by the wrapper (`--confirm`);
   confirm per action with the user, not per session.
+
+## Model notes
+
+- White Rabbit Neo / Deep Hat v3: open-weight security model (MITRE
+  ATT&CK, CVE reasoning, pentest report drafting) that runs locally;
+  a fallback when the primary model refuses authorized defensive work.

@@ -97,3 +97,9 @@ Before spending a reconstruction/splat run on user photos:
 - ComfyUI not running -> wrapper exits 1 with a start hint. Don't spawn
   the server silently; tell the user.
 - Check VRAM in `status` before queueing large models (>=8GB typical).
+
+## Model notes
+
+- Seacore (Q3.5-family, ~4B params, ~2.7GB via Ollama) generates
+  interactive three.js scenes in-browser from a prompt; a lightweight
+  alternative to the ComfyUI pipeline for quick 3D prototypes.
