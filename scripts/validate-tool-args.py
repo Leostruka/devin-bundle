@@ -83,7 +83,6 @@ _CURRENT_TOOL = ""
 STATE_DIR = os.path.join(_devin_home(), "state")
 PROFILE_DENY = {
     "researcher": frozenset({"exec"}),
-    "reviewer": frozenset({"exec"}),
     "issue-tracker": frozenset({"exec"}),
     "triage-labels": frozenset({"exec"}),
 }
