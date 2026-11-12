@@ -130,5 +130,17 @@
       ]
     }
   ],
-  "PermissionRequest": []
+  "PermissionRequest": [
+    {
+      "matcher": "^exec$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/permission-gate.py",
+          "timeout": 15,
+          "fail_closed": false
+        }
+      ]
+    }
+  ]
 }
