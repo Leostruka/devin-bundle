@@ -34,6 +34,10 @@ import io
 # Embedded Python builds (for example AutoClaw's bundled runtime, which ships a
 # ._pth file) do not add this script's directory to sys.path. Resolve sibling
 # modules explicitly so `python <path>/search.py` works in those environments.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import CSV_CONFIG, AVAILABLE_STACKS, MAX_RESULTS, RTL_LEVEL_CHOICES, UNTRUNCATED_COLS, search, search_stack

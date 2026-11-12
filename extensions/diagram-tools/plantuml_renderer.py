@@ -23,6 +23,10 @@ import urllib.request
 import zlib
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 SERVER = "https://www.plantuml.com/plantuml"
 MAX_BYTES = 32 * 1024 * 1024  # 32 MiB cap on rendered artifacts
 _ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"

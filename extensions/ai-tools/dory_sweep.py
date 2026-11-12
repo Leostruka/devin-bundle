@@ -15,6 +15,10 @@ import sys
 import urllib.request
 
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 def fail(msg, code=1):
     print(json.dumps({"ok": False, "error": msg}))
     sys.exit(code)
