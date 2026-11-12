@@ -2,7 +2,7 @@
 
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-10-31).
 Só custam quando invocadas. Use isto (~3800 tok) em vez de `skill list` (~1600 tok).
-Subconjunto curado de alto uso - o índice completo das 185 é `manifest.json`
+Subconjunto curado de alto uso - o índice completo das 184 é `manifest.json`
 (`skills[].name`). Skills consolidadas são routers: o SKILL.md é caro de entrada;
 detalhe vive em `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 
