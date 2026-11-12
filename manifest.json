@@ -387,7 +387,7 @@
       "source": "created:link-eval #490 (huwprosser Busy Bar reel)",
       "purpose": "Use when embedding the Devin agent into an external surface — a device (Busy Bar), an LLM harness (opencode/hermes), a service, an IDE, or a cron. Covers direction (devin-as-callee vs caller vs bidirectional), the transport ladder, the verified surface inventory, and the integration contract checklist. Complements cli-adapter (outbound agent->app); this skill is inbound/integration.",
       "original_path": "%APPDATA%\\devin\\skills\\devin-integrate",
-      "export_hash": "9f52d80e5c98bdaf9a9004a7752c61c73d47c97e5ec7c276990ff64f3f7b510a",
+      "export_hash": "2f57fa63e0f0c7174bfd56500255eb22dc00384ef0b53eba3d319f825571528e",
       "exported_at": "2026-11-11T06:36:31.795"
     },
     {

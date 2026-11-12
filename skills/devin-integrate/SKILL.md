@@ -79,3 +79,9 @@ and builds. This skill is that loop, codified.
   (`x-ignored-params` pattern in bridge).
 - Spawning unbounded devin processes under concurrent callers — cap
   (bridge `--concurrency` semaphore).
+
+## Reference products
+
+- OpenWorker (open-source, Andrew Ng): agent-as-coworker with 40+ SaaS
+  connectors (mail/calendar/docs) doing triage, replies, updates;
+  a reference for the devin-as-employee integration direction.
