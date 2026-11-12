@@ -1,0 +1,104 @@
+{
+ "ok": true,
+ "text": "O seu AI-agent é \"Roon\". Nativa destrop-apps, rotando em rostas, vendendo no GPU. Não é \"Electron\", não é \"Bundle Brouser\". \"Roon\" é seu \"Renderer\", seu \"Text Engine\", seu \"Layout\" e \"Animations\". Um \"CodeBase\" com macOS, Windows e Linux. O Webworks 2, mas é ainda experimental. Mas aqui é a parte que acontece. Cada \"RoonApp\" pode ser pesado. Não é \"Window\", não é \"Screen\". Então seu \"Coding\" agent, \"ClaudCode\", \"Codex\", \"OpenCode\" pode render ele. O seu \"Coding\" agent, \"ClaudCode\", \"Codex\", \"OpenCode\" pode render o app para um \"PNG\". Read a \"Full Elementary\" e \"Drive-it\" com scripted clicks e keypresses. Que significa que o \"Agent Build the UI\", \"Luxedit\", \"Testit\" e \"Fixesit\". No seu \"Fun Detail\", eles não possuem \"Pool Requests\". O seu \"Agent\" é \"Opens Em Issue\" e seus \"Agentes\" \"Ship the Fix\". É pre-release e é \"MIT Licensed\". Se você tiver um \"Estop Apps\" com AI, fique um \"I\" aqui. Comente \"Roon\" e eu senti o \"Repo\". Plus o \"Prompt\" para começar o primeiro app.",
+ "segments": [
+  {
+   "start": 0.0,
+   "end": 1.54,
+   "text": "O seu AI-agent é \"Roon\"."
+  },
+  {
+   "start": 1.54,
+   "end": 4.18,
+   "text": "Nativa destrop-apps, rotando em rostas, vendendo no GPU."
+  },
+  {
+   "start": 4.18,
+   "end": 6.18,
+   "text": "Não é \"Electron\", não é \"Bundle Brouser\"."
+  },
+  {
+   "start": 6.18,
+   "end": 10.56,
+   "text": "\"Roon\" é seu \"Renderer\", seu \"Text Engine\", seu \"Layout\" e \"Animations\"."
+  },
+  {
+   "start": 10.56,
+   "end": 13.22,
+   "text": "Um \"CodeBase\" com macOS, Windows e Linux."
+  },
+  {
+   "start": 13.22,
+   "end": 15.58,
+   "text": "O Webworks 2, mas é ainda experimental."
+  },
+  {
+   "start": 15.58,
+   "end": 17.42,
+   "text": "Mas aqui é a parte que acontece."
+  },
+  {
+   "start": 17.42,
+   "end": 19.38,
+   "text": "Cada \"RoonApp\" pode ser pesado."
+  },
+  {
+   "start": 19.38,
+   "end": 21.38,
+   "text": "Não é \"Window\", não é \"Screen\"."
+  },
+  {
+   "start": 21.38,
+   "end": 26.38,
+   "text": "Então seu \"Coding\" agent, \"ClaudCode\", \"Codex\", \"OpenCode\" pode render ele."
+  },
+  {
+   "start": 26.38,
+   "end": 31.26,
+   "text": "O seu \"Coding\" agent, \"ClaudCode\", \"Codex\", \"OpenCode\" pode render o app para um \"PNG\"."
+  },
+  {
+   "start": 31.26,
+   "end": 34.86,
+   "text": "Read a \"Full Elementary\" e \"Drive-it\" com scripted clicks e keypresses."
+  },
+  {
+   "start": 34.86,
+   "end": 38.74,
+   "text": "Que significa que o \"Agent Build the UI\", \"Luxedit\", \"Testit\" e \"Fixesit\"."
+  },
+  {
+   "start": 38.74,
+   "end": 41.46,
+   "text": "No seu \"Fun Detail\", eles não possuem \"Pool Requests\"."
+  },
+  {
+   "start": 41.46,
+   "end": 44.5,
+   "text": "O seu \"Agent\" é \"Opens Em Issue\" e seus \"Agentes\" \"Ship the Fix\"."
+  },
+  {
+   "start": 44.5,
+   "end": 46.66,
+   "text": "É pre-release e é \"MIT Licensed\"."
+  },
+  {
+   "start": 46.66,
+   "end": 49.28,
+   "text": "Se você tiver um \"Estop Apps\" com AI, fique um \"I\" aqui."
+  },
+  {
+   "start": 49.28,
+   "end": 50.94,
+   "text": "Comente \"Roon\" e eu senti o \"Repo\"."
+  },
+  {
+   "start": 50.94,
+   "end": 52.78,
+   "text": "Plus o \"Prompt\" para começar o primeiro app."
+  }
+ ],
+ "model": "base",
+ "source": "https://www.instagram.com/louis_rlee/reel/DfnKmAPIoAW/",
+ "detected_lang": "pt"
+}
