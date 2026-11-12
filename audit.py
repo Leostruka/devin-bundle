@@ -1426,30 +1426,59 @@ try:
             _src42 = open(_fp, encoding='utf-8').read()
         except (OSError, UnicodeDecodeError):
             continue
-        if 'ensure_ascii=False' not in _src42:
+        if _PIN42.search(_src42):
             continue
         # stdout emission = print(...) or sys.stdout.write(...) whose
         # args contain ensure_ascii=False, OR print(var) where var was
         # assigned json.dumps(..., ensure_ascii=False). File writes go
         # through utf-8-pinned handles already.
         _emits = False
-        for _m in _re42.finditer(
-                r'print\s*\(|sys\.stdout\.write\s*\(', _src42):
-            _seg = _src42[_m.start():_m.start() + 400]
-            _close = _seg.find('))')
-            if 'ensure_ascii=False' in _seg[:_close + 2 if _close > 0 else 400]:
-                _emits = True
-                break
-        if not _emits:
+        if 'ensure_ascii=False' in _src42:
             for _m in _re42.finditer(
-                    r'(\w+)\s*=\s*json\.dumps\([^)]*ensure_ascii=False',
-                    _src42):
-                if _re42.search(r'print\s*\(\s*' + _m.group(1)
-                                + r'\s*\)', _src42):
+                    r'print\s*\(|sys\.stdout\.write\s*\(', _src42):
+                _seg = _src42[_m.start():_m.start() + 400]
+                _close = _seg.find('))')
+                if 'ensure_ascii=False' in _seg[:_close + 2 if _close > 0 else 400]:
                     _emits = True
                     break
-        if _emits and not _PIN42.search(_src42):
+            if not _emits:
+                for _m in _re42.finditer(
+                        r'(\w+)\s*=\s*json\.dumps\([^)]*ensure_ascii=False',
+                        _src42):
+                    if _re42.search(r'print\s*\(\s*' + _m.group(1)
+                                    + r'\s*\)', _src42):
+                        _emits = True
+                        break
+        if _emits:
             _bad_out.append(_fp)
+            continue
+        # non-ASCII literals in stdout-bound calls (print/add_argument/
+        # error/write) crash on cp1252 consoles without a pin - found via
+        # grainrad --help UnicodeEncodeError on the -> arrow.
+        try:
+            _t42 = _ast.parse(_src42)
+        except SyntaxError:
+            continue
+        _na = False
+        for _cn in _ast.walk(_t42):
+            if not isinstance(_cn, _ast.Call):
+                continue
+            _fn = _cn.func
+            _is_out = (isinstance(_fn, _ast.Name) and _fn.id == 'print') \
+                or (isinstance(_fn, _ast.Attribute) and _fn.attr in
+                    ('add_argument', 'error', 'exit', 'write'))
+            if not _is_out:
+                continue
+            for _a in _ast.walk(_cn):
+                if isinstance(_a, _ast.Constant) \
+                        and isinstance(_a.value, str) \
+                        and any(ord(c) > 127 for c in _a.value):
+                    _na = True
+                    break
+            if _na:
+                break
+        if _na:
+            _bad_out.append(_fp + ' (non-ascii output)')
     if _bad_out:
         errors.append('JSON emitters without sys.stdout utf-8 pin: '
                       + ', '.join(_bad_out[:10]))
