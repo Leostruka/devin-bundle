@@ -3,4 +3,4 @@
 verdict: FIX
 gh: #573
 source: .devin/research/2026-11-12-reels-batch8-survey.md
-status: open
+status: resolved (PR #574+#577)
