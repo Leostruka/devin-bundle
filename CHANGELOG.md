@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(skills): tool pointers - Seacore, White Rabbit Neo, Minimite, TaskMon (#576)
+- feat(skills): data-analyst glossary + performance load-test playbook (#575)
+- fix(extensions): stdout utf-8 pins on 36 JSON emitters; audit [42] (#574)
+- spike: Rune agent-rendered UI loop validated (#570)
 - fix(permission-gate): block gh -w/--web browser side-effect (#563)
 - fix: hookrun stderr gating, gate -w/hostname/date vectors, audit [39] scope, ledger guard boundary (#564)
 - fix(permission-gate): round-4 - bundled flags anchored, brace-expansion, attached args, ext-strip, auth -t (#566)

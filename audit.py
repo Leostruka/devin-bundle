@@ -1407,6 +1407,48 @@ try:
 except Exception as _e41:
     print('  SKIP compat-doc check failed: ' + str(_e41))
 
+# 42. stdout utf-8 pin: files that print ensure_ascii=False JSON must
+# pin sys.stdout - on Windows the console is cp1252 and `>` redirects
+# write mojibake (issue #573: PT transcripts lost accents).
+print()
+print('[42] stdout utf-8 pin on JSON emitters')
+try:
+    import re as _re42
+    _bad_out = []
+    _PIN42 = _re42.compile(
+        r'sys\.stdout\.reconfigure|'
+        r'\(sys\.stdout\s*,|'
+        r'getattr\(sys\.stdout,\s*[\'"]reconfigure|'
+        r'for\s+\w+\s+in\s*\(sys\.(?:stdin|stdout)\s*,\s*sys\.(?:stdin|stdout)|'
+        r'pin_stdio_utf8')
+    for _fp in _scan_py_files():
+        try:
+            _src42 = open(_fp, encoding='utf-8').read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if 'ensure_ascii=False' not in _src42 or 'print(' not in _src42:
+            continue
+        # only count ensure_ascii=False inside a print(...) call - file
+        # writes go through utf-8-pinned handles already
+        _emits = False
+        for _m in _re42.finditer(r'print\s*\(', _src42):
+            _seg = _src42[_m.start():_m.start() + 400]
+            _close = _seg.find('))')
+            if 'ensure_ascii=False' in _seg[:_close + 2 if _close > 0 else 400]:
+                _emits = True
+                break
+        if _emits and not _PIN42.search(_src42):
+            _bad_out.append(_fp)
+    if _bad_out:
+        errors.append('JSON emitters without sys.stdout utf-8 pin: '
+                      + ', '.join(_bad_out[:10]))
+        print('  FAIL ' + str(len(_bad_out)) + ' file(s): '
+              + ', '.join(_bad_out[:5]))
+    else:
+        print('  OK  all ensure_ascii=False emitters pin utf-8 stdout')
+except Exception as _e42:
+    print('  SKIP stdout-pin check failed: ' + str(_e42))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
