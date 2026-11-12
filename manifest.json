@@ -1699,7 +1699,7 @@
       "name": "permission-gate.py",
       "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
       "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
-      "export_hash": "854A8A729D838D3ED880603B3C88BA7AB6C61DBC76F968F9DB925EEFCCC0B2AA"
+      "export_hash": "8C4C41DBEEC14A6C7104E1E21DB380575AA8C93D307A06CFFB2698F8D1D1672B"
     }
   ],
   "script_count": 55,
