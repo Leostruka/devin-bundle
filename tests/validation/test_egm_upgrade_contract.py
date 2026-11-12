@@ -162,4 +162,9 @@ with patch("builtins.open", checkout_open):
     assert result.returncode == 0, result.stderr
     assert "Errors:   0" in result.stdout
     warning = "manifest agent hash mismatch" if category == "agents" else "manifest script hash mismatch"
-    assert (warning in result.stdout) is changed
+    # Assert on THIS entry's presence in the mismatch list, not the warning's
+    # presence — unrelated export_hash drift (e.g. serial merges, #547) must
+    # not fail a newline-semantics check it doesn't own.
+    mismatch_lines = [l for l in result.stdout.splitlines() if warning in l]
+    listed = any(name in l for l in mismatch_lines)
+    assert listed is changed
