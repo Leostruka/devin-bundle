@@ -41,3 +41,10 @@
 - #564 whole-day-diff review: hookrun stderr gating, hostname/date
   positional sets, [39] exemption scope, ledger guard boundary, mcp content
 - verify: audit 48/48 clean, live probe all vectors, ledger 0 drift
+
+## Closeout (16:15) - estado final
+- 15 PRs merged (#534-#564) + tracking issue #565
+- audit 48/48 clean | pytest 2491/8skip | validation 332
+- live sync + doctor 3/3 | ledger 1427/0 drift
+- issues: #431 aguarda decisao usuario (shadow->assist)
+- surfaces: todos os items auditados item-a-item + interacoes
