@@ -684,7 +684,7 @@ if (Test-Path $extSrc) {
   foreach ($cand in @("python", "python3", "py")) {
     if (Get-Command $cand -ErrorAction SilentlyContinue) { $pyCmd = $cand; break }
   }
-  foreach ($extName in @("computer-use", "scrape-tools")) {
+  foreach ($extName in @("computer-use", "scrape-tools", "laya-tools")) {
     $extDir = Join-Path $extDst $extName
     $extReq = Join-Path $extDir "requirements.txt"
     if (-not (Test-Path $extReq)) { continue }

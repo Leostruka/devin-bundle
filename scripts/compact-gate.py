@@ -211,14 +211,14 @@ def _terminate(pid):
 def _spawn_daemon(config_path):
     cli = _laya_cli_path()
     if not cli:
-        return
+        return None
     base = os.path.dirname(cli)
     venv_py = os.path.join(
         base, ".venv",
         "Scripts/python.exe" if os.name == "nt"
         else os.path.join("bin", "python"))
     py = venv_py if os.path.isfile(venv_py) else sys.executable
-    subprocess.Popen(
+    return subprocess.Popen(
         [py, cli, "serve-daemon", "--config", config_path],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         creationflags=(getattr(subprocess, "DETACHED_PROCESS", 0)
@@ -272,12 +272,16 @@ def _ensure_daemon(config_path, spawn_timeout_s=60.0):
                 and _pid_alive(info.get("pid", -1)) \
                 and _port_open(int(info["port"])):
             return info
-        _spawn_daemon(config_path)
+        proc = _spawn_daemon(config_path)
         deadline = time.time() + spawn_timeout_s
         while time.time() < deadline:
             info = _daemon_info(laya_dir)
             if info and _port_open(int(info["port"])):
                 return info
+            # fail-fast: spawned daemon died (missing venv/deps) — no port
+            # will ever open; return instead of burning the hook budget.
+            if proc is not None and proc.poll() is not None:
+                return None
             time.sleep(0.5)
         return None
     finally:
@@ -513,7 +517,11 @@ def main():
         sys.exit(0)
 
     state["last_eval_call"] = state["calls"]
-    daemon = _ensure_daemon(cfg_path)
+    # The daemon is detached: a short wait abstains this turn but the daemon
+    # keeps booting for later turns. Never burn a full 60s spawn timeout
+    # inside a 20s/30s hook budget (#546).
+    spawn_wait = float(os.environ.get("LAYA_SPAWN_WAIT_S", "8"))
+    daemon = _ensure_daemon(cfg_path, spawn_timeout_s=spawn_wait)
     st = _digest_state(state, p)
     deadline = cfg.get("deadline_ms", 1000) \
         if isinstance(cfg, dict) else 1000
