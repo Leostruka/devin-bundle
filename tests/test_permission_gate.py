@@ -36,7 +36,9 @@ def test_approves_readonly_misc():
     for c in ("ls -la", "rg foo -t py", "fd -e md", "cat file.txt",
               "pwd", "wc -l x", "which python", "date", "echo hi",
               "gh pr view 123", "gh issue list", "gh run view 456",
-              "gh pr checks 78", "gh search prs foo", "gh auth status"):
+              "gh pr checks 78", "gh search prs foo", "gh auth status",
+              "git log -p file", "git diff -p", "git stash show -p",
+              "git remote -v", "git remote", "git ls-files -o"):
         out = gate(c)
         assert json.loads(out)["decision"] == "approve", c
 
@@ -59,7 +61,15 @@ def test_silent_on_exec_vectors():
               "rg --hostname-bin=nc x", "git-lfs pull", "git-lfs prune",
               "git fetch 'ext::sh -c calc'",
               "git ls-remote 'ext::sh -c calc'",
-              "git diff --output=ops.txt", "git log -o out.txt",
+              "git ls-remote 'e'xt::'sh -c calc'",
+              "git ls-remote -u calc .",
+              "git ls-remote --upload-pack calc .",
+              "git ls-remote --exec calc .",
+              "git grep --open-files-in-pager=calc foo",
+              "git diff --out\"\"put=x", "git remote show -\"\"p origin",
+              "fd . -\"\"x calc", "rg --pre\"\"=cat x",
+              "git diff --output=ops.txt", "git log --output=ops.txt",
+              "gh issue develop 5 --checkout",
               "date -s 01:01"):
         assert gate(c) == "", c
 
