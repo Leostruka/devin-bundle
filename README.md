@@ -225,7 +225,7 @@ Há 55 scripts Python em `scripts/`: 14 entry points de hooks (6 consolidados qu
 
 ### 7. Extensões
 
-Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills homônimas:
+Ferramentas locais em `extensions/`, invocadas pelas skills homônimas:
 
 | Extensão | O que faz |
 |---|---|
@@ -243,11 +243,14 @@ Ferramentas locais com venv próprio em `extensions/`, invocadas pelas skills ho
 | `remotion-render` | Render Remotion com plan_check do scene-plan v2 |
 | `stock-footage` | Fetcher Pexels + Pixabay para b-roll |
 | `hyperframes` | Wrapper do CLI de animação HTML hyperframes |
+| `ppisp-prep` | Preparação de frames/calibração de câmera para pipelines 3D/visão |
 | `image-forensics` | Proveniência de imagem: EXIF/XMP/C2PA |
 | `mesh-utils` | Inspect/convert/clean de meshes e cenas 3D |
 | `offsec-tools` | Dispatcher seguro de ferramentas offsec open-source |
 | `rea-ops` | Wrapper do CLI de reverse-engineering morluto/rea |
 | `rz-ops` | Wrapper estruturado da toolchain rizin |
+| `api-bridge` | API OpenAI-compatible local sobre o devin CLI (serve loopback/LAN com token) |
+| `busybar` | Busy Bar como superfície física de controle (eventos do device → ações focus/agent) |
 | `blender-operator` | exec server dentro do Blender |
 | `comfyui-operator` | Cliente HTTP stdlib para ComfyUI local (gen 3D/imagem) |
 | `code-graph` | Índice estrutural SQLite FTS5 (símbolos/refs/outline/incremental), fallback rg/glob |
