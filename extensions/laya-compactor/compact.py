@@ -26,6 +26,10 @@ import sys
 import time
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 _EXT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_EXT / "laya-tools"))
 sys.path.insert(0, str(_EXT / "laya-compactor"))

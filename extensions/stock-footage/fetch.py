@@ -31,6 +31,10 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 MAX_JSON = 4 * 1024 * 1024        # 4 MiB cap on API responses
 MAX_FILE = 200 * 1024 * 1024      # 200 MiB cap on downloads
 TIMEOUT = 30

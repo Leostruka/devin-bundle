@@ -9,6 +9,12 @@ tool_result is never orphaned from its tool_use.
 """
 from __future__ import annotations
 
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 PIN_ROLES = ("system",)
 
 

@@ -20,6 +20,10 @@ import math
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 READ_WPM = 160.0
 RENDER_MS_PER_FRAME = 120.0
 OVERLAY_TOLERANCE = 0.0

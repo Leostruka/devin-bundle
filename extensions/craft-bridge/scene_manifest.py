@@ -27,6 +27,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 LAYER_DOMAIN = {
     "video": "filmcraft", "audio": "soundcraft",
     "image": "photocraft", "photo": "lightcraft",
