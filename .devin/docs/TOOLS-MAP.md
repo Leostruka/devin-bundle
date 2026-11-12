@@ -2,7 +2,7 @@
 
 Mapeia TODAS as ferramentas, subagentes, hooks, e configs do Devin CLI
 runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
-(versão validada: `3000.11.234` em `data/bundle-identity.json`).
+(versão validada: `3000.12.43` em `data/bundle-identity.json`).
 
 ## Ferramentas do runtime (26 ativas + 2 modo-dependentes)
 
@@ -95,13 +95,13 @@ product-manager, qa-ci, README, red-team-lead, repo-reviewer,
 researcher, reviewer, scrum-master, security-auditor, sentinel, sre,
 subagent_explore, subagent_general, tech-lead,
 thermo-nuclear-code-quality-review-subagent,
-thermo-nuclear-review-subagent, triage-labels, ux-researcher. 27 perfis
+thermo-nuclear-review-subagent, triage-labels, ux-researcher. 28 perfis
 validados (parity com `agents/*.md` + `.devin/agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
-## Hooks (8 eventos, 12 entry points, 54 scripts)
+## Hooks (8 eventos, 13 entry points, 54 scripts)
 
-Duas camadas: `hooks.v1.json` liga 11 entry points consolidados; cada
+Duas camadas: `hooks.v1.json` liga 13 comandos (6 entry points consolidados + 7 diretos); cada
 entry point agregador executa seus scripts internos num único processo
 via `scripts/_hookrun.py` (merge rules em `.devin/docs/HOOKS-PIPELINE.md`,
 fluxo em `.devin/docs/diagrams/hook-event-flow.md`). Scripts internos
