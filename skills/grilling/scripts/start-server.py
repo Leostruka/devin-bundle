@@ -116,7 +116,7 @@ def main():
     # Kill any existing server recorded in this state dir
     if pid_file.exists():
         try:
-            old_pid = int(pid_file.read_text().strip())
+            old_pid = int(pid_file.read_text(encoding="utf-8").strip())
             if is_windows():
                 subprocess.run(["taskkill", "/PID", str(old_pid), "/F"], capture_output=True, shell=False)
             else:

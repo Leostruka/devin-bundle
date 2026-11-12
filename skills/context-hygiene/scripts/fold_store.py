@@ -93,6 +93,12 @@ def delete(fid):
 
 
 def main():
+    _recfg = getattr(sys.stdin, "reconfigure", None)
+    if _recfg:
+        try:
+            _recfg(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
     args = sys.argv[1:]
     if not args:
         print(__doc__)

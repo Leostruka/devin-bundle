@@ -84,7 +84,7 @@ def main():
 
 def subprocess_run(cmd):
     import subprocess
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
     return result.stdout.strip()
 
 if __name__ == "__main__":

@@ -187,7 +187,7 @@ def set_secret(name, value):
             proc = subprocess.run(
                 ["gh", "secret", "set", name],
                 input=value,
-                text=True,
+                text=True, encoding="utf-8", errors="replace",
                 capture_output=True,
             )
             if proc.returncode == 0:
@@ -207,7 +207,7 @@ def set_var(name, value):  # public-api: wizard helper
             proc = subprocess.run(
                 ["gh", "variable", "set", name, "--body", value],
                 capture_output=True,
-                text=True,
+                text=True, encoding="utf-8", errors="replace",
             )
             if proc.returncode == 0:
                 print(f"  {GREEN}✓ set{RESET} GitHub variable {name}")
