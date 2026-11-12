@@ -87,6 +87,9 @@ cancelled orders. Maintain `.devin/db-glossary.md`:
    (`certified_by`); never invent definitions.
 4. When the user corrects a number ("that's not our churn"), fix the
    glossary row first, then re-run; the correction persists.
+5. Always return the generating query with the answer, and when the
+   data cannot answer the question, say so instead of approximating
+   (an analyst who abstains beats one who fabricates).
 
 ### Step 2 — Query formulation
 

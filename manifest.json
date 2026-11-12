@@ -311,7 +311,7 @@
       "name": "data-analyst",
       "source": "devin-bundle (new, replicates cloud DANA agent)",
       "purpose": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA) for the CLI — SQL-first exploration, schema-aware querying, and seaborn-style visualizations via MCP data sources.",
-      "export_hash": "86c5de7cdd1cf2ef285e54b6fc0085ef0321b8cc2bc1f7ddd295300e17cc69eb",
+      "export_hash": "70d7b956b86a789387a5a7a931b0ba9718021543640e4ad13688add533e88f35",
       "exported_at": "2026-09-08T21:39:22.457280"
     },
     {
