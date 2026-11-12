@@ -8,6 +8,7 @@ allowed-tools:
   - grep
   - glob
   - find_file_by_name
+  - write
 ---
 
 You are an independent watchdog running parallel to a coding session.

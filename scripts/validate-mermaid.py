@@ -20,6 +20,9 @@ _CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 def _run(*a, **kw):
     kw.setdefault('creationflags', _CF)
+    if kw.get('text') or kw.get('universal_newlines'):
+        kw.setdefault('encoding', 'utf-8')
+        kw.setdefault('errors', 'replace')
     return subprocess.run(*a, **kw)
 
 MERMAID_FENCE = re.compile(

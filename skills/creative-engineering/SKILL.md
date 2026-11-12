@@ -34,7 +34,7 @@ Map the brief through the 5 Form Questions to corpus domains:
 
 ## Knowledge base
 
-`extensions/media-tools/knowledge_bases/aesthetics/` — 8 archetype files.
+`extensions/media-tools/knowledge_bases/aesthetics/` — 15 archetype files.
 `index.json` maps names + aliases → files. **Load the matching `.md` before
 writing any code** for that style.
 
