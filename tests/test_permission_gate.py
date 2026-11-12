@@ -72,9 +72,15 @@ def test_silent_on_exec_vectors():
               "git diff --output=ops.txt", "git log --output=ops.txt",
               "gh issue develop 5 --checkout",
               "gh pr view 1 --web", "gh pr view 1 --web=true",
-              "gh pr view 1 -wfoo",
+              "gh pr view 1 -wfoo", "gh auth status -t",
+              "gh auth status --show-token",
               "hostname pwned", "hostname -F /tmp/x",
-              "date 0101120001", "date -s 01:01"):
+              "hostname -F/tmp/name", "hostname --file=/tmp/n",
+              "date 0101120001", "date -s 01:01",
+              "git branch -uorigin/evil", "git branch -vuorigin/x",
+              "git ls-remote -utouch .", "git diff {--output=/tmp/p,--stat}",
+              "./cat.ps1 /etc/passwd", "tools/ls.bat -la",
+              "git ls-files --resolve-undo", "rg -z foo", "rg --search-zip x"):
         assert gate(c) == "", c
 
 

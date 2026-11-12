@@ -14,7 +14,7 @@ import re
 import sys
 
 # Shell composition: an approved command is ONE invocation.
-UNSAFE_CHARS = re.compile(r"[;&|`$<>\\\r\n]|\(|\)")
+UNSAFE_CHARS = re.compile(r"[;&|`$<>\\\r\n{}]|\(|\)")
 
 # Binaries that can only read/print — every arg form is safe.
 SAFE_BINARIES = {
@@ -32,14 +32,13 @@ GIT_READONLY = {
 }
 # git verbs that mutate when given a positional ref name — list forms only.
 GIT_LIST_ONLY = {
-    "branch": re.compile(r"^-(a|v|l|r|f|q|u\d*|vv|list|show-current)"
-                         r"|^--(list|all|show-current|remotes|contains|"
-                         r"merged|no-merged|sort=|points-at|format=|column|"
-                         r"no-column|omit-empty|ignore-case)"),
-    "tag": re.compile(r"^-(l|n\d*|v|sort=|points-at|contains|merged|"
-                      r"no-merged|list|ignore-case|column|no-column)|"
-                      r"^--(list|sort=|points-at|contains|merged|no-merged|"
-                      r"format=|ignore-case|column|no-column)"),
+    # short opts as anchored bundles (no -u/-d/-m/-c: those mutate refs)
+    "branch": re.compile(r"^-[avlrqf]+$|^--(list|all|show-current|remotes|"
+                         r"contains|merged|no-merged|sort=|points-at|format=|"
+                         r"column|no-column|omit-empty|ignore-case)"),
+    "tag": re.compile(r"^-[lvn]+\d*$|^--(list|sort=|points-at|contains|"
+                      r"merged|no-merged|format=|ignore-case|column|"
+                      r"no-column)"),
 }
 # git verbs with mixed read/write subcommands.
 GIT_SUBVERBS = {
@@ -58,7 +57,8 @@ GIT_DANGEROUS_ARG = re.compile(
 GIT_GREP_PAGER = re.compile(r"^-O")
 # -p/--prune only mutates under `git remote`; -u is --upload-pack on ls-remote.
 GIT_REMOTE_DANGEROUS = re.compile(r"^(-p|--prune)$", re.I)
-GIT_LSREMOTE_DANGEROUS = re.compile(r"^-u$")
+GIT_LSREMOTE_DANGEROUS = re.compile(r"^-u")  # -u<cmd> = --upload-pack exec
+GIT_LSFILES_DANGEROUS = re.compile(r"^--resolve-undo$")  # clears index state
 
 # gh: commands are `gh <noun> <verb>`.
 GH_NOUN_READS = {
@@ -82,7 +82,9 @@ GH_API_WRITE = re.compile(
     r"method-override", re.I)
 
 FD_DANGEROUS = re.compile(r"^(-x|--exec|--exec-batch)", re.I)
-RG_DANGEROUS = re.compile(r"^--pre(=|$)|^--hostname-bin", re.I)
+# --pre/--hostname-bin exec helpers; -z/--search-zip execs PATH decompressors
+RG_DANGEROUS = re.compile(r"^--pre(=|$)|^--hostname-bin|^(-z|--search-zip)",
+                          re.I)
 DATE_DANGEROUS = re.compile(r"^(-s|--set)")
 
 
@@ -109,7 +111,8 @@ def _git_ok(parts):
             all(not GIT_DANGEROUS_ARG.match(a) for a in args[1:])
     if verb not in GIT_READONLY:
         return False
-    extra = GIT_LSREMOTE_DANGEROUS if verb == "ls-remote" else None
+    extra = {"ls-remote": GIT_LSREMOTE_DANGEROUS,
+             "ls-files": GIT_LSFILES_DANGEROUS}.get(verb)
     return all(not GIT_DANGEROUS_ARG.match(a)
                and not GIT_GREP_PAGER.match(a)
                and not (extra and extra.match(a)) for a in args)
@@ -128,9 +131,12 @@ def _gh_ok(parts):
     verbs = GH_NOUN_READS.get(noun)
     if verbs is None:
         return False
-    return bool(args) and args[0].lower() in verbs and \
-        all(not a.startswith("-X")
-            and not re.match(r"^(-w|--web)", a) for a in args)
+    if not (args and args[0].lower() in verbs):
+        return False
+    if noun == "auth":  # `auth status -t/--show-token` prints the credential
+        return all(a not in ("-t", "--show-token") for a in args)
+    return all(not a.startswith("-X")
+               and not re.match(r"^(-w|--web)", a) for a in args)
 
 
 def _exec_verdict(command):
@@ -141,7 +147,7 @@ def _exec_verdict(command):
     # `--out""put` runs as `--output`. Normalize the same way per token.
     parts = [p.replace("'", "").replace('"', "") for p in cmd.split()]
     exe = parts[0].rsplit("/", 1)[-1].rsplit("\\", 1)[-1].lower()
-    exe = re.sub(r"\.(exe|bat|cmd|ps1)$", "", exe)
+    exe = re.sub(r"\.exe$", "", exe)
     if exe in SAFE_BINARIES:
         return True
     if exe == "git":
@@ -157,9 +163,9 @@ def _exec_verdict(command):
         return all(a.startswith("-") or a.startswith("+") for a in parts[1:]) \
             and not any(DATE_DANGEROUS.match(a) for a in parts[1:])
     if exe == "hostname":
-        # positional or -F/--file sets the name; flag-only forms are reads.
-        return all(a.startswith("-") and a not in ("-F", "--file")
-                   for a in parts[1:])
+        # positional or -F/--file (any attached form) sets the name.
+        return all(a.startswith("-")
+                   and not re.match(r"^(-F|--file)", a) for a in parts[1:])
     return False
 
 
