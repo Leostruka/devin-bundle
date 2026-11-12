@@ -171,6 +171,14 @@ def cmd_record_all(_args):
         _record_file(root, live, rel, files)
         n += 1
     pruned = [rel for rel in list(files) if rel not in live_set]
+    # Guard: a degenerate live scan (missing dir, ACL, mid-install) must not
+    # wipe the recorded set — pruning >25% of records or all of them means
+    # the scan is suspect, not that every file vanished at once.
+    if files and len(pruned) > max(50, len(files) // 4):
+        print(json.dumps({"ok": False,
+                          "error": "prune refused: would drop %d/%d records"
+                                   % (len(pruned), len(files))}))
+        return 1
     for rel in pruned:
         del files[rel]
     _save_ledger(data)
