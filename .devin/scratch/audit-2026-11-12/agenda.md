@@ -16,3 +16,9 @@
 
 - operate-spline removal shipped (#540); issues #541 (PermissionRequest), #542 (test hygiene)
 - Next: fix #542 cheap items (skip guards -> hard imports, fixture SessionEnd, rename, count parse)
+
+## Loop 13:00-15:00 (remaining)
+
+- PR serial queue babysit: #534 -> #538 -> #539 -> #540 -> #545 (auto-merge armed; update-branch per merge)
+- On all merged: changelog backfill refs + install.ps1 live sync + audit full + final survey close-out
+- Buffer items se sobrar tempo: #541 spike gate design; push-gate suite perf (#544 follow-up)
