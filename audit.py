@@ -1460,6 +1460,48 @@ try:
 except Exception as _e42:
     print('  SKIP stdout-pin check failed: ' + str(_e42))
 
+# 43. stdlib-name usage without import: `sys.`/`os.`/`re.`/`json.`
+# attribute access with no matching import is a NameError at runtime.
+# Caught refresh.py vault template (pin added inside a string literal
+# escaped every check that compiles only real code).
+print()
+print('[43] stdlib names used without import')
+try:
+    import ast as _ast43
+    _bad_name = []
+    _STDLIB = ('sys', 'os', 're', 'json', 'subprocess', 'pathlib',
+               'datetime', 'shutil', 'hashlib', 'argparse')
+    for _fp in _scan_py_files():
+        try:
+            _tree43 = _ast43.parse(
+                open(_fp, encoding='utf-8').read())
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            continue
+        _imported = set()
+        for _n in _ast43.walk(_tree43):
+            if isinstance(_n, _ast43.Import):
+                _imported.update(
+                    a.name.split('.')[0] for a in _n.names)
+            elif isinstance(_n, _ast43.ImportFrom):
+                _imported.update(
+                    (a.asname or a.name) for a in _n.names)
+        _used = {n.value.id for n in _ast43.walk(_tree43)
+                 if isinstance(n, _ast43.Attribute)
+                 and isinstance(n.value, _ast43.Name)}
+        _missing = [u for u in _used
+                    if u in _STDLIB and u not in _imported]
+        if _missing:
+            _bad_name.append(_fp + ' (' + ','.join(sorted(_missing)) + ')')
+    if _bad_name:
+        errors.append('stdlib names used without import: '
+                      + ', '.join(_bad_name[:10]))
+        print('  FAIL ' + str(len(_bad_name)) + ' file(s): '
+              + ', '.join(_bad_name[:5]))
+    else:
+        print('  OK  no stdlib name used without import')
+except Exception as _e43:
+    print('  SKIP import-use check failed: ' + str(_e43))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
