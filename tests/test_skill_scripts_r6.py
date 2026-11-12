@@ -51,3 +51,27 @@ def test_scan_secrets_cp1252_file(tmp_path):
     f.write_bytes(b"caf\xe9 \x93quote\x94")
     findings = scan_secrets.scan_file(str(f))
     assert isinstance(findings, list)
+
+
+def test_scaffold_end_to_end(tmp_path):
+    """scaffold.py must produce a working vault (regression: skill_dir
+    pointed at scripts/ -> templates 404; refresh.py shipped NameError)."""
+    import subprocess
+    vault = tmp_path / "vault"
+    r = subprocess.run(
+        [sys.executable, str(OBS_DIR / "scaffold.py"),
+         "--project-dir", str(tmp_path), "--vault-dir", str(vault),
+         "--project-name", "T"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert r.returncode == 0, r.stderr
+    assert (vault / "00-Overview.md").exists()
+    assert len(list((vault / "Diagrams").glob("*.md"))) == 14
+    for name in ("refresh.py", "validate_wiki_config.py",
+                 "wiki_structure.py", "wiki_contents.py", "query.py"):
+        gen = vault / name
+        assert gen.exists(), name
+        h = subprocess.run(
+            [sys.executable, str(gen), "--help"],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace")
+        assert h.returncode == 0, (name, h.stderr[-300:])
