@@ -65,3 +65,13 @@
 - [x] 15:15-16:30 exec: #573 pins (36 ext, PR #574), #567+#569 (PR #575 merged), #568/#571 covered
 - [ ] 16:30-17:30 #574 merge + live sync + close-out; spikes #570/#572 se couber
 - [ ] 17:30-18:00 buffer final + report
+
+### Bloco 4 - progresso real (vs plano)
+
+- 13:30-14:00 transcrições 12/12 (cp1252 fix mid-flight) + fetch 2 links
+- 14:00-14:15 survey + 7 issues GitHub (#567-#573) + 7 locais
+- 14:15-14:45 #573: pin transcribe + varredura 35 ext emitters (PR #574 merged)
+- 14:15-14:50 #567 perf playbook + #569 glossary (PR #575 merged); #571 COVERED fechada
+- 14:50-15:10 pointers duráveis skills (PR #576 merged) + Rune spike VALIDADO (#570 fechada)
+- 15:10-15:30 audit [42] novo check + 3 scripts pinados (PR #577) + changelog refs
+- Pendente: #572 backlog (GPU), #431 (decisão usuário), merge #577 + sync live
