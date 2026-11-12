@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- feat(hooks): permission-gate — auto-approve provably read-only exec PermissionRequests (#541, #551)
 - feat(audit): check [41] compat doc pins validated_cli_version + dynamic check count (#550)
 - test(egm): per-entry hash mismatch assertion — unblocks serial merges (#549)
 - fix(laya): compact-gate daemon wait fail-fast + 8s cap; installers provision laya-tools venv (#548)
