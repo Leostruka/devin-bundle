@@ -147,3 +147,15 @@ install.sh already provisions laya-tools - parity confirmed.
 - manifest: extensions intentionally not tracked (install handles dir-level)
 - audit [9c] already verifies agent hashes - manual recheck confirmed clean
 - Full suite after all gate work: 2491 pass / 8 skip
+
+## Round 9 - holistic whole-day-diff review (#564)
+Reviewer over all 42 commits found real residuals:
+- _hookrun forwarded child stderr + non-JSON stdout to hook stderr - under
+  fail_closed that rejects the call; now behind DEVIN_HOOKRUN_DEBUG
+- gate: --web=true/-wfoo bypass (now ^(-w|--web)); hostname positional/-F
+  sets name (flag-only handler); date MMDDhhmm sets time (args must be -/+)
+- audit [39]: exemption matched json.load(sys.stdin)/isatty -> narrowed to
+  tuple-context (sys.stdin, ...) - verified no unpinned file newly exposed
+- ledger: prune guard dead below 51 records -> total wipe refused any size;
+  record NAME on missing live file now ok:false + exit 1
+- context-pressure reads mcp `content` key; audit count regex incl. letters

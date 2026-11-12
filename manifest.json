@@ -1363,7 +1363,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "84d7d733805b61eade395328bcbb5d9348c200acfc3c4fd34e42e4956d263cbb",
+      "export_hash": "DC22E00EEC57299023C6CAA386FDFD6D99D53F9C2EBCD42496D393FA4CBA398E",
       "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
@@ -1417,7 +1417,7 @@
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "507029a6127f40fe31843514a6d0507b861547ef4b34389582d598e01edc4a6a",
+      "export_hash": "203059A16ACE1D27A785D9664E13C0A4CA5628D08AFFADFC4074953A36F725A8",
       "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
@@ -1493,7 +1493,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "99E7C56E501384041D3F5961162D6A03A9F8C44C817227F6720F4ED4826382FF",
+      "export_hash": "C5C221C8627A09445DC7F89F1A2C71FC1873CB1C8D6F17087C46F1C57A76614B",
       "exported_at": "2026-11-08T08:50:55.845199"
     },
     {
@@ -1699,7 +1699,7 @@
       "name": "permission-gate.py",
       "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
       "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
-      "export_hash": "8C4C41DBEEC14A6C7104E1E21DB380575AA8C93D307A06CFFB2698F8D1D1672B"
+      "export_hash": "C1BDB951DAAA3124EBFE74F87CC9EFE3E9447FD80C4E036B13B4E32F17F9C036"
     }
   ],
   "script_count": 55,
