@@ -123,7 +123,10 @@ def run(script_names, payload):
         code, out, err = _run_one(name, payload)
         ms = int((time.time() - ts) * 1000)
         timings[name] = ms
-        if ms > SLOW_SCRIPT_MS:
+        # Slow scripts are observable via the timings_ms metric below. Do NOT
+        # warn on stderr: under `fail_closed: true` the CLI treats hook stderr
+        # as failure and rejects the tool call (audit-2026-11-12 #544).
+        if ms > SLOW_SCRIPT_MS and os.environ.get("DEVIN_HOOKRUN_DEBUG"):
             sys.stderr.write(
                 f"[hookrun] slow script {name}: {ms}ms\n")
         if err:
