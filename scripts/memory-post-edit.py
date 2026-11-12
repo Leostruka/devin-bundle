@@ -70,6 +70,12 @@ def score_path(note, file_path):
 
 def main():
     try:
+        _recfg = getattr(sys.stdin, "reconfigure", None)
+        if _recfg:
+            try:
+                _recfg(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)

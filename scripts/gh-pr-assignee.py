@@ -29,6 +29,12 @@ _URL_RX = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
 
 def main():
     try:
+        _recfg = getattr(sys.stdin, "reconfigure", None)
+        if _recfg:
+            try:
+                _recfg(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
