@@ -17,9 +17,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 TEMPLATE = Path(__file__).parent / "templates" / "remotion-project"
 
@@ -84,6 +81,8 @@ def render(plan, workdir, dry=True, comp="Plan", out_name="out.mp4",
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="scene-plan -> remotion render")
     ap.add_argument("plan")
     ap.add_argument("--workdir", required=True)

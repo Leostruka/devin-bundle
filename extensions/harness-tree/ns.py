@@ -11,9 +11,6 @@ import os
 import sys
 import time
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from tree import read, tree_hash  # noqa: E402
@@ -52,6 +49,8 @@ def resume(run_dir):
 
 
 def main(argv):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     if len(argv) < 3:
         print(__doc__.strip())
         return 2

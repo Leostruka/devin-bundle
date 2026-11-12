@@ -21,9 +21,6 @@ import os
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import decision_contract as dc  # noqa: E402
@@ -200,6 +197,8 @@ def self_test():
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     dc.pin_stdio_utf8()
     p = argparse.ArgumentParser(description="Agent CLI over the laya decision engine.")
     sub = p.add_subparsers(dest="cmd")

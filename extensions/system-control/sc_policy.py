@@ -19,11 +19,6 @@ from pathlib import Path
 
 import sc_contract as contract
 
-import sys
-
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 STATE_DIR = (Path(tempfile.gettempdir())
              / "devin-system-control-confirmations")

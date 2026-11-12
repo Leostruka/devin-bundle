@@ -28,9 +28,6 @@ import sys
 import time
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import filebool
@@ -227,6 +224,8 @@ def explore(root, keywords, question, *, top_k=DEFAULT_TOP_K,
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(
         description="Two-stage explore: rg filter -> filebool top-K")
     ap.add_argument("--root", default=".")

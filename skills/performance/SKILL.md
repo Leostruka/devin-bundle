@@ -26,27 +26,29 @@ Measure, profile, and optimize speed, throughput, and resource usage.
 
 ## Load-test + DB tuning playbook
 
-The "projecto real" loop (compose -> carga -> medir -> ajustar):
+The "real project" loop (compose -> load -> measure -> tune):
 
-1. **Reproduzir deps com docker-compose.** Todo projeto deve ter
-   Dockerfile + compose das dependencias (db, cache, proxy). Rode a
-   app e o banco como servicos separados; prefira Docker em Linux -
-   em Mac/Windows o daemon numa VM distorce medidas.
-2. **Isolar gargalos de rede.** `network_mode: host` no compose remove
-   o overhead da bridge NAT do Docker; se a latencia muda com host
-   mode, o gargalo era rede, nao app.
-3. **Gerar carga real.** Gatling (simulacao em Scala, relatorio HTML)
-   ou Vegeta (CLI, `attack | report`) batendo no endpoint real.
-   Meça p50/p95/p99 e throughput, nao media.
-4. **Verificar se o banco e o gargalo.** `EXPLAIN ANALYZE` na query
-   lenta mostra custo real por plano (seq scan vs index). Full-text
-   search: compare `LIKE '%x%'` vs `tsvector` antes de trocar de db.
-5. **Dimensionar pool de conexoes.** Observe `pg_stat_activity`
-   (pgAdmin) sob carga: pool maior que conexoes usadas e desperdicio;
-   fila de espera = pool pequeno demais. Formula inicial:
+1. **Reproduce deps with docker-compose.** Every project should ship
+   a Dockerfile plus a compose for dependencies (db, cache, proxy).
+   Run app and db as separate services; prefer Docker on Linux - on
+   Mac/Windows the daemon runs in a VM and distorts measurements.
+2. **Isolate network bottlenecks.** `network_mode: host` in compose
+   removes Docker bridge NAT overhead; if latency changes under host
+   mode, the bottleneck was the network, not the app.
+3. **Generate real load.** Gatling (Scala simulation, HTML report)
+   or Vegeta (CLI, `attack | report`) against the real endpoint.
+   Measure p50/p95/p99 and throughput, never the mean.
+4. **Check whether the db is the bottleneck.** `EXPLAIN ANALYZE` on
+   the slow query shows real per-plan cost (seq scan vs index).
+   Full-text search: compare `LIKE '%x%'` vs `tsvector` before
+   swapping databases.
+5. **Size the connection pool.** Watch `pg_stat_activity` (pgAdmin)
+   under load: a pool larger than connections actually used is waste;
+   a wait queue means the pool is too small. Starting formula:
    `pool = (cores * 2) + spindle_count`.
-6. **Threads vs fibers.** Linguagens/IO model mudam quantas conexoes
-   e quanta RAM cada worker precisa; ajuste pool e limits juntos.
+6. **Threads vs fibers.** Language/IO model changes how many
+   connections and how much RAM each worker needs; tune pool and
+   limits together.
 
 ## See also
 

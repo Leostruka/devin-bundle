@@ -100,6 +100,7 @@ Before spending a reconstruction/splat run on user photos:
 
 ## Model notes
 
-- Seacore (Q3.5-family, ~4B params, ~2.7GB via Ollama) generates
-  interactive three.js scenes in-browser from a prompt; a lightweight
-  alternative to the ComfyUI pipeline for quick 3D prototypes.
+- ccore/Qwen3.5-4B-3D-Coder (ollama tag materion/qwen3.5-3d-coder:4b,
+  ~4B params, ~2.7GB Q4_K_M) generates interactive three.js scenes
+  in-browser from a prompt; a lightweight alternative to the ComfyUI
+  pipeline for quick 3D prototypes.

@@ -14,9 +14,6 @@ import sys
 from pathlib import Path
 
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 def visual_signature(path):
     text = Path(path).read_text(encoding="utf-8", errors="replace")
@@ -52,6 +49,8 @@ def compare(a, b):
 
 
 def main(argv):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     if len(argv) < 3:
         print(__doc__.strip())
         return 1

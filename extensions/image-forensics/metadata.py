@@ -10,11 +10,6 @@ import json
 from pathlib import Path
 
 
-import sys
-
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 def report(path):
     """Return {has_exif, camera_make, camera_model, software,
@@ -64,4 +59,6 @@ def report(path):
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     print(json.dumps(report(sys.argv[1]), ensure_ascii=False, indent=2))

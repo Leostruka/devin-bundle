@@ -35,9 +35,6 @@ import json
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 VALIDATION_SUBDIR = ("tests", "validation")
 
@@ -145,6 +142,8 @@ def check_coverage(changed_docs, mapping, *, tests_root="."):
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(
         description="JEV-5 explicit doc-to-test coverage check")
     ap.add_argument("--changed", nargs="+", required=True,

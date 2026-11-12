@@ -20,9 +20,6 @@ import json
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]
                     / "computer-use"))
@@ -33,6 +30,8 @@ MAX_INPUT_BYTES = _dp.MAX_SNAPSHOT_BYTES
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(
         description="scrape nodes -> DOM-picker elements JSON")
     ap.add_argument("source", help="nodes JSON file ('-' = stdin)")

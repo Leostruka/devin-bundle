@@ -94,8 +94,8 @@ Use this playbook when building, adapting, or distilling a custom reasoning or d
 
 ### External tools worth knowing
 
-- Minimite: trains a mini model from scratch in ~2min for <$0.50
-  (nanoGPT-class); useful for teaching/demos before real post-training.
-- TaskMon GPU (Microsoft, OSS): GPU task manager showing per-process
-  VRAM/AI usage on NVIDIA/AMD/Intel/Apple; quick observability when
-  local inference competes for VRAM.
+- MiniMind (jingyaogong/minimind): trains a 26M model from scratch in
+  ~2h for ~$0.43; useful for teaching/demos before real post-training.
+- gputaskman / GPU Taskman (Scott Hanselman, MIT): GPU task manager
+  showing per-process VRAM/AI usage on NVIDIA/AMD/Intel/Apple; quick
+  observability when local inference competes for VRAM.
