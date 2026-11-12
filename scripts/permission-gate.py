@@ -92,6 +92,12 @@ def _exec_verdict(command: str) -> bool:
 
 
 def main():
+    reconfigure = getattr(sys.stdin, "reconfigure", None)
+    if reconfigure:
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
     try:
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
