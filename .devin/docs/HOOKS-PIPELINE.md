@@ -9,9 +9,9 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 
 1. **Event**: Devin CLI lifecycle event (`PreToolUse`, `PostToolUse`,
    `UserPromptSubmit`, `SessionStart`, `PostCompaction`, `Stop`,
-   `SessionEnd`; `PermissionRequest` wired empty).
-2. **Entry point**: `command`s per matcher in `hooks.v1.json`. Thirteen
-   commands total (six consolidated `_hookrun` entry points plus seven
+   `SessionEnd`; `PermissionRequest` approve-only).
+2. **Entry point**: `command`s per matcher in `hooks.v1.json`. Fourteen
+   commands total (six consolidated `_hookrun` entry points plus eight
    direct single-script commands; the write/edit PostToolUse matcher
    carries four direct commands). Inner scripts are never bound directly
    under consolidated entry points.
@@ -35,6 +35,7 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 | `memory-stop.py` | SessionEnd | direct |
 | `file-size-guard.py` | PostToolUse `^(write\|edit)$` | direct |
 | `design-lint-gate.py` | PostToolUse `^(write\|edit)$` | direct |
+| `permission-gate.py` | PermissionRequest `^exec$` | direct (approve-only; silent = human decides) |
 
 ## Merge rules (`_hookrun.run`)
 

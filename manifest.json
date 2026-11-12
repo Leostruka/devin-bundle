@@ -1694,9 +1694,15 @@
       "purpose": "append missing merged-PR refs to CHANGELOG [Unreleased] (#488)",
       "export_hash": "f0996df20ff20036fdbeb0df0134b4442b4130f97676ecf078edaafbeeb9c72d",
       "exported_at": "2026-11-11T07:34:53.641356"
+    },
+    {
+      "name": "permission-gate.py",
+      "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
+      "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
+      "export_hash": "f05d0fe1f8c1c452dcd6fd63915fd33ad8bbb7468663071b8e71917fdcd4a0a1"
     }
   ],
-  "script_count": 54,
+  "script_count": 55,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,
