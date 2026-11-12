@@ -40,9 +40,6 @@ import shlex
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import decision_contract as dc
@@ -323,6 +320,8 @@ def _laya_suggestion(questions, files, n_lines, has_tests, *,
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     dc.pin_stdio_utf8()
     ap = argparse.ArgumentParser(
         description="JEV-4 seven-question diff triage")

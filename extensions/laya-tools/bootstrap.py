@@ -20,9 +20,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 HERE = Path(__file__).resolve().parent
 VENV = HERE / ".venv"
@@ -132,6 +129,8 @@ def emit(ok, extra=None):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     global device
 
     if not REQUIREMENTS.is_file():

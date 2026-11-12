@@ -20,9 +20,6 @@ import json
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import metadata as md          # noqa: E402
@@ -105,6 +102,8 @@ def build_ref(dir_path, out_path):
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="PRNU provenance verdict")
     ap.add_argument("image", nargs="?")
     ap.add_argument("--ref")

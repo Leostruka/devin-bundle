@@ -18,9 +18,6 @@ import sys
 import time
 import urllib.request
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 BASE = "https://www.tooooools.app"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) devin-bundle-catalog"}
@@ -76,6 +73,8 @@ def scrape(dry_run=False):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", default=OUT_DEFAULT)
     ap.add_argument("--dry-run", action="store_true",

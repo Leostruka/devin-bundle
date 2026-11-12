@@ -20,9 +20,6 @@ import math
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 READ_WPM = 160.0
 RENDER_MS_PER_FRAME = 120.0
@@ -165,6 +162,8 @@ def _fail(msg):
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     src = argv[0] if argv else sys.argv[1]
     try:
         raw = Path(src).read_text(encoding="utf-8")

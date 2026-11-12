@@ -15,9 +15,6 @@ import sys
 import urllib.request
 
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 def fail(msg, code=1):
     print(json.dumps({"ok": False, "error": msg}))
@@ -62,6 +59,8 @@ def match(text, candidates):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--cases", required=True)
     ap.add_argument("--loops", type=int, required=True)

@@ -23,9 +23,6 @@ import urllib.request
 import zlib
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 SERVER = "https://www.plantuml.com/plantuml"
 MAX_BYTES = 32 * 1024 * 1024  # 32 MiB cap on rendered artifacts
@@ -112,6 +109,8 @@ def self_test():
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser(description="Render PlantUML DSL via the public server (no Java).")
     p.add_argument("source", nargs="?", help="PlantUML source file (.puml/.txt)")
     p.add_argument("--format", choices=["svg", "png"], default="svg")

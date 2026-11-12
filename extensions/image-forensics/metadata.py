@@ -7,13 +7,9 @@ screenshot and re-upload while pixel noise survives.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-
-import sys
-
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
 def report(path):
@@ -64,4 +60,6 @@ def report(path):
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     print(json.dumps(report(sys.argv[1]), ensure_ascii=False, indent=2))

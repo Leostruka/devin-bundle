@@ -58,13 +58,13 @@
       "name": "ai-tools",
       "source": "devin-bundle",
       "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
-      "export_hash": "81e34aca8a6a56fa4042c0d29f9e78547c3fa9ad6d648a01711e6196b8052608"
+      "export_hash": "2279033893b4b759a810673b2ca8129a5b528d5745ba2b051274222debcd7220"
     },
     {
       "name": "ai3d-gen",
       "source": "devin-bundle",
       "purpose": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, with direct-model fallbacks (TRELLIS, TripoSG, InstantMesh, Hunyuan3D). All free/open weights, no paid SaaS.",
-      "export_hash": "f9a100717e06e80d7ab0e1a562ffb6f0c9048c8c854e0de49297e9d7e94c5a6a"
+      "export_hash": "dc195a249311fac9bca78828a118e6e01d67e5606f8cf1bfd1db79c6ef95d4dc"
     },
     {
       "name": "animation-direction",
@@ -835,7 +835,7 @@
       "source": "created:v2.8.0 skill-coverage",
       "purpose": "Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure.",
       "original_path": "%APPDATA%\\devin\\skills\\performance",
-      "export_hash": "dbd27d4c8d7960b4b05c18ee5881717d69f2d7b45e55acb5f7367ec12314eded",
+      "export_hash": "318db3ecd18088464b85444eb91988d8b7ae5882d254ce08d6fa5700e9cdded2",
       "exported_at": "2026-09-08T21:39:22.459109"
     },
     {

@@ -25,12 +25,8 @@ command_id before dispatch.
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
 import sys
-
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+from pathlib import Path
 
 
 LAYER_DOMAIN = {
@@ -104,6 +100,8 @@ def compile(manifest, ops_map=None):
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     import argparse
     ap = argparse.ArgumentParser(description="scene manifest compiler")
     ap.add_argument("manifest")

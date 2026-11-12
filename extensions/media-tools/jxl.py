@@ -25,9 +25,6 @@ import sys
 import tempfile
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 CACHE = Path(os.environ.get("JXL_CACHE",
                             Path(__file__).parent / "_cache"))
@@ -176,6 +173,8 @@ def encode(src, dst, quality=90, effort=7):
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="JPEG XL via cjxl/djxl")
     sub = ap.add_subparsers(dest="action", required=True)
     sub.add_parser("identify").add_argument("file")

@@ -27,9 +27,6 @@ import sys
 import time
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import decision_contract as dc  # noqa: E402
@@ -290,6 +287,8 @@ def warm_engine(engine, config):
 
 
 def main(config_path=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     dc.pin_stdio_utf8()
     cfg = dc.load_config(config_path)
     if not dc.enabled(cfg):

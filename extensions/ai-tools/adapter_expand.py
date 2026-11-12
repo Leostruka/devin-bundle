@@ -8,7 +8,7 @@ verifies the MECHANISM on CPU with real numbers:
 
   1. BASELINE   - load a cached HF model, measure tok/s and RAM.
   2. INJECT     - attach LoRA-style adapter W' = W + (a/lr)*B@A to
-     q_proj/v_proj; core params frozen (requires_grad=False).
+     q_proj/v_proj (scaling 2.0/r); core params frozen.
   3. TRAIN      - few steps on a tiny style task; only adapter grads
      flow. Report loss first->last as evidence the expansion learns.
   4. OVERHEAD   - re-measure tok/s: adapter inference cost vs base.
@@ -26,9 +26,6 @@ import json
 import os
 import sys
 import time
-
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
@@ -154,6 +151,8 @@ def run(model_id, steps, rank):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default=MODEL)
     ap.add_argument("--steps", type=int, default=8)

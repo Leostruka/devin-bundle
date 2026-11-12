@@ -20,9 +20,6 @@ import json
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import verdict as vd          # noqa: E402
@@ -89,6 +86,8 @@ def evaluate(real_dir, synth_dir, ref=None, pce_real=vd.PCE_REAL,
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(
         description="held-out real-vs-synthetic provenance eval")
     ap.add_argument("--real", required=True, help="dir of real captures")

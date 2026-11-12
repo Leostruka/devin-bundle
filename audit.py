@@ -1426,17 +1426,28 @@ try:
             _src42 = open(_fp, encoding='utf-8').read()
         except (OSError, UnicodeDecodeError):
             continue
-        if 'ensure_ascii=False' not in _src42 or 'print(' not in _src42:
+        if 'ensure_ascii=False' not in _src42:
             continue
-        # only count ensure_ascii=False inside a print(...) call - file
-        # writes go through utf-8-pinned handles already
+        # stdout emission = print(...) or sys.stdout.write(...) whose
+        # args contain ensure_ascii=False, OR print(var) where var was
+        # assigned json.dumps(..., ensure_ascii=False). File writes go
+        # through utf-8-pinned handles already.
         _emits = False
-        for _m in _re42.finditer(r'print\s*\(', _src42):
+        for _m in _re42.finditer(
+                r'print\s*\(|sys\.stdout\.write\s*\(', _src42):
             _seg = _src42[_m.start():_m.start() + 400]
             _close = _seg.find('))')
             if 'ensure_ascii=False' in _seg[:_close + 2 if _close > 0 else 400]:
                 _emits = True
                 break
+        if not _emits:
+            for _m in _re42.finditer(
+                    r'(\w+)\s*=\s*json\.dumps\([^)]*ensure_ascii=False',
+                    _src42):
+                if _re42.search(r'print\s*\(\s*' + _m.group(1)
+                                + r'\s*\)', _src42):
+                    _emits = True
+                    break
         if _emits and not _PIN42.search(_src42):
             _bad_out.append(_fp)
     if _bad_out:
