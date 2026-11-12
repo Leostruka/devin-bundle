@@ -91,3 +91,19 @@
 - review-package.py:63 foi a ultima warning
 - audit 49/49 limpo; pytest 2491/8skip; ledger 1427/0 drift
 - PR #579 auto-merge armado (aguardando CI)
+
+### Bloco 4 - round scaffold + ledger (15:50)
+
+- #579 merged. Explorando #580 achou BUG REAL: scaffold.py quebrado desde #55
+  (git mv p/ scripts/ deixou skill_dir apontando p/ scripts/, load_template
+  404 no primeiro template - nunca funcionou pos-refactor)
+- Fix skill_dir + extracao: MERMAID_TEMPLATES(14) + 5 scripts embedded ->
+  templates/mermaid/ + templates/vault-scripts/, byte-identico
+- Verificacao held-out: golden diff vault antes/depois = identico
+- scaffold.py 1204 -> 331 linhas; PR #581 merged, #580 fechada
+- Achado 2: install-ledger reconcile MASCARAVA drift - record-all em live
+  desatualizado gravava stale rendered + new source -> "Current" falso
+  (16 arquivos skills estavam stale no live, reconcile dizia 0 drift)
+- Fix: shortcut rendered so vale p/ _RENDERED_FILES (config.json/hooks);
+  regression test adicionado. Live sync real feito: 1446 Current/0 drift
+- PR #582 em CI
