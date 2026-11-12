@@ -831,14 +831,6 @@
       "export_hash": "8f4226fbab9efdcce01454984f0bdbecf4ef656dd292513290c973e1dda6f979"
     },
     {
-      "name": "operate-spline",
-      "source": "devin-bundle",
-      "purpose": "Use when the user asks to launch, drive, build scenes in, export from, or shut down the Spline desktop app (3D/2D design, Electron). Routes to extensions/spline-operator/wrapper.py, which speaks the app's embedded MCP bridge (ws://127.0.0.1:19692) - structured tool calls, not GUI clicking.",
-      "original_path": "%APPDATA%\\devin\\skills\\operate-spline",
-      "export_hash": "08d69cb4d87870cd6ff68c35a92502f718182554488216c1918d46b8c66fa40c",
-      "exported_at": "2026-11-02T20:52:47.097911"
-    },
-    {
       "name": "performance",
       "source": "created:v2.8.0 skill-coverage",
       "purpose": "Use when the user wants to profile, optimize, load-test, or measure the performance of code, queries, or infrastructure.",
@@ -1365,7 +1357,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 185,
+  "skill_count": 184,
   "rule_count": 24,
   "scripts": [
     {
