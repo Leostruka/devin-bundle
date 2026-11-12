@@ -31,7 +31,7 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 | `user-prompt.py` | UserPromptSubmit | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate, token-saver |
 | `session-start.py` | SessionStart | constraint-pinning, context-budget |
 | `constraint-pinning.py` | PostCompaction | direct |
-| `stop-guard.py` | Stop | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect |
+| `stop-guard.py` | Stop | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect, decision-queue |
 | `memory-stop.py` | SessionEnd | direct |
 | `file-size-guard.py` | PostToolUse `^(write\|edit)$` | direct |
 | `design-lint-gate.py` | PostToolUse `^(write\|edit)$` | direct |
