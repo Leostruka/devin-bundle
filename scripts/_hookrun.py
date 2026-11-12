@@ -34,9 +34,25 @@ SLOW_SCRIPT_MS = 5000
 
 
 def metrics_sink_path():
-    """Append-only JSONL metric sink (gitignored via '.devin/ledgers/*')."""
-    project = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
-    return os.path.join(project, ".devin", "ledgers", "metrics.jsonl")
+    """Append-only JSONL metric sink (gitignored via '.devin/ledgers/*').
+
+    Anchors to the project root by walking up from cwd looking for `.devin/`
+    or `manifest.json` — a hook spawned with cwd=scripts/ must not create a
+    stray `scripts/.devin/` tree."""
+    explicit = os.environ.get("DEVIN_PROJECT_DIR")
+    if explicit:
+        return os.path.join(explicit, ".devin", "ledgers", "metrics.jsonl")
+    start = os.getcwd()
+    cur = os.path.abspath(start)
+    for _ in range(4):
+        if os.path.isdir(os.path.join(cur, ".devin")) \
+                or os.path.isfile(os.path.join(cur, "manifest.json")):
+            return os.path.join(cur, ".devin", "ledgers", "metrics.jsonl")
+        parent = os.path.dirname(cur)
+        if parent == cur:
+            break
+        cur = parent
+    return os.path.join(start, ".devin", "ledgers", "metrics.jsonl")
 
 
 def emit_metric(event, **fields):
@@ -107,7 +123,10 @@ def run(script_names, payload):
         code, out, err = _run_one(name, payload)
         ms = int((time.time() - ts) * 1000)
         timings[name] = ms
-        if ms > SLOW_SCRIPT_MS:
+        # Slow scripts are observable via the timings_ms metric below. Do NOT
+        # warn on stderr: under `fail_closed: true` the CLI treats hook stderr
+        # as failure and rejects the tool call (audit-2026-11-12 #544).
+        if ms > SLOW_SCRIPT_MS and os.environ.get("DEVIN_HOOKRUN_DEBUG"):
             sys.stderr.write(
                 f"[hookrun] slow script {name}: {ms}ms\n")
         if err:

@@ -16,10 +16,7 @@ def load(name):
 
 @pytest.fixture
 def tel():
-    try:
-        return load("sc_telemetry")
-    except ModuleNotFoundError:
-        pytest.skip("sc_telemetry not implemented yet")
+    return load("sc_telemetry")
 
 
 def ev(tel, pid, kind="process.exit", ts=None, attrs=None):

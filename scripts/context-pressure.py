@@ -250,18 +250,33 @@ def process_hook(payload_str):
     except json.JSONDecodeError:
         payload = {}
 
-    tool_output = payload.get("tool_output", "")
-    # tool_output can be a string or structured
-    if isinstance(tool_output, dict):
-        tool_output = json.dumps(tool_output)
-    elif not isinstance(tool_output, str):
-        tool_output = str(tool_output)
+    resp = payload.get("tool_response") or payload.get("tool_output") or {}
+    if isinstance(resp, dict):
+        tool_output = resp.get("output") or resp.get("stdout") or ""
+    else:
+        tool_output = str(resp)
 
     output_tokens = estimate_tokens(tool_output)
 
     marker = load_marker()
+    sid = payload.get("session_id") or ""
+    import datetime
+    stale = False
+    if marker.get("session_start"):
+        try:
+            age_h = (datetime.datetime.now()
+                     - datetime.datetime.fromisoformat(
+                         marker["session_start"])).total_seconds() / 3600
+            stale = age_h > 12
+        except (ValueError, TypeError):
+            stale = True
+    if stale or (sid and marker.get("session_id")
+                 and marker["session_id"] != sid):
+        marker = {"tool_output_tokens": 0, "calls": 0,
+                  "session_start": None, "session_id": sid}
+    if sid:
+        marker["session_id"] = sid
     if not marker.get("session_start"):
-        import datetime
         marker["session_start"] = datetime.datetime.now().isoformat()
 
     marker["tool_output_tokens"] = marker.get("tool_output_tokens", 0) + output_tokens
