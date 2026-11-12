@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(ai-tools): adapter_expand frozen-core + low-rank PoC (#572)
 - feat(audit): check [42] stdout utf-8 pin; 3 more emitters pinned (#577)
 - feat(skills): tool pointers - Seacore, White Rabbit Neo, Minimite, TaskMon (#576)
 - feat(skills): data-analyst glossary + performance load-test playbook (#575)
