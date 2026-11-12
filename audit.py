@@ -1393,4 +1393,5 @@ if warnings:
 if not errors and not warnings:
     print()
     print('ALL 40 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+sys.exit(1 if errors else 0)
 
