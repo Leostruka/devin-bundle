@@ -17,8 +17,9 @@ Usage:
   python scripts/spec-consistency.py PLAN.md [--root DIR] [--strict]
 
 --root defaults to the nearest ancestor of PLAN containing `.devin/`,
-else the current directory. Exit 0 always (report-only); --strict exits 1
-when errors are found. Exit 2 on unreadable input.
+else the current directory. Exits 1 whenever the report carries errors
+(`ok:false` => non-zero per the CLI contract); --strict is retained for
+compatibility. Exit 2 on unreadable input.
 """
 import json
 import os
@@ -298,7 +299,7 @@ def main():
                     "info": len(findings) - errors - warnings},
     }
     print(json.dumps(report, indent=2))
-    sys.exit(1 if ("--strict" in flags and errors) else 0)
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

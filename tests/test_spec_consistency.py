@@ -108,6 +108,14 @@ def test_ledger_pending_evidence_flagged(repo):
     assert "ledger_ticked_gate_pending_evidence" in kinds
 
 
+def test_ok_false_exits_nonzero(repo):
+    """Contract [36]: ok:false envelope must exit non-zero, no --strict needed."""
+    plan = write_plan(repo, BAD_PLAN)
+    r, out = run_check(plan, repo)
+    assert out["ok"] is False
+    assert r.returncode != 0
+
+
 def test_strict_exit_code(repo):
     plan = write_plan(repo, BAD_PLAN)
     r, _ = run_check(plan, repo, "--strict")

@@ -319,6 +319,7 @@ def main():
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except Exception as exc:  # fail-open: ledger must never break install
+    except Exception as exc:  # callers tolerate non-zero (install.sh `|| true`,
+        # install.ps1 pipes to Out-Null); ok:false must exit non-zero (contract).
         print(json.dumps({"ok": False, "error": str(exc)}))
-        sys.exit(0)
+        sys.exit(1)
