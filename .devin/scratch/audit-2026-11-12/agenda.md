@@ -75,3 +75,11 @@
 - 14:50-15:10 pointers duráveis skills (PR #576 merged) + Rune spike VALIDADO (#570 fechada)
 - 15:10-15:30 audit [42] novo check + 3 scripts pinados (PR #577) + changelog refs
 - Pendente: #572 backlog (GPU), #431 (decisão usuário), merge #577 + sync live
+
+### Bloco 4 - fechamento (15:10)
+
+- Review subagent no bloco: HIGH pins em modulo importavel (mutava stdout do host) -> pins movidos p/ main()/__main__ (29), removidos de 6 sem stdout; [42] detection estendida; fatos corrigidos (MiniMind/gputaskman/ccore); playbook EN
+- #572: PoC CPU validado e FECHADO (adapter_expand.py - core frozen bit-identico, loss 5.4->1.3, 0.109% params)
+- PRs do bloco: #574 #575 #576 #577 #578 - todos merged
+- Estado: audit 49/49 limpo, pytest 2491, ledger 0 drift, live sync
+- Restam: #431 (decisao usuario), #565 (tracking intencional)
