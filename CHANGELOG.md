@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix: pin stdout utf-8 on 14 non-ascii emitters; audit [42] now detects the class (#585)
 - test: scaffold end-to-end regression - vault gen + generated scripts --help (#584)
 - fix: refresh.py vault template sys import; audit [43] stdlib-name check catches internal_probe os bug (#583)
 - fix(install-ledger): record-all on stale live no longer masks drift as Current (#582)

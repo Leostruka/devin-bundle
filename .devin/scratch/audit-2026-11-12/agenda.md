@@ -119,3 +119,13 @@
   --help nos 5 scripts gerados - cobre ambos os bugs) - PR #584
 - fold_store RC=2 = CLI manual sem --help (documentado, nao bug);
   librosa = dep opcional; templates interativos = esperado
+
+### Bloco 4 - non-ascii emitters (16:45)
+
+- Smoke sweep extensions: grainrad --help crashava UnicodeEncodeError
+  (-> em help text, cp1252). Mesma classe dos pins, mas [42] so cobria
+  ensure_ascii=False
+- AST sweep: 13 CLIs a mais com literais nao-ASCII em print/add_argument
+  sem pin -> todos pinados; [42] estendido p/ detectar a classe (AST)
+- PR #585 merged; live sync + ledger 1446/0 drift
+- Estado final do dia: audit 50/50 limpo, pytest 2491, 0 PRs, CI verde
