@@ -1363,7 +1363,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "306BA3D3B1C10511A7FF14506E2D9CC2EA785D2B7AD4864D3BA211B5C1DCA0BD",
+      "export_hash": "306ba3d3b1c10511a7ff14506e2d9cc2ea785d2b7ad4864d3ba211b5c1dca0bd",
       "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
@@ -1417,13 +1417,13 @@
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "203059A16ACE1D27A785D9664E13C0A4CA5628D08AFFADFC4074953A36F725A8",
+      "export_hash": "203059a16ace1d27a785d9664e13c0a4ca5628d08affadfc4074953a36f725a8",
       "exported_at": "2026-11-08T15:58:15.329079"
     },
     {
       "name": "decision-queue.py",
       "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
-      "export_hash": "28449CBF29D7224AB068747C5C9C72FDE553F23A0DC95CC0379811645AB0895C",
+      "export_hash": "28449cbf29d7224ab068747c5c9c72fde553f23a0dc95cc0379811645ab0895c",
       "exported_at": "2026-11-10T06:59:34.745097"
     },
     {
@@ -1437,7 +1437,7 @@
       "name": "dep-audit.py",
       "source": "devin-bundle",
       "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
-      "export_hash": "24e621559a4d40cf5159b79b557ae6aebac37626ad5889c03703a220a7b0c925",
+      "export_hash": "8d9504fda6fb94bef36840144279241a9da35f092b6fea2a89d114922f4d8a3d",
       "exported_at": "2026-11-08T10:18:51.569042"
     },
     {
@@ -1456,7 +1456,7 @@
     {
       "name": "done-evaluator.py",
       "purpose": "grades a claimed done against transcript evidence - writer is not the grader (issue #437)",
-      "export_hash": "48d4553ed56a1f551b21775b76ce7ba5dc8b433a68d993c868d38303070751b4",
+      "export_hash": "4f9b2aa5a7238d175c39b6d103c3ec1519e5eb259a1b12d997477d8f24956990",
       "exported_at": "2026-11-10T07:19:30.736758"
     },
     {
@@ -1469,7 +1469,7 @@
     {
       "name": "focus.py",
       "purpose": "Focus-session tracker (start/stop/report) over gitignored .devin/ledgers/focus.jsonl - issue #419",
-      "export_hash": "e487eaf83a9f292c2e08dbda92c52e3db735e6c58ed332ae8c9a17a4caef49bf",
+      "export_hash": "a6ec1ac0e887546a78dc6a68720f21e0e5dd2940285278268e799bb03088c15b",
       "exported_at": "2026-11-08T09:45:01.894092"
     },
     {
@@ -1493,7 +1493,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "C5C221C8627A09445DC7F89F1A2C71FC1873CB1C8D6F17087C46F1C57A76614B",
+      "export_hash": "c5c221c8627a09445dc7f89f1a2c71fc1873cb1c8d6f17087c46f1c57a76614b",
       "exported_at": "2026-11-08T08:50:55.845199"
     },
     {
@@ -1644,7 +1644,7 @@
     {
       "name": "subagent-trace.py",
       "purpose": "per-dispatch trace records (.devin/subagent-trace.jsonl) + abort flag channel for orchestrated subagents",
-      "export_hash": "000957B801A7417B48DE30DDB8F4B9231DB6C0AF8BAD4196A51B83E4692F5383",
+      "export_hash": "000957b801a7417b48de30ddb8f4b9231db6c0af8bad4196a51b83e4692f5383",
       "exported_at": "2026-11-10T07:19:30.736758"
     },
     {
@@ -1699,7 +1699,7 @@
       "name": "permission-gate.py",
       "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
       "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
-      "export_hash": "38014FF532D3B9C8317776662D2C0B9C7B70021A41A94F842DC514D9ADE6E7F5"
+      "export_hash": "38014ff532d3b9c8317776662d2c0b9c7b70021a41a94f842dc514d9ade6e7f5"
     }
   ],
   "script_count": 55,

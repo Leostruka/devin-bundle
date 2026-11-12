@@ -24,6 +24,10 @@ import os
 import re
 import sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 _DONE_RE = re.compile(
     r"\b(done|complete[ds]?|finished|all tests pass|resolved|fixed it|"
     r"task complete|work is done|shipped)\b", re.I)

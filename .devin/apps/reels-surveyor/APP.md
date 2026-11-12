@@ -17,3 +17,4 @@ Decode each transcript against the current bundle (manifest.json, skills/, .devi
 - 2026-11-05 batch-2: 16 reels -> 15 issues -> all resolved (#310-#322)
 - 2026-11-05 batch-3: 10 slots -> 9 transcribed -> 3 issues resolved (#331)
 - 2026-11-06 batch-4: 5 reels + SWE-2-Flash -> 8 issues -> resolved (#339); follow-up evals OpenViking/Artemis (#340)
+- 2026-11-12 batch-8: 11 reels + 2 web links + busybar re-check -> 7 issues (#567-#573) -> 5 resolved (PRs #574-#576: ext UTF-8 pins x36, data-analyst glossary, perf load-test playbook, tool pointers), #570 spike validated (.devin/research/2026-11-12-rune-spike.md), #572 backlog (GPU eval next sprint); infra find: transcribe.py stdout cp1252 fixed
