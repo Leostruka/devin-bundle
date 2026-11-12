@@ -2,7 +2,7 @@
 
 ## Validated release
 
-The bundle is validated against Devin CLI `3000.12.17` (see `data/bundle-identity.json`).
+The bundle is validated against Devin CLI `3000.12.43` (see `data/bundle-identity.json`).
 
 Release notes for the validated version and intermediate CLI versions are tracked in `data/bundle-identity.json` and the Devin CLI changelog.
 
@@ -14,8 +14,8 @@ against (`verified <date>, CLI <version>`). Rule of maintenance: whenever
 `validated_cli_version` advances, add a new `## <version> capabilities`
 section covering every intermediate minor, and re-verify that each prior
 adoption decision still holds. Owner: whoever bumps
-`data/bundle-identity.json`; `audit.py` fails if the doc lags a validated
-minor without a section.
+`data/bundle-identity.json`; the rule is enforced by review — no audit.py
+check exists for it yet (#531 tracks adding one).
 
 ## 3000.10.x capabilities (verified 2026-09-15, CLI 3000.10.27)
 
