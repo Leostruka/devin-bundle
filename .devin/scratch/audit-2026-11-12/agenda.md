@@ -48,3 +48,9 @@
 - live sync + doctor 3/3 | ledger 1427/0 drift
 - issues: #431 aguarda decisao usuario (shadow->assist)
 - surfaces: todos os items auditados item-a-item + interacoes
+
+## Round 11 (16:55) - gate 4th pass
+- #566 merged: 3 critical + 3 important residuals fechados (bundle flags,
+  -u attached, brace-expansion, -F<file>, ext-strip, auth -t)
+- live probe: 8 bypasses silent, reads intactos
+- fim do expediente de auditoria
