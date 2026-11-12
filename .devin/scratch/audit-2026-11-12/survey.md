@@ -64,3 +64,16 @@
   *.proposal.json ignored (transient calibration artifacts).
 - Counts updated: 55 scripts, 14 hook entry points (6 consolidated + 8 direct).
 - Remaining open issues: #431 only (user decision on shadow->assist).
+
+## Round 3 — render-normalization + ledger reconciliation
+
+- hooks-render WARN root cause: live render uses scoop shim
+  `...\current\python` (no .exe) inside an escaped quote; audit regex
+  required `.exe` + unescaped follower. Fixed via optional-.exe pattern
+  and escaped-quote lookahead (#553).
+- Ledger "Removed" ghosts: record-all never pruned records for files
+  deleted live (operate-spline, old metrics path). record-all now has
+  snapshot semantics — prunes absent records (#554).
+- Ledger reconciled: 0 Outdated/Modified/Removed/Foreign; live audit.py,
+  TOOLS-MAP, manifest synced; stale operate-spline live dir removed.
+- Result: audit 41 checks, 0 errors, 0 warnings — first fully clean run.

@@ -165,13 +165,17 @@ def cmd_record_all(_args):
     root, live = _root(), _live()
     data = _load_ledger()
     files = data.setdefault("files", {})
+    live_set = set(_iter_live_files(live))
     n = 0
-    for rel in sorted(set(_iter_live_files(live))):
+    for rel in sorted(live_set):
         _record_file(root, live, rel, files)
         n += 1
+    pruned = [rel for rel in list(files) if rel not in live_set]
+    for rel in pruned:
+        del files[rel]
     _save_ledger(data)
     _write_corpus_index(root)
-    print(json.dumps({"ok": True, "recorded": n}))
+    print(json.dumps({"ok": True, "recorded": n, "pruned": len(pruned)}))
     return 0
 
 
