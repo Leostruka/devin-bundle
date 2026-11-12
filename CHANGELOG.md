@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix(obsidian-workflow): scaffold skill_dir bug (broken since #55) + extract embedded templates, 1204 -> 331 lines, golden-diff verified (#581)
 - fix(skills): utf-8 contracts in skill scripts - stdout pins, stdin readers, subprocess encoding, file io (audit scan extended to skills/) (#579)
 - fix: review round - pin scope to entry points, audit [42] detect, pointer facts (#578)
 - feat(ai-tools): adapter_expand frozen-core + low-rank PoC (#572)
