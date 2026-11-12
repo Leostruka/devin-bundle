@@ -88,6 +88,7 @@ def test_silent_on_gh_writes():
     assert gate('gh api -H "X-HTTP-Method-Override: PUT" repos/x') == ""
     assert gate("gh pr merge 1 --squash") == ""
     assert gate("gh auth token") == ""
+    assert gate("gh pr view 1 --web") == ""
 
 
 def test_gh_api_read_approved():
