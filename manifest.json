@@ -1787,7 +1787,7 @@
       "name": "reviewer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\reviewer.md",
-      "export_hash": "92493B03FE37C224090D9E7ACA6D2DBAE6CB4A35BCB392DFFE373C04A4F82111",
+      "export_hash": "22d24f9a129e1e9454c43ef665810cf4380c987d4c6d1ca3bfa45bf6102725e1",
       "exported_at": "2026-09-08T21:39:22.432096"
     },
     {
@@ -1823,7 +1823,7 @@
       "name": "sentinel",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\sentinel.md",
-      "export_hash": "76FBAFF7805C891C329EEF03B7A9E507E97510032C8C9E11B29B989CFD01E2F4",
+      "export_hash": "64e458a243407b705e6009bfc6d2b7046e795d152eec3b8129a4dc3f0c09c0c3",
       "exported_at": "2026-11-05T07:49:44.220070"
     },
     {
