@@ -1376,6 +1376,27 @@ try:
 except Exception as _e:
     print('  SKIP skills-debt check failed: ' + str(_e))
 
+# 41. Compat doc must name the validated CLI version (#531)
+print()
+print('[41] Compat doc version pin')
+try:
+    _ident = json.load(open('data/bundle-identity.json', encoding='utf-8-sig'))
+    _v = _ident.get('validated_cli_version')
+    _doc = '.devin/docs/DEVIN-CLI-COMPATIBILITY.md'
+    if not _v:
+        warnings.append('bundle-identity.json lacks validated_cli_version')
+        print('  WARN no validated_cli_version declared')
+    elif not os.path.isfile(_doc):
+        errors.append(_doc + ' missing')
+        print('  FAIL ' + _doc + ' missing')
+    elif _v not in open(_doc, encoding='utf-8').read():
+        warnings.append(_doc + ' does not name validated_cli_version ' + _v)
+        print('  WARN ' + _doc + ' missing version ' + _v)
+    else:
+        print('  OK  compat doc names validated_cli_version ' + _v)
+except Exception as _e41:
+    print('  SKIP compat-doc check failed: ' + str(_e41))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
@@ -1392,6 +1413,9 @@ if warnings:
         print('  - ' + w)
 if not errors and not warnings:
     print()
-    print('ALL 40 CHECKS PASSED - NO ERRORS, NO WARNINGS')
+    _n_checks = len(set(re.findall(
+        r"^print\('\[(\d+)\]",
+        open(__file__, encoding='utf-8').read(), re.M)))
+    print('ALL ' + str(_n_checks) + ' CHECKS PASSED - NO ERRORS, NO WARNINGS')
 sys.exit(1 if errors else 0)
 
