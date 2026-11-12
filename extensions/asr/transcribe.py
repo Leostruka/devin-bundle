@@ -23,6 +23,9 @@ import sys
 import tempfile
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 CACHE = Path(os.environ.get("ASR_CACHE",
                             Path(__file__).parent / "_cache"))
 MODELS = {"base": "ggml-base.bin", "small": "ggml-small.bin",

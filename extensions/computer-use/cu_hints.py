@@ -30,6 +30,12 @@ from pathlib import Path
 
 import cu_target
 
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 HINT_CHARS = "sadfjklewcmpgh"  # vimium-style home-row alphabet
 MAX_HINTS = len(HINT_CHARS) ** 2  # 196
 HINT_TTL_S = float(os.environ.get("CU_HINT_TTL", "120"))

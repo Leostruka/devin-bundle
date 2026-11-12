@@ -23,6 +23,10 @@ from pathlib import Path
 
 import numpy as np
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 IMG_EXT = (".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp", ".webp")
 
 # spread thresholds (std across the set), tune on real captures

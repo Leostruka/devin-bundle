@@ -13,6 +13,10 @@ import sys
 from html.parser import HTMLParser
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 sys.path.insert(0, str(Path(__file__).parent))
 from rules_registry import ANTIPATTERNS  # noqa: E402
 import checks  # noqa: E402

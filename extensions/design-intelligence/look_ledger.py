@@ -14,6 +14,10 @@ import sys
 from pathlib import Path
 
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 def visual_signature(path):
     text = Path(path).read_text(encoding="utf-8", errors="replace")
     fonts = sorted(set(f.strip().strip("'\"").lower()

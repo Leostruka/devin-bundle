@@ -18,6 +18,10 @@ import sys
 import time
 import urllib.request
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
 BASE = "https://www.tooooools.app"
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) devin-bundle-catalog"}
 OUT_DEFAULT = os.path.join(os.path.dirname(__file__), "knowledge_bases",

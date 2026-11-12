@@ -58,7 +58,7 @@
       "name": "ai-tools",
       "source": "devin-bundle",
       "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
-      "export_hash": "25cff25002de8e0abd38aa7924c4e0d2fb8586350da005f6eca617b0d72c4198"
+      "export_hash": "81e34aca8a6a56fa4042c0d29f9e78547c3fa9ad6d648a01711e6196b8052608"
     },
     {
       "name": "ai3d-gen",
