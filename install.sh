@@ -626,7 +626,7 @@ if [[ -d "$ext_src" ]]; then
   done
 
   # --- 8c. extension Python deps (isolated venv, no system/user-site) ---
-  for ext_name in computer-use scrape-tools; do
+  for ext_name in computer-use scrape-tools laya-tools; do
     ext_dir="$ext_dst/$ext_name"
     [[ -f "$ext_dir/requirements.txt" ]] || continue
     if [[ -z "$PY" ]]; then
