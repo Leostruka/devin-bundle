@@ -159,3 +159,13 @@ Reviewer over all 42 commits found real residuals:
 - ledger: prune guard dead below 51 records -> total wipe refused any size;
   record NAME on missing live file now ok:false + exit 1
 - context-pressure reads mcp `content` key; audit count regex incl. letters
+
+## Round 10 - template/config sanity + skill refs
+- config.json/mcp_config.json/credentials.toml: MASKED/empty templates ok;
+  config.hooks empty (installer merges hooks.v1.json)
+- SKILL.md `scripts/x.py` refs: 32 checked, 18 "missing" were skill-local
+  paths (skills/<name>/scripts/) - all resolve; no dead pointers
+- .devin/*.py (623) are vendored deps/scratch - outside [36]-[39] scope
+  correctly
+- residual nits filed as tracking issue #565
+- gate probe matrix final: 18 approve / 9 silent on representative commands
