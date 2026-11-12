@@ -37,3 +37,9 @@
 - Issues closed: #527 #528 #529 #530 #532 #533 #535 #542 #544.
 - Open: #547 (structural), #546 (hook timeouts), #541 (gate design), #531 (automated compat check), #431 (user decision).
 - Survey complete: 8 lifecycle events verified, 184 skills, 54 scripts, ~30 extensions, ~150 test files, 13 hook entry points, install/manifest/live triad, CI/local parity.
+
+## Loop 15:15 — issue burn-down
+
+- #546 fixed (PR #548): compact-gate's own _ensure_daemon lacked the #522 fail-fast (that fix covered extensions/laya-tools lc.ensure_daemon only). Now returns Popen, breaks poll on dead spawn, hook call site caps wait at LAYA_SPAWN_WAIT_S=8s (daemon detached, abstains this turn, boots for next). Installers provisioned laya-tools venv (was hardcoded computer-use/scrape-tools only — actual root cause of "daemon never starts").
+- #547 test-half fixed (PR #549): egm test now asserts the mutated entry's name in the mismatch list — unrelated drift no longer fails serial merges. Verified live: first clean `git push` through the gate post-#544-fix.
+- #531 closed via PR #550: audit check [41] pins compat-doc version vs bundle-identity; summary count self-derives.

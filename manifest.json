@@ -1399,7 +1399,7 @@
     {
       "name": "compact-gate.py",
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
-      "export_hash": "06248b2ae2a308fcf5b5f677a1891719887736d74b913302e2304ca505267eab",
+      "export_hash": "dbc335d0165630b92cf4f0b0882cc91fb5eb0c26bc1ad4478854028b6c0e46de",
       "exported_at": "2026-10-31T00:00:00.000000"
     },
     {
