@@ -5,3 +5,4 @@ tests/test_busybar_listen.py::test_ws_loopback_receives_bundled_frame — signat
 tests/held-out/mutation/test_check_push_green_blocks.py::test_mutation_remove_exit_code — body rewritten to assert real mutant detection (secrets-block scenario); same name, still collected (issue #542)
 tests/held-out/mutation/test_check_push_green_blocks.py::test_mutation_empty_function — same repair (#542)
 test_audit_check_count
+tests/test_permission_gate.py::test_silent_on_gh_api_write - renamed to test_silent_on_gh_writes with expanded coverage (not a deletion)

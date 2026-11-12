@@ -93,6 +93,12 @@ def main(argv=None):
         print(json.dumps({"ok": found, "id": rid}))
         return 0 if found else 1
     try:
+        _recfg = getattr(sys.stdin, "reconfigure", None)
+        if _recfg:
+            try:
+                _recfg(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
         payload = json.load(sys.stdin)
     except (ValueError, OSError):
         payload = {}

@@ -224,3 +224,36 @@ def test_corpus_index_excludes_noise_dirs_and_artifacts(env):
     keys = idx["files"]
     assert "extensions/x/real.py" in keys
     assert not any(".venv" in k or k.endswith(".pyd") for k in keys)
+
+
+def test_record_all_prune_refuses_degenerate_scan(env, capsys):
+    """A missing/empty live must not wipe recorded files (review finding)."""
+    root, live = env
+    # seed 60 records so >25% threshold trips on a wipe
+    files = {f"scripts/f{i}.py": {"source_hash": "x", "rendered_hash": "x"}
+             for i in range(60)}
+    data = {"version": 1, "files": files}
+    mod._save_ledger(data)
+    # live has no files on disk -> live_set empty -> prune would drop all
+    rc = mod.cmd_record_all(None)
+    assert rc == 1
+    out = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert out["ok"] is False and "prune refused" in out["error"]
+    assert len(mod._load_ledger()["files"]) == 60
+
+
+def test_record_all_prunes_absent_records(env, capsys):
+    root, live = env
+    _write(live / "scripts" / "a.py", "a")
+    _write(live / "scripts" / "b.py", "b")
+    _write(live / "scripts" / "c.py", "c")
+    _write(live / "docs" / "d.md", "d")
+    files = {r: {"source_hash": "x"} for r in
+             ("scripts/a.py", "scripts/b.py", "scripts/c.py", "docs/d.md")}
+    files["scripts/gone.py"] = {"source_hash": "x"}
+    mod._save_ledger({"version": 1, "files": files})
+    rc = mod.cmd_record_all(None)
+    assert rc == 0
+    ledger = mod._load_ledger()["files"]
+    assert "scripts/gone.py" not in ledger
+    assert "scripts/a.py" in ledger
