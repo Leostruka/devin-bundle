@@ -28,3 +28,10 @@
 - Fila serial drenada: 6 PRs merged
 - Live sync -Force + audit 0 err / 1 warn + pytest 2478
 - Survey e issues fechados no GitHub
+
+## Round 6 (12:00) - permission-gate 2nd-pass review
+- reviewer subagent: 10 bypasses (quote-collapse, -u/space-form upload-pack,
+  --open-files-in-pager, gh issue develop --checkout) -> fixed in #562 merged
+- .devin/agents + apps audit via researcher: clean; "README in VALID_PROFILES"
+  flagged but is a real runtime profile -> no defect
+- install.sh/install.ps1 laya-tools venv parity confirmed
