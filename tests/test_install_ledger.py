@@ -82,6 +82,17 @@ def test_reconcile_five_states(env):
     assert rep["Foreign"] == ["scripts/foreign.py"]
 
 
+def test_record_all_on_stale_live_does_not_mask_drift(env):
+    """record-all on an unsynced live must not burn stale bytes as Current."""
+    root, live = env
+    _write(root / "scripts" / "s.py", "new-version")
+    _write(live / "scripts" / "s.py", "old-version")
+    _cli(["record-all"], env)
+    rep = mod.reconcile()
+    assert rep["Outdated"] == ["scripts/s.py"]
+    assert rep["Current"] == []
+
+
 def test_record_all_then_current(env):
     root, live = env
     _write(root / "scripts" / "a.py", "a")
