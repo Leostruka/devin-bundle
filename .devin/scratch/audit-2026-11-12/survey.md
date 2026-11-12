@@ -92,3 +92,13 @@
 - False-positive fix: [39] regex restricted to real call forms after
   cu_actions.py docstring match (#560).
 - Live resynced; ledger clean; audit 0 errors.
+
+## Round 5 - independent review + hardening (#561)
+
+Fresh-eyes reviewer on permission-gate found real vulns. Fixes shipped:
+- Inverted to deny-by-default arg shapes: env/fd -x/rg --pre/git-lfs exec removed or gated
+- ext:: transport blocked per-arg (quote-stripped); ref mutation via positionals blocked (branch/tag/stash/reflog expire/remote set-head)
+- File-write flags blocked: git diff --output, log -o; gh --method=POST/--input/-H override/auth token
+- audit [39] exemption scoped to stdin-targeted pin - caught stdout-only pins in decision-queue + subagent-trace (now pinned)
+- install-ledger record-all: prune guard refuses degenerate scans (>25% or total wipe) + 2 regression tests
+Live gate probed: 7/7 vectors correct. Audit 41/41 clean. Ledger 0 drift.
