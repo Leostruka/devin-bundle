@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix(permission-gate): block gh -w/--web browser side-effect (#563)
 - fix: hookrun stderr gating, gate -w/hostname/date vectors, audit [39] scope, ledger guard boundary (#564)
+- fix(permission-gate): round-4 - bundled flags anchored, brace-expansion, attached args, ext-strip, auth -t (#566)
 - fix(permission-gate): quote-collapse normalization + per-verb dangerous args (#562)
 - fix(permission-gate): deny-by-default arg shapes; stdin pins; ledger prune guard (#561)
 - fix(audit): [39] restrict to real json.load call forms - docstring false positive (#560)

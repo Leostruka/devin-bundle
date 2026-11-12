@@ -1363,7 +1363,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "DC22E00EEC57299023C6CAA386FDFD6D99D53F9C2EBCD42496D393FA4CBA398E",
+      "export_hash": "306BA3D3B1C10511A7FF14506E2D9CC2EA785D2B7AD4864D3BA211B5C1DCA0BD",
       "exported_at": "2026-11-08T09:25:41.154386"
     },
     {
@@ -1699,7 +1699,7 @@
       "name": "permission-gate.py",
       "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
       "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
-      "export_hash": "C1BDB951DAAA3124EBFE74F87CC9EFE3E9447FD80C4E036B13B4E32F17F9C036"
+      "export_hash": "38014FF532D3B9C8317776662D2C0B9C7B70021A41A94F842DC514D9ADE6E7F5"
     }
   ],
   "script_count": 55,
