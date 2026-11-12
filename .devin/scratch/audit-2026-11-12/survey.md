@@ -27,3 +27,13 @@
 - laya proposal.json: authored decision artifact, correctly tracked -> non-defect.
 - ledgers/ root: 45-file legacy archive, deliberate -> non-defect (documented).
 - .devin internals otherwise CLEAN: apps/evals/rules/templates/gitignore/secrets/ci-refs all verified.
+
+## CLOSE-OUT (16:10)
+
+- All 6 audit PRs merged: #534 #538 #539 #540 #543 #545 (+ earlier #536 #537).
+- Serial-merge defect discovered + filed #547: export_hash staleness fails the egm newline test on every merge commit - burned 3 CI cycles, preempted 2.
+- Live install synced with -Force (installer requires it for divergent files); cmp-verified SYNCED.
+- Final state: pytest 2478 pass / 8 skip; audit.py 0 errors, 1 warn (ledger drift audit.py - benign).
+- Issues closed: #527 #528 #529 #530 #532 #533 #535 #542 #544.
+- Open: #547 (structural), #546 (hook timeouts), #541 (gate design), #531 (automated compat check), #431 (user decision).
+- Survey complete: 8 lifecycle events verified, 184 skills, 54 scripts, ~30 extensions, ~150 test files, 13 hook entry points, install/manifest/live triad, CI/local parity.
