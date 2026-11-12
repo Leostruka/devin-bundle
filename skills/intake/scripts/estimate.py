@@ -15,7 +15,7 @@ def estimate_diff(diff_path=None, repo='.'):
     else:
         result = subprocess.run(
             ['git', 'diff', '--stat'],
-            cwd=repo, capture_output=True, text=True, timeout=30
+            cwd=repo, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30
         )
         if result.returncode != 0:
             return 0, 0

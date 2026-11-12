@@ -146,6 +146,12 @@ def cmd_tools(source):
 
 
 def main():
+    _recfg = getattr(sys.stdin, "reconfigure", None)
+    if _recfg:
+        try:
+            _recfg(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description="MCP context-cost auditor")
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--config", metavar="PATH", help="mcp_config.json to analyze")

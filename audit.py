@@ -1140,7 +1140,7 @@ except Exception as _e:
 # Shared scanner for checks 36-38: yields .py files under extensions/
 # and scripts/, skipping vendored/runtime dirs.
 def _scan_py_files():
-    for _root in ('extensions', 'scripts'):
+    for _root in ('extensions', 'scripts', 'skills'):
         for _dirpath, _dirnames, _filenames in os.walk(_root):
             _dirnames[:] = [d for d in _dirnames
                             if d not in ('.venv', '__pycache__', 'tests')]

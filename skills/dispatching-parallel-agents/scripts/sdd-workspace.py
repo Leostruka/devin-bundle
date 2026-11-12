@@ -19,7 +19,7 @@ import os, sys, subprocess, argparse
 def git_toplevel():
     result = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"],
-        capture_output=True, text=True, check=True
+        capture_output=True, text=True, encoding="utf-8", errors="replace", check=True
     )
     return result.stdout.strip()
 

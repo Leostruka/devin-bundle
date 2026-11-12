@@ -14,27 +14,27 @@ def git_rev_parse(ref, verify=True):
         cmd.extend(["--verify", ref])
     else:
         cmd.append(ref)
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
     return result.stdout.strip()
 
 def git_log(base, head):
-    result = subprocess.run(["git", "log", "--oneline", f"{base}..{head}"], capture_output=True, text=True, check=True)
+    result = subprocess.run(["git", "log", "--oneline", f"{base}..{head}"], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
     return result.stdout
 
 def git_diff_stat(base, head):
-    result = subprocess.run(["git", "diff", "--stat", f"{base}..{head}"], capture_output=True, text=True, check=True)
+    result = subprocess.run(["git", "diff", "--stat", f"{base}..{head}"], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
     return result.stdout
 
 def git_diff(base, head):
-    result = subprocess.run(["git", "diff", "-U10", f"{base}..{head}"], capture_output=True, text=True, check=True)
+    result = subprocess.run(["git", "diff", "-U10", f"{base}..{head}"], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
     return result.stdout
 
 def git_rev_list_count(base, head):
-    result = subprocess.run(["git", "rev-list", "--count", f"{base}..{head}"], capture_output=True, text=True, check=True)
+    result = subprocess.run(["git", "rev-list", "--count", f"{base}..{head}"], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
     return int(result.stdout.strip())
 
 def git_short(ref):
-    result = subprocess.run(["git", "rev-parse", "--short", ref], capture_output=True, text=True, check=True)
+    result = subprocess.run(["git", "rev-parse", "--short", ref], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True)
     return result.stdout.strip()
 
 def main():
@@ -60,7 +60,7 @@ def main():
         out = args.outfile
     else:
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        workspace = subprocess.run([sys.executable, os.path.join(script_dir, "sdd-workspace.py"), args.plan_file], capture_output=True, text=True, check=True).stdout.strip()
+        workspace = subprocess.run([sys.executable, os.path.join(script_dir, "sdd-workspace.py"), args.plan_file], capture_output=True, text=True, encoding="utf-8", errors="replace", check=True).stdout.strip()
         short_base = git_short(args.base)
         short_head = git_short(args.head)
         out = os.path.join(workspace, f"review-{short_base}..{short_head}.diff")

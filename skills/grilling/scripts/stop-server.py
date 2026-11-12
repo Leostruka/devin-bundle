@@ -38,8 +38,7 @@ def command_has_server_id(pid, expected_id):
             result = subprocess.run(
                 ["wmic", "process", "where", f"ProcessId={pid}", "get", "CommandLine", "/value"],
                 capture_output=True,
-                text=True,
-                errors="replace",
+                text=True, encoding="utf-8", errors="replace",
             )
             if result.returncode == 0 and expected_arg in result.stdout:
                 return True
@@ -54,7 +53,7 @@ def command_has_server_id(pid, expected_id):
             result = subprocess.run(
                 ["ps", "-p", str(pid), "-o", "command="],
                 capture_output=True,
-                text=True,
+                text=True, encoding="utf-8",
                 errors="replace",
             )
             return result.returncode == 0 and expected_arg in result.stdout
@@ -77,8 +76,7 @@ def is_process_alive(pid):
             result = subprocess.run(
                 ["tasklist", "/FI", f"PID eq {pid}"],
                 capture_output=True,
-                text=True,
-                errors="replace",
+                text=True, encoding="utf-8", errors="replace",
             )
             return str(pid) in result.stdout
         else:

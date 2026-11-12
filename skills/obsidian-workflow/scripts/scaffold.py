@@ -42,7 +42,7 @@ def git_name(project_dir):
             ["git", "rev-parse", "--show-toplevel"],
             cwd=project_dir,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
         )
         if result.returncode == 0:
             return Path(result.stdout.strip()).name
@@ -468,6 +468,8 @@ def find_changed_files(project_dir, since_ts):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="Re-index wiki and flag stale pages.")
     parser.add_argument("--project-dir", required=True, help="Project directory to scan")
     parser.add_argument("--branch", help="Branch being indexed (recorded in manifest)")
@@ -1167,7 +1169,7 @@ views:
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
             cwd=project_dir,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
         )
         if result.returncode == 0:
             indexed_branch = result.stdout.strip()

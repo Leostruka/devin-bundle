@@ -77,7 +77,7 @@ def check_mermaid_parse(diagram_code):
         result = subprocess.run(
             ["node", PARSE_CHECK_JS, diagram_code.strip()],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
             timeout=15,
         )
         if result.returncode == 0:

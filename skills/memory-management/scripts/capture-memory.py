@@ -115,6 +115,12 @@ def install_helpers():
 
 
 def main():
+    _recfg = getattr(sys.stdin, "reconfigure", None)
+    if _recfg:
+        try:
+            _recfg(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
     p = argparse.ArgumentParser(description='Capture a project memory note')
     p.add_argument('--file', help='Path to note body file')
     p.add_argument('--title', required=True, help='Note title')

@@ -95,6 +95,8 @@ def brute(parts, alg, sig, wordlist):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="dma jwt_tool (offline)")
     ap.add_argument("token")
     ap.add_argument("--none", action="store_true",

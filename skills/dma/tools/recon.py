@@ -109,6 +109,8 @@ def resolve_live(names, workers=8):
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description="dma recon passivo (zero pacote no alvo)")
     ap.add_argument("--domain", required=True)
     ap.add_argument("--out", default=os.path.join(".devin/scratch", "dma", "recon"))
