@@ -1493,7 +1493,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "5405c0d3e9d350feb591eb751879e4f43d681d280d40844c04c07bee79d2731d",
+      "export_hash": "6b24fc878d98bffc5af08a3d2cc99442edb683b7606bf79f5534a46369e8b45c",
       "exported_at": "2026-11-08T08:50:55.845199"
     },
     {
@@ -1620,7 +1620,7 @@
     {
       "name": "spec-consistency.py",
       "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
-      "export_hash": "956bdd2b91211da7e98f94b79e98e85857a3c2cf48e96f89983ba2c1625f2ea1",
+      "export_hash": "7825cc13936a19c0480adbae9387f6bfa31f90d268553f524d7c2321b8df1d9a",
       "exported_at": "2026-09-26T18:26:15.829557"
     },
     {
