@@ -11,3 +11,8 @@
 | F | 15:00-15:45 | Workflows/CI, docs consistency, subagent profiles |
 | - | 15:45-16:45 | Issues + survey doc + fixes triviais in-loop |
 | - | 16:45-17:00 | Closeout: audit final, sync, relatório |
+
+## Loop 11:40-12:00
+
+- operate-spline removal shipped (#540); issues #541 (PermissionRequest), #542 (test hygiene)
+- Next: fix #542 cheap items (skip guards -> hard imports, fixture SessionEnd, rename, count parse)
