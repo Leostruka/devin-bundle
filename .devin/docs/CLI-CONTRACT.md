@@ -178,6 +178,9 @@ contract and hook-runtime infrastructure now carries v2.
   unstamped.
 - `busybar`: no stdout-JSON emitters (`push.py` json.dumps is an HTTP
   payload, `listen.py` is a daemon listener).
+- `system-control/sc_bench.py`: internal microbenchmark over the
+  sc_* internals (perf numbers dict, `{"ok": false}` exits 2). Not an
+  agent-facing tool - same separate-contract domain as sc_cli.
 - `--detail brief|compact|full`: implemented on `stock-footage search`
   (default `full`). Note `full` output also gained an additive
   `result.detail` echo key - consumers ignoring unknown keys are

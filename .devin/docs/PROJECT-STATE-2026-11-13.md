@@ -2,11 +2,11 @@
 
 ## Position
 
-Main `42743f8`+ (origin synced). Bundle `v3.22.0` released and tagged
-(v3.21.0 shipped earlier same day; v3.22.0 cuts the full envelope arc).
-Live install: 1449/1449 files Current, 0 drift; live probe reports
-`answered_by.bundle=3.22.0`. audit.py 50/50, 0 errors, 0 warnings.
-pytest 2589 pass / 7 skip.
+Main `3d9e70d` (origin synced, CI + pages green). Bundle `v3.22.0`
+released and tagged (v3.21.0 shipped earlier same day; v3.22.0 cuts
+the full envelope arc). Live install: 1449/1449 files Current,
+0 drift; live probe reports `answered_by.bundle=3.22.0`.
+audit.py 50/50, 0 errors, 0 warnings. pytest 2761 pass / 74 skip.
 
 ## Batch-9 research (3 links deep-dived)
 
@@ -23,8 +23,9 @@ pytest 2589 pass / 7 skip.
 Every agent-facing JSON CLI now emits `api_version: 2` +
 `meta.answered_by {bundle, wrapper}`; bundle version resolves from the
 nearest ancestor `manifest.json` with a `"name"` marker, honest `""`
-on malformed/missing manifests. 86 deterministic subprocess probes in
-`tests/test_envelope_contract_v2.py`.
+on malformed/missing manifests. 84 deterministic subprocess probes in
+`tests/test_envelope_contract_v2.py` plus dedicated off-runner cases
+(fold_store stdin/tmp probe, standalone-import checks).
 
 Waves: 11 dedicated wrappers -> scrape-tools/asr + `code-graph
 --envelope` opt-in -> full computer-use surface (23 files) ->
@@ -38,6 +39,27 @@ Probe/CI-found crash fixes (8): metadata.py, plan_check.py
 (argv IndexError), look_ledger.py, ns.py resume, fit_calibration.py,
 capture_eval.py (unreadable input), api-bridge doctor + models
 (silent death on missing devin via `_devin_path` sys.exit to stderr).
+
+### Dedup wave + independent review (#610, HEAD 3d9e70d)
+
+~70 byte-identical envelope trios collapsed into 8 per-dir shared
+modules: `cu_envelope`, `laya_envelope`, `asr_envelope`,
+`ai_envelope`, `media_envelope`, `remotion_envelope`,
+`forensics_envelope`, `design_envelope` (wrapper uniform per dir) and
+`scripts/bundle_envelope.py` exposing `bind(wrapper)` for per-file
+names (13 tools). Independent review caught a critical import-order
+bug: spec_from_file_location loaders don't put the script's dir on
+sys.path, so `from bundle_envelope import bind` relied on
+test-collection pollution - all 13 scripts now self-insert their dir
+first; `_hookrun`, `mcp_server`, `cu_taskrunner`, `camera_blocking`
+loaders hardened the same way. `test_cli_contract_doc.py` pins
+CLI-CONTRACT.md to the modules it names; both docs mapped in
+`.devin/validation-contracts.json`. Full sweep: every remaining
+`print(json.dumps` is either stamped or a documented exclusion
+(hook-protocol, bare arrays, sc_bench benchmark, tests/fixtures).
+
+Metrics: 2761 passed / 74 skipped at 3d9e70d; audit 50/50;
+ledger 1449 files / 0 drift; CI + pages green.
 
 ## Also landed
 
