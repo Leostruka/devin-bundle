@@ -1,0 +1,798 @@
+﻿<#
+.SYNOPSIS
+  Devin bundle installer (Windows / PowerShell).
+  Restores the FULL Devin CLI setup to the correct config locations.
+
+.DESCRIPTION
+  Installs all bundle components:
+    - AGENTS.md          → %APPDATA%\devin\AGENTS.md
+    - agents\*.md        → %APPDATA%\devin\agents\
+    - skills\*           → %APPDATA%\devin\skills\
+    - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
+    - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
+    - scripts\*          → %APPDATA%\devin\scripts\
+    - extensions\*       → %APPDATA%\devin\extensions\ (+ .venv for computer-use/scrape-tools/laya-tools, + rust-core cargo build)
+    - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
+    - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
+
+  Behavior:
+    - Files that already exist and are identical → skipped
+    - Files that exist and differ → skipped unless -Force (use -Backup to save first)
+    - config.json: MERGE by default (preserve local org_id, apply bundle model/theme/etc.)
+      Use -Force to overwrite completely.
+    - credentials.toml: only installed with -RestoreSecrets. MASKED values are skipped.
+    - mcp_config.json: skipped if env values are MASKED (can't restore tokens).
+
+.PARAMETER DryRun
+  Show what would happen without writing anything.
+
+.PARAMETER Force
+  Overwrite existing files that differ. For config.json, overwrites completely (no merge).
+
+.PARAMETER Backup
+  Before overwriting, save the existing file to %USERPROFILE%\.devin-import-backup-<timestamp>\.
+
+.PARAMETER RestoreSecrets
+  Install credentials.toml with real secrets. Only works if export was done with -NoMask.
+  MASKED values are skipped with a warning.
+
+.EXAMPLE
+  .\install.ps1                    # install everything (skip existing, merge config)
+  .\install.ps1 -DryRun            # show what would happen
+  .\install.ps1 -Force -Backup     # overwrite everything, backup first
+  .\install.ps1 -RestoreSecrets    # also install credentials.toml (if unmasked)
+#>
+[CmdletBinding()]
+param(
+  [switch]$DryRun,
+  [switch]$Force,
+  [switch]$Backup,
+  [switch]$RestoreSecrets
+)
+
+$ErrorActionPreference = "Stop"
+$bundleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$devinHome  = Join-Path $env:APPDATA "devin"
+$legacyConfigHome = Join-Path $env:USERPROFILE ".config\devin"
+$backupDir  = Join-Path $env:USERPROFILE ".devin-import-backup-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+
+# Bundle source paths
+$rulesSrc   = Join-Path $bundleRoot "AGENTS.md"
+$agentsSrc  = Join-Path $bundleRoot "agents"
+$skillsSrc  = Join-Path $bundleRoot "skills"
+$configSrc  = Join-Path $bundleRoot "config.json"
+$scriptsSrc = Join-Path $bundleRoot "scripts"
+$dataSrc    = Join-Path $bundleRoot "data"
+$mcpSrc     = Join-Path $bundleRoot "mcp_config.json"
+$credsSrc   = Join-Path $bundleRoot "credentials.toml"
+$devinSrc   = Join-Path $bundleRoot ".devin"
+$extSrc     = Join-Path $bundleRoot "extensions"
+
+# Destination paths
+$rulesDst   = Join-Path $devinHome "AGENTS.md"
+$agentsDst  = Join-Path $devinHome "agents"
+$skillsDst  = Join-Path $devinHome "skills"
+$configDst  = Join-Path $devinHome "config.json"
+$scriptsDst = Join-Path $devinHome "scripts"
+$dataDst    = Join-Path $devinHome "data"
+$mcpDst     = Join-Path $devinHome "mcp_config.json"
+$credsDst   = Join-Path $devinHome "credentials.toml"
+$docsDst    = Join-Path $devinHome "docs"
+$extDst     = Join-Path $devinHome "extensions"
+
+$script:Copied = 0
+$script:Skipped = 0
+$script:Overwritten = 0
+$script:Backed = 0
+$script:Merged = 0
+
+function Write-Step($msg) { Write-Host "`n[*] $msg" -ForegroundColor Cyan }
+function Write-Ok($msg)   { Write-Host "    [+] $msg" -ForegroundColor Green }
+function Write-Skip($msg) { Write-Host "    [~] $msg" -ForegroundColor Yellow }
+function Write-Warn($msg) { Write-Host "    [!] $msg" -ForegroundColor Yellow }
+function Write-Err($msg)  { Write-Host "    [x] $msg" -ForegroundColor Red }
+
+# Preflight: fail fast on hosts missing core cmdlets (broken PS5.1 module
+# sets) instead of dying mid-install (issue #412).
+$requiredCmdlets = 'Get-ChildItem','Copy-Item','Get-Content','Set-Content','Join-Path','Test-Path','Resolve-Path','Get-Date','Write-Host','Get-Command'
+$missingCmdlets = $requiredCmdlets | Where-Object { -not (Get-Command $_ -ErrorAction SilentlyContinue) }
+if ($missingCmdlets) {
+  Write-Host "[x] missing required cmdlets: $($missingCmdlets -join ', ')" -ForegroundColor Red
+  Write-Host "    install.ps1 requires Windows PowerShell 5.1+ or pwsh 7+ with working inbox modules." -ForegroundColor Red
+  exit 1
+}
+
+function Get-FileHash256($path) {
+  if (-not (Test-Path $path)) { return $null }
+  $sha = [Security.Cryptography.SHA256]::Create()
+  try {
+    return ([BitConverter]::ToString($sha.ComputeHash([IO.File]::ReadAllBytes($path))) -replace '-','')
+  } finally { $sha.Dispose() }
+}
+
+function Get-FolderHash($path, $exclude = $null) {
+  if (-not (Test-Path $path)) { return $null }
+  $base = (Resolve-Path $path).Path
+  $files = Get-ChildItem $base -Recurse -File | Sort-Object FullName
+  if ($exclude) { $files = $files | Where-Object { $_.FullName -notmatch $exclude } }
+  if ($files.Count -eq 0) { return "" }
+  # hash + relative path per line, mirroring `sha256sum` output in the
+  # Bash dir_hash: a pure rename must change the folder hash.
+  $hashes = $files | ForEach-Object {
+    $rel = $_.FullName.Substring($base.Length).TrimStart('\','/') -replace '\\','/'
+    (Get-FileHash256 $_.FullName) + "  ./" + $rel
+  }
+  return ($hashes -join "`n")
+}
+
+function Backup-File($path) {
+  if (-not (Test-Path $path)) { return }
+  $rel = $path.Replace($env:APPDATA, "").TrimStart('\', '/')
+  $bPath = if ($rel) { Join-Path $backupDir $rel } else { $backupDir }
+  New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force -ErrorAction Stop | Out-Null
+  if ($DryRun) {
+    Write-Skip "backup: $path → $bPath"
+  } else {
+    Copy-Item $path $bPath -Force -ErrorAction Stop
+  }
+  $script:Backed++
+}
+
+function Backup-Dir($path) {
+  if (-not (Test-Path $path)) { return }
+  $rel = $path.Replace($env:USERPROFILE, "").TrimStart('\', '/')
+  $bPath = if ($rel) { Join-Path $backupDir $rel } else { $backupDir }
+  New-Item -ItemType Directory -Path (Split-Path $bPath -Parent) -Force -ErrorAction Stop | Out-Null
+  if ($DryRun) {
+    Write-Skip "backup: $path → $bPath"
+  } else {
+    Copy-Item $path $bPath -Recurse -Force -ErrorAction Stop
+  }
+  $script:Backed++
+}
+
+function Backup-Or-Abort($path, $label) {
+  if (-not $Backup) { return }
+  try {
+    if ((Test-Path $path -PathType Container)) { Backup-Dir $path } else { Backup-File $path }
+  }
+  catch {
+    Write-Warn "$label - backup failed; aborting install"
+    exit 1
+  }
+}
+
+function Install-File($src, $dst, $label) {
+  if (-not (Test-Path $src)) {
+    Write-Skip "$label (not in bundle)"
+    return
+  }
+  $pretty = $dst.Replace($env:APPDATA, "%APPDATA%\devin")
+  if (Test-Path $dst) {
+    $srcHash = Get-FileHash256 $src
+    $dstHash = Get-FileHash256 $dst
+    if ($srcHash -eq $dstHash) {
+      Write-Ok "$label (unchanged)"
+      $script:Skipped++
+      return
+    }
+    if (-not $Force) {
+      Write-Warn "$label — exists and differs (use -Force to overwrite)"
+      $script:Skipped++
+      return
+    }
+    Backup-Or-Abort $dst $label
+    if ($DryRun) {
+      Write-Skip "would overwrite $label"
+    } else {
+      Copy-Item $src $dst -Force
+      Write-Ok "overwrote $label"
+    }
+    $script:Overwritten++
+  } else {
+    if ($DryRun) {
+      Write-Skip "would install $label"
+    } else {
+      New-Item -ItemType Directory -Path (Split-Path $dst -Parent) -Force | Out-Null
+      Copy-Item $src $dst -Force
+      Write-Ok "installed $label"
+    }
+    $script:Copied++
+  }
+}
+
+# Copy a directory tree, skipping paths matching $exclude (regex on FullName).
+# When $exclude is null, falls back to a plain recursive copy.
+function Copy-FilteredDir($src, $dst, $exclude = $null) {
+  if (-not $exclude) {
+    Copy-Item $src $dst -Recurse -Force
+    return
+  }
+  New-Item -ItemType Directory -Force -Path $dst | Out-Null
+  Get-ChildItem $src -Recurse -File | Where-Object { $_.FullName -notmatch $exclude } | ForEach-Object {
+    $rel = $_.FullName.Substring($src.Length).TrimStart('\', '/')
+    $target = Join-Path $dst $rel
+    New-Item -ItemType Directory -Force -Path (Split-Path $target -Parent) | Out-Null
+    Copy-Item $_.FullName $target -Force
+  }
+}
+
+function Install-SkillDir($src, $dst, $name, $exclude = $null) {
+  if (Test-Path $dst) {
+    $srcHash = Get-FolderHash $src $exclude
+    $dstHash = Get-FolderHash $dst $exclude
+    if ($srcHash -eq $dstHash) {
+      $script:Skipped++
+      return "skip"
+    }
+    if (-not $Force) {
+      $script:Skipped++
+      return "diff"
+    }
+    Backup-Or-Abort $dst "skills/$name"
+    if ($DryRun) {
+      return "would-update"
+    }
+    Remove-Item $dst -Recurse -Force
+    Copy-FilteredDir $src $dst $exclude
+    $script:Overwritten++
+    return "updated"
+  } else {
+    if ($DryRun) {
+      return "would-install"
+    }
+    Copy-FilteredDir $src $dst $exclude
+    $script:Copied++
+    return "installed"
+  }
+}
+
+function ConvertTo-Hashtable($obj) {
+  if ($obj -is [System.Collections.IDictionary]) {
+    $h = [ordered]@{};
+    foreach ($k in $obj.Keys) { $h[$k] = ConvertTo-Hashtable $obj[$k] }
+    return $h
+  }
+  if ($obj -is [array] -or ($obj -is [System.Collections.IEnumerable] -and -not ($obj -is [string]))) {
+    return @($obj | ForEach-Object { ConvertTo-Hashtable $_ })
+  }
+  if ($obj -is [System.Management.Automation.PSCustomObject]) {
+    $h = [ordered]@{};
+    foreach ($p in $obj.PSObject.Properties) { $h[$p.Name] = ConvertTo-Hashtable $p.Value }
+    return $h
+  }
+  return $obj
+}
+
+function Merge-Hashtables($base, $override) {
+  $result = [ordered]@{};
+  # Start with all base keys
+  foreach ($k in $base.Keys) { $result[$k] = $base[$k] }
+  # Apply override recursively
+  foreach ($k in $override.Keys) {
+    if ($result.Contains($k)) {
+      $b = $result[$k]
+      $o = $override[$k]
+      if ($b -is [System.Collections.IDictionary] -and $o -is [System.Collections.IDictionary]) {
+        $result[$k] = Merge-Hashtables $b $o
+      } else {
+        $result[$k] = $o
+      }
+    } else {
+      $result[$k] = $override[$k]
+    }
+  }
+  return $result
+}
+
+function Merge-ConfigJson($src, $dst) {
+  # Merge bundle config into local config, preserving local org_id
+  try {
+    $bundleConfig = Get-Content $src -Raw | ConvertFrom-Json
+  } catch {
+    Write-Err "bundle config.json is invalid JSON — skipping"
+    return
+  }
+
+  if (-not (Test-Path $dst)) {
+    # No local config — just copy bundle with {{APPDATA}} expanded
+    if ($DryRun) { Write-Skip "would install config.json" }
+    else {
+      $content = Get-Content $src -Raw
+      $content = $content -replace '\{\{APPDATA\}\}', ($env:APPDATA -replace '\\', '/')
+      $utf8NoBom = [Text.UTF8Encoding]::new($false)
+      [IO.File]::WriteAllText($dst, $content, $utf8NoBom)
+      Write-Ok "installed config.json ({{APPDATA}} expanded)"
+    }
+    $script:Copied++
+    return
+  }
+
+  try {
+    $localConfig = Get-Content $dst -Raw | ConvertFrom-Json
+  } catch {
+    Write-Warn "local config.json is invalid JSON — using -Force behavior"
+    if ($Force) { Install-File $src $dst "config.json" }
+    return
+  }
+
+  # If identical, skip
+  $srcHash = Get-FileHash256 $src
+  $dstHash = Get-FileHash256 $dst
+  if ($srcHash -eq $dstHash) {
+    Write-Ok "config.json (unchanged)"
+    $script:Skipped++
+    return
+  }
+
+  if ($Force) {
+    Backup-Or-Abort $dst "config.json"
+    if ($DryRun) { Write-Skip "would overwrite config.json completely" }
+    else {
+      $content = Get-Content $src -Raw
+      $content = $content -replace '\{\{APPDATA\}\}', ($env:APPDATA -replace '\\', '/')
+      $utf8NoBom = [Text.UTF8Encoding]::new($false)
+      [IO.File]::WriteAllText($dst, $content, $utf8NoBom)
+      Write-Ok "overwrote config.json (complete, {{APPDATA}} expanded)"
+    }
+    $script:Overwritten++
+    return
+  }
+
+  # Merge: bundle as defaults, local settings win (e.g. theme, legacy_terminal).
+  # The bundle always ships org_id as MASKED, so a real local org_id is kept.
+  if ($DryRun) {
+    Write-Skip "would merge config.json (preserve local settings)"
+    $script:Merged++
+    return
+  }
+
+  Backup-Or-Abort $dst "config.json"
+
+  $bundleHt = ConvertTo-Hashtable $bundleConfig
+  $localHt = ConvertTo-Hashtable $localConfig
+  $merged = Merge-Hashtables $bundleHt $localHt
+
+  $json = ($merged | ConvertTo-Json -Depth 10) -replace "`r`n", "`n"
+  # Expand {{APPDATA}} placeholder to the real path (forward slashes)
+  $json = $json -replace '\{\{APPDATA\}\}', ($env:APPDATA -replace '\\', '/')
+  $utf8NoBom = [Text.UTF8Encoding]::new($false)
+  [IO.File]::WriteAllText($dst, $json, $utf8NoBom)
+  Write-Ok "merged config.json (preserved local settings, {{APPDATA}} expanded)"
+  $script:Merged++
+}
+
+function Test-HasMasked($path) {
+  if (-not (Test-Path $path)) { return $false }
+  $content = Get-Content $path -Raw
+  return $content -match "MASKED"
+}
+
+# --- Strip BOM from file (if present) ---
+# BOM (EF BB BF) in YAML frontmatter can prevent parsers from recognizing
+# the `---` delimiter, causing model/name/allowed-tools fields to be ignored.
+function Invoke-StripBom($path) {
+  if (-not (Test-Path $path)) { return }
+  $bytes = [IO.File]::ReadAllBytes($path)
+  if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+    if ($DryRun) {
+      Write-Skip "would strip BOM from $(Split-Path $path -Leaf)"
+    } else {
+      $content = [Text.Encoding]::UTF8.GetString($bytes, 3, $bytes.Length - 3)
+      $utf8NoBom = [Text.UTF8Encoding]::new($false)
+      [IO.File]::WriteAllText($path, $content, $utf8NoBom)
+      Write-Ok "stripped BOM from $(Split-Path $path -Leaf)"
+    }
+  }
+}
+
+# --- Case sensitivity detection ---
+# Returns $true if case-sensitive, $false if case-insensitive.
+function Test-CaseSensitive($path) {
+  $testName = ".__casetest_$(Get-Random)"
+  $testFile = Join-Path $path $testName
+  try {
+    Set-Content -Path $testFile -Value "x" -ErrorAction Stop
+    $upperFile = Join-Path $path $testName.ToUpper()
+    $exists = Test-Path $upperFile
+    Remove-Item $testFile -Force -ErrorAction SilentlyContinue
+    return -not $exists
+  } catch {
+    return $true  # assume case-sensitive on error
+  }
+}
+
+# --- Dedup AGENTS.md case variants ---
+# Removes any case-variant file (agents.md, Agents.MD, ...) that is not the
+# exact canonical AGENTS.md, on every filesystem. Enumeration (not Test-Path)
+# catches real second entries on DrvFs/per-dir case-sensitive NTFS, where a
+# case-insensitive probe would report only one file. On plain case-insensitive
+# FSs where no variant exists, still warns about the Devin CLI duplicate
+# listing (known bug, not fixable from filesystem level).
+function Invoke-DedupAgentsMd($dir, $label) {
+  $canonical = Join-Path $dir "AGENTS.md"
+  if (-not (Test-Path $canonical)) { return }
+
+  # Enumerate real directory entries: DrvFs (/mnt/c) and per-directory
+  # case-sensitive NTFS can hold BOTH agents.md and AGENTS.md as separate
+  # files even when the default Win32 lookup is case-insensitive. Any entry
+  # that is not the exact canonical casing is a duplicate.
+  $variants = @(Get-ChildItem $dir -File -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -ieq 'agents.md' -and $_.Name -cne 'AGENTS.md' })
+  foreach ($v in $variants) {
+    Write-Warn "${label}: found case-variant $($v.Name) duplicate - removing"
+    if ($DryRun) {
+      Write-Skip "would remove case-variant $($v.Name)"
+    } else {
+      Remove-Item $v.FullName -Force -ErrorAction SilentlyContinue
+      if (Test-Path $v.FullName) {
+        Write-Warn "${label}: could not remove case-variant $($v.Name)"
+      } else {
+        Write-Ok "${label}: removed case-variant $($v.Name) (kept AGENTS.md)"
+      }
+    }
+  }
+
+  if (-not (Test-CaseSensitive $dir) -and $variants.Count -eq 0) {
+    Write-Skip "${label}: case-insensitive FS — Devin CLI may list AGENTS.md twice (known bug, not fixable here)"
+  }
+}
+
+# --- Remove legacy ~/.config/devin on Windows ---
+# The Devin CLI on Windows uses %APPDATA%\devin as the user config home.
+# A stale ~/.config/devin directory from older installs or other tools causes
+# confusion, so the installer removes it when -Force is used.
+function Remove-LegacyConfig() {
+  if (-not (Test-Path $legacyConfigHome)) { return }
+
+  Write-Warn "legacy config directory found at $legacyConfigHome"
+  if (-not $Force) {
+    Write-Warn "use -Force to remove it and use %APPDATA%\devin instead"
+    return
+  }
+
+  Backup-Or-Abort $legacyConfigHome "legacy config dir"
+
+  if ($DryRun) {
+    Write-Skip "would remove legacy config directory $legacyConfigHome"
+  } else {
+    Remove-Item $legacyConfigHome -Recurse -Force
+    Write-Ok "removed legacy config directory $legacyConfigHome"
+  }
+}
+
+# --- Header ---
+
+Write-Host "================================================" -ForegroundColor DarkGray
+Write-Host "  Devin Bundle Installer (Full Setup)" -ForegroundColor White
+Write-Host "  Source : $bundleRoot" -ForegroundColor DarkGray
+Write-Host "  Target : $devinHome" -ForegroundColor DarkGray
+if ($DryRun) { Write-Host "  Mode   : DRY-RUN" -ForegroundColor Yellow }
+if ($Force)   { Write-Host "  Force  : YES" -ForegroundColor DarkGray }
+if ($Backup)  { Write-Host "  Backup : YES ($backupDir)" -ForegroundColor DarkGray }
+if ($RestoreSecrets) { Write-Host "  Secrets: RESTORE" -ForegroundColor DarkGray }
+Write-Host "================================================" -ForegroundColor DarkGray
+
+# Validate bundle has required files
+if (-not (Test-Path $rulesSrc)) { throw "AGENTS.md not found in bundle ($bundleRoot)" }
+if (-not (Test-Path $skillsSrc)) { throw "skills/ folder not found in bundle ($bundleRoot)" }
+
+# Ensure target dirs
+Write-Step "Ensure target directories"
+if (-not $DryRun) {
+  New-Item -ItemType Directory -Force -Path $devinHome | Out-Null
+  New-Item -ItemType Directory -Force -Path $skillsDst | Out-Null
+  New-Item -ItemType Directory -Force -Path $agentsDst | Out-Null
+  New-Item -ItemType Directory -Force -Path $scriptsDst | Out-Null
+  Write-Ok "$devinHome"
+} else {
+  Write-Skip "would create target dirs"
+}
+
+# --- Remove legacy ~/.config/devin (Windows) ---
+Write-Step "Remove legacy ~/.config/devin (requires -Force)"
+Remove-LegacyConfig
+
+# --- 1. AGENTS.md ---
+Write-Step "Install AGENTS.md"
+Install-File -src $rulesSrc -dst $rulesDst -label "AGENTS.md"
+
+# --- 1b. Dedup AGENTS.md case variants (Windows/WSL bug workaround) ---
+Write-Step "Dedup AGENTS.md case variants"
+Invoke-DedupAgentsMd $devinHome "target"
+Invoke-DedupAgentsMd $bundleRoot "bundle"
+
+# --- 2. agents/ ---
+Write-Step "Install agent profiles"
+if (Test-Path $agentsSrc) {
+  $agentFiles = Get-ChildItem $agentsSrc -Filter "*.md"
+  foreach ($agentFile in $agentFiles) {
+    Install-File -src $agentFile.FullName -dst (Join-Path $agentsDst $agentFile.Name) -label $agentFile.Name
+  }
+} else {
+  Write-Skip "agents/ not in bundle"
+}
+
+# --- 2b. Strip BOM from agent files (YAML frontmatter safety) ---
+Write-Step "Strip BOM from agent files"
+$agentFiles = Get-ChildItem $agentsDst -Filter "*.md" -ErrorAction SilentlyContinue
+if ($agentFiles) {
+  foreach ($af in $agentFiles) {
+    Invoke-StripBom $af.FullName
+  }
+} else {
+  Write-Skip "no agent files to check"
+}
+
+# --- 3. skills/ ---
+Write-Step "Install skills"
+if (Test-Path $skillsSrc) {
+  $skillDirs = Get-ChildItem $skillsSrc -Directory
+  $installed = 0; $updated = 0; $skipped = 0; $diff = 0
+  foreach ($skill in $skillDirs) {
+    # Never ship Python bytecode caches inside skill dirs.
+    $result = Install-SkillDir -src $skill.FullName -dst (Join-Path $skillsDst $skill.Name) -name $skill.Name -exclude '\\__pycache__\\|\.pyc$'
+    switch ($result) {
+      "installed"      { $installed++; Write-Ok "$($skill.Name) (installed)" }
+      "updated"        { $updated++; Write-Ok "$($skill.Name) (updated)" }
+      "skip"           { $skipped++ }
+      "diff"           { $diff++; Write-Warn "$($skill.Name) — differs (use -Force)" }
+      "would-install"  { Write-Skip "would install $($skill.Name)" }
+      "would-update"   { Write-Skip "would update $($skill.Name)" }
+    }
+  }
+  Write-Host "    → installed: $installed | updated: $updated | unchanged: $skipped | differs: $diff (total: $($skillDirs.Count))" -ForegroundColor DarkGray
+}
+
+# --- 4. config.json (merge) ---
+Write-Step "Install config.json (merge — preserves local org_id)"
+if (Test-Path $configSrc) {
+  Merge-ConfigJson -src $configSrc -dst $configDst
+} else {
+  Write-Skip "config.json not in bundle"
+}
+
+# --- 4a. user hooks rendered from hooks.v1.json (single source) ---
+# hooks.v1.json is authored with project-relative `python scripts/...` commands;
+# user-level hooks need absolute paths — render and inject into config.json.hooks.
+$hooksV1 = Join-Path $bundleRoot "hooks.v1.json"
+$renderHooks = Join-Path $bundleRoot "scripts\render-user-hooks.py"
+if ((Test-Path $hooksV1) -and (Test-Path $renderHooks) -and (Test-Path $configDst)) {
+  if ($DryRun) {
+    Write-Skip "would render config.json hooks from hooks.v1.json"
+  } elseif (Get-Command python -ErrorAction SilentlyContinue) {
+    $renderOut = & python $renderHooks $devinHome --merge $configDst 2>&1
+    if ($LASTEXITCODE -eq 0) {
+      Write-Ok "config.json hooks rendered from hooks.v1.json"
+      $renderOut | Where-Object { $_ } | ForEach-Object {
+        Write-Host "    $_" -ForegroundColor DarkGray
+      }
+    } else {
+      Write-Warn "render-user-hooks.py failed (exit $LASTEXITCODE) - hooks not updated"
+      $tail = @($renderOut | Where-Object { $_ } | Select-Object -Last 5)
+      foreach ($line in $tail) {
+        Write-Host "    $line" -ForegroundColor DarkGray
+      }
+    }
+  } else {
+    Write-Warn "python not found — config.json hooks not rendered"
+  }
+}
+
+# --- 5. scripts/ ---
+Write-Step "Install scripts/ (hook scripts)"
+if (Test-Path $scriptsSrc) {
+  $scriptFiles = Get-ChildItem $scriptsSrc -File
+  foreach ($sf in $scriptFiles) {
+    Install-File -src $sf.FullName -dst (Join-Path $scriptsDst $sf.Name) -label "scripts/$($sf.Name)"
+  }
+} else {
+  Write-Skip "scripts/ not in bundle"
+}
+
+# --- 5a. data/ (model context windows, thresholds) ---
+Write-Step "Install data/ (model context windows)"
+if (Test-Path $dataSrc) {
+  $dataFiles = Get-ChildItem $dataSrc -File
+  foreach ($df in $dataFiles) {
+    Install-File -src $df.FullName -dst (Join-Path $dataDst $df.Name) -label "data/$($df.Name)"
+  }
+} else {
+  Write-Skip "data/ not in bundle"
+}
+
+# --- 6. mcp_config.json ---
+Write-Step "Install mcp_config.json"
+if (Test-Path $mcpSrc) {
+  if (Test-HasMasked $mcpSrc) {
+    Write-Warn "mcp_config.json has MASKED values — tokens cannot be restored"
+    Write-Host "    Install the file structure anyway? Use -Force to overwrite with masked version." -ForegroundColor DarkGray
+    if ($Force) {
+      Install-File -src $mcpSrc -dst $mcpDst -label "mcp_config.json (masked)"
+    } else {
+      Write-Skip "mcp_config.json (masked — use -Force to install structure, tokens need manual restore)"
+    }
+  } else {
+    Install-File -src $mcpSrc -dst $mcpDst -label "mcp_config.json"
+  }
+} else {
+  Write-Skip "mcp_config.json not in bundle"
+}
+
+# --- 7. credentials.toml ---
+Write-Step "Install credentials.toml"
+if (Test-Path $credsSrc) {
+  if (-not $RestoreSecrets) {
+    Write-Skip "credentials.toml — use -RestoreSecrets to install"
+  } elseif (Test-HasMasked $credsSrc) {
+    Write-Warn "credentials.toml has MASKED values — cannot restore real secrets"
+    Write-Host "    Re-export with -NoMask on the source machine, then re-install with -RestoreSecrets." -ForegroundColor DarkGray
+  } else {
+    Install-File -src $credsSrc -dst $credsDst -label "credentials.toml (REAL SECRETS)"
+    Write-Warn "credentials.toml installed with real secrets — keep this machine secure"
+  }
+} else {
+  Write-Skip "credentials.toml not in bundle"
+}
+
+# --- 7b. docs/ (bundle documentation; sources dissolved under .devin/) ---
+Write-Step "Install docs/ (bundle documentation)"
+$docsParts = @(
+  @{ src = (Join-Path $devinSrc "docs");      dst = $docsDst },
+  @{ src = (Join-Path $devinSrc "plans");     dst = (Join-Path $docsDst "plans") },
+  @{ src = (Join-Path $devinSrc "templates"); dst = (Join-Path $docsDst "templates") }
+)
+$docsSeen = $false
+foreach ($part in $docsParts) {
+  if (-not (Test-Path $part.src)) { continue }
+  $docsSeen = $true
+  $result = Install-SkillDir -src $part.src -dst $part.dst -name ("docs/" + (Split-Path $part.src -Leaf))
+  switch ($result) {
+    "installed"      { Write-Ok ("docs/" + (Split-Path $part.src -Leaf) + " (installed)") }
+    "updated"        { Write-Ok ("docs/" + (Split-Path $part.src -Leaf) + " (updated)") }
+    "skip"           { Write-Skip ("docs/" + (Split-Path $part.src -Leaf) + " (unchanged)") }
+    "diff"           { Write-Warn ("docs/" + (Split-Path $part.src -Leaf) + " — exists and differs (use -Force)") }
+    "would-install"  { Write-Skip ("would install docs/" + (Split-Path $part.src -Leaf)) }
+    "would-update"   { Write-Skip ("would update docs/" + (Split-Path $part.src -Leaf)) }
+  }
+}
+if (-not $docsSeen) { Write-Skip ".devin/{docs,plans,templates} not in bundle" }
+
+# --- 8. extensions/ (local tools, e.g. computer-use) ---
+Write-Step "Install extensions/ (local tools)"
+if (Test-Path $extSrc) {
+  $extDirs = Get-ChildItem $extSrc -Directory
+  foreach ($ext in $extDirs) {
+    # Empty extension dirs (untracked placeholders) must not report "installed"
+    if (-not (Get-ChildItem $ext.FullName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1)) {
+      Write-Skip "extensions/$($ext.Name) is empty"
+      continue
+    }
+    $result = Install-SkillDir -src $ext.FullName -dst (Join-Path $extDst $ext.Name) -name $ext.Name -exclude '\.venv\\|\\__pycache__\\|\\target\\|\.(pyd|so|dylib|pyc)$'
+    switch ($result) {
+      "installed"      { Write-Ok "extensions/$($ext.Name) (installed)" }
+      "updated"        { Write-Ok "extensions/$($ext.Name) (updated)" }
+      "skip"           { Write-Skip "extensions/$($ext.Name) (unchanged)" }
+      "diff"           { Write-Warn "extensions/$($ext.Name) — differs (use -Force)" }
+      "would-install"  { Write-Skip "would install extensions/$($ext.Name)" }
+      "would-update"   { Write-Skip "would update extensions/$($ext.Name)" }
+    }
+  }
+
+  # --- 8a. extension Python deps (isolated venv, no system/user-site) ---
+  $pyCmd = $null
+  foreach ($cand in @("python", "python3", "py")) {
+    if (Get-Command $cand -ErrorAction SilentlyContinue) { $pyCmd = $cand; break }
+  }
+  foreach ($extName in @("computer-use", "scrape-tools", "laya-tools")) {
+    $extDir = Join-Path $extDst $extName
+    $extReq = Join-Path $extDir "requirements.txt"
+    if (-not (Test-Path $extReq)) { continue }
+    if (-not $pyCmd) {
+      Write-Warn "python not found - skipping $extName venv (scripts need pip deps)"
+    } elseif ($DryRun) {
+      Write-Skip "would create venv at $extDir\.venv and pip install -r requirements.txt"
+    } else {
+      $venvPy = Join-Path $extDir ".venv\Scripts\python.exe"
+      if (-not (Test-Path $venvPy)) {
+        & $pyCmd -m venv (Join-Path $extDir ".venv")
+      }
+      & $venvPy -m pip install --quiet --disable-pip-version-check -r $extReq
+      if ($LASTEXITCODE -eq 0) {
+        # Marker records which requirements.txt content was installed; the
+        # revalidation step below and future installs detect drift cheaply.
+        Set-Content -Path (Join-Path $extDir ".venv\.deps.sha256") -Value (Get-FileHash256 $extReq) -NoNewline
+        Write-Ok "$extName deps installed in $extDir\.venv"
+      } else {
+        Write-Warn "$extName pip install failed (exit $LASTEXITCODE)"
+      }
+    }
+  }
+
+  # --- 8a2. extension venv drift revalidation (fail-soft) ---
+  # Venvs are built at install time only and are gitignored: a deleted,
+  # half-created, or requirements-stale venv otherwise surfaces inside the
+  # extension at call time. Re-check every dep-bearing extension here.
+  if (Test-Path $extDst) {
+    Get-ChildItem $extDst -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+      $req = Join-Path $_.FullName "requirements.txt"
+      if (-not (Test-Path $req)) { return }
+      $venvPy = Join-Path $_.FullName ".venv\Scripts\python.exe"
+      $marker = Join-Path $_.FullName ".venv\.deps.sha256"
+      $reqHash = Get-FileHash256 $req
+      if ($DryRun) {
+        Write-Skip "would re-validate extensions/$($_.Name) venv deps"
+      } elseif (-not (Test-Path $venvPy)) {
+        Write-Warn "extensions/$($_.Name): .venv missing - deps not installed (re-run install to repair)"
+      } elseif (-not (Test-Path $marker)) {
+        Write-Warn "extensions/$($_.Name): venv has no deps marker - installed state unverified (re-run install to repair)"
+      } elseif ((Get-Content $marker -Raw).Trim() -ne $reqHash) {
+        Write-Warn "extensions/$($_.Name): requirements.txt changed since venv build - deps stale (re-run install to repair)"
+      } else {
+        Write-Skip "extensions/$($_.Name): venv deps verified"
+      }
+    }
+  }
+
+  # --- 8b. rust-core compiled extensions (optional toolchain, non-blocking) ---
+  $rcSrc = Join-Path $extSrc "rust-core"
+  $rcDir = Join-Path $extDst "rust-core"
+  if (Test-Path (Join-Path $rcSrc "Cargo.toml")) {
+    if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
+      Write-Warn "cargo/rustc not found — skipping rust-core build (install Rust toolchain to enable hybrid extensions)"
+    } elseif ($DryRun) {
+      Write-Skip "would run: cargo build --release in $rcDir and stage .pyd/.so artifacts"
+    } else {
+      & cargo build --release --quiet --manifest-path (Join-Path $rcDir "Cargo.toml")
+      if ($LASTEXITCODE -eq 0) {
+        $staged = 0
+        Get-ChildItem (Join-Path $rcDir "target\release") -Filter "*.dll" -File -ErrorAction SilentlyContinue | ForEach-Object {
+          Copy-Item $_.FullName (Join-Path $rcDir ($_.BaseName + ".pyd")) -Force
+          $staged++
+          Write-Ok "rust extension staged: $($_.BaseName).pyd"
+        }
+        if ($staged -eq 0) { Write-Warn "cargo build ok but no cdylib artifacts found in target\release" }
+      } else {
+        Write-Warn "rust-core cargo build failed (exit $LASTEXITCODE) — continuing without compiled extensions"
+      }
+    }
+  }
+} else {
+  Write-Skip "extensions/ not in bundle"
+}
+
+# --- Install drift ledger (M2_06): snapshot managed files post-install ---
+if (-not $DryRun -and (Test-Path "$bundleRoot\scripts\install-ledger.py")) {
+  $py = Get-Command python -ErrorAction SilentlyContinue
+  if ($py) {
+    Write-Step "Install drift ledger"
+    $env:DEVIN_PROJECT_DIR = $bundleRoot
+    python "$bundleRoot\scripts\install-ledger.py" record-all | Out-Null
+  }
+}
+
+# --- Summary ---
+Write-Step "Summary"
+Write-Host "    Installed:   $script:Copied" -ForegroundColor Green
+Write-Host "    Overwritten: $script:Overwritten" -ForegroundColor Yellow
+Write-Host "    Merged:      $script:Merged" -ForegroundColor Cyan
+Write-Host "    Skipped:     $script:Skipped" -ForegroundColor DarkYellow
+Write-Host "    Backups:     $script:Backed" -ForegroundColor DarkCyan
+
+if ($script:Backed -gt 0 -and -not $DryRun) {
+  Write-Host "`n    Backups saved in: $backupDir" -ForegroundColor DarkCyan
+}
+
+if ($DryRun) {
+  Write-Host "`nDry-run complete. Re-run without -DryRun to apply." -ForegroundColor Yellow
+} else {
+  Write-Host "`nDone. Restart Devin CLI to pick up new config." -ForegroundColor Green
+  if (-not $RestoreSecrets -and (Test-Path $credsSrc)) {
+    Write-Host "  Tip: run with -RestoreSecrets to install credentials.toml." -ForegroundColor DarkGray
+  }
+  $devinCmd = Get-Command devin -ErrorAction SilentlyContinue
+  if ($devinCmd) {
+    Write-Step "devin doctor"
+    & devin doctor
+  }
+}

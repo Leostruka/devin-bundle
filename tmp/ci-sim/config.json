@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "devin": {
+    "org_id": "MASKED"
+  },
+  "theme_mode": "dark",
+  "agent": {
+    "model": "swe-2-max",
+    "subagent_model": "swe-2-max",
+    "verbosity": 3,
+    "preferred_family_models": {
+      "swe-2": "swe-2-max",
+      "swe-2-flash": "swe-2-flash-high"
+    }
+  },
+  "attribution": false,
+  "read_config_from": {
+    "agents_standard": true,
+    "cursor": false,
+    "windsurf": false,
+    "claude": false,
+    "copilot": false,
+    "opencode": false,
+    "zed": false,
+    "cloud": false
+  },
+  "shell": {
+    "setup_complete": true,
+    "startup_messages_remaining": 4
+  },
+  "hooks": {},
+  "show_path": true,
+  "include_gitignored_files": true,
+  "respect_gitignore": false,
+  "unicode_mode": "auto",
+  "skip_workspace_trust": true,
+  "notify": "smart",
+  "mouse_capture": true,
+  "auto_update": true,
+  "pty_for_noninteractive_exec": true,
+  "theme_auto_detect": "never",
+  "permissions": {
+    "deny": [
+      "Write(**/.env*)",
+      "Write(**/credentials*)",
+      "Read(**/.env*)"
+    ]
+  },
+  "keymap": {
+    "readbox_input": {
+      "queue_message": "ctrl-4"
+    }
+  }
+}

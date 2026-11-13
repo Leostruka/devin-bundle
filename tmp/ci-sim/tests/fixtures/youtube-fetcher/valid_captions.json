@@ -1,0 +1,15 @@
+{
+  "video_id": "dQw4w9WgXcQ",
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "title": "Rick Astley - Never Gonna Give You Up (Official Video)",
+  "author": "Rick Astley",
+  "duration": 212,
+  "language": "en",
+  "caption_type": "manual",
+  "captions": [
+    {"text": "We're no strangers to love", "start": 0.0, "duration": 4.2},
+    {"text": "You know the rules and so do I", "start": 4.2, "duration": 4.4},
+    {"text": "A full commitment's what I'm thinking of", "start": 8.6, "duration": 4.8},
+    {"text": "You wouldn't get this from any other guy", "start": 13.4, "duration": 4.4}
+  ]
+}

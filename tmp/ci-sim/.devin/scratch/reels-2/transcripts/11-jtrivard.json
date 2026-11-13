@@ -1,0 +1,25 @@
+{
+ "ok": true,
+ "text": "I have had cloud code run for over 690 hours straight. I had to reboot my machine. It would have just kept going five things you didn't know about cloud code that you definitely should and if you do know these congratulations you are in a .0001% club number five coming in is a plug in called you should know this has an agent watch your agent and tell you hey by the way your agent missed something you should probably pay attention to coming in at number four slash loop no fixed interval your task coming in at number three auto compact. What you're doing is setting the auto compact threshold from a million down to a level that will avoid context pollute probably about two thirds of the context context when no maybe about half this will keep cloud code running a lot smarter because we all know when it gets to the end of that context window things get a little sketchy coming in at number two we have ultra code which allows cloud code to use custom JavaScript to coordinate dozens hundreds however many agents you would want it to this is the juice. And coming in at number one is my favorite look at all those fancy colors ultra think forces the model to reason at its maximum reason effort for one turn only and then subsequent turns will turn back down to your normal effort level ultra think cranks up the reasoning and ensures that cloud code does its best work you want this full list comment give me the list and I will send you the list of all these commands and make sure you fall because this is only part one in a series where I'm going to be talking about these all the time.",
+ "segments": [
+  {
+   "start": 0.0,
+   "end": 29.8,
+   "text": "I have had cloud code run for over 690 hours straight. I had to reboot my machine. It would have just kept going five things you didn't know about cloud code that you definitely should and if you do know these congratulations you are in a .0001% club number five coming in is a plug in called you should know this has an agent watch your agent and tell you hey by the way your agent missed something you should probably pay attention to coming in at number four slash loop no fixed interval your task coming in at number three auto compact."
+  },
+  {
+   "start": 29.8,
+   "end": 58.32,
+   "text": "What you're doing is setting the auto compact threshold from a million down to a level that will avoid context pollute probably about two thirds of the context context when no maybe about half this will keep cloud code running a lot smarter because we all know when it gets to the end of that context window things get a little sketchy coming in at number two we have ultra code which allows cloud code to use custom JavaScript to coordinate dozens hundreds however many agents you would want it to this is the juice."
+  },
+  {
+   "start": 58.84,
+   "end": 88.8,
+   "text": "And coming in at number one is my favorite look at all those fancy colors ultra think forces the model to reason at its maximum reason effort for one turn only and then subsequent turns will turn back down to your normal effort level ultra think cranks up the reasoning and ensures that cloud code does its best work you want this full list comment give me the list and I will send you the list of all these commands and make sure you fall because this is only part one in a series where I'm going to be talking about these all the time."
+  }
+ ],
+ "model": "base",
+ "source": "https://www.instagram.com/j.t.rivard/reel/DfS0h0Nqyi4/",
+ "slug": "11-jtrivard",
+ "url": "https://www.instagram.com/j.t.rivard/reel/DfS0h0Nqyi4/"
+}

@@ -1,0 +1,421 @@
+#!/usr/bin/env python3
+"""Keyboard control: type literal text, press a key, or fire a hotkey chord.
+Prints JSON to stdout.
+
+Action profiles (see profile.py / cu_motion.py): fast (instant, default),
+smooth (fixed 35ms/char), human (lognormal digram/trigram-context cadence —
+repeated letters faster, punctuation pauses; seedable via --seed/$CU_SEED).
+An explicit --delay always wins.
+
+Requires pynput (installed via requirements.txt into the extension's .venv).
+"""
+import argparse
+import atexit
+import os
+import random
+import sys
+import time
+
+import cu_actions
+import cu_browser
+import cu_motion as cm
+import cu_hints
+import cu_scope
+import cu_target
+
+
+
+from cu_envelope import _stamp, _dumps
+
+def set_dpi_awareness():
+    import cu_dpi
+    cu_dpi.set_dpi_awareness()
+
+
+def fail(msg, code=1):
+    print(_dumps({"ok": False, "error": msg}))
+    sys.exit(code)
+
+
+KEY_ALIASES = {
+    "ctrl": "ctrl", "control": "ctrl", "alt": "alt", "shift": "shift",
+    "win": "cmd", "cmd": "cmd", "super": "cmd", "meta": "cmd",
+    "enter": "enter", "return": "enter", "esc": "esc", "escape": "esc",
+    "tab": "tab", "space": "space", "backspace": "backspace",
+    "delete": "delete", "del": "delete", "insert": "insert",
+    "home": "home", "end": "end", "pageup": "page_up", "pagedown": "page_down",
+    "up": "up", "down": "down", "left": "left", "right": "right",
+    "capslock": "caps_lock", "numlock": "num_lock", "printscreen": "print_screen",
+}
+for i in range(1, 25):
+    KEY_ALIASES[f"f{i}"] = f"f{i}"
+
+
+def resolve_key(name, Key, KeyCode):
+    n = name.strip().lower()
+    n = KEY_ALIASES.get(n, n)
+    if hasattr(Key, n):
+        return getattr(Key, n)
+    if len(name.strip()) == 1:
+        return KeyCode.from_char(name.strip())
+    fail(f"unknown key: {name}", 2)
+
+
+def _remote_main(target):
+    """Type into the isolated env. Unicode text prefers the guest
+    worker's text.insert; keystroke events via QMP cover --key/--chord
+    and the no-worker fallback. No pynput/SendInput/host clipboard."""
+    import cu_qmp_backend
+    import cu_guest
+    enc = cu_qmp_backend
+    if target["kind"] == "adb":
+        import cu_adb_backend
+        enc = cu_adb_backend
+    p = cm.JsonParser(description="Type into isolated env")
+    p.add_argument("text", nargs="?", default=None)
+    p.add_argument("--key", default=None,
+                   help="named key (enter, tab, f5...)")
+    p.add_argument("--chord", default=None,
+                   help="modifier chord (ctrl+alt+delete)")
+    p.add_argument("--env", default=None)
+    p.add_argument("--channel", choices=["host", "env"], default="env",
+                   help="accepted for parity; env dispatch already "
+                        "selected by --env")
+    p.add_argument("--verify", action="store_true",
+                   help="re-observe after dispatch; attaches "
+                        "evidence-level verification")
+    args = p.parse_args()
+    backend = target["backend"]
+    layout = target["spec"].get("keyboard_layout", "en-us")
+    try:
+        events = None
+        res = None
+        if args.key:
+            events = enc.encode_key(args.key)
+        elif args.chord:
+            events = enc.encode_chord(args.chord)
+        elif args.text is not None:
+            # Prefer the guest worker's Unicode insert (real text, no
+            # keymap limit); fall back to keystroke events when the
+            # channel/cap isn't there — still guest-only either way.
+            try:
+                insertable = cu_guest.check_operation(
+                    "text.insert", backend.guest_caps())["allowed"]
+            except Exception:
+                insertable = False
+            if insertable:
+                pass  # dispatched via text_insert below
+            else:
+                events = enc.encode_text(args.text, layout=layout)
+        else:
+            cu_target.reject_remote("no text/--key/--chord given")
+        before = None
+        if args.verify:
+            img0, meta0 = backend.observe()
+            before = {"frame": img0, "meta": meta0}
+        if events is not None:
+            res = backend.send_events(events)
+        else:
+            res = backend.text_insert(args.text)
+    except (cu_qmp_backend.UnsupportedText,
+            getattr(enc, "UnsupportedText", cu_qmp_backend.UnsupportedText),
+            getattr(enc, "UnsupportedOp", cu_qmp_backend.UnsupportedText)
+            ) as exc:
+        cu_target.reject_remote(f"unsupported_text:{exc}")
+    except Exception as exc:
+        cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
+    out = {"ok": True, "status": "dispatched",
+           "env_id": target["env_id"], **res}
+    if args.verify:
+        import cu_backend
+        img2, meta2 = backend.observe()
+        out["verification"] = cu_backend.verify_effect(
+            {"cmd": "type"}, before,
+            {"frame": img2, "meta": meta2},
+            {"kind": "frame_changed"})
+    print(_dumps(out))
+
+
+def _scoped_type(args, channel):
+    """Dispatch text/key through a window-scoped channel. No focused-window
+    requirement, no global input. delivered != effect."""
+    prof = getattr(args, "profile", None)
+    if prof in ("human", "smooth"):
+        fail(f"--channel {channel} is teleport-only: --profile {prof} is "
+             "host-only (human/smooth target a REAL window focus)", 2)
+    if args.key and channel == "uia":
+        fail("uia channel has no key concept; use text "
+             "(Value.SetValue) or a named Invoke", 2)
+    if args.keys:
+        fail(f"chords unsupported on channel {channel} "
+             "(no reliable modifier state outside the input queue)", 2)
+    try:
+        frame, inp = cu_scope.scoped_hwnd(args)
+    except cu_scope.ScopeError as exc:
+        fail(f"window target: {exc}", 2)
+    base = {"channel": channel, "hwnd": inp, "frame": frame}
+    if args.dry_run:
+        print(_dumps({"ok": True, "status": "dry_run", **base}))
+        return
+    res = None
+    if args.text is not None:
+        ghost = None
+        if getattr(args, "cursor", "real") == "ghost":
+            l, t, r_, b = cu_scope.win.rect(inp)
+            ghost = cu_scope.ghost_to(inp, (r_ - l) // 2, (b - t) // 2,
+                                      capture=args.overlay_capture)
+        if channel == "scope":
+            res = cu_scope.post_text(inp, args.text)
+        elif channel == "console":
+            res = cu_scope.console_type(frame, args.text)
+        elif channel == "uia":
+            res = cu_scope.uia_set_value(inp, args.text,
+                                         name=args.uia_name)
+        elif channel == "cdp":
+            res = cu_scope.cdp_text(frame, args.text)
+        if res is not None and ghost:
+            res["ghost"] = ghost["ghost"]
+    elif args.key:
+        if channel == "scope":
+            res = cu_scope.post_key(inp, args.key)
+        elif channel == "console":
+            res = cu_scope.console_key(frame, args.key)
+        elif channel == "cdp":
+            res = cu_scope.cdp_key(frame, args.key)
+    if args.enter and args.text is not None:
+        if channel == "uia":
+            fail("--enter unsupported on uia channel "
+                 "(patterns have no key events)", 2)
+        if channel == "scope":
+            cu_scope.post_key(inp, "enter")
+        elif channel == "console":
+            cu_scope.console_key(frame, "enter")
+        elif channel == "cdp":
+            cu_scope.cdp_key(frame, "enter")
+    res = res or {"delivered": False, "error": "not_dispatched"}
+    if isinstance(res.get("delivered"), bool):
+        ok = res["delivered"]
+    else:
+        ok = res["delivered"] == res.get("total")
+    out = {"ok": ok, "status": "dispatched", **base, **res}
+    print(_dumps(out))
+    if not ok:
+        sys.exit(1)
+
+
+def main():
+    cu_scope.pre_channel_check(sys.argv[1:], fail)
+    target = cu_target.cli_guard(sys.argv[1:])
+    if target is not None:
+        _remote_main(target)
+        return
+    if os.environ.get("CU_SESSION") == "1":
+        import cu_session_dispatch
+        cu_session_dispatch.run_via_daemon("type_text", sys.argv[1:])
+        return
+    p = cm.JsonParser(description="Keyboard control via pynput")
+    p.add_argument("text", nargs="?", default=None, help="Literal text to type")
+    p.add_argument("--key", default=None, help="Single key name (e.g. enter, tab, f5)")
+    p.add_argument("--keys", default=None,
+                   help="Hotkey chord, '+'-separated (e.g. 'ctrl+c', 'ctrl+shift+s')")
+    p.add_argument("--delay", type=float, default=0.0,
+                   help="Fixed delay between keystrokes in seconds (overrides profile)")
+    p.add_argument("--enter", action="store_true",
+                   help="Press Enter after typing the literal text")
+    p.add_argument("--hint", default=None,
+                   help="hint id from screenshot.py --hints; targets the "
+                        "element instead of the focused window")
+    p.add_argument("--gen", type=int, default=None,
+                   help="generation from the same --hints output; pins the "
+                        "observation so a newer snapshot rejects the hint")
+    p.add_argument("--via", default="auto",
+                   choices=["auto", "physical", "uia", "browser"],
+                   help="with --hint: auto uses the element's UIA Value "
+                        "pattern when available, falling back to physical "
+                        "typing; 'uia' rejects instead of falling back; "
+                        "'browser' requires a bound browser window (DOM "
+                        "focus+insert, no physical fallback)")
+    p.add_argument("--seed", type=int, default=None,
+                   help="seed the human-typing RNG (or set $CU_SEED) for a "
+                        "reproducible cadence")
+    p.add_argument("--profile", choices=cm.PROFILES, default=None,
+                   help="action profile override for this call")
+    p.add_argument("--dry-run", action="store_true",
+                   help="compute timing plan but dispatch no input")
+    p.add_argument("--env", default=None,
+                   help="isolated environment id "
+                        "(.devin/computer-use/envs); absent = local host")
+    p.add_argument("--observation", default=None,
+                   help="observation id issued for that env")
+    cu_scope.add_channel_args(p)
+    args = p.parse_args()
+    channel = cu_scope.check_channel_args(args, fail)
+    if channel in cu_scope.CHANNELS:
+        if not any([args.text, args.key, args.keys]):
+            fail("provide text, --key, or --keys", 2)
+        _scoped_type(args, channel)
+        return
+
+    if not any([args.text, args.key, args.keys]):
+        fail("provide text, --key, or --keys", 2)
+    if getattr(args, "via", None) == "browser" and \
+            not getattr(args, "hint", None):
+        fail("--via browser requires --hint (needs element hwnd)", 2)
+    if getattr(args, "hint", None):
+        e, r = cu_hints.resolve_hint(args.hint, session=cu_hints.session_id(),
+                             generation=args.gen)
+        if not e:
+            fail(f"hint {args.hint!r} rejected: {r} — "
+                 "rerun screenshot.py --hints")
+        args._hint_entry = e  # freeze: single resolution per invocation
+
+    set_dpi_awareness()
+    try:
+        from pynput.keyboard import Controller, Key, KeyCode
+    except ImportError:
+        fail("pynput not installed — run: <venv-python> -m pip install -r requirements.txt", 2)
+    atexit.register(cu_actions.emergency_release)
+
+    profile = cm.get_profile(args.profile)
+    kb = Controller()
+    try:
+        if args.keys:
+            keys = [resolve_key(k, Key, KeyCode) for k in args.keys.split("+")]
+            t0 = cu_actions.now_ms()
+            if not args.dry_run:
+                with cu_actions.OwnedInputs() as owned:
+                    for k in keys:
+                        owned.press(kb, k)
+                        g = cm.key_gap(profile, seed=args.seed)
+                        if g:
+                            time.sleep(g)
+                    for k in reversed(keys):
+                        owned.release(kb, k)
+            out = cu_actions.result(
+                "dispatched", "physical", keys=args.keys, profile=profile,
+                timings_ms={"move": None, "dispatch": None,
+                            "total": round(cu_actions.now_ms() - t0, 1)})
+            if args.dry_run:
+                out["dry_run"] = True
+            print(_dumps(out))
+            return
+        if args.key:
+            k = resolve_key(args.key, Key, KeyCode)
+            t0 = cu_actions.now_ms()
+            if not args.dry_run:
+                with cu_actions.OwnedInputs() as owned:
+                    owned.press(kb, k)
+                    g = cm.key_gap(profile, seed=args.seed)
+                    if g:
+                        time.sleep(g)
+                    owned.release(kb, k)
+            out = cu_actions.result(
+                "dispatched", "physical", key=args.key, profile=profile,
+                timings_ms={"move": None, "dispatch": None,
+                            "total": round(cu_actions.now_ms() - t0, 1)})
+            if args.dry_run:
+                out["dry_run"] = True
+            print(_dumps(out))
+            return
+        if args.text is not None:
+            entry = getattr(args, "_hint_entry", None)
+            if args.hint and entry is None:
+                entry, reason = cu_hints.resolve_hint(
+                    args.hint, session=cu_hints.session_id(),
+                    generation=args.gen)
+                if not entry:
+                    fail(f"hint {args.hint!r} rejected: {reason} — "
+                         "rerun screenshot.py --hints")
+            t0 = cu_actions.now_ms()
+            backend = "physical"
+            uia_note = None
+            if entry is not None and args.via == "browser":
+                if args.dry_run:
+                    backend = "dom"
+                else:
+                    res, reason = cu_browser.dom_action(
+                        entry.get("hwnd"), entry["x"], entry["y"],
+                        "type", text=args.text,
+                        enabled=entry.get("enabled", True),
+                        bounds_px=entry.get("bounds"))
+                    if res:
+                        backend = "dom"
+                    else:
+                        fail(f"browser type rejected: {reason}")
+            elif entry is not None and args.via == "auto" \
+                    and not args.dry_run:
+                ok, _ = cu_browser.check(entry.get("hwnd"))
+                if ok:
+                    res, dom_reason = cu_browser.dom_action(
+                        entry.get("hwnd"), entry["x"], entry["y"],
+                        "type", text=args.text,
+                        enabled=entry.get("enabled", True),
+                        bounds_px=entry.get("bounds"))
+                    if res:
+                        backend = "dom"
+                    elif dom_reason and dom_reason.startswith(
+                            "browser_actionable_"):
+                        uia_note = dom_reason  # declared fallback cause
+            if entry is not None and args.via in ("auto", "uia") \
+                    and backend == "physical" and not args.dry_run:
+                res, reason = cu_hints.uia_perform(entry, "set_value",
+                                                   args.text)
+                if res is not None and reason is None:
+                    backend = "uia"
+                elif args.via == "uia":
+                    fail(f"uia set_value rejected: {reason}")
+                else:
+                    uia_note = reason
+            delays = cm.type_delays(
+                args.text, profile,
+                args.delay if args.delay > 0 else None, seed=args.seed)
+            plan = cm.typing_plan(
+                args.text, profile,
+                args.delay if args.delay > 0 else None, seed=args.seed)
+            if not args.dry_run and backend == "physical":
+                if entry is not None and not cu_hints.window_foreground(
+                        entry.get("hwnd")):
+                    fail("hint window is not foreground — refusing to type "
+                         "into another window's focus")
+                if plan is None:
+                    kb.type(args.text)
+                else:
+                    for op, ch, d in plan:
+                        if op == "backspace":
+                            kb.press(Key.backspace)
+                            kb.release(Key.backspace)
+                        else:
+                            kb.type(ch)
+                        time.sleep(d)
+                if args.enter:
+                    if profile == "human":
+                        time.sleep(max(0.02, cm.gauss(
+                            args.seed, 0.15, 0.05)))
+                    with cu_actions.OwnedInputs() as owned:
+                        owned.press(kb, Key.enter)
+                        owned.release(kb, Key.enter)
+            out = cu_actions.result(
+                "dispatched", backend, typed=len(args.text),
+                profile=profile,
+                delay_mode=(backend if backend in ("uia", "dom") else
+                            "instant" if delays is None else
+                            "fixed" if args.delay > 0 else profile),
+                timings_ms={"move": None, "dispatch": None,
+                            "total": round(cu_actions.now_ms() - t0, 1)})
+            if entry is not None:
+                out["hint"] = args.hint
+            if uia_note:
+                out["dispatch"]["uia_fallback"] = uia_note
+            if delays and backend == "physical":
+                out["secs"] = round(sum(delays), 3)  # planned cadence
+            if args.dry_run:
+                out["dry_run"] = True
+            print(_dumps(out))
+    except SystemExit:
+        raise
+    except Exception as e:
+        fail(f"{type(e).__name__}: {e}")
+
+
+if __name__ == "__main__":
+    cu_actions.run_cli(main)

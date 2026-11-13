@@ -1,0 +1,32 @@
+[
+  {
+    "id": "A",
+    "question": "Scope: what is the system boundary?",
+    "depends_on": []
+  },
+  {
+    "id": "B",
+    "question": "Audience: who is the primary user?",
+    "depends_on": []
+  },
+  {
+    "id": "C",
+    "question": "Volume: what is the expected load?",
+    "depends_on": []
+  },
+  {
+    "id": "D",
+    "question": "Latency: what is the SLO?",
+    "depends_on": []
+  },
+  {
+    "id": "E",
+    "question": "Format: output as API or UI?",
+    "depends_on": []
+  },
+  {
+    "id": "F",
+    "question": "Storage: do we need persistence?",
+    "depends_on": []
+  }
+]

@@ -729,7 +729,8 @@ def main(argv=None):
             if args.write and not args.approve:
                 err("extract --write requires --approve")
                 return 2
-            text = source.read_text(encoding="utf-8", newline="")
+            with source.open(encoding="utf-8", newline="") as _fh:
+                text = _fh.read()
             text = text.replace("\r\n", "\n").replace("\r", "\n")
             entities, relations, conflicts = parse_markdown(text, rel)
             data = build_extract_data(rel, text, entities, relations, conflicts)
@@ -743,7 +744,8 @@ def main(argv=None):
             if args.write and not args.approve:
                 err("merge --write requires --approve")
                 return 2
-            text = source.read_text(encoding="utf-8", newline="")
+            with source.open(encoding="utf-8", newline="") as _fh:
+                text = _fh.read()
             text = text.replace("\r\n", "\n").replace("\r", "\n")
             entities, relations, conflicts = parse_markdown(text, rel)
             new = build_extract_data(rel, text, entities, relations, conflicts)

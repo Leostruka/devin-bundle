@@ -172,7 +172,8 @@ def hash_file(path):
 
 def read_text(path):
     try:
-        text = path.read_text(encoding='utf-8', newline='')
+        with path.open(encoding='utf-8', newline='') as fh:
+            text = fh.read()
         text = text.replace('\r\n', '\n').replace('\r', '\n')
         return True, text
     except UnicodeDecodeError:

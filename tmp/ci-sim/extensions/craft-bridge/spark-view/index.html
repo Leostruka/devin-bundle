@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>spark-view - gsplat preview</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #111; color: #ddd;
+               font: 13px/1.4 system-ui, sans-serif; }
+  #hud { position: fixed; top: 8px; left: 8px; z-index: 2;
+         background: rgba(0,0,0,.55); padding: 8px 10px; border-radius: 6px; }
+  #hud input { color: #ddd; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <div>spark-view: drop a .ply / .spz / .splat file, or pass ?src=URL</div>
+  <input type="file" id="file" accept=".ply,.spz,.splat,.ksplat">
+  <div id="status"></div>
+</div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+    "@sparkjsdev/spark": "https://cdn.jsdelivr.net/npm/@sparkjsdev/spark@0.1.10/dist/spark.module.js"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SplatMesh } from '@sparkjsdev/spark';
+
+const status = (t) => document.getElementById('status').textContent = t;
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.01, 500);
+camera.position.set(0, 1.5, 4);
+const controls = new OrbitControls(camera, renderer.domElement);
+
+let splat = null;
+function load(url, name) {
+  status('loading ' + name);
+  if (splat) { scene.remove(splat); splat.dispose(); }
+  splat = new SplatMesh({ url });
+  scene.add(splat);
+  status('loaded ' + name + ' - orbit to inspect');
+}
+const src = new URLSearchParams(location.search).get('src');
+if (src) load(src, src);
+document.getElementById('file').addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (f) load(URL.createObjectURL(f), f.name);
+});
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>

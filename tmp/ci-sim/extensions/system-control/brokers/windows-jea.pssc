@@ -1,0 +1,41 @@
+@{
+    # JEA session configuration for the system-control privileged broker.
+    # Declarative template only — NOT auto-installed. An administrator
+    # must copy, review, and register this file (see README.md).
+    #
+    # The session exposes exactly ONE constrained function,
+    # Restart-AllowedService, which restarts a service only when its
+    # name is in the validated allowlist below. No arbitrary command
+    # execution is possible inside the session.
+
+    SchemaVersion = '2.0.0.0'
+    GUID = 'b7e4f2a1-9c3d-4e5f-8a6b-1d2c3e4f5a6b'
+    Author = 'system-control operator'
+    Description = 'Constrained broker endpoint: allowlisted service restart only.'
+    SessionType = 'RestrictedRemoteServer'
+    RunAsVirtualAccount = $true
+    TranscriptDirectory = 'C:\ProgramData\system-control\jea-transcripts'
+
+    # No external cmdlets or providers are visible.
+    VisibleCmdlets = @()
+    VisibleFunctions = @('Restart-AllowedService')
+    VisibleProviders = @()
+    ScriptsToProcess = @()
+    AliasDefinitions = @()
+
+    FunctionDefinitions = @(
+        @{
+            Name = 'Restart-AllowedService'
+            ScriptBlock = {
+                param(
+                    [Parameter(Mandatory = $true)]
+                    [ValidateSet('allowed-svc-a', 'allowed-svc-b')]
+                    [string]$Name
+                )
+                # Validated allowlist above is the ONLY authorization
+                # boundary; anything else fails parameter validation.
+                Restart-Service -Name $Name -Force -ErrorAction Stop
+            }
+        }
+    )
+}

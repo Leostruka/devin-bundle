@@ -1,0 +1,12 @@
+{
+  "cut": "timeline.cut",
+  "trim": "timeline.trim",
+  "grade": "color.grade",
+  "mix": "audio.mix",
+  "export": "file.export",
+  "open": "file.open",
+  "save": "file.save",
+  "text": "text.insert",
+  "layer": "layer.add",
+  "render": "render.frame"
+}

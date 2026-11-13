@@ -1,0 +1,487 @@
+{
+ "version": 1,
+ "eval": "review-risk-v1-cal-01",
+ "profile": "review-risk-v1",
+ "cases": [
+  {
+   "case_id": "rr-001",
+   "gold": "low",
+   "request": {
+    "version": 1,
+    "request_id": "rr-001",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 3, \"diff_lines\": 45, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-002",
+   "gold": "low",
+   "request": {
+    "version": 1,
+    "request_id": "rr-002",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 1, \"diff_lines\": 12, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-003",
+   "gold": "low",
+   "request": {
+    "version": 1,
+    "request_id": "rr-003",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 5, \"diff_lines\": 120, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-004",
+   "gold": "low",
+   "request": {
+    "version": 1,
+    "request_id": "rr-004",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 2, \"diff_lines\": 30, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-005",
+   "gold": "medium",
+   "request": {
+    "version": 1,
+    "request_id": "rr-005",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 4, \"diff_lines\": 60, \"has_tests\": false, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-006",
+   "gold": "medium",
+   "request": {
+    "version": 1,
+    "request_id": "rr-006",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 3, \"diff_lines\": 55, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-007",
+   "gold": "medium",
+   "request": {
+    "version": 1,
+    "request_id": "rr-007",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 8, \"diff_lines\": 900, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-008",
+   "gold": "medium",
+   "request": {
+    "version": 1,
+    "request_id": "rr-008",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 2, \"diff_lines\": 25, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": false}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-009",
+   "gold": "medium",
+   "request": {
+    "version": 1,
+    "request_id": "rr-009",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 6, \"diff_lines\": 400, \"has_tests\": false, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": false}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-010",
+   "gold": "high",
+   "request": {
+    "version": 1,
+    "request_id": "rr-010",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 2, \"diff_lines\": 80, \"has_tests\": true, \"q1\": true, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-011",
+   "gold": "high",
+   "request": {
+    "version": 1,
+    "request_id": "rr-011",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 1, \"diff_lines\": 15, \"has_tests\": true, \"q1\": false, \"q2\": true, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-012",
+   "gold": "high",
+   "request": {
+    "version": 1,
+    "request_id": "rr-012",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 3, \"diff_lines\": 200, \"has_tests\": true, \"q1\": false, \"q2\": false, \"q3\": true, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-013",
+   "gold": "critical",
+   "request": {
+    "version": 1,
+    "request_id": "rr-013",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 4, \"diff_lines\": 300, \"has_tests\": true, \"q1\": true, \"q2\": false, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-014",
+   "gold": "critical",
+   "request": {
+    "version": 1,
+    "request_id": "rr-014",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 2, \"diff_lines\": 150, \"has_tests\": true, \"q1\": true, \"q2\": true, \"q3\": false, \"q5\": false, \"q6\": false, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-015",
+   "gold": "critical",
+   "request": {
+    "version": 1,
+    "request_id": "rr-015",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 5, \"diff_lines\": 800, \"has_tests\": true, \"q1\": false, \"q2\": true, \"q3\": true, \"q5\": true, \"q6\": true, \"q7\": true}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "rr-016",
+   "gold": "medium",
+   "request": {
+    "version": 1,
+    "request_id": "rr-016",
+    "profile": "review-risk-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "classify review risk of this diff",
+     "snippets": "{\"files_changed\": 7, \"diff_lines\": 250, \"has_tests\": false, \"q1\": false, \"q2\": false, \"q3\": false, \"q5\": true, \"q6\": false, \"q7\": false}",
+     "confidence_hint": "0.0"
+    },
+    "candidates": [
+     {
+      "id": "low"
+     },
+     {
+      "id": "medium"
+     },
+     {
+      "id": "high"
+     },
+     {
+      "id": "critical"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  }
+ ]
+}

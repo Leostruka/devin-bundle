@@ -1,0 +1,1399 @@
+{
+ "version": 1,
+ "eval": "skill-family-v1-cal-01",
+ "profile": "skill-family-v1",
+ "cases": [
+  {
+   "case_id": "sf-001",
+   "gold": "development",
+   "request": {
+    "version": 1,
+    "request_id": "sf-001",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "fix the AttributeError in gcal apply when schedule blocks are strings"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-002",
+   "gold": "development",
+   "request": {
+    "version": 1,
+    "request_id": "sf-002",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "add a --fit contain option to composite.py and update its tests"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-003",
+   "gold": "development",
+   "request": {
+    "version": 1,
+    "request_id": "sf-003",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "refactor roadmap-board capacity() to use the shared status_vocab module"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-004",
+   "gold": "investigation",
+   "request": {
+    "version": 1,
+    "request_id": "sf-004",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "find why transcribe returns empty segments for mp4 files - trace the whisper.cpp demux path"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-005",
+   "gold": "investigation",
+   "request": {
+    "version": 1,
+    "request_id": "sf-005",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "compare Roon vs MiroFish for agent UI control and write an eval note"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-006",
+   "gold": "investigation",
+   "request": {
+    "version": 1,
+    "request_id": "sf-006",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "root-cause the intermittent heartbeat_stale error in cu_env_daemon"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-007",
+   "gold": "operations",
+   "request": {
+    "version": 1,
+    "request_id": "sf-007",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "run the full pytest suite and audit.py, fix any failures before pushing"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-008",
+   "gold": "operations",
+   "request": {
+    "version": 1,
+    "request_id": "sf-008",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "register the devin-agenda-roteiro scheduled task for tomorrow 9am"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-009",
+   "gold": "operations",
+   "request": {
+    "version": 1,
+    "request_id": "sf-009",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "sync the live install copies under the devin config dir and update the install ledger"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-010",
+   "gold": "data",
+   "request": {
+    "version": 1,
+    "request_id": "sf-010",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "query the issues table for open bugs older than 30 days and chart them by effort"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-011",
+   "gold": "data",
+   "request": {
+    "version": 1,
+    "request_id": "sf-011",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "compute per-class precision and recall for the image-forensics eval_set results"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-012",
+   "gold": "data",
+   "request": {
+    "version": 1,
+    "request_id": "sf-012",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "analyze the focus.jsonl ledger and report deep-work hours per day this week"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-013",
+   "gold": "visual",
+   "request": {
+    "version": 1,
+    "request_id": "sf-013",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "generate a 3D splat from these real-estate photos after provenance check"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-014",
+   "gold": "visual",
+   "request": {
+    "version": 1,
+    "request_id": "sf-014",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "render the narrated video through the remotion pipeline and composite it over the audio"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-015",
+   "gold": "visual",
+   "request": {
+    "version": 1,
+    "request_id": "sf-015",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "create an architecture diagram of the laya decision lanes as a plantuml svg"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-016",
+   "gold": "knowledge",
+   "request": {
+    "version": 1,
+    "request_id": "sf-016",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "explain how the Wilson score lower bound works in eval_decisions"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-017",
+   "gold": "knowledge",
+   "request": {
+    "version": 1,
+    "request_id": "sf-017",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "what does the PCE metric measure in PRNU forensics? summarize the paper"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-018",
+   "gold": "knowledge",
+   "request": {
+    "version": 1,
+    "request_id": "sf-018",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "look up the whisper.cpp v1.7.6 release notes and summarize breaking changes"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-019",
+   "gold": "assistance",
+   "request": {
+    "version": 1,
+    "request_id": "sf-019",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "help me plan tomorrow's agenda blocks around my free/busy windows"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-020",
+   "gold": "assistance",
+   "request": {
+    "version": 1,
+    "request_id": "sf-020",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "draft a commit message for this diff and write the PR body"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-021",
+   "gold": "assistance",
+   "request": {
+    "version": 1,
+    "request_id": "sf-021",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "organize these research notes into the weekly plan document"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-022",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sf-022",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "hi"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-023",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sf-023",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "fix the bug in the chart and also generate the report diagram"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sf-024",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sf-024",
+    "profile": "skill-family-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "what time is it and can you also restart the server and check the logs"
+    },
+    "candidates": [
+     {
+      "id": "development",
+      "role": "family",
+      "name": "development",
+      "scope": "routing"
+     },
+     {
+      "id": "investigation",
+      "role": "family",
+      "name": "investigation",
+      "scope": "routing"
+     },
+     {
+      "id": "operations",
+      "role": "family",
+      "name": "operations",
+      "scope": "routing"
+     },
+     {
+      "id": "data",
+      "role": "family",
+      "name": "data",
+      "scope": "routing"
+     },
+     {
+      "id": "visual",
+      "role": "family",
+      "name": "visual",
+      "scope": "routing"
+     },
+     {
+      "id": "knowledge",
+      "role": "family",
+      "name": "knowledge",
+      "scope": "routing"
+     },
+     {
+      "id": "assistance",
+      "role": "family",
+      "name": "assistance",
+      "scope": "routing"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  }
+ ]
+}

@@ -1,0 +1,112 @@
+{
+  "name": "eval",
+  "total": 16,
+  "correct": 4,
+  "wrong": 2,
+  "abstained": 7,
+  "correct_abstain": 3,
+  "shortlist_miss": 0,
+  "decided": 6,
+  "accuracy": 0.6666666666666666,
+  "wilson_accuracy_low": 0.34699137155155724,
+  "coverage": 0.375,
+  "abstain_precision": 0.3,
+  "cases": [
+    {
+      "case_id": "sh-01",
+      "outcome": "abstained",
+      "gold": "afk-loop",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-02",
+      "outcome": "wrong",
+      "gold": "big-file-refactor",
+      "picked": "architecture"
+    },
+    {
+      "case_id": "sh-03",
+      "outcome": "abstained",
+      "gold": "binary-triage",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-04",
+      "outcome": "correct",
+      "gold": "architecture",
+      "picked": "architecture"
+    },
+    {
+      "case_id": "sh-05",
+      "outcome": "wrong",
+      "gold": "a11y-audit",
+      "picked": "devin-config"
+    },
+    {
+      "case_id": "sh-06",
+      "outcome": "abstained",
+      "gold": "agent-reach",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-07",
+      "outcome": "abstained",
+      "gold": "data-analyst",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-08",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-09",
+      "outcome": "abstained",
+      "gold": "agent-cost-guard",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-10",
+      "outcome": "correct",
+      "gold": "api-context-spec",
+      "picked": "api-context-spec"
+    },
+    {
+      "case_id": "sh-11",
+      "outcome": "correct",
+      "gold": "ascii-art",
+      "picked": "ascii-art"
+    },
+    {
+      "case_id": "sh-12",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-13",
+      "outcome": "correct",
+      "gold": "image-forensics",
+      "picked": "image-forensics"
+    },
+    {
+      "case_id": "sh-14",
+      "outcome": "abstained",
+      "gold": "computer-use",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-15",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sh-16",
+      "outcome": "abstained",
+      "gold": "arena",
+      "picked": "__none__"
+    }
+  ]
+}

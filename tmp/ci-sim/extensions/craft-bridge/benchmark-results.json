@@ -1,0 +1,12 @@
+{
+  "tokenizer": "Xenova/gpt-4",
+  "tokenizer_sha256": "5d4b2d413d98f5de978ed84c2dfe024daef5c6f88a8095c47c5de46cc1f45e66",
+  "json_form": "minified",
+  "fixture": "../../tests/fixtures/openui/hud_form.dsl",
+  "input_sha256": "9232c3b99f60517244409d485a97f23985a1733004267e2c766b5a5b0e51d7e4",
+  "fixture_bytes_dsl": 341,
+  "fixture_bytes_json": 684,
+  "dsl_tokens": 108,
+  "json_tokens": 191,
+  "ratio": 0.5654
+}

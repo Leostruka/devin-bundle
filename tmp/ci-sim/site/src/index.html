@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>devin-bundle // atlas</title>
+<meta name="description" content="Interactive atlas of the devin-bundle: 181 skills, 17 agent profiles, the hooks pipeline, ADRs, docs and changelog — rendered as the terminal it ships in.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23050807'/><text x='3' y='12' font-family='monospace' font-size='11' fill='%2333ff66'>&gt;_</text></svg>">
+</head>
+<body>
+<div class="crt" aria-hidden="true"></div>
+
+<header class="titlebar">
+  <span class="dots"><i></i><i></i><i></i></span>
+  <span class="tb-title">visitor@devin-bundle:~/atlas</span>
+  <span class="tb-meta" id="tb-version"></span>
+</header>
+
+<nav class="statusline" id="tabs" role="tablist" aria-label="sections"></nav>
+
+<main>
+  <section id="view-boot" class="view" role="tabpanel">
+    <pre class="logo" aria-label="devin bundle">
+ ____            _          ____                  _ _
+|  _ \  _____   _(_)_ __    | __ ) _   _ _ __   __| | | ___
+| | | |/ _ \ \ / / | '_ \   |  _ \| | | | '_ \ / _` | |/ _ \
+| |_| |  __/\ V /| | | | |  | |_) | |_| | | | | (_| | |  __/
+|____/ \___| \_/ |_|_| |_|  |____/ \__,_|_| |_|\__,_|_|\___|
+</pre>
+    <pre id="bootlog" class="bootlog" aria-live="polite"></pre>
+    <p class="hint">type <kbd>/</kbd> or press <kbd>Ctrl</kbd>+<kbd>K</kbd> for the command palette · tabs are <code>cd</code> targets</p>
+  </section>
+
+  <section id="view-skills" class="view" role="tabpanel" hidden>
+    <div class="grep">
+      <span class="prompt">$</span> grep -i
+      <input id="skill-q" type="search" placeholder="pattern… (try: review, debug, video, audit)" aria-label="filter skills">
+      <span class="count" id="skill-count"></span>
+    </div>
+    <div class="grid" id="skill-grid"></div>
+  </section>
+
+  <section id="view-agents" class="view" role="tabpanel" hidden>
+    <div class="grid" id="agent-grid"></div>
+  </section>
+
+  <section id="view-hooks" class="view" role="tabpanel" hidden>
+    <div id="hooks-flow"></div>
+  </section>
+
+  <section id="view-scripts" class="view" role="tabpanel" hidden>
+    <div id="script-list"></div>
+  </section>
+
+  <section id="view-adr" class="view" role="tabpanel" hidden>
+    <div class="reader"><aside id="adr-index"></aside><article id="adr-body" class="doc"></article></div>
+  </section>
+
+  <section id="view-docs" class="view" role="tabpanel" hidden>
+    <div class="reader"><aside id="docs-index"></aside><article id="docs-body" class="doc"></article></div>
+  </section>
+
+  <section id="view-issues" class="view" role="tabpanel" hidden>
+    <div id="issues-board"></div>
+  </section>
+
+  <section id="view-changelog" class="view" role="tabpanel" hidden>
+    <div id="changelog-log"></div>
+  </section>
+
+  <section id="view-apps" class="view" role="tabpanel" hidden>
+    <div class="grid" id="app-grid"></div>
+  </section>
+</main>
+
+<div id="repl-out" aria-live="polite" hidden></div>
+<footer class="promptline">
+  <span class="prompt">visitor@devin-bundle</span>:<span class="path" id="repl-path">~$</span>
+  <input id="repl" spellcheck="false" autocomplete="off" aria-label="terminal" placeholder="help">
+</footer>
+
+<div id="palette" hidden>
+  <div class="pal-box">
+    <div class="pal-line"><span class="prompt">&gt;</span><input id="pal-input" placeholder="cd &lt;section&gt; | open &lt;skill&gt; | help" aria-label="command"></div>
+    <div id="pal-results"></div>
+  </div>
+</div>
+
+<div id="modal" hidden>
+  <div class="modal-box">
+    <div class="modal-bar"><span id="modal-title"></span><button id="modal-close" aria-label="close">[q]</button></div>
+    <article id="modal-body" class="doc"></article>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js" defer></script>
+<script>window.DATA = /*__DATA__*/;</script>
+<script src="app.js" defer></script>
+</body>
+</html>

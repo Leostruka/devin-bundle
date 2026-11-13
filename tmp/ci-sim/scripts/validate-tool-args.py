@@ -1,0 +1,562 @@
+#!/usr/bin/env python3
+"""PreToolUse hook: validates tool arguments before execution.
+
+Stdin payload (per /cli/extensibility/hooks/lifecycle-hooks):
+  {"hook_event_name": "PreToolUse", "tool_name": "read",
+   "tool_input": {...}, "session_id": "...", "prompt_id": "..."}
+
+Exit codes (per /cli/extensibility/hooks/overview#exit-codes):
+  0 = allow, 2 = block.
+
+Scope (ALTK SPARC, arXiv:2603.15473, ACM CAIS 2026):
+  Validates arguments where hallucinated values cause real failures:
+  - Path tools (read/write/edit/notebook_*): absolute path, parent dir exists
+  - Search tools (grep/glob/find_file_by_name): regex validity, path exists
+  - Network tools (webfetch/web_search): URL scheme, stopword-only queries
+  - Delegation tools (run_subagent): profile name against VALID_PROFILES
+  - MCP tools (mcp_call_tool/mcp_read_resource): required fields
+  - Control tools (skill/request_scope): command/scope enum validation
+  - UI tools (ask_user_question/browser_preview/todo_write): required fields,
+    option counts, URL scheme, status enum
+
+Excluded (matcher does not fire — tool fails clearly without validation):
+  get_output, write_to_process, kill_shell (shell_id presence is trivial),
+  read_subagent (agent_id presence is trivial),
+  close_browser_preview (preview_id presence is trivial),
+  mcp_list_tools, mcp_list_servers (no required args to validate),
+  apply_patch (args vary; fail-open), exit_plan_mode (no required args).
+  Removing these from the matcher saves Python process spawns with zero
+  loss of real validation value.
+"""
+import sys, json, os, re, time
+
+
+def _devin_home():
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
+HIT_LOG = os.path.join(_devin_home(), "notes", "tool-args-hits.jsonl")
+
+
+def _log_hit(tool_name, result):
+    # Hit-rate instrumentation (audit Phase 5d): if blocks stay ~0 for a week
+    # of usage, this hook is pure spawn cost and should be removed.
+    if not tool_name:
+        return
+    try:
+        os.makedirs(os.path.dirname(HIT_LOG), exist_ok=True)
+        with open(HIT_LOG, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"t": int(time.time()), "tool": tool_name, "r": result}) + "\n")
+    except OSError:
+        pass
+
+VALID_PROFILES = frozenset({
+    "architect", "art-director", "chief-of-staff", "copywriter",
+    "debugger", "domain", "implementer", "issue-tracker",
+    "product-manager", "qa-ci", "README", "red-team-lead", "repo-reviewer",
+    "researcher", "reviewer", "scrum-master", "security-auditor",
+    "subagent_explore",
+    "subagent_general", "tech-lead", "data-analyst", "sre",
+    "ux-researcher", "performance-engineer",
+    "thermo-nuclear-code-quality-review-subagent",
+    "sentinel", "thermo-nuclear-review-subagent", "triage-labels",
+})
+
+# A query made up only of stopwords carries no search signal.
+STOPWORDS = frozenset({
+    "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+    "to", "of", "in", "on", "at", "by", "for", "with", "from", "and", "or",
+    "but", "not", "no", "yes", "do", "did", "does", "it", "this", "that",
+})
+
+
+_CURRENT_TOOL = ""
+
+# Per-profile tool deny rules (issue: no per-skill/agent sandboxing).
+# When run_subagent dispatches a profile, the mapping is recorded keyed on
+# session_id under the devin home state dir; subsequent tool calls from a
+# session carrying a denied profile are blocked. Read-only profiles lose
+# exec so a prompt-injected or drifted agent cannot mutate the system.
+STATE_DIR = os.path.join(_devin_home(), "state")
+PROFILE_DENY = {
+    "researcher": frozenset({"exec"}),
+    "issue-tracker": frozenset({"exec"}),
+    "triage-labels": frozenset({"exec"}),
+}
+
+
+def _profile_state_path(session_id):
+    safe = re.sub(r"[^A-Za-z0-9_.-]", "_", session_id or "unknown")
+    return os.path.join(STATE_DIR, "subagent-{}.json".format(safe))
+
+
+def _record_profile(session_id, profile):
+    try:
+        os.makedirs(STATE_DIR, exist_ok=True)
+        with open(_profile_state_path(session_id), "w", encoding="utf-8") as f:
+            json.dump({"profile": profile, "session_id": session_id}, f)
+    except (OSError, IOError):
+        pass
+
+
+def _session_profile(session_id):
+    try:
+        with open(_profile_state_path(session_id), "r", encoding="utf-8") as f:
+            return (json.load(f).get("profile") or "").strip()
+    except (OSError, IOError, ValueError):
+        return ""
+
+
+# --- Subagent dispatch budgets (optional, opt-in) ---
+# Policy file: <state>/subagent-budget.json. All knobs optional; absent or
+# invalid file = uncapped (default behavior). Knobs:
+#   max_dispatches:       max run_subagent calls per session_id (block)
+#   session_max_minutes:  max wall minutes since first dispatch (block new)
+#   max_cost_usd/spent_usd: block when spent_usd >= max_cost_usd. spent_usd is
+#                         updated by an external recorder — the hook cannot
+#                         observe token spend.
+# Not enforceable: per-agent wall-clock kill (no subagent lifecycle events in
+# hook payloads), real-time cost (no token telemetry). See agent-cost-guard.
+LEDGER = os.path.join(
+    os.environ.get("DEVIN_STATE_DIR") or STATE_DIR, "subagent-ledger.jsonl")
+BUDGET_POLICY = os.path.join(
+    os.environ.get("DEVIN_STATE_DIR") or STATE_DIR, "subagent-budget.json")
+
+
+def _ledger_records(session_id):
+    recs = []
+    try:
+        with open(LEDGER, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                if r.get("session_id") == session_id:
+                    recs.append(r)
+    except (OSError, IOError):
+        pass
+    return recs
+
+
+def _record_dispatch(session_id, tool_input):
+    try:
+        os.makedirs(os.path.dirname(LEDGER), exist_ok=True)
+        with open(LEDGER, "a", encoding="utf-8") as f:
+            f.write(json.dumps({
+                "ts": int(time.time()), "session_id": session_id,
+                "profile": tool_input.get("profile", "") or "subagent_general",
+                "title": tool_input.get("title", "")[:80],
+            }) + "\n")
+    except (OSError, IOError):
+        pass
+
+
+def _enforce_budget(session_id, tool_input):
+    try:
+        with open(BUDGET_POLICY, "r", encoding="utf-8") as f:
+            policy = json.load(f)
+    except (OSError, IOError, ValueError):
+        return  # no policy = uncapped
+    if not isinstance(policy, dict):
+        return
+
+    max_cost = policy.get("max_cost_usd")
+    spent = policy.get("spent_usd")
+    if (isinstance(max_cost, (int, float)) and isinstance(spent, (int, float))
+            and spent >= max_cost):
+        block(
+            "run_subagent blocked: session budget spent_usd {} >= max_cost_usd {} "
+            "(subagent-budget.json).".format(spent, max_cost)
+        )
+
+    max_disp = policy.get("max_dispatches")
+    max_min = policy.get("session_max_minutes")
+    if not (isinstance(max_disp, int) or isinstance(max_min, (int, float))):
+        _record_dispatch(session_id, tool_input)
+        return
+
+    recs = _ledger_records(session_id)
+    if isinstance(max_disp, int) and len(recs) >= max_disp:
+        block(
+            "run_subagent blocked: {} dispatches this session >= max_dispatches "
+            "{} (subagent-budget.json).".format(len(recs), max_disp)
+        )
+    if isinstance(max_min, (int, float)) and recs:
+        elapsed_min = (time.time() - min(r.get("ts", 0) for r in recs)) / 60.0
+        if elapsed_min > max_min:
+            block(
+                "run_subagent blocked: {:.1f}min since first dispatch exceeds "
+                "session_max_minutes {} (subagent-budget.json).".format(
+                    elapsed_min, max_min)
+            )
+    _record_dispatch(session_id, tool_input)
+
+
+def _enforce_profile_deny(session_id, tool_name, data):
+    """Block tools denied for the session's recorded subagent profile.
+
+    Enforcement requires the payload to identify a subagent context
+    (agent_id / subagent_id / is_subagent). session_id is session-wide in
+    the Devin CLI, so a denied profile recorded at dispatch would otherwise
+    also block the parent agent's own calls.
+    """
+    if not (data.get("agent_id") or data.get("subagent_id")
+            or data.get("is_subagent")):
+        return
+    profile = _session_profile(session_id)
+    denied = PROFILE_DENY.get(profile)
+    if denied and tool_name in denied:
+        block(
+            "Tool '{}' is denied for subagent profile '{}' "
+            "(per-profile sandboxing).".format(tool_name, profile)
+        )
+
+
+def block(reason):
+    """Emit a block decision and exit with code 2 (deny)."""
+    _log_hit(_CURRENT_TOOL, "block")
+    print(json.dumps({"decision": "block", "reason": reason}))
+    sys.exit(2)
+
+
+def require_abs_path(tool_name, file_path, key="file_path"):
+    if not file_path:
+        block(f"{tool_name} requires {key}.")
+    if not isinstance(file_path, str):
+        block(f"{tool_name} {key} must be a string, got {type(file_path).__name__}.")
+    if not os.path.isabs(file_path):
+        block(
+            f"{tool_name} {key} must be an absolute path, got '{file_path}'. "
+            "Devin CLI file tools require absolute paths."
+        )
+
+
+def check_exec(ti):
+    command = ti.get("command", "")
+    if not isinstance(command, str) or not command.strip():
+        block("exec requires a non-empty command string.")
+    if "\x00" in command:
+        block("exec command contains a null byte (possible injection).")
+
+
+def check_read(ti):
+    require_abs_path("read", ti.get("file_path", ""))
+
+
+def check_write(ti):
+    file_path = ti.get("file_path", "")
+    require_abs_path("write", file_path)
+    parent = os.path.dirname(file_path)
+    if parent and not os.path.isdir(parent):
+        block(
+            f"write parent directory does not exist: '{parent}'. "
+            "Create it first, or correct the path."
+        )
+
+
+def check_edit(ti):
+    require_abs_path("edit", ti.get("file_path", ""))
+    if not ti.get("old_string"):
+        block("edit requires a non-empty old_string.")
+    if ti.get("old_string") == ti.get("new_string"):
+        block("edit old_string and new_string are identical; the edit is a no-op.")
+
+
+def check_notebook_read(ti):
+    require_abs_path("notebook_read", ti.get("notebook_path", ""), "notebook_path")
+
+
+def check_notebook_edit(ti):
+    require_abs_path("notebook_edit", ti.get("notebook_path", ""), "notebook_path")
+
+
+def check_grep(ti):
+    pattern = ti.get("pattern", "")
+    if not pattern:
+        block("grep requires a pattern.")
+    try:
+        re.compile(pattern)
+    except re.error as exc:
+        block(f"grep pattern is not a valid regex: {exc}.")
+    path = ti.get("path", "")
+    if path and not os.path.exists(path):
+        block(f"grep path does not exist: '{path}'.")
+
+
+def check_glob(ti):
+    if not ti.get("pattern"):
+        block("glob requires a pattern.")
+    path = ti.get("path", "")
+    if path and not os.path.exists(path):
+        block(f"glob path does not exist: '{path}'.")
+
+
+def check_find_file_by_name(ti):
+    if not ti.get("pattern"):
+        block("find_file_by_name requires a pattern.")
+    path = ti.get("path", "")
+    if path and not os.path.exists(path):
+        block(f"find_file_by_name path does not exist: '{path}'.")
+
+
+def check_web_search(ti):
+    query = ti.get("query", "")
+    if not isinstance(query, str) or not query.strip():
+        block("web_search requires a non-empty query.")
+    tokens = [t for t in re.findall(r"[a-zA-Z']+", query.lower()) if t]
+    if tokens and all(t in STOPWORDS for t in tokens):
+        block(f"web_search query contains only stopwords: '{query}'.")
+
+
+def check_webfetch(ti):
+    url = ti.get("url", "")
+    if not isinstance(url, str) or not url.strip():
+        block("webfetch requires a url.")
+    if not url.startswith(("http://", "https://")):
+        block(
+            f"webfetch url must start with http:// or https://, got '{url[:60]}'."
+        )
+
+
+def check_run_subagent(ti):
+    task = ti.get("task", "")
+    if not isinstance(task, str) or not task.strip():
+        block("run_subagent requires a non-empty task.")
+    profile = ti.get("profile", "")
+    if profile and profile not in VALID_PROFILES:
+        block(
+            f"run_subagent profile '{profile}' is not valid. Must be one of: "
+            + ", ".join(sorted(VALID_PROFILES))
+        )
+    is_bg = ti.get("is_background")
+    if is_bg is not None and not isinstance(is_bg, bool):
+        block("run_subagent is_background must be a boolean if provided.")
+    # Limit parallel subagents to 3 (cost/context guard).
+    # If the caller intends more, it must split into sequential batches.
+    max_parallel = ti.get("max_parallel", 3)
+    if not isinstance(max_parallel, int):
+        block(
+            f"run_subagent max_parallel must be an integer, got {type(max_parallel).__name__}."
+        )
+    if max_parallel > 3:
+        block(
+            f"run_subagent max_parallel is {max_parallel}; limit is 3. "
+            "Split into sequential batches or ask the user for approval."
+        )
+
+
+def check_mcp_call_tool(ti):
+    if not ti.get("server_name"):
+        block("mcp_call_tool requires server_name.")
+    if not ti.get("tool_name"):
+        block("mcp_call_tool requires tool_name.")
+
+
+def check_mcp_read_resource(ti):
+    if not ti.get("server_name"):
+        block("mcp_read_resource requires server_name.")
+    if not ti.get("resource_uri"):
+        block("mcp_read_resource requires resource_uri.")
+
+
+def check_skill(ti):
+    cmd = ti.get("command") or "invoke"
+    if cmd not in ("invoke", "list", "search"):
+        block("skill command must be 'invoke', 'list', or 'search', got '" + str(cmd) + "'.")
+
+
+def check_request_scope(ti):
+    if not ti.get("scope"):
+        block("request_scope requires a scope.")
+    if ti.get("scope") not in ("read", "write"):
+        block("request_scope scope must be 'read' or 'write'.")
+    if not ti.get("path"):
+        block("request_scope requires a path.")
+
+
+def check_mcp_list_tools(ti):  # dispatch stub via check_<tool> table
+    pass  # server_name is optional; no required args — kept for documentation
+
+
+def check_mcp_list_servers(ti):  # dispatch stub via check_<tool> table
+    pass  # no required args — kept for documentation
+
+
+def check_ask_user_question(ti):
+    questions = ti.get("questions")
+    if not isinstance(questions, list) or not questions:
+        block("ask_user_question requires a non-empty questions array.")
+    if len(questions) > 4:
+        block(f"ask_user_question supports at most 4 questions, got {len(questions)}.")
+    for i, q in enumerate(questions):
+        if not isinstance(q, dict):
+            block(f"ask_user_question questions[{i}] must be an object.")
+        if not q.get("question"):
+            block(f"ask_user_question questions[{i}] requires a question.")
+        if not q.get("header"):
+            block(f"ask_user_question questions[{i}] requires a header.")
+        opts = q.get("options")
+        if not isinstance(opts, list) or len(opts) < 2:
+            block(f"ask_user_question questions[{i}] requires at least 2 options.")
+        if len(opts) > 4:
+            block(f"ask_user_question questions[{i}] supports at most 4 options, got {len(opts)}.")
+
+
+def check_browser_preview(ti):
+    url = ti.get("url", "")
+    if not isinstance(url, str) or not url.strip():
+        block("browser_preview requires a url.")
+    if not url.startswith(("http://", "https://")):
+        block(f"browser_preview url must start with http:// or https://, got '{url[:60]}'.")
+    if not ti.get("name"):
+        block("browser_preview requires a name.")
+
+
+def check_todo_write(ti):
+    todos = ti.get("todos")
+    if not isinstance(todos, list):
+        block("todo_write requires a todos array.")
+    valid_statuses = {"pending", "in_progress", "completed"}
+    in_progress_count = 0
+    for i, t in enumerate(todos):
+        if not isinstance(t, dict):
+            block(f"todo_write todos[{i}] must be an object.")
+        if not t.get("content"):
+            block(f"todo_write todos[{i}] requires content.")
+        status = t.get("status", "")
+        if status not in valid_statuses:
+            block(f"todo_write todos[{i}] status must be one of {sorted(valid_statuses)}, got '{status}'.")
+        if status == "in_progress":
+            in_progress_count += 1
+    if in_progress_count > 1:
+        block(f"todo_write must have exactly ONE in_progress item, got {in_progress_count}.")
+
+
+CHECKS = {
+    "exec": check_exec,
+    "read": check_read,
+    "write": check_write,
+    "edit": check_edit,
+    "notebook_read": check_notebook_read,
+    "notebook_edit": check_notebook_edit,
+    "grep": check_grep,
+    "glob": check_glob,
+    "find_file_by_name": check_find_file_by_name,
+    "web_search": check_web_search,
+    "webfetch": check_webfetch,
+    "run_subagent": check_run_subagent,
+    "mcp_call_tool": check_mcp_call_tool,
+    "mcp_read_resource": check_mcp_read_resource,
+    "skill": check_skill,
+    "request_scope": check_request_scope,
+    "ask_user_question": check_ask_user_question,
+    "browser_preview": check_browser_preview,
+    "todo_write": check_todo_write,
+}
+
+
+def main():
+    try:
+        _recfg = getattr(sys.stdin, "reconfigure", None)
+        if _recfg:
+            try:
+                _recfg(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+        data = json.load(sys.stdin)
+    except (json.JSONDecodeError, EOFError, ValueError):
+        sys.exit(0)  # fail-open
+
+    tool_name = data.get("tool_name", "") or ""
+    tool_input = data.get("tool_input") or {}
+
+    if not isinstance(tool_input, dict):
+        sys.exit(0)
+
+    session_id = data.get("session_id", "") or ""
+
+    # Record the dispatched profile so later calls in this session can be
+    # denied per-profile even though the hook payload has no skill identity.
+    if tool_name == "run_subagent" and isinstance(tool_input, dict):
+        prof = tool_input.get("profile", "") or "subagent_general"
+        _record_profile(session_id, prof)
+        _enforce_budget(session_id, tool_input)
+
+    _enforce_profile_deny(session_id, tool_name, data)
+
+    check = CHECKS.get(tool_name)
+    if check is None:
+        sys.exit(0)
+
+    global _CURRENT_TOOL
+    _CURRENT_TOOL = tool_name
+    try:
+        check(tool_input)
+    except SystemExit:
+        raise
+    except Exception:
+        sys.exit(0)  # fail-open on unexpected validator error
+
+    _log_hit(tool_name, "allow")
+    sys.exit(0)
+
+
+# --- Model-interface preflight ---
+
+
+def preflight_tool_call(emitted_call, adapter_valid=True, executor_valid=True, observer_valid=True):
+    """Probe the full model-interface funnel and attribute failure exactly.
+
+    Stages: emitted (model output), parsed (adapter/template validation),
+    executed (tool ran), observed (result returned to model).
+    A silently censored or rejected call is never attributed to the model
+    unless the model emitted nothing at all.
+    """
+    if not emitted_call or not isinstance(emitted_call, dict):
+        return {"verdict": "fail", "stage": "emitted", "reason": "model emitted no call"}
+
+    tool_name = emitted_call.get("tool_name", "")
+    tool_input = emitted_call.get("tool_input") or {}
+
+    # Stage 1: emitted — model must have produced a recognizable tool call.
+    if not tool_name:
+        return {"verdict": "fail", "stage": "emitted", "reason": "model call missing tool_name"}
+
+    # Stage 2: parsed — adapter/template validation.
+    check = CHECKS.get(tool_name)
+    if not adapter_valid:
+        return {"verdict": "fail", "stage": "parsed", "reason": f"adapter rejected {tool_name}"}
+    if check is not None:
+        try:
+            # Run validation; SystemExit from block() means the adapter rejected.
+            check(tool_input)
+        except SystemExit:
+            return {"verdict": "fail", "stage": "parsed", "reason": f"adapter validation failed for {tool_name}"}
+
+    # Stage 3: executed — tool ran (simulated).
+    if not executor_valid:
+        return {"verdict": "fail", "stage": "executed", "reason": f"executor failed for {tool_name}"}
+
+    # Stage 4: observed — result returned to model.
+    if not observer_valid:
+        return {"verdict": "fail", "stage": "observed", "reason": f"observer did not return for {tool_name}"}
+
+    return {"verdict": "pass", "stage": "observed", "reason": f"{tool_name} completed full funnel"}
+
+
+def classify_interface_failure(result):
+    """Return a short label for the failed stage, keeping model blame separate."""
+    if result["verdict"] == "pass":
+        return "ok"
+    stage = result["stage"]
+    if stage == "emitted":
+        return "model-emission"
+    return stage
+
+
+if __name__ == "__main__":
+    main()

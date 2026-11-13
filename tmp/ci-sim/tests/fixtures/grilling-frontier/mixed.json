@@ -1,0 +1,41 @@
+[
+  {
+    "id": "A",
+    "question": "Data model: entities known?",
+    "depends_on": []
+  },
+  {
+    "id": "B",
+    "question": "API style: REST or GraphQL?",
+    "depends_on": []
+  },
+  {
+    "id": "C",
+    "question": "Auth: required?",
+    "depends_on": []
+  },
+  {
+    "id": "D",
+    "question": "Frontend: SPA or MPA?",
+    "depends_on": []
+  },
+  {
+    "id": "E",
+    "question": "Deployment: cloud or on-prem?",
+    "depends_on": []
+  },
+  {
+    "id": "F",
+    "question": "ORM choice based on data model?",
+    "depends_on": [
+      "A"
+    ]
+  },
+  {
+    "id": "G",
+    "question": "Frontend framework based on SPA/MPA?",
+    "depends_on": [
+      "D"
+    ]
+  }
+]

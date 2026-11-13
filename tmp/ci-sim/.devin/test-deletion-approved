@@ -1,0 +1,8 @@
+tests/test_push_green_tiers.py -> renamed to tests/test_check_push_green_tiers.py (scoped-tier filename mapping); content unchanged
+tests/test_ci_workflow.py::test_workflow_parses_and_has_changes_job — renamed to test_workflow_has_changes_job_and_gates (stdlib-only rewrite, yaml absent in CI); same contract coverage
+tests/test_busybar_listen.py::test_replay_counts_actions_and_skips_bad — signature change (+monkeypatch chdir for effort-state isolation), not a deletion
+tests/test_busybar_listen.py::test_ws_loopback_receives_bundled_frame — signature change (+tmp_path/monkeypatch for effort-state isolation), not a deletion
+tests/held-out/mutation/test_check_push_green_blocks.py::test_mutation_remove_exit_code — body rewritten to assert real mutant detection (secrets-block scenario); same name, still collected (issue #542)
+tests/held-out/mutation/test_check_push_green_blocks.py::test_mutation_empty_function — same repair (#542)
+test_audit_check_count
+tests/test_permission_gate.py::test_silent_on_gh_api_write - renamed to test_silent_on_gh_writes with expanded coverage (not a deletion)

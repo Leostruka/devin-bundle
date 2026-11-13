@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "fast-math"
+version = "0.1.0"
+description = "Demo PyO3 micro-extension: CPU-bound math kernels for the devin-bundle hybrid extension layer"
+requires-python = ">=3.9"
+
+[tool.maturin]
+bindings = "pyo3"
+manifest-path = "Cargo.toml"

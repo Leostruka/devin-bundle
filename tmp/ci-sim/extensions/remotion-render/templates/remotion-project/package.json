@@ -1,0 +1,16 @@
+{
+  "name": "plan-render",
+  "private": true,
+  "scripts": {
+    "render": "remotion render Plan out/out.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

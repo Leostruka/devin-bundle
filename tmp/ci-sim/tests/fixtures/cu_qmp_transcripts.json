@@ -1,0 +1,8 @@
+{
+  "greeting": {"QMP": {"version": {"qemu": {"major": 9, "minor": 0, "micro": 0}, "package": "test"}, "capabilities": ["oob"]}},
+  "caps_ack": {"return": {}},
+  "query_status_running": {"id": "qmp-1", "return": {"status": "running", "singlestep": false, "running": true}},
+  "async_event": {"event": "RESET", "timestamp": {"seconds": 1, "microseconds": 0}},
+  "command_error": {"id": "qmp-2", "error": {"class": "CommandNotFound", "desc": "The command foo has not been found"}},
+  "empty_ack": {"id": "qmp-3", "return": {}}
+}

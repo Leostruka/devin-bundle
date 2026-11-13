@@ -1,0 +1,86 @@
+{
+  "comment": "Central model registry for the bundle. SWE-2 native: routing is by effort level (Medium/High/Max), not model size. Install/export scripts may expand {{...}} placeholders. Env overrides: BUNDLE_DEFAULT_MODEL, BUNDLE_DEFAULT_SUBAGENT_MODEL, BUNDLE_MAX_MODEL, BUNDLE_MEDIUM_MODEL, BUNDLE_FAST_MODEL.",
+  "default_parent_model": "swe-2-max",
+  "default_subagent_model": "swe-2-max",
+  "max_role_model": "swe-2-max",
+  "medium_role_model": "swe-2-medium",
+  "fast_role_model": "swe-2-flash-high",
+  "effort_levels": {
+    "medium": "Simple tasks, spot fixes, isolated scripts.",
+    "high": "Tasks spanning multiple files; default for general work.",
+    "max": "Open-ended tasks, global refactors, long-horizon coding.",
+    "advisor": "Escalation consult role: strongest free model, invoked for hard decisions only (architecture, dead-end bugs).",
+    "fast": "Flash fast lane: bounded mechanical execution and routine volume, ~200 tok/s."
+  },
+  "models": [
+    {
+      "id": "swe-2-medium",
+      "name": "SWE-2 Medium",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "medium",
+      "effort": "medium",
+      "free_until": "2026-11-30",
+      "free_tier_permanent": false
+    },
+    {
+      "id": "swe-2-high",
+      "name": "SWE-2 High",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "parent",
+      "effort": "high",
+      "free_until": "2026-11-30",
+      "free_tier_permanent": false
+    },
+    {
+      "id": "swe-2-max",
+      "name": "SWE-2 Max",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "max",
+      "effort": "max",
+      "is_default_parent": true,
+      "is_default_subagent": true,
+      "free_until": "2026-11-30",
+      "free_tier_permanent": false
+    },
+    {
+      "id": "swe-2-flash-medium",
+      "name": "SWE-2 Flash Medium",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "fast",
+      "effort": "medium",
+      "free_until": "2026-12-04T18:00:00Z",
+      "free_tier_permanent": true,
+      "notes": "SWE-2 Flash family (2026-11-04): post-train of Inkling-Small 276B/12B MoE (Apache-2.0). ~200 tok/s vs SWE-2 60; free in Devin Desktop+CLI. After the free window ends, 1/5 the price of SWE-2."
+    },
+    {
+      "id": "swe-2-flash-high",
+      "name": "SWE-2 Flash High",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "fast",
+      "effort": "high",
+      "free_until": "2026-12-04T18:00:00Z",
+      "free_tier_permanent": false,
+      "notes": "Flash variant at high effort - fast lane for routine multi-file work."
+    },
+    {
+      "id": "swe-2-flash-max",
+      "name": "SWE-2 Flash Max",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "role": "fast",
+      "effort": "max",
+      "free_until": "2026-12-04T18:00:00Z",
+      "free_tier_permanent": false,
+      "notes": "Flash variant at max effort - cheap escalation while the free window lasts."
+    }
+  ],
+  "aliases": {
+    "swe": "swe-2"
+  },
+  "advisor_role_model": "swe-2-max"
+}

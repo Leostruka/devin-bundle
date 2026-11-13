@@ -1,0 +1,15 @@
+{
+  "models": [
+    {"id": "swe-2-medium", "name": "SWE-2 Medium", "context_window": 262144},
+    {"id": "swe-2-high", "name": "SWE-2 High", "context_window": 262144},
+    {"id": "swe-2-max", "name": "SWE-2 Max", "context_window": 262144},
+    {"id": "swe-2-flash-medium", "name": "SWE-2 Flash Medium", "context_window": 262144},
+    {"id": "swe-2-flash-high", "name": "SWE-2 Flash High", "context_window": 262144},
+    {"id": "swe-2-flash-max", "name": "SWE-2 Flash Max", "context_window": 262144}
+  ],
+  "thresholds": {
+    "warn_pct": 60,
+    "critical_pct": 75,
+    "clear_recommended_pct": 80
+  }
+}

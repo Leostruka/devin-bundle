@@ -1,0 +1,10 @@
+{
+  "PreToolUse": [],
+  "PostToolUse": [],
+  "PermissionRequest": [],
+  "UserPromptSubmit": [],
+  "Stop": [],
+  "PostCompaction": [],
+  "SessionStart": [],
+  "SessionEnd": []
+}

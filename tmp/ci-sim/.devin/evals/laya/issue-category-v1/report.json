@@ -1,0 +1,160 @@
+{
+  "name": "eval",
+  "total": 24,
+  "correct": 13,
+  "wrong": 6,
+  "abstained": 4,
+  "correct_abstain": 1,
+  "shortlist_miss": 0,
+  "decided": 19,
+  "accuracy": 0.6842105263157895,
+  "wilson_accuracy_low": 0.49552364737637195,
+  "coverage": 0.7916666666666666,
+  "abstain_precision": 0.2,
+  "cases": [
+    {
+      "case_id": "ic-001",
+      "outcome": "abstained",
+      "gold": "bug",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-002",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-003",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-004",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-005",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-006",
+      "outcome": "abstained",
+      "gold": "bug",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-007",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-008",
+      "outcome": "correct",
+      "gold": "bug",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-009",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-010",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-011",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-012",
+      "outcome": "abstained",
+      "gold": "enhancement",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-013",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-014",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-015",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-016",
+      "outcome": "correct",
+      "gold": "enhancement",
+      "picked": "enhancement"
+    },
+    {
+      "case_id": "ic-017",
+      "outcome": "wrong",
+      "gold": "needs_info",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-018",
+      "outcome": "wrong",
+      "gold": "needs_info",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-019",
+      "outcome": "wrong",
+      "gold": "needs_info",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-020",
+      "outcome": "abstained",
+      "gold": "needs_info",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-021",
+      "outcome": "wrong",
+      "gold": "__none__",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-022",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "ic-023",
+      "outcome": "wrong",
+      "gold": "__none__",
+      "picked": "bug"
+    },
+    {
+      "case_id": "ic-024",
+      "outcome": "wrong",
+      "gold": "__none__",
+      "picked": "enhancement"
+    }
+  ]
+}

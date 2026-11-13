@@ -1,0 +1,1897 @@
+{
+ "version": 1,
+ "eval": "skill-pick-v1-cal-01",
+ "profile": "skill-pick-v1",
+ "cases": [
+  {
+   "case_id": "sp-001",
+   "gold": "big-file-refactor",
+   "request": {
+    "version": 1,
+    "request_id": "sp-001",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "refactor this 1500-line module before it becomes unmaintainable"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-002",
+   "gold": "afk-loop",
+   "request": {
+    "version": 1,
+    "request_id": "sp-002",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "work through the local issue DAG unattended overnight"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-003",
+   "gold": "architecture",
+   "request": {
+    "version": 1,
+    "request_id": "sp-003",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "design the seams and adapters for this new subsystem"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-004",
+   "gold": "binary-triage",
+   "request": {
+    "version": 1,
+    "request_id": "sp-004",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "extract evidence from this closed vendor DLL without heavy RE tooling"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-005",
+   "gold": "agentic-rag",
+   "request": {
+    "version": 1,
+    "request_id": "sp-005",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "build an agentic RAG product for the support desk"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-006",
+   "gold": "animation-direction",
+   "request": {
+    "version": 1,
+    "request_id": "sp-006",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "turn this narrated clip into synced motion graphics"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-007",
+   "gold": "api-design",
+   "request": {
+    "version": 1,
+    "request_id": "sp-007",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "review and document this REST API surface"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-008",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sp-008",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "fix a typo in the README intro paragraph"
+    },
+    "candidates": [
+     {
+      "id": "afk-loop",
+      "role": "skill",
+      "name": "afk-loop",
+      "scope": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships."
+     },
+     {
+      "id": "agentic-rag",
+      "role": "skill",
+      "name": "agentic-rag",
+      "scope": "Use when implementing an agentic RAG product in a target project (support desk, knowledge assistant, evidence-gated Q&A). Playbook for the retrieve -> decision-gate -> answer-or-escalate architecture "
+     },
+     {
+      "id": "animation-direction",
+      "role": "skill",
+      "name": "animation-direction",
+      "scope": "Use when turning narrated video/audio into synced code-rendered motion graphics â€” narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers th"
+     },
+     {
+      "id": "api-design",
+      "role": "skill",
+      "name": "api-design",
+      "scope": "Use when the user wants to design, review, or document an API. Covers REST, OpenAPI, versioning, error models, contract testing, and authentication."
+     },
+     {
+      "id": "api-spec",
+      "role": "skill",
+      "name": "api-spec",
+      "scope": "Use when the user wants to design, review, or document an API (REST, OpenAPI, versioning, error models, contract testing, authentication), or when generating/maintaining OpenAPI specs as machine-reada"
+     },
+     {
+      "id": "architecture",
+      "role": "skill",
+      "name": "architecture",
+      "scope": "Use when designing modules, seams, and adapters, when evaluating module depth and identifying deepening opportunities in a codebase, or when modernizing legacy code incrementally (strangler-fig, seams"
+     },
+     {
+      "id": "big-file-refactor",
+      "role": "skill",
+      "name": "big-file-refactor",
+      "scope": "Use when a source file has grown past roughly 1000 lines, when context compaction is losing track of a file's content, or when asked to break an oversized file into modules safely."
+     },
+     {
+      "id": "binary-triage",
+      "role": "skill",
+      "name": "binary-triage",
+      "scope": "Use when extracting evidence from closed binaries (DLL/SO/EXE/AAR) without heavy RE tooling - engine version, symbols, getter constants, exports, diff between builds, ctypes runtime probing. Answers i"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-009",
+   "gold": "a11y-audit",
+   "request": {
+    "version": 1,
+    "request_id": "sp-009",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "check this frontend for WCAG accessibility violations"
+    },
+    "candidates": [
+     {
+      "id": "a11y-audit",
+      "role": "skill",
+      "name": "a11y-audit",
+      "scope": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment."
+     },
+     {
+      "id": "agent-reach",
+      "role": "skill",
+      "name": "agent-reach",
+      "scope": "Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to th"
+     },
+     {
+      "id": "data-analyst",
+      "role": "skill",
+      "name": "data-analyst",
+      "scope": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA)"
+     },
+     {
+      "id": "devin-config",
+      "role": "skill",
+      "name": "devin-config",
+      "scope": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule â€” or when auditing/managing a project's `.devin/` configuration, producing det"
+     },
+     {
+      "id": "devin-manager",
+      "role": "skill",
+      "name": "devin-manager",
+      "scope": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only p"
+     },
+     {
+      "id": "ghidra",
+      "role": "skill",
+      "name": "ghidra",
+      "scope": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output +"
+     },
+     {
+      "id": "jira",
+      "role": "skill",
+      "name": "jira",
+      "scope": "Use when the user asks to interact with Jira â€” search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP ser"
+     },
+     {
+      "id": "mcp-context-audit",
+      "role": "skill",
+      "name": "mcp-context-audit",
+      "scope": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mc"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-010",
+   "gold": "agent-reach",
+   "request": {
+    "version": 1,
+    "request_id": "sp-010",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "research trending topics across YouTube and RSS feeds"
+    },
+    "candidates": [
+     {
+      "id": "a11y-audit",
+      "role": "skill",
+      "name": "a11y-audit",
+      "scope": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment."
+     },
+     {
+      "id": "agent-reach",
+      "role": "skill",
+      "name": "agent-reach",
+      "scope": "Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to th"
+     },
+     {
+      "id": "data-analyst",
+      "role": "skill",
+      "name": "data-analyst",
+      "scope": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA)"
+     },
+     {
+      "id": "devin-config",
+      "role": "skill",
+      "name": "devin-config",
+      "scope": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule â€” or when auditing/managing a project's `.devin/` configuration, producing det"
+     },
+     {
+      "id": "devin-manager",
+      "role": "skill",
+      "name": "devin-manager",
+      "scope": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only p"
+     },
+     {
+      "id": "ghidra",
+      "role": "skill",
+      "name": "ghidra",
+      "scope": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output +"
+     },
+     {
+      "id": "jira",
+      "role": "skill",
+      "name": "jira",
+      "scope": "Use when the user asks to interact with Jira â€” search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP ser"
+     },
+     {
+      "id": "mcp-context-audit",
+      "role": "skill",
+      "name": "mcp-context-audit",
+      "scope": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mc"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-011",
+   "gold": "data-analyst",
+   "request": {
+    "version": 1,
+    "request_id": "sp-011",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "query the sales database and chart monthly revenue"
+    },
+    "candidates": [
+     {
+      "id": "a11y-audit",
+      "role": "skill",
+      "name": "a11y-audit",
+      "scope": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment."
+     },
+     {
+      "id": "agent-reach",
+      "role": "skill",
+      "name": "agent-reach",
+      "scope": "Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to th"
+     },
+     {
+      "id": "data-analyst",
+      "role": "skill",
+      "name": "data-analyst",
+      "scope": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA)"
+     },
+     {
+      "id": "devin-config",
+      "role": "skill",
+      "name": "devin-config",
+      "scope": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule â€” or when auditing/managing a project's `.devin/` configuration, producing det"
+     },
+     {
+      "id": "devin-manager",
+      "role": "skill",
+      "name": "devin-manager",
+      "scope": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only p"
+     },
+     {
+      "id": "ghidra",
+      "role": "skill",
+      "name": "ghidra",
+      "scope": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output +"
+     },
+     {
+      "id": "jira",
+      "role": "skill",
+      "name": "jira",
+      "scope": "Use when the user asks to interact with Jira â€” search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP ser"
+     },
+     {
+      "id": "mcp-context-audit",
+      "role": "skill",
+      "name": "mcp-context-audit",
+      "scope": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mc"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-012",
+   "gold": "mcp-context-audit",
+   "request": {
+    "version": 1,
+    "request_id": "sp-012",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "audit my MCP server configuration for bloat"
+    },
+    "candidates": [
+     {
+      "id": "a11y-audit",
+      "role": "skill",
+      "name": "a11y-audit",
+      "scope": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment."
+     },
+     {
+      "id": "agent-reach",
+      "role": "skill",
+      "name": "agent-reach",
+      "scope": "Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to th"
+     },
+     {
+      "id": "data-analyst",
+      "role": "skill",
+      "name": "data-analyst",
+      "scope": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA)"
+     },
+     {
+      "id": "devin-config",
+      "role": "skill",
+      "name": "devin-config",
+      "scope": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule â€” or when auditing/managing a project's `.devin/` configuration, producing det"
+     },
+     {
+      "id": "devin-manager",
+      "role": "skill",
+      "name": "devin-manager",
+      "scope": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only p"
+     },
+     {
+      "id": "ghidra",
+      "role": "skill",
+      "name": "ghidra",
+      "scope": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output +"
+     },
+     {
+      "id": "jira",
+      "role": "skill",
+      "name": "jira",
+      "scope": "Use when the user asks to interact with Jira â€” search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP ser"
+     },
+     {
+      "id": "mcp-context-audit",
+      "role": "skill",
+      "name": "mcp-context-audit",
+      "scope": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mc"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-013",
+   "gold": "devin-manager",
+   "request": {
+    "version": 1,
+    "request_id": "sp-013",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "manage and inspect devin cli sessions"
+    },
+    "candidates": [
+     {
+      "id": "a11y-audit",
+      "role": "skill",
+      "name": "a11y-audit",
+      "scope": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment."
+     },
+     {
+      "id": "agent-reach",
+      "role": "skill",
+      "name": "agent-reach",
+      "scope": "Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to th"
+     },
+     {
+      "id": "data-analyst",
+      "role": "skill",
+      "name": "data-analyst",
+      "scope": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA)"
+     },
+     {
+      "id": "devin-config",
+      "role": "skill",
+      "name": "devin-config",
+      "scope": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule â€” or when auditing/managing a project's `.devin/` configuration, producing det"
+     },
+     {
+      "id": "devin-manager",
+      "role": "skill",
+      "name": "devin-manager",
+      "scope": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only p"
+     },
+     {
+      "id": "ghidra",
+      "role": "skill",
+      "name": "ghidra",
+      "scope": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output +"
+     },
+     {
+      "id": "jira",
+      "role": "skill",
+      "name": "jira",
+      "scope": "Use when the user asks to interact with Jira â€” search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP ser"
+     },
+     {
+      "id": "mcp-context-audit",
+      "role": "skill",
+      "name": "mcp-context-audit",
+      "scope": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mc"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-014",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sp-014",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "what is the weather in Lisbon tomorrow"
+    },
+    "candidates": [
+     {
+      "id": "a11y-audit",
+      "role": "skill",
+      "name": "a11y-audit",
+      "scope": "Use when the user wants to check a frontend for accessibility. Covers keyboard navigation, screen-reader labels, color contrast, focus management, and WCAG alignment."
+     },
+     {
+      "id": "agent-reach",
+      "role": "skill",
+      "name": "agent-reach",
+      "scope": "Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to th"
+     },
+     {
+      "id": "data-analyst",
+      "role": "skill",
+      "name": "data-analyst",
+      "scope": "Use when the user asks to query a database, analyze data, create charts/visualizations, explore data patterns, or asks business questions about data. Replicates Devin cloud's Data Analyst Agent (DANA)"
+     },
+     {
+      "id": "devin-config",
+      "role": "skill",
+      "name": "devin-config",
+      "scope": "Use when evolving the agent's capabilities with a new skill, custom subagent, plugin, hook, MCP server, or project rule â€” or when auditing/managing a project's `.devin/` configuration, producing det"
+     },
+     {
+      "id": "devin-manager",
+      "role": "skill",
+      "name": "devin-manager",
+      "scope": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only p"
+     },
+     {
+      "id": "ghidra",
+      "role": "skill",
+      "name": "ghidra",
+      "scope": "Use when analyzing raw firmware images (ARM/Thumb embedded), dumped flash, or binaries without symbols - importing at a custom base address, seeding function discovery, and dumping decompiled output +"
+     },
+     {
+      "id": "jira",
+      "role": "skill",
+      "name": "jira",
+      "scope": "Use when the user asks to interact with Jira â€” search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP ser"
+     },
+     {
+      "id": "mcp-context-audit",
+      "role": "skill",
+      "name": "mcp-context-audit",
+      "scope": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which MCP servers consume the most context window budget, or before committing a change to mc"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-015",
+   "gold": "agent-cost-guard",
+   "request": {
+    "version": 1,
+    "request_id": "sp-015",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "monitor token cost per loop and detect runaway spend"
+    },
+    "candidates": [
+     {
+      "id": "agent-cost-guard",
+      "role": "skill",
+      "name": "agent-cost-guard",
+      "scope": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure."
+     },
+     {
+      "id": "api-context-spec",
+      "role": "skill",
+      "name": "api-context-spec",
+      "scope": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable."
+     },
+     {
+      "id": "ascii-art",
+      "role": "skill",
+      "name": "ascii-art",
+      "scope": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii."
+     },
+     {
+      "id": "ask-bundle",
+      "role": "skill",
+      "name": "ask-bundle",
+      "scope": "Use when deciding which skill or flow fits your situation â€” the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague "
+     },
+     {
+      "id": "autonomous-gates",
+      "role": "skill",
+      "name": "autonomous-gates",
+      "scope": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance"
+     },
+     {
+      "id": "brag-slim",
+      "role": "skill",
+      "name": "brag-slim",
+      "scope": "Use when someone says /brag-slim, let's /brag about this, brag about a website, make a launch video, or wants to show off what they built. Turns a project directory or a website URL into a short, shar"
+     },
+     {
+      "id": "cli-adapter",
+      "role": "skill",
+      "name": "cli-adapter",
+      "scope": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path."
+     },
+     {
+      "id": "context-hygiene",
+      "role": "skill",
+      "name": "context-hygiene",
+      "scope": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-016",
+   "gold": "autonomous-gates",
+   "request": {
+    "version": 1,
+    "request_id": "sp-016",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "run this multi-step task unattended with verification gates"
+    },
+    "candidates": [
+     {
+      "id": "agent-cost-guard",
+      "role": "skill",
+      "name": "agent-cost-guard",
+      "scope": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure."
+     },
+     {
+      "id": "api-context-spec",
+      "role": "skill",
+      "name": "api-context-spec",
+      "scope": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable."
+     },
+     {
+      "id": "ascii-art",
+      "role": "skill",
+      "name": "ascii-art",
+      "scope": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii."
+     },
+     {
+      "id": "ask-bundle",
+      "role": "skill",
+      "name": "ask-bundle",
+      "scope": "Use when deciding which skill or flow fits your situation â€” the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague "
+     },
+     {
+      "id": "autonomous-gates",
+      "role": "skill",
+      "name": "autonomous-gates",
+      "scope": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance"
+     },
+     {
+      "id": "brag-slim",
+      "role": "skill",
+      "name": "brag-slim",
+      "scope": "Use when someone says /brag-slim, let's /brag about this, brag about a website, make a launch video, or wants to show off what they built. Turns a project directory or a website URL into a short, shar"
+     },
+     {
+      "id": "cli-adapter",
+      "role": "skill",
+      "name": "cli-adapter",
+      "scope": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path."
+     },
+     {
+      "id": "context-hygiene",
+      "role": "skill",
+      "name": "context-hygiene",
+      "scope": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-017",
+   "gold": "context-hygiene",
+   "request": {
+    "version": 1,
+    "request_id": "sp-017",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "keep the context window lean and fold large docs"
+    },
+    "candidates": [
+     {
+      "id": "agent-cost-guard",
+      "role": "skill",
+      "name": "agent-cost-guard",
+      "scope": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure."
+     },
+     {
+      "id": "api-context-spec",
+      "role": "skill",
+      "name": "api-context-spec",
+      "scope": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable."
+     },
+     {
+      "id": "ascii-art",
+      "role": "skill",
+      "name": "ascii-art",
+      "scope": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii."
+     },
+     {
+      "id": "ask-bundle",
+      "role": "skill",
+      "name": "ask-bundle",
+      "scope": "Use when deciding which skill or flow fits your situation â€” the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague "
+     },
+     {
+      "id": "autonomous-gates",
+      "role": "skill",
+      "name": "autonomous-gates",
+      "scope": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance"
+     },
+     {
+      "id": "brag-slim",
+      "role": "skill",
+      "name": "brag-slim",
+      "scope": "Use when someone says /brag-slim, let's /brag about this, brag about a website, make a launch video, or wants to show off what they built. Turns a project directory or a website URL into a short, shar"
+     },
+     {
+      "id": "cli-adapter",
+      "role": "skill",
+      "name": "cli-adapter",
+      "scope": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path."
+     },
+     {
+      "id": "context-hygiene",
+      "role": "skill",
+      "name": "context-hygiene",
+      "scope": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-018",
+   "gold": "api-context-spec",
+   "request": {
+    "version": 1,
+    "request_id": "sp-018",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "generate an OpenAPI spec to feed agents context"
+    },
+    "candidates": [
+     {
+      "id": "agent-cost-guard",
+      "role": "skill",
+      "name": "agent-cost-guard",
+      "scope": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure."
+     },
+     {
+      "id": "api-context-spec",
+      "role": "skill",
+      "name": "api-context-spec",
+      "scope": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable."
+     },
+     {
+      "id": "ascii-art",
+      "role": "skill",
+      "name": "ascii-art",
+      "scope": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii."
+     },
+     {
+      "id": "ask-bundle",
+      "role": "skill",
+      "name": "ask-bundle",
+      "scope": "Use when deciding which skill or flow fits your situation â€” the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague "
+     },
+     {
+      "id": "autonomous-gates",
+      "role": "skill",
+      "name": "autonomous-gates",
+      "scope": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance"
+     },
+     {
+      "id": "brag-slim",
+      "role": "skill",
+      "name": "brag-slim",
+      "scope": "Use when someone says /brag-slim, let's /brag about this, brag about a website, make a launch video, or wants to show off what they built. Turns a project directory or a website URL into a short, shar"
+     },
+     {
+      "id": "cli-adapter",
+      "role": "skill",
+      "name": "cli-adapter",
+      "scope": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path."
+     },
+     {
+      "id": "context-hygiene",
+      "role": "skill",
+      "name": "context-hygiene",
+      "scope": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-019",
+   "gold": "ask-bundle",
+   "request": {
+    "version": 1,
+    "request_id": "sp-019",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "route this vague request to the right skill or flow"
+    },
+    "candidates": [
+     {
+      "id": "agent-cost-guard",
+      "role": "skill",
+      "name": "agent-cost-guard",
+      "scope": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure."
+     },
+     {
+      "id": "api-context-spec",
+      "role": "skill",
+      "name": "api-context-spec",
+      "scope": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable."
+     },
+     {
+      "id": "ascii-art",
+      "role": "skill",
+      "name": "ascii-art",
+      "scope": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii."
+     },
+     {
+      "id": "ask-bundle",
+      "role": "skill",
+      "name": "ask-bundle",
+      "scope": "Use when deciding which skill or flow fits your situation â€” the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague "
+     },
+     {
+      "id": "autonomous-gates",
+      "role": "skill",
+      "name": "autonomous-gates",
+      "scope": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance"
+     },
+     {
+      "id": "brag-slim",
+      "role": "skill",
+      "name": "brag-slim",
+      "scope": "Use when someone says /brag-slim, let's /brag about this, brag about a website, make a launch video, or wants to show off what they built. Turns a project directory or a website URL into a short, shar"
+     },
+     {
+      "id": "cli-adapter",
+      "role": "skill",
+      "name": "cli-adapter",
+      "scope": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path."
+     },
+     {
+      "id": "context-hygiene",
+      "role": "skill",
+      "name": "context-hygiene",
+      "scope": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-020",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sp-020",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "bake a chocolate cake for dessert"
+    },
+    "candidates": [
+     {
+      "id": "agent-cost-guard",
+      "role": "skill",
+      "name": "agent-cost-guard",
+      "scope": "Use when monitoring token cost per loop, detecting token maxing, or limiting parallel subagents to control cost and context pressure."
+     },
+     {
+      "id": "api-context-spec",
+      "role": "skill",
+      "name": "api-context-spec",
+      "scope": "Use when generating or maintaining OpenAPI specs as context for AI agents. Ensures API contracts are explicit, versioned, and machine-readable."
+     },
+     {
+      "id": "ascii-art",
+      "role": "skill",
+      "name": "ascii-art",
+      "scope": "Use when generating animated ASCII art for artifacts the agent produces - README banners (SVG), CLI splash screens, loading/404 states or decorative pieces in web pages and terminals. Wraps the ascii."
+     },
+     {
+      "id": "ask-bundle",
+      "role": "skill",
+      "name": "ask-bundle",
+      "scope": "Use when deciding which skill or flow fits your situation â€” the meta-router entry point for this bundle (direct specialist skills, multi-skill flows, local AFK issues), or when the request is vague "
+     },
+     {
+      "id": "autonomous-gates",
+      "role": "skill",
+      "name": "autonomous-gates",
+      "scope": "Use when running long-horizon or multi-step tasks where quality must be verified before proceeding, when the user asks for \"autonomous mode\" or \"run unattended\", or when a task has explicit acceptance"
+     },
+     {
+      "id": "brag-slim",
+      "role": "skill",
+      "name": "brag-slim",
+      "scope": "Use when someone says /brag-slim, let's /brag about this, brag about a website, make a launch video, or wants to show off what they built. Turns a project directory or a website URL into a short, shar"
+     },
+     {
+      "id": "cli-adapter",
+      "role": "skill",
+      "name": "cli-adapter",
+      "scope": "Use when a tool or app has no MCP server or official connector, when the user asks the agent to control an application, or when a thin CLI wrapper is the cheapest integration path."
+     },
+     {
+      "id": "context-hygiene",
+      "role": "skill",
+      "name": "context-hygiene",
+      "scope": "Use when context is growing large or the agent forgets earlier instructions, when deciding clear vs compact, when processing documents/logs >50k tokens, when monitoring token cost or limiting subagent"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-021",
+   "gold": "image-forensics",
+   "request": {
+    "version": 1,
+    "request_id": "sp-021",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "verify whether this photo is a real camera capture"
+    },
+    "candidates": [
+     {
+      "id": "ai-coding-dictionary",
+      "role": "skill",
+      "name": "ai-coding-dictionary",
+      "scope": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term d"
+     },
+     {
+      "id": "ai3d-gen",
+      "role": "skill",
+      "name": "ai3d-gen",
+      "scope": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, "
+     },
+     {
+      "id": "architecture-diagrams",
+      "role": "skill",
+      "name": "architecture-diagrams",
+      "scope": "Use when the deliverable is a physical diagram artifact (.svg/.png) â€” C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid ther"
+     },
+     {
+      "id": "computer-use",
+      "role": "skill",
+      "name": "computer-use",
+      "scope": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) o"
+     },
+     {
+      "id": "image-forensics",
+      "role": "skill",
+      "name": "image-forensics",
+      "scope": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating th"
+     },
+     {
+      "id": "system-control",
+      "role": "skill",
+      "name": "system-control",
+      "scope": "Use when the task needs authorized OS-level control â€” process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file cop"
+     },
+     {
+      "id": "teach",
+      "role": "skill",
+      "name": "teach",
+      "scope": "Use when the user wants to learn a skill or concept through a guided, multi-step session."
+     },
+     {
+      "id": "camera-blocking",
+      "role": "skill",
+      "name": "camera-blocking",
+      "scope": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt templa"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-022",
+   "gold": "computer-use",
+   "request": {
+    "version": 1,
+    "request_id": "sp-022",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "control the local screen: screenshots, clicks, typing"
+    },
+    "candidates": [
+     {
+      "id": "ai-coding-dictionary",
+      "role": "skill",
+      "name": "ai-coding-dictionary",
+      "scope": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term d"
+     },
+     {
+      "id": "ai3d-gen",
+      "role": "skill",
+      "name": "ai3d-gen",
+      "scope": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, "
+     },
+     {
+      "id": "architecture-diagrams",
+      "role": "skill",
+      "name": "architecture-diagrams",
+      "scope": "Use when the deliverable is a physical diagram artifact (.svg/.png) â€” C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid ther"
+     },
+     {
+      "id": "computer-use",
+      "role": "skill",
+      "name": "computer-use",
+      "scope": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) o"
+     },
+     {
+      "id": "image-forensics",
+      "role": "skill",
+      "name": "image-forensics",
+      "scope": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating th"
+     },
+     {
+      "id": "system-control",
+      "role": "skill",
+      "name": "system-control",
+      "scope": "Use when the task needs authorized OS-level control â€” process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file cop"
+     },
+     {
+      "id": "teach",
+      "role": "skill",
+      "name": "teach",
+      "scope": "Use when the user wants to learn a skill or concept through a guided, multi-step session."
+     },
+     {
+      "id": "camera-blocking",
+      "role": "skill",
+      "name": "camera-blocking",
+      "scope": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt templa"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-023",
+   "gold": "ai3d-gen",
+   "request": {
+    "version": 1,
+    "request_id": "sp-023",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "generate a 3D asset from a text prompt locally"
+    },
+    "candidates": [
+     {
+      "id": "ai-coding-dictionary",
+      "role": "skill",
+      "name": "ai-coding-dictionary",
+      "scope": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term d"
+     },
+     {
+      "id": "ai3d-gen",
+      "role": "skill",
+      "name": "ai3d-gen",
+      "scope": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, "
+     },
+     {
+      "id": "architecture-diagrams",
+      "role": "skill",
+      "name": "architecture-diagrams",
+      "scope": "Use when the deliverable is a physical diagram artifact (.svg/.png) â€” C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid ther"
+     },
+     {
+      "id": "computer-use",
+      "role": "skill",
+      "name": "computer-use",
+      "scope": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) o"
+     },
+     {
+      "id": "image-forensics",
+      "role": "skill",
+      "name": "image-forensics",
+      "scope": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating th"
+     },
+     {
+      "id": "system-control",
+      "role": "skill",
+      "name": "system-control",
+      "scope": "Use when the task needs authorized OS-level control â€” process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file cop"
+     },
+     {
+      "id": "teach",
+      "role": "skill",
+      "name": "teach",
+      "scope": "Use when the user wants to learn a skill or concept through a guided, multi-step session."
+     },
+     {
+      "id": "camera-blocking",
+      "role": "skill",
+      "name": "camera-blocking",
+      "scope": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt templa"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-024",
+   "gold": "camera-blocking",
+   "request": {
+    "version": 1,
+    "request_id": "sp-024",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "block the webcam for this recording session"
+    },
+    "candidates": [
+     {
+      "id": "ai-coding-dictionary",
+      "role": "skill",
+      "name": "ai-coding-dictionary",
+      "scope": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term d"
+     },
+     {
+      "id": "ai3d-gen",
+      "role": "skill",
+      "name": "ai3d-gen",
+      "scope": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, "
+     },
+     {
+      "id": "architecture-diagrams",
+      "role": "skill",
+      "name": "architecture-diagrams",
+      "scope": "Use when the deliverable is a physical diagram artifact (.svg/.png) â€” C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid ther"
+     },
+     {
+      "id": "computer-use",
+      "role": "skill",
+      "name": "computer-use",
+      "scope": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) o"
+     },
+     {
+      "id": "image-forensics",
+      "role": "skill",
+      "name": "image-forensics",
+      "scope": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating th"
+     },
+     {
+      "id": "system-control",
+      "role": "skill",
+      "name": "system-control",
+      "scope": "Use when the task needs authorized OS-level control â€” process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file cop"
+     },
+     {
+      "id": "teach",
+      "role": "skill",
+      "name": "teach",
+      "scope": "Use when the user wants to learn a skill or concept through a guided, multi-step session."
+     },
+     {
+      "id": "camera-blocking",
+      "role": "skill",
+      "name": "camera-blocking",
+      "scope": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt templa"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-025",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sp-025",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "write a short poem about the ocean"
+    },
+    "candidates": [
+     {
+      "id": "ai-coding-dictionary",
+      "role": "skill",
+      "name": "ai-coding-dictionary",
+      "scope": "Use when the user asks about AI coding jargon, wants to clarify a term like context engineering, harness engineering, prompt engineering, or agent harness, or when the agent needs to agree on a term d"
+     },
+     {
+      "id": "ai3d-gen",
+      "role": "skill",
+      "name": "ai3d-gen",
+      "scope": "Use when the user asks for generative 3D assets (text-to-3D, image-to-3D, mesh synthesis) via self-hosted open models. Routes to extensions/comfyui-operator/wrapper.py against a local ComfyUI server, "
+     },
+     {
+      "id": "architecture-diagrams",
+      "role": "skill",
+      "name": "architecture-diagrams",
+      "scope": "Use when the deliverable is a physical diagram artifact (.svg/.png) â€” C4 models, dense class diagrams, network topology rendered via PlantUML. Not for diagrams embedded in Markdown (use Mermaid ther"
+     },
+     {
+      "id": "computer-use",
+      "role": "skill",
+      "name": "computer-use",
+      "scope": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) o"
+     },
+     {
+      "id": "image-forensics",
+      "role": "skill",
+      "name": "image-forensics",
+      "scope": "Use when checking whether an image is a real camera capture or synthetic/generated, when tagging media provenance before ingestion, when verifying visual evidence for fact-check, or when validating th"
+     },
+     {
+      "id": "system-control",
+      "role": "skill",
+      "name": "system-control",
+      "scope": "Use when the task needs authorized OS-level control â€” process inventory, service status, bounded one-shot command execution, persistent owned sessions, event streams, or root-bound verified file cop"
+     },
+     {
+      "id": "teach",
+      "role": "skill",
+      "name": "teach",
+      "scope": "Use when the user wants to learn a skill or concept through a guided, multi-step session."
+     },
+     {
+      "id": "camera-blocking",
+      "role": "skill",
+      "name": "camera-blocking",
+      "scope": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt templa"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-026",
+   "gold": "context7",
+   "request": {
+    "version": 1,
+    "request_id": "sp-026",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "look up up-to-date library docs via context7"
+    },
+    "candidates": [
+     {
+      "id": "ai-tools",
+      "role": "skill",
+      "name": "ai-tools",
+      "scope": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments "
+     },
+     {
+      "id": "arena",
+      "role": "skill",
+      "name": "arena",
+      "scope": "Use when one attempt at a non-trivial artifact would lock in the wrong shape. Spawns N parallel candidates at the same task, cross-judges, picks a base, grafts the strongest parts of the losers into i"
+     },
+     {
+      "id": "benchmark-checklist",
+      "role": "skill",
+      "name": "benchmark-checklist",
+      "scope": "Use when running a benchmark, reporting a measured speedup or regression, or vetting a performance number before acting on it."
+     },
+     {
+      "id": "career-ops",
+      "role": "skill",
+      "name": "career-ops",
+      "scope": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never "
+     },
+     {
+      "id": "context7",
+      "role": "skill",
+      "name": "context7",
+      "scope": "Use when the user asks about a library, framework, or component and up-to-date docs would help."
+     },
+     {
+      "id": "correct",
+      "role": "skill",
+      "name": "correct",
+      "scope": "Use when the operator corrects an agent mistake in the repo, or when hardening the project so a repeated agent mistake class cannot happen again."
+     },
+     {
+      "id": "create-verification-skill",
+      "role": "skill",
+      "name": "create-verification-skill",
+      "scope": "Use when a project needs a scripted way to drive the real app the way a user does and prove behavior, or when asked to make a control/verification skill for the repo. Generates a project-local verify-"
+     },
+     {
+      "id": "criador-de-devin-app",
+      "role": "skill",
+      "name": "criador-de-devin-app",
+      "scope": "Use when turning a recurring intent into a named devin-cli app - a repeatable agent automation with its own name, schedule, prompt and done-when contract. Covers the agentic-app naming framework and t"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-027",
+   "gold": "create-verification-skill",
+   "request": {
+    "version": 1,
+    "request_id": "sp-027",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "create a new skill that verifies its own output"
+    },
+    "candidates": [
+     {
+      "id": "ai-tools",
+      "role": "skill",
+      "name": "ai-tools",
+      "scope": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments "
+     },
+     {
+      "id": "arena",
+      "role": "skill",
+      "name": "arena",
+      "scope": "Use when one attempt at a non-trivial artifact would lock in the wrong shape. Spawns N parallel candidates at the same task, cross-judges, picks a base, grafts the strongest parts of the losers into i"
+     },
+     {
+      "id": "benchmark-checklist",
+      "role": "skill",
+      "name": "benchmark-checklist",
+      "scope": "Use when running a benchmark, reporting a measured speedup or regression, or vetting a performance number before acting on it."
+     },
+     {
+      "id": "career-ops",
+      "role": "skill",
+      "name": "career-ops",
+      "scope": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never "
+     },
+     {
+      "id": "context7",
+      "role": "skill",
+      "name": "context7",
+      "scope": "Use when the user asks about a library, framework, or component and up-to-date docs would help."
+     },
+     {
+      "id": "correct",
+      "role": "skill",
+      "name": "correct",
+      "scope": "Use when the operator corrects an agent mistake in the repo, or when hardening the project so a repeated agent mistake class cannot happen again."
+     },
+     {
+      "id": "create-verification-skill",
+      "role": "skill",
+      "name": "create-verification-skill",
+      "scope": "Use when a project needs a scripted way to drive the real app the way a user does and prove behavior, or when asked to make a control/verification skill for the repo. Generates a project-local verify-"
+     },
+     {
+      "id": "criador-de-devin-app",
+      "role": "skill",
+      "name": "criador-de-devin-app",
+      "scope": "Use when turning a recurring intent into a named devin-cli app - a repeatable agent automation with its own name, schedule, prompt and done-when contract. Covers the agentic-app naming framework and t"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-028",
+   "gold": "benchmark-checklist",
+   "request": {
+    "version": 1,
+    "request_id": "sp-028",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "run the pre-merge benchmark checklist"
+    },
+    "candidates": [
+     {
+      "id": "ai-tools",
+      "role": "skill",
+      "name": "ai-tools",
+      "scope": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments "
+     },
+     {
+      "id": "arena",
+      "role": "skill",
+      "name": "arena",
+      "scope": "Use when one attempt at a non-trivial artifact would lock in the wrong shape. Spawns N parallel candidates at the same task, cross-judges, picks a base, grafts the strongest parts of the losers into i"
+     },
+     {
+      "id": "benchmark-checklist",
+      "role": "skill",
+      "name": "benchmark-checklist",
+      "scope": "Use when running a benchmark, reporting a measured speedup or regression, or vetting a performance number before acting on it."
+     },
+     {
+      "id": "career-ops",
+      "role": "skill",
+      "name": "career-ops",
+      "scope": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never "
+     },
+     {
+      "id": "context7",
+      "role": "skill",
+      "name": "context7",
+      "scope": "Use when the user asks about a library, framework, or component and up-to-date docs would help."
+     },
+     {
+      "id": "correct",
+      "role": "skill",
+      "name": "correct",
+      "scope": "Use when the operator corrects an agent mistake in the repo, or when hardening the project so a repeated agent mistake class cannot happen again."
+     },
+     {
+      "id": "create-verification-skill",
+      "role": "skill",
+      "name": "create-verification-skill",
+      "scope": "Use when a project needs a scripted way to drive the real app the way a user does and prove behavior, or when asked to make a control/verification skill for the repo. Generates a project-local verify-"
+     },
+     {
+      "id": "criador-de-devin-app",
+      "role": "skill",
+      "name": "criador-de-devin-app",
+      "scope": "Use when turning a recurring intent into a named devin-cli app - a repeatable agent automation with its own name, schedule, prompt and done-when contract. Covers the agentic-app naming framework and t"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-029",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "sp-029",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "deploy this service to production kubernetes"
+    },
+    "candidates": [
+     {
+      "id": "ai-tools",
+      "role": "skill",
+      "name": "ai-tools",
+      "scope": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments "
+     },
+     {
+      "id": "arena",
+      "role": "skill",
+      "name": "arena",
+      "scope": "Use when one attempt at a non-trivial artifact would lock in the wrong shape. Spawns N parallel candidates at the same task, cross-judges, picks a base, grafts the strongest parts of the losers into i"
+     },
+     {
+      "id": "benchmark-checklist",
+      "role": "skill",
+      "name": "benchmark-checklist",
+      "scope": "Use when running a benchmark, reporting a measured speedup or regression, or vetting a performance number before acting on it."
+     },
+     {
+      "id": "career-ops",
+      "role": "skill",
+      "name": "career-ops",
+      "scope": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never "
+     },
+     {
+      "id": "context7",
+      "role": "skill",
+      "name": "context7",
+      "scope": "Use when the user asks about a library, framework, or component and up-to-date docs would help."
+     },
+     {
+      "id": "correct",
+      "role": "skill",
+      "name": "correct",
+      "scope": "Use when the operator corrects an agent mistake in the repo, or when hardening the project so a repeated agent mistake class cannot happen again."
+     },
+     {
+      "id": "create-verification-skill",
+      "role": "skill",
+      "name": "create-verification-skill",
+      "scope": "Use when a project needs a scripted way to drive the real app the way a user does and prove behavior, or when asked to make a control/verification skill for the repo. Generates a project-local verify-"
+     },
+     {
+      "id": "criador-de-devin-app",
+      "role": "skill",
+      "name": "criador-de-devin-app",
+      "scope": "Use when turning a recurring intent into a named devin-cli app - a repeatable agent automation with its own name, schedule, prompt and done-when contract. Covers the agentic-app naming framework and t"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "sp-030",
+   "gold": "handoff",
+   "request": {
+    "version": 1,
+    "request_id": "sp-030",
+    "profile": "skill-pick-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "write a handoff document so the next session can resume"
+    },
+    "candidates": [
+     {
+      "id": "context-folding",
+      "role": "skill",
+      "name": "context-folding",
+      "scope": "Use when context is growing large (approaching model window limits), when long documents or transcripts need to be processed, or when compaction is losing critical information. Adapts Recursive Langua"
+     },
+     {
+      "id": "handoff",
+      "role": "skill",
+      "name": "handoff",
+      "scope": "Use when the user needs to compact the current conversation into a document for another agent to continue."
+     },
+     {
+      "id": "structured-knowledge-extraction",
+      "role": "skill",
+      "name": "structured-knowledge-extraction",
+      "scope": "Use when extracting entities, relations, evidence, and provenance from Markdown or plain text into a typed, versioned knowledge graph under `.devin/`."
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  }
+ ]
+}

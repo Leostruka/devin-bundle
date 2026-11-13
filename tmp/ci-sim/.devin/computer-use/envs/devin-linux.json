@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "env_id": "devin-linux",
+  "provider": "qemu",
+  "image_ref": "C:\\Users\\leand\\AppData\\Local\\devin-cu\\images\\debian-live-13.7.0-amd64-xfce.iso",
+  "image_sha256": "379fcf159fa72a2ed8e3b74f4047df6061bc65adf5217e3d194e41a26fdb85e4",
+  "image_format": "iso",
+  "image_source": "https://cdimage.debian.org/debian-cd/current-live/amd64/iso-hybrid/debian-live-13.7.0-amd64-xfce.iso",
+  "image_license": "Debian — DFSG-free, https://www.debian.org/legal/licenses/",
+  "guest_os": "debian-13-xfce-live",
+  "keyboard_layout": "en-us",
+  "accel": "whpx",
+  "qemu_path": "C:\\Program Files\\qemu\\qemu-system-x86_64.exe",
+  "qemu_sha256": "47d57a6072e0bb3bd98f87926eb129eb1736dfe818c67b3b81ef7ce4edd0b3cd",
+  "resources": { "vcpus": 2, "memory_mib": 4096 },
+  "disk_mib": 8192,
+  "network": "off",
+  "clipboard": "off",
+  "mounts": [],
+  "physical_devices": []
+}

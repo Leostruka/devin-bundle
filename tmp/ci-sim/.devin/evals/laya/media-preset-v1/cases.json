@@ -1,0 +1,839 @@
+{
+ "version": 1,
+ "eval": "media-preset-v1-cal-01",
+ "profile": "media-preset-v1",
+ "cases": [
+  {
+   "case_id": "mp-001",
+   "gold": "matrix",
+   "request": {
+    "version": 1,
+    "request_id": "mp-001",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "make the footage look like the matrix code rain"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-002",
+   "gold": "retro-crt",
+   "request": {
+    "version": 1,
+    "request_id": "mp-002",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "give this render an old CRT monitor vibe"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-003",
+   "gold": "classic-terminal",
+   "request": {
+    "version": 1,
+    "request_id": "mp-003",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "style it like a green phosphor terminal"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-004",
+   "gold": "cyberpunk",
+   "request": {
+    "version": 1,
+    "request_id": "mp-004",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "apply the neon cyberpunk city look"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-005",
+   "gold": "minimal",
+   "request": {
+    "version": 1,
+    "request_id": "mp-005",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "keep it clean and minimal, no effects"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-006",
+   "gold": "high-detail",
+   "request": {
+    "version": 1,
+    "request_id": "mp-006",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "max out the detail and sharpness"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-007",
+   "gold": "matrix",
+   "request": {
+    "version": 1,
+    "request_id": "mp-007",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "I want that hacker movie green cascade effect"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-008",
+   "gold": "retro-crt",
+   "request": {
+    "version": 1,
+    "request_id": "mp-008",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "make it look like a 1990s arcade screen"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-009",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "mp-009",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "export this as a gif"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-010",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "mp-010",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "what preset options do we have?"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-011",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "mp-011",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "speed up the video to 2x"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-012",
+   "gold": "classic-terminal",
+   "request": {
+    "version": 1,
+    "request_id": "mp-012",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "amber terminal aesthetic please"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-013",
+   "gold": "cyberpunk",
+   "request": {
+    "version": 1,
+    "request_id": "mp-013",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "neon pink and blue futuristic style"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-014",
+   "gold": "__none__",
+   "request": {
+    "version": 1,
+    "request_id": "mp-014",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "add background music to the video"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-015",
+   "gold": "minimal",
+   "request": {
+    "version": 1,
+    "request_id": "mp-015",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "strip everything down to bare essentials"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  },
+  {
+   "case_id": "mp-016",
+   "gold": "high-detail",
+   "request": {
+    "version": 1,
+    "request_id": "mp-016",
+    "profile": "media-preset-v1",
+    "mode": "shadow",
+    "state": {
+     "goal": "I need maximum fidelity for the close-up"
+    },
+    "candidates": [
+     {
+      "id": "classic-terminal",
+      "role": "preset",
+      "name": "classic-terminal",
+      "scope": "image"
+     },
+     {
+      "id": "matrix",
+      "role": "preset",
+      "name": "matrix",
+      "scope": "image"
+     },
+     {
+      "id": "retro-crt",
+      "role": "preset",
+      "name": "retro-crt",
+      "scope": "image"
+     },
+     {
+      "id": "high-detail",
+      "role": "preset",
+      "name": "high-detail",
+      "scope": "image"
+     },
+     {
+      "id": "minimal",
+      "role": "preset",
+      "name": "minimal",
+      "scope": "image"
+     },
+     {
+      "id": "cyberpunk",
+      "role": "preset",
+      "name": "cyberpunk",
+      "scope": "image"
+     }
+    ],
+    "deadline_ms": 1000
+   }
+  }
+ ]
+}

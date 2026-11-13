@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+"""agent-reach: local wrapper for the agent-reach trend/source CLI.
+
+Drives `agent-reach get <channel>[.<command>]` on PATH (or
+`uv tool run agent-reach`) through a whitelist of credential-free
+channels only. Upstream grammar (agent-reach 0.1.x): channels are
+installable manifests; reads go through `get`, host readiness through
+`doctor --json`.
+
+Safety contract:
+  - Never runs through a shell; subprocess list-form only.
+  - Whitelisted channels only: youtube, rss (upstream index, auth:none).
+  - Credential/cookie channels (twitter, x, reddit, instagram,
+    xiaohongshu, boss) are explicitly rejected: bundle security policy
+    keeps credentialed scraping out of scope.
+  - Bounded stdout/stderr; hard timeout per call.
+  - Missing binary/toolchain -> {"status": "missing"}; never fabricate.
+
+Output: JSON envelope on stdout: {api_version, status, command, stdout,
+stderr, duration_s, meta.answered_by}. Exit 0 = ok, non-zero = error.
+"""
+import json
+import platform
+import re
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+AR_BIN = "agent-reach"
+DEFAULT_TIMEOUT = 120
+MAX_OUTPUT = 1024 * 1024  # 1 MiB per stream
+
+# Credential-free channels in the upstream agent-reach index
+# (`agent-reach list --all`, auth:none); safe under the bundle
+# credential policy. Host availability is reported by `doctor`.
+CHANNELS = ["youtube", "rss"]
+
+# Standalone commands proxied without `get` translation.
+COMMANDS = ["doctor"]
+
+# `<channel>` or `<channel>.<command>` targets only.
+TARGET_RE = re.compile(r"[a-z0-9_]+(\.[a-z0-9_]+)?")
+
+# Cookie/credential channels: rejected, not merely absent.
+BLOCKED_CHANNELS = {
+    "twitter": "requires account cookies/credentials",
+    "x": "requires account cookies/credentials",
+    "reddit": "requires API credentials",
+    "instagram": "requires account cookies/credentials",
+    "xiaohongshu": "requires account cookies/credentials",
+    "boss": "requires account cookies/credentials",
+}
+
+
+def emit(payload, code=0):
+    _stamp(payload)
+    json.dump(payload, sys.stdout, indent=2, sort_keys=False)
+    sys.stdout.write("\n")
+    sys.exit(code)
+
+
+def resolve_invoker():
+    """Return argv prefix that runs agent-reach, or None."""
+    binpath = shutil.which(AR_BIN)
+    if binpath:
+        return [binpath]
+    uv = shutil.which("uv")
+    if uv:
+        return [uv, "tool", "run", AR_BIN]
+    return None
+
+
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached.
+
+    manifest.json sits at the install root in both the repo layout
+    (extensions/<name>/ -> repo root) and the live install
+    (%APPDATA%/devin/extensions/<name>/ -> %APPDATA%/devin). Only a
+    JSON object with a "name" key counts as the bundle manifest;
+    malformed or unrelated JSON yields "" rather than a guess.
+    """
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).absolute().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    data = json.loads(mf.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    break
+                if isinstance(data, dict) and data.get("name"):
+                    _BUNDLE_VERSION = str(data.get("version") or "")
+                break
+    return _BUNDLE_VERSION
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "agent-reach"}
+
+
+def _stamp(payload):
+    """Assert envelope contract v2 on a response dict (in place)."""
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def envelope(status, command, stdout="", stderr="", duration_s=0.0, **extra):
+    env = {
+        "status": status,
+        "command": command,
+        "stdout": stdout,
+        "stderr": stderr,
+        "duration_s": duration_s,
+    }
+    env.update(extra)
+    return _stamp(env)
+
+
+def run_cmd(argv, command, timeout=DEFAULT_TIMEOUT):
+    """Run argv list-form. Returns JSON envelope dict."""
+    t0 = time.time()
+    try:
+        proc = subprocess.run(
+            argv,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=timeout,
+            errors="replace",
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except FileNotFoundError as e:
+        return envelope("missing", command, stderr=str(e),
+                        duration_s=round(time.time() - t0, 2))
+    except subprocess.TimeoutExpired:
+        return envelope("timeout", command,
+                        stderr="timeout after %ds" % timeout,
+                        duration_s=round(time.time() - t0, 2))
+    return envelope(
+        "ok" if proc.returncode == 0 else "error",
+        command,
+        stdout=(proc.stdout or "")[:MAX_OUTPUT],
+        stderr=(proc.stderr or "")[:MAX_OUTPUT],
+        duration_s=round(time.time() - t0, 2),
+        exit_code=proc.returncode,
+    )
+
+
+def cmd_doctor(_argv):
+    report = envelope("ok", "doctor")
+    report["host"] = {"os": platform.system(),
+                      "python": platform.python_version()}
+    report["agent_reach_bin"] = shutil.which(AR_BIN)
+    report["uv"] = shutil.which("uv")
+    invoker = resolve_invoker()
+    report["agent_reach_invocation"] = invoker
+    if not invoker:
+        report["status"] = "missing"
+        report["hint"] = ("install agent-reach on PATH or uv "
+                          "(uv tool run agent-reach)")
+        emit(report, 1)
+    probe = run_cmd(invoker + ["doctor", "--json"], "doctor:probe")
+    report["probe_exit_code"] = probe.get("exit_code")
+    try:
+        report["channels"] = json.loads(probe["stdout"] or "[]")
+    except ValueError:
+        report["channels"] = probe["stdout"]
+        report["probe_stderr"] = probe["stderr"]
+    if probe["status"] != "ok":
+        report["status"] = "degraded"
+        report["hint"] = ("agent-reach doctor failed or a channel is "
+                          "down; install channels with "
+                          "`agent-reach install <channel>`")
+    emit(report, 0 if report["status"] == "ok" else 1)
+
+
+def cmd_channel(channel, argv):
+    invoker = resolve_invoker()
+    if not invoker:
+        emit(envelope("missing", channel,
+                      stderr="agent-reach not found (need agent-reach on "
+                             "PATH or uv)"), 1)
+    extra = [t for t in argv if t != "--"]
+    for t in extra:
+        if t.startswith("-"):
+            emit(envelope("rejected", channel,
+                          stderr="flags not forwarded; positional "
+                                 "args only: %s" % t), 2)
+    run_argv = invoker + ["get", channel] + extra + ["--json"]
+    result = run_cmd(run_argv, channel)
+    emit(result, 0 if result["status"] == "ok" else 1)
+
+
+def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if not argv or argv[0] in ("-h", "--help"):
+        emit({"usage": "wrapper.py <channel>[.<command>] [args]",
+              "channels": CHANNELS + COMMANDS,
+              "blocked_channels": sorted(BLOCKED_CHANNELS)},
+             0 if argv else 2)
+    command = argv[0]
+    if command in BLOCKED_CHANNELS:
+        emit(envelope("rejected", command,
+                      stderr="channel requires credentials/cookies and is "
+                             "out of scope: %s" % BLOCKED_CHANNELS[command],
+                      policy="credential-free channels only",
+                      allowed=sorted(CHANNELS + COMMANDS)), 2)
+    if command in COMMANDS:
+        cmd_doctor(argv[1:])
+    base = command.split(".", 1)[0]
+    if base not in CHANNELS or not TARGET_RE.fullmatch(command):
+        emit(envelope("rejected", command,
+                      stderr="channel not whitelisted: %s" % command,
+                      allowed=sorted(CHANNELS + COMMANDS)), 2)
+    cmd_channel(command, argv[1:])
+
+
+if __name__ == "__main__":
+    main()

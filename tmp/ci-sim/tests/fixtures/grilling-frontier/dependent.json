@@ -1,0 +1,42 @@
+[
+  {
+    "id": "A",
+    "question": "Choose a backend language.",
+    "depends_on": []
+  },
+  {
+    "id": "B",
+    "question": "Choose a web framework.",
+    "depends_on": [
+      "A"
+    ]
+  },
+  {
+    "id": "C",
+    "question": "Choose an ORM.",
+    "depends_on": [
+      "B"
+    ]
+  },
+  {
+    "id": "D",
+    "question": "Choose a migration tool.",
+    "depends_on": [
+      "C"
+    ]
+  },
+  {
+    "id": "E",
+    "question": "Choose a hosting provider.",
+    "depends_on": [
+      "D"
+    ]
+  },
+  {
+    "id": "F",
+    "question": "Choose a CI pipeline.",
+    "depends_on": [
+      "E"
+    ]
+  }
+]

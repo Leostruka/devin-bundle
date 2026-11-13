@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "mode": "shadow",
+  "calibration": {
+    "id": "media-intent-v1-platt-2026-11-09",
+    "checkpoint_sha256": "54f695651fcf10da8a23003899ba646932c877b87e8b69d88d63ee92e1c58aab",
+    "profile": "media-intent-v1",
+    "locale": "en",
+    "data_source": "maintainer-authored frozen manifests, real worker captures",
+    "evaluation_id": "media-intent-v1-heldout-40",
+    "threshold": 0.9,
+    "cardinality": 5,
+    "map": {
+      "kind": "platt",
+      "a": 23.1982,
+      "b": -13.1611
+    }
+  },
+  "device": "cpu",
+  "deadline_ms": 1000,
+  "queue_depth": 4,
+  "profiles": [
+    "ui-target-v1",
+    "skill-family-v1",
+    "issue-category-v1",
+    "output-context-v1",
+    "compact-item-v1",
+    "compact-gate-v1",
+    "compact-boundary-v1",
+    "cmd-risk-v1",
+    "filebool-v1",
+    "media-intent-v1"
+  ],
+  "models": {
+    "english": {
+      "path": "D:\\Programing\\ai_workspace\\devin-bundle\\.devin\\laya\\models\\english",
+      "sha256": "54f695651fcf10da8a23003899ba646932c877b87e8b69d88d63ee92e1c58aab",
+      "identity": "english"
+    }
+  },
+  "daemon": {
+    "idle_ttl_s": 1800
+  },
+  "compact_gate": {
+    "eval_floor": 0.25,
+    "compact_at": 0.7,
+    "compact_to": 0.4,
+    "force_at": 0.8,
+    "k_calls": 8,
+    "cooldown_turns": 10
+  }
+}

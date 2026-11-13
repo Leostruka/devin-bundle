@@ -1,0 +1,160 @@
+{
+  "name": "eval",
+  "total": 24,
+  "correct": 2,
+  "wrong": 14,
+  "abstained": 7,
+  "correct_abstain": 1,
+  "shortlist_miss": 0,
+  "decided": 16,
+  "accuracy": 0.125,
+  "wilson_accuracy_low": 0.04226207137767879,
+  "coverage": 0.6666666666666666,
+  "abstain_precision": 0.125,
+  "cases": [
+    {
+      "case_id": "sf-001",
+      "outcome": "abstained",
+      "gold": "development",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-002",
+      "outcome": "correct",
+      "gold": "development",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-003",
+      "outcome": "correct",
+      "gold": "development",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-004",
+      "outcome": "wrong",
+      "gold": "investigation",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-005",
+      "outcome": "wrong",
+      "gold": "investigation",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-006",
+      "outcome": "wrong",
+      "gold": "investigation",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-007",
+      "outcome": "wrong",
+      "gold": "operations",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-008",
+      "outcome": "abstained",
+      "gold": "operations",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-009",
+      "outcome": "wrong",
+      "gold": "operations",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-010",
+      "outcome": "abstained",
+      "gold": "data",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-011",
+      "outcome": "wrong",
+      "gold": "data",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-012",
+      "outcome": "wrong",
+      "gold": "data",
+      "picked": "operations"
+    },
+    {
+      "case_id": "sf-013",
+      "outcome": "wrong",
+      "gold": "visual",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-014",
+      "outcome": "wrong",
+      "gold": "visual",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-015",
+      "outcome": "wrong",
+      "gold": "visual",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-016",
+      "outcome": "abstained",
+      "gold": "knowledge",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-017",
+      "outcome": "abstained",
+      "gold": "knowledge",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-018",
+      "outcome": "wrong",
+      "gold": "knowledge",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-019",
+      "outcome": "abstained",
+      "gold": "assistance",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-020",
+      "outcome": "wrong",
+      "gold": "assistance",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-021",
+      "outcome": "abstained",
+      "gold": "assistance",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-022",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "sf-023",
+      "outcome": "wrong",
+      "gold": "__none__",
+      "picked": "development"
+    },
+    {
+      "case_id": "sf-024",
+      "outcome": "wrong",
+      "gold": "__none__",
+      "picked": "operations"
+    }
+  ]
+}

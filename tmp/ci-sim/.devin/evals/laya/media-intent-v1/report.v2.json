@@ -1,0 +1,160 @@
+{
+  "name": "media-intent-v1-cal-02",
+  "total": 24,
+  "correct": 15,
+  "wrong": 1,
+  "abstained": 3,
+  "correct_abstain": 5,
+  "shortlist_miss": 0,
+  "decided": 16,
+  "accuracy": 0.9375,
+  "wilson_accuracy_low": 0.7624894211087485,
+  "coverage": 0.6666666666666666,
+  "abstain_precision": 0.625,
+  "cases": [
+    {
+      "case_id": "mi-017",
+      "outcome": "abstained",
+      "gold": "stylize_image",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "mi-018",
+      "outcome": "correct",
+      "gold": "stylize_image",
+      "picked": "stylize_image"
+    },
+    {
+      "case_id": "mi-019",
+      "outcome": "correct",
+      "gold": "stylize_image",
+      "picked": "stylize_image"
+    },
+    {
+      "case_id": "mi-020",
+      "outcome": "correct",
+      "gold": "stylize_video",
+      "picked": "stylize_video"
+    },
+    {
+      "case_id": "mi-021",
+      "outcome": "abstained",
+      "gold": "stylize_video",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "mi-022",
+      "outcome": "correct",
+      "gold": "diagram",
+      "picked": "diagram"
+    },
+    {
+      "case_id": "mi-023",
+      "outcome": "correct",
+      "gold": "diagram",
+      "picked": "diagram"
+    },
+    {
+      "case_id": "mi-024",
+      "outcome": "correct",
+      "gold": "launch_video",
+      "picked": "launch_video"
+    },
+    {
+      "case_id": "mi-025",
+      "outcome": "correct",
+      "gold": "launch_video",
+      "picked": "launch_video"
+    },
+    {
+      "case_id": "mi-026",
+      "outcome": "correct",
+      "gold": "ui_design",
+      "picked": "ui_design"
+    },
+    {
+      "case_id": "mi-027",
+      "outcome": "correct",
+      "gold": "ui_design",
+      "picked": "ui_design"
+    },
+    {
+      "case_id": "mi-028",
+      "outcome": "wrong",
+      "gold": "__none__",
+      "picked": "ui_design"
+    },
+    {
+      "case_id": "mi-029",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "mi-030",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "mi-031",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "mi-032",
+      "outcome": "correct",
+      "gold": "stylize_image",
+      "picked": "stylize_image"
+    },
+    {
+      "case_id": "mi-033",
+      "outcome": "correct",
+      "gold": "diagram",
+      "picked": "diagram"
+    },
+    {
+      "case_id": "mi-034",
+      "outcome": "correct",
+      "gold": "launch_video",
+      "picked": "launch_video"
+    },
+    {
+      "case_id": "mi-035",
+      "outcome": "correct",
+      "gold": "ui_design",
+      "picked": "ui_design"
+    },
+    {
+      "case_id": "mi-036",
+      "outcome": "correct",
+      "gold": "stylize_video",
+      "picked": "stylize_video"
+    },
+    {
+      "case_id": "mi-037",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "mi-038",
+      "outcome": "correct_abstain",
+      "gold": "__none__",
+      "picked": "__none__"
+    },
+    {
+      "case_id": "mi-039",
+      "outcome": "correct",
+      "gold": "stylize_image",
+      "picked": "stylize_image"
+    },
+    {
+      "case_id": "mi-040",
+      "outcome": "abstained",
+      "gold": "diagram",
+      "picked": "__none__"
+    }
+  ]
+}
