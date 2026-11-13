@@ -84,6 +84,7 @@ The bundle does not own:
 | `install.ps1`, `install.sh` | Cross-platform installers. |
 | `export.ps1`, `export.sh` | Cross-platform exporters. |
 | `audit.py` | Bundle consistency audit. |
+| `.devin/docs/CLI-CONTRACT.md` | Envelope v2 spec: `api_version` + `meta.answered_by` on agent-facing JSON CLIs. |
 | `.github/workflows/ci.yml` | CI validation source. |
 | `.devin/plans/` | Approved implementation roadmaps and sub-plans. |
 
