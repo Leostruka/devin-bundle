@@ -133,7 +133,7 @@ def main():
            "count": len(nodes), "nodes": nodes}
     if adaptive_meta:
         out["adaptive"] = adaptive_meta
-    print(json.dumps(out))
+    st_common.emit(out)
 
 
 if __name__ == "__main__":

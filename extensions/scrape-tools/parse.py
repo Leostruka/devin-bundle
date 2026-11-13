@@ -12,10 +12,11 @@ import argparse
 import json
 import sys
 
+import st_common
+
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
-    sys.exit(code)
+    st_common.fail(msg, code)
 
 
 def node_to_dict(el):
@@ -86,8 +87,8 @@ def main():
     nodes = [node_to_dict(el) for el in found]
     if args.first:
         nodes = nodes[:1]
-    print(json.dumps({"ok": True, "source": args.source,
-                      "count": len(nodes), "nodes": nodes}))
+    st_common.emit({"ok": True, "source": args.source,
+                    "count": len(nodes), "nodes": nodes})
 
 
 if __name__ == "__main__":

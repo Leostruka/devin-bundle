@@ -63,13 +63,28 @@ help/usage JSON paths (routed through `emit()`). Non-dict payloads pass
 through untouched.
 
 The helpers are duplicated per wrapper on purpose: extensions install
-as flat self-contained dirs, no shared import path exists.
+as flat self-contained dirs, no shared import path exists. Exception:
+files inside the same extension dir that already share a module may
+share the helpers - `scrape-tools` keeps them once in `st_common.py`
+and sibling CLIs call `st_common.emit(payload)`.
+
+## Covered entry points
+
+Dedicated wrappers: agent-reach, voicebox, hyperframes, gcal,
+offsec-tools, rea-ops, rz-ops, stock-footage, blender-operator,
+comfyui-operator, laya-tools.
+
+Utility CLIs (wave 5, #604): `scrape-tools/{scrape,parse,dom_elements}.py`
+(shared stamp via `st_common.emit`) and `asr/{bootstrap,transcribe}.py`
+(local `_emit`).
 
 ## Adding a wrapper
 
 1. Copy the `_bundle_version()` + `_answered_by()` + `_stamp()` block
    from any wrapped extension; call `_stamp(...)` at every JSON output
-   funnel, including help/usage paths.
+   funnel, including help/usage paths. If the extension already has a
+   shared module (e.g. `st_common.py`), host the trio there once and
+   route sibling prints through `emit(payload)`.
 2. Add a `(path, argv, wrapper-name)` row to `PROBES` in
    `tests/test_envelope_contract_v2.py` - the test runs the wrapper in
    a real subprocess and asserts `api_version == 2`,
@@ -82,6 +97,9 @@ as flat self-contained dirs, no shared import path exists.
 
 - `system-control` `sc_*` suite: governed by `sc_contract.py`
   (`SCHEMA_VERSION`), a separate wire contract. Evaluate separately.
+- `code-graph/query.py --json`: emits a bare JSON array - an object
+  envelope cannot be added without a breaking shape change; needs a
+  consumer audit before an opt-in `--envelope` flag or migration (#604).
 - Media/internal tools (grainrad, jxl, playblast, craft-bridge,
   api-bridge): lower agent-call frequency.
 - `--detail brief|compact|full`: implemented on `stock-footage search`

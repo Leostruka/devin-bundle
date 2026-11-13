@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix(extensions): envelope v2 provenance hardened after independent review (#601) - `_bundle_version` no longer crashes on valid-JSON non-dict manifests (`null`/`[]` -> `AttributeError` killed every emit path), walks `Path(__file__).absolute()` so junctioned installs report the invoked tree's version, and only accepts manifests with a `"name"` key. Uniform `_answered_by()`+`_stamp()` trio replaces per-site `setdefault`: `api_version` is forced to 2, non-dict `meta` repaired, `answered_by` merged without clobbering upstream provenance, and `env.update(extra)` can no longer strip contract keys. Usage/help JSON paths in agent-reach/hyperframes now route through `emit()` so they carry v2 fields. `test_envelope_contract_v2.py` upgraded from static text matching to real subprocess probes asserting `api_version==2` + `answered_by.{wrapper,bundle}` on all 11 wrappers.
 
+- feat(extensions): envelope v2 wave 5 - utility-CLI emitters covered (#604). `scrape-tools` hosts the trio once in `st_common.py` with a shared `emit()` (scrape.py/parse.py/dom_elements.py route all JSON through it); `asr/{bootstrap,transcribe}.py` carry local `_emit`. Contract probes use CI-safe argvs (`capabilities` catalog dumps instead of backend-probing no-args paths; SSRF-denied URL, missing-dep, missing-file exits). `code-graph/query.py --json` documented out-of-scope - bare-array shape needs a consumer audit before any opt-in envelope flag.
+
 - feat(laya-tools): bootstrap --help/--dry-run args, no more silent install on probe (#588)
 
 ## [3.21.0] - 2026-11-13
