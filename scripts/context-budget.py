@@ -22,13 +22,13 @@ count — exact counts require the model provider's tokenizer.
 """
 import sys, os, json, argparse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bundle_envelope import bind
 
 
 _stamp, _dumps = bind("context-budget")
 
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     from _hookrun import emit_metric
 except Exception:

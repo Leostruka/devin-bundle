@@ -127,6 +127,8 @@ def _load(name):
     spec = importlib.util.spec_from_file_location(
         name, os.path.join(HERE, name + ".py"))
     mod = importlib.util.module_from_spec(spec)
+    if HERE not in sys.path:
+        sys.path.append(HERE)
     spec.loader.exec_module(mod)
     return mod
 

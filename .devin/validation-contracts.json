@@ -38,5 +38,11 @@
     "tests/validation/test_jev_runtime_contracts.py::test_review_gate_cannot_authorize",
     "tests/validation/test_jev_runtime_contracts.py::test_dom_picker_stale_abstains",
     "tests/validation/test_jev_runtime_contracts.py::test_doc_coverage_map_targets_are_real"
+  ],
+  ".devin/docs/CLI-CONTRACT.md": [
+    "tests/validation/test_cli_contract_doc.py"
+  ],
+  ".devin/docs/TOOLS-MAP.md": [
+    "tests/validation/test_tools_map_hooks.py"
   ]
 }

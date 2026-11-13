@@ -96,7 +96,7 @@ def _load(name, path):
     mod = importlib.util.module_from_spec(spec)
     d = os.path.dirname(os.path.abspath(path))
     if d not in sys.path:
-        sys.path.insert(0, d)
+        sys.path.append(d)
     spec.loader.exec_module(mod)
     return mod
 

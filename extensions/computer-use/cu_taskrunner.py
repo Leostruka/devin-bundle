@@ -178,6 +178,8 @@ def _notify_done(trace_id, st):
         spec = importlib.util.spec_from_file_location(
             "cu_notify", os.path.join(HERE, "cu_notify.py"))
         mod = importlib.util.module_from_spec(spec)
+        if HERE not in sys.path:
+            sys.path.append(HERE)
         spec.loader.exec_module(mod)
         cmd = " ".join(st.get("command") or [])[:80]
         mod.notify(f"cu task {st['state']}: {trace_id}", cmd,
