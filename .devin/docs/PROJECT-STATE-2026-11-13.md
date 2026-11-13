@@ -2,11 +2,11 @@
 
 ## Position
 
-Main `9ca96ed` (origin synced, CI + pages green). Bundle `v3.22.0`
+Main `fe16686` (origin synced). Bundle `v3.22.0`
 released and tagged (v3.21.0 shipped earlier same day; v3.22.0 cuts
-the full envelope arc). Live install: 1449/1449 files Current,
+the full envelope arc). Live install: 1462/1462 files Current,
 0 drift; live probe reports `answered_by.bundle=3.22.0`.
-audit.py 50/50, 0 errors, 0 warnings. pytest 2803 pass / 73 skip.
+audit.py 51/51, 0 errors, 0 warnings. pytest 2803 pass / 73 skip.
 
 ## Batch-9 research (3 links deep-dived)
 
@@ -79,6 +79,30 @@ funnel. 57 dead imports removed; manifest export_hash resync.
 
 Metrics: 2803 passed / 73 skipped at d2e2f88; audit 50/50;
 ledger 0 drift; live probe pulse --json -> bundle 3.22.0.
+
+### Guard hardening + utf-8 arc (HEAD fe16686)
+
+Independent review of the completeness guard closed: marker regex
+covers `import *_envelope` + `from json import dumps`; emit detection
+spans `sys.stdout.write/writelines`, `os.write`, comma-spanning
+`json.dump` payloads, escaped/f-string literals; strict `__main__`
+match; no `sys.path` leak in `_probes()`. Contract AST guard gained
+a stdout-write bypass detector tracking stamped names through
+`_stamp`/`_dumps`/`emit`/`_emit` (code-graph/query.py + cu_session.py
+whitelisted as documented protocol surfaces). `changelog-refs`
+`--write` OSError now emits the stamped `{"ok": false}` path.
+
+Python-floor regression caught by CI ubuntu py3.11:
+`Path.read_text(newline=)` is 3.13+ (3 sites fixed ->
+`path.open(newline=)`); audit check [44] pins the 3.11 floor
+(`read_text(newline=)`, `itertools.batched`, `Path.walk()`) and
+re-flags on reintroduction. utf-8 convention extended to the
+harness: 91 `subprocess text=True` sites pinned across 49 test
+files + audit.py's own 9 calls + media-tools nested tests +
+scratch probes; check [37] now covers `Popen`.
+
+Metrics: audit 51/51, 0 errors/warnings; ledger 1462/0 drift;
+contract+held-out 225 pass / 57 skip (post-hardening).
 
 ## Also landed
 
