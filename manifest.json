@@ -1494,8 +1494,8 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "ea2ccafd4eec4e9c18a225a278addc6a777bf5da93de8d42c72eb617045839c8",
-      "exported_at": "2026-11-08T08:50:55.845199"
+      "export_hash": "B0C9773DD9ADE47E27BF85D5D67AE4CCF072E478C9361B8B4BB68AA0A53493AC",
+      "exported_at": "2026-11-13T08:12:21.393212"
     },
     {
       "name": "laya-guard.py",
