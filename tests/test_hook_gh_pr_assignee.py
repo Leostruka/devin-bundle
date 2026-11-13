@@ -105,9 +105,9 @@ def _gh_shim(tmp_path):
     """gh shim on PATH calls the fake; hook resolves it via $GH_PR_BIN."""
     bat = tmp_path / "gh.bat"
     bat.write_text(f'@echo off\r\n"{sys.executable}" '
-                   f'"{FAKE_GH}" %*\r\n')
+                   f'"{FAKE_GH}" %*\r\n', encoding="utf-8")
     sh = tmp_path / "gh"
-    sh.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{FAKE_GH}" "$@"\n')
+    sh.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{FAKE_GH}" "$@"\n', encoding="utf-8")
     sh.chmod(0o755)
     log = tmp_path / "gh_calls.jsonl"
     env = dict(os.environ)
@@ -139,4 +139,4 @@ def test_e2e_non_create_never_touches_gh(tmp_path):
     env, log = _gh_shim(tmp_path)
     r = _post_exec(_payload(cmd="git status", output="clean"), env)
     assert r.returncode == 0
-    assert not log.exists() or not log.read_text().strip()
+    assert not log.exists() or not log.read_text(encoding="utf-8").strip()

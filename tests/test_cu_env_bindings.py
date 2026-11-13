@@ -85,7 +85,7 @@ def remote_target(tmp_path, monkeypatch):
     reg = tmp_path / "envs"
     reg.mkdir()
     (reg / "devin-linux.json").write_text(json.dumps(
-        {"env_id": "devin-linux", "provider": "qemu"}))
+        {"env_id": "devin-linux", "provider": "qemu"}), encoding="utf-8")
     monkeypatch.setenv("CU_ENV_ROOT", str(reg))
     return reg
 

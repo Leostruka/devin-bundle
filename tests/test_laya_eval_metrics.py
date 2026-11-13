@@ -154,7 +154,7 @@ def test_evaluate_manifest_cli(tmp_path, capsys):
 
 def test_manifest_not_frozen_rejected(tmp_path):
     manifest = tmp_path / "live.json"
-    manifest.write_text(json.dumps({"version": 1, "cases": []}))
+    manifest.write_text(json.dumps({"version": 1, "cases": []}), encoding="utf-8")
     rc = ed.main(["--manifest", str(manifest), "--mode", "evaluate",
                   "--out", str(tmp_path / "r.json")])
     assert rc != 0

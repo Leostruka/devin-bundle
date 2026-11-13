@@ -110,7 +110,7 @@ def env_dir(tmp_path):
     d.mkdir()
     (d / "ready.json").write_text(json.dumps({
         "socket": "tcp://127.0.0.1:1", "token": "t0k",
-        "qemu_pid": 1, "daemon_pid": 2}))
+        "qemu_pid": 1, "daemon_pid": 2}), encoding="utf-8")
     return d
 
 
@@ -166,7 +166,7 @@ def _write_env(tmp_path):
     reg.mkdir()
     (reg / "devin-linux.json").write_text(json.dumps(
         {"env_id": "devin-linux", "provider": "qemu",
-         "keyboard_layout": "en-us"}))
+         "keyboard_layout": "en-us"}), encoding="utf-8")
 
 
 def test_mouse_remote_click_dispatches(tmp_path, monkeypatch, capsys):

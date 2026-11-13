@@ -30,7 +30,7 @@ def test_json_report_on_real_agents_md():
 
 def test_human_output_goes_to_stderr_only(tmp_path):
     f = tmp_path / "AGENTS.md"
-    f.write_text("# rules\n" + "x" * 400)
+    f.write_text("# rules\n" + "x" * 400, encoding="utf-8")
     p = _run([str(f)])
     assert p.returncode == 0
     assert p.stdout == ""  # never injects into context (Rule 18)

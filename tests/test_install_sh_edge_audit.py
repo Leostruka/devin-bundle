@@ -201,7 +201,7 @@ def test_unmasked_credentials_install_with_flag_mode_600(tmp_path):
     assert r.returncode == 0, r.stderr
     creds = home / 'credentials.toml'
     assert creds.exists()
-    assert 'real-key-123' in creds.read_text()
+    assert 'real-key-123' in creds.read_text(encoding="utf-8")
     if sys.platform != 'win32':
         mode = stat.S_IMODE(os.stat(creds).st_mode)
         assert mode == 0o600, oct(mode)
@@ -218,7 +218,7 @@ def test_masked_mcp_skipped_then_force_installed(tmp_path):
     r = run_install(bundle, home, '--force')
     assert r.returncode == 0
     assert (home / 'mcp_config.json').exists()
-    assert 'MASKED' in (home / 'mcp_config.json').read_text()
+    assert 'MASKED' in (home / 'mcp_config.json').read_text(encoding="utf-8")
 
 
 @requires_bash
@@ -228,7 +228,7 @@ def test_backup_directory_contains_files(tmp_path):
     home = tmp_path / 'home'
     assert run_install(bundle, home).returncode == 0
     # Diverge the installed skill, then force+backup.
-    (home / 'skills' / 'demo' / 'extra.txt').write_text('local')
+    (home / 'skills' / 'demo' / 'extra.txt').write_text('local', encoding="utf-8")
     r = run_install(bundle, home, '--force', '--backup')
     assert r.returncode == 0, r.stderr
     backups = list(home.glob('skills/demo.backup.*'))
@@ -255,7 +255,7 @@ def test_install_receipt_written(tmp_path):
     assert r.returncode == 0, r.stderr
     receipt = home / '.install-receipt.json'
     assert receipt.exists()
-    data = json.loads(receipt.read_text())
+    data = json.loads(receipt.read_text(encoding="utf-8"))
     assert isinstance(data['skipped'], list)
     # masked creds + masked mcp must appear as recorded skips
     assert any('credentials.toml' in s for s in data['skipped'])

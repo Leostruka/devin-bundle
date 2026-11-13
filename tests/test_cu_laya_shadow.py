@@ -98,7 +98,7 @@ def test_shadow_suggestion_logged_and_sanitized(tmp_path):
     client = FakeClient()
     out = cd.suggest(client, CTX, "open audio", _els(), log_path=log)
     assert out["outcome"] == "suggestion"
-    rec = json.loads(log.read_text().splitlines()[0])
+    rec = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
     assert rec["candidate_id"] == "as"
     assert "open audio" not in json.dumps(rec)   # goal text not logged
     assert rec["mode"] == "shadow"

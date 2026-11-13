@@ -175,7 +175,7 @@ def test_low_risk_never_authorizes():
 
 def test_laya_off_gives_typed_abstention(tmp_path):
     cfg = tmp_path / "profile.json"
-    cfg.write_text(json.dumps({"version": 1, "mode": "off"}))
+    cfg.write_text(json.dumps({"version": 1, "mode": "off"}), encoding="utf-8")
     out = rg.triage_diff(_diff(), commit_msg="fix: why",
                          config=str(cfg))
     assert out["laya"]["outcome"] == "abstain"
@@ -306,7 +306,7 @@ def test_coverage_hit_file_and_function(tmp_path):
     tdir = tmp_path / "tests" / "validation"
     tdir.mkdir(parents=True)
     (tdir / "test_rules.py").write_text(
-        "def test_rule_contract():\n    assert True\n")
+        "def test_rule_contract():\n    assert True\n", encoding="utf-8")
     mapping = {"AGENTS.md": ["tests/validation/test_rules.py::"
                              "test_rule_contract"]}
     out = dco.check_coverage(["AGENTS.md"], mapping,
@@ -334,7 +334,7 @@ def test_missing_test_file_is_important(tmp_path):
 def test_missing_test_function_is_important(tmp_path):
     tdir = tmp_path / "tests" / "validation"
     tdir.mkdir(parents=True)
-    (tdir / "test_rules.py").write_text("def test_other(): pass\n")
+    (tdir / "test_rules.py").write_text("def test_other(): pass\n", encoding="utf-8")
     mapping = {"AGENTS.md": ["tests/validation/test_rules.py::"
                              "test_rule_contract"]}
     out = dco.check_coverage(["AGENTS.md"], mapping,
@@ -347,7 +347,7 @@ def _mk_test(tmp_path, rel="tests/validation/test_rules.py",
              body="def test_contract():\n    assert True\n"):
     f = tmp_path / rel
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(body)
+    f.write_text(body, encoding="utf-8")
     return f
 
 
@@ -365,7 +365,7 @@ def test_target_outside_validation_dir_rejected(tmp_path):
     (tmp_path / "tests" / "test_top.py").parent.mkdir(parents=True,
                                                     exist_ok=True)
     (tmp_path / "tests" / "test_top.py").write_text(
-        "def test_x(): pass\n")
+        "def test_x(): pass\n", encoding="utf-8")
     mapping = {"AGENTS.md": ["tests/test_top.py::test_x"]}
     out = dco.check_coverage(["AGENTS.md"], mapping,
                              tests_root=str(tmp_path))
@@ -392,7 +392,7 @@ def test_symlink_target_rejected(tmp_path):
 def test_non_test_file_rejected(tmp_path):
     f = tmp_path / "tests" / "validation" / "helper.py"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text("def test_contract(): pass\n")
+    f.write_text("def test_contract(): pass\n", encoding="utf-8")
     mapping = {"AGENTS.md": ["tests/validation/helper.py::"
                              "test_contract"]}
     out = dco.check_coverage(["AGENTS.md"], mapping,
@@ -550,7 +550,7 @@ def test_daemon_unavailable_is_typed_abstain(tmp_path, monkeypatch):
     monkeypatch.setenv("LAYA_NO_DAEMON", "1")
     cfg = tmp_path / "profile.json"
     cfg.write_text(json.dumps({"version": 1, "mode": "shadow",
-                               "profiles": ["ui-target-v1"]}))
+                               "profiles": ["ui-target-v1"]}), encoding="utf-8")
     rec = dp.suggest_dom(_snapshot(3), goal="item 1", context={},
                          config=str(cfg))
     if rec["outcome"] == "suggestion":
@@ -566,7 +566,7 @@ def test_mode_off_with_assist_override_never_raises(tmp_path,
     monkeypatch.setenv("LAYA_NO_DAEMON", "1")
     cfg = tmp_path / "profile.json"
     cfg.write_text(json.dumps({"version": 1, "mode": "off",
-                               "profiles": ["ui-target-v1"]}))
+                               "profiles": ["ui-target-v1"]}), encoding="utf-8")
     called = []
     monkeypatch.setattr(dp.lc, "ensure_daemon",
                         lambda *a, **k: called.append(1) or None)
@@ -582,7 +582,7 @@ def test_uncalibrated_assist_override_degrades(tmp_path, monkeypatch):
     cfg = tmp_path / "profile.json"
     cfg.write_text(json.dumps({"version": 1, "mode": "assist",
                                "calibration": None,
-                               "profiles": ["ui-target-v1"]}))
+                               "profiles": ["ui-target-v1"]}), encoding="utf-8")
     rec = dp.suggest_dom(_snapshot(3), goal="zzznomatch", context={},
                          config=str(cfg), mode="assist")
     assert rec["outcome"] == "abstain"
@@ -593,7 +593,7 @@ def test_exact_match_shortcircuits_before_daemon(tmp_path,
                                                  monkeypatch):
     cfg = tmp_path / "profile.json"
     cfg.write_text(json.dumps({"version": 1, "mode": "shadow",
-                               "profiles": ["ui-target-v1"]}))
+                               "profiles": ["ui-target-v1"]}), encoding="utf-8")
     called = []
     monkeypatch.setattr(dp.lc, "ensure_daemon",
                         lambda *a, **k: called.append(1) or None)
@@ -657,9 +657,9 @@ def test_nodes_to_elements_canonical_parity_and_stable_ids():
 
 def test_review_gate_cli(tmp_path):
     diff = tmp_path / "d.diff"
-    diff.write_text(_diff("requirements.txt", added=["+requests"]))
+    diff.write_text(_diff("requirements.txt", added=["+requests"]), encoding="utf-8")
     msg = tmp_path / "m.txt"
-    msg.write_text("deps: add requests because scraping")
+    msg.write_text("deps: add requests because scraping", encoding="utf-8")
     out = subprocess.run(
         [sys.executable,
          str(ROOT / "extensions" / "laya-tools" / "review_gate.py"),
@@ -672,7 +672,7 @@ def test_review_gate_cli(tmp_path):
 
 def test_dom_picker_cli(tmp_path):
     snap = tmp_path / "snap.json"
-    snap.write_text(json.dumps(_snapshot(5)))
+    snap.write_text(json.dumps(_snapshot(5)), encoding="utf-8")
     out = subprocess.run(
         [sys.executable,
          str(ROOT / "extensions" / "computer-use" / "cu_dom_picker.py"),

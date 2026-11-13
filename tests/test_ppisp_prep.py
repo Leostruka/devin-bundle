@@ -78,7 +78,7 @@ def test_runner_doctor_missing_upstream(tmp_path, monkeypatch):
 def test_runner_refuses_unverified_license(tmp_path, monkeypatch):
     up = tmp_path / "up"
     up.mkdir()
-    (up / "README.md").write_text("ppisp")
+    (up / "README.md").write_text("ppisp", encoding="utf-8")
     monkeypatch.setenv("PPISP_DIR", str(up))
     out = ppisp_runner.run(str(tmp_path), str(tmp_path / "out"))
     assert out["ok"] is False
@@ -88,9 +88,9 @@ def test_runner_refuses_unverified_license(tmp_path, monkeypatch):
 def _licensed_upstream(tmp_path, monkeypatch):
     up = tmp_path / "up"
     up.mkdir()
-    (up / "README.md").write_text("ppisp")
-    (up / "LICENSE").write_text("MIT License\nPermission is hereby granted")
-    (up / "train.py").write_text("print('hi')")
+    (up / "README.md").write_text("ppisp", encoding="utf-8")
+    (up / "LICENSE").write_text("MIT License\nPermission is hereby granted", encoding="utf-8")
+    (up / "train.py").write_text("print('hi')", encoding="utf-8")
     monkeypatch.setenv("PPISP_DIR", str(up))
     return up
 

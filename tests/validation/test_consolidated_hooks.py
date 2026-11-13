@@ -96,7 +96,7 @@ def test_session_start_passes():
 
 def test_file_size_guard_warns_over_threshold(tmp_path, monkeypatch):
     big = tmp_path / "big.py"
-    big.write_text("x = 1\n" * 900)
+    big.write_text("x = 1\n" * 900, encoding="utf-8")
     monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path))
     p = run("file-size-guard.py", {"hook_event_name": "PostToolUse", "tool_name": "edit",
                                    "tool_input": {"file_path": str(big)}})
@@ -107,7 +107,7 @@ def test_file_size_guard_warns_over_threshold(tmp_path, monkeypatch):
 
 def test_file_size_guard_silent_below_threshold(tmp_path, monkeypatch):
     small = tmp_path / "small.py"
-    small.write_text("x = 1\n" * 10)
+    small.write_text("x = 1\n" * 10, encoding="utf-8")
     monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path))
     p = run("file-size-guard.py", {"hook_event_name": "PostToolUse", "tool_name": "edit",
                                    "tool_input": {"file_path": str(small)}})
@@ -117,7 +117,7 @@ def test_file_size_guard_silent_below_threshold(tmp_path, monkeypatch):
 
 def test_file_size_guard_skips_non_code(tmp_path):
     f = tmp_path / "big.txt"
-    f.write_text("line\n" * 9000)
+    f.write_text("line\n" * 9000, encoding="utf-8")
     p = run("file-size-guard.py", {"hook_event_name": "PostToolUse", "tool_name": "write",
                                    "tool_input": {"file_path": str(f)}})
     assert p.returncode == 0
@@ -126,7 +126,7 @@ def test_file_size_guard_skips_non_code(tmp_path):
 
 def test_file_size_guard_band_dedup(tmp_path, monkeypatch):
     big = tmp_path / "big.py"
-    big.write_text("x = 1\n" * 900)
+    big.write_text("x = 1\n" * 900, encoding="utf-8")
     monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path))
     payload = {"hook_event_name": "PostToolUse", "tool_name": "edit",
                "tool_input": {"file_path": str(big)}}

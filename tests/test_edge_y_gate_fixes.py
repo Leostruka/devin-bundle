@@ -115,7 +115,7 @@ def test_run_check_timeout_status():
 
 def test_partially_masked_credentials_blocks(tmp_path):
     (tmp_path / "credentials.toml").write_text(
-        'a_key = "MASKED"\napi_token = "real-secret-value"\n')
+        'a_key = "MASKED"\napi_token = "real-secret-value"\n', encoding="utf-8")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     assert r.returncode == 2
@@ -123,7 +123,7 @@ def test_partially_masked_credentials_blocks(tmp_path):
 
 
 def test_fully_masked_credentials_ok(tmp_path):
-    (tmp_path / "credentials.toml").write_text('api_token = "MASKED"\n')
+    (tmp_path / "credentials.toml").write_text('api_token = "MASKED"\n', encoding="utf-8")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     assert r.returncode == 0, r.stdout + r.stderr
@@ -133,7 +133,7 @@ def test_mcp_config_one_masked_one_real_blocks(tmp_path):
     (tmp_path / "mcp_config.json").write_text(json.dumps({
         "a": {"API_KEY": "MASKED"},
         "b": {"TOKEN": "sk-live-123456"},
-    }))
+    }), encoding="utf-8")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     assert r.returncode == 2
@@ -142,7 +142,7 @@ def test_mcp_config_one_masked_one_real_blocks(tmp_path):
 
 def test_mcp_config_all_masked_ok(tmp_path):
     (tmp_path / "mcp_config.json").write_text(json.dumps(
-        {"a": {"API_KEY": "MASKED", "TOKEN": "MASKED"}}))
+        {"a": {"API_KEY": "MASKED", "TOKEN": "MASKED"}}), encoding="utf-8")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     assert r.returncode == 0, r.stdout + r.stderr
@@ -152,7 +152,7 @@ def test_mcp_config_all_masked_ok(tmp_path):
 
 def test_ai_signature_untracked_file_blocks(tmp_path):
     subprocess.run(["git", "init"], cwd=tmp_path, capture_output=True)
-    (tmp_path / "note.md").write_text(SIG_LINE + "\n")
+    (tmp_path / "note.md").write_text(SIG_LINE + "\n", encoding="utf-8")
     r = run_hook("check-ai-signature.py",
                  {"hook_event_name": "Stop", "stop_hook_active": False},
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
@@ -162,7 +162,7 @@ def test_ai_signature_untracked_file_blocks(tmp_path):
 
 def test_ai_signature_untracked_clean_ok(tmp_path):
     subprocess.run(["git", "init"], cwd=tmp_path, capture_output=True)
-    (tmp_path / "note.md").write_text("plain content\n")
+    (tmp_path / "note.md").write_text("plain content\n", encoding="utf-8")
     r = run_hook("check-ai-signature.py",
                  {"hook_event_name": "Stop", "stop_hook_active": False},
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
@@ -230,7 +230,7 @@ def test_silent_error_failed_plus_warning_flagged(tmp_path):
     # finding recorded in the metrics sink (issues 67/68)
     metrics = tmp_path / ".devin" / "ledgers" / "metrics.jsonl"
     assert metrics.exists()
-    rec = json.loads(metrics.read_text().splitlines()[-1])
+    rec = json.loads(metrics.read_text(encoding="utf-8").splitlines()[-1])
     assert rec["event"] == "silent-error-review"
 
 
@@ -297,7 +297,7 @@ def test_profile_recorded_on_dispatch(tmp_path):
     assert r.returncode == 0
     state = tmp_path / "devin" / "state" / "subagent-sess-1.json"
     assert state.exists()
-    assert json.loads(state.read_text())["profile"] == "researcher"
+    assert json.loads(state.read_text(encoding="utf-8"))["profile"] == "researcher"
 
 
 def test_profile_deny_requires_subagent_context(tmp_path):
@@ -337,7 +337,7 @@ def test_hookrun_emits_metric(tmp_path):
     assert r.returncode == 0, r.stderr[-500:]
     metrics = tmp_path / ".devin" / "ledgers" / "metrics.jsonl"
     assert metrics.exists()
-    rec = json.loads(metrics.read_text().splitlines()[-1])
+    rec = json.loads(metrics.read_text(encoding="utf-8").splitlines()[-1])
     assert rec["event"] == "hookrun"
     assert "duration_ms" in rec and "exit_code" in rec
     assert "timings_ms" in rec  # per-script timing, issue #408
@@ -372,7 +372,7 @@ def _git_repo(tmp_path):
     subprocess.run(["git", "init"], cwd=tmp_path, capture_output=True)
     (tmp_path / "tests").mkdir()
     t = tmp_path / "tests" / "test_x.py"
-    t.write_text("def test_x():\n    assert True\n")
+    t.write_text("def test_x():\n    assert True\n", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=tmp_path, capture_output=True)
     subprocess.run(["git", "-c", "user.email=a@b", "-c", "user.name=t",
                     "commit", "-m", "init"], cwd=tmp_path, capture_output=True)
@@ -393,7 +393,7 @@ def test_deleted_test_file_with_approval_ok(tmp_path):
     t.unlink()
     (tmp_path / ".devin").mkdir()
     (tmp_path / ".devin" / "test-deletion-approved").write_text(
-        "approved removal: tests/test_x.py (superseded by test_y)")
+        "approved removal: tests/test_x.py (superseded by test_y)", encoding="utf-8")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     # approval naming the deleted file clears the deletion gate; tests/
@@ -406,7 +406,7 @@ def test_deleted_test_file_approval_without_name_blocks(tmp_path):
     t = _git_repo(tmp_path)
     t.unlink()
     (tmp_path / ".devin").mkdir()
-    (tmp_path / ".devin" / "test-deletion-approved").write_text("obsolete")
+    (tmp_path / ".devin" / "test-deletion-approved").write_text("obsolete", encoding="utf-8")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     # a marker that does not NAME the deleted test no longer approves it
@@ -417,10 +417,10 @@ def test_deleted_test_file_approval_without_name_blocks(tmp_path):
 def test_removed_test_def_approval_named_ok(tmp_path):
     t = _git_repo(tmp_path)
     # remove the def line from the tracked test file (uncommitted edit)
-    t.write_text("")
+    t.write_text("", encoding="utf-8")
     (tmp_path / ".devin").mkdir()
     (tmp_path / ".devin" / "test-deletion-approved").write_text(
-        "signature rewrite approved: test_x")
+        "signature rewrite approved: test_x", encoding="utf-8")
     r = run_hook("check-push-green.py", push_payload("git push"),
                  env_extra={"DEVIN_PROJECT_DIR": str(tmp_path)})
     assert "test deletion" not in r.stdout
@@ -430,9 +430,9 @@ def test_removed_test_def_approval_named_ok(tmp_path):
 
 def _git_repo_pytest(tmp_path):
     t = _git_repo(tmp_path)
-    (tmp_path / "pytest.ini").write_text("[pytest]\n")
+    (tmp_path / "pytest.ini").write_text("[pytest]\n", encoding="utf-8")
     (tmp_path / ".gitignore").write_text(
-        "__pycache__/\n.pytest_cache/\n")
+        "__pycache__/\n.pytest_cache/\n", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=tmp_path, capture_output=True)
     subprocess.run(["git", "-c", "user.email=a@b", "-c", "user.name=t",
                     "commit", "-m", "cfg"], cwd=tmp_path, capture_output=True)
@@ -444,7 +444,7 @@ def test_tree_fingerprint_changes_on_dirty(tmp_path):
     _git_repo_pytest(tmp_path)
     fp1 = mod._tree_fingerprint(str(tmp_path))
     assert fp1 and "|" in fp1
-    (tmp_path / "dirty.txt").write_text("x")
+    (tmp_path / "dirty.txt").write_text("x", encoding="utf-8")
     fp2 = mod._tree_fingerprint(str(tmp_path))
     assert fp1 != fp2  # untracked change shifts the test surface
 
@@ -475,7 +475,7 @@ def test_push_gate_cache_miss_on_dirty_tree(tmp_path):
     r1 = run_hook("check-push-green.py", push_payload("git push"),
                   env_extra=env, timeout=60)
     assert r1.returncode == 0
-    (tmp_path / "newfile.txt").write_text("dirty")
+    (tmp_path / "newfile.txt").write_text("dirty", encoding="utf-8")
     r2 = run_hook("check-push-green.py", push_payload("git push"),
                   env_extra=env, timeout=60)
     assert r2.returncode == 0

@@ -51,7 +51,7 @@ def test_due_auto_emits_next_issue_and_consumes(tmp_path):
     assert d["ok"] and d["due"] == ["i1.json"]
     assert d["next_issue"] == "01-first"
     # consumed marker written
-    data = json.loads((intents / "i1.json").read_text())
+    data = json.loads((intents / "i1.json").read_text(encoding="utf-8"))
     assert data["consumed"] is True
 
 
@@ -63,7 +63,7 @@ def test_dry_run_does_not_consume(tmp_path):
             "--issues-glob", str(tmp_path / "none" / "*.md"))
     d = json.loads(r.stdout)
     assert d["dry_run"] and d["due"] == ["i1.json"]
-    assert "consumed" not in (intents / "i1.json").read_text()
+    assert "consumed" not in (intents / "i1.json").read_text(encoding="utf-8")
 
 
 def test_blocked_frontier_skips_blocked(tmp_path):

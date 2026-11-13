@@ -28,15 +28,15 @@ def phone(tmp_path):
     shimdir.mkdir()
     shutil.copy(FAKE, shimdir / "adb_fake.py")
     (shimdir / "adb.bat").write_text(
-        f'@echo off\r\n"{sys.executable}" "%~dp0adb_fake.py" %*\r\n')
+        f'@echo off\r\n"{sys.executable}" "%~dp0adb_fake.py" %*\r\n', encoding="utf-8")
     adb_sh = shimdir / "adb"
     adb_sh.write_text(
-        f'#!/bin/sh\nexec "{sys.executable}" "{shimdir}/adb_fake.py" "$@"\n')
+        f'#!/bin/sh\nexec "{sys.executable}" "{shimdir}/adb_fake.py" "$@"\n', encoding="utf-8")
     adb_sh.chmod(0o755)
     envs = tmp_path / "envs"
     envs.mkdir()
     (envs / "phone.json").write_text(
-        json.dumps({"env_id": "phone", "provider": "adb"}))
+        json.dumps({"env_id": "phone", "provider": "adb"}), encoding="utf-8")
     log = tmp_path / "adb_calls.jsonl"
     env = dict(os.environ)
     env.update({
@@ -245,15 +245,15 @@ def test_explicit_serial_skips_discovery(tmp_path):
     shimdir.mkdir()
     shutil.copy(FAKE, shimdir / "adb_fake.py")
     (shimdir / "adb.bat").write_text(
-        f'@echo off\r\n"{sys.executable}" "%~dp0adb_fake.py" %*\r\n')
+        f'@echo off\r\n"{sys.executable}" "%~dp0adb_fake.py" %*\r\n', encoding="utf-8")
     adb_sh = shimdir / "adb"
     adb_sh.write_text(
-        f'#!/bin/sh\nexec "{sys.executable}" "{shimdir}/adb_fake.py" "$@"\n')
+        f'#!/bin/sh\nexec "{sys.executable}" "{shimdir}/adb_fake.py" "$@"\n', encoding="utf-8")
     adb_sh.chmod(0o755)
     envs = tmp_path / "envs"
     envs.mkdir()
     (envs / "phone.json").write_text(json.dumps(
-        {"env_id": "phone", "provider": "adb", "serial": "MY-SERIAL-9"}))
+        {"env_id": "phone", "provider": "adb", "serial": "MY-SERIAL-9"}), encoding="utf-8")
     log = tmp_path / "log.jsonl"
     env = dict(os.environ)
     env.update({"PATH": str(shimdir) + os.pathsep + env["PATH"],
@@ -268,6 +268,6 @@ def test_explicit_serial_skips_discovery(tmp_path):
     out = _json(r)
     assert out["ok"] and out["instance_id"] == "MY-SERIAL-9"
     calls = [json.loads(l)["argv"] for l in
-             log.read_text().splitlines() if l.strip()]
+             log.read_text(encoding="utf-8").splitlines() if l.strip()]
     assert all(c[:2] == ["-s", "MY-SERIAL-9"] for c in calls)
     assert not any(c[0] == "devices" for c in calls)

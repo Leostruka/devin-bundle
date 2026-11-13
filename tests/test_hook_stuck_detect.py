@@ -110,7 +110,7 @@ def test_malformed_payload_silent():
 
 def test_corrupt_state_recovers(_state_dir):
     state = os.path.join(_state_dir, ".stuck-detect.json")
-    with open(state, "w") as f:
+    with open(state, "w", encoding="utf-8") as f:
         f.write("{not json")
     for _ in range(3):
         _, out = _run(_payload())
@@ -121,5 +121,5 @@ def test_state_file_capped(_state_dir):
     for i in range(40):
         _run(_payload(cmd=f"unique-cmd-{i}", success=True))
     state = os.path.join(_state_dir, ".stuck-detect.json")
-    data = json.load(open(state))
+    data = json.load(open(state, encoding="utf-8"))
     assert len(data["history"]) <= 12

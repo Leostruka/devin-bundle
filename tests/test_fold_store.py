@@ -52,7 +52,7 @@ def test_invalid_id_rejected(store):
 def test_cli(tmp_path, monkeypatch):
     env = dict(os.environ, FOLD_STORE_DIR=str(tmp_path / "folds"))
     src = tmp_path / "big.txt"
-    src.write_text("payload " * 50)
+    src.write_text("payload " * 50, encoding="utf-8")
     p = subprocess.run([sys.executable, SCRIPT, "save", "cli1",
                         "--summary", "cli fold", "--content-file", str(src)],
                        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)

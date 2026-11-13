@@ -148,15 +148,15 @@ def _manifest(tmp_path, entries):
         e.setdefault("split", "heldout")
         e.setdefault("source", "synthetic")
     m = tmp_path / "manifest.json"
-    m.write_text(json.dumps({"entries": entries}))
+    m.write_text(json.dumps({"entries": entries}), encoding="utf-8")
     return m
 
 
 def test_manifest_hash_tamper_rejected(tmp_path):
     m = _manifest(tmp_path, [{"id": "e1", "_data": b"abc"}])
-    data = json.loads(m.read_text())
+    data = json.loads(m.read_text(encoding="utf-8"))
     data["entries"][0]["sha256"] = "0" * 64
-    m.write_text(json.dumps(data))
+    m.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(hb.ManifestError, match="sha256"):
         hb.load_manifest(m)
 
@@ -176,18 +176,18 @@ def test_manifest_rejects_non_public_source(tmp_path):
 
 def test_manifest_rejects_sensitive_path(tmp_path):
     m = _manifest(tmp_path, [{"id": "e1", "_data": b"x"}])
-    data = json.loads(m.read_text())
+    data = json.loads(m.read_text(encoding="utf-8"))
     data["entries"][0]["path"] = str(tmp_path / "credentials" / ".env")
-    m.write_text(json.dumps(data))
+    m.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(hb.ManifestError, match="sensitive"):
         hb.load_manifest(m)
 
 
 def test_manifest_rejects_path_escape(tmp_path):
     m = _manifest(tmp_path, [{"id": "e1", "_data": b"x"}])
-    data = json.loads(m.read_text())
+    data = json.loads(m.read_text(encoding="utf-8"))
     data["entries"][0]["path"] = str(tmp_path.parent / "outside.txt")
-    m.write_text(json.dumps(data))
+    m.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(hb.ManifestError, match="root"):
         hb.load_manifest(m, data_root=tmp_path)
 
@@ -237,7 +237,7 @@ def test_relative_paths_resolve_against_data_root(tmp_path, monkeypatch):
     m.write_text(json.dumps({"entries": [{
         "id": "e1", "path": "e1",
         "sha256": h.sha256(b"data").hexdigest(),
-        "split": "heldout", "source": "public"}]}))
+        "split": "heldout", "source": "public"}]}), encoding="utf-8")
     monkeypatch.chdir(tmp_path.parent)
     entries = hb.load_manifest(m, data_root=root)
     assert entries[0]["id"] == "e1"
@@ -245,9 +245,9 @@ def test_relative_paths_resolve_against_data_root(tmp_path, monkeypatch):
 
 def test_manifest_rejects_bad_field_types(tmp_path):
     m = _manifest(tmp_path, [{"id": "e1", "_data": b"x"}])
-    data = json.loads(m.read_text())
+    data = json.loads(m.read_text(encoding="utf-8"))
     data["entries"][0]["sha256"] = 12345
-    m.write_text(json.dumps(data))
+    m.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(hb.ManifestError):
         hb.load_manifest(m)
 
@@ -260,7 +260,7 @@ def test_oversized_entry_rejected_not_truncated(tmp_path):
 
 def test_manifest_size_bound_enforced(tmp_path, monkeypatch):
     m = tmp_path / "m.json"
-    m.write_text(json.dumps({"entries": []}))
+    m.write_text(json.dumps({"entries": []}), encoding="utf-8")
     monkeypatch.setattr(hb, "MAX_MANIFEST_BYTES", 4)
     with pytest.raises(hb.ManifestError, match="size bound"):
         hb.load_manifest(m)
@@ -338,14 +338,14 @@ def test_out_rejects_existing_destination(monkeypatch, tmp_path, capsys):
     m = _manifest(tmp_path, [{"id": "e1", "_data": b"x"}])
     b, mo = _backend(tmp_path)
     out = tmp_path / "results.json"
-    out.write_text("prior results")
+    out.write_text("prior results", encoding="utf-8")
     monkeypatch.setattr(sys, "argv", _cli_argv(m, tmp_path, out, b, mo))
     monkeypatch.setattr(ba, "run",
                         lambda *a, **k: {"ok": True, "output": "x"})
     with pytest.raises(SystemExit) as se:
         hb.main()
     assert se.value.code != 0
-    assert out.read_text() == "prior results"
+    assert out.read_text(encoding="utf-8") == "prior results"
 
 
 def test_out_writes_fresh_destination(monkeypatch, tmp_path, capsys):
@@ -357,7 +357,7 @@ def test_out_writes_fresh_destination(monkeypatch, tmp_path, capsys):
                         lambda *a, **k: {"ok": True, "output": "x"})
     with pytest.raises(SystemExit) as se:
         hb.main()
-    data = json.loads(out.read_text())
+    data = json.loads(out.read_text(encoding="utf-8"))
     assert data["manifest_entries"] == 1
 
 
@@ -620,7 +620,7 @@ def test_vllm_extra_flags_rejected_nonempty():
 def test_manifest_rejects_non_object_json(tmp_path):
     for bad in ("null", "[1,2]", "5", '"s"'):
         m = tmp_path / "m.json"
-        m.write_text(bad)
+        m.write_text(bad, encoding="utf-8")
         with pytest.raises(hb.ManifestError):
             hb.load_manifest(m)
 

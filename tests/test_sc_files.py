@@ -50,7 +50,7 @@ def test_inspect_rejects_parent_escape(tmp_path):
 
 def test_inspect_rejects_dotdot_component_inside(tmp_path):
     (tmp_path / "d").mkdir()
-    (tmp_path / "f").write_text("x")
+    (tmp_path / "f").write_text("x", encoding="utf-8")
     r = sc_files.inspect_path(str(tmp_path), "d/../f")
     assert r["ok"] is False and r["status"] == "rejected"
 
@@ -70,7 +70,7 @@ def test_inspect_rejects_empty_and_nul(tmp_path):
 def test_inspect_rejects_symlink_escape(tmp_path):
     outside = tmp_path.parent / f"{tmp_path.name}-outside"
     outside.mkdir(exist_ok=True)
-    (outside / "secret").write_text("s")
+    (outside / "secret").write_text("s", encoding="utf-8")
     _link(str(outside / "secret"), str(tmp_path / "link"))
     r = sc_files.inspect_path(str(tmp_path), "link")
     assert r["ok"] is False and r["status"] == "rejected"
@@ -79,7 +79,7 @@ def test_inspect_rejects_symlink_escape(tmp_path):
 def test_inspect_rejects_symlink_chain_escape(tmp_path):
     outside = tmp_path.parent / f"{tmp_path.name}-chain"
     outside.mkdir(exist_ok=True)
-    (outside / "secret").write_text("s")
+    (outside / "secret").write_text("s", encoding="utf-8")
     _link(str(outside / "secret"), str(tmp_path / "l2"))
     _link(str(tmp_path / "l2"), str(tmp_path / "l1"))
     r = sc_files.inspect_path(str(tmp_path), "l1")
@@ -87,7 +87,7 @@ def test_inspect_rejects_symlink_chain_escape(tmp_path):
 
 
 def test_inspect_rejects_symlink_inside_root(tmp_path):
-    (tmp_path / "real").write_text("x")
+    (tmp_path / "real").write_text("x", encoding="utf-8")
     _link(str(tmp_path / "real"), str(tmp_path / "lnk"))
     r = sc_files.inspect_path(str(tmp_path), "lnk")
     assert r["ok"] is False and r["status"] == "rejected"
@@ -96,7 +96,7 @@ def test_inspect_rejects_symlink_inside_root(tmp_path):
 def test_inspect_rejects_junction_component(tmp_path):
     target = tmp_path / "target"
     target.mkdir()
-    (target / "inner").write_text("x")
+    (target / "inner").write_text("x", encoding="utf-8")
     _junction(str(target), str(tmp_path / "jct"))
     assert sc_files.inspect_path(str(tmp_path), "jct")["status"] == "rejected"
     assert sc_files.inspect_path(
@@ -132,7 +132,7 @@ def test_inspect_file_streaming_hash(tmp_path):
 
 
 def test_inspect_never_returns_contents(tmp_path):
-    (tmp_path / "f").write_text("top secret payload")
+    (tmp_path / "f").write_text("top secret payload", encoding="utf-8")
     r = sc_files.inspect_path(str(tmp_path), "f")
     assert "top secret payload" not in json.dumps(r)
 
@@ -279,7 +279,7 @@ def _run(argv, capsys):
 
 
 def test_cli_file_inspect(capsys, tmp_path):
-    (tmp_path / "f").write_text("x")
+    (tmp_path / "f").write_text("x", encoding="utf-8")
     code, r = _run(["file", "inspect", "--root", str(tmp_path),
                     "--path", "f"], capsys)
     assert code == 0 and r["status"] == "verified"
@@ -541,7 +541,7 @@ def test_copy_oserror_maps_to_unknown(tmp_path, monkeypatch):
 
 
 def test_cli_file_inspect_oserror_exit_1(capsys, tmp_path, monkeypatch):
-    (tmp_path / "f").write_text("x")
+    (tmp_path / "f").write_text("x", encoding="utf-8")
 
     def deny(*a, **k):
         raise PermissionError(13, "denied")
@@ -562,7 +562,7 @@ def test_cli_flag_value_swallow_rejected(capsys, tmp_path):
 @pytest.mark.skipif(os.name != "nt", reason="Windows name mangling")
 def test_inspect_trailing_dot_space_rejected(tmp_path):
     """F10: 'a.'/'a ' resolve to 'a' on Windows — reject the alias."""
-    (tmp_path / "a").write_text("x")
+    (tmp_path / "a").write_text("x", encoding="utf-8")
     for rel in ("a.", "a ", "sub./a", "a/./b"):
         r = sc_files.inspect_path(str(tmp_path), rel)
         assert r["status"] == "rejected", rel

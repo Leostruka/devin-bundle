@@ -20,7 +20,7 @@ FIXTURE = Path(__file__).resolve().parent / "fixtures" / "openui" / "hud_form.ds
 
 
 def test_parse_fixture_structure():
-    doc = ui_dsl.parse(FIXTURE.read_text())
+    doc = ui_dsl.parse(FIXTURE.read_text(encoding="utf-8"))
     assert len(doc.blocks) == 2
     hud, form = doc.blocks
     assert hud.type == "hud" and hud.attrs["anchor"] == "top-right"
@@ -32,7 +32,7 @@ def test_parse_fixture_structure():
 
 
 def test_canonical_roundtrip():
-    src = FIXTURE.read_text()
+    src = FIXTURE.read_text(encoding="utf-8")
     assert ui_dsl.emit(ui_dsl.parse(src)) == src
 
 
@@ -83,15 +83,15 @@ def test_error_reports_line_number():
 def test_line_byte_element_bounds(monkeypatch):
     monkeypatch.setattr(ui_dsl, "MAX_LINES", 5)
     with pytest.raises(ui_dsl.ParseError):
-        ui_dsl.parse(FIXTURE.read_text())
+        ui_dsl.parse(FIXTURE.read_text(encoding="utf-8"))
     monkeypatch.setattr(ui_dsl, "MAX_LINES", 10**6)
     monkeypatch.setattr(ui_dsl, "MAX_BYTES", 10)
     with pytest.raises(ui_dsl.ParseError):
-        ui_dsl.parse(FIXTURE.read_text())
+        ui_dsl.parse(FIXTURE.read_text(encoding="utf-8"))
     monkeypatch.setattr(ui_dsl, "MAX_BYTES", 10**9)
     monkeypatch.setattr(ui_dsl, "MAX_ELEMENTS", 2)
     with pytest.raises(ui_dsl.ParseError):
-        ui_dsl.parse(FIXTURE.read_text())
+        ui_dsl.parse(FIXTURE.read_text(encoding="utf-8"))
 
 
 
@@ -133,7 +133,7 @@ def test_stream_finish_with_dangling_partial():
 
 def test_stream_snapshot_deterministic():
     a, b = ui_dsl.StreamParser(), ui_dsl.StreamParser()
-    src = FIXTURE.read_text()
+    src = FIXTURE.read_text(encoding="utf-8")
     a.feed(src)
     for i in range(0, len(src), 13):
         b.feed(src[i:i + 13])
@@ -153,7 +153,7 @@ def test_render_escapes_xss():
 
 
 def test_render_native_controls_and_labels():
-    html = ui_dsl.render_html(ui_dsl.parse(FIXTURE.read_text()))
+    html = ui_dsl.render_html(ui_dsl.parse(FIXTURE.read_text(encoding="utf-8")))
     assert 'role="progressbar"' in html
     assert 'aria-valuenow="60"' in html
     assert '<input type="radio" name="q1"' in html
@@ -204,7 +204,7 @@ def equivalent_json(doc):
 
 
 def test_semantic_json_projection():
-    doc = ui_dsl.parse(FIXTURE.read_text())
+    doc = ui_dsl.parse(FIXTURE.read_text(encoding="utf-8"))
     sem = ui_dsl.to_jsonable(doc)
     assert sem == equivalent_json(doc)
     q1 = sem["blocks"][1]["children"][0]
@@ -214,7 +214,7 @@ def test_semantic_json_projection():
 def test_tokenizer_benchmark_dsl_beats_json(tmp_path):
     pytest.importorskip("tokenizers")
     tok, meta = ui_dsl.load_tokenizer()
-    src = FIXTURE.read_text()
+    src = FIXTURE.read_text(encoding="utf-8")
     doc = ui_dsl.parse(src)
     json_src = json.dumps(equivalent_json(doc), ensure_ascii=False)
     dsl_toks = len(tok.encode(src).ids)
@@ -223,7 +223,7 @@ def test_tokenizer_benchmark_dsl_beats_json(tmp_path):
     results = {"tokenizer": meta["tokenizer"],
                "dsl_tokens": dsl_toks, "json_tokens": json_toks,
                "ratio": round(ratio, 4)}
-    (tmp_path / "bench.json").write_text(json.dumps(results))
+    (tmp_path / "bench.json").write_text(json.dumps(results), encoding="utf-8")
     assert dsl_toks < json_toks
     assert ratio < 0.75
 
@@ -233,11 +233,11 @@ def test_cli_parse_render_roundtrip(tmp_path):
     out = tmp_path / "out.dsl"
     assert ui_dsl.main(["parse", "--input", str(FIXTURE),
                         "--output", str(out)]) == 0
-    assert out.read_text() == FIXTURE.read_text()
+    assert out.read_text(encoding="utf-8") == FIXTURE.read_text(encoding="utf-8")
     html = tmp_path / "out.html"
     assert ui_dsl.main(["render", "--input", str(FIXTURE),
                         "--output", str(html)]) == 0
-    assert "<form" in html.read_text()
+    assert "<form" in html.read_text(encoding="utf-8")
     assert ui_dsl.main(["render", "--input", str(FIXTURE),
                         "--output", str(html)]) != 0
     assert ui_dsl.main(["render", "--input", str(FIXTURE),
@@ -249,7 +249,7 @@ def test_cli_benchmark(tmp_path, capsys):
     res = tmp_path / "res.json"
     assert ui_dsl.main(["benchmark", "--fixture", str(FIXTURE),
                         "--output", str(res)]) == 0
-    data = json.loads(res.read_text())
+    data = json.loads(res.read_text(encoding="utf-8"))
     assert data["dsl_tokens"] < data["json_tokens"]
     assert data["tokenizer"]
     assert data["json_form"] == "minified"
@@ -325,10 +325,10 @@ def test_cli_bounded_input_and_no_clobber(tmp_path, monkeypatch):
                         "--output", str(tmp_path / "o.dsl")]) == 2
     monkeypatch.setattr(ui_dsl, "MAX_BYTES", 10**9)
     out = tmp_path / "o.html"
-    out.write_text("KEEP ME")
+    out.write_text("KEEP ME", encoding="utf-8")
     assert ui_dsl.main(["render", "--input", str(FIXTURE),
                         "--output", str(out)]) == 2
-    assert out.read_text() == "KEEP ME"
+    assert out.read_text(encoding="utf-8") == "KEEP ME"
 
 
 def test_benchmark_local_tokenizer_artifact(tmp_path):
@@ -337,17 +337,17 @@ def test_benchmark_local_tokenizer_artifact(tmp_path):
     tok, _ = ui_dsl.load_tokenizer()
     p = tmp_path / "tok.json"
     tok.save(str(p))
-    res = ui_dsl.benchmark(FIXTURE.read_text(), tokenizer=str(p),
+    res = ui_dsl.benchmark(FIXTURE.read_text(encoding="utf-8"), tokenizer=str(p),
                            fixture_name="hud_form.dsl")
     assert res["tokenizer"] == str(p)
     assert res["tokenizer_sha256"] == hashlib.sha256(
         tok.to_str().encode("utf-8")).hexdigest()
     assert res["input_sha256"] == hashlib.sha256(
-        ui_dsl.emit(ui_dsl.parse(FIXTURE.read_text()))
+        ui_dsl.emit(ui_dsl.parse(FIXTURE.read_text(encoding="utf-8")))
         .encode("utf-8")).hexdigest()
     assert res["fixture"] == "hud_form.dsl"
     assert res["json_form"] == "minified"
-    doc = ui_dsl.parse(FIXTURE.read_text())
+    doc = ui_dsl.parse(FIXTURE.read_text(encoding="utf-8"))
     min_json = json.dumps(equivalent_json(doc), ensure_ascii=False,
                           separators=(",", ":"))
     assert res["fixture_bytes_json"] == len(min_json.encode("utf-8"))
@@ -361,7 +361,7 @@ def test_browser_native_dialog_submit(tmp_path):
     unchanged, no network request issued."""
     from playwright.sync_api import sync_playwright
     html = tmp_path / "ui.html"
-    html.write_text(ui_dsl.render_html(ui_dsl.parse(FIXTURE.read_text())))
+    html.write_text(ui_dsl.render_html(ui_dsl.parse(FIXTURE.read_text(encoding="utf-8"))), encoding="utf-8")
     requests = []
     with sync_playwright() as pw:
         exe = None

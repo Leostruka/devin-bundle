@@ -206,7 +206,7 @@ def test_open_backend_via_registry(tmp_path, monkeypatch):
     monkeypatch.setenv("CU_ENV_ROOT", str(tmp_path))
     monkeypatch.setenv("CU_STATE_ROOT", str(tmp_path / "state"))
     (tmp_path / "phone.json").write_text(
-        '{"env_id": "phone", "provider": "adb", "serial": "s1"}')
+        '{"env_id": "phone", "provider": "adb", "serial": "s1"}', encoding="utf-8")
     import cu_target
     tgt = cu_target.resolve_target("phone", cu_target.load_registry())
     b = cb.open_backend(tgt)

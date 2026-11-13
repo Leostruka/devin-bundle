@@ -25,7 +25,7 @@ def test_hook_records_decision_stop(tmp_path):
         proj=tmp_path)
     q = tmp_path / ".devin" / "decisions.jsonl"
     assert q.exists()
-    rec = json.loads(q.read_text().strip())
+    rec = json.loads(q.read_text(encoding="utf-8").strip())
     assert rec["resolved"] is False and rec["source"] == "stop"
 
 

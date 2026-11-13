@@ -53,7 +53,7 @@ def test_existing_destination_rejects_without_overwrite(files, tmp_path):
 
 def test_symlink_chain_escape_rejects(files, tmp_path):
     outside = tmp_path.parent / f"outside-{os.getpid()}"
-    outside.write_text("secret")
+    outside.write_text("secret", encoding="utf-8")
     try:
         (tmp_path / "l1").symlink_to(tmp_path / "l2")
         (tmp_path / "l2").symlink_to(outside)

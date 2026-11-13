@@ -33,14 +33,14 @@ def _repo(tmp_path):
     (tmp_path / "data" / "output-modes.json").write_text(json.dumps({
         "lean": {"context": "x", "flags": {"diff_footer": True}},
         "quiet": {"context": "x", "flags": {"diff_footer": False}},
-    }))
+    }), encoding="utf-8")
     (tmp_path / ".devin").mkdir()
-    (tmp_path / "f.txt").write_text("a")
+    (tmp_path / "f.txt").write_text("a", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=tmp_path, capture_output=True)
     subprocess.run(["git", "-c", "user.email=a@b", "-c", "user.name=t",
                     "commit", "-m", "init"], cwd=tmp_path,
                    capture_output=True)
-    (tmp_path / "f.txt").write_text("a\nb\nc")
+    (tmp_path / "f.txt").write_text("a\nb\nc", encoding="utf-8")
     return tmp_path
 
 
@@ -53,7 +53,7 @@ def _payload(tool="exec"):
 def test_footer_when_lean_mode(tmp_path):
     root = _repo(tmp_path)
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "lean"}))
+        json.dumps({"mode": "lean"}), encoding="utf-8")
     code, out = _run(_payload(), root)
     assert code == 0 and "diff-stat: 1 files (+" in out
 
@@ -67,7 +67,7 @@ def test_silent_when_mode_off(tmp_path):
 def test_silent_when_mode_disables_footer(tmp_path):
     root = _repo(tmp_path)
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "quiet"}))
+        json.dumps({"mode": "quiet"}), encoding="utf-8")
     code, out = _run(_payload(), root)
     assert code == 0 and out == ""
 
@@ -75,6 +75,6 @@ def test_silent_when_mode_disables_footer(tmp_path):
 def test_silent_for_non_exec_tool(tmp_path):
     root = _repo(tmp_path)
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "lean"}))
+        json.dumps({"mode": "lean"}), encoding="utf-8")
     code, out = _run(_payload(tool="read"), root)
     assert code == 0 and out == ""

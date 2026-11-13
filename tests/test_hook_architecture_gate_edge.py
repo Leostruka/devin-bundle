@@ -42,7 +42,7 @@ def test_write_blocked_without_manifest(managed):
 
 
 def test_write_allowed_with_manifest(managed):
-    (managed / ".devin" / "ARCHITECTURE_MANIFEST.md").write_text("# m")
+    (managed / ".devin" / "ARCHITECTURE_MANIFEST.md").write_text("# m", encoding="utf-8")
     p = _run(_write(managed / "src" / "main.py"))
     assert p.returncode == 0
 

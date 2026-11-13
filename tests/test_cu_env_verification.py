@@ -167,7 +167,7 @@ def test_remote_click_with_verify_attaches_evidence(tmp_path,
     reg = tmp_path / "envs"
     reg.mkdir()
     (reg / "devin-linux.json").write_text(json.dumps(
-        {"env_id": "devin-linux", "provider": "qemu"}))
+        {"env_id": "devin-linux", "provider": "qemu"}), encoding="utf-8")
     monkeypatch.setenv("CU_ENV_ROOT", str(reg))
     cb = load("cu_backend")
     monkeypatch.setattr(cb, "open_backend",

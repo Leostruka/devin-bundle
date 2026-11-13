@@ -165,11 +165,11 @@ def test_masked_export_hides_all_secret_kinds(tmp_path):
     assert cfg['api_token'] == 'MASKED'
     assert cfg['devin']['org_id'] == 'MASKED'
     assert cfg['hooks'] == {}
-    raw = (bundle / 'config.json').read_text()
+    raw = (bundle / 'config.json').read_text(encoding="utf-8")
     assert 'secret123' not in raw
     mcp = json.loads((bundle / 'mcp_config.json').read_text(encoding='utf-8-sig'))
     assert mcp['mcpServers']['srv']['env']['CUSTOM_NAME'] == 'MASKED'
-    creds = (bundle / 'credentials.toml').read_text()
+    creds = (bundle / 'credentials.toml').read_text(encoding="utf-8")
     assert 'livekey' not in creds
     assert 'MASKED' in creds
 
@@ -207,4 +207,4 @@ def test_masked_export_without_python_fails(tmp_path):
     assert r.returncode != 0
     assert 'refusing to export unmasked' in r.stdout + r.stderr
     assert not (bundle / 'config.json').exists() or \
-        'real-org-id' not in (bundle / 'config.json').read_text()
+        'real-org-id' not in (bundle / 'config.json').read_text(encoding="utf-8")

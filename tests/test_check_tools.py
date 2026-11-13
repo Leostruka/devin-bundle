@@ -33,7 +33,7 @@ def test_schema_missing_keys_and_enabled_no_renderer():
 
 def test_byte_identity_deterministic(tmp_path):
     script = tmp_path / "r.py"
-    script.write_text("import sys; print('stable')")
+    script.write_text("import sys; print('stable')", encoding="utf-8")
     with patch.object(mod, "ROOT", str(tmp_path)):
         ok, detail = mod.check_byte_identity("r.py", None)
     assert ok and "identical" in detail
@@ -42,7 +42,7 @@ def test_byte_identity_deterministic(tmp_path):
 def test_byte_identity_catches_nondeterminism(tmp_path):
     script = tmp_path / "r.py"
     script.write_text(
-        "import time; print(time.time_ns())")
+        "import time; print(time.time_ns())", encoding="utf-8")
     with patch.object(mod, "ROOT", str(tmp_path)):
         ok, detail = mod.check_byte_identity("r.py", None)
     assert not ok and "diverge" in detail
@@ -50,7 +50,7 @@ def test_byte_identity_catches_nondeterminism(tmp_path):
 
 def test_byte_identity_renderer_failure(tmp_path):
     script = tmp_path / "r.py"
-    script.write_text("import sys; sys.exit(1)")
+    script.write_text("import sys; sys.exit(1)", encoding="utf-8")
     with patch.object(mod, "ROOT", str(tmp_path)):
         ok, detail = mod.check_byte_identity("r.py", None)
     assert not ok and "exit 1" in detail

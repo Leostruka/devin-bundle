@@ -99,7 +99,7 @@ def test_stale_pidfile_never_attaches(daemon):
     while True:
         try:
             tmp = daemon.PIDFILE.with_suffix(".fake")
-            tmp.write_text(fake)
+            tmp.write_text(fake, encoding="utf-8")
             os.replace(tmp, daemon.PIDFILE)
             break
         except OSError:

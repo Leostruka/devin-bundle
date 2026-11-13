@@ -22,8 +22,8 @@ def corpus(tmp_path):
     src.mkdir()
     (src / "alpha.py").write_text(
         "import beta\n\ndef myCamelFunc():\n    pass\n"
-        "class Snake_case:\n    pass\n")
-    (src / "beta.py").write_text("def helper():\n    pass\n")
+        "class Snake_case:\n    pass\n", encoding="utf-8")
+    (src / "beta.py").write_text("def helper():\n    pass\n", encoding="utf-8")
     r = run("index.py", str(tmp_path))
     assert r.returncode == 0, r.stderr
     return tmp_path
@@ -50,16 +50,16 @@ def test_detect_changes_clean_then_dirty(corpus):
     rep = json.loads(r.stdout)
     assert rep["changed"] == [] and rep["new"] == [] and rep["removed"] == []
     assert rep["api_version"] == 2
-    (corpus / "src" / "alpha.py").write_text("def v2():\n    pass\n")
+    (corpus / "src" / "alpha.py").write_text("def v2():\n    pass\n", encoding="utf-8")
     rep = json.loads(run("detect_changes.py", str(corpus)).stdout)
     assert "src/alpha.py" in rep["changed"]
-    (corpus / "src" / "new.py").write_text("def n():\n    pass\n")
+    (corpus / "src" / "new.py").write_text("def n():\n    pass\n", encoding="utf-8")
     rep = json.loads(run("detect_changes.py", str(corpus)).stdout)
     assert "src/new.py" in rep["new"]
 
 
 def test_incremental_reindex(corpus):
-    (corpus / "src" / "alpha.py").write_text("def added():\n    pass\n")
+    (corpus / "src" / "alpha.py").write_text("def added():\n    pass\n", encoding="utf-8")
     run("index.py", str(corpus))
     r = run("query.py", str(corpus), "symbols", "added")
     assert "added" in r.stdout

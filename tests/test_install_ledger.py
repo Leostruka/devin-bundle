@@ -24,7 +24,7 @@ def env(tmp_path, monkeypatch):
         (live / d).mkdir(parents=True)
     (root / ".devin" / "install-ledger").mkdir(parents=True)
     (root / "manifest.json").write_text(
-        json.dumps({"version": "1.0.0", "scripts": [], "skills": []}))
+        json.dumps({"version": "1.0.0", "scripts": [], "skills": []}), encoding="utf-8")
     monkeypatch.setenv("DEVIN_PROJECT_DIR", str(root))
     monkeypatch.setenv("DEVIN_HOME", str(live))
     return root, live
@@ -32,7 +32,7 @@ def env(tmp_path, monkeypatch):
 
 def _write(path, text):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
+    path.write_text(text, encoding="utf-8")
 
 
 def test_reconcile_five_states(env):
@@ -72,7 +72,7 @@ def test_reconcile_five_states(env):
     _write(live / "scripts" / "foreign.py", "foreign")
 
     (root / ".devin" / "install-ledger" / "installs.json").write_text(
-        json.dumps(ledger))
+        json.dumps(ledger), encoding="utf-8")
 
     rep = mod.reconcile()
     assert rep["Current"] == ["scripts/cur.py"]
@@ -113,9 +113,9 @@ def _cli(argv, env):
 
 def test_backup_if_differs_writes_copy(env, tmp_path):
     dst = tmp_path / "file.py"
-    dst.write_text("old bytes")
+    dst.write_text("old bytes", encoding="utf-8")
     bak = mod.backup_if_differs(str(dst), str(tmp_path / "backups"))
-    assert bak and open(bak).read() == "old bytes"
+    assert bak and open(bak, encoding="utf-8").read() == "old bytes"
 
 
 def test_backup_if_differs_missing_returns_none(tmp_path):
@@ -126,7 +126,7 @@ def test_backup_if_differs_missing_returns_none(tmp_path):
 def test_backup_failure_aborts_write(env, tmp_path):
     """Simulated backup failure -> caller must abort; dst untouched."""
     dst = tmp_path / "f.py"
-    dst.write_text("keep")
+    dst.write_text("keep", encoding="utf-8")
     ro_dir = tmp_path / "ro"
     ro_dir.mkdir()
     with patch.object(mod.shutil, "copyfile",
@@ -136,7 +136,7 @@ def test_backup_failure_aborts_write(env, tmp_path):
             aborted = False
         except OSError:
             aborted = True
-    assert aborted and dst.read_text() == "keep"
+    assert aborted and dst.read_text(encoding="utf-8") == "keep"
 
 
 def test_corpus_index_written(env):
@@ -145,7 +145,7 @@ def test_corpus_index_written(env):
     _cli(["record-all"], env)
     idx = json.loads(
         (root / ".devin" / "install-ledger" / "corpus-index.json")
-        .read_text())
+        .read_text(encoding="utf-8"))
     assert idx["files"]["scripts/a.py"] == mod._sha256(
         root / "scripts" / "a.py")
 
@@ -180,7 +180,7 @@ def test_corpus_index_covers_remapped_docs(env):
     _cli(["record-all"], env)
     idx = json.loads(
         (root / ".devin" / "install-ledger" / "corpus-index.json")
-        .read_text())
+        .read_text(encoding="utf-8"))
     assert idx["files"]["docs/guide.md"] == mod._sha256(
         root / ".devin" / "docs" / "guide.md")
     assert idx["files"]["docs/plans/p.md"] == mod._sha256(
@@ -199,7 +199,7 @@ def test_rendered_file_current_when_source_recorded(env):
         "rendered_hash": h(live / "config.json"),
         "installed_at": "t", "corpus_version": "1.0.0"}}}
     (root / ".devin" / "install-ledger" / "installs.json").write_text(
-        json.dumps(ledger))
+        json.dumps(ledger), encoding="utf-8")
     rep = mod.reconcile()
     assert rep["Current"] == ["config.json"]
     # source moves -> same live bytes become Outdated
@@ -217,7 +217,7 @@ def test_build_artifacts_never_drift(env):
             "dest": "", "source_hash": None, "rendered_hash": "stale",
             "installed_at": "t", "corpus_version": "1.0.0"}}}
     (root / ".devin" / "install-ledger" / "installs.json").write_text(
-        json.dumps(ledger))
+        json.dumps(ledger), encoding="utf-8")
     rep = mod.reconcile()
     assert all("fast_math.pyd" not in v for v in rep.values())
 
@@ -231,7 +231,7 @@ def test_corpus_index_excludes_noise_dirs_and_artifacts(env):
     _cli(["record-all"], env)
     idx = json.loads(
         (root / ".devin" / "install-ledger" / "corpus-index.json")
-        .read_text())
+        .read_text(encoding="utf-8"))
     keys = idx["files"]
     assert "extensions/x/real.py" in keys
     assert not any(".venv" in k or k.endswith(".pyd") for k in keys)

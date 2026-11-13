@@ -69,7 +69,7 @@ def test_spawn_rejects_bad_cwd(tmp_path):
     with pytest.raises(contract.InvalidRequest):
         sc_process.spawn(py("pass"), cwd=str(tmp_path / "missing"))
     f = tmp_path / "f.txt"
-    f.write_text("x")
+    f.write_text("x", encoding="utf-8")
     with pytest.raises(contract.InvalidRequest):
         sc_process.spawn(py("pass"), cwd=str(f))
 

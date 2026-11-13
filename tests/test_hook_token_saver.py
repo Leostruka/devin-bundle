@@ -34,7 +34,7 @@ def root(tmp_path, monkeypatch):
         "caveman": {"context": "CAVEMAN fragment", "flags": {"diff_footer": True}},
         "quiet": {"context": "QUIET fragment", "flags": {"diff_footer": False}},
     }
-    (tmp_path / "data" / "output-modes.json").write_text(json.dumps(presets))
+    (tmp_path / "data" / "output-modes.json").write_text(json.dumps(presets), encoding="utf-8")
     (tmp_path / ".devin").mkdir()
     return tmp_path
 
@@ -46,7 +46,7 @@ def test_no_mode_file_silent(root):
 
 def test_injects_once_then_silent(root):
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "caveman"}))
+        json.dumps({"mode": "caveman"}), encoding="utf-8")
     code, out = _run(root=str(root))
     assert code == 0 and "CAVEMAN fragment" in out
     # second call with unchanged mode: nothing injected (the savings)
@@ -56,28 +56,28 @@ def test_injects_once_then_silent(root):
 
 def test_mode_change_injects_new_preset(root):
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "caveman"}))
+        json.dumps({"mode": "caveman"}), encoding="utf-8")
     _run(root=str(root))
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "quiet"}))
+        json.dumps({"mode": "quiet"}), encoding="utf-8")
     code, out = _run(root=str(root))
     assert code == 0 and "QUIET fragment" in out
 
 
 def test_combo_injects_both(root):
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "caveman+quiet"}))
+        json.dumps({"mode": "caveman+quiet"}), encoding="utf-8")
     code, out = _run(root=str(root))
     assert "CAVEMAN fragment" in out and "QUIET fragment" in out
 
 
 def test_switching_off_emits_restore_notice(root):
     (root / ".devin" / "output-mode.json").write_text(
-        json.dumps({"mode": "caveman"}))
+        json.dumps({"mode": "caveman"}), encoding="utf-8")
     _run(root=str(root))
     # hook's state survives the mode edit (it lives in the same file)
-    cfg = json.loads((root / ".devin" / "output-mode.json").read_text())
+    cfg = json.loads((root / ".devin" / "output-mode.json").read_text(encoding="utf-8"))
     cfg["mode"] = "off"
-    (root / ".devin" / "output-mode.json").write_text(json.dumps(cfg))
+    (root / ".devin" / "output-mode.json").write_text(json.dumps(cfg), encoding="utf-8")
     code, out = _run(root=str(root))
     assert code == 0 and "restored to default" in out

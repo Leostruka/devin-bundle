@@ -47,7 +47,7 @@ def test_rate_limit_writes_intent(tmp_path):
     assert "resume intent" in out
     files = _intents(tmp_path)
     assert len(files) == 1
-    rec = json.loads(files[0].read_text())
+    rec = json.loads(files[0].read_text(encoding="utf-8"))
     assert rec["kind"] == "resume_at"
     assert rec["auto"] is False
     assert rec["when"] >= int(time.time()) + 250
@@ -64,5 +64,5 @@ def test_retry_after_minutes_bounded(tmp_path):
     _run({"hook_event_name": "Stop",
           "last_assistant_message": "rate limit. retry after 60000 minutes"},
          tmp_path)
-    rec = json.loads(_intents(tmp_path)[0].read_text())
+    rec = json.loads(_intents(tmp_path)[0].read_text(encoding="utf-8"))
     assert rec["when"] <= int(time.time()) + 86400

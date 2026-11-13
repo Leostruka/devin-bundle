@@ -25,14 +25,14 @@ def repo(tmp_path):
     (tmp_path / ".devin" / "ARCHITECTURE_MANIFEST.md").write_text(
         "# Manifest\n\nTop dirs: `extensions/`, `scripts/`, `tests/`, `.devin/`.\n",
         encoding="utf-8")
-    (tmp_path / ".devin" / "adr" / "0001-x.md").write_text("# ADR\n")
+    (tmp_path / ".devin" / "adr" / "0001-x.md").write_text("# ADR\n", encoding="utf-8")
     (tmp_path / "scripts").mkdir()
-    (tmp_path / "scripts" / "existing.py").write_text("# exists\n")
+    (tmp_path / "scripts" / "existing.py").write_text("# exists\n", encoding="utf-8")
     (tmp_path / ".devin" / "ledgers" / "clean.md").write_text(
-        "# GATES\n\n- [x] G1: thing\n  CHECK: true\n  EVIDENCE: ok\n")
+        "# GATES\n\n- [x] G1: thing\n  CHECK: true\n  EVIDENCE: ok\n", encoding="utf-8")
     (tmp_path / ".devin" / "ledgers" / "dirty.md").write_text(
         "# GATES\n\n- [x] G1: claimed\n  CHECK: pytest x\n"
-        "  EXPECT: pass\n  EVIDENCE: pending\n")
+        "  EXPECT: pass\n  EVIDENCE: pending\n", encoding="utf-8")
     return tmp_path
 
 

@@ -164,7 +164,7 @@ def test_metadata_contains_no_raw_request(tmp_path, monkeypatch):
     req = request("process.cancel", {"secretish": "v"},
                   {"pid": 10, "start_time": 20})
     token = policy.issue_confirmation(req)["confirmation_id"]
-    meta = json.loads((tmp_path / f"{token}.json").read_text())
+    meta = json.loads((tmp_path / f"{token}.json").read_text(encoding="utf-8"))
     assert set(meta) == {"digest", "created_at", "expires_at"}
     assert meta["digest"] == policy.request_digest(req)
     assert "args" not in meta and "target" not in meta
@@ -186,10 +186,10 @@ def test_consume_expired_deletes_token(tmp_path, monkeypatch):
     token = policy.issue_confirmation(req, ttl_s=60)[
         "confirmation_id"]
     path = tmp_path / f"{token}.json"
-    meta = json.loads(path.read_text())
+    meta = json.loads(path.read_text(encoding="utf-8"))
     meta["created_at"] = time.time() - 61
     meta["expires_at"] = time.time() - 1
-    path.write_text(json.dumps(meta))
+    path.write_text(json.dumps(meta), encoding="utf-8")
     r = policy.consume_confirmation(req, token)
     assert r == {"ok": False, "reason": "expired"}
     assert not path.exists()
@@ -211,7 +211,7 @@ def test_malformed_metadata_fails_closed_and_consumes(tmp_path,
     req = request("process.cancel", {})
     token = policy.issue_confirmation(req)["confirmation_id"]
     path = tmp_path / f"{token}.json"
-    path.write_text("not json {")
+    path.write_text("not json {", encoding="utf-8")
     r = policy.consume_confirmation(req, token)
     assert r["ok"] is False
     assert not path.exists()
@@ -300,7 +300,7 @@ def test_consume_deeply_nested_json_fails_closed(tmp_path, monkeypatch):
     monkeypatch.setattr(policy, "STATE_DIR", tmp_path)
     req = request("process.cancel", {})
     token = policy.issue_confirmation(req)["confirmation_id"]
-    (tmp_path / f"{token}.json").write_text("[" * 100000)
+    (tmp_path / f"{token}.json").write_text("[" * 100000, encoding="utf-8")
     r = policy.consume_confirmation(req, token)
     assert r == {"ok": False, "reason": "unknown_confirmation"}
     assert list(tmp_path.iterdir()) == []
@@ -351,7 +351,7 @@ def test_consume_rejects_malformed_metadata_fields(tmp_path,
     for meta in cases:
         token = policy.issue_confirmation(req)["confirmation_id"]
         path = tmp_path / f"{token}.json"
-        path.write_text(json.dumps(meta))
+        path.write_text(json.dumps(meta), encoding="utf-8")
         r = policy.consume_confirmation(req, token)
         assert r == {"ok": False, "reason": "unknown_confirmation"}, meta
         assert not path.exists()

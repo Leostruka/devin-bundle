@@ -173,7 +173,7 @@ def _fake_proc_tree(tmp_path, pids):
     for pid in pids:
         d = tmp_path / str(pid)
         d.mkdir()
-        (d / "stat").write_text(stat.replace("(worker)", f"(p{pid})"))
+        (d / "stat").write_text(stat.replace("(worker)", f"(p{pid})"), encoding="utf-8")
 
 
 def test_linux_boot_time_read_once_per_scan(tmp_path, monkeypatch):

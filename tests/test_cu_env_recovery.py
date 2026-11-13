@@ -98,7 +98,7 @@ def env_dir(tmp_path):
     d.mkdir()
     (d / "ready.json").write_text(json.dumps({
         "socket": "tcp://127.0.0.1:1", "token": "t0k",
-        "qemu_pid": 1, "daemon_pid": 2}))
+        "qemu_pid": 1, "daemon_pid": 2}), encoding="utf-8")
     return d
 
 
@@ -130,7 +130,7 @@ def test_every_call_carries_request_id(env_dir):
 
 
 def test_stale_heartbeat_is_not_ready(env_dir):
-    (env_dir / "hb").write_text(str(time.time() - 60))
+    (env_dir / "hb").write_text(str(time.time() - 60), encoding="utf-8")
     be = cu_qmp_backend.QmpBackend("devin-linux", env_dir=env_dir,
                                  ipc=lambda *a, **k: None)
     with pytest.raises(cu_qmp_backend.BackendError,
@@ -139,7 +139,7 @@ def test_stale_heartbeat_is_not_ready(env_dir):
 
 
 def test_fresh_heartbeat_passes(env_dir):
-    (env_dir / "hb").write_text(str(time.time()))
+    (env_dir / "hb").write_text(str(time.time()), encoding="utf-8")
     be = cu_qmp_backend.QmpBackend(
         "devin-linux", env_dir=env_dir,
         ipc=lambda *a, **k: {"ok": True, "return": {"running": True}})

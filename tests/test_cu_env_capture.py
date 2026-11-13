@@ -59,9 +59,9 @@ def env_dir(tmp_path):
     d.mkdir()
     (d / "ready.json").write_text(json.dumps({
         "socket": str(d / "qmp.ipc"), "qemu_pid": 1,
-        "daemon_pid": 2}))
+        "daemon_pid": 2}), encoding="utf-8")
     (d / "state.json").write_text(json.dumps({
-        "instance_id": "i-abc123", "running": True}))
+        "instance_id": "i-abc123", "running": True}), encoding="utf-8")
     return d
 
 
@@ -229,7 +229,7 @@ def test_screenshot_remote_ignores_host_mss(env_dir, tmp_path,
     reg = tmp_path / "envs"
     reg.mkdir()
     (reg / "devin-linux.json").write_text(json.dumps(
-        {"env_id": "devin-linux", "provider": "qemu"}))
+        {"env_id": "devin-linux", "provider": "qemu"}), encoding="utf-8")
     monkeypatch.setenv("CU_ENV_ROOT", str(reg))
     out = tmp_path / "shot.png"
     monkeypatch.setattr(sys, "argv",
@@ -312,7 +312,7 @@ def _write_approved_spec(env_dir):
         "accel": "whpx", "qemu_path": "qemu",
         "resources": {"vcpus": 1, "memory_mib": 512},
         "network": "off", "clipboard": "off",
-        "mounts": [], "physical_devices": []}))
+        "mounts": [], "physical_devices": []}), encoding="utf-8")
 
 
 def test_daemon_serves_over_real_socket(env_dir):
@@ -328,7 +328,7 @@ def test_daemon_serves_over_real_socket(env_dir):
     for _ in range(100):
         try:
             ready = json.loads(
-                (env_dir / "ready.json").read_text())
+                (env_dir / "ready.json").read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             pass
         if ready.get("daemon_pid"):
@@ -356,11 +356,11 @@ def test_write_private_owner_only_perms(tmp_path):
     """ready.json carries the TCP auth token; it must be owner-only."""
     p = tmp_path / "ready.json"
     cu_env_daemon._write_private(p, '{"token": "t0k"}')
-    assert p.read_text() == '{"token": "t0k"}'
+    assert p.read_text(encoding="utf-8") == '{"token": "t0k"}'
     if os.name != "nt":
         assert (p.stat().st_mode & 0o777) == 0o600
     # rewrite over a broader-perm file must tighten it
-    p.write_text("x")
+    p.write_text("x", encoding="utf-8")
     if os.name != "nt":
         p.chmod(0o644)
     cu_env_daemon._write_private(p, "y")

@@ -20,7 +20,7 @@ def _write_pid(root, pid, comm, ticks=TICKS):
     d = root / str(pid)
     d.mkdir(exist_ok=True)
     fields = ["S"] + ["0"] * 18 + [str(ticks)]
-    (d / "stat").write_text(f"{pid} ({comm}) " + " ".join(fields))
+    (d / "stat").write_text(f"{pid} ({comm}) " + " ".join(fields), encoding="utf-8")
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def fake_proc(tmp_path, monkeypatch):
     root = tmp_path / "proc"
     root.mkdir()
     (root / "stat").write_text(
-        "cpu  0 0 0 0\nbtime %d\nprocesses 1\n" % BTIME)
+        "cpu  0 0 0 0\nbtime %d\nprocesses 1\n" % BTIME, encoding="utf-8")
     monkeypatch.setattr(linux, "PROC_ROOT", str(root))
     monkeypatch.setattr(linux, "_clock_ticks", lambda: CLK)
     return root

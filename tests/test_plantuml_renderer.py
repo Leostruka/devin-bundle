@@ -55,7 +55,7 @@ def test_explicit_out_refuses_overwrite(monkeypatch, capsys, tmp_path):
     code, env = run_main([str(src), "-o", str(out)], capsys)
     assert code == 2
     assert env["ok"] is False and "out exists" in env["error"]
-    assert out.read_text() == "<svg>old</svg>"
+    assert out.read_text(encoding="utf-8") == "<svg>old</svg>"
 
 
 def test_oversize_response_rejected(monkeypatch, capsys, tmp_path):

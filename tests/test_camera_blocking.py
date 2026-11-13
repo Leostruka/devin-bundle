@@ -121,11 +121,11 @@ def test_server_nonce_not_echoed_over_socket(tmp_path):
         assert "nonce" not in r and r.get("pid")
         r = call({"id": "e", "op": "exec", "code": "1+1"})
         assert r["ok"] is False and "nonce" not in r
-        nonce = nonce_file.read_text().strip()
+        nonce = nonce_file.read_text(encoding="utf-8").strip()
         r = call({"id": "e2", "op": "exec", "code": "1+1", "nonce": nonce})
         assert r["ok"] is True and r["result"] == "2" and "nonce" not in r
     finally:
-        nonce = nonce_file.read_text().strip()
+        nonce = nonce_file.read_text(encoding="utf-8").strip()
         try:
             call({"id": "s", "op": "shutdown", "nonce": nonce})
         except OSError:
@@ -182,7 +182,7 @@ def test_clobber_refused(tmp_path):
 
 def test_clobber_each_artifact(tmp_path):
     for f in ("shot.camera.json", "shot.preview.png", "shot.handoff.json"):
-        (tmp_path / f).write_text("{}")
+        (tmp_path / f).write_text("{}", encoding="utf-8")
         r = cb.run(_params(out=str(tmp_path)))
         assert r["stage"] == "clobber"
         (tmp_path / f).unlink()
@@ -321,13 +321,13 @@ def test_port_in_use_refused(monkeypatch, tmp_path):
 @pytest.mark.parametrize("f", ["blockout.py", "camera_rig.py",
                                "playblast.py"])
 def test_preset_compiles(f):
-    src = (BO / "presets" / f).read_text()
+    src = (BO / "presets" / f).read_text(encoding="utf-8")
     compile(src, f, "exec")
 
 
 def test_presets_do_not_wipe_scene():
     for f in ("blockout.py", "camera_rig.py", "playblast.py"):
-        src = (BO / "presets" / f).read_text()
+        src = (BO / "presets" / f).read_text(encoding="utf-8")
         assert "read_homefile" not in src
         assert "bpy.ops.wm.open_mainfile" not in src
         assert "object.delete" not in src
@@ -366,7 +366,7 @@ def test_ingest_happy_path(tmp_path, monkeypatch):
     mp4 = tmp_path / "shot.mp4"
     mp4.write_bytes(b"fake-mp4")
     cam = tmp_path / "shot.camera.json"
-    cam.write_text(json.dumps(_camera_meta()))
+    cam.write_text(json.dumps(_camera_meta()), encoding="utf-8")
     monkeypatch.setattr(ingest.subprocess, "run",
                         _fake_ffprobe(_ffprobe_json()))
     monkeypatch.setattr(ingest, "find_ffprobe", lambda: "/bin/ffprobe")
@@ -382,7 +382,7 @@ def test_ingest_fps_mismatch(tmp_path, monkeypatch):
     mp4 = tmp_path / "s.mp4"
     mp4.write_bytes(b"x")
     (tmp_path / "s.camera.json").write_text(
-        json.dumps(_camera_meta(fps=24)))
+        json.dumps(_camera_meta(fps=24)), encoding="utf-8")
     monkeypatch.setattr(ingest.subprocess, "run",
                         _fake_ffprobe(_ffprobe_json(fps="30/1", n=60)))
     monkeypatch.setattr(ingest, "find_ffprobe", lambda: "/bin/ffprobe")
@@ -393,7 +393,7 @@ def test_ingest_fps_mismatch(tmp_path, monkeypatch):
 def test_ingest_framecount_mismatch(tmp_path, monkeypatch):
     mp4 = tmp_path / "s.mp4"
     mp4.write_bytes(b"x")
-    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()))
+    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()), encoding="utf-8")
     monkeypatch.setattr(ingest.subprocess, "run",
                         _fake_ffprobe(_ffprobe_json(n=200)))
     monkeypatch.setattr(ingest, "find_ffprobe", lambda: "/bin/ffprobe")
@@ -403,7 +403,7 @@ def test_ingest_framecount_mismatch(tmp_path, monkeypatch):
 
 def test_ingest_camera_schema_enforced(tmp_path):
     bad = tmp_path / "bad.camera.json"
-    bad.write_text(json.dumps({"fps": 24, "frames": []}))
+    bad.write_text(json.dumps({"fps": 24, "frames": []}), encoding="utf-8")
     with pytest.raises(ValueError, match="missing"):
         ingest.load_camera(str(bad))
 
@@ -411,7 +411,7 @@ def test_ingest_camera_schema_enforced(tmp_path):
 def test_ingest_ffprobe_timeout_typed(tmp_path, monkeypatch):
     mp4 = tmp_path / "s.mp4"
     mp4.write_bytes(b"x")
-    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()))
+    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()), encoding="utf-8")
 
     def hang(*a, **k):
         raise ingest.subprocess.TimeoutExpired("ffprobe", 60)
@@ -448,8 +448,8 @@ def test_ingest_missing_mp4(tmp_path):
 def test_ingest_no_clobber(tmp_path, monkeypatch):
     mp4 = tmp_path / "s.mp4"
     mp4.write_bytes(b"x")
-    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()))
-    (tmp_path / "s.handoff.json").write_text("{}")
+    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()), encoding="utf-8")
+    (tmp_path / "s.handoff.json").write_text("{}", encoding="utf-8")
     monkeypatch.setattr(ingest.subprocess, "run",
                         _fake_ffprobe(_ffprobe_json()))
     monkeypatch.setattr(ingest, "find_ffprobe", lambda: "/bin/ffprobe")
@@ -586,7 +586,7 @@ def test_ingest_rejects_nonfinite(tmp_path):
         meta = _camera_meta()
         meta["frames"][0]["location"] = [bad_val, 0.0, 0.0]
         f = tmp_path / "c.json"
-        f.write_text(json.dumps(meta))
+        f.write_text(json.dumps(meta), encoding="utf-8")
         with pytest.raises(ValueError, match="non-finite"):
             ingest.load_camera(str(f))
 
@@ -595,19 +595,19 @@ def test_ingest_rejects_bad_frame_types(tmp_path):
     meta = _camera_meta()
     meta["frames"][0]["location"] = "here"
     f = tmp_path / "c.json"
-    f.write_text(json.dumps(meta))
+    f.write_text(json.dumps(meta), encoding="utf-8")
     with pytest.raises(ValueError, match="3-vec"):
         ingest.load_camera(str(f))
     meta = _camera_meta()
     meta["fps"] = float("inf")
-    f.write_text(json.dumps(meta))
+    f.write_text(json.dumps(meta), encoding="utf-8")
     with pytest.raises(ValueError, match="fps"):
         ingest.load_camera(str(f))
 
 
 def _write_cam(tmp_path, meta):
     f = tmp_path / "c.json"
-    f.write_text(json.dumps(meta))
+    f.write_text(json.dumps(meta), encoding="utf-8")
     return str(f)
 
 
@@ -669,7 +669,7 @@ def test_beats_fractional_per_second():
 def test_beats_per_second_out_of_range(tmp_path, monkeypatch):
     mp4 = tmp_path / "s.mp4"
     mp4.write_bytes(b"x")
-    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()))
+    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()), encoding="utf-8")
     monkeypatch.setattr(ingest.subprocess, "run",
                         _fake_ffprobe(_ffprobe_json()))
     monkeypatch.setattr(ingest, "find_ffprobe", lambda: "/bin/ffprobe")
@@ -700,8 +700,8 @@ def test_run_ingest_oserror_structured(tmp_path, monkeypatch):
 def test_ingest_cli_structured_error(tmp_path, monkeypatch, capsys):
     mp4 = tmp_path / "s.mp4"
     mp4.write_bytes(b"x")
-    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()))
-    (tmp_path / "s.handoff.json").write_text("{}")
+    (tmp_path / "s.camera.json").write_text(json.dumps(_camera_meta()), encoding="utf-8")
+    (tmp_path / "s.handoff.json").write_text("{}", encoding="utf-8")
     monkeypatch.setattr(ingest.subprocess, "run",
                         _fake_ffprobe(_ffprobe_json()))
     monkeypatch.setattr(ingest, "find_ffprobe", lambda: "/bin/ffprobe")

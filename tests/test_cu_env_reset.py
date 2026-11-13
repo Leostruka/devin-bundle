@@ -113,7 +113,7 @@ def test_restart_same_instance_new_process(spec, root):
     cap = []
     m = _mgr(spec, root, spawncap=cap)
     (root / "devin-linux").mkdir(parents=True)
-    m.state_file().write_text(json.dumps(_live_state(m)))
+    m.state_file().write_text(json.dumps(_live_state(m)), encoding="utf-8")
     r = m.restart()
     assert r["running"] is True
     assert r["instance_id"] == "i-1"      # same instance
@@ -124,7 +124,7 @@ def test_restart_same_instance_new_process(spec, root):
 def test_stop_then_start_same_instance(spec, root):
     m = _mgr(spec, root)
     (root / "devin-linux").mkdir(parents=True)
-    m.state_file().write_text(json.dumps(_live_state(m)))
+    m.state_file().write_text(json.dumps(_live_state(m)), encoding="utf-8")
     r = m.stop()
     assert r["running"] is False
     r2 = m.start()
@@ -135,7 +135,7 @@ def test_reset_new_instance_and_archives_old(spec, root):
     m = _mgr(spec, root)
     env_dir = root / "devin-linux"
     env_dir.mkdir(parents=True)
-    m.state_file().write_text(json.dumps(_live_state(m, iid="i-old")))
+    m.state_file().write_text(json.dumps(_live_state(m, iid="i-old")), encoding="utf-8")
     (env_dir / "overlay.qcow2").write_bytes(b"old-disk")
     r = m.reset()
     assert r["instance_id"] != "i-old"
@@ -153,7 +153,7 @@ def test_stop_is_graceful_not_kill(spec, root):
 
     m = _mgr(spec, root, ipc=ipc)
     (root / "devin-linux").mkdir(parents=True)
-    m.state_file().write_text(json.dumps(_live_state(m)))
+    m.state_file().write_text(json.dumps(_live_state(m)), encoding="utf-8")
     r = m.stop()
     assert r["running"] is False
     assert "system_powerdown" in calls
@@ -166,7 +166,7 @@ def test_force_stop_is_distinct_and_disclosed(spec, root):
 
     m = _mgr(spec, root, ipc=dead_ipc)
     (root / "devin-linux").mkdir(parents=True)
-    m.state_file().write_text(json.dumps(_live_state(m)))
+    m.state_file().write_text(json.dumps(_live_state(m)), encoding="utf-8")
     r = m.stop()
     assert r["status"] == "unknown"          # dead daemon ≠ confirmed stop
     rf = m.stop(force=True)
@@ -189,6 +189,6 @@ def test_inconsistent_state_terminal_error(spec, root):
     (root / "devin-linux").mkdir(parents=True)
     st = _live_state(m)
     st["instance_id"] = ""                   # corrupted
-    m.state_file().write_text(json.dumps(st))
+    m.state_file().write_text(json.dumps(st), encoding="utf-8")
     with pytest.raises(RuntimeError, match="state_inconsistent"):
         m.status()

@@ -71,9 +71,9 @@ def test_unbind_clears():
 def test_binding_rejects_other_session():
     t.bind(hwnd=10, probe=_probe(10, "mintty", 1))
     path = t._BINDING_OVERRIDE
-    data = json.loads(open(path).read())
+    data = json.loads(open(path, encoding="utf-8").read())
     data["session_id"] = "other-sess"
-    open(path, "w").write(json.dumps(data))
+    open(path, "w", encoding="utf-8").write(json.dumps(data))
     assert t.binding() is None
 
 

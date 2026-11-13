@@ -159,7 +159,7 @@ def test_events_call_sends_op(tmp_path, monkeypatch):
     threading.Thread(target=serve, daemon=True).start()
     pf = tmp_path / "ev.json"
     pf.write_text(json.dumps({"pid": os.getpid(), "port": port,
-                              "session": "s1"}))
+                              "session": "s1"}), encoding="utf-8")
     monkeypatch.setattr(cli_mod, "EVENTS_PATH", str(pf))
     monkeypatch.setattr(cli_mod, "_events_info", lambda: {
         "pid": os.getpid(), "port": port, "session": "s1"})

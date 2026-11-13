@@ -14,7 +14,7 @@ def test_result_writes_audit(monkeypatch, tmp_path):
     monkeypatch.setenv("CU_AUDIT_PATH", str(p))
     monkeypatch.setattr(sys, "argv", ["mouse.py", "click", "500", "300"])
     r = ca.result("dispatched", "physical", timings_ms={"total": 3})
-    lines = p.read_text().strip().splitlines()
+    lines = p.read_text(encoding="utf-8").strip().splitlines()
     assert len(lines) == 1
     rec = json.loads(lines[0])
     assert rec["status"] == "dispatched" and rec["tool"] == "mouse.py"
@@ -38,7 +38,7 @@ def test_rotation_keeps_tail(monkeypatch, tmp_path):
     monkeypatch.setattr(sys, "argv", ["type_text.py", "x"])
     for i in range(60):
         ca.result("dispatched", "physical", n=i)
-    lines = p.read_text().strip().splitlines()
+    lines = p.read_text(encoding="utf-8").strip().splitlines()
     assert len(lines) <= 1000
     assert json.loads(lines[-1])["extra"]["n"] == 59
 
@@ -71,7 +71,7 @@ def test_positional_text_never_audited(monkeypatch, tmp_path):
     monkeypatch.setenv("CU_AUDIT_PATH", str(p))
     monkeypatch.setattr(sys, "argv", ["type_text.py", "s3cret-passphrase"])
     ca.result("dispatched", "physical")
-    line = p.read_text().strip()
+    line = p.read_text(encoding="utf-8").strip()
     assert "s3cret" not in line
     rec = json.loads(line)
     assert rec.get("cmd") is None

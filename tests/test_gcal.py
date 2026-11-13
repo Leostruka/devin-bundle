@@ -288,7 +288,7 @@ def test_wrapper_plan(tmp_path):
     tasks = tmp_path / "t.json"
     tasks.write_text(json.dumps(
         [{"name": "deep work", "minutes": 120, "priority": 1},
-         {"name": "email", "minutes": 30, "priority": 3}]))
+         {"name": "email", "minutes": 30, "priority": 3}]), encoding="utf-8")
     p = subprocess.run(
         [sys.executable, WRAPPER, "plan", "--tasks", str(tasks),
          "--ics", str(ics),
@@ -335,7 +335,7 @@ def test_apply_previews_roteiro_without_confirm(tmp_path):
         {"task": "deep work", "start": "2026-11-07T09:00:00Z",
          "end": "2026-11-07T11:00:00Z"},
         {"task": "email", "start": "2026-11-07T11:30:00Z",
-         "end": "2026-11-07T12:00:00Z"}]}))
+         "end": "2026-11-07T12:00:00Z"}]}), encoding="utf-8")
     p = subprocess.run(
         [sys.executable, WRAPPER, "apply", "--roteiro", str(roteiro),
          "--prefix", "[r] "],

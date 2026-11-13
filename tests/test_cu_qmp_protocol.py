@@ -16,7 +16,7 @@ from cu_load import load  # noqa: E402
 cu_qmp = load("cu_qmp")
 
 FIXTURES = json.loads((Path(__file__).parent / "fixtures"
-                       / "cu_qmp_transcripts.json").read_text())
+                       / "cu_qmp_transcripts.json").read_text(encoding="utf-8"))
 
 
 class ScriptReader:

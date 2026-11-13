@@ -106,7 +106,7 @@ def test_doctor_skips_symlinks():
         assert not any("symlink" in a["path"] for a in data["artifacts"])
         # Create a reference to the symlink target
         note = dst / ".devin" / "memory" / "symlink-test.md"
-        note.write_text("See `skills/symlink.md` for context.")
+        note.write_text("See `skills/symlink.md` for context.", encoding="utf-8")
         result = run(["doctor", str(dst)])
         assert result.returncode == 0, result.stderr
         data = json.loads(result.stdout)

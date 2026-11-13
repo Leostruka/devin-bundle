@@ -101,7 +101,7 @@ def env_dir(tmp_path):
     d.mkdir()
     (d / "ready.json").write_text(json.dumps({
         "socket": "tcp://127.0.0.1:1", "token": "t0k",
-        "qemu_pid": 1, "daemon_pid": 2}))
+        "qemu_pid": 1, "daemon_pid": 2}), encoding="utf-8")
     return d
 
 
@@ -196,7 +196,7 @@ def test_type_text_remote_never_touches_pynput(env_dir, tmp_path,
     reg.mkdir()
     (reg / "devin-linux.json").write_text(json.dumps(
         {"env_id": "devin-linux", "provider": "qemu",
-         "keyboard_layout": "en-us"}))
+         "keyboard_layout": "en-us"}), encoding="utf-8")
     monkeypatch.setenv("CU_ENV_ROOT", str(reg))
     monkeypatch.setattr(sys, "argv",
                         ["type_text.py", "hello", "--env",

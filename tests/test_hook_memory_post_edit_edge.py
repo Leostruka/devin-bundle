@@ -40,7 +40,7 @@ def mem(tmp_path):
 def test_matching_note_injected(mem, tmp_path):
     (mem / "n1.md").write_text(
         NOTE.format(title="N1", status="active",
-                    cue="src/auth", body="remember this"))
+                    cue="src/auth", body="remember this"), encoding="utf-8")
     p = _run(_edit(tmp_path / "src" / "auth" / "x.py"), mem)
     assert p.returncode == 0
     out = json.loads(p.stdout)
@@ -51,7 +51,7 @@ def test_matching_note_injected(mem, tmp_path):
 def test_no_match_prints_nothing(mem, tmp_path):
     (mem / "n1.md").write_text(
         NOTE.format(title="N1", status="active", cue="other/dir",
-                    body="x"))
+                    body="x"), encoding="utf-8")
     p = _run(_edit(tmp_path / "src" / "main.py"), mem)
     assert p.returncode == 0 and p.stdout == ""
 
@@ -59,14 +59,14 @@ def test_no_match_prints_nothing(mem, tmp_path):
 def test_inactive_note_ignored(mem, tmp_path):
     (mem / "n1.md").write_text(
         NOTE.format(title="N1", status="archived", cue="src",
-                    body="x"))
+                    body="x"), encoding="utf-8")
     p = _run(_edit(tmp_path / "src" / "main.py"), mem)
     assert p.returncode == 0 and p.stdout == ""
 
 
 def test_wrong_event_or_tool_ignored(mem, tmp_path):
     (mem / "n1.md").write_text(
-        NOTE.format(title="N1", status="active", cue="", body="x"))
+        NOTE.format(title="N1", status="active", cue="", body="x"), encoding="utf-8")
     assert _run(_edit(tmp_path / "a.py", event="PreToolUse"),
                 mem).stdout == ""
     assert _run(_edit(tmp_path / "a.py", tool="read"),
@@ -75,7 +75,7 @@ def test_wrong_event_or_tool_ignored(mem, tmp_path):
 
 def test_moc_file_excluded(mem, tmp_path):
     (mem / "MOC.md").write_text(
-        NOTE.format(title="MOC", status="active", cue="src", body="x"))
+        NOTE.format(title="MOC", status="active", cue="src", body="x"), encoding="utf-8")
     p = _run(_edit(tmp_path / "src" / "a.py"), mem)
     assert p.returncode == 0 and p.stdout == ""
 
@@ -84,7 +84,7 @@ def test_top_k_cap(mem, tmp_path):
     for i in range(4):
         (mem / f"n{i}.md").write_text(
             NOTE.format(title=f"N{i}", status="active", cue="src",
-                        body="b"))
+                        body="b"), encoding="utf-8")
     p = _run(_edit(tmp_path / "src" / "a.py"), mem)
     ctx = json.loads(p.stdout)["hookSpecificOutput"]["additionalContext"]
     assert ctx.count("**[[") == 2  # TOP_K = 2

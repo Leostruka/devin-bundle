@@ -124,7 +124,7 @@ def test_spec_must_be_object():
 
 def test_check_questions_cli_invalid_json(tmp_path):
     f = tmp_path / "q.json"
-    f.write_text("{not json")
+    f.write_text("{not json", encoding="utf-8")
     r = run_cli("--check-questions", str(f))
     assert r.returncode != 0
     out = json.loads(r.stdout)
@@ -135,7 +135,7 @@ def test_check_questions_cli_invalid_schema(tmp_path):
     f = tmp_path / "q.json"
     f.write_text(json.dumps({"x": {"type": "choice",
                                    "instructions": "i",
-                                   "criteria": {}}}))
+                                   "criteria": {}}}), encoding="utf-8")
     r = run_cli("--check-questions", str(f))
     assert r.returncode != 0
     out = json.loads(r.stdout)
@@ -147,7 +147,7 @@ def test_check_questions_cli_valid(tmp_path):
     f = tmp_path / "q.json"
     f.write_text(json.dumps({"x": {"type": "choice",
                                    "instructions": "i",
-                                   "criteria": {"a": "d"}}}))
+                                   "criteria": {"a": "d"}}}), encoding="utf-8")
     r = run_cli("--check-questions", str(f))
     assert r.returncode == 0
     assert json.loads(r.stdout)["ok"] is True

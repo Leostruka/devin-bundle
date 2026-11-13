@@ -279,7 +279,7 @@ def test_op_har_writes_file(tmp_path):
     out = tmp_path / "h.json"
     r = ev._op(buf, "har", str(out))
     assert r["ok"] and r["entries"] == 1
-    data = json.loads(out.read_text())
+    data = json.loads(out.read_text(encoding="utf-8"))
     assert data["entries"][0]["url"] == "u"
 
 

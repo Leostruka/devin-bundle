@@ -23,9 +23,9 @@ gate = _load("dep_audit_gate", "dep-audit-gate.py")
 
 
 def test_detect_ecosystems(tmp_path):
-    (tmp_path / "requirements.txt").write_text("requests\n")
-    (tmp_path / "package.json").write_text("{}")
-    (tmp_path / "Cargo.toml").write_text("[package]\n")
+    (tmp_path / "requirements.txt").write_text("requests\n", encoding="utf-8")
+    (tmp_path / "package.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "Cargo.toml").write_text("[package]\n", encoding="utf-8")
     assert set(audit._detect(str(tmp_path))) == {"python", "node", "rust"}
 
 
@@ -34,7 +34,7 @@ def test_detect_empty(tmp_path):
 
 
 def test_scan_no_scanners_skips(tmp_path, monkeypatch):
-    (tmp_path / "requirements.txt").write_text("requests\n")
+    (tmp_path / "requirements.txt").write_text("requests\n", encoding="utf-8")
     monkeypatch.setattr(audit.shutil, "which", lambda n: None)
     out = audit.scan(str(tmp_path))
     assert out["ok"] is True
@@ -44,7 +44,7 @@ def test_scan_no_scanners_skips(tmp_path, monkeypatch):
 
 
 def test_pip_audit_parse(tmp_path, monkeypatch):
-    (tmp_path / "requirements.txt").write_text("requests\n")
+    (tmp_path / "requirements.txt").write_text("requests\n", encoding="utf-8")
     payload = [{"name": "requests", "vulns": [
         {"id": "CVE-2024-0001", "severity": "HIGH",
          "fix_versions": ["2.32.0"]}]}]
@@ -228,8 +228,8 @@ def test_gate_scan_bounded_by_hook_budget():
 def test_dep_audit_max_seconds_skips_exhausted(tmp_path, monkeypatch):
     """--max-seconds=0 exhausts budget immediately: detected ecosystems
     are skipped 'budget-exhausted', never scanned."""
-    (tmp_path / "requirements.txt").write_text("requests\n")
-    (tmp_path / "package.json").write_text("{}")
+    (tmp_path / "requirements.txt").write_text("requests\n", encoding="utf-8")
+    (tmp_path / "package.json").write_text("{}", encoding="utf-8")
     monkeypatch.setattr(audit.shutil, "which",
                         lambda n: "/x" if n in ("pip-audit", "npm") else None)
     out = audit.scan(str(tmp_path), max_seconds=0)
@@ -248,7 +248,7 @@ def test_deadline_caps_scanner_timeout():
 
 def test_main_root_after_max_seconds(tmp_path, monkeypatch, capsys):
     """Review regression: --root honored in any argv position."""
-    (tmp_path / "package.json").write_text("{}")
+    (tmp_path / "package.json").write_text("{}", encoding="utf-8")
     monkeypatch.setenv("DEVIN_PROJECT_DIR", str(tmp_path / "wrong"))
     audit.main(["--max-seconds", "30", "--root", str(tmp_path)])
     out = json.loads(capsys.readouterr().out)

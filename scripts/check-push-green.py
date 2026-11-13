@@ -283,7 +283,11 @@ def check_test_deletions(cwd):
         for ln in diff.stdout.splitlines():
             if not ln.startswith("-") or ln.startswith("---"):
                 continue
-            m = re.search(r"def (test_\w+)|class (Test\w+)", ln)
+            # Anchor def/class to the removed line itself - fixture
+            # strings like write_text("def test_x()...") must not flag.
+            m = re.match(
+                r"-\s*(?:async\s+)?def\s+(test_\w+)"
+                r"|-\s*class\s+(Test\w+)", ln)
             if m:
                 name = m.group(1) or m.group(2)
                 if name not in approved:

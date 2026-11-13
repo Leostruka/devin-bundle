@@ -33,12 +33,12 @@ def test_launch_records_ownership_and_binds(monkeypatch, tmp_path):
     r = br.launch_owned("work")
     assert r["ok"] and r["pid"] == 4321 and r["endpoint"].endswith("49999")
     assert bound["hit"] == (r["endpoint"], 4321)
-    assert json.loads(open(br.LAUNCHED_PATH).read())["pid"] == 4321
+    assert json.loads(open(br.LAUNCHED_PATH, encoding="utf-8").read())["pid"] == 4321
 
 
 def test_stop_refuses_foreign_pid(monkeypatch, tmp_path):
     monkeypatch.setattr(br, "LAUNCHED_PATH", str(tmp_path / "x.json"))
-    open(br.LAUNCHED_PATH, "w").write(json.dumps({"pid": 1}))
+    open(br.LAUNCHED_PATH, "w", encoding="utf-8").write(json.dumps({"pid": 1}))
     monkeypatch.setattr(br, "_pid_alive", lambda pid: False)
     monkeypatch.setattr(br, "binding", lambda: None)
     r = br.stop_owned()
@@ -57,7 +57,7 @@ def test_launch_refuses_when_already_launched(monkeypatch, tmp_path):
 
 def test_stop_refuses_dead_endpoint(monkeypatch, tmp_path):
     monkeypatch.setattr(br, "LAUNCHED_PATH", str(tmp_path / "x.json"))
-    open(br.LAUNCHED_PATH, "w").write(json.dumps(
+    open(br.LAUNCHED_PATH, "w", encoding="utf-8").write(json.dumps(
         {"pid": 555, "endpoint": "http://127.0.0.1:1"}))
     monkeypatch.setattr(br, "_pid_alive", lambda pid: True)
     def _boom(url, timeout=5.0):
@@ -105,7 +105,7 @@ def test_launch_kills_spawned_on_timeout(monkeypatch, tmp_path):
 
 def test_stop_reports_kill_failure(monkeypatch, tmp_path):
     monkeypatch.setattr(br, "LAUNCHED_PATH", str(tmp_path / "x.json"))
-    open(br.LAUNCHED_PATH, "w").write(json.dumps(
+    open(br.LAUNCHED_PATH, "w", encoding="utf-8").write(json.dumps(
         {"pid": 555, "endpoint": "http://127.0.0.1:2"}))
     monkeypatch.setattr(br, "_pid_alive", lambda pid: True)
     monkeypatch.setattr(br, "_http_json",

@@ -299,8 +299,8 @@ def test_cli_session_spawn_send_recv_flow(capsys, daemon, tmp_path,
                     "--"] + argv, capsys)
     assert code == 0 and r["ok"], r
     assert sf.exists()
-    _wait_text(json.loads(sf.read_text()), "READY")
-    sess_id = json.loads(sf.read_text())["id"]
+    _wait_text(json.loads(sf.read_text(encoding="utf-8")), "READY")
+    sess_id = json.loads(sf.read_text(encoding="utf-8"))["id"]
     req2 = {"version": 1, "request_id": "sd1",
             "capability": "session.send",
             "args": {"session_id": sess_id, "data": "hi\n"},
@@ -310,7 +310,7 @@ def test_cli_session_spawn_send_recv_flow(capsys, daemon, tmp_path,
                     "--session-file", str(sf), "--data", "hi\n",
                     "--confirmation-id", cid2], capsys)
     assert code == 0 and r["ok"], r
-    s = json.loads(sf.read_text())
+    s = json.loads(sf.read_text(encoding="utf-8"))
     _wait_text(s, "ECHO:hi")
     code, r = _run(["session", "recv", "--session-file", str(sf),
                     "--tail", "5"], capsys)

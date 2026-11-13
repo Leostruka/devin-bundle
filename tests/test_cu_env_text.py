@@ -55,7 +55,7 @@ def env_dir(tmp_path):
     (d / "ready.json").write_text(json.dumps({
         "socket": "tcp://127.0.0.1:1", "token": "t0k",
         "qemu_pid": 1, "daemon_pid": 2,
-        "guest_caps": {"text_insert": True, "clipboard": False}}))
+        "guest_caps": {"text_insert": True, "clipboard": False}}), encoding="utf-8")
     return d
 
 
@@ -134,7 +134,7 @@ def test_text_insert_without_cap_rejected(env_dir, tmp_path):
     d.mkdir()
     (d / "ready.json").write_text(json.dumps({
         "socket": "tcp://127.0.0.1:1", "token": "t",
-        "guest_caps": {"text_insert": False}}))
+        "guest_caps": {"text_insert": False}}), encoding="utf-8")
     be = cu_qmp_backend.QmpBackend(
         "devin-linux", env_dir=d,
         ipc=lambda *a, **k: pytest.fail("IPC without capability"))

@@ -22,7 +22,7 @@ def load(name):
 @pytest.fixture
 def linux(tmp_path, monkeypatch):
     lx = load("backends.linux")
-    (tmp_path / "stat").write_text("btime 1000\n")
+    (tmp_path / "stat").write_text("btime 1000\n", encoding="utf-8")
     monkeypatch.setattr(lx, "PROC_ROOT", str(tmp_path))
     return lx
 
@@ -31,8 +31,8 @@ def fake_proc(root, pid, name="proc", start_ticks=100, state="S"):
     d = Path(root) / str(pid)
     d.mkdir()
     (d / "stat").write_text(f"{pid} ({name}) {state} " + "0 " * 19 +
-                            str(start_ticks))
-    (d / "comm").write_text(name + "\n")
+                            str(start_ticks), encoding="utf-8")
+    (d / "comm").write_text(name + "\n", encoding="utf-8")
     return d
 
 

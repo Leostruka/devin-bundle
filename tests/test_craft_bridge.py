@@ -35,7 +35,7 @@ sys.exit(2)
 @pytest.fixture
 def fake_app(tmp_path, monkeypatch):
     script = tmp_path / "fakecraft_cli.py"
-    script.write_text(FAKE_CLI)
+    script.write_text(FAKE_CLI, encoding="utf-8")
     monkeypatch.setitem(
         bridge.APPS, "fakecraft",
         {"cli": [sys.executable, str(script)], "domain": "fake"})

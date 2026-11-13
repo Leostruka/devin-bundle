@@ -106,7 +106,7 @@ def test_render_dry_materializes_project(tmp_path):
     wd = Path(out["workdir"])
     assert (wd / "src" / "plan.json").exists()
     assert (wd / "package.json").exists()
-    plan = json.loads((wd / "src" / "plan.json").read_text())
+    plan = json.loads((wd / "src" / "plan.json").read_text(encoding="utf-8"))
     assert plan["beats"][0]["id"] == "b1"
 
 
@@ -176,7 +176,7 @@ def test_main_missing_file_typed_error(tmp_path, capsys):
 
 def test_main_bad_json_typed_error(tmp_path, capsys):
     p = tmp_path / "bad.json"
-    p.write_text("{not json")
+    p.write_text("{not json", encoding="utf-8")
     rc = plan_check.main([str(p)])
     out = json.loads(capsys.readouterr().out)
     assert rc == 2
@@ -185,7 +185,7 @@ def test_main_bad_json_typed_error(tmp_path, capsys):
 
 def test_main_non_dict_plan_typed_error(tmp_path, capsys):
     p = tmp_path / "arr.json"
-    p.write_text("[1, 2]")
+    p.write_text("[1, 2]", encoding="utf-8")
     rc = plan_check.main([str(p)])
     out = json.loads(capsys.readouterr().out)
     assert rc == 2
@@ -494,12 +494,12 @@ def test_plan_check_main_exit_codes(tmp_path, capsys):
     """Invalid plan -> exit 1; valid -> 0 (gate must fail CI)."""
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"version": 2,
-                               "audio_duration_s": -5, "beats": []}))
+                               "audio_duration_s": -5, "beats": []}), encoding="utf-8")
     rc = plan_check.main([str(bad)])
     assert rc == 1
     capsys.readouterr()
     good = tmp_path / "good.json"
-    good.write_text(json.dumps(_plan()))
+    good.write_text(json.dumps(_plan()), encoding="utf-8")
     rc = plan_check.main([str(good)])
     assert rc == 0
 

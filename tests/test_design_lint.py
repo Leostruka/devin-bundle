@@ -80,7 +80,7 @@ def test_seeded_rules_each_fire():
 
 def test_ignore_file_rules(tmp_path):
     ig = tmp_path / "ig.json"
-    ig.write_text(json.dumps({"files": [], "rules": ["side-tab"]}))
+    ig.write_text(json.dumps({"files": [], "rules": ["side-tab"]}), encoding="utf-8")
     r = run("design_lint.py", FIX, "--json", "--ignore", str(ig))
     payload = json.loads(r.stdout[r.stdout.find("{"):])
     assert "side-tab" not in {f["rule"] for f in payload["findings"]}
@@ -91,9 +91,9 @@ def test_look_ledger_reskin(tmp_path):
     b = tmp_path / "b.html"
     skel = '<div class="wrap grid"><h1 class="t">X</h1></div>'
     a.write_text(skel + '<style>.t{font-family:Inter;color:#112233}'
-                  '</style>')
+                  '</style>', encoding="utf-8")
     b.write_text(skel + '<style>.t{font-family:Roboto;color:#445566}'
-                  '</style>')
+                  '</style>', encoding="utf-8")
     r = run("look_ledger.py", "compare", str(a), str(b))
     d = json.loads(r.stdout)
     assert d["same_skeleton"] and not d["same_fonts"]

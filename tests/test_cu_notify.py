@@ -44,12 +44,12 @@ def test_script_hook_runs(mod, monkeypatch, tmp_path):
     script = tmp_path / "hook.py"
     script.write_text(
         "import sys\nopen(%r, 'w').write(sys.argv[1] + '|' + sys.argv[3])\n"
-        % str(marker))
+        % str(marker), encoding="utf-8")
     monkeypatch.setenv("CU_NOTIFY_HOOK",
                        f"{sys.executable} {script}")
     res = mod.notify("done", "body", "error")
     assert res["_notify_script"][0] is True
-    assert marker.read_text() == "done|error"
+    assert marker.read_text(encoding="utf-8") == "done|error"
 
 
 def test_adapter_failure_never_blocks(mod, monkeypatch):
