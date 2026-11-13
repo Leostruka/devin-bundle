@@ -7,121 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- fix: pin stdout utf-8 on 14 non-ascii emitters; audit [42] now detects the class (#585)
-- test: scaffold end-to-end regression - vault gen + generated scripts --help (#584)
-- fix: refresh.py vault template sys import; audit [43] stdlib-name check catches internal_probe os bug (#583)
-- fix(install-ledger): record-all on stale live no longer masks drift as Current (#582)
-- fix(obsidian-workflow): scaffold skill_dir bug (broken since #55) + extract embedded templates, 1204 -> 331 lines, golden-diff verified (#581)
-- fix(skills): utf-8 contracts in skill scripts - stdout pins, stdin readers, subprocess encoding, file io (audit scan extended to skills/) (#579)
-- fix: review round - pin scope to entry points, audit [42] detect, pointer facts (#578)
-- feat(ai-tools): adapter_expand frozen-core + low-rank PoC (#572)
-- feat(audit): check [42] stdout utf-8 pin; 3 more emitters pinned (#577)
-- feat(skills): tool pointers - Seacore, White Rabbit Neo, Minimite, TaskMon (#576)
-- feat(skills): data-analyst glossary + performance load-test playbook (#575)
-- fix(extensions): stdout utf-8 pins on 36 JSON emitters; audit [42] (#574)
-- spike: Rune agent-rendered UI loop validated (#570)
-- fix(permission-gate): block gh -w/--web browser side-effect (#563)
-- fix: hookrun stderr gating, gate -w/hostname/date vectors, audit [39] scope, ledger guard boundary (#564)
-- fix(permission-gate): round-4 - bundled flags anchored, brace-expansion, attached args, ext-strip, auth -t (#566)
-- fix(permission-gate): quote-collapse normalization + per-verb dangerous args (#562)
-- fix(permission-gate): deny-by-default arg shapes; stdin pins; ledger prune guard (#561)
-- fix(audit): [39] restrict to real json.load call forms - docstring false positive (#560)
-- fix(scripts): stdin utf-8 pins across 26 hooks + audit [39] json.load coverage (#557, #558, #559)
-- docs+test: TOOLS-MAP hooks resynced + mechanical drift guard (#556)
-- fix(ledger): record-all prunes stale records (#554)
-- fix(audit): hooks live-render compare collapses scoop python shim without .exe (#553)
-- chore: drop stale agent-rts gitattributes rule; ignore laya *.proposal.json (#552)
-- fix(audit): hooks-render compare collapses no-.exe scoop python shim (#551 follow-up)
-- feat(hooks): permission-gate — auto-approve provably read-only exec PermissionRequests (#541, #551)
-- feat(audit): check [41] compat doc pins validated_cli_version + dynamic check count (#550)
-- test(egm): per-entry hash mismatch assertion — unblocks serial merges (#549)
-- fix(laya): compact-gate daemon wait fail-fast + 8s cap; installers provision laya-tools venv (#548)
-- fix(cli-contract): spec-consistency + install-ledger exit non-zero on ok:false (#533) (#545)
-- fix(skills): remove dead operate-spline skill — spline-operator removed in #72 (#540)
-- fix: script argv convention main(argv=None) + recon probe path (#539)
-- fix: subagent profile contradictions — sentinel write, reviewer exec (#538)
-- fix(audit): context-pressure cascade + manifest/pointer hygiene + hookrun stderr-under-fail_closed (#534, #544)
-- test: repair vacuous mutation/audit checks (#542) (#543)
-- fix: audit exit code + ci aggregator needs:[changes] coverage (#536)
-- docs: audit staleness batch — 184/185 counts, 3000.12.43 (#537)
-- changelog: ref #524 (#525)
-- fix(ignore): recon/*.jsonl never matched inside own dir — credential captures unignored (#526)
-- changelog: backfill refs #521-#523 (#524)
-- fix(api-bridge): internal backend flatten multipart message content (#523)
-- laya: media-intent-v1 shadow activation (#431) (#522)
-- changelog: backfill refs #512-#520 (#521)
-- feat(skills): device-repurpose + saas-replacer playbooks (#513 #514) (#520)
-- eval: design-iteration-loop contract cases + runner (#516) (#519)
-- feat(hooks): optional subagent dispatch budgets (#515) (#518)
-- fix(scripts): decision-queue main(argv) crashes _hookrun Stop chain (#512)
-- docs: yt-batch2 deep-dive survey + issues #513-#516 (#517)
-- feat(api-bridge): internal backend — real tool_calls round-trip (#511)
-- api-bridge doctor: acp handshake probe (#510)
-- api-bridge: stream_options.include_usage contract (#509)
-- changelog: backfill merged-PR refs #503-#507 (#508)
-- devin-integrate doc refresh + gitignore metrics (#507)
-- busybar ws: post-handshake frame buffer fix + loopback test (#505)
-- api-bridge setup: codex harness stanza (#506)
-- ci: merge_group trigger for merge queue (#504)
-- changelog: backfill merged-PR refs #493-#501 (#503)
-- push-gate: warn on push to auto-merge-armed branch (#485) (#496)
-- api-bridge: setup + doctor subcommands (#492) (#499)
-- CI: docs-only PRs skip test/rust/install matrices (#487) (#497)
-- changelog-refs: auto-append missing merged-PR refs (#488) (#498)
-- busybar listen: input events -> agent triggers (#491) (#500)
-- push-gate: budgeted deferral — held-out always, rest defers to required CI (#484) (#501)
-- api-bridge: --backend acp — real incremental streaming + real usage (#489) (#494)
-- ship-metrics: DORA lead-time log + push-gate audit scoping (#486 #484) (#495)
-- skills: devin-integrate + push-gate risk tiers (#490 #484) (#493)
-- push-gate: warn when pushing onto a branch with auto-merge armed (orphan-commit guard, #485)
-- api-bridge: `doctor` backend sanity + `setup` harness stanzas (opencode/generic) (#492)
-- CI path filter: docs-only PRs skip test/rust/install matrices via `changes` job (#487)
-- changelog-refs: auto-append missing merged-PR refs to [Unreleased] (#488)
-- busybar listen: device input events -> focus/effort triggers, --replay/--ws, fail-soft (#491)
-- push-gate: budgeted deferral — held-out always, mapped tests get remaining ~50s budget, overflow defers to required CI by name (#484)
-- ship-metrics: DORA lead-time log `.devin/metrics/ships.jsonl` + report (#486)
-- push-gate: `audit.py` root-file scoping slimmed to fast audit check (#484)
-- api-bridge `--backend acp`: warm ACP process — real incremental SSE deltas + real token usage (#489)
+## [3.21.0] - 2026-11-13
 
-- api-bridge extension (#478, #479, #480, #481, #482, #483): OpenAI-compatible local API over `devin -p` — `/v1/chat/completions` + `/v1/models` on loopback/LAN (token-required off-loopback); isolated workdir per request; E2E-verified translation ("bridge" -> "ponte"). v0.2: model validation, error taxonomy (400/502/504), estimated usage; v0.3: `--concurrency` semaphore, CORS preflight, `x-ignored-params`, self-describing `GET /`, `devin`-alias fix, deep `/health` (503 on missing backend).
-- skill `devin-integrate` (#490): embed-Devin-anything playbook — direction matrix, transport ladder, verified surface inventory, contract checklist (origin: Busy Bar reel evaluation).
-- push-gate docs-only risk tier (#484): pushes whose changed paths are all doc surfaces (`*.md`, docs/, .devin content dirs) skip the full suite — the suite now exceeds the outer hook budget (~150s), so a mid-run kill never wrote the green cache and every push ran cold; cheap checks (secrets, test deletions) still run on every push.
-- state snapshot wave update + final (#475, #477).
+- permission-gate hook (issue #541): new PermissionRequest event hook that auto-approves provably read-only `exec` commands so humans stop answering prompts for `git status`-class reads. Approve-only by contract (never emits `block`; silence lets the human decide; `fail_closed: false`). Four independent review rounds hardened it to deny-by-default exact arg shapes: quote-collapse normalization, per-verb dangerous args, brace expansion, bundled/attached flags, extension-stripping on script interpreters, credential-print vectors (`gh auth token`, `gh auth -t`, `--web` browser side-effects), mutating positionals (`git tag`, `branch -u`, `remote set-head`), `env`/`fd -x`/`rg --pre` exec wrappers, `ext::` transport. Verified end-to-end against the live gate with probe matrices; residual nits documented in #565.
 
-- dead-code removal + `# public-api` def-line convention + install-ledger rendered-currency/artifact exclusion (#473); state snapshot wave update (#475).
-- push-gate green cache (#476): verified-green verdict cached per HEAD+tree fingerprint in .git/push-green.json; repeat pushes on an unchanged surface skip the ~150s suite phase.
+- UTF-8 contract hardening end-to-end: stdin pins on 26 hook scripts + audit [39] covering `json.load(sys.stdin)`/`loads(read())`/`for in sys.stdin`; stdout pins on 36 extension JSON emitters + audit [42] detecting `ensure_ascii=False` emitters and, after widening, any non-ASCII literal inside `print()`/`add_argument()`/`error()`/`write()` calls (caught `grainrad --help` UnicodeEncodeError on cp1252 plus 13 sibling CLIs). File-I/O audit [38] + subprocess `encoding="utf-8", errors="replace"` sweep extended from `extensions/`+`scripts/` into `skills/` (16 real violations fixed). New audit [43] AST check: stdlib names used without import (caught `internal_probe.py` `os.environ` NameError and the `refresh.py` vault template orphan pin).
 
-- simplify-scan unreferenced_def restricted to module top-level defs + `@pytest.fixture` exclusion (#471): findings 30 -> 13.
-- install-ledger `.devin/` remap (#472): live `docs/`, `docs/plans/`, `docs/templates/` now compare against `.devin/docs`, `.devin/plans`, `.devin/templates` sources; corpus index covers remapped docs. False Outdated drift 75 -> 0.
-- dead-code removal: `find_binary` (bitnet_adapter), `_search_csv` compat shim (design-intelligence), `SECURITY_ATTRIBUTES` (probe_spawnpty), unused test helpers (`_channel_pair`, `_spawn_ok`, `_evs`, `_lines_with`). Scan unreferenced_def 9 -> 6 (remaining = dispatch stubs/public API).
-- fail-soft annotation wave (#469): all 103 unannotated `except: pass` sites across system-control/computer-use/laya/gcal/design-intelligence + hooks/scripts/tests annotated with `# fail-soft:` reason; scan except_pass 103 -> 0.
-- silent-error-review `overflow_path` adoption (#470): PostToolUse truncated results carry `tool_response.overflow_path` to the complete output (field verified empirically on 3000.12.43); hook now scans full file <=8 MB so tail errors are caught; finding snippets prefer error lines.
-- pulse frontier fix (#461): `**Status:**`/`**Blocked by:**` bold-colon forms now parsed; frontier consumes `status_vocab` canonical statuses + archived-effort exclusion. Phantom claimable backlog 168 -> 0; issue 04-jev triaged resolved.
-- simplify-scan sibling-reraise pass (#466): `except X: raise` sibling marks `except: pass` as intentional fail-open. except_pass findings 110 -> 103.
-- handoff skill adopts acp-summarizer schema (#460): Overview / Key Details & Breadcrumbs / Current State; breadcrumbs = re-readable paths.
-- margin evidence for laya media-intent (#463, #431 item 5): runner-up recapture on frozen heldouts; margin gate rejected (error inside correct band).
-- ACP session modes + client fs-gateway documented (#464): ask/plan modes delegate fs reads to client; silent deadlock if capability undeclared.
-- simplify-scan precision pass (#459): TODO/FIXME/HACK/XXX markers restricted to comment text; annotated `except: pass` fail-open suppressed; pytest `test_*`/`Test*` defs no longer counted unreferenced. Scan noise 2612 -> 149 actionable items.
+- obsidian-workflow repaired end-to-end: `scaffold.py` had been broken since the #55 `scripts/` move (`skill_dir` resolved to `scripts/`, every template load 404'd). Fixed to the skill root and split 1204 -> 331 lines: 14 mermaid diagram templates + 5 embedded vault scripts extracted byte-identical to `templates/mermaid/` and `templates/vault-scripts/` (verified by golden diff). Generated `refresh.py` gained the missing `import sys`. New e2e test runs a real scaffold and `--help`s every generated script.
 
-- laya worker emits `raw_runner_up_probability` alongside `raw_top_probability` from `distribution` or `probabilities` keys (#458, feeds #431 item 5): held-out margin evidence showed confident-wrong failure (mi-h14 margin 0.9365), so margin gating was rejected as an activation discriminator.
+- install-ledger correctness: `record-all` is now snapshot semantics (prunes records for deleted live files) with a degenerate-scan guard refusing total wipe or >25%/50-record pruning. Fixed a drift-masking bug where `record-all` on an unsynced live recorded stale bytes plus new source hashes and reconcile reported `Current` - the rendered-copy shortcut now applies only to legitimately rendered files (`config.json`, `hooks.v1.json`); byte-copy paths reaching that branch are `Outdated`. `record` refuses missing live files. Live install re-synced; 1446 files Current, 0 drift.
 
-- devin-cli alignment 3000.12.28 -> 3000.12.43 (#457): acp server agent-types (summarizer/review/codemap) + --cloud relay, DEVIN_MODEL/DEVIN_REFUSAL_FALLBACK env, desktop/forward/migrate/setup/uninstall commands, cloud drs blueprints. Eval issues #453-#456 filed for acp-review/codemap/summarizer/drs.
+- ai-tools: `adapter_expand.py` frozen-core + low-rank adapter PoC validated on CPU torch - core parameters bit-identical after training, adapter learned (loss 5.4 -> 1.3), 0.109% trainable params, ~2GB RAM; GPU benchmark remains backlog (#572 closed). MiniMind + GPU Taskman pointers added; `weight_patch` self-test green.
 
-- reels-7/yt-batch2 eval batch (#434-#451, milestone 14; PR #452): 28 unique links deep-dived (transcripts + captions + 7 researcher waves) -> survey + 18 eval issues. Executed same-day: `scripts/rules-coverage.py` NL-rule->control audit (#439, 74.3% coverage, all security rules backed), `task-brief.py --require-done-when` + SKILL.md orchestrator re-verify contract (#438), `scripts/pulse.py` rts-intents drainer -> afk-loop frontier (#434).
+- skills content (batch-8 link research): `performance` gained a concrete load-test playbook (Dockerfile+Compose, `network_mode: host` comparison, Gatling/Vegeta, p50/p95/p99, `EXPLAIN ANALYZE`, `LIKE '%x%'` vs `tsvector`, `pg_stat_activity`, pool sizing, threads/fibers). `data-analyst` gained Step 1b business glossary (`.devin/db-glossary.md`, SQL-ready certified definitions, user confirmation, abstention path). Tool pointers corrected/added: Seacore Qwen3.5-4B 3D coder, White Rabbit Neo/Deep Hat v3, OpenMavic, Invidious/OpenCloud, MinTea/MiniMind. `skills/red-team` pointer updates for the AI-hacking-training reel.
 
-- **Reels-7/YouTube eval batch closeout (#434-#451)**: 18 research-driven eval issues resolved - 11 shipped, 7 documented decisions.
-  - `scripts/done-evaluator.py` (#437): writer-is-not-the-grader gate - deterministic contradiction scan (test-run state, unchecked acceptance, admitted skips) + `--emit-brief` for separate-tier grading; wired into `skills/afk-loop` verification step.
-  - `scripts/subagent-trace.py` (#435): per-dispatch trace JSONL + `.devin/subagent-abort/<id>` kill channel; contract in `skills/dispatching-parallel-agents`.
-  - `scripts/simplify-scan.py` (#447): rot scan (TODO/FIXME, oversized, unreferenced defs, except:pass); audit check [40] skills-debt staleness (#449).
-  - `scripts/graph-query.py` (#442): graph-before-grep retrieval fusing code-graph FTS + memory cues; spike evidence 5/5 top-2 vs grep-OR 11-248 unranked hits.
-  - `extensions/ai-tools/weight_patch.py` (#440): activation-guided weight patching PoC - contrast direction extraction, planted-defect repair on down_proj, honest negative control.
-  - `extensions/ai-tools/dory_sweep.py` (#441): Dory1.0-4B loop sweep on laya heldout - k={1,2,4} table, flat 0.688 skill-pick / 0.438-0.562 issue-cat at 20-110x latency, defer verdict; requires dory-enabled llama.cpp fork (PR ggml-org/llama.cpp#30306).
-  - `skills/impeccable` (#445/#446): state x motion coverage matrix + converge-by-gate bounded iteration (gate=lint+waivers, N=3, plateau/distill kill-switch).
-  - `skills/lgpd-questionnaire` (#448): compliance questionnaire skeleton - data inventory, legal basis, subject rights, breach response.
-  - `.devin/docs/DEVICE-AUTOMATION-LANE.md` (#451): 4 access classes (HTTP API > structured > GUI > bridge), device sketches, 6 safety boundaries.
-  - Eval docs: `.devin/evals/{graphify-query,design-state-motion,design-iteration-loop,raea-vs-remotion,lgpd-questionnaire,jev-cloud-tier,busybar-integration}/` - raea = verified Rust+Bevy Remotion alternative (hybrid recommendation); Jev = verified TypeSafe AI decision API (spike deferred); Busy Bar = verified busylib HTTP device (spec + `extensions/busybar/push.py` skeleton).
+- research corpus: `.devin/research/2026-11-12-reels-batch8-survey.md` (14 links: 12 Instagram reels transcribed via reels-surveyor + local ASR, Odyssey world-models site, AkitaOnRails Rinha de Backend) with per-link verdicts and N-area mapping; Rune spike cloned/built/rendered headless (PNG + a11y element tree + scripted input) validating the agent-rendered UI loop (#570).
 
-- **decision-queue.py (#436)**: stop-hook module + CLI recording human-blocking stops to `.devin/decisions.jsonl` (fail-open); `roadmap-board.py` surfaces `pending_decisions` count in JSON and Markdown board output. `stop-guard.py` `_hookrun` chain updated. Closes the "agent stopped for a decision overnight" blind spot.
+- audit growth: checks [41] compat-doc pins `validated_cli_version`, [42] stdout utf-8 emitters (extended twice), [43] stdlib-name-without-import; check count now 50. TOOLS-MAP hooks entry-points resynced with mechanical drift guard (#556); `test_egm` per-entry hash assertion unblocks serial merges (#549); changelog-refs gate enforces PR refs in Unreleased.
+
+- misc fixes: compact-gate daemon wait fail-fast + 8s cap; installers provision laya-tools venv on both sh/ps1; `spec-consistency` + `install-ledger` exit non-zero on `ok:false`; dead `operate-spline` skill removed (#540); stale `agent-rts` gitattributes rule dropped; mutation-test suite made non-vacuous; `silent-error-review` stderr-leak gated behind `DEVIN_HOOKRUN_DEBUG`.
+
+- validation: pytest suite 2491 passed / 8 skipped; tests/validation 332 passing; `python audit.py` 50 checks 0 errors 0 warnings; doctor 3/3; install ledger 1446 files Current 0 drift; live `%APPDATA%\devin` fully synced.
 
 ## [3.20.0] - 2026-11-09
 
