@@ -79,3 +79,4 @@ node_modules/
 .devin/scratch/if-eval/
 .devin/metrics/
 .devin/decisions.jsonl
+tmp/
