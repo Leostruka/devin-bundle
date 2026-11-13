@@ -27,7 +27,6 @@ import sys
 import threading
 
 import cu_dpi
-from pathlib import Path
 
 
 

@@ -23,7 +23,6 @@ import sys
 import threading
 import time
 from ctypes import wintypes
-from pathlib import Path
 
 # window flags
 

@@ -17,7 +17,6 @@ import os
 import random
 import tempfile
 import time
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

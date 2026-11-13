@@ -18,7 +18,6 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import status_vocab  # noqa: E402
-from pathlib import Path
 
 from bundle_envelope import bind
 

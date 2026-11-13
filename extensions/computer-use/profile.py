@@ -18,7 +18,6 @@ import cu_actions
 import cu_target
 from cu_motion import (ENV_VAR, PROFILES, JsonParser, get_profile,
                        profile_path, set_profile)
-from pathlib import Path
 
 
 

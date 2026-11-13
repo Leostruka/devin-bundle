@@ -18,7 +18,6 @@ import json
 import os
 import sys
 import time
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

@@ -18,7 +18,6 @@ import os
 import re
 import sys
 from ctypes import wintypes
-from pathlib import Path
 
 # -- input-bearing child classes worth descending into ----------------------
 

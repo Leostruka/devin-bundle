@@ -13,7 +13,6 @@ import argparse
 import json
 import sys
 import urllib.request
-from pathlib import Path
 
 from ai_envelope import _stamp, _dumps
 

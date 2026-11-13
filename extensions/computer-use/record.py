@@ -29,7 +29,6 @@ import cu_actions
 import cu_capture
 import cu_motion as cm
 import cu_target
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

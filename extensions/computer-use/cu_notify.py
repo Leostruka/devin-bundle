@@ -17,7 +17,6 @@ import subprocess
 import sys
 import time
 import urllib.request
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

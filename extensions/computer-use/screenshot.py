@@ -20,7 +20,6 @@ import cu_capture
 import cu_hints
 import cu_motion as cm
 import cu_target
-from pathlib import Path
 
 
 

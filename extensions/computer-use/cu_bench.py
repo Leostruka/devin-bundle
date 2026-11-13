@@ -22,7 +22,6 @@ import tempfile
 import time
 
 import cu_actions
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

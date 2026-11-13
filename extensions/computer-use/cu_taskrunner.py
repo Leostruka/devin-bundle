@@ -29,7 +29,6 @@ import sys
 import tempfile
 import time
 import uuid
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

@@ -14,7 +14,6 @@ import shutil
 import subprocess
 import sys
 from fractions import Fraction
-from pathlib import Path
 
 from media_envelope import _stamp, _dumps
 

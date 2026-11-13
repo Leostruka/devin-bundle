@@ -17,7 +17,6 @@ or a malformed override pattern. Stdlib only.
 """
 import json
 import sys
-from pathlib import Path
 
 from ai_envelope import _stamp, _dumps
 

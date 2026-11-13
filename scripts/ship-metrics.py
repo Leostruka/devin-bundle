@@ -17,7 +17,6 @@ import json
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 from bundle_envelope import bind
 

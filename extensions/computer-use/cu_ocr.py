@@ -26,7 +26,6 @@ import tempfile
 
 import cu_dpi
 import cu_target
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

@@ -14,7 +14,6 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from fx.fonts import load_font
-from pathlib import Path
 
 from media_envelope import _stamp, _dumps
 

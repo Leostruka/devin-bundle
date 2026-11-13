@@ -16,7 +16,6 @@ import tempfile
 
 import cu_actions
 import cu_terminal
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps

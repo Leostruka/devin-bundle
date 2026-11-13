@@ -18,7 +18,6 @@ import time
 
 import cu_actions
 import cu_browser
-from pathlib import Path
 
 
 from cu_envelope import _stamp, _dumps
