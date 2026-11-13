@@ -52,3 +52,27 @@ def test_skill_frontmatter_and_core_pipeline():
         "researcher",
     ):
         assert required_token in text, f"SKILL.md missing required token: {required_token}"
+
+
+def test_reference_playbooks_complete():
+    for name in REFERENCES:
+        path = SKILL_DIR / "reference" / name
+        assert path.is_file(), f"missing reference playbook: {name}"
+        content = path.read_text(encoding="utf-8")
+        assert len(content) > 800, f"reference playbook too short: {name}"
+
+    osint = (SKILL_DIR / "reference" / "journalistic-osint-protocol.md").read_text(encoding="utf-8")
+    for token in ("PRISMA-lite", "lateral reading", "changelogs", "job postings", "Wayback", "binary-triage"):
+        assert token in osint, f"journalistic-osint-protocol.md missing {token}"
+
+    fp = (SKILL_DIR / "reference" / "first-principles-justification.md").read_text(encoding="utf-8")
+    for token in ("First Principles", "RICE", "Kano", "JTBD", "Deep Modules", "Kill Criterion", "NFR"):
+        assert token in fp, f"first-principles-justification.md missing {token}"
+
+    hardening = (SKILL_DIR / "reference" / "atomic-modular-hardening.md").read_text(encoding="utf-8")
+    for token in ("Atomic Hardening", "Atomic Optimization", "Modular Hardening", "Modular Optimization", "Envelope v2", "ADR-003"):
+        assert token in hardening, f"atomic-modular-hardening.md missing {token}"
+
+    surfaces = (SKILL_DIR / "reference" / "contact-surfaces-excellence.md").read_text(encoding="utf-8")
+    for token in ("Facilitar", "Resolver", "Impressionar", "Ser Intuitivo", "Time-to-Value", "Nielsen", "Doherty"):
+        assert token in surfaces, f"contact-surfaces-excellence.md missing {token}"
