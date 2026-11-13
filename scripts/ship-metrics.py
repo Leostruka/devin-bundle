@@ -17,6 +17,51 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "ship-metrics"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 FIELDS = ("number,title,createdAt,mergedAt,additions,deletions,"
           "changedFiles,author")
@@ -81,13 +126,13 @@ def _merge_rows(path, prs):
 def report(path):
     rows = [r for r in _load(path) if r.get("lead_min") is not None]
     if not rows:
-        print(json.dumps({"ok": True, "n": 0}))
+        print(_dumps({"ok": True, "n": 0}))
         return
     leads = sorted(r["lead_min"] for r in rows)
     n = len(leads)
     med = leads[n // 2] if n % 2 else (leads[n // 2 - 1]
                                      + leads[n // 2]) / 2
-    print(json.dumps({
+    print(_dumps({
         "ok": True, "n": n,
         "lead_min": {"median": med, "p90": leads[int(n * .9)],
                      "max": leads[-1]},
@@ -114,7 +159,7 @@ def main():
     else:
         report(a.log)
         return
-    print(json.dumps({"ok": True, "appended": n, "log": a.log}))
+    print(_dumps({"ok": True, "appended": n, "log": a.log}))
 
 
 if __name__ == "__main__":

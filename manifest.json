@@ -1587,14 +1587,14 @@
       "name": "roadmap-board.py",
       "source": "devin-bundle",
       "purpose": "Macro roadmap board - parses .devin/issues + .devin/scratch/*/issues status/blocked-by/blocks into Markdown board + frontier + --json (issue #346 macro layer)",
-      "export_hash": "ecc4744aa45c91e58a0b3538e7e6eb42fe3afdeac39b4a103e7c0bafd24f56fa",
-      "exported_at": "2026-11-10T07:00:01.776085"
+      "export_hash": "5636C5235F5C2731FAD32D92AE8DE7D4E5CD2EDE1B024E59EB7A46CDC3E7F2EE",
+      "exported_at": "2026-11-13T11:27:00.869323"
     },
     {
       "name": "rules-coverage.py",
       "purpose": "Manual-run audit - maps NL rules to deterministic controls (hooks/audit/permissions), reports unenforced",
-      "export_hash": "2e16eb9a89de175994dff95778d075fd56363549b9f424b75aecd8c2579adb56",
-      "exported_at": "2026-11-10T06:51:06.217969"
+      "export_hash": "73EB06AEF4B19655255579504A2155095A2371ADE8D97BEE1B502DD8D11D9A2E",
+      "exported_at": "2026-11-13T11:27:00.869323"
     },
     {
       "name": "session-start.py",
@@ -1689,8 +1689,8 @@
     {
       "name": "ship-metrics.py",
       "purpose": "DORA lead-time log — .devin/metrics/ships.jsonl + report (#486)",
-      "export_hash": "b5a6fee8c83e9476b91a135f9e4e01e28eb07bdaef5fee4e654c0dfbaaf2bda6",
-      "exported_at": "2026-11-11T07:20:20.702571"
+      "export_hash": "0239993F959316E67341B68F6FCE09B0CE8565A51061DDCCD20CABF2FDA09279",
+      "exported_at": "2026-11-13T11:27:00.869323"
     },
     {
       "name": "changelog-refs.py",
