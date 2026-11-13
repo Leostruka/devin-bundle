@@ -150,7 +150,13 @@ contract and hook-runtime infrastructure now carries v2.
 - `scripts/*.py` hooks (43 files): their stdout JSON is consumed by the
   Devin CLI hook runtime (permission decisions, nudges, gates), not
   parsed by agents as tool output - infrastructure, not an "answered_by"
-  surface.
+  surface. Same verdict for hook-protocol payloads outside the hook
+  registry (`skill-picker.py`, `refine-review-prompt.py`, token-saver,
+  pulse, rl-resume-detect): they print `hookSpecificOutput`/gate
+  `decision` objects, not tool output.
+- Bare-array JSON outputs are not envelope carriers: `_stamp` only
+  stamps dicts, so `skills/*/scripts/query-memory.py --json`,
+  `fold_store.py list|grep`, and any list-shaped emit stay as-is.
 - `busybar`: no stdout-JSON emitters (`push.py` json.dumps is an HTTP
   payload, `listen.py` is a daemon listener).
 - `--detail brief|compact|full`: implemented on `stock-footage search`
