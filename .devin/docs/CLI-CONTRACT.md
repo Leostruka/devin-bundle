@@ -98,6 +98,15 @@ too: `cu_motion.py` (JsonParser usage errors), `cu_target.py`
 `cu_taskrunner`, `cu_wgc`) are stamped as well - the extension's whole
 JSON-on-stdout surface now carries v2.
 
+Skill-referenced extension CLIs (wave 8, #604): `ai-tools` (9 files),
+`media-tools` (6), `remotion-render` (3), `design-intelligence` (3),
+`image-forensics` (3) - same `_dumps` funnel. Non-stdout `json.dumps`
+(e.g. `look_ledger` jsonl ledger writes) is intentionally NOT stamped;
+only stdout JSON is the agent contract. Three crash-on-missing-arg bugs
+were fixed in passing (`metadata.py`, `plan_check.py` no-args IndexError,
+`look_ledger.py` unhandled file errors) - all now emit `{"ok": false}`
+JSON with non-zero exit.
+
 ## Adding a wrapper
 
 1. Copy the `_bundle_version()` + `_answered_by()` + `_stamp()` block

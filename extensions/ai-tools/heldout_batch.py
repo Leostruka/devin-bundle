@@ -24,6 +24,50 @@ import hashlib
 import json
 from pathlib import Path
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "ai-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 REQUIRED_SPLIT = "heldout"
 ALLOWED_SOURCES = {"public", "synthetic"}
 DEFAULT_MAX_JOBS = 64
@@ -191,16 +235,16 @@ def main():
     try:
         entries = load_manifest(args.manifest, args.data_root)
     except ManifestError as e:
-        print(json.dumps({"ok": False, "error": str(e)}))
+        print(_dumps({"ok": False, "error": str(e)}))
         raise SystemExit(2)
     if not (args.binary and args.model):
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": "no backend configured: pass --binary "
                                    "and --model"}))
         raise SystemExit(2)
     import bitnet_adapter as ba
     if not Path(args.binary).is_file() or not Path(args.model).is_file():
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": "backend unavailable: binary or model "
                                    "missing"}))
         raise SystemExit(2)
@@ -212,12 +256,12 @@ def main():
                      Path(args.model).resolve()}
         protected.update(Path(e["path"]).resolve() for e in entries)
         if out_path in protected:
-            print(json.dumps(
+            print(_dumps(
                 {"ok": False,
                  "error": "output path collides with a batch input"}))
             raise SystemExit(2)
         if out_path.exists():
-            print(json.dumps(
+            print(_dumps(
                 {"ok": False,
                  "error": "output file exists; refusing to overwrite"}))
             raise SystemExit(2)
@@ -233,7 +277,7 @@ def main():
         try:
             Path(args.out).write_text(text, encoding="utf-8")
         except OSError as e:
-            print(json.dumps({"ok": False,
+            print(_dumps({"ok": False,
                               "error": f"write_failed:{e}"}))
             raise SystemExit(2)
     print(text)

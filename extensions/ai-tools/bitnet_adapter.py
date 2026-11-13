@@ -30,6 +30,50 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "ai-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 DEFAULT_N_PREDICT = 128
 DEFAULT_THREADS = 2
 DEFAULT_CTX_SIZE = 2048
@@ -289,7 +333,7 @@ def _self_test():
             raise AssertionError(f"bound not enforced: {bad}")
         except (ValueError, TypeError):
             pass
-    print(json.dumps({"ok": True, "self_test": True}))
+    print(_dumps({"ok": True, "self_test": True}))
 
 
 def main():
@@ -314,7 +358,7 @@ def main():
                        n_predict=args.n_predict, threads=args.threads,
                        ctx_size=args.ctx_size, temperature=args.temperature,
                        timeout=args.timeout)
-    print(json.dumps(run(args.prompt, cfg)))
+    print(_dumps(run(args.prompt, cfg)))
 
 
 if __name__ == "__main__":

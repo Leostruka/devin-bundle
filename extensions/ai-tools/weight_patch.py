@@ -26,13 +26,58 @@ import os
 import sys
 
 import numpy as np
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "ai-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 
 SEED = 0
 
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(code)
 
 
@@ -89,7 +134,7 @@ def self_test():
     }
     out = {"ok": bool(all(checks.values())), "checks": checks,
            "r_recovery_cos": float(cos(r_hat, r_true))}
-    print(json.dumps(out, indent=2))
+    print(_dumps(out, indent=2))
     return 0 if out["ok"] else 1
 
 
@@ -278,7 +323,7 @@ def run_model(args):
     rep["control_loop_rate_after"] = n / len(PROBE_PROMPTS)
     rep["control_sample_before"] = texts[:3]
 
-    print(json.dumps(rep, indent=2, ensure_ascii=False))
+    print(_dumps(rep, indent=2, ensure_ascii=False))
     return 0
 
 

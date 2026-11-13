@@ -13,6 +13,50 @@ import re
 import sys
 from pathlib import Path
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "design-intelligence"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 
 
 def visual_signature(path):
@@ -55,27 +99,34 @@ def main(argv):
         print(__doc__.strip())
         return 1
     cmd = argv[1]
-    if cmd == "record":
-        ledger = argv[argv.index("--ledger") + 1]
-        print(json.dumps(record(argv[2], ledger), ensure_ascii=False))
-        return 0
-    if cmd == "compare" and len(argv) >= 4:
-        print(json.dumps(compare(argv[2], argv[3]), ensure_ascii=False))
-        return 0
-    if cmd == "check":
-        ledger = argv[argv.index("--ledger") + 1]
-        sig = visual_signature(argv[2])
-        hits = []
-        try:
-            for line in Path(ledger).read_text(encoding="utf-8").splitlines():
-                e = json.loads(line)
-                if e["skeleton"] == sig["skeleton"] \
-                        and e["file"] != str(argv[2]):
-                    hits.append(e["file"])
-        except OSError:
-            pass
-        print(json.dumps({"matches": hits, "reskin_family": bool(hits)}))
-        return 1 if hits else 0
+    try:
+        if cmd == "record":
+            ledger = argv[argv.index("--ledger") + 1]
+            print(_dumps(record(argv[2], ledger), ensure_ascii=False))
+            return 0
+        if cmd == "compare" and len(argv) >= 4:
+            print(_dumps(compare(argv[2], argv[3]), ensure_ascii=False))
+            return 0
+        if cmd == "check":
+            ledger = argv[argv.index("--ledger") + 1]
+            sig = visual_signature(argv[2])
+            hits = []
+            try:
+                for line in Path(ledger).read_text(
+                        encoding="utf-8").splitlines():
+                    e = json.loads(line)
+                    if e["skeleton"] == sig["skeleton"] \
+                            and e["file"] != str(argv[2]):
+                        hits.append(e["file"])
+            except OSError:
+                pass
+            print(_dumps({"matches": hits,
+                              "reskin_family": bool(hits)}))
+            return 1 if hits else 0
+    except (OSError, ValueError, IndexError) as exc:
+        print(_dumps({"ok": False, "error": str(exc)},
+                         ensure_ascii=False))
+        return 1
     print(__doc__.strip())
     return 1
 
