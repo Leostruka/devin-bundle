@@ -974,7 +974,10 @@ def setup(args):
 
 def doctor(args):
     """One-shot backend sanity: binary, model inventory, port (#492)."""
-    devin = _devin_path(args.devin)
+    # Resolve without sys.exit: doctor must REPORT a missing devin binary,
+    # not die before printing checks.
+    devin = (args.devin or os.environ.get("DEVIN_BIN")
+             or shutil.which("devin") or shutil.which("devin.exe") or "")
     port = getattr(args, "port", 8787)
     checks = {"devin": os.path.isfile(devin)
               or shutil.which(devin) is not None}
