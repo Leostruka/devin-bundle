@@ -11,3 +11,13 @@ Escopo: 3 links (caleb amazing-github-repos, meshy image-to-3d, astryx design-sy
 
 Regras: verdicts ADOPT/ADAPT/COVERED/BACKLOG/skip; issues so p/ acionaveis;
 evidencia citavel por claim; sem fabricar de fonte incompleta.
+
+## Batch-9 progresso (07:05-08:20)
+
+- [x] 3 links fetched + deep-dived (calec repos, meshy api, astryx cli)
+- [x] Survey versionado: .devin/research/2026-11-13-batch9-survey.md
+- [x] Issues #589-#591 filed -> closed (PR #592 merged, verdicts doc)
+- [x] #593 envelope v2: pilot #594 MERGED; rollout #595 (9 wrappers) + #596 (laya) em CI
+- [x] CLI-CONTRACT.md doc em main
+- [ ] Aguardar merges #595/#596 -> sync live + ledger + changelog
+- [ ] Loop continua ate 18h

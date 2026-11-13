@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(extensions): envelope contract v2 - `api_version: 2` + `meta.answered_by {bundle, wrapper}` provenance on every JSON response, inspired by the astryx CLI contract (batch-9 research, #593). Rolled out to 10 agent-facing wrappers (agent-reach pilot #594; voicebox, hyperframes, gcal, offsec-tools, rea-ops, rz-ops, stock-footage, blender-operator, comfyui-operator, laya-tools via #595/#596). Provenance resolves the bundle version from the nearest `manifest.json` ancestor - repo and live install alike - so stale live copies are identifiable at call time. Spec: `.devin/docs/CLI-CONTRACT.md`. `system-control` keeps its own `SCHEMA_VERSION` contract; craft-bridge skipped (raw passthrough channel).
+
+- fix(install-ledger): `MANAGED_FILES` now tracks root distribution files `audit.py`, `manifest.json`, `mcp_config.json` - live `manifest.json` had silently stayed at 3.20.0 after the v3.21.0 release, caught by the new envelope provenance on first live probe (#597). Ledger 1446 -> 1449 files, 0 drift.
+
+- research(batch-9): curated GitHub resource index `.devin/research/resource-index.md` - 14 high-signal repos (papers-we-love, system-design-primer, public-apis, LLMs/ML-from-scratch, ...) ranked by when-to-reach with bundle-area mapping; pointers added to `research` + `ai-tools` skills (#589, PR #592). Meshy image-to-3D API verified real but verdict BACKLOG - ai3d-gen stays local-first, hosted path only on explicit opt-in (#590). Astryx CLI agent-facing contract evaluated - covered patterns documented, envelope-v2 gaps shipped as #593-#597 (#591).
+
 - feat(laya-tools): bootstrap --help/--dry-run args, no more silent install on probe (#588)
 
 ## [3.21.0] - 2026-11-13
