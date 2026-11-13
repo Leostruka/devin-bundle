@@ -63,8 +63,20 @@ def test_credentialed_channels_rejected(capsys, chan):
 def test_envelope_keys_present(capsys):
     code, env = _run(capsys, "bogus")
     assert code == 2
-    for key in ("status", "command", "stdout", "stderr", "duration_s"):
+    for key in ("api_version", "status", "command", "stdout", "stderr",
+                "duration_s", "meta"):
         assert key in env
+
+
+def test_envelope_v2_provenance(capsys):
+    code, env = _run(capsys, "bogus")
+    assert code == 2
+    assert env["api_version"] == 2
+    answered = env["meta"]["answered_by"]
+    assert answered["wrapper"] == "agent-reach"
+    manifest = json.loads(
+        (AR_DIR.parents[1] / "manifest.json").read_text(encoding="utf-8"))
+    assert answered["bundle"] == manifest["version"]
 
 
 def test_flag_injection_rejected(capsys, monkeypatch):
