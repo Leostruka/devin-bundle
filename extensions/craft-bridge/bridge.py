@@ -235,7 +235,7 @@ def main(argv=None):
         print(_dumps(res, indent=2))
     elif args.cmd == "commands":
         res = list_commands(args.app)
-        print(res.get("stdout", json.dumps(res)))
+        print(res.get("stdout", _dumps(res)))
     elif args.cmd == "run":
         params = json.loads(args.params) if args.params else None
         res = run_command(args.app, args.command_id, params,

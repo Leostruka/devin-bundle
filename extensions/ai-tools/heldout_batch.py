@@ -272,7 +272,7 @@ def main():
 
     res = run_batch(entries, runner, max_jobs=args.max_jobs)
     res["ok"] = all(r["ok"] for r in res["results"])
-    text = json.dumps(res, indent=2)
+    text = _dumps(res, indent=2)
     if args.out:
         try:
             Path(args.out).write_text(text, encoding="utf-8")

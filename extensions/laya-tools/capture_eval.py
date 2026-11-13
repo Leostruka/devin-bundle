@@ -119,6 +119,9 @@ def main(argv=None):
         print(_dumps({"ok": False,
                           "error": f"draft_unreadable:{exc}"}))
         return 2
+    if not isinstance(draft, dict):
+        print(_dumps({"ok": False, "error": "draft_cases_invalid"}))
+        return 2
     cases = draft.get("cases")
     if not isinstance(cases, list):
         print(_dumps({"ok": False, "error": "draft_cases_invalid"}))

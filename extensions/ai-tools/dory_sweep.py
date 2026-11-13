@@ -151,7 +151,7 @@ def main():
            "ms_mean": round(sum(lat) / len(lat)) if lat else 0,
            "laya_budget_ms": 200,
            "rows": rows}
-    out = json.dumps(rep, indent=1, ensure_ascii=False)
+    out = _dumps(rep, indent=1, ensure_ascii=False)
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(out + "\n")

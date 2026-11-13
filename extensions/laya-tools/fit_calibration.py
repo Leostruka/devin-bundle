@@ -83,8 +83,13 @@ def _decided_cases(manifest_path):
     """[(x, y, case_id)] for decided cases: x = raw_confidence,
     y = 1 iff candidate_id == gold."""
     data = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or not isinstance(
+            data.get("cases"), list):
+        raise ValueError("manifest_not_object_or_cases_not_list")
     out = []
-    for c in data.get("cases", []):
+    for c in data["cases"]:
+        if not isinstance(c, dict):
+            continue
         rep = c.get("reply") or {}
         if rep.get("outcome") != "suggestion":
             continue
@@ -279,7 +284,7 @@ def main(argv=None):
         }
         report["emit_block"] = block
 
-    txt = json.dumps(report, indent=1)
+    txt = _dumps(report, indent=1)
     if args.out:
         Path(args.out).write_text(txt + "\n", encoding="utf-8")
     print(txt)

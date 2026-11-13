@@ -203,3 +203,49 @@ def test_wrapper_emits_contract_v2(rel, argv, wrapper):
     assert answered.get("bundle") == MANIFEST_VERSION, \
         f"{wrapper}: answered_by.bundle={answered.get('bundle')!r} " \
         f"(manifest {MANIFEST_VERSION})"
+
+
+# Files whose JSON stdout must route through the stamp. Derived from
+# PROBES plus emit-only siblings that share the same _dumps funnel.
+def _stamped_files():
+    import glob
+    out = set(rel for rel, _, _ in PROBES)
+    for rel in list(out):
+        d = os.path.dirname(rel)
+        if d.startswith("extensions/"):
+            out.update(glob.glob(os.path.join(d, "*.py"),
+                                 root_dir=str(ROOT)))
+    return sorted(out)
+
+
+@pytest.mark.parametrize("rel", _stamped_files(),
+                         ids=[os.path.basename(r) for r in _stamped_files()])
+def test_no_unstamped_stdout_pattern(rel):
+    """Guard the two bypass classes found in review: direct
+    `print(json.dumps(...))` and assign-then-print `x=json.dumps();
+    print(x)`. Both must route through `_dumps`/`_stamp`."""
+    import ast
+    src = (ROOT / rel).read_text(encoding="utf-8")
+    if "_BUNDLE_VERSION_CACHE" not in src:
+        pytest.skip(f"{rel}: not a stamped emitter")
+    tree = ast.parse(src)
+    assigns = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name) \
+                and isinstance(node.value, ast.Call) \
+                and isinstance(node.value.func, ast.Attribute) \
+                and node.value.func.attr == "dumps":
+            assigns[node.targets[0].id] = node.lineno
+        if isinstance(node, ast.Call) and isinstance(
+                node.func, ast.Name) and node.func.id == "print":
+            for a in node.args:
+                if isinstance(a, ast.Call) and isinstance(
+                        a.func, ast.Attribute) and a.func.attr == "dumps":
+                    pytest.fail(
+                        f"{rel}:{a.lineno} print(json.dumps(...)) bypasses "
+                        "_dumps funnel")
+                if isinstance(a, ast.Name) and a.id in assigns:
+                    pytest.fail(
+                        f"{rel}:{a.lineno} print({a.id}) of json.dumps "
+                        f"assigned at :{assigns[a.id]} bypasses _dumps")

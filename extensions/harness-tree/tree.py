@@ -182,7 +182,7 @@ def main(argv):
     if cmd == "snapshot" and len(argv) >= 3:
         tree = read(argv[2])
         out = argv[argv.index("--out") + 1] if "--out" in argv else None
-        payload = json.dumps(tree, indent=1, ensure_ascii=False,
+        payload = _dumps(tree, indent=1, ensure_ascii=False,
                              sort_keys=True)
         if out:
             with open(out, "w", encoding="utf-8", newline="\n") as fh:
@@ -212,7 +212,7 @@ def main(argv):
             print(f"ERROR: {exc}", file=sys.stderr)
             return 1
         out = argv[argv.index("--out") + 1] if "--out" in argv else None
-        payload = json.dumps(out_tree, indent=1, ensure_ascii=False,
+        payload = _dumps(out_tree, indent=1, ensure_ascii=False,
                              sort_keys=True)
         if out:
             with open(out, "w", encoding="utf-8", newline="\n") as fh:
