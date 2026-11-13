@@ -49,5 +49,5 @@ def test_cli_svg_txt(tmp_path):
         dst = tmp_path / f"out.{fmt}"
         r = subprocess.run(
             [sys.executable, str(cli), "--input", str(src), "--output", str(dst),
-             "--format", fmt], capture_output=True, text=True, timeout=60)
+             "--format", fmt], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
         assert json.loads(r.stdout)["ok"] and dst.stat().st_size > 50

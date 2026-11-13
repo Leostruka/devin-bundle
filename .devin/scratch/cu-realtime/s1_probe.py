@@ -30,7 +30,7 @@ def call(args, timeout=60, env_extra=None):
     if env_extra:
         env.update(env_extra)
     t0 = time.time()
-    r = subprocess.run([PY, TERM] + args, capture_output=True, text=True,
+    r = subprocess.run([PY, TERM] + args, capture_output=True, text=True, encoding="utf-8", errors="replace",
                        timeout=timeout, env=env)
     return (time.time() - t0) * 1000, r.stdout.strip()
 

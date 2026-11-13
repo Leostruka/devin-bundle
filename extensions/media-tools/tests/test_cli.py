@@ -8,7 +8,7 @@ CLI = ROOT / "grainrad.py"
 
 
 def run_cli(*argv):
-    r = subprocess.run([sys.executable, str(CLI), *argv], capture_output=True, text=True, timeout=60)
+    r = subprocess.run([sys.executable, str(CLI), *argv], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
     return json.loads(r.stdout.strip().splitlines()[-1]), r.returncode
 
 

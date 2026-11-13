@@ -199,7 +199,7 @@ def dom_reflex():
             [sys.executable, str(EXT / "browser.py"), "bind",
              "--endpoint", "http://127.0.0.1:9222",
              "--pid", str(proc.pid)],
-            capture_output=True, text=True, timeout=20)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
         if '"ok": true' not in bind.stdout:
             return {"ok": False, "stage": "bind", "out": bind.stdout,
                     "err": bind.stderr[-300:]}

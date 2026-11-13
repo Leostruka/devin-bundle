@@ -456,7 +456,7 @@ for pattern in required_ignores:
 try:
     import subprocess
     tracked = [p for p in subprocess.check_output(
-        ['git', 'ls-files'], text=True).split() if '__pycache__' in p]
+        ['git', 'ls-files'], text=True, encoding="utf-8", errors="replace").split() if '__pycache__' in p]
 except Exception:
     tracked = []
 if tracked:
@@ -673,7 +673,7 @@ for a in manifest_agents:
 print()
 print('[20] Temp files check')
 import subprocess
-_git_dir = subprocess.run(['git', 'rev-parse', '--git-dir'], capture_output=True, text=True).stdout.strip()
+_git_dir = subprocess.run(['git', 'rev-parse', '--git-dir'], capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.strip()
 if _git_dir and os.path.isdir(_git_dir):
     temp_files = [f for f in os.listdir(_git_dir) if f.endswith('.tmp')]
 else:
@@ -688,7 +688,7 @@ else:
 print()
 print('[21] Git tag vs manifest version')
 import subprocess
-result = subprocess.run(['git', 'tag', '-l'], capture_output=True, text=True)
+result = subprocess.run(['git', 'tag', '-l'], capture_output=True, text=True, encoding="utf-8", errors="replace")
 tags = result.stdout.strip().split('\n') if result.stdout.strip() else []
 print('  Tags: ' + str(tags))
 expected_tag = 'v' + str(ver)
@@ -873,7 +873,7 @@ import subprocess
 artifact_exts = ('.zip', '.tmp', '.bak')
 tracked_artifacts = []
 try:
-    r = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, timeout=10)
+    r = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     for line in r.stdout.split('\n'):
         line = line.strip()
         if line and line.lower().endswith(artifact_exts):
@@ -896,7 +896,7 @@ credential_names = ('credentials.toml', '.env', 'id_rsa', 'id_ed25519', 'id_ecds
 credential_exts = ('.pem', '.key', '.env', '.pfx', '.p12')
 tracked_creds = []
 try:
-    r2 = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, timeout=10)
+    r2 = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     for line in r2.stdout.split('\n'):
         line = line.strip()
         if line in credential_names or line.endswith(credential_exts):
@@ -1021,7 +1021,7 @@ try:
     tag = 'v' + manifest_v
     subjects = subprocess.check_output(
         ['git', 'log', tag + '..HEAD', '--format=%s|%cI'],
-        text=True, stderr=subprocess.DEVNULL, timeout=15)
+        text=True, encoding="utf-8", errors="replace", stderr=subprocess.DEVNULL, timeout=15)
     # merges younger than RECENT_MERGE_H can lack refs yet - warn, not fail
     import time
     from datetime import datetime
@@ -1127,7 +1127,7 @@ print('[35] tools.json renderers')
 try:
     _ct_out = subprocess.run(
         [sys.executable, os.path.join('scripts', 'check-tools.py')],
-        capture_output=True, text=True, timeout=120)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
     if _ct_out.returncode == 0:
         print('  OK  ' + _ct_out.stdout.strip().splitlines()[-1])
     else:
