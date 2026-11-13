@@ -11,8 +11,9 @@ stdlib only. Emits a single JSON object on stdout:
   {ok, steps, venv_python, torch_version, device}
 Progress notes go to stderr. Exit code != 0 on any failure.
 
-  python bootstrap.py
+  python bootstrap.py [--dry-run]
 """
+import argparse
 import json
 import os
 import shutil
@@ -131,7 +132,37 @@ def emit(ok, extra=None):
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    parser = argparse.ArgumentParser(
+        description="Isolated .venv installer for laya-tools "
+                    "(torch + laya, cpu or cu124 index).")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="probe environment and print the install plan "
+                             "as JSON without creating the venv or installing")
+    args = parser.parse_args()
     global device
+
+    if args.dry_run:
+        dry_steps = []
+        base = pick_interpreter()
+        dry_steps.append({"step": "python_version",
+                          "ok": base is not None,
+                          "detail": " ".join(base) if base else
+                                    f"need Python >={MIN_PY[0]}.{MIN_PY[1]} "
+                                    f"and <{NEWEST_OK[0]}.{NEWEST_OK[1]} "
+                                    f"(running {sys.version.split()[0]})"})
+        dry_steps.append({"step": "vcruntime", "ok": has_vcruntime()})
+        device = detect_device()
+        dry_steps.append({"step": "gpu_detect", "ok": True,
+                          "detail": device})
+        dry_steps.append({"step": "create_venv", "ok": True,
+                          "detail": ("exists, would reuse" if venv_python().is_file()
+                                     else "would create " + str(VENV))})
+        plan = {"venv": str(VENV), "requirements": str(REQUIREMENTS),
+                "torch_index": TORCH_INDEX[device]}
+        print(json.dumps({"ok": all(s["ok"] for s in dry_steps),
+                          "dry_run": True, "plan": plan,
+                          "steps": dry_steps}, indent=2, ensure_ascii=False))
+        sys.exit(0 if all(s["ok"] for s in dry_steps) else 1)
 
     if not REQUIREMENTS.is_file():
         step("requirements", False, f"missing {REQUIREMENTS}")
