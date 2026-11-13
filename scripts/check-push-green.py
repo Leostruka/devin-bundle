@@ -273,7 +273,9 @@ def check_test_deletions(cwd):
                     ".devin/test-deletion-approved naming the file."
                 )
     try:
-        diff = _run(["git", "diff", "HEAD", "--unified=0", "--", "tests/", "test/"],
+        diff = _run(["git", "diff", "HEAD", "--unified=0", "--",
+                     "tests/", "test/", "*/tests/", "*/*/tests/",
+                     "test_*.py", "*_test.py"],
                     capture_output=True, text=True, timeout=15, cwd=cwd,
                     encoding="utf-8", errors="replace")
     except (FileNotFoundError, OSError, subprocess.SubprocessError):
