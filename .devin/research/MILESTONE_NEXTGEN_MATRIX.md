@@ -14,7 +14,7 @@ brief are marked `[CORRECTION]`.
 | Memory/read path | `semble` external CLI (`--limit 20`, `[SEMBLE-DOWN]`->`rg` fallback), `extensions/laya-tools/filebool.py` (`ask_laya_glob`/`ask_laya_filebool` batch classification), `rg`, `read`; `.devin/memory/MOC.md` + `memory-*` hooks; `mcp_config.json` EMPTY |
 | Harness evolution | `skills/self-improvement` modes (improvement-loop 10-step, refine, harness-reference w/ PrimeAgent+RLM map, a2a-messaging, subagent-router); `scripts/refine-review-prompt.py`, `validate-refinement-evidence.py`, `check-push-green.py`; `tests/held-out/` |
 | Install/export | `install.ps1`/`install.sh` (copy+merge to `%APPDATA%/devin`), `export.ps1`/`export.sh`, `scripts/render-user-hooks.py` (deterministic renderer hooks.v1.json->config.json.hooks), `manifest.json` w/ `export_hash` per skill |
-| Fleet/RTS | `extensions/agent-rts` (server.py :8798, event-sourced World, intent/decision file queues, repo collectors, Three.js web UI; "observes and relays, never dispatches" canon), `extensions/rtsd` (:8797 sibling), `.devin/rts/` (fleet.json, events.jsonl, intents/, decisions/), `scripts/rts-emit.py|rts-decision.py|rts-intents.py` |
+| Fleet/RTS | REMOVED (user decision 2026-11-13): agent-rts stack killed completely - extension was already removed in #216; `.devin/rts/`, M2_12, ledgers and design docs deleted |
 | Orchestration | `.devin/orchestrator_prompts_v2.md` (v3 asset-driven DAG, 7 personas, upstream_hashes sha8, DRAFT/APPROVED/BLOCKED, laya router/guard transitions), `agents/*.md` (14 profiles), `skills/dispatching-parallel-agents`, `skills/using-git-worktrees`, `skills/scheduled-turns` |
 | 3D/media | `extensions/blender-operator` (TCP JSONL exec loop, full bpy, headless), `extensions/media-tools` (fx/ pipeline, grainrad, ascii_mancer, glb_input, intent.py+laya shadow), `skills/operate-blender`, `skills/youtube-fetcher` |
 | Output economy | Rule 8 telegraphic; `scripts/post-exec.py`; `context-budget.py`; `skills/context-hygiene`, `effort-calibration`; `data/bundle-models.json` (effort routing) |
@@ -30,7 +30,7 @@ brief are marked `[CORRECTION]`.
 | 5 | `pbakaus/impeccable` (Apache-2.0, skill v4.7.0) | ~62-rule registry (`antipatterns.mjs` ~32 slop + ~27 quality +3 newer) + `checks.mjs` pure fns; `npx impeccable detect --json` exit 0/1/2; PRODUCT.md (durable truth) vs DESIGN.md (Stitch-YAML tokens, fixed sections); 23-24 cmds [CORRECTION: count unverified] | our `skills/impeccable` = direct port, text-only | UPGRADE_EXISTING + NEW_EXTENSION + HOOK_INTEGRATION | skill sync (cmds, PRODUCT/DESIGN spec); `design-intelligence/design_lint.py` (Python port of registry+checks); `scripts/design-lint-gate.py` PostToolUse |
 | 6 | `agencyagents.app` + `msitarzewski/agency-agents{,-app}` (MIT x2) | `tools.json` format contract ("same format => byte-identical"); `convert.sh` ref renderers -> 16 CLIs; `installs.json`+`corpus-index.json` SHA-256 ledger; **5-state reconcile** [CORRECTION: Current/Outdated/Modified/Removed/Foreign]; `backup_if_differs` (outside tool dirs, abort-on-fail, skip-identical) | install/export already render+sync; `render-user-hooks.py`; upstream_hashes sha8 | UPGRADE_EXISTING | `install.ps1`/`export.sh`/`install.sh` + new stdlib `scripts/install-ledger.py`; `tools.json` data file (Devin target first) |
 | 7 | `DeusData/codebase-memory-mcp` (MIT, v0.12.1) | C binary: 162 vendored tree-sitter->SQLite FTS5-BM25 (camel tokenizer), static nomic-embed vectors, 17 MCP tools, sub-ms Cypher subset. [CORRECTION: "99% token savings" NOT reproduced - skillproof.dev measured +127% MORE tokens; 17 tools > our 15 cap] | semble (semantic), rg (exact), ask_laya_glob (batch bool), empty mcp_config | NEW_SKILL (routing doc) + NEW_EXTENSION (pattern-port) + benchmark gate | `extensions/code-graph/` (SQLite FTS5 minimal index, stdlib `sqlite3`); routing table into `skill-discovery`/research docs; real cbm only if held-out bench proves savings |
-| 8 | `stablyai/orca` (MIT, hyper-active) | Electron fleet ctl: PTY-per-worktree, SSH relay daemon (13-byte JSON-RPC frames), hibernation->`getAgentResumeArgv`, hook ingest w/ `x-orca-agent-hook-token` + session-id registry (bounded 512), fan-out->compare, RN/Expo mobile | agent-rts/rtsd observe-only canon; fleet.json; worktrees+dispatch skills exist | UPGRADE_EXISTING | agent-rts opt-in dispatch lane (intents->spawn), worktree lanes in fleet.json, provider resume-argv table; remote relay deferred |
+| 8 | `stablyai/orca` (MIT, hyper-active) | Electron fleet ctl: PTY-per-worktree, SSH relay daemon, hibernation, hook ingest, fan-out->compare, RN/Expo mobile | agent-rts stack KILLED 2026-11-13 (user decision) | KILLED | none - RTS stack removed completely |
 | 9 | YT `mvfo3pUiCCA` (Kyle Skelly, Sep-2026) | Blender low-poly blockout + auto camera path -> playblast MP4 -> multimodal LLM sec-by-sec prompt -> Seedance 2.5 repaint (keeps camera/framing, reference imgs for adherence) -> scroll-scrub web hero. Bridge = Higgsfield MCP (not generic blender-mcp) [CORRECTION]. Prompt template + scroll code not published | `blender-operator` (generic bpy loop; no blockout/playblast presets), media-tools, creative-engineering | NEW_SKILL + muscle presets | `skills/camera-blocking/` (workflow+templates); `extensions/blender-operator/presets/{camera_rig,playblast}.py`; Seedance = prompt-template only (external SaaS) |
 | 10 | YT `cCFAIrbt_s8` -> `aicodeking/pandacode` (MIT+attribution) | Real Tauri app. Token Saver = prompt-fragment presets (caveman/lean/quiet) sent ON CHANGE only + cached sys-prompt (~650 tok/msg); queue vs Cmd+Enter steer; per-turn git diff; 2-click worktrees; 1 architect+3 workers w/ guards (silent->fail, 20min kill, <=20 rounds); auto-resume at RL reset; permission modes | Rule 8 ~= caveman; post-exec.py; scheduled-turns; orchestrator_prompts v3 | HOOK_INTEGRATION + UPGRADE_EXISTING | `scripts/token-saver.py` (UserPromptSubmit injector w/ mode state); quiet-tools compression in `post-exec.py`; RL-detect->resume intent via `stop-guard.py`+scheduled-turns; team guards -> orchestrator_prompts v4 |
 
@@ -155,22 +155,16 @@ install/export drift ledger (agency-agents port):
 
 ## F. Fleet orchestration & multi-agent UX (Phase 3 detail)
 
-agent-rts upgrades (preserves "game observes" canon - dispatch is opt-in lane):
-- `POST /intent {"kind":"spawn", profile, task, worktree}` -> intent file
-  consumed by an explicit user-approved bridge (not auto-exec); status back
-  into fleet.json lanes.
-- fleet.json schema += `lane` (worktree path), `resume_argv` (provider table:
-  devin/claude/codex -> resume cmd), `hibernated_at`.
-- Hook ingest hardening (orca pattern): `x-agent-hook-token` shared secret on
-  `rts-emit.py` POST path; session-id-bound registry, bounded size, PTY-exit
-  cleanup equivalent (subagent-id liveness sweep).
+KILLED 2026-11-13 (user decision): agent-rts stack removed completely -
+`.devin/rts/`, M2_12, ledgers and design docs deleted. Section retained for
+history only.
 - PandaCode guards -> orchestrator_prompts v4: architect+3-worker template,
   silent-worker->fail-to-architect, 20min turn kill, <=20 rounds, pause never
   consumes retries; queue-vs-steer semantics documented (Devin CLI queues by
   nature; steer = next-turn inject).
-- Worktree 2-click: `using-git-worktrees` += lane register/deregister cmds
-  writing `.devin/rts/worktrees.json`; merge-back refuses dirty/conflict
-  (PandaCode semantics).
+- Worktree 2-click: `using-git-worktrees` lane register/deregister cmds;
+  merge-back refuses dirty/conflict (PandaCode semantics) - registry moved
+  off `.devin/rts/` (stack killed).
 - Deferred non-goals: SSH remote relay, Electron GUI, mobile companion.
 
 ## G. Blender camera-blocking pipeline (Phase 3 detail)
@@ -207,11 +201,11 @@ M2_08 self-improvement PPC upgrade (modes+anti-leakage)          [no deps]
 M2_09 extensions/harness-tree (SurfaceSpec dict-diff engine)     [08]
 M2_10 code-graph pattern-port (SQLite FTS5 index) + routing doc  [no deps]
 M2_11 token-saver hooks (mode injector+quiet+RL-resume+diff-footer) [no deps]
-M2_12 agent-rts dispatch lane + worktree lanes + resume-argv     [no deps]
+M2_12 KILLED (user decision 2026-11-13) - agent-rts stack removed
 M2_13 camera-blocking skill + blender presets                    [no deps]
 M2_14 orchestrator_prompts v4 (team guards+direction contract)   [03,04]
 
-parallel-capable: {01,02,06,08,10,11,12,13} then {03,04,05,07,09} then {14}
+parallel-capable: {01,02,06,08,10,11,13} then {03,04,05,07,09} then {14}
 ```
 
 ## I. Source register
