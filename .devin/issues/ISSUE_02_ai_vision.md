@@ -60,9 +60,25 @@ Status: in-progress · Source: IG `DeRX9KpJPlT` (@plattipusofficial) + Lukáš/F
   test. `github.com/polimi-ispl/prnu-python` is the Python port our
   `prnu.py` already follows.
 
-Next step unblocked: download 3-4 VISION devices' `images/flat/` +
-`images/nat/` (small subset, ~200MB), build refs per device, measure
-PCE separation real-vs-synth on held-out native + social images.
+First real calibration run (2026-11-13, subset in
+`.devin/scratch/prnu-vision/`, gitignored): D02_iPhone4s + D15_iPhone6,
+8 flat refs each, held-out nat + natWA.
+
+| comparison | PCE | verdict |
+|---|---|---|
+| D02 nat vs ref_D02 | 68-266 (7/8 real, 1 abstain) | correct |
+| D15 nat vs ref_D15 | 110-1391 (3/3 real) | correct |
+| D02 nat vs ref_D15 | 9-17 | correctly rejected |
+| D15 nat vs ref_D02 | 15-21 | correctly rejected |
+| D02 natWA vs ref_D02 | abstain (residual below floor) | correct abstain |
+
+Same-device vs cross-device separation ~4x at default threshold 50;
+WhatsApp recompression kills the residual so the tool abstains instead
+of guessing - matches the documented abstain rules. Server
+rate-limits parallel fetches (503) - download sequentially with
+`--retry`. Ref builder caveat: `--build-ref` swallows per-image load
+errors and reports `empty image set` when all fail - a 206-byte 503
+page looks like a jpg until PIL rejects it.
 
 ## Progress (2026-11-09 audit)
 

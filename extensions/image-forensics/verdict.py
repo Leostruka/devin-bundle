@@ -91,16 +91,19 @@ def _load_ref(ref_path, shape):
 def build_ref(dir_path, out_path):
     import numpy as np
     arrays = []
+    skipped = []
     for f in sorted(Path(dir_path).iterdir()):
         if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".tif",
                                 ".tiff", ".bmp", ".webp"):
             try:
                 arrays.append(prnu.load_gray(f))
             except Exception:
+                skipped.append(f.name)
                 continue
     ref = prnu.build_reference(arrays)
     np.save(out_path, ref)
-    return {"ok": True, "images": len(arrays), "ref": str(out_path)}
+    return {"ok": True, "images": len(arrays), "skipped": skipped,
+            "ref": str(out_path)}
 
 
 def main(argv=None):
@@ -121,7 +124,10 @@ def main(argv=None):
                                    "overwrite; pick another --out or "
                                    "delete it first)"}, ensure_ascii=False))
             return 2
-        res = build_ref(args.build_ref, args.out or "ref.npy")
+        try:
+            res = build_ref(args.build_ref, args.out or "ref.npy")
+        except (ValueError, OSError) as e:
+            res = {"ok": False, "error": str(e)}
         print(_dumps(res, ensure_ascii=False))
         return 0 if res.get("ok") else 1
     if not args.image:
