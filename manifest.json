@@ -1366,7 +1366,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "306ba3d3b1c10511a7ff14506e2d9cc2ea785d2b7ad4864d3ba211b5c1dca0bd",
+      "export_hash": "6e8e6830218ec87a46b52833231575c794f766c908172a679b5cb9113919b86c",
       "exported_at": "2026-11-13"
     },
     {

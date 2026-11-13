@@ -86,6 +86,8 @@ def emit_metric(event, **fields):
 def _run_one(script_name, payload):
     """Run scripts/<script_name> main() in-process. Returns (exit_code, stdout, stderr)."""
     path = os.path.join(SCRIPTS_DIR, script_name)
+    if SCRIPTS_DIR not in sys.path:
+        sys.path.insert(0, SCRIPTS_DIR)
     spec = importlib.util.spec_from_file_location('hookmod_' + script_name.replace('-', '_'), path)
     mod = importlib.util.module_from_spec(spec)
     stdin_buf = io.StringIO(json.dumps(payload))
