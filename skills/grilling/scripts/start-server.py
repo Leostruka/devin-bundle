@@ -208,6 +208,8 @@ def main():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if is_windows() else 0,
             )
             pid_file.write_text(str(process.pid), encoding="utf-8")
