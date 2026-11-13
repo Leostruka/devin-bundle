@@ -73,6 +73,9 @@ def main():
     ap.add_argument("--out")
     args = ap.parse_args()
 
+    if args.out and os.path.exists(args.out):
+        fail(f"out exists: {args.out} (refusing to overwrite; "
+             "pick another --out or delete it first)", 2)
     try:
         data = json.load(open(args.cases, encoding="utf-8"))
     except (OSError, ValueError) as e:

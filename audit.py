@@ -1474,11 +1474,14 @@ try:
                     if not _is_out:
                         continue
                     for _a in _cn.args:
-                        if (isinstance(_a, _ast.Call)
-                                and _is_ascii_dumps(_a)) or (
-                                isinstance(_a, _ast.Name)
-                                and _a.id in _dumped):
-                            _emits = True
+                        for _x in _ast.walk(_a):
+                            if (isinstance(_x, _ast.Call)
+                                    and _is_ascii_dumps(_x)) or (
+                                    isinstance(_x, _ast.Name)
+                                    and _x.id in _dumped):
+                                _emits = True
+                                break
+                        if _emits:
                             break
                     if _emits:
                         break
@@ -1610,6 +1613,25 @@ try:
                     and getattr(_f.value.func, 'id', '') == 'Path':
                 _hit = 'Path.walk() is 3.12+'
                 break
+        _pathvars = set()
+        for _n in _ast44.walk(_t44):
+            if isinstance(_n, _ast44.Assign) \
+                    and isinstance(_n.value, _ast44.Call) \
+                    and getattr(_n.value.func, 'id', '') in (
+                    'Path', 'PosixPath', 'WindowsPath'):
+                for _tg in _n.targets:
+                    if isinstance(_tg, _ast44.Name):
+                        _pathvars.add(_tg.id)
+        for _n in _ast44.walk(_t44):
+            if not isinstance(_n, _ast44.Call):
+                continue
+            _f = _n.func
+            if not isinstance(_f, _ast44.Attribute):
+                continue
+            if _f.attr == 'walk' and isinstance(_f.value, _ast44.Name) \
+                    and _f.value.id in _pathvars:
+                _hit = 'Path.walk() is 3.12+'
+                break
         if _hit:
             _bad44.append(_fp + ' (' + _hit + ')')
     if _bad44:
@@ -1633,9 +1655,20 @@ try:
     import ast as _ast45
     import re as _re45
     _WRITE45 = _re45.compile(
-        r"open\s*\([^)]*['\"]w['\"]|write_text\s*\(|\.save\s*\(")
-    _OUTFLAGS = {'-o', '--out', '--output', '--dst', '--report',
-                 '--sheet', '--output-dir'}
+        r"open\s*\([^)]*['\"]w[b+]*['\"]|write_text\s*\(|\.save\s*\("
+        r"|write_bytes\s*\(")
+    _OUTSEGS = {'out', 'output', 'dst', 'sheet', 'report', 'dump',
+                'outfile', 'o'}
+    _POSNAMES = {'out', 'output', 'dst', 'outfile', 'target'}
+
+    def _isoutflag45(f):
+        """-o or any long flag with an output-y segment (--diff-out,
+        --out-file, --output-dir; but not --timeout/--layout)."""
+        if f == '-o':
+            return True
+        if not f.startswith('--'):
+            return False
+        return any(s in _OUTSEGS for s in f[2:].split('-'))
 
     def _dests45(t):
         """dest names declared via output flags on add_argument calls."""
@@ -1647,7 +1680,10 @@ try:
             flags = [a.value for a in n.args
                      if isinstance(a, _ast45.Constant)
                      and isinstance(a.value, str)]
-            if not any(f in _OUTFLAGS for f in flags):
+            pos = next((f for f in flags if not f.startswith('-')),
+                       None)
+            if not any(_isoutflag45(f) for f in flags) \
+                    and not (pos and pos in _POSNAMES):
                 continue
             act = next((k.value.value for k in n.keywords
                         if k.arg == 'action'
@@ -1749,6 +1785,8 @@ try:
     # this file's AST (helper module / subprocess target).
     _SKIP45 = {
         'extensions/remotion-render/render.py',   # out_name -> remotion out/; workdir rmtree-guarded
+        'extensions/comfyui-operator/wrapper.py',  # --out is a download dir (makedirs refresh)
+        'extensions/craft-bridge/ui_dsl.py',      # O_EXCL atomic refusal inside _write_output
     }
     _bad45 = []
     for _fp in _scan_py_files():

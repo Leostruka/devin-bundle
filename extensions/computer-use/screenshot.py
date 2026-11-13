@@ -222,7 +222,8 @@ def _remote_main(target):
              "default")
     env_dir = backend.env_dir
     ext = "jpg" if args.format == "jpeg" else "png"
-    if args.out and os.path.exists(args.out):
+    if (args.out and os.path.exists(args.out)
+            and not args.if_changed):
         fail(f"out exists: {args.out} (refusing to overwrite; "
              "pick another --out or delete it first)", 2)
     out = args.out or str(env_dir /
@@ -346,9 +347,13 @@ def main():
     profile = cm.get_profile()
     fmt = args.format or ("jpeg" if profile == "fast" else "png")
     ext = "jpg" if fmt == "jpeg" else "png"
-    if args.out and os.path.exists(args.out):
+    if (args.out and os.path.exists(args.out)
+            and not args.if_changed and not args.diff):
         fail(f"out exists: {args.out} (refusing to overwrite; "
              "pick another --out or delete it first)", 2)
+    if args.diff_out and os.path.exists(args.diff_out):
+        fail(f"diff_out exists: {args.diff_out} (refusing to "
+             "overwrite; pick another --diff-out)", 2)
     out = args.out or os.path.join(tempfile.gettempdir(),
                                    f"screenshot-{int(time.time())}.{ext}")
 

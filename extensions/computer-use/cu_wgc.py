@@ -309,9 +309,9 @@ def shot(hwnd, timeout=4.0, wait=False):
             w.close()
 
 
-def fail(msg):
+def fail(msg, code=1):
     print(_dumps({"ok": False, "error": msg}))
-    sys.exit(1)
+    sys.exit(code)
 
 
 def main():
@@ -344,7 +344,7 @@ def main():
         if args.out and arr is not None:
             if os.path.exists(args.out):
                 fail(f"out exists: {args.out} (refusing to overwrite; "
-                     "pick another --out or delete it first)")
+                     "pick another --out or delete it first)", 2)
             from PIL import Image
             Image.fromarray(arr).save(args.out, format="PNG")
             res["path"] = args.out

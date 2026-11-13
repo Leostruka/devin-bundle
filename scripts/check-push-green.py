@@ -287,7 +287,7 @@ def check_test_deletions(cwd):
             # strings like write_text("def test_x()...") must not flag.
             m = re.match(
                 r"-\s*(?:async\s+)?def\s+(test_\w+)"
-                r"|-\s*class\s+(Test\w+)", ln)
+                r"|-\s*class\s+(Test\w*)", ln)
             if m:
                 name = m.group(1) or m.group(2)
                 if name not in approved:

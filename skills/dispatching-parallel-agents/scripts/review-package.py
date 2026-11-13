@@ -65,6 +65,9 @@ def main():
         short_head = git_short(args.head)
         out = os.path.join(workspace, f"review-{short_base}..{short_head}.diff")
 
+    if args.outfile and os.path.exists(out):
+        print(f"refusing to overwrite {out}", file=sys.stderr)
+        sys.exit(2)
     commits = git_log(args.base, args.head)
     stat = git_diff_stat(args.base, args.head)
     diff = git_diff(args.base, args.head)

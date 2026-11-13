@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -299,6 +300,10 @@ def main() -> None:
         sr=args.sr,
     )
 
+    for pth in (args.output_json, args.output_md):
+        if pth.exists():
+            print(f"refusing to overwrite {pth}", file=sys.stderr)
+            sys.exit(2)
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_md.parent.mkdir(parents=True, exist_ok=True)
     args.output_json.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")

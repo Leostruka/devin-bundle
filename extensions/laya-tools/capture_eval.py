@@ -72,6 +72,12 @@ def main(argv=None):
                    help="Seconds to wait per reply (default 120)")
     args = p.parse_args(argv)
 
+    if Path(args.out).exists():
+        print(_dumps({"ok": False,
+                      "error": f"out exists: {args.out} (refusing to "
+                               "overwrite; pick another --out or "
+                               "delete it first)"}))
+        return 2
     try:
         draft = json.loads(Path(args.draft).read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:

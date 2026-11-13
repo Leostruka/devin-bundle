@@ -105,6 +105,12 @@ def main():
     ap.add_argument("--dry-run", action="store_true",
                     help="Single pass per boundary; marks dry_run in output")
     args = ap.parse_args()
+    if args.out and os.path.exists(args.out):
+        print(_dumps({"ok": False,
+                      "error": f"out exists: {args.out} (refusing to "
+                               "overwrite; pick another --out or "
+                               "delete it first)"}))
+        sys.exit(2)
     runs = 1 if args.dry_run else max(1, args.runs)
     warmup = 1 if args.dry_run else max(0, args.warmup)
 

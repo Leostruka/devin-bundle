@@ -122,6 +122,9 @@ def main():
             arr = np.clip(np.exp(-(((x - 320) ** 2 + (y - 240) ** 2) / 2.0 / 140.0**2))
                           + ((x + y) % 80 < 40) * 0.35, 0, 1)
             img = Image.fromarray((arr * 255).astype(np.uint8)).convert("RGB")
+            if args.output and Path(args.output).exists():
+                print(_dumps({"ok": False, "error": f"out exists: {args.output} (refusing to overwrite; pick another --output or delete it first)"}))
+                return 2
             out = args.output or "grainrad_selftest.png"
         else:
             if not args.output:

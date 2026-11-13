@@ -74,6 +74,9 @@ def main():
         slug = os.path.splitext(os.path.basename(args.plan_file))[0]
         out = os.path.join(workspace, f"task-{args.task_number}-brief.md")
 
+    if args.outfile and os.path.exists(out):
+        print(f"refusing to overwrite {out}", file=sys.stderr)
+        sys.exit(2)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
         f.write(task_text)
