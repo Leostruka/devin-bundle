@@ -156,7 +156,8 @@ contract and hook-runtime infrastructure now carries v2.
   `decision` objects, not tool output.
 - Bare-array JSON outputs are not envelope carriers: `_stamp` only
   stamps dicts, so `skills/*/scripts/query-memory.py --json`,
-  `fold_store.py list|grep`, and any list-shaped emit stay as-is.
+  `fold_store.py list|grep`, and any list-shaped emit stay as-is
+  (`fold_store.py save` emits a dict and IS stamped - wave 11 fix).
 - Protocol surfaces, not tool output: `computer-use/mcp_server.py`
   (JSON-RPC loop - extra keys could break strict MCP clients) and
   `system-control/sc_cli.py` `_emit` (SCHEMA_VERSION contract) use

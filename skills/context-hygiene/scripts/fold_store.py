@@ -20,6 +20,54 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "fold_store"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     "..", "..", ".."))
@@ -122,16 +170,16 @@ def main():
                 i += 1
         if not content:
             content = sys.stdin.read()
-        print(json.dumps(save(fid, summary, content)))
+        print(_dumps(save(fid, summary, content)))
         return 0
     if cmd == "unfold" and len(args) == 2:
         print(unfold(args[1]), end="")
         return 0
     if cmd == "grep" and len(args) == 2:
-        print(json.dumps(grep(args[1]), indent=1))
+        print(_dumps(grep(args[1]), indent=1))
         return 0
     if cmd == "list":
-        print(json.dumps(list_folds(), indent=1))
+        print(_dumps(list_folds(), indent=1))
         return 0
     if cmd == "delete" and len(args) == 2:
         delete(args[1])

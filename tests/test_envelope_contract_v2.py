@@ -210,6 +210,7 @@ def test_wrapper_emits_contract_v2(rel, argv, wrapper):
 def _stamped_files():
     import glob
     out = set(rel for rel, _, _ in PROBES)
+    out.add("skills/context-hygiene/scripts/fold_store.py")
     for rel in list(out):
         d = os.path.dirname(rel)
         if d.startswith("extensions/"):
@@ -249,3 +250,20 @@ def test_no_unstamped_stdout_pattern(rel):
                     pytest.fail(
                         f"{rel}:{a.lineno} print({a.id}) of json.dumps "
                         f"assigned at :{assigns[a.id]} bypasses _dumps")
+
+
+def test_fold_store_save_emits_contract_v2(tmp_path):
+    """fold_store save needs stdin + FOLD_STORE_DIR (writes a record
+    file) so it can't ride the shared PROBES runner."""
+    env = dict(PROBE_ENV, FOLD_STORE_DIR=str(tmp_path))
+    proc = subprocess.run(
+        [sys.executable,
+         str(ROOT / "skills/context-hygiene/scripts/fold_store.py"),
+         "save", "probe", "--summary", "p"],
+        input="x", capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=30, env=env, cwd=str(ROOT))
+    payload = json.loads(proc.stdout)
+    assert payload.get("api_version") == 2
+    answered = payload.get("meta", {}).get("answered_by", {})
+    assert answered.get("wrapper") == "fold_store"
+    assert answered.get("bundle") == MANIFEST_VERSION

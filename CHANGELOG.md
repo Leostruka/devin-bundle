@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix(scripts): `fold_store.py save` was misclassified as bare-array in wave 11 - its `{"id","tokens_est"}` dict is agent-facing and now carries the contract trio (grep/list arrays route through `_dumps` unchanged since `_stamp` passes non-dicts). Dedicated probe with `FOLD_STORE_DIR` tmp + stdin (can't ride the shared PROBES runner); file added to the AST guard set.
+
 ## [3.22.0] - 2026-11-13
 
 - feat(extensions): envelope contract v2 - `api_version: 2` + `meta.answered_by {bundle, wrapper}` provenance on every JSON response, inspired by the astryx CLI contract (batch-9 research, #593). Rolled out to 10 agent-facing wrappers (agent-reach pilot #594; voicebox, hyperframes, gcal, offsec-tools, rea-ops, rz-ops, stock-footage, blender-operator, comfyui-operator, laya-tools via #595/#596). Provenance resolves the bundle version from the nearest `manifest.json` ancestor - repo and live install alike - so stale live copies are identifiable at call time. Spec: `.devin/docs/CLI-CONTRACT.md`. `system-control` keeps its own `SCHEMA_VERSION` contract; craft-bridge skipped (raw passthrough channel).
@@ -35,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - feat(extensions): envelope v2 wave 10 - final sweep (#604). laya-tools sub-tools (10 files: fit_calibration, layad, capture_eval, doc_coverage, eval_decisions, explore, filebool, laya_worker, review_gate, bootstrap), blender-operator/camera_blocking, code-graph/detect_changes, and 9 skill-referenced non-hook scripts (check-tools, context-budget, decision-queue, done-evaluator, focus, install-ledger, dep-audit, spec-consistency, subagent-trace) - 56 emit sites, 21 runtime probes (83 contract tests total). Probe-found crash fixes: `fit_calibration.py` unreadable-manifest and `capture_eval.py` unreadable-draft OSError tracebacks -> `{"ok": false}` + non-zero exit (6th/7th found bugs). Agent-facing JSON emit surface fully closed; hook-runtime scripts remain deliberately unstamped (PR #608).
 
-- feat(scripts): envelope v2 wave 11 - last dict-JSON emitters (#604). `roadmap-board.py --json`, `ship-metrics.py report`, `rules-coverage.py` stamped; 3 probes (86 total). Remaining unstamped stdout verified as hook-protocol payloads (`hookSpecificOutput`/gate `decision`) or bare-array outputs the stamp skips by design (query-memory, fold_store, code-graph `--json`); boundary documented in CLI-CONTRACT.md (PR #609).
+- feat(scripts): envelope v2 wave 11 - last dict-JSON emitters (#604). `roadmap-board.py --json`, `ship-metrics.py report`, `rules-coverage.py` stamped; 3 probes (86 total). Remaining unstamped stdout verified as hook-protocol payloads (`hookSpecificOutput`/gate `decision`) or bare-array outputs the stamp skips by design (query-memory, code-graph `--json`); boundary documented in CLI-CONTRACT.md (PR #609).
 
 - fix(api-bridge): `doctor`/`models` no longer die silently when devin is missing - `_devin_path` sys.exit'd to stderr leaving empty stdout; both now emit `{"ok": false}` JSON (devin_missing / devin:false checks) with exit 1 (8th bug in the envelope probing chain).
 
