@@ -160,3 +160,37 @@ def test_doctor_degraded_when_probe_fails(capsys, monkeypatch):
     assert code == 1
     assert env["status"] == "degraded"
     assert env["probe_exit_code"] == 1
+
+
+def _run_standalone(tmp_path, manifest_content=None):
+    """Copy wrapper.py alone into tmp_path, optionally with a manifest,
+    and run it - exercises _bundle_version edge cases end-to-end."""
+    import shutil
+    import subprocess
+    dst = tmp_path / "wrapper.py"
+    shutil.copy(AR_DIR / "wrapper.py", dst)
+    if manifest_content is not None:
+        (tmp_path / "manifest.json").write_text(
+            manifest_content, encoding="utf-8")
+    proc = subprocess.run(
+        [sys.executable, str(dst), "bogus"],
+        capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=30)
+    return json.loads(proc.stdout)
+
+
+def test_bundle_version_empty_without_manifest(tmp_path):
+    env = _run_standalone(tmp_path)
+    assert env["meta"]["answered_by"]["bundle"] == ""
+    assert env["meta"]["answered_by"]["wrapper"] == "agent-reach"
+
+
+def test_bundle_version_empty_on_malformed_manifest(tmp_path):
+    env = _run_standalone(tmp_path, manifest_content="{not json")
+    assert env["meta"]["answered_by"]["bundle"] == ""
+
+
+def test_bundle_version_reads_manifest(tmp_path):
+    env = _run_standalone(
+        tmp_path, manifest_content='{"version": "9.9.9-test"}')
+    assert env["meta"]["answered_by"]["bundle"] == "9.9.9-test"
