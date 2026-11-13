@@ -12,6 +12,7 @@ Uso:
 """
 import argparse
 import json
+import os
 import sys
 from urllib.parse import urlparse
 
@@ -112,6 +113,10 @@ def main():
     out = "\n".join(lines) + "\n"
 
     if a.out:
+        if os.path.exists(a.out):
+            print(f"[dma] --out exists: {a.out} (refusing to overwrite; "
+                  "pick another --out or delete it first)", file=sys.stderr)
+            return 2
         with open(a.out, "w", encoding="utf-8") as fh:
             fh.write(out)
         print(f"[audit] {len(leads)} leads -> {a.out}")

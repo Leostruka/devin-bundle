@@ -137,6 +137,11 @@ def main(argv=None):
     if not isinstance(cases, list):
         return _emit({"ok": False, "error": "manifest_cases_invalid"}, 2)
     report = evaluate(cases, name=args.name)
+    if Path(args.out).exists():
+        return _emit({"ok": False,
+                      "error": f"out exists: {args.out} (refusing to "
+                               "overwrite; pick another --out or "
+                               "delete it first)"}, 2)
     Path(args.out).write_text(
         json.dumps(report, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8")

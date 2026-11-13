@@ -115,6 +115,12 @@ def main(argv=None):
     ap.add_argument("--out")
     args = ap.parse_args(argv)
     if args.build_ref:
+        if args.out and Path(args.out).exists():
+            print(_dumps({"ok": False,
+                          "error": f"out exists: {args.out} (refusing to "
+                                   "overwrite; pick another --out or "
+                                   "delete it first)"}, ensure_ascii=False))
+            return 2
         res = build_ref(args.build_ref, args.out or "ref.npy")
         print(_dumps(res, ensure_ascii=False))
         return 0 if res.get("ok") else 1

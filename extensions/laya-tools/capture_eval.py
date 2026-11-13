@@ -152,6 +152,12 @@ def main(argv=None):
         "config_sha256": _sha256(args.config),
         "cases": out_cases,
     }
+    if Path(args.out).exists():
+        print(_dumps({"ok": False,
+                      "error": f"out exists: {args.out} (refusing to "
+                               "overwrite; pick another --out or "
+                               "delete it first)"}))
+        return 2
     Path(args.out).write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8")

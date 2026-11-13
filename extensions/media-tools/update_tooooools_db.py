@@ -87,6 +87,12 @@ def main():
     if args.dry_run:
         print(_dumps(db, indent=1, ensure_ascii=False))
         return
+    if args.out != OUT_DEFAULT and os.path.exists(args.out):
+        print(_dumps({"ok": False,
+                      "error": f"out exists: {args.out} (refusing to "
+                               "overwrite; pick another --out or "
+                               "delete it first)"}))
+        sys.exit(2)
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     with open(args.out, "w", encoding="utf-8", newline="\n") as f:
         json.dump(db, f, indent=1, ensure_ascii=False)

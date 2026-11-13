@@ -11,6 +11,7 @@ matched against candidate ids -> accuracy + per-call latency.
 """
 import argparse
 import json
+import os
 import sys
 import urllib.request
 
@@ -111,6 +112,9 @@ def main():
            "rows": rows}
     out = _dumps(rep, indent=1, ensure_ascii=False)
     if args.out:
+        if os.path.exists(args.out):
+            fail(f"out exists: {args.out} (refusing to overwrite; "
+                 "pick another --out or delete it first)", 2)
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(out + "\n")
     print(out)

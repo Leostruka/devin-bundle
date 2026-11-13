@@ -7,6 +7,7 @@ screen blend f(A,B) = 1 - (1-A)*(1-B) -> PNG.
 CLI prints JSON to stdout: {"ok": true, "path": ...} or {"ok": false, "error": ...}.
 """
 import argparse
+import os
 import sys
 
 import numpy as np
@@ -82,6 +83,9 @@ def main():
             return 0
         if not args.input or not args.output:
             print(_dumps({"ok": False, "error": "missing --input/--output (or --self-test)"}))
+            return 2
+        if os.path.exists(args.output):
+            print(_dumps({"ok": False, "error": f"out exists: {args.output} (refusing to overwrite; pick another --output or delete it first)"}))
             return 2
         with Image.open(args.input) as src:
             mance(src, args.output, args.cell_detail, args.cell_block)

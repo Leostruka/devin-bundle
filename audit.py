@@ -1429,25 +1429,58 @@ try:
         if _PIN42.search(_src42):
             continue
         # stdout emission = print(...) or sys.stdout.write(...) whose
-        # args contain ensure_ascii=False, OR print(var) where var was
-        # assigned json.dumps(..., ensure_ascii=False). File writes go
-        # through utf-8-pinned handles already.
+        # args contain a json.dumps(..., ensure_ascii=False) call, OR
+        # print(var) where var was assigned such a dumps call. AST-
+        # based: the old 400-char/)) window false-flagged any print
+        # within 400 chars of an unrelated file-write json.dump.
         _emits = False
         if 'ensure_ascii=False' in _src42:
-            for _m in _re42.finditer(
-                    r'print\s*\(|sys\.stdout\.write\s*\(', _src42):
-                _seg = _src42[_m.start():_m.start() + 400]
-                _close = _seg.find('))')
-                if 'ensure_ascii=False' in _seg[:_close + 2 if _close > 0 else 400]:
-                    _emits = True
-                    break
-            if not _emits:
-                for _m in _re42.finditer(
-                        r'(\w+)\s*=\s*json\.dumps\([^)]*ensure_ascii=False',
-                        _src42):
-                    if _re42.search(r'print\s*\(\s*' + _m.group(1)
-                                    + r'\s*\)', _src42):
-                        _emits = True
+            try:
+                _t42e = _ast.parse(_src42)
+            except SyntaxError:
+                _t42e = None
+            if _t42e is not None:
+                def _is_ascii_dumps(_call):
+                    _f = _call.func
+                    _named = (isinstance(_f, _ast.Attribute)
+                              and _f.attr == 'dumps') or (
+                                  isinstance(_f, _ast.Name)
+                                  and _f.id == 'dumps')
+                    return _named and any(
+                        k.arg == 'ensure_ascii'
+                        and isinstance(k.value, _ast.Constant)
+                        and k.value.value is False
+                        for k in _call.keywords)
+                _dumped = set()
+                for _n in _ast.walk(_t42e):
+                    if isinstance(_n, _ast.Assign) \
+                            and isinstance(_n.value, _ast.Call) \
+                            and _is_ascii_dumps(_n.value):
+                        for _tg in _n.targets:
+                            if isinstance(_tg, _ast.Name):
+                                _dumped.add(_tg.id)
+                for _cn in _ast.walk(_t42e):
+                    if not isinstance(_cn, _ast.Call):
+                        continue
+                    _fn = _cn.func
+                    _is_out = (isinstance(_fn, _ast.Name)
+                               and _fn.id == 'print') or (
+                        isinstance(_fn, _ast.Attribute)
+                        and _fn.attr == 'write'
+                        and isinstance(_fn.value, _ast.Attribute)
+                        and _fn.value.attr == 'stdout'
+                        and isinstance(_fn.value.value, _ast.Name)
+                        and _fn.value.value.id == 'sys')
+                    if not _is_out:
+                        continue
+                    for _a in _cn.args:
+                        if (isinstance(_a, _ast.Call)
+                                and _is_ascii_dumps(_a)) or (
+                                isinstance(_a, _ast.Name)
+                                and _a.id in _dumped):
+                            _emits = True
+                            break
+                    if _emits:
                         break
         if _emits:
             _bad_out.append(_fp)
@@ -1588,6 +1621,40 @@ try:
         print('  OK  no stdlib API newer than the 3.11 floor')
 except Exception as _e44:
     print('  SKIP floor-compat check failed: ' + str(_e44))
+
+# 45. --out/-o/dst output paths: user-named outputs must refuse to
+# overwrite existing files (stamped {"ok": false} + non-zero exit).
+# Heuristic: declares an output flag AND has a file-write call but no
+# .exists() check anywhere in the file. Warn-level - append-mode
+# recorders and delegated writers may still be legit.
+print()
+print('[45] --out overwrite-refusal')
+try:
+    import re as _re45
+    _FLAG45 = _re45.compile(
+        r"add_argument\([^)]*['\"](?:-o|--out|--output|--dst)['\"]")
+    _WRITE45 = _re45.compile(
+        r"open\s*\([^)]*['\"]w['\"]|write_text\s*\(|\.save\s*\(")
+    _bad45 = []
+    for _fp in _scan_py_files():
+        try:
+            _src45 = open(_fp, encoding='utf-8').read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if not _FLAG45.search(_src45):
+            continue
+        if '.exists(' in _src45 or not _WRITE45.search(_src45):
+            continue
+        _bad45.append(_fp)
+    if _bad45:
+        warnings.append('--out declared without overwrite-refusal: '
+                        + ', '.join(_bad45[:10]))
+        print('  WARN ' + str(len(_bad45)) + ' file(s): '
+              + ', '.join(_bad45[:5]))
+    else:
+        print('  OK  all --out emitters refuse to overwrite')
+except Exception as _e45:
+    print('  SKIP out-refusal check failed: ' + str(_e45))
 
 print()
 print('=== SUMMARY ===')

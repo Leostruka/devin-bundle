@@ -245,6 +245,12 @@ def main(argv=None):
 
     txt = _dumps(report, indent=1)
     if args.out:
+        if Path(args.out).exists():
+            print(_dumps({"ok": False,
+                          "error": f"out exists: {args.out} (refusing to "
+                                   "overwrite; pick another --out or "
+                                   "delete it first)"}))
+            return 2
         Path(args.out).write_text(txt + "\n", encoding="utf-8")
     print(txt)
     return 0

@@ -127,6 +127,9 @@ def main():
             if not args.output:
                 print(_dumps({"ok": False, "error": "missing --output (or --self-test)"}))
                 return 2
+            if Path(args.output).exists():
+                print(_dumps({"ok": False, "error": f"out exists: {args.output} (refusing to overwrite; pick another --output or delete it first)"}))
+                return 2
             out = args.output
             inp = args.input or ""
             if args.webcam or inp.startswith("webcam"):

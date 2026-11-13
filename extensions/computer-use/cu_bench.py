@@ -163,6 +163,12 @@ def main():
     if errors:
         result["errors"] = errors
     if args.out:
+        if os.path.exists(args.out):
+            print(_dumps({"ok": False,
+                          "error": f"out exists: {args.out} (refusing to "
+                                   "overwrite; pick another --out or "
+                                   "delete it first)"}))
+            sys.exit(2)
         with open(args.out, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2)
     print(_dumps(result))

@@ -342,6 +342,9 @@ def main():
         if arr is not None:
             res["frame_w"], res["frame_h"] = int(arr.shape[1]), int(arr.shape[0])
         if args.out and arr is not None:
+            if os.path.exists(args.out):
+                fail(f"out exists: {args.out} (refusing to overwrite; "
+                     "pick another --out or delete it first)")
             from PIL import Image
             Image.fromarray(arr).save(args.out, format="PNG")
             res["path"] = args.out
@@ -355,6 +358,9 @@ def main():
     if img is None:
         fail(err)
     from PIL import Image
+    if args.out and os.path.exists(args.out):
+        fail(f"out exists: {args.out} (refusing to overwrite; "
+             "pick another --out or delete it first)")
     out = args.out or os.path.join(
         tempfile.gettempdir(), f"cu-wgc-{args.hwnd}.png")
     Image.fromarray(img).save(out, format="PNG")

@@ -250,9 +250,15 @@ def main():
     enc = _pick_encoder(out)
     if not os.path.splitext(out)[1]:
         out += ".mp4" if enc == "ffmpeg" else ".webp"
+    if args.out and os.path.exists(out):
+        fail(f"out exists: {out} (refusing to overwrite; "
+             "pick another --out or delete it first)", 2)
     sheet_path = None if args.no_sheet else (
         args.sheet or os.path.join(tempfile.gettempdir(),
                                    f"record-{ts}-sheet.png"))
+    if sheet_path and args.sheet and os.path.exists(sheet_path):
+        fail(f"sheet exists: {sheet_path} (refusing to overwrite; "
+             "pick another --sheet or delete it first)", 2)
     sheet = _Sheet(Image, args.tiles, args.cols) if sheet_path else None
 
     grab = _remote_grab(target, args) if target is not None \

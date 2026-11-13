@@ -121,6 +121,12 @@ def main():
                     choices=["crtsh", "wayback", "dns"])
     a = ap.parse_args()
 
+    if a.out != ap.get_default("out") and os.path.exists(a.out) \
+            and os.listdir(a.out):
+        print(f"[recon] --out exists and is non-empty: {a.out} "
+              "(refusing to overwrite; pick another --out or "
+              "delete it first)", file=sys.stderr)
+        return 2
     os.makedirs(a.out, exist_ok=True)
     errors = {}
 

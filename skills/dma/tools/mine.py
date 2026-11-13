@@ -201,6 +201,10 @@ def main():
         "idor_candidates": sorted(set(idor)),
         "skeleton_candidates": SKELETON_PATHS,
     }
+    if a.out != ap.get_default("out") and os.path.exists(a.out):
+        print(f"[mine] --out exists: {a.out} (refusing to overwrite; "
+              "pick another --out or delete it first)", file=sys.stderr)
+        return 2
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
