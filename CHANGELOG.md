@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- refactor(computer-use): envelope trio deduplicated into shared `cu_envelope.py` - 23 files carried byte-identical 45-line copies; same-extension carve-out already documented for `st_common` (independent review finding). Sibling files now `from cu_envelope import _stamp, _dumps`; AST guard + static markers accept the delegation marker. Also: `cu_session --worker` pipe transport unstamped (protocol surface, inner payloads self-stamp), `_echo` op output stamped so the dispatch relay carries the envelope, and `record.py` no longer routes through the session daemon (`_run_op` whitelist excluded it - always returned `unknown script 'record'`; long-running capture belongs standalone).
+
 - fix(scripts): `fold_store.py save` was misclassified as bare-array in wave 11 - its `{"id","tokens_est"}` dict is agent-facing and now carries the contract trio (grep/list arrays route through `_dumps` unchanged since `_stamp` passes non-dicts). Dedicated probe with `FOLD_STORE_DIR` tmp + stdin (can't ride the shared PROBES runner); file added to the AST guard set.
 
 ## [3.22.0] - 2026-11-13

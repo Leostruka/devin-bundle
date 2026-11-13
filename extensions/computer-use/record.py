@@ -32,48 +32,7 @@ import cu_target
 from pathlib import Path
 
 
-_BUNDLE_VERSION_CACHE = None
-
-
-def _bundle_version():
-    """Nearest ancestor manifest.json with a "name" marker, else ""."""
-    global _BUNDLE_VERSION_CACHE
-    if _BUNDLE_VERSION_CACHE is not None:
-        return _BUNDLE_VERSION_CACHE
-    import json as _json
-    for parent in Path(__file__).absolute().parents:
-        manifest = parent / "manifest.json"
-        if manifest.is_file():
-            try:
-                data = _json.loads(
-                    manifest.read_text(encoding="utf-8"))
-            except (OSError, ValueError):
-                break
-            if isinstance(data, dict) and data.get("name"):
-                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
-            else:
-                _BUNDLE_VERSION_CACHE = ""
-            return _BUNDLE_VERSION_CACHE
-    _BUNDLE_VERSION_CACHE = ""
-    return _BUNDLE_VERSION_CACHE
-
-
-def _answered_by():
-    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
-
-
-def _stamp(payload):
-    if not isinstance(payload, dict):
-        return payload
-    payload["api_version"] = 2
-    if not isinstance(payload.get("meta"), dict):
-        payload["meta"] = {}
-    payload["meta"].setdefault("answered_by", _answered_by())
-    return payload
-
-
-def _dumps(payload, **kw):
-    return json.dumps(_stamp(payload), **kw)
+from cu_envelope import _stamp, _dumps
 
 FFMPEG_EXTS = {".mp4", ".webm", ".mkv", ".mov"}
 PIL_EXTS = {".webp", ".gif"}
@@ -243,10 +202,6 @@ def _remote_grab(target, args):
 
 def main():
     target = cu_target.cli_guard(sys.argv[1:])
-    if os.environ.get("CU_SESSION") == "1" and target is None:
-        import cu_session_dispatch
-        cu_session_dispatch.run_via_daemon("record", sys.argv[1:])
-        return
     p = cm.JsonParser(description="Record the screen to video + contact sheet")
     p.add_argument("--seconds", type=float, default=5.0,
                    help="capture duration (default 5)")

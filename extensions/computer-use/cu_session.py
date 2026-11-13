@@ -28,48 +28,7 @@ import uuid
 from pathlib import Path
 
 
-_BUNDLE_VERSION_CACHE = None
-
-
-def _bundle_version():
-    """Nearest ancestor manifest.json with a "name" marker, else ""."""
-    global _BUNDLE_VERSION_CACHE
-    if _BUNDLE_VERSION_CACHE is not None:
-        return _BUNDLE_VERSION_CACHE
-    import json as _json
-    for parent in Path(__file__).absolute().parents:
-        manifest = parent / "manifest.json"
-        if manifest.is_file():
-            try:
-                data = _json.loads(
-                    manifest.read_text(encoding="utf-8"))
-            except (OSError, ValueError):
-                break
-            if isinstance(data, dict) and data.get("name"):
-                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
-            else:
-                _BUNDLE_VERSION_CACHE = ""
-            return _BUNDLE_VERSION_CACHE
-    _BUNDLE_VERSION_CACHE = ""
-    return _BUNDLE_VERSION_CACHE
-
-
-def _answered_by():
-    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
-
-
-def _stamp(payload):
-    if not isinstance(payload, dict):
-        return payload
-    payload["api_version"] = 2
-    if not isinstance(payload.get("meta"), dict):
-        payload["meta"] = {}
-    payload["meta"].setdefault("answered_by", _answered_by())
-    return payload
-
-
-def _dumps(payload, **kw):
-    return json.dumps(_stamp(payload), **kw)
+from cu_envelope import _stamp, _dumps
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DAEMON_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-daemon.json")
@@ -84,7 +43,7 @@ def _run_op(cmd):
     from contextlib import redirect_stdout
     name, argv = cmd.get("script"), cmd.get("argv") or []
     if name == "_echo":
-        return {"ok": True, "output": json.dumps({"echo": argv})}
+        return {"ok": True, "output": _dumps({"echo": argv})}
     if name not in ("mouse", "type_text", "screenshot", "profile",
                     "cu_ocr"):
         return {"ok": False, "error": f"unknown script {name!r}"}
@@ -122,7 +81,8 @@ def worker_main():
             env = json.loads(line)
         except json.JSONDecodeError:
             continue
-        print(_dumps(_run_op(env.get("cmd") or {})), flush=True)
+        sys.stdout.write(json.dumps(_run_op(env.get("cmd") or {})) + "\n")
+        sys.stdout.flush()
 
 
 def _daemon_write_pidfile(port, session):

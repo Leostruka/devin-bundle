@@ -66,7 +66,10 @@ The helpers are duplicated per wrapper on purpose: extensions install
 as flat self-contained dirs, no shared import path exists. Exception:
 files inside the same extension dir that already share a module may
 share the helpers - `scrape-tools` keeps them once in `st_common.py`
-and sibling CLIs call `st_common.emit(payload)`.
+and sibling CLIs call `st_common.emit(payload)`; `computer-use` keeps
+them once in `cu_envelope.py` and all 23 sibling files do
+`from cu_envelope import _stamp, _dumps` (deduplicated after
+independent review - one fix site instead of 23 identical copies).
 
 ## Covered entry points
 
@@ -159,9 +162,13 @@ contract and hook-runtime infrastructure now carries v2.
   `fold_store.py list|grep`, and any list-shaped emit stay as-is
   (`fold_store.py save` emits a dict and IS stamped - wave 11 fix).
 - Protocol surfaces, not tool output: `computer-use/mcp_server.py`
-  (JSON-RPC loop - extra keys could break strict MCP clients) and
+  (JSON-RPC loop - extra keys could break strict MCP clients),
+  `computer-use/cu_session.py` `--worker`/daemon transports (JSON-lines
+  stdin/stdout pipe and loopback socket - inner script payloads are
+  already self-stamped by their own `_dumps`), and
   `system-control/sc_cli.py` `_emit` (SCHEMA_VERSION contract) use
-  `sys.stdout.write(json.dumps(...))` deliberately unstamped.
+  `sys.stdout.write(json.dumps(...))`/raw `json.dumps` deliberately
+  unstamped.
 - `busybar`: no stdout-JSON emitters (`push.py` json.dumps is an HTTP
   payload, `listen.py` is a daemon listener).
 - `--detail brief|compact|full`: implemented on `stock-footage search`

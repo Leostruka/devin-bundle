@@ -180,7 +180,7 @@ def test_wrappers_emit_api_version_and_provenance():
     are the authoritative runtime guard. Files that stamp via a shared
     helper (st_common.emit/_emit) don't carry the literals themselves."""
     markers = ('"api_version"', "'api_version'", "_bundle_version",
-               "_stamp(", "st_common.emit(", "_emit(")
+               "_stamp(", "st_common.emit(", "_emit(", "cu_envelope")
     for rel, _, _ in PROBES:
         text = (ROOT / rel).read_text(encoding="utf-8")
         assert any(m in text for m in markers), \
@@ -227,7 +227,7 @@ def test_no_unstamped_stdout_pattern(rel):
     print(x)`. Both must route through `_dumps`/`_stamp`."""
     import ast
     src = (ROOT / rel).read_text(encoding="utf-8")
-    if "_BUNDLE_VERSION_CACHE" not in src:
+    if "_BUNDLE_VERSION_CACHE" not in src and "cu_envelope" not in src:
         pytest.skip(f"{rel}: not a stamped emitter")
     tree = ast.parse(src)
     assigns = {}
