@@ -186,7 +186,7 @@ def test_doc_coverage_map_targets_are_real():
     mapping = _map()
     required = {
         ".devin/research/LAYA_MASTER_ARCHITECTURE.md",
-        ".devin/rts/openui-lang.md",
+        "extensions/craft-bridge/openui-lang.md",
         ".devin/sdd/goldfish-review.md",
     }
     assert required <= set(mapping), "core docs unmapped"

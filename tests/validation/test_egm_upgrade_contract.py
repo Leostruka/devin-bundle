@@ -46,7 +46,7 @@ def test_camera_addenda_reference_existing_owner(path):
 
 
 def test_openui_example_has_balanced_blocks_and_parseable_attributes():
-    doc = text(".devin/rts/openui-lang.md")
+    doc = text("extensions/craft-bridge/openui-lang.md")
     example = re.search(r"```\n(.*?)\n```", doc, re.S).group(1)
     stack = []
     for line in example.splitlines():

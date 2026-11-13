@@ -10,7 +10,7 @@
   ".devin/laya/profile.json": [
     "tests/validation/test_egm_upgrade_contract.py::test_laya_rollout_is_distinct_from_current_runtime"
   ],
-  ".devin/rts/openui-lang.md": [
+  "extensions/craft-bridge/openui-lang.md": [
     "tests/validation/test_jev_runtime_contracts.py::test_ui_dsl_stream_and_parser_bounded",
     "tests/validation/test_jev_runtime_contracts.py::test_ui_dsl_render_has_no_handler_injection",
     "tests/validation/test_egm_upgrade_contract.py::test_openui_example_has_balanced_blocks_and_parseable_attributes"
