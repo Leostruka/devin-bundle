@@ -187,6 +187,12 @@ contract and hook-runtime infrastructure now carries v2.
   carry the stamp machinery.
 - `computer-use/cu_taskrunner.py list`: bare-array output - covered
   instead via `stop <missing-id>` dict probe.
+- `scripts/render-user-hooks.py`: stdout IS the generated hooks config
+  document (piped into user config.json or `--merge`). Stamping would
+  inject contract keys into a deliverable payload - config-document
+  surface, not tool output.
+- `.devin/evals/**/run_eval.py`: eval-harness test reports - dev-facing
+  infrastructure, same class as `tests/`.
 - `--detail brief|compact|full`: implemented on `stock-footage search`
   (default `full`). Note `full` output also gained an additive
   `result.detail` echo key - consumers ignoring unknown keys are
