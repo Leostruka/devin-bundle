@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - feat(laya-tools): bootstrap --help/--dry-run args, no more silent install on probe (#588)
 
-- feat(extensions): envelope v2 wave 6 - computer-use agent entry CLIs (#604). The 8 skill-invoked CLIs (`terminal`, `screenshot`, `mouse`, `type_text`, `record`, `profile`, `env`, `browser`) route all `print(json.dumps(..))` sites through a `_dumps = json.dumps . _stamp` funnel - 65 emit sites stamped with zero output-shape changes. Shared emit paths that fire during CLI runs are covered too: `cu_motion` (JsonParser usage errors), `cu_target`/`cu_actions` (rejections/exception wrapper), `cu_scope` (window-discovery CLI), `cu_session_dispatch` (daemon paths under `$CU_SESSION=1`). Remaining `cu_*` files emit only under their own `__main__` - deferred to a future wave.
+- feat(extensions): envelope v2 wave 6 - computer-use agent entry CLIs (#604). The 8 skill-invoked CLIs (`terminal`, `screenshot`, `mouse`, `type_text`, `record`, `profile`, `env`, `browser`) route all `print(json.dumps(..))` sites through a `_dumps = json.dumps . _stamp` funnel - 65 emit sites stamped with zero output-shape changes. Shared emit paths that fire during CLI runs are covered too: `cu_motion` (JsonParser usage errors), `cu_target`/`cu_actions` (rejections/exception wrapper), `cu_scope` (window-discovery CLI), `cu_session_dispatch` (daemon paths under `$CU_SESSION=1`), then the remaining `__main__`-only utility CLIs (cu_bench, cu_dom_picker, cu_events, cu_notify, cu_ocr, cu_overlay, cu_probe, cu_session, cu_taskrunner, cu_wgc) - the extension's entire JSON-on-stdout surface carries v2, zero `print(json.dumps` residual.
 
 ## [3.21.0] - 2026-11-13
 

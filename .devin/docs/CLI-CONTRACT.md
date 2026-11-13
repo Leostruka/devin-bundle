@@ -92,8 +92,11 @@ with `_stamp`). Shared modules that emit on a CLI's behalf are stamped
 too: `cu_motion.py` (JsonParser usage errors), `cu_target.py`
 (typed rejections), `cu_actions.py` (exception wrapper),
 `cu_scope.py` (window-discovery CLI), and `cu_session_dispatch.py`
-(daemon-unavailable paths under `$CU_SESSION=1`). Other `cu_*` files
-emit only under their own `__main__` and remain a future wave.
+(daemon-unavailable paths under `$CU_SESSION=1`). The remaining
+`__main__`-only utility CLIs (`cu_bench`, `cu_dom_picker`, `cu_events`,
+`cu_notify`, `cu_ocr`, `cu_overlay`, `cu_probe`, `cu_session`,
+`cu_taskrunner`, `cu_wgc`) are stamped as well - the extension's whole
+JSON-on-stdout surface now carries v2.
 
 ## Adding a wrapper
 

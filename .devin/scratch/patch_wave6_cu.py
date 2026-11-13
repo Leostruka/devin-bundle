@@ -14,7 +14,9 @@ CU = ROOT / "extensions" / "computer-use"
 FILES = ["terminal.py", "screenshot.py", "mouse.py", "type_text.py",
          "record.py", "profile.py", "env.py", "browser.py",
          "cu_motion.py",
-         "cu_target.py", "cu_actions.py", "cu_scope.py", "cu_session_dispatch.py"]
+         "cu_target.py", "cu_actions.py", "cu_scope.py", "cu_session_dispatch.py", "cu_bench.py", "cu_dom_picker.py",
+         "cu_events.py", "cu_notify.py", "cu_ocr.py", "cu_overlay.py",
+         "cu_probe.py", "cu_session.py", "cu_taskrunner.py", "cu_wgc.py"]
 
 TRIO = '''
 _BUNDLE_VERSION_CACHE = None

@@ -26,6 +26,51 @@ import tempfile
 import threading
 import time
 import uuid
+from pathlib import Path
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 EVENTS_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-events.json")
@@ -221,7 +266,7 @@ def _request(payload, timeout=15.0):
 def daemon_main(hwnds):
     """Loopback daemon: hook pump -> debounced refresh -> sidecars."""
     if sys.platform != "win32":
-        print(json.dumps({"ok": False, "error": "windows only"}))
+        print(_dumps({"ok": False, "error": "windows only"}))
         return
     import socket
     import cu_dpi
@@ -359,17 +404,17 @@ def main():
         return
     if args.cmd == "start":
         if _daemon_info():
-            print(json.dumps({"ok": True, "already": True,
+            print(_dumps({"ok": True, "already": True,
                               **_daemon_info()}))
             return
         d = _spawn(args.hwnd)
-        print(json.dumps({"ok": bool(d), **(d or
+        print(_dumps({"ok": bool(d), **(d or
                           {"error": "daemon failed to start"})}))
         return
     if args.cmd == "stop":
-        print(json.dumps(_request({"cmd": {"op": "stop"}})))
+        print(_dumps(_request({"cmd": {"op": "stop"}})))
         return
-    print(json.dumps(_request({"cmd": {"op": args.cmd,
+    print(_dumps(_request({"cmd": {"op": args.cmd,
                                        "hwnd": args.hwnd[0]
                                        if args.hwnd else None}})))
 

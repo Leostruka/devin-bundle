@@ -63,6 +63,9 @@ PROBES = [
     ("extensions/computer-use/profile.py", ["bogus"], "computer-use"),
     ("extensions/computer-use/env.py", ["doctor"], "computer-use"),
     ("extensions/computer-use/browser.py", ["status"], "computer-use"),
+    # __main__-only utility CLIs (wave-7 sweep of the same extension):
+    # daemon-absent error path is deterministic on any host.
+    ("extensions/computer-use/cu_events.py", ["drain"], "computer-use"),
 ]
 
 # Keys that could turn a probe into a real network call.

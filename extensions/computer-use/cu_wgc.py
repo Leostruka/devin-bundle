@@ -26,6 +26,51 @@ import threading
 import time
 
 import cu_dpi
+from pathlib import Path
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 _PIXFMT = None  # resolved lazily
 
@@ -308,7 +353,7 @@ def shot(hwnd, timeout=4.0, wait=False):
 
 
 def fail(msg):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(1)
 
 
@@ -327,7 +372,7 @@ def main():
 
     if args.cmd == "caps":
         ok, why = capability()
-        print(json.dumps({"ok": True, "available": ok, "reason": why}))
+        print(_dumps({"ok": True, "available": ok, "reason": why}))
         return
     if args.cmd == "wait":
         ok, why = capability()
@@ -344,7 +389,7 @@ def main():
             Image.fromarray(arr).save(args.out, format="PNG")
             res["path"] = args.out
         res["ok"] = True
-        print(json.dumps(res))
+        print(_dumps(res))
         return
     if args.hwnd is None:
         fail("--hwnd required")
@@ -356,7 +401,7 @@ def main():
     out = args.out or os.path.join(
         tempfile.gettempdir(), f"cu-wgc-{args.hwnd}.png")
     Image.fromarray(img).save(out, format="PNG")
-    print(json.dumps({"ok": True, "hwnd": args.hwnd,
+    print(_dumps({"ok": True, "hwnd": args.hwnd,
                       "w": int(img.shape[1]), "h": int(img.shape[0]),
                       "path": out}))
 

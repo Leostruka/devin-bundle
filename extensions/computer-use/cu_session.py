@@ -25,6 +25,51 @@ import tempfile
 import threading
 import time
 import uuid
+from pathlib import Path
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DAEMON_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-daemon.json")
@@ -77,7 +122,7 @@ def worker_main():
             env = json.loads(line)
         except json.JSONDecodeError:
             continue
-        print(json.dumps(_run_op(env.get("cmd") or {})), flush=True)
+        print(_dumps(_run_op(env.get("cmd") or {})), flush=True)
 
 
 def _daemon_write_pidfile(port, session):
