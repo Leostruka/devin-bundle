@@ -78,6 +78,12 @@ Utility CLIs (wave 5, #604): `scrape-tools/{scrape,parse,dom_elements}.py`
 (shared stamp via `st_common.emit`) and `asr/{bootstrap,transcribe}.py`
 (local `_emit`).
 
+`code-graph/query.py`: `--json` keeps the historical bare-array output;
+`--envelope` (top-level or per-subcommand) wraps results in
+`{"ok", "result": [...], api_version, meta}`, and the missing-index
+exit also emits a stamped `{"ok": false, "status": "missing"}` JSON
+under `--json`/`--envelope`.
+
 ## Adding a wrapper
 
 1. Copy the `_bundle_version()` + `_answered_by()` + `_stamp()` block
@@ -97,9 +103,8 @@ Utility CLIs (wave 5, #604): `scrape-tools/{scrape,parse,dom_elements}.py`
 
 - `system-control` `sc_*` suite: governed by `sc_contract.py`
   (`SCHEMA_VERSION`), a separate wire contract. Evaluate separately.
-- `code-graph/query.py --json`: emits a bare JSON array - an object
-  envelope cannot be added without a breaking shape change; needs a
-  consumer audit before an opt-in `--envelope` flag or migration (#604).
+- `code-graph/query.py --json` bare-array output: kept for
+  back-compat; the opt-in `--envelope` flag is the contract path.
 - Media/internal tools (grainrad, jxl, playblast, craft-bridge,
   api-bridge): lower agent-call frequency.
 - `--detail brief|compact|full`: implemented on `stock-footage search`

@@ -70,7 +70,7 @@ requests) take precedence over skills; skills override defaults.
 | Verification | `gates` |
 | Documentation | `context7`, `web_search`, `webfetch` |
 | Exploration | `research` |
-| Structural queries (defs/refs/outline) | `extensions/code-graph` query.py (`symbols`/`refs`/`files`/`outline`); falls back to `rg`/`glob` with `[GRAPH-DOWN]` when index absent |
+| Structural queries (defs/refs/outline) | `extensions/code-graph` query.py (`symbols`/`refs`/`files`/`outline`; add `--envelope` for contract v2 provenance); falls back to `rg`/`glob` with `[GRAPH-DOWN]` when index absent |
 | Planning | `planning`, `execution` |
 | Context/cost | `context-hygiene`, `mcp-governance` |
 

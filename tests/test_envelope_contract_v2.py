@@ -48,6 +48,10 @@ PROBES = [
      ["nonexistent.json"], "scrape-tools"),
     ("extensions/asr/bootstrap.py", ["--model", "bad!"], "asr"),
     ("extensions/asr/transcribe.py", ["manifest.json"], "asr"),
+    # --envelope is opt-in: result envelope when index exists, stamped
+    # missing-index JSON otherwise - deterministic contract either way.
+    ("extensions/code-graph/query.py",
+     [".", "files", "zzz-probe", "--envelope"], "code-graph"),
 ]
 
 # Keys that could turn a probe into a real network call.
