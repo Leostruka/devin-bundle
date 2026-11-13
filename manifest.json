@@ -523,7 +523,8 @@
       "name": "frontend-design",
       "source": "devin-bundle",
       "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view for this brief.",
-      "export_hash": "9fe323e2644c520e6b7ff8567fb41c965c1ec89160d02f56ad254421ce7a5750"
+      "export_hash": "B0412673D6BDCC7F87FEC9DD3BF8DE670ED606403FA9E48D78BFBD5CB6E89FBB",
+      "exported_at": "2026-11-13T08:50:22.026078"
     },
     {
       "name": "gates",

@@ -152,7 +152,9 @@ Work in two passes.
 Pass 1: brainstorm a short design plan from the brief. Create a compact
 token system:
 
-- Color: 4-6 named hex values for the core base palette.
+- Color: 4-6 named hex values for the core base palette. Prefer CSS
+  custom properties for theming (the astryx/meta pattern: theme =
+  variable overrides, no component forking) when the target is web.
 - Type: the typefaces and their roles.
 - Layout: a layout concept using one-sentence prose descriptions and ASCII
   wireframes to ideate and compare. Include alignment guidance: left,
