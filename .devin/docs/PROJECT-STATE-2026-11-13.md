@@ -2,9 +2,11 @@
 
 ## Position
 
-Main `42743f8`+ (origin synced). Bundle `v3.21.0` released and tagged.
-Live install: 1449/1449 files Current, 0 drift. audit.py 50/50, 0
-errors, 0 warnings. pytest 2589 pass / 7 skip.
+Main `42743f8`+ (origin synced). Bundle `v3.22.0` released and tagged
+(v3.21.0 shipped earlier same day; v3.22.0 cuts the full envelope arc).
+Live install: 1449/1449 files Current, 0 drift; live probe reports
+`answered_by.bundle=3.22.0`. audit.py 50/50, 0 errors, 0 warnings.
+pytest 2589 pass / 7 skip.
 
 ## Batch-9 research (3 links deep-dived)
 
