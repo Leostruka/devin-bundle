@@ -35,6 +35,50 @@ import decision_contract as dc          # noqa: E402
 import transcript as tr                 # noqa: E402
 import state as st                      # noqa: E402
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "laya-compactor"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 PROFILE = "compact-item-v1"
 CANDIDATES = [{"id": "keep"}, {"id": "truncate"}, {"id": "drop"}]
 
@@ -253,11 +297,11 @@ def main(argv=None):
         messages = json.loads(Path(args.transcript).read_text(
             encoding="utf-8"))
     except (OSError, ValueError) as e:
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": f"transcript unreadable: {e}"}))
         return 2
     if not isinstance(messages, list):
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": "transcript must be a JSON list"}))
         return 2
     cfg = dc.load_config(args.config if Path(args.config).exists()
@@ -283,10 +327,10 @@ def main(argv=None):
                 json.dumps(report, ensure_ascii=False, indent=2),
                 encoding="utf-8")
     except OSError as e:
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": f"output not writable: {e}"}))
         return 2
-    print(json.dumps(report["stats"], ensure_ascii=False))
+    print(_dumps(report["stats"], ensure_ascii=False))
     return 0
 
 

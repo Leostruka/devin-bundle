@@ -18,6 +18,50 @@ sys.path.insert(0, str(Path(__file__).parent))
 from rules_registry import ANTIPATTERNS  # noqa: E402
 import checks  # noqa: E402
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "design-intelligence"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 TEXT_EXTS = {".html", ".htm", ".css", ".tsx", ".jsx", ".vue", ".svelte"}
 _STYLE_RE = None
 
@@ -107,7 +151,7 @@ def main(argv):
         ignore = Path(argv[i + 1])
     findings, skipped = run(args[0], ignore)
     if "--json" in flags:
-        print(json.dumps({"findings": findings, "skipped": skipped,
+        print(_dumps({"findings": findings, "skipped": skipped,
                           "count": len(findings)}, indent=1,
                          ensure_ascii=False))
     else:

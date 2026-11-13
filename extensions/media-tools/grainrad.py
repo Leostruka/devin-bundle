@@ -18,6 +18,50 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fx
 from fx.pipeline import adjust, process, postprocess
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "media-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 
 def _coerce(v):
     for cast in (int, float):
@@ -87,23 +131,23 @@ def main():
     args = p.parse_args()
     try:
         if args.list_effects:
-            print(json.dumps({"ok": True, "effects": sorted(fx.EFFECTS)}))
+            print(_dumps({"ok": True, "effects": sorted(fx.EFFECTS)}))
             return 0
         if args.list_presets:
             from presets import list_presets
-            print(json.dumps({"ok": True, "presets": list_presets()}))
+            print(_dumps({"ok": True, "presets": list_presets()}))
             return 0
         eff_params, adj, proc, post = _parse_params(args.param)
         if args.delete_preset:
             from presets import delete_preset
-            print(json.dumps({"ok": delete_preset(args.delete_preset)}))
+            print(_dumps({"ok": delete_preset(args.delete_preset)}))
             return 0
         if args.save_preset:
             from presets import save_preset
             save_preset(args.save_preset, {
                 "effect": args.effect, "params": eff_params,
                 "adjust": adj, "process": proc, "post": post})
-            print(json.dumps({"ok": True, "preset": args.save_preset}))
+            print(_dumps({"ok": True, "preset": args.save_preset}))
             return 0
         if args.preset:
             from presets import get_preset
@@ -123,7 +167,7 @@ def main():
             out = args.output or "grainrad_selftest.png"
         else:
             if not args.output:
-                print(json.dumps({"ok": False, "error": "missing --output (or --self-test)"}))
+                print(_dumps({"ok": False, "error": "missing --output (or --self-test)"}))
                 return 2
             out = args.output
             inp = args.input or ""
@@ -137,11 +181,11 @@ def main():
             elif inp:
                 img = Image.open(inp)
             else:
-                print(json.dumps({"ok": False, "error": "missing --input (or --self-test)"}))
+                print(_dumps({"ok": False, "error": "missing --input (or --self-test)"}))
                 return 2
         if args.format in ("svg", "txt", "threejs"):
             if args.effect != "ascii":
-                print(json.dumps({"ok": False, "error": f"--format {args.format} requires --effect ascii"}))
+                print(_dumps({"ok": False, "error": f"--format {args.format} requires --effect ascii"}))
                 return 2
             from fx.ascii_fx import grid, to_svg, to_text, to_threejs
             gk = {k: eff_params[k] for k in ("scale", "spacing", "out_width", "charset", "custom_chars") if k in eff_params}
@@ -177,10 +221,10 @@ def main():
             else:
                 result = run(img, args.effect, eff_params, adj, proc, post)
                 result.save(out)
-        print(json.dumps({"ok": True, "path": out}))
+        print(_dumps({"ok": True, "path": out}))
         return 0
     except Exception as e:
-        print(json.dumps({"ok": False, "error": str(e)}))
+        print(_dumps({"ok": False, "error": str(e)}))
         return 1
 
 

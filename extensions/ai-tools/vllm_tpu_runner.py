@@ -21,6 +21,51 @@ import hashlib
 import json
 import subprocess
 import sys
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "ai-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 _BIND_HOST = "127.0.0.1"
 _PORT_MIN, _PORT_MAX = 1024, 65535
@@ -175,12 +220,12 @@ def main():
     ap.add_argument("--check-only", action="store_true")
     args = ap.parse_args()
     if args.check_only:
-        print(json.dumps(check_tpu()))
+        print(_dumps(check_tpu()))
         return
     if args.serve:
         if not args.model:
             ap.error("--model required with --serve")
-        print(json.dumps(serve(args.model, args.port,
+        print(_dumps(serve(args.model, args.port,
                                args.tensor_parallel_size,
                                args.max_model_len, args.download_dir)))
         return
@@ -190,13 +235,13 @@ def main():
     try:
         entries = hb.load_manifest(args.manifest, args.data_root)
     except hb.ManifestError as e:
-        print(json.dumps({"ok": False, "error": str(e)}))
+        print(_dumps({"ok": False, "error": str(e)}))
         raise SystemExit(2)
     res = run_tpu_batch(entries, args.model, args.max_tokens,
                         tensor_parallel_size=args.tensor_parallel_size,
                         max_model_len=args.max_model_len,
                         download_dir=args.download_dir)
-    print(json.dumps(res))
+    print(_dumps(res))
     raise SystemExit(0 if res["ok"] else 1)
 
 

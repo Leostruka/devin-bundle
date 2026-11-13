@@ -16,6 +16,50 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from core import CSV_CONFIG, DATA_DIR, STACK_CONFIG, _STACK_COLS
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "design-intelligence"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 
 def check_domain(name, path, expected_cols):
     problems = []
@@ -51,7 +95,7 @@ def main():
         report[f"stack:{stack}"] = "FAIL" if p else "ok"
 
     if "--json" in sys.argv:
-        print(json.dumps({"problems": problems, "domains": report},
+        print(_dumps({"problems": problems, "domains": report},
                          indent=1, sort_keys=True))
     else:
         for name, status in sorted(report.items()):

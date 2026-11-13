@@ -38,6 +38,51 @@ import time
 import urllib.parse
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "api-bridge"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 _CF = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
@@ -929,7 +974,10 @@ def setup(args):
 
 def doctor(args):
     """One-shot backend sanity: binary, model inventory, port (#492)."""
-    devin = _devin_path(args.devin)
+    # Resolve without sys.exit: doctor must REPORT a missing devin binary,
+    # not die before printing checks.
+    devin = (args.devin or os.environ.get("DEVIN_BIN")
+             or shutil.which("devin") or shutil.which("devin.exe") or "")
     port = getattr(args, "port", 8787)
     checks = {"devin": os.path.isfile(devin)
               or shutil.which(devin) is not None}
@@ -956,7 +1004,7 @@ def doctor(args):
         except (OSError, subprocess.SubprocessError):
             checks["acp"] = False
     ok = checks["devin"] and checks["models"] and checks["port_free"]
-    print(json.dumps({"ok": ok, **checks,
+    print(_dumps({"ok": ok, **checks,
                       "verdict": ("ready" if ok else "fix above")}))
     sys.exit(0 if ok else 1)
 
@@ -1040,7 +1088,7 @@ def main():
         doctor(args)
     elif args.cmd == "models":
         devin = _devin_path(args.devin)
-        print(json.dumps({"ok": True, "models": _list_models(
+        print(_dumps({"ok": True, "models": _list_models(
             devin, tempfile.gettempdir())}))
     else:
         serve(args)

@@ -28,6 +28,50 @@ import json
 import sys
 from pathlib import Path
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "craft-bridge"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 
 LAYER_DOMAIN = {
     "video": "filmcraft", "audio": "soundcraft",
@@ -109,17 +153,17 @@ def main(argv=None):
     try:
         m = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     except (OSError, ValueError) as e:
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": f"manifest unreadable: {e}"}))
         return 2
     if not isinstance(m, dict):
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": "manifest must be a JSON object"}))
         return 2
     try:
-        print(json.dumps(compile(m), indent=2, ensure_ascii=False))
+        print(_dumps(compile(m), indent=2, ensure_ascii=False))
     except ValueError as e:
-        print(json.dumps({"ok": False, "error": str(e)}))
+        print(_dumps({"ok": False, "error": str(e)}))
         return 2
     return 0
 

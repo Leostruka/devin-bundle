@@ -66,6 +66,67 @@ PROBES = [
     # __main__-only utility CLIs (wave-7 sweep of the same extension):
     # daemon-absent error path is deterministic on any host.
     ("extensions/computer-use/cu_events.py", ["drain"], "computer-use"),
+    # wave-8 skill-referenced extension CLIs (#604): every argv below is
+    # an offline deterministic path - usage error, missing input, or a
+    # self-test/validate mode. jxl_bootstrap is excluded from probes
+    # (its only JSON path performs a toolchain install); the static
+    # marker check still covers it.
+    ("extensions/ai-tools/abliterator.py", [], "ai-tools"),
+    ("extensions/ai-tools/adapter_expand.py", ["--self-test"], "ai-tools"),
+    ("extensions/ai-tools/bitnet_adapter.py", ["--self-test"], "ai-tools"),
+    ("extensions/ai-tools/dory_sweep.py",
+     ["--cases", "nope", "--loops", "1"], "ai-tools"),
+    ("extensions/ai-tools/heldout_batch.py",
+     ["--manifest", "nope"], "ai-tools"),
+    ("extensions/ai-tools/offload_plan.py",
+     ["--backend", "bitnet.cpp"], "ai-tools"),
+    ("extensions/ai-tools/prompt_compiler.py", [], "ai-tools"),
+    ("extensions/ai-tools/vllm_tpu_runner.py",
+     ["--check-only"], "ai-tools"),
+    ("extensions/ai-tools/weight_patch.py", [], "ai-tools"),
+    ("extensions/media-tools/ascii_mancer.py", [], "media-tools"),
+    ("extensions/media-tools/grainrad.py", [], "media-tools"),
+    ("extensions/media-tools/jxl.py",
+     ["identify", "nope"], "media-tools"),
+    ("extensions/media-tools/playblast_ingest.py",
+     ["nope.mp4"], "media-tools"),
+    ("extensions/media-tools/update_tooooools_db.py",
+     ["--dry-run"], "media-tools"),
+    ("extensions/remotion-render/composite.py",
+     ["-o", "probe-x.out", "a.png", "b.png"], "remotion-render"),
+    ("extensions/remotion-render/plan_check.py", [], "remotion-render"),
+    ("extensions/remotion-render/render.py",
+     ["--workdir", "nope", "plan.json"], "remotion-render"),
+    ("extensions/design-intelligence/design_lint.py",
+     ["nonexistent", "--json"], "design-intelligence"),
+    ("extensions/design-intelligence/look_ledger.py",
+     ["compare", "nope", "nope2"], "design-intelligence"),
+    ("extensions/design-intelligence/validate_csv.py",
+     ["--json"], "design-intelligence"),
+    ("extensions/image-forensics/eval_set.py",
+     ["--real", "nope", "--synth", "nope"], "image-forensics"),
+    ("extensions/image-forensics/metadata.py", [], "image-forensics"),
+    ("extensions/image-forensics/verdict.py",
+     ["nope"], "image-forensics"),
+    # wave-9 remaining extension emitters + graph-query (#604): doctor
+    # reports, missing-input errors, resume/diff on absent state - all
+    # offline deterministic.
+    ("extensions/laya-compactor/compact.py",
+     ["-o", "probe-x.out", "nope"], "laya-compactor"),
+    ("extensions/ppisp-prep/photo_qc.py", ["nope"], "ppisp-prep"),
+    ("extensions/ppisp-prep/ppisp_runner.py", ["doctor"], "ppisp-prep"),
+    ("extensions/mesh-utils/meshops.py", ["doctor"], "mesh-utils"),
+    ("extensions/api-bridge/bridge.py", ["doctor"], "api-bridge"),
+    ("extensions/diagram-tools/plantuml_renderer.py",
+     ["--self-test"], "diagram-tools"),
+    ("extensions/craft-bridge/bridge.py", ["doctor"], "craft-bridge"),
+    ("extensions/craft-bridge/scene_manifest.py",
+     ["nope"], "craft-bridge"),
+    ("extensions/harness-tree/ns.py",
+     ["resume", "nonexistent"], "harness-tree"),
+    ("extensions/harness-tree/tree.py",
+     ["diff", "nope", "nope2"], "harness-tree"),
+    ("scripts/graph-query.py", ["probe-test"], "graph-query"),
 ]
 
 # Keys that could turn a probe into a real network call.
