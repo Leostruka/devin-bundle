@@ -14,7 +14,6 @@ JSON to stdout: {"ok": true, "totals": {...}, "items": [...]}
 Exit 0 ok, 1 on {"ok": false} (e.g. bad root), 2 on misuse.
 """
 import ast
-import json
 import os
 import re
 import sys
@@ -27,6 +26,11 @@ SIZE_LIMIT = 800
 MARKER_RE = re.compile(r"\b(TODO|FIXME|HACK|XXX)\b")
 SKIP_DIRS = {".git", ".venv", "node_modules", "target", "__pycache__",
              "dist", "build", ".devin"}
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bundle_envelope import bind  # noqa: E402
+
+_stamp, _dumps = bind("simplify-scan")
 
 
 def iter_py_files(root):
@@ -155,18 +159,18 @@ def main(argv=None):
     for i, a in enumerate(args):
         if a == "--root":
             if i + 1 >= len(args):
-                print(json.dumps({"ok": False,
-                                  "error": "--root <dir>"}))
+                print(_dumps({"ok": False,
+                              "error": "--root <dir>"}))
                 return 2
             root = Path(args[i + 1]).resolve()
         elif a in ("-h", "--help"):
             print(__doc__)
             return 0
     if not root.is_dir():
-        print(json.dumps({"ok": False,
-                          "error": "root not a directory: " + str(root)}))
+        print(_dumps({"ok": False,
+                      "error": "root not a directory: " + str(root)}))
         return 1
-    print(json.dumps(scan(str(root)), indent=1))
+    print(_dumps(scan(str(root)), indent=1))
     return 0
 
 

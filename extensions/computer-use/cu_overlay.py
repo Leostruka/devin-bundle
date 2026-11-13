@@ -16,7 +16,6 @@ it through queue_command(). Windows-only.
 """
 import argparse
 import ctypes
-import json
 import math
 import queue
 import sys

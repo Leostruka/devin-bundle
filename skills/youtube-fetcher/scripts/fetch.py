@@ -115,8 +115,47 @@ def err(msg):
     sys.stderr.write(str(msg) + "\n")
 
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    meta = payload.get("meta")
+    if not isinstance(meta, dict):
+        meta = {}
+        payload["meta"] = meta
+    payload["api_version"] = 2
+    meta.setdefault("answered_by",
+                    {"bundle": _bundle_version(),
+                     "wrapper": "youtube-fetcher"})
+    return payload
+
+
 def emit_json(data):
-    text = json.dumps(data, sort_keys=True, indent=2, ensure_ascii=False)
+    text = json.dumps(_stamp(data), sort_keys=True, indent=2,
+                      ensure_ascii=False)
     sys.stdout.buffer.write((text + "\n").encode("utf-8"))
 
 

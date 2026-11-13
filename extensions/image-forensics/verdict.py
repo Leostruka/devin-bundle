@@ -16,7 +16,6 @@ PCE thresholds are dataset-calibrated, not universal.
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 

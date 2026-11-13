@@ -8,12 +8,52 @@ Kills the server process. Only deletes session directory if it is
 under a temp dir. Persistent directories (.devin/) are kept
 so mockups can be reviewed later.
 """
+import json
 import os
 import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _stamp(d):
+    d = dict(d)
+    d["api_version"] = 2
+    d.setdefault("meta", {})["answered_by"] = {
+        "bundle": _bundle_version(), "wrapper": "grilling"}
+    return d
+
+
+def _dumps(d, **kw):
+    return json.dumps(_stamp(d), **kw)
+
+
+def emit(d):
+    print(_dumps(d))
 
 
 def is_windows():
@@ -124,12 +164,12 @@ def mark_stopped(state_dir, reason):
 
 def main():
     if len(sys.argv) != 2:
-        print('{"error": "Usage: python stop-server.py <session_dir>"}')
+        emit({"error": "Usage: python stop-server.py <session_dir>"})
         sys.exit(1)
 
     session_dir = Path(sys.argv[1]).resolve()
     if not session_dir.exists():
-        print('{"status": "not_running"}')
+        emit({"status": "not_running"})
         sys.exit(0)
 
     state_dir = session_dir / "state"
@@ -139,7 +179,7 @@ def main():
 
     if not pid_file.exists():
         mark_stopped(state_dir, "no_pid_file")
-        print('{"status": "not_running"}')
+        emit({"status": "not_running"})
         return
 
     try:
@@ -148,7 +188,7 @@ def main():
         pid_file.unlink(missing_ok=True)
         server_id_file.unlink(missing_ok=True)
         mark_stopped(state_dir, "stale_pid")
-        print('{"status": "stale_pid"}')
+        emit({"status": "stale_pid"})
         return
 
     # Refuse to signal a PID we cannot verify is our server
@@ -156,14 +196,14 @@ def main():
         pid_file.unlink(missing_ok=True)
         server_id_file.unlink(missing_ok=True)
         mark_stopped(state_dir, "stale_pid")
-        print('{"status": "stale_pid"}')
+        emit({"status": "stale_pid"})
         return
 
     if not is_process_alive(pid):
         pid_file.unlink(missing_ok=True)
         server_id_file.unlink(missing_ok=True)
         mark_stopped(state_dir, "already_dead")
-        print('{"status": "already_dead"}')
+        emit({"status": "already_dead"})
         return
 
     if terminate(pid):
@@ -182,9 +222,9 @@ def main():
         except Exception:
             pass  # fail-soft: cleanup; preserve primary error
 
-        print('{"status": "stopped"}')
+        emit({"status": "stopped"})
     else:
-        print('{"status": "failed", "error": "process still running"}')
+        emit({"status": "failed", "error": "process still running"})
         sys.exit(1)
 
 

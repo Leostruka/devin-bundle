@@ -5,7 +5,6 @@
 require interactive human consent on a real TTY — piped stdin refuses.
 """
 import argparse
-import json
 import sys
 
 import cu_env

@@ -26,6 +26,9 @@ if hasattr(sys.stdout, "reconfigure"):
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import status_vocab  # noqa: E402
+from bundle_envelope import bind  # noqa: E402
+
+_stamp, _dumps = bind("pulse")
 
 STATUS_RE = re.compile(
     r"^\s*(?:[-*]\s*)?(?:\*\*)?Status(?:\*\*)?\s*:\s*(?:\*\*)?\s*(\w+)",
@@ -118,7 +121,7 @@ def main(argv=None):
             it["consumed_at"] = now
             with open(it["path"], "w", encoding="utf-8") as f:
                 json.dump({k: v for k, v in it.items() if k != "path"}, f)
-    print(json.dumps({
+    print(_dumps({
         "ok": True, "dry_run": dry, "now": now,
         "due": [os.path.basename(x["path"]) for x in due],
         "refused": refused, "pending": [os.path.basename(p) for p in pending],

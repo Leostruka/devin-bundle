@@ -12,9 +12,15 @@ hand cleanup.
 docs(changelog) PRs are skipped — they cannot cite their own number
 pre-merge (same exclusion the audit check applies).
 """
+import os
 import re
 import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from bundle_envelope import bind  # noqa: E402
+
+_stamp, _dumps = bind("changelog-refs")
 
 TAG_RE = re.compile(r'\(#(\d+)\)\s*$')
 
@@ -54,12 +60,12 @@ def main():
     write = "--write" in sys.argv
     todo = missing_refs()
     if not todo:
-        print('{"ok": true, "missing": 0}')
+        print(_dumps({"ok": True, "missing": 0}))
         return
     bullets = [f"- {s}\n" for _n, s in todo]
     if not write:
-        print('{"ok": true, "missing": %d}' % len(todo))
-        sys.stdout.writelines(bullets)
+        print(_dumps({"ok": True, "missing": len(todo)}))
+        sys.stderr.writelines(bullets)
         return
     path = "CHANGELOG.md"
     text = open(path, encoding="utf-8-sig").read()
@@ -67,7 +73,7 @@ def main():
     j = text.find("\n", i)
     text = text[:j + 1] + "".join(bullets) + text[j + 1:]
     open(path, "w", encoding="utf-8", newline="").write(text)
-    print('{"ok": true, "appended": %d}' % len(todo))
+    print(_dumps({"ok": True, "appended": len(todo)}))
 
 
 if __name__ == "__main__":

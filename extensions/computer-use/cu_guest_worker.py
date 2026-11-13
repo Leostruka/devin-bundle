@@ -4,7 +4,6 @@ guest/ (it ships inside the image), this module exists so tests and the
 supervisor can load its pure functions via the standard extension path.
 """
 import importlib.util
-import sys
 from pathlib import Path
 
 _w = Path(__file__).resolve().parent / "guest" / "worker.py"

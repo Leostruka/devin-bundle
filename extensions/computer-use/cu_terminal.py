@@ -23,7 +23,6 @@ never touches a user's terminal.
 import json
 import os
 import re
-import sys
 import tempfile
 import threading
 import time

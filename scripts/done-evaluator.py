@@ -19,8 +19,6 @@ Usage:
     ... --strict    exit 4 when verdict is not_done (loop gate)
 """
 import argparse
-import json
-import os
 import re
 import sys
 

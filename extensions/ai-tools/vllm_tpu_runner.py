@@ -18,9 +18,7 @@ only at module scope.
 """
 import argparse
 import hashlib
-import json
 import subprocess
-import sys
 
 from ai_envelope import _stamp, _dumps
 

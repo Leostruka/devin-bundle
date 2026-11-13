@@ -20,7 +20,6 @@ Two independent channels, each degrading to a typed error:
 Coordinates are physical pixels (PerMonitorV2), same space as mouse.py.
 """
 import argparse
-import json
 import os
 import queue
 import sys

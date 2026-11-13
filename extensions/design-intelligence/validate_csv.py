@@ -9,7 +9,6 @@ CLI: python validate_csv.py [--json]
 exit 0 all valid / 1 problems found
 """
 import csv
-import json
 import sys
 from pathlib import Path
 

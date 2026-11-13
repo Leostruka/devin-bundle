@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
-import json
 import math
 import os
 import shutil

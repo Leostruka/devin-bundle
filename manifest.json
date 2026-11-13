@@ -1465,7 +1465,7 @@
     {
       "name": "done-evaluator.py",
       "purpose": "grades a claimed done against transcript evidence - writer is not the grader (issue #437)",
-      "export_hash": "6f01c7b2e76100b7209b6fa152a893ae69666aa03d2045e65a859ad66635a1a7",
+      "export_hash": "33a2c4e5a929d9f4ba8dc4669831e3a9964fb07ce66bdbf14092669138fc63bd",
       "exported_at": "2026-11-13"
     },
     {
@@ -1496,7 +1496,7 @@
     {
       "name": "graph-query.py",
       "purpose": "graph-before-grep retrieval - fuses code-graph FTS + memory cues into ranked file results (issue #442)",
-      "export_hash": "6bc84e61da06ea3952651cf9d58f994b7a5b91dfe44807619ddcd965c15923a5",
+      "export_hash": "7ed37116c136a1e87563e6a9e88195b1ba37537c5f7985069a6c0c6b729e32cd",
       "exported_at": "2026-11-13"
     },
     {
@@ -1568,7 +1568,7 @@
     {
       "name": "pulse.py",
       "purpose": "Manual-run - drains due .devin/rts/intents/*.json into one afk-loop frontier step (refuses auto:false)",
-      "export_hash": "9f7d253931a8c8b3110a1f760b0521f44baa03126758919d36a246da213cc411",
+      "export_hash": "f447195df94f5534bdac40f0a38f59410e0f881410314ca1a0d477346bf69c08",
       "exported_at": "2026-11-13"
     },
     {
@@ -1599,7 +1599,7 @@
     {
       "name": "rules-coverage.py",
       "purpose": "Manual-run audit - maps NL rules to deterministic controls (hooks/audit/permissions), reports unenforced",
-      "export_hash": "f2dadc78506c6f9b490c878323f0b521ecd705c39cb6b527d0789ad237f511f8",
+      "export_hash": "f6bed70cdac0be54ec111d87079683bee2e2d29dfd263cad2622ee0b64dc06fe",
       "exported_at": "2026-11-13"
     },
     {
@@ -1617,7 +1617,7 @@
     {
       "name": "simplify-scan.py",
       "purpose": "rot scan - TODO/FIXME markers, oversized files, unreferenced defs, except:pass swallows (issue #447)",
-      "export_hash": "2f35db5258ea9933149947599bbb519e0d2007f883bb5be6eb351fcce06dfb84",
+      "export_hash": "94ea83c989618b0e15e3003a5251cb152ca1fba8b780cb84334f1d662df93c5b",
       "exported_at": "2026-11-13"
     },
     {
@@ -1629,7 +1629,7 @@
     {
       "name": "spec-consistency.py",
       "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
-      "export_hash": "bb5aa235887f4652026b1fe2d57263c6919e50ad262eee6b4c5d17163e1123eb",
+      "export_hash": "716d541a1bebe1a99d7290a37fcabf7ff524c360b8fdffe15011e2fe2789d15e",
       "exported_at": "2026-11-13"
     },
     {
@@ -1701,7 +1701,7 @@
     {
       "name": "changelog-refs.py",
       "purpose": "append missing merged-PR refs to CHANGELOG [Unreleased] (#488)",
-      "export_hash": "f0996df20ff20036fdbeb0df0134b4442b4130f97676ecf078edaafbeeb9c72d",
+      "export_hash": "1244cc8fad69931b247ec3d9d6750b489b933502854b97096276117fa58b44ef",
       "exported_at": "2026-11-13"
     },
     {

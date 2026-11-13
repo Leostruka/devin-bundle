@@ -18,7 +18,6 @@ to a structured error instead of an ImportError crash, so the base
 extension installs stay lean.
 """
 import argparse
-import json
 import os
 import sys
 import tempfile

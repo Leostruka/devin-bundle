@@ -5,7 +5,7 @@ Usage:
   python query-memory.py "fiscal quarters"
   python query-memory.py "fiscal quarters" --top 5
 """
-import argparse, os, re, sys
+import argparse, os, sys
 
 BASE = '.devin/memory'
 

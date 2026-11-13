@@ -10,7 +10,6 @@ map to a built-in control - this audit makes the coverage explicit.
 
 Usage: rules-coverage.py [RULE_FILE ...]     (JSON to stdout)
 """
-import json
 import os
 import re
 import sys

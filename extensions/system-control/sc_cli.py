@@ -7,7 +7,6 @@ subprocess timeouts), 2 rejected request.
 
 import json
 import math
-import os
 import subprocess
 import sys
 import uuid

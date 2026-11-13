@@ -13,8 +13,6 @@ Honesty contract: delivery != effect. PostMessage bypasses the input queue
 off-Windows so tests can run on any platform via the `win` seam.
 """
 import ctypes
-import json
-import os
 import re
 import sys
 from ctypes import wintypes

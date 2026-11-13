@@ -17,7 +17,6 @@ Exit non-zero when ok is false. UTF-8 pinned.
 import argparse
 import glob
 import io
-import json
 import os
 import re
 import sys

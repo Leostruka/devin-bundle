@@ -9,7 +9,6 @@ Exit codes: 0 ok (0 matches is still ok), 1 selector/parse error,
 2 usage/IO error.
 """
 import argparse
-import json
 import sys
 
 import st_common

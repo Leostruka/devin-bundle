@@ -21,8 +21,6 @@ result on a small local HF model, with a controlled ground-truth defect:
   weight_patch.py --model Qwen/Qwen2.5-0.5B-Instruct [--beta 8] [--topk 2]
 """
 import argparse
-import json
-import os
 import sys
 
 import numpy as np

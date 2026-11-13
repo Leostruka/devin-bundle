@@ -179,6 +179,28 @@ PROBES = [
     ("extensions/computer-use/cu_wgc.py", ["caps"], "computer-use"),
     ("extensions/design-intelligence/search.py",
      ["x", "--json"], "design-intelligence"),
+    # holistic-review pass: tool emitters misfiled as hook-protocol
+    # (pulse, simplify-scan), literal-JSON emitters (changelog-refs),
+    # sys.stdout.buffer.write skill CLIs, and craft-bridge ui_dsl.
+    ("scripts/pulse.py", ["--dry-run"], "pulse"),
+    ("scripts/simplify-scan.py",
+     ["--root", "nonexistent"], "simplify-scan"),
+    ("scripts/changelog-refs.py", [], "changelog-refs"),
+    ("extensions/craft-bridge/ui_dsl.py",
+     ["benchmark", "--fixture", "nonexistent"], "craft-bridge"),
+    ("skills/youtube-fetcher/scripts/fetch.py",
+     ["validate", "dQw4w9WgXcQ"], "youtube-fetcher"),
+    ("skills/devin-manager/scripts/devin-manager.py",
+     ["scan", "."], "devin-manager"),
+    ("skills/devin-config/scripts/devin-manager.py",
+     ["scan", "."], "devin-config"),
+    ("skills/structured-knowledge-extraction/scripts/extract.py",
+     ["search", "x", "nonexistent-proj"],
+     "structured-knowledge-extraction"),
+    ("skills/knowledge-modeling/scripts/extract.py",
+     ["search", "x", "nonexistent-proj"], "knowledge-modeling"),
+    ("skills/grilling/scripts/stop-server.py",
+     ["nonexistent"], "grilling"),
 ]
 
 # Keys that could turn a probe into a real network call.

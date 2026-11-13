@@ -10,7 +10,6 @@ persist it with --set. Scripts resolve: --profile flag > $COMPUTER_USE_PROFILE
 > session file > "fast".
 """
 import argparse
-import json
 import os
 import sys
 

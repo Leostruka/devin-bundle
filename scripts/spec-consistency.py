@@ -21,7 +21,6 @@ else the current directory. Exits 1 whenever the report carries errors
 (`ok:false` => non-zero per the CLI contract); --strict is retained for
 compatibility. Exit 2 on unreadable input.
 """
-import json
 import os
 import re
 import sys

@@ -19,7 +19,6 @@ Measured constraints (phase-2 probe):
 """
 import argparse
 import asyncio
-import json
 import os
 import sys
 import tempfile

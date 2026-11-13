@@ -15,7 +15,6 @@ claims:
 raises ValueError for an unsupported backend, a dense-model MoE request,
 or a malformed override pattern. Stdlib only.
 """
-import json
 import sys
 
 from ai_envelope import _stamp, _dumps

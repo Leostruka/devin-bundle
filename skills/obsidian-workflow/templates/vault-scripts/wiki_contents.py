@@ -23,7 +23,6 @@ def find_page(vault_dir, name):
         if md.stem == name or md.name == name or str(md.relative_to(vault_dir)).replace("\\", "/") == name:
             return md
     # Try by title in frontmatter
-    import re
     for md in vault_dir.rglob("*.md"):
         text = md.read_text(encoding="utf-8", errors="replace")
         if text.startswith("---"):

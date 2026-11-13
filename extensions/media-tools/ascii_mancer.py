@@ -7,7 +7,6 @@ screen blend f(A,B) = 1 - (1-A)*(1-B) -> PNG.
 CLI prints JSON to stdout: {"ok": true, "path": ...} or {"ok": false, "error": ...}.
 """
 import argparse
-import json
 import sys
 
 import numpy as np

@@ -13,7 +13,6 @@ Uso:
   python gql_probe.py --scope scope.md --url https://app/graphql
 """
 import argparse
-import json
 import os
 import sys
 from urllib.parse import quote

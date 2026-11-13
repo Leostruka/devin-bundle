@@ -8,7 +8,6 @@ Params: --param k=v repeatable. Bare keys go to the effect; prefix with
 adjust./process./bloom./grain./chromatic./scanlines./vignette. for pipeline stages.
 """
 import argparse
-import json
 import sys
 from pathlib import Path
 

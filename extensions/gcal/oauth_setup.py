@@ -27,6 +27,43 @@ import threading
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    meta = payload.get("meta")
+    if not isinstance(meta, dict):
+        meta = {}
+        payload["meta"] = meta
+    payload["api_version"] = 2
+    meta.setdefault("answered_by",
+                    {"bundle": _bundle_version(), "wrapper": "gcal"})
+    return payload
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -213,9 +250,9 @@ def main():
                          "approve with prompt=consent")
     path = _write_gcal_section(client_id, client_secret, refresh,
                                force=args.force)
-    json.dump({"status": "ok", "credentials_toml": path,
-               "refresh_token": "<stored>",
-               "scopes": tokens.get("scope", "").split()},
+    json.dump(_stamp({"status": "ok", "credentials_toml": path,
+                      "refresh_token": "<stored>",
+                      "scopes": tokens.get("scope", "").split()}),
               sys.stdout, indent=2)
     sys.stdout.write("\n")
 

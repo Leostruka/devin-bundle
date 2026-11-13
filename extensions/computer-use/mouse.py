@@ -9,7 +9,6 @@ Requires pynput (installed via requirements.txt into the extension's .venv).
 """
 import argparse
 import atexit
-import json
 import os
 import random
 import sys

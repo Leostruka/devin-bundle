@@ -15,7 +15,6 @@ video files cannot be viewed directly. --no-sheet disables it.
 --env records an isolated guest by polling backend.observe(); fps there is
 best-effort (QEMU screendump is slow). fps_actual reports the truth.
 """
-import json
 import math
 import os
 import random

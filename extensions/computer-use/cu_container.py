@@ -15,7 +15,6 @@ this module only guarantees the spec is closed and the runtime argv
 matches it exactly.
 """
 import re
-from pathlib import Path
 
 ALLOWED_RUNTIMES = frozenset({"docker", "podman"})
 

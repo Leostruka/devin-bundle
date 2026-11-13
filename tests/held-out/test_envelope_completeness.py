@@ -18,13 +18,60 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
 
 MARKER = re.compile(
-    r"_BUNDLE_VERSION_CACHE"
+    r"_BUNDLE_VERSION"  # covers both _BUNDLE_VERSION and _BUNDLE_VERSION_CACHE
     r"|from\s+\w*_envelope\s+import"
     r"|from\s+bundle_envelope\s+import"
     r"|import\s+st_common\b"
     r"|from\s+st_common\s+import")
 
+# Emission styles that mean "emits JSON to stdout" - files with these
+# and NO stamp marker are invisible to the marker scan, so they are
+# collected separately and must be explicitly accounted for.
+EMIT = re.compile(
+    r"sys\.stdout\.buffer\.write"
+    r"|sys\.stdout\.write\s*\(\s*json"
+    r"|json\.dump\s*\([^,]+,\s*sys\.stdout"
+    r"|print\s*\(\s*json\.dumps"
+    r"|print\s*\(\s*_dumps"
+    r"|print\s*\(\s*f?[\"']\{[\"']"  # print('{"key"' JSON literal
+    r"|print\s*\(\s*f?[\"']\{\{"     # print(f'{{"key"' f-literal
+)
+
 SCAN_DIRS = ("extensions", "scripts", "skills")
+
+# Marker-free JSON emitters intentionally outside the contract.
+UNSTAMPED = {
+    # hook-protocol payloads consumed by the Devin hook runtime, not
+    # parsed as tool output (hookSpecificOutput / gate decisions)
+    "scripts/architecture-gate.py", "scripts/behavioral-nudge.py",
+    "scripts/check-ai-signature.py", "scripts/check-push-green.py",
+    "scripts/compact-gate.py", "scripts/constraint-pinning.py",
+    "scripts/destructive-gate.py",
+    "scripts/design-lint-gate.py", "scripts/dep-audit-gate.py",
+    "scripts/file-size-guard.py", "scripts/gh-pr-assignee.py",
+    "scripts/git-diff-stat.py", "scripts/laya-guard.py",
+    "scripts/memory-post-edit.py", "scripts/memory-post-exec.py",
+    "scripts/memory-retrieval.py",
+    "scripts/no-em-dash.py", "scripts/permission-gate.py",
+    "scripts/refine-review-prompt.py", "scripts/rl-resume-detect.py",
+    "scripts/silent-error-review.py", "scripts/skill-picker.py",
+    "scripts/stuck-detect.py",
+    "scripts/token-saver.py", "scripts/validate-mermaid.py",
+    "scripts/validate-tool-args.py",
+    "scripts/_hookrun.py",
+    # config-document / transport / benchmark surfaces
+    "scripts/render-user-hooks.py",
+    "extensions/computer-use/mcp_server.py",
+    "extensions/system-control/sc_cli.py",
+    "extensions/system-control/sc_bench.py",
+    "extensions/busybar/listen.py",            # daemon listener
+    "skills/memory-management/scripts/query-memory.py",   # bare array
+    "skills/project-memory/scripts/query-memory.py",      # bare array
+    "extensions/computer-use/integration/fixtures/cu_input_probe.py",
+    "scripts/status_vocab.py",  # __main__ vocab dump - config doc
+}
+
+SKIP_DIRS = {".venv", "__pycache__", "node_modules", ".git", "scratch"}
 
 # Marker-carrying CLI files deliberately outside PROBES. Shared
 # *_envelope.py helpers and st_common.py are already skipped by the
@@ -35,6 +82,10 @@ EXCLUDE = {
     "extensions/computer-use/cu_session.py",
     # network bootstrap - every path fetches, no offline argv
     "extensions/media-tools/jxl_bootstrap.py",
+    # interactive OAuth flow - browser + callback server, no offline argv
+    "extensions/gcal/oauth_setup.py",
+    # spawns a real node server process on every success path
+    "skills/grilling/scripts/start-server.py",
     # dedicated probe that cannot ride the shared runner (stdin+tmpdir)
     "skills/context-hygiene/scripts/fold_store.py",
 }
@@ -47,9 +98,10 @@ def _probes():
 
 
 def _scan():
-    stamped, libs = [], []
+    stamped, libs, unmarked = [], [], []
     for top in SCAN_DIRS:
-        for dirpath, _dirs, files in os.walk(os.path.join(ROOT, top)):
+        for dirpath, dirs, files in os.walk(os.path.join(ROOT, top)):
+            dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
             for f in files:
                 if not f.endswith(".py"):
                     continue
@@ -60,20 +112,21 @@ def _scan():
                                encoding="utf-8", errors="replace").read()
                 except OSError:
                     continue
-                if not MARKER.search(src):
-                    continue
-                if f.endswith("_envelope.py") or f == "st_common.py":
-                    continue
-                if "__main__" in src:
-                    stamped.append(rel)
-                else:
-                    libs.append(rel)
-    return sorted(stamped), sorted(libs)
+                if MARKER.search(src):
+                    if f.endswith("_envelope.py") or f == "st_common.py":
+                        continue
+                    if "__main__" in src:
+                        stamped.append(rel)
+                    else:
+                        libs.append(rel)
+                elif EMIT.search(src):
+                    unmarked.append(rel)
+    return sorted(stamped), sorted(libs), sorted(unmarked)
 
 
 def test_every_stamped_cli_is_probe_covered():
     probed = _probes()
-    stamped, _libs = _scan()
+    stamped, _libs, _unmarked = _scan()
     uncovered = [r for r in stamped
                  if r not in probed and r not in EXCLUDE]
     assert not uncovered, (
@@ -81,9 +134,29 @@ def test_every_stamped_cli_is_probe_covered():
         "with reason:\n" + "\n".join(uncovered))
 
 
+def test_no_unmarked_json_emitters():
+    """Marker-free files that still write JSON to stdout must be in
+    UNSTAMPED (documented exclusion) - otherwise the contract has an
+    invisible emitter."""
+    _stamped, _libs, unmarked = _scan()
+    escaped = [r for r in unmarked if r not in UNSTAMPED]
+    assert not escaped, (
+        "JSON emitters without stamp marker or documented exclusion:\n"
+        + "\n".join(escaped))
+
+
 def test_exclusions_still_carry_marker():
-    stamped, libs = _scan()
+    stamped, libs, _unmarked = _scan()
     seen = set(stamped) | set(libs)
     stale = sorted(e for e in EXCLUDE if e not in seen)
     assert not stale, ("EXCLUDE entries lost their marker or file - "
+                       "drop them: " + ", ".join(stale))
+
+
+def test_unstamped_list_still_emits():
+    """UNSTAMPED entries whose emit pattern disappears are stale -
+    drop them so the list stays honest."""
+    _stamped, _libs, unmarked = _scan()
+    stale = sorted(u for u in UNSTAMPED if u not in unmarked)
+    assert not stale, ("UNSTAMPED entries no longer emit JSON - "
                        "drop them: " + ", ".join(stale))

@@ -50,9 +50,48 @@ def err(msg):
     sys.stderr.write(msg + '\n')
 
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    meta = payload.get("meta")
+    if not isinstance(meta, dict):
+        meta = {}
+        payload["meta"] = meta
+    payload["api_version"] = 2
+    meta.setdefault("answered_by",
+                    {"bundle": _bundle_version(),
+                     "wrapper": "devin-manager"})
+    return payload
+
+
 def emit_json(data):
     '''Write deterministic JSON to stdout.'''
-    text = json.dumps(data, sort_keys=True, indent=2, ensure_ascii=False)
+    text = json.dumps(_stamp(data), sort_keys=True, indent=2,
+                      ensure_ascii=False)
     sys.stdout.buffer.write((text + '\n').encode('utf-8'))
 
 
@@ -296,10 +335,12 @@ def scan_artifact(devin, project, abs_path):
         elif rel.endswith('.json'):
             try:
                 data = json.loads(content)
-                json_keys = sorted(data.keys())
+                json_keys = sorted(data.keys()) if isinstance(data, dict) else []
                 refs = extract_refs(rel, content, is_json=True)
                 if rel == 'mcp_config.json' or provenance == '.devin/mcp_config.json':
-                    mcp_servers = sorted(data.get('mcpServers', {}).keys())
+                    mcp_servers = sorted(data.get('mcpServers', {}).keys()) \
+                        if isinstance(data, dict) and isinstance(
+                            data.get('mcpServers'), dict) else []
             except json.JSONDecodeError as e:
                 json_error = str(e)
                 json_keys = []

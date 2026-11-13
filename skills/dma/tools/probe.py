@@ -16,7 +16,6 @@ Uso:
 import argparse
 import hashlib
 import http.client
-import json
 import os
 import socket
 import ssl

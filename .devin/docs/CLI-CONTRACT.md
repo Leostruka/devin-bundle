@@ -70,11 +70,12 @@ through a per-dir module - `scrape-tools/st_common.py`,
 `asr/asr_envelope.py`, `ai-tools/ai_envelope.py`,
 `media-tools/media_envelope.py`, `remotion-render/remotion_envelope.py`,
 `image-forensics/forensics_envelope.py`,
-`design-intelligence/design_envelope.py`, and
-`scripts/bundle_envelope.py` (`bind(wrapper)` for per-file names).
+`design-intelligence/design_envelope.py`,
+`craft-bridge/craft_envelope.py`, and `scripts/bundle_envelope.py`
+(`bind(wrapper)` for per-file names).
 Deduplicated after independent review - one fix site per dir instead
 of ~70 identical copies. Dirs with only 1-2 emitters keep a local
-copy (ppisp-prep, harness-tree, craft-bridge, mesh-utils,
+copy (ppisp-prep, harness-tree, mesh-utils,
 laya-compactor, diagram-tools, code-graph, blender-operator,
 api-bridge).
 
@@ -86,7 +87,7 @@ comfyui-operator, laya-tools.
 
 Utility CLIs (wave 5, #604): `scrape-tools/{scrape,parse,dom_elements}.py`
 (shared stamp via `st_common.emit`) and `asr/{bootstrap,transcribe}.py`
-(local `_emit`).
+(shared `asr_envelope._emit`).
 
 `code-graph/query.py`: `--json` keeps the historical bare-array output;
 `--envelope` (top-level or per-subcommand) wraps results in
@@ -136,6 +137,21 @@ dep-audit, spec-consistency, subagent-trace). `fit_calibration.py` and
 surface: every `print(json.dumps` outside `system-control`'s separate
 contract and hook-runtime infrastructure now carries v2.
 
+Completeness wave (#610 follow-up): `pulse.py`, `simplify-scan.py`,
+`changelog-refs.py`, `craft-bridge/ui_dsl.py` (benchmark + `{"ok":
+false}` on unreadable input), `fold_store.py save`,
+`devin-manager`/`devin-config` `devin-manager.py scan` (also fixed a
+crash on JSON-array artifacts),
+`youtube-fetcher/fetch.py`, `structured-knowledge-extraction/extract.py`,
+`knowledge-modeling/search.py`, and `grilling/scripts/stop-server.py`.
+`grilling/start-server.py` relays the spawned server's first line
+verbatim (passthrough, deliberately unstamped); `gcal/oauth_setup.py`
+carries the stamp machinery but is excluded from PROBES (interactive
+OAuth flow, no offline argv). `tests/held-out/test_envelope_completeness.py`
+now scans every CLI in extensions/scripts/skills: stamped files must be
+in PROBES or explicitly excluded; unmarked JSON emitters must be
+documented in UNSTAMPED; stale entries fail.
+
 ## Adding a wrapper
 
 1. Copy the `_bundle_version()` + `_answered_by()` + `_stamp()` block
@@ -157,13 +173,15 @@ contract and hook-runtime infrastructure now carries v2.
   (`SCHEMA_VERSION`), a separate wire contract. Evaluate separately.
 - `code-graph/query.py --json` bare-array output: kept for
   back-compat; the opt-in `--envelope` flag is the contract path.
-- `scripts/*.py` hooks (43 files): their stdout JSON is consumed by the
-  Devin CLI hook runtime (permission decisions, nudges, gates), not
-  parsed by agents as tool output - infrastructure, not an "answered_by"
-  surface. Same verdict for hook-protocol payloads outside the hook
-  registry (`skill-picker.py`, `refine-review-prompt.py`, token-saver,
-  pulse, rl-resume-detect): they print `hookSpecificOutput`/gate
-  `decision` objects, not tool output.
+- `scripts/*.py` hook-protocol emitters (26 files): their stdout JSON is
+  consumed by the Devin CLI hook runtime (permission decisions, nudges,
+  gates), not parsed by agents as tool output - infrastructure, not an
+  "answered_by" surface. This includes hook-protocol payloads outside
+  the hook registry (`skill-picker.py`, `refine-review-prompt.py`,
+  `token-saver.py`, `rl-resume-detect.py`): they print
+  `hookSpecificOutput`/gate `decision` objects, not tool output.
+  `pulse.py` was formerly in this class but now emits a stamped dict
+  report - see PROBES.
 - Bare-array JSON outputs are not envelope carriers: `_stamp` only
   stamps dicts, so `skills/*/scripts/query-memory.py --json`,
   `fold_store.py list|grep`, and any list-shaped emit stay as-is

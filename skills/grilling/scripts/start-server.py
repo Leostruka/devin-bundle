@@ -18,6 +18,7 @@ Options:
   --background            Force background mode.
 """
 import argparse
+import json
 import os
 import random
 import shutil
@@ -25,6 +26,45 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _stamp(d):
+    d = dict(d)
+    d["api_version"] = 2
+    d.setdefault("meta", {})["answered_by"] = {
+        "bundle": _bundle_version(), "wrapper": "grilling"}
+    return d
+
+
+def _dumps(d, **kw):
+    return json.dumps(_stamp(d), **kw)
+
+
+def emit(d):
+    print(_dumps(d))
 
 
 def is_windows():
@@ -43,7 +83,7 @@ def find_node():
     """Find the node executable."""
     node = shutil.which("node")
     if not node:
-        print('{"error": "node not found in PATH"}')
+        emit({"error": "node not found in PATH"})
         sys.exit(1)
     return node
 
@@ -88,7 +128,7 @@ def main():
     script_dir = Path(__file__).resolve().parent
     server_js = script_dir / "server.cjs"
     if not server_js.exists():
-        print('{"error": "server.cjs not found next to start-server.py"}')
+        emit({"error": "server.cjs not found next to start-server.py"})
         sys.exit(1)
 
     # Determine session directory
@@ -193,10 +233,10 @@ def main():
                 sys.exit(0)
             else:
                 project_dir_text = args.project_dir or ""
-                print(f'{{"error": "Server started but was killed. Retry with: python start-server.py --project-dir {project_dir_text} --host {bind_host} --url-host {url_host} --foreground"}}')
+                emit({"error": "Server started but was killed. Retry with: python start-server.py --project-dir %s --host %s --url-host %s --foreground" % (project_dir_text, bind_host, url_host)})
                 sys.exit(1)
     except Exception as e:
-        print(f'{{"error": "Failed to start server: {e}"}}')
+        emit({"error": "Failed to start server: %s" % e})
         sys.exit(1)
 
 

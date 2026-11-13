@@ -48,6 +48,9 @@ import re
 import sys
 import tempfile
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from craft_envelope import _stamp, _dumps  # noqa: E402
+
 DSL_VERSION = 1
 
 MAX_LINES = 2000
@@ -640,10 +643,13 @@ def main(argv=None):
             res = benchmark(_read_input(args.fixture), args.tokenizer,
                             fixture_name=args.fixture)
             _write_output(args.output,
-                          json.dumps(res, indent=2) + "\n", args.force)
+                          _dumps(res, indent=2) + "\n", args.force)
     except ParseError as e:
         print(f"ui_dsl: {e}", file=sys.stderr)
         return 2
+    except OSError as e:
+        print(_dumps({"ok": False, "error": f"io:{e}"}))
+        return 1
     return 0
 
 

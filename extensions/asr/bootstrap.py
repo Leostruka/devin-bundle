@@ -13,10 +13,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import io
-import json
 import platform
 import re
-import sys
 import urllib.error
 import urllib.request
 import zipfile

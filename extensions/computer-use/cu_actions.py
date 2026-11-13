@@ -14,7 +14,6 @@ OwnedInputs tracks buttons/keys this session pressed and releases exactly
 those in finally paths — a held physical key owned by the user is never
 touched.
 """
-import json
 import os
 import sys
 import time

@@ -13,9 +13,7 @@ Exit 0 ok / 1 fetch+select error / 2 usage error.
 """
 import argparse
 import ipaddress
-import json
 import socket
-import sys
 from urllib.parse import urlparse
 
 import st_common

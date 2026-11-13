@@ -14,7 +14,6 @@ import hashlib
 import io
 import json
 import platform
-import sys
 import urllib.error
 import urllib.request
 import zipfile
