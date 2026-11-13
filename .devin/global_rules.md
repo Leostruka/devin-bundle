@@ -36,5 +36,6 @@ Run the platform exporter in dry-run mode when changing exported bundle resource
 - Keep the database and internal services inside private networks/VPCs; don't expose credentials to frontend code.
 - Don't delete tests without explicit approval.
 - CLI contract conventions (audit checks [36]/[37]/[38] enforce): tools emitting `{"ok": false}` envelopes must exit non-zero; user-named output paths (`--out`/`-o`/`dst`) must refuse to overwrite existing files; all text-mode I/O must pin UTF-8 - `subprocess text=True` calls get `encoding="utf-8", errors="replace"`, and `Path.read_text()/write_text()`/`open()` get `encoding="utf-8"` (Windows cp1252 decode corrupts non-ASCII).
+- Envelope v2 (`.devin/docs/CLI-CONTRACT.md`): agent-facing JSON CLIs route stdout through `_dumps`/`_stamp` - `api_version: 2` + `meta.answered_by {bundle, wrapper}`, bundle version from nearest ancestor `manifest.json` with `"name"`. New emitters: copy the trio + add a PROBES row in `tests/test_envelope_contract_v2.py` (subprocess probe, offline argv).
 - Prefer the smallest solution that works; reject overengineering and token maxing.
 - Declare intent, user impact, and boundaries before coding.
