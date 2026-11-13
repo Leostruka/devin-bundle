@@ -1087,7 +1087,12 @@ def main():
     elif args.cmd == "doctor":
         doctor(args)
     elif args.cmd == "models":
-        devin = _devin_path(args.devin)
+        devin = (args.devin or os.environ.get("DEVIN_BIN")
+                 or shutil.which("devin")
+                 or shutil.which("devin.exe") or "")
+        if not devin:
+            print(_dumps({"ok": False, "error": "devin_missing"}))
+            sys.exit(1)
         print(_dumps({"ok": True, "models": _list_models(
             devin, tempfile.gettempdir())}))
     else:
