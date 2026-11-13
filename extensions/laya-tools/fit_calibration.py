@@ -27,6 +27,50 @@ import math
 import sys
 from pathlib import Path
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "laya-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
@@ -165,18 +209,23 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     train, train_total = [], 0
-    for m in args.manifest:
-        cases, total = _decided_cases(m)
-        train += cases
-        train_total += total
-    heldout_sets = []
-    for m in args.heldout:
-        cases, total = _decided_cases(m)
-        heldout_sets.append({"manifest": m, "cases": cases,
-                             "total": total})
+    try:
+        for m in args.manifest:
+            cases, total = _decided_cases(m)
+            train += cases
+            train_total += total
+        heldout_sets = []
+        for m in args.heldout:
+            cases, total = _decided_cases(m)
+            heldout_sets.append({"manifest": m, "cases": cases,
+                                 "total": total})
+    except (OSError, ValueError) as exc:
+        print(_dumps({"ok": False,
+                          "reason": f"manifest_unreadable:{exc}"}))
+        return 1
 
     if len(train) < 5:
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "reason": "too_few_decided_train_cases",
                           "n": len(train)}))
         return 1

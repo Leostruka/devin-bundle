@@ -21,6 +21,50 @@ import subprocess
 import sys
 from pathlib import Path
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "laya-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 
 HERE = Path(__file__).resolve().parent
 VENV = HERE / ".venv"
@@ -125,7 +169,7 @@ def emit(ok, extra=None):
            "venv_python": str(venv_python()),
            "torch_version": extra.get("torch_version"),
            "device": device}
-    print(json.dumps(out, indent=2, ensure_ascii=False))
+    print(_dumps(out, indent=2, ensure_ascii=False))
     sys.exit(0 if ok else 1)
 
 
@@ -159,7 +203,7 @@ def main():
                                      else "would create " + str(VENV))})
         plan = {"venv": str(VENV), "requirements": str(REQUIREMENTS),
                 "torch_index": TORCH_INDEX[device]}
-        print(json.dumps({"ok": all(s["ok"] for s in dry_steps),
+        print(_dumps({"ok": all(s["ok"] for s in dry_steps),
                           "dry_run": True, "plan": plan,
                           "steps": dry_steps}, indent=2, ensure_ascii=False))
         sys.exit(0 if all(s["ok"] for s in dry_steps) else 1)

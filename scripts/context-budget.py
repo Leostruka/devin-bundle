@@ -21,6 +21,51 @@ Token estimate uses the chars/4 heuristic. This is an estimate, not an exact
 count — exact counts require the model provider's tokenizer.
 """
 import sys, os, json, argparse
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "context-budget"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
@@ -191,7 +236,7 @@ def report(path, as_json=False, simulated_tokens=None):
         share_rows.append({"model_id": subagent["id"], "name": subagent["name"], "share_pct": round(share, 2)})
 
     if as_json:
-        print(json.dumps({
+        print(_dumps({
             "file": path,
             "chars": chars,
             "estimated_tokens": tok,

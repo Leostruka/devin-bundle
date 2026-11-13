@@ -26,6 +26,51 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "subagent-trace"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -94,7 +139,7 @@ def _record(args, piped=None):
         rec["id"] = f"s{int(time.time() * 1000)}"
     rec.setdefault("status", "running")
     if rec["status"] not in STATUSES:
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": f"status must be one of {STATUSES}"}))
         return 2
     path = _trace_path()
@@ -110,7 +155,7 @@ def _record(args, piped=None):
         rec.setdefault("ts", now)
         recs.append(rec)
     _save(path, recs)
-    print(json.dumps({"ok": True, "id": rec["id"], "record": rec}))
+    print(_dumps({"ok": True, "id": rec["id"], "record": rec}))
     return 0
 
 
@@ -134,7 +179,7 @@ def main(argv=None):
     try:
         return _main(args)
     except Exception as e:  # fail-open
-        print(json.dumps({"ok": False, "error": str(e)}))
+        print(_dumps({"ok": False, "error": str(e)}))
         return 0
 
 
@@ -144,14 +189,14 @@ def _main(args):
         recs = _load(path)
         if args.pending:
             recs = [r for r in recs if r.get("status") == "running"]
-        print(json.dumps({"ok": True, "pending": len(recs),
+        print(_dumps({"ok": True, "pending": len(recs),
                           "records": recs}, indent=1))
         return 0
     if args.abort is not None:
         os.makedirs(_abort_dir(), exist_ok=True)
         with open(_abort_path(args.abort), "w", encoding="utf-8") as f:
             json.dump({"id": args.abort, "ts": int(time.time())}, f)
-        print(json.dumps({"ok": True, "aborted": args.abort}))
+        print(_dumps({"ok": True, "aborted": args.abort}))
         return 0
     if args.clear_abort is not None:
         try:
@@ -159,17 +204,17 @@ def _main(args):
             removed = True
         except OSError:
             removed = False
-        print(json.dumps({"ok": True, "cleared": args.clear_abort,
+        print(_dumps({"ok": True, "cleared": args.clear_abort,
                           "removed": removed}))
         return 0
     if args.mode == "check-abort":
         rid = args.id_arg or args.id
         if not rid:
-            print(json.dumps({"ok": False,
+            print(_dumps({"ok": False,
                               "error": "check-abort <id>"}))
             return 2
         aborted = os.path.exists(_abort_path(rid))
-        print(json.dumps({"ok": True, "id": rid, "abort": aborted}))
+        print(_dumps({"ok": True, "id": rid, "abort": aborted}))
         return 0 if aborted else 1
     if args.mode == "record":
         return _record(args)
@@ -187,7 +232,7 @@ def _main(args):
                 return _record(args, piped=data)
     except OSError:
         pass
-    print(json.dumps({"ok": False,
+    print(_dumps({"ok": False,
                       "error": "usage: record|--list|--pending|--abort ID|"
                                "--clear-abort ID|check-abort ID"}))
     return 2
