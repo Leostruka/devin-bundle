@@ -37,6 +37,33 @@ Status: in-progress · Source: IG `DeRX9KpJPlT` (@plattipusofficial) + Lukáš/F
 4. Held-out validation per Rule 15: fresh image set, no calibration leakage; record metrics in refinement log.
 5. Write `image-forensics` SKILL.md; link from `ai3d-gen` preflight + `fact-check`.
 
+## Datasets (trusted sources, 2026-11-13)
+
+- **VISION** (LESC lab, Univ. of Florence; EURASIP J. Inf. Security 2017,
+  peer-reviewed open access): 34,427 images + 1,914 videos, 35 portable
+  devices / 11 brands. Per-device dirs `D01..D35`; `images/flat/` subdirs
+  are flat-field captures = ideal reference builders; native + social
+  (FB/YT/WhatsApp) versions cover the recompression regime our
+  false-positive finding needs. Download: `wget -i
+  https://lesc.dinfo.unifi.it/VISION/VISION_files.txt` (license:
+  research use, cite the paper). Errata: 5 misplaced social videos
+  listed on the datasets page.
+- **Dresden Image Database** (Agilbert/Goljan lineage): the original
+  PRNU benchmark (~70 devices, flat/natural split); canonical but the
+  primary host has been intermittently offline - VISION is the
+  reliable fetch today. ISPL Polimi republishes derived PRNU refs:
+  `github.com/polimi-ispl/cnn-fast-sdi` `utility_dataset.py` shows the
+  `prnu_flat_<dev>.npy` convention and the Dresden/VISION device lists.
+- **Code**: Binghamton DDE hosts the reference implementation
+  (`dde.binghamton.edu/download/camera_fingerprint`) - getFingerprint,
+  PCE, NoiseExtractFromImage, consistent with the large-scale Goljan
+  test. `github.com/polimi-ispl/prnu-python` is the Python port our
+  `prnu.py` already follows.
+
+Next step unblocked: download 3-4 VISION devices' `images/flat/` +
+`images/nat/` (small subset, ~200MB), build refs per device, measure
+PCE separation real-vs-synth on held-out native + social images.
+
 ## Progress (2026-11-09 audit)
 
 - Landed: `extensions/image-forensics/` (metadata.py, prnu.py, verdict.py) + `skills/image-forensics/SKILL.md` + tests/test_image_forensics.py (10 tests, green)
