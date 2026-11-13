@@ -143,7 +143,7 @@ def spawn_target(marker):
     p = subprocess.Popen(
         [sys.executable, os.path.join(HERE, "p1_target.py"),
          marker, "60", "--qpc"],
-        stdout=subprocess.PIPE, text=True)
+        stdout=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
     line = p.stdout.readline().split()
     return p, int(line[0]) / int(line[1])
 
@@ -214,7 +214,7 @@ def main():
         rp = subprocess.Popen(
             [sys.executable, os.path.join(HERE, "p1_rename.py"),
              str(hwnd), f"{marker0}_n{i}"],
-            stdout=subprocess.PIPE, text=True)
+            stdout=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
         line = rp.stdout.readline().split()
         t0 = int(line[0]) / int(line[1])
         ev = drain(events_q, "prop", timeout=4,

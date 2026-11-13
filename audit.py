@@ -1210,7 +1210,7 @@ print()
 print('[37] subprocess utf-8 decode')
 try:
     import ast as _ast37
-    _SUB = ('run', 'call', 'check_output', 'check_call')
+    _SUB = ('run', 'call', 'check_output', 'check_call', 'Popen')
     _bad_enc = []
     for _fp in _scan_py_files():
         try:

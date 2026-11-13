@@ -217,7 +217,7 @@ def main():
         rp = subprocess.Popen(
             [sys.executable, os.path.join(here, "p1_rename.py"),
              str(hwnd), f"{marker}_{i}"],
-            stdout=subprocess.PIPE, text=True)
+            stdout=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
         line = rp.stdout.readline().split()
         qpc_set, qpc_freq = int(line[0]), int(line[1])
         ev = drain_matching(q, EVENT_OBJECT_NAMECHANGE, hwnd)
