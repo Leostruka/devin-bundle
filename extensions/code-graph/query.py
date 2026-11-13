@@ -55,9 +55,12 @@ def _stamp(payload):
     return payload
 
 
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 def _emit(payload):
-    _stamp(payload)
-    print(json.dumps(payload, indent=1))
+    print(_dumps(payload, indent=1))
 
 
 def _db(args):
@@ -123,7 +126,7 @@ def main():
     if args.envelope:
         _emit({"ok": True, "result": out})
     elif args.json:
-        print(json.dumps(out, indent=1))
+        sys.stdout.write(json.dumps(out, indent=1) + "\n")
     else:
         for r in out:
             print(" ".join(f"{k}={v}" for k, v in r.items()))

@@ -39,6 +39,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import CSV_CONFIG, AVAILABLE_STACKS, MAX_RESULTS, RTL_LEVEL_CHOICES, UNTRUNCATED_COLS, search, search_stack
 from design_system import generate_design_system
+from design_envelope import _dumps
 
 # Force UTF-8 for stdout/stderr to handle emojis on Windows (cp1252 default)
 if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
@@ -159,7 +160,7 @@ if __name__ == "__main__":
         )
 
         if args.json:
-            print(json_module.dumps(
+            print(_dumps(
                 {"design_system": result["design_system"], "persistence": result["persistence"]},
                 indent=2, ensure_ascii=False,
             ))
@@ -189,7 +190,7 @@ if __name__ == "__main__":
             )
         result = search_stack(args.query, args.stack, args.max_results)
         if args.json:
-            print(json_module.dumps(result, indent=2, ensure_ascii=False))
+            print(_dumps(result, indent=2, ensure_ascii=False))
         else:
             print(format_output(result, full=args.full))
     # Domain search
@@ -199,6 +200,6 @@ if __name__ == "__main__":
         except ValueError as exc:
             parser.error(str(exc))
         if args.json:
-            print(json_module.dumps(result, indent=2, ensure_ascii=False))
+            print(_dumps(result, indent=2, ensure_ascii=False))
         else:
             print(format_output(result, full=args.full))

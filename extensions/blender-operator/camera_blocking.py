@@ -94,6 +94,9 @@ ENGINES = ("BLENDER_WORKBENCH", "BLENDER_EEVEE_NEXT")
 def _load(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
+    d = os.path.dirname(os.path.abspath(path))
+    if d not in sys.path:
+        sys.path.insert(0, d)
     spec.loader.exec_module(mod)
     return mod
 

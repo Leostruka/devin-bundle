@@ -64,12 +64,19 @@ through untouched.
 
 The helpers are duplicated per wrapper on purpose: extensions install
 as flat self-contained dirs, no shared import path exists. Exception:
-files inside the same extension dir that already share a module may
-share the helpers - `scrape-tools` keeps them once in `st_common.py`
-and sibling CLIs call `st_common.emit(payload)`; `computer-use` keeps
-them once in `cu_envelope.py` and all 23 sibling files do
-`from cu_envelope import _stamp, _dumps` (deduplicated after
-independent review - one fix site instead of 23 identical copies).
+files inside the same dir that already cross-import share the helpers
+through a per-dir module - `scrape-tools/st_common.py`,
+`computer-use/cu_envelope.py`, `laya-tools/laya_envelope.py`,
+`asr/asr_envelope.py`, `ai-tools/ai_envelope.py`,
+`media-tools/media_envelope.py`, `remotion-render/remotion_envelope.py`,
+`image-forensics/forensics_envelope.py`,
+`design-intelligence/design_envelope.py`, and
+`scripts/bundle_envelope.py` (`bind(wrapper)` for per-file names).
+Deduplicated after independent review - one fix site per dir instead
+of ~70 identical copies. Dirs with only 1-2 emitters keep a local
+copy (ppisp-prep, harness-tree, craft-bridge, mesh-utils,
+laya-compactor, diagram-tools, code-graph, blender-operator,
+api-bridge).
 
 ## Covered entry points
 
