@@ -161,6 +161,7 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | mcp_config.json | `./mcp_config.json` | `~/.config/devin/mcp_config.json` | MCP servers |
 | hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks (`.devin/adr/005-hooks-single-source.md`); também template `.devin/` |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
+| CLI-CONTRACT.md | `./.devin/docs/` | — | Envelope v2: `api_version: 2` + `meta.answered_by` em todo JSON CLI agent-facing (waves 1-11, #604) |
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 21 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local + README (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 184 skills |
