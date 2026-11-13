@@ -79,7 +79,8 @@ def test_cli_spawn_routes_to_daemon(capsys, monkeypatch):
                         lambda: {"pid": 1, "port": 1, "session": "x"})
     monkeypatch.setattr(cli_mod, "_daemon_call", fake_call)
     r = _run(["spawn", "--shell", "cmd"], capsys)
-    assert r == {"ok": True, "sid": "s1"}
+    assert r["ok"] is True and r["sid"] == "s1"
+    assert r["api_version"] == 2
     assert calls == [("spawn", {"shell": "cmd", "cols": 120, "rows": 30})]
 
 
