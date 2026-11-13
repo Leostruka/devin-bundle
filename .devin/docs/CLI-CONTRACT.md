@@ -40,31 +40,41 @@ install (`%APPDATA%/devin/extensions/<name>/wrapper.py`), because
 thus identifiable at call time instead of only at ledger reconcile
 (the class fixed in #582).
 
-If no manifest is found, `bundle` is `""` (honest unknown, never
-fabricated).
+Only a JSON object with a `"name"` key counts as the bundle manifest:
+malformed JSON, non-dict JSON (`null`, `[]`), and unrelated files yield
+`bundle: ""` (honest unknown, never fabricated). The walk uses
+`Path(__file__).absolute()` so a junctioned/symlinked install reports
+the version of the tree it was invoked from, not the resolved target.
 
-## Implementation patterns
+## Implementation pattern (uniform)
 
-Two patterns, pick by wrapper shape:
+Every covered wrapper carries the same three-function block:
 
-- **Pattern A - `envelope()` funnel exists**: add `api_version` +
-  `meta` inside `envelope()` (agent-reach, voicebox, hyperframes,
-  stock-footage).
-- **Pattern B - ad-hoc payloads**: inject in the single `emit()` (or
-  final print) funnel via `setdefault`, so every payload path is
-  covered without refactoring call sites (gcal, offsec-tools,
-  rea-ops, rz-ops, blender-operator, comfyui-operator).
+- `_bundle_version()` - cached manifest lookup described above.
+- `_answered_by()` - returns `{"bundle": ..., "wrapper": "<name>"}`.
+- `_stamp(payload)` - in-place: forces `api_version = 2`, replaces a
+  non-dict `meta` with `{}`, then `setdefault("answered_by", ...)` so a
+  passthrough payload's own `answered_by` is preserved.
 
-`_bundle_version()` is duplicated per wrapper on purpose: extensions
-install as flat self-contained dirs, no shared import path exists.
+`_stamp` runs at every JSON funnel: inside `envelope()` builders
+*after* `env.update(extra)` (so `extra` cannot clobber the contract
+keys), inside `emit()`/`_out()`/final-print for ad-hoc payloads, and on
+help/usage JSON paths (routed through `emit()`). Non-dict payloads pass
+through untouched.
+
+The helpers are duplicated per wrapper on purpose: extensions install
+as flat self-contained dirs, no shared import path exists.
 
 ## Adding a wrapper
 
-1. Copy the `_bundle_version()` + provenance block from any wrapped
-   extension (Pattern A inside `envelope()`, Pattern B inside the
-   `emit()`/final-print funnel).
-2. Add the path to `WRAPPERS` in `tests/test_envelope_contract_v2.py`
-   and to the list above.
+1. Copy the `_bundle_version()` + `_answered_by()` + `_stamp()` block
+   from any wrapped extension; call `_stamp(...)` at every JSON output
+   funnel, including help/usage paths.
+2. Add a `(path, argv, wrapper-name)` row to `PROBES` in
+   `tests/test_envelope_contract_v2.py` - the test runs the wrapper in
+   a real subprocess and asserts `api_version == 2`,
+   `answered_by.wrapper`, and `answered_by.bundle == manifest.json`
+   version. Pick an argv that emits JSON without side effects.
 3. Probe live: run the wrapper once and confirm
    `meta.answered_by.bundle` equals `manifest.json` version.
 
@@ -75,11 +85,14 @@ install as flat self-contained dirs, no shared import path exists.
 - Media/internal tools (grainrad, jxl, playblast, craft-bridge,
   api-bridge): lower agent-call frequency.
 - `--detail brief|compact|full`: implemented on `stock-footage search`
-  (default `full` = back-compat). Deferred elsewhere; passthrough
-  wrappers defer verbosity to upstream tools.
+  (default `full`). Note `full` output also gained an additive
+  `result.detail` echo key - consumers ignoring unknown keys are
+  unaffected. Deferred elsewhere; passthrough wrappers defer verbosity
+  to upstream tools.
 
 ## References
 
-- Issue #593, PRs #594 (pilot), #595 (rollout waves 1-3)
+- Issue #593, PRs #594 (pilot), #595 (rollout waves 1-3), #601
+  (runtime-verified guard + hardened provenance)
 - Astryx CLI contract inspiration: `meta.answeredBy`, `apiVersion`
   (meta/astryx packages/cli/README)

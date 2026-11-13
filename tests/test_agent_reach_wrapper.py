@@ -192,5 +192,18 @@ def test_bundle_version_empty_on_malformed_manifest(tmp_path):
 
 def test_bundle_version_reads_manifest(tmp_path):
     env = _run_standalone(
-        tmp_path, manifest_content='{"version": "9.9.9-test"}')
+        tmp_path,
+        manifest_content='{"name": "devin-bundle", "version": "9.9.9-test"}')
     assert env["meta"]["answered_by"]["bundle"] == "9.9.9-test"
+
+
+def test_bundle_version_ignores_non_dict_manifest(tmp_path):
+    for content in ("null", "[]", '"3.0.0"', "42"):
+        env = _run_standalone(tmp_path, manifest_content=content)
+        assert env["meta"]["answered_by"]["bundle"] == "", content
+
+
+def test_bundle_version_ignores_unnamed_manifest(tmp_path):
+    env = _run_standalone(
+        tmp_path, manifest_content='{"version": "9.9.9-test"}')
+    assert env["meta"]["answered_by"]["bundle"] == ""
