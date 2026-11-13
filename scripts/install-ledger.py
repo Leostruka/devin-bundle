@@ -46,7 +46,8 @@ import sys
 LEDGER_REL = os.path.join(".devin", "install-ledger", "installs.json")
 MANAGED_TOP = ("skills", "scripts", "agents", "docs", "data",
                "extensions")
-MANAGED_FILES = ("AGENTS.md", "config.json", "hooks.v1.json")
+MANAGED_FILES = ("AGENTS.md", "audit.py", "config.json", "hooks.v1.json",
+                 "manifest.json", "mcp_config.json")
 
 # Managed files whose live bytes legitimately differ from bundle source
 # (merged/rendered at install: config.json keeps local org_id etc.).
