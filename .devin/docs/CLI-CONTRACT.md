@@ -58,7 +58,7 @@ install as flat self-contained dirs, no shared import path exists.
 - `system-control` `sc_*` suite: governed by `sc_contract.py`
   (`SCHEMA_VERSION`), a separate wire contract. Evaluate separately.
 - Media/internal tools (grainrad, jxl, playblast, craft-bridge,
-  api-bridge, laya-tools pending wave-4): lower agent-call frequency.
+  api-bridge): lower agent-call frequency.
 - `--detail brief|compact|full`: implemented on `stock-footage search`
   (default `full` = back-compat). Deferred elsewhere; passthrough
   wrappers defer verbosity to upstream tools.
