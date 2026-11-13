@@ -181,6 +181,12 @@ contract and hook-runtime infrastructure now carries v2.
 - `system-control/sc_bench.py`: internal microbenchmark over the
   sc_* internals (perf numbers dict, `{"ok": false}` exits 2). Not an
   agent-facing tool - same separate-contract domain as sc_cli.
+- `media-tools/jxl_bootstrap.py`: network bootstrap (downloads the
+  cjxl binary with checksum verification) - every path fetches; no
+  offline argv exists to probe. Excluded from PROBES; its emits still
+  carry the stamp machinery.
+- `computer-use/cu_taskrunner.py list`: bare-array output - covered
+  instead via `stop <missing-id>` dict probe.
 - `--detail brief|compact|full`: implemented on `stock-footage search`
   (default `full`). Note `full` output also gained an additive
   `result.detail` echo key - consumers ignoring unknown keys are

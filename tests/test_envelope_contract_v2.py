@@ -163,6 +163,22 @@ PROBES = [
     ("scripts/roadmap-board.py", ["--json"], "roadmap-board"),
     ("scripts/ship-metrics.py", ["report"], "ship-metrics"),
     ("scripts/rules-coverage.py", ["nonexistent"], "rules-coverage"),
+    # held-out completeness pass: stamped CLIs that had no probe row
+    # (caught by tests/held-out/test_envelope_completeness.py).
+    ("extensions/computer-use/cu_bench.py", ["--dry-run"], "computer-use"),
+    ("extensions/computer-use/cu_dom_picker.py",
+     ["--snapshot", "nope", "--goal", "x"], "computer-use"),
+    ("extensions/computer-use/cu_notify.py", ["t", "m"], "computer-use"),
+    ("extensions/computer-use/cu_ocr.py",
+     ["find", "x", "--window", "0"], "computer-use"),
+    ("extensions/computer-use/cu_overlay.py", ["--hold", "1"], "computer-use"),
+    ("extensions/computer-use/cu_probe.py", ["--at", "0,0"], "computer-use"),
+    ("extensions/computer-use/cu_scope.py", ["--list"], "computer-use"),
+    ("extensions/computer-use/cu_taskrunner.py",
+     ["stop", "nonexistent"], "computer-use"),
+    ("extensions/computer-use/cu_wgc.py", ["caps"], "computer-use"),
+    ("extensions/design-intelligence/search.py",
+     ["x", "--json"], "design-intelligence"),
 ]
 
 # Keys that could turn a probe into a real network call.
