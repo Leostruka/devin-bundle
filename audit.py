@@ -1630,20 +1630,142 @@ except Exception as _e44:
 print()
 print('[45] --out overwrite-refusal')
 try:
+    import ast as _ast45
     import re as _re45
-    _FLAG45 = _re45.compile(
-        r"add_argument\([^)]*['\"](?:-o|--out|--output|--dst)['\"]")
     _WRITE45 = _re45.compile(
         r"open\s*\([^)]*['\"]w['\"]|write_text\s*\(|\.save\s*\(")
+    _OUTFLAGS = {'-o', '--out', '--output', '--dst', '--report',
+                 '--sheet', '--output-dir'}
+
+    def _dests45(t):
+        """dest names declared via output flags on add_argument calls."""
+        ds = set()
+        for n in _ast45.walk(t):
+            if not (isinstance(n, _ast45.Call)
+                    and getattr(n.func, 'attr', '') == 'add_argument'):
+                continue
+            flags = [a.value for a in n.args
+                     if isinstance(a, _ast45.Constant)
+                     and isinstance(a.value, str)]
+            if not any(f in _OUTFLAGS for f in flags):
+                continue
+            act = next((k.value.value for k in n.keywords
+                        if k.arg == 'action'
+                        and isinstance(k.value, _ast45.Constant)), None)
+            if act in ('store_true', 'store_false', 'count',
+                       'append_const', 'version', 'help'):
+                continue
+            dest = next((k.value.value for k in n.keywords
+                         if k.arg == 'dest'
+                         and isinstance(k.value, _ast45.Constant)), None)
+            if dest is None:
+                longf = [f.lstrip('-').replace('-', '_')
+                         for f in flags if f.startswith('--')]
+                dest = longf[0] if longf else (
+                    flags[0].lstrip('-') if flags else None)
+            if dest:
+                ds.add(dest)
+        return ds
+
+    def _argsvars45(t):
+        """Names bound from parse_args()/parse_known_args()."""
+        vs = {'args'}
+        for n in _ast45.walk(t):
+            if isinstance(n, _ast45.Assign) and isinstance(
+                    n.value, _ast45.Call) and getattr(
+                    n.value.func, 'attr', '') in (
+                    'parse_args', 'parse_known_args'):
+                for tg in n.targets:
+                    if isinstance(tg, _ast45.Name):
+                        vs.add(tg.id)
+        return vs
+
+    def _isout45(x, dests, avars):
+        return (isinstance(x, _ast45.Attribute)
+                and x.attr in dests
+                and isinstance(x.value, _ast45.Name)
+                and x.value.id in avars)
+
+    def _derived45(t, dests, avars):
+        """Names whose value flows from <ns>.<dest> (to fixpoint)."""
+        def _hits(node):
+            for x in _ast45.walk(node):
+                if _isout45(x, dests, avars):
+                    return True
+            return False
+        names = set()
+        grew = True
+        while grew:
+            grew = False
+            for n in _ast45.walk(t):
+                tgts, expr = [], None
+                if isinstance(n, _ast45.Assign):
+                    tgts = n.targets
+                    expr = n.value
+                elif isinstance(n, _ast45.AnnAssign):
+                    tgts = [n.target]
+                    expr = n.value
+                elif isinstance(n, _ast45.For):
+                    tgts = [n.target]
+                    expr = n.iter
+                elif isinstance(n, _ast45.Call):
+                    for kw in n.keywords:
+                        if (kw.arg and kw.arg not in names
+                                and _hits(kw.value)):
+                            names.add(kw.arg)
+                            grew = True
+                    continue
+                if expr is None:
+                    continue
+                if _hits(expr) or any(
+                        x.id in names
+                        for x in _ast45.walk(expr)
+                        if isinstance(x, _ast45.Name)):
+                    for tg in tgts:
+                        for x in _ast45.walk(tg):
+                            if (isinstance(x, _ast45.Name)
+                                    and x.id not in names):
+                                names.add(x.id)
+                                grew = True
+        return names
+
+    def _guards45(t, dests, avars, names):
+        """True if some exists()-style call touches the out path."""
+        for n in _ast45.walk(t):
+            if not isinstance(n, _ast45.Call):
+                continue
+            m = getattr(n.func, 'attr', None)
+            if m not in ('exists', 'is_file', 'is_dir', 'lexists'):
+                continue
+            for x in _ast45.walk(n):
+                if _isout45(x, dests, avars):
+                    return True
+                if (isinstance(x, _ast45.Name) and x.id in names):
+                    return True
+        return False
+
+    # Documented exemptions: --out names a file written by an external
+    # engine inside an already-guarded dir, or the guard lives outside
+    # this file's AST (helper module / subprocess target).
+    _SKIP45 = {
+        'extensions/remotion-render/render.py',   # out_name -> remotion out/; workdir rmtree-guarded
+    }
     _bad45 = []
     for _fp in _scan_py_files():
+        _fn = str(_fp).replace('\\', '/')
+        if _fn in _SKIP45:
+            continue
         try:
             _src45 = open(_fp, encoding='utf-8').read()
-        except (OSError, UnicodeDecodeError):
+            _t45 = _ast45.parse(_src45)
+        except (OSError, UnicodeDecodeError, SyntaxError):
             continue
-        if not _FLAG45.search(_src45):
+        _d45 = _dests45(_t45)
+        if not _d45 or not _WRITE45.search(_src45):
             continue
-        if '.exists(' in _src45 or not _WRITE45.search(_src45):
+        _av45 = _argsvars45(_t45)
+        if _guards45(_t45, _d45, _av45,
+                     _derived45(_t45, _d45, _av45)):
             continue
         _bad45.append(_fp)
     if _bad45:
