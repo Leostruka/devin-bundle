@@ -24,6 +24,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]
                     / "computer-use"))
 import cu_dom_picker as _dp
+import st_common
 
 nodes_to_elements = _dp.nodes_to_elements
 MAX_INPUT_BYTES = _dp.MAX_SNAPSHOT_BYTES
@@ -39,20 +40,20 @@ def main(argv=None):
     try:
         raw = _dp.read_bounded(args.source, MAX_INPUT_BYTES)
     except OSError as e:
-        print(json.dumps({"ok": False, "error": f"read_error:{e}"}))
+        st_common.emit({"ok": False, "error": f"read_error:{e}"})
         return 2
     if raw is None:
-        print(json.dumps({"ok": False, "error": "input_too_large"}))
+        st_common.emit({"ok": False, "error": "input_too_large"})
         return 2
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as e:
-        print(json.dumps({"ok": False, "error": f"read_error:{e}"}))
+        st_common.emit({"ok": False, "error": f"read_error:{e}"})
         return 2
     nodes = data.get("nodes") if isinstance(data, dict) else data
     els = nodes_to_elements(nodes)
-    print(json.dumps({"ok": True, "count": len(els),
-                      "elements": els}, ensure_ascii=False))
+    st_common.emit({"ok": True, "count": len(els),
+                    "elements": els})
     return 0
 
 

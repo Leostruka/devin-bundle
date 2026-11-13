@@ -40,6 +40,53 @@ _LANG_RE = re.compile(
     r"(?:([A-Za-z]+)\s*\(p\s*=\s*([\d.]+)\)|([a-z]{2}))",
     re.IGNORECASE)
 
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached.
+
+    manifest.json sits at the install root in both the repo layout
+    (extensions/<name>/ -> repo root) and the live install
+    (%APPDATA%/devin/extensions/<name>/ -> %APPDATA%/devin). Only a
+    JSON object with a "name" key counts as the bundle manifest;
+    malformed or unrelated JSON yields "" rather than a guess.
+    """
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).absolute().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    data = json.loads(mf.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    break
+                if isinstance(data, dict) and data.get("name"):
+                    _BUNDLE_VERSION = str(data.get("version") or "")
+                break
+    return _BUNDLE_VERSION
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "asr"}
+
+
+def _stamp(payload):
+    """Assert envelope contract v2 on a response dict (in place)."""
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _emit(payload):
+    _stamp(payload)
+    print(json.dumps(payload, ensure_ascii=False))
+
 
 def parse_segments(text):
     """whisper.cpp stdout -> [{start, end, text}] in seconds."""
@@ -190,7 +237,7 @@ def main(argv=None):
     ap.add_argument("--lang", default="auto")
     args = ap.parse_args(argv)
     res = transcribe(args.source, args.model, args.lang)
-    print(json.dumps(res, ensure_ascii=False))
+    _emit(res)
     return 0 if res.get("ok") else 1
 
 

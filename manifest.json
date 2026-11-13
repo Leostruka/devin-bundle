@@ -1104,7 +1104,8 @@
       "name": "skill-discovery",
       "source": "devin-bundle",
       "purpose": "Use when starting any non-trivial task, before taking any action a skill might apply to, when the user asks how to do something, when no skill seems to match, or when discovering, installing, or evaluating a new skill for Devin CLI.",
-      "export_hash": "06395a49ebb96896141904f84ce8751a44673747a06a5b5d75a39d8111eed4b7"
+      "export_hash": "9DB96B40CFD20864EDB45C28FE365E2F12DA261AD08772CFB5E5C6C57F57C18F",
+      "exported_at": "2026-11-13T09:25:17.324362"
     },
     {
       "name": "social-midia",

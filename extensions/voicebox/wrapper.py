@@ -50,6 +50,7 @@ LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
 
 def emit(payload, code=0):
+    _stamp(payload)
     json.dump(payload, sys.stdout, indent=2, sort_keys=False)
     sys.stdout.write("\n")
     sys.exit(code)
@@ -106,33 +107,53 @@ _BUNDLE_VERSION = None
 
 
 def _bundle_version():
-    """Bundle version from the nearest manifest.json ancestor, cached."""
+    """Bundle version from the nearest manifest.json ancestor, cached.
+
+    manifest.json sits at the install root in both the repo layout
+    (extensions/<name>/ -> repo root) and the live install
+    (%APPDATA%/devin/extensions/<name>/ -> %APPDATA%/devin). Only a
+    JSON object with a "name" key counts as the bundle manifest;
+    malformed or unrelated JSON yields "" rather than a guess.
+    """
     global _BUNDLE_VERSION
     if _BUNDLE_VERSION is None:
         _BUNDLE_VERSION = ""
-        for parent in Path(__file__).resolve().parents:
+        for parent in Path(__file__).absolute().parents:
             mf = parent / "manifest.json"
             if mf.is_file():
                 try:
-                    _BUNDLE_VERSION = str(
-                        json.loads(mf.read_text(encoding="utf-8"))
-                        .get("version") or "")
+                    data = json.loads(mf.read_text(encoding="utf-8"))
                 except (OSError, ValueError):
-                    pass
+                    break
+                if isinstance(data, dict) and data.get("name"):
+                    _BUNDLE_VERSION = str(data.get("version") or "")
                 break
     return _BUNDLE_VERSION
 
 
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "voicebox"}
+
+
+def _stamp(payload):
+    """Assert envelope contract v2 on a response dict (in place)."""
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
 def envelope(action, status, duration, result=None, error=None):
-    env = {"api_version": 2, "status": status, "action": action,
-           "duration_s": round(duration, 2),
-           "meta": {"answered_by": {
-               "bundle": _bundle_version(), "wrapper": "voicebox"}}}
+    env = {"status": status, "action": action,
+           "duration_s": round(duration, 2)}
     if result is not None:
         env["result"] = result
     if error is not None:
         env["error"] = error
-    return env
+    return _stamp(env)
 
 
 def missing(action, duration, extra=None, hint=MISSING_HINT):
