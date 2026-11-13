@@ -176,6 +176,32 @@ def _orientation_ok(hit, orientation):
     return True
 
 
+def _best_file(hit):
+    files = hit.get("files") or []
+    if not files:
+        return None
+    return max(files, key=lambda f: f.get("width") or 0)
+
+
+def _shape_hits(hits, detail):
+    """Token-efficient detail levels (astryx-style): full keeps every
+    file variant; compact adds count+best link; brief drops files."""
+    if detail == "full":
+        return hits
+    out = []
+    for h in hits:
+        item = {k: h.get(k) for k in
+                ("id", "width", "height", "duration", "url", "preview")}
+        if detail == "compact":
+            best = _best_file(h)
+            item["files_count"] = len(h.get("files") or [])
+            item["best"] = ({"quality": best.get("quality"),
+                             "link": best.get("link")}
+                            if best else None)
+        out.append(item)
+    return out
+
+
 def search(args):
     t0 = time.time()
     if not _key(args.provider):
@@ -197,7 +223,9 @@ def search(args):
         hits = [h for h in hits if _orientation_ok(h, args.orientation)]
     return envelope("search", "ok", time.time() - t0,
                     result={"provider": args.provider,
-                            "query": args.query, "hits": hits})
+                            "query": args.query,
+                            "detail": args.detail,
+                            "hits": _shape_hits(hits, args.detail)})
 
 
 def _detail(args):
@@ -266,6 +294,10 @@ def main(argv=None):
     sp.add_argument("--per-page", type=int, default=10)
     sp.add_argument("--orientation",
                     choices=("portrait", "landscape", "square"))
+    sp.add_argument("--detail", choices=("brief", "compact", "full"),
+                    default="full",
+                    help="output verbosity: brief drops file variants, "
+                         "compact keeps count+best link, full is default")
     dp = sub.add_parser("download")
     dp.add_argument("--provider", choices=PROVIDERS, default="pexels")
     dp.add_argument("--id", required=True)
