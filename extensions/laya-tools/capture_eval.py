@@ -39,6 +39,50 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import decision_contract as dc  # noqa: E402
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "laya-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 
 def note(msg):
     print(f"[capture] {msg}", file=sys.stderr)
@@ -69,15 +113,20 @@ def main(argv=None):
                    help="Seconds to wait per reply (default 120)")
     args = p.parse_args(argv)
 
-    draft = json.loads(Path(args.draft).read_text(encoding="utf-8"))
+    try:
+        draft = json.loads(Path(args.draft).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(_dumps({"ok": False,
+                          "error": f"draft_unreadable:{exc}"}))
+        return 2
     cases = draft.get("cases")
     if not isinstance(cases, list):
-        print(json.dumps({"ok": False, "error": "draft_cases_invalid"}))
+        print(_dumps({"ok": False, "error": "draft_cases_invalid"}))
         return 2
 
     cfg = dc.load_config(args.config)
     if not dc.enabled(cfg):
-        print(json.dumps({"ok": False, "error":
+        print(_dumps({"ok": False, "error":
                           "config_disabled:mode is off — set shadow first"},
                          indent=2))
         return 1
@@ -111,11 +160,11 @@ def main(argv=None):
             try:
                 line = q.get(timeout=args.reply_timeout)
             except queue.Empty:
-                print(json.dumps({"ok": False,
+                print(_dumps({"ok": False,
                                   "error": f"reply_timeout:{cid}"}))
                 return 1
             if line is None:
-                print(json.dumps({"ok": False,
+                print(_dumps({"ok": False,
                                   "error": f"worker_eof:{cid}"}))
                 return 1
             reply = json.loads(line)
@@ -144,7 +193,7 @@ def main(argv=None):
     Path(args.out).write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8")
-    print(json.dumps({"ok": True, "out": str(args.out),
+    print(_dumps({"ok": True, "out": str(args.out),
                       "cases": len(out_cases)}))
     return 0
 

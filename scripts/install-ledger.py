@@ -42,6 +42,51 @@ import json
 import os
 import shutil
 import sys
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "install-ledger"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 LEDGER_REL = os.path.join(".devin", "install-ledger", "installs.json")
 MANAGED_TOP = ("skills", "scripts", "agents", "docs", "data",
@@ -181,7 +226,7 @@ def cmd_record_all(_args):
     # the scan is suspect, not that every file vanished at once.
     if files and (len(pruned) == len(files)
                   or len(pruned) > max(50, len(files) // 4)):
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": "prune refused: would drop %d/%d records"
                                    % (len(pruned), len(files))}))
         return 1
@@ -189,7 +234,7 @@ def cmd_record_all(_args):
         del files[rel]
     _save_ledger(data)
     _write_corpus_index(root)
-    print(json.dumps({"ok": True, "recorded": n, "pruned": len(pruned)}))
+    print(_dumps({"ok": True, "recorded": n, "pruned": len(pruned)}))
     return 0
 
 
@@ -198,12 +243,12 @@ def cmd_record(args):
     data = _load_ledger()
     rel = args.name.replace("\\", "/")
     if not os.path.isfile(os.path.join(live, rel)):
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": "live file not found: " + rel}))
         return 1
     _record_file(root, live, rel, data.setdefault("files", {}))
     _save_ledger(data)
-    print(json.dumps({"ok": True, "recorded": rel}))
+    print(_dumps({"ok": True, "recorded": rel}))
     return 0
 
 
@@ -251,7 +296,7 @@ def reconcile():
 
 
 def cmd_reconcile(_args):
-    print(json.dumps(reconcile(), indent=2, sort_keys=True))
+    print(_dumps(reconcile(), indent=2, sort_keys=True))
     return 0
 
 
@@ -346,5 +391,5 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception as exc:  # callers tolerate non-zero (install.sh `|| true`,
         # install.ps1 pipes to Out-Null); ok:false must exit non-zero (contract).
-        print(json.dumps({"ok": False, "error": str(exc)}))
+        print(_dumps({"ok": False, "error": str(exc)}))
         sys.exit(1)

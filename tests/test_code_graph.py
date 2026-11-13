@@ -48,7 +48,8 @@ def test_outline_and_refs_and_files(corpus):
 def test_detect_changes_clean_then_dirty(corpus):
     r = run("detect_changes.py", str(corpus))
     rep = json.loads(r.stdout)
-    assert rep == {"changed": [], "new": [], "removed": []}
+    assert rep["changed"] == [] and rep["new"] == [] and rep["removed"] == []
+    assert rep["api_version"] == 2
     (corpus / "src" / "alpha.py").write_text("def v2():\n    pass\n")
     rep = json.loads(run("detect_changes.py", str(corpus)).stdout)
     assert "src/alpha.py" in rep["changed"]

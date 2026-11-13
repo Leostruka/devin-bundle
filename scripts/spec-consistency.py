@@ -25,6 +25,51 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "spec-consistency"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 
 CHECKBOX_RE = re.compile(r"^\s*-\s*\[([ xX])\]")
 BACKTICK_RE = re.compile(r"`([^`\n]+)`")
@@ -154,12 +199,12 @@ def main():
     root = (sys.argv[sys.argv.index("--root") + 1]
             if "--root" in sys.argv else find_root(plan_path))
     if not os.path.isfile(plan_path):
-        print(json.dumps({"ok": False, "error": f"plan_not_found:{plan_path}"}))
+        print(_dumps({"ok": False, "error": f"plan_not_found:{plan_path}"}))
         sys.exit(2)
     try:
         lines = open(plan_path, encoding="utf-8").read().splitlines()
     except OSError as exc:
-        print(json.dumps({"ok": False, "error": f"plan_unreadable:{exc}"}))
+        print(_dumps({"ok": False, "error": f"plan_unreadable:{exc}"}))
         sys.exit(2)
 
     findings = []
@@ -298,7 +343,7 @@ def main():
         "summary": {"errors": errors, "warnings": warnings,
                     "info": len(findings) - errors - warnings},
     }
-    print(json.dumps(report, indent=2))
+    print(_dumps(report, indent=2))
     sys.exit(1 if errors else 0)
 
 

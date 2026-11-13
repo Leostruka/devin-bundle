@@ -1396,8 +1396,8 @@
     {
       "name": "check-tools.py",
       "purpose": "tools.json validator - schema check + byte-identical render gate per enabled tool (M2_07 multi-CLI contract)",
-      "export_hash": "80f5c07f815752e403718c766fcce153ce5ff3049281265de618f25c96d033e0",
-      "exported_at": "2026-11-08T08:50:55.845199"
+      "export_hash": "71052D528CC85E99EDBA3816AD236E5346CF3F7DFFF03BBCBE22EF143A9B8E5D",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "compact-gate.py",
@@ -1414,8 +1414,8 @@
     {
       "name": "context-budget.py",
       "purpose": "SessionStart hook — reports AGENTS.md token cost",
-      "export_hash": "df4df228a7906342111078fa7af87fe4976638c17c48927a18f822bec4593bf1",
-      "exported_at": "2026-11-08T15:58:15.329079"
+      "export_hash": "56F52DAB097C291099862678AC6032B7BE17517425E84538A968ABA2C2DEB602",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "context-pressure.py",
@@ -1426,8 +1426,8 @@
     {
       "name": "decision-queue.py",
       "purpose": "Stop hook module - records human-blocking stops to .devin/decisions.jsonl; --pending/--resolve CLI",
-      "export_hash": "28449cbf29d7224ab068747c5c9c72fde553f23a0dc95cc0379811645ab0895c",
-      "exported_at": "2026-11-10T06:59:34.745097"
+      "export_hash": "3076B96AD2392BBFC3322ACCFFB5EC71665B61E4026F1EA78E56FF5763D4A968",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "dep-audit-gate.py",
@@ -1440,8 +1440,8 @@
       "name": "dep-audit.py",
       "source": "devin-bundle",
       "purpose": "Dependency vulnerability scan - detects ecosystems, shells to installed scanners (pip-audit/npm audit/cargo audit/osv-scanner), JSON contract, never installs (R5-01)",
-      "export_hash": "8d9504fda6fb94bef36840144279241a9da35f092b6fea2a89d114922f4d8a3d",
-      "exported_at": "2026-11-08T10:18:51.569042"
+      "export_hash": "5C8A67BE9755FC72D50509E8EDE7F9DF1BB40F2FC5E8C57FB51E368EEEB36A41",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "design-lint-gate.py",
@@ -1459,8 +1459,8 @@
     {
       "name": "done-evaluator.py",
       "purpose": "grades a claimed done against transcript evidence - writer is not the grader (issue #437)",
-      "export_hash": "4f9b2aa5a7238d175c39b6d103c3ec1519e5eb259a1b12d997477d8f24956990",
-      "exported_at": "2026-11-10T07:19:30.736758"
+      "export_hash": "75B1E34C934A744691A4485B2C8CCAF312A95A822AB460E214BF1614BE75C08D",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "file-size-guard.py",
@@ -1472,8 +1472,8 @@
     {
       "name": "focus.py",
       "purpose": "Focus-session tracker (start/stop/report) over gitignored .devin/ledgers/focus.jsonl - issue #419",
-      "export_hash": "a6ec1ac0e887546a78dc6a68720f21e0e5dd2940285278268e799bb03088c15b",
-      "exported_at": "2026-11-08T09:45:01.894092"
+      "export_hash": "8398B7F7A577C61C0F62F1A74D0B95A3C24DB2165916B373395F7C396FDBF838",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "gh-pr-assignee.py",
@@ -1491,13 +1491,13 @@
       "name": "graph-query.py",
       "purpose": "graph-before-grep retrieval - fuses code-graph FTS + memory cues into ranked file results (issue #442)",
       "export_hash": "C84F2FC6402C5C1C349258594521F63BC4BD0C3E1E4BE3BA9ED09FAB763C6D10",
-      "exported_at": "2026-11-13T10:34:29.069750"
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "B0C9773DD9ADE47E27BF85D5D67AE4CCF072E478C9361B8B4BB68AA0A53493AC",
-      "exported_at": "2026-11-13T08:12:21.393212"
+      "export_hash": "899C2AD2BD1554AFC478CE7F0226F163B73166BBB7990232C1BC51DD56F58B41",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "laya-guard.py",
@@ -1623,8 +1623,8 @@
     {
       "name": "spec-consistency.py",
       "purpose": "Spec-vs-repo consistency checker - reads plan files, ADRs and .devin/ledgers; reports drift as JSON (manual gate, stdlib-only)",
-      "export_hash": "7825cc13936a19c0480adbae9387f6bfa31f90d268553f524d7c2321b8df1d9a",
-      "exported_at": "2026-09-26T18:26:15.829557"
+      "export_hash": "B246648F86D598EE17B6A64F407DD76A88B5B35900C891741695886848B60551",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "status_vocab.py",
@@ -1647,8 +1647,8 @@
     {
       "name": "subagent-trace.py",
       "purpose": "per-dispatch trace records (.devin/subagent-trace.jsonl) + abort flag channel for orchestrated subagents",
-      "export_hash": "000957b801a7417b48de30ddb8f4b9231db6c0af8bad4196a51b83e4692f5383",
-      "exported_at": "2026-11-10T07:19:30.736758"
+      "export_hash": "EF489DEC453CAB93CF37B9FCD1DE543C699848A3E2CD68C49161715FDED8D68C",
+      "exported_at": "2026-11-13T10:31:51.365474"
     },
     {
       "name": "token-saver.py",

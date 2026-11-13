@@ -111,9 +111,20 @@ Remaining emitters (wave 9, #604): `laya-compactor`, `ppisp-prep`,
 `mesh-utils`, `api-bridge`, `diagram-tools`, `craft-bridge`,
 `harness-tree`, plus `scripts/graph-query.py` (agent-facing
 graph-before-grep retrieval). `ns.py resume` gained a JSON error path
-(FileNotFoundError crash -> `{"ok": false}` + exit 1). This closes the
-extension emit surface: every `print(json.dumps` outside
-`system-control`'s separate contract now carries v2.
+(FileNotFoundError crash -> `{"ok": false}` + exit 1).
+
+Final sweep (wave 10, #604): `extensions/laya-tools` sub-tools
+(fit_calibration, layad, capture_eval, doc_coverage, eval_decisions,
+explore, filebool, laya_worker, review_gate, bootstrap),
+`extensions/blender-operator/camera_blocking.py`,
+`extensions/code-graph/detect_changes.py`, and the nine
+skill-referenced non-hook `scripts/` tools (check-tools,
+context-budget, decision-queue, done-evaluator, focus, install-ledger,
+dep-audit, spec-consistency, subagent-trace). `fit_calibration.py` and
+`capture_eval.py` gained JSON error paths (OSError tracebacks ->
+`{"ok": false}` + non-zero exit). This closes the agent-facing emit
+surface: every `print(json.dumps` outside `system-control`'s separate
+contract and hook-runtime infrastructure now carries v2.
 
 ## Adding a wrapper
 

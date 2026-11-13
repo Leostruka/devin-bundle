@@ -31,6 +31,50 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import decision_contract as dc  # noqa: E402
 
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "laya-tools"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
+
 PROTO_VERSION = 1
 
 
@@ -292,19 +336,19 @@ def main(config_path=None):
     dc.pin_stdio_utf8()
     cfg = dc.load_config(config_path)
     if not dc.enabled(cfg):
-        print(json.dumps({"ok": True, "mode": "off",
+        print(_dumps({"ok": True, "mode": "off",
                           "note": "feature disabled; engine not loaded"}))
         return 0
     model = cfg.get("model")
     if model and model not in (cfg.get("models") or {}):
-        print(json.dumps({"ok": False,
+        print(_dumps({"ok": False,
                           "error": f"model_not_approved:{model}"}))
         return 1
     try:
         engine = load_engine(cfg.get("models") or {},
                              cfg.get("device") or "cpu")
     except RuntimeError as e:
-        print(json.dumps({"ok": False, "error": str(e)}))
+        print(_dumps({"ok": False, "error": str(e)}))
         return 1
     # Warm the engine once so the first real request does not eat
     # cold-start latency inside its deadline_ms budget.
