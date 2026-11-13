@@ -104,6 +104,36 @@ scratch probes; check [37] now covers `Popen`.
 Metrics: audit 51/51, 0 errors/warnings; ledger 1462/0 drift;
 contract+held-out 225 pass / 57 skip (post-hardening).
 
+### --out refusal wave + review cycle (HEAD 5cdbf0c)
+
+Full triage of 32 `--out`/`-o`/`dst` declarers: 18 gained stamped
+`ok:false` + rc=2 refusal (cu_wgc, cu_bench, screenshot, record,
+ascii_mancer, grainrad, dory_sweep, capture_eval, eval_decisions,
+fit_calibration, verdict, dma audit/mine/recon conditional,
+compact +report, brag analyze_music_cues, dispatching
+review-package/task-brief); 6 pre-existing guards verified
+(camera_blocking clobber+`--force`, ui_dsl `O_EXCL`,
+playblast/composite/voicebox/stock-footage); 4 append-jsonl exempt;
+4 directory/external-engine semantics. `render.py` no longer
+`shutil.rmtree`s arbitrary `--workdir` (non-render dirs refuse).
+
+Independent review caught and fixed: `screenshot --if-changed`/
+`--diff` baseline exemption (rerun-to-stable-path was dead),
+`--diff-out` unguarded, `grainrad --self-test` bypass, guards
+moved ahead of expensive compute (fail-fast), cu_wgc rc aligned
+to 2. Checks hardened: [42] walks emit-arg subtrees
+(BinOp/JoinedStr/IfExp), [44] tracks `p=Path(x); p.walk()`,
+[45] rebuilt AST-precise (parse_args var binding, derived-name
+fixpoint through assigns/fors/kwargs, action= filter, flag
+segments `--diff-out`/`--output-md`, positional names, binary
+writes, documented skip-set). `check-push-green` covers nested
+tests dirs + `test_*.py` at any depth + bare `class Test:`.
+New `tests/validation/test_out_overwrite_refusal.py` pins the
+convention (17-file static + behavioral probe).
+
+Metrics: pytest 2733 pass / 64 skip / 0 fail at 5cdbf0c;
+audit 52/52, 0 errors/warnings; ledger 1462/0 drift.
+
 ## Also landed
 
 - `install-ledger` MANAGED_FILES now tracks root artifacts (audit.py,
