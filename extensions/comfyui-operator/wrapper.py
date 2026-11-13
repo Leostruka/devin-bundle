@@ -16,13 +16,42 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+from pathlib import Path
 
 DEFAULT_URL = "http://127.0.0.1:8188"
 LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
 _ALLOWED_SCHEMES = {"http", "https"}
 
 
+
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached."""
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
+def _provenance():
+    return {"answered_by": {"bundle": _bundle_version(), "wrapper": "comfyui-operator"}}
+
 def _out(obj, code=0):
+    if isinstance(obj, dict):
+        obj.setdefault("api_version", 2)
+        obj.setdefault("meta", _provenance())
     print(json.dumps(obj, indent=2, sort_keys=True))
     sys.exit(code)
 
