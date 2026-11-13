@@ -157,6 +157,10 @@ contract and hook-runtime infrastructure now carries v2.
 - Bare-array JSON outputs are not envelope carriers: `_stamp` only
   stamps dicts, so `skills/*/scripts/query-memory.py --json`,
   `fold_store.py list|grep`, and any list-shaped emit stay as-is.
+- Protocol surfaces, not tool output: `computer-use/mcp_server.py`
+  (JSON-RPC loop - extra keys could break strict MCP clients) and
+  `system-control/sc_cli.py` `_emit` (SCHEMA_VERSION contract) use
+  `sys.stdout.write(json.dumps(...))` deliberately unstamped.
 - `busybar`: no stdout-JSON emitters (`push.py` json.dumps is an HTTP
   payload, `listen.py` is a daemon listener).
 - `--detail brief|compact|full`: implemented on `stock-footage search`
