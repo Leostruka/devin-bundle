@@ -26,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
 
 DEFAULT_PORT = 19693
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -181,6 +182,31 @@ def _kill_pid(pid):
 
 
 # ---------- commands ----------
+
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached."""
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
+def _provenance():
+    return {"answered_by": {"bundle": _bundle_version(), "wrapper": "blender-operator"}}
+
 
 def cmd_launch(args):
     blender = find_blender(args.exe)
@@ -359,6 +385,9 @@ def main():
     else:
         ap.print_help()
         sys.exit(2)
+    if isinstance(result, dict):
+        result.setdefault("api_version", 2)
+        result.setdefault("meta", _provenance())
     print(json.dumps(result, indent=1))
     sys.exit(0 if result.get("ok") else 1)
 
