@@ -93,6 +93,10 @@ def frames(b: bytes):
 
 
 def main() -> None:
+    if len(sys.argv) < 2:
+        print("usage: pbdump.py <proto.binlog> [want_path]",
+              file=sys.stderr)
+        sys.exit(2)
     path = sys.argv[1]
     want_path = sys.argv[2] if len(sys.argv) > 2 else None
     reqs = {}
