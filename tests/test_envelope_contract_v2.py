@@ -158,6 +158,11 @@ PROBES = [
     ("scripts/dep-audit.py", [], "dep-audit"),
     ("scripts/spec-consistency.py", ["nonexistent"], "spec-consistency"),
     ("scripts/subagent-trace.py", [], "subagent-trace"),
+    # wave-11 (#604): last dict-JSON emitters in scripts/. Remaining
+    # unstamped prints are hook-protocol output or bare arrays.
+    ("scripts/roadmap-board.py", ["--json"], "roadmap-board"),
+    ("scripts/ship-metrics.py", ["report"], "ship-metrics"),
+    ("scripts/rules-coverage.py", ["nonexistent"], "rules-coverage"),
 ]
 
 # Keys that could turn a probe into a real network call.
