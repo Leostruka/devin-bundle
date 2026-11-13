@@ -1,4 +1,0 @@
-numpy
-Pillow
-# optional, stronger denoiser when present:
-PyWavelets

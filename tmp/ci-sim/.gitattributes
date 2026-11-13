@@ -1,5 +1,0 @@
-* text=auto eol=lf
-*.sh   text eol=lf
-*.ps1  text eol=crlf
-*.ics  text eol=crlf whitespace=cr-at-eol
-*.vtt  -whitespace

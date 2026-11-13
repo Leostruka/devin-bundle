@@ -1,6 +1,0 @@
-[
-  {"name": "Agent: file ISSUE tickets under #346 (capacity/WIP, timeboxing, focus tracker, goal tracker)", "minutes": 90, "priority": 1},
-  {"name": "Agent: first real agenda-roteiro run + scheduled-turns wiring + APP.md log", "minutes": 60, "priority": 2},
-  {"name": "Agent: implement meso capacity/WIP view over roadmap-board --json", "minutes": 180, "priority": 3},
-  {"name": "Agent: audit + pytest + PR + #346 update", "minutes": 60, "priority": 4}
-]

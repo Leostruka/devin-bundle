@@ -1,1 +1,0 @@
-What does scripts/pulse.py do? Answer in 2 sentences - read-only, no edits.
