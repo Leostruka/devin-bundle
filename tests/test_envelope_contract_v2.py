@@ -108,6 +108,25 @@ PROBES = [
     ("extensions/image-forensics/metadata.py", [], "image-forensics"),
     ("extensions/image-forensics/verdict.py",
      ["nope"], "image-forensics"),
+    # wave-9 remaining extension emitters + graph-query (#604): doctor
+    # reports, missing-input errors, resume/diff on absent state - all
+    # offline deterministic.
+    ("extensions/laya-compactor/compact.py",
+     ["-o", "probe-x.out", "nope"], "laya-compactor"),
+    ("extensions/ppisp-prep/photo_qc.py", ["nope"], "ppisp-prep"),
+    ("extensions/ppisp-prep/ppisp_runner.py", ["doctor"], "ppisp-prep"),
+    ("extensions/mesh-utils/meshops.py", ["doctor"], "mesh-utils"),
+    ("extensions/api-bridge/bridge.py", ["doctor"], "api-bridge"),
+    ("extensions/diagram-tools/plantuml_renderer.py",
+     ["--self-test"], "diagram-tools"),
+    ("extensions/craft-bridge/bridge.py", ["doctor"], "craft-bridge"),
+    ("extensions/craft-bridge/scene_manifest.py",
+     ["nope"], "craft-bridge"),
+    ("extensions/harness-tree/ns.py",
+     ["resume", "nonexistent"], "harness-tree"),
+    ("extensions/harness-tree/tree.py",
+     ["diff", "nope", "nope2"], "harness-tree"),
+    ("scripts/graph-query.py", ["probe-test"], "graph-query"),
 ]
 
 # Keys that could turn a probe into a real network call.

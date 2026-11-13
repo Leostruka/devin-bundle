@@ -107,6 +107,14 @@ were fixed in passing (`metadata.py`, `plan_check.py` no-args IndexError,
 `look_ledger.py` unhandled file errors) - all now emit `{"ok": false}`
 JSON with non-zero exit.
 
+Remaining emitters (wave 9, #604): `laya-compactor`, `ppisp-prep`,
+`mesh-utils`, `api-bridge`, `diagram-tools`, `craft-bridge`,
+`harness-tree`, plus `scripts/graph-query.py` (agent-facing
+graph-before-grep retrieval). `ns.py resume` gained a JSON error path
+(FileNotFoundError crash -> `{"ok": false}` + exit 1). This closes the
+extension emit surface: every `print(json.dumps` outside
+`system-control`'s separate contract now carries v2.
+
 ## Adding a wrapper
 
 1. Copy the `_bundle_version()` + `_answered_by()` + `_stamp()` block
@@ -128,8 +136,12 @@ JSON with non-zero exit.
   (`SCHEMA_VERSION`), a separate wire contract. Evaluate separately.
 - `code-graph/query.py --json` bare-array output: kept for
   back-compat; the opt-in `--envelope` flag is the contract path.
-- Media/internal tools (grainrad, jxl, playblast, craft-bridge,
-  api-bridge): lower agent-call frequency.
+- `scripts/*.py` hooks (43 files): their stdout JSON is consumed by the
+  Devin CLI hook runtime (permission decisions, nudges, gates), not
+  parsed by agents as tool output - infrastructure, not an "answered_by"
+  surface.
+- `busybar`: no stdout-JSON emitters (`push.py` json.dumps is an HTTP
+  payload, `listen.py` is a daemon listener).
 - `--detail brief|compact|full`: implemented on `stock-footage search`
   (default `full`). Note `full` output also gained an additive
   `result.detail` echo key - consumers ignoring unknown keys are
