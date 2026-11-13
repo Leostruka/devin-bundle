@@ -19,7 +19,7 @@ def run(script, payload, cwd=None):
         [sys.executable, str(ROOT / "scripts" / script)],
         input=json.dumps(payload),
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         cwd=cwd or ROOT,
         timeout=60,
     )
@@ -212,7 +212,7 @@ def test_stop_unstaged_code_dash_allowed(tmp_path):
 def test_invalid_payload_fails_open():
     p = subprocess.run(
         [sys.executable, "scripts/no-em-dash.py"],
-        input="not json", capture_output=True, text=True,
+        input="not json", capture_output=True, text=True, encoding="utf-8", errors="replace",
         cwd=ROOT, timeout=30)
     assert p.returncode == 0
 

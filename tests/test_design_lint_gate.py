@@ -14,7 +14,7 @@ def run_hook(path=None, raw=None):
     payload = raw if raw is not None else json.dumps(
         {"tool_input": {"file_path": path}})
     return subprocess.run([PY, HOOK], input=payload,
-                          capture_output=True, text=True)
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
 def write(tmpdir, name, text):

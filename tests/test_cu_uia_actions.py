@@ -304,7 +304,7 @@ def test_enum_clickables_no_process_crash():
         "{'elements': -1 if r is None else len(r['elements'])}))" % ext)
     for i in range(3):  # the crash was nondeterministic — repeat
         r = subprocess.run([str(venv), "-c", code],
-                           capture_output=True, text=True, timeout=90)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
         assert r.returncode == 0, \
             f"run {i} exit {r.returncode}: {r.stderr[-300:]}"
         assert "elements" in json.loads(r.stdout.strip())

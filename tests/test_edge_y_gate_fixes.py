@@ -24,7 +24,7 @@ def run_hook(script, payload, env_extra=None, timeout=20):
     env.update(env_extra or {})
     return subprocess.run(
         [sys.executable, os.path.join(SCRIPTS, script)],
-        input=json.dumps(payload), capture_output=True, text=True,
+        input=json.dumps(payload), capture_output=True, text=True, encoding="utf-8", errors="replace",
         timeout=timeout, env=env,
     )
 
@@ -199,7 +199,7 @@ def test_render_hooks_resolves_interpreter(tmp_path):
     r = subprocess.run(
         [sys.executable, os.path.join(SCRIPTS, "render-user-hooks.py"),
          str(tmp_path)],
-        capture_output=True, text=True, timeout=20)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
     assert r.returncode == 0, r.stderr
     rendered = json.loads(r.stdout)
     for entries in rendered.values():

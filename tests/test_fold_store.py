@@ -55,11 +55,11 @@ def test_cli(tmp_path, monkeypatch):
     src.write_text("payload " * 50)
     p = subprocess.run([sys.executable, SCRIPT, "save", "cli1",
                         "--summary", "cli fold", "--content-file", str(src)],
-                       capture_output=True, text=True, env=env)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     assert p.returncode == 0
     p = subprocess.run([sys.executable, SCRIPT, "unfold", "cli1"],
-                       capture_output=True, text=True, env=env)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     assert "payload" in p.stdout
     p = subprocess.run([sys.executable, SCRIPT, "grep", "payload"],
-                       capture_output=True, text=True, env=env)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     assert "cli1" in p.stdout

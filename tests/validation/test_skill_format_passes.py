@@ -14,7 +14,7 @@ def test_skill_format_all_pass():
     result = subprocess.run(
         [sys.executable, "scripts/validate-skill-format.py"],
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         cwd=bundle_root,
         timeout=60,
     )

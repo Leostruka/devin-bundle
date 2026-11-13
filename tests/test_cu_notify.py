@@ -63,6 +63,6 @@ def test_cli(tmp_path, monkeypatch):
     env = dict(os.environ)
     proc = subprocess.run(
         [sys.executable, NOTIFY, "cli", "msg", "info"],
-        capture_output=True, text=True, timeout=15, env=env)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=15, env=env)
     assert proc.returncode == 0
     assert "_notify_file" in proc.stdout

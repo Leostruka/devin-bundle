@@ -33,7 +33,7 @@ def _find_bash():
     for exe in candidates:
         try:
             r = subprocess.run([exe, '--version'], capture_output=True,
-                               text=True, timeout=10)
+                               text=True, encoding="utf-8", errors="replace", timeout=10)
         except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             continue
         if r.returncode == 0 and 'GNU bash' in r.stdout:
@@ -74,7 +74,7 @@ def run_install(bundle, home, *args):
     return subprocess.run(
         [BASH, 'install.sh'] + list(args),
         cwd=str(bundle), env=env,
-        capture_output=True, text=True, timeout=120)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
 
 
 # --- static assertions (portable, always run) ---
@@ -174,7 +174,7 @@ def test_single_python_resolution():
 @requires_bash
 def test_bash_syntax():
     r = subprocess.run([BASH, '-n', os.path.join(REPO_ROOT, 'install.sh')],
-                       capture_output=True, text=True, timeout=10)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     assert r.returncode == 0, r.stderr
 
 

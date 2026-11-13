@@ -19,7 +19,7 @@ def run_audit():
     return subprocess.run(
         [sys.executable, "audit.py"],
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         cwd=ROOT,
         timeout=60,
     )

@@ -35,7 +35,7 @@ def run_exec(command: str) -> tuple[int, str]:
     })
     result = subprocess.run(
         [sys.executable, SIG_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=10,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     return result.returncode, result.stdout.strip()
 

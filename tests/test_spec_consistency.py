@@ -13,7 +13,7 @@ SCRIPT = REPO / "scripts" / "spec-consistency.py"
 def run_check(plan, root, *extra):
     r = subprocess.run(
         [sys.executable, str(SCRIPT), str(plan), "--root", str(root), *extra],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r, json.loads(r.stdout)
 
 
@@ -132,6 +132,6 @@ def test_outside_manifest_dirs(repo):
 
 def test_missing_plan_exits_2(repo):
     r = subprocess.run([sys.executable, str(SCRIPT), "nope.md",
-                        "--root", str(repo)], capture_output=True, text=True)
+                        "--root", str(repo)], capture_output=True, text=True, encoding="utf-8", errors="replace")
     assert r.returncode == 2
     assert json.loads(r.stdout)["ok"] is False

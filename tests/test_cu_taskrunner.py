@@ -14,7 +14,7 @@ RUNNER = os.path.join(REPO, "extensions", "computer-use", "cu_taskrunner.py")
 
 def _cli(*args, timeout=20):
     return subprocess.run([sys.executable, RUNNER, *args],
-                          capture_output=True, text=True, timeout=timeout,
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout,
                           cwd=REPO)
 
 

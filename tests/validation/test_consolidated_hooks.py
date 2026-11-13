@@ -14,7 +14,7 @@ def run(script, payload):
         [sys.executable, f"scripts/{script}"],
         input=json.dumps(payload),
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         cwd=ROOT,
         timeout=60,
     )

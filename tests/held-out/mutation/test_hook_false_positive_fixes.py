@@ -25,7 +25,7 @@ def run_gate(command):
     })
     result = subprocess.run(
         [sys.executable, GATE_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=10,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     return result.returncode, result.stdout.strip()
 
@@ -39,7 +39,7 @@ def run_sig_check(content, tool="write", file_path="/tmp/test.md"):
     })
     result = subprocess.run(
         [sys.executable, SIG_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=10,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     return result.returncode, result.stdout.strip()
 

@@ -15,7 +15,7 @@ def _run(args, stdin_payload=None, cwd=None):
     return subprocess.run(
         [sys.executable, SCRIPT, *args],
         input=json.dumps(stdin_payload) if stdin_payload else "",
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
         cwd=cwd or ROOT, timeout=20)
 
 
@@ -47,7 +47,7 @@ def test_no_agents_md_found_fails_open(tmp_path, monkeypatch):
     env = dict(os.environ, DEVIN_PROJECT_DIR=str(tmp_path),
                APPDATA=str(tmp_path / "appdata"))
     p = subprocess.run([sys.executable, SCRIPT],
-                       capture_output=True, text=True,
+                       capture_output=True, text=True, encoding="utf-8", errors="replace",
                        cwd=str(tmp_path), env=env, timeout=20)
     assert p.returncode == 0
     assert "no AGENTS.md" in p.stderr

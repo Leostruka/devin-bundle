@@ -110,7 +110,7 @@ def test_mouse_via_browser_no_hint_fails():
     r = subprocess.run(
         [sys.executable, str(cu_load.EXT / "mouse.py"),
          "click", "10", "10", "--via", "browser"],
-        capture_output=True, text=True, env=env)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     out = json.loads(r.stdout)
     assert out["ok"] is False and "requires --hint" in out["error"]
 
@@ -121,7 +121,7 @@ def test_mouse_via_browser_stale_hint_zero_dispatch():
     r = subprocess.run(
         [sys.executable, str(cu_load.EXT / "mouse.py"),
          "click", "--hint", "zz", "--via", "browser"],
-        capture_output=True, text=True, env=env)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     out = json.loads(r.stdout)
     assert out["ok"] is False and "rejected" in out["error"]
 

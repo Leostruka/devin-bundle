@@ -37,7 +37,7 @@ def run_nudge(prompt: str = "test prompt") -> dict:
     try:
         result = subprocess.run(
             [sys.executable, NUDGE_SCRIPT],
-            input=payload, capture_output=True, text=True, timeout=10,
+            input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
         )
         if result.returncode != 0 or not result.stdout.strip():
             return {}
@@ -64,7 +64,7 @@ def test_nudge_exit_code_zero():
     payload = json.dumps({"hook_event_name": "UserPromptSubmit", "prompt": "x", "session_id": "s"})
     result = subprocess.run(
         [sys.executable, NUDGE_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=10,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     assert result.returncode == 0, f"Expected exit 0, got {result.returncode}"
 
@@ -73,7 +73,7 @@ def test_nudge_handles_invalid_json():
     """The hook must fail-open (exit 0) on invalid JSON."""
     result = subprocess.run(
         [sys.executable, NUDGE_SCRIPT],
-        input="not json", capture_output=True, text=True, timeout=10,
+        input="not json", capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     assert result.returncode == 0
 

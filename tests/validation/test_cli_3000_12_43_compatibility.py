@@ -12,7 +12,7 @@ def run_memory_hook(payload):
         [sys.executable, "scripts/memory-stop.py"],
         input=json.dumps(payload),
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         cwd=ROOT,
         timeout=10,
     )
@@ -66,7 +66,7 @@ def test_validator_accepts_discovered_project_profiles():
                 "tool_input": {"profile": profile, "title": "test", "task": "test"},
             }),
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
             cwd=ROOT,
             timeout=10,
         )

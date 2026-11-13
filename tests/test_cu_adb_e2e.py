@@ -264,7 +264,7 @@ def test_explicit_serial_skips_discovery(tmp_path):
     env.pop("CU_ADB", None)
     r = subprocess.run(
         [sys.executable, str(EXT / "screenshot.py"), "--env", "phone"],
-        capture_output=True, text=True, env=env, cwd=str(REPO), timeout=60)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, cwd=str(REPO), timeout=60)
     out = _json(r)
     assert out["ok"] and out["instance_id"] == "MY-SERIAL-9"
     calls = [json.loads(l)["argv"] for l in

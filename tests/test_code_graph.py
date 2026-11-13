@@ -13,7 +13,7 @@ PY = sys.executable
 
 def run(script, *argv):
     return subprocess.run([PY, os.path.join(EXT, script), *argv],
-                          capture_output=True, text=True)
+                          capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
 @pytest.fixture()

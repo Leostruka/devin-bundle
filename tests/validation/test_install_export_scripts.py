@@ -104,7 +104,7 @@ def _find_bash():
     for exe in candidates:
         try:
             r = subprocess.run([exe, '--version'], capture_output=True,
-                               text=True, timeout=10)
+                               text=True, encoding="utf-8", errors="replace", timeout=10)
         except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             continue
         if r.returncode == 0 and 'GNU bash' in r.stdout:
@@ -127,7 +127,7 @@ def test_bash_scripts_pass_syntax_check():
         result = subprocess.run(
             [bash, '-n', unix_path],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
             timeout=10,
         )
         assert result.returncode == 0, f"{name} has bash syntax errors: {result.stderr}"

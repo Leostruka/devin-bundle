@@ -35,7 +35,7 @@ CLI = LAYA_DIR / "laya_cli.py"
 
 def run_cli(*argv):
     return subprocess.run([sys.executable, str(CLI), *argv],
-                          capture_output=True, text=True, timeout=30)
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
 
 
 # --- check_questions: pure validator ----------------------------------------

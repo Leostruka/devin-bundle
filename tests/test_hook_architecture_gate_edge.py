@@ -17,7 +17,7 @@ def _run(payload, cwd=None):
     return subprocess.run(
         [sys.executable, SCRIPT],
         input=json.dumps(payload),
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
         cwd=cwd or ROOT, timeout=20)
 
 
@@ -107,7 +107,7 @@ def test_manifest_escape_hatch_exec(managed):
 
 def test_invalid_json_fails_open():
     p = subprocess.run([sys.executable, SCRIPT], input="{bad",
-                       capture_output=True, text=True, timeout=20)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
     assert p.returncode == 0
 
 
@@ -121,5 +121,5 @@ def test_non_dict_tool_input_fails_open():
     p = subprocess.run([sys.executable, SCRIPT],
                        input=json.dumps({"tool_name": "write",
                                          "tool_input": "x"}),
-                       capture_output=True, text=True, timeout=20)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
     assert p.returncode == 0

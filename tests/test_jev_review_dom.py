@@ -664,7 +664,7 @@ def test_review_gate_cli(tmp_path):
         [sys.executable,
          str(ROOT / "extensions" / "laya-tools" / "review_gate.py"),
          "--diff", str(diff), "--commit-msg-file", str(msg)],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     assert out.returncode == 0, out.stderr
     data = json.loads(out.stdout)
     assert data["ok"] is True and data["risk"] == "high"
@@ -678,7 +678,7 @@ def test_dom_picker_cli(tmp_path):
          str(ROOT / "extensions" / "computer-use" / "cu_dom_picker.py"),
          "--snapshot", str(snap), "--goal", "item 3",
          "--observation-id", "obs-1"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     assert out.returncode == 0, out.stderr
     data = json.loads(out.stdout)
     assert data["ok"] is True

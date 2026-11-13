@@ -136,7 +136,7 @@ def test_cli_recommend_off_abstains_without_spawn(tmp_path):
         [sys.executable, str(CLI), "recommend",
          "--profile", "skill-family-v1", "--goal", "fix a bug",
          "--config", str(tmp_path / "absent.json")],
-        capture_output=True, text=True, timeout=30)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
     assert r.returncode == 0
     out = json.loads(r.stdout)
     assert out["outcome"] == "abstain"

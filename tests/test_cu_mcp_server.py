@@ -13,7 +13,7 @@ def _rpc(lines, timeout=20):
     """Send newline-delimited JSON-RPC lines; return parsed responses."""
     proc = subprocess.run(
         [sys.executable, SERVER], input="\n".join(lines) + "\n",
-        capture_output=True, text=True, timeout=timeout,
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout,
     )
     assert proc.returncode == 0, proc.stderr
     return [json.loads(l) for l in proc.stdout.strip().splitlines() if l.strip()]

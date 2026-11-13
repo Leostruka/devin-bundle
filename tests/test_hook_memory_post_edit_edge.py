@@ -21,7 +21,7 @@ def _run(payload, mem_dir, cwd=None):
     return subprocess.run(
         [sys.executable, SCRIPT],
         input=json.dumps(payload),
-        capture_output=True, text=True,
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
         cwd=cwd or ROOT, env=env, timeout=20)
 
 
@@ -98,7 +98,7 @@ def test_missing_memory_dir_fails_open(tmp_path):
 def test_invalid_json_fails_open(mem):
     env = dict(os.environ, BUNDLE_MEMORY_DIR=str(mem))
     p = subprocess.run([sys.executable, SCRIPT], input="nope",
-                       capture_output=True, text=True, env=env,
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env,
                        timeout=20)
     assert p.returncode == 0
 

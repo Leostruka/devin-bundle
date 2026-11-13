@@ -34,7 +34,7 @@ def run_validate(tool_name, tool_input):
         [sys.executable, VALIDATE_SCRIPT],
         input=payload,
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace",
         timeout=10,
         cwd=ROOT,
     )

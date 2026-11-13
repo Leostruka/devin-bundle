@@ -434,7 +434,7 @@ def test_memory_retrieval_skips_unreadable_note(tmp_path):
         [sys.executable, str(ROOT / "scripts" / "memory-retrieval.py")],
         input=json.dumps({"hook_event_name": "UserPromptSubmit",
                           "prompt": "compaction please"}),
-        capture_output=True, text=True, env=env, timeout=30)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, timeout=30)
     assert p.returncode == 0
     assert "additionalContext" in p.stdout
     assert "skipping unreadable note" in p.stderr

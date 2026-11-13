@@ -18,7 +18,7 @@ def _read(rel):
 def _run(*argv):
     return subprocess.run(
         [sys.executable, WRAPPER] + list(argv),
-        capture_output=True, text=True, timeout=60)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
 
 
 def test_wrapper_exists_and_compiles():

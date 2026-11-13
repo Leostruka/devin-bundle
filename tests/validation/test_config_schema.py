@@ -55,7 +55,7 @@ def test_render_user_hooks_expands_paths():
     out = subprocess.run(
         [sys.executable, os.path.join(REPO_ROOT, 'scripts', 'render-user-hooks.py'),
          'HOME_TOKEN'],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     assert out.returncode == 0
     rendered = json.loads(out.stdout)
     assert len(rendered) == 8

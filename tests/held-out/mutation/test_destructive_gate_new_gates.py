@@ -30,7 +30,7 @@ def run_gate(command: str) -> tuple[int, str]:
     })
     result = subprocess.run(
         [sys.executable, GATE_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=10,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     return result.returncode, result.stdout.strip()
 
@@ -101,6 +101,6 @@ def test_fail_open_on_invalid_json():
     """The hook must fail-open (exit 0) on invalid JSON."""
     result = subprocess.run(
         [sys.executable, GATE_SCRIPT],
-        input="not json", capture_output=True, text=True, timeout=10,
+        input="not json", capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     assert result.returncode == 0

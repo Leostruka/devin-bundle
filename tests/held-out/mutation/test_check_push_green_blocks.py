@@ -32,7 +32,7 @@ def run_push_check(command: str = "git push origin main", cwd: str = None) -> in
         env["DEVIN_PROJECT_DIR"] = cwd
     result = subprocess.run(
         [sys.executable, PUSH_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=30, env=env,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30, env=env,
     )
     return result.returncode
 
@@ -58,7 +58,7 @@ def test_non_exec_tool_allowed():
     })
     result = subprocess.run(
         [sys.executable, PUSH_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=10,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     assert result.returncode == 0
 
@@ -67,7 +67,7 @@ def test_invalid_json_fail_open():
     """Invalid JSON must fail-open (exit 0)."""
     result = subprocess.run(
         [sys.executable, PUSH_SCRIPT],
-        input="not json", capture_output=True, text=True, timeout=10,
+        input="not json", capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     assert result.returncode == 0
 

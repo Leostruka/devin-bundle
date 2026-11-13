@@ -31,7 +31,7 @@ def run_silent_check(output: str, tool: str = "exec", success: bool = True) -> t
     })
     result = subprocess.run(
         [sys.executable, SILENT_SCRIPT],
-        input=payload, capture_output=True, text=True, timeout=10,
+        input=payload, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     return result.returncode, result.stdout.strip()
 
@@ -95,6 +95,6 @@ def test_fail_open_on_invalid_json():
     """The hook must fail-open (exit 0) on invalid JSON."""
     result = subprocess.run(
         [sys.executable, SILENT_SCRIPT],
-        input="not json", capture_output=True, text=True, timeout=10,
+        input="not json", capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     assert result.returncode == 0

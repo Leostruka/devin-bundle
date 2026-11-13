@@ -452,7 +452,7 @@ def _cli(script, *argv):
     import subprocess
     return subprocess.run(
         [sys.executable, str(EXT / script), *argv],
-        capture_output=True, text=True, timeout=30)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
 
 
 def _cli_json(cp):

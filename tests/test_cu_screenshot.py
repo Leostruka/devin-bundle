@@ -17,7 +17,7 @@ def test_no_image_bypass_json_contract(tmp_path):
     r = subprocess.run(
         [sys.executable, str(cu_load.EXT / "screenshot.py"),
          "--hints", "--no-image", "--window", "all"],
-        capture_output=True, text=True, env=env, timeout=60)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, timeout=60)
     out = json.loads(r.stdout)  # stdout is exactly one JSON object
     if out.get("ok") is False:
         pytest.skip("no UIA elements on this machine: %s" % out.get("error"))

@@ -18,7 +18,7 @@ def _run(args=None, stdin_text=""):
     return subprocess.run(
         [node, SCRIPT, *(args or [])],
         input=stdin_text,
-        capture_output=True, text=True, timeout=30)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
 
 
 def _mermaid_missing(p):

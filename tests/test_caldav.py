@@ -297,7 +297,7 @@ def test_wrapper_caldav_missing_creds():
     p = subprocess.run(
         [sys.executable, WRAPPER, "free-busy", "--caldav",
          "--from", "2026-11-08T00:00:00Z", "--to", "2026-11-09T00:00:00Z"],
-        capture_output=True, text=True, env=_scrubbed_env())
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=_scrubbed_env())
     out = json.loads(p.stdout)
     assert p.returncode == 1 and out["status"] == "missing"
 
@@ -307,7 +307,7 @@ def test_wrapper_caldav_add_preview():
         [sys.executable, WRAPPER, "add", "--caldav", "--summary", "x",
          "--start", "2026-11-08T09:00:00Z",
          "--end", "2026-11-08T10:00:00Z"],
-        capture_output=True, text=True, env=_scrubbed_env())
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=_scrubbed_env())
     out = json.loads(p.stdout)
     assert p.returncode == 0 and out["status"] == "confirm-required"
     assert out["backend"] == "caldav" and out["calendar"] == "AGdevin"
@@ -379,7 +379,7 @@ def test_wrapper_caldav_e2e_freebusy_add_apply():
             [sys.executable, WRAPPER, "free-busy", "--caldav",
              "--from", "2026-11-08T00:00:00Z",
              "--to", "2026-11-09T00:00:00Z"],
-            capture_output=True, text=True, env=env)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
         out = json.loads(p.stdout)
         assert p.returncode == 0 and out["status"] == "ok"
         assert out["source"] == "caldav"
@@ -392,7 +392,7 @@ def test_wrapper_caldav_e2e_freebusy_add_apply():
              "--calendar", "Personal", "--summary", "focus",
              "--start", "2026-11-08T14:00:00Z",
              "--end", "2026-11-08T15:00:00Z"],
-            capture_output=True, text=True, env=env)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
         out = json.loads(p.stdout)
         assert p.returncode == 0 and out["status"] == "ok"
         assert out["backend"] == "caldav"
@@ -411,7 +411,7 @@ def test_wrapper_caldav_e2e_freebusy_add_apply():
         p = subprocess.run(
             [sys.executable, WRAPPER, "apply", "--caldav", "--confirm",
              "--roteiro", rfile],
-            capture_output=True, text=True, env=env)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
         out = json.loads(p.stdout)
         assert p.returncode == 0 and out["status"] == "ok"
         assert out["calendar_created"] is True

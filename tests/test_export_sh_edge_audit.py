@@ -32,7 +32,7 @@ def _find_bash():
     for exe in candidates:
         try:
             r = subprocess.run([exe, '--version'], capture_output=True,
-                               text=True, timeout=10)
+                               text=True, encoding="utf-8", errors="replace", timeout=10)
         except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             continue
         if r.returncode == 0 and 'GNU bash' in r.stdout:
@@ -73,7 +73,7 @@ def run_export(bundle, live, *args):
     return subprocess.run(
         [BASH, 'export.sh'] + list(args),
         cwd=str(bundle), env=env,
-        capture_output=True, text=True, timeout=120)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
 
 
 # --- static assertions ---
@@ -147,7 +147,7 @@ def test_pycache_excluded_from_export():
 @requires_bash
 def test_bash_syntax():
     r = subprocess.run([BASH, '-n', os.path.join(REPO_ROOT, 'export.sh')],
-                       capture_output=True, text=True, timeout=10)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     assert r.returncode == 0, r.stderr
 
 
@@ -203,7 +203,7 @@ def test_masked_export_without_python_fails(tmp_path):
            for d in ('/usr/bin', '/bin') for c in ('python3', 'python')):
         pytest.skip('python lives in the minimal PATH')
     r = subprocess.run([BASH, 'export.sh'], cwd=str(bundle), env=env,
-                       capture_output=True, text=True, timeout=120)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
     assert r.returncode != 0
     assert 'refusing to export unmasked' in r.stdout + r.stderr
     assert not (bundle / 'config.json').exists() or \

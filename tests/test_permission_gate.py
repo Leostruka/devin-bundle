@@ -10,7 +10,7 @@ SCRIPT = os.path.join(REPO, "scripts", "permission-gate.py")
 
 def run_gate(payload):
     r = subprocess.run([sys.executable, SCRIPT], input=json.dumps(payload),
-                       capture_output=True, text=True, timeout=10)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     assert r.returncode == 0
     return r.stdout.strip()
 
@@ -116,6 +116,6 @@ def test_silent_on_other_tools():
 
 def test_fail_open_on_garbage():
     r = subprocess.run([sys.executable, SCRIPT], input="not json",
-                       capture_output=True, text=True, timeout=10)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     assert r.returncode == 0
     assert r.stdout.strip() == ""

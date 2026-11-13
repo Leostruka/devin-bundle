@@ -226,7 +226,7 @@ def test_wrapper_ics_free_busy(tmp_path):
     p = subprocess.run(
         [sys.executable, WRAPPER, "free-busy", "--ics", str(ics),
          "--from", "2026-11-06T08:00:00Z", "--to", "2026-11-06T18:00:00Z"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = json.loads(p.stdout)
     assert p.returncode == 0 and out["status"] == "ok"
     assert out["source"] == "ics" and len(out["busy"]) == 3
@@ -258,7 +258,7 @@ def test_wrapper_ics_url_free_busy():
              "--ics-url", f"http://127.0.0.1:{port}/cal.ics",
              "--from", "2026-11-06T08:00:00Z",
              "--to", "2026-11-06T18:00:00Z"],
-            capture_output=True, text=True)
+            capture_output=True, text=True, encoding="utf-8", errors="replace")
         out = json.loads(p.stdout)
         assert p.returncode == 0 and out["status"] == "ok"
         assert out["source"] == "ics-url" and len(out["busy"]) == 3
@@ -277,7 +277,7 @@ def test_wrapper_missing_creds_graceful(tmp_path):
            "USERPROFILE": str(tmp_path),
            "HOME": str(tmp_path)}
     p = subprocess.run([sys.executable, WRAPPER, "free-busy"],
-                       capture_output=True, text=True, env=env)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     out = json.loads(p.stdout)
     assert p.returncode == 1 and out["status"] == "missing"
 
@@ -293,7 +293,7 @@ def test_wrapper_plan(tmp_path):
         [sys.executable, WRAPPER, "plan", "--tasks", str(tasks),
          "--ics", str(ics),
          "--from", "2026-11-06T08:00:00Z", "--to", "2026-11-06T18:00:00Z"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = json.loads(p.stdout)
     assert p.returncode == 0
     r = out["roteiro"]
@@ -316,7 +316,7 @@ def test_add_needs_confirm_before_any_write(tmp_path):
         [sys.executable, WRAPPER, "add", "--summary", "x",
          "--start", "2026-11-07T09:00:00Z",
          "--end", "2026-11-07T10:00:00Z"],
-        capture_output=True, text=True, env=env)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     out = json.loads(p.stdout)
     assert p.returncode == 0 and out["status"] == "confirm-required"
     assert out["payload"]["summary"] == "x"
@@ -324,7 +324,7 @@ def test_add_needs_confirm_before_any_write(tmp_path):
 
 def test_add_missing_args_is_usage_error():
     p = subprocess.run([sys.executable, WRAPPER, "add", "--summary", "x"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = json.loads(p.stdout)
     assert p.returncode == 2 and out["status"] == "error"
 
@@ -339,7 +339,7 @@ def test_apply_previews_roteiro_without_confirm(tmp_path):
     p = subprocess.run(
         [sys.executable, WRAPPER, "apply", "--roteiro", str(roteiro),
          "--prefix", "[r] "],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = json.loads(p.stdout)
     assert p.returncode == 0 and out["status"] == "confirm-required"
     assert len(out["events"]) == 2
@@ -349,7 +349,7 @@ def test_apply_previews_roteiro_without_confirm(tmp_path):
 def test_apply_missing_file_is_error():
     p = subprocess.run([sys.executable, WRAPPER, "apply",
                         "--roteiro", "nope.json"], capture_output=True,
-                       text=True)
+                       text=True, encoding="utf-8", errors="replace")
     out = json.loads(p.stdout)
     assert p.returncode == 2 and out["status"] == "error"
 
@@ -392,7 +392,7 @@ def test_add_preview_names_agdevin_default():
         [sys.executable, WRAPPER, "add", "--summary", "x",
          "--start", "2026-11-07T09:00:00Z",
          "--end", "2026-11-07T10:00:00Z"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = json.loads(p.stdout)
     assert out["status"] == "confirm-required"
     assert out["calendar"] == "AGdevin"
@@ -405,7 +405,7 @@ def test_bool_flag_rejects_value_assignment(tmp_path):
          "--start", "2026-11-07T09:00:00Z",
          "--end", "2026-11-07T10:00:00Z",
          "--confirm=false"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
     out = json.loads(p.stdout)
     assert p.returncode == 2 and out["status"] == "error"
     assert "takes no value" in out["stderr"]

@@ -158,7 +158,7 @@ with patch("builtins.open", checkout_open):
     result = subprocess.run([sys.executable, "-c", script, target, category,
                              name, newline, writer_newline,
                              "changed" if changed else "same"], cwd=ROOT,
-                            capture_output=True, text=True, timeout=90)
+                            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=90)
     assert result.returncode == 0, result.stderr
     assert "Errors:   0" in result.stdout
     warning = "manifest agent hash mismatch" if category == "agents" else "manifest script hash mismatch"

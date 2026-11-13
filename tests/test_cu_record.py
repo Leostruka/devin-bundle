@@ -184,7 +184,7 @@ def test_cli_webp_contract(tmp_path):
         [sys.executable, str(cu_load.EXT / "record.py"),
          "--seconds", "0.4", "--fps", "5",
          "--out", str(out), "--sheet", str(sheet)],
-        capture_output=True, text=True, env=env, timeout=120)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, timeout=120)
     res = json.loads(r.stdout)
     if res.get("ok") is False:
         pytest.skip("no display/capture backend: %s" % res.get("error"))

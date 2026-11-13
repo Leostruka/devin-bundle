@@ -121,7 +121,7 @@ def _gh_shim(tmp_path):
 def _post_exec(payload, env):
     return subprocess.run(
         [sys.executable, POST_EXEC], input=json.dumps(payload),
-        capture_output=True, text=True, env=env, timeout=30)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, timeout=30)
 
 
 def test_e2e_assigns_via_real_runner(tmp_path):
