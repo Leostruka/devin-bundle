@@ -1,7 +1,12 @@
 # CLI envelope contract v2
 
-JSON responses from bundle CLIs/extensions follow a shared envelope so
-agents can identify provenance and version at call time.
+JSON responses from bundle extension wrappers follow a shared envelope
+so agents can identify provenance and version at call time.
+
+Scope note: `extensions/*` wrappers only. `scripts/` tools emit ad-hoc
+JSON consumed by hooks/repo runs (drift already covered by the install
+ledger's `scripts/` tracking); hook-internal JSON goes to the hook
+runtime, not agents.
 
 ## Shape
 
@@ -52,6 +57,16 @@ Two patterns, pick by wrapper shape:
 
 `_bundle_version()` is duplicated per wrapper on purpose: extensions
 install as flat self-contained dirs, no shared import path exists.
+
+## Adding a wrapper
+
+1. Copy the `_bundle_version()` + provenance block from any wrapped
+   extension (Pattern A inside `envelope()`, Pattern B inside the
+   `emit()`/final-print funnel).
+2. Add the path to `WRAPPERS` in `tests/test_envelope_contract_v2.py`
+   and to the list above.
+3. Probe live: run the wrapper once and confirm
+   `meta.answered_by.bundle` equals `manifest.json` version.
 
 ## Out of scope
 
