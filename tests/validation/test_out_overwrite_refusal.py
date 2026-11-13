@@ -21,6 +21,7 @@ GUARDED = [
     "extensions/computer-use/record.py",
     "extensions/media-tools/ascii_mancer.py",
     "extensions/media-tools/grainrad.py",
+    "extensions/media-tools/jxl.py",
     "extensions/media-tools/update_tooooools_db.py",
     "extensions/ai-tools/dory_sweep.py",
     "extensions/laya-tools/capture_eval.py",
