@@ -252,8 +252,8 @@ def _stamped_files():
     for rel in list(out):
         d = os.path.dirname(rel)
         if d.startswith("extensions/"):
-            out.update(glob.glob(os.path.join(d, "*.py"),
-                                 root_dir=str(ROOT)))
+            out.update(g.replace(os.sep, "/") for g in glob.glob(
+                os.path.join(d, "*.py"), root_dir=str(ROOT)))
     return sorted(out)
 
 
@@ -270,6 +270,7 @@ def test_no_unstamped_stdout_pattern(rel):
         pytest.skip(f"{rel}: not a stamped emitter")
     tree = ast.parse(src)
     assigns = {}
+    stamped_names = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign) and len(node.targets) == 1 \
                 and isinstance(node.targets[0], ast.Name) \
@@ -277,6 +278,21 @@ def test_no_unstamped_stdout_pattern(rel):
                 and isinstance(node.value.func, ast.Attribute) \
                 and node.value.func.attr == "dumps":
             assigns[node.targets[0].id] = node.lineno
+        # names routed through the stamp funnel: _stamp(x) / emit(x) /
+        # y = _stamp(x) / y = _dumps(x) - dump of those names is stamped
+        if isinstance(node, ast.Call) and isinstance(
+                node.func, ast.Name) and node.func.id in (
+                "_stamp", "_dumps", "emit", "_emit"):
+            for a in node.args:
+                if isinstance(a, ast.Name):
+                    stamped_names.add(a.id)
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name) \
+                and isinstance(node.value, ast.Call) \
+                and isinstance(node.value.func, ast.Name) \
+                and node.value.func.id in ("_stamp", "_dumps",
+                                           "emit", "_emit"):
+            stamped_names.add(node.targets[0].id)
         if isinstance(node, ast.Call) and isinstance(
                 node.func, ast.Name) and node.func.id == "print":
             for a in node.args:
@@ -289,6 +305,57 @@ def test_no_unstamped_stdout_pattern(rel):
                     pytest.fail(
                         f"{rel}:{a.lineno} print({a.id}) of json.dumps "
                         f"assigned at :{assigns[a.id]} bypasses _dumps")
+        # stdout-channel writes containing an unstamped dumps/dump
+        # call - the third bypass class (buffer.write, stdout.write,
+        # writelines, os.write, json.dump(..., sys.stdout))
+        STDOUT_WRITE_OK = {
+            # documented bare-array --json back-compat (CLI-CONTRACT);
+            # --envelope is the stamped route
+            "extensions/code-graph/query.py",
+            # daemon stdin/stdout pipe transport - raw JSON-lines;
+            # inner script payloads self-stamp via their own _dumps
+            "extensions/computer-use/cu_session.py",
+        }
+        if rel in STDOUT_WRITE_OK:
+            continue
+        if isinstance(node, ast.Call):
+            fn = node.func
+            stdout_write = False
+            if isinstance(fn, ast.Attribute) and fn.attr in (
+                    "write", "writelines"):
+                recv = fn.value
+                if isinstance(recv, ast.Attribute) and recv.attr == "stdout":
+                    stdout_write = True  # sys.stdout.write / .buffer.write
+                elif isinstance(recv, ast.Attribute) and recv.attr == "buffer" \
+                        and isinstance(recv.value, ast.Attribute) \
+                        and recv.value.attr == "stdout":
+                    stdout_write = True
+            if isinstance(fn, ast.Attribute) and fn.attr == "write" \
+                    and isinstance(fn.value, ast.Name) and fn.value.id == "os":
+                stdout_write = True  # os.write(...)
+            if isinstance(fn, ast.Attribute) and fn.attr == "dump" \
+                    and isinstance(fn.value, ast.Name) and fn.value.id == "json" \
+                    and any(isinstance(a, ast.Attribute) and a.attr == "stdout"
+                            for a in node.args[1:]):
+                stdout_write = True  # json.dump(x, sys.stdout)
+            if stdout_write:
+                for sub in ast.walk(node):
+                    if isinstance(sub, ast.Call) and isinstance(
+                            sub.func, ast.Attribute) and sub.func.attr in (
+                            "dumps", "dump"):
+                        stamped_call = any(
+                            isinstance(a, ast.Call) and isinstance(
+                                a.func, ast.Name) and a.func.id in (
+                                "_stamp", "_dumps", "emit", "_emit")
+                            for a in sub.args) or any(
+                            isinstance(a, ast.Name)
+                            and a.id in stamped_names
+                            for a in sub.args)
+                        if not stamped_call:
+                            pytest.fail(
+                                f"{rel}:{sub.lineno} stdout write of "
+                                "unstamped json.dumps/dump bypasses "
+                                "_dumps funnel")
 
 
 def test_fold_store_save_emits_contract_v2(tmp_path):

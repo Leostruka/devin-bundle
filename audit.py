@@ -1531,6 +1531,64 @@ try:
 except Exception as _e43:
     print('  SKIP import-use check failed: ' + str(_e43))
 
+# 44. Python-floor compat: stdlib APIs newer than the CI floor (3.11)
+# import fine but crash at call time on older interpreters.
+# read_text(newline=) landed in 3.13 - it produced the devin-manager
+# CI ubuntu py3.11 probe failure (empty stdout -> JSONDecodeError);
+# Path.walk() and itertools.batched() are 3.12+.
+print()
+print('[44] Python floor compat (3.11)')
+try:
+    import ast as _ast44
+    _bad44 = []
+    for _fp in _scan_py_files():
+        try:
+            _src44 = open(_fp, encoding='utf-8').read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if 'read_text' not in _src44 and 'batched' not in _src44 \
+                and 'walk' not in _src44:
+            continue
+        try:
+            _t44 = _ast44.parse(_src44)
+        except SyntaxError:
+            continue
+        _hit = None
+        for _n in _ast44.walk(_t44):
+            if isinstance(_n, _ast44.ImportFrom) \
+                    and _n.module == 'itertools' \
+                    and any(a.name == 'batched' for a in _n.names):
+                _hit = 'itertools.batched is 3.12+'
+                break
+            if not isinstance(_n, _ast44.Call):
+                continue
+            _f = _n.func
+            if not isinstance(_f, _ast44.Attribute):
+                continue
+            if _f.attr == 'read_text' and any(
+                    k.arg == 'newline' for k in _n.keywords):
+                _hit = 'read_text(newline=) is 3.13+'
+                break
+            if _f.attr == 'batched' and isinstance(_f.value, _ast44.Name) \
+                    and _f.value.id == 'itertools':
+                _hit = 'itertools.batched is 3.12+'
+                break
+            if _f.attr == 'walk' and isinstance(_f.value, _ast44.Call) \
+                    and getattr(_f.value.func, 'id', '') == 'Path':
+                _hit = 'Path.walk() is 3.12+'
+                break
+        if _hit:
+            _bad44.append(_fp + ' (' + _hit + ')')
+    if _bad44:
+        errors.append('stdlib API newer than the 3.11 floor: '
+                      + ', '.join(_bad44[:10]))
+        print('  FAIL ' + str(len(_bad44)) + ' file(s): '
+              + ', '.join(_bad44[:5]))
+    else:
+        print('  OK  no stdlib API newer than the 3.11 floor')
+except Exception as _e44:
+    print('  SKIP floor-compat check failed: ' + str(_e44))
+
 print()
 print('=== SUMMARY ===')
 print('Errors:   ' + str(len(errors)))
