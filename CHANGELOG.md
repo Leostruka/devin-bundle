@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - research(batch-9): curated GitHub resource index `.devin/research/resource-index.md` - 14 high-signal repos (papers-we-love, system-design-primer, public-apis, LLMs/ML-from-scratch, ...) ranked by when-to-reach with bundle-area mapping; pointers added to `research` + `ai-tools` skills (#589, PR #592). Meshy image-to-3D API verified real but verdict BACKLOG - ai3d-gen stays local-first, hosted path only on explicit opt-in (#590). Astryx CLI agent-facing contract evaluated - covered patterns documented, envelope-v2 gaps shipped as #593-#597 (#591).
 
+- feat(stock-footage): `search` gains `--detail brief|compact|full` (default `full` = back-compat) - astryx-style token-efficient levels; brief drops per-file variants, compact keeps `files_count`+`best` link (#598).
+
+- test(extensions): envelope v2 hardening - `_bundle_version` edge cases verified end-to-end via standalone subprocess probes (absent/malformed/valid manifest -> honest empty/version, never fabricated) (#599); static coverage guard asserts all 11 contract wrappers carry `api_version`/`answered_by`/`_bundle_version` markers so future wrappers can't ship without provenance (#600).
+
 - feat(laya-tools): bootstrap --help/--dry-run args, no more silent install on probe (#588)
 
 ## [3.21.0] - 2026-11-13
