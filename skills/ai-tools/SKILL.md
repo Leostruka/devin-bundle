@@ -99,3 +99,6 @@ Use this playbook when building, adapting, or distilling a custom reasoning or d
 - gputaskman / GPU Taskman (Scott Hanselman, MIT): GPU task manager
   showing per-process VRAM/AI usage on NVIDIA/AMD/Intel/Apple; quick
   observability when local inference competes for VRAM.
+- rasbt/LLMs-from-scratch + eriklindernoren/ML-From-Scratch: step-by-step
+  PyTorch/NumPy implementations for verifying model mechanics before
+  post-training; see `.devin/research/resource-index.md`.

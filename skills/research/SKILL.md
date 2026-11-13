@@ -22,6 +22,10 @@ Spin up a **background agent** so you keep working while it reads. Its job:
 3. Save it where the repo keeps such notes; match convention, else somewhere
    sensible and say where.
 
+Before improvising tool/library discovery, check
+`.devin/research/resource-index.md` (curated high-signal repos: papers,
+apis, algorithms, learning paths) for an existing primary source.
+
 ## Mode: deep-mode (codebase)
 
 When: "deep search the codebase", "map all callers of Y", architecture-level

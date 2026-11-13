@@ -58,7 +58,8 @@
       "name": "ai-tools",
       "source": "devin-bundle",
       "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
-      "export_hash": "2279033893b4b759a810673b2ca8129a5b528d5745ba2b051274222debcd7220"
+      "export_hash": "C8BE898E90A1EBA3A23BA0E2E542C896207C44D25B7D4675AD0C1FD22E7B6DD0",
+      "exported_at": "2026-11-13T07:08:14.733703"
     },
     {
       "name": "ai3d-gen",
@@ -964,8 +965,8 @@
       "source": "devin-bundle",
       "purpose": "Use when the user asks a question that needs investigation against primary sources and citations, or says 'deep', 'deep search', 'deep research', 'research this thoroughly', or asks for exhaustive codebase exploration beyond a quick grep. Covers external primary-source research (background agent) and multi-pass deep codebase search with citations.",
       "original_path": "%APPDATA%\\devin\\skills\\research",
-      "export_hash": "581bc4d19aba7a9359b96f7f0cf8e27c340c1fbe2f2601431198b8375022a716",
-      "exported_at": "2026-09-08T21:39:22.444591"
+      "export_hash": "42329AF28E2FD7F6002C72414DE7E65D756E8075B8E9354D433C9B80677679AF",
+      "exported_at": "2026-11-13T07:08:14.733703"
     },
     {
       "name": "resolving-merge-conflicts",
