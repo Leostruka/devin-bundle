@@ -46,3 +46,38 @@ agent-facing tooling; pointer in relevant skill. NOT adopting the lib
 
 ## Issues filed
 - (see gh issue list; numbered below in agenda)
+
+## L3 deep-dive (astryx CLI contract) - evidence
+
+Fetched meta/astryx README + packages/cli/README (primary sources).
+Agent-facing innovations vs bundle grep (apiVersion/answeredBy/--detail/
+outsideProject: ZERO matches repo-wide):
+
+| Astryx pattern | Bundle equivalent | Verdict |
+|---|---|---|
+| `manifest --json` full machine contract | manifest.json + bundle-identity.json | COVERED (static, not per-command) |
+| Typed envelope `{apiVersion,type,data,meta.answeredBy}` | flat `{"ok":...}` envelopes | GAP: no version provenance - stale live copies indistinguishable (relates to #582 drift bug) |
+| `--detail brief|compact|full`, `--dense`, `--lang` | none | GAP: no token-efficient output levels on high-traffic CLIs |
+| `outsideProject: same|own|refuse` per command | implicit | GAP (minor): capability honesty not declared |
+| `search` cross-domain ranked + follow-up cmd | graph-query.py, check-tools.py, TOOLS-MAP | PARTIAL: no unified ranked search w/ next-command hints |
+| `init` writes component index -> AGENTS.md | TOOLS-MAP.md + auto-discovered skills | COVERED (different mechanism, same outcome) |
+| `swizzle` eject component source | skill copy/export mechanism | COVERED conceptually |
+| global vs project install precedence | install-ledger + live sync | COVERED |
+
+Adopted now: comparison documented here + follow-up issue for envelope v2.
+Not adopted: the React library itself (bundle is not a React app).
+
+## L2 deep-dive (Meshy) - evidence
+
+Fetched docs.meshy.ai/en/api/image-to-3d (primary source).
+API real: POST /openapi/v1/image-to-3d, Bearer key, async task lifecycle
+(create -> poll/stream -> result), accepts base64 data URI (no public URL
+needed), target_formats incl glb/fbx/obj/usdz/stl/blend, models
+meshy-7.1/meshy-t2/t2.5, texture models meshy-7/n1/6-lite, credit-based
+pricing w/ refunds, deprecations tracked (meshy-7 retires 2026-12-31).
+MCP integration exists per feature page.
+
+Verdict: BACKLOG. ai3d-gen stays local-first/open-weights. Hosted path
+only if user explicitly opts in (image upload to third party = privacy
+decision; Ultra tiers paid). No default dependency. Revisit if local
+pipeline can't cover a case or user requests hosted gen.
