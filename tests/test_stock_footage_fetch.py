@@ -134,3 +134,53 @@ def test_search_non_dict_json_typed_error(monkeypatch, capsys):
     out = json.loads(capsys.readouterr().out)
     assert rc == 1 and out["status"] == "error"
     assert "not_an_object" in out["error"]
+
+
+def _fake_hit():
+    return {"id": 7, "width": 1920, "height": 1080, "duration": 12,
+            "url": "https://x/v", "preview": "https://x/p.jpg",
+            "files": [{"quality": "sd", "width": 640, "height": 360,
+                       "link": "https://x/sd.mp4"},
+                      {"quality": "hd", "width": 1920, "height": 1080,
+                       "link": "https://x/hd.mp4"}]}
+
+
+def test_shape_hits_full_unchanged():
+    hits = [_fake_hit()]
+    assert fetch._shape_hits(hits, "full") == hits
+
+
+def test_shape_hits_brief_drops_files():
+    out = fetch._shape_hits([_fake_hit()], "brief")
+    assert out[0]["id"] == 7 and "files" not in out[0]
+    assert out[0]["preview"] == "https://x/p.jpg"
+
+
+def test_shape_hits_compact_keeps_best():
+    out = fetch._shape_hits([_fake_hit()], "compact")
+    assert out[0]["files_count"] == 2
+    assert out[0]["best"]["link"] == "https://x/hd.mp4"
+    assert "files" not in out[0]
+
+
+def test_search_detail_flag_end_to_end(monkeypatch, capsys):
+    monkeypatch.setenv("PEXELS_API_KEY", "k")
+    payload = {"videos": [{"id": 7, "width": 1920, "height": 1080,
+                           "duration": 12, "url": "https://x/v",
+                           "video_pictures": [{"picture": "https://x/p"}],
+                           "video_files": [
+                               {"quality": "hd", "width": 1920,
+                                "height": 1080, "link": "https://x/hd"}]}]}
+
+    class _Resp:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def read(self, n=-1): return json.dumps(payload).encode()
+
+    monkeypatch.setattr(fetch.urllib.request, "urlopen",
+                        lambda req, timeout=None: _Resp())
+    rc = fetch.main(["search", "--query", "x", "--detail", "brief"])
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 0 and out["status"] == "ok"
+    assert out["result"]["detail"] == "brief"
+    assert "files" not in out["result"]["hits"][0]
