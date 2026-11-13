@@ -111,7 +111,7 @@
       "name": "arena",
       "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
       "purpose": "Use when one attempt at a non-trivial artifact would lock in the wrong shape. Spawns N parallel candidates at the same task, cross-judges, picks a base, grafts the strongest parts of the losers into it.",
-      "original_path": "%APPDATA%\\devin\\skills\u0007rena",
+      "original_path": "%APPDATA%\\devin\\skills\\arena",
       "export_hash": "eb406b378592d13cd4104ca3cfccc27001b49b24ffbe0cd21719ae6f694fb3aa",
       "exported_at": "2026-11-04T21:54:49.869576"
     },
