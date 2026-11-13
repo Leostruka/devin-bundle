@@ -18,12 +18,57 @@ import time
 
 import cu_actions
 import cu_browser
+from pathlib import Path
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 EVENTS_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-bevents.json")
 
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(code)
 
 
@@ -134,7 +179,7 @@ def _remote_main(target):
     if args.cmd == "bind-remote":
         r = cu_browser.bind_remote(target["env_id"],
                                    backend.instance_id())
-        print(json.dumps(r))
+        print(_dumps(r))
         return
     gate = cu_guest.check_operation(
         f"dom.{args.cmd}", backend.guest_caps())
@@ -148,7 +193,7 @@ def _remote_main(target):
         r = backend.guest_call(method, params)
     except Exception as exc:
         cu_target.reject_remote(f"{type(exc).__name__}:{exc}")
-    print(json.dumps({"ok": True, "status": "dispatched",
+    print(_dumps({"ok": True, "status": "dispatched",
                       "env_id": target["env_id"], "return": r}))
 
 
@@ -239,10 +284,10 @@ def main():
     args = p.parse_args()
 
     if args.cmd == "bind":
-        print(json.dumps(cu_browser.bind(args.endpoint, args.pid)))
+        print(_dumps(cu_browser.bind(args.endpoint, args.pid)))
         return
     if args.cmd == "unbind":
-        print(json.dumps(cu_browser.unbind()))
+        print(_dumps(cu_browser.unbind()))
         return
     if args.cmd == "status":
         b = cu_browser.binding()
@@ -255,29 +300,29 @@ def main():
             if cli:
                 out["dialect"] = cli.dialect
                 cli.close()
-        print(json.dumps(out))
+        print(_dumps(out))
         return
     if args.cmd == "pin":
         t = None if args.target in (None, "off") else args.target
-        print(json.dumps(cu_browser.pin_target(t)))
+        print(_dumps(cu_browser.pin_target(t)))
         return
     if args.cmd == "events":
         if args.op == "start":
-            print(json.dumps(_events_start(args)))
+            print(_dumps(_events_start(args)))
         elif args.op == "stop":
-            print(json.dumps(_events_stop(args)))
+            print(_dumps(_events_stop(args)))
         else:
             op = {"op": args.op}
             if args.arg is not None:
                 op["arg"] = args.arg
-            print(json.dumps(_events_call(op)))
+            print(_dumps(_events_call(op)))
         return
     if args.cmd == "launch":
-        print(json.dumps(cu_browser.launch_owned(args.profile,
+        print(_dumps(cu_browser.launch_owned(args.profile,
                                                args.timeout)))
         return
     if args.cmd == "stop":
-        print(json.dumps(cu_browser.stop_owned()))
+        print(_dumps(cu_browser.stop_owned()))
         return
 
     cli = _client()
@@ -328,7 +373,7 @@ def main():
                 max_frames=args.max_frames, last_only=args.last)
         else:
             out = {"ok": False, "error": f"unknown cmd {args.cmd}"}
-        print(json.dumps(out))
+        print(_dumps(out))
     except Exception as ex:
         fail(f"{type(ex).__name__}: {ex}")
     finally:

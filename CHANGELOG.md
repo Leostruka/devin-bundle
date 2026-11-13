@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - feat(laya-tools): bootstrap --help/--dry-run args, no more silent install on probe (#588)
 
+- feat(extensions): envelope v2 wave 6 - computer-use agent entry CLIs (#604). The 8 skill-invoked CLIs (`terminal`, `screenshot`, `mouse`, `type_text`, `record`, `profile`, `env`, `browser`) route all `print(json.dumps(..))` sites through a `_dumps = json.dumps . _stamp` funnel - 65 emit sites stamped with zero output-shape changes. Shared emit paths that fire during CLI runs are covered too: `cu_motion` (JsonParser usage errors), `cu_target`/`cu_actions` (rejections/exception wrapper), `cu_scope` (window-discovery CLI), `cu_session_dispatch` (daemon paths under `$CU_SESSION=1`). Remaining `cu_*` files emit only under their own `__main__` - deferred to a future wave.
+
 ## [3.21.0] - 2026-11-13
 
 - permission-gate hook (issue #541): new PermissionRequest event hook that auto-approves provably read-only `exec` commands so humans stop answering prompts for `git status`-class reads. Approve-only by contract (never emits `block`; silence lets the human decide; `fail_closed: false`). Four independent review rounds hardened it to deny-by-default exact arg shapes: quote-collapse normalization, per-verb dangerous args, brace expansion, bundled/attached flags, extension-stripping on script interpreters, credential-print vectors (`gh auth token`, `gh auth -t`, `--web` browser side-effects), mutating positionals (`git tag`, `branch -u`, `remote set-head`), `env`/`fd -x`/`rg --pre` exec wrappers, `ext::` transport. Verified end-to-end against the live gate with probe matrices; residual nits documented in #565.

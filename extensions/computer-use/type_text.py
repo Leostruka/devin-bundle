@@ -23,7 +23,52 @@ import cu_motion as cm
 import cu_hints
 import cu_scope
 import cu_target
+from pathlib import Path
 
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 def set_dpi_awareness():
     import cu_dpi
@@ -31,7 +76,7 @@ def set_dpi_awareness():
 
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(code)
 
 
@@ -131,7 +176,7 @@ def _remote_main(target):
             {"cmd": "type"}, before,
             {"frame": img2, "meta": meta2},
             {"kind": "frame_changed"})
-    print(json.dumps(out))
+    print(_dumps(out))
 
 
 def _scoped_type(args, channel):
@@ -153,7 +198,7 @@ def _scoped_type(args, channel):
         fail(f"window target: {exc}", 2)
     base = {"channel": channel, "hwnd": inp, "frame": frame}
     if args.dry_run:
-        print(json.dumps({"ok": True, "status": "dry_run", **base}))
+        print(_dumps({"ok": True, "status": "dry_run", **base}))
         return
     res = None
     if args.text is not None:
@@ -196,7 +241,7 @@ def _scoped_type(args, channel):
     else:
         ok = res["delivered"] == res.get("total")
     out = {"ok": ok, "status": "dispatched", **base, **res}
-    print(json.dumps(out))
+    print(_dumps(out))
     if not ok:
         sys.exit(1)
 
@@ -295,7 +340,7 @@ def main():
                             "total": round(cu_actions.now_ms() - t0, 1)})
             if args.dry_run:
                 out["dry_run"] = True
-            print(json.dumps(out))
+            print(_dumps(out))
             return
         if args.key:
             k = resolve_key(args.key, Key, KeyCode)
@@ -313,7 +358,7 @@ def main():
                             "total": round(cu_actions.now_ms() - t0, 1)})
             if args.dry_run:
                 out["dry_run"] = True
-            print(json.dumps(out))
+            print(_dumps(out))
             return
         if args.text is not None:
             entry = getattr(args, "_hint_entry", None)
@@ -408,7 +453,7 @@ def main():
                 out["secs"] = round(sum(delays), 3)  # planned cadence
             if args.dry_run:
                 out["dry_run"] = True
-            print(json.dumps(out))
+            print(_dumps(out))
     except SystemExit:
         raise
     except Exception as e:

@@ -52,6 +52,17 @@ PROBES = [
     # missing-index JSON otherwise - deterministic contract either way.
     ("extensions/code-graph/query.py",
      [".", "files", "zzz-probe", "--envelope"], "code-graph"),
+    # wave-6 computer-use (#604): the 8 skill-invoked entry CLIs plus
+    # cu_motion's shared JsonParser error path all emit stamped JSON on
+    # dependency-free paths (binding lookup, usage error, doctor report).
+    ("extensions/computer-use/terminal.py", ["info"], "computer-use"),
+    ("extensions/computer-use/screenshot.py", [], "computer-use"),
+    ("extensions/computer-use/mouse.py", [], "computer-use"),
+    ("extensions/computer-use/type_text.py", [], "computer-use"),
+    ("extensions/computer-use/record.py", [], "computer-use"),
+    ("extensions/computer-use/profile.py", ["bogus"], "computer-use"),
+    ("extensions/computer-use/env.py", ["doctor"], "computer-use"),
+    ("extensions/computer-use/browser.py", ["status"], "computer-use"),
 ]
 
 # Keys that could turn a probe into a real network call.

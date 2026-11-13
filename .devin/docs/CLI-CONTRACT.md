@@ -84,6 +84,17 @@ Utility CLIs (wave 5, #604): `scrape-tools/{scrape,parse,dom_elements}.py`
 exit also emits a stamped `{"ok": false, "status": "missing"}` JSON
 under `--json`/`--envelope`.
 
+computer-use (wave 6, #604): the 8 skill-invoked entry CLIs -
+`terminal.py`, `screenshot.py`, `mouse.py`, `type_text.py`, `record.py`,
+`profile.py`, `env.py`, `browser.py` - stamp every `print(json.dumps(..))`
+site via a local `_dumps(payload, **kw)` funnel (`json.dumps` composed
+with `_stamp`). Shared modules that emit on a CLI's behalf are stamped
+too: `cu_motion.py` (JsonParser usage errors), `cu_target.py`
+(typed rejections), `cu_actions.py` (exception wrapper),
+`cu_scope.py` (window-discovery CLI), and `cu_session_dispatch.py`
+(daemon-unavailable paths under `$CU_SESSION=1`). Other `cu_*` files
+emit only under their own `__main__` and remain a future wave.
+
 ## Adding a wrapper
 
 1. Copy the `_bundle_version()` + `_answered_by()` + `_stamp()` block
