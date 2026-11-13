@@ -1701,7 +1701,7 @@
     {
       "name": "changelog-refs.py",
       "purpose": "append missing merged-PR refs to CHANGELOG [Unreleased] (#488)",
-      "export_hash": "1244cc8fad69931b247ec3d9d6750b489b933502854b97096276117fa58b44ef",
+      "export_hash": "a568c45094af0c3bdb834a5105708435455377e5211849063a8c58ca057351aa",
       "exported_at": "2026-11-13"
     },
     {

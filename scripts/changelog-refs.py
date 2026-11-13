@@ -58,7 +58,11 @@ def missing_refs(chlog=None):
 
 def main():
     write = "--write" in sys.argv
-    todo = missing_refs()
+    try:
+        todo = missing_refs()
+    except OSError as e:
+        print(_dumps({"ok": False, "error": f"io:{e}"}))
+        return 1
     if not todo:
         print(_dumps({"ok": True, "missing": 0}))
         return
@@ -68,13 +72,18 @@ def main():
         sys.stderr.writelines(bullets)
         return
     path = "CHANGELOG.md"
-    text = open(path, encoding="utf-8-sig").read()
+    try:
+        text = open(path, encoding="utf-8-sig").read()
+    except OSError as e:
+        print(_dumps({"ok": False, "error": f"io:{e}"}))
+        return 1
     i = text.find("## [Unreleased]")
     j = text.find("\n", i)
     text = text[:j + 1] + "".join(bullets) + text[j + 1:]
     open(path, "w", encoding="utf-8", newline="").write(text)
     print(_dumps({"ok": True, "appended": len(todo)}))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
 MARKER = re.compile(
     r"_BUNDLE_VERSION"  # covers both _BUNDLE_VERSION and _BUNDLE_VERSION_CACHE
     r"|from\s+\w*_envelope\s+import"
-    r"|from\s+bundle_envelope\s+import"
+    r"|import\s+\w*_envelope\b"
     r"|import\s+st_common\b"
     r"|from\s+st_common\s+import")
 
@@ -30,11 +30,15 @@ MARKER = re.compile(
 EMIT = re.compile(
     r"sys\.stdout\.buffer\.write"
     r"|sys\.stdout\.write\s*\(\s*json"
-    r"|json\.dump\s*\([^,]+,\s*sys\.stdout"
+    r"|sys\.stdout\.write\s*\(\s*dumps?\s*\("     # from json import dumps
+    r"|sys\.stdout\.writelines"
+    r"|os\.write\s*\(\s*(?:1|sys\.stdout)"
+    r"|json\.dump\s*\(.*sys\.stdout"             # spans commas in arg 1
     r"|print\s*\(\s*json\.dumps"
+    r"|print\s*\(\s*dumps\s*\("                  # from json import dumps
     r"|print\s*\(\s*_dumps"
-    r"|print\s*\(\s*f?[\"']\{[\"']"  # print('{"key"' JSON literal
-    r"|print\s*\(\s*f?[\"']\{\{"     # print(f'{{"key"' f-literal
+    r"|print\s*\(\s*f?[\"']\s*\{\\?[\"']\w"  # print('{"k"' or '{"k"'
+    r"|print\s*\(\s*f?[\"']\{\{"             # print(f'{{"k"' f-literal
 )
 
 SCAN_DIRS = ("extensions", "scripts", "skills")
@@ -93,8 +97,14 @@ EXCLUDE = {
 
 def _probes():
     sys.path.insert(0, os.path.join(ROOT, "tests"))
-    from test_envelope_contract_v2 import PROBES
+    try:
+        from test_envelope_contract_v2 import PROBES
+    finally:
+        sys.path.remove(os.path.join(ROOT, "tests"))
     return {rel for rel, _argv, _w in PROBES}
+
+
+_MAIN = re.compile(r"__name__\s*==\s*[\"']__main__[\"']")
 
 
 def _scan():
@@ -108,14 +118,15 @@ def _scan():
                 rel = os.path.relpath(os.path.join(dirpath, f),
                                       ROOT).replace(os.sep, "/")
                 try:
-                    src = open(os.path.join(dirpath, f),
-                               encoding="utf-8", errors="replace").read()
+                    with open(os.path.join(dirpath, f),
+                              encoding="utf-8", errors="replace") as fh:
+                        src = fh.read()
                 except OSError:
                     continue
                 if MARKER.search(src):
                     if f.endswith("_envelope.py") or f == "st_common.py":
                         continue
-                    if "__main__" in src:
+                    if _MAIN.search(src):
                         stamped.append(rel)
                     else:
                         libs.append(rel)
