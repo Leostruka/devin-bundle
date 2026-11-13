@@ -1656,7 +1656,8 @@ try:
     import re as _re45
     _WRITE45 = _re45.compile(
         r"open\s*\([^)]*['\"]w[b+]*['\"]|write_text\s*\(|\.save\s*\("
-        r"|write_bytes\s*\(")
+        r"|write_bytes\s*\(|subprocess\.(?:run|Popen|call|check_output)"
+        r"\s*\(")
     _OUTSEGS = {'out', 'output', 'dst', 'sheet', 'report', 'dump',
                 'outfile', 'o'}
     _POSNAMES = {'out', 'output', 'dst', 'outfile', 'target'}
@@ -1729,6 +1730,10 @@ try:
                 if _isout45(x, dests, avars):
                     return True
             return False
+        params = {}   # func_name -> positional param names
+        for n in _ast45.walk(t):
+            if isinstance(n, _ast45.FunctionDef):
+                params[n.name] = [a.arg for a in n.args.args]
         names = set()
         grew = True
         while grew:
@@ -1750,6 +1755,13 @@ try:
                                 and _hits(kw.value)):
                             names.add(kw.arg)
                             grew = True
+                    if isinstance(n.func, _ast45.Name):
+                        ps = params.get(n.func.id, [])
+                        for i, a in enumerate(n.args):
+                            if i < len(ps) and ps[i] not in names \
+                                    and _hits(a):
+                                names.add(ps[i])
+                                grew = True
                     continue
                 if expr is None:
                     continue
@@ -1787,6 +1799,9 @@ try:
         'extensions/remotion-render/render.py',   # out_name -> remotion out/; workdir rmtree-guarded
         'extensions/comfyui-operator/wrapper.py',  # --out is a download dir (makedirs refresh)
         'extensions/craft-bridge/ui_dsl.py',      # O_EXCL atomic refusal inside _write_output
+        'extensions/computer-use/terminal.py',    # dst = session-link id, not a file
+        'extensions/computer-use/browser.py',     # target = env/URL, not a file
+        'extensions/ppisp-prep/ppisp_runner.py',  # --out = dir forwarded to upstream trainer
     }
     _bad45 = []
     for _fp in _scan_py_files():
