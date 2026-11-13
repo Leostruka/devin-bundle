@@ -34,6 +34,9 @@ GUARDED = [
     "skills/dma/tools/audit.py",
     "skills/dma/tools/mine.py",
     "skills/dma/tools/recon.py",
+    "skills/brag/scripts/analyze_music_cues.py",
+    "skills/dispatching-parallel-agents/scripts/review-package.py",
+    "skills/dispatching-parallel-agents/scripts/task-brief.py",
 ]
 
 
