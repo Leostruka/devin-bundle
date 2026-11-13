@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(laya-tools): bootstrap --help/--dry-run args, no more silent install on probe (#588)
+
 ## [3.21.0] - 2026-11-13
 
 - permission-gate hook (issue #541): new PermissionRequest event hook that auto-approves provably read-only `exec` commands so humans stop answering prompts for `git status`-class reads. Approve-only by contract (never emits `block`; silence lets the human decide; `fail_closed: false`). Four independent review rounds hardened it to deny-by-default exact arg shapes: quote-collapse normalization, per-verb dangerous args, brace expansion, bundled/attached flags, extension-stripping on script interpreters, credential-print vectors (`gh auth token`, `gh auth -t`, `--web` browser side-effects), mutating positionals (`git tag`, `branch -u`, `remote set-head`), `env`/`fd -x`/`rg --pre` exec wrappers, `ext::` transport. Verified end-to-end against the live gate with probe matrices; residual nits documented in #565.
