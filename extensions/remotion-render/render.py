@@ -30,6 +30,9 @@ def materialize(plan, workdir):
     if not TEMPLATE.exists():
         raise FileNotFoundError(f"template missing: {TEMPLATE}")
     if workdir.exists():
+        if not (workdir / "src").is_dir():
+            raise FileExistsError(
+                f"refusing to rmtree non-render dir: {workdir}")
         shutil.rmtree(workdir)
     shutil.copytree(TEMPLATE, workdir)
     (workdir / "src" / "plan.json").write_text(
@@ -99,8 +102,12 @@ def main(argv=None):
         print(_dumps({"ok": False,
                           "error": f"plan unreadable: {e}"}))
         return 2
-    res = render(plan, args.workdir, dry=args.dry,
-                 comp=args.comp, out_name=args.out)
+    try:
+        res = render(plan, args.workdir, dry=args.dry,
+                     comp=args.comp, out_name=args.out)
+    except OSError as e:
+        print(_dumps({"ok": False, "error": str(e)}))
+        return 2
     print(_dumps(res, indent=2))
     return 0 if res.get("ok") else 1
 

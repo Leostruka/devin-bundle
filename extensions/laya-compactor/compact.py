@@ -316,6 +316,11 @@ def main(argv=None):
     finally:
         if client:
             client.close()
+    for pth in (args.out, args.report):
+        if pth and Path(pth).exists():
+            print(_dumps({"ok": False,
+                          "error": f"refusing to overwrite {pth}"}))
+            return 2
     try:
         Path(args.out).write_text(
             json.dumps(result["messages"], ensure_ascii=False, indent=2),

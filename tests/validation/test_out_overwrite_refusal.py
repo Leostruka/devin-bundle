@@ -26,6 +26,8 @@ GUARDED = [
     "extensions/laya-tools/capture_eval.py",
     "extensions/laya-tools/eval_decisions.py",
     "extensions/laya-tools/fit_calibration.py",
+    "extensions/laya-compactor/compact.py",
+    "extensions/remotion-render/render.py",
     "extensions/image-forensics/verdict.py",
     "extensions/diagram-tools/plantuml_renderer.py",
     "extensions/ai-tools/heldout_batch.py",
