@@ -1490,8 +1490,8 @@
     {
       "name": "graph-query.py",
       "purpose": "graph-before-grep retrieval - fuses code-graph FTS + memory cues into ranked file results (issue #442)",
-      "export_hash": "2a54f920d31be078a40b3fea804a674550f64f558899c7a1630b67fcef57f28d",
-      "exported_at": "2026-11-10T07:41:35.131974"
+      "export_hash": "C84F2FC6402C5C1C349258594521F63BC4BD0C3E1E4BE3BA9ED09FAB763C6D10",
+      "exported_at": "2026-11-13T10:34:29.069750"
     },
     {
       "name": "install-ledger.py",
