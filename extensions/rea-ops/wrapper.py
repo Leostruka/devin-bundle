@@ -21,6 +21,7 @@ import shutil
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 REA_PACKAGE = "rea-agents@latest"
 REA_BIN = "rea-agents"
@@ -39,7 +40,36 @@ EXEC_SUBCOMMANDS = [
 ]
 
 
+
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached."""
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
+def _provenance():
+    return {"answered_by": {"bundle": _bundle_version(), "wrapper": "rea-ops"}}
+
+
 def emit(payload, code=0):
+    if isinstance(payload, dict):
+        payload.setdefault("api_version", 2)
+        payload.setdefault("meta", _provenance())
     json.dump(payload, sys.stdout, indent=2, sort_keys=False)
     sys.stdout.write("\n")
     sys.exit(code)

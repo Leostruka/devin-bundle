@@ -14,9 +14,9 @@ stdlib urllib only. API keys come from env; absent keys report a typed
     -> {"ok": true, "status": "ok", "action": "download",
         "result": {"out": ..., "bytes": ..., "picked": {quality, width}}}
 
-Envelope: {"ok": bool, "status": "ok"|"missing"|"error",
+Envelope: {"api_version": 2, "ok": bool, "status": "ok"|"missing"|"error",
            "action": ..., "result"|"error": ..., "hint"?: ...,
-           "duration_s": ...}
+           "duration_s": ..., "meta": {"answered_by": ...}}
 Exit 0 = ok, non-zero = error/missing.
 """
 from __future__ import annotations
@@ -53,9 +53,32 @@ class _FetchError(Exception):
     pass
 
 
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached."""
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
 def envelope(action, status, duration, result=None, error=None):
-    env = {"ok": status == "ok", "status": status, "action": action,
-           "duration_s": round(duration, 2)}
+    env = {"api_version": 2, "ok": status == "ok", "status": status,
+           "action": action, "duration_s": round(duration, 2),
+           "meta": {"answered_by": {
+               "bundle": _bundle_version(), "wrapper": "stock-footage"}}}
     if result is not None:
         env["result"] = result
     if error is not None:
