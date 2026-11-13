@@ -2,7 +2,7 @@
 
 ## Position
 
-Main `d2e2f88` (origin synced, CI + pages green). Bundle `v3.22.0`
+Main `9ca96ed` (origin synced, CI + pages green). Bundle `v3.22.0`
 released and tagged (v3.21.0 shipped earlier same day; v3.22.0 cuts
 the full envelope arc). Live install: 1449/1449 files Current,
 0 drift; live probe reports `answered_by.bundle=3.22.0`.
@@ -106,6 +106,14 @@ ledger 0 drift; live probe pulse --json -> bundle 3.22.0.
   `ensure_ascii=False`.
 - The pre-push gate runs scoped pytest - resolve merge conflicts in
   separate steps, never chain resolve+push.
+- `git add -A` swept a 2785-file `git archive` simulation tree into
+  6ffc79c; its signature-detector sources tripped the AI-signature
+  job and its test-copy deletions tripped the Rule-25 gate. Stage
+  explicit paths; `tmp/` is now gitignored.
+- Python-version trap: `Path.read_text(newline=)` is 3.13+ only
+  (`write_text` has it since 3.10) - `path.open(newline=)` is the
+  portable form. CI py3.11 caught devin-manager scan returning empty
+  stdout; extract.py had the same latent crash twice.
 
 ## Open
 
