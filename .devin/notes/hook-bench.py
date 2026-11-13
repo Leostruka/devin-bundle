@@ -25,9 +25,10 @@ for s in sorted(glob.glob("scripts/*.py")):
     ts = []
     for _ in range(N):
         t = time.perf_counter()
-        subprocess.run([sys.executable, s], input=payloads[k], capture_output=True, text=True)
+        subprocess.run([sys.executable, s], input=payloads[k], capture_output=True, text=True, encoding="utf-8", errors="replace")
         ts.append(round((time.perf_counter() - t) * 1000))
     res[os.path.basename(s)] = ts
 
-json.dump(res, open(OUT, "w"), indent=1)
+with open(OUT, "w", encoding="utf-8") as fh:
+    json.dump(res, fh, indent=1)
 print({k: f"{sum(v)/len(v):.0f}ms" for k, v in res.items()})
