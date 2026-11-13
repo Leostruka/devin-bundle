@@ -192,6 +192,12 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.action == "identify":
         res = identify(args.file)
+    elif args.action in ("decode", "encode") and Path(
+            args.output).exists():
+        res = {"ok": False,
+               "error": f"out exists: {args.output} (refusing to "
+                        "overwrite; pick another output or delete it "
+                        "first)"}
     elif args.action == "decode":
         res = decode(args.input, args.output)
     else:
