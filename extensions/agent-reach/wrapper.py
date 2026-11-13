@@ -16,8 +16,8 @@ Safety contract:
   - Bounded stdout/stderr; hard timeout per call.
   - Missing binary/toolchain -> {"status": "missing"}; never fabricate.
 
-Output: JSON envelope on stdout: {status, command, stdout, stderr,
-duration_s}. Exit 0 = ok, non-zero = error.
+Output: JSON envelope on stdout: {api_version, status, command, stdout,
+stderr, duration_s, meta.answered_by}. Exit 0 = ok, non-zero = error.
 """
 import json
 import platform
@@ -26,6 +26,7 @@ import shutil
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 AR_BIN = "agent-reach"
 DEFAULT_TIMEOUT = 120
@@ -70,13 +71,46 @@ def resolve_invoker():
     return None
 
 
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached.
+
+    Works from the repo (extensions/agent-reach/) and the live install
+    (%APPDATA%/devin/extensions/agent-reach/): manifest.json sits at the
+    install root two levels up in both layouts.
+    """
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
 def envelope(status, command, stdout="", stderr="", duration_s=0.0, **extra):
     env = {
+        "api_version": 2,
         "status": status,
         "command": command,
         "stdout": stdout,
         "stderr": stderr,
         "duration_s": duration_s,
+        "meta": {
+            "answered_by": {
+                "bundle": _bundle_version(),
+                "wrapper": "agent-reach",
+            }
+        },
     }
     env.update(extra)
     return env
