@@ -16,7 +16,8 @@ Safety contract:
   - Backend down -> {"status": "missing"}; never fabricate.
 
 Output: JSON envelope on stdout:
-  {"status": ..., "action": ..., "result"|"error": ..., "duration_s": ...}
+  {"api_version": 2, "status": ..., "action": ..., "result"|"error": ...,
+   "duration_s": ..., "meta": {"answered_by": ...}}
 Exit 0 = ok, non-zero = error/missing.
 """
 import argparse
@@ -26,6 +27,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 from urllib.parse import urlparse
 
 DEFAULT_HOST = "http://127.0.0.1:17493"
@@ -100,9 +102,32 @@ def http_request(method, url, payload=None, timeout=PROBE_TIMEOUT,
     return resp.status, dict(resp.headers), body
 
 
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached."""
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
 def envelope(action, status, duration, result=None, error=None):
-    env = {"status": status, "action": action,
-           "duration_s": round(duration, 2)}
+    env = {"api_version": 2, "status": status, "action": action,
+           "duration_s": round(duration, 2),
+           "meta": {"answered_by": {
+               "bundle": _bundle_version(), "wrapper": "voicebox"}}}
     if result is not None:
         env["result"] = result
     if error is not None:

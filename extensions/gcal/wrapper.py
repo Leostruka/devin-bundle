@@ -30,6 +30,7 @@ import os
 import sys
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import caldav  # noqa: E402
@@ -37,7 +38,36 @@ import gcal  # noqa: E402
 import plan  # noqa: E402
 
 
+
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached."""
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
+def _provenance():
+    return {"answered_by": {"bundle": _bundle_version(), "wrapper": "gcal"}}
+
+
 def emit(payload, code=0):
+    if isinstance(payload, dict):
+        payload.setdefault("api_version", 2)
+        payload.setdefault("meta", _provenance())
     json.dump(payload, sys.stdout, indent=2, sort_keys=False,
               default=str)
     sys.stdout.write("\n")

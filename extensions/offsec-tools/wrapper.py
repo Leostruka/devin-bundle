@@ -32,6 +32,7 @@ import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 import time
 
 DEFAULT_TIMEOUT = 300
@@ -158,7 +159,36 @@ TOOL_CATALOG = {
 WINDOWS = platform.system() == "Windows"
 
 
+
+_BUNDLE_VERSION = None
+
+
+def _bundle_version():
+    """Bundle version from the nearest manifest.json ancestor, cached."""
+    global _BUNDLE_VERSION
+    if _BUNDLE_VERSION is None:
+        _BUNDLE_VERSION = ""
+        for parent in Path(__file__).resolve().parents:
+            mf = parent / "manifest.json"
+            if mf.is_file():
+                try:
+                    _BUNDLE_VERSION = str(
+                        json.loads(mf.read_text(encoding="utf-8"))
+                        .get("version") or "")
+                except (OSError, ValueError):
+                    pass
+                break
+    return _BUNDLE_VERSION
+
+
+def _provenance():
+    return {"answered_by": {"bundle": _bundle_version(), "wrapper": "offsec-tools"}}
+
+
 def emit(payload, code=0):
+    if isinstance(payload, dict):
+        payload.setdefault("api_version", 2)
+        payload.setdefault("meta", _provenance())
     json.dump(payload, sys.stdout, indent=2, sort_keys=False)
     sys.stdout.write("\n")
     sys.exit(code)
