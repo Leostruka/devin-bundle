@@ -2,11 +2,11 @@
 
 ## Position
 
-Main `3d9e70d` (origin synced, CI + pages green). Bundle `v3.22.0`
+Main `d2e2f88` (origin synced, CI + pages green). Bundle `v3.22.0`
 released and tagged (v3.21.0 shipped earlier same day; v3.22.0 cuts
 the full envelope arc). Live install: 1449/1449 files Current,
 0 drift; live probe reports `answered_by.bundle=3.22.0`.
-audit.py 50/50, 0 errors, 0 warnings. pytest 2761 pass / 74 skip.
+audit.py 50/50, 0 errors, 0 warnings. pytest 2803 pass / 73 skip.
 
 ## Batch-9 research (3 links deep-dived)
 
@@ -60,6 +60,25 @@ CLI-CONTRACT.md to the modules it names; both docs mapped in
 
 Metrics: 2761 passed / 74 skipped at 3d9e70d; audit 50/50;
 ledger 1449 files / 0 drift; CI + pages green.
+
+### Completeness wave (#610 follow-up, HEAD d2e2f88)
+
+The held-out guard now scans every CLI in extensions/scripts/skills
+for BOTH directions: marker-carrying files must be probed or
+explicitly excluded; unmarked JSON emitters (buffer.write,
+json.dump->stdout, sys.stdout.write, literal prints) must be
+documented in UNSTAMPED. Stale entries fail on both ends.
+
+Newly stamped: pulse, simplify-scan, changelog-refs, ui_dsl
+(+craft_envelope.py), fold_store save, devin-manager/devin-config
+scan, youtube-fetcher/fetch, structured-knowledge-extraction/extract,
+knowledge-modeling/search, grilling stop-server. Bugs fixed in
+passing: devin-manager scan crash on JSON-array artifacts;
+ui_dsl uncaught OSError; grilling emit() bypassed the _dumps
+funnel. 57 dead imports removed; manifest export_hash resync.
+
+Metrics: 2803 passed / 73 skipped at d2e2f88; audit 50/50;
+ledger 0 drift; live probe pulse --json -> bundle 3.22.0.
 
 ## Also landed
 
