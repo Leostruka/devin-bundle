@@ -20,7 +20,52 @@ import cu_capture
 import cu_hints
 import cu_motion as cm
 import cu_target
+from pathlib import Path
 
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 def set_dpi_awareness():
     import cu_dpi
@@ -28,7 +73,7 @@ def set_dpi_awareness():
 
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(code)
 
 
@@ -225,7 +270,7 @@ def _remote_main(target):
         shot_hash = _img_hash(img)
         st = _shot_state(scope)
         if st.get("sha256") == shot_hash:
-            print(json.dumps({"ok": True, "changed": False,
+            print(_dumps({"ok": True, "changed": False,
                               "path": st.get("path")}))
             return
     result = {"ok": True, "path": out, "width": img.width,
@@ -274,7 +319,7 @@ def _remote_main(target):
         _save_image(img, out, args.format, args.quality)
     if args.if_changed:
         _write_shot_state(shot_hash, out, scope=scope)
-    print(json.dumps(result))
+    print(_dumps(result))
 
 
 def main():
@@ -356,7 +401,7 @@ def main():
                      for e, hid in zip(els, cu_hints.hint_ids(len(els)))]
             data = cu_hints.write_sidecar(
                 hints, window=obs["window"], capture={"skipped": True})
-            print(json.dumps(
+            print(_dumps(
                 {"ok": True, "path": None, "capture": "skipped",
                  "profile": profile, "hints": hints,
                  "truncated": obs["truncated"],
@@ -404,21 +449,21 @@ def main():
             if args.diff_out:
                 _save_diff(img, args.diff, args.diff_out)
                 res["diff_path"] = args.diff_out
-            print(json.dumps(res))
+            print(_dumps(res))
             return
         shot_hash = None
         if args.if_changed:
             shot_hash = _img_hash(img)
             st = _shot_state()
             if st.get("sha256") == shot_hash:
-                print(json.dumps({"ok": True, "changed": False,
+                print(_dumps({"ok": True, "changed": False,
                                   "path": st.get("path")}))
                 return
             if (args.threshold is not None and st.get("path")
                     and os.path.isfile(st["path"])):
                 try:
                     if _diff_file(img, st["path"]) <= args.threshold:
-                        print(json.dumps({"ok": True, "changed": False,
+                        print(_dumps({"ok": True, "changed": False,
                                           "path": st["path"]}))
                         return
                 except Exception:
@@ -472,7 +517,7 @@ def main():
                 mss.tools.to_png(img.rgb, img.size, output=out)
         if shot_hash:
             _write_shot_state(shot_hash, out)
-        print(json.dumps(result))
+        print(_dumps(result))
     except Exception as e:
         fail(f"{type(e).__name__}: {e}")
 

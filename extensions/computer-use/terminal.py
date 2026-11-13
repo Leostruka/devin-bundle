@@ -16,12 +16,57 @@ import tempfile
 
 import cu_actions
 import cu_terminal
+from pathlib import Path
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 DAEMON_PATH = os.path.join(tempfile.gettempdir(), "devin-cu-tsdaemon.json")
 
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(code)
 
 
@@ -113,7 +158,7 @@ def _remote_main(target):
            "env_id": target["env_id"], "untrusted": True}
     if isinstance(r, dict):
         out.update(r)
-    print(json.dumps(out))
+    print(_dumps(out))
 
 
 def main():
@@ -205,10 +250,10 @@ def main():
         if args.pid:
             probe = {args.hwnd: {"class": "", "pid": args.pid}}
             probe = None  # class resolved by real probe
-        print(json.dumps(cu_terminal.bind(args.hwnd, mode=args.mode)))
+        print(_dumps(cu_terminal.bind(args.hwnd, mode=args.mode)))
         return
     if args.cmd == "unbind":
-        print(json.dumps(cu_terminal.unbind()))
+        print(_dumps(cu_terminal.unbind()))
         return
     if args.cmd == "status":
         b = cu_terminal.binding()
@@ -216,47 +261,47 @@ def main():
         if b:
             out["binding"] = {k: b[k] for k in
                               ("hwnd", "pid", "mode", "title") if k in b}
-        print(json.dumps(out))
+        print(_dumps(out))
         return
     if args.cmd == "info":
-        print(json.dumps(cu_terminal.info()))
+        print(_dumps(cu_terminal.info()))
         return
     if args.cmd == "read":
-        print(json.dumps(cu_terminal.read(tail=args.tail, find=args.find)))
+        print(_dumps(cu_terminal.read(tail=args.tail, find=args.find)))
         return
     if args.cmd == "type":
-        print(json.dumps(cu_terminal.type_text(args.text)))
+        print(_dumps(cu_terminal.type_text(args.text)))
         return
     if args.cmd == "key":
-        print(json.dumps(cu_terminal.key(args.name)))
+        print(_dumps(cu_terminal.key(args.name)))
         return
     if args.cmd == "scroll":
-        print(json.dumps(cu_terminal.scroll(args.direction, args.n)))
+        print(_dumps(cu_terminal.scroll(args.direction, args.n)))
         return
     if args.cmd == "send":
-        print(json.dumps(cu_terminal.send(args.text, shell=args.shell,
+        print(_dumps(cu_terminal.send(args.text, shell=args.shell,
                                           timeout=args.timeout,
                                           confirm=args.confirm)))
         return
     if args.cmd == "exec":
         r = cu_terminal.spawn(shell=args.shell)
         if not r.get("ok"):
-            print(json.dumps(r))
+            print(_dumps(r))
             return
         sid = r["session"]
         cu_terminal.send_to(sid, args.text + "\r\n")
         out = cu_terminal.recv_from(sid, wait=args.wait,
                                     timeout=args.timeout)
         cu_terminal.close_session(sid)
-        print(json.dumps(out))
+        print(_dumps(out))
         return
     if args.cmd == "sessions":
         if args.op == "start":
-            print(json.dumps(_daemon_start()))
+            print(_dumps(_daemon_start()))
         elif args.op == "stop":
-            print(json.dumps(_daemon_call("stop")))
+            print(_dumps(_daemon_call("stop")))
         else:
-            print(json.dumps(_daemon_call(args.op)))
+            print(_dumps(_daemon_call(args.op)))
         return
     if args.cmd in ("spawn", "send-to", "recv", "close", "kill",
                     "link", "unlink", "links"):
@@ -264,7 +309,7 @@ def main():
         if not _daemon_info():
             r = _daemon_start()
             if not r.get("ok"):
-                print(json.dumps(r))
+                print(_dumps(r))
                 return
         if args.cmd == "spawn":
             out = _daemon_call("spawn", {"shell": args.shell,
@@ -290,7 +335,7 @@ def main():
             out = _daemon_call("unlink", {"id": args.id})
         else:
             out = _daemon_call("links")
-        print(json.dumps(out))
+        print(_dumps(out))
         return
     fail(f"unknown cmd {args.cmd}")
 

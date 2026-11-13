@@ -84,7 +84,9 @@ def run(argv):
 def test_eval_returns_result(client):
     client.eval_queue = [42]
     out = run(["eval", "1+1"])
-    assert out == {"ok": True, "result": 42}
+    assert out["ok"] is True and out["result"] == 42
+    assert out["api_version"] == 2
+    assert out["meta"]["answered_by"]["wrapper"] == "computer-use"
 
 
 def test_eval_boundaries_wraps_strings(client):

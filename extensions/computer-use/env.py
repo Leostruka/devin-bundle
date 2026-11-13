@@ -9,12 +9,57 @@ import json
 import sys
 
 import cu_env
+from pathlib import Path
 
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 def _emit(ok, status, **kw):
     out = {"ok": ok, "status": status}
     out.update(kw)
-    print(json.dumps(out, indent=2))
+    print(_dumps(out, indent=2))
     return 0 if ok else 1
 
 
@@ -125,7 +170,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.cmd == "doctor":
-        print(json.dumps(cu_env.doctor(image_path=args.image_path,
+        print(_dumps(cu_env.doctor(image_path=args.image_path,
                                        image_sha256=args.image_sha256,
                                        qemu_path=args.qemu_path),
                          indent=2))

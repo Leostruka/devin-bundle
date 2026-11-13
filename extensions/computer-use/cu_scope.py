@@ -18,8 +18,53 @@ import os
 import re
 import sys
 from ctypes import wintypes
+from pathlib import Path
 
 # -- input-bearing child classes worth descending into ----------------------
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 INPUT_CLASSES = {
     "edit", "richedit", "richedit20a", "richedit20w", "richedit50w",
     "richedit60w", "richeditbox", "scintilla", "termcontrol",
@@ -635,14 +680,14 @@ def main():
     args = ap.parse_args()
     try:
         if args.list:
-            print(json.dumps({"ok": True, "windows": find_windows()}))
+            print(_dumps({"ok": True, "windows": find_windows()}))
             return
         out = resolve_input_target(title=args.title, class_name=args.class_name,
                                    pid=args.pid, title_regex=args.title_regex)
         out["channel"] = pick_channel(out["input"])
-        print(json.dumps({"ok": True, **out}))
+        print(_dumps({"ok": True, **out}))
     except ScopeError as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}))
+        print(_dumps({"ok": False, "error": str(exc)}))
         sys.exit(1)
 
 

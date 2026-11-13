@@ -21,7 +21,52 @@ import cu_motion as cm
 import cu_hints
 import cu_scope
 import cu_target
+from pathlib import Path
 
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 def set_dpi_awareness():
     import cu_dpi
@@ -29,7 +74,7 @@ def set_dpi_awareness():
 
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(code)
 
 
@@ -159,7 +204,7 @@ def _remote_main(target):
                                          args.x, args.y, w, h,
                                          button=args.button)
         if args.dry_run:
-            print(json.dumps({"ok": True, "status": "dry_run",
+            print(_dumps({"ok": True, "status": "dry_run",
                               "env_id": target["env_id"],
                               "cmd": args.cmd,
                               "events": len(events)}))
@@ -181,7 +226,7 @@ def _remote_main(target):
             {"cmd": args.cmd}, before,
             {"frame": img2, "meta": meta2},
             {"kind": "frame_changed"})
-    print(json.dumps(out))
+    print(_dumps(out))
 
 
 def _scoped_mouse(args, channel):
@@ -234,7 +279,7 @@ def _scoped_mouse(args, channel):
         out["delivered"] = bool(res.get("delivered"))
         if ghost:
             out["ghost"] = ghost["ghost"]
-        print(json.dumps(out))
+        print(_dumps(out))
         if not res.get("delivered"):
             sys.exit(1)
         return
@@ -245,7 +290,7 @@ def _scoped_mouse(args, channel):
         cx, cy = cu_scope.screen_to_client(inp, args.x, args.y)
         res = cu_scope.ghost_to(inp, cx, cy,
                                 capture=args.overlay_capture)
-        print(json.dumps({"ok": True, "status": "ghosted", **base,
+        print(_dumps({"ok": True, "status": "ghosted", **base,
                           **res}))
         return
     if args.cmd == "scroll":
@@ -255,7 +300,7 @@ def _scoped_mouse(args, channel):
                 d = "right" if args.dx > 0 else "left"
             res = cu_scope.uia_scroll(inp, direction=d,
                                       name=args.uia_name)
-            print(json.dumps({"ok": bool(res.get("delivered")),
+            print(_dumps({"ok": bool(res.get("delivered")),
                               "status": "dispatched", **base, **res}))
             if not res.get("delivered"):
                 sys.exit(1)
@@ -372,7 +417,7 @@ def main():
     try:
         if args.cmd == "position":
             x, y = mouse.position
-            print(json.dumps({"ok": True, "x": x, "y": y}))
+            print(_dumps({"ok": True, "x": x, "y": y}))
             return
         if args.cmd == "move":
             x, y, entry = _resolve_xy(args)
@@ -390,7 +435,7 @@ def main():
             if args.dry_run:
                 out["dry_run"] = True
                 out["x"], out["y"] = x, y
-            print(json.dumps(out))
+            print(_dumps(out))
             return
         if args.cmd == "click":
             x, y, entry = _resolve_xy(args)
@@ -481,7 +526,7 @@ def main():
             out["timings_ms"] = {"move": _ms(t_move),
                                  "dispatch": _ms(t_disp),
                                  "total": _ms(cu_actions.now_ms() - t0)}
-            print(json.dumps(out))
+            print(_dumps(out))
             return
         if args.cmd == "scroll":
             t0 = cu_actions.now_ms()
@@ -506,7 +551,7 @@ def main():
                                                 "total": _ms(cu_actions.now_ms() - t0)})
             if args.dry_run:
                 out["dry_run"] = True
-            print(json.dumps(out))
+            print(_dumps(out))
             return
         if args.cmd == "drag":
             t0 = cu_actions.now_ms()
@@ -545,7 +590,7 @@ def main():
                                                 "total": _ms(cu_actions.now_ms() - t0)})
             if args.dry_run:
                 out["dry_run"] = True
-            print(json.dumps(out))
+            print(_dumps(out))
             return
     except SystemExit:
         raise

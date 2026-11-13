@@ -34,6 +34,50 @@ import sys
 from pathlib import Path
 
 
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]
                     / "laya-tools"))
@@ -292,15 +336,15 @@ def main(argv=None):
     try:
         raw = read_bounded(args.snapshot, MAX_SNAPSHOT_BYTES)
     except OSError as e:
-        print(json.dumps({"ok": False, "error": f"snapshot_error:{e}"}))
+        print(_dumps({"ok": False, "error": f"snapshot_error:{e}"}))
         return 2
     if raw is None:
-        print(json.dumps({"ok": False, "error": "snapshot_too_large"}))
+        print(_dumps({"ok": False, "error": "snapshot_too_large"}))
         return 2
     try:
         snapshot = json.loads(raw)
     except json.JSONDecodeError as e:
-        print(json.dumps({"ok": False, "error": f"snapshot_error:{e}"}))
+        print(_dumps({"ok": False, "error": f"snapshot_error:{e}"}))
         return 2
     context = {}
     if args.context_json:
@@ -319,7 +363,7 @@ def main(argv=None):
     out.update({k: rec.get(k) for k in
                 ("outcome", "candidate_id", "reason", "mode",
                  "adoptable", "profile_version")})
-    print(json.dumps(out, ensure_ascii=False))
+    print(_dumps(out, ensure_ascii=False))
     return 0
 
 

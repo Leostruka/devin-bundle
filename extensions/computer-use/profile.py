@@ -18,10 +18,55 @@ import cu_actions
 import cu_target
 from cu_motion import (ENV_VAR, PROFILES, JsonParser, get_profile,
                        profile_path, set_profile)
+from pathlib import Path
 
+
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "computer-use"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    return json.dumps(_stamp(payload), **kw)
 
 def fail(msg, code=1):
-    print(json.dumps({"ok": False, "error": msg}))
+    print(_dumps({"ok": False, "error": msg}))
     sys.exit(code)
 
 
@@ -45,13 +90,13 @@ def main():
 
     if args.set_profile:
         set_profile(args.set_profile)
-        print(json.dumps({"ok": True, "profile": args.set_profile,
+        print(_dumps({"ok": True, "profile": args.set_profile,
                           "path": profile_path()}))
         return
 
     if args.show:
         env = os.environ.get(ENV_VAR)
-        print(json.dumps({"ok": True, "profile": get_profile(),
+        print(_dumps({"ok": True, "profile": get_profile(),
                           "env": env if env in PROFILES else None,
                           "file": profile_path()}))
         return
@@ -74,7 +119,7 @@ def main():
     if not name:
         fail(f"invalid selection: {sel}", 2)
     set_profile(name)
-    print(json.dumps({"ok": True, "profile": name, "path": profile_path()}))
+    print(_dumps({"ok": True, "profile": name, "path": profile_path()}))
 
 
 if __name__ == "__main__":
