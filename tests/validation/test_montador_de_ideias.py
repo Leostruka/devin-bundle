@@ -1,4 +1,5 @@
 """Contract tests for skills/montador-de-ideias and its /leo + ask-bundle routing."""
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[2]
@@ -129,3 +130,14 @@ def test_no_em_dashes_in_montador_de_ideias():
     for f in SKILL_DIR.rglob("*.md"):
         text = f.read_text(encoding="utf-8")
         assert em_dash not in text and en_dash not in text, f"Forbidden dash found in {f}"
+
+
+def test_manifest_and_skill_tiers_include_montador_de_ideias():
+    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8-sig"))
+    skills_by_name = {s["name"]: s for s in manifest.get("skills", [])}
+    assert "montador-de-ideias" in skills_by_name, "montador-de-ideias missing from manifest.json"
+    entry = skills_by_name["montador-de-ideias"]
+    assert entry["purpose"].startswith("Use when assembling, expanding, or elevating a raw project idea")
+
+    tiers = (ROOT / ".devin" / "docs" / "SKILL-TIERS.md").read_text(encoding="utf-8")
+    assert "`montador-de-ideias`" in tiers, "SKILL-TIERS.md missing montador-de-ideias"

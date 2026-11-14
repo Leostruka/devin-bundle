@@ -776,6 +776,13 @@
       "export_hash": "8cc940afd212613644c29b04dee0ee7afcd8423529bbd6c4678c84c6d41bea40"
     },
     {
+      "name": "montador-de-ideias",
+      "source": "custom",
+      "original_path": "C:\\Users\\leand\\AppData\\Roaming\\devin\\skills\\montador-de-ideias",
+      "purpose": "Use when assembling, expanding, or elevating a raw project idea or initial prompt into an ultra-detailed, first-principles dossier and compiled master prompt with journalistic OSINT market research, Tech Lead and Staff Architect justifications, atomic and modular hardening/optimization, and high-impact contact surfaces.",
+      "export_hash": "7a7c3047a7780945f2af7bc5222557e6f049b02fd568d3272329ad62b0572f02"
+    },
+    {
       "name": "mutation-testing",
       "source": "devin-bundle",
       "purpose": "Use when the user asks to find testing gaps, mutation test, or identify surviving mutants.",
@@ -1360,7 +1367,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 184,
+  "skill_count": 185,
   "rule_count": 24,
   "scripts": [
     {
