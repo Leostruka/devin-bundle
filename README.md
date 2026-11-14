@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-185-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-186-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-25-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.22.0-orange.svg)](CHANGELOG.md)
@@ -139,7 +139,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 185 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 186 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
@@ -155,7 +155,7 @@ Principais grupos:
 | Grupo | Skills principais | Uso |
 |---|---|---|
 | Ideação e decisão | `grilling`, `planning`, `prototype`, `research` | Tornar uma ideia precisa antes de construir |
-| Planejamento | `planning`, `execution` | Gerar PRD, tickets verticais ou plano detalhado |
+| Planejamento | `planning`, `execution`, `adaptive-agenda-calendar-routine-engine` | Gerar PRD, tickets verticais, plano detalhado ou agenda temporal |
 | Implementação | `execution`, `testing`, `architecture` | Construir comportamento test-first em módulos profundos |
 | Execução autônoma | `execution`, `gates` | Trabalhar sem supervisão contínua com gates verificáveis |
 | Qualidade | `code-review`, `testing`, `gates` | Revisar spec, padrões, testes e evidências |
@@ -467,7 +467,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 21 perfis customizados
-├── skills/                    # 182 workflows invocáveis
+├── skills/                    # 186 workflows invocáveis
 
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools, gcal)
@@ -633,7 +633,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 185 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 186 skills |
 
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |

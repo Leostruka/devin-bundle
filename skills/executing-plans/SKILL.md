@@ -74,3 +74,4 @@ After all tasks complete and verified:
 
 - Before finishing, `finishing-a-development-branch` (already required in Step 3) closes with `code-review` and `verification-before-completion`.
 - If the plan changes in size or risk mid-flight, invoke `review-cadence` to decide whether to keep the same checkpoint cadence.
+- `adaptive-agenda-calendar-routine-engine` can drive plan execution inside HH:MM-HH:MM agenda blocks; each block's gate discipline is what this skill's per-task gates already enforce.

@@ -34,3 +34,5 @@ Redact any sensitive information, such as API keys, passwords, or personally ide
 If the user passed arguments, treat them as a description of what the next session will focus on and tailor the doc accordingly.
 
 **Cross-skill:** If the handoff captures a decision, convention, or gotcha worth remembering across sessions, also invoke `memory-management` with the user's approval.
+
+**Cross-skill:** Inside `adaptive-agenda-calendar-routine-engine`, this document is the artifact the block-transition handoff rite requires between HH:MM-HH:MM blocks.

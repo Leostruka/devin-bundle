@@ -152,6 +152,7 @@ Security gate: python scripts/check-ai-signature.py
 - **`handoff`:** if work spans sessions, capture the current gate state before ending.
 - **`verification-before-completion` skill:** defines per-task VFs; gates execute them
 - **`check-push-green.py` hook:** already enforces the push gate at the hook level
+- **`adaptive-agenda-calendar-routine-engine`**: its >=32-cycle loop executes under this skill's gate types; each battery boundary is an integration gate and each block close is a final gate.
 
 ## Integration with Existing Rules
 

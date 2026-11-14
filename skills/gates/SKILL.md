@@ -101,3 +101,7 @@ Rules:
 Anti-patterns: grading own gates without re-running; trusting "done" without
 recorded evidence; skipping ABANDON; gates as the ONLY verification (manual
 review still catches design issues); overly broad step gates (scope them).
+
+## Cross-skills
+
+- `adaptive-agenda-calendar-routine-engine` relies on this skill's gate discipline to verify each of its >=32 loop cycles before a block can close.

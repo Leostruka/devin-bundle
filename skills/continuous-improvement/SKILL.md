@@ -385,3 +385,7 @@ ESTADO: <validada|não_validada|estagnada|revertida|bloqueada>
 ARQUIVOS_ALTERADOS: <lista dentro de SCOPE>
 PUSH_COMMIT: <não feito>
 ```
+
+## Cross-skills
+
+- `adaptive-agenda-calendar-routine-engine` schedules kaizen sessions as Stage 5 close blocks with handoff artifacts between blocks.

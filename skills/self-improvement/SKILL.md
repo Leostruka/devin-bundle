@@ -53,3 +53,7 @@ orchestration. Evidence:
   `SOURCE_REGISTER`, `VFS`, `SCOPE` before researching or editing.
 - **No delegation without authorization** — `DELEGATION: disabled` means no
   `run_subagent`/`read_subagent`.
+
+## Cross-skills
+
+- `adaptive-agenda-calendar-routine-engine` hosts meta-improvement work inside Stage 5 close blocks; its Open-Minded Scrum self-evaluation mirrors this skill's held-out discipline.
