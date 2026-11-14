@@ -16,6 +16,11 @@ scripts, or config that could be exploited):
 3. Include: description, reproduction steps, potential impact.
 4. You will receive a response within 72 hours.
 
+For non-security reports, use the issue forms under
+`.github/ISSUE_TEMPLATE/`. The "Security vulnerability" contact link in
+`.github/ISSUE_TEMPLATE/config.yml` points back to this file so reports
+stay private.
+
 ## Security Guardrails in This Bundle
 
 | Guardrail | Mechanism | Scope |
@@ -44,3 +49,8 @@ scripts, or config that could be exploited):
 
 **Never commit unmasked secrets.** Use `-NoMask` only for local backup or
 direct transfer between trusted machines.
+
+On GitHub, prefer `gh secret set` (write-only, encrypted) for credentials
+and `gh variable set` for non-sensitive configuration; never commit either
+to the repo. If a secret is exposed (commit, log, issue), rotate it
+immediately and purge it from history.

@@ -17,3 +17,4 @@ triggers: [user, model]
 
 - Use `git-helper` for git operations you're unsure about.
 - Use `gh` to read the original PRs/issues that introduced the conflicting changes.
+- Use `git-github-adaptive-engineering` when the conflict sits inside a merge/rebase the engine already classified - its Fase Zero check frames the fix.

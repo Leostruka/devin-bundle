@@ -549,6 +549,14 @@
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
+      "name": "git-github-adaptive-engineering",
+      "source": "devin-bundle",
+      "purpose": "Use when any task touches git history, GitHub issues/PRs/releases/CI, repo governance, or branch and merge decisions. Runs the Fase Zero situational-awareness battery, picks one of five delivery flows via the adaptive decision engine, and enforces commit/PR information-density standards. Orchestrates the gh, git-workflows, github-actions, pr, and debug/finish skills.",
+      "original_path": "%APPDATA%\\devin\\skills\\git-github-adaptive-engineering",
+      "export_hash": "cf01385c54c22a6318630845ec33540bb1169f9f495283fc3a4fd46fb5be7668",
+      "exported_at": "2026-11-13T22:53:30.000000"
+    },
+    {
       "name": "git-helper",
       "source": "devin-bundle",
       "purpose": "Use when managing branches, writing commits, or resolving simple git workflow questions.",
@@ -1360,7 +1368,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 184,
+  "skill_count": 185,
   "rule_count": 25,
   "scripts": [
     {
@@ -1710,9 +1718,15 @@
       "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
       "export_hash": "38014ff532d3b9c8317776662d2c0b9c7b70021a41a94f842dc514d9ade6e7f5",
       "exported_at": "2026-11-13"
+    },
+    {
+      "name": "phase-zero.py",
+      "purpose": "Read-only Fase Zero situational-awareness battery (git + GitHub state) emitted as JSON envelope v2 (#612)",
+      "export_hash": "78748fbfff182fd76889e95d10c7b72739279e72b3905b1f0b43837d49aff51a",
+      "exported_at": "2026-11-13"
     }
   ],
-  "script_count": 56,
+  "script_count": 57,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,

@@ -134,3 +134,4 @@ After diagnosis, offer to:
 - **`deep-mode`** - when the failure is intermittent, spans multiple jobs, or you need to correlate patterns across many historical builds
 - **`tdd`** - after fixing, write a regression test that would have caught the CI failure
 - **`mutation-testing`** - after fixing, consider running mutation testing on the affected area to find more gaps
+- **`git-github-adaptive-engineering`** - the CI self-healing flow (flow 5) routes red-CI work here; its Fase Zero state check (`scripts/phase-zero.py`) and `gh run` arsenal complement this playbook.

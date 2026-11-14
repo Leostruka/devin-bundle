@@ -54,6 +54,7 @@ git branch -d branch-name
 - Use `resolving-merge-conflicts` when a merge or rebase has conflicts.
 - Use `finishing-a-development-branch` when a feature branch is complete and needs to be integrated.
 - Use `using-git-worktrees` when you need an isolated workspace for a feature.
+- Use `git-github-adaptive-engineering` when branch/commit work feeds an issue-driven delivery - it runs the Fase Zero battery (`scripts/phase-zero.py`) and picks the flow.
 
 ## Best Practices
 

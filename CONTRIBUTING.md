@@ -13,7 +13,7 @@ Use [GitHub Issues](../../issues). Choose the appropriate template:
 
 1. **Fork** the repo
 2. **Clone** your fork
-3. Create a branch: `git checkout -b feat/my-improvement`
+3. Create a branch: `git checkout -b feat/123-my-improvement` (see issue-first traceability below)
 4. **Make changes** following the standards below
 5. **Test locally:** `.\export.ps1 -DryRun` (Windows) or `./export.sh --dry-run` (Linux)
 6. **Commit** with a clear message (see format below)
@@ -30,10 +30,45 @@ Use [GitHub Issues](../../issues). Choose the appropriate template:
 
 Types: `feat`, `fix`, `docs`, `refactor`, `prune`, `export`, `chore`
 
+Anything beyond a trivial one-liner follows the density template under
+"Issue-first traceability" below (subject `type(scope): short (#N)` plus
+mandatory body sections and `Refs: #N`).
+
 Examples:
 - `feat: add context-folding skill (RLM-style)`
 - `fix: check-push-green now detects .NET projects`
 - `docs: update README with 9/9 adaptation status`
+
+### Issue-first traceability
+
+Every change starts from a GitHub issue; the issue is the unit of
+traceability and branches, commits, and PRs all wire back to it.
+
+- **Branch:** `<type>/<issue>-<slug>` (e.g. `feat/612-adaptive-git-github`).
+- **Commits:** reference the issue with `Refs: #N` in the body. The
+  density template (subject `type(scope): short (#N)` plus Contexto e
+  Motivacao, Detalhamento Tecnico, Decisoes Arquiteturais e Trade-offs,
+  and Validacao sections) lives in
+  `skills/git-github-adaptive-engineering/reference/density-templates.md`.
+  Write the body to a file and commit with `git commit -F <file>`.
+- **PRs:** `Closes #N` in the body completes the issue on merge;
+  `Refs: #N` relates without closing. The PR template requires the link.
+- **Labels:** triage applies `type:*` (feat, fix, refactor, docs, chore),
+  `priority:*`, `scope:*` (skills, ci, governance, ...), and `status:*`.
+  `.github/release.yml` maps `type:*` to release-note categories.
+
+For the full workflow (Fase Zero situational awareness, the adaptive
+decision engine, and the gh/API arsenal), invoke the
+`git-github-adaptive-engineering` skill.
+
+### Secrets and variables
+
+Never commit secrets. Store credentials on the repository or an
+environment with `gh secret set <NAME>` (encrypted, write-only) and
+non-sensitive configuration with `gh variable set <NAME>` (readable via
+the API). Scope secrets to a GitHub environment when only some workflows
+need them, reference them by name in workflows (`${{ secrets.NAME }}` /
+`${{ vars.NAME }}`), and rotate any secret that is exposed.
 
 ### Skill Quality Standards
 

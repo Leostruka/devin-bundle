@@ -158,6 +158,10 @@ PROBES = [
     ("scripts/dep-audit.py", [], "dep-audit"),
     ("scripts/spec-consistency.py", ["nonexistent"], "spec-consistency"),
     ("scripts/subagent-trace.py", [], "subagent-trace"),
+    # issue-612 adaptive git/github engine: offline-safe battery; --timeout
+    # bounds each git/gh probe so the subprocess run stays fast without
+    # network or gh auth.
+    ("scripts/phase-zero.py", ["--timeout", "5"], "phase-zero"),
     # wave-11 (#604): last dict-JSON emitters in scripts/. Remaining
     # unstamped prints are hook-protocol output or bare arrays.
     ("scripts/roadmap-board.py", ["--json"], "roadmap-board"),
