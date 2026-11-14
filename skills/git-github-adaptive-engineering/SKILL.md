@@ -115,3 +115,7 @@ This skill orchestrates; siblings execute depth:
 - `phase-zero.py` is read-only; do not extend it to mutate state.
 - Destructive git ops (force-push, `reset --hard`, `branch -D`,
   `tag -d`) need explicit per-action user confirmation.
+- This skill versions and delivers work; it does not schedule or
+  sequence it in time. Agendas, calendars, routines, and block
+  planning belong to the temporal/planning skills and are never
+  re-implemented here.
