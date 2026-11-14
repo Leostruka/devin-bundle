@@ -20,6 +20,14 @@
       "exported_at": "2026-09-08T21:39:22.459244"
     },
     {
+      "name": "adaptive-agenda-calendar-routine-engine",
+      "source": "devin-bundle",
+      "purpose": "Use when planning or executing work across hours, days, weeks, or sprints. Turns the calendar into a strict time-blocked agenda (HH:MM-HH:MM blocks carrying a routine profile, expected inputs, and a handoff output artifact), runs the 5-stage cognitive flow (Radar and Hunt -> Triage plus Steve Jobs conception -> workbench manifest -> >=32-cycle loop -> Close plus Open-Minded Scrum), and unfolds macro calendar milestones into micro agenda blocks through extensions/gcal/wrapper.py.",
+      "original_path": "%APPDATA%\\devin\\skills\\adaptive-agenda-calendar-routine-engine",
+      "export_hash": "cd5b8f3666adfe7afc4f996514527a8f56ef96e7696a71f8f547fcb3c2f99573",
+      "exported_at": "2026-11-14T00:35:55.371037"
+    },
+    {
       "name": "afk-loop",
       "source": "devin-bundle",
       "purpose": "Use when you want the agent to work unattended through local Markdown implementation issues, picking the next ready task from a DAG of blocking relationships.",
@@ -1360,7 +1368,7 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 184,
+  "skill_count": 185,
   "rule_count": 24,
   "scripts": [
     {
