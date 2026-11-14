@@ -1,6 +1,0 @@
-iEhCLn9utDU|Agent Desktop: Free Open Source Computer Use, 40x Faster|Prism Labs|436|20261102
-of628n5754g|Head Of Design At X's New Claude Skill Is Insane|AI LABS|736|20261107
-anqN-iDO3uw|Como Astra editou os pesos do Qwen|Lucas Montano|872|20261106
-z5kcsAmoZRo|I Cancelled Claude Code. Here's What I Use Now|Epic Programmer|787|20261106
-gEJ26rECifc|I Switched To An Open Source Code Reviewer And I'm Not Looking Back|DevOps Toolbox|532|20261030
-g_NgCLTibiM|Make Your AI Agents Predictable With Graph Engineering - Zachary Blumenfeld, Neo4j|AI Engineer|1235|20261103

@@ -68,3 +68,7 @@ ramifications aren't obvious.
 ## Cross-skills
 
 - `adaptive-agenda-calendar-routine-engine` - Stage 5 versioned delivery (commits, PRs, issue wiring) delegates here together with `gh`, `git-workflows`, `pr`, `finishing-a-development-branch`.
+
+## Cross-skills
+
+- Use `git-github-adaptive-engineering` for the full PR pipeline - it owns issue wiring (`Closes #N`/`Refs: #N`), `--body-file`, and density templates; this skill owns the Summary/Evidence/Merge Danger body format.

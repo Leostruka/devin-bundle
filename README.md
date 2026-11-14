@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-185-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-186-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.22.0-orange.svg)](CHANGELOG.md)
@@ -139,7 +139,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 185 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 186 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
@@ -163,7 +163,7 @@ Principais grupos:
 | Arquitetura | `architecture` | Aprofundar módulos e reduzir dependências rasas |
 | Pesquisa e varredura | `research`, `scan`, `context7`, `ai-coding-dictionary` | Investigar com fontes ou varrer o codebase por objetivo |
 | Contexto e memória | `context-hygiene`, `memory-management`, `handoff` | Controlar contexto e preservar conhecimento útil |
-| Git e entrega | `git-workflows`, `gh`, `code-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
+| Git e entrega | `git-github-adaptive-engineering`, `git-workflows`, `gh`, `code-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
 | Infra e especialidades | `security`, `a11y-audit`, `api-spec`, `database`, `e2e-testing`, `i18n`, `docker`, `performance`, `observability-quality` | Aplicar processos especializados |
 | Extensão do harness | `project-bootstrap`, `devin-config`, `self-improvement` | Configurar e evoluir o ecossistema |
 | Desktop e dados | `computer-use`, `system-control`, `data-analyst`, `ai-tools`, `brag` | GUI/terminal/browser, análise de dados, ML local, vídeo de lançamento |
@@ -208,7 +208,7 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 56 scripts Python em `scripts/`: 14 entry points de hooks (6 consolidados que executam 27 módulos de check in-process via `_hookrun`, 8 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
+Há 57 scripts Python em `scripts/`: 14 entry points de hooks (6 consolidados que executam 27 módulos de check in-process via `_hookrun`, 8 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
 
 ### 6. Configuração e distribuição
 
@@ -467,7 +467,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 21 perfis customizados
-├── skills/                    # 185 workflows invocáveis
+├── skills/                    # 186 workflows invocáveis
 
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools, gcal)
@@ -633,7 +633,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 185 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 186 skills |
 
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |

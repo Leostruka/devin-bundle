@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest a new skill, hook, rule, workflow, or improvement
+title: "[Feat] "
+labels: ["type:feat"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. This form files the issue with the `type:feat` label; triage adds `priority:*` and `scope:*` labels based on your answers below.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The customer pain or workflow gap, not the technology. Per Rule 1, start with the experience.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: What should be added or changed, and where it would live in the bundle.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Cite primary sources (docs, papers, real-world usage) that support this change. Per Rule 12, claims must be verified against primary sources.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you consider, and why did it not work?
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Suggested scope
+      description: Triage maps this answer to a `scope:*` label.
+      options:
+        - skills/ (suggests scope:skills)
+        - CI or workflows (suggests scope:ci)
+        - governance, rules, or templates (suggests scope:governance)
+        - multiple areas or unclear
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Triage maps this answer to a `priority:*` label.
+      options:
+        - Critical - drop everything (suggests priority:critical)
+        - High (suggests priority:high)
+        - Medium (suggests priority:medium)
+    validations:
+      required: true

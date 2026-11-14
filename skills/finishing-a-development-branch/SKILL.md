@@ -231,3 +231,7 @@ place. If your platform provides a workspace-exit tool, use it.
 ## Cross-skills
 
 - `adaptive-agenda-calendar-routine-engine` - Stage 5 versioned delivery (commits, PRs, issue wiring) delegates here together with `gh`, `git-workflows`, `pr`, `finishing-a-development-branch`.
+
+## Cross-skills
+
+- Use `git-github-adaptive-engineering` to pick the integration flow (merge, PR, hotfix) and run the Fase Zero battery (`scripts/phase-zero.py`) before pushing or opening the PR - it owns `gh pr create --body-file` and the `Closes #N`/`Refs: #N` wiring; this skill owns the merge and cleanup steps.
