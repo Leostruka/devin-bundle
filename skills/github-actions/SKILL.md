@@ -85,3 +85,4 @@ CI/CD is the most common place to leak secrets and take supply-chain attacks: th
 - Secrets in repo/CI: `security` skill.
 - Pinned versions of actions/deps: repository pinning rules (versions >7 days published).
 - CI files are a protected zone: justify edits in the change report.
+- Red CI triage and flow selection: `git-github-adaptive-engineering` orchestrates (flow 5, CI self-healing); this skill owns the workflow YAML rules.

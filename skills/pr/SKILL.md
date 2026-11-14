@@ -65,3 +65,7 @@ on what makes them irreversible.
 **Blast Radius:** one-word scope of possible impact (e.g. layout shift,
 consumer breakage, CI contract, migration cost), plus a line when the
 ramifications aren't obvious.
+
+## Cross-skills
+
+- Use `git-github-adaptive-engineering` for the full PR pipeline - it owns issue wiring (`Closes #N`/`Refs: #N`), `--body-file`, and density templates; this skill owns the Summary/Evidence/Merge Danger body format.

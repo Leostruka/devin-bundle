@@ -28,6 +28,7 @@ Deploy, release, and verify code in target environments.
 
 - `docker` — container build, run, and compose.
 - `deploy` — release orchestration, rollback, and smoke tests.
+- `git-github-adaptive-engineering` - release flow selection, `gh workflow run`, environments, and `gh release`/attestation depth.
 
 ## Output rule
 

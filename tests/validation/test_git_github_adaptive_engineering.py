@@ -23,6 +23,21 @@ REFERENCE_FILES = [
 ]
 PHASE_ZERO = ROOT / "scripts" / "phase-zero.py"
 
+# Task 2: executor skills that must point back at the orchestrator so
+# agents discover the engine from whichever skill they already loaded.
+WIRED_SKILLS = [
+    "gh",
+    "git-helper",
+    "git-workflows",
+    "github-actions",
+    "pr",
+    "debug-ci-failures",
+    "deploy",
+    "resolving-merge-conflicts",
+    "using-git-worktrees",
+    "finishing-a-development-branch",
+]
+
 REQUIRED_TOKENS = [
     "Fase Zero",
     "decision engine",
@@ -154,3 +169,14 @@ def test_phase_zero_emits_envelope_v2_offline():
         assert "ok" in p, f"probe {p.get('probe')} lacks ok flag"
     summary = payload.get("summary", {})
     assert summary.get("total") == len(probes)
+
+
+def test_wired_skills_reference_adaptive_engine():
+    """Each executor skill carries a pointer to
+    git-github-adaptive-engineering (cross-skills/cascade/see-also)."""
+    for name in WIRED_SKILLS:
+        path = ROOT / "skills" / name / "SKILL.md"
+        assert path.is_file(), f"missing skill file: {path}"
+        text = _read(path)
+        assert "git-github-adaptive-engineering" in text, \
+            f"{name}/SKILL.md does not reference the adaptive engine"
