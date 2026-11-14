@@ -19,6 +19,8 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Cross-skills:** Before planning, invoke `deep-mode` if the spec touches unfamiliar code, and `context7` if it depends on a library whose current API you need to verify.
 
+**Cross-skills:** Plans that feed `adaptive-agenda-calendar-routine-engine` map tasks to workbench manifest entries and HH:MM-HH:MM agenda blocks.
+
 **Context:** If working in an isolated worktree, it should have been created via the `/using-git-worktrees` skill at execution time.
 
 **Save plans to:** `.devin/plans/YYYY-MM-DD-<feature-name>.md`

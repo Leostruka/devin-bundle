@@ -57,3 +57,7 @@ re-litigating the code.
   for pointers and pinned rules only; push detail to docs and skills.
 - `CODING_STANDARDS` lives in review tooling (reviewer prompts,
   lint/hook checks), not implementation context.
+
+## Cross-skills
+
+- `adaptive-agenda-calendar-routine-engine` runs session retrospectives as Stage 5 self-evaluation inside the close block.

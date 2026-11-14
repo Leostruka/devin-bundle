@@ -87,3 +87,7 @@ The agent can write, never silently:
 
 Every input task is either in `schedule` with a concrete start/end or
 named in `unscheduled`, and slack is reported.
+
+## Cross-skills
+
+- `adaptive-agenda-calendar-routine-engine` orchestrates; roteiro is its day-packing executor for the micro agenda's HH:MM-HH:MM blocks over extensions/gcal free/busy.

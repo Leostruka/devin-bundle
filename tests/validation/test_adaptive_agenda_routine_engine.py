@@ -17,6 +17,26 @@ REFERENCE_FILES = [
     "five-stages.md",
 ]
 
+# Task 2: executor skills that must point back at the orchestrator so
+# agents discover the engine from whichever skill they already loaded.
+WIRED_SKILLS = [
+    "afk-loop",
+    "scheduled-turns",
+    "roteiro",
+    "continuous-improvement",
+    "self-improvement",
+    "retro",
+    "planning",
+    "executing-plans",
+    "gates",
+    "autonomous-gates",
+    "handoff",
+    "task-sizer",
+    "writing-plans",
+    "planning-pipeline",
+    "project-memory",
+]
+
 REQUIRED_TOKENS = [
     "HH:MM",
     "handoff",
@@ -112,3 +132,14 @@ def test_no_em_or_en_dashes_in_skill_files():
             f"{path.relative_to(ROOT)} contains an em dash (U+2014)"
         assert EN_DASH not in text, \
             f"{path.relative_to(ROOT)} contains an en dash (U+2013)"
+
+
+def test_wired_skills_reference_adaptive_engine():
+    """Each executor skill carries a pointer to
+    adaptive-agenda-calendar-routine-engine (cross-skills/see-also)."""
+    for name in WIRED_SKILLS:
+        path = ROOT / "skills" / name / "SKILL.md"
+        assert path.is_file(), f"missing skill file: {path}"
+        text = _read(path)
+        assert "adaptive-agenda-calendar-routine-engine" in text, \
+            f"{name}/SKILL.md does not reference the adaptive engine"

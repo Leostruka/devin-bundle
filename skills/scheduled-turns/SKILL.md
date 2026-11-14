@@ -68,3 +68,7 @@ Unregister-ScheduledTask -TaskName "devin-<name>" -Confirm:$false
 ```
 
 Delete `.devin/scheduled/<name>.md` to retire the turn's instructions.
+
+## Cross-skills
+
+- Use `adaptive-agenda-calendar-routine-engine` to slot recurring turns (morning radar, daily triage) into calendar-backed micro agenda blocks.

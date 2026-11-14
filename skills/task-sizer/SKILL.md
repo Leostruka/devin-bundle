@@ -63,3 +63,4 @@ Decision: Split into 2 tickets:
 - `implement` - enforces the ~300/~500 limits during execution.
 - `effort-calibration` - larger tasks need higher effort; smaller tasks need less.
 - `verification-before-completion` - verifies the PR size was respected.
+- `adaptive-agenda-calendar-routine-engine` - uses these estimates to size calendar blocks and workbench manifest entries (objetivos_secundarios).

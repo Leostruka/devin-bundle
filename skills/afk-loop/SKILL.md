@@ -111,3 +111,4 @@ The worker never gets the last word on its own DONE claim. Before setting
 - `/tdd` for the implementation cycle.
 - `/verification-before-completion` before reporting done.
 - `/finishing-a-development-branch` when the loop ends and the branch must be merged.
+- `/adaptive-agenda-calendar-routine-engine` runs unattended issue loops inside HH:MM-HH:MM agenda blocks and the >=32-cycle verification batteries.
