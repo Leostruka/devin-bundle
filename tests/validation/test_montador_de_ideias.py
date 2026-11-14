@@ -105,3 +105,27 @@ def test_templates_complete():
         "## 3. Super-Prompt Compilado (Pronto para Execucao)",
     ):
         assert section in compiled, f"compiled-prompt.md missing section: {section}"
+
+
+def test_leo_and_ask_bundle_route_to_montador_de_ideias():
+    leo_text = (ROOT / "skills" / "leo" / "SKILL.md").read_text(encoding="utf-8")
+    ask_text = (ROOT / "skills" / "ask-bundle" / "SKILL.md").read_text(encoding="utf-8")
+    flows_text = (ROOT / "skills" / "ask-bundle" / "modes" / "flows-detail.md").read_text(encoding="utf-8")
+
+    assert "`montador-de-ideias`" in leo_text, "leo SKILL.md missing montador-de-ideias route"
+    assert "`montador-de-ideias`" in ask_text, "ask-bundle SKILL.md missing montador-de-ideias route"
+    assert "`montador-de-ideias`" in flows_text, "flows-detail.md missing montador-de-ideias"
+
+    # Quick-start menu must expose montador-de-ideias and stay within 4 bullets
+    leo_qs = leo_text.split("## Quick-start menu", 1)[1].split("## Quick AFK issue creation", 1)[0]
+    assert "`montador-de-ideias`" in leo_qs, "leo Quick-start menu missing montador-de-ideias"
+    leo_bullets = [line for line in leo_qs.splitlines() if line.strip().startswith("- **")]
+    assert 2 <= len(leo_bullets) <= 4, f"leo Quick-start menu must have 2-4 options, found {len(leo_bullets)}"
+
+
+def test_no_em_dashes_in_montador_de_ideias():
+    em_dash = chr(0x2014)
+    en_dash = chr(0x2013)
+    for f in SKILL_DIR.rglob("*.md"):
+        text = f.read_text(encoding="utf-8")
+        assert em_dash not in text and en_dash not in text, f"Forbidden dash found in {f}"

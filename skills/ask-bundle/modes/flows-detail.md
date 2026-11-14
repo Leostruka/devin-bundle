@@ -14,6 +14,8 @@ A **flow** is a path through the skills. Most paths run along one **main flow**,
 
 The route most work travels. You have an idea and want it built.
 
+**`montador-de-ideias`** is the optional upstream idea-assembly entry point, run before `grilling` (With-docs mode) when the user wants a full investigative OSINT teardown, a first-principles dossier, and a compiled super-prompt - without mutating their original prompt without consent.
+
 1. **`grilling` (With-docs mode)** — sharpen the idea by interview. Start here whenever you are **working in a working directory**: it's stateful, retaining what it learns in `.devin/CONTEXT.md` and `.devin/adr/`. (No working directory? Use **`grilling` (Stateless mode)** — see Standalone. Both run the same **`grilling`** primitive; `grilling` (With-docs mode) is the one that leaves a paper trail, which makes it the better of the two whenever a repo is there to leave it in.)
 2. **Branch — can you settle every question in conversation?** If a question needs a runnable answer (state, business logic, a UI you have to see), detour through a prototype, bridged by **`handoff`** in both directions (a prototype lives in its own directory, which is exactly what `handoff` is for — see Phase boundaries):
    - **`handoff`** out, then open a fresh session against that file,

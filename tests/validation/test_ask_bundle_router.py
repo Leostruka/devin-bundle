@@ -31,6 +31,7 @@ def test_router_covers_specialist_domains():
         "observability-quality",
         "wizard",
         "teach",
+        "montador-de-ideias",
     ):
         assert f"`{skill}`" in text
 
