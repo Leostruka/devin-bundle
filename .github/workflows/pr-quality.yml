@@ -1,0 +1,81 @@
+name: PR Quality
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: PR checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Validate skill frontmatter
+        run: python scripts/validate-skill-format.py skills
+
+      - name: No em-dash in added prose
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          python -c "
+          import os, subprocess, sys
+          base = os.environ['BASE_REF']
+          diff = subprocess.run(
+              ['git', 'diff', '--unified=0', 'origin/' + base + '...HEAD',
+               '--', '*.md', '*.markdown', '*.txt', '*.rst'],
+              capture_output=True, text=True, encoding='utf-8',
+              errors='replace').stdout
+          hits = []
+          for line in diff.split('\n'):
+              if line.startswith('+') and not line.startswith('+++') \
+                      and chr(0x2014) in line:
+                  hits.append(line[:120])
+          if hits:
+              print('FAIL: em-dash (U+2014) in added prose lines:')
+              for h in hits[:20]:
+                  print(' ', h)
+              sys.exit(1)
+          print('OK: no em-dash in added prose.')
+          "
+
+      - name: PR references an issue
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if printf '%s' "$PR_BODY" | grep -qiE '(closes|fixes|refs)[[:space:]]*:?[[:space:]]*#[0-9]+'; then
+            echo "OK: issue reference found in PR body."
+          else
+            echo "FAIL: PR body must reference an issue."
+            echo "Add a line like 'Closes #123' or 'Refs: #123' to the PR body."
+            exit 1
+          fi
+
+      - name: Conventional PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if printf '%s' "$PR_TITLE" | grep -qE '^(feat|fix|docs|refactor|prune|export|chore|test|ci|build|perf|revert)(\(.+\))?!?:'; then
+            echo "OK: title matches conventional format."
+          else
+            echo "FAIL: PR title must match: type(scope): subject"
+            echo "Allowed types: feat fix docs refactor prune export chore test ci build perf revert"
+            exit 1
+          fi

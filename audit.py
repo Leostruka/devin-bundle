@@ -486,9 +486,14 @@ else:
 print()
 print('[13] GitHub templates')
 templates = [
-    '.github/ISSUE_TEMPLATE/bug_report.md',
-    '.github/ISSUE_TEMPLATE/feature_request.md',
+    '.github/ISSUE_TEMPLATE/config.yml',
+    '.github/ISSUE_TEMPLATE/bug_report.yml',
+    '.github/ISSUE_TEMPLATE/feature_request.yml',
+    '.github/ISSUE_TEMPLATE/skill_improvement.yml',
     '.github/PULL_REQUEST_TEMPLATE.md',
+    '.github/release.yml',
+    '.github/dependabot.yml',
+    '.github/workflows/pr-quality.yml',
 ]
 for t in templates:
     if os.path.exists(t):
