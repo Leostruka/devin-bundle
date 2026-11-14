@@ -1,0 +1,3944 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:00:00.100 --> 00:00:01.540 align:start position:0%
+ 
+Welcome <00:00:00.688><c>to </c><00:00:01.276><c>Tiny</c>
+
+00:00:01.540 --> 00:00:01.550 align:start position:0%
+Welcome to Tiny
+ 
+
+00:00:01.550 --> 00:00:03.175 align:start position:0%
+Welcome to Tiny
+Software <00:00:02.054><c>Factories, </c><00:00:02.558><c>lesson </c><00:00:03.062><c>two.</c>
+
+00:00:03.175 --> 00:00:03.185 align:start position:0%
+Software Factories, lesson two.
+ 
+
+00:00:03.185 --> 00:00:05.121 align:start position:0%
+Software Factories, lesson two.
+Here <00:00:03.558><c>we </c><00:00:03.931><c>take </c><00:00:04.304><c>your </c><00:00:04.677><c>“tiny </c><00:00:05.050><c>factories”</c>
+
+00:00:05.121 --> 00:00:05.131 align:start position:0%
+Here we take your “tiny factories”
+ 
+
+00:00:05.131 --> 00:00:07.016 align:start position:0%
+Here we take your “tiny factories”
+to <00:00:05.351><c>the </c><00:00:05.571><c>next </c><00:00:05.791><c>level </c><00:00:06.011><c>by </c><00:00:06.231><c>understanding </c><00:00:06.451><c>their </c><00:00:06.671><c>role </c><00:00:06.891><c>as</c>
+
+00:00:07.016 --> 00:00:07.026 align:start position:0%
+to the next level by understanding their role as
+ 
+
+00:00:07.026 --> 00:00:08.879 align:start position:0%
+to the next level by understanding their role as
+“liquid” <00:00:08.762><c>software.</c>
+
+00:00:08.879 --> 00:00:08.889 align:start position:0%
+“liquid” software.
+ 
+
+00:00:08.889 --> 00:00:10.822 align:start position:0%
+“liquid” software.
+More <00:00:09.132><c>on </c><00:00:09.375><c>that </c><00:00:09.618><c>in </c><00:00:09.861><c>a </c><00:00:10.104><c>moment.  </c><00:00:10.347><c>First,</c>
+
+00:00:10.822 --> 00:00:10.832 align:start position:0%
+More on that in a moment.  First,
+ 
+
+00:00:10.832 --> 00:00:12.923 align:start position:0%
+More on that in a moment.  First,
+let's <00:00:11.172><c>talk </c><00:00:11.512><c>about </c><00:00:11.852><c>the </c><00:00:12.192><c>big </c><00:00:12.532><c>picture</c>
+
+00:00:12.923 --> 00:00:12.933 align:start position:0%
+let's talk about the big picture
+ 
+
+00:00:12.933 --> 00:00:15.095 align:start position:0%
+let's talk about the big picture
+.  <00:00:13.196><c>If </c><00:00:13.459><c>you </c><00:00:13.722><c>want </c><00:00:13.985><c>to </c><00:00:14.248><c>multiply </c><00:00:14.511><c>your </c><00:00:14.774><c>impact</c>
+
+00:00:15.095 --> 00:00:15.105 align:start position:0%
+.  If you want to multiply your impact
+ 
+
+00:00:15.105 --> 00:00:17.019 align:start position:0%
+.  If you want to multiply your impact
+as <00:00:15.330><c>an </c><00:00:15.555><c>engineer, </c><00:00:15.780><c>you </c><00:00:16.005><c>need </c><00:00:16.230><c>to </c><00:00:16.455><c>stop</c>
+
+00:00:17.019 --> 00:00:17.029 align:start position:0%
+as an engineer, you need to stop
+ 
+
+00:00:17.029 --> 00:00:19.122 align:start position:0%
+as an engineer, you need to stop
+obsessing <00:00:17.710><c>over </c><00:00:18.391><c>primitives: </c><00:00:19.072><c>agents,</c>
+
+00:00:19.122 --> 00:00:19.132 align:start position:0%
+obsessing over primitives: agents,
+ 
+
+00:00:19.132 --> 00:00:21.165 align:start position:0%
+obsessing over primitives: agents,
+models, <00:00:20.084><c>tools, </c><00:00:21.036><c>bindings.</c>
+
+00:00:21.165 --> 00:00:21.175 align:start position:0%
+models, tools, bindings.
+ 
+
+00:00:21.175 --> 00:00:22.984 align:start position:0%
+models, tools, bindings.
+What <00:00:21.445><c>should </c><00:00:21.715><c>you </c><00:00:21.985><c>focus </c><00:00:22.255><c>on </c><00:00:22.525><c>then </c><00:00:22.795><c>to</c>
+
+00:00:22.984 --> 00:00:22.994 align:start position:0%
+What should you focus on then to
+ 
+
+00:00:22.994 --> 00:00:25.285 align:start position:0%
+What should you focus on then to
+get <00:00:23.326><c>maximum </c><00:00:23.658><c>results?  </c><00:00:23.990><c>The </c><00:00:24.322><c>goal </c><00:00:24.654><c>is </c><00:00:24.986><c>to</c>
+
+00:00:25.285 --> 00:00:25.295 align:start position:0%
+get maximum results?  The goal is to
+ 
+
+00:00:25.295 --> 00:00:28.062 align:start position:0%
+get maximum results?  The goal is to
+optimize <00:00:26.054><c>how </c><00:00:26.813><c>you </c><00:00:27.572><c>work.</c>
+
+00:00:28.062 --> 00:00:28.072 align:start position:0%
+optimize how you work.
+ 
+
+00:00:28.072 --> 00:00:30.590 align:start position:0%
+optimize how you work.
+The <00:00:28.612><c>most </c><00:00:29.152><c>important </c><00:00:29.692><c>meta-optimization </c><00:00:30.232><c>that</c>
+
+00:00:30.590 --> 00:00:30.600 align:start position:0%
+The most important meta-optimization that
+ 
+
+00:00:30.600 --> 00:00:33.085 align:start position:0%
+The most important meta-optimization that
+engineers <00:00:30.903><c>are </c><00:00:31.206><c>currently </c><00:00:31.509><c>implementing </c><00:00:31.812><c>is </c><00:00:32.115><c>the </c><00:00:32.418><c>transition </c><00:00:32.721><c>from </c><00:00:33.024><c>“</c>
+
+00:00:33.085 --> 00:00:33.095 align:start position:0%
+engineers are currently implementing is the transition from “
+ 
+
+00:00:33.095 --> 00:00:35.514 align:start position:0%
+engineers are currently implementing is the transition from “
+person <00:00:33.357><c>in </c><00:00:33.619><c>the </c><00:00:33.881><c>loop” </c><00:00:34.143><c>to </c><00:00:34.405><c>“person </c><00:00:34.667><c>near </c><00:00:34.929><c>the </c><00:00:35.191><c>loop” </c><00:00:35.453><c>and</c>
+
+00:00:35.514 --> 00:00:35.524 align:start position:0%
+person in the loop” to “person near the loop” and
+ 
+
+00:00:35.524 --> 00:00:37.777 align:start position:0%
+person in the loop” to “person near the loop” and
+, <00:00:35.878><c>finally, </c><00:00:36.232><c>to </c><00:00:36.586><c>completely </c><00:00:36.940><c>exiting </c><00:00:37.294><c>the </c><00:00:37.648><c>loop.</c>
+
+00:00:37.777 --> 00:00:37.787 align:start position:0%
+, finally, to completely exiting the loop.
+ 
+
+00:00:37.787 --> 00:00:41.097 align:start position:0%
+, finally, to completely exiting the loop.
+Why <00:00:38.269><c>is </c><00:00:38.751><c>this </c><00:00:39.233><c>optimization </c><00:00:39.715><c>important?</c>
+
+00:00:41.097 --> 00:00:41.107 align:start position:0%
+Why is this optimization important?
+ 
+
+00:00:41.107 --> 00:00:43.373 align:start position:0%
+Why is this optimization important?
+Because <00:00:41.478><c>the </c><00:00:41.849><c>scale </c><00:00:42.220><c>of </c><00:00:42.591><c>intelligence </c><00:00:42.962><c>working</c>
+
+00:00:43.373 --> 00:00:43.383 align:start position:0%
+Because the scale of intelligence working
+ 
+
+00:00:43.383 --> 00:00:45.681 align:start position:0%
+Because the scale of intelligence working
+on <00:00:43.786><c>your </c><00:00:44.189><c>behalf </c><00:00:44.592><c>directly </c><00:00:44.995><c>impacts </c><00:00:45.398><c>your</c>
+
+00:00:45.681 --> 00:00:45.691 align:start position:0%
+on your behalf directly impacts your
+ 
+
+00:00:45.691 --> 00:00:48.149 align:start position:0%
+on your behalf directly impacts your
+performance <00:00:46.180><c>as </c><00:00:46.669><c>an </c><00:00:47.158><c>agentive </c><00:00:47.647><c>engineer</c>
+
+00:00:48.149 --> 00:00:48.159 align:start position:0%
+performance as an agentive engineer
+ 
+
+00:00:48.159 --> 00:00:48.803 align:start position:0%
+performance as an agentive engineer
+.
+
+00:00:48.803 --> 00:00:48.813 align:start position:0%
+.
+ 
+
+00:00:48.813 --> 00:00:50.793 align:start position:0%
+.
+When <00:00:48.983><c>you </c><00:00:49.153><c>are </c><00:00:49.323><c>stuck </c><00:00:49.493><c>“in </c><00:00:49.663><c>the </c><00:00:49.833><c>loop,” </c><00:00:50.003><c>you </c><00:00:50.173><c>are </c><00:00:50.343><c>constantly</c>
+
+00:00:50.793 --> 00:00:50.803 align:start position:0%
+When you are stuck “in the loop,” you are constantly
+ 
+
+00:00:50.803 --> 00:00:52.810 align:start position:0%
+When you are stuck “in the loop,” you are constantly
+exchanging <00:00:51.190><c>requests </c><00:00:51.577><c>with </c><00:00:51.964><c>your </c><00:00:52.351><c>agent, </c><00:00:52.738><c>and</c>
+
+00:00:52.810 --> 00:00:52.820 align:start position:0%
+exchanging requests with your agent, and
+ 
+
+00:00:52.820 --> 00:00:54.763 align:start position:0%
+exchanging requests with your agent, and
+he <00:00:53.089><c>works </c><00:00:53.358><c>until </c><00:00:53.627><c>he </c><00:00:53.896><c>needs </c><00:00:54.165><c>you.  </c><00:00:54.434><c>Here, </c><00:00:54.703><c>make</c>
+
+00:00:54.763 --> 00:00:54.773 align:start position:0%
+he works until he needs you.  Here, make
+ 
+
+00:00:54.773 --> 00:00:57.187 align:start position:0%
+he works until he needs you.  Here, make
+no <00:00:55.161><c>mistake, </c><00:00:55.549><c>you </c><00:00:55.937><c>are </c><00:00:56.325><c>the </c><00:00:56.713><c>"bottleneck."  </c><00:00:57.101><c>And</c>
+
+00:00:57.187 --> 00:00:57.197 align:start position:0%
+no mistake, you are the "bottleneck."  And
+ 
+
+00:00:57.197 --> 00:00:59.025 align:start position:0%
+no mistake, you are the "bottleneck."  And
+now <00:00:57.420><c>that </c><00:00:57.643><c>you </c><00:00:57.866><c>are </c><00:00:58.089><c>“near </c><00:00:58.312><c>the </c><00:00:58.535><c>loop,” </c><00:00:58.758><c>your</c>
+
+00:00:59.025 --> 00:00:59.035 align:start position:0%
+now that you are “near the loop,” your
+ 
+
+00:00:59.035 --> 00:01:00.955 align:start position:0%
+now that you are “near the loop,” your
+proactive <00:00:59.463><c>agents </c><00:00:59.891><c>work </c><00:01:00.319><c>for </c><00:01:00.747><c>you</c>
+
+00:01:00.955 --> 00:01:00.965 align:start position:0%
+proactive agents work for you
+ 
+
+00:01:00.965 --> 00:01:03.252 align:start position:0%
+proactive agents work for you
+around <00:01:01.253><c>the </c><00:01:01.541><c>clock </c><00:01:01.829><c>and </c><00:01:02.117><c>only </c><00:01:02.405><c>stop </c><00:01:02.693><c>when </c><00:01:02.981><c>they</c>
+
+00:01:03.252 --> 00:01:03.262 align:start position:0%
+around the clock and only stop when they
+ 
+
+00:01:03.262 --> 00:01:05.396 align:start position:0%
+around the clock and only stop when they
+reach <00:01:03.759><c>a </c><00:01:04.256><c>decision </c><00:01:04.753><c>point </c><00:01:05.250><c>that</c>
+
+00:01:05.396 --> 00:01:05.406 align:start position:0%
+reach a decision point that
+ 
+
+00:01:05.406 --> 00:01:07.491 align:start position:0%
+reach a decision point that
+requires <00:01:05.664><c>your </c><00:01:05.922><c>attention.  </c><00:01:06.180><c>When </c><00:01:06.438><c>you </c><00:01:06.696><c>are </c><00:01:06.954><c>“out </c><00:01:07.212><c>of</c>
+
+00:01:07.491 --> 00:01:07.501 align:start position:0%
+requires your attention.  When you are “out of
+ 
+
+00:01:07.501 --> 00:01:09.732 align:start position:0%
+requires your attention.  When you are “out of
+the <00:01:07.798><c>loop,” </c><00:01:08.095><c>your </c><00:01:08.392><c>system </c><00:01:08.689><c>works </c><00:01:08.986><c>for </c><00:01:09.283><c>you </c><00:01:09.580><c>24/7</c>
+
+00:01:09.732 --> 00:01:09.742 align:start position:0%
+the loop,” your system works for you 24/7
+ 
+
+00:01:09.742 --> 00:01:11.940 align:start position:0%
+the loop,” your system works for you 24/7
+without <00:01:09.958><c>any </c><00:01:10.174><c>expectation </c><00:01:10.390><c>that </c><00:01:10.606><c>you </c><00:01:10.822><c>will </c><00:01:11.038><c>intervene </c><00:01:11.254><c>at </c><00:01:11.470><c>all</c>
+
+00:01:11.940 --> 00:01:11.950 align:start position:0%
+without any expectation that you will intervene at all
+ 
+
+00:01:11.950 --> 00:01:13.916 align:start position:0%
+without any expectation that you will intervene at all
+.  <00:01:12.469><c>Here </c><00:01:12.988><c>at </c><00:01:13.507><c>Tiny</c>
+
+00:01:13.916 --> 00:01:13.926 align:start position:0%
+.  Here at Tiny
+ 
+
+00:01:13.926 --> 00:01:15.291 align:start position:0%
+.  Here at Tiny
+Software <00:01:14.552><c>Factories, </c><00:01:15.178><c>we</c>
+
+00:01:15.291 --> 00:01:15.301 align:start position:0%
+Software Factories, we
+ 
+
+00:01:15.301 --> 00:01:17.083 align:start position:0%
+Software Factories, we
+focus <00:01:15.558><c>on </c><00:01:15.815><c>moving </c><00:01:16.072><c>from </c><00:01:16.329><c>“in </c><00:01:16.586><c>the </c><00:01:16.843><c>loop</c>
+
+00:01:17.083 --> 00:01:17.093 align:start position:0%
+focus on moving from “in the loop
+ 
+
+00:01:17.093 --> 00:01:19.020 align:start position:0%
+focus on moving from “in the loop
+” <00:01:17.351><c>to </c><00:01:17.609><c>“near </c><00:01:17.867><c>the </c><00:01:18.125><c>loop.”  </c><00:01:18.383><c>But </c><00:01:18.641><c>Tiny</c>
+
+00:01:19.020 --> 00:01:19.030 align:start position:0%
+” to “near the loop.”  But Tiny
+ 
+
+00:01:19.030 --> 00:01:20.944 align:start position:0%
+” to “near the loop.”  But Tiny
+Software <00:01:19.427><c>Factories </c><00:01:19.824><c>is </c><00:01:20.221><c>not </c><00:01:20.618><c>just</c>
+
+00:01:20.944 --> 00:01:20.954 align:start position:0%
+Software Factories is not just
+ 
+
+00:01:20.954 --> 00:01:23.241 align:start position:0%
+Software Factories is not just
+about <00:01:21.268><c>that.  </c><00:01:21.582><c>The </c><00:01:21.896><c>architecture </c><00:01:22.210><c>of </c><00:01:22.524><c>the </c><00:01:22.838><c>Tiny </c><00:01:23.152><c>Factory</c>
+
+00:01:23.241 --> 00:01:23.251 align:start position:0%
+about that.  The architecture of the Tiny Factory
+ 
+
+00:01:23.251 --> 00:01:25.502 align:start position:0%
+about that.  The architecture of the Tiny Factory
+is <00:01:23.498><c>designed </c><00:01:23.745><c>with </c><00:01:23.992><c>two </c><00:01:24.239><c>key </c><00:01:24.486><c>goals </c><00:01:24.733><c>in </c><00:01:24.980><c>mind</c>
+
+00:01:25.502 --> 00:01:25.512 align:start position:0%
+is designed with two key goals in mind
+ 
+
+00:01:25.512 --> 00:01:27.825 align:start position:0%
+is designed with two key goals in mind
+.  <00:01:25.812><c>The </c><00:01:26.112><c>first </c><00:01:26.412><c>is </c><00:01:26.712><c>rapid </c><00:01:27.012><c>deployment </c><00:01:27.312><c>in </c><00:01:27.612><c>three</c>
+
+00:01:27.825 --> 00:01:27.835 align:start position:0%
+.  The first is rapid deployment in three
+ 
+
+00:01:27.835 --> 00:01:29.931 align:start position:0%
+.  The first is rapid deployment in three
+stages: <00:01:28.856><c>initialization, </c><00:01:29.877><c>configuration,</c>
+
+00:01:29.931 --> 00:01:29.941 align:start position:0%
+stages: initialization, configuration,
+ 
+
+00:01:29.941 --> 00:01:32.355 align:start position:0%
+stages: initialization, configuration,
+specialization;  <00:01:30.246><c>The </c><00:01:30.551><c>second </c><00:01:30.856><c>is </c><00:01:31.161><c>taking </c><00:01:31.466><c>shape </c><00:01:31.771><c>for </c><00:01:32.076><c>the</c>
+
+00:01:32.355 --> 00:01:32.365 align:start position:0%
+specialization;  The second is taking shape for the
+ 
+
+00:01:32.365 --> 00:01:34.545 align:start position:0%
+specialization;  The second is taking shape for the
+problem <00:01:32.652><c>you </c><00:01:32.939><c>are </c><00:01:33.226><c>solving.  </c><00:01:33.513><c>So </c><00:01:33.800><c>what </c><00:01:34.087><c>does </c><00:01:34.374><c>it</c>
+
+00:01:34.545 --> 00:01:34.555 align:start position:0%
+problem you are solving.  So what does it
+ 
+
+00:01:34.555 --> 00:01:36.966 align:start position:0%
+problem you are solving.  So what does it
+mean <00:01:34.835><c>to </c><00:01:35.115><c>take </c><00:01:35.395><c>the </c><00:01:35.675><c>shape </c><00:01:35.955><c>of </c><00:01:36.235><c>the </c><00:01:36.515><c>problem </c><00:01:36.795><c>you</c>
+
+00:01:36.966 --> 00:01:36.976 align:start position:0%
+mean to take the shape of the problem you
+ 
+
+00:01:36.976 --> 00:01:39.256 align:start position:0%
+mean to take the shape of the problem you
+are <00:01:37.403><c>solving?  </c><00:01:37.830><c>As </c><00:01:38.257><c>intelligence </c><00:01:38.684><c>increases </c><00:01:39.111><c>and</c>
+
+00:01:39.256 --> 00:01:39.266 align:start position:0%
+are solving?  As intelligence increases and
+ 
+
+00:01:39.266 --> 00:01:41.480 align:start position:0%
+are solving?  As intelligence increases and
+token <00:01:39.784><c>values ​​</c><00:01:40.302><c>decrease, </c><00:01:40.820><c>a</c>
+
+00:01:41.480 --> 00:01:41.490 align:start position:0%
+token values ​​decrease, a
+ 
+
+00:01:41.490 --> 00:01:43.674 align:start position:0%
+token values ​​decrease, a
+new <00:01:41.898><c>type </c><00:01:42.306><c>of </c><00:01:42.714><c>software </c><00:01:43.122><c>emerges </c><00:01:43.530><c>that</c>
+
+00:01:43.674 --> 00:01:43.684 align:start position:0%
+new type of software emerges that
+ 
+
+00:01:43.684 --> 00:01:45.837 align:start position:0%
+new type of software emerges that
+changes <00:01:43.900><c>form </c><00:01:44.116><c>depending </c><00:01:44.332><c>on </c><00:01:44.548><c>the </c><00:01:44.764><c>problem </c><00:01:44.980><c>it </c><00:01:45.196><c>is </c><00:01:45.412><c>meant </c><00:01:45.628><c>to</c>
+
+00:01:45.837 --> 00:01:45.847 align:start position:0%
+changes form depending on the problem it is meant to
+ 
+
+00:01:45.847 --> 00:01:48.028 align:start position:0%
+changes form depending on the problem it is meant to
+solve.  <00:01:46.176><c>And </c><00:01:46.505><c>that's </c><00:01:46.834><c>the </c><00:01:47.163><c>real </c><00:01:47.492><c>value </c><00:01:47.821><c>here</c>
+
+00:01:48.028 --> 00:01:48.038 align:start position:0%
+solve.  And that's the real value here
+ 
+
+00:01:48.038 --> 00:01:50.397 align:start position:0%
+solve.  And that's the real value here
+.  <00:01:48.485><c>It </c><00:01:48.932><c>is </c><00:01:49.379><c>constantly </c><00:01:49.826><c>changing </c><00:01:50.273><c>shape.</c>
+
+00:01:50.397 --> 00:01:50.407 align:start position:0%
+.  It is constantly changing shape.
+ 
+
+00:01:50.407 --> 00:01:51.682 align:start position:0%
+.  It is constantly changing shape.
+The <00:01:50.625><c>more </c><00:01:50.843><c>you </c><00:01:51.061><c>learn </c><00:01:51.279><c>about </c><00:01:51.497><c>your</c>
+
+00:01:51.682 --> 00:01:51.692 align:start position:0%
+The more you learn about your
+ 
+
+00:01:51.692 --> 00:01:53.053 align:start position:0%
+The more you learn about your
+problem, <00:01:52.013><c>the </c><00:01:52.334><c>more </c><00:01:52.655><c>your</c>
+
+00:01:53.053 --> 00:01:53.063 align:start position:0%
+problem, the more your
+ 
+
+00:01:53.063 --> 00:01:54.360 align:start position:0%
+problem, the more your
+software <00:01:53.463><c>changes </c><00:01:53.863><c>shape </c><00:01:54.263><c>to</c>
+
+00:01:54.360 --> 00:01:54.370 align:start position:0%
+software changes shape to
+ 
+
+00:01:54.370 --> 00:01:56.116 align:start position:0%
+software changes shape to
+solve <00:01:54.685><c>it.  </c><00:01:55.000><c>This </c><00:01:55.315><c>new </c><00:01:55.630><c>“liquid”</c>
+
+00:01:56.116 --> 00:01:56.126 align:start position:0%
+solve it.  This new “liquid”
+ 
+
+00:01:56.126 --> 00:01:58.093 align:start position:0%
+solve it.  This new “liquid”
+software <00:01:56.600><c>has </c><00:01:57.074><c>a </c><00:01:57.548><c>unique </c><00:01:58.022><c>feature—</c>
+
+00:01:58.093 --> 00:01:58.103 align:start position:0%
+software has a unique feature—
+ 
+
+00:01:58.103 --> 00:02:00.018 align:start position:0%
+software has a unique feature—
+it <00:01:58.352><c>is </c><00:01:58.601><c>designed </c><00:01:58.850><c>from </c><00:01:59.099><c>day </c><00:01:59.348><c>one </c><00:01:59.597><c>to </c><00:01:59.846><c>be</c>
+
+00:02:00.018 --> 00:02:00.028 align:start position:0%
+it is designed from day one to be
+ 
+
+00:02:00.028 --> 00:02:01.925 align:start position:0%
+it is designed from day one to be
+customizable.  <00:02:00.754><c>A </c><00:02:01.480><c>tiny</c>
+
+00:02:01.925 --> 00:02:01.935 align:start position:0%
+customizable.  A tiny
+ 
+
+00:02:01.935 --> 00:02:03.956 align:start position:0%
+customizable.  A tiny
+software <00:02:02.585><c>factory—this </c><00:02:03.235><c>is </c><00:02:03.885><c>what</c>
+
+00:02:03.956 --> 00:02:03.966 align:start position:0%
+software factory—this is what
+ 
+
+00:02:03.966 --> 00:02:05.911 align:start position:0%
+software factory—this is what
+“liquid” <00:02:04.245><c>software </c><00:02:04.524><c>is </c><00:02:04.803><c>all </c><00:02:05.082><c>about.  </c><00:02:05.361><c>It </c><00:02:05.640><c>is</c>
+
+00:02:05.911 --> 00:02:05.921 align:start position:0%
+“liquid” software is all about.  It is
+ 
+
+00:02:05.921 --> 00:02:08.167 align:start position:0%
+“liquid” software is all about.  It is
+designed <00:02:06.254><c>to </c><00:02:06.587><c>adapt </c><00:02:06.920><c>to </c><00:02:07.253><c>the </c><00:02:07.586><c>specific</c>
+
+00:02:08.167 --> 00:02:08.177 align:start position:0%
+designed to adapt to the specific
+ 
+
+00:02:08.177 --> 00:02:10.331 align:start position:0%
+designed to adapt to the specific
+problem <00:02:08.555><c>you </c><00:02:08.933><c>need </c><00:02:09.311><c>to </c><00:02:09.689><c>solve</c>
+
+00:02:10.331 --> 00:02:10.341 align:start position:0%
+problem you need to solve
+ 
+
+00:02:10.341 --> 00:02:12.589 align:start position:0%
+problem you need to solve
+24/7, <00:02:10.882><c>being </c><00:02:11.423><c>“near </c><00:02:11.964><c>the </c><00:02:12.505><c>cycle”</c>
+
+00:02:12.589 --> 00:02:12.599 align:start position:0%
+24/7, being “near the cycle”
+ 
+
+00:02:12.599 --> 00:02:14.799 align:start position:0%
+24/7, being “near the cycle”
+rather <00:02:12.817><c>than </c><00:02:13.035><c>“in </c><00:02:13.253><c>it.”  </c><00:02:13.471><c>If </c><00:02:13.689><c>you </c><00:02:13.907><c>are </c><00:02:14.125><c>interested </c><00:02:14.343><c>in </c><00:02:14.561><c>this</c>
+
+00:02:14.799 --> 00:02:14.809 align:start position:0%
+rather than “in it.”  If you are interested in this
+ 
+
+00:02:14.809 --> 00:02:17.271 align:start position:0%
+rather than “in it.”  If you are interested in this
+new <00:02:15.203><c>class </c><00:02:15.597><c>of </c><00:02:15.991><c>“liquid” </c><00:02:16.385><c>software, </c><00:02:16.779><c>stay </c><00:02:17.173><c>with</c>
+
+00:02:17.271 --> 00:02:17.281 align:start position:0%
+new class of “liquid” software, stay with
+ 
+
+00:02:17.281 --> 00:02:19.222 align:start position:0%
+new class of “liquid” software, stay with
+us, <00:02:17.751><c>and </c><00:02:18.221><c>let </c><00:02:18.691><c>us </c><00:02:19.161><c>initialize,</c>
+
+00:02:19.222 --> 00:02:19.232 align:start position:0%
+us, and let us initialize,
+ 
+
+00:02:19.232 --> 00:02:21.904 align:start position:0%
+us, and let us initialize,
+configure, <00:02:19.771><c>and </c><00:02:20.310><c>specialize </c><00:02:20.849><c>your </c><00:02:21.388><c>powerful</c>
+
+00:02:21.904 --> 00:02:21.914 align:start position:0%
+configure, and specialize your powerful
+ 
+
+00:02:21.914 --> 00:02:27.896 align:start position:0%
+configure, and specialize your powerful
+“tiny <00:02:23.133><c>factories.”</c>
+
+00:02:27.896 --> 00:02:27.906 align:start position:0%
+ 
+ 
+
+00:02:27.906 --> 00:02:29.606 align:start position:0%
+ 
+In <00:02:28.181><c>the </c><00:02:28.456><c>second </c><00:02:28.731><c>lesson </c><00:02:29.006><c>and </c><00:02:29.281><c>throughout </c><00:02:29.556><c>all</c>
+
+00:02:29.606 --> 00:02:29.616 align:start position:0%
+In the second lesson and throughout all
+ 
+
+00:02:29.616 --> 00:02:31.064 align:start position:0%
+In the second lesson and throughout all
+Tiny <00:02:29.980><c>Factories, </c><00:02:30.344><c>we </c><00:02:30.708><c>will</c>
+
+00:02:31.064 --> 00:02:31.074 align:start position:0%
+Tiny Factories, we will
+ 
+
+00:02:31.074 --> 00:02:32.887 align:start position:0%
+Tiny Factories, we will
+use <00:02:31.480><c>a </c><00:02:31.886><c>function </c><00:02:32.292><c>map </c><00:02:32.698><c>to</c>
+
+00:02:32.887 --> 00:02:32.897 align:start position:0%
+use a function map to
+ 
+
+00:02:32.897 --> 00:02:34.597 align:start position:0%
+use a function map to
+gradually <00:02:33.270><c>reveal </c><00:02:33.643><c>the </c><00:02:34.016><c>capabilities</c>
+
+00:02:34.597 --> 00:02:34.607 align:start position:0%
+gradually reveal the capabilities
+ 
+
+00:02:34.607 --> 00:02:36.746 align:start position:0%
+gradually reveal the capabilities
+within <00:02:34.856><c>the </c><00:02:35.105><c>factory.  </c><00:02:35.354><c>This </c><00:02:35.603><c>is </c><00:02:35.852><c>the </c><00:02:36.101><c>second </c><00:02:36.350><c>level </c><00:02:36.599><c>of</c>
+
+00:02:36.746 --> 00:02:36.756 align:start position:0%
+within the factory.  This is the second level of
+ 
+
+00:02:36.756 --> 00:02:39.288 align:start position:0%
+within the factory.  This is the second level of
+four <00:02:36.955><c>factories.  </c><00:02:37.154><c>We'll </c><00:02:37.353><c>go </c><00:02:37.552><c>through </c><00:02:37.751><c>the </c><00:02:37.950><c>14 </c><00:02:38.149><c>features </c><00:02:38.348><c>one </c><00:02:38.547><c>by </c><00:02:38.746><c>one</c>
+
+00:02:39.288 --> 00:02:39.298 align:start position:0%
+four factories.  We'll go through the 14 features one by one
+ 
+
+00:02:39.298 --> 00:02:41.764 align:start position:0%
+four factories.  We'll go through the 14 features one by one
+and <00:02:39.817><c>explain </c><00:02:40.336><c>why </c><00:02:40.855><c>they're </c><00:02:41.374><c>valuable</c>
+
+00:02:41.764 --> 00:02:41.774 align:start position:0%
+and explain why they're valuable
+ 
+
+00:02:41.774 --> 00:02:44.003 align:start position:0%
+and explain why they're valuable
+to <00:02:42.219><c>your </c><00:02:42.664><c>engineering.  </c><00:02:43.109><c>Each </c><00:02:43.554><c>function</c>
+
+00:02:44.003 --> 00:02:44.013 align:start position:0%
+to your engineering.  Each function
+ 
+
+00:02:44.013 --> 00:02:46.155 align:start position:0%
+to your engineering.  Each function
+belongs <00:02:44.354><c>to </c><00:02:44.695><c>one </c><00:02:45.036><c>of </c><00:02:45.377><c>the </c><00:02:45.718><c>three </c><00:02:46.059><c>dimensions.</c>
+
+00:02:46.155 --> 00:02:46.165 align:start position:0%
+belongs to one of the three dimensions.
+ 
+
+00:02:46.165 --> 00:02:48.597 align:start position:0%
+belongs to one of the three dimensions.
+We <00:02:46.450><c>have </c><00:02:46.735><c>effort, </c><00:02:47.020><c>value, </c><00:02:47.305><c>and </c><00:02:47.590><c>also </c><00:02:47.875><c>a </c><00:02:48.160><c>third</c>
+
+00:02:48.597 --> 00:02:48.607 align:start position:0%
+We have effort, value, and also a third
+ 
+
+00:02:48.607 --> 00:02:50.881 align:start position:0%
+We have effort, value, and also a third
+dimension—skills.  <00:02:48.913><c>As </c><00:02:49.219><c>in </c><00:02:49.525><c>the </c><00:02:49.831><c>first </c><00:02:50.137><c>lesson, </c><00:02:50.443><c>we </c><00:02:50.749><c>will</c>
+
+00:02:50.881 --> 00:02:50.891 align:start position:0%
+dimension—skills.  As in the first lesson, we will
+ 
+
+00:02:50.891 --> 00:02:53.039 align:start position:0%
+dimension—skills.  As in the first lesson, we will
+simplify <00:02:51.226><c>everything </c><00:02:51.561><c>and </c><00:02:51.896><c>focus </c><00:02:52.231><c>on </c><00:02:52.566><c>effort</c>
+
+00:02:53.039 --> 00:02:53.049 align:start position:0%
+simplify everything and focus on effort
+ 
+
+00:02:53.049 --> 00:02:55.012 align:start position:0%
+simplify everything and focus on effort
+and <00:02:53.321><c>value.  </c><00:02:53.593><c>If </c><00:02:53.865><c>you </c><00:02:54.137><c>missed </c><00:02:54.409><c>the </c><00:02:54.681><c>first</c>
+
+00:02:55.012 --> 00:02:55.022 align:start position:0%
+and value.  If you missed the first
+ 
+
+00:02:55.022 --> 00:02:56.965 align:start position:0%
+and value.  If you missed the first
+lesson, <00:02:55.316><c>be </c><00:02:55.610><c>sure </c><00:02:55.904><c>to </c><00:02:56.198><c>watch </c><00:02:56.492><c>it.  </c><00:02:56.786><c>There</c>
+
+00:02:56.965 --> 00:02:56.975 align:start position:0%
+lesson, be sure to watch it.  There
+ 
+
+00:02:56.975 --> 00:02:58.697 align:start position:0%
+lesson, be sure to watch it.  There
+we <00:02:57.098><c>look </c><00:02:57.221><c>at </c><00:02:57.344><c>the </c><00:02:57.467><c>basics </c><00:02:57.590><c>of </c><00:02:57.713><c>the </c><00:02:57.836><c>architecture </c><00:02:57.959><c>of </c><00:02:58.082><c>a</c>
+
+00:02:58.697 --> 00:02:58.707 align:start position:0%
+we look at the basics of the architecture of a
+ 
+
+00:02:58.707 --> 00:03:00.240 align:start position:0%
+we look at the basics of the architecture of a
+tiny <00:02:59.167><c>software </c><00:02:59.627><c>factory</c>
+
+00:03:00.240 --> 00:03:00.250 align:start position:0%
+tiny software factory
+ 
+
+00:03:00.250 --> 00:03:02.469 align:start position:0%
+tiny software factory
+.  <00:03:00.617><c>Here </c><00:03:00.984><c>we </c><00:03:01.351><c>add </c><00:03:01.718><c>14 </c><00:03:02.085><c>new</c>
+
+00:03:02.469 --> 00:03:02.479 align:start position:0%
+.  Here we add 14 new
+ 
+
+00:03:02.479 --> 00:03:04.665 align:start position:0%
+.  Here we add 14 new
+features <00:03:02.732><c>on </c><00:03:02.985><c>top </c><00:03:03.238><c>of </c><00:03:03.491><c>it </c><00:03:03.744><c>to </c><00:03:03.997><c>expand</c>
+
+00:03:04.665 --> 00:03:04.675 align:start position:0%
+features on top of it to expand
+ 
+
+00:03:04.675 --> 00:03:07.110 align:start position:0%
+features on top of it to expand
+the <00:03:04.968><c>capabilities </c><00:03:05.261><c>of </c><00:03:05.554><c>your </c><00:03:05.847><c>factories </c><00:03:06.140><c>right </c><00:03:06.433><c>out </c><00:03:06.726><c>of</c>
+
+00:03:07.110 --> 00:03:07.120 align:start position:0%
+the capabilities of your factories right out of
+ 
+
+00:03:07.120 --> 00:03:08.878 align:start position:0%
+the capabilities of your factories right out of
+the <00:03:07.545><c>box.   </c><00:03:07.970><c>The</c>
+
+00:03:08.878 --> 00:03:08.888 align:start position:0%
+the box.   The
+ 
+
+00:03:08.888 --> 00:03:11.347 align:start position:0%
+the box.   The
+first <00:03:09.228><c>and </c><00:03:09.568><c>most </c><00:03:09.908><c>important </c><00:03:10.248><c>feature </c><00:03:10.588><c>of </c><00:03:10.928><c>every</c>
+
+00:03:11.347 --> 00:03:11.357 align:start position:0%
+first and most important feature of every
+ 
+
+00:03:11.357 --> 00:03:14.306 align:start position:0%
+first and most important feature of every
+tiny <00:03:11.741><c>factory </c><00:03:12.125><c>is </c><00:03:12.509><c>that </c><00:03:12.893><c>it </c><00:03:13.277><c>is </c><00:03:13.661><c>empty.</c>
+
+00:03:14.306 --> 00:03:14.316 align:start position:0%
+tiny factory is that it is empty.
+ 
+
+00:03:14.316 --> 00:03:16.624 align:start position:0%
+tiny factory is that it is empty.
+Your <00:03:14.781><c>second-level </c><00:03:15.246><c>factory </c><00:03:15.711><c>template </c><00:03:16.176><c>contains</c>
+
+00:03:16.624 --> 00:03:16.634 align:start position:0%
+Your second-level factory template contains
+ 
+
+00:03:16.634 --> 00:03:18.699 align:start position:0%
+Your second-level factory template contains
+generic <00:03:17.274><c>agent </c><00:03:17.914><c>tools </c><00:03:18.554><c>that</c>
+
+00:03:18.699 --> 00:03:18.709 align:start position:0%
+generic agent tools that
+ 
+
+00:03:18.709 --> 00:03:20.891 align:start position:0%
+generic agent tools that
+have <00:03:18.937><c>no </c><00:03:19.165><c>purpose </c><00:03:19.393><c>until </c><00:03:19.621><c>you </c><00:03:19.849><c>define </c><00:03:20.077><c>one.  </c><00:03:20.305><c>This </c><00:03:20.533><c>is </c><00:03:20.761><c>a</c>
+
+00:03:20.891 --> 00:03:20.901 align:start position:0%
+have no purpose until you define one.  This is a
+ 
+
+00:03:20.901 --> 00:03:22.961 align:start position:0%
+have no purpose until you define one.  This is a
+key <00:03:21.257><c>feature </c><00:03:21.613><c>of </c><00:03:21.969><c>software </c><00:03:22.325><c>factories</c>
+
+00:03:22.961 --> 00:03:22.971 align:start position:0%
+key feature of software factories
+ 
+
+00:03:22.971 --> 00:03:24.869 align:start position:0%
+key feature of software factories
+.  <00:03:23.300><c>Make </c><00:03:23.629><c>no </c><00:03:23.958><c>mistake, </c><00:03:24.287><c>having </c><00:03:24.616><c>a</c>
+
+00:03:24.869 --> 00:03:24.879 align:start position:0%
+.  Make no mistake, having a
+ 
+
+00:03:24.879 --> 00:03:26.619 align:start position:0%
+.  Make no mistake, having a
+template <00:03:25.211><c>that </c><00:03:25.543><c>you </c><00:03:25.875><c>can </c><00:03:26.207><c>customize </c><00:03:26.539><c>with</c>
+
+00:03:26.619 --> 00:03:26.629 align:start position:0%
+template that you can customize with
+ 
+
+00:03:26.629 --> 00:03:28.777 align:start position:0%
+template that you can customize with
+great <00:03:27.664><c>default </c><00:03:28.699><c>settings</c>
+
+00:03:28.777 --> 00:03:28.787 align:start position:0%
+great default settings
+ 
+
+00:03:28.787 --> 00:03:31.196 align:start position:0%
+great default settings
+is <00:03:29.155><c>a </c><00:03:29.523><c>huge </c><00:03:29.891><c>advantage.  </c><00:03:30.259><c>You'll </c><00:03:30.627><c>see</c>
+
+00:03:31.196 --> 00:03:31.206 align:start position:0%
+is a huge advantage.  You'll see
+ 
+
+00:03:31.206 --> 00:03:33.306 align:start position:0%
+is a huge advantage.  You'll see
+it <00:03:31.404><c>again </c><00:03:31.602><c>here </c><00:03:31.800><c>in </c><00:03:31.998><c>the </c><00:03:32.196><c>second </c><00:03:32.394><c>lesson.  </c><00:03:32.592><c>Here </c><00:03:32.790><c>is </c><00:03:32.988><c>our</c>
+
+00:03:33.306 --> 00:03:33.316 align:start position:0%
+it again here in the second lesson.  Here is our
+ 
+
+00:03:33.316 --> 00:03:35.930 align:start position:0%
+it again here in the second lesson.  Here is our
+empty <00:03:33.627><c>factory.  </c><00:03:33.938><c>We </c><00:03:34.249><c>have </c><00:03:34.560><c>focus </c><00:03:34.871><c>in </c><00:03:35.182><c>the </c><00:03:35.493><c>center</c>
+
+00:03:35.930 --> 00:03:35.940 align:start position:0%
+empty factory.  We have focus in the center
+ 
+
+00:03:35.940 --> 00:03:38.418 align:start position:0%
+empty factory.  We have focus in the center
+, <00:03:36.176><c>actions </c><00:03:36.412><c>on </c><00:03:36.648><c>the </c><00:03:36.884><c>right, </c><00:03:37.120><c>list </c><00:03:37.356><c>on </c><00:03:37.592><c>the </c><00:03:37.828><c>left.  </c><00:03:38.064><c>Every</c>
+
+00:03:38.418 --> 00:03:38.428 align:start position:0%
+, actions on the right, list on the left.  Every
+ 
+
+00:03:38.428 --> 00:03:40.907 align:start position:0%
+, actions on the right, list on the left.  Every
+app <00:03:38.676><c>is </c><00:03:38.924><c>a </c><00:03:39.172><c>list </c><00:03:39.420><c>of </c><00:03:39.668><c>something.  </c><00:03:39.916><c>What's </c><00:03:40.164><c>on </c><00:03:40.412><c>your</c>
+
+00:03:40.907 --> 00:03:40.917 align:start position:0%
+app is a list of something.  What's on your
+ 
+
+00:03:40.917 --> 00:03:42.787 align:start position:0%
+app is a list of something.  What's on your
+list?  <00:03:41.380><c>And </c><00:03:41.843><c>inside </c><00:03:42.306><c>the</c>
+
+00:03:42.787 --> 00:03:42.797 align:start position:0%
+list?  And inside the
+ 
+
+00:03:42.797 --> 00:03:44.406 align:start position:0%
+list?  And inside the
+second-tier <00:03:43.000><c>software </c><00:03:43.203><c>factory, </c><00:03:43.406><c>we </c><00:03:43.609><c>have </c><00:03:43.812><c>a </c><00:03:44.015><c>bunch </c><00:03:44.218><c>of</c>
+
+00:03:44.406 --> 00:03:44.416 align:start position:0%
+second-tier software factory, we have a bunch of
+ 
+
+00:03:44.416 --> 00:03:46.129 align:start position:0%
+second-tier software factory, we have a bunch of
+new <00:03:44.928><c>features </c><00:03:45.440><c>to </c><00:03:45.952><c>consider.</c>
+
+00:03:46.129 --> 00:03:46.139 align:start position:0%
+new features to consider.
+ 
+
+00:03:46.139 --> 00:03:47.588 align:start position:0%
+new features to consider.
+You <00:03:46.291><c>can </c><00:03:46.443><c>see </c><00:03:46.595><c>some </c><00:03:46.747><c>of </c><00:03:46.899><c>them </c><00:03:47.051><c>here, </c><00:03:47.203><c>in </c><00:03:47.355><c>the</c>
+
+00:03:47.588 --> 00:03:47.598 align:start position:0%
+You can see some of them here, in the
+ 
+
+00:03:47.598 --> 00:03:49.638 align:start position:0%
+You can see some of them here, in the
+settings <00:03:47.896><c>menu.  </c><00:03:48.194><c>Before </c><00:03:48.492><c>we </c><00:03:48.790><c>look </c><00:03:49.088><c>at </c><00:03:49.386><c>our</c>
+
+00:03:49.638 --> 00:03:49.648 align:start position:0%
+settings menu.  Before we look at our
+ 
+
+00:03:49.648 --> 00:03:51.734 align:start position:0%
+settings menu.  Before we look at our
+new <00:03:49.885><c>features, </c><00:03:50.122><c>we </c><00:03:50.359><c>need </c><00:03:50.596><c>to </c><00:03:50.833><c>prepare </c><00:03:51.070><c>the</c>
+
+00:03:51.734 --> 00:03:51.744 align:start position:0%
+new features, we need to prepare the
+ 
+
+00:03:51.744 --> 00:03:53.889 align:start position:0%
+new features, we need to prepare the
+three-step <00:03:52.355><c>process </c><00:03:52.966><c>that </c><00:03:53.577><c>every</c>
+
+00:03:53.889 --> 00:03:53.899 align:start position:0%
+three-step process that every
+ 
+
+00:03:53.899 --> 00:03:55.969 align:start position:0%
+three-step process that every
+empty <00:03:54.224><c>factory </c><00:03:54.549><c>goes </c><00:03:54.874><c>through </c><00:03:55.199><c>to </c><00:03:55.524><c>become </c><00:03:55.849><c>operational.</c>
+
+00:03:55.969 --> 00:03:55.979 align:start position:0%
+empty factory goes through to become operational.
+ 
+
+00:03:55.979 --> 00:03:57.873 align:start position:0%
+empty factory goes through to become operational.
+Initialization, <00:03:57.812><c>configuration,</c>
+
+00:03:57.873 --> 00:03:57.883 align:start position:0%
+Initialization, configuration,
+ 
+
+00:03:57.883 --> 00:04:00.064 align:start position:0%
+Initialization, configuration,
+specialization.  <00:03:58.562><c>We </c><00:03:59.241><c>specialize </c><00:03:59.920><c>this</c>
+
+00:04:00.064 --> 00:04:00.074 align:start position:0%
+specialization.  We specialize this
+ 
+
+00:04:00.074 --> 00:04:02.342 align:start position:0%
+specialization.  We specialize this
+tiny <00:04:00.425><c>factory </c><00:04:00.776><c>to </c><00:04:01.127><c>work </c><00:04:01.478><c>as </c><00:04:01.829><c>a</c>
+
+00:04:02.342 --> 00:04:02.352 align:start position:0%
+tiny factory to work as a
+ 
+
+00:04:02.352 --> 00:04:04.528 align:start position:0%
+tiny factory to work as a
+data <00:04:02.618><c>analyst </c><00:04:02.884><c>for </c><00:04:03.150><c>Hughes' </c><00:04:03.416><c>image </c><00:04:03.682><c>generation </c><00:04:03.948><c>application</c>
+
+00:04:04.528 --> 00:04:04.538 align:start position:0%
+data analyst for Hughes' image generation application
+ 
+
+00:04:04.538 --> 00:04:06.419 align:start position:0%
+data analyst for Hughes' image generation application
+from <00:04:04.748><c>the </c><00:04:04.958><c>first </c><00:04:05.168><c>lesson.  </c><00:04:05.378><c>This </c><00:04:05.588><c>is </c><00:04:05.798><c>a </c><00:04:06.008><c>simple</c>
+
+00:04:06.419 --> 00:04:06.429 align:start position:0%
+from the first lesson.  This is a simple
+ 
+
+00:04:06.429 --> 00:04:08.181 align:start position:0%
+from the first lesson.  This is a simple
+application <00:04:06.848><c>for </c><00:04:07.267><c>converting </c><00:04:07.686><c>text </c><00:04:08.105><c>to</c>
+
+00:04:08.181 --> 00:04:08.191 align:start position:0%
+application for converting text to
+ 
+
+00:04:08.191 --> 00:04:09.947 align:start position:0%
+application for converting text to
+images.  <00:04:08.503><c>It </c><00:04:08.815><c>will </c><00:04:09.127><c>serve </c><00:04:09.439><c>as </c><00:04:09.751><c>a</c>
+
+00:04:09.947 --> 00:04:09.957 align:start position:0%
+images.  It will serve as a
+ 
+
+00:04:09.957 --> 00:04:12.045 align:start position:0%
+images.  It will serve as a
+demonstration <00:04:10.224><c>application </c><00:04:10.491><c>for </c><00:04:10.758><c>us </c><00:04:11.025><c>to </c><00:04:11.292><c>explore </c><00:04:11.559><c>the</c>
+
+00:04:12.045 --> 00:04:12.055 align:start position:0%
+demonstration application for us to explore the
+ 
+
+00:04:12.055 --> 00:04:16.899 align:start position:0%
+demonstration application for us to explore the
+tiny <00:04:13.016><c>factory.</c>
+
+00:04:16.899 --> 00:04:16.909 align:start position:0%
+ 
+ 
+
+00:04:16.909 --> 00:04:19.268 align:start position:0%
+ 
+In <00:04:17.260><c>this </c><00:04:17.611><c>three-step </c><00:04:17.962><c>process, </c><00:04:18.313><c>the </c><00:04:18.664><c>first </c><00:04:19.015><c>step</c>
+
+00:04:19.268 --> 00:04:19.278 align:start position:0%
+In this three-step process, the first step
+ 
+
+00:04:19.278 --> 00:04:21.461 align:start position:0%
+In this three-step process, the first step
+is <00:04:19.541><c>to </c><00:04:19.804><c>initialize </c><00:04:20.067><c>the </c><00:04:20.330><c>factory.  </c><00:04:20.593><c>In </c><00:04:20.856><c>the </c><00:04:21.119><c>first</c>
+
+00:04:21.461 --> 00:04:21.471 align:start position:0%
+is to initialize the factory.  In the first
+ 
+
+00:04:21.471 --> 00:04:23.102 align:start position:0%
+is to initialize the factory.  In the first
+stage, <00:04:21.869><c>we </c><00:04:22.267><c>use </c><00:04:22.665><c>one </c><00:04:23.063><c>skill,</c>
+
+00:04:23.102 --> 00:04:23.112 align:start position:0%
+stage, we use one skill,
+ 
+
+00:04:23.112 --> 00:04:24.767 align:start position:0%
+stage, we use one skill,
+one <00:04:23.435><c>command </c><00:04:23.758><c>with </c><00:04:24.081><c>one </c><00:04:24.404><c>factory </c><00:04:24.727><c>template,</c>
+
+00:04:24.767 --> 00:04:24.777 align:start position:0%
+one command with one factory template,
+ 
+
+00:04:24.777 --> 00:04:26.127 align:start position:0%
+one command with one factory template,
+one <00:04:25.087><c>empty </c><00:04:25.397><c>factory, </c><00:04:25.707><c>and </c><00:04:26.017><c>we</c>
+
+00:04:26.127 --> 00:04:26.137 align:start position:0%
+one empty factory, and we
+ 
+
+00:04:26.137 --> 00:04:27.580 align:start position:0%
+one empty factory, and we
+move <00:04:26.504><c>our </c><00:04:26.871><c>empty </c><00:04:27.238><c>factory</c>
+
+00:04:27.580 --> 00:04:27.590 align:start position:0%
+move our empty factory
+ 
+
+00:04:27.590 --> 00:04:29.489 align:start position:0%
+move our empty factory
+inside <00:04:28.002><c>our </c><00:04:28.414><c>target </c><00:04:28.826><c>application.  </c><00:04:29.238><c>So</c>
+
+00:04:29.489 --> 00:04:29.499 align:start position:0%
+inside our target application.  So
+ 
+
+00:04:29.499 --> 00:04:31.801 align:start position:0%
+inside our target application.  So
+, <00:04:29.713><c>we </c><00:04:29.927><c>have </c><00:04:30.141><c>an </c><00:04:30.355><c>empty </c><00:04:30.569><c>factory.  </c><00:04:30.783><c>We </c><00:04:30.997><c>will </c><00:04:31.211><c>port</c>
+
+00:04:31.801 --> 00:04:31.811 align:start position:0%
+, we have an empty factory.  We will port
+ 
+
+00:04:31.811 --> 00:04:33.675 align:start position:0%
+, we have an empty factory.  We will port
+it <00:04:32.111><c>to </c><00:04:32.411><c>any </c><00:04:32.711><c>existing </c><00:04:33.011><c>or </c><00:04:33.311><c>new</c>
+
+00:04:33.675 --> 00:04:33.685 align:start position:0%
+it to any existing or new
+ 
+
+00:04:33.685 --> 00:04:35.675 align:start position:0%
+it to any existing or new
+codebase <00:04:33.874><c>you </c><00:04:34.063><c>have.  </c><00:04:34.252><c>And </c><00:04:34.441><c>then </c><00:04:34.630><c>we </c><00:04:34.819><c>will </c><00:04:35.008><c>perform </c><00:04:35.197><c>the</c>
+
+00:04:35.675 --> 00:04:35.685 align:start position:0%
+codebase you have.  And then we will perform the
+ 
+
+00:04:35.685 --> 00:04:37.550 align:start position:0%
+codebase you have.  And then we will perform the
+second <00:04:35.938><c>step, </c><00:04:36.191><c>which </c><00:04:36.444><c>is </c><00:04:36.697><c>to </c><00:04:36.950><c>configure</c>
+
+00:04:37.550 --> 00:04:37.560 align:start position:0%
+second step, which is to configure
+ 
+
+00:04:37.560 --> 00:04:39.213 align:start position:0%
+second step, which is to configure
+.  <00:04:37.746><c>But </c><00:04:37.932><c>the </c><00:04:38.118><c>first </c><00:04:38.304><c>step </c><00:04:38.490><c>here </c><00:04:38.676><c>is </c><00:04:38.862><c>simply</c>
+
+00:04:39.213 --> 00:04:39.223 align:start position:0%
+.  But the first step here is simply
+ 
+
+00:04:39.223 --> 00:04:41.320 align:start position:0%
+.  But the first step here is simply
+initializing <00:04:39.550><c>the </c><00:04:39.877><c>factory.  </c><00:04:40.204><c>We </c><00:04:40.531><c>will </c><00:04:40.858><c>do </c><00:04:41.185><c>this</c>
+
+00:04:41.320 --> 00:04:41.330 align:start position:0%
+initializing the factory.  We will do this
+ 
+
+00:04:41.330 --> 00:04:43.258 align:start position:0%
+initializing the factory.  We will do this
+using <00:04:41.594><c>a </c><00:04:41.858><c>powerful </c><00:04:42.122><c>agent </c><00:04:42.386><c>in </c><00:04:42.650><c>a </c><00:04:42.914><c>loop </c><00:04:43.178><c>with</c>
+
+00:04:43.258 --> 00:04:43.268 align:start position:0%
+using a powerful agent in a loop with
+ 
+
+00:04:43.268 --> 00:04:45.046 align:start position:0%
+using a powerful agent in a loop with
+our <00:04:43.613><c>single </c><00:04:43.958><c>TSF </c><00:04:44.303><c>skill.  </c><00:04:44.648><c>Let's</c>
+
+00:04:45.046 --> 00:04:45.056 align:start position:0%
+our single TSF skill.  Let's
+ 
+
+00:04:45.056 --> 00:04:46.963 align:start position:0%
+our single TSF skill.  Let's
+demonstrate <00:04:45.414><c>this </c><00:04:45.772><c>right </c><00:04:46.130><c>now.  </c><00:04:46.488><c>In </c><00:04:46.846><c>VS</c>
+
+00:04:46.963 --> 00:04:46.973 align:start position:0%
+demonstrate this right now.  In VS
+ 
+
+00:04:46.973 --> 00:04:49.637 align:start position:0%
+demonstrate this right now.  In VS
+Code <00:04:47.301><c>you </c><00:04:47.629><c>can </c><00:04:47.957><c>see </c><00:04:48.285><c>that </c><00:04:48.613><c>we </c><00:04:48.941><c>have </c><00:04:49.269><c>a</c>
+
+00:04:49.637 --> 00:04:49.647 align:start position:0%
+Code you can see that we have a
+ 
+
+00:04:49.647 --> 00:04:51.874 align:start position:0%
+Code you can see that we have a
+TSF <00:04:49.939><c>two </c><00:04:50.231><c>codebase.  </c><00:04:50.523><c>It's </c><00:04:50.815><c>a </c><00:04:51.107><c>tiny, </c><00:04:51.399><c>second-</c>
+
+00:04:51.874 --> 00:04:51.884 align:start position:0%
+TSF two codebase.  It's a tiny, second-
+ 
+
+00:04:51.884 --> 00:04:54.393 align:start position:0%
+TSF two codebase.  It's a tiny, second-
+tier <00:04:52.186><c>factory, </c><00:04:52.488><c>and </c><00:04:52.790><c>it </c><00:04:53.092><c>only </c><00:04:53.394><c>has </c><00:04:53.696><c>the </c><00:04:53.998><c>bare </c><00:04:54.300><c>essentials.</c>
+
+00:04:54.393 --> 00:04:54.403 align:start position:0%
+tier factory, and it only has the bare essentials.
+ 
+
+00:04:54.403 --> 00:04:56.131 align:start position:0%
+tier factory, and it only has the bare essentials.
+We <00:04:54.664><c>have </c><00:04:54.925><c>a </c><00:04:55.186><c>skill </c><00:04:55.447><c>catalog </c><00:04:55.708><c>here </c><00:04:55.969><c>with</c>
+
+00:04:56.131 --> 00:04:56.141 align:start position:0%
+We have a skill catalog here with
+ 
+
+00:04:56.141 --> 00:04:58.437 align:start position:0%
+We have a skill catalog here with
+a <00:04:56.437><c>super </c><00:04:56.733><c>skill </c><00:04:57.029><c>of </c><00:04:57.325><c>a </c><00:04:57.621><c>tiny </c><00:04:57.917><c>factory </c><00:04:58.213><c>that</c>
+
+00:04:58.437 --> 00:04:58.447 align:start position:0%
+a super skill of a tiny factory that
+ 
+
+00:04:58.447 --> 00:05:00.765 align:start position:0%
+a super skill of a tiny factory that
+just <00:04:58.754><c>does </c><00:04:59.061><c>a </c><00:04:59.368><c>bunch </c><00:04:59.675><c>of </c><00:04:59.982><c>tasks.  </c><00:05:00.289><c>Next </c><00:05:00.596><c>we</c>
+
+00:05:00.765 --> 00:05:00.775 align:start position:0%
+just does a bunch of tasks.  Next we
+ 
+
+00:05:00.775 --> 00:05:03.339 align:start position:0%
+just does a bunch of tasks.  Next we
+have <00:05:01.186><c>the </c><00:05:01.597><c>tiny </c><00:05:02.008><c>software </c><00:05:02.419><c>factory </c><00:05:02.830><c>application </c><00:05:03.241><c>in</c>
+
+00:05:03.339 --> 00:05:03.349 align:start position:0%
+have the tiny software factory application in
+ 
+
+00:05:03.349 --> 00:05:05.670 align:start position:0%
+have the tiny software factory application in
+.tsf <00:05:03.724><c>and </c><00:05:04.099><c>a </c><00:05:04.474><c>few </c><00:05:04.849><c>configuration </c><00:05:05.224><c>files</c>
+
+00:05:05.670 --> 00:05:05.680 align:start position:0%
+.tsf and a few configuration files
+ 
+
+00:05:05.680 --> 00:05:07.295 align:start position:0%
+.tsf and a few configuration files
+along <00:05:05.888><c>with </c><00:05:06.096><c>a </c><00:05:06.304><c>README.  </c><00:05:06.512><c>So </c><00:05:06.720><c>we </c><00:05:06.928><c>want</c>
+
+00:05:07.295 --> 00:05:07.305 align:start position:0%
+along with a README.  So we want
+ 
+
+00:05:07.305 --> 00:05:09.241 align:start position:0%
+along with a README.  So we want
+to <00:05:07.605><c>install </c><00:05:07.905><c>a </c><00:05:08.205><c>new </c><00:05:08.505><c>tiny </c><00:05:08.805><c>software </c><00:05:09.105><c>factory</c>
+
+00:05:09.241 --> 00:05:09.251 align:start position:0%
+to install a new tiny software factory
+ 
+
+00:05:09.251 --> 00:05:11.476 align:start position:0%
+to install a new tiny software factory
+inside <00:05:09.802><c>our </c><00:05:10.353><c>analytics </c><00:05:10.904><c>application</c>
+
+00:05:11.476 --> 00:05:11.486 align:start position:0%
+inside our analytics application
+ 
+
+00:05:11.486 --> 00:05:13.319 align:start position:0%
+inside our analytics application
+, <00:05:11.771><c>where </c><00:05:12.056><c>you </c><00:05:12.341><c>see </c><00:05:12.626><c>our </c><00:05:12.911><c>Hughes </c><00:05:13.196><c>application.</c>
+
+00:05:13.319 --> 00:05:13.329 align:start position:0%
+, where you see our Hughes application.
+ 
+
+00:05:13.329 --> 00:05:15.500 align:start position:0%
+, where you see our Hughes application.
+This <00:05:13.638><c>process </c><00:05:13.947><c>is </c><00:05:14.256><c>simple.  </c><00:05:14.565><c>We </c><00:05:14.874><c>don't </c><00:05:15.183><c>do</c>
+
+00:05:15.500 --> 00:05:15.510 align:start position:0%
+This process is simple.  We don't do
+ 
+
+00:05:15.510 --> 00:05:17.438 align:start position:0%
+This process is simple.  We don't do
+any <00:05:15.714><c>of </c><00:05:15.918><c>this </c><00:05:16.122><c>manually </c><00:05:16.326><c>anymore.  </c><00:05:16.530><c>We </c><00:05:16.734><c>use</c>
+
+00:05:17.438 --> 00:05:17.448 align:start position:0%
+any of this manually anymore.  We use
+ 
+
+00:05:17.448 --> 00:05:19.151 align:start position:0%
+any of this manually anymore.  We use
+agents <00:05:17.857><c>to </c><00:05:18.266><c>work </c><00:05:18.675><c>at </c><00:05:19.084><c>"agent"</c>
+
+00:05:19.151 --> 00:05:19.161 align:start position:0%
+agents to work at "agent"
+ 
+
+00:05:19.161 --> 00:05:21.680 align:start position:0%
+agents to work at "agent"
+speed.  <00:05:19.499><c>I'll </c><00:05:19.837><c>open </c><00:05:20.175><c>a </c><00:05:20.513><c>terminal </c><00:05:20.851><c>and </c><00:05:21.189><c>run</c>
+
+00:05:21.680 --> 00:05:21.690 align:start position:0%
+speed.  I'll open a terminal and run
+ 
+
+00:05:21.690 --> 00:05:23.879 align:start position:0%
+speed.  I'll open a terminal and run
+in-loop.  <00:05:21.878><c>I </c><00:05:22.066><c>intentionally </c><00:05:22.254><c>named </c><00:05:22.442><c>this </c><00:05:22.630><c>command </c><00:05:22.818><c>so </c><00:05:23.006><c>that </c><00:05:23.194><c>it </c><00:05:23.382><c>would</c>
+
+00:05:23.879 --> 00:05:23.889 align:start position:0%
+in-loop.  I intentionally named this command so that it would
+ 
+
+00:05:23.889 --> 00:05:26.211 align:start position:0%
+in-loop.  I intentionally named this command so that it would
+always <00:05:24.215><c>be </c><00:05:24.541><c>understood </c><00:05:24.867><c>when </c><00:05:25.193><c>I </c><00:05:25.519><c>sit </c><00:05:25.845><c>down</c>
+
+00:05:26.211 --> 00:05:26.221 align:start position:0%
+always be understood when I sit down
+ 
+
+00:05:26.221 --> 00:05:28.441 align:start position:0%
+always be understood when I sit down
+to <00:05:26.434><c>work, </c><00:05:26.647><c>sit </c><00:05:26.860><c>down </c><00:05:27.073><c>in </c><00:05:27.286><c>a </c><00:05:27.499><c>chair, </c><00:05:27.712><c>and </c><00:05:27.925><c>have </c><00:05:28.138><c>a</c>
+
+00:05:28.441 --> 00:05:28.451 align:start position:0%
+to work, sit down in a chair, and have a
+ 
+
+00:05:28.451 --> 00:05:30.806 align:start position:0%
+to work, sit down in a chair, and have a
+dialogue, <00:05:28.829><c>/tsf </c><00:05:29.207><c>to </c><00:05:29.585><c>activate </c><00:05:29.963><c>our </c><00:05:30.341><c>skill</c>
+
+00:05:30.806 --> 00:05:30.816 align:start position:0%
+dialogue, /tsf to activate our skill
+ 
+
+00:05:30.816 --> 00:05:32.955 align:start position:0%
+dialogue, /tsf to activate our skill
+.  <00:05:31.110><c>And </c><00:05:31.404><c>we're </c><00:05:31.698><c>going </c><00:05:31.992><c>to </c><00:05:32.286><c>run </c><00:05:32.580><c>init.  </c><00:05:32.874><c>And</c>
+
+00:05:32.955 --> 00:05:32.965 align:start position:0%
+.  And we're going to run init.  And
+ 
+
+00:05:32.965 --> 00:05:34.855 align:start position:0%
+.  And we're going to run init.  And
+then <00:05:33.133><c>we </c><00:05:33.301><c>will </c><00:05:33.469><c>pass </c><00:05:33.637><c>the </c><00:05:33.805><c>path </c><00:05:33.973><c>where </c><00:05:34.141><c>we </c><00:05:34.309><c>want </c><00:05:34.477><c>to</c>
+
+00:05:34.855 --> 00:05:34.865 align:start position:0%
+then we will pass the path where we want to
+ 
+
+00:05:34.865 --> 00:05:37.066 align:start position:0%
+then we will pass the path where we want to
+install <00:05:35.205><c>our </c><00:05:35.545><c>software </c><00:05:35.885><c>factory.  </c><00:05:36.225><c>This </c><00:05:36.565><c>will </c><00:05:36.905><c>be</c>
+
+00:05:37.066 --> 00:05:37.076 align:start position:0%
+install our software factory.  This will be
+ 
+
+00:05:37.076 --> 00:05:39.149 align:start position:0%
+install our software factory.  This will be
+one <00:05:37.394><c>directory </c><00:05:37.712><c>higher </c><00:05:38.030><c>inside </c><00:05:38.348><c>the </c><00:05:38.666><c>TSF </c><00:05:38.984><c>before</c>
+
+00:05:39.149 --> 00:05:39.159 align:start position:0%
+one directory higher inside the TSF before
+ 
+
+00:05:39.159 --> 00:05:42.085 align:start position:0%
+one directory higher inside the TSF before
+analytics.  <00:05:39.631><c>OK?  </c><00:05:40.103><c>So </c><00:05:40.575><c>I'll </c><00:05:41.047><c>start </c><00:05:41.519><c>this.  </c><00:05:41.991><c>And</c>
+
+00:05:42.085 --> 00:05:42.095 align:start position:0%
+analytics.  OK?  So I'll start this.  And
+ 
+
+00:05:42.095 --> 00:05:44.036 align:start position:0%
+analytics.  OK?  So I'll start this.  And
+now <00:05:42.514><c>the </c><00:05:42.933><c>state-of-the-art </c><00:05:43.352><c>in-loop </c><00:05:43.771><c>agent</c>
+
+00:05:44.036 --> 00:05:44.046 align:start position:0%
+now the state-of-the-art in-loop agent
+ 
+
+00:05:44.046 --> 00:05:46.294 align:start position:0%
+now the state-of-the-art in-loop agent
+will <00:05:44.309><c>get </c><00:05:44.572><c>to </c><00:05:44.835><c>work.  </c><00:05:45.098><c>This </c><00:05:45.361><c>is </c><00:05:45.624><c>mostly</c>
+
+00:05:46.294 --> 00:05:46.304 align:start position:0%
+will get to work.  This is mostly
+ 
+
+00:05:46.304 --> 00:05:48.351 align:start position:0%
+will get to work.  This is mostly
+just <00:05:46.534><c>a </c><00:05:46.764><c>quick </c><00:05:46.994><c>copy </c><00:05:47.224><c>of </c><00:05:47.454><c>the </c><00:05:47.684><c>relevant</c>
+
+00:05:48.351 --> 00:05:48.361 align:start position:0%
+just a quick copy of the relevant
+ 
+
+00:05:48.361 --> 00:05:50.341 align:start position:0%
+just a quick copy of the relevant
+files <00:05:48.666><c>for </c><00:05:48.971><c>the </c><00:05:49.276><c>tiny </c><00:05:49.581><c>software </c><00:05:49.886><c>factory.  </c><00:05:50.191><c>You</c>
+
+00:05:50.341 --> 00:05:50.351 align:start position:0%
+files for the tiny software factory.  You
+ 
+
+00:05:50.351 --> 00:05:52.630 align:start position:0%
+files for the tiny software factory.  You
+see <00:05:50.579><c>here </c><00:05:50.807><c>that </c><00:05:51.035><c>these </c><00:05:51.263><c>files </c><00:05:51.491><c>have </c><00:05:51.719><c>been </c><00:05:51.947><c>copied</c>
+
+00:05:52.630 --> 00:05:52.640 align:start position:0%
+see here that these files have been copied
+ 
+
+00:05:52.640 --> 00:05:54.811 align:start position:0%
+see here that these files have been copied
+.  <00:05:52.891><c>We </c><00:05:53.142><c>have </c><00:05:53.393><c>a </c><00:05:53.644><c>skills </c><00:05:53.895><c>catalog </c><00:05:54.146><c>here, </c><00:05:54.397><c>and </c><00:05:54.648><c>we</c>
+
+00:05:54.811 --> 00:05:54.821 align:start position:0%
+.  We have a skills catalog here, and we
+ 
+
+00:05:54.821 --> 00:05:57.417 align:start position:0%
+.  We have a skills catalog here, and we
+have <00:05:55.099><c>the </c><00:05:55.377><c>codebase </c><00:05:55.655><c>of </c><00:05:55.933><c>a </c><00:05:56.211><c>tiny </c><00:05:56.489><c>software </c><00:05:56.767><c>factory </c><00:05:57.045><c>in </c><00:05:57.323><c>the</c>
+
+00:05:57.417 --> 00:05:57.427 align:start position:0%
+have the codebase of a tiny software factory in the
+ 
+
+00:05:57.427 --> 00:05:59.416 align:start position:0%
+have the codebase of a tiny software factory in the
+.tsf <00:05:57.685><c>directory.  </c><00:05:57.943><c>And </c><00:05:58.201><c>TSF </c><00:05:58.459><c>two </c><00:05:58.717><c>remains</c>
+
+00:05:59.416 --> 00:05:59.426 align:start position:0%
+.tsf directory.  And TSF two remains
+ 
+
+00:05:59.426 --> 00:06:01.667 align:start position:0%
+.tsf directory.  And TSF two remains
+completely <00:06:00.130><c>untouched.  </c><00:06:00.834><c>Remember, </c><00:06:01.538><c>TSF</c>
+
+00:06:01.667 --> 00:06:01.677 align:start position:0%
+completely untouched.  Remember, TSF
+ 
+
+00:06:01.677 --> 00:06:03.959 align:start position:0%
+completely untouched.  Remember, TSF
+two <00:06:01.900><c>is </c><00:06:02.123><c>an </c><00:06:02.346><c>empty </c><00:06:02.569><c>template.  </c><00:06:02.792><c>This </c><00:06:03.015><c>is </c><00:06:03.238><c>an </c><00:06:03.461><c>empty</c>
+
+00:06:03.959 --> 00:06:03.969 align:start position:0%
+two is an empty template.  This is an empty
+ 
+
+00:06:03.969 --> 00:06:05.931 align:start position:0%
+two is an empty template.  This is an empty
+codebase.  <00:06:04.326><c>It's </c><00:06:04.683><c>an </c><00:06:05.040><c>empty </c><00:06:05.397><c>factory </c><00:06:05.754><c>that</c>
+
+00:06:05.931 --> 00:06:05.941 align:start position:0%
+codebase.  It's an empty factory that
+ 
+
+00:06:05.941 --> 00:06:07.797 align:start position:0%
+codebase.  It's an empty factory that
+does <00:06:06.230><c>nothing </c><00:06:06.519><c>until </c><00:06:06.808><c>you </c><00:06:07.097><c>give </c><00:06:07.386><c>it </c><00:06:07.675><c>a</c>
+
+00:06:07.797 --> 00:06:07.807 align:start position:0%
+does nothing until you give it a
+ 
+
+00:06:07.807 --> 00:06:09.993 align:start position:0%
+does nothing until you give it a
+specific <00:06:08.343><c>purpose.  </c><00:06:08.879><c>Fantasy.  </c><00:06:09.415><c>You </c><00:06:09.951><c>see</c>
+
+00:06:09.993 --> 00:06:10.003 align:start position:0%
+specific purpose.  Fantasy.  You see
+ 
+
+00:06:10.003 --> 00:06:11.470 align:start position:0%
+specific purpose.  Fantasy.  You see
+that <00:06:10.328><c>our </c><00:06:10.653><c>in-loop </c><00:06:10.978><c>agent </c><00:06:11.303><c>reports</c>
+
+00:06:11.470 --> 00:06:11.480 align:start position:0%
+that our in-loop agent reports
+ 
+
+00:06:11.480 --> 00:06:13.636 align:start position:0%
+that our in-loop agent reports
+success.  <00:06:11.860><c>It </c><00:06:12.240><c>was </c><00:06:12.620><c>successfully </c><00:06:13.000><c>installed.  </c><00:06:13.380><c>Just</c>
+
+00:06:13.636 --> 00:06:13.646 align:start position:0%
+success.  It was successfully installed.  Just
+ 
+
+00:06:13.646 --> 00:06:15.529 align:start position:0%
+success.  It was successfully installed.  Just
+a <00:06:13.960><c>few </c><00:06:14.274><c>files.  </c><00:06:14.588><c>They </c><00:06:14.902><c>chose </c><00:06:15.216><c>several</c>
+
+00:06:15.529 --> 00:06:15.539 align:start position:0%
+a few files.  They chose several
+ 
+
+00:06:15.539 --> 00:06:17.839 align:start position:0%
+a few files.  They chose several
+new <00:06:15.779><c>ports </c><00:06:16.019><c>for </c><00:06:16.259><c>us.  </c><00:06:16.499><c>Fantasy.  </c><00:06:16.739><c>This </c><00:06:16.979><c>leads </c><00:06:17.219><c>us </c><00:06:17.459><c>to </c><00:06:17.699><c>the</c>
+
+00:06:17.839 --> 00:06:17.849 align:start position:0%
+new ports for us.  Fantasy.  This leads us to the
+ 
+
+00:06:17.849 --> 00:06:20.089 align:start position:0%
+new ports for us.  Fantasy.  This leads us to the
+next <00:06:18.092><c>step </c><00:06:18.335><c>in </c><00:06:18.578><c>the </c><00:06:18.821><c>process </c><00:06:19.064><c>of </c><00:06:19.307><c>initializing</c>
+
+00:06:20.089 --> 00:06:20.099 align:start position:0%
+next step in the process of initializing
+ 
+
+00:06:20.099 --> 00:06:23.445 align:start position:0%
+next step in the process of initializing
+our <00:06:20.829><c>factory.</c>
+
+00:06:23.445 --> 00:06:23.455 align:start position:0%
+ 
+ 
+
+00:06:23.455 --> 00:06:25.540 align:start position:0%
+ 
+If <00:06:23.670><c>you </c><00:06:23.885><c>want </c><00:06:24.100><c>to </c><00:06:24.315><c>go </c><00:06:24.530><c>from </c><00:06:24.745><c>an </c><00:06:24.960><c>empty</c>
+
+00:06:25.540 --> 00:06:25.550 align:start position:0%
+If you want to go from an empty
+ 
+
+00:06:25.550 --> 00:06:27.613 align:start position:0%
+If you want to go from an empty
+factory <00:06:25.765><c>to </c><00:06:25.980><c>a </c><00:06:26.195><c>working </c><00:06:26.410><c>one, </c><00:06:26.625><c>this </c><00:06:26.840><c>is </c><00:06:27.055><c>the </c><00:06:27.270><c>process.   </c><00:06:27.485><c>The</c>
+
+00:06:27.613 --> 00:06:27.623 align:start position:0%
+factory to a working one, this is the process.   The
+ 
+
+00:06:27.623 --> 00:06:29.980 align:start position:0%
+factory to a working one, this is the process.   The
+next <00:06:28.017><c>step </c><00:06:28.411><c>is, </c><00:06:28.805><c>of </c><00:06:29.199><c>course,</c>
+
+00:06:29.980 --> 00:06:29.990 align:start position:0%
+next step is, of course,
+ 
+
+00:06:29.990 --> 00:06:32.576 align:start position:0%
+next step is, of course,
+factory <00:06:30.288><c>settings.  </c><00:06:30.586><c>This </c><00:06:30.884><c>is </c><00:06:31.182><c>factory </c><00:06:31.480><c>planning.  </c><00:06:31.778><c>This </c><00:06:32.076><c>is </c><00:06:32.374><c>where</c>
+
+00:06:32.576 --> 00:06:32.586 align:start position:0%
+factory settings.  This is factory planning.  This is where
+ 
+
+00:06:32.586 --> 00:06:34.631 align:start position:0%
+factory settings.  This is factory planning.  This is where
+you <00:06:32.824><c>and </c><00:06:33.062><c>your </c><00:06:33.300><c>agents </c><00:06:33.538><c>sit </c><00:06:33.776><c>down, </c><00:06:34.014><c>write </c><00:06:34.252><c>a</c>
+
+00:06:34.631 --> 00:06:34.641 align:start position:0%
+you and your agents sit down, write a
+ 
+
+00:06:34.641 --> 00:06:36.775 align:start position:0%
+you and your agents sit down, write a
+detailed, <00:06:35.236><c>lengthy </c><00:06:35.831><c>prompt, </c><00:06:36.426><c>which</c>
+
+00:06:36.775 --> 00:06:36.785 align:start position:0%
+detailed, lengthy prompt, which
+ 
+
+00:06:36.785 --> 00:06:38.592 align:start position:0%
+detailed, lengthy prompt, which
+is <00:06:36.957><c>essentially </c><00:06:37.129><c>a </c><00:06:37.301><c>plan, </c><00:06:37.473><c>and </c><00:06:37.645><c>then </c><00:06:37.817><c>pass </c><00:06:37.989><c>it </c><00:06:38.161><c>to </c><00:06:38.333><c>the</c>
+
+00:06:38.592 --> 00:06:38.602 align:start position:0%
+is essentially a plan, and then pass it to the
+ 
+
+00:06:38.602 --> 00:06:40.466 align:start position:0%
+is essentially a plan, and then pass it to the
+TSF <00:06:38.891><c>configuration </c><00:06:39.180><c>skill.  </c><00:06:39.469><c>This </c><00:06:39.758><c>is </c><00:06:40.047><c>how </c><00:06:40.336><c>you</c>
+
+00:06:40.466 --> 00:06:40.476 align:start position:0%
+TSF configuration skill.  This is how you
+ 
+
+00:06:40.476 --> 00:06:42.375 align:start position:0%
+TSF configuration skill.  This is how you
+mount <00:06:40.823><c>your </c><00:06:41.170><c>codebase </c><00:06:41.517><c>and </c><00:06:41.864><c>start</c>
+
+00:06:42.375 --> 00:06:42.385 align:start position:0%
+mount your codebase and start
+ 
+
+00:06:42.385 --> 00:06:44.447 align:start position:0%
+mount your codebase and start
+customizing <00:06:42.635><c>it </c><00:06:42.885><c>to </c><00:06:43.135><c>work </c><00:06:43.385><c>with </c><00:06:43.635><c>the </c><00:06:43.885><c>specific</c>
+
+00:06:44.447 --> 00:06:44.457 align:start position:0%
+customizing it to work with the specific
+ 
+
+00:06:44.457 --> 00:06:46.536 align:start position:0%
+customizing it to work with the specific
+problem <00:06:44.778><c>you </c><00:06:45.099><c>are </c><00:06:45.420><c>trying </c><00:06:45.741><c>to </c><00:06:46.062><c>solve.  </c><00:06:46.383><c>We</c>
+
+00:06:46.536 --> 00:06:46.546 align:start position:0%
+problem you are trying to solve.  We
+ 
+
+00:06:46.546 --> 00:06:48.996 align:start position:0%
+problem you are trying to solve.  We
+are <00:06:46.874><c>turning </c><00:06:47.202><c>our </c><00:06:47.530><c>tiny </c><00:06:47.858><c>software </c><00:06:48.186><c>factory </c><00:06:48.514><c>into </c><00:06:48.842><c>a</c>
+
+00:06:48.996 --> 00:06:49.006 align:start position:0%
+are turning our tiny software factory into a
+ 
+
+00:06:49.006 --> 00:06:51.296 align:start position:0%
+are turning our tiny software factory into a
+data <00:06:49.297><c>analytics </c><00:06:49.588><c>software </c><00:06:49.879><c>factory.  </c><00:06:50.170><c>And </c><00:06:50.461><c>in </c><00:06:50.752><c>a </c><00:06:51.043><c>moment</c>
+
+00:06:51.296 --> 00:06:51.306 align:start position:0%
+data analytics software factory.  And in a moment
+ 
+
+00:06:51.306 --> 00:06:53.289 align:start position:0%
+data analytics software factory.  And in a moment
+we'll <00:06:51.596><c>demonstrate </c><00:06:51.886><c>why </c><00:06:52.176><c>this </c><00:06:52.466><c>is </c><00:06:52.756><c>so</c>
+
+00:06:53.289 --> 00:06:53.299 align:start position:0%
+we'll demonstrate why this is so
+ 
+
+00:06:53.299 --> 00:06:55.309 align:start position:0%
+we'll demonstrate why this is so
+powerful.  <00:06:53.593><c>But </c><00:06:53.887><c>in </c><00:06:54.181><c>the </c><00:06:54.475><c>same </c><00:06:54.769><c>in-loop </c><00:06:55.063><c>agent,</c>
+
+00:06:55.309 --> 00:06:55.319 align:start position:0%
+powerful.  But in the same in-loop agent,
+ 
+
+00:06:55.319 --> 00:06:57.537 align:start position:0%
+powerful.  But in the same in-loop agent,
+we <00:06:55.581><c>will </c><00:06:55.843><c>do </c><00:06:56.105><c>a </c><00:06:56.367><c>CD, </c><00:06:56.629><c>that </c><00:06:56.891><c>is, </c><00:06:57.153><c>change </c><00:06:57.415><c>directories.</c>
+
+00:06:57.537 --> 00:06:57.547 align:start position:0%
+we will do a CD, that is, change directories.
+ 
+
+00:06:57.547 --> 00:06:59.897 align:start position:0%
+we will do a CD, that is, change directories.
+We <00:06:57.872><c>will </c><00:06:58.197><c>move </c><00:06:58.522><c>on </c><00:06:58.847><c>to </c><00:06:59.172><c>the </c><00:06:59.497><c>TSF </c><00:06:59.822><c>2</c>
+
+00:06:59.897 --> 00:06:59.907 align:start position:0%
+We will move on to the TSF 2
+ 
+
+00:06:59.907 --> 00:07:01.968 align:start position:0%
+We will move on to the TSF 2
+analytics <00:07:00.223><c>codebase.  </c><00:07:00.539><c>Let's </c><00:07:00.855><c>launch.  </c><00:07:01.171><c>And </c><00:07:01.487><c>now </c><00:07:01.803><c>we</c>
+
+00:07:01.968 --> 00:07:01.978 align:start position:0%
+analytics codebase.  Let's launch.  And now we
+ 
+
+00:07:01.978 --> 00:07:04.095 align:start position:0%
+analytics codebase.  Let's launch.  And now we
+will <00:07:02.233><c>launch </c><00:07:02.488><c>TSF, </c><00:07:02.743><c>that </c><00:07:02.998><c>is, </c><00:07:03.253><c>the </c><00:07:03.508><c>skills </c><00:07:03.763><c>there.  </c><00:07:04.018><c>And</c>
+
+00:07:04.095 --> 00:07:04.105 align:start position:0%
+will launch TSF, that is, the skills there.  And
+ 
+
+00:07:04.105 --> 00:07:05.777 align:start position:0%
+will launch TSF, that is, the skills there.  And
+then <00:07:04.550><c>we'll </c><00:07:04.995><c>do </c><00:07:05.440><c>the</c>
+
+00:07:05.777 --> 00:07:05.787 align:start position:0%
+then we'll do the
+ 
+
+00:07:05.787 --> 00:07:07.794 align:start position:0%
+then we'll do the
+setup <00:07:06.040><c>workflow.  </c><00:07:06.293><c>We </c><00:07:06.546><c>jump </c><00:07:06.799><c>into </c><00:07:07.052><c>the </c><00:07:07.305><c>empty</c>
+
+00:07:07.794 --> 00:07:07.804 align:start position:0%
+setup workflow.  We jump into the empty
+ 
+
+00:07:07.804 --> 00:07:09.728 align:start position:0%
+setup workflow.  We jump into the empty
+factory <00:07:08.254><c>template.  </c><00:07:08.704><c>I'll </c><00:07:09.154><c>just </c><00:07:09.604><c>address</c>
+
+00:07:09.728 --> 00:07:09.738 align:start position:0%
+factory template.  I'll just address
+ 
+
+00:07:09.738 --> 00:07:11.554 align:start position:0%
+factory template.  I'll just address
+this <00:07:09.907><c>prompt </c><00:07:10.076><c>that </c><00:07:10.245><c>my </c><00:07:10.414><c>agent </c><00:07:10.583><c>and </c><00:07:10.752><c>I </c><00:07:10.921><c>have </c><00:07:11.090><c>been </c><00:07:11.259><c>working </c><00:07:11.428><c>on</c>
+
+00:07:11.554 --> 00:07:11.564 align:start position:0%
+this prompt that my agent and I have been working on
+ 
+
+00:07:11.564 --> 00:07:13.347 align:start position:0%
+this prompt that my agent and I have been working on
+.  <00:07:11.801><c>This </c><00:07:12.038><c>is </c><00:07:12.275><c>exactly </c><00:07:12.512><c>how </c><00:07:12.749><c>you </c><00:07:12.986><c>want</c>
+
+00:07:13.347 --> 00:07:13.357 align:start position:0%
+.  This is exactly how you want
+ 
+
+00:07:13.357 --> 00:07:15.427 align:start position:0%
+.  This is exactly how you want
+to <00:07:13.750><c>specialize </c><00:07:14.143><c>your </c><00:07:14.536><c>tiny </c><00:07:14.929><c>software </c><00:07:15.322><c>factory</c>
+
+00:07:15.427 --> 00:07:15.437 align:start position:0%
+to specialize your tiny software factory
+ 
+
+00:07:15.437 --> 00:07:18.459 align:start position:0%
+to specialize your tiny software factory
+.  <00:07:15.710><c>This </c><00:07:15.983><c>is </c><00:07:16.256><c>just </c><00:07:16.529><c>a </c><00:07:16.802><c>plan.  </c><00:07:17.075><c>150 </c><00:07:17.348><c>lines.  </c><00:07:17.621><c>And </c><00:07:17.894><c>you </c><00:07:18.167><c>can</c>
+
+00:07:18.459 --> 00:07:18.469 align:start position:0%
+.  This is just a plan.  150 lines.  And you can
+ 
+
+00:07:18.469 --> 00:07:19.894 align:start position:0%
+.  This is just a plan.  150 lines.  And you can
+see <00:07:18.644><c>here </c><00:07:18.819><c>a </c><00:07:18.994><c>single </c><00:07:19.169><c>line </c><00:07:19.344><c>of </c><00:07:19.519><c>code </c><00:07:19.694><c>that</c>
+
+00:07:19.894 --> 00:07:19.904 align:start position:0%
+see here a single line of code that
+ 
+
+00:07:19.904 --> 00:07:21.580 align:start position:0%
+see here a single line of code that
+turns <00:07:20.321><c>this </c><00:07:20.738><c>initialized </c><00:07:21.155><c>software</c>
+
+00:07:21.580 --> 00:07:21.590 align:start position:0%
+turns this initialized software
+ 
+
+00:07:21.590 --> 00:07:23.266 align:start position:0%
+turns this initialized software
+factory <00:07:21.845><c>into </c><00:07:22.100><c>a </c><00:07:22.355><c>product </c><00:07:22.610><c>analytics </c><00:07:22.865><c>agent</c>
+
+00:07:23.266 --> 00:07:23.276 align:start position:0%
+factory into a product analytics agent
+ 
+
+00:07:23.276 --> 00:07:25.111 align:start position:0%
+factory into a product analytics agent
+.  <00:07:23.495><c>So, </c><00:07:23.714><c>here's </c><00:07:23.933><c>what </c><00:07:24.152><c>he </c><00:07:24.371><c>does.  </c><00:07:24.590><c>I'll </c><00:07:24.809><c>just</c>
+
+00:07:25.111 --> 00:07:25.121 align:start position:0%
+.  So, here's what he does.  I'll just
+ 
+
+00:07:25.121 --> 00:07:26.813 align:start position:0%
+.  So, here's what he does.  I'll just
+get <00:07:25.347><c>the </c><00:07:25.573><c>absolute </c><00:07:25.799><c>link </c><00:07:26.025><c>to </c><00:07:26.251><c>it </c><00:07:26.477><c>and </c><00:07:26.703><c>we'll</c>
+
+00:07:26.813 --> 00:07:26.823 align:start position:0%
+get the absolute link to it and we'll
+ 
+
+00:07:26.823 --> 00:07:28.474 align:start position:0%
+get the absolute link to it and we'll
+run <00:07:27.014><c>it.  </c><00:07:27.205><c>Now </c><00:07:27.396><c>we </c><00:07:27.587><c>are </c><00:07:27.778><c>going </c><00:07:27.969><c>to</c>
+
+00:07:28.474 --> 00:07:28.484 align:start position:0%
+run it.  Now we are going to
+ 
+
+00:07:28.484 --> 00:07:30.359 align:start position:0%
+run it.  Now we are going to
+configure <00:07:28.765><c>the </c><00:07:29.046><c>system.  </c><00:07:29.327><c>We </c><00:07:29.608><c>will </c><00:07:29.889><c>run </c><00:07:30.170><c>this</c>
+
+00:07:30.359 --> 00:07:30.369 align:start position:0%
+configure the system.  We will run this
+ 
+
+00:07:30.369 --> 00:07:32.569 align:start position:0%
+configure the system.  We will run this
+query <00:07:30.641><c>in </c><00:07:30.913><c>the </c><00:07:31.185><c>system.  </c><00:07:31.457><c>Large </c><00:07:31.729><c>collection.  </c><00:07:32.001><c>The </c><00:07:32.273><c>agent</c>
+
+00:07:32.569 --> 00:07:32.579 align:start position:0%
+query in the system.  Large collection.  The agent
+ 
+
+00:07:32.579 --> 00:07:34.841 align:start position:0%
+query in the system.  Large collection.  The agent
+gets <00:07:32.874><c>to </c><00:07:33.169><c>work.  </c><00:07:33.464><c>This </c><00:07:33.759><c>will </c><00:07:34.054><c>take </c><00:07:34.349><c>some </c><00:07:34.644><c>time</c>
+
+00:07:34.841 --> 00:07:34.851 align:start position:0%
+gets to work.  This will take some time
+ 
+
+00:07:34.851 --> 00:07:36.730 align:start position:0%
+gets to work.  This will take some time
+.  <00:07:35.030><c>This </c><00:07:35.209><c>is </c><00:07:35.388><c>the </c><00:07:35.567><c>process </c><00:07:35.746><c>of </c><00:07:35.925><c>taking </c><00:07:36.104><c>your </c><00:07:36.283><c>empty</c>
+
+00:07:36.730 --> 00:07:36.740 align:start position:0%
+.  This is the process of taking your empty
+ 
+
+00:07:36.740 --> 00:07:38.509 align:start position:0%
+.  This is the process of taking your empty
+software <00:07:37.118><c>factory, </c><00:07:37.496><c>placing </c><00:07:37.874><c>it </c><00:07:38.252><c>next</c>
+
+00:07:38.509 --> 00:07:38.519 align:start position:0%
+software factory, placing it next
+ 
+
+00:07:38.519 --> 00:07:40.287 align:start position:0%
+software factory, placing it next
+to <00:07:38.826><c>your </c><00:07:39.133><c>new </c><00:07:39.440><c>or </c><00:07:39.747><c>existing </c><00:07:40.054><c>codebase</c>
+
+00:07:40.287 --> 00:07:40.297 align:start position:0%
+to your new or existing codebase
+ 
+
+00:07:40.297 --> 00:07:41.921 align:start position:0%
+to your new or existing codebase
+, <00:07:40.517><c>and </c><00:07:40.737><c>now </c><00:07:40.957><c>we </c><00:07:41.177><c>let </c><00:07:41.397><c>your </c><00:07:41.617><c>agent</c>
+
+00:07:41.921 --> 00:07:41.931 align:start position:0%
+, and now we let your agent
+ 
+
+00:07:41.931 --> 00:07:43.556 align:start position:0%
+, and now we let your agent
+work <00:07:42.201><c>on </c><00:07:42.471><c>actually </c><00:07:42.741><c>mounting </c><00:07:43.011><c>the</c>
+
+00:07:43.556 --> 00:07:43.566 align:start position:0%
+work on actually mounting the
+ 
+
+00:07:43.566 --> 00:07:45.436 align:start position:0%
+work on actually mounting the
+codebase.  <00:07:43.781><c>So </c><00:07:43.996><c>let's </c><00:07:44.211><c>let </c><00:07:44.426><c>our </c><00:07:44.641><c>agent </c><00:07:44.856><c>do </c><00:07:45.071><c>the</c>
+
+00:07:45.436 --> 00:07:45.446 align:start position:0%
+codebase.  So let's let our agent do the
+ 
+
+00:07:45.446 --> 00:07:47.772 align:start position:0%
+codebase.  So let's let our agent do the
+work.  <00:07:45.796><c>This </c><00:07:46.146><c>will </c><00:07:46.496><c>take </c><00:07:46.846><c>some </c><00:07:47.196><c>time.  </c><00:07:47.546><c>While</c>
+
+00:07:47.772 --> 00:07:47.782 align:start position:0%
+work.  This will take some time.  While
+ 
+
+00:07:47.782 --> 00:07:49.584 align:start position:0%
+work.  This will take some time.  While
+our <00:07:48.134><c>internal </c><00:07:48.486><c>agent </c><00:07:48.838><c>builds </c><00:07:49.190><c>the </c><00:07:49.542><c>system</c>
+
+00:07:49.584 --> 00:07:49.594 align:start position:0%
+our internal agent builds the system
+ 
+
+00:07:49.594 --> 00:07:51.370 align:start position:0%
+our internal agent builds the system
+that <00:07:49.788><c>builds </c><00:07:49.982><c>the </c><00:07:50.176><c>system, </c><00:07:50.370><c>we'll </c><00:07:50.564><c>look </c><00:07:50.758><c>at </c><00:07:50.952><c>the </c><00:07:51.146><c>new</c>
+
+00:07:51.370 --> 00:07:51.380 align:start position:0%
+that builds the system, we'll look at the new
+ 
+
+00:07:51.380 --> 00:07:53.130 align:start position:0%
+that builds the system, we'll look at the new
+features <00:07:51.695><c>of </c><00:07:52.010><c>our </c><00:07:52.325><c>empty </c><00:07:52.640><c>factory, </c><00:07:52.955><c>which</c>
+
+00:07:53.130 --> 00:07:53.140 align:start position:0%
+features of our empty factory, which
+ 
+
+00:07:53.140 --> 00:07:54.916 align:start position:0%
+features of our empty factory, which
+can <00:07:53.390><c>be </c><00:07:53.640><c>quickly </c><00:07:53.890><c>redeployed </c><00:07:54.140><c>as </c><00:07:54.390><c>a </c><00:07:54.640><c>liquid</c>
+
+00:07:54.916 --> 00:07:54.926 align:start position:0%
+can be quickly redeployed as a liquid
+ 
+
+00:07:54.926 --> 00:07:56.727 align:start position:0%
+can be quickly redeployed as a liquid
+software <00:07:55.585><c>to </c><00:07:56.244><c>solve</c>
+
+00:07:56.727 --> 00:07:56.737 align:start position:0%
+software to solve
+ 
+
+00:07:56.737 --> 00:07:58.642 align:start position:0%
+software to solve
+any <00:07:57.194><c>problem </c><00:07:57.651><c>you </c><00:07:58.108><c>encounter</c>
+
+00:07:58.642 --> 00:07:58.652 align:start position:0%
+any problem you encounter
+ 
+
+00:07:58.652 --> 00:08:00.532 align:start position:0%
+any problem you encounter
+on <00:07:58.873><c>an </c><00:07:59.094><c>ongoing </c><00:07:59.315><c>basis, </c><00:07:59.536><c>as </c><00:07:59.757><c>we've </c><00:07:59.978><c>added </c><00:08:00.199><c>a</c>
+
+00:08:00.532 --> 00:08:00.542 align:start position:0%
+on an ongoing basis, as we've added a
+ 
+
+00:08:00.542 --> 00:08:02.473 align:start position:0%
+on an ongoing basis, as we've added a
+bunch <00:08:00.762><c>of </c><00:08:00.982><c>new </c><00:08:01.202><c>features </c><00:08:01.422><c>to </c><00:08:01.642><c>the </c><00:08:01.862><c>empty </c><00:08:02.082><c>factory </c><00:08:02.302><c>for</c>
+
+00:08:02.473 --> 00:08:02.483 align:start position:0%
+bunch of new features to the empty factory for
+ 
+
+00:08:02.483 --> 00:08:04.512 align:start position:0%
+bunch of new features to the empty factory for
+its <00:08:02.865><c>redeployment.  </c><00:08:03.247><c>Let's </c><00:08:03.629><c>work </c><00:08:04.011><c>through </c><00:08:04.393><c>these</c>
+
+00:08:04.512 --> 00:08:04.522 align:start position:0%
+its redeployment.  Let's work through these
+ 
+
+00:08:04.522 --> 00:08:06.268 align:start position:0%
+its redeployment.  Let's work through these
+powerful <00:08:04.903><c>features </c><00:08:05.284><c>now, </c><00:08:05.665><c>as </c><00:08:06.046><c>they</c>
+
+00:08:06.268 --> 00:08:06.278 align:start position:0%
+powerful features now, as they
+ 
+
+00:08:06.278 --> 00:08:08.205 align:start position:0%
+powerful features now, as they
+really <00:08:06.577><c>expand </c><00:08:06.876><c>on </c><00:08:07.175><c>the </c><00:08:07.474><c>capabilities </c><00:08:07.773><c>gained</c>
+
+00:08:08.205 --> 00:08:08.215 align:start position:0%
+really expand on the capabilities gained
+ 
+
+00:08:08.215 --> 00:08:11.493 align:start position:0%
+really expand on the capabilities gained
+from <00:08:08.456><c>the </c><00:08:08.697><c>first </c><00:08:08.938><c>lesson.</c>
+
+00:08:11.493 --> 00:08:11.503 align:start position:0%
+ 
+ 
+
+00:08:11.503 --> 00:08:13.431 align:start position:0%
+ 
+So, <00:08:11.680><c>what </c><00:08:11.857><c>new </c><00:08:12.034><c>features </c><00:08:12.211><c>are </c><00:08:12.388><c>there </c><00:08:12.565><c>in </c><00:08:12.742><c>the </c><00:08:12.919><c>empty</c>
+
+00:08:13.431 --> 00:08:13.441 align:start position:0%
+So, what new features are there in the empty
+ 
+
+00:08:13.441 --> 00:08:15.457 align:start position:0%
+So, what new features are there in the empty
+code <00:08:13.671><c>base </c><00:08:13.901><c>of </c><00:08:14.131><c>the </c><00:08:14.361><c>second </c><00:08:14.591><c>lesson?  </c><00:08:14.821><c>The </c><00:08:15.051><c>first</c>
+
+00:08:15.457 --> 00:08:15.467 align:start position:0%
+code base of the second lesson?  The first
+ 
+
+00:08:15.467 --> 00:08:17.453 align:start position:0%
+code base of the second lesson?  The first
+brand <00:08:15.863><c>new </c><00:08:16.259><c>feature </c><00:08:16.655><c>is </c><00:08:17.051><c>the</c>
+
+00:08:17.453 --> 00:08:17.463 align:start position:0%
+brand new feature is the
+ 
+
+00:08:17.463 --> 00:08:19.400 align:start position:0%
+brand new feature is the
+tool <00:08:17.689><c>summary.  </c><00:08:17.915><c>This </c><00:08:18.141><c>is </c><00:08:18.367><c>when </c><00:08:18.593><c>a </c><00:08:18.819><c>lightweight </c><00:08:19.045><c>model</c>
+
+00:08:19.400 --> 00:08:19.410 align:start position:0%
+tool summary.  This is when a lightweight model
+ 
+
+00:08:19.410 --> 00:08:21.429 align:start position:0%
+tool summary.  This is when a lightweight model
+summarizes <00:08:19.903><c>the </c><00:08:20.396><c>exact </c><00:08:20.889><c>tool </c><00:08:21.382><c>calls</c>
+
+00:08:21.429 --> 00:08:21.439 align:start position:0%
+summarizes the exact tool calls
+ 
+
+00:08:21.439 --> 00:08:23.429 align:start position:0%
+summarizes the exact tool calls
+your <00:08:21.827><c>agents </c><00:08:22.215><c>make </c><00:08:22.603><c>as </c><00:08:22.991><c>they </c><00:08:23.379><c>work,</c>
+
+00:08:23.429 --> 00:08:23.439 align:start position:0%
+your agents make as they work,
+ 
+
+00:08:23.439 --> 00:08:25.263 align:start position:0%
+your agents make as they work,
+so <00:08:23.778><c>you </c><00:08:24.117><c>can </c><00:08:24.456><c>quickly </c><00:08:24.795><c>observe </c><00:08:25.134><c>and</c>
+
+00:08:25.263 --> 00:08:25.273 align:start position:0%
+so you can quickly observe and
+ 
+
+00:08:25.273 --> 00:08:27.007 align:start position:0%
+so you can quickly observe and
+understand <00:08:25.776><c>what's </c><00:08:26.279><c>happening.  </c><00:08:26.782><c>As</c>
+
+00:08:27.007 --> 00:08:27.017 align:start position:0%
+understand what's happening.  As
+ 
+
+00:08:27.017 --> 00:08:28.867 align:start position:0%
+understand what's happening.  As
+intelligence <00:08:27.385><c>grows, </c><00:08:27.753><c>the </c><00:08:28.121><c>models </c><00:08:28.489><c>powering</c>
+
+00:08:28.867 --> 00:08:28.877 align:start position:0%
+intelligence grows, the models powering
+ 
+
+00:08:28.877 --> 00:08:30.598 align:start position:0%
+intelligence grows, the models powering
+your <00:08:29.161><c>software </c><00:08:29.445><c>factories </c><00:08:29.729><c>will </c><00:08:30.013><c>become</c>
+
+00:08:30.598 --> 00:08:30.608 align:start position:0%
+your software factories will become
+ 
+
+00:08:30.608 --> 00:08:32.226 align:start position:0%
+your software factories will become
+increasingly <00:08:31.133><c>complex </c><00:08:31.658><c>to </c><00:08:32.183><c>understand,</c>
+
+00:08:32.226 --> 00:08:32.236 align:start position:0%
+increasingly complex to understand,
+ 
+
+00:08:32.236 --> 00:08:34.113 align:start position:0%
+increasingly complex to understand,
+as <00:08:32.566><c>each </c><00:08:32.896><c>tool </c><00:08:33.226><c>call </c><00:08:33.556><c>will </c><00:08:33.886><c>be</c>
+
+00:08:34.113 --> 00:08:34.123 align:start position:0%
+as each tool call will be
+ 
+
+00:08:34.123 --> 00:08:36.050 align:start position:0%
+as each tool call will be
+filled <00:08:34.407><c>with </c><00:08:34.691><c>a </c><00:08:34.975><c>wealth </c><00:08:35.259><c>of </c><00:08:35.543><c>information</c>
+
+00:08:36.050 --> 00:08:36.060 align:start position:0%
+filled with a wealth of information
+ 
+
+00:08:36.060 --> 00:08:38.000 align:start position:0%
+filled with a wealth of information
+.  <00:08:36.330><c>You </c><00:08:36.600><c>have </c><00:08:36.870><c>two </c><00:08:37.140><c>options.  </c><00:08:37.410><c>You </c><00:08:37.680><c>can</c>
+
+00:08:38.000 --> 00:08:38.010 align:start position:0%
+.  You have two options.  You can
+ 
+
+00:08:38.010 --> 00:08:39.790 align:start position:0%
+.  You have two options.  You can
+turn <00:08:38.253><c>away </c><00:08:38.496><c>and </c><00:08:38.739><c>pray, </c><00:08:38.982><c>or </c><00:08:39.225><c>you </c><00:08:39.468><c>can</c>
+
+00:08:39.790 --> 00:08:39.800 align:start position:0%
+turn away and pray, or you can
+ 
+
+00:08:39.800 --> 00:08:41.472 align:start position:0%
+turn away and pray, or you can
+design <00:08:40.467><c>and </c><00:08:41.134><c>measure.</c>
+
+00:08:41.472 --> 00:08:41.482 align:start position:0%
+design and measure.
+ 
+
+00:08:41.482 --> 00:08:43.421 align:start position:0%
+design and measure.
+Tool <00:08:41.962><c>summaries </c><00:08:42.442><c>reveal </c><00:08:42.922><c>what</c>
+
+00:08:43.421 --> 00:08:43.431 align:start position:0%
+Tool summaries reveal what
+ 
+
+00:08:43.431 --> 00:08:45.425 align:start position:0%
+Tool summaries reveal what
+your <00:08:43.705><c>alien </c><00:08:43.979><c>language </c><00:08:44.253><c>model </c><00:08:44.527><c>is </c><00:08:44.801><c>actually </c><00:08:45.075><c>doing </c><00:08:45.349><c>and</c>
+
+00:08:45.425 --> 00:08:45.435 align:start position:0%
+your alien language model is actually doing and
+ 
+
+00:08:45.435 --> 00:08:47.401 align:start position:0%
+your alien language model is actually doing and
+summarize <00:08:45.819><c>the </c><00:08:46.203><c>work </c><00:08:46.587><c>done </c><00:08:46.971><c>into </c><00:08:47.355><c>sentences</c>
+
+00:08:47.401 --> 00:08:47.411 align:start position:0%
+summarize the work done into sentences
+ 
+
+00:08:47.411 --> 00:08:49.057 align:start position:0%
+summarize the work done into sentences
+you <00:08:47.724><c>can </c><00:08:48.037><c>understand </c><00:08:48.350><c>at </c><00:08:48.663><c>a</c>
+
+00:08:49.057 --> 00:08:49.067 align:start position:0%
+you can understand at a
+ 
+
+00:08:49.067 --> 00:08:50.645 align:start position:0%
+you can understand at a
+glance.  <00:08:49.266><c>Let's </c><00:08:49.465><c>take </c><00:08:49.664><c>a </c><00:08:49.863><c>close </c><00:08:50.062><c>look </c><00:08:50.261><c>at </c><00:08:50.460><c>this</c>
+
+00:08:50.645 --> 00:08:50.655 align:start position:0%
+glance.  Let's take a close look at this
+ 
+
+00:08:50.655 --> 00:08:52.005 align:start position:0%
+glance.  Let's take a close look at this
+so <00:08:50.860><c>we </c><00:08:51.065><c>can </c><00:08:51.270><c>see </c><00:08:51.475><c>what </c><00:08:51.680><c>it</c>
+
+00:08:52.005 --> 00:08:52.015 align:start position:0%
+so we can see what it
+ 
+
+00:08:52.015 --> 00:08:53.273 align:start position:0%
+so we can see what it
+really <00:08:52.176><c>looks </c><00:08:52.337><c>like.  </c><00:08:52.498><c>So, </c><00:08:52.659><c>I'll </c><00:08:52.820><c>say </c><00:08:52.981><c>"ping" </c><00:08:53.142><c>to</c>
+
+00:08:53.273 --> 00:08:53.283 align:start position:0%
+really looks like.  So, I'll say "ping" to
+ 
+
+00:08:53.283 --> 00:08:54.641 align:start position:0%
+really looks like.  So, I'll say "ping" to
+make <00:08:53.532><c>sure </c><00:08:53.781><c>our </c><00:08:54.030><c>agent </c><00:08:54.279><c>is </c><00:08:54.528><c>online.</c>
+
+00:08:54.641 --> 00:08:54.651 align:start position:0%
+make sure our agent is online.
+ 
+
+00:08:54.651 --> 00:08:56.796 align:start position:0%
+make sure our agent is online.
+Fantastically.  <00:08:55.000><c>And </c><00:08:55.349><c>I </c><00:08:55.698><c>will </c><00:08:56.047><c>do </c><00:08:56.396><c>CWD.  </c><00:08:56.745><c>And</c>
+
+00:08:56.796 --> 00:08:56.806 align:start position:0%
+Fantastically.  And I will do CWD.  And
+ 
+
+00:08:56.806 --> 00:08:58.109 align:start position:0%
+Fantastically.  And I will do CWD.  And
+remember, <00:08:57.015><c>this </c><00:08:57.224><c>is </c><00:08:57.433><c>our </c><00:08:57.642><c>agent </c><00:08:57.851><c>working </c><00:08:58.060><c>in</c>
+
+00:08:58.109 --> 00:08:58.119 align:start position:0%
+remember, this is our agent working in
+ 
+
+00:08:58.119 --> 00:08:59.635 align:start position:0%
+remember, this is our agent working in
+our <00:08:58.400><c>empty </c><00:08:58.681><c>software </c><00:08:58.962><c>factory.  </c><00:08:59.243><c>And </c><00:08:59.524><c>you</c>
+
+00:08:59.635 --> 00:08:59.645 align:start position:0%
+our empty software factory.  And you
+ 
+
+00:08:59.645 --> 00:09:01.307 align:start position:0%
+our empty software factory.  And you
+can <00:08:59.839><c>see </c><00:09:00.033><c>here </c><00:09:00.227><c>that </c><00:09:00.421><c>for </c><00:09:00.615><c>the </c><00:09:00.809><c>PWD </c><00:09:01.003><c>team, </c><00:09:01.197><c>we</c>
+
+00:09:01.307 --> 00:09:01.317 align:start position:0%
+can see here that for the PWD team, we
+ 
+
+00:09:01.317 --> 00:09:02.985 align:start position:0%
+can see here that for the PWD team, we
+can <00:09:01.835><c>always </c><00:09:02.353><c>look </c><00:09:02.871><c>inward.</c>
+
+00:09:02.985 --> 00:09:02.995 align:start position:0%
+can always look inward.
+ 
+
+00:09:02.995 --> 00:09:04.868 align:start position:0%
+can always look inward.
+Now <00:09:03.245><c>it's </c><00:09:03.495><c>wrapped </c><00:09:03.745><c>up </c><00:09:03.995><c>in </c><00:09:04.245><c>this </c><00:09:04.495><c>nice </c><00:09:04.745><c>summary.</c>
+
+00:09:04.868 --> 00:09:04.878 align:start position:0%
+Now it's wrapped up in this nice summary.
+ 
+
+00:09:04.878 --> 00:09:06.620 align:start position:0%
+Now it's wrapped up in this nice summary.
+Let's <00:09:05.082><c>set </c><00:09:05.286><c>this </c><00:09:05.490><c>up, </c><00:09:05.694><c>because </c><00:09:05.898><c>remember, </c><00:09:06.102><c>this </c><00:09:06.306><c>is </c><00:09:06.510><c>a</c>
+
+00:09:06.620 --> 00:09:06.630 align:start position:0%
+Let's set this up, because remember, this is a
+ 
+
+00:09:06.630 --> 00:09:08.254 align:start position:0%
+Let's set this up, because remember, this is a
+rare <00:09:07.092><c>software.  </c><00:09:07.554><c>It </c><00:09:08.016><c>is</c>
+
+00:09:08.254 --> 00:09:08.264 align:start position:0%
+rare software.  It is
+ 
+
+00:09:08.264 --> 00:09:10.221 align:start position:0%
+rare software.  It is
+designed <00:09:08.565><c>for </c><00:09:08.866><c>change.  </c><00:09:09.167><c>It </c><00:09:09.468><c>is </c><00:09:09.769><c>designed </c><00:09:10.070><c>to</c>
+
+00:09:10.221 --> 00:09:10.231 align:start position:0%
+designed for change.  It is designed to
+ 
+
+00:09:10.231 --> 00:09:11.701 align:start position:0%
+designed for change.  It is designed to
+change <00:09:10.516><c>shape </c><00:09:10.801><c>at </c><00:09:11.086><c>any </c><00:09:11.371><c>time.  </c><00:09:11.656><c>LS,</c>
+
+00:09:11.701 --> 00:09:11.711 align:start position:0%
+change shape at any time.  LS,
+ 
+
+00:09:11.711 --> 00:09:13.643 align:start position:0%
+change shape at any time.  LS,
+let's <00:09:11.970><c>do </c><00:09:12.229><c>a </c><00:09:12.488><c>few </c><00:09:12.747><c>more </c><00:09:13.006><c>runs </c><00:09:13.265><c>here.   </c><00:09:13.524><c>That's</c>
+
+00:09:13.643 --> 00:09:13.653 align:start position:0%
+let's do a few more runs here.   That's
+ 
+
+00:09:13.653 --> 00:09:15.557 align:start position:0%
+let's do a few more runs here.   That's
+all.  <00:09:13.975><c>So, </c><00:09:14.297><c>we </c><00:09:14.619><c>got </c><00:09:14.941><c>a </c><00:09:15.263><c>good</c>
+
+00:09:15.557 --> 00:09:15.567 align:start position:0%
+all.  So, we got a good
+ 
+
+00:09:15.567 --> 00:09:17.557 align:start position:0%
+all.  So, we got a good
+resume.  <00:09:15.786><c>And </c><00:09:16.005><c>then </c><00:09:16.224><c>we'll </c><00:09:16.443><c>do </c><00:09:16.662><c>it.  </c><00:09:16.881><c>I </c><00:09:17.100><c>will </c><00:09:17.319><c>say</c>
+
+00:09:17.557 --> 00:09:17.567 align:start position:0%
+resume.  And then we'll do it.  I will say
+ 
+
+00:09:17.567 --> 00:09:19.276 align:start position:0%
+resume.  And then we'll do it.  I will say
+to <00:09:17.827><c>set </c><00:09:18.087><c>the </c><00:09:18.347><c>tool </c><00:09:18.607><c>summary </c><00:09:18.867><c>every </c><00:09:19.127><c>three</c>
+
+00:09:19.276 --> 00:09:19.286 align:start position:0%
+to set the tool summary every three
+ 
+
+00:09:19.286 --> 00:09:20.994 align:start position:0%
+to set the tool summary every three
+tool <00:09:19.571><c>calls </c><00:09:19.856><c>and </c><00:09:20.141><c>set </c><00:09:20.426><c>the </c><00:09:20.711><c>visible</c>
+
+00:09:20.994 --> 00:09:21.004 align:start position:0%
+tool calls and set the visible
+ 
+
+00:09:21.004 --> 00:09:22.386 align:start position:0%
+tool calls and set the visible
+rows <00:09:21.213><c>to </c><00:09:21.422><c>two.  </c><00:09:21.631><c>As </c><00:09:21.840><c>you </c><00:09:22.049><c>know, </c><00:09:22.258><c>we</c>
+
+00:09:22.386 --> 00:09:22.396 align:start position:0%
+rows to two.  As you know, we
+ 
+
+00:09:22.396 --> 00:09:24.129 align:start position:0%
+rows to two.  As you know, we
+use <00:09:22.825><c>the </c><00:09:23.254><c>concept </c><00:09:23.683><c>of</c>
+
+00:09:24.129 --> 00:09:24.139 align:start position:0%
+use the concept of
+ 
+
+00:09:24.139 --> 00:09:25.712 align:start position:0%
+use the concept of
+agent <00:09:24.428><c>access </c><00:09:24.717><c>parity, </c><00:09:25.006><c>which </c><00:09:25.295><c>we </c><00:09:25.584><c>will</c>
+
+00:09:25.712 --> 00:09:25.722 align:start position:0%
+agent access parity, which we will
+ 
+
+00:09:25.722 --> 00:09:27.505 align:start position:0%
+agent access parity, which we will
+mention <00:09:25.953><c>later.  </c><00:09:26.184><c>You </c><00:09:26.415><c>can </c><00:09:26.646><c>see </c><00:09:26.877><c>here </c><00:09:27.108><c>that </c><00:09:27.339><c>our</c>
+
+00:09:27.505 --> 00:09:27.515 align:start position:0%
+mention later.  You can see here that our
+ 
+
+00:09:27.515 --> 00:09:29.108 align:start position:0%
+mention later.  You can see here that our
+agent <00:09:27.810><c>has </c><00:09:28.105><c>changed </c><00:09:28.400><c>its </c><00:09:28.695><c>own </c><00:09:28.990><c>settings.</c>
+
+00:09:29.108 --> 00:09:29.118 align:start position:0%
+agent has changed its own settings.
+ 
+
+00:09:29.118 --> 00:09:31.285 align:start position:0%
+agent has changed its own settings.
+Let's <00:09:29.545><c>run </c><00:09:29.972><c>another </c><00:09:30.399><c>query.  </c><00:09:30.826><c>Wonderful</c>
+
+00:09:31.285 --> 00:09:31.295 align:start position:0%
+Let's run another query.  Wonderful
+ 
+
+00:09:31.295 --> 00:09:33.483 align:start position:0%
+Let's run another query.  Wonderful
+.  <00:09:31.640><c>Summarize </c><00:09:31.985><c>the </c><00:09:32.330><c>architecture </c><00:09:32.675><c>of </c><00:09:33.020><c>this </c><00:09:33.365><c>application.</c>
+
+00:09:33.483 --> 00:09:33.493 align:start position:0%
+.  Summarize the architecture of this application.
+ 
+
+00:09:33.493 --> 00:09:34.976 align:start position:0%
+.  Summarize the architecture of this application.
+With <00:09:33.810><c>each </c><00:09:34.127><c>team, </c><00:09:34.444><c>first </c><00:09:34.761><c>it</c>
+
+00:09:34.976 --> 00:09:34.986 align:start position:0%
+With each team, first it
+ 
+
+00:09:34.986 --> 00:09:36.742 align:start position:0%
+With each team, first it
+comes <00:09:35.191><c>in, </c><00:09:35.396><c>and </c><00:09:35.601><c>now </c><00:09:35.806><c>they </c><00:09:36.011><c>are </c><00:09:36.216><c>summed </c><00:09:36.421><c>up </c><00:09:36.626><c>and</c>
+
+00:09:36.742 --> 00:09:36.752 align:start position:0%
+comes in, and now they are summed up and
+ 
+
+00:09:36.752 --> 00:09:38.723 align:start position:0%
+comes in, and now they are summed up and
+grouped <00:09:37.129><c>together.  </c><00:09:37.506><c>You </c><00:09:37.883><c>see </c><00:09:38.260><c>there </c><00:09:38.637><c>are</c>
+
+00:09:38.723 --> 00:09:38.733 align:start position:0%
+grouped together.  You see there are
+ 
+
+00:09:38.733 --> 00:09:40.671 align:start position:0%
+grouped together.  You see there are
+two <00:09:38.960><c>challenges </c><00:09:39.187><c>there, </c><00:09:39.414><c>one, </c><00:09:39.641><c>two.  </c><00:09:39.868><c>And </c><00:09:40.095><c>we </c><00:09:40.322><c>can</c>
+
+00:09:40.671 --> 00:09:40.681 align:start position:0%
+two challenges there, one, two.  And we can
+ 
+
+00:09:40.681 --> 00:09:42.580 align:start position:0%
+two challenges there, one, two.  And we can
+quickly <00:09:41.052><c>understand </c><00:09:41.423><c>what </c><00:09:41.794><c>our </c><00:09:42.165><c>agent </c><00:09:42.536><c>did,</c>
+
+00:09:42.580 --> 00:09:42.590 align:start position:0%
+quickly understand what our agent did,
+ 
+
+00:09:42.590 --> 00:09:44.587 align:start position:0%
+quickly understand what our agent did,
+very, <00:09:42.900><c>very </c><00:09:43.210><c>quickly.  </c><00:09:43.520><c>So, </c><00:09:43.830><c>read </c><00:09:44.140><c>the </c><00:09:44.450><c>read</c>
+
+00:09:44.587 --> 00:09:44.597 align:start position:0%
+very, very quickly.  So, read the read
+ 
+
+00:09:44.597 --> 00:09:46.574 align:start position:0%
+very, very quickly.  So, read the read
+me, <00:09:44.981><c>understand </c><00:09:45.365><c>the </c><00:09:45.749><c>directory </c><00:09:46.133><c>structure.  </c><00:09:46.517><c>And,</c>
+
+00:09:46.574 --> 00:09:46.584 align:start position:0%
+me, understand the directory structure.  And,
+ 
+
+00:09:46.584 --> 00:09:48.574 align:start position:0%
+me, understand the directory structure.  And,
+of <00:09:46.813><c>course, </c><00:09:47.042><c>there </c><00:09:47.271><c>is </c><00:09:47.500><c>a </c><00:09:47.729><c>clear </c><00:09:47.958><c>summary </c><00:09:48.187><c>of </c><00:09:48.416><c>what</c>
+
+00:09:48.574 --> 00:09:48.584 align:start position:0%
+of course, there is a clear summary of what
+ 
+
+00:09:48.584 --> 00:09:50.755 align:start position:0%
+of course, there is a clear summary of what
+our <00:09:48.804><c>agent </c><00:09:49.024><c>did.  </c><00:09:49.244><c>This </c><00:09:49.464><c>is </c><00:09:49.684><c>a </c><00:09:49.904><c>very, </c><00:09:50.124><c>very </c><00:09:50.344><c>powerful</c>
+
+00:09:50.755 --> 00:09:50.765 align:start position:0%
+our agent did.  This is a very, very powerful
+ 
+
+00:09:50.765 --> 00:09:52.170 align:start position:0%
+our agent did.  This is a very, very powerful
+feature <00:09:51.135><c>as </c><00:09:51.505><c>your </c><00:09:51.875><c>agent</c>
+
+00:09:52.170 --> 00:09:52.180 align:start position:0%
+feature as your agent
+ 
+
+00:09:52.180 --> 00:09:54.139 align:start position:0%
+feature as your agent
+scales <00:09:52.449><c>and </c><00:09:52.718><c>becomes </c><00:09:52.987><c>more </c><00:09:53.256><c>complex </c><00:09:53.525><c>and </c><00:09:53.794><c>it </c><00:09:54.063><c>becomes</c>
+
+00:09:54.139 --> 00:09:54.149 align:start position:0%
+scales and becomes more complex and it becomes
+ 
+
+00:09:54.149 --> 00:09:55.859 align:start position:0%
+scales and becomes more complex and it becomes
+harder <00:09:54.403><c>to </c><00:09:54.657><c>keep </c><00:09:54.911><c>track </c><00:09:55.165><c>of </c><00:09:55.419><c>everything </c><00:09:55.673><c>it</c>
+
+00:09:55.859 --> 00:09:55.869 align:start position:0%
+harder to keep track of everything it
+ 
+
+00:09:55.869 --> 00:09:57.634 align:start position:0%
+harder to keep track of everything it
+does, <00:09:56.278><c>and </c><00:09:56.687><c>you'll </c><00:09:57.096><c>see </c><00:09:57.505><c>how</c>
+
+00:09:57.634 --> 00:09:57.644 align:start position:0%
+does, and you'll see how
+ 
+
+00:09:57.644 --> 00:10:01.892 align:start position:0%
+does, and you'll see how
+powerful <00:09:57.938><c>this </c><00:09:58.232><c>is </c><00:09:58.526><c>throughout </c><00:09:58.820><c>this </c><00:09:59.114><c>lesson.</c>
+
+00:10:01.892 --> 00:10:01.902 align:start position:0%
+ 
+ 
+
+00:10:01.902 --> 00:10:03.752 align:start position:0%
+ 
+This <00:10:02.154><c>is </c><00:10:02.406><c>a </c><00:10:02.658><c>classic </c><00:10:02.910><c>example, </c><00:10:03.162><c>improved</c>
+
+00:10:03.752 --> 00:10:03.762 align:start position:0%
+This is a classic example, improved
+ 
+
+00:10:03.762 --> 00:10:06.029 align:start position:0%
+This is a classic example, improved
+delegation <00:10:04.089><c>to </c><00:10:04.416><c>subagents.  </c><00:10:04.743><c>These </c><00:10:05.070><c>are </c><00:10:05.397><c>disposable</c>
+
+00:10:06.029 --> 00:10:06.039 align:start position:0%
+delegation to subagents.  These are disposable
+ 
+
+00:10:06.039 --> 00:10:08.004 align:start position:0%
+delegation to subagents.  These are disposable
+agents <00:10:06.308><c>for </c><00:10:06.577><c>a </c><00:10:06.846><c>single </c><00:10:07.115><c>task.  </c><00:10:07.384><c>The </c><00:10:07.653><c>main</c>
+
+00:10:08.004 --> 00:10:08.014 align:start position:0%
+agents for a single task.  The main
+ 
+
+00:10:08.014 --> 00:10:09.693 align:start position:0%
+agents for a single task.  The main
+difference <00:10:08.328><c>from </c><00:10:08.642><c>the </c><00:10:08.956><c>subagents </c><00:10:09.270><c>you </c><00:10:09.584><c>are</c>
+
+00:10:09.693 --> 00:10:09.703 align:start position:0%
+difference from the subagents you are
+ 
+
+00:10:09.703 --> 00:10:11.239 align:start position:0%
+difference from the subagents you are
+used <00:10:09.950><c>to </c><00:10:10.197><c>is </c><00:10:10.444><c>that </c><00:10:10.691><c>we </c><00:10:10.938><c>can</c>
+
+00:10:11.239 --> 00:10:11.249 align:start position:0%
+used to is that we can
+ 
+
+00:10:11.249 --> 00:10:13.326 align:start position:0%
+used to is that we can
+specialize <00:10:11.628><c>aggressively.  </c><00:10:12.007><c>So, </c><00:10:12.386><c>what </c><00:10:12.765><c>does </c><00:10:13.144><c>this</c>
+
+00:10:13.326 --> 00:10:13.336 align:start position:0%
+specialize aggressively.  So, what does this
+ 
+
+00:10:13.336 --> 00:10:15.177 align:start position:0%
+specialize aggressively.  So, what does this
+mean?  <00:10:13.596><c>We </c><00:10:13.856><c>can </c><00:10:14.116><c>give </c><00:10:14.376><c>our </c><00:10:14.636><c>agent </c><00:10:14.896><c>its</c>
+
+00:10:15.177 --> 00:10:15.187 align:start position:0%
+mean?  We can give our agent its
+ 
+
+00:10:15.187 --> 00:10:16.882 align:start position:0%
+mean?  We can give our agent its
+own <00:10:15.442><c>model </c><00:10:15.697><c>level, </c><00:10:15.952><c>its </c><00:10:16.207><c>own </c><00:10:16.462><c>system</c>
+
+00:10:16.882 --> 00:10:16.892 align:start position:0%
+own model level, its own system
+ 
+
+00:10:16.892 --> 00:10:18.553 align:start position:0%
+own model level, its own system
+prompt, <00:10:17.113><c>its </c><00:10:17.334><c>own </c><00:10:17.555><c>tools, </c><00:10:17.776><c>and </c><00:10:17.997><c>its </c><00:10:18.218><c>own </c><00:10:18.439><c>budgets.</c>
+
+00:10:18.553 --> 00:10:18.563 align:start position:0%
+prompt, its own tools, and its own budgets.
+ 
+
+00:10:18.563 --> 00:10:20.582 align:start position:0%
+prompt, its own tools, and its own budgets.
+Specifically, <00:10:18.936><c>we </c><00:10:19.309><c>have </c><00:10:19.682><c>time </c><00:10:20.055><c>budgets </c><00:10:20.428><c>and</c>
+
+00:10:20.582 --> 00:10:20.592 align:start position:0%
+Specifically, we have time budgets and
+ 
+
+00:10:20.592 --> 00:10:22.609 align:start position:0%
+Specifically, we have time budgets and
+expense <00:10:20.871><c>budgets.  </c><00:10:21.150><c>So </c><00:10:21.429><c>these </c><00:10:21.708><c>are </c><00:10:21.987><c>granular</c>
+
+00:10:22.609 --> 00:10:22.619 align:start position:0%
+expense budgets.  So these are granular
+ 
+
+00:10:22.619 --> 00:10:24.302 align:start position:0%
+expense budgets.  So these are granular
+subagents <00:10:23.010><c>with </c><00:10:23.401><c>great </c><00:10:23.792><c>restrictions </c><00:10:24.183><c>and</c>
+
+00:10:24.302 --> 00:10:24.312 align:start position:0%
+subagents with great restrictions and
+ 
+
+00:10:24.312 --> 00:10:26.247 align:start position:0%
+subagents with great restrictions and
+great <00:10:24.956><c>default </c><00:10:25.600><c>settings</c>
+
+00:10:26.247 --> 00:10:26.257 align:start position:0%
+great default settings
+ 
+
+00:10:26.257 --> 00:10:28.406 align:start position:0%
+great default settings
+.  <00:10:26.445><c>And </c><00:10:26.633><c>all </c><00:10:26.821><c>of </c><00:10:27.009><c>this </c><00:10:27.197><c>is </c><00:10:27.385><c>available.  </c><00:10:27.573><c>If </c><00:10:27.761><c>we </c><00:10:27.949><c>open</c>
+
+00:10:28.406 --> 00:10:28.416 align:start position:0%
+.  And all of this is available.  If we open
+ 
+
+00:10:28.416 --> 00:10:30.151 align:start position:0%
+.  And all of this is available.  If we open
+our <00:10:28.749><c>settings </c><00:10:29.082><c>here, </c><00:10:29.415><c>we </c><00:10:29.748><c>have</c>
+
+00:10:30.151 --> 00:10:30.161 align:start position:0%
+our settings here, we have
+ 
+
+00:10:30.161 --> 00:10:31.872 align:start position:0%
+our settings here, we have
+tool <00:10:30.393><c>summaries </c><00:10:30.625><c>that </c><00:10:30.857><c>include </c><00:10:31.089><c>a </c><00:10:31.321><c>special</c>
+
+00:10:31.872 --> 00:10:31.882 align:start position:0%
+tool summaries that include a special
+ 
+
+00:10:31.882 --> 00:10:33.642 align:start position:0%
+tool summaries that include a special
+summary <00:10:32.245><c>prompt </c><00:10:32.608><c>that </c><00:10:32.971><c>you </c><00:10:33.334><c>can</c>
+
+00:10:33.642 --> 00:10:33.652 align:start position:0%
+summary prompt that you can
+ 
+
+00:10:33.652 --> 00:10:35.390 align:start position:0%
+summary prompt that you can
+change.  <00:10:33.849><c>And </c><00:10:34.046><c>of </c><00:10:34.243><c>course, </c><00:10:34.440><c>we </c><00:10:34.637><c>have </c><00:10:34.834><c>the </c><00:10:35.031><c>lines, </c><00:10:35.228><c>we</c>
+
+00:10:35.390 --> 00:10:35.400 align:start position:0%
+change.  And of course, we have the lines, we
+ 
+
+00:10:35.400 --> 00:10:36.723 align:start position:0%
+change.  And of course, we have the lines, we
+have <00:10:35.566><c>the </c><00:10:35.732><c>level, </c><00:10:35.898><c>we </c><00:10:36.064><c>have </c><00:10:36.230><c>the </c><00:10:36.396><c>mindset </c><00:10:36.562><c>that</c>
+
+00:10:36.723 --> 00:10:36.733 align:start position:0%
+have the level, we have the mindset that
+ 
+
+00:10:36.733 --> 00:10:38.032 align:start position:0%
+have the level, we have the mindset that
+our <00:10:36.939><c>agent </c><00:10:37.145><c>has </c><00:10:37.351><c>set, </c><00:10:37.557><c>and </c><00:10:37.763><c>we </c><00:10:37.969><c>have</c>
+
+00:10:38.032 --> 00:10:38.042 align:start position:0%
+our agent has set, and we have
+ 
+
+00:10:38.042 --> 00:10:39.874 align:start position:0%
+our agent has set, and we have
+the <00:10:38.411><c>summation </c><00:10:38.780><c>of </c><00:10:39.149><c>every </c><00:10:39.518><c>third</c>
+
+00:10:39.874 --> 00:10:39.884 align:start position:0%
+the summation of every third
+ 
+
+00:10:39.884 --> 00:10:41.745 align:start position:0%
+the summation of every third
+tool <00:10:40.109><c>call.  </c><00:10:40.334><c>All </c><00:10:40.559><c>of </c><00:10:40.784><c>this </c><00:10:41.009><c>can </c><00:10:41.234><c>again </c><00:10:41.459><c>be</c>
+
+00:10:41.745 --> 00:10:41.755 align:start position:0%
+tool call.  All of this can again be
+ 
+
+00:10:41.755 --> 00:10:43.423 align:start position:0%
+tool call.  All of this can again be
+customized <00:10:42.254><c>and </c><00:10:42.753><c>adapted.  </c><00:10:43.252><c>But</c>
+
+00:10:43.423 --> 00:10:43.433 align:start position:0%
+customized and adapted.  But
+ 
+
+00:10:43.433 --> 00:10:45.333 align:start position:0%
+customized and adapted.  But
+moving <00:10:43.676><c>on </c><00:10:43.919><c>to </c><00:10:44.162><c>our </c><00:10:44.405><c>subagents </c><00:10:44.648><c>here, </c><00:10:44.891><c>so </c><00:10:45.134><c>the</c>
+
+00:10:45.333 --> 00:10:45.343 align:start position:0%
+moving on to our subagents here, so the
+ 
+
+00:10:45.343 --> 00:10:46.985 align:start position:0%
+moving on to our subagents here, so the
+model, <00:10:45.545><c>the </c><00:10:45.747><c>mindset, </c><00:10:45.949><c>the </c><00:10:46.151><c>budget, </c><00:10:46.353><c>it </c><00:10:46.555><c>will </c><00:10:46.757><c>be</c>
+
+00:10:46.985 --> 00:10:46.995 align:start position:0%
+model, the mindset, the budget, it will be
+ 
+
+00:10:46.995 --> 00:10:48.689 align:start position:0%
+model, the mindset, the budget, it will be
+capped <00:10:47.212><c>at </c><00:10:47.429><c>25 </c><00:10:47.646><c>cents </c><00:10:47.863><c>per </c><00:10:48.080><c>launch, </c><00:10:48.297><c>and </c><00:10:48.514><c>it</c>
+
+00:10:48.689 --> 00:10:48.699 align:start position:0%
+capped at 25 cents per launch, and it
+ 
+
+00:10:48.699 --> 00:10:50.392 align:start position:0%
+capped at 25 cents per launch, and it
+will <00:10:48.850><c>run </c><00:10:49.001><c>for </c><00:10:49.152><c>up </c><00:10:49.303><c>to </c><00:10:49.454><c>10 </c><00:10:49.605><c>minutes </c><00:10:49.756><c>with </c><00:10:49.907><c>up</c>
+
+00:10:50.392 --> 00:10:50.402 align:start position:0%
+will run for up to 10 minutes with up
+ 
+
+00:10:50.402 --> 00:10:52.114 align:start position:0%
+will run for up to 10 minutes with up
+to <00:10:50.727><c>four </c><00:10:51.052><c>agents.  </c><00:10:51.377><c>So, </c><00:10:51.702><c>fully</c>
+
+00:10:52.114 --> 00:10:52.124 align:start position:0%
+to four agents.  So, fully
+ 
+
+00:10:52.124 --> 00:10:53.965 align:start position:0%
+to four agents.  So, fully
+customizable, <00:10:52.683><c>all </c><00:10:53.242><c>traces </c><00:10:53.801><c>and</c>
+
+00:10:53.965 --> 00:10:53.975 align:start position:0%
+customizable, all traces and
+ 
+
+00:10:53.975 --> 00:10:55.816 align:start position:0%
+customizable, all traces and
+agent <00:10:54.213><c>information </c><00:10:54.451><c>will </c><00:10:54.689><c>be </c><00:10:54.927><c>listed </c><00:10:55.165><c>here.  </c><00:10:55.403><c>Let's</c>
+
+00:10:55.816 --> 00:10:55.826 align:start position:0%
+agent information will be listed here.  Let's
+ 
+
+00:10:55.826 --> 00:10:57.929 align:start position:0%
+agent information will be listed here.  Let's
+run <00:10:56.352><c>some </c><00:10:56.878><c>subagents.  </c><00:10:57.404><c>Run</c>
+
+00:10:57.929 --> 00:10:57.939 align:start position:0%
+run some subagents.  Run
+ 
+
+00:10:57.939 --> 00:10:59.840 align:start position:0%
+run some subagents.  Run
+three <00:10:58.298><c>subagents </c><00:10:58.657><c>to </c><00:10:59.016><c>generalize </c><00:10:59.375><c>the </c><00:10:59.734><c>TSF</c>
+
+00:10:59.840 --> 00:10:59.850 align:start position:0%
+three subagents to generalize the TSF
+ 
+
+00:10:59.850 --> 00:11:01.963 align:start position:0%
+three subagents to generalize the TSF
+server, <00:11:00.348><c>client, </c><00:11:00.846><c>and </c><00:11:01.344><c>skill </c><00:11:01.842><c>respectively.</c>
+
+00:11:01.963 --> 00:11:01.973 align:start position:0%
+server, client, and skill respectively.
+ 
+
+00:11:01.973 --> 00:11:04.257 align:start position:0%
+server, client, and skill respectively.
+Use <00:11:02.434><c>a </c><00:11:02.895><c>lightweight </c><00:11:03.356><c>model, </c><00:11:03.817><c>limit</c>
+
+00:11:04.257 --> 00:11:04.267 align:start position:0%
+Use a lightweight model, limit
+ 
+
+00:11:04.267 --> 00:11:06.283 align:start position:0%
+Use a lightweight model, limit
+execution <00:11:04.482><c>time </c><00:11:04.697><c>to </c><00:11:04.912><c>1 </c><00:11:05.127><c>minute </c><00:11:05.342><c>with </c><00:11:05.557><c>a </c><00:11:05.772><c>budget </c><00:11:05.987><c>of </c><00:11:06.202><c>15</c>
+
+00:11:06.283 --> 00:11:06.293 align:start position:0%
+execution time to 1 minute with a budget of 15
+ 
+
+00:11:06.293 --> 00:11:08.153 align:start position:0%
+execution time to 1 minute with a budget of 15
+cents.  <00:11:06.595><c>Create </c><00:11:06.897><c>a </c><00:11:07.199><c>page </c><00:11:07.501><c>with </c><00:11:07.803><c>their</c>
+
+00:11:08.153 --> 00:11:08.163 align:start position:0%
+cents.  Create a page with their
+ 
+
+00:11:08.163 --> 00:11:10.538 align:start position:0%
+cents.  Create a page with their
+results.  <00:11:08.484><c>So, </c><00:11:08.805><c>we'll </c><00:11:09.126><c>start </c><00:11:09.447><c>this.  </c><00:11:09.768><c>And, </c><00:11:10.089><c>as </c><00:11:10.410><c>you</c>
+
+00:11:10.538 --> 00:11:10.548 align:start position:0%
+results.  So, we'll start this.  And, as you
+ 
+
+00:11:10.548 --> 00:11:12.404 align:start position:0%
+results.  So, we'll start this.  And, as you
+might <00:11:10.926><c>expect, </c><00:11:11.304><c>we'll </c><00:11:11.682><c>see </c><00:11:12.060><c>some</c>
+
+00:11:12.404 --> 00:11:12.414 align:start position:0%
+might expect, we'll see some
+ 
+
+00:11:12.414 --> 00:11:14.362 align:start position:0%
+might expect, we'll see some
+asynchronous <00:11:12.851><c>subagent </c><00:11:13.288><c>launches.  </c><00:11:13.725><c>Here </c><00:11:14.162><c>is</c>
+
+00:11:14.362 --> 00:11:14.372 align:start position:0%
+asynchronous subagent launches.  Here is
+ 
+
+00:11:14.372 --> 00:11:16.440 align:start position:0%
+asynchronous subagent launches.  Here is
+the <00:11:14.520><c>server, </c><00:11:14.668><c>here </c><00:11:14.816><c>is </c><00:11:14.964><c>the </c><00:11:15.112><c>client, </c><00:11:15.260><c>and </c><00:11:15.408><c>here </c><00:11:15.556><c>is </c><00:11:15.704><c>the</c>
+
+00:11:16.440 --> 00:11:16.450 align:start position:0%
+the server, here is the client, and here is the
+ 
+
+00:11:16.450 --> 00:11:18.073 align:start position:0%
+the server, here is the client, and here is the
+generalization.  <00:11:16.883><c>We </c><00:11:17.316><c>can </c><00:11:17.749><c>always</c>
+
+00:11:18.073 --> 00:11:18.083 align:start position:0%
+generalization.  We can always
+ 
+
+00:11:18.083 --> 00:11:19.939 align:start position:0%
+generalization.  We can always
+come <00:11:18.445><c>back </c><00:11:18.807><c>to </c><00:11:19.169><c>this.  </c><00:11:19.531><c>Server, </c><00:11:19.893><c>client,</c>
+
+00:11:19.939 --> 00:11:19.949 align:start position:0%
+come back to this.  Server, client,
+ 
+
+00:11:19.949 --> 00:11:22.188 align:start position:0%
+come back to this.  Server, client,
+skill, <00:11:20.451><c>they're </c><00:11:20.953><c>back.  </c><00:11:21.455><c>That's </c><00:11:21.957><c>all</c>
+
+00:11:22.188 --> 00:11:22.198 align:start position:0%
+skill, they're back.  That's all
+ 
+
+00:11:22.198 --> 00:11:24.228 align:start position:0%
+skill, they're back.  That's all
+.  <00:11:22.567><c>Completed </c><00:11:22.936><c>results.  </c><00:11:23.305><c>And </c><00:11:23.674><c>now </c><00:11:24.043><c>our</c>
+
+00:11:24.228 --> 00:11:24.238 align:start position:0%
+.  Completed results.  And now our
+ 
+
+00:11:24.238 --> 00:11:26.213 align:start position:0%
+.  Completed results.  And now our
+agent <00:11:24.455><c>creates </c><00:11:24.672><c>a </c><00:11:24.889><c>page </c><00:11:25.106><c>by </c><00:11:25.323><c>performing </c><00:11:25.540><c>a </c><00:11:25.757><c>bunch </c><00:11:25.974><c>of</c>
+
+00:11:26.213 --> 00:11:26.223 align:start position:0%
+agent creates a page by performing a bunch of
+ 
+
+00:11:26.223 --> 00:11:27.923 align:start position:0%
+agent creates a page by performing a bunch of
+agent <00:11:26.488><c>actions.  </c><00:11:26.753><c>If </c><00:11:27.018><c>you </c><00:11:27.283><c>look </c><00:11:27.548><c>at </c><00:11:27.813><c>the</c>
+
+00:11:27.923 --> 00:11:27.933 align:start position:0%
+agent actions.  If you look at the
+ 
+
+00:11:27.933 --> 00:11:29.558 align:start position:0%
+agent actions.  If you look at the
+focus <00:11:28.109><c>in </c><00:11:28.285><c>the </c><00:11:28.461><c>center </c><00:11:28.637><c>and </c><00:11:28.813><c>our </c><00:11:28.989><c>page </c><00:11:29.165><c>on </c><00:11:29.341><c>the </c><00:11:29.517><c>left,</c>
+
+00:11:29.558 --> 00:11:29.568 align:start position:0%
+focus in the center and our page on the left,
+ 
+
+00:11:29.568 --> 00:11:31.227 align:start position:0%
+focus in the center and our page on the left,
+you'll <00:11:29.755><c>see </c><00:11:29.942><c>how </c><00:11:30.129><c>this </c><00:11:30.316><c>was </c><00:11:30.503><c>created.  </c><00:11:30.690><c>This </c><00:11:30.877><c>is </c><00:11:31.064><c>a</c>
+
+00:11:31.227 --> 00:11:31.237 align:start position:0%
+you'll see how this was created.  This is a
+ 
+
+00:11:31.237 --> 00:11:33.717 align:start position:0%
+you'll see how this was created.  This is a
+great <00:11:31.629><c>concise </c><00:11:32.021><c>breakdown </c><00:11:32.413><c>of </c><00:11:32.805><c>the </c><00:11:33.197><c>TSF </c><00:11:33.589><c>architecture.</c>
+
+00:11:33.717 --> 00:11:33.727 align:start position:0%
+great concise breakdown of the TSF architecture.
+ 
+
+00:11:33.727 --> 00:11:35.374 align:start position:0%
+great concise breakdown of the TSF architecture.
+We <00:11:33.893><c>don't </c><00:11:34.059><c>need </c><00:11:34.225><c>to </c><00:11:34.391><c>go </c><00:11:34.557><c>through </c><00:11:34.723><c>all </c><00:11:34.889><c>of </c><00:11:35.055><c>this, </c><00:11:35.221><c>but</c>
+
+00:11:35.374 --> 00:11:35.384 align:start position:0%
+We don't need to go through all of this, but
+ 
+
+00:11:35.384 --> 00:11:36.846 align:start position:0%
+We don't need to go through all of this, but
+you <00:11:35.618><c>can </c><00:11:35.852><c>see </c><00:11:36.086><c>that </c><00:11:36.320><c>our </c><00:11:36.554><c>agent</c>
+
+00:11:36.846 --> 00:11:36.856 align:start position:0%
+you can see that our agent
+ 
+
+00:11:36.856 --> 00:11:38.388 align:start position:0%
+you can see that our agent
+went <00:11:36.985><c>through </c><00:11:37.114><c>it </c><00:11:37.243><c>very </c><00:11:37.372><c>quickly </c><00:11:37.501><c>and </c><00:11:37.630><c>got </c><00:11:37.759><c>the </c><00:11:37.888><c>job </c><00:11:38.017><c>done </c><00:11:38.146><c>in </c><00:11:38.275><c>a</c>
+
+00:11:38.388 --> 00:11:38.398 align:start position:0%
+went through it very quickly and got the job done in a
+ 
+
+00:11:38.398 --> 00:11:40.091 align:start position:0%
+went through it very quickly and got the job done in a
+fraction <00:11:38.575><c>of </c><00:11:38.752><c>the </c><00:11:38.929><c>time </c><00:11:39.106><c>thanks </c><00:11:39.283><c>to </c><00:11:39.460><c>powerful </c><00:11:39.637><c>subagents</c>
+
+00:11:40.091 --> 00:11:40.101 align:start position:0%
+fraction of the time thanks to powerful subagents
+ 
+
+00:11:40.101 --> 00:11:41.659 align:start position:0%
+fraction of the time thanks to powerful subagents
+.  <00:11:40.328><c>The </c><00:11:40.555><c>answer </c><00:11:40.782><c>didn't </c><00:11:41.009><c>have </c><00:11:41.236><c>to </c><00:11:41.463><c>be</c>
+
+00:11:41.659 --> 00:11:41.669 align:start position:0%
+.  The answer didn't have to be
+ 
+
+00:11:41.669 --> 00:11:43.149 align:start position:0%
+.  The answer didn't have to be
+perfect, <00:11:42.052><c>so </c><00:11:42.435><c>we </c><00:11:42.818><c>scaled</c>
+
+00:11:43.149 --> 00:11:43.159 align:start position:0%
+perfect, so we scaled
+ 
+
+00:11:43.159 --> 00:11:44.751 align:start position:0%
+perfect, so we scaled
+our <00:11:43.322><c>models </c><00:11:43.485><c>down </c><00:11:43.648><c>into </c><00:11:43.811><c>subagents </c><00:11:43.974><c>to </c><00:11:44.137><c>just </c><00:11:44.300><c>get </c><00:11:44.463><c>the</c>
+
+00:11:44.751 --> 00:11:44.761 align:start position:0%
+our models down into subagents to just get the
+ 
+
+00:11:44.761 --> 00:11:46.374 align:start position:0%
+our models down into subagents to just get the
+job <00:11:45.286><c>done </c><00:11:45.811><c>quickly.  </c><00:11:46.336><c>Again,</c>
+
+00:11:46.374 --> 00:11:46.384 align:start position:0%
+job done quickly.  Again,
+ 
+
+00:11:46.384 --> 00:11:48.031 align:start position:0%
+job done quickly.  Again,
+if <00:11:46.648><c>we </c><00:11:46.912><c>open </c><00:11:47.176><c>the </c><00:11:47.440><c>settings </c><00:11:47.704><c>again </c><00:11:47.968><c>and</c>
+
+00:11:48.031 --> 00:11:48.041 align:start position:0%
+if we open the settings again and
+ 
+
+00:11:48.041 --> 00:11:49.597 align:start position:0%
+if we open the settings again and
+go <00:11:48.276><c>to </c><00:11:48.511><c>subagents, </c><00:11:48.746><c>we </c><00:11:48.981><c>will </c><00:11:49.216><c>see</c>
+
+00:11:49.597 --> 00:11:49.607 align:start position:0%
+go to subagents, we will see
+ 
+
+00:11:49.607 --> 00:11:51.416 align:start position:0%
+go to subagents, we will see
+these <00:11:49.901><c>exact </c><00:11:50.195><c>launches.  </c><00:11:50.489><c>If </c><00:11:50.783><c>you </c><00:11:51.077><c>don't </c><00:11:51.371><c>measure,</c>
+
+00:11:51.416 --> 00:11:51.426 align:start position:0%
+these exact launches.  If you don't measure,
+ 
+
+00:11:51.426 --> 00:11:53.573 align:start position:0%
+these exact launches.  If you don't measure,
+you <00:11:51.744><c>can't </c><00:11:52.062><c>improve.  </c><00:11:52.380><c>So </c><00:11:52.698><c>we </c><00:11:53.016><c>measure</c>
+
+00:11:53.573 --> 00:11:53.583 align:start position:0%
+you can't improve.  So we measure
+ 
+
+00:11:53.583 --> 00:11:55.767 align:start position:0%
+you can't improve.  So we measure
+everything, <00:11:53.830><c>right </c><00:11:54.077><c>down </c><00:11:54.324><c>to </c><00:11:54.571><c>our </c><00:11:54.818><c>subagents.  </c><00:11:55.065><c>And </c><00:11:55.312><c>this </c><00:11:55.559><c>again</c>
+
+00:11:55.767 --> 00:11:55.777 align:start position:0%
+everything, right down to our subagents.  And this again
+ 
+
+00:11:55.777 --> 00:11:57.663 align:start position:0%
+everything, right down to our subagents.  And this again
+emphasizes <00:11:56.047><c>the </c><00:11:56.317><c>key </c><00:11:56.587><c>idea: </c><00:11:56.857><c>with </c><00:11:57.127><c>Tiny </c><00:11:57.397><c>Software</c>
+
+00:11:57.663 --> 00:11:57.673 align:start position:0%
+emphasizes the key idea: with Tiny Software
+ 
+
+00:11:57.673 --> 00:11:59.379 align:start position:0%
+emphasizes the key idea: with Tiny Software
+Factory, <00:11:57.893><c>with </c><00:11:58.113><c>a </c><00:11:58.333><c>system </c><00:11:58.553><c>that </c><00:11:58.773><c>you </c><00:11:58.993><c>can</c>
+
+00:11:59.379 --> 00:11:59.389 align:start position:0%
+Factory, with a system that you can
+ 
+
+00:11:59.389 --> 00:12:01.636 align:start position:0%
+Factory, with a system that you can
+use <00:11:59.822><c>to </c><00:12:00.255><c>work </c><00:12:00.688><c>around </c><00:12:01.121><c>the </c><00:12:01.554><c>loop,</c>
+
+00:12:01.636 --> 00:12:01.646 align:start position:0%
+use to work around the loop,
+ 
+
+00:12:01.646 --> 00:12:03.701 align:start position:0%
+use to work around the loop,
+not <00:12:01.860><c>in </c><00:12:02.074><c>it, </c><00:12:02.288><c>we </c><00:12:02.502><c>see </c><00:12:02.716><c>everything.  </c><00:12:02.930><c>And, </c><00:12:03.144><c>of </c><00:12:03.358><c>course, </c><00:12:03.572><c>we</c>
+
+00:12:03.701 --> 00:12:03.711 align:start position:0%
+not in it, we see everything.  And, of course, we
+ 
+
+00:12:03.711 --> 00:12:05.531 align:start position:0%
+not in it, we see everything.  And, of course, we
+can <00:12:04.061><c>customize </c><00:12:04.411><c>everything, </c><00:12:04.761><c>because </c><00:12:05.111><c>it's </c><00:12:05.461><c>"liquid"</c>
+
+00:12:05.531 --> 00:12:05.541 align:start position:0%
+can customize everything, because it's "liquid"
+ 
+
+00:12:05.541 --> 00:12:07.312 align:start position:0%
+can customize everything, because it's "liquid"
+software.  <00:12:06.246><c>You </c><00:12:06.951><c>see</c>
+
+00:12:07.312 --> 00:12:07.322 align:start position:0%
+software.  You see
+ 
+
+00:12:07.322 --> 00:12:08.823 align:start position:0%
+software.  You see
+the <00:12:07.538><c>responses, </c><00:12:07.754><c>that </c><00:12:07.970><c>is, </c><00:12:08.186><c>all </c><00:12:08.402><c>the</c>
+
+00:12:08.823 --> 00:12:08.833 align:start position:0%
+the responses, that is, all the
+ 
+
+00:12:08.833 --> 00:12:11.067 align:start position:0%
+the responses, that is, all the
+tool <00:12:09.157><c>calls.  </c><00:12:09.481><c>And </c><00:12:09.805><c>if </c><00:12:10.129><c>we </c><00:12:10.453><c>scroll </c><00:12:10.777><c>up</c>
+
+00:12:11.067 --> 00:12:11.077 align:start position:0%
+tool calls.  And if we scroll up
+ 
+
+00:12:11.077 --> 00:12:12.856 align:start position:0%
+tool calls.  And if we scroll up
+, <00:12:11.340><c>we </c><00:12:11.603><c>see </c><00:12:11.866><c>the </c><00:12:12.129><c>exact </c><00:12:12.392><c>task </c><00:12:12.655><c>that</c>
+
+00:12:12.856 --> 00:12:12.866 align:start position:0%
+, we see the exact task that
+ 
+
+00:12:12.866 --> 00:12:14.853 align:start position:0%
+, we see the exact task that
+the <00:12:13.253><c>agent </c><00:12:13.640><c>was </c><00:12:14.027><c>performing: </c><00:12:14.414><c>query </c><00:12:14.801><c>input,</c>
+
+00:12:14.853 --> 00:12:14.863 align:start position:0%
+the agent was performing: query input,
+ 
+
+00:12:14.863 --> 00:12:16.910 align:start position:0%
+the agent was performing: query input,
+input <00:12:15.265><c>synthesis, </c><00:12:15.667><c>and </c><00:12:16.069><c>then </c><00:12:16.471><c>output</c>
+
+00:12:16.910 --> 00:12:16.920 align:start position:0%
+input synthesis, and then output
+ 
+
+00:12:16.920 --> 00:12:18.738 align:start position:0%
+input synthesis, and then output
+results.  <00:12:17.262><c>We </c><00:12:17.604><c>own </c><00:12:17.946><c>our </c><00:12:18.288><c>own</c>
+
+00:12:18.738 --> 00:12:18.748 align:start position:0%
+results.  We own our own
+ 
+
+00:12:18.748 --> 00:12:20.699 align:start position:0%
+results.  We own our own
+agent <00:12:19.151><c>tools, </c><00:12:19.554><c>so </c><00:12:19.957><c>we </c><00:12:20.360><c>can</c>
+
+00:12:20.699 --> 00:12:20.709 align:start position:0%
+agent tools, so we can
+ 
+
+00:12:20.709 --> 00:12:22.499 align:start position:0%
+agent tools, so we can
+configure <00:12:20.995><c>them </c><00:12:21.281><c>to </c><00:12:21.567><c>see </c><00:12:21.853><c>everything, </c><00:12:22.139><c>and </c><00:12:22.425><c>that's</c>
+
+00:12:22.499 --> 00:12:22.509 align:start position:0%
+configure them to see everything, and that's
+ 
+
+00:12:22.509 --> 00:12:24.857 align:start position:0%
+configure them to see everything, and that's
+exactly <00:12:22.786><c>what </c><00:12:23.063><c>we've </c><00:12:23.340><c>done </c><00:12:23.617><c>here.  </c><00:12:23.894><c>Keep </c><00:12:24.171><c>in </c><00:12:24.448><c>mind</c>
+
+00:12:24.857 --> 00:12:24.867 align:start position:0%
+exactly what we've done here.  Keep in mind
+ 
+
+00:12:24.867 --> 00:12:26.967 align:start position:0%
+exactly what we've done here.  Keep in mind
+, <00:12:25.064><c>this </c><00:12:25.261><c>is </c><00:12:25.458><c>just </c><00:12:25.655><c>a </c><00:12:25.852><c>second-level </c><00:12:26.049><c>Tiny </c><00:12:26.246><c>Software </c><00:12:26.443><c>Factory </c><00:12:26.640><c>template</c>
+
+00:12:26.967 --> 00:12:26.977 align:start position:0%
+, this is just a second-level Tiny Software Factory template
+ 
+
+00:12:26.977 --> 00:12:32.165 align:start position:0%
+, this is just a second-level Tiny Software Factory template
+.
+
+00:12:32.165 --> 00:12:32.175 align:start position:0%
+ 
+ 
+
+00:12:32.175 --> 00:12:34.842 align:start position:0%
+ 
+These <00:12:32.566><c>capabilities </c><00:12:32.957><c>consistently </c><00:12:33.348><c>point </c><00:12:33.739><c>to </c><00:12:34.130><c>a </c><00:12:34.521><c>very</c>
+
+00:12:34.842 --> 00:12:34.852 align:start position:0%
+These capabilities consistently point to a very
+ 
+
+00:12:34.852 --> 00:12:36.723 align:start position:0%
+These capabilities consistently point to a very
+important <00:12:35.240><c>feature </c><00:12:35.628><c>of </c><00:12:36.016><c>Tiny </c><00:12:36.404><c>Software</c>
+
+00:12:36.723 --> 00:12:36.733 align:start position:0%
+important feature of Tiny Software
+ 
+
+00:12:36.733 --> 00:12:39.139 align:start position:0%
+important feature of Tiny Software
+Factory.  <00:12:36.971><c>And </c><00:12:37.209><c>this </c><00:12:37.447><c>is, </c><00:12:37.685><c>of </c><00:12:37.923><c>course, </c><00:12:38.161><c>agent </c><00:12:38.399><c>access </c><00:12:38.637><c>parity</c>
+
+00:12:39.139 --> 00:12:39.149 align:start position:0%
+Factory.  And this is, of course, agent access parity
+ 
+
+00:12:39.149 --> 00:12:41.186 align:start position:0%
+Factory.  And this is, of course, agent access parity
+.  <00:12:39.533><c>This </c><00:12:39.917><c>remains </c><00:12:40.301><c>relevant </c><00:12:40.685><c>at </c><00:12:41.069><c>the</c>
+
+00:12:41.186 --> 00:12:41.196 align:start position:0%
+.  This remains relevant at the
+ 
+
+00:12:41.196 --> 00:12:43.041 align:start position:0%
+.  This remains relevant at the
+second <00:12:41.594><c>level.  </c><00:12:41.992><c>We </c><00:12:42.390><c>emphasized </c><00:12:42.788><c>this</c>
+
+00:12:43.041 --> 00:12:43.051 align:start position:0%
+second level.  We emphasized this
+ 
+
+00:12:43.051 --> 00:12:44.699 align:start position:0%
+second level.  We emphasized this
+at <00:12:43.319><c>the </c><00:12:43.587><c>first </c><00:12:43.855><c>level.  </c><00:12:44.123><c>Every </c><00:12:44.391><c>mouse </c><00:12:44.659><c>click,</c>
+
+00:12:44.699 --> 00:12:44.709 align:start position:0%
+at the first level.  Every mouse click,
+ 
+
+00:12:44.709 --> 00:12:46.527 align:start position:0%
+at the first level.  Every mouse click,
+every <00:12:45.230><c>setting </c><00:12:45.751><c>change—your </c><00:12:46.272><c>agent</c>
+
+00:12:46.527 --> 00:12:46.537 align:start position:0%
+every setting change—your agent
+ 
+
+00:12:46.537 --> 00:12:48.402 align:start position:0%
+every setting change—your agent
+can <00:12:46.893><c>also </c><00:12:47.249><c>execute </c><00:12:47.605><c>equivalent </c><00:12:47.961><c>commands.  </c><00:12:48.317><c>And</c>
+
+00:12:48.402 --> 00:12:48.412 align:start position:0%
+can also execute equivalent commands.  And
+ 
+
+00:12:48.412 --> 00:12:50.367 align:start position:0%
+can also execute equivalent commands.  And
+why <00:12:48.634><c>is </c><00:12:48.856><c>this </c><00:12:49.078><c>so </c><00:12:49.300><c>important?  </c><00:12:49.522><c>This </c><00:12:49.744><c>allows </c><00:12:49.966><c>you </c><00:12:50.188><c>to</c>
+
+00:12:50.367 --> 00:12:50.377 align:start position:0%
+why is this so important?  This allows you to
+ 
+
+00:12:50.377 --> 00:12:52.449 align:start position:0%
+why is this so important?  This allows you to
+move <00:12:50.579><c>at </c><00:12:50.781><c>the </c><00:12:50.983><c>speed </c><00:12:51.185><c>of </c><00:12:51.387><c>agents.  </c><00:12:51.589><c>You </c><00:12:51.791><c>and </c><00:12:51.993><c>I </c><00:12:52.195><c>are</c>
+
+00:12:52.449 --> 00:12:52.459 align:start position:0%
+move at the speed of agents.  You and I are
+ 
+
+00:12:52.459 --> 00:12:54.549 align:start position:0%
+move at the speed of agents.  You and I are
+slow.  <00:12:52.951><c>Let's </c><00:12:53.443><c>just </c><00:12:53.935><c>admit </c><00:12:54.427><c>it.</c>
+
+00:12:54.549 --> 00:12:54.559 align:start position:0%
+slow.  Let's just admit it.
+ 
+
+00:12:54.559 --> 00:12:56.243 align:start position:0%
+slow.  Let's just admit it.
+Let's <00:12:54.866><c>use </c><00:12:55.173><c>the </c><00:12:55.480><c>best </c><00:12:55.787><c>tool </c><00:12:56.094><c>for</c>
+
+00:12:56.243 --> 00:12:56.253 align:start position:0%
+Let's use the best tool for
+ 
+
+00:12:56.253 --> 00:12:58.118 align:start position:0%
+Let's use the best tool for
+engineering <00:12:56.501><c>work—agents.  </c><00:12:56.749><c>You </c><00:12:56.997><c>and </c><00:12:57.245><c>I </c><00:12:57.493><c>are </c><00:12:57.741><c>not </c><00:12:57.989><c>the</c>
+
+00:12:58.118 --> 00:12:58.128 align:start position:0%
+engineering work—agents.  You and I are not the
+ 
+
+00:12:58.128 --> 00:13:00.037 align:start position:0%
+engineering work—agents.  You and I are not the
+best <00:12:58.348><c>tool.  </c><00:12:58.568><c>This </c><00:12:58.788><c>is </c><00:12:59.008><c>one </c><00:12:59.228><c>of </c><00:12:59.448><c>the </c><00:12:59.668><c>many</c>
+
+00:13:00.037 --> 00:13:00.047 align:start position:0%
+best tool.  This is one of the many
+ 
+
+00:13:00.047 --> 00:13:01.526 align:start position:0%
+best tool.  This is one of the many
+reasons <00:13:00.213><c>why </c><00:13:00.379><c>it </c><00:13:00.545><c>is </c><00:13:00.711><c>so </c><00:13:00.877><c>important </c><00:13:01.043><c>to </c><00:13:01.209><c>move </c><00:13:01.375><c>from</c>
+
+00:13:01.526 --> 00:13:01.536 align:start position:0%
+reasons why it is so important to move from
+ 
+
+00:13:01.536 --> 00:13:03.127 align:start position:0%
+reasons why it is so important to move from
+working <00:13:01.730><c>“in </c><00:13:01.924><c>the </c><00:13:02.118><c>loop” </c><00:13:02.312><c>to </c><00:13:02.506><c>working </c><00:13:02.700><c>“near </c><00:13:02.894><c>the </c><00:13:03.088><c>loop.”</c>
+
+00:13:03.127 --> 00:13:03.137 align:start position:0%
+working “in the loop” to working “near the loop.”
+ 
+
+00:13:03.137 --> 00:13:04.835 align:start position:0%
+working “in the loop” to working “near the loop.”
+You <00:13:03.381><c>are </c><00:13:03.625><c>shifting </c><00:13:03.869><c>more </c><00:13:04.113><c>work </c><00:13:04.357><c>to </c><00:13:04.601><c>your</c>
+
+00:13:04.835 --> 00:13:04.845 align:start position:0%
+You are shifting more work to your
+ 
+
+00:13:04.845 --> 00:13:06.407 align:start position:0%
+You are shifting more work to your
+agents, <00:13:05.007><c>and </c><00:13:05.169><c>you </c><00:13:05.331><c>are </c><00:13:05.493><c>not </c><00:13:05.655><c>doing </c><00:13:05.817><c>it </c><00:13:05.979><c>out </c><00:13:06.141><c>of </c><00:13:06.303><c>laziness.</c>
+
+00:13:06.407 --> 00:13:06.417 align:start position:0%
+agents, and you are not doing it out of laziness.
+ 
+
+00:13:06.417 --> 00:13:07.680 align:start position:0%
+agents, and you are not doing it out of laziness.
+You <00:13:06.704><c>are </c><00:13:06.991><c>agent </c><00:13:07.278><c>engineering</c>
+
+00:13:07.680 --> 00:13:07.690 align:start position:0%
+You are agent engineering
+ 
+
+00:13:07.690 --> 00:13:09.015 align:start position:0%
+You are agent engineering
+the <00:13:08.001><c>results </c><00:13:08.312><c>you </c><00:13:08.623><c>expect.  </c><00:13:08.934><c>We</c>
+
+00:13:09.015 --> 00:13:09.025 align:start position:0%
+the results you expect.  We
+ 
+
+00:13:09.025 --> 00:13:10.224 align:start position:0%
+the results you expect.  We
+will <00:13:09.258><c>demonstrate </c><00:13:09.491><c>this </c><00:13:09.724><c>key </c><00:13:09.957><c>feature</c>
+
+00:13:10.224 --> 00:13:10.234 align:start position:0%
+will demonstrate this key feature
+ 
+
+00:13:10.234 --> 00:13:11.481 align:start position:0%
+will demonstrate this key feature
+throughout <00:13:10.523><c>the </c><00:13:10.812><c>process.  </c><00:13:11.101><c>We're </c><00:13:11.390><c>already</c>
+
+00:13:11.481 --> 00:13:11.491 align:start position:0%
+throughout the process.  We're already
+ 
+
+00:13:11.491 --> 00:13:12.730 align:start position:0%
+throughout the process.  We're already
+doing <00:13:11.655><c>this, </c><00:13:11.819><c>but </c><00:13:11.983><c>let's </c><00:13:12.147><c>show </c><00:13:12.311><c>you </c><00:13:12.475><c>what </c><00:13:12.639><c>it</c>
+
+00:13:12.730 --> 00:13:12.740 align:start position:0%
+doing this, but let's show you what it
+ 
+
+00:13:12.740 --> 00:13:14.154 align:start position:0%
+doing this, but let's show you what it
+looks <00:13:12.927><c>like.  </c><00:13:13.114><c>So, </c><00:13:13.301><c>we'll </c><00:13:13.488><c>say </c><00:13:13.675><c>something </c><00:13:13.862><c>like </c><00:13:14.049><c>this</c>
+
+00:13:14.154 --> 00:13:14.164 align:start position:0%
+looks like.  So, we'll say something like this
+ 
+
+00:13:14.164 --> 00:13:15.550 align:start position:0%
+looks like.  So, we'll say something like this
+.  <00:13:14.533><c>Set </c><00:13:14.902><c>the </c><00:13:15.271><c>default</c>
+
+00:13:15.550 --> 00:13:15.560 align:start position:0%
+.  Set the default
+ 
+
+00:13:15.560 --> 00:13:17.081 align:start position:0%
+.  Set the default
+subagent <00:13:15.926><c>settings </c><00:13:16.292><c>to </c><00:13:16.658><c>"light", </c><00:13:17.024><c>30</c>
+
+00:13:17.081 --> 00:13:17.091 align:start position:0%
+subagent settings to "light", 30
+ 
+
+00:13:17.091 --> 00:13:18.542 align:start position:0%
+subagent settings to "light", 30
+cents <00:13:17.472><c>each.  </c><00:13:17.853><c>Set </c><00:13:18.234><c>the</c>
+
+00:13:18.542 --> 00:13:18.552 align:start position:0%
+cents each.  Set the
+ 
+
+00:13:18.552 --> 00:13:20.057 align:start position:0%
+cents each.  Set the
+tool <00:13:18.899><c>summary </c><00:13:19.246><c>to </c><00:13:19.593><c>"every </c><00:13:19.940><c>call".</c>
+
+00:13:20.057 --> 00:13:20.067 align:start position:0%
+tool summary to "every call".
+ 
+
+00:13:20.067 --> 00:13:22.455 align:start position:0%
+tool summary to "every call".
+Enable <00:13:20.494><c>cron </c><00:13:20.921><c>pulse.  </c><00:13:21.348><c>Create </c><00:13:21.775><c>a </c><00:13:22.202><c>new</c>
+
+00:13:22.455 --> 00:13:22.465 align:start position:0%
+Enable cron pulse.  Create a new
+ 
+
+00:13:22.465 --> 00:13:24.507 align:start position:0%
+Enable cron pulse.  Create a new
+"orange <00:13:22.763><c>on </c><00:13:23.061><c>black" </c><00:13:23.359><c>theme, </c><00:13:23.657><c>but </c><00:13:23.955><c>make </c><00:13:24.253><c>it</c>
+
+00:13:24.507 --> 00:13:24.517 align:start position:0%
+"orange on black" theme, but make it
+ 
+
+00:13:24.517 --> 00:13:26.685 align:start position:0%
+"orange on black" theme, but make it
+pleasing <00:13:24.836><c>to </c><00:13:25.155><c>the </c><00:13:25.474><c>eyes.  </c><00:13:25.793><c>Set </c><00:13:26.112><c>a </c><00:13:26.431><c>theme</c>
+
+00:13:26.685 --> 00:13:26.695 align:start position:0%
+pleasing to the eyes.  Set a theme
+ 
+
+00:13:26.695 --> 00:13:28.499 align:start position:0%
+pleasing to the eyes.  Set a theme
+for <00:13:27.134><c>agent </c><00:13:27.573><c>status, </c><00:13:28.012><c>model </c><00:13:28.451><c>selection,</c>
+
+00:13:28.499 --> 00:13:28.509 align:start position:0%
+for agent status, model selection,
+ 
+
+00:13:28.509 --> 00:13:30.602 align:start position:0%
+for agent status, model selection,
+tool <00:13:28.998><c>calls, </c><00:13:29.487><c>input, </c><00:13:29.976><c>output, </c><00:13:30.465><c>and</c>
+
+00:13:30.602 --> 00:13:30.612 align:start position:0%
+tool calls, input, output, and
+ 
+
+00:13:30.612 --> 00:13:32.273 align:start position:0%
+tool calls, input, output, and
+total <00:13:31.121><c>tokens </c><00:13:31.630><c>in </c><00:13:32.139><c>the</c>
+
+00:13:32.273 --> 00:13:32.283 align:start position:0%
+total tokens in the
+ 
+
+00:13:32.283 --> 00:13:33.886 align:start position:0%
+total tokens in the
+global <00:13:32.792><c>navigation </c><00:13:33.301><c>panel </c><00:13:33.810><c>in</c>
+
+00:13:33.886 --> 00:13:33.896 align:start position:0%
+global navigation panel in
+ 
+
+00:13:33.896 --> 00:13:35.931 align:start position:0%
+global navigation panel in
+compact <00:13:34.195><c>mode </c><00:13:34.494><c>on </c><00:13:34.793><c>the </c><00:13:35.092><c>left, </c><00:13:35.391><c>open</c>
+
+00:13:35.931 --> 00:13:35.941 align:start position:0%
+compact mode on the left, open
+ 
+
+00:13:35.941 --> 00:13:37.775 align:start position:0%
+compact mode on the left, open
+settings, <00:13:36.322><c>tools, </c><00:13:36.703><c>and </c><00:13:37.084><c>then </c><00:13:37.465><c>list</c>
+
+00:13:37.775 --> 00:13:37.785 align:start position:0%
+settings, tools, and then list
+ 
+
+00:13:37.785 --> 00:13:39.647 align:start position:0%
+settings, tools, and then list
+hotkeys <00:13:39.513><c>by</c>
+
+00:13:39.647 --> 00:13:39.657 align:start position:0%
+hotkeys by
+ 
+
+00:13:39.657 --> 00:13:41.630 align:start position:0%
+hotkeys by
+logical <00:13:40.039><c>groups.  </c><00:13:40.421><c>So, </c><00:13:40.803><c>I'm </c><00:13:41.185><c>just</c>
+
+00:13:41.630 --> 00:13:41.640 align:start position:0%
+logical groups.  So, I'm just
+ 
+
+00:13:41.640 --> 00:13:44.183 align:start position:0%
+logical groups.  So, I'm just
+setting <00:13:41.885><c>up </c><00:13:42.130><c>a </c><00:13:42.375><c>bunch </c><00:13:42.620><c>of </c><00:13:42.865><c>different </c><00:13:43.110><c>things.  </c><00:13:43.355><c>The </c><00:13:43.600><c>main </c><00:13:43.845><c>goal </c><00:13:44.090><c>is</c>
+
+00:13:44.183 --> 00:13:44.193 align:start position:0%
+setting up a bunch of different things.  The main goal is
+ 
+
+00:13:44.193 --> 00:13:46.334 align:start position:0%
+setting up a bunch of different things.  The main goal is
+to <00:13:44.520><c>show </c><00:13:44.847><c>that </c><00:13:45.174><c>our </c><00:13:45.501><c>agent </c><00:13:45.828><c>has</c>
+
+00:13:46.334 --> 00:13:46.344 align:start position:0%
+to show that our agent has
+ 
+
+00:13:46.344 --> 00:13:48.423 align:start position:0%
+to show that our agent has
+access <00:13:46.668><c>parity.  </c><00:13:46.992><c>It </c><00:13:47.316><c>can </c><00:13:47.640><c>do </c><00:13:47.964><c>everything </c><00:13:48.288><c>we</c>
+
+00:13:48.423 --> 00:13:48.433 align:start position:0%
+access parity.  It can do everything we
+ 
+
+00:13:48.433 --> 00:13:50.595 align:start position:0%
+access parity.  It can do everything we
+could <00:13:48.771><c>do </c><00:13:49.109><c>inside </c><00:13:49.447><c>the </c><00:13:49.785><c>system.  </c><00:13:50.123><c>So </c><00:13:50.461><c>you</c>
+
+00:13:50.595 --> 00:13:50.605 align:start position:0%
+could do inside the system.  So you
+ 
+
+00:13:50.605 --> 00:13:52.495 align:start position:0%
+could do inside the system.  So you
+see <00:13:50.922><c>again </c><00:13:51.239><c>how </c><00:13:51.556><c>fast </c><00:13:51.873><c>the </c><00:13:52.190><c>agent</c>
+
+00:13:52.495 --> 00:13:52.505 align:start position:0%
+see again how fast the agent
+ 
+
+00:13:52.505 --> 00:13:54.432 align:start position:0%
+see again how fast the agent
+updates <00:13:52.859><c>the </c><00:13:53.213><c>entire </c><00:13:53.567><c>system.  </c><00:13:53.921><c>It </c><00:13:54.275><c>opens</c>
+
+00:13:54.432 --> 00:13:54.442 align:start position:0%
+updates the entire system.  It opens
+ 
+
+00:13:54.442 --> 00:13:56.319 align:start position:0%
+updates the entire system.  It opens
+the <00:13:54.687><c>settings </c><00:13:54.932><c>for </c><00:13:55.177><c>me.  </c><00:13:55.422><c>He </c><00:13:55.667><c>can </c><00:13:55.912><c>control </c><00:13:56.157><c>this</c>
+
+00:13:56.319 --> 00:13:56.329 align:start position:0%
+the settings for me.  He can control this
+ 
+
+00:13:56.329 --> 00:13:57.801 align:start position:0%
+the settings for me.  He can control this
+interface.  <00:13:56.683><c>He </c><00:13:57.037><c>can </c><00:13:57.391><c>operate </c><00:13:57.745><c>an</c>
+
+00:13:57.801 --> 00:13:57.811 align:start position:0%
+interface.  He can operate an
+ 
+
+00:13:57.811 --> 00:13:59.493 align:start position:0%
+interface.  He can operate an
+empty <00:13:58.073><c>factory </c><00:13:58.335><c>without </c><00:13:58.597><c>my </c><00:13:58.859><c>involvement.  </c><00:13:59.121><c>And </c><00:13:59.383><c>that</c>
+
+00:13:59.493 --> 00:13:59.503 align:start position:0%
+empty factory without my involvement.  And that
+ 
+
+00:13:59.503 --> 00:14:01.154 align:start position:0%
+empty factory without my involvement.  And that
+means <00:13:59.717><c>he </c><00:13:59.931><c>can </c><00:14:00.145><c>do </c><00:14:00.359><c>the </c><00:14:00.573><c>same </c><00:14:00.787><c>for </c><00:14:01.001><c>a</c>
+
+00:14:01.154 --> 00:14:01.164 align:start position:0%
+means he can do the same for a
+ 
+
+00:14:01.164 --> 00:14:02.680 align:start position:0%
+means he can do the same for a
+working <00:14:01.350><c>factory.  </c><00:14:01.536><c>Again, </c><00:14:01.722><c>this </c><00:14:01.908><c>is </c><00:14:02.094><c>a </c><00:14:02.280><c>topic </c><00:14:02.466><c>of </c><00:14:02.652><c>"</c>
+
+00:14:02.680 --> 00:14:02.690 align:start position:0%
+working factory.  Again, this is a topic of "
+ 
+
+00:14:02.690 --> 00:14:03.963 align:start position:0%
+working factory.  Again, this is a topic of "
+liquid" <00:14:03.286><c>software </c><00:14:03.882><c>that</c>
+
+00:14:03.963 --> 00:14:03.973 align:start position:0%
+liquid" software that
+ 
+
+00:14:03.973 --> 00:14:04.940 align:start position:0%
+liquid" software that
+configures <00:14:04.184><c>itself </c><00:14:04.395><c>using </c><00:14:04.606><c>an</c>
+
+00:14:04.940 --> 00:14:04.950 align:start position:0%
+configures itself using an
+ 
+
+00:14:04.950 --> 00:14:06.438 align:start position:0%
+configures itself using an
+internal <00:14:05.286><c>agent.  </c><00:14:05.622><c>It </c><00:14:05.958><c>opens </c><00:14:06.294><c>the</c>
+
+00:14:06.438 --> 00:14:06.448 align:start position:0%
+internal agent.  It opens the
+ 
+
+00:14:06.448 --> 00:14:08.484 align:start position:0%
+internal agent.  It opens the
+tools <00:14:06.753><c>page </c><00:14:07.058><c>here.  </c><00:14:07.363><c>You </c><00:14:07.668><c>see </c><00:14:07.973><c>them </c><00:14:08.278><c>all</c>
+
+00:14:08.484 --> 00:14:08.494 align:start position:0%
+tools page here.  You see them all
+ 
+
+00:14:08.494 --> 00:14:10.151 align:start position:0%
+tools page here.  You see them all
+.  <00:14:08.731><c>We </c><00:14:08.968><c>can </c><00:14:09.205><c>switch </c><00:14:09.442><c>between </c><00:14:09.679><c>description </c><00:14:09.916><c>mode</c>
+
+00:14:10.151 --> 00:14:10.161 align:start position:0%
+.  We can switch between description mode
+ 
+
+00:14:10.161 --> 00:14:11.757 align:start position:0%
+.  We can switch between description mode
+and <00:14:10.373><c>parameter </c><00:14:10.585><c>mode </c><00:14:10.797><c>if </c><00:14:11.009><c>we </c><00:14:11.221><c>want.  </c><00:14:11.433><c>And </c><00:14:11.645><c>you</c>
+
+00:14:11.757 --> 00:14:11.767 align:start position:0%
+and parameter mode if we want.  And you
+ 
+
+00:14:11.767 --> 00:14:13.444 align:start position:0%
+and parameter mode if we want.  And you
+can <00:14:12.094><c>see </c><00:14:12.421><c>all </c><00:14:12.748><c>of </c><00:14:13.075><c>our </c><00:14:13.402><c>tools</c>
+
+00:14:13.444 --> 00:14:13.454 align:start position:0%
+can see all of our tools
+ 
+
+00:14:13.454 --> 00:14:14.842 align:start position:0%
+can see all of our tools
+grouped <00:14:13.773><c>by </c><00:14:14.092><c>the </c><00:14:14.411><c>framework </c><00:14:14.730><c>we</c>
+
+00:14:14.842 --> 00:14:14.852 align:start position:0%
+grouped by the framework we
+ 
+
+00:14:14.852 --> 00:14:16.824 align:start position:0%
+grouped by the framework we
+developed <00:14:15.132><c>for </c><00:14:15.412><c>the </c><00:14:15.692><c>system.  </c><00:14:15.972><c>We'll </c><00:14:16.252><c>show </c><00:14:16.532><c>some</c>
+
+00:14:16.824 --> 00:14:16.834 align:start position:0%
+developed for the system.  We'll show some
+ 
+
+00:14:16.834 --> 00:14:18.669 align:start position:0%
+developed for the system.  We'll show some
+of <00:14:17.070><c>these </c><00:14:17.306><c>additional </c><00:14:17.542><c>features </c><00:14:17.778><c>in </c><00:14:18.014><c>a </c><00:14:18.250><c>moment, </c><00:14:18.486><c>but</c>
+
+00:14:18.669 --> 00:14:18.679 align:start position:0%
+of these additional features in a moment, but
+ 
+
+00:14:18.679 --> 00:14:20.458 align:start position:0%
+of these additional features in a moment, but
+here <00:14:18.918><c>you </c><00:14:19.157><c>can </c><00:14:19.396><c>also </c><00:14:19.635><c>see </c><00:14:19.874><c>all </c><00:14:20.113><c>the</c>
+
+00:14:20.458 --> 00:14:20.468 align:start position:0%
+here you can also see all the
+ 
+
+00:14:20.468 --> 00:14:22.376 align:start position:0%
+here you can also see all the
+hotkeys <00:14:20.826><c>that </c><00:14:21.184><c>we </c><00:14:21.542><c>can </c><00:14:21.900><c>work </c><00:14:22.258><c>with.</c>
+
+00:14:22.376 --> 00:14:22.386 align:start position:0%
+hotkeys that we can work with.
+ 
+
+00:14:22.386 --> 00:14:24.335 align:start position:0%
+hotkeys that we can work with.
+This <00:14:22.757><c>is </c><00:14:23.128><c>how </c><00:14:23.499><c>I </c><00:14:23.870><c>refresh</c>
+
+00:14:24.335 --> 00:14:24.345 align:start position:0%
+This is how I refresh
+ 
+
+00:14:24.345 --> 00:14:26.177 align:start position:0%
+This is how I refresh
+and <00:14:24.594><c>navigate </c><00:14:24.843><c>the </c><00:14:25.092><c>interface </c><00:14:25.341><c>very, </c><00:14:25.590><c>very </c><00:14:25.839><c>quickly.  </c><00:14:26.088><c>I</c>
+
+00:14:26.177 --> 00:14:26.187 align:start position:0%
+and navigate the interface very, very quickly.  I
+ 
+
+00:14:26.187 --> 00:14:28.272 align:start position:0%
+and navigate the interface very, very quickly.  I
+use <00:14:26.855><c>these </c><00:14:27.523><c>hotkeys.  </c><00:14:28.191><c>I</c>
+
+00:14:28.272 --> 00:14:28.282 align:start position:0%
+use these hotkeys.  I
+ 
+
+00:14:28.282 --> 00:14:30.411 align:start position:0%
+use these hotkeys.  I
+improve <00:14:28.631><c>the </c><00:14:28.980><c>developer </c><00:14:29.329><c>experience </c><00:14:29.678><c>for </c><00:14:30.027><c>every</c>
+
+00:14:30.411 --> 00:14:30.421 align:start position:0%
+improve the developer experience for every
+ 
+
+00:14:30.421 --> 00:14:32.580 align:start position:0%
+improve the developer experience for every
+software <00:14:30.782><c>factory </c><00:14:31.143><c>I </c><00:14:31.504><c>now </c><00:14:31.865><c>work </c><00:14:32.226><c>for</c>
+
+00:14:32.580 --> 00:14:32.590 align:start position:0%
+software factory I now work for
+ 
+
+00:14:32.590 --> 00:14:34.343 align:start position:0%
+software factory I now work for
+.  <00:14:32.776><c>I </c><00:14:32.962><c>move </c><00:14:33.148><c>at </c><00:14:33.334><c>the </c><00:14:33.520><c>speed </c><00:14:33.706><c>of </c><00:14:33.892><c>an </c><00:14:34.078><c>agent </c><00:14:34.264><c>and</c>
+
+00:14:34.343 --> 00:14:34.353 align:start position:0%
+.  I move at the speed of an agent and
+ 
+
+00:14:34.353 --> 00:14:36.539 align:start position:0%
+.  I move at the speed of an agent and
+dynamically <00:14:34.850><c>adapt </c><00:14:35.347><c>the </c><00:14:35.844><c>software</c>
+
+00:14:36.539 --> 00:14:36.549 align:start position:0%
+dynamically adapt the software
+ 
+
+00:14:36.549 --> 00:14:38.519 align:start position:0%
+dynamically adapt the software
+to <00:14:36.785><c>the </c><00:14:37.021><c>task </c><00:14:37.257><c>we </c><00:14:37.493><c>are </c><00:14:37.729><c>solving.  </c><00:14:37.965><c>In </c><00:14:38.201><c>this</c>
+
+00:14:38.519 --> 00:14:38.529 align:start position:0%
+to the task we are solving.  In this
+ 
+
+00:14:38.529 --> 00:14:40.790 align:start position:0%
+to the task we are solving.  In this
+case, <00:14:38.840><c>we </c><00:14:39.151><c>are </c><00:14:39.462><c>not </c><00:14:39.773><c>solving </c><00:14:40.084><c>any </c><00:14:40.395><c>problem.  </c><00:14:40.706><c>I'm</c>
+
+00:14:40.790 --> 00:14:40.800 align:start position:0%
+case, we are not solving any problem.  I'm
+ 
+
+00:14:40.800 --> 00:14:43.132 align:start position:0%
+case, we are not solving any problem.  I'm
+just <00:14:41.130><c>demonstrating </c><00:14:41.460><c>the </c><00:14:41.790><c>capabilities </c><00:14:42.120><c>of </c><00:14:42.450><c>the</c>
+
+00:14:43.132 --> 00:14:43.142 align:start position:0%
+just demonstrating the capabilities of the
+ 
+
+00:14:43.142 --> 00:14:45.372 align:start position:0%
+just demonstrating the capabilities of the
+tiny <00:14:43.362><c>software </c><00:14:43.582><c>factory </c><00:14:43.802><c>architecture.  </c><00:14:44.022><c>And </c><00:14:44.242><c>this </c><00:14:44.462><c>is </c><00:14:44.682><c>the </c><00:14:44.902><c>power </c><00:14:45.122><c>of</c>
+
+00:14:45.372 --> 00:14:45.382 align:start position:0%
+tiny software factory architecture.  And this is the power of
+ 
+
+00:14:45.382 --> 00:14:47.604 align:start position:0%
+tiny software factory architecture.  And this is the power of
+“liquid” <00:14:46.058><c>software.  </c><00:14:46.734><c>It </c><00:14:47.410><c>is</c>
+
+00:14:47.604 --> 00:14:47.614 align:start position:0%
+“liquid” software.  It is
+ 
+
+00:14:47.614 --> 00:14:49.171 align:start position:0%
+“liquid” software.  It is
+designed <00:14:48.295><c>to </c><00:14:48.976><c>be</c>
+
+00:14:49.171 --> 00:14:49.181 align:start position:0%
+designed to be
+ 
+
+00:14:49.181 --> 00:14:50.990 align:start position:0%
+designed to be
+customizable <00:14:49.496><c>down </c><00:14:49.811><c>to </c><00:14:50.126><c>the </c><00:14:50.441><c>keystrokes.  </c><00:14:50.756><c>So</c>
+
+00:14:50.990 --> 00:14:51.000 align:start position:0%
+customizable down to the keystrokes.  So
+ 
+
+00:14:51.000 --> 00:14:52.858 align:start position:0%
+customizable down to the keystrokes.  So
+, <00:14:51.194><c>there's </c><00:14:51.388><c>a </c><00:14:51.582><c>lot </c><00:14:51.776><c>of </c><00:14:51.970><c>information </c><00:14:52.164><c>here.  </c><00:14:52.358><c>Of </c><00:14:52.552><c>course, </c><00:14:52.746><c>you</c>
+
+00:14:52.858 --> 00:14:52.868 align:start position:0%
+, there's a lot of information here.  Of course, you
+ 
+
+00:14:52.868 --> 00:14:54.606 align:start position:0%
+, there's a lot of information here.  Of course, you
+can <00:14:53.076><c>see </c><00:14:53.284><c>that </c><00:14:53.492><c>we </c><00:14:53.700><c>can </c><00:14:53.908><c>customize </c><00:14:54.116><c>the </c><00:14:54.324><c>model</c>
+
+00:14:54.606 --> 00:14:54.616 align:start position:0%
+can see that we can customize the model
+ 
+
+00:14:54.616 --> 00:14:56.501 align:start position:0%
+can see that we can customize the model
+.  <00:14:55.004><c>We </c><00:14:55.392><c>have </c><00:14:55.780><c>tool </c><00:14:56.168><c>calls,</c>
+
+00:14:56.501 --> 00:14:56.511 align:start position:0%
+.  We have tool calls,
+ 
+
+00:14:56.511 --> 00:14:58.298 align:start position:0%
+.  We have tool calls,
+I/O <00:14:56.788><c>tokens, </c><00:14:57.065><c>and </c><00:14:57.342><c>so </c><00:14:57.619><c>on, </c><00:14:57.896><c>just </c><00:14:58.173><c>as</c>
+
+00:14:58.298 --> 00:14:58.308 align:start position:0%
+I/O tokens, and so on, just as
+ 
+
+00:14:58.308 --> 00:15:00.474 align:start position:0%
+I/O tokens, and so on, just as
+you <00:14:58.466><c>would </c><00:14:58.624><c>expect.  </c><00:14:58.782><c>This </c><00:14:58.940><c>is </c><00:14:59.098><c>where </c><00:14:59.256><c>the </c><00:14:59.414><c>magic </c><00:14:59.572><c>of </c><00:14:59.730><c>the </c><00:14:59.888><c>tiny</c>
+
+00:15:00.474 --> 00:15:00.484 align:start position:0%
+you would expect.  This is where the magic of the tiny
+ 
+
+00:15:00.484 --> 00:15:02.824 align:start position:0%
+you would expect.  This is where the magic of the tiny
+software <00:15:00.916><c>factory </c><00:15:01.348><c>really </c><00:15:01.780><c>comes </c><00:15:02.212><c>into </c><00:15:02.644><c>play</c>
+
+00:15:02.824 --> 00:15:02.834 align:start position:0%
+software factory really comes into play
+ 
+
+00:15:02.834 --> 00:15:05.223 align:start position:0%
+software factory really comes into play
+.  <00:15:03.091><c>She </c><00:15:03.348><c>completed </c><00:15:03.605><c>the </c><00:15:03.862><c>configuration </c><00:15:04.119><c>of </c><00:15:04.376><c>the </c><00:15:04.633><c>empty</c>
+
+00:15:05.223 --> 00:15:05.233 align:start position:0%
+.  She completed the configuration of the empty
+ 
+
+00:15:05.233 --> 00:15:12.419 align:start position:0%
+.  She completed the configuration of the empty
+software <00:15:05.661><c>factory </c><00:15:06.089><c>to </c><00:15:06.517><c>a </c><00:15:06.945><c>working </c><00:15:07.373><c>state.</c>
+
+00:15:12.419 --> 00:15:12.429 align:start position:0%
+ 
+ 
+
+00:15:12.429 --> 00:15:14.230 align:start position:0%
+ 
+Despite <00:15:12.819><c>popular </c><00:15:13.209><c>belief, </c><00:15:13.599><c>having </c><00:15:13.989><c>one</c>
+
+00:15:14.230 --> 00:15:14.240 align:start position:0%
+Despite popular belief, having one
+ 
+
+00:15:14.240 --> 00:15:16.237 align:start position:0%
+Despite popular belief, having one
+super <00:15:14.551><c>agent </c><00:15:14.862><c>doing </c><00:15:15.173><c>everything </c><00:15:15.484><c>for </c><00:15:15.795><c>you </c><00:15:16.106><c>is</c>
+
+00:15:16.237 --> 00:15:16.247 align:start position:0%
+super agent doing everything for you is
+ 
+
+00:15:16.247 --> 00:15:18.328 align:start position:0%
+super agent doing everything for you is
+not <00:15:16.498><c>the </c><00:15:16.749><c>best </c><00:15:17.000><c>way </c><00:15:17.251><c>to </c><00:15:17.502><c>consistently </c><00:15:17.753><c>solve</c>
+
+00:15:18.328 --> 00:15:18.338 align:start position:0%
+not the best way to consistently solve
+ 
+
+00:15:18.338 --> 00:15:20.382 align:start position:0%
+not the best way to consistently solve
+specialized <00:15:18.994><c>tasks </c><00:15:19.650><c>24/7.  </c><00:15:20.306><c>In</c>
+
+00:15:20.382 --> 00:15:20.392 align:start position:0%
+specialized tasks 24/7.  In
+ 
+
+00:15:20.392 --> 00:15:22.458 align:start position:0%
+specialized tasks 24/7.  In
+the <00:15:20.733><c>age </c><00:15:21.074><c>of </c><00:15:21.415><c>agents, </c><00:15:21.756><c>anyone </c><00:15:22.097><c>can </c><00:15:22.438><c>create</c>
+
+00:15:22.458 --> 00:15:22.468 align:start position:0%
+the age of agents, anyone can create
+ 
+
+00:15:22.468 --> 00:15:24.144 align:start position:0%
+the age of agents, anyone can create
+anything <00:15:22.857><c>with </c><00:15:23.246><c>a </c><00:15:23.635><c>single </c><00:15:24.024><c>request.</c>
+
+00:15:24.144 --> 00:15:24.154 align:start position:0%
+anything with a single request.
+ 
+
+00:15:24.154 --> 00:15:26.080 align:start position:0%
+anything with a single request.
+Specialization <00:15:24.613><c>is </c><00:15:25.072><c>your </c><00:15:25.531><c>advantage, </c><00:15:25.990><c>and</c>
+
+00:15:26.080 --> 00:15:26.090 align:start position:0%
+Specialization is your advantage, and
+ 
+
+00:15:26.090 --> 00:15:28.477 align:start position:0%
+Specialization is your advantage, and
+moving <00:15:26.413><c>closer </c><00:15:26.736><c>to </c><00:15:27.059><c>the </c><00:15:27.382><c>work </c><00:15:27.705><c>cycle </c><00:15:28.028><c>multiplies </c><00:15:28.351><c>it</c>
+
+00:15:28.477 --> 00:15:28.487 align:start position:0%
+moving closer to the work cycle multiplies it
+ 
+
+00:15:28.487 --> 00:15:30.610 align:start position:0%
+moving closer to the work cycle multiplies it
+, <00:15:28.733><c>because </c><00:15:28.979><c>now </c><00:15:29.225><c>you </c><00:15:29.471><c>don't </c><00:15:29.717><c>have </c><00:15:29.963><c>to </c><00:15:30.209><c>sit </c><00:15:30.455><c>still</c>
+
+00:15:30.610 --> 00:15:30.620 align:start position:0%
+, because now you don't have to sit still
+ 
+
+00:15:30.620 --> 00:15:32.732 align:start position:0%
+, because now you don't have to sit still
+to <00:15:31.014><c>get </c><00:15:31.408><c>the </c><00:15:31.802><c>work </c><00:15:32.196><c>done.  </c><00:15:32.590><c>You</c>
+
+00:15:32.732 --> 00:15:32.742 align:start position:0%
+to get the work done.  You
+ 
+
+00:15:32.742 --> 00:15:34.988 align:start position:0%
+to get the work done.  You
+build <00:15:33.151><c>systems </c><00:15:33.560><c>that </c><00:15:33.969><c>build </c><00:15:34.378><c>systems </c><00:15:34.787><c>on</c>
+
+00:15:34.988 --> 00:15:34.998 align:start position:0%
+build systems that build systems on
+ 
+
+00:15:34.998 --> 00:15:37.187 align:start position:0%
+build systems that build systems on
+your <00:15:35.341><c>behalf.  </c><00:15:35.684><c>You </c><00:15:36.027><c>move </c><00:15:36.370><c>closer </c><00:15:36.713><c>to </c><00:15:37.056><c>the</c>
+
+00:15:37.187 --> 00:15:37.197 align:start position:0%
+your behalf.  You move closer to the
+ 
+
+00:15:37.197 --> 00:15:38.955 align:start position:0%
+your behalf.  You move closer to the
+cycle <00:15:37.382><c>so </c><00:15:37.567><c>you </c><00:15:37.752><c>don't </c><00:15:37.937><c>get </c><00:15:38.122><c>stuck </c><00:15:38.307><c>in </c><00:15:38.492><c>it.  </c><00:15:38.677><c>In </c><00:15:38.862><c>the</c>
+
+00:15:38.955 --> 00:15:38.965 align:start position:0%
+cycle so you don't get stuck in it.  In the
+ 
+
+00:15:38.965 --> 00:15:40.784 align:start position:0%
+cycle so you don't get stuck in it.  In the
+third <00:15:39.317><c>lesson, </c><00:15:39.669><c>we </c><00:15:40.021><c>will </c><00:15:40.373><c>go </c><00:15:40.725><c>further,</c>
+
+00:15:40.784 --> 00:15:40.794 align:start position:0%
+third lesson, we will go further,
+ 
+
+00:15:40.794 --> 00:15:43.038 align:start position:0%
+third lesson, we will go further,
+specializing <00:15:41.316><c>intelligence </c><00:15:41.838><c>in </c><00:15:42.360><c>the </c><00:15:42.882><c>factory</c>
+
+00:15:43.038 --> 00:15:43.048 align:start position:0%
+specializing intelligence in the factory
+ 
+
+00:15:43.048 --> 00:15:45.834 align:start position:0%
+specializing intelligence in the factory
+using <00:15:43.549><c>small </c><00:15:44.050><c>teams </c><00:15:44.551><c>of </c><00:15:45.052><c>agents.  </c><00:15:45.553><c>In</c>
+
+00:15:45.834 --> 00:15:45.844 align:start position:0%
+using small teams of agents.  In
+ 
+
+00:15:45.844 --> 00:15:48.017 align:start position:0%
+using small teams of agents.  In
+addition, <00:15:46.087><c>we </c><00:15:46.330><c>will </c><00:15:46.573><c>add </c><00:15:46.816><c>another </c><00:15:47.059><c>set </c><00:15:47.302><c>of </c><00:15:47.545><c>features</c>
+
+00:15:48.017 --> 00:15:48.027 align:start position:0%
+addition, we will add another set of features
+ 
+
+00:15:48.027 --> 00:15:50.327 align:start position:0%
+addition, we will add another set of features
+on <00:15:48.636><c>top </c><00:15:49.245><c>of </c><00:15:49.854><c>the</c>
+
+00:15:50.327 --> 00:15:50.337 align:start position:0%
+on top of the
+ 
+
+00:15:50.337 --> 00:15:52.460 align:start position:0%
+on top of the
+first <00:15:50.561><c>and </c><00:15:50.785><c>second </c><00:15:51.009><c>level </c><00:15:51.233><c>software </c><00:15:51.457><c>factory </c><00:15:51.681><c>functionality.  </c><00:15:51.905><c>At </c><00:15:52.129><c>this</c>
+
+00:15:52.460 --> 00:15:52.470 align:start position:0%
+first and second level software factory functionality.  At this
+ 
+
+00:15:52.470 --> 00:15:54.093 align:start position:0%
+first and second level software factory functionality.  At this
+stage, <00:15:52.706><c>as </c><00:15:52.942><c>a </c><00:15:53.178><c>tiny </c><00:15:53.414><c>software </c><00:15:53.650><c>factory </c><00:15:53.886><c>participant</c>
+
+00:15:54.093 --> 00:15:54.103 align:start position:0%
+stage, as a tiny software factory participant
+ 
+
+00:15:54.103 --> 00:15:56.250 align:start position:0%
+stage, as a tiny software factory participant
+, <00:15:54.491><c>you </c><00:15:54.879><c>have </c><00:15:55.267><c>enough </c><00:15:55.655><c>tools </c><00:15:56.043><c>to</c>
+
+00:15:56.250 --> 00:15:56.260 align:start position:0%
+, you have enough tools to
+ 
+
+00:15:56.260 --> 00:15:58.622 align:start position:0%
+, you have enough tools to
+solve <00:15:56.635><c>specific </c><00:15:57.010><c>tasks </c><00:15:57.385><c>around </c><00:15:57.760><c>the </c><00:15:58.135><c>clock</c>
+
+00:15:58.622 --> 00:15:58.632 align:start position:0%
+solve specific tasks around the clock
+ 
+
+00:15:58.632 --> 00:16:00.563 align:start position:0%
+solve specific tasks around the clock
+, <00:15:58.929><c>staying </c><00:15:59.226><c>close </c><00:15:59.523><c>to </c><00:15:59.820><c>the </c><00:16:00.117><c>cycle, </c><00:16:00.414><c>not</c>
+
+00:16:00.563 --> 00:16:00.573 align:start position:0%
+, staying close to the cycle, not
+ 
+
+00:16:00.573 --> 00:16:02.492 align:start position:0%
+, staying close to the cycle, not
+inside <00:16:01.042><c>it.  </c><00:16:01.511><c>After </c><00:16:01.980><c>each</c>
+
+00:16:02.492 --> 00:16:02.502 align:start position:0%
+inside it.  After each
+ 
+
+00:16:02.502 --> 00:16:04.925 align:start position:0%
+inside it.  After each
+completed <00:16:03.049><c>lesson, </c><00:16:03.596><c>ask </c><00:16:04.143><c>yourself: </c><00:16:04.690><c>what</c>
+
+00:16:04.925 --> 00:16:04.935 align:start position:0%
+completed lesson, ask yourself: what
+ 
+
+00:16:04.935 --> 00:16:07.429 align:start position:0%
+completed lesson, ask yourself: what
+tasks <00:16:05.517><c>can </c><00:16:06.099><c>I </c><00:16:06.681><c>consistently </c><00:16:07.263><c>solve</c>
+
+00:16:07.429 --> 00:16:07.439 align:start position:0%
+tasks can I consistently solve
+ 
+
+00:16:07.439 --> 00:16:08.955 align:start position:0%
+tasks can I consistently solve
+using <00:16:07.902><c>tiny </c><00:16:08.365><c>software </c><00:16:08.828><c>factory?</c>
+
+00:16:08.955 --> 00:16:08.965 align:start position:0%
+using tiny software factory?
+ 
+
+00:16:08.965 --> 00:16:10.905 align:start position:0%
+using tiny software factory?
+See <00:16:09.265><c>you </c><00:16:09.565><c>in </c><00:16:09.865><c>lesson </c><00:16:10.165><c>three, </c><00:16:10.465><c>where </c><00:16:10.765><c>we</c>
+
+00:16:10.905 --> 00:16:10.915 align:start position:0%
+See you in lesson three, where we
+ 
+
+00:16:10.915 --> 00:16:12.825 align:start position:0%
+See you in lesson three, where we
+scale <00:16:11.267><c>up </c><00:16:11.619><c>and </c><00:16:11.971><c>create </c><00:16:12.323><c>small</c>
+
+00:16:12.825 --> 00:16:12.835 align:start position:0%
+scale up and create small
+ 
+
+00:16:12.835 --> 00:16:14.865 align:start position:0%
+scale up and create small
+teams <00:16:13.201><c>of </c><00:16:13.567><c>agents </c><00:16:13.933><c>that </c><00:16:14.299><c>interact </c><00:16:14.665><c>with</c>
+
+00:16:14.865 --> 00:16:14.875 align:start position:0%
+teams of agents that interact with
+ 
+
+00:16:14.875 --> 00:16:16.545 align:start position:0%
+teams of agents that interact with
+each <00:16:15.130><c>other </c><00:16:15.385><c>to </c><00:16:15.640><c>work </c><00:16:15.895><c>faster </c><00:16:16.150><c>and </c><00:16:16.405><c>more</c>
+
+00:16:16.545 --> 00:16:16.555 align:start position:0%
+each other to work faster and more
+ 
+
+00:16:16.555 --> 00:16:18.879 align:start position:0%
+each other to work faster and more
+efficiently <00:16:16.809><c>than </c><00:16:17.063><c>they </c><00:16:17.317><c>could </c><00:16:17.571><c>alone.  </c><00:16:17.825><c>And </c><00:16:18.079><c>all </c><00:16:18.333><c>this </c><00:16:18.587><c>becomes</c>
+
+00:16:18.879 --> 00:16:18.889 align:start position:0%
+efficiently than they could alone.  And all this becomes
+ 
+
+00:16:18.889 --> 00:16:21.093 align:start position:0%
+efficiently than they could alone.  And all this becomes
+possible <00:16:19.272><c>thanks </c><00:16:19.655><c>to </c><00:16:20.038><c>investments </c><00:16:20.421><c>in </c><00:16:20.804><c>your</c>
+
+00:16:21.093 --> 00:16:21.103 align:start position:0%
+possible thanks to investments in your
+ 
+
+00:16:21.103 --> 00:16:22.877 align:start position:0%
+possible thanks to investments in your
+empty <00:16:21.400><c>and </c><00:16:21.697><c>operating </c><00:16:21.994><c>tiny </c><00:16:22.291><c>software </c><00:16:22.588><c>factories</c>
+
+00:16:22.877 --> 00:16:22.887 align:start position:0%
+empty and operating tiny software factories
+ 
+
+00:16:22.887 --> 00:16:25.324 align:start position:0%
+empty and operating tiny software factories
+— <00:16:23.658><c>your </c><00:16:24.429><c>“liquid” </c><00:16:25.200><c>software.</c>
+
+00:16:25.324 --> 00:16:25.334 align:start position:0%
+— your “liquid” software.
+ 
+
+00:16:25.334 --> 00:16:28.415 align:start position:0%
+— your “liquid” software.
+See <00:16:25.855><c>you </c><00:16:26.376><c>there.</c>
+

@@ -1,0 +1,141 @@
+{
+ "ok": true,
+ "loops": 1,
+ "cases": 16,
+ "acc": 0.4375,
+ "correct": 7,
+ "ms_p50": 3908,
+ "ms_p95": 4213,
+ "ms_mean": 3984,
+ "laya_budget_ms": 200,
+ "rows": [
+  {
+   "case_id": "ic-h01",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 3852,
+   "raw": " bug\nExplanation: The crash indicates a failure"
+  },
+  {
+   "case_id": "ic-h02",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 3853,
+   "raw": " bug\nExplanation: The issue is that the"
+  },
+  {
+   "case_id": "ic-h03",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 3853,
+   "raw": " bug\nExplanation: The script is expected to"
+  },
+  {
+   "case_id": "ic-h04",
+   "gold": "bug",
+   "pred": null,
+   "ok": false,
+   "ms": 3908,
+   "raw": " eval_decisions.py crashes on manifests where reply"
+  },
+  {
+   "case_id": "ic-h05",
+   "gold": "bug",
+   "pred": null,
+   "ok": false,
+   "ms": 3841,
+   "raw": " cu_session_worker_main_leaks_cu_session"
+  },
+  {
+   "case_id": "ic-h06",
+   "gold": "bug",
+   "pred": "bug",
+   "ok": true,
+   "ms": 3868,
+   "raw": " bug\nIf candidate is bug, explain the issue"
+  },
+  {
+   "case_id": "ic-h07",
+   "gold": "enhancement",
+   "pred": "enhancement",
+   "ok": true,
+   "ms": 3855,
+   "raw": " enhancement\nExplain the reasoning for your candidate id"
+  },
+  {
+   "case_id": "ic-h08",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 3921,
+   "raw": " bug\nExplanation: The user is asking to"
+  },
+  {
+   "case_id": "ic-h09",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 3942,
+   "raw": " bug\nExplain your reasoning before presenting the final"
+  },
+  {
+   "case_id": "ic-h10",
+   "gold": "enhancement",
+   "pred": "bug",
+   "ok": false,
+   "ms": 4692,
+   "raw": " bug\nExplanation of reasoning (after the id"
+  },
+  {
+   "case_id": "ic-h11",
+   "gold": "enhancement",
+   "pred": "enhancement",
+   "ok": true,
+   "ms": 4213,
+   "raw": " \"enhancement\"\n- If the user's"
+  },
+  {
+   "case_id": "ic-h12",
+   "gold": "needs_info",
+   "pred": "bug",
+   "ok": false,
+   "ms": 3985,
+   "raw": " bug\nExplanation: The user is asking for"
+  },
+  {
+   "case_id": "ic-h13",
+   "gold": "needs_info",
+   "pred": "needs_info",
+   "ok": true,
+   "ms": 4127,
+   "raw": " needs_info\n```\n\nPlease reason through this problem first"
+  },
+  {
+   "case_id": "ic-h14",
+   "gold": "needs_info",
+   "pred": "bug",
+   "ok": false,
+   "ms": 3942,
+   "raw": " bug\nExplain the issue:\nThe user is"
+  },
+  {
+   "case_id": "ic-h15",
+   "gold": "__none__",
+   "pred": "bug",
+   "ok": false,
+   "ms": 4058,
+   "raw": " bug, enhancement, needs_info, __none__\n"
+  },
+  {
+   "case_id": "ic-h16",
+   "gold": "__none__",
+   "pred": "bug",
+   "ok": false,
+   "ms": 3839,
+   "raw": " bug\nExplain why: The user reports that"
+  }
+ ]
+}

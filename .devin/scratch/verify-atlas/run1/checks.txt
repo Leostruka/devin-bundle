@@ -1,0 +1,11 @@
+id="view-adr"
+id="view-agents"
+id="view-boot"
+id="view-changelog"
+id="view-docs"
+id="view-hooks"
+id="view-scripts"
+id="view-skills"
+"help","cd","ls","cat","open","grep","doctor","install","version","pwd","history","clear",":q"
+3
+manifest skills: 178
