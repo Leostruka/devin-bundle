@@ -163,7 +163,7 @@ Principais grupos:
 | Arquitetura | `architecture` | Aprofundar módulos e reduzir dependências rasas |
 | Pesquisa e varredura | `research`, `scan`, `context7`, `ai-coding-dictionary` | Investigar com fontes ou varrer o codebase por objetivo |
 | Contexto e memória | `context-hygiene`, `memory-management`, `handoff` | Controlar contexto e preservar conhecimento útil |
-| Git e entrega | `git-workflows`, `gh`, `code-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
+| Git e entrega | `git-github-adaptive-engineering`, `git-workflows`, `gh`, `code-review`, `finishing-a-development-branch`, `deploy` | Isolar, revisar, integrar e publicar trabalho |
 | Infra e especialidades | `security`, `a11y-audit`, `api-spec`, `database`, `e2e-testing`, `i18n`, `docker`, `performance`, `observability-quality` | Aplicar processos especializados |
 | Extensão do harness | `project-bootstrap`, `devin-config`, `self-improvement` | Configurar e evoluir o ecossistema |
 | Desktop e dados | `computer-use`, `system-control`, `data-analyst`, `ai-tools`, `brag` | GUI/terminal/browser, análise de dados, ML local, vídeo de lançamento |

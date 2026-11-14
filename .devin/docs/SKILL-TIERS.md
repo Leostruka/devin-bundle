@@ -2,7 +2,7 @@
 
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-10-31).
 Só custam quando invocadas. Use isto (~3800 tok) em vez de `skill list` (~1600 tok).
-Subconjunto curado de alto uso - o índice completo das 184 é `manifest.json`
+Subconjunto curado de alto uso - o índice completo das 185 é `manifest.json`
 (`skills[].name`). Skills consolidadas são routers: o SKILL.md é caro de entrada;
 detalhe vive em `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 
@@ -72,6 +72,7 @@ Raramente >3 por tarefa (~5000 tok).
 
 | Skill | Faz | Tok | Quando |
 |---|---|---|---|
+| `git-github-adaptive-engineering` | Motor adaptativo p/ todo trabalho git/GitHub: Fase Zero + 5 fluxos, orquestra skills irmãs | ~1.40k | Qualquer tarefa que toca git, issues, PRs, CI ou governança do repo |
 | `git-workflows` | Branches, commits, worktree isolado, conflitos | 813 | Git workflow, isolar feature, merge conflict |
 | `gh` | GitHub CLI c/ JSON | 2294 | Issues, PRs, Actions |
 | `finishing-a-development-branch` | Testes + opções de integração | 1870 | Branch completa |
