@@ -228,3 +228,7 @@ place. If your platform provides a workspace-exit tool, use it.
 | "The merged-result failure is probably flaky" | A failing merged result stops everything. Branch and worktree stay put while you investigate. |
 | "The base branch is obviously main" | Confirm the fork point or ask. Merging into the wrong base is expensive to undo. |
 | "The push was rejected — force-push will fix it" | A rejected push means the remote moved. Investigate; force-push only on your human partner's explicit request. |
+
+## Cross-skills
+
+- Use `git-github-adaptive-engineering` to pick the integration flow (merge, PR, hotfix) and run the Fase Zero battery (`scripts/phase-zero.py`) before pushing or opening the PR - it owns `gh pr create --body-file` and the `Closes #N`/`Refs: #N` wiring; this skill owns the merge and cleanup steps.

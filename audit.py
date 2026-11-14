@@ -274,7 +274,7 @@ print('[8] Scripts directory')
 script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
 print('  Scripts: ' + str(script_files))
 # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py', 'simplify-scan.py', 'graph-query.py', 'subagent-trace.py', 'done-evaluator.py', 'ship-metrics.py', 'changelog-refs.py', 'bundle_envelope.py'}
+manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py', 'simplify-scan.py', 'graph-query.py', 'subagent-trace.py', 'done-evaluator.py', 'ship-metrics.py', 'changelog-refs.py', 'bundle_envelope.py', 'phase-zero.py'}
 for s in script_files:
     if s not in scripts_referenced and s not in manual_scripts:
         warnings.append(s + ' not referenced in hooks.v1.json')
@@ -486,8 +486,10 @@ else:
 print()
 print('[13] GitHub templates')
 templates = [
-    '.github/ISSUE_TEMPLATE/bug_report.md',
-    '.github/ISSUE_TEMPLATE/feature_request.md',
+    '.github/ISSUE_TEMPLATE/config.yml',
+    '.github/ISSUE_TEMPLATE/bug_report.yml',
+    '.github/ISSUE_TEMPLATE/feature_request.yml',
+    '.github/ISSUE_TEMPLATE/skill_improvement.yml',
     '.github/PULL_REQUEST_TEMPLATE.md',
 ]
 for t in templates:
@@ -495,6 +497,21 @@ for t in templates:
         print('  OK  ' + t)
     else:
         errors.append('Template missing: ' + t)
+        print('  FAIL ' + t + ' missing')
+
+# 13b. GitHub governance automation files
+print()
+print('[13b] GitHub governance files')
+governance = [
+    '.github/release.yml',
+    '.github/dependabot.yml',
+    '.github/workflows/pr-quality.yml',
+]
+for t in governance:
+    if os.path.exists(t):
+        print('  OK  ' + t)
+    else:
+        errors.append('Governance file missing: ' + t)
         print('  FAIL ' + t + ' missing')
 
 # 14. LICENSE, SECURITY, CONTRIBUTING, CHANGELOG

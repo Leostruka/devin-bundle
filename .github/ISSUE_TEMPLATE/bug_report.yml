@@ -1,0 +1,73 @@
+name: Bug report
+description: Report something in the bundle that does not work as documented
+title: "[Bug] "
+labels: ["type:fix"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. This form files the issue with the `type:fix` label; triage adds `priority:*` and `scope:*` labels based on your answers below.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Brief description of the problem, including the observable symptom.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: What you expected to happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Numbered steps that reproduce the problem, or "cannot reproduce" if unknown.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      description: Pick the bundle area where the bug lives.
+      options:
+        - skills/
+        - hooks or scripts
+        - CI workflows
+        - installers or exporters
+        - docs, rules, or templates
+        - other
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Triage maps this answer to a `priority:*` label.
+      options:
+        - Blocks all work (suggests priority:critical)
+        - Significant impact (suggests priority:high)
+        - Moderate impact (suggests priority:medium)
+        - Minor or cosmetic (suggests priority:medium or lower)
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Devin CLI version, bundle version (manifest.json), and how the bundle was installed.
+      placeholder: Windows 11, Devin CLI x.y.z, bundle 1.2.3, install.ps1
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or output
+      description: Paste relevant command output, logs, or links to screenshots.
+      render: shell
