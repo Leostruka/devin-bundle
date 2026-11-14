@@ -26,7 +26,7 @@ actions, priority hierarchy), `modes/flows-detail.md` (verbose flow map),
 
 | Situation | Entry | Next |
 |---|---|---|
-| Assemble / expand a raw idea or prompt (OSINT + first principles + super-prompt) | `montador-de-ideias` | -> `project-orchestrator` or `grilling` -> `planning` |
+| Assemble / expand a raw idea or prompt (OSINT + first principles + super-prompt) | `montador-de-ideias` | → `project-orchestrator` or `grilling` → `planning` |
 | Build/change something | `grilling` (intent) or `execution` cadence if trivial | → `planning` spec→tickets → `execution`+`testing` → `security` (API/DB/secrets/infra) → `code-review` → `gates` → `finishing-a-development-branch` |
 | Run AFK/unattended | `execution` execution (needs ready-for-agent issues) | see AFK creation below |
 | Hard/intermittent bug | `debugging` | → `testing` regression → `architecture` if no seam |
@@ -96,7 +96,7 @@ the nearest phase boundary (`PHASE-BOUNDARIES.md`).
 ## Quick-start menu (vague request)
 
 `ask_user_question` with 2–4 options:
-- Assemble an idea/prompt or build/change something -> `montador-de-ideias`, `grilling`, or `execution` cadence
+- Assemble an idea/prompt or build/change something → `montador-de-ideias`, `grilling`, or `execution` cadence
 - Improve a skill/rule/hook/MCP → `self-improvement`
 - Debug/research → `debugging` / `research`
 - Set up repo / run AFK → `project-bootstrap` / `execution` afk

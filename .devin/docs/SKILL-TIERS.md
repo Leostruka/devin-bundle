@@ -100,7 +100,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `playbook` | Playbook reutilizável c/ Procedure/Specs/Advice (replica cloud) | 1516 | Tarefa repetida, "make this reusable" |
 | `execution` | Decide onde colocar checkpoints de review/planning (cadence) | 1153 | Tarefa pequena pode pular grilling? |
 | `arena` | Torneio: N soluções paralelas, juízes ranqueiam, campeão mergeia | 933 | Decisão aberta com várias opções reais |
-| `montador-de-ideias` | Monta/expande ideia crua em dossiê OSINT + primeiros princípios + super-prompt sem alterar original sem aval (+6k defer) | ~1100 | Ideia crua -> super-prompt blindado e dossiê de mercado |
+| `montador-de-ideias` | Monta/expande ideia crua em dossiê OSINT + primeiros princípios + super-prompt sem alterar original sem aval (+6k defer) | ~2500 | Ideia crua -> super-prompt blindado e dossiê de mercado |
 
 ## Pesquisa
 

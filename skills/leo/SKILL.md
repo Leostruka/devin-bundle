@@ -98,7 +98,7 @@ Pick the entry skill from the user's situation. If the situation is not in this 
 
 | Situation | Entry skill | Next |
 |---|---|---|
-| Assemble / expand / elevate a raw project idea or prompt with OSINT teardown, first principles, and atomic/modular hardening | `montador-de-ideias` | -> `project-orchestrator` or `grilling` -> `planning-pipeline` |
+| Assemble / expand / elevate a raw project idea or prompt with OSINT teardown, first principles, and atomic/modular hardening | `montador-de-ideias` | → `project-orchestrator` or `grilling` → `planning-pipeline` |
 | Build / change / implement something | `grilling` (With-docs) to capture intent and user impact, or `review-cadence` if trivial | → `planning-pipeline` Spec → Tickets (estimate PR size; split >500 lines) → `implement` + `tdd` → `security-audit` (if API, DB, secrets, endpoints, or infra) → `code-review` → `verification-before-completion` → `finishing-a-development-branch` |
 | Run AFK / unattended on a feature | `afk-loop` only if issues exist and are `ready-for-agent`; otherwise use **Quick AFK issue creation** below | `afk-loop` |
 | Hard / intermittent / unclear bug | `diagnosing-bugs` | → `tdd` regression → `improve-codebase-architecture` if no seam |
@@ -152,7 +152,7 @@ After executing critical tools (API calls, DB writes, file-system changes, netwo
 
 When the user says "leo", "start", or the objective is unclear, ask a focused `ask_user_question` with 2–4 options. The tool adds an "Other" option automatically; route "Other" to `ask-bundle` or a follow-up question.
 
-- **Assemble a raw idea / prompt, or build / change something in the repo** -> `montador-de-ideias` to expand and blindar a seed idea/prompt with OSINT + first principles, `grilling` (With-docs) if design decisions remain, or `review-cadence` if trivial
+- **Assemble a raw idea / prompt, or build / change something in the repo** → `montador-de-ideias` to expand and harden a seed idea/prompt with OSINT + first principles, `grilling` (With-docs) if design decisions remain, or `review-cadence` if trivial
 - **Improve / add a skill, rule, hook, or MCP** → `continuous-improvement`
 - **Debug, fix, or research a problem** → `diagnosing-bugs` for bugs, `research` / `deep-mode` for exploration
 - **Set up this repo for Devin or run AFK work** → `project-setup` / the engineering-skills setup for setup, `afk-loop` if issues already exist

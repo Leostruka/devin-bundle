@@ -777,10 +777,11 @@
     },
     {
       "name": "montador-de-ideias",
-      "source": "custom",
-      "original_path": "C:\\Users\\leand\\AppData\\Roaming\\devin\\skills\\montador-de-ideias",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\skills\\montador-de-ideias",
       "purpose": "Use when assembling, expanding, or elevating a raw project idea or initial prompt into an ultra-detailed, first-principles dossier and compiled master prompt with journalistic OSINT market research, Tech Lead and Staff Architect justifications, atomic and modular hardening/optimization, and high-impact contact surfaces.",
-      "export_hash": "7a7c3047a7780945f2af7bc5222557e6f049b02fd568d3272329ad62b0572f02"
+      "export_hash": "7a7c3047a7780945f2af7bc5222557e6f049b02fd568d3272329ad62b0572f02",
+      "exported_at": "2026-11-13T22:11:17.993979"
     },
     {
       "name": "mutation-testing",

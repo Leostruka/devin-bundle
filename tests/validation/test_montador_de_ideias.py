@@ -123,6 +123,12 @@ def test_leo_and_ask_bundle_route_to_montador_de_ideias():
     leo_bullets = [line for line in leo_qs.splitlines() if line.strip().startswith("- **")]
     assert 2 <= len(leo_bullets) <= 4, f"leo Quick-start menu must have 2-4 options, found {len(leo_bullets)}"
 
+    # ask-bundle quick-start menu must also expose montador-de-ideias (2-4 options)
+    ask_qs = ask_text.split("## Quick-start menu", 1)[1].split("## Quick AFK issue creation", 1)[0]
+    assert "`montador-de-ideias`" in ask_qs, "ask-bundle Quick-start menu missing montador-de-ideias"
+    ask_bullets = [line for line in ask_qs.splitlines() if line.strip().startswith("- ")]
+    assert 2 <= len(ask_bullets) <= 4, f"ask-bundle Quick-start menu must have 2-4 options, found {len(ask_bullets)}"
+
 
 def test_no_em_dashes_in_montador_de_ideias():
     em_dash = chr(0x2014)
