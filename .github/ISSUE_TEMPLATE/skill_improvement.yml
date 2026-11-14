@@ -1,0 +1,48 @@
+name: Skill improvement
+description: Propose an improvement to an existing bundle skill
+title: "[Skill] "
+labels: ["scope:skills", "type:feat"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when an existing skill under `skills/` should behave differently or cover more ground. For a skill that is broken, use the bug report form instead. This form files the issue with `scope:skills` and `type:feat` labels; triage adjusts `type:*` if the change is actually a fix and adds `priority:*`.
+  - type: input
+    id: skill-name
+    attributes:
+      label: Skill name
+      description: The directory name under `skills/` (for example `git-helper`).
+      placeholder: git-helper
+    validations:
+      required: true
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current behavior
+      description: What the skill does today and where it falls short.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-change
+    attributes:
+      label: Proposed change
+      description: What should change, keeping progressive disclosure (compact SKILL.md, depth under `reference/`).
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Real usage examples, failing runs, or primary sources supporting the change.
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Triage maps this answer to a `priority:*` label.
+      options:
+        - Critical - drop everything (suggests priority:critical)
+        - High (suggests priority:high)
+        - Medium (suggests priority:medium)
+    validations:
+      required: true

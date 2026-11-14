@@ -169,3 +169,4 @@ Sometimes useful data isn't on the typed commands. Examples:
 - Use `code-review` when the user wants an inline GitHub review with suggestions.
 - Use `git-workflows` when a `gh pr merge` fails with conflicts.
 - Use `finishing-a-development-branch` after a PR is merged to clean up.
+- Use `git-github-adaptive-engineering` to run the Fase Zero state check and pick a delivery flow around gh operations.

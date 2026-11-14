@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Questions and discussions
+    url: https://github.com/Leostruka/devin-bundle/discussions
+    about: Ask questions and discuss ideas before opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/Leostruka/devin-bundle/blob/main/SECURITY.md
+    about: Report security vulnerabilities privately following SECURITY.md.

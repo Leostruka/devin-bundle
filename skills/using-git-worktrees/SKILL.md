@@ -143,6 +143,7 @@ Ready to implement <feature-name>
 
 - When the worktree is complete, use `finishing-a-development-branch` to merge, PR, or clean it up.
 - If the work needs to pause and resume in a fresh session, use `handoff` to capture context.
+- Use `git-github-adaptive-engineering` to check repo state (branch, remotes, governance) via `scripts/phase-zero.py` before picking a delivery flow.
 
 ## Quick Reference
 

@@ -1,0 +1,28 @@
+# Release notes categories for `gh release create --generate-notes`.
+# Mapped to the repo label taxonomy (type:*). Pull requests labeled
+# duplicate, invalid, or wontfix are excluded from generated notes.
+changelog:
+  categories:
+    - title: Features
+      labels:
+        - type:feat
+    - title: Fixes
+      labels:
+        - type:fix
+    - title: Refactors
+      labels:
+        - type:refactor
+    - title: Documentation
+      labels:
+        - type:docs
+    - title: Chores
+      labels:
+        - type:chore
+    - title: Other Changes
+      labels:
+        - "*"
+  exclude:
+    labels:
+      - duplicate
+      - invalid
+      - wontfix
