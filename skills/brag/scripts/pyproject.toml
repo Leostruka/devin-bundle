@@ -5,7 +5,7 @@ description = "Development tooling for the /brag skill."
 requires-python = ">=3.11"
 dependencies = [
   "librosa>=0.10.2",
-  "numpy>=1.26",
+  "numpy>=2.4.6",
   "scipy>=1.11",
   "soundfile>=0.12",
 ]
