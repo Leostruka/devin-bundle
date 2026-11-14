@@ -169,3 +169,4 @@ Sometimes useful data isn't on the typed commands. Examples:
 - Use `code-review` when the user wants an inline GitHub review with suggestions.
 - Use `git-workflows` when a `gh pr merge` fails with conflicts.
 - Use `finishing-a-development-branch` after a PR is merged to clean up.
+- `adaptive-agenda-calendar-routine-engine` delegates Stage 5 versioned delivery (commits, PRs, issue wiring) to this skill and `git-workflows`, `pr`, `finishing-a-development-branch`.

@@ -35,6 +35,10 @@ WIRED_SKILLS = [
     "writing-plans",
     "planning-pipeline",
     "project-memory",
+    "gh",
+    "git-workflows",
+    "pr",
+    "finishing-a-development-branch",
 ]
 
 REQUIRED_TOKENS = [

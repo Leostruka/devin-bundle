@@ -107,3 +107,4 @@ repos with multi-submodule states worktrees cannot express.
 - `finishing-a-development-branch` — when the branch/worktree is done.
 - `handoff` — pause and resume in a fresh session.
 - `gh` — read PRs/issues behind conflicting changes.
+- `adaptive-agenda-calendar-routine-engine` - Stage 5 versioned delivery (commits, PRs, issue wiring) delegates here together with `gh`, `pr`, `finishing-a-development-branch`.

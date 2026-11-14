@@ -78,6 +78,7 @@ The engine orchestrates; these skills execute:
 | Kaizen self-improvement loop | `continuous-improvement`, `self-improvement` |
 | Block-to-block context transfer | `handoff` |
 | Completion-claim discipline, >=32-cycle evidence | `gates` |
+| Versioned delivery in Stage 5 (commits, PRs, issue wiring) | `gh`, `git-workflows`, `pr`, `finishing-a-development-branch` |
 
 ## Boundaries
 
@@ -88,3 +89,6 @@ The engine orchestrates; these skills execute:
   confirmation.
 - The engine decides what runs and in which order; it does not bypass
   executor skills' own contracts.
+- The engine schedules and sequences work; git/GitHub delivery mechanics
+  (commits, PRs, issues, releases) belong to the git/GitHub skills and
+  are never re-implemented here.
