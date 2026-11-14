@@ -99,6 +99,22 @@ no-progress cycle ends the loop. If a cycle grows the file >20%
 without closing findings, stop and `distill`. Gate unmet at 3:
 write remaining findings to the audit plan file and stop.
 
+### Reference bar (optional, for high-stakes surfaces)
+
+When a stronger gate than lint-clean is wanted, anchor scoring to
+references, not self-assessment (pattern from Leon Lin's `cook` skill,
+evidence `.devin/research/2026-11-14-yt-batch3-reels10-survey.md` T1):
+
+1. Attach 6-12 reference images before prompting; they are the minimum
+   bar, not inspiration.
+2. Declare a numeric target per surface (for example 9/10 vs the chosen
+   reference).
+3. Score against the reference with a separate judge or subagent - the
+   builder never self-scores; fix the weakest dimension each round.
+4. Finalize the static design before the motion pass; motion references
+   are screen recordings, not screenshots.
+5. Human approval is the ship gate, not the score.
+
 ### State and motion coverage (eval R7-12)
 
 During `audit`/`harden`, verify interactive components cover seven
