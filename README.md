@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-184-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-185-blue.svg)](#2-skills)
 
 [![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.22.0-orange.svg)](CHANGELOG.md)
@@ -139,7 +139,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 184 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 185 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
@@ -208,7 +208,7 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 56 scripts Python em `scripts/`: 14 entry points de hooks (6 consolidados que executam 27 módulos de check in-process via `_hookrun`, 8 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
+Há 57 scripts Python em `scripts/`: 14 entry points de hooks (6 consolidados que executam 27 módulos de check in-process via `_hookrun`, 8 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
 
 ### 6. Configuração e distribuição
 
@@ -633,7 +633,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 184 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 185 skills |
 
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |
