@@ -76,3 +76,32 @@ def test_reference_playbooks_complete():
     surfaces = (SKILL_DIR / "reference" / "contact-surfaces-excellence.md").read_text(encoding="utf-8")
     for token in ("Facilitar", "Resolver", "Impressionar", "Ser Intuitivo", "Time-to-Value", "Nielsen", "Doherty"):
         assert token in surfaces, f"contact-surfaces-excellence.md missing {token}"
+
+
+def test_templates_complete():
+    for name in TEMPLATES:
+        path = SKILL_DIR / "templates" / name
+        assert path.is_file(), f"missing template: {name}"
+        content = path.read_text(encoding="utf-8")
+        assert len(content) > 600, f"template too short: {name}"
+
+    dossier = (SKILL_DIR / "templates" / "idea-dossier.md").read_text(encoding="utf-8")
+    for section in (
+        "original_prompt_sha256",
+        "## 1. Filosofia, Problema Raiz e Dor",
+        "## 2. Dossie Investigativo & OSINT de Mercado",
+        "## 3. Justificativa por Primeiros Principios",
+        "## 4. Arquitetura Master (Product Manager + Tech Lead + Staff Architect)",
+        "## 5. Hardening e Otimizacao (Nivel Atomico e Nivel Modular)",
+        "## 6. Superficies de Contato (Facilitar, Resolver, Impressionar, Ser Intuitivo)",
+    ):
+        assert section in dossier, f"idea-dossier.md missing section: {section}"
+
+    compiled = (SKILL_DIR / "templates" / "compiled-prompt.md").read_text(encoding="utf-8")
+    for section in (
+        "original_prompt_sha256",
+        "## 1. Prompt Original (Preservado Intacto)",
+        "## 2. Registro de Mudancas Aprovadas pelo Usuario",
+        "## 3. Super-Prompt Compilado (Pronto para Execucao)",
+    ):
+        assert section in compiled, f"compiled-prompt.md missing section: {section}"
