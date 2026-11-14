@@ -2,7 +2,7 @@
 
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-10-31).
 Só custam quando invocadas. Use isto (~3800 tok) em vez de `skill list` (~1600 tok).
-Subconjunto curado de alto uso - o índice completo das 186 é `manifest.json`
+Subconjunto curado de alto uso - o índice completo das 187 é `manifest.json`
 (`skills[].name`). Skills consolidadas são routers: o SKILL.md é caro de entrada;
 detalhe vive em `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 
@@ -102,6 +102,7 @@ Custo alto. Invoque só quando for operação Obsidian real.
 | `playbook` | Playbook reutilizável c/ Procedure/Specs/Advice (replica cloud) | 1516 | Tarefa repetida, "make this reusable" |
 | `execution` | Decide onde colocar checkpoints de review/planning (cadence) | 1153 | Tarefa pequena pode pular grilling? |
 | `arena` | Torneio: N soluções paralelas, juízes ranqueiam, campeão mergeia | 933 | Decisão aberta com várias opções reais |
+| `montador-de-ideias` | Monta/expande ideia crua em dossiê OSINT + primeiros princípios + super-prompt sem alterar original sem aval (+6k defer) | ~2500 | Ideia crua -> super-prompt blindado e dossiê de mercado |
 
 ## Pesquisa
 
