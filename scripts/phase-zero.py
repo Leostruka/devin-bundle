@@ -19,8 +19,7 @@ import os
 import subprocess
 import sys
 
-import sys as _sys, os as _os
-_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bundle_envelope import bind
 
 
@@ -112,12 +111,19 @@ def collect(root, timeout):
     add("git_branches", ["git", "branch", "-a"])
     add("git_remotes", ["git", "remote", "-v"])
     add("git_log", ["git", "log", "-n", "5", "--oneline"])
-    add("git_toplevel", ["git", "rev-parse", "--show-toplevel"])
+    toplevel = add("git_toplevel",
+                   ["git", "rev-parse", "--show-toplevel"])
     add("gh_auth", ["gh", "auth", "status"])
     repo = add("gh_repo_view",
                ["gh", "repo", "view", "--json", REPO_VIEW_FIELDS],
                json_out=True)
-    probes.append(_github_tree(root))
+    # .github/ lives at the repo root: prefer the toplevel reported by
+    # git rev-parse so the probe works from any subdirectory (falls
+    # back to cwd when not inside a git work tree).
+    tree_root = root
+    if toplevel.get("ok") and toplevel.get("stdout"):
+        tree_root = toplevel["stdout"]
+    probes.append(_github_tree(tree_root))
 
     slug = None
     if repo.get("ok") and isinstance(repo.get("json"), dict):

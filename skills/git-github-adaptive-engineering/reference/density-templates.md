@@ -49,7 +49,7 @@ Rules:
 
 ## PR body template (`gh pr create --body-file <file>`)
 
-```markdown
+````markdown
 ## Summary
 
 <one paragraph: what and why>
@@ -87,7 +87,7 @@ flowchart LR
 - [ ] Docs/ADR updated when behavior or architecture changed
 
 Closes #612
-```
+````
 
 Rules:
 

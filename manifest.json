@@ -550,11 +550,11 @@
     },
     {
       "name": "git-github-adaptive-engineering",
-      "source": "issue-612 adaptive git/github engineering",
+      "source": "devin-bundle",
       "purpose": "Use when any task touches git history, GitHub issues/PRs/releases/CI, repo governance, or branch and merge decisions. Runs the Fase Zero situational-awareness battery, picks one of five delivery flows via the adaptive decision engine, and enforces commit/PR information-density standards. Orchestrates the gh, git-workflows, github-actions, pr, and debug/finish skills.",
       "original_path": "%APPDATA%\\devin\\skills\\git-github-adaptive-engineering",
       "export_hash": "cf01385c54c22a6318630845ec33540bb1169f9f495283fc3a4fd46fb5be7668",
-      "exported_at": "2026-11-13"
+      "exported_at": "2026-11-13T22:53:30.000000"
     },
     {
       "name": "git-helper",
@@ -1722,7 +1722,7 @@
     {
       "name": "phase-zero.py",
       "purpose": "Read-only Fase Zero situational-awareness battery (git + GitHub state) emitted as JSON envelope v2 (#612)",
-      "export_hash": "be9495eef52851d9e880d6602978552e1e596a665e794e172c23291ee56901bf",
+      "export_hash": "78748fbfff182fd76889e95d10c7b72739279e72b3905b1f0b43837d49aff51a",
       "exported_at": "2026-11-13"
     }
   ],
