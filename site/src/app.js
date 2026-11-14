@@ -31,26 +31,27 @@ addEventListener("hashchange", () => go(location.hash.slice(1) || "boot"));
 /* ---------------- boot sequence ---------------- */
 const LINES = [
   ["dim","$ devin doctor --verbose"],
-  ["ok","  pass  custom subagent profiles   21 profile(s) loaded"],
+  ["ok",`  pass  custom subagent profiles   ${D.counts?.agents ?? "?"} profile(s) loaded`],
   ["ok","  pass  otel exporter environment  no unsupported variables"],
   ["ok","  pass  otel export                off"],
   ["dim",""],
   ["dim","$ cat manifest.json | jq '.skill_count, .agent_count'"],
-  ["",`${D.counts?.skills ?? 168}`],
-  ["",`${D.counts?.agents ?? 16}`],
+  ["",`${D.counts?.skills ?? "?"}`],
+  ["",`${D.counts?.agents ?? "?"}`],
   ["dim",""],
   ["dim","$ ./install.ps1 -Force"],
-  ["ok","  [+] skills        " + `${D.counts?.skills ?? 168} synced   live=bundle`],
-  ["ok","  [+] agents        " + `${D.counts?.agents ?? 16} profiles`],
+  ["ok","  [+] skills        " + `${D.counts?.skills ?? "?"} synced   live=bundle`],
+  ["ok","  [+] agents        " + `${D.counts?.agents ?? "?"} profiles`],
   ["ok","  [+] hooks         " + `${(D.hooks||[]).reduce((n,e)=>n+e.hooks.length,0)} hooks rendered from hooks.v1.json`],
-  ["ok","  [+] scripts       " + `${D.counts?.scripts ?? 34} hook scripts`],
+  ["ok","  [+] scripts       " + `${D.counts?.scripts ?? "?"} hook scripts`],
   ["warn","  [~] credentials.toml  use -RestoreSecrets to install"],
   ["dim",""],
   ["dim","$ ls .devin/adr | wc -l && ls .devin/docs | wc -l"],
-  ["",`${D.counts?.adrs ?? 8}`],
-  ["",`${D.counts?.docs ?? 14}`],
+  ["",`${D.counts?.adrs ?? "?"}`],
+  ["",`${D.counts?.docs ?? "?"}`],
   ["dim",""],
   ["",`bundle v${D.version ?? "?"} — atlas ready. cd <section> to explore.`],
+  ["dim",`built ${D.generated_at ?? "?"}${D.git_sha ? " @ " + D.git_sha : ""}`],
 ];
 
 const LOGO_DEVIN = ` ____            _          ____                  _ _
@@ -305,7 +306,7 @@ function rprint(lines){
 const recho = t => rprint([["r-cmd", `visitor@devin-bundle:${curSec === "boot" ? "~" : "~/" + curSec}$ ${t}`]]);
 
 const DOCTOR_LINES = () => [
-  ["r-cmd","pass  custom subagent profiles   21 profile(s) loaded"],
+  ["r-cmd",`pass  custom subagent profiles   ${D.counts?.agents ?? "?"} profile(s) loaded`],
   ["r-cmd","pass  otel exporter environment   no unsupported variables"],
   ["r-cmd","pass  otel export                 off"],
 ];
@@ -479,7 +480,7 @@ document.addEventListener("keydown", e => {
 });
 
 /* ---------------- init ---------------- */
-$("#tb-version").innerHTML = `v<b>${esc(D.version||"?")}</b> · ${D.counts?.skills??"?"} skills · ${D.counts?.agents??"?"} agents`;
+$("#tb-version").innerHTML = `v<b>${esc(D.version||"?")}</b> · ${D.counts?.skills??"?"} skills · ${D.counts?.agents??"?"} agents · built ${esc(D.generated_at||"?")}${D.git_sha ? "@" + esc(D.git_sha) : ""}`;
 go(location.hash.slice(1) || "boot");
 boot();
 })();
