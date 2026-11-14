@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Skills](https://img.shields.io/badge/skills-184-blue.svg)](#2-skills)
 
-[![Rules](https://img.shields.io/badge/rules-24-green.svg)](#1-regras-globais)
+[![Rules](https://img.shields.io/badge/rules-25-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.22.0-orange.svg)](CHANGELOG.md)
 [![Atlas](https://img.shields.io/badge/atlas-github%20pages-33ff66.svg)](https://leostruka.github.io/devin-bundle/)
 

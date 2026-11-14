@@ -1361,7 +1361,7 @@
     }
   ],
   "skill_count": 184,
-  "rule_count": 24,
+  "rule_count": 25,
   "scripts": [
     {
       "name": "_hookrun.py",
