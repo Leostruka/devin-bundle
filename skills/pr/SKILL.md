@@ -65,6 +65,9 @@ on what makes them irreversible.
 **Blast Radius:** one-word scope of possible impact (e.g. layout shift,
 consumer breakage, CI contract, migration cost), plus a line when the
 ramifications aren't obvious.
+## Cross-skills
+
+- `adaptive-agenda-calendar-routine-engine` - Stage 5 versioned delivery (commits, PRs, issue wiring) delegates here together with `gh`, `git-workflows`, `pr`, `finishing-a-development-branch`.
 
 ## Cross-skills
 

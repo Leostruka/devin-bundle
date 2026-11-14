@@ -54,3 +54,4 @@ defined gate is not ready-for-agent — define the gate first.
   needs full planning or can move straight to implementation.
 - `reference/plan-document-reviewer-prompt.md` — reviewer prompt for checking
   a finished plan doc.
+- Use `adaptive-agenda-calendar-routine-engine` when a spec or plan feeds calendar-backed work: Stage 3 builds the workbench manifest and Stage 4 schedules HH:MM-HH:MM agenda blocks.

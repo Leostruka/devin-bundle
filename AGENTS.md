@@ -30,6 +30,7 @@ survive compaction; merged rules keep their number as an alias.
 27. **Declare intent and impact before coding**
 28. **Hybrid Rust–Python extensions** (`.devin/adr/003-`)
 29. **Architecture manifest before source edits**
+30. **Verified commits** - sign commits so GitHub shows "Verified"
 
 ---
 
@@ -154,3 +155,7 @@ High-performance extensions use the hybrid architecture in `.devin/adr/003-hybri
 ### 29. Architecture manifest before source edits
 
 `architecture-gate.py` (PreToolUse) blocks writes outside `.devin/` when `.devin/ARCHITECTURE_MANIFEST.md` is missing — don't guess conventions. Help the user fill it from `docs/templates/ARCHITECTURE_MANIFEST.md` (installed copy under the Devin config home, e.g. `%APPDATA%\devin\docs\templates`; bundle source: `.devin/templates/`). Read-only investigation always allowed — explore first so the manifest reflects reality.
+
+### 30. Verified commits
+
+Commits must be cryptographically signed so GitHub shows the "Verified" badge. One-time per machine: `git config --global gpg.format ssh`, `git config --global commit.gpgsign true`, `git config --global user.signingkey <key.pub>` (SSH or GPG key), then register the public key on GitHub as a **signing** key (Settings -> SSH and GPG keys -> Key type: Signing; REST `POST /user/ssh_signing_keys` needs the `admin:ssh_signing_key` scope). Never downgrade `commit.gpgsign` to false to land a commit - if an environment genuinely cannot sign, declare it in the PR instead.

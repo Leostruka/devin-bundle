@@ -93,3 +93,7 @@ Required frontmatter: `title`, `date`, `session`, `category`, `tags`, `status`, 
 - arXiv:2605.07313 / 2605.17830: naive accumulation causes 16-20pp reliability loss and temporal contamination.
 - arXiv:2607.20972: voluntary memory use ≈ 0; effective memory is harness-owned and cue-anchored.
 - arXiv:2606.12329 (PROJECTMEM): event-sourced, plain-text project memory with deterministic pre-action judgment.
+
+## Cross-skills
+
+- `adaptive-agenda-calendar-routine-engine` block handoffs persist state between HH:MM-HH:MM blocks; capture durable decisions here.

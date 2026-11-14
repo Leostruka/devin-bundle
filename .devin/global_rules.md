@@ -24,6 +24,8 @@ This is a single-context repository. See `.devin/agents/domain.md`.
 
 Run `python audit.py` and `python -m pytest` before committing.
 
+Commits must be cryptographically signed so GitHub shows the "Verified" badge; configure SSH/GPG signing once per machine and declare it in the PR if an environment cannot sign.
+
 Run the platform exporter in dry-run mode when changing exported bundle resources.
 
 ## Security and project hygiene
