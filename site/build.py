@@ -10,7 +10,10 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
+import urllib.request
+from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
@@ -339,6 +342,59 @@ def collect_issues():
     return groups
 
 
+def collect_github():
+    """Fetch open GitHub issues + PRs via the public API (repo is public).
+
+    Build must never fail on network: any error -> empty list, the group
+    just does not render. 10s timeout, no auth needed.
+    """
+    url = ("https://api.github.com/repos/Leostruka/devin-bundle/issues"
+           "?state=open&per_page=100")
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "devin-bundle-atlas-build",
+                          "Accept": "application/vnd.github+json"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            raw = json.loads(r.read().decode("utf-8"))
+    except Exception:
+        return []
+    _PRI = {"critical": "P1", "high": "P2", "medium": "P3"}
+    issues, prs = [], []
+    for it in raw:
+        labels = [lb["name"] for lb in it.get("labels", [])]
+        pri = next((_PRI[lb.split(":", 1)[1]]
+                    for lb in labels
+                    if lb.startswith("priority:")
+                    and lb.split(":", 1)[1] in _PRI), "")
+        row = {"file": f"#{it['number']}", "title": it["title"],
+               "priority": pri, "status": "open",
+               "answered": bool(it.get("comments"))}
+        (prs if "pull_request" in it else issues).append(row)
+    groups = []
+    if issues:
+        groups.append({"group": "github issues (open)",
+                       "count": len(issues), "resolved": 0,
+                       "items": issues})
+    if prs:
+        groups.append({"group": "github prs (open)",
+                       "count": len(prs), "resolved": 0,
+                       "items": prs})
+    return groups
+
+
+def git_sha():
+    sha = os.environ.get("GITHUB_SHA")
+    if sha:
+        return sha[:7]
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", timeout=10).stdout.strip() or None
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return None
+
+
 def collect_changelog():
     text = read("CHANGELOG.md") or ""
     rels = []
@@ -368,6 +424,9 @@ def main():
     apps = collect_apps()
     data = {
         "version": manifest.get("version"),
+        "generated_at": datetime.now(timezone.utc).strftime(
+            "%Y-%m-%d %H:%M UTC"),
+        "git_sha": git_sha(),
         "counts": {
             "skills": len(skills),
             "agents": len(agents),
@@ -384,7 +443,7 @@ def main():
         "docs": docs,
         "apps": apps,
         "changelog": collect_changelog(),
-        "issues": collect_issues(),
+        "issues": collect_github() + collect_issues(),
         "readme_html": md_to_html(read("README.md") or "")[:8000],
     }
     if os.path.isdir(DIST):
@@ -393,6 +452,9 @@ def main():
             shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
     os.makedirs(DIST, exist_ok=True)
     tpl = read("index.html", SRC)
+    tpl = (tpl
+           .replace("__N_SKILLS__", str(len(skills)))
+           .replace("__N_AGENTS__", str(len(agents))))
     for asset in ("style.css", "app.js"):
         shutil.copy(os.path.join(SRC, asset), os.path.join(DIST, asset))
     open(os.path.join(DIST, "index.html"), "w",
