@@ -2,7 +2,7 @@
 
 Skills por domínio de uso + custo (tok = bytes÷4 do SKILL.md, medido 2026-10-31).
 Só custam quando invocadas. Use isto (~3800 tok) em vez de `skill list` (~1600 tok).
-Subconjunto curado de alto uso - o índice completo das 184 é `manifest.json`
+Subconjunto curado de alto uso - o índice completo das 185 é `manifest.json`
 (`skills[].name`). Skills consolidadas são routers: o SKILL.md é caro de entrada;
 detalhe vive em `modes/`/`reference/` e só é lido sob demanda (`+defer`).
 
@@ -35,6 +35,7 @@ Sem pin, os custom agents usam o default router do CLI (possivelmente pago). `su
 | `dispatching-parallel-agents` | Subagents têm 262k próprio + plan execution | 10590 | 2+ tarefas independentes |
 | `gates` | Prova de conclusão, unlazy ledger, gates autônomos | 1127 | Antes de "terminei" |
 | `testing` | Test-first, gaps de teste, mutation (+7.5k defer) | 478 | Feature/bugfix |
+| `adaptive-agenda-calendar-routine-engine` | Calendário -> agenda HH:MM estrita, 4 perfis de rotina, fluxo 5 estágios (>=32 ciclos) | ~1.1k | Trabalho em horas/dias/semanas/sprints |
 
 Raramente >3 por tarefa (~5000 tok).
 

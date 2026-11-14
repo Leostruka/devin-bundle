@@ -155,7 +155,7 @@ Principais grupos:
 | Grupo | Skills principais | Uso |
 |---|---|---|
 | Ideação e decisão | `grilling`, `planning`, `prototype`, `research` | Tornar uma ideia precisa antes de construir |
-| Planejamento | `planning`, `execution` | Gerar PRD, tickets verticais ou plano detalhado |
+| Planejamento | `planning`, `execution`, `adaptive-agenda-calendar-routine-engine` | Gerar PRD, tickets verticais, plano detalhado ou agenda temporal |
 | Implementação | `execution`, `testing`, `architecture` | Construir comportamento test-first em módulos profundos |
 | Execução autônoma | `execution`, `gates` | Trabalhar sem supervisão contínua com gates verificáveis |
 | Qualidade | `code-review`, `testing`, `gates` | Revisar spec, padrões, testes e evidências |
@@ -467,7 +467,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 21 perfis customizados
-├── skills/                    # 182 workflows invocáveis
+├── skills/                    # 185 workflows invocáveis
 
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools, gcal)
