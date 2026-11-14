@@ -57,6 +57,7 @@ jobs:
           "
 
       - name: PR references an issue
+        if: github.actor != 'dependabot[bot]'
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
@@ -69,6 +70,7 @@ jobs:
           fi
 
       - name: Conventional PR title
+        if: github.actor != 'dependabot[bot]'
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |

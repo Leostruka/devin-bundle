@@ -6,6 +6,16 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: pip
-    directory: /
+    directories:
+      - /extensions/ai-tools
+      - /extensions/computer-use
+      - /extensions/craft-bridge
+      - /extensions/image-forensics
+      - /extensions/laya-tools
+      - /extensions/media-tools
+      - /extensions/ppisp-prep
+      - /extensions/rust-core/crates/fast-math
+      - /extensions/scrape-tools
+      - /skills/brag/scripts
     schedule:
       interval: weekly

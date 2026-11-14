@@ -491,15 +491,27 @@ templates = [
     '.github/ISSUE_TEMPLATE/feature_request.yml',
     '.github/ISSUE_TEMPLATE/skill_improvement.yml',
     '.github/PULL_REQUEST_TEMPLATE.md',
-    '.github/release.yml',
-    '.github/dependabot.yml',
-    '.github/workflows/pr-quality.yml',
 ]
 for t in templates:
     if os.path.exists(t):
         print('  OK  ' + t)
     else:
         errors.append('Template missing: ' + t)
+        print('  FAIL ' + t + ' missing')
+
+# 13b. GitHub governance automation files
+print()
+print('[13b] GitHub governance files')
+governance = [
+    '.github/release.yml',
+    '.github/dependabot.yml',
+    '.github/workflows/pr-quality.yml',
+]
+for t in governance:
+    if os.path.exists(t):
+        print('  OK  ' + t)
+    else:
+        errors.append('Governance file missing: ' + t)
         print('  FAIL ' + t + ' missing')
 
 # 14. LICENSE, SECURITY, CONTRIBUTING, CHANGELOG
