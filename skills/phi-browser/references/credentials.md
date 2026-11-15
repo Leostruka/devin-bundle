@@ -1,4 +1,4 @@
-# Credentials — the user's password manager
+# Credentials - the user's password manager
 
 Full semantics for `credentialStatus()`, `fillCredential()`,
 `runWithCredential()`, and `getCredential()`. Read this before your FIRST
@@ -18,21 +18,21 @@ accounts on the same site.
 The vault serves every standard item type, not just logins: secure notes,
 cards, identities, and SSH keys. Domain queries reach logins only (they match
 through the login's site URIs); use `{search: 'item name'}` or `{id}` for the
-other types — `getCredential({search: 'wifi note'})` returns a secure note's
+other types - `getCredential({search: 'wifi note'})` returns a secure note's
 body as `notes`. Every served item carries `type` (`'login'` / `'note'` /
 `'card'` / `'identity'` / `'sshKey'`) and `name`, and its default fields
 follow the type: a note serves `notes`, a card serves
 `cardholderName`/`brand`/`number`/`expMonth`/`expYear`/`code`, an identity its
 name/address/contact fields (including `ssn`/`passportNumber`/
 `licenseNumber`), an SSH key `privateKey`/`publicKey`/`fingerprint`. Only
-logins can be filled into pages — `fillCredential` on another type fails with
+logins can be filled into pages - `fillCredential` on another type fails with
 `not_a_login`; other types reach a task through `getCredential` or
 `runWithCredential` (e.g. `{env: {SSH_KEY: 'privateKey'}}`).
 
-**Prefer the secret-free helpers — you never see the value.**
+**Prefer the secret-free helpers - you never see the value.**
 
 - Web form → `fillCredential(target, domain, {field})`. Phi fills the field
-  itself — the value goes app → page and never reaches you; all you get back is
+  itself - the value goes app → page and never reaches you; all you get back is
   `{filled: true, field, matches}`. `field` is `'password'` (default) or
   `'username'`. A typical login is two calls, then verify by re-observing:
 
@@ -44,15 +44,15 @@ logins can be filled into pages — `fillCredential` on another type fails with
 
   In-app fill is a Phi-side capability: on an older build without it,
   `fillCredential` throws with `autofill_not_available`. It will NOT fall back
-  to fetching the secret into your context — a fill must never become a reveal.
+  to fetching the secret into your context - a fill must never become a reveal.
   If a value genuinely has to enter your context, use `getCredential`. The
-  fill lands on the field as it exists when the user approves — if the page
+  fill lands on the field as it exists when the user approves - if the page
   navigates or re-renders while the approval prompt is up, the call fails
   cleanly (`target_not_found`); re-observe and retry. Password fills require a
   real `type=password` input, username fills a text/email input.
 - CLI / API → `runWithCredential(domain, command, {env})`. Runs `command` (an
   argv array, no shell) with credential fields injected as environment
-  variables — `{env: {PGPASSWORD: 'password'}}` maps variables to fields
+  variables - `{env: {PGPASSWORD: 'password'}}` maps variables to fields
   (username, password, uri, notes, domain, credentialId, plus the
   type-specific card/identity/SSH-key fields such as `number`, `ssn`,
   `privateKey`), or
@@ -65,36 +65,36 @@ logins can be filled into pages — `fillCredential` on another type fails with
   ```
 
   The scrub catches an accidental echo, not a command that transforms the
-  secret — only run commands you'd trust with the secret anyway.
+  secret - only run commands you'd trust with the secret anyway.
 
 Reach for `getCredential` only when the task genuinely needs the value in
-your context (composing it into a config file, reading it out to the user) —
+your context (composing it into a config file, reading it out to the user) - 
 never just to fill a form or run a command.
 
 **TOTP/2FA is deliberately not exposed** (`totp_not_supported`): releasing a
 live 2FA code to an agent would collapse both factors behind one approval.
 When a login hits a 2FA step, `handOff('Enter your 2FA code, then hand
-back')` — that step is the user's.
+back')` - that step is the user's.
 
 **Fills are origin-bound.** `fillCredential` refuses with `origin_mismatch`
 when the current page's host doesn't belong to the credential's site (equal
-host or subdomain either way) — that mismatch is exactly how a misleading page
+host or subdomain either way) - that mismatch is exactly how a misleading page
 or injected instruction would exfiltrate a password. Don't work around it by
 fetching with `getCredential` and filling manually; if the user confirmed the
 page legitimately takes that login (an SSO portal), pass
-`{allowCrossOrigin: true}` — that ALWAYS shows the user a prompt naming both
+`{allowCrossOrigin: true}` - that ALWAYS shows the user a prompt naming both
 sites, and the approval covers that one fill only.
 
 **A fill is approved like a reveal.** Anything attached to the page (your
 own CDP session included) could read a filled field back, so Phi asks the
 user for a fill exactly as it would for `getCredential`: the approval is for
 this request or for ten minutes on this item at this page host, never
-standing. A denied request is auto-denied for five minutes — don't retry
+standing. A denied request is auto-denied for five minutes - don't retry
 it; ask the user. If the page navigated between the approval and the fill,
 the call fails `origin_changed`; look at the page again before asking.
 
 **Filled secrets don't ride back into your context.** Page scans report
-password-type inputs as `•••` (never their contents — including passwords the
+password-type inputs as `•••` (never their contents - including passwords the
 user typed themselves during a handoff), and every secret a fill or run
 handled this round is scrubbed from everything the round prints, so a page
 readback or error echo can't smuggle the value back to you. Don't try to read
@@ -104,7 +104,7 @@ a filled value back; verify a login by its outcome (the post-submit page).
 several vault items fit, Phi asks the USER to pick one in its own prompt
 (then asks them to approve the request as usual); you never see the
 candidates. If no pick can be offered, the call throws `ambiguous` with only
-the match count — ask the user which account and narrow with
+the match count - ask the user which account and narrow with
 `{domain, username}`. Phi never picks an account on the user's behalf.
 
 **Repeated denials pause prompts**: after three denials within two minutes
@@ -113,18 +113,18 @@ minutes (`user_denied`). Stop and ask the user instead of retrying.
 
 Every secret-touching call (fills and runs included) pops an approve/deny
 prompt in Phi that names you and the site; the user may grant a 10-minute
-remember for that site. Prompts are typed by exposure — a browser fill, a
-command-env injection, or revealing the raw value to you — and a remembered
+remember for that site. Prompts are typed by exposure - a browser fill, a
+command-env injection, or revealing the raw value to you - and a remembered
 grant covers only the kind it was approved for (a fill-only grant never
 authorizes `getCredential`; a full-access grant covers everything), so a
 `user_denied` on getCredential can follow an approved fill: that's the user
-declining the ESCALATION, not the task. The prompt also shows a purpose line —
+declining the ESCALATION, not the task. The prompt also shows a purpose line - 
 `fillCredential`/`runWithCredential` compose it automatically; pass
-`{purpose: '…'}` to `getCredential` so the user sees why you need the value. On denial the call throws `user_denied` — surface that and stop,
+`{purpose: '…'}` to `getCredential` so the user sees why you need the value. On denial the call throws `user_denied` - surface that and stop,
 don't retry. If status is `locked` or `logged_out`, tell the user to
 unlock/sign in from Settings ▸ General ▸ Bitwarden rather than looping. On
 `not_found`, retry a non-login item as `{search: 'its name'}` (domain queries
-reach logins only), and confirm the name/domain with the user — the item may
+reach logins only), and confirm the name/domain with the user - the item may
 be stored under a different one.
 
 Secrets returned by `getCredential` enter your context (transcript, logs), so

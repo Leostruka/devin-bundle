@@ -7,7 +7,7 @@
 // Needs a running Phi Browser with the CDP endpoint enabled (see
 // references/install.md) and at least one browser window open. Drives a
 // throwaway hidden agent Space named 'phi-skill-selftest' against a local
-// HTTP server — no external sites, safe to run while the user browses.
+// HTTP server - no external sites, safe to run while the user browses.
 // Takes ~60s; exits non-zero when any check fails.
 
 import { spawnSync } from 'node:child_process'
@@ -114,7 +114,7 @@ setTimeout(() => {
 
 // A CMP living in an OPEN shadow root (TikTok pattern): the accept control is
 // invisible to plain querySelectorAll, so only the shadow-selector tier can
-// find it — and the click must still arrive as a trusted pointer event.
+// find it - and the click must still arrive as a trusted pointer event.
 const SHADOW_CONSENT = `<!doctype html><title>shadow consent</title>
 <style>body{margin:0;min-height:100vh}</style>
 <div id="page-body">Page content</div><script>
@@ -182,7 +182,7 @@ function startServer() {
       res.setHeader('content-type', 'text/html')
       const page = (name) => `<!doctype html><title>${name}</title><h1>${name}</h1>`
       if (req.url.startsWith('/slow')) {
-        // Delay the HEADERS so Page.navigate itself blocks — the goto-budget
+        // Delay the HEADERS so Page.navigate itself blocks - the goto-budget
         // tests need a navigation that cannot commit quickly.
         setTimeout(() => res.end(page('slow')), 8000)
       } else if (req.url.startsWith('/spa')) {
@@ -369,7 +369,7 @@ async function main() {
         liveBend >= 5 && liveSpeeds.length >= 6
           && Math.max(...liveSpeeds) > Math.min(...liveSpeeds) * 2,
         `${liveBend.toFixed(1)}px bend, `
-          + `${Math.round(Math.min(...liveSpeeds) * 1000)}–`
+          + `${Math.round(Math.min(...liveSpeeds) * 1000)}-`
           + `${Math.round(Math.max(...liveSpeeds) * 1000)} px/s`)
   check('click cursor trajectory is paced over time',
         moves.length >= 2 && moves.at(-1).at - moves[0].at >= 250,
@@ -654,5 +654,5 @@ try {
 
 const failed = results.filter((r) => !r.ok)
 console.log(`\n${results.length - failed.length}/${results.length} checks passed` +
-            (fatal ? ` — aborted by: ${fatal.message}` : ''))
+            (fatal ? ` - aborted by: ${fatal.message}` : ''))
 process.exit(failed.length || fatal ? 1 : 0)

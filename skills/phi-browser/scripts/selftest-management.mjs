@@ -16,7 +16,7 @@
 // tiny marker file that briefly lands in the profile's Downloads folder
 // (record and file are both removed before exit).
 // Profile CREATION is deliberately not exercised (profiles have no delete
-// API, so a created one would be permanent residue) — only its refusal
+// API, so a created one would be permanent residue) - only its refusal
 // paths are. Takes ~90s; exits non-zero when any check fails.
 
 import { createServer } from 'node:http'
@@ -80,7 +80,7 @@ async function sweepLeftovers() {
       await H.deleteSpace(space.spaceId).catch(() => {})
     }
   }
-  // Rule ids regenerate on every write — re-list after each delete.
+  // Rule ids regenerate on every write - re-list after each delete.
   for (let i = 0; i < 10; i++) {
     const rule = (await H.listUrlRules()).find((r) => r.host.startsWith(RULE_MARKER))
     if (!rule) break
@@ -108,7 +108,7 @@ async function main() {
         `${listed?.name} ${listed?.themeId}`)
   check('createSpace binds a profile', !!created.profileId, created.profileId)
 
-  // A hex snaps to the nearest built-in theme — the pinned theme is what the
+  // A hex snaps to the nearest built-in theme - the pinned theme is what the
   // window shows, so that is what must change.
   const respaced = await H.updateSpace(spaceId, { name: `${SPACE_NAME} 2`, colorHex: '#3A6FF8',
                                                   iconName: 'mail' })
@@ -379,5 +379,5 @@ try {
 
 const failed = results.filter((r) => !r.ok)
 console.log(`\n${results.length - failed.length}/${results.length} checks passed` +
-            (fatal ? ` — aborted by: ${fatal.message}` : ''))
+            (fatal ? ` - aborted by: ${fatal.message}` : ''))
 process.exit(failed.length || fatal ? 1 : 0)

@@ -1,4 +1,4 @@
-# phi-browser skill — setup (Windows)
+# phi-browser skill - setup (Windows)
 
 ## 1. Install the skill
 
@@ -10,7 +10,7 @@ the skill. "All agents" links them all. A tick marks an agent already linked
 to this build.
 
 **By hand:** link the skill into your agent's skills folder (Claude Code shown; swap the
-destination for another agent — Codex `~/.codex/skills`, Cursor
+destination for another agent - Codex `~/.codex/skills`, Cursor
 `~/.cursor/skills`, etc.). PowerShell, from the repository root:
 
 ```powershell
@@ -37,11 +37,11 @@ channels the same way macOS does over its Unix socket:
   browser management (`agentSpace.*`, `credentials.*`).
 - `/json/version`, `/json/list` → the DevTools discovery documents, and
   `/devtools/<kind>/<id>` → a CDP WebSocket session, both served by the
-  client through the browser's in-process DevTools transport — so page
+  client through the browser's in-process DevTools transport - so page
   automation (CDP) rides the same pipe.
 
 That pipe is the only way to reach the protocol: Phi does not open a
-loopback DevTools port. Three gates sit in front of it — the pipe's ACL
+loopback DevTools port. Three gates sit in front of it - the pipe's ACL
 (owner + SYSTEM + administrators, medium integrity, no remote clients), the
 token, which every request must carry as `X-Phi-Token` (a missing or wrong
 token is answered `403` before anything else happens), and the user's switch
@@ -59,7 +59,7 @@ again). A refused connection reads `403 … agent control is off`.
 
 **Discovery.** The skill searches these user-data directories, first hit wins:
 
-1. `%PHI_USER_DATA_DIR%` — set this to be explicit. The framework/client dev
+1. `%PHI_USER_DATA_DIR%` - set this to be explicit. The framework/client dev
    build is launched with `--user-data-dir` (e.g. `C:\phi-fx-test`), so point
    the variable at the same path.
 2. `%LOCALAPPDATA%\Phinomenon\PhiBrowser\User Data`
@@ -92,11 +92,11 @@ EOF
 agent Space is created off-screen, `example.com` loads in it, and `pageInfo`
 prints the page's URL/title/size.
 
-## 4. Credentials — the agent password vault
+## 4. Credentials - the agent password vault
 
 `credentials.*` is backed by a local **DPAPI-encrypted** vault,
 `PhiCredentials.dat`, in the user-data directory (the Windows stand-in for the
-macOS Bitwarden provider — there is no cloud provider on Windows yet).
+macOS Bitwarden provider - there is no cloud provider on Windows yet).
 
 - `credentialStatus()` reports `ready` when the vault exists, else
   `logged_out`.
@@ -104,9 +104,9 @@ macOS Bitwarden provider — there is no cloud provider on Windows yet).
   **allow/deny** prompt. `fillCredential(target, query)` fills a page field
   **without** the secret ever entering the agent: Phi writes the value into
   the tagged field in-process and returns only `{filled:true}`. Both are
-  origin-bound — a fill into a page that doesn't belong to the credential's
+  origin-bound - a fill into a page that doesn't belong to the credential's
   site is refused (`origin_mismatch`) unless you pass `{allowCrossOrigin:true}`.
-- TOTP is never released (`totp_not_supported`) — 2FA stays with the user.
+- TOTP is never released (`totp_not_supported`) - 2FA stays with the user.
 
 Seed the vault (until a settings UI exists) by writing a JSON array and letting
 the client encrypt it on next load. A **plaintext** `PhiCredentials.dat` is
@@ -126,12 +126,12 @@ also accepted as-is for dev/test:
   could not be started. Set `PHI_USER_DATA_DIR` to the running client's
   user-data dir, or `PHI_CLIENT_EXE` to the exe, or start Phi by hand.
 - **Launched but never published its pipe**: the client started but 60 s
-  passed with no `CDPAgentSocket` — it may be sitting at a prompt, or still
+  passed with no `CDPAgentSocket` - it may be sitting at a prompt, or still
   starting. Check the window and retry.
 - **Screenshots are blank**: the agent Space renders off-screen; if a capture
-  ever comes back blank, the window was occluded — bring it forward is not yet
+  ever comes back blank, the window was occluded - bring it forward is not yet
   a supported gesture, so retry the capture.
 - **`credentials.*` returns `logged_out`**: no `PhiCredentials.dat` in the
   user-data dir. Seed it (section 4).
 - **`whole-browser` capture (`screenshotBrowser`) fails**: not wired on
-  Windows yet — use `screenshot()` / `annotatedScreenshot()` (CDP), which work.
+  Windows yet - use `screenshot()` / `annotatedScreenshot()` (CDP), which work.

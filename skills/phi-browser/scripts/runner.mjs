@@ -29,12 +29,12 @@ const { createRequire } = await import('node:module')
 const { join } = await import('node:path')
 surface.require = createRequire(join(process.cwd(), '__phi-heredoc__.mjs'))
 
-// Everything this process prints reaches the agent's context — scrub any
+// Everything this process prints reaches the agent's context - scrub any
 // secret the round handled out of ALL of it, not just cliLog.
 const scrub = surface.__scrubSessionSecrets ?? ((t) => t)
 
 // The heredoc body's ambient `console` writes would bypass cliLog's
-// scrubber — shadow it with a scrubbing shim, injected as one more surface
+// scrubber - shadow it with a scrubbing shim, injected as one more surface
 // name so it wins inside the function body without touching the global.
 const { inspect } = await import('node:util')
 const scrubArg = (a) => scrub(typeof a === 'string' ? a : inspect(a))
@@ -50,7 +50,7 @@ surface.console = Object.assign(Object.create(console), {
 // A floating rejection (or a throw from a fire-and-forget callback) kills
 // Node WITHOUT running finally blocks: the busy badge would stick and the
 // round-end keep-alive would never be granted, expiring the Space
-// mid-conversation — and the default reporter bypasses the secret scrubber.
+// mid-conversation - and the default reporter bypasses the secret scrubber.
 // Treat both like a normal failure: scrub, dispose, exit 1.
 for (const event of ['unhandledRejection', 'uncaughtException']) {
   process.on(event, (err) => {
@@ -60,7 +60,7 @@ for (const event of ['unhandledRejection', 'uncaughtException']) {
 }
 
 // A killed round (Bash-tool timeout, Ctrl-C) should still flip the Space's
-// busy badge back to idle — best effort, the default handler would just die.
+// busy badge back to idle - best effort, the default handler would just die.
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
     __dispose().catch(() => {}).finally(() => process.exit(130))
@@ -90,7 +90,7 @@ try {
   // script compiles as an anonymous async function, so frames read
   // "<anonymous>:LINE"). Skip the message line already printed above. The
   // body sits behind a 2-line Function-constructor wrapper, so V8 reports
-  // heredoc line N as <anonymous>:N+2 — compensate before printing.
+  // heredoc line N as <anonymous>:N+2 - compensate before printing.
   const fixLines = (t) => t.replace(/<anonymous>:(\d+)/g,
     (m, n) => `<anonymous>:${Math.max(1, Number(n) - 2)}`)
   const frames = fixLines(String(err?.stack || '')

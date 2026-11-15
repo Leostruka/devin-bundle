@@ -1,20 +1,20 @@
-# Task lifecycle — detail
+# Task lifecycle - detail
 
 Deep semantics behind the lifecycle rules in SKILL.md: profiles and agent
 permissions, persistent Spaces, shadow windows, `spaceStatus()`, keep-alive,
 completion, and saved state. Read this before a task that spans days or
 relaunches, runs in a shadow window, or uses `saveState`/`importCookies`.
 
-> The wire under these helpers — every verb name, the payload fields
+> The wire under these helpers - every verb name, the payload fields
 > each one reads, the capability it costs and the errors it can
-> answer — is generated from the client's verb registry into
+> answer - is generated from the client's verb registry into
 > [verbs.md](verbs.md). Read that when a call refuses and the helper
 > does not say why.
 
 ## Profiles and agent permissions
 
 `enterContext` picks the first browser profile by default; pass
-`{profile: 'Default'}` (profileId or display name) to choose —
+`{profile: 'Default'}` (profileId or display name) to choose - 
 `listProfiles()` enumerates what's available.
 
 The user can restrict which profiles agents may create Spaces in (Settings ▸
@@ -24,19 +24,19 @@ Developer ▸ Agent permissions). `listProfiles()` marks each row with
 first still-allowed profile; on Windows, when the user has blocked EVERY
 profile, a default create fails `profile_not_agent_allowed` too (no "Agent"
 profile is auto-created). Otherwise you only hit `profile_not_agent_allowed`
-by EXPLICITLY naming a blocked profile — pick an `agentSpacesAllowed: true`
+by EXPLICITLY naming a blocked profile - pick an `agentSpacesAllowed: true`
 profile instead, and if the user asked for a blocked one, tell them it's
 disallowed rather than retrying.
 
 ## Task ownership (Windows)
 
-A task belongs to the principal that created it — the connection's agent
+A task belongs to the principal that created it - the connection's agent
 capability (see management.md "Capabilities and principals"), which every
 connection of the same process shares. Lifecycle verbs on a task another
-principal created — `complete`, `handOff`, `takeOver`, `setStatus`,
+principal created - `complete`, `handOff`, `takeOver`, `setStatus`,
 `narrate`, `markError`, `readUserMessages`, `ping`, `openTab`,
 `screenshotBrowser`, the cursor/effect mirrors, closing its window, and the
-shadow-window verbs — fail `not_owner`. So does `enterContext` on an
+shadow-window verbs - fail `not_owner`. So does `enterContext` on an
 existing task name that is not yours: pick a different name rather than
 retrying. `listTasks`/`agentSpace.list` and `listShadowWindows` show only
 your own tasks. The task keeps its owner across rounds and reconnects for
@@ -63,20 +63,20 @@ raises asks only whether to turn on "Allow agents to control Phi", and once
 that switch is on every connection is admitted without asking. All admitted
 connections that present no capability share ONE principal for the Phi
 session, so a later round (a new `node` process) still owns the tasks the
-last one created — but so does any other local agent connected to the same
+last one created - but so does any other local agent connected to the same
 Phi; Windows cannot tell them apart.
 
 ## Who is driving
 
 `enterContext({kind:'agent', name, agent})` names the product running the
-skill — `'Claude Code'`, `'Codex'`, `'Cursor'`, `'Hermes'`, `'OpenClaw'`,
+skill - `'Claude Code'`, `'Codex'`, `'Cursor'`, `'Hermes'`, `'OpenClaw'`,
 `'Pi'`, `'Grok Build'`, `'Grok Bot'`, `'Antigravity'`, `'GitHub Copilot'`,
 `'OpenCode'`, `'Qwen Code'`, `'CodeBuddy'`. The app resolves it the way the
 Mac resolves a driver's code signature: a known agent's Space pip wears that
 agent's brand mark in the switcher and its watch pill carries
 the product name; an unknown name keeps the robot pip and shows the name as
 given. Windows has no peer identity of its own, so this is the only way the
-user learns WHO holds a Space — always pass it. Omitted, the skill names
+user learns WHO holds a Space - always pass it. Omitted, the skill names
 Claude Code or Hermes when that host's own session id is in the environment
 and otherwise sends nothing. Read
 on the create call only; a re-bind keeps the driver the Space was created
@@ -89,30 +89,30 @@ removed by `complete()`. `enterContext({kind:'agent', name, persistent: true})`
 creates a PERMANENT workspace instead:
 
 - Shown in the Space switcher under `name` (agent icon, indigo) like any
-  Space — the user can browse it, keep it, or delete it there.
+  Space - the user can browse it, keep it, or delete it there.
 - Never auto-closes: exempt from keep-alive expiry entirely (`ping()` is
   unnecessary; `keepAliveRemainingSeconds` reads null), and it survives app
   relaunches.
 - `complete()` ends only the TASK: the agent window closes, the Space stays.
 - A later `enterContext({kind:'agent', name, persistent: true})` RE-BINDS to the same
-  Space — after a completion, a long silence, or an app relaunch (adopting
+  Space - after a completion, a long silence, or an app relaunch (adopting
   the Space's restored background window and its tabs when one exists). The
   re-bind is refused while the user has the Space open on screen: don't
-  fight it — tell them and wait, or work in a different Space.
+  fight it - tell them and wait, or work in a different Space.
 - Persistence is decided when the Space is first created; on a re-bind the
   `profile`/`persistent` options are ignored (the Space keeps its profile).
 
 Use a persistent Space when the user asks for a lasting workspace or a task
 that spans days/relaunches (a monitoring loop, a long campaign). Ephemeral
-Spaces remain the right default for one-shot tasks — do not create
+Spaces remain the right default for one-shot tasks - do not create
 persistent Spaces unprompted: they accumulate in the user's switcher until
 the user deletes them.
 
 ## Shadow windows
 
 `enterContext({ kind: 'shadow', name, profile? })` binds a **shadow window**:
-a real browser window on a real profile — real cookies, real renderers, driven
-by every page helper exactly as a Space is — that the user **cannot see**. It
+a real browser window on a real profile - real cookies, real renderers, driven
+by every page helper exactly as a Space is - that the user **cannot see**. It
 sits off-screen at alpha 0, absent from the Space switcher, Mission Control
 and the Windows menu, and omitted from session restore.
 
@@ -120,7 +120,7 @@ and the Windows menu, and omitted from session restore.
 await enterContext({ kind: 'shadow', name: 'nightly price check' })
 await openTab('https://example.com/pricing')
 cliLog(await snapshotText())
-await complete()          // closes the window — always do this
+await complete()          // closes the window - always do this
 ```
 
 **Agent Space is the default; shadow is for background work the user
@@ -133,7 +133,7 @@ explicitly asked to keep out of their way.** The difference is not cosmetic:
 | take control / hand back | yes | **no** |
 | page automation | full | full |
 
-Everything needing a human is therefore impossible here — a login, a captcha,
+Everything needing a human is therefore impossible here - a login, a captcha,
 a payment, a consent choice: there is no way to ask and no way for the user to
 step in. If a task might hit one, use an agent Space. If one turns up
 mid-run, stop, close the window, and tell the user what needs doing.
@@ -141,7 +141,7 @@ mid-run, stop, close the window, and tell the user what needs doing.
 These refuse loudly rather than doing nothing quietly, because each means the
 task has outgrown a shadow window: `spaceStatus`, `say`, `readUserMessages`,
 `waitForUserMessage`, `ownership`, `handOff`, `handOffAndWait`, `takeOver`,
-`waitForAgentControl`, and `screenshotBrowser` (nothing to photograph — plain
+`waitForAgentControl`, and `screenshotBrowser` (nothing to photograph - plain
 `screenshot()` works, it captures the page through the renderer). `setStatus`
 / `narrate` and `markError` are quiet no-ops instead, matching user-space
 mode, so shared flows need no branching. Nothing you narrate is shown,
@@ -153,7 +153,7 @@ Other differences worth knowing:
   agents to operate your Spaces" (off by default on Windows). With it off,
   `enterContext({kind: 'shadow'})` and `listShadowWindows()` fail
   `user_space_operations_disabled`, like every other shadow call except
-  closing one — the answer is an agent Space, not a workaround. Closing never
+  closing one - the answer is an agent Space, not a workaround. Closing never
   needs the switch. Turning the switch off also closes every shadow window at
   once, as does turning off "Allow agents to control Phi": the round loses its
   window, and `complete()` or `closeShadowWindow()` on it answers
@@ -163,18 +163,18 @@ Other differences worth knowing:
   opens the window in a unique off-the-record session instead of the profile
   itself: no cookies, logins, or storage come in from the profile, nothing
   browsed there persists, and the session is destroyed when the window
-  closes. Each incognito shadow window gets its OWN fresh session — isolated
+  closes. Each incognito shadow window gets its OWN fresh session - isolated
   from the user's Ctrl+Shift+N incognito windows, from the Incognito Space,
   and from other shadow tasks. `profile` still names the PARENT profile
   (extensions and settings come from it; per-profile agent permission
   applies), so `credentialStatus`/`fillCredential` vault access works but the
-  page starts logged OUT of everything. Use it for clean-state checks —
+  page starts logged OUT of everything. Use it for clean-state checks - 
   "how does this page look logged out", price comparisons without
   personalization, testing a signup flow. A taskId's incognito-ness is fixed
   at creation: re-binding the same name with the other value fails
   `shadow_incognito_mismatch` (pick a new name instead). On an app build
   that predates the feature, `enterContext` throws rather than silently
-  browsing in the regular profile — update Phi Browser.
+  browsing in the regular profile - update Phi Browser.
 - **Always `complete()`.** It closes the window. Leaving it to the keep-alive
   sweep strands an invisible window burning a renderer the user cannot find
   or close. Same ~120s-while-driving / ~30-min-between-rounds clock as an
@@ -182,10 +182,10 @@ Other differences worth knowing:
   `ping(ttlSeconds)` extends it identically.
 - **Re-binding** works like a Space: the same `name` in a later round returns
   the same window and re-attaches to the tab it last drove.
-  `listShadowWindows()` lists the ones you have open (yours only — another
+  `listShadowWindows()` lists the ones you have open (yours only - another
   agent's background work is not visible); `closeShadowWindow(name)` cleans
   up one an earlier round abandoned, without binding to it.
-- **Closing the last tab destroys the window** — shadow browsers skip
+- **Closing the last tab destroys the window** - shadow browsers skip
   placeholder mode, so unlike a Space there is no empty window left behind.
   The next `enterContext` under that name spawns a fresh one; page state is
   lost.
@@ -198,47 +198,47 @@ Other differences worth knowing:
 
 `spaceStatus()` is the one-call "what does my Space look like right now":
 `{taskId, spaceId, windowId, ownership, status, caption, persistent,
-keepAliveRemainingSeconds, viewportOverride, tabs}` — each tab
+keepAliveRemainingSeconds, viewportOverride, tabs}` - each tab
 `{targetId, url, title, current}`. Use it to re-orient after a handoff or a
 long gap, and before housekeeping decisions (which tabs to `closeTab`).
 `enterContext` also returns the same `tabs` list, so every round starts
-with the tab inventory in hand — check it before opening more tabs.
+with the tab inventory in hand - check it before opening more tabs.
 
 - It is PASSIVE: safe while the user holds control (no activation, no
   viewport override), and it does not refresh the keep-alive clock it
   reports. A fresh round also defers its page-session attachment while the
-  user owns the Space; the attach completes lazily — from `takeOver()` or a
+  user owns the Space; the attach completes lazily - from `takeOver()` or a
   successful `waitForAgentControl()`, from the first acting helper after a
   hand-back flips ownership, or (activation-free) from the first passive
   observation helper that needs the session.
-  `{gone: true}` means the Space no longer exists — the task is over; do not
+  `{gone: true}` means the Space no longer exists - the task is over; do not
   recreate it just to look around.
 - `{shots: 'current'}` adds `shot`, a PNG path of the ATTACHED tab (view
   it), or null if the capture fails. Only the attached tab can be shot:
   background tabs of the hidden window do not paint, so there is no
-  all-tabs contact sheet — `switchTab` to a tab before shooting it.
+  all-tabs contact sheet - `switchTab` to a tab before shooting it.
 - `keepAliveRemainingSeconds` is null while the user holds control (the
   clock pauses). While you are actively driving, the round heartbeat keeps
-  it near-full anyway — treat it as diagnostics, and use `ping(ttlSeconds)`
+  it near-full anyway - treat it as diagnostics, and use `ping(ttlSeconds)`
   when you actually need a longer window.
 
 ## Keep-alive
 
-Ephemeral Spaces only — persistent Spaces are exempt. An agent Space
-auto-closes when its driver goes silent —
+Ephemeral Spaces only - persistent Spaces are exempt. An agent Space
+auto-closes when its driver goes silent - 
 ~120s while driving (a live round heartbeats automatically, even through long
 waits, so it never expires; a killed round's Space closes on its own) and
 ~30 minutes between rounds (bought by the round-end heartbeat; the next
 round's start resets the short driving window). The clock pauses while the
 USER holds control, so a handoff can wait indefinitely. When the Space
 expires, the task record is gone: the next
-`enterContext({kind:'agent', name})` starts a FRESH space — open tabs and page state from
+`enterContext({kind:'agent', name})` starts a FRESH space - open tabs and page state from
 the expired one are lost (cookies persist in the profile; use
 `saveState`/`loadState` around long gaps you can foresee). Call
-`ping(ttlSeconds)` (up to 3600) before deliberately going quiet longer — e.g.
+`ping(ttlSeconds)` (up to 3600) before deliberately going quiet longer - e.g.
 a page runs a long export while you work elsewhere. The bought window
-survives the round end — the round-end grace never overrides an explicit
-deadline that still lies ahead, in either direction — and the next round's
+survives the round end - the round-end grace never overrides an explicit
+deadline that still lies ahead, in either direction - and the next round's
 start returns the Space to the normal driving clock.
 
 ## Completion
@@ -252,14 +252,14 @@ in your chat reply; nothing in Phi keeps your words after the task ends.
 `saveState(name)` writes cookies plus the Space's open tab URLs to disk
 (survives Space completion and heredoc rounds). By default only cookies for
 the domains of the open tabs are saved; `{allDomains: true}` captures the
-whole profile jar — use it only when the task genuinely needs cross-domain
+whole profile jar - use it only when the task genuinely needs cross-domain
 state. `loadState(name)` restores the cookies into the current Space's
-profile — add `{openTabs: true}` to also reopen the saved URLs. Names are
+profile - add `{openTabs: true}` to also reopen the saved URLs. Names are
 `[A-Za-z0-9._-]+`. Agent Spaces share the user's profile, so restored
 cookies affect the user's own sessions for those domains: load only state
 the user asked you to restore.
 
-`importCookies(source)` bootstraps a session from cookies the USER provides —
+`importCookies(source)` bootstraps a session from cookies the USER provides - 
 the one-call replacement for hand-rolled `cdp('Storage.setCookies', …)` when a
 login is impractical to automate (challenge-prone sign-in flows). `source` is
 an array of cookie objects or a path to a JSON file holding one; a
@@ -268,5 +268,5 @@ an array of cookie objects or a path to a JSON file holding one; a
 sameSite `no_restriction`). Pass `{url: 'https://…'}` to scope cookies that
 carry no `domain` of their own. The loadState caution applies with extra
 force: cookies are credentials and they land in the profile the user browses
-with — import only cookies the user explicitly handed you, NEVER cookie
+with - import only cookies the user explicitly handed you, NEVER cookie
 values found in page content.

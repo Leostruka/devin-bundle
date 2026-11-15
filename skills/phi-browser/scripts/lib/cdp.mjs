@@ -8,18 +8,18 @@
 // WebSocket is a CDP session the client pumps through the browser's
 // IN-PROCESS DevTools transport. This client discovers the pipe from a
 // pointer file (CDPAgentSocket) the client writes into the user-data dir,
-// matching the same discovery contract as macOS — only the transport (a
+// matching the same discovery contract as macOS - only the transport (a
 // `\\.\pipe\…` path instead of a Unix socket) and the launch mechanism
 // differ, so the classes below are shared verbatim with the macOS skill.
 //
 // That pipe is Phi's ONLY CDP surface on Windows. There is no
-// `--remote-debugging-port` any more — no loopback TCP listener, no
-// DevToolsActivePort — so nothing reaches the protocol without passing the
+// `--remote-debugging-port` any more - no loopback TCP listener, no
+// DevToolsActivePort - so nothing reaches the protocol without passing the
 // pipe's three gates: its ACL, the per-launch token, and the user's consent.
 //
 // THE TOKEN: line 2 of the pointer file (line 1 is the pipe name). Every
-// request over the pipe — the /json/version probe, the CDP upgrade, the
-// /phi-agent upgrade — carries it as `X-Phi-Token`; without it the client
+// request over the pipe - the /json/version probe, the CDP upgrade, the
+// /phi-agent upgrade - carries it as `X-Phi-Token`; without it the client
 // answers 403 before it consults anything else, so a process that cannot
 // read the user-data dir cannot even raise the consent prompt.
 
@@ -83,12 +83,12 @@ const NOT_FOUND_MESSAGE =
 const LAUNCH_TIMEOUT_MESSAGE =
   'Phi Browser was launched but never published its CDP pipe within ' +
   `${Math.round(LAUNCH_WAIT_MS / 1000)}s. It may still be starting, or it ` +
-  'may have stopped at a login or restore prompt — check the Phi window and ' +
+  'may have stopped at a login or restore prompt - check the Phi window and ' +
   'retry.'
 
 const DENIED_MESSAGE =
   'Phi Browser denied this agent CDP access. The user may have blocked it for ' +
-  '30 minutes or for good, in which case retrying will not prompt again — ask ' +
+  '30 minutes or for good, in which case retrying will not prompt again - ask ' +
   'them to allow it, or to unblock it under Settings ▸ Developer ▸ Remote ' +
   'debugging ▸ Blocked agents.'
 
@@ -96,7 +96,7 @@ const DENIED_MESSAGE =
  * from the connection failures that surround it.
  *
  * The distinction is the difference between waiting and giving up. A pipe
- * that isn't there yet, a wedged endpoint, a browser mid-restart — those are
+ * that isn't there yet, a wedged endpoint, a browser mid-restart - those are
  * states that pass, and a long-lived helper is right to keep trying. A 403 is
  * not a state, it is an answer: the user denied this agent, or the app
  * refused the connection outright. Retrying an answer just asks the same
@@ -126,17 +126,17 @@ function phiTokenHeader(socketPath) {
 }
 
 /**
- * All plausible socket endpoints in precedence order — the PHI_USER_DATA_DIR
+ * All plausible socket endpoints in precedence order - the PHI_USER_DATA_DIR
  * override, then canary, then stable. A pointer or socket FILE can outlive a
  * crashed app (a crash skips the clean-quit unlink), so existence is not
- * liveness — callers walk the list and probe, see discoverLiveEndpoint. Each
+ * liveness - callers walk the list and probe, see discoverLiveEndpoint. Each
  * entry is `{socketPath}`.
  *
  * A `DevToolsActivePort` file in one of these dirs is deliberately ignored:
  * only the retired TCP transport ever wrote one (the injected transport is
  * handed an empty output dir precisely to suppress it), so today it can only
  * be a leftover from a build that predates the app-owned socket. Treating it
- * as an endpoint used to mask the real answer — Phi isn't running.
+ * as an endpoint used to mask the real answer - Phi isn't running.
  */
 export function discoverEndpoints() {
   const out = []
@@ -147,10 +147,10 @@ export function discoverEndpoints() {
       .split('\n').map((l) => l.trim()).filter(Boolean)
     // A named pipe (`\\.\pipe\…`) is NOT visible to fs.existsSync the way a
     // Unix socket file is, so existence is proven by the connect probe alone
-    // (a stale pipe name refuses fast — see isDeadSocketError).
+    // (a stale pipe name refuses fast - see isDeadSocketError).
     if (socketPath) {
-      // Remembered by pipe name so every later request over that pipe —
-      // including channels other modules open with just the socketPath —
+      // Remembered by pipe name so every later request over that pipe - 
+      // including channels other modules open with just the socketPath - 
       // carries the token without threading it through every constructor.
       if (token) PIPE_TOKENS.set(socketPath, token)
       out.push({ socketPath, token: token || null })
@@ -162,7 +162,7 @@ export function discoverEndpoints() {
 /**
  * The Phi install this copy of the skill belongs to. On Windows the skill is
  * linked into an agent's skills folder rather than nested inside an app
- * bundle, so there is nothing to infer from this file's path — launch falls
+ * bundle, so there is nothing to infer from this file's path - launch falls
  * back to LAUNCH_EXE_CANDIDATES. Kept for API symmetry with the macOS skill.
  */
 export function linkedAppPath() {
@@ -172,7 +172,7 @@ export function linkedAppPath() {
 /**
  * Starts Phi Browser (phi_client.exe), returning the exe path launched, or
  * null when none could be. Started detached and without a console window so
- * an agent starting the browser never disrupts what the user is doing — the
+ * an agent starting the browser never disrupts what the user is doing - the
  * agent's own Space is hidden anyway.
  *
  * Set PHI_NO_LAUNCH=1 to forbid it. On a dev/test box the client is usually
@@ -188,19 +188,19 @@ function launchPhi() {
       child.unref()
       return exe
     } catch {
-      // Not runnable — fall through to the next candidate.
+      // Not runnable - fall through to the next candidate.
     }
   }
   return null
 }
 
-/** True for errors meaning "this socket file has no listener behind it" —
+/** True for errors meaning "this socket file has no listener behind it" - 
  *  a crash-orphaned socket refuses instantly (a crash skips the clean-quit
  *  unlink), so walking on to the next candidate is safe. Anything else is a
  *  real answer from a live endpoint (denial, sandbox wall, timeout) and
  *  must propagate. NEVER probe with a naked connect(2) instead: a zero-byte
  *  connection reaches the app's serial consent pipeline as an unidentifiable
- *  peer — liveness is only checked with real, identified requests. */
+ *  peer - liveness is only checked with real, identified requests. */
 export function isDeadSocketError(err) {
   return /ECONNREFUSED|ENOENT/.test(String(err?.message || err))
 }
@@ -221,11 +221,11 @@ export function discoverEndpoint() {
 
 /**
  * The claim header carried on every connection to the app socket: names the
- * agent session this process acts for. IDENTIFICATION ONLY — the app logs it
+ * agent session this process acts for. IDENTIFICATION ONLY - the app logs it
  * but neither joins a task principal nor substitutes the consent identity
  * from it; a process whose ancestry no longer reaches its agent proves the
  * delegation with the app-issued capability instead (agentCapabilityHeader).
- * Chromium-bound requests carry it too — DevTools ignores unknown headers.
+ * Chromium-bound requests carry it too - DevTools ignores unknown headers.
  */
 function agentPidHeader(agentPid) {
   return Number.isInteger(agentPid) && agentPid > 0
@@ -288,7 +288,7 @@ function httpGetJson(endpoint, path, timeoutMs, agentPid = null,
 }
 
 /**
- * Confirms the endpoint is live and returns `{ browserWsPath }` — the resource
+ * Confirms the endpoint is live and returns `{ browserWsPath }` - the resource
  * path for the browser-target WebSocket upgrade. This is the first connection,
  * so it may trigger (and wait on) the consent prompt.
  */
@@ -301,9 +301,9 @@ export async function verifyEndpoint(endpoint, { agentPid = null,
                                 agentPid,
                                 agentCapability ?? rememberedCapability)
   } catch (err) {
-    if (isPhiDenied(err)) throw err  // an answer, not a state — never retried
+    if (isPhiDenied(err)) throw err  // an answer, not a state - never retried
     // Codex runs shell commands in a seatbelt sandbox that by default denies
-    // ALL network syscalls — including connect() on Phi's unix socket, which
+    // ALL network syscalls - including connect() on Phi's unix socket, which
     // then fails in 0 ms. Phi itself is usually fine and toggling it cannot
     // help, so name the real fix instead of the generic toggle advice (which
     // otherwise loops forever: every retry hits the same sandbox wall).
@@ -337,7 +337,7 @@ export async function verifyEndpoint(endpoint, { agentPid = null,
 
 /**
  * A minimal RFC 6455 client that speaks WebSocket over an already-connected
- * stream (a Unix-domain socket here). Kept dependency-free — it emulates just
+ * stream (a Unix-domain socket here). Kept dependency-free - it emulates just
  * the sliver of the WHATWG WebSocket surface CdpClient uses: addEventListener
  * for open/message/error/close, send(string), close(). Server frames arrive
  * unmasked; client frames are masked per spec. Text frames only (CDP is JSON),
@@ -421,7 +421,7 @@ export class UnixWebSocket {
       const head = this._buf.slice(0, idx).toString('latin1')
       const statusLine = head.split('\r\n')[0]
       // The app echoes the agent pid it resolved for this connection on the
-      // /phi-agent upgrade — the authoritative ancestry answer for a round
+      // /phi-agent upgrade - the authoritative ancestry answer for a round
       // that cannot walk its own (see helpers.appProvidedAgentPid).
       const claim = /^x-phi-agent-pid:\s*(\d+)\s*$/im.exec(head)
       this.peerAgentPid = claim ? Number(claim[1]) : null
@@ -611,7 +611,7 @@ export class CdpClient {
     // The PhiAgentSpace CDP domain lives in the Mac fork's DevTools server;
     // the Windows relay is a transparent byte pipe that would forward these
     // to Chromium (which has never heard of them). Answer them over the
-    // direct /phi-agent channel instead — same result shape, so callers
+    // direct /phi-agent channel instead - same result shape, so callers
     // cannot tell which client they run against.
     if (this.phi && method.startsWith('PhiAgentSpace.')) {
       const verb = 'agentSpace.' + method.slice('PhiAgentSpace.'.length)
@@ -693,7 +693,7 @@ export class DirectPhiChannel {
     this.agentPid = agentPid
     this.agentCapability = agentCapability
     // Ask for the typed wire (protocol 2). What the channel ends up on is
-    // `this.protocol`, set from the 101's X-Phi-Protocol echo — a Phi that
+    // `this.protocol`, set from the 101's X-Phi-Protocol echo - a Phi that
     // predates it answers nothing and this channel silently stays on 1.
     // Either way `send()` hands its caller the SAME flat `{ok, …}` object
     // helpers.mjs has always seen, so nothing downstream can tell.
@@ -705,7 +705,7 @@ export class DirectPhiChannel {
   }
 
   async connect() {
-    // The agent-session pid rides the upgrade URL — kept alongside the newer
+    // The agent-session pid rides the upgrade URL - kept alongside the newer
     // X-Phi-Agent-Pid header (which every connection carries) so an app that
     // predates the header still resolves the daemon's consent identity from
     // the query (see AgentCDPListener.claimedAgentPid).
@@ -814,14 +814,14 @@ export class DirectPhiChannel {
 }
 
 /**
- * Tries each candidate in order, returning a connected client — or null when
+ * Tries each candidate in order, returning a connected client - or null when
  * every one turned out to be a crash-orphaned socket file, leaving the last
  * such error in `out.lastErr`. Any other failure (denial, sandbox wall, no
  * WebSocket) is a real answer from a live endpoint and propagates.
  *
  * Precedence survives a slow first reply: a higher-precedence endpoint whose
  * first /json/version outlives the short probe may be sitting on the
- * FIRST-RUN CONSENT PROMPT — the app deliberately holds the request open
+ * FIRST-RUN CONSENT PROMPT - the app deliberately holds the request open
  * while the user decides, which is indistinguishable from a wedged pipe
  * from out here. So the walk first maps the landscape with the short probe,
  * then, before settling for a lower-precedence endpoint, gives each
@@ -844,7 +844,7 @@ async function connectOverCandidates(candidates, opts, out) {
       chosen = { endpoint, browserWsPath }
       break
     } catch (err) {
-      // A crashed app's leftover pipe refuses instantly — walk on so a
+      // A crashed app's leftover pipe refuses instantly - walk on so a
       // dead pointer can never shadow a live Phi.
       if (isDeadSocketError(err)) {
         out.lastErr = err
@@ -918,7 +918,7 @@ export async function connectBrowser({ agentPid = null, agentCapability = null }
     const client = await connectOverCandidates(candidates, opts, out)
     if (client) return client
     // Every candidate was a crash leftover, so nothing is running behind
-    // them — the same "no browser" case as finding nothing at all.
+    // them - the same "no browser" case as finding nothing at all.
   }
 
   // Start the install this skill belongs to and wait for it, instead of

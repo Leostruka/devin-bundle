@@ -38,7 +38,7 @@ export function agentRootPid() {
 /**
  * Every live ancestor pid of this process, nearest first (from the parent up
  * to just below launchd). Empty when ps is unavailable. Used to judge
- * whether a pid the app resolved for a connection is genuinely above us —
+ * whether a pid the app resolved for a connection is genuinely above us - 
  * the app's ancestry walk may stop on a different ancestor than
  * agentRootPid() does (wrapper binaries, helper bundles), and any ancestor
  * is proof the round is parented to what the app bound, not orphaned.
@@ -65,7 +65,7 @@ export function ancestorPids() {
 }
 
 // Shell and wrapper processes skipped when walking ancestry for the agent
-// root — the JS mirror of AgentPeerIdentity.passthroughNames plus the shells
+// root - the JS mirror of AgentPeerIdentity.passthroughNames plus the shells
 // that sit between an agent and the tools it spawns.
 const PASSTHROUGH = new Set([
   'sh', 'bash', 'zsh', 'dash', 'fish', 'csh', 'tcsh', 'ksh',

@@ -2,15 +2,15 @@
 // Copyright 2026 Phinomenon Inc.
 //
 // INTERACTIVE self-test for the control-handoff round trip and the input
-// animations a watching user sees. Run it yourself — it needs a human:
+// animations a watching user sees. Run it yourself - it needs a human:
 //   node scripts/selftest-animations.mjs
 //
 // Flow: opens a demo agent Space against a local HTTP server, hands control
 // to you (Phi shows the native handoff prompt), and the moment you click
-// "Hand back" it performs every input primitive as a watchable choreography —
+// "Hand back" it performs every input primitive as a watchable choreography - 
 // mouse movement across hover targets, clicks, a double-click, a raw
 // coordinate click, paced typing (fillInput + typeText + Enter), and
-// scrolling — while the demo page counts what actually landed. Each phase is
+// scrolling - while the demo page counts what actually landed. Each phase is
 // verified programmatically, so it doubles as a functional check of
 // hover/click/fillInput/typeText/pressKey/scroll running AFTER a handoff.
 //
@@ -56,7 +56,7 @@ const PAGE = `<!doctype html><meta charset="utf-8"><title>Phi input animation de
   .stripe { height: 300px; display: flex; align-items: center; justify-content: center; color: #98a2b5; font-size: 20px; border-top: 1px dashed #d4dbe6 }
 </style>
 <main>
-  <h1>Phi agent — input animation demo</h1>
+  <h1>Phi agent - input animation demo</h1>
   <p class="sub">Hand control back and keep watching: every cursor glide, click ripple, keystroke, and scroll below is the agent.</p>
   <section><h2>1 · Mouse movement</h2>
     <div class="dots"><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div></div>
@@ -141,11 +141,11 @@ async function main() {
   await H.openTab(`${BASE}/`)
   check('agent owns the fresh space', (await H.ownership()) === 'agent')
 
-  console.log('\nIn Phi: the handoff prompt is up — jump into the demo Space,')
+  console.log('\nIn Phi: the handoff prompt is up - jump into the demo Space,')
   console.log('look around, then click "Hand back" and KEEP WATCHING the Space.')
   console.log(`Waiting up to ${HANDBACK_TIMEOUT / 60} minutes for the hand-back…\n`)
   await H.handOff('Animation demo ready. Look around, then click "Hand back" '
-    + 'and keep watching — I’ll drive every input so you can see the animations.')
+    + 'and keep watching - I’ll drive every input so you can see the animations.')
   check('handOff gives the user control', (await H.ownership()) === 'user')
 
   let back
@@ -159,7 +159,7 @@ async function main() {
   }
   if (back.gone) {
     check('user handed control back', false,
-          `space gone (${back.reason}) — the demo was ended from the browser`)
+          `space gone (${back.reason}) - the demo was ended from the browser`)
     return
   }
   check('user handed control back', back.owner === 'agent')
@@ -233,9 +233,9 @@ try {
   server.close()
   if (fatal) {
     if (/user is controlling/i.test(String(fatal.message))) {
-      // The user grabbed control mid-demo — that is their right per the
+      // The user grabbed control mid-demo - that is their right per the
       // handoff rules: leave the Space with them, never yank it away.
-      console.log('\nYou took control mid-demo — the Space stays with you; '
+      console.log('\nYou took control mid-demo - the Space stays with you; '
         + 'delete it from the Space switcher when done.')
     } else {
       try { await H.ensureAgentSpace(SPACE); await H.complete({ success: false }) } catch {}
@@ -246,5 +246,5 @@ try {
 
 const failed = results.filter((r) => !r.ok)
 console.log(`\n${results.length - failed.length}/${results.length} checks passed` +
-            (fatal ? ` — aborted by: ${fatal.message}` : ''))
+            (fatal ? ` - aborted by: ${fatal.message}` : ''))
 process.exit(failed.length || fatal ? 1 : 0)

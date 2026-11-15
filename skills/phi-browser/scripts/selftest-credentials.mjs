@@ -8,14 +8,14 @@
 //   node scripts/selftest-credentials.mjs github.com    # + tier 2, end-to-end
 //
 // Tier 1 needs only a running Phi with the CDP endpoint enabled: argument
-// validation and the shared fill machinery against a local page — no vault,
+// validation and the shared fill machinery against a local page - no vault,
 // no approval prompts.
 //
 // Tier 2 (with a vault-domain argument) exercises the real path: it fetches
 // the item once with getCredential to learn the expected values, then checks
 // that fillCredential's in-app dispatch lands exactly those values in the
 // page and that its return carries no secret. Pass a domain that exists in
-// the user's vault. Phi pops its approve prompt for each secret call —
+// the user's vault. Phi pops its approve prompt for each secret call - 
 // approve, and grant the 10-minute remember to be asked only once. Secrets
 // never appear in this test's output (details print lengths and booleans,
 // not values).
@@ -115,18 +115,18 @@ async function tier1() {
 
 async function tier2() {
   if (!DOMAIN) {
-    console.log('\nSKIP  tier 2 (end-to-end vault fill) — pass a vault domain to run it:\n' +
+    console.log('\nSKIP  tier 2 (end-to-end vault fill) - pass a vault domain to run it:\n' +
                 '      node scripts/selftest-credentials.mjs github.com')
     return
   }
   const status = await H.credentialStatus()
   if (!status.ready) {
-    console.log(`\nSKIP  tier 2 — password manager not ready (${status.status}); ` +
+    console.log(`\nSKIP  tier 2 - password manager not ready (${status.status}); ` +
                 'unlock/sign in via Settings ▸ General ▸ Bitwarden and rerun')
     return
   }
 
-  // Reference values. The test process is allowed to see them — the property
+  // Reference values. The test process is allowed to see them - the property
   // under test is that fillCredential's RESULTS and ERRORS never carry them.
   // When several vault items match the domain, Phi asks the tester to pick
   // one in its own chooser before the approval (the candidates never reach
@@ -139,7 +139,7 @@ async function tier2() {
   } catch (err) {
     const msg = String(err?.message || '')
     if (/not_found/.test(msg)) {
-      console.log(`\nSKIP  tier 2 — no ${DOMAIN} item in the vault; rerun with a ` +
+      console.log(`\nSKIP  tier 2 - no ${DOMAIN} item in the vault; rerun with a ` +
                   'domain that exists there')
       return
     }
@@ -152,7 +152,7 @@ async function tier2() {
     cred = await H.getCredential(q)
   }
   if (!cred.password) {
-    console.log(`\nSKIP  tier 2 — the ${DOMAIN} vault item has no password`)
+    console.log(`\nSKIP  tier 2 - the ${DOMAIN} vault item has no password`)
     return
   }
   check('served credential is the unique match', cred.matches === 1,
@@ -168,7 +168,7 @@ async function tier2() {
   await H.js('["user","pass","pass2"].forEach((i) => document.getElementById(i).value = "")')
 
   // The test page is on 127.0.0.1 while the credential belongs to DOMAIN, so
-  // every fill here exercises the explicit cross-origin opt-out — Phi prompts
+  // every fill here exercises the explicit cross-origin opt-out - Phi prompts
   // under the destination-qualified scope ("DOMAIN → 127.0.0.1"); grant the
   // 10-minute remember on the first prompt to be asked only once.
   const xo = { allowCrossOrigin: true }
@@ -189,11 +189,11 @@ async function tier2() {
     await H.fillCredential('#user', q, { field: 'username', ...xo })
     check('fill username lands the vault value', await val('user') === cred.username)
   } else {
-    console.log(`SKIP  username fill — the ${DOMAIN} vault item has no username`)
+    console.log(`SKIP  username fill - the ${DOMAIN} vault item has no username`)
   }
 
   // A non-INPUT target is refused at tag time, before any vault or approval
-  // work — the secret never exists in this process for a fill, so there is
+  // work - the secret never exists in this process for a fill, so there is
   // nothing an error message could leak (the old runner-side fill needed a
   // scrub here; the in-app fill makes it structural).
   let threw = null
@@ -203,7 +203,7 @@ async function tier2() {
         threw && /not an <input> \(select\)/.test(msg) && !msg.includes(cred.password))
 
   // Readback protection: a routine re-scan after the fill must mask the
-  // password field's contents. Checked on the field itself — the password may
+  // password field's contents. Checked on the field itself - the password may
   // legitimately collide with visible text elsewhere (e.g. equal the
   // username), and that case is covered by the cliLog scrub below.
   const obs = await H.observe()
@@ -229,7 +229,7 @@ async function tier2() {
         leak.code === 0 && leak.stdout.includes('PW=•••') &&
         !leak.stdout.includes(cred.password))
 
-  // cliLog — the one channel into the agent's context — must scrub a handled
+  // cliLog - the one channel into the agent's context - must scrub a handled
   // secret even when page JS read it back directly. Runs after
   // runWithCredential, which is what registers the value now: an in-app fill
   // never hands this process the secret, so it has nothing to register.
@@ -266,5 +266,5 @@ try {
 
 const failed = results.filter((r) => !r.ok)
 console.log(`\n${results.length - failed.length}/${results.length} checks passed` +
-            (fatal ? ` — aborted by: ${fatal.message}` : ''))
+            (fatal ? ` - aborted by: ${fatal.message}` : ''))
 process.exit(failed.length || fatal ? 1 : 0)

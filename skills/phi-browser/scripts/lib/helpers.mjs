@@ -2,7 +2,7 @@
 //
 // Helper surface preloaded into phi-browser heredoc scripts. Page automation
 // rides stock CDP to Chromium; the agentSpace.* surface (management + task
-// lifecycle) goes through state.cdp.phi — direct to the Mac client over the
+// lifecycle) goes through state.cdp.phi - direct to the Mac client over the
 // app socket, or the Chromium PhiAgentSpace tunnel under the TCP dev override.
 
 import {
@@ -17,9 +17,9 @@ import { connectBrowser, isEndpointTimeout } from './cdp.mjs'
 import { agentRootPid, ancestorPids } from './agent-process.mjs'
 
 // Default viewport for the hidden agent window: both dimensions follow the
-// Agent Space's own PAGE AREA — its window minus Sidebar, Content Header and
+// Agent Space's own PAGE AREA - its window minus Sidebar, Content Header and
 // bookmark bar, reported by the app itself via
-// agentSpace.panelSize (see agentPageArea) — so the agent renders exactly
+// agentSpace.panelSize (see agentPageArea) - so the agent renders exactly
 // what the user sees when surfacing the Space. The page area is re-measured
 // before each action, so a Sidebar toggle, a bar, a panel or a window resize
 // is picked up at the next action (see maybeTrackPageArea).
@@ -37,7 +37,7 @@ const state = {
   cdp: null,            // CdpClient (browser target)
   task: null,           // {taskId, spaceId, windowId, ownership, status}
   userSpace: null,      // {spaceId, name, windowId} when bound to a USER
-                        // Space via ensureUserSpace instead of a task —
+                        // Space via ensureUserSpace instead of a task - 
                         // mutually exclusive with `task` (see ensureUserSpace)
   sessionId: null,      // current page session (flat mode)
   targetId: null,       // current page target
@@ -45,18 +45,18 @@ const state = {
   openDialog: null,     // {type, message} while a JS dialog blocks the page
   dialogBlocked: false, // true when the attach was DEGRADED: a dialog was
                         // already holding the renderer, so the renderer-gated
-                        // session setup was skipped — handleDialog() closes
+                        // session setup was skipped - handleDialog() closes
                         // the dialog browser-level and completes the attach
   ownerCheckedAt: 0,    // epoch ms of the last authoritative ownership read
-  network: null,        // {requests: Map<id,entry>, order: [id]} — capture for
+  network: null,        // {requests: Map<id,entry>, order: [id]} - capture for
                         // the CURRENT tab, armed at attach (see readNetwork)
   sessionDisposers: [], // unsubscribers for the current page session's
                         // listeners; drained on every re-attach
-  // targetId -> {request: {width?, height?}, width, height, scale} — the tab's viewport
+  // targetId -> {request: {width?, height?}, width, height, scale} - the tab's viewport
   // override for this heredoc round; `scale` is the last applied compositing
   // scale (input coords must be multiplied by it, see inputScale).
   viewportByTarget: new Map(),
-  // {x, y, windowId} in widget coordinates — the last mouse position this
+  // {x, y, windowId} in widget coordinates - the last mouse position this
   // round dispatched in the bound window. click()/hover() use it to emit the
   // intermediate move events a real cursor produces instead of teleporting;
   // windowId prevents a context switch from leaking an unrelated origin.
@@ -72,11 +72,11 @@ const state = {
   // gate's TTL expiring.
   challengeGate: null,
   pageArea: null,            // the page-area answer ("WxH") the current agent
-                             // viewport was sized from — see agentPageArea
-  pageAreaCheckedAt: 0,      // when it was last re-checked — see maybeTrackPageArea
+                             // viewport was sized from - see agentPageArea
+  pageAreaCheckedAt: 0,      // when it was last re-checked - see maybeTrackPageArea
   lastPingAt: 0,             // epoch ms of the last keep-alive ping (see maybePing)
   pingTimer: null,           // round-long heartbeat interval (see ensureAgentSpace)
-  explicitTtl: null,         // {taskId, deadline} bought by ping(ttlSeconds) —
+  explicitTtl: null,         // {taskId, deadline} bought by ping(ttlSeconds) - 
                              // honored over the default round-end grace while
                              // the deadline lies ahead (see releaseTtlSeconds)
 }
@@ -84,7 +84,7 @@ const state = {
 // The app auto-closes an agent Space when its driver goes silent (~120s while
 // driving; paused while the USER holds control). Live rounds stay alive via
 // the throttled heartbeat in maybePing; the round-end release ping buys this
-// much for the gap until the next heredoc round — unless an explicit
+// much for the gap until the next heredoc round - unless an explicit
 // ping(ttlSeconds) bought a window that still lies ahead (releaseTtlSeconds).
 const INTER_ROUND_KEEPALIVE_SECONDS = 30 * 60
 
@@ -92,7 +92,7 @@ const INTER_ROUND_KEEPALIVE_SECONDS = 30 * 60
 // Network.getResponseBody can return it later. readNetwork only reads the
 // metadata events, waitForNetworkIdle only counts in-flight requests, and
 // scrapeMedia pulls bytes from the renderer cache via Page.getResourceContent
-// — nothing here ever fetches a captured body, so on a long-lived agent tab
+// - nothing here ever fetches a captured body, so on a long-lived agent tab
 // that retention is pure growth. Cap it hard; a body evicted from the buffer
 // changes nothing any consumer sees.
 const NETWORK_CAPTURE_PARAMS = {
@@ -109,7 +109,7 @@ async function cdpClient() {
   state.cdp = await connectBrowser({
     agentPid: claimAgentPid(),
   })
-  // `state.cdp.phi` is the agentSpace.* channel — direct to Swift over the
+  // `state.cdp.phi` is the agentSpace.* channel - direct to Swift over the
   // app socket, or the Chromium tunnel under the TCP dev override. Either way
   // the ownership push lands here.
   state.cdp.phi.onEvent('agentSpace.ownershipChanged', ({ taskId, owner }) => {
@@ -133,8 +133,8 @@ async function cdpClient() {
 
 /** Raw escape hatch: send any CDP command on the current page session. */
 export async function cdp(method, params = {}) {
-  // The escape hatch must not be an escape from page safety. Release phases —
-  // in EVERY dispatch family, including drag, touch, and emulated touch —
+  // The escape hatch must not be an escape from page safety. Release phases - 
+  // in EVERY dispatch family, including drag, touch, and emulated touch - 
   // always remain available so a held key/pointer/gesture cannot get stuck;
   // every phase that can begin or mutate user input goes through the same
   // document gate as the high-level helpers. Raw coordinates are still
@@ -148,7 +148,7 @@ export async function cdp(method, params = {}) {
     (method === 'Input.dispatchDragEvent' &&
       (params.type === 'drop' || params.type === 'dragCancel')) ||
     method === 'Input.cancelDragging'
-  // A bare mouseMoved is cosmetic hover — ownership-guarded but not
+  // A bare mouseMoved is cosmetic hover - ownership-guarded but not
   // page-gated (gating every sample would make raw move streams unusable).
   // A move carrying a pressed-buttons bitmask IS mutating input (drag motion,
   // text selection) and takes the full gate like a press.
@@ -166,7 +166,7 @@ export async function cdp(method, params = {}) {
       })
       if (keyboardInput && gate.consent?.clicked) {
         throw new Error(`cdp ${method}: a late cookie-consent overlay was dismissed and ` +
-                        'changed focus — refocus the intended control before typing')
+                        'changed focus - refocus the intended control before typing')
       }
     }
   }
@@ -225,7 +225,7 @@ function revealDomainDocs(type) {
     seen[domain] = true
     writeFileSync(file, JSON.stringify(seen))
     process.stderr.write(
-      `ℹ phi-browser: first ${domain} call this task — full semantics: ` +
+      `ℹ phi-browser: first ${domain} call this task - full semantics: ` +
       `<skill-dir>/references/${domain}.md\n`)
   } catch {}
 }
@@ -238,7 +238,7 @@ async function phiSend(type, payload, timeoutMs) {
     // code (e.g. an ambiguous credential lookup's candidate list).
     const doc = domainDocFor(type, parsed.error)
     const err = new Error(`${type}: ${parsed.error || 'failed'}` +
-      (doc ? ` — see references/${doc}.md` : ''))
+      (doc ? ` - see references/${doc}.md` : ''))
     err.reply = parsed
     throw err
   }
@@ -254,7 +254,7 @@ const CRED_PROMPT_TIMEOUT_MS = 190000
 function requireTask() {
   if (!state.task) {
     throw new Error(
-      "No agent space selected — call enterContext({kind:'agent', name}) first " +
+      "No agent space selected - call enterContext({kind:'agent', name}) first " +
       "(or enterContext({kind:'user', space}) to work in a user Space)")
   }
   return state.task
@@ -262,7 +262,7 @@ function requireTask() {
 
 function requireSession() {
   if (!state.sessionId) {
-    throw new Error('No tab attached — call enterContext({kind}), openTab(url) or switchTab(targetId) first')
+    throw new Error('No tab attached - call enterContext({kind}), openTab(url) or switchTab(targetId) first')
   }
   return state.sessionId
 }
@@ -273,7 +273,7 @@ function requireSession() {
  * wait on the renderer and starve the follow-up takeOver()/
  * waitForAgentControl()). The first helper that actually needs the session
  * finishes the attach here: passive observation while the user drives is
- * legitimate (the attach stays activation-free in that state — see
+ * legitimate (the attach stays activation-free in that state - see
  * attachTabNow), and an ownership flip back to the agent mid-round must not
  * strand every helper on a misleading "No tab attached".
  */
@@ -283,24 +283,24 @@ async function ensureSessionAttached() {
 }
 
 // ---------------------------------------------------------------------------
-// Execution context — the ONE concept for "where do page helpers act".
+// Execution context - the ONE concept for "where do page helpers act".
 //
 // A round is bound to at most one context: an AGENT Space (a hidden window,
-// the default surface — `state.task`) or a USER Space (the user's real,
-// visible window — `state.userSpace`). The two are mutually exclusive.
+// the default surface - `state.task`) or a USER Space (the user's real,
+// visible window - `state.userSpace`). The two are mutually exclusive.
 // Browser-management helpers (listSpaces, addBookmark, tab groups, …) need
 // NO context: they operate the user's browser app-wide and take an explicit
 // `space` where relevant.
 //
 // Every agent-vs-user branch in this module goes through contextKind() /
-// currentContext() — never pokes state.task / state.userSpace directly — so
+// currentContext() - never pokes state.task / state.userSpace directly - so
 // the distinction lives in exactly one place.
 
-/** 'agent' | 'shadow' | 'user' | null — the bound context's kind.
+/** 'agent' | 'shadow' | 'user' | null - the bound context's kind.
  *  Allocation-free; used on the per-action hot path (guardAgentControl).
  *
- *  A SHADOW context is a task like an agent Space — same taskId namespace,
- *  keep-alive and complete() — so it rides `state.task` rather than a slot of
+ *  A SHADOW context is a task like an agent Space - same taskId namespace,
+ *  keep-alive and complete() - so it rides `state.task` rather than a slot of
  *  its own. Only its window differs: invisible, hence no pip or
  *  ownership. */
 export function contextKind() {
@@ -337,7 +337,7 @@ export function currentContext() {
 /**
  * Every mutating helper calls this. A user takeover is a HARD STOP for the
  * whole task: never retry the failed operation, never call takeOver() on your
- * own — ask the user and wait.
+ * own - ask the user and wait.
  */
 async function guardAgentControl() {
   // User-space mode has no ownership model: the user's own window is the
@@ -347,7 +347,7 @@ async function guardAgentControl() {
   // A shadow window has no ownership either, for the opposite reason: it is
   // invisible, so there is no "Take control" button and no user to honor.
   // Its viewport is its own real frame, never a measured page area (see
-  // resolveBaseViewport). Keep-alive still matters — more than for a Space,
+  // resolveBaseViewport). Keep-alive still matters - more than for a Space,
   // since a leaked shadow window is one the user cannot see to close.
   if (contextKind() === 'shadow') {
     await maybePing()
@@ -356,7 +356,7 @@ async function guardAgentControl() {
   const task = requireTask()
   // The cached bit is kept live by the ownershipChanged broadcast, but a single
   // dropped event would leave it stale as 'agent' while the user is actually
-  // driving — and honoring a takeover is safety-critical. Re-verify with the
+  // driving - and honoring a takeover is safety-critical. Re-verify with the
   // app whenever the cache says 'user', or when we haven't had an authoritative
   // read in the last 2s (so a burst of actions still costs at most one round
   // trip every 2s, but a missed broadcast can never strand us in the agent).
@@ -368,14 +368,14 @@ async function guardAgentControl() {
   }
   if (task.ownership !== 'agent') {
     throw new Error(
-      'user is controlling this agent space — hard stop. Ask the user, and ' +
+      'user is controlling this agent space - hard stop. Ask the user, and ' +
       'resume with takeOver() only after they explicitly confirm.')
   }
   // Ownership can return to the agent through THIS re-read (a hand-back that
-  // landed mid-round) — finish the bind's deferred attach before acting, or
+  // landed mid-round) - finish the bind's deferred attach before acting, or
   // every session-needing helper below would die on "No tab attached".
   await ensureSessionAttached()
-  // Agent is driving — keep the emulated viewport in step with the Space's
+  // Agent is driving - keep the emulated viewport in step with the Space's
   // page area before acting, and nudge the Space's keep-alive (both throttled).
   await maybeTrackPageArea()
   await maybePing()
@@ -392,7 +392,7 @@ export async function listAgentSpaces() {
 /** Browser profiles available for ensureAgentSpace's {profile} option, as
  *  [{profileId, displayName, agentSpacesAllowed}]. `agentSpacesAllowed: false`
  *  means the user has blocked agent Spaces in that profile (Settings ▸
- *  Developer ▸ Agent permissions) — ensureAgentSpace on it is refused; pick a
+ *  Developer ▸ Agent permissions) - ensureAgentSpace on it is refused; pick a
  *  profile where the flag is true. */
 export async function listProfiles() {
   const { profiles } = await phiSend('agentSpace.listProfiles', {})
@@ -404,13 +404,13 @@ export async function listProfiles() {
  * `kind`:
  *
  *   enterContext({ kind: 'agent', name, profile?, persistent? })
- *     — a hidden AGENT Space (the default surface). `persistent: true` makes
+ *     - a hidden AGENT Space (the default surface). `persistent: true` makes
  *       it a permanent workspace kept in the Space switcher across relaunches;
  *       omit it for the ephemeral default. Full lifecycle (ownership/handoff,
  *       keep-alive, complete()). See references/lifecycle.md.
  *
  *   enterContext({ kind: 'shadow', name, profile?, incognito? })
- *     — an INVISIBLE background window: no pip, no handoff,
+ *     - an INVISIBLE background window: no pip, no handoff,
  *       nobody watching. Only when the user explicitly asks for background
  *       work; anything that might need a human belongs in an agent Space.
  *       `incognito: true` browses in a fresh off-the-record session (no
@@ -418,12 +418,12 @@ export async function listProfiles() {
  *       See references/lifecycle.md ▸ "Shadow windows".
  *
  *   enterContext({ kind: 'user', space?, window?, profile?, create?, activate? })
- *     — the user's REAL, visible Space window. No ownership guard, keep-alive,
+ *     - the user's REAL, visible Space window. No ownership guard, keep-alive,
  *       or complete(); actions land in the user's live view. An unknown name
  *       is created when create (default true). `window` (a windowId from
  *       listSpaces' windowIds, userFocus, or an earlier binding) pins the
  *       binding to that exact window when the Space is open in several, and
- *       may stand alone — with `window` given, `space` is optional and
+ *       may stand alone - with `window` given, `space` is optional and
  *       derived from the window. At least one of the two is required.
  *       See references/management.md.
  *
@@ -449,7 +449,7 @@ export async function enterContext(spec = {}) {
       { profile: spec.profile ?? '', create: spec.create ?? true,
         activate: spec.activate ?? false, window: spec.window ?? null })
   }
-  throw new Error(`enterContext: unknown kind ${JSON.stringify(spec.kind)} — ` +
+  throw new Error(`enterContext: unknown kind ${JSON.stringify(spec.kind)} - ` +
                   "use 'agent', 'shadow', or 'user'")
 }
 
@@ -467,17 +467,17 @@ export function ensureUserSpace(space, opts = {}) {
 }
 
 /**
- * AGENT-context impl (private — reach it via enterContext({kind:'agent'})).
+ * AGENT-context impl (private - reach it via enterContext({kind:'agent'})).
  * Reuses the agent space whose taskId equals `name`, or creates one. Selects
  * it and re-attaches to the tab the task last drove (its first tab on a
- * fresh space). Options: {profile} — profileId or display name (defaults to
- * the first profile); {persistent: true} — a PERMANENT workspace: named
+ * fresh space). Options: {profile} - profileId or display name (defaults to
+ * the first profile); {persistent: true} - a PERMANENT workspace: named
  * `name` in the Space switcher, never expired by the keep-alive sweep,
  * kept on complete(), surviving app relaunches, and re-bound to by a later
  * call with the same name (see references/lifecycle.md "Persistent
  * Spaces"). Persistence
  * is decided when the Space is first created; on a re-bind both options are
- * ignored (the Space keeps its own profile). {agent} — WHO is driving: the
+ * ignored (the Space keeps its own profile). {agent} - WHO is driving: the
  * product name of the agent running this skill ('Claude Code', 'Codex',
  * 'Cursor', 'Pi', …); the Space's pip wears that agent's mark and the watch
  * pill names it. Omitted, a host that exports its own session id (Claude
@@ -511,7 +511,7 @@ async function enterAgentContext(name,
       taskId: name,
       spaceId: created.spaceId,
       windowId: created.windowId,
-      // Normally 'agent' by construction — but a create that re-adopted a
+      // Normally 'agent' by construction - but a create that re-adopted a
       // restarted agent's task returns the task as it stands, possibly with
       // the USER still holding control from a pre-restart handoff.
       ownership: created.ownership || 'agent',
@@ -532,31 +532,31 @@ async function enterAgentContext(name,
   state.targetId = null
   // Round-long heartbeat: per-action pings only fire while helpers run, so a
   // long silent stretch inside a round (a wait(120), a slow export) would let
-  // the ~120s driving window lapse mid-round. Unref'd — never keeps the
+  // the ~120s driving window lapse mid-round. Unref'd - never keeps the
   // process alive once the script ends.
   if (!state.pingTimer) {
     state.pingTimer = setInterval(() => { maybePing() }, 15000)
     state.pingTimer.unref?.()
   }
   // A round is starting: mark the Space busy (paired with the idle flip in
-  // __dispose when the heredoc ends) — unless the USER is driving: a round
+  // __dispose when the heredoc ends) - unless the USER is driving: a round
   // that starts under user control (a hand-back watcher, an observation) must
   // not flip the badge while they work.
   if (task.ownership !== 'user') await reportRunState(true)
   const tabs = await listTabs()
   // Zombie heal. A re-bound record with ZERO tabs is broken, not empty:
   // closing a Space's last tab leaves a window that agentSpace.openTab
-  // silently no-ops into ({ok:true}, no tab ever appears — measured), and a
+  // silently no-ops into ({ok:true}, no tab ever appears - measured), and a
   // dead window's lingering record lists no tabs either. A healthy Space
-  // always has ≥1 tab between rounds, so purge and start fresh — the page
+  // always has ≥1 tab between rounds, so purge and start fresh - the page
   // state died with the tabs either way. (A just-CREATED space is exempt:
   // its seed tab can lag, and openTab works there.)
   if (rebound && tabs.length === 0 && task.ownership !== 'user') {
     if (task.persistent) {
-      // A persistent Space is a permanent workspace — never purge it from
+      // A persistent Space is a permanent workspace - never purge it from
       // here; reopening it (or an app relaunch) restores its window.
       throw new Error(
-        `enterContext(agent): persistent space '${name}' has no tabs — ` +
+        `enterContext(agent): persistent space '${name}' has no tabs - ` +
         'reopen it from the Space switcher (or relaunch Phi Browser), then retry')
     }
     await phiSend('agentSpace.complete', {
@@ -578,18 +578,18 @@ async function enterAgentContext(name,
       // drives. Attaching Page/Runtime here can wait on the renderer and
       // prevent the following explicit takeOver()/waitForAgentControl() from
       // ever running. Remember the intended tab now; the attach completes
-      // lazily via ensureSessionAttached — from takeOver()/
+      // lazily via ensureSessionAttached - from takeOver()/
       // waitForAgentControl(), from guardAgentControl once a hand-back flips
       // ownership, or from the first passive observation helper.
       state.targetId = tab.targetId
     } else {
       await attachTab(tab.targetId)
     }
-    // Re-apply an explicit viewport the session set in an earlier round — the
+    // Re-apply an explicit viewport the session set in an earlier round - the
     // CDP override died with that round's session. Skip when the user holds
     // control (their takeover deliberately clears emulation) or the attach
     // was degraded by an open dialog (the renderer is blocked, so the
-    // Emulation call would hang — the same reason attach itself went
+    // Emulation call would hang - the same reason attach itself went
     // degraded).
     const vp = readStoredViewport(task.taskId)
     if (vp && task.ownership !== 'user' && !state.dialogBlocked && !state.openDialog) {
@@ -608,23 +608,23 @@ async function enterAgentContext(name,
            // The tab inventory was in hand anyway (listed above to pick the
            // attach target); returning it gives every round its Space
            // situational awareness for free. `current` is stamped after the
-           // attach — the list itself predates it.
+           // attach - the list itself predates it.
            tabs: tabs.map((t) => ({ ...t, current: t.targetId === state.targetId })) }
 }
 
 /**
- * SHADOW-context impl (private — reach it via enterContext({kind:'shadow'})).
+ * SHADOW-context impl (private - reach it via enterContext({kind:'shadow'})).
  *
  * A shadow window is Phi's background-execution primitive: a real browser
- * window on a real profile — real cookies, real renderers, driven by every
- * page helper exactly as a Space is — that the user CANNOT see. It sits
+ * window on a real profile - real cookies, real renderers, driven by every
+ * page helper exactly as a Space is - that the user CANNOT see. It sits
  * off-screen at alpha 0, absent from the Space switcher, Mission Control and
  * the Windows menu, and omitted from session restore.
  *
  * What that costs, and why the kind is explicit at the entry point: there is
  * no pip, no handoff and no takeover, so nothing here can ask
  * the user anything. A login, a captcha, a payment, any consequential choice
- * is unreachable — those belong in an agent Space, which can hand off.
+ * is unreachable - those belong in an agent Space, which can hand off.
  *
  * Re-binds by `name` like an agent Space. The feature is gated by Settings ▸
  * Developer ▸ "Allow agents to operate your Spaces"; with it off every call
@@ -632,11 +632,11 @@ async function enterAgentContext(name,
  * agent Space, not a workaround. Turning it off closes every shadow window.
  *
  * `incognito: true` puts the window in a unique off-the-record profile
- * derived from `profile` (which still names the PARENT profile — extensions
+ * derived from `profile` (which still names the PARENT profile - extensions
  * and settings come from it, cookies and logins do NOT): a fresh empty
  * session per window, isolated from the user's own incognito windows and
  * from other shadow tasks, destroyed when the window closes. A taskId's
- * incognito-ness is fixed at creation — re-binding with the other value
+ * incognito-ness is fixed at creation - re-binding with the other value
  * fails `shadow_incognito_mismatch`.
  */
 async function enterShadowContext(name, { profile = '', incognito = false } = {}) {
@@ -649,16 +649,16 @@ async function enterShadowContext(name, { profile = '', incognito = false } = {}
   const { windowId } = created
   // An app build that predates incognito shadow windows ignores the flag and
   // opens a REGULAR shadow window on the profile. Its reply carries no
-  // `incognito` echo — refuse rather than silently browse outside incognito.
+  // `incognito` echo - refuse rather than silently browse outside incognito.
   if (incognito && created.incognito !== true) {
     await phiSend('agentSpace.shadow.close', { taskId: name }).catch(() => {})
     throw new Error(
       "enterContext({kind:'shadow', incognito:true}): this Phi build does not " +
-      'support incognito shadow windows — update Phi Browser, or drop `incognito`.')
+      'support incognito shadow windows - update Phi Browser, or drop `incognito`.')
   }
   await releaseBoundTask({ shadow: true, taskId: name })
-  // Rides state.task (see contextKind): a shadow context IS a task — same
-  // taskId, keep-alive and complete() — with `shadow` marking the one
+  // Rides state.task (see contextKind): a shadow context IS a task - same
+  // taskId, keep-alive and complete() - with `shadow` marking the one
   // difference, that its window has no presence surfaces.
   state.task = { taskId: name, windowId, shadow: true, ownership: 'agent',
                  incognito: !!incognito }
@@ -668,7 +668,7 @@ async function enterShadowContext(name, { profile = '', incognito = false } = {}
   state.targetId = null
   // Round-long heartbeat, as for an agent Space: per-action pings only fire
   // while helpers run, so a long silent stretch inside one round would let
-  // the window lapse. Unref'd — never keeps the process alive.
+  // the window lapse. Unref'd - never keeps the process alive.
   if (!state.pingTimer) {
     state.pingTimer = setInterval(() => { maybePing() }, 15000)
     state.pingTimer.unref?.()
@@ -695,14 +695,14 @@ async function enterShadowContext(name, { profile = '', incognito = false } = {}
 
 /** The shadow windows this driver has open, as
  *  [{taskId, windowId, profileId, incognito, createdAt}]. Scoped to this
- *  agent — another agent's background work is not listed. Use it to find and
+ *  agent - another agent's background work is not listed. Use it to find and
  *  clean up windows an earlier round abandoned. */
 export async function listShadowWindows() {
   const { shadows } = await phiSend('agentSpace.shadow.list', {})
   return shadows || []
 }
 
-/** Closes a shadow window by name without binding to it — the cleanup path
+/** Closes a shadow window by name without binding to it - the cleanup path
  *  for one an earlier round left behind. Closing the CURRENT context's window
  *  is `complete()`. */
 export async function closeShadowWindow(name) {
@@ -721,26 +721,26 @@ export async function closeShadowWindow(name) {
 function refuseInShadow(name) {
   if (contextKind() !== 'shadow') return
   throw new Error(
-    `${name}() needs an agent Space — this round is bound to a shadow window, ` +
+    `${name}() needs an agent Space - this round is bound to a shadow window, ` +
     'which has no pip or user handoff. Use ' +
     "enterContext({kind:'agent', name}) for anything the user must see or take over.")
 }
 
 /**
- * One-call digest of the CURRENT agent Space — situational awareness without
+ * One-call digest of the CURRENT agent Space - situational awareness without
  * side effects. Returns {taskId, spaceId, windowId, ownership, status,
  * caption, keepAliveRemainingSeconds, viewportOverride, tabs}, plus `shot` (a
- * PNG path of the attached tab — Read it) with {shots: 'current'}. Returns
- * {gone: true} when the Space no longer exists (expired or finished) — the
+ * PNG path of the attached tab - Read it) with {shots: 'current'}. Returns
+ * {gone: true} when the Space no longer exists (expired or finished) - the
  * task is over, do not recreate it just to look around.
  *
  * Passive by design, so it is safe for post-handoff re-orientation while the
  * USER holds control: no guardAgentControl, no tab activation, no viewport
  * override, and no keep-alive refresh (agentSpace.list is not a control
- * message — though while the agent is driving, the round heartbeat keeps the
+ * message - though while the agent is driving, the round heartbeat keeps the
  * clock near-full anyway, so keepAliveRemainingSeconds mostly matters as a
  * post-hoc "how close did I cut it"). The shot is captured straight off the
- * existing session — none of screenshot()'s resize/ping side effects.
+ * existing session - none of screenshot()'s resize/ping side effects.
  *
  * Only the ATTACHED tab can be shot: background tabs of the hidden agent
  * window do not paint (visibility forcing follows the active tab), so an
@@ -749,12 +749,12 @@ function refuseInShadow(name) {
  */
 export async function spaceStatus({ shots = false } = {}) {
   if (shots && shots !== true && shots !== 'current') {
-    throw new Error("spaceStatus: only {shots: 'current'} is supported — " +
+    throw new Error("spaceStatus: only {shots: 'current'} is supported - " +
                     'background tabs of the hidden window do not paint')
   }
   if (contextKind() === 'user') {
     throw new Error('spaceStatus is agent-space only (there is no task ' +
-                    'record for a user Space) — in user-space mode use ' +
+                    'record for a user Space) - in user-space mode use ' +
                     'listTabs(), userFocus(), or screenshot() instead')
   }
   // A shadow window has no Space record either, and none of what this
@@ -765,7 +765,7 @@ export async function spaceStatus({ shots = false } = {}) {
   const tasks = await listAgentSpaces()
   const t = tasks.find((x) => x.taskId === task.taskId)
   if (!t) return { gone: true, taskId: task.taskId }
-  // The list read is authoritative — keep the cached ownership bit (and the
+  // The list read is authoritative - keep the cached ownership bit (and the
   // guard's staleness clock) in step, same as waitForAgentControl.
   task.ownership = t.ownership
   state.ownerCheckedAt = Date.now()
@@ -777,7 +777,7 @@ export async function spaceStatus({ shots = false } = {}) {
     status: t.status,
     caption: t.caption || '',
     persistent: t.persistent ?? false,
-    // Commands typed into the console since the last drain — non-zero means
+    // Commands typed into the console since the last drain - non-zero means
     // call readUserMessages() before continuing.
     pendingUserMessages: t.pendingUserMessages ?? 0,
     keepAliveRemainingSeconds: t.keepAliveRemainingSeconds ?? null,
@@ -823,21 +823,21 @@ export async function listTabs() {
                    current: t.targetId === state.targetId })
       }
     } catch {
-      // Target without a browser window (detached, closing) — skip.
+      // Target without a browser window (detached, closing) - skip.
     }
   }
   return out
 }
 
 /**
- * The size a tab in one of the USER's windows renders at — the real page
+ * The size a tab in one of the USER's windows renders at - the real page
  * area (window minus Sidebar and Content Header). The agent window can't be
- * asked while hidden (its view size is 0×0 — the reason the override exists
+ * asked while hidden (its view size is 0×0 - the reason the override exists
  * at all), but sibling frame mirroring keeps it at the user's window size, so
  * a user-tab's page area is what this page would get there. http(s) pages
  * first: a WebUI tab (Phi's NTP) is a native view whose backing WebContents
  * is a near-window-sized shell, not the page area. Tabs of agent windows are
- * skipped implicitly: their metrics read 0×0 and fail the >0 check. Passive —
+ * skipped implicitly: their metrics read 0×0 and fail the >0 check. Passive - 
  * a flat
  * attach + one Page.getLayoutMetrics, no activation, no overrides.
  */
@@ -874,8 +874,8 @@ async function userWindowPanelSize(client) {
 
 /**
  * The one "how big is the page area?" question to the app: the size the
- * agent's page renders at in its Agent Space — the window minus Sidebar,
- * Content Header and bookmark bar — as {width, height}, or null when the app
+ * agent's page renders at in its Agent Space - the window minus Sidebar,
+ * Content Header and bookmark bar - as {width, height}, or null when the app
  * cannot answer. Names the task, not its window: while the Space is watched
  * its window id resolves to the user's shell hosting it. Shared by the base
  * viewport (resolveBaseViewport) and the per-action re-check
@@ -892,18 +892,18 @@ async function agentPageArea() {
 }
 
 /**
- * The real page-area size for a tab — what the page would render at in a
+ * The real page-area size for a tab - what the page would render at in a
  * regular tab, so the agent's layout matches what the user sees when
  * surfacing the Space exactly. Measured in order:
  *  1. the app itself (`agentPageArea`): the Agent Space's own page area
- *     straight from the window layout — authoritative, works for NTP-only
+ *     straight from the window layout - authoritative, works for NTP-only
  *     windows and covers watch mode (the visible window is then this very
  *     Space);
- *  2. this tab's own Page.getLayoutMetrics with the override cleared —
+ *  2. this tab's own Page.getLayoutMetrics with the override cleared - 
  *     correct whenever the agent window is actually on screen; 0×0 while it
  *     is hidden, which falls through;
  *  3. a tab in one of the user's windows (`userWindowPanelSize`);
- *  4. the agent window's OS bounds — includes the browser chrome, so wider
+ *  4. the agent window's OS bounds - includes the browser chrome, so wider
  *     and taller than the panel; last measurable resort;
  *  5. FALLBACK_VIEWPORT.
  */
@@ -911,7 +911,7 @@ async function resolveBaseViewport(client, sessionId, targetId) {
   // Step 1 measures the Space's page area so a WATCHING user sees the page
   // at the size their window presents it. Nobody watches a shadow window, and
   // unlike a hidden Space window it is Show()n off-screen at its own real
-  // frame — so its layout metrics (step 2) are genuine and win here.
+  // frame - so its layout metrics (step 2) are genuine and win here.
   if (contextKind() !== 'shadow') {
     const area = await agentPageArea()
     state.pageArea = area ? `${area.width}x${area.height}` : null
@@ -941,9 +941,9 @@ async function resolveBaseViewport(client, sessionId, targetId) {
 
 /**
  * The agent Space window is never shown, so its content won't lay out or paint
- * reliably without an explicit device-metrics override — its hidden view size
+ * reliably without an explicit device-metrics override - its hidden view size
  * is literally 0×0, so "no override" and CDP's width/height:0 tracking mode
- * both collapse the page (measured). Impose a SIZED override — by default the
+ * both collapse the page (measured). Impose a SIZED override - by default the
  * Space's PAGE AREA (see resolveBaseViewport), so the layout is identical to
  * a regular tab and screenshots/getBoundingClientRect match what the user
  * sees when surfacing. Page-area changes (a Sidebar toggle, a bar, a panel,
@@ -954,10 +954,10 @@ async function resolveBaseViewport(client, sessionId, targetId) {
  * `request` ({width?, height?}, from setViewport) overrides either dimension;
  * omitted dimensions track the page area. When the chosen viewport exceeds
  * the page area in either axis, the emulation also sets `scale` so the WHOLE
- * viewport renders scaled-to-fit inside the page area — a user surfacing the
+ * viewport renders scaled-to-fit inside the page area - a user surfacing the
  * Space sees the full page context, never a clipped slice. Scale only affects
  * compositing, not layout: innerWidth/innerHeight, coordinates and refs are
- * unchanged — but Input.dispatchMouseEvent coords are widget-space, so input
+ * unchanged - but Input.dispatchMouseEvent coords are widget-space, so input
  * helpers multiply by the stored scale (see inputScale). Per CDP session, so
  * the override stays isolated to this tab and never touches Chrome's
  * per-origin HostZoomMap. Records {request, width, height, scale} in
@@ -978,22 +978,22 @@ async function applyAgentViewport(client, sessionId, targetId, request = null) {
 
 /**
  * Keeps the emulated viewport in step with the Space's page area while a
- * round drives. Ask the app for the page area again — one message, throttled
- * to one check per second — and re-apply the current tab's viewport when the
+ * round drives. Ask the app for the page area again - one message, throttled
+ * to one check per second - and re-apply the current tab's viewport when the
  * answer differs from the one it was sized from: an explicit setViewport
  * request is preserved (its fit-to-page-area scale recomputed), the default
- * re-measures. Catches whatever changes the page area — a Sidebar toggle, a
- * bookmark bar, a panel, an infobar, a window resize — at the agent's next
+ * re-measures. Catches whatever changes the page area - a Sidebar toggle, a
+ * bookmark bar, a panel, an infobar, a window resize - at the agent's next
  * action. Called from guardAgentControl (every mutating helper) and the
  * observation entry points, so the agent always acts on a layout matching
- * what the user actually sees. No-op while the user drives — their takeover
- * cleared the override and nothing may shift under them — and for a shadow
+ * what the user actually sees. No-op while the user drives - their takeover
+ * cleared the override and nothing may shift under them - and for a shadow
  * window, whose viewport is its own real frame.
  */
 async function maybeTrackPageArea() {
   if (!state.sessionId || !state.targetId) return
   // Agent-Space emulation only: a user-Space tab is visible and sized for
-  // real — never impose device metrics on it — and a shadow window is never
+  // real - never impose device metrics on it - and a shadow window is never
   // measured by the app.
   if (contextKind() !== 'agent' || state.task.ownership === 'user') return
   const now = Date.now()
@@ -1011,9 +1011,9 @@ async function maybeTrackPageArea() {
 /**
  * Throttled keep-alive heartbeat. The app expires a silent driving task after
  * ~120s (agentSpace.ping / any control message refreshes it), so nudge it at
- * most every 20s — from the per-action call sites shared with the resize
+ * most every 20s - from the per-action call sites shared with the resize
  * tracker AND from the round-long interval ensureAgentSpace starts (covering
- * in-round stretches with no helper calls, like a long wait) — so a live
+ * in-round stretches with no helper calls, like a long wait) - so a live
  * round never expires and an abandoned Space closes on its own. Explicit
  * TTL control is exposed as ping(ttlSeconds).
  */
@@ -1037,8 +1037,8 @@ function pingCall() {
  * user holds control); rounds end with a 30-minute grace for the gap to the
  * next round, and the next round's start resets the short driving window.
  * Call with a larger ttlSeconds (up to 3600) before deliberately going quiet
- * for longer — e.g. leaving a page to run a long export while you work
- * elsewhere — or a small one to let an abandoned Space close sooner. The
+ * for longer - e.g. leaving a page to run a long export while you work
+ * elsewhere - or a small one to let an abandoned Space close sooner. The
  * explicit window survives the round end: while its deadline still lies
  * ahead, the round-end release honors it instead of the default grace.
  */
@@ -1056,13 +1056,13 @@ export async function ping(ttlSeconds) {
 }
 
 /**
- * The grace to buy when a round boundary releases `taskId` — __dispose at the
+ * The grace to buy when a round boundary releases `taskId` - __dispose at the
  * round's end, or a mid-round rebind away (releaseBoundTask). An explicit
  * ping(ttlSeconds) declared an absolute expiry; while that deadline still
  * lies ahead it is authoritative in BOTH directions (a bought hour must not
  * shrink to the default grace, a deliberately short leash must not stretch
- * to it). A deadline the round outlived is spent — the heartbeat kept the
- * Space alive past it — so fall back to the default inter-round grace.
+ * to it). A deadline the round outlived is spent - the heartbeat kept the
+ * Space alive past it - so fall back to the default inter-round grace.
  */
 function releaseTtlSeconds(taskId) {
   const explicit = state.explicitTtl
@@ -1075,13 +1075,13 @@ function releaseTtlSeconds(taskId) {
 
 /**
  * Mid-round rebind away from a live agent context: flip its badge idle (a
- * no-op for shadow, which has no badge) and buy the release grace NOW —
+ * no-op for shadow, which has no badge) and buy the release grace NOW - 
  * __dispose only releases the task still bound when the round ends, so
  * without this the departing Space or shadow window would expire ~120s into
  * the gap despite the session being alive, and a later re-enter would get a
  * fresh, empty one. Each kind is released on its own channel (pingCall,
  * read while the departing task is still bound). `except` identifies the
- * context being entered — re-entering the bound one is a refresh, not a
+ * context being entered - re-entering the bound one is a refresh, not a
  * departure, and the match is kind + taskId: a Space and a shadow window
  * sharing a name are different contexts in different registries.
  */
@@ -1101,7 +1101,7 @@ async function releaseBoundTask(except) {
 // each heredoc round, so this lives on disk: the next round's ensureAgentSpace
 // re-attaches where the task left off instead of snapping back to the seed
 // tab (which misdirected keystrokes and flipped the watched window's active
-// tab every round). Best-effort — losing it only costs a switchTab.
+// tab every round). Best-effort - losing it only costs a switchTab.
 const TASK_DIR = join(tmpdir(), 'phi-browser-tasks')
 
 // Per-session disk state (survives the per-round Node process): the tab a
@@ -1132,7 +1132,7 @@ function writeLastTargetId(taskId, targetId) {
   writeSessionState(taskId, { targetId })
 }
 
-// A persisted viewport request re-applies on the next round's attach — the
+// A persisted viewport request re-applies on the next round's attach - the
 // CDP override itself dies with the round's session, so without this a
 // standalone setViewport would reset before the next command reads it.
 // `null` clears the override going forward.
@@ -1171,9 +1171,9 @@ function detectedAgentName() {
 }
 
 // The pid of the agent session this round acts for, claimed on every
-// app-socket connection (the X-Phi-Agent-Pid header — see cdp.mjs).
+// app-socket connection (the X-Phi-Agent-Pid header - see cdp.mjs).
 // IDENTIFICATION ONLY: the app logs it but neither substitutes the consent
-// identity nor joins a task principal from it — delegation is proven with
+// identity nor joins a task principal from it - delegation is proven with
 // the app-issued capability instead. Also the reference value for the
 // orphaned-round check (roundLostAgentSession): a mismatch against what the
 // app actually resolved marks this round as severed from its agent session.
@@ -1184,7 +1184,7 @@ function claimAgentPid() {
 }
 
 // The agent pid the APP resolved for this round's /phi-agent connection
-// (echoed on the upgrade response — see AgentDirectConnection). The
+// (echoed on the upgrade response - see AgentDirectConnection). The
 // authoritative ancestry answer when this process cannot walk its own:
 // Codex's seatbelt sandbox denies the sysctls `ps` needs, so
 // `agentRootPid()` returns null in every sandboxed round even though the
@@ -1200,10 +1200,10 @@ function appProvidedAgentCapability() {
 
 // True when this round claims to act for a live agent session it is NOT
 // joined to: it named the agent's pid, the connection is a real app-socket
-// channel (the app always echoes a session capability on those — its absence
+// channel (the app always echoes a session capability on those - its absence
 // means the legacy tunnel or an older app, where this check does not apply),
 // and the app resolved a different driver than the claimed agent. That is
-// the orphaned-round signature — a watcher backgrounded with `… &` is
+// the orphaned-round signature - a watcher backgrounded with `… &` is
 // reparented away from the agent once its shell exits, and the app's
 // per-principal task isolation then gives it a FRESH driver principal that
 // can neither see nor drive the agent's tasks. Such a round must fail
@@ -1214,11 +1214,11 @@ function roundLostAgentSession() {
   if (!appProvidedAgentCapability()) return false
   const resolved = appProvidedAgentPid()
   if (resolved === claimed) return false
-  // The app's walk may stop on a DIFFERENT ancestor than ours — its
+  // The app's walk may stop on a DIFFERENT ancestor than ours - its
   // passthrough list and helper-bundle handling differ (a homebrew
   // `timeout` resolves to coreutils, an Electron terminal to the outer
   // app). A resolved driver that is a live ancestor of this process still
-  // means the round is parented to what the app bound — not orphaned. A
+  // means the round is parented to what the app bound - not orphaned. A
   // true orphan was reparented AWAY from its claimed agent (to launchd),
   // so the app resolves no pid (plumbing) or one outside our ancestry.
   return !(resolved && ancestorPids().includes(resolved))
@@ -1229,19 +1229,19 @@ const ORPHANED_ROUND_MESSAGE =
   'agent (typically backgrounded with `… &`, which reparents it away from ' +
   'the agent once its spawning shell exits), so the app isolates it under ' +
   'a fresh driver principal that cannot see the agent\'s tasks. Its view ' +
-  'of task state is NOT authoritative — do not conclude the task ended. ' +
+  'of task state is NOT authoritative - do not conclude the task ended. ' +
   'Run watchers with a background mode that keeps them parented to the ' +
   'agent session (e.g. Claude Code\'s run_in_background), or use the ' +
-  'blocking handOffAndWait() — see SKILL.md "Hand-back watcher".'
+  'blocking handOffAndWait() - see SKILL.md "Hand-back watcher".'
 
 // Serializes the attach sequence. Concurrent work in one round is legitimate
 // (Promise.all(openTab × N)), but interleaved attachTab bodies race: the
 // "detach the previous session" step below then lands on ANOTHER call's
-// freshly created session while its domains are still enabling — commands on
+// freshly created session while its domains are still enabling - commands on
 // a detached session are dropped, not answered, and surface as
 // 'Page.enable: timed out after 40000ms'. The sequence is a handful of fast
 // round trips, so serializing costs nothing next to page loads (which still
-// overlap — openTab does its load waiting off-lock, see prepareTab).
+// overlap - openTab does its load waiting off-lock, see prepareTab).
 let attachLock = Promise.resolve()
 
 function attachTab(targetId) {
@@ -1254,9 +1254,9 @@ function attachTab(targetId) {
 // Browser-level JavaScript-dialog recovery (PhiAgentSpace domain)
 //
 // A JavaScript dialog (alert/confirm/prompt/beforeunload) parks the tab's
-// renderer main thread inside a modal IPC, so every renderer-gated command —
+// renderer main thread inside a modal IPC, so every renderer-gated command - 
 // Page.enable (its response comes from the renderer), Runtime.evaluate,
-// Page.captureScreenshot — hangs until the dialog closes. A session attached
+// Page.captureScreenshot - hangs until the dialog closes. A session attached
 // AFTER the dialog opened can neither see it (no javascriptDialogOpening
 // replay) nor close it (Page.handleJavaScriptDialog only reaches dialogs its
 // own session saw open). These helpers ride the BROWSER session instead, so
@@ -1289,18 +1289,18 @@ async function browserHandleDialog(targetId, accept, promptText) {
 
 /** Degraded-attach check: when the target is wedged behind a displayed
  *  dialog, surface it on state.openDialog and skip the renderer-gated setup
- *  (the attach still succeeds — pageInfo() reports the dialog and
+ *  (the attach still succeeds - pageInfo() reports the dialog and
  *  handleDialog(accept) closes it and completes the attach). */
 async function dialogBlockedAttach(targetId) {
   const st = await browserDialogState(targetId)
   if (!st || !st.open) return false
   state.openDialog = { type: st.type || 'dialog', message: st.message || '' }
   state.dialogBlocked = true
-  // Network capture never armed for this tab — drop the previous tab's
+  // Network capture never armed for this tab - drop the previous tab's
   // buffer so readNetwork can't report stale requests as this tab's.
   state.network = { requests: new Map(), order: [] }
   logAction('tab blocked by dialog',
-            `${state.openDialog.type} — handleDialog(accept?) to close it`)
+            `${state.openDialog.type} - handleDialog(accept?) to close it`)
   return true
 }
 
@@ -1308,7 +1308,7 @@ async function attachTabNow(targetId) {
   const client = await cdpClient()
   // Detach the previous page session so sessions don't accumulate across a
   // long tab-switching run (each attach opens a fresh flat session), and drop
-  // its listeners — the detached session emits nothing, but dead entries
+  // its listeners - the detached session emits nothing, but dead entries
   // would still be scanned on every event.
   if (state.sessionId) {
     await client.send('Target.detachFromTarget',
@@ -1332,7 +1332,7 @@ async function attachTabNow(targetId) {
     state.sessionDisposers.push(client.on(method, fn, sessionId))
   // Armed BEFORE the domain enables (and re-armed by the deaf-session retry
   // below): a dialog that opens while the setup is still in flight must not
-  // be missed — it is the only signal the CDP side ever sends about it.
+  // be missed - it is the only signal the CDP side ever sends about it.
   const armDialogListeners = () => {
     on('Page.javascriptDialogOpening', (params) => {
       state.openDialog = { type: params.type, message: params.message }
@@ -1342,7 +1342,7 @@ async function attachTabNow(targetId) {
     })
   }
   armDialogListeners()
-  // Attach stays passive — no tab activation, no viewport override below —
+  // Attach stays passive - no tab activation, no viewport override below - 
   // whenever the USER owns what's on screen: while they hold control of an
   // agent Space (takeOver()/waitForAgentControl restores agent presentation),
   // and ALWAYS in a user-Space binding, where Target.activateTarget would
@@ -1356,7 +1356,7 @@ async function attachTabNow(targetId) {
     await client.send('Target.activateTarget', { targetId }).catch(() => {})
   }
   // A tab wedged behind a dialog from an EARLIER round would hang every
-  // renderer-gated command below — probe browser-side and degrade instead of
+  // renderer-gated command below - probe browser-side and degrade instead of
   // timing out (see dialogBlockedAttach).
   if (await dialogBlockedAttach(targetId)) return sessionId
   try {
@@ -1364,7 +1364,7 @@ async function attachTabNow(targetId) {
   } catch (err) {
     if (!/timed out/i.test(String(err?.message || ''))) throw err
     // A dialog can also have opened in the race window after the probe
-    // above — re-check before treating the session as deaf.
+    // above - re-check before treating the session as deaf.
     if (await dialogBlockedAttach(targetId)) return sessionId
     // A just-created session can go deaf under a storm of simultaneous target
     // attaches (its commands dropped, never answered). One fresh session
@@ -1402,8 +1402,8 @@ async function attachTabNow(targetId) {
   // Refs are backendNodeIds; DOM.resolveNode / DOM.describeNode need the DOM
   // agent live on this session.
   await client.send('DOM.enable', {}, sessionId)
-  // Arm network capture for readNetwork(). CDP has no request history — only
-  // events after Network.enable — so capture covers this round's attach
+  // Arm network capture for readNetwork(). CDP has no request history - only
+  // events after Network.enable - so capture covers this round's attach
   // onward; navigate and readNetwork in the same round to audit a load. The
   // buffer is reset on every attach (one buffer, current tab only).
   const net = { requests: new Map(), order: [] }
@@ -1416,7 +1416,7 @@ async function attachTabNow(targetId) {
       net.requests.set(p.requestId, e)
       net.order.push(p.requestId)
     }
-    // A redirect re-sends the same requestId — keep the latest hop's URL.
+    // A redirect re-sends the same requestId - keep the latest hop's URL.
     e.url = p.request.url
     e.method = p.request.method
     e.type = p.type || ''
@@ -1437,7 +1437,7 @@ async function attachTabNow(targetId) {
   await client.send('Network.enable', NETWORK_CAPTURE_PARAMS, sessionId).catch(() => {})
   // Restore this tab's viewport override if one was set earlier this round
   // (switching back keeps it); default = the Space's page area. Agent-window
-  // tabs only — a user-Space tab is visible and needs no emulation.
+  // tabs only - a user-Space tab is visible and needs no emulation.
   if (!userDriving && state.task) {
     await applyAgentViewport(client, sessionId, targetId,
                              state.viewportByTarget.get(targetId)?.request ?? null)
@@ -1448,7 +1448,7 @@ async function attachTabNow(targetId) {
 /** Switches the current tab; also activates it in the hidden window (keeps
  *  its renderer painting via the agent-mode visibility forcing). In a
  *  user-Space binding the switch is attach-only: the tab selected on the
- *  user's screen — and their window focus — are never touched. */
+ *  user's screen - and their window focus - are never touched. */
 export async function switchTab(targetId) {
   await guardAgentControl()
   await attachTab(targetId)  // attachTab activates the target (agent windows only)
@@ -1474,8 +1474,8 @@ const BLANK_TAB_URLS = new Set([
 ])
 
 // Tabs already adopted by an openTab call this round. Concurrent opens
-// (Promise.all(openTab × N)) are supported, so each call must claim its tab —
-// the single blank seed tab, or a target another call's open just created —
+// (Promise.all(openTab × N)) are supported, so each call must claim its tab - 
+// the single blank seed tab, or a target another call's open just created - 
 // before doing anything to it. Claims are made synchronously (no await
 // between check and add), which is what makes them race-free.
 const claimedTabs = new Set()
@@ -1484,9 +1484,9 @@ const claimedTabs = new Set()
  * Load-side setup of one tab on its OWN short-lived CDP session, so
  * concurrent openTab calls never contend for the shared current-tab session
  * (whose attach/detach cycle is serialized and would otherwise be yanked out
- * from under a parallel caller mid-wait). Applies the agent viewport first —
+ * from under a parallel caller mid-wait). Applies the agent viewport first - 
  * a hidden-window tab has no size until one is imposed, and the consent
- * pass's visibility checks need real layout — then optionally navigates,
+ * pass's visibility checks need real layout - then optionally navigates,
  * polls the document ready, and runs the consent pass. Runtime.evaluate and
  * Page.navigate need no domain enables, so this session never issues one:
  * Page.enable stays confined to the serialized attachTab.
@@ -1525,10 +1525,10 @@ async function prepareTab(client, targetId, { navigateTo = null, acceptCookies }
  * Opens `url` in the agent window and switches to it. Reuses a pristine blank
  * tab (the seed New Tab every fresh Space spawns with) by navigating it in
  * place; creates a new tab only when none exists. {reuseBlank: false} forces
- * a genuinely new tab — diffUrls needs one it can close without touching the
+ * a genuinely new tab - diffUrls needs one it can close without touching the
  * caller's tabs. Safe to fire concurrently (Promise.all over many URLs):
  * each call claims its own tab and loads it on a dedicated setup session, and
- * only the cheap final attach is serialized — the last call to finish stays
+ * only the cheap final attach is serialized - the last call to finish stays
  * the current tab, so switchTab before acting on a specific one.
  */
 export async function openTab(url, { acceptCookies = true, reuseBlank = true } = {}) {
@@ -1537,11 +1537,11 @@ export async function openTab(url, { acceptCookies = true, reuseBlank = true } =
   // stays the user's own choice, and there is no agent seed tab to reuse.
   const uctx = currentContext()
   if (uctx?.kind === 'user') {
-    // Route into the bound window, not the key-window default — with the
+    // Route into the bound window, not the key-window default - with the
     // Space open in several windows they can differ.
     const tab = await openSpaceTab(uctx.spaceId, url, { window: uctx.windowId })
     // Wait for the document on a DEDICATED session (concurrent opens must
-    // not contend for the shared current-tab session — same reason
+    // not contend for the shared current-tab session - same reason
     // prepareTab exists), then do the cheap final attach. The spaces.openTab
     // reply predates the navigation's commit, and the initial about:blank
     // document reports readyState 'complete', so require the real page to
@@ -1599,7 +1599,7 @@ export async function openTab(url, { acceptCookies = true, reuseBlank = true } =
       let win
       try {
         win = await client.send('Browser.getWindowForTarget', { targetId })
-      } catch { before.add(targetId); continue }  // detached/closing — ignore
+      } catch { before.add(targetId); continue }  // detached/closing - ignore
       if (win.windowId !== task.windowId) { before.add(targetId); continue }
       if (claimedTabs.has(targetId)) continue  // claimed during the lookup above
       claimedTabs.add(targetId)
@@ -1644,19 +1644,19 @@ export async function goto(url, { timeout = 25, acceptCookies = true } = {}) {
   clearChallengeGate(state.targetId)
   state.challengeGate = null
   const deadline = Date.now() + timeout * 1000
-  // Page.navigate answers at commit — normally fast, but budget it inside
+  // Page.navigate answers at commit - normally fast, but budget it inside
   // {timeout} (capped at the 40s send default) instead of always allowing 40s.
   const res = await client.send('Page.navigate', { url }, requireSession(),
                                 Math.min(40000, Math.max(2000, timeout * 1000)))
   // Page.navigate resolves with errorText on hard failures (bad host, blocked
-  // scheme, …) instead of rejecting — surface it rather than silently waiting
+  // scheme, …) instead of rejecting - surface it rather than silently waiting
   // out the timeout and returning the previous page's info.
   if (res.errorText) {
     throw new Error(`goto: navigation to ${url} failed: ${res.errorText}`)
   }
   await waitForLoad({ timeout: (deadline - Date.now()) / 1000 }).catch(() => {})
   // Dismiss a cookie-consent banner with the static rule set (CMP selectors
-  // only — high precision, no model turn), polling briefly for a late-injected
+  // only - high precision, no model turn), polling briefly for a late-injected
   // banner to surface. Opt out with {acceptCookies:false}; tune the wait by
   // passing an options object, e.g. {acceptCookies:{waitMs:8000}}. Skipped in
   // user-space mode like openTab's pass: consent in the user's own window is
@@ -1665,7 +1665,7 @@ export async function goto(url, { timeout = 25, acceptCookies = true } = {}) {
     await autoAcceptConsent(typeof acceptCookies === 'object' ? acceptCookies : {})
   }
   // The navigation itself succeeded; a page probe that still fails (busy or
-  // wedged renderer) must degrade, not fail the goto — fall back to
+  // wedged renderer) must degrade, not fail the goto - fall back to
   // browser-side target info, which never touches the renderer.
   try {
     return await pageInfo()
@@ -1674,7 +1674,7 @@ export async function goto(url, { timeout = 25, acceptCookies = true } = {}) {
       .send('Target.getTargetInfo', { targetId: state.targetId })
       .catch(() => ({ targetInfo: null }))
     return { url: targetInfo?.url ?? url, title: targetInfo?.title ?? '',
-             degraded: 'in-page probe unavailable — browser-side info only' }
+             degraded: 'in-page probe unavailable - browser-side info only' }
   }
 }
 
@@ -1700,7 +1700,7 @@ export async function waitForLoad({ timeout = 25 } = {}) {
         const ready = await evalInPage('document.readyState', 4000)
         if (ready === 'complete' || ready === 'interactive') return { ready }
       } catch {}
-      // The poll may have burned seconds hanging on a stale context — an
+      // The poll may have burned seconds hanging on a stale context - an
       // event that landed meanwhile settles the wait before the next poll.
       if (fired) return { ready: fired, via: 'event' }
       await wait(0.25)
@@ -1713,12 +1713,12 @@ export async function waitForLoad({ timeout = 25 } = {}) {
 
 /**
  * Polls until a target exists (and, by default, is visible). Returns its
- * center `{x, y}` and size — handy to chain into click. Observation only, so it
+ * center `{x, y}` and size - handy to chain into click. Observation only, so it
  * is not ownership-gated. Accepts every target form except raw coordinates.
- * `{minCount: N}` waits until at least N (visible) elements match — for SPA
+ * `{minCount: N}` waits until at least N (visible) elements match - for SPA
  * lists that stream in ("wait until the feed has 10 items"); the return then
  * carries `count` alongside the FIRST match's rect. minCount needs a selector
- * target (css/xpath/loc) — a ref identifies exactly one node.
+ * target (css/xpath/loc) - a ref identifies exactly one node.
  */
 export async function waitForElement(target, { timeout = 15, visible = true,
                                                minCount = 1 } = {}) {
@@ -1727,7 +1727,7 @@ export async function waitForElement(target, { timeout = 15, visible = true,
     throw new Error('waitForElement needs an element target, not coordinates')
   }
   if (minCount > 1 && spec.kind === 'ref') {
-    throw new Error('waitForElement: minCount needs a selector target — a ref identifies one node')
+    throw new Error('waitForElement: minCount needs a selector target - a ref identifies one node')
   }
   logAction(`wait for ${describeTarget(target)}`)
   const deadline = Date.now() + timeout * 1000
@@ -1772,7 +1772,7 @@ export async function waitForElement(target, { timeout = 15, visible = true,
  * Polls `expression` in the page until it evaluates truthy, then returns that
  * value; throws on timeout (mentioning the last evaluation error, so a typo'd
  * expression doesn't fail as a silent timeout). The bounded generic wait for
- * SPA readiness that waitForElement can't express — e.g.
+ * SPA readiness that waitForElement can't express - e.g.
  * `waitForFunction('window.__APP_READY === true')` or a computed condition.
  * The expression is arbitrary page JS (same rules as js()), so it is
  * ownership-gated per poll: a user takeover stops the wait immediately.
@@ -1845,15 +1845,15 @@ async function evalInPage(expression, timeoutMs = 20000,
   // Fail fast instead of burning the timeout: an open dialog holds the
   // renderer main thread, so the evaluate below could never run.
   if (state.openDialog) {
-    throw new Error(`a JavaScript dialog is open (${state.openDialog.type}) — ` +
+    throw new Error(`a JavaScript dialog is open (${state.openDialog.type}) - ` +
                     'call handleDialog(accept) first')
   }
   // Passive observation in a round bound while the user drives (a watcher's
   // screenshot/pageInfo/detectChallenge) rides the deferred attach.
   await ensureSessionAttached()
   const client = await cdpClient()
-  // objectGroup asks for the result BY REFERENCE — a RemoteObject the caller
-  // reads through callFunctionOn and frees with releaseObjectGroup — instead
+  // objectGroup asks for the result BY REFERENCE - a RemoteObject the caller
+  // reads through callFunctionOn and frees with releaseObjectGroup - instead
   // of a serialized copy. Used by pageScan to carry DOM nodes back without
   // parking them on a page global (see PHI_SCAN_FN).
   const params = { expression, awaitPromise: true, returnByValue: !objectGroup }
@@ -1874,7 +1874,7 @@ async function evalInPage(expression, timeoutMs = 20000,
         return evalInPage(expression, timeoutMs, { depth: depth + 1, objectGroup })
       }
       // A pinned eval that TIMES OUT (rather than erroring) is the signature
-      // of a stale-but-alive context — e.g. the previous document parked
+      // of a stale-but-alive context - e.g. the previous document parked
       // frozen in the back/forward cache after a real navigation: commands
       // against it hang instead of failing, so the gone-test above never
       // fires. Drop the pin so the NEXT probe re-resolves the live document;
@@ -1894,7 +1894,7 @@ async function evalInPage(expression, timeoutMs = 20000,
   return objectGroup ? result : result?.value
 }
 
-/** Runtime.evaluate pinned to an EXPLICIT session — for the short-lived
+/** Runtime.evaluate pinned to an EXPLICIT session - for the short-lived
  *  per-tab setup sessions (see prepareTab) that never enable any domain and
  *  must not ride the shared current-tab session. No main-frame context
  *  pinning: a fresh tab's default context is the only one there is. */
@@ -1919,7 +1919,7 @@ async function evalOnSession(sessionId, expression, timeoutMs = 20000) {
 export async function js(expression) {
   await guardAgentControl()
   if (state.openDialog) {
-    throw new Error('a JavaScript dialog is open — call handleDialog(accept) first')
+    throw new Error('a JavaScript dialog is open - call handleDialog(accept) first')
   }
   logAction('run js', String(expression).slice(0, 120))
   return evalInPage(String(expression))
@@ -1929,25 +1929,25 @@ export async function js(expression) {
  * Reader View extraction for the current tab: the page distilled to its
  * article, through Phi's own pipeline rather than a scrape.
  *
- * Prefer this over `snapshotText()` when you want an ARTICLE — the prose of a
- * post, a doc page, a PDF — rather than the page as a whole. It runs the same
+ * Prefer this over `snapshotText()` when you want an ARTICLE - the prose of a
+ * post, a doc page, a PDF - rather than the page as a whole. It runs the same
  * site rules, rung ladder, coverage gate and PDF accessibility path the reader
  * button uses, so the boilerplate a scrape has to be told to ignore (nav,
  * comment threads, related-post rails, cookie furniture) is already gone.
  *
  * Returns `{title, byline, siteName, lang, sourceURL, rung, coverage,
  * htmlLength, contentHTML?, rule?, isComplete, pageCount?}`. `rung` is which
- * strategy produced it — `rule` (a site rule from phi-reader-rules),
- * `readability`, `structural`, or `accessibility` (PDFs) — and `coverage` is
+ * strategy produced it - `rule` (a site rule from phi-reader-rules),
+ * `readability`, `structural`, or `accessibility` (PDFs) - and `coverage` is
  * the fraction of the page's visible text that survived. Pass
  * `{html: false}` when you only want the verdict; a long article's markup
  * dwarfs everything else. `{complete: true}` waits for the whole of a long
- * PDF rather than the first pages the reader opens with — slower, and only
+ * PDF rather than the first pages the reader opens with - slower, and only
  * meaningful when `isComplete` came back false.
  *
  * Throws when the page is not an article. `no_article_detected` and
  * `below_coverage_floor` are ordinary answers for a homepage, a search result,
- * or an app screen — fall back to `snapshotText()` there.
+ * or an app screen - fall back to `snapshotText()` there.
  */
 export async function readerArticle({ html = true, complete = false } = {}) {
   const task = requireTask()
@@ -1980,13 +1980,13 @@ export async function pageInfo() {
 /**
  * Checks the current page for a Cloudflare challenge. Returns null when there
  * is none, else {vendor: 'cloudflare', kind, url, title} with kind one of:
- *   'interstitial' — full-page "Just a moment…" gate in front of the real page
- *   'turnstile'    — an unsolved Turnstile widget embedded in a normal page
+ *   'interstitial' - full-page "Just a moment…" gate in front of the real page
+ *   'turnstile'    - an unsolved Turnstile widget embedded in a normal page
  *                    (login/signup forms); a solved widget returns null
- *   'blocked'      — a Cloudflare block/error page ("Attention Required",
- *                    "Sorry, you have been blocked"); nothing to solve —
+ *   'blocked'      - a Cloudflare block/error page ("Attention Required",
+ *                    "Sorry, you have been blocked"); nothing to solve - 
  *                    report it to the user instead of handing off
- * Observation only — not ownership-gated. Use waitForChallengeClearance for
+ * Observation only - not ownership-gated. Use waitForChallengeClearance for
  * the bounded passive settling window; never click, reload, navigate, or
  * inject JS to solve a challenge. See SKILL.md ("Cloudflare challenges") and
  * references/challenges.md.
@@ -2025,7 +2025,7 @@ export async function detectChallenge() {
       return hit('interstitial', 'title-and-copy')
     }
     // Turnstile widget embedded in a regular page: a challenge only while
-    // unsolved — passing it fills the hidden response input.
+    // unsolved - passing it fills the hidden response input.
     if (has('iframe[src*="challenges.cloudflare.com"], .cf-turnstile')) {
       const resp = document.querySelector(
         'input[name="cf-turnstile-response"], input[name="cf-challenge-response"]')
@@ -2049,7 +2049,7 @@ function challengeGateFile(targetId) {
 
 // One encounter, one key. Cloudflare interstitials reload THEMSELVES with
 // rotating __cf_chl_* query tokens, so keying on the exact URL would mint a
-// fresh budget per reload — the unbounded probe loop the budget exists to
+// fresh budget per reload - the unbounded probe loop the budget exists to
 // prevent. Origin+path identifies the encounter; a real navigation resets
 // the gate explicitly (goto/closeTab/complete).
 function challengeGateKey(url) {
@@ -2168,19 +2168,19 @@ export async function waitForChallengeClearance({
 // ---------------------------------------------------------------------------
 // Cookie-consent auto-accept
 //
-// A static rule set that dismisses cookie/GDPR banners deterministically —
+// A static rule set that dismisses cookie/GDPR banners deterministically - 
 // no model reasoning, no screenshot. Selector facts are cross-checked against
 // the corpora the consent-handling projects maintain: DuckDuckGo autoconsent
 // (whose per-CMP optIn click rules subsume Consent-O-Matic's),
 // I-don't-care-about-cookies, and EasyList Cookie. EasyList itself never
-// clicks — it HIDES banners cosmetically and pre-seeds consent state with
+// clicks - it HIDES banners cosmetically and pre-seeds consent state with
 // set-cookie scriptlets, and its own docs concede hiding breaks scroll locks,
 // overlays, and embeds on the biggest sites (Google/YouTube, Facebook,
 // Instagram, Twitter, Medium, Guardian are on its "no workaround" list).
-// Clicking the real accept control — what this rule set does — is the
+// Clicking the real accept control - what this rule set does - is the
 // dismissal that works everywhere, persists into the profile, and never
 // leaves a scroll-locked page behind. Tiers: a per-CMP accept-all selector
-// table (high precision — a vendor-specific id/class hit is a real accept
+// table (high precision - a vendor-specific id/class hit is a real accept
 // control) including open-shadow-root CMPs, a guarded accept-text heuristic,
 // then per-CMP CLOSE controls for notice-only banners that ship no accept
 // control at all (the CCPA OneTrust variant: "Cookie Settings" + ✕ only),
@@ -2210,7 +2210,7 @@ const PAGE_OPERABLE_POINT_DECL = `
     var hitMatches = hit === el || (hit && el.contains(hit));
     if (!hitMatches && hit && hit !== doc.body && hit !== doc.documentElement &&
         hit.contains(el)) {
-      // An ANCESTOR legitimately receives the hit for the control it wraps —
+      // An ANCESTOR legitimately receives the hit for the control it wraps - 
       // the custom checkbox/radio pattern styles a label/span over the real
       // input, and a human click there toggles the input. body/html are
       // excluded so a target clipped out of view never reads as operable.
@@ -2305,7 +2305,7 @@ const CONSENT_ACCEPT_FN = `function (opts) {
     '#shopify-pc__banner__btn-accept',
     '#pandectes-banner .cc-allow',
     // Major sites the hide-based lists cannot fix (EasyList "no workaround"
-    // table) — clicking accept is the only clean dismissal there.
+    // table) - clicking accept is the only clean dismissal there.
     '.HTjtHe#xe7COe button#L2AGLb',
     'form[action^="https://consent.google."][action$="/save"]:has(input[name="set_eom"][value="false"]) button, ' +
       'form[action^="https://consent.youtube."][action$="/save"]:has(input[name="set_eom"][value="false"]) button',
@@ -2321,7 +2321,7 @@ const CONSENT_ACCEPT_FN = `function (opts) {
     'button[aria-label="Accept all"], button[aria-label="Accept all cookies"]'
   ];
 
-  // CMPs that render inside an OPEN shadow root — a plain querySelectorAll
+  // CMPs that render inside an OPEN shadow root - a plain querySelectorAll
   // never sees them. Each entry pins the host element; its shadowRoot is then
   // queried with the inner selector. Closed roots stay unreachable and fall
   // through to the pending report.
@@ -2335,7 +2335,7 @@ const CONSENT_ACCEPT_FN = `function (opts) {
 
   // Vendor-specific close/dismiss controls. Notice-only banners (the CCPA
   // OneTrust variant is the big one: just "Cookie Settings" + a ✕) ship NO
-  // accept control at all — dismissing via the vendor's own close button is
+  // accept control at all - dismissing via the vendor's own close button is
   // the only way to clear them, and it persists (OneTrust sets
   // OptanonAlertBoxClosed). Tried only after both accept tiers found nothing.
   var CMP_CLOSE_SELECTORS = [
@@ -2357,11 +2357,11 @@ const CONSENT_ACCEPT_FN = `function (opts) {
   // A label that itself names cookies alongside an accept verb ("Allow all
   // cookies", "Alle Cookies erlauben", "Autoriser tous les cookies") is
   // self-evidently a consent control even outside a consent-looking
-  // container — the big sites (Facebook, Instagram) hash their container
+  // container - the big sites (Facebook, Instagram) hash their container
   // classes so no context check is possible there. REJECT_RE still vetoes.
   var ACCEPT_VERB_RE = /(accept|allow|agree|einverstanden|akzeptier|erlaub|zulassen|zustimm|autoris|aceptar|permitir|aceitar|consenti|accett|toestaan|tillad|till[aå]t|godta|godk[aä]nn|salli|zezw[oó]l|povoli|dopusti|prihva|engedélyez|izin ver|разреш|принима)/i;
   var COOKIE_NOUN_RE = /(cookie|kolači|evästee|informasjonskapsl|çerez|бисквитк|куки)/i;
-  // Never click these — decline / manage / settings / necessary-only, in
+  // Never click these - decline / manage / settings / necessary-only, in
   // several languages.
   var REJECT_RE = /(reject|decline|refuse|disagree|deny|manage|settings|preferences|customi[sz]e|options|more info|learn more|necessary|essential only|opt out|do not|withdraw|ablehnen|nur notwendige|einstellungen|refuser|personnaliser|gerer|rechazar|configurar|rifiuta|impostazioni|weiger|instellingen|n[oöøe]dv[aäe]ndig|noodzakelijk|necesari|necessari|necess[aá]r|n[eé]cessaire|erforderlich|wymagane|nezbytn|v[aä]lttäm[aä]tt|\\b(only|solo|alleen|endast|apenas)\\b)/i;
   var CONSENT_CTX_RE = /(cookie|consent|gdpr|ccpa|privacy|cmp|gate|banner|notice|policy)/i;
@@ -2421,7 +2421,7 @@ const CONSENT_ACCEPT_FN = `function (opts) {
   var allDocs = docs();
 
   function pendingHint() {
-    // A consent-looking container is present but nothing was clicked — either
+    // A consent-looking container is present but nothing was clicked - either
     // it injected late, sits in a cross-origin iframe, or comes from a CMP not
     // in the table. Report enough for the caller to decide the fallback.
     var xo = document.querySelector(
@@ -2446,7 +2446,7 @@ const CONSENT_ACCEPT_FN = `function (opts) {
     for (var bi = 0; bi < boxes.length; bi++) {
       var box = boxes[bi];
       // Off-viewport matches (a below-the-fold cookie-policy section, a
-      // footer link block) are not a pending banner — counting them stalls
+      // footer link block) are not a pending banner - counting them stalls
       // the first input on pages that have no banner at all.
       if (!isVisible(box) || !inViewport(box)) continue;
       pending = true;
@@ -2554,7 +2554,7 @@ const CONSENT_ACCEPT_FN = `function (opts) {
     }
   }
 
-  // 3) Per-CMP close controls — only after no accept control matched: a real
+  // 3) Per-CMP close controls - only after no accept control matched: a real
   //    accept persists consent and wins; for notice-only banners the close is
   //    the only control there is.
   if (wantDismiss) {
@@ -2639,7 +2639,7 @@ async function activateConsentCandidate(candidate, opts, sessionId = undefined,
 }
 
 // Best-effort automatic pass wired into goto()/openTab(): CMP selectors only
-// — accept table first, then vendor close controls for notice-only banners —
+// - accept table first, then vendor close controls for notice-only banners - 
 // (near-zero false positive), never throws, never blocks navigation. On a
 // first visit the banner is usually injected a beat after load, so this polls
 // for it to surface rather than checking once: it clicks the instant an accept
@@ -2673,15 +2673,15 @@ async function autoAcceptConsent({ waitMs = 3000, graceMs = 1200, intervalMs = 3
 }
 
 /**
- * Deterministically dismiss a cookie-consent banner via the static rule set —
+ * Deterministically dismiss a cookie-consent banner via the static rule set - 
  * no model reasoning, no screenshot. Scans the top document and same-origin
  * frames. Tier order: per-CMP accept selectors, accept-label heuristic,
- * per-CMP close controls (notice-only banners — e.g. the CCPA OneTrust
- * variant — ship no accept control at all, only a ✕), close-label heuristic.
+ * per-CMP close controls (notice-only banners - e.g. the CCPA OneTrust
+ * variant - ship no accept control at all, only a ✕), close-label heuristic.
  * Returns `{clicked:true, rule:'cmp'|'heuristic'|'cmp-close'|'heuristic-close',
  * selector?, text}` on a hit, or `{clicked:false,
  * reason:'none'|'cross-origin-frame', pending, frameSrc?}` when the rules
- * didn't match — then observe/annotatedScreenshot and click it yourself (or
+ * didn't match - then observe/annotatedScreenshot and click it yourself (or
  * hand off for a cross-origin CMP frame). `goto` and `openTab` already run
  * the selector tiers automatically; call this for the text heuristics or a
  * manual retry. Options: `{heuristic=true}` also run the text fallbacks,
@@ -2708,13 +2708,13 @@ const INPUT_GATE_MAX_GRACE_MS = 1500
 // `intent` names the class of input being gated. A blocking consent layer a
 // person CAN still act on refuses only keyboard input: pointer clicks are the
 // way such a layer gets dismissed (natively hit-tested, so they land on the
-// topmost surface — the banner), and wheel input may be needed to scroll a
+// topmost surface - the banner), and wheel input may be needed to scroll a
 // long consent dialog. In a USER Space the consent choice belongs to the
 // user, so every intent is refused while a layer genuinely blocks the page.
 async function ensurePageOperable({ force = false, intent = 'keyboard' } = {}) {
   if (state.openDialog) {
     throw new Error(`page is not human-operable: a JavaScript dialog is open ` +
-                    `(${state.openDialog.type}) — call handleDialog(accept) first`)
+                    `(${state.openDialog.type}) - call handleDialog(accept) first`)
   }
   const PAGE_PROBE = `(() => ({
     ready: document.readyState,
@@ -2764,10 +2764,10 @@ async function ensurePageOperable({ force = false, intent = 'keyboard' } = {}) {
   if (challenge) {
     const next = challenge.kind === 'blocked'
       ? 'report the hard block to the user; do not retry input'
-      : `remained after ${state.challengeGate?.attempts || 0} passive rechecks — ` +
+      : `remained after ${state.challengeGate?.attempts || 0} passive rechecks - ` +
         'hand control to the user'
     throw new Error(`page is not human-operable: ${challenge.vendor} ` +
-                    `${challenge.kind} detected — ${next}`)
+                    `${challenge.kind} detected - ${next}`)
   }
 
   const documentKey = `${state.targetId}|${page.timeOrigin}|${page.url}`
@@ -2798,7 +2798,7 @@ async function ensurePageOperable({ force = false, intent = 'keyboard' } = {}) {
     // is enough: the user can accept it themselves or explicitly ask us to.
     consent = await runConsentAccept({ heuristic: false, frames: true, scroll: false })
   }
-  // Only a layer that genuinely BLOCKS the page refuses input — a matched but
+  // Only a layer that genuinely BLOCKS the page refuses input - a matched but
   // non-blocking candidate (a footer notice in a user Space) never does.
   const consentBlocks = !consent?.clicked && !!consent?.blocking &&
     (consent?.pending || (userSpace && consent?.candidate))
@@ -2807,14 +2807,14 @@ async function ensurePageOperable({ force = false, intent = 'keyboard' } = {}) {
       ? 'a cross-origin cookie-consent frame'
       : 'a cookie-consent overlay'
     const remedy = userSpace
-      ? 'the consent choice in a user Space belongs to the user — ask them ' +
+      ? 'the consent choice in a user Space belongs to the user - ask them ' +
         'to dismiss it (or to explicitly approve acceptCookies())'
       : consent.reason === 'cross-origin-frame'
         ? 'click() its visible Accept/Close button (pointer input still ' +
           'works on the banner) or hand control to the user'
         : 'call acceptCookies(), click() the banner\'s own control, or hand ' +
           'control to the user'
-    throw new Error(`page is not human-operable: ${detail} is blocking input — ${remedy}`)
+    throw new Error(`page is not human-operable: ${detail} is blocking input - ${remedy}`)
   }
   state.inputGate = { documentKey, checkedAt: Date.now() }
   return { ready: true, consent, consentBlocks }
@@ -2825,7 +2825,7 @@ async function ensurePageOperable({ force = false, intent = 'keyboard' } = {}) {
 //
 // Every scan (observe/snapshotText/annotatedScreenshot, either view) becomes
 // the new baseline for its tab+scope. Baselines live on DISK because the Node
-// process dies with each heredoc round — a later round can still answer "what
+// process dies with each heredoc round - a later round can still answer "what
 // changed since my last look?" via observe({diff: true}). One JSON file per
 // page target; scoped and showHidden scans keep separate baselines so a
 // partial scan never poisons the full-page one.
@@ -2852,7 +2852,7 @@ function writeScanBaseline(scopeKey, data) {
     try { all = JSON.parse(readFileSync(file, 'utf8')) } catch {}
     all[scopeKey] = { url: data.url, elements: data.elements, text: data.text }
     writeFileSync(file, JSON.stringify(all))
-  } catch {}  // cache is best-effort — a failed write only costs diff quality
+  } catch {}  // cache is best-effort - a failed write only costs diff quality
 }
 
 /** Runs a scan and rotates the baseline for its scope; returns the fresh scan
@@ -2950,8 +2950,8 @@ function wrapUntrusted(text) {
 // One DOM pass produces BOTH views so ref numbers agree no matter which helper
 // you called: `elements` (the structured action surface for observe()) and
 // `text` (the prose outline for snapshotText()). A ref is the node's CDP
-// backendNodeId — the renderer's own identifier, stable for the node's
-// lifetime — so @N keeps working across scans until the element itself is
+// backendNodeId - the renderer's own identifier, stable for the node's
+// lifetime - so @N keeps working across scans until the element itself is
 // destroyed. Page JS can't see backend ids, so the scan emits NUL-framed scan
 // indices and returns the matching nodes by reference alongside them;
 // pageScan() swaps both views over to the real ids right after (see
@@ -2974,21 +2974,21 @@ const PHI_SCAN_FN = `function (opts) {
     return s.display !== 'none' && s.visibility !== 'hidden'
   }
   // Scoping to a currently-hidden subtree (closed menu, collapsed panel)
-  // implies the caller wants its contents — behave as if showHidden were on.
+  // implies the caller wants its contents - behave as if showHidden were on.
   const showHidden = !!opts.showHidden || (root !== document.body && !visible(root))
   // Plain local: the scan hands this array back BY REFERENCE alongside the
   // serializable view (see pageScan), so the node handles never land on a
-  // global the page could read — and the caller's remote handle works from
+  // global the page could read - and the caller's remote handle works from
   // whatever context the scan ran in, child frame included.
   const nodes = []
   const out = []
   const els = []
   const headings = []
-  // Offset of the frame currently being walked, in TOP-page viewport coords —
+  // Offset of the frame currently being walked, in TOP-page viewport coords - 
   // rects recorded inside same-origin iframes stay directly clickable.
   let foX = 0, foY = 0
   // True while walking a subtree that failed the visibility check (only
-  // reachable when showHidden) — recorded elements get flagged.
+  // reachable when showHidden) - recorded elements get flagged.
   let hiddenNow = false
   // Matched against tagName.toUpperCase(): HTML tagNames are already upper,
   // but SVG (and other foreign) elements report lowercase.
@@ -3048,7 +3048,7 @@ const PHI_SCAN_FN = `function (opts) {
   const CLICKABLE_ROLE = /^(button|link|tab|menuitem|checkbox|radio|switch|option)$/
   const walk = (node, depth) => {
     if (node.nodeType === Node.TEXT_NODE) {
-      // Hidden subtrees contribute their CONTROLS (flagged), not their prose —
+      // Hidden subtrees contribute their CONTROLS (flagged), not their prose - 
       // a collapsed menu's labels ride the recorded links/buttons anyway.
       if (hiddenNow) return
       const t = clean(node.textContent)
@@ -3086,7 +3086,7 @@ const PHI_SCAN_FN = `function (opts) {
     if (tag === 'input') {
       const nm = nameOf(el)
       // Never echo a password field's content into the scan (and thus into
-      // the agent's context) — report only that a value is present. Covers
+      // the agent's context) - report only that a value is present. Covers
       // secrets the agent filled AND ones the user typed during a handoff.
       // data-phi-filled is the app's durable vault-fill marker: it keeps
       // the mask on even after a show-password toggle flips the input to
@@ -3121,7 +3121,7 @@ const PHI_SCAN_FN = `function (opts) {
     if (tag === 'iframe' || tag === 'frame') {
       // Same-origin frame: walk its body inline, offsetting rects by the
       // frame's position so everything stays in TOP-page viewport coords.
-      // Cross-origin frame: contentDocument is null/throws — record the frame
+      // Cross-origin frame: contentDocument is null/throws - record the frame
       // itself so the agent knows unscanned content exists there.
       let childBody = null
       try { childBody = el.contentDocument && el.contentDocument.body } catch (e) {}
@@ -3169,14 +3169,14 @@ const PHI_SCAN_FN = `function (opts) {
   }
 }`
 
-/** objectGroup holding one scan's remote handles — released when it finishes. */
+/** objectGroup holding one scan's remote handles - released when it finishes. */
 const SCAN_GROUP = 'phi-scan'
 
 /**
  * Runs the shared DOM scan, then swaps the scan-index placeholders in both
  * views for CDP backendNodeIds; returns {url, title, headings, elements, text}.
- * Options: {within} — scan only that subtree (any element target form);
- * {showHidden} — include hidden elements, flagged; {withRects} — record each
+ * Options: {within} - scan only that subtree (any element target form);
+ * {showHidden} - include hidden elements, flagged; {withRects} - record each
  * element's TOP-page viewport rect (used by annotatedScreenshot).
  */
 async function pageScan({ within = null, showHidden = false, withRects = false } = {}) {
@@ -3184,8 +3184,8 @@ async function pageScan({ within = null, showHidden = false, withRects = false }
   const client = await cdpClient()
   const sid = requireSession()
   // The scan returns {data, nodes} BY REFERENCE. Both reads below ride the
-  // wrapper's own objectId, so they land in the context the scan ran in —
-  // child frame included — with no pinning of their own.
+  // wrapper's own objectId, so they land in the context the scan ran in - 
+  // child frame included - with no pinning of their own.
   let wrapperId
   if (within == null) {
     const result = await evalInPage(
@@ -3245,14 +3245,14 @@ async function scanView(client, sid, wrapperId) {
 
 /**
  * Maps the scan's node array (in scan order) to CDP backendNodeIds: one
- * Runtime.getProperties over the array, then a DOM.describeNode per node —
+ * Runtime.getProperties over the array, then a DOM.describeNode per node - 
  * issued concurrently, the CDP client multiplexes by command id. backendNodeId
  * comes from the renderer itself, which is what lets a ref outlive the scan
  * that produced it.
  *
  * The array is reached through the scan's returned wrapper rather than a page
- * global, so nothing Phi-named is ever visible to the page — not even for the
- * length of the scan — and the handle resolves in the scan's own context.
+ * global, so nothing Phi-named is ever visible to the page - not even for the
+ * length of the scan - and the handle resolves in the scan's own context.
  */
 async function scanBackendIds(client, sid, wrapperId, count) {
   const ids = new Array(count).fill(null)
@@ -3272,27 +3272,27 @@ async function scanBackendIds(client, sid, wrapperId, count) {
       const { node } = await client.send('DOM.describeNode',
                                          { objectId: p.value.objectId }, sid)
       ids[i] = node.backendNodeId
-    } catch {}  // node died mid-scan — its ref stays null
+    } catch {}  // node died mid-scan - its ref stays null
   }))
   return ids
 }
 
 /**
- * PRIMARY observation: the page's actionable surface as structured data —
+ * PRIMARY observation: the page's actionable surface as structured data - 
  * `{url, title, headings, elements}` where each element is
  * `{ref, role, name, loc, ...}` (inputs also carry `type`/`value`, links
  * `href`). Feed `@ref` or `loc` straight into click/hover/fillInput/etc.
  * Reach for `snapshotText()` when you need to READ page prose, or
  * `screenshot()` for canvas-like/visual pages.
- * Refs are CDP backendNodeIds — stable for the element's lifetime, so they
+ * Refs are CDP backendNodeIds - stable for the element's lifetime, so they
  * stay valid across scans. `elements` is capped at `maxElements` (refs beyond
  * the cap still resolve); `truncated` flags when the cap hit.
  * Options beyond maxElements:
- *   {diff: true}       — return only changes vs the previous scan of this
+ *   {diff: true}       - return only changes vs the previous scan of this
  *                        tab+scope: {added, removed, changed, unchanged}.
  *                        Baselines persist on disk across heredoc rounds.
- *   {within: target}   — scan only that subtree (selector/@ref/loc/xpath).
- *   {showHidden: true} — include hidden elements, flagged `hidden: true`.
+ *   {within: target}   - scan only that subtree (selector/@ref/loc/xpath).
+ *   {showHidden: true} - include hidden elements, flagged `hidden: true`.
  */
 export async function observe({ maxElements = 500, within = null,
                                 showHidden = false, diff = false } = {}) {
@@ -3318,7 +3318,7 @@ export async function observe({ maxElements = 500, within = null,
     url, title, headings,
     elements: list.slice(0, maxElements),
     ...(list.length > maxElements ? { truncated: list.length - maxElements } : {}),
-    ...(diff && !prev ? { note: 'first scan of this scope — full result' } : {}),
+    ...(diff && !prev ? { note: 'first scan of this scope - full result' } : {}),
   }
 }
 
@@ -3346,7 +3346,7 @@ export async function snapshotText({ maxChars = 60000, within = null,
       ? `[navigated: ${prev.url} -> ${data.url}]\n` : ''
     text = head + diffText(prev.text, data.text)
   } else {
-    text = (diff ? '[first scan of this scope — full text]\n' : '') + (data.text ?? '')
+    text = (diff ? '[first scan of this scope - full text]\n' : '') + (data.text ?? '')
   }
   if (typeof text === 'string' && text.length > maxChars) {
     text = text.slice(0, maxChars) + `\n…[truncated at ${maxChars} chars]`
@@ -3360,11 +3360,11 @@ export async function snapshotText({ maxChars = 60000, within = null,
 /**
  * The current tab's console messages as enveloped text, one per line
  * (`[level] text (url:line)`). Chromium buffers console messages per tab
- * (capped ~1000), and Console.enable replays that buffer — so history from
+ * (capped ~1000), and Console.enable replays that buffer - so history from
  * BEFORE this heredoc round is included, unlike readNetwork. Options:
  * {errors: true} keeps only error/warning; {max} caps returned lines (newest
  * kept). Repeated identical messages collapse into one line with `(xN)`.
- * Observation only — not ownership-gated.
+ * Observation only - not ownership-gated.
  */
 export async function readConsole({ errors = false, max = 100 } = {}) {
   const client = await cdpClient()
@@ -3426,11 +3426,11 @@ export async function readConsole({ errors = false, max = 100 } = {}) {
 /**
  * Requests seen on the current tab as enveloped text lines
  * (`status method url [type] size`). Capture is armed when the round attaches
- * to the tab (enterContext/openTab/switchTab) — CDP has no request
+ * to the tab (enterContext/openTab/switchTab) - CDP has no request
  * history, so traffic from earlier rounds is not visible: to audit a page
  * load, goto and readNetwork in the SAME round. Options: {failedOnly: true}
  * keeps network failures and 4xx/5xx responses; {max} caps returned lines
- * (newest kept). Observation only — not ownership-gated.
+ * (newest kept). Observation only - not ownership-gated.
  */
 export async function readNetwork({ failedOnly = false, max = 100 } = {}) {
   requireSession()
@@ -3476,7 +3476,7 @@ export async function readNetwork({ failedOnly = false, max = 100 } = {}) {
 
 /**
  * Prose diff between two pages (e.g. staging vs production). Runs in a
- * TEMPORARY tab — the current tab and its scan baselines are untouched:
+ * TEMPORARY tab - the current tab and its scan baselines are untouched:
  * opens url1, scans, navigates the temp tab to url2, scans, closes it and
  * re-attaches the previous tab. Returns `-`/`+` prefixed lines (same
  * line-multiset format as snapshotText({diff: true})), enveloped.
@@ -3486,7 +3486,7 @@ export async function diffUrls(url1, url2) {
   // visible user window: every open/attach/close there flips the tab the
   // user is looking at. Run comparisons from an agent Space.
   if (contextKind() === 'user') {
-    throw new Error('diffUrls is agent-space only — it churns a temporary ' +
+    throw new Error('diffUrls is agent-space only - it churns a temporary ' +
                     'tab, which would visibly flip tabs in the user\'s ' +
                     "window; run it from an agent Space (enterContext({kind:'agent'}))")
   }
@@ -3499,8 +3499,8 @@ export async function diffUrls(url1, url2) {
     const a = await pageScan({})
     await goto(url2)
     const b = await pageScan({})
-    // Refs are backendNodeIds — distinct across two documents even for
-    // identical content — so strip them before diffing prose.
+    // Refs are backendNodeIds - distinct across two documents even for
+    // identical content - so strip them before diffing prose.
     const strip = (t) => String(t || '').replace(/ref=\d+ ?/g, '')
     let d = diffText(strip(a.text), strip(b.text))
     if (d === '[no changes since previous scan]') d = '[no textual differences]'
@@ -3581,7 +3581,7 @@ function normalizeTarget(target) {
   throw new Error('unsupported target: ' + describeTarget(target))
 }
 
-// In-page finder for css/xpath/href/role specs. Ref specs never reach it —
+// In-page finder for css/xpath/href/role specs. Ref specs never reach it - 
 // a ref is a backendNodeId, resolved Node-side via DOM.resolveNode.
 // Searches the top document first, then every same-origin child frame, so
 // locs produced by the scan inside iframes still resolve.
@@ -3593,7 +3593,7 @@ function __phiDocs(){
       try {
         var d = win.frames[i].document
         if (d) { docs.push(d); collect(win.frames[i]) }
-      } catch (e) {}  // cross-origin frame — skip
+      } catch (e) {}  // cross-origin frame - skip
     }
   }
   try { collect(window) } catch (e) {}
@@ -3677,7 +3677,7 @@ function __phiCount(spec, needVisible){
  *
  * Evaluated bare, `${PHI_LOCATE};__phiFind(...)` declares __phiDocs, __phiFind,
  * __phiCount, __phiRoleOf and __phiNameOf on the page's global object, where
- * they outlive the round — leaving five Phi-named functions on `window` for any
+ * they outlive the round - leaving five Phi-named functions on `window` for any
  * page the agent targeted to read back. The IIFE scopes them to the call.
  */
 const locateExpr = (call) => `(function () {${PHI_LOCATE}
@@ -3686,7 +3686,7 @@ return ${call}
 
 /**
  * Resolves a normalized (non-coordinate) spec to a Runtime remote object.
- * Ref specs go through DOM.resolveNode — a ref IS a backendNodeId, so no
+ * Ref specs go through DOM.resolveNode - a ref IS a backendNodeId, so no
  * page-side table is involved and a destroyed node simply fails to resolve.
  * Other kinds run the in-page __phiFind. Returns null when nothing matches.
  */
@@ -3699,7 +3699,7 @@ async function resolveSpecObjectId(spec) {
         { backendNodeId: spec.value, objectGroup: 'phi-target' }, sid)
       if (!object?.objectId) return null
       // A re-render can leave the id resolving to a DETACHED node (the object
-      // survives until GC) whose rect reads (0,0) — a click would land at the
+      // survives until GC) whose rect reads (0,0) - a click would land at the
       // page origin. Treat detached as not found.
       const { result } = await client.send('Runtime.callFunctionOn', {
         objectId: object.objectId,
@@ -3726,7 +3726,7 @@ async function resolveSpecObjectId(spec) {
 }
 
 /** Resolves a spec and invokes `fnDecl` with the element as `this`, returning
- *  the by-value result — or null when the target doesn't resolve. */
+ *  the by-value result - or null when the target doesn't resolve. */
 async function callOnTarget(spec, fnDecl, args = []) {
   const objectId = await resolveSpecObjectId(spec)
   if (!objectId) return null
@@ -3752,7 +3752,7 @@ async function callOnTarget(spec, fnDecl, args = []) {
 // SPAs often mount a control a beat after the scan (or navigation) that led
 // to it, so an acting helper failing INSTANTLY with "target not found" is
 // usually a race, not a real absence. Acting helpers (click/hover/fillInput/
-// uploadFile) give target RESOLUTION this short bounded grace — a resolved
+// uploadFile) give target RESOLUTION this short bounded grace - a resolved
 // target still acts immediately, only a missing one waits. Longer or
 // conditional waits stay explicit: waitForElement / waitForFunction.
 const RESOLVE_RETRY_MS = 3000
@@ -3769,11 +3769,11 @@ async function retryResolve(attempt, retryMs = RESOLVE_RETRY_MS) {
 
 /** Resolves a target to viewport {x, y} (center, or top-left + offset),
  *  scrolling it into view first. The point must be visible, enabled, inside
- *  the viewport, and topmost through its same-origin frame chain—the reach a
+ *  the viewport, and topmost through its same-origin frame chain - the reach a
  *  human pointer actually has. Throws if missing or inoperable (after the
  *  short grace above; {retryMs: 0} probes exactly once). {gateRefresh: false}
- *  keeps the whole probe mutation-free — no consent re-gate, no pointer
- *  moves — for the commit checks right before a press. {scroll: false} skips
+ *  keeps the whole probe mutation-free - no consent re-gate, no pointer
+ *  moves - for the commit checks right before a press. {scroll: false} skips
  *  the scroll-into-view: required mid-drag, where scrolling the page under a
  *  held button would be a gesture of its own. Element hits carry w/h;
  *  raw-coordinate targets return {x, y} alone. */
@@ -3831,10 +3831,10 @@ async function locateObjectId(target) {
 
 /** PNG screenshot of the current tab. Returns the file path. */
 export async function screenshot(path) {
-  // An open dialog blocks the renderer — the capture below would time out
+  // An open dialog blocks the renderer - the capture below would time out
   // after 30s instead of ever painting.
   if (state.openDialog) {
-    throw new Error(`a JavaScript dialog is open (${state.openDialog.type}) — ` +
+    throw new Error(`a JavaScript dialog is open (${state.openDialog.type}) - ` +
                     'call handleDialog(accept) first')
   }
   await ensureSessionAttached()
@@ -3850,8 +3850,8 @@ export async function screenshot(path) {
 }
 
 /**
- * Screenshots the ENTIRE browser window — the native chrome (sidebar, tab
- * strip, address bar, split-view arrangement) plus the web content — unlike
+ * Screenshots the ENTIRE browser window - the native chrome (sidebar, tab
+ * strip, address bar, split-view arrangement) plus the web content - unlike
  * screenshot(), which captures only the web viewport. Returns the PNG path;
  * Read it. The app renders the chrome and composites the page (captured over
  * CDP, since the agent window is hidden) into the web area. In a split view
@@ -3861,7 +3861,7 @@ export async function screenshot(path) {
  */
 export async function screenshotBrowser(path) {
   // Nothing to photograph: a shadow window is alpha 0 and off-screen, so the
-  // native capture returns an empty frame. screenshot() still works — it
+  // native capture returns an empty frame. screenshot() still works - it
   // captures the page through the renderer, not the screen.
   refuseInShadow('screenshotBrowser')
   await maybeTrackPageArea()
@@ -3878,7 +3878,7 @@ export async function screenshotBrowser(path) {
   let webPath
   let captureTimeout
   try {
-    // A dialog-blocked renderer cannot paint — skip straight to the
+    // A dialog-blocked renderer cannot paint - skip straight to the
     // chrome-only shot instead of stalling 30s on the capture.
     if (state.openDialog) throw new Error('dialog open')
     const { data } = await client.send('Page.captureScreenshot',
@@ -3911,7 +3911,7 @@ export async function screenshotBrowser(path) {
 }
 
 // Draws fixed-position boxes + @ref labels over the given rects; lives in one
-// container so removal is a single remove(). pointer-events:none — the page
+// container so removal is a single remove(). pointer-events:none - the page
 // never sees it.
 const PHI_OVERLAY_FN = `function (boxes) {
   var old = document.getElementById('__phi_overlay__')
@@ -3941,7 +3941,7 @@ const PHI_OVERLAY_FN = `function (boxes) {
 
 /**
  * screenshot() with @ref-labeled boxes over every interactive element in the
- * viewport — visual click-targeting: Read the PNG, then act on the labeled
+ * viewport - visual click-targeting: Read the PNG, then act on the labeled
  * refs (they are the same refs observe() returns). The overlay is injected
  * only for the capture and removed right after. Returns the PNG file path.
  * Boxes are capped at `maxBoxes` (viewport elements only, scan order).
@@ -3950,7 +3950,7 @@ export async function annotatedScreenshot(path, { maxBoxes = 150 } = {}) {
   await guardAgentControl()
   logAction('screenshot (annotated)')
   const data = await pageScan({ withRects: true })
-  // A full-page scan just happened — keep the diff baseline current.
+  // A full-page scan just happened - keep the diff baseline current.
   writeScanBaseline(scanScopeKey({}), data)
   const vp = await evalInPage('({ w: innerWidth, h: innerHeight })')
   const boxes = (Array.isArray(data.elements) ? data.elements : [])
@@ -3991,7 +3991,7 @@ const PAPER_FORMATS = {
  * {tagged: true} emits an accessible (tagged) PDF; {outline: true} adds PDF
  * bookmarks generated from the page's headings; {toc: true} waits for
  * Paged.js pagination to settle before printing (for pages that
- * self-paginate and build their own table of contents — no-op when Paged.js
+ * self-paginate and build their own table of contents - no-op when Paged.js
  * isn't on the page). Returns {file, bytes}.
  */
 export async function savePdf(path, {
@@ -4009,7 +4009,7 @@ export async function savePdf(path, {
                    transferMode: 'ReturnAsStream' }
   const paper = format ? PAPER_FORMATS[String(format).toLowerCase()] : null
   if (format && !paper) {
-    throw new Error(`savePdf: unknown format '${format}' — use a4|letter|legal`)
+    throw new Error(`savePdf: unknown format '${format}' - use a4|letter|legal`)
   }
   if (paper) { params.paperWidth = paper.width; params.paperHeight = paper.height }
   if (width !== undefined) params.paperWidth = Number(width)
@@ -4028,7 +4028,7 @@ export async function savePdf(path, {
   }
   if (headerTemplate || footerTemplate) {
     params.displayHeaderFooter = true
-    // Chromium falls back to a date/title header when none is given — an
+    // Chromium falls back to a date/title header when none is given - an
     // empty template keeps the header blank unless explicitly requested.
     params.headerTemplate = headerTemplate || '<span></span>'
     params.footerTemplate = footerTemplate || '<span></span>'
@@ -4089,7 +4089,7 @@ export async function archivePage(path) {
   return { file, bytes: Buffer.byteLength(data) }
 }
 
-/** Saves the page distilled to its article as one standalone HTML file — the
+/** Saves the page distilled to its article as one standalone HTML file - the
  *  reader's own export, not a re-render of a scrape. Returns
  *  {file, bytes, title, rung, isComplete}.
  *
@@ -4122,7 +4122,7 @@ export async function saveArticle(path, { complete = false, inlineImages = true 
 }
 
 // In-page collector for scrapeMedia: media elements under `this` (or the top
-// document — iframes are not walked). currentSrc resolves srcset/<picture>/
+// document - iframes are not walked). currentSrc resolves srcset/<picture>/
 // <source> selection to the URL the browser actually chose.
 const MEDIA_COLLECT_FN = `function (types) {
   var root = (this && this.nodeType === 1) ? this : document
@@ -4180,7 +4180,7 @@ function mediaFileName(dir, url, contentType, used, i) {
   return join(dir, name)
 }
 
-/** The renderer's cached bytes for a resource of the current page — exact
+/** The renderer's cached bytes for a resource of the current page - exact
  *  bytes, no new network request, no CORS; null when not in the cache. */
 async function mediaFromCache(url) {
   const client = await cdpClient()
@@ -4218,14 +4218,14 @@ async function mediaFromPage(url, maxBytes) {
 
 /** True when a CDP cookie's domain matches `hostname` (exact host, or the
  *  hostname is a subdomain of the cookie's domain). Deliberately ignores the
- *  host-only distinction — close enough for scoping/filtering here. */
+ *  host-only distinction - close enough for scoping/filtering here. */
 function cookieMatchesHost(cookie, hostname) {
   const d = (cookie.domain || '').replace(/^\./, '')
   return !!d && (hostname === d || hostname.endsWith('.' + d))
 }
 
 /** Node-side fetch carrying the profile's cookies, the page's referer and
- *  the browser's user agent — no CORS, covers what the page can't fetch. */
+ *  the browser's user agent - no CORS, covers what the page can't fetch. */
 async function mediaFromNode(url, maxBytes) {
   const client = await cdpClient()
   const { cookies } = await client.send('Storage.getCookies', {}, requireSession())
@@ -4255,7 +4255,7 @@ async function mediaFromNode(url, maxBytes) {
  * background images are NOT collected. Each URL is fetched via the first
  * route that works: renderer cache -> in-page fetch -> cookie-carrying Node
  * fetch; data: URLs decode directly, blob: URLs only work in-page (MSE
- * streams fail honestly). URLs/filenames in the result are page-derived —
+ * streams fail honestly). URLs/filenames in the result are page-derived - 
  * the untrusted-content rules apply.
  * Options: {types: ['image']} (add 'video'/'audio'), {within: target},
  * {dir} (default under the OS temp dir), {limit: 100},
@@ -4266,7 +4266,7 @@ export async function scrapeMedia({ types = ['image'], within = null, dir,
                                     limit = 100, maxBytes = 50 * 1024 * 1024 } = {}) {
   const bad = types.filter((t) => !['image', 'video', 'audio'].includes(t))
   if (bad.length) {
-    throw new Error(`scrapeMedia: unknown types ${bad.join(',')} — use image|video|audio`)
+    throw new Error(`scrapeMedia: unknown types ${bad.join(',')} - use image|video|audio`)
   }
   logAction(`scrape media (${types.join(',')})`)
   let found
@@ -4320,7 +4320,7 @@ export async function scrapeMedia({ types = ['image'], within = null, dir,
 /**
  * Sets the CURRENT tab's emulated viewport. Do NOT use this on normal sites:
  * the default already tracks the Space's page area, which is the size the
- * page would render at in a regular tab — change it only for exceptional
+ * page would render at in a regular tab - change it only for exceptional
  * cases (testing responsive layouts at an explicit width, or when the user
  * asks for a specific size). Omitted dimensions track the page area, so
  * `setViewport()` resets. Both dimensions are clamped to
@@ -4333,11 +4333,11 @@ export async function scrapeMedia({ types = ['image'], within = null, dir,
  */
 export async function setViewport({ width, height } = {}) {
   // The emulation override exists for the HIDDEN agent window (0×0 without
-  // it). A user-Space tab is visible and sized for real — imposing metrics
+  // it). A user-Space tab is visible and sized for real - imposing metrics
   // there would visibly reshape the user's own tab and nothing would clear
   // it. Test responsive layouts from an agent Space instead.
   if (contextKind() === 'user') {
-    throw new Error('setViewport is agent-space only — a user-Space tab is ' +
+    throw new Error('setViewport is agent-space only - a user-Space tab is ' +
                     'visible and sized for real; use an agent Space to test ' +
                     'explicit viewport sizes')
   }
@@ -4358,7 +4358,7 @@ export async function setViewport({ width, height } = {}) {
     : { ...(w !== undefined ? { width: w } : {}),
         ...(h !== undefined ? { height: h } : {}) }
   // Persist so the next round re-applies it (the CDP override dies with this
-  // round's session) — the CLI runs one command per round.
+  // round's session) - the CLI runs one command per round.
   if (state.task) writeStoredViewport(state.task.taskId, request)
   return applyAgentViewport(await cdpClient(), requireSession(), targetId, request)
 }
@@ -4403,7 +4403,7 @@ function logAction(text, detail) {
   }).catch(() => {})
 }
 
-// Console-width URL: scheme stripped, capped — the console is a narrow
+// Console-width URL: scheme stripped, capped - the console is a narrow
 // terminal, not an address bar.
 function shortUrl(url) {
   const s = String(url).replace(/^https?:\/\//, '')
@@ -4517,7 +4517,7 @@ function typingGapMs(unit, count) {
 }
 
 // Hard ceiling on one paced insertion. Key events have an uncompressible
-// dwell, so typing time is otherwise linear in length — a multi-thousand-char
+// dwell, so typing time is otherwise linear in length - a multi-thousand-char
 // fill would blow through the caller's whole tool-round timeout mid-typing,
 // leaving the field half-replaced with no verification or fallback ever
 // running. Text still pending at the deadline is committed in one
@@ -4527,7 +4527,7 @@ const INSERT_TEXT_PACED_BUDGET_MS = 8000
 // Types keyboard-representable characters with real CDP keyDown/keyUp
 // events. Input.insertText is reserved for graphemes that genuinely do not
 // correspond to one physical key (IME text, emoji, composed Unicode), which
-// is the purpose CDP defines for that command — and for the remainder of a
+// is the purpose CDP defines for that command - and for the remainder of a
 // value whose paced time exceeded INSERT_TEXT_PACED_BUDGET_MS. The overlay's
 // typing pulse is refreshed while a long value is in flight.
 async function insertTextPaced(text, pulse) {
@@ -4561,7 +4561,7 @@ async function insertTextPaced(text, pulse) {
  * space, not CSS-viewport space: the compositor divides them by the scale
  * (measured: dispatch (400,1000) at scale 0.5 → page sees (800,2000)). So CSS
  * coords must be multiplied by the scale before dispatch. Wheel deltas are NOT
- * transformed (measured: deltaY 600 scrolls 600 CSS px) — scale positions
+ * transformed (measured: deltaY 600 scrolls 600 CSS px) - scale positions
  * only. The mirrored overlay cursor uses the same widget coords, which is also
  * where the point appears visually in the surfaced window.
  */
@@ -4782,7 +4782,7 @@ async function movePointer(client, sid, x, y, { held = 0, button = 'left' } = {}
   let from = pointerMemory()
 
   // The native overlay follows sampled hops directly, so it wants a steady
-  // stream — but not every 11–21ms page sample: each mirror message rides the
+  // stream - but not every 11-21ms page sample: each mirror message rides the
   // app bus onto the app's MAIN thread (timer, publish, pill re-render) while
   // the user browses. ~25Hz keeps the overlay's rapid-update mode engaged
   // (its threshold is a 90ms gap) at a fraction of the per-sample traffic;
@@ -4856,8 +4856,8 @@ function inputPointChanged(a, b) {
  * Converges the pointer on a possibly-moving element before a press: measure,
  * glide, and commit only once a mutation-free probe agrees with the resting
  * pointer. A streaming page (a feed filling in, late media) can shift a
- * target several times while the pointer travels — a single re-measure would
- * abort on exactly the pages the re-measure exists for — so this chases the
+ * target several times while the pointer travels - a single re-measure would
+ * abort on exactly the pages the re-measure exists for - so this chases the
  * target for up to ~3s of instability before giving up. Raw-coordinate specs
  * settle on the first pass (locateRect returns them verbatim). Returns the
  * settled CSS point, its widget projection, and the element's size.
@@ -4908,8 +4908,8 @@ async function settlePointerOnTarget(client, sid, target, start, s, label) {
 
 /**
  * Clicks a target. Two call forms:
- *   click(x, y[, {button, clickCount}])   — raw viewport coordinates
- *   click(target[, {button, clickCount}]) — a selector/@ref/loc/xpath (resolved
+ *   click(x, y[, {button, clickCount}])   - raw viewport coordinates
+ *   click(target[, {button, clickCount}]) - a selector/@ref/loc/xpath (resolved
  *                                           and scrolled into view first)
  * See "Element targeting" above for every accepted target form.
  */
@@ -4941,7 +4941,7 @@ export async function click(target, arg2, arg3) {
   await ensurePageOperable({ force: true, intent: 'pointer' })
   // The page can shift under the glide pause (a streaming list, late media,
   // or a just-mounted consent layer). Re-run the whole page gate, then
-  // converge on the target — chasing it through further shifts — and require
+  // converge on the target - chasing it through further shifts - and require
   // it to remain the topmost hit-test result at the resting pointer. The
   // commit probe keeps a short mutation-free retry window: the glide itself
   // can hover-open a flyout over the target in passing, and such layers
@@ -5002,13 +5002,13 @@ export async function hover(target, maybeY) {
  * Drags with the button held: press at `from`, a paced held-button glide
  * (the same trajectory machinery as click, streamed to the watcher), release
  * at `to`. Both ends accept every click() target form, including [x, y]
- * coordinates, and must be visible in the SAME viewport — a drag never
+ * coordinates, and must be visible in the SAME viewport - a drag never
  * scrolls the page under a held button; scroll() first so both ends are on
  * screen. Pointer-driven drags (sliders, reorder lists, canvas gestures,
  * text selection with button:'left') see the trusted press/move/release
  * stream a physical drag produces. Pages that start a NATIVE HTML5 drag
  * session (draggable=true) hand tracking to the OS, which synthetic moves
- * cannot steer — use the raw cdp('Input.dispatchDragEvent') family there.
+ * cannot steer - use the raw cdp('Input.dispatchDragEvent') family there.
  * The button is always released, even when the drag fails mid-flight, so a
  * gesture can never stay stuck down.
  */
@@ -5024,7 +5024,7 @@ export async function drag(from, to, { button = 'left' } = {}) {
     dest = await locateRect(to, { scroll: false })
   } catch (err) {
     if (/not human-operable/.test(String(err?.message || ''))) {
-      throw new Error('drag: both ends must be visible at once — scroll() until ' +
+      throw new Error('drag: both ends must be visible at once - scroll() until ' +
                       describeTarget(from) + ' and ' + describeTarget(to) +
                       ' share the viewport, then retry')
     }
@@ -5069,7 +5069,7 @@ export async function drag(from, to, { button = 'left' } = {}) {
       }
     }
     // The page may reflow once the drag latches (placeholders and drop zones
-    // appearing) — re-resolve the drop point mid-drag, scroll-free.
+    // appearing) - re-resolve the drop point mid-drag, scroll-free.
     const fresh = await locateRect(to, { retryMs: 400, gateRefresh: false, scroll: false })
     await movePointer(client, sid, Math.round(fresh.x * s), Math.round(fresh.y * s),
                       { held, button })
@@ -5090,15 +5090,15 @@ export async function drag(from, to, { button = 'left' } = {}) {
  * Fills an input/textarea/select/contenteditable target. Text fields are
  * pointed to, clicked, selected, and typed at a watchable pace (physical-key
  * text through key events; IME/emoji through CDP's composition insertion),
- * then verified by readback. Fields that reject or reformat typed input — masks,
- * pickers, SELECTs — fall back to the deterministic native value setter +
+ * then verified by readback. Fields that reject or reformat typed input - masks,
+ * pickers, SELECTs - fall back to the deterministic native value setter +
  * `input`/`change` events, so framework-bound fields (React/Vue) still
  * update; SELECTs match by value or visible option label. A real input hidden
  * by its own styling (the styled-widget pattern: display:none selects,
  * opacity-0 custom controls) skips the pointer phase and goes straight to the
  * setter. Returns `{done: true}`; when the field normalized/reformatted the
  * committed value (a mask writing "(555) 123-4567"), it returns
- * `{done: true, verified: false, note}` instead of failing — throw is
+ * `{done: true, verified: false, note}` instead of failing - throw is
  * reserved for a field that rejected the value outright. Pass
  * `{instant: true}` to skip the typing pace and set the value in one shot.
  */
@@ -5139,7 +5139,7 @@ async function selectAllWithKeyboard(client, sid) {
 }
 
 /** Shared fill machinery: resolve, point, click/focus, select, type-or-set,
- *  and verify. Does not log — the public caller writes the action line. */
+ *  and verify. Does not log - the public caller writes the action line. */
 async function fillTargetValue(spec, target, str, { instant = false, label = 'fillInput' } = {}) {
   await ensurePageOperable()
   let rect = null
@@ -5149,8 +5149,8 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
   } catch (err) {
     if (!/not human-operable/.test(String(err?.message || ''))) throw err
     // Distinguish WHY the point failed. A real input hidden by its OWN
-    // styling — the styled-widget pattern: a display:none select behind
-    // Select2/Chosen, an opacity-0/offscreen input under a custom control —
+    // styling - the styled-widget pattern: a display:none select behind
+    // Select2/Chosen, an opacity-0/offscreen input under a custom control - 
     // has no point a pointer could reach, yet filling it through the native
     // setter is exactly what worked before the pointer path existed, and
     // what its framework expects. Only a field that RENDERS but is covered
@@ -5244,7 +5244,7 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
       return this.isContentEditable ? this.textContent : this.value
     }`)
     if (typed === str) return { done: true }
-    // Typed result didn't stick (masked/reformatting field) — fall through to
+    // Typed result didn't stick (masked/reformatting field) - fall through to
     // the deterministic setter.
   }
 
@@ -5255,7 +5255,7 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
   // A masked field can reject the paced typing after several key events and
   // force this setter fallback. Recheck once more before the page-side write;
   // a modal that appeared during typing must stop the fallback from reaching
-  // through it. (A hidden target has no point to re-hit — the page gate above
+  // through it. (A hidden target has no point to re-hit - the page gate above
   // still stands between the setter and any blocking layer.)
   await ensurePageOperable({ force: true })
   if (!hiddenTarget) await locateRect(target, { retryMs: 400, gateRefresh: false })
@@ -5266,7 +5266,7 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
     var tag = el.tagName
     // Remember what the field held BEFORE the write (readable only by the
     // verify pass below): a post-write value that still equals it means the
-    // field rejected the write, which is a failure — while a changed but
+    // field rejected the write, which is a failure - while a changed but
     // inexact value means the field reformatted it, which is not.
     var prev = null
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') prev = el.value
@@ -5284,7 +5284,7 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
       el.value = v
       if (el.value !== v) {
         // Selects are routinely addressed by their visible OPTION LABEL, not
-        // the value attribute — match that before giving up.
+        // the value attribute - match that before giving up.
         var want = String(v).trim()
         for (var i = 0; i < el.options.length; i++) {
           var t = String(el.options[i].label || el.options[i].textContent || '').trim()
@@ -5308,7 +5308,7 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
   if (!res) throw new Error(label + ': target not found: ' + describeTarget(target))
   if (!res.ok) throw new Error(label + ': ' + (res.err || 'failed'))
   // Framework handlers can synchronously or asynchronously reject OR REFORMAT
-  // a setter result — and reformatting (masks, number/date normalization,
+  // a setter result - and reformatting (masks, number/date normalization,
   // trimming) is the very reason this fallback exists, so a non-exact
   // readback is a soft signal, not a failure. Throw only when the field ended
   // up EMPTY while text was requested (a genuine rejection). Never echo the
@@ -5344,7 +5344,7 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
                     '(value did not match requested text after fallback)')
   }
   return { done: true, verified: false,
-           note: 'the field normalized or reformatted the value — read it back if exactness matters' }
+           note: 'the field normalized or reformatted the value - read it back if exactness matters' }
 }
 
 /** Sets files on a `<input type=file>` target. Pass absolute paths. */
@@ -5366,7 +5366,7 @@ export async function typeText(text) {
   await guardAgentControl()
   const gate = await ensurePageOperable()
   if (gate.consent?.clicked) {
-    throw new Error('typeText: a late cookie-consent overlay was dismissed and changed focus — ' +
+    throw new Error('typeText: a late cookie-consent overlay was dismissed and changed focus - ' +
                     'click/fill the intended field again before typing')
   }
   const client = await cdpClient()
@@ -5418,7 +5418,7 @@ export async function callOnElement(target, fnDecl, args = []) {
   return probe.value
 }
 
-/** One phase of a key press — `phase` is 'down' or 'up'. Accepts the same
+/** One phase of a key press - `phase` is 'down' or 'up'. Accepts the same
  *  named keys as pressKey plus single printable characters. Use for held-key
  *  interactions (shift-selection, game controls); pressKey remains the
  *  simple down+up. CDP modifier bits: 1=Alt, 2=Ctrl, 4=Meta, 8=Shift. */
@@ -5428,7 +5428,7 @@ export async function keyPhase(key, phase, { modifiers = 0 } = {}) {
   if (phase === 'down') {
     const gate = await ensurePageOperable()
     if (gate.consent?.clicked) {
-      throw new Error('keyPhase: a late cookie-consent overlay was dismissed and changed focus — ' +
+      throw new Error('keyPhase: a late cookie-consent overlay was dismissed and changed focus - ' +
                       'refocus the intended control before pressing a key')
     }
   }
@@ -5452,7 +5452,7 @@ export async function keyPhase(key, phase, { modifiers = 0 } = {}) {
 }
 
 /**
- * One raw mouse phase in CSS-pixel viewport coordinates — `type` is 'move',
+ * One raw mouse phase in CSS-pixel viewport coordinates - `type` is 'move',
  * 'down', 'up', or 'wheel'. Applies the same zoom scaling and watcher
  * mirroring as click/scroll. drag() is the humanized two-point gesture;
  * compose anything more exotic (multi-waypoint paths, held-button hovers)
@@ -5480,7 +5480,7 @@ export async function mouseEvent(type, { x = 0, y = 0, button = 'left',
     params.clickCount = clickCount
   }
   // A move that is part of a held-button gesture must carry the pressed-
-  // buttons bitmask (1=left, 2=right, 4=middle) — Chromium only synthesizes
+  // buttons bitmask (1=left, 2=right, 4=middle) - Chromium only synthesizes
   // a drag when the moves say a button is down.
   if (buttons !== undefined) {
     params.buttons = buttons
@@ -5559,7 +5559,7 @@ function resolveKeyDef(key) {
       keyCode: key.codePointAt(0), code: '',
     }
   }
-  throw new Error(`unsupported key '${key}' — use typeText for character sequences`)
+  throw new Error(`unsupported key '${key}' - use typeText for character sequences`)
 }
 
 const KEY_DEFS = {
@@ -5577,7 +5577,7 @@ const KEY_DEFS = {
   Home: { keyCode: 36, key: 'Home', code: 'Home' },
   End: { keyCode: 35, key: 'End', code: 'End' },
   Space: { keyCode: 32, key: ' ', code: 'Space', text: ' ' },
-  // Modifier keys — held down/up via keyPhase (a plain pressKey down+up is a
+  // Modifier keys - held down/up via keyPhase (a plain pressKey down+up is a
   // no-op tap). No `text`: modifiers never insert a character.
   Shift: { keyCode: 16, key: 'Shift', code: 'ShiftLeft' },
   Control: { keyCode: 17, key: 'Control', code: 'ControlLeft' },
@@ -5589,7 +5589,7 @@ export async function pressKey(key, { modifiers = 0 } = {}) {
   await guardAgentControl()
   const gate = await ensurePageOperable()
   if (gate.consent?.clicked) {
-    throw new Error('pressKey: a late cookie-consent overlay was dismissed and changed focus — ' +
+    throw new Error('pressKey: a late cookie-consent overlay was dismissed and changed focus - ' +
                     'refocus the intended control before pressing a key')
   }
   const def = resolveKeyDef(key)
@@ -5694,7 +5694,7 @@ export async function scroll({ dy = 600, dx = 0, x, y } = {}) {
   // the deterministic paced-wheel trajectory as a compatibility fallback.
   // The anchor stays in WIDGET space: synthetic gestures inject through the
   // same widget-coordinate pipeline as dispatchMouseEvent (see inputScale),
-  // and the wheel fallback below uses the identical anchor — dividing by the
+  // and the wheel fallback below uses the identical anchor - dividing by the
   // scale here would land the gesture up to 1/s off (or outside the widget)
   // whenever a viewport override renders with scale < 1.
   const gesture = {
@@ -5729,8 +5729,8 @@ export async function handleDialog(accept = true, promptText = undefined) {
   const targetId = state.targetId
   const wasBlocked = state.dialogBlocked
   // The per-session path reaches only dialogs THIS session saw open (Page
-  // enabled at the time). A dialog inherited from an earlier round — the
-  // degraded-attach case — needs the browser-level command instead.
+  // enabled at the time). A dialog inherited from an earlier round - the
+  // degraded-attach case - needs the browser-level command instead.
   if (!wasBlocked) {
     const params = { accept }
     if (promptText !== undefined) params.promptText = promptText
@@ -5753,7 +5753,7 @@ export async function handleDialog(accept = true, promptText = undefined) {
     throw new Error(
       'handleDialog: a dialog from an earlier round blocks this tab, and ' +
       'this Phi build has no browser-level dialog handling ' +
-      '(PhiAgentSpace.handleJavaScriptDialog) — update Phi Browser, or drop ' +
+      '(PhiAgentSpace.handleJavaScriptDialog) - update Phi Browser, or drop ' +
       'the tab with closeTab()')
   }
   state.openDialog = null
@@ -5767,11 +5767,11 @@ export async function handleDialog(accept = true, promptText = undefined) {
  * Browser-level dialog control that needs NO attached page session:
  * PhiAgentSpace.handleJavaScriptDialog resolves the tab in the browser
  * process and closes its dialog there, so it reaches tabs whose renderer is
- * blocked and tabs other than the current one — without touching the attach
+ * blocked and tabs other than the current one - without touching the attach
  * flow. Prefer handleDialog(accept) for the current tab; use this to free a
  * NON-current tab (targetIds from listTabs()). accept=false keeps a
  * beforeunload'd page in place; accept=true lets the navigation proceed.
- * Returns {handled} — false means no dialog was showing.
+ * Returns {handled} - false means no dialog was showing.
  */
 export async function dismissDialog(targetId, accept = false, promptText = undefined) {
   if (!targetId || typeof targetId !== 'string') {
@@ -5784,7 +5784,7 @@ export async function dismissDialog(targetId, accept = false, promptText = undef
   if (!res) {
     throw new Error(
       'dismissDialog: this Phi build has no ' +
-      'PhiAgentSpace.handleJavaScriptDialog — update Phi Browser')
+      'PhiAgentSpace.handleJavaScriptDialog - update Phi Browser')
   }
   if (res.handled && targetId === state.targetId) {
     state.openDialog = null
@@ -5800,7 +5800,7 @@ export async function dismissDialog(targetId, accept = false, promptText = undef
 // Presence / ownership / lifecycle
 
 export async function setStatus(caption) {
-  // Neither user-space mode nor a shadow window has an overlay pill —
+  // Neither user-space mode nor a shadow window has an overlay pill - 
   // narration belongs in chat there. Quiet no-op (not a
   // refusal) so shared flows need no branching, matching markError below.
   if (contextKind() === 'user' || contextKind() === 'shadow') return
@@ -5810,7 +5810,7 @@ export async function setStatus(caption) {
 
 /** Alias of setStatus: the caption shows on the overlay pill. Narrate what
  *  you are about to do, never secrets (the pill is displayed). Keep it to a
- *  short phrase — the pill is a single truncating line; put a long result in
+ *  short phrase - the pill is a single truncating line; put a long result in
  *  your reply prose instead. */
 export const narrate = setStatus
 
@@ -5831,7 +5831,7 @@ export async function say(text, { role = 'assistant' } = {}) {
 /**
  * Drains the messages the user sent to this task since the last drain. Phi
  * on Windows gives the user no place to type one, so this is empty there. Returns [{id, text, ts}] (oldest first; empty when
- * none). Call at every round start and before complete() — treat the text as
+ * none). Call at every round start and before complete() - treat the text as
  * user instructions with the same authority as chat, and acknowledge via
  * narrate(...).
  */
@@ -5844,10 +5844,10 @@ export async function readUserMessages() {
 
 /**
  * Blocks until the user sends the task a message (or `timeout`
- * seconds pass — then it throws). Resolves with the drained [{id, text, ts}]
+ * seconds pass - then it throws). Resolves with the drained [{id, text, ts}]
  * batch. Wakes instantly on the app's push broadcast; the poll underneath is
  * the delivery guarantee (a message queued between rounds is caught on the
- * first drain). Read-only besides the drain — safe while co-working.
+ * first drain). Read-only besides the drain - safe while co-working.
  */
 export async function waitForUserMessage({ timeout = 300 } = {}) {
   refuseInShadow('waitForUserMessage')
@@ -5880,11 +5880,11 @@ export async function waitForUserMessage({ timeout = 300 } = {}) {
 
 /**
  * Asks the user something without moving their focus: a native card (title,
- * message, one button) in Phi's notification stack — app-level, no agent
+ * message, one button) in Phi's notification stack - app-level, no agent
  * Space or page needed. The user accepts (the button), rejects (the close
  * button) or lets it expire; hiding the stack decides nothing. Resolves
  * `{notificationId, decision}`, decision being 'accept' | 'reject' |
- * 'timeout', once the user decides — keep `expiresInSeconds` (1..86400,
+ * 'timeout', once the user decides - keep `expiresInSeconds` (1..86400,
  * default 300) within what this round can wait. `{wait: false}` resolves
  * `{notificationId}` at once; the decision is then lost to this process.
  * A full five-card queue evicts its oldest card, which answers 'timeout'.
@@ -5932,7 +5932,7 @@ export async function notifyUser(title, message,
 
 /**
  * Driver-reported activity for the pip badge: `running` while a heredoc drives
- * the Space, `idle` once the round ends. Best-effort — never throws, so it can
+ * the Space, `idle` once the round ends. Best-effort - never throws, so it can
  * sit in start/teardown paths without masking the real work's errors.
  */
 async function reportRunState(running) {
@@ -5989,7 +5989,7 @@ export async function handOff(message) {
 
 /**
  * Takes control back. ONLY call after the user explicitly confirmed
- * (a "continue" in chat) — this seizes the browser away from them.
+ * (a "continue" in chat) - this seizes the browser away from them.
  */
 export async function takeOver() {
   refuseInShadow('takeOver')
@@ -5998,7 +5998,7 @@ export async function takeOver() {
   forgetPointer()
   task.ownership = 'agent'
   state.ownerCheckedAt = Date.now()
-  // Agent is driving again — mark the Space busy.
+  // Agent is driving again - mark the Space busy.
   await reportRunState(true)
   // A fresh round entered passively while the user owned the Space, so it has
   // a selected target but deliberately no CDP page session yet. Attach only
@@ -6007,7 +6007,7 @@ export async function takeOver() {
     await attachTab(state.targetId)
   } else if (state.sessionId) {
     // Restore the agent viewport we cleared on handOff so hidden-window layout
-    // and screenshots work again — with this tab's override if one was set.
+    // and screenshots work again - with this tab's override if one was set.
     await applyAgentViewport(await cdpClient(), state.sessionId, state.targetId,
                              state.viewportByTarget.get(state.targetId)?.request ?? null)
   }
@@ -6017,19 +6017,19 @@ export async function takeOver() {
 /**
  * Blocking poll until the agent holds control again, or the user ends the
  * Space from the browser. Waiting is read-only. Resolves with one of:
- *   {owner: 'agent'}                — the user clicked "Hand back" (or a
+ *   {owner: 'agent'}                - the user clicked "Hand back" (or a
  *                                     parallel round called takeOver());
  *                                     restores the agent presentation that
- *                                     handOff cleared — busy badge, and this
+ *                                     handOff cleared - busy badge, and this
  *                                     tab's viewport override when attached
- *   {gone: true, reason: 'finished'} — the user ended the task (Finish, or a
+ *   {gone: true, reason: 'finished'} - the user ended the task (Finish, or a
  *                                     switcher delete) or it completed
  *                                     elsewhere: the Space is gone
- *   {gone: true, reason: 'deleted'}  — backstop: the Space's window died but
+ *   {gone: true, reason: 'deleted'}  - backstop: the Space's window died but
  *                                     a stale task record lingers (normal
  *                                     deletes report 'finished'); purge it
  *                                     with a dedicated complete() round
- * On `gone` the task is OVER — the user ended it; do not recreate the Space
+ * On `gone` the task is OVER - the user ended it; do not recreate the Space
  * to push on. Throws only on timeout. Also the body of the background
  * hand-back watcher (see SKILL.md "Hand-back watcher").
  */
@@ -6042,7 +6042,7 @@ export async function waitForAgentControl({ timeout = 600 } = {}) {
     const t = tasks.find((x) => x.taskId === task.taskId)
     if (!t) {
       // "Task missing" is only authoritative from a round that still holds
-      // the agent's driver principal — from an orphaned round it means "not
+      // the agent's driver principal - from an orphaned round it means "not
       // visible to YOU", and reporting {gone} would falsely end the task.
       if (roundLostAgentSession()) {
         throw new Error(`waitForAgentControl: ${ORPHANED_ROUND_MESSAGE}`)
@@ -6067,7 +6067,7 @@ export async function waitForAgentControl({ timeout = 600 } = {}) {
     }
     // Backstop: a Space delete drops the task record with it (caught as
     // 'finished' above), but if the window died while the record lingered
-    // (an inconsistent teardown), waiting forever would strand the watcher —
+    // (an inconsistent teardown), waiting forever would strand the watcher - 
     // probe the window itself and report 'deleted' so the caller purges it.
     try {
       await (await cdpClient()).send('Browser.getWindowBounds',
@@ -6081,19 +6081,19 @@ export async function waitForAgentControl({ timeout = 600 } = {}) {
 }
 
 /**
- * Blocking ask-for-help: hands control to the user AND waits — in the SAME
- * round — for them to hand it back, so the task resumes WITHOUT the round
+ * Blocking ask-for-help: hands control to the user AND waits - in the SAME
+ * round - for them to hand it back, so the task resumes WITHOUT the round
  * ending. This is the handoff to use under an agent that cannot be woken once
  * it goes idle (Codex): because the round stays live, the user clicking "Hand
  * back" continues the SAME turn with no re-invocation. It is `handOff()`
- * immediately followed by `waitForAgentControl()` — see both for details.
+ * immediately followed by `waitForAgentControl()` - see both for details.
  *
  * Resolves with what `waitForAgentControl` returns: `{owner: 'agent'}` when the
- * user hands back (control is already yours — do NOT `takeOver()`; verify page
+ * user hands back (control is already yours - do NOT `takeOver()`; verify page
  * state and continue), or `{gone, reason}` when they ended the task. Returns
  * `{timedOut: true}` instead of throwing when the wait elapses.
  *
- * IMPORTANT — keep hand-offs SHORT. The driving agent may cap a single
+ * IMPORTANT - keep hand-offs SHORT. The driving agent may cap a single
  * tool-call's duration (Codex kills a shell call around ~120s), which would
  * SIGKILL this blocking round before the user finishes a slow login/captcha.
  * `timeout` therefore defaults BELOW that cap. On `{timedOut: true}` (or when
@@ -6114,11 +6114,11 @@ export async function handOffAndWait(message, { timeout = 100 } = {}) {
 /**
  * Finishes the task and closes the agent Space (and its window). Ephemeral
  * Spaces (the default) are removed entirely; a PERSISTENT Space (created with
- * ensureAgentSpace's {persistent: true}) keeps its Space in the switcher —
+ * ensureAgentSpace's {persistent: true}) keeps its Space in the switcher - 
  * only the task ends and its window closes, and a later
  * ensureAgentSpace(name, {persistent: true}) re-binds to it. If the user
  * needs a live page left open in an ephemeral Space, hand it to them with
- * handOff() BEFORE completing. Run in its own dedicated final heredoc — and
+ * handOff() BEFORE completing. Run in its own dedicated final heredoc - and
  * give the user the result first (reply prose before this heredoc, or
  * narrate). Completion is immediate; `immediate` is accepted for scripts
  * written for the Mac and changes nothing.
@@ -6155,9 +6155,9 @@ export async function complete({ success = true, message = undefined,
 // Saved state (cookies + tab URLs)
 //
 // On DISK because the Node process dies with each heredoc round and agent
-// Spaces are ephemeral — saved state outlives both. One JSON file per name,
+// Spaces are ephemeral - saved state outlives both. One JSON file per name,
 // mode 0600 (cookies are credentials). Agent Spaces share the user's profile,
-// so loadState writes into the USER's cookie jar for those domains — load
+// so loadState writes into the USER's cookie jar for those domains - load
 // only state the user asked to restore.
 
 const STATE_DIR = join(tmpdir(), 'phi-browser-state')
@@ -6171,7 +6171,7 @@ function stateFile(name) {
 
 /** Saves cookies + the Space's open tab URLs under `name` for a later
  *  loadState. By default only cookies for the DOMAINS OF THE OPEN TABS are
- *  saved — the profile is shared with the user, so an unscoped dump would
+ *  saved - the profile is shared with the user, so an unscoped dump would
  *  persist their whole cookie jar to disk; pass {allDomains: true} only when
  *  the task genuinely needs cross-domain state (e.g. an SSO session on a
  *  different domain). Returns {name, cookies, urls}. */
@@ -6180,7 +6180,7 @@ export async function saveState(name, { allDomains = false } = {}) {
   logAction(`save state '${name}'`)
   const file = stateFile(name)
   // Storage.getCookies on the PAGE session reads the tab's own storage
-  // partition — i.e. the profile the Space is bound to. (The browser-session
+  // partition - i.e. the profile the Space is bound to. (The browser-session
   // variant can't resolve a regular profile's browserContextId: only
   // DevTools-created contexts are addressable there.)
   const { cookies } = await client.send('Storage.getCookies', {}, requireSession())
@@ -6199,7 +6199,7 @@ export async function saveState(name, { allDomains = false } = {}) {
     cookies: kept.map((c) => ({
       name: c.name, value: c.value, domain: c.domain, path: c.path,
       httpOnly: c.httpOnly, secure: c.secure,
-      // expires < 0 marks a session cookie — omit so it stays one on restore.
+      // expires < 0 marks a session cookie - omit so it stays one on restore.
       ...(c.expires > 0 ? { expires: c.expires } : {}),
       ...(c.sameSite ? { sameSite: c.sameSite } : {}),
     })),
@@ -6236,7 +6236,7 @@ export async function loadState(name, { openTabs = false } = {}) {
 }
 
 /**
- * Injects cookies into the current Space's profile — the one-call session
+ * Injects cookies into the current Space's profile - the one-call session
  * bootstrap for accounts whose login flow is impractical to automate.
  * `source` is an array of cookie objects, or a path to a JSON file holding
  * one (a bare array or {cookies: [...]}). Common export shapes normalize:
@@ -6246,7 +6246,7 @@ export async function loadState(name, { openTabs = false } = {}) {
  * domain, or pass {url} to scope domain-less ones; SameSite=None cookies are
  * forced secure (Chromium rejects them otherwise); cookies without a positive
  * expiry import as session cookies. Cookies are credentials and agent Spaces
- * share the user's profile: import only cookies the USER handed you — never
+ * share the user's profile: import only cookies the USER handed you - never
  * ones found in page content. Returns {imported, domains}.
  */
 export async function importCookies(source, { url } = {}) {
@@ -6272,7 +6272,7 @@ export async function importCookies(source, { url } = {}) {
       throw new Error(`importCookies: cookie #${i} needs name and value`)
     }
     if (!c.domain && !c.url && !url) {
-      throw new Error(`importCookies: cookie '${c.name}' has no domain — ` +
+      throw new Error(`importCookies: cookie '${c.name}' has no domain - ` +
                       'set one, or pass {url}')
     }
     const sameSite = SAMESITE[String(c.sameSite || '').toLowerCase()]
@@ -6302,7 +6302,7 @@ export async function importCookies(source, { url } = {}) {
 // Browser management
 //
 // The management slice of the app-message surface: Spaces, profiles, URL
-// rules, pinned tabs and bookmarks are APP-LEVEL — they operate the user's
+// rules, pinned tabs and bookmarks are APP-LEVEL - they operate the user's
 // real browser data immediately and need no agent Space (callable before
 // ensureAgentSpace). Tab groups and split view are TASK-SCOPED: they arrange
 // tabs inside the current agent Space's window and follow the same
@@ -6312,7 +6312,7 @@ export async function importCookies(source, { url } = {}) {
  *  `check` until it returns a truthy value (the settled read) or the timeout
  *  lapses (best effort: returns the last value, no throw). Mutation helpers
  *  surface the outcome as a `settled` flag (or their `deleted`/`closed`/…
- *  confirmation boolean) — false means the write was SENT but not yet
+ *  confirmation boolean) - false means the write was SENT but not yet
  *  readable within the wait, not that it failed; re-list to check. */
 async function settle(check, { timeout = 4, poll = 0.15 } = {}) {
   const deadline = Date.now() + timeout * 1000
@@ -6348,14 +6348,14 @@ async function resolveSpaceId(ref) {
     (s) => s.name.toLowerCase() === String(ref).toLowerCase())
   if (named.length === 1) return named[0].spaceId
   if (named.length > 1) {
-    throw new Error(`space name '${ref}' is ambiguous — use a spaceId from listSpaces()`)
+    throw new Error(`space name '${ref}' is ambiguous - use a spaceId from listSpaces()`)
   }
-  throw new Error(`unknown space '${ref}' — see listSpaces()`)
+  throw new Error(`unknown space '${ref}' - see listSpaces()`)
 }
 
 /** The user's normal Spaces, as [{spaceId, name, colorHex, themeId,
  *  iconName, profileId, sortOrder, isDefault, isActive, windowIds}]. `windowIds`
- *  lists the Space's open windows (empty when none) — the ids that
+ *  lists the Space's open windows (empty when none) - the ids that
  *  enterContext({kind:'user', window}), openSpaceTab({window}), and
  *  listSpaceTabs({window}) accept. Agent and Incognito Spaces are not
  *  included. */
@@ -6367,7 +6367,7 @@ export async function listSpaces() {
 /** Creates a normal user Space. Options: {profile} (profileId or display
  *  name; defaults to the active Space's profile), {themeId} or {colorHex}
  *  (see updateSpace), {iconName} (see updateSpace), {activate: true} to also
- *  surface it in the user's focused window (default false — don't yank the
+ *  surface it in the user's focused window (default false - don't yank the
  *  user's window). Returns {spaceId, profileId, themeId, iconName}. */
 export async function createSpace(name, { profile = '', themeId, colorHex, iconName,
                                           activate = false } = {}) {
@@ -6394,7 +6394,7 @@ export async function createSpace(name, { profile = '', themeId, colorHex, iconN
  *  a bare catalog name ("mail"), "emoji:<hex codepoints>" (e.g.
  *  "emoji:1F977"), or the emoji itself ("🥷"). Unknown values fail with
  *  unknown_theme / invalid_color / invalid_icon. Returns
- *  {spaceId, themeId, iconName, settled} — themeId/iconName are what landed. */
+ *  {spaceId, themeId, iconName, settled} - themeId/iconName are what landed. */
 export async function updateSpace(space, { name, themeId, colorHex, iconName } = {}) {
   const spaceId = await resolveSpaceId(space)
   const reply = await phiSend('agentSpace.spaces.update', {
@@ -6415,7 +6415,7 @@ export async function updateSpace(space, { name, themeId, colorHex, iconName } =
 }
 
 /** Deletes a Space: closes its windows and cascade-deletes its bookmarks and
- *  URL rules. Refused for the default Space and agent Spaces. DESTRUCTIVE —
+ *  URL rules. Refused for the default Space and agent Spaces. DESTRUCTIVE - 
  *  only on the user's explicit ask. */
 export async function deleteSpace(space) {
   const spaceId = await resolveSpaceId(space)
@@ -6439,7 +6439,7 @@ export async function renameProfile(profileId, displayName) {
 }
 
 /** Every Space's URL routing rules, as [{id, spaceId, host, pathPrefix, ask,
- *  sortOrder}]. Rule ids are stable only until the next rule write — always
+ *  sortOrder}]. Rule ids are stable only until the next rule write - always
  *  list right before updateUrlRule/deleteUrlRule. */
 export async function listUrlRules() {
   const { rules } = await phiSend('agentSpace.urlRules.list', {})
@@ -6461,7 +6461,7 @@ export async function addUrlRule({ space, host, pathPrefix, ask = false } = {}) 
     ...(ask ? { ask: true } : {}),
   })
   // Rule ids regenerate on every write, so the settled read is "a rule with
-  // this host exists in this Space under a fresh id" — return that row so
+  // this host exists in this Space under a fresh id" - return that row so
   // callers get a usable id without a second list.
   const added = await settle(async () =>
     (await listUrlRules()).find((r) =>
@@ -6618,7 +6618,7 @@ export async function moveBookmark(guid, { folder, index } = {}) {
   return { guid, settled }
 }
 
-/** Deletes a bookmark — or a folder with everything in it. DESTRUCTIVE for
+/** Deletes a bookmark - or a folder with everything in it. DESTRUCTIVE for
  *  folders: only on the user's explicit ask. */
 export async function removeBookmark(guid) {
   const res = await phiSend('agentSpace.bookmarks.remove', { guid })
@@ -6631,7 +6631,7 @@ export async function removeBookmark(guid) {
 
 // --- Credentials -------------------------------------------------------------
 //
-// Fetch items from the user's password manager (Bitwarden) — logins, secure
+// Fetch items from the user's password manager (Bitwarden) - logins, secure
 // notes, cards, identities, and SSH keys. A served item carries `type`
 // ('login'|'note'|'card'|'identity'|'sshKey') and `name`; domain queries reach
 // logins only (they match through login URIs), while {search} and {id} reach
@@ -6639,13 +6639,13 @@ export async function removeBookmark(guid) {
 // first; the user may grant a 10-minute remember for the same site. Gated by
 // Settings ▸ Developer ▸ Agent permissions. fillCredential is the fill-first
 // path: Phi fills the page field itself, so the secret never enters this
-// process at all (logins only — other types have no origin to bind a fill
-// to). Values returned by getCredential DO enter the agent's context — prefer
+// process at all (logins only - other types have no origin to bind a fill
+// to). Values returned by getCredential DO enter the agent's context - prefer
 // fillCredential / runWithCredential, then field-limited requests, and never
 // log the values.
 // TOTP is deliberately not exposed (the app answers totp_not_supported):
 // releasing a live 2FA code to an agent collapses both factors behind one
-// approval prompt — 2FA steps stay with the user via handOff().
+// approval prompt - 2FA steps stay with the user via handOff().
 
 function normalizeCredentialQuery(query) {
   if (typeof query === 'string') return { domain: query }
@@ -6655,7 +6655,7 @@ function normalizeCredentialQuery(query) {
 
 /** Lowercase host of a URI, tolerating a missing scheme; null when unparsable.
  *  Feeds the origin check, so the parse must not be spoofable: the authority
- *  is isolated BEFORE userinfo is stripped — stripping at an `@` first would
+ *  is isolated BEFORE userinfo is stripped - stripping at an `@` first would
  *  let "https://evil.com/x@github.com" read as github.com. Mirrors the
  *  app-side `hostOfURI`. */
 function hostOfUri(uri) {
@@ -6671,7 +6671,7 @@ function hostOfUri(uri) {
 /** Whether the page's host and a credential's host belong together: equal, or
  *  one a subdomain of the other (github.com ↔ auth.github.com). The subdomain
  *  arm requires the parent to have at least two labels, so a bare public suffix
- *  ("com") can't be treated as the parent of every host under it — otherwise
+ *  ("com") can't be treated as the parent of every host under it - otherwise
  *  this origin guard would pass a fill to the wrong site. Mirrors the helper's
  *  `host_matches`; a full public-suffix list is future work. */
 function credHostMatches(pageHost, credHost) {
@@ -6691,7 +6691,7 @@ export async function credentialStatus() {
 
 /** For an `ambiguous` credential error: a message naming the (non-secret)
  *  candidate items and how to narrow; null for any other error. Phi never
- *  picks among several matching vault items — the right item is the user's
+ *  picks among several matching vault items - the right item is the user's
  *  call, made by narrowing the query, not a default taken on their behalf. */
 function ambiguousCredentialMessage(label, err) {
   const reply = err?.reply
@@ -6706,12 +6706,12 @@ function ambiguousCredentialMessage(label, err) {
     })
     .filter(Boolean)
   return `${label}: ${reply.matches || 'several'} vault items match this query ` +
-    'and Phi will not pick one — ask the user which account, then narrow ' +
+    'and Phi will not pick one - ask the user which account, then narrow ' +
     'it to a single item with {domain, username} (or {id: credentialId})' +
     (names.length ? `. Candidates: ${names.join(', ')}` : '') +
     (Array.isArray(reply.candidates) && reply.matches > reply.candidates.length
       ? ` (first ${reply.candidates.length} of ${reply.matches})` : '') +
-    ' — see references/credentials.md'
+    ' - see references/credentials.md'
 }
 
 /** Fetches a vault item after the user approves in Phi. `query` is a domain
@@ -6720,13 +6720,13 @@ function ambiguousCredentialMessage(label, err) {
  *  logins; {search: 'item name'} and {id} also reach secure notes, cards,
  *  identities, and SSH keys. The reply always carries `type`
  *  ('login'|'note'|'card'|'identity'|'sshKey') and `name`. opts.fields limits
- *  returned fields; the default follows the type — login:
+ *  returned fields; the default follows the type - login:
  *  username/password/uri/domain (its notes require an explicit ask), note:
  *  notes (the note body), card: cardholderName/brand/number/expMonth/expYear/
  *  code, identity: its name/address/contact fields plus ssn etc., sshKey:
  *  privateKey/publicKey/fingerprint. opts.purpose is a short line shown in
  *  the approval prompt saying why the item is needed. Returns the credential
- *  object; a served item is always the query's UNIQUE match — when several
+ *  object; a served item is always the query's UNIQUE match - when several
  *  vault items fit, Phi has the USER pick one in its prompt; if it cannot,
  *  this throws 'ambiguous' with only the count, so ask the user and narrow
  *  with {domain, username}. Throws 'user_denied' if the user declines. */
@@ -6753,23 +6753,23 @@ export async function getCredential(query, { fields, purpose } = {}) {
  * marker; Phi then opens its own DevTools session on this tab, finds the
  * marker, and sets the value itself (`credentials.autofill`): the value goes
  * app → page, and this call gets back only {filled, field}. The filled value
- * is always the query's UNIQUE vault match — several matches are put to
+ * is always the query's UNIQUE vault match - several matches are put to
  * the user to pick in Phi's prompt, else throw 'ambiguous' with the count
  * only (no secret moves); ask the user, narrow with {domain, username}. `field` is 'password' (default) or
- * 'username'. 2FA/TOTP steps are the user's — hand off.
+ * 'username'. 2FA/TOTP steps are the user's - hand off.
  *
  * On an older Phi build without the in-app dispatch this throws
- * `autofill_not_available` — it deliberately does NOT fall back to fetching
+ * `autofill_not_available` - it deliberately does NOT fall back to fetching
  * the secret here, because a fill must never quietly become a reveal. If the
  * value genuinely has to enter the agent, use getCredential, which shares it
  * explicitly.
  *
  * Origin-bound: a domain query is refused with origin_mismatch when the current
- * page's host doesn't belong to the credential's site — a misdirected fill is
+ * page's host doesn't belong to the credential's site - a misdirected fill is
  * exactly how a prompt-injected agent would leak a login to the wrong site.
  * Pre-checked here (no approval spent), and enforced again by the app against
  * the page's real URL and the item's own uri/domain (id/search queries are
- * only checkable there). `{allowCrossOrigin: true}` overrides — only when the
+ * only checkable there). `{allowCrossOrigin: true}` overrides - only when the
  * user confirmed the page (e.g. an SSO portal that legitimately takes another
  * site's login); the app then shows the destination in the approval prompt.
  */
@@ -6790,12 +6790,12 @@ export async function fillCredential(target, query,
 
   // Origin pre-check for a domain query: refuse a misdirected fill before the
   // vault is even asked (no approval spent). The app re-derives the page host
-  // from the browser side and enforces this again — this early check just
+  // from the browser side and enforces this again - this early check just
   // fails fast and words the error usefully.
   const pageHost = hostOfUri(await evalInPage('location.hostname'))
   if (!allowCrossOrigin && q.domain && !credHostMatches(pageHost, q.domain)) {
     throw new Error(
-      `fillCredential: origin_mismatch — the page is on "${pageHost}" but the ` +
+      `fillCredential: origin_mismatch - the page is on "${pageHost}" but the ` +
       `credential is for "${q.domain}". If the user confirmed this page should ` +
       `take that login (e.g. an SSO portal), retry with {allowCrossOrigin: true}.`)
   }
@@ -6804,7 +6804,7 @@ export async function fillCredential(target, query,
 
   // Resolve the element with the same machinery every acting helper uses
   // (selector/@ref/loc, same-origin frames, short mount grace) and stamp it
-  // with a one-time marker for Phi to find — no selector scheme crosses the
+  // with a one-time marker for Phi to find - no selector scheme crosses the
   // app boundary. Field-shape problems fail HERE, before any approval prompt.
   const token = randomUUID()
   const tagged = await retryResolve(() => callOnTarget(spec, `function (token, field) {
@@ -6829,7 +6829,7 @@ export async function fillCredential(target, query,
   if (!tagged.ok) throw new Error(`fillCredential: ${tagged.err}`)
 
   const purpose = `fill the ${field} field on ${pageHost || 'the current page'}`
-  // The fill happens IN PHI — the value goes app → page and never enters this
+  // The fill happens IN PHI - the value goes app → page and never enters this
   // runner or the agent's context. We hand Phi the marker + query and get back
   // only {filled}. Contrast getCredential, which returns the value to the agent.
   let res
@@ -6863,11 +6863,11 @@ function remapAutofillError(err) {
   }
   if (msg.includes('target_not_found')) {
     return 'fillCredential: the field disappeared while the fill was pending ' +
-      '(the page navigated or re-rendered, e.g. during the approval prompt) — ' +
+      '(the page navigated or re-rendered, e.g. during the approval prompt) - ' +
       're-observe and retry.'
   }
   if (msg.includes('origin_mismatch')) {
-    return 'fillCredential: origin_mismatch — Phi refused to fill this ' +
+    return 'fillCredential: origin_mismatch - Phi refused to fill this ' +
       'credential into the current page (it does not belong to the ' +
       "credential's site). If the user confirmed this page should take that " +
       'login, retry with {allowCrossOrigin: true}.'
@@ -6928,13 +6928,13 @@ function scrubSecrets(text, secrets) {
 }
 
 // Secret values this round has handled (filled into a page or injected into a
-// child process). Everything that leaves the runner for the agent's context —
-// cliLog and the runner's error printer — is scrubbed of their exact values,
+// child process). Everything that leaves the runner for the agent's context - 
+// cliLog and the runner's error printer - is scrubbed of their exact values,
 // so a secret can't ride back in through a page readback (a "show password"
 // toggle flipping the input to type=text, a js() probe, an echoing page).
 const sessionSecrets = new Set()
 
-/** Tiny values are not registered: scrubbing 1–3 chars would shred output. */
+/** Tiny values are not registered: scrubbing 1-3 chars would shred output. */
 function registerSecret(value) {
   if (typeof value === 'string' && value.length >= 4) sessionSecrets.add(value)
 }
@@ -6945,7 +6945,7 @@ export function __scrubSessionSecrets(text) {
 }
 
 /**
- * Runs a command with vault fields injected as environment variables — the
+ * Runs a command with vault fields injected as environment variables - the
  * CLI/API counterpart of fillCredential: secrets go browser → this process →
  * the child's environment, never through the agent's context. `command` is
  * an argv array (no shell). `env` maps variable names to credential fields
@@ -6954,12 +6954,12 @@ export function __scrubSessionSecrets(text) {
  * password, uri, notes, domain, credentialId, type, name) plus the
  * type-specific fields of cards (cardholderName, brand, number, expMonth,
  * expYear, code), identities (firstName … licenseNumber), and SSH keys
- * (privateKey, publicKey, fingerprint) — see CRED_RUN_FIELDS.
+ * (privateKey, publicKey, fingerprint) - see CRED_RUN_FIELDS.
  *
  * Returns {code, stdout, stderr, timedOut} with secret values scrubbed to
  * ••• in the captured output. That catches an accidental echo (a connection
  * string in an error message), NOT a command that transforms a secret
- * (base64, substrings) — only run commands you'd run with the secret anyway.
+ * (base64, substrings) - only run commands you'd run with the secret anyway.
  */
 export async function runWithCredential(query, command,
                                         { env = {}, envAll = false, cwd,
@@ -6972,7 +6972,7 @@ export async function runWithCredential(query, command,
   for (const [name, field] of mappings) {
     if (!name) throw new Error('runWithCredential: empty env variable name')
     if (!CRED_RUN_FIELDS.includes(field)) {
-      throw new Error(`runWithCredential: unknown field '${field}' in env mapping — ` +
+      throw new Error(`runWithCredential: unknown field '${field}' in env mapping - ` +
                       `valid: ${CRED_RUN_FIELDS.join(', ')}`)
     }
   }
@@ -7045,7 +7045,7 @@ export async function runWithCredential(query, command,
 //
 // Default target: the current agent Space's window (task required, mutations
 // ownership-guarded). Every helper also takes a {space} option (Space name or
-// id) to target a USER Space's open window instead — app-level like the rest
+// id) to target a USER Space's open window instead - app-level like the rest
 // of browser management: no agent Space and no control ownership involved.
 // Tab references are CDP targetIds, or the integer tabIds listSpaceTabs()
 // returns (a user Space's tabs may have no CDP target to name them by).
@@ -7069,7 +7069,7 @@ async function resolveTabIds(targets, { strict = true } = {}) {
   if (strict) {
     list.forEach((t, i) => {
       if (!Number.isInteger(tabIds[i]) || tabIds[i] < 0) {
-        throw new Error(`cannot resolve a tab id for target ${t} — is it a live tab?`)
+        throw new Error(`cannot resolve a tab id for target ${t} - is it a live tab?`)
       }
     })
   }
@@ -7096,7 +7096,7 @@ async function targetIdsByTabId() {
 async function layoutScope(space, { mutating = true } = {}) {
   if (space) return { spaceId: await resolveSpaceId(space) }
   // User-space mode: the bound Space is the implicit target, same as the
-  // task window is in agent mode — window included, so a Space open in
+  // task window is in agent mode - window included, so a Space open in
   // several windows keeps layout ops on the bound one.
   const ctx = currentContext()
   if (ctx?.kind === 'user') {
@@ -7106,13 +7106,13 @@ async function layoutScope(space, { mutating = true } = {}) {
   return { taskId: requireTask().taskId }
 }
 
-/** A user Space's open tabs — the window's full listable inventory, open
- *  pinned and bookmark-opened tabs included — as [{tabId, targetId, url,
+/** A user Space's open tabs - the window's full listable inventory, open
+ *  pinned and bookmark-opened tabs included - as [{tabId, targetId, url,
  *  title, active, kind}], `kind` one of normal|pinned|bookmark. tabId works
  *  directly as a tab reference in the layout helpers below; targetId is
  *  null when the tab has no live CDP target. Needs the Space to have an
  *  open window (`window_not_ready` marks one whose state is still
- *  attaching — transient, retry); `{window}` (a windowId) reads one
+ *  attaching - transient, retry); `{window}` (a windowId) reads one
  *  specific window's strip when several show the Space. */
 export async function listSpaceTabs(space, { window: windowId = null } = {}) {
   const spaceId = await resolveSpaceId(space)
@@ -7122,23 +7122,23 @@ export async function listSpaceTabs(space, { window: windowId = null } = {}) {
   return tabs.map((t) => ({ ...t, targetId: byTabId.get(t.tabId) ?? null }))
 }
 
-/** Opens `url` as a new tab in a USER Space's window — the user-Space
+/** Opens `url` as a new tab in a USER Space's window - the user-Space
  *  counterpart of the agent-window openTab. App-level like the rest of
  *  browser management: no agent Space, no control ownership. `activate`
  *  (default true) selects the new tab in the user's window; `{window}` (a
  *  windowId) targets one specific window when several show the Space
  *  (failing `window_not_open` on a mismatch). A Space with no open window
- *  gets one first — a closed window is not a closed Space, and this is the
+ *  gets one first - a closed window is not a closed Space, and this is the
  *  one way to reach a Space when the user has no browser window at all:
  *  surfaced when `activate` is true, opened BEHIND the user's windows when
  *  false, so a background open never moves their focus. Returns the new
  *  tab as {tabId, targetId, url, title, active, windowId, windowOpened},
  *  settled by diffing the Space's tab strip (a freshly opened window also
- *  carries its seed New Tab — the requested URL's tab is the one returned). */
+ *  carries its seed New Tab - the requested URL's tab is the one returned). */
 // Tabs already claimed by an openSpaceTab call this round. Concurrent opens
 // (Promise.all over URLs) each diff the same tab strip, so every call must
-// claim its tab synchronously inside the settle check — mirroring openTab's
-// claimedTabs — or two calls could return the same new tab.
+// claim its tab synchronously inside the settle check - mirroring openTab's
+// claimedTabs - or two calls could return the same new tab.
 const claimedSpaceTabs = new Set()
 
 export async function openSpaceTab(space, url, { activate = true,
@@ -7163,8 +7163,8 @@ export async function openSpaceTab(space, url, { activate = true,
   await settle(async () => {
     // Require a live targetId: the tab row can appear in the strip a poll
     // before its CDP target materializes, and callers need the target. The
-    // find-then-add is synchronous — that's what makes the claim race-free.
-    // Diff the strip of the window the open actually landed in — the
+    // find-then-add is synchronous - that's what makes the claim race-free.
+    // Diff the strip of the window the open actually landed in - the
     // key-window default could resolve differently across the two listings.
     // Several new tabs (a fresh window's seed New Tab beside ours): the one
     // at the requested URL wins; a lone newcomer is ours whatever it shows,
@@ -7181,7 +7181,7 @@ export async function openSpaceTab(space, url, { activate = true,
 }
 
 /** Where the user currently is: {spaceId, spaceName, isAgentSpace,
- *  isIncognito, windowId?, tab?} — `tab` is the active Space's selected tab
+ *  isIncognito, windowId?, tab?} - `tab` is the active Space's selected tab
  *  as {tabId, targetId, url, title}, present only when the Space has an
  *  open window (and never for Incognito Spaces). */
 export async function userFocus() {
@@ -7200,7 +7200,7 @@ export async function userFocus() {
 }
 
 /** Surfaces a user Space in the user's focused window, opening its window
- *  there when it has none — the programmatic Space-switcher click. On-screen
+ *  there when it has none - the programmatic Space-switcher click. On-screen
  *  change the user sees immediately: only on their ask. With no user window
  *  open at all there is nothing to switch: fails `no_focused_window`
  *  (`openSpaceTab` opens a window regardless). */
@@ -7213,24 +7213,24 @@ export async function activateSpace(space) {
 /**
  * Binds this round to a USER Space so the page helpers (observe, click,
  * fillInput, goto, openTab, switchTab, …) drive ITS window. The agent Space
- * stays the DEFAULT working surface — reach for this only when the user
+ * stays the DEFAULT working surface - reach for this only when the user
  * explicitly asks for work in their own Space ("in my space", "go to space
  * X and …"). What user-space mode does NOT have: no ownership guard or
- * handoff (the user is inherently in control of their own window — every
+ * handoff (the user is inherently in control of their own window - every
  * action lands in their live view), no keep-alive or complete(), no
- * overlay/status surface (setStatus/narrate are no-ops — report
+ * overlay/status surface (setStatus/narrate are no-ops - report
  * in chat), and no emulated viewport (the window is visible and sized for
  * real).
  *
  * Resolution: an unknown name is created as a new Space when `create` is
- * true (then opened — a window must exist to drive); an existing Space
+ * true (then opened - a window must exist to drive); an existing Space
  * with no open window is opened by opening a New Tab in it
  * (`spaces.openTab` opens the window: BEHIND the user's windows by
- * default, surfaced when `activate` is true — and it works when the user
+ * default, surfaced when `activate` is true - and it works when the user
  * has no browser window at all); `{activate: true}` also surfaces an
  * already-open Space in the user's focused window. `{window}`
  * (a windowId) pins the binding to that exact window when the Space is open
- * in several — and stands alone: with `window` given, `space` may be
+ * in several - and stands alone: with `window` given, `space` may be
  * omitted entirely and is derived from the window. The pinned window must
  * already be open (no creation/activation fallback: neither could produce
  * the requested window), so a stale id fails with `window_not_open`
@@ -7254,7 +7254,7 @@ async function enterUserContext(space, { profile = '', create = true,
   }
   if (windowId != null && activate) {
     throw new Error("enterContext({kind:'user'}): window and activate are " +
-                    "mutually exclusive — activation targets the user's focused window")
+                    "mutually exclusive - activation targets the user's focused window")
   }
   let spaceId = null
   let created = false
@@ -7272,7 +7272,7 @@ async function enterUserContext(space, { profile = '', create = true,
   let reply = null
   if (!created && !activate) {
     // window_not_ready is a window mid-attach (it exists, its state does
-    // not yet) — retry it briefly; every other error is an answer.
+    // not yet) - retry it briefly; every other error is an answer.
     let lastErr = null
     await settle(async () => {
       try {
@@ -7288,7 +7288,7 @@ async function enterUserContext(space, { profile = '', create = true,
       }
     }, { timeout: 5 })
     if (lastErr) {
-      // With a pinned window there is no fallback — window_not_open (and
+      // With a pinned window there is no fallback - window_not_open (and
       // even space_not_open) is the answer, not a cue to activate.
       if (windowId != null ||
           !/space_not_open|window_not_ready/.test(String(lastErr.message))) throw lastErr
@@ -7296,7 +7296,7 @@ async function enterUserContext(space, { profile = '', create = true,
   }
   // A window-only bind learns its Space from the reply.
   if (reply?.spaceId) spaceId = reply.spaceId
-  // An open window with an empty tab strip is broken, not usable — send it
+  // An open window with an empty tab strip is broken, not usable - send it
   // through activation too (surfacing a Space seeds a tab).
   if (reply && reply.tabs.length === 0) reply = null
   if (!reply && windowId != null) {
@@ -7309,8 +7309,8 @@ async function enterUserContext(space, { profile = '', create = true,
       // Already open: surfacing it is the whole ask.
       await phiSend('agentSpace.spaces.activate', { spaceId })
     } else {
-      // Windowless: a New Tab open gives the Space a window — its seed tab
-      // is that New Tab, so nothing is doubled — behind the user's windows
+      // Windowless: a New Tab open gives the Space a window - its seed tab
+      // is that New Tab, so nothing is doubled - behind the user's windows
       // unless `activate` asked for it in front. An app build from before
       // openTab learned to open windows answers `space_not_open`; there the
       // old activation is the only way, focus steal and all.
@@ -7323,7 +7323,7 @@ async function enterUserContext(space, { profile = '', create = true,
       }
     }
     // A freshly opened window fills progressively (restore delivers tabs in
-    // batches from Chromium), so "has a tab" is not "has its tabs" — settle
+    // batches from Chromium), so "has a tab" is not "has its tabs" - settle
     // on the count holding still for a beat, not on the first arrival.
     let lastCount = 0
     let stableSince = 0
@@ -7334,7 +7334,7 @@ async function enterUserContext(space, { profile = '', create = true,
       if (count !== lastCount) { lastCount = count; stableSince = Date.now() }
       return count > 0 && Date.now() - stableSince >= 600
     }, { timeout: 10 })
-    // `reply` is assigned on every poll — a timeout can leave it non-null
+    // `reply` is assigned on every poll - a timeout can leave it non-null
     // but tabless, so the usable-window test is the tab count, not `reply`.
     if (!reply || reply.tabs.length === 0) {
       throw new Error(
@@ -7352,7 +7352,7 @@ async function enterUserContext(space, { profile = '', create = true,
   const tabs = reply.tabs.map((t) => ({
     ...t, targetId: byTabId.get(t.tabId) ?? null,
   }))
-  // The user's own selected tab is authoritative — attaching to it changes
+  // The user's own selected tab is authoritative - attaching to it changes
   // nothing on screen. The remembered last-driven tab only matters when the
   // selected one has no live target (e.g. a discarded tab).
   const last = readLastTargetId(`space:${spaceId}`)
@@ -7378,7 +7378,7 @@ export async function listTabGroups({ space } = {}) {
 }
 
 /** Groups tabs (targetIds or tabIds) into a new tab group. Options: {title,
- *  color, space} — color is a Chromium wire string: grey, blue, red, yellow,
+ *  color, space} - color is a Chromium wire string: grey, blue, red, yellow,
  *  green, pink, purple, cyan, orange. Returns {token}. */
 export async function createTabGroup(targets, { title, color, space } = {}) {
   const scope = await layoutScope(space)
@@ -7388,7 +7388,7 @@ export async function createTabGroup(targets, { title, color, space } = {}) {
     ...(title ? { title } : {}),
     ...(color ? { color } : {}),
   })
-  // Group state flows back from the browser asynchronously — settle until
+  // Group state flows back from the browser asynchronously - settle until
   // the new group is listable so follow-up ops (update, addTabs) can trust it.
   const settled = !!(await settle(async () => {
     const { groups } = await phiSend('agentSpace.tabGroups.list', scope)
@@ -7478,7 +7478,7 @@ export async function createSplitView(primaryTarget, secondaryTarget,
   return { splitId: created.splitId, settled }
 }
 
-/** Adjusts a split: {ratio} (0–1, the primary pane's share) and/or {layout}. */
+/** Adjusts a split: {ratio} (0-1, the primary pane's share) and/or {layout}. */
 export async function updateSplitView(splitId, { ratio, layout, space } = {}) {
   const scope = await layoutScope(space)
   await phiSend('agentSpace.splitView.update', {
@@ -7514,7 +7514,7 @@ export async function removeSplitView(splitId, { space } = {}) {
 // not to a single tab. Default target is the current agent Space's window (so
 // a file the agent just triggered shows up here); {space} targets a USER
 // Space's open window instead (app-level, gated by the "operate your Spaces"
-// setting). The agent can only observe and control downloads — it cannot open
+// setting). The agent can only observe and control downloads - it cannot open
 // files or reveal them in Finder.
 
 /** Downloads visible in the target window's profile, newest first, as
@@ -7538,7 +7538,7 @@ export async function getDownload(guid, { space } = {}) {
   return download
 }
 
-/** Pauses an in-progress download. The control is asynchronous — re-read with
+/** Pauses an in-progress download. The control is asynchronous - re-read with
  *  getDownload(guid) to observe the new state. */
 export async function pauseDownload(guid, { space } = {}) {
   const scope = await layoutScope(space)
@@ -7572,7 +7572,7 @@ export async function removeDownload(guid, { space } = {}) {
 
 export function cliLog(value) {
   const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2)
-  // The one channel into the agent's context — never let a handled secret
+  // The one channel into the agent's context - never let a handled secret
   // ride through it, whatever page readback or probe picked it up.
   console.log(__scrubSessionSecrets(text))
 }
@@ -7583,11 +7583,11 @@ export function wait(seconds) {
 
 // A live page's JS heap only comes back to the OS on a low-memory signal, so
 // a long multi-round task lets the driven renderer climb across rounds and
-// only deflate when it happens to GC or navigate — which is how a runaway
+// only deflate when it happens to GC or navigate - which is how a runaway
 // Space renderer reaches multiple GB before righting itself. Force that GC at
 // each idle hand-back so the reclaim happens proactively. performance.memory
 // is the top frame's JS heap only (a coarse proxy for RSS), but a reading this
-// large AFTER a full GC means the live page is genuinely holding it — reload
+// large AFTER a full GC means the live page is genuinely holding it - reload
 // the tab to drop it, since the next round re-observes from scratch anyway.
 const RENDERER_RELOAD_HEAP_BYTES = 2 * 1024 * 1024 * 1024
 
@@ -7602,7 +7602,7 @@ async function reclaimAgentRenderer(client, sid) {
     heap = Number(result?.value) || 0
   } catch {}
   if (heap > RENDERER_RELOAD_HEAP_BYTES) {
-    logAction(`reclaimed Space renderer: JS heap ${(heap / 1e9).toFixed(1)} GB after GC — reloading tab`)
+    logAction(`reclaimed Space renderer: JS heap ${(heap / 1e9).toFixed(1)} GB after GC - reloading tab`)
     await client.send('Page.reload', {}, sid, 10000).catch(() => {})
   }
 }
@@ -7621,12 +7621,12 @@ export async function __dispose() {
     // after this round ends. A session that never comes back (crash, kill,
     // conversation abandoned) still lets the Space close on its own. An
     // explicit ping(ttlSeconds) whose deadline still lies ahead overrides
-    // the default in both directions — see releaseTtlSeconds.
+    // the default in both directions - see releaseTtlSeconds.
     await phiSend(pingCall(), {
       taskId: state.task.taskId,
       ttlSeconds: releaseTtlSeconds(state.task.taskId),
     }).catch(() => {})
-    // Reclaim the renderer's between-rounds bloat while the Space is idle —
+    // Reclaim the renderer's between-rounds bloat while the Space is idle - 
     // this runs only at hand-back, so it never races a live action.
     if (state.sessionId) {
       await reclaimAgentRenderer(state.cdp, state.sessionId).catch(() => {})
