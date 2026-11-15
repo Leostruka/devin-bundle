@@ -2313,4 +2313,3 @@ Shows the user a card (title, message, one button) without taking focus; answers
 | `message` | string | no | - | The card's message (nonblank). |
 | `buttonTitle` | string | no | - | The accept button's label (default Run). |
 | `expiresInSeconds` | number | no | - | Whole seconds, 1 to 86400 (default 300); the card then answers timeout. |
-
