@@ -19,8 +19,13 @@ tabs.innerHTML = SECTIONS.map(s =>
   `<button role="tab" data-sec="${s}" aria-selected="${s==="boot"}">~/${s}${tabCount[s] ? `<span class="tn">${tabCount[s]}</span>` : ""}</button>`).join("");
 
 let _linking = false;
+/* lazy section render: heavy grids/tables build on first visit, not on load */
+const _rendered = {};
+const _renderers = {}; // populated below
+
 function go(sec){
   if(!SECTIONS.includes(sec)) sec = "boot";
+  if(!_rendered[sec]){ _rendered[sec] = 1; _renderers[sec]?.(); }
   _linking = true;
   SECTIONS.forEach(s => {
     $("#view-"+s).hidden = s !== sec;
@@ -153,78 +158,89 @@ function skillCard(s){
     <span class="cmeta"><span class="tag">${s.lines}L</span>${s.vendor?'<span class="tag cy">'+esc(s.vendor)+"</span>":""}</span>
   </button>`;
 }
-grid.innerHTML = (D.skills||[]).map(skillCard).join("");
-$("#skill-count").textContent = `${(D.skills||[]).length} match(es)`;
-$("#skill-q").addEventListener("input", e => {
-  const q = e.target.value.trim().toLowerCase();
-  let n = 0;
-  $$(".card", grid).forEach(c => {
-    const s = (D.skills||[]).find(x => x.dir === c.dataset.name);
-    const hit = !q || (s.name+" "+s.desc).toLowerCase().includes(q);
-    c.style.display = hit ? "" : "none"; if(hit) n++;
-    c.querySelector(".cdesc").innerHTML = s && q
-      ? esc(s.desc||"").replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig"), "<mark>$1</mark>")
-      : esc(s?.desc||"");
-    c.querySelector(".cname").innerHTML = s && q
-      ? esc(s.name).replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig"), "<mark>$1</mark>")
-      : esc(s?.name||"");
-  });
-  $("#skill-count").textContent = `${n} match(es)`;
-  $$("#skill-chips button").forEach(b => b.classList.toggle("on", b.dataset.q === q));
-});
 let skillSort = "az";
-$("#skill-sort").addEventListener("click", () => {
-  skillSort = skillSort === "az" ? "size" : "az";
-  $("#skill-sort").textContent = skillSort === "az" ? "az↓" : "sz↓";
-  const cards = $$(".card", grid);
-  cards.sort((a,b) => {
-    const sa = (D.skills||[]).find(x => x.dir === a.dataset.name);
-    const sb = (D.skills||[]).find(x => x.dir === b.dataset.name);
-    return skillSort === "az" ? sa.name.localeCompare(sb.name) : sb.lines - sa.lines;
+let _grepT = null;
+_renderers.skills = () => {
+  grid.innerHTML = (D.skills||[]).map(skillCard).join("");
+  $("#skill-count").textContent = `${(D.skills||[]).length} match(es)`;
+  $("#skill-q").addEventListener("input", e => {
+    clearTimeout(_grepT);
+    _grepT = setTimeout(() => {
+      const q = e.target.value.trim().toLowerCase();
+      let n = 0;
+      const rx = q ? new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig") : null;
+      $$(".card", grid).forEach(c => {
+        const s = (D.skills||[]).find(x => x.dir === c.dataset.name);
+        const hit = !q || (s.name+" "+s.desc).toLowerCase().includes(q);
+        c.style.display = hit ? "" : "none"; if(hit) n++;
+        c.querySelector(".cdesc").innerHTML = s && rx ? esc(s.desc||"").replace(rx, "<mark>$1</mark>") : esc(s?.desc||"");
+        c.querySelector(".cname").innerHTML = s && rx ? esc(s.name).replace(rx, "<mark>$1</mark>") : esc(s?.name||"");
+      });
+      $("#skill-count").textContent = `${n} match(es)`;
+      $$("#skill-chips button").forEach(b => b.classList.toggle("on", b.dataset.q === q));
+    }, 90);
   });
-  cards.forEach(c => grid.appendChild(c));
-});
-$("#skill-chips").addEventListener("click", e => {
-  const b = e.target.closest("button"); if(!b) return;
-  const q = $("#skill-q"); q.value = b.dataset.q;
-  q.dispatchEvent(new Event("input")); q.focus();
-});
+  $("#skill-sort").addEventListener("click", () => {
+    skillSort = skillSort === "az" ? "size" : "az";
+    $("#skill-sort").textContent = skillSort === "az" ? "az↓" : "sz↓";
+    const cards = $$(".card", grid);
+    cards.sort((a,b) => {
+      const sa = (D.skills||[]).find(x => x.dir === a.dataset.name);
+      const sb = (D.skills||[]).find(x => x.dir === b.dataset.name);
+      return skillSort === "az" ? sa.name.localeCompare(sb.name) : sb.lines - sa.lines;
+    });
+    cards.forEach(c => grid.appendChild(c));
+  });
+  $("#skill-chips").addEventListener("click", e => {
+    const b = e.target.closest("button"); if(!b) return;
+    const q = $("#skill-q"); q.value = b.dataset.q;
+    q.dispatchEvent(new Event("input")); q.focus();
+  });
+};
 
 /* ---------------- agents ---------------- */
-$("#agent-grid").innerHTML = (D.agents||[]).map(a => `
-  <button class="card" data-open="agent" data-name="${esc(a.name)}">
-    <span class="cname">${esc(a.name)}</span>
-    <span class="cdesc">${esc(a.desc||"")}</span>
-    <span class="cmeta">${a.model?`<span class="tag am">${esc(a.model)}</span>`:""}</span>
-  </button>`).join("");
+_renderers.agents = () => {
+  $("#agent-grid").innerHTML = (D.agents||[]).map(a => `
+    <button class="card" data-open="agent" data-name="${esc(a.name)}">
+      <span class="cname">${esc(a.name)}</span>
+      <span class="cdesc">${esc(a.desc||"")}</span>
+      <span class="cmeta">${a.model?`<span class="tag am">${esc(a.model)}</span>`:""}</span>
+    </button>`).join("");
+};
 
 /* ---------------- apps ---------------- */
-$("#app-grid").innerHTML = (D.apps||[]).map(a => `
-  <button class="card" data-open="app" data-name="${esc(a.name)}">
-    <span class="cname">${esc(a.name)}</span>
-    <span class="cdesc">${esc(a.intent||"")}</span>
-    <span class="cmeta">${a.schedule?`<span class="tag am">${esc(a.schedule)}</span>`:""}</span>
-  </button>`).join("") || `<div class="dim">no apps under .devin/apps/</div>`;
+_renderers.apps = () => {
+  $("#app-grid").innerHTML = (D.apps||[]).map(a => `
+    <button class="card" data-open="app" data-name="${esc(a.name)}">
+      <span class="cname">${esc(a.name)}</span>
+      <span class="cdesc">${esc(a.intent||"")}</span>
+      <span class="cmeta">${a.schedule?`<span class="tag am">${esc(a.schedule)}</span>`:""}</span>
+    </button>`).join("") || `<div class="dim">no apps under .devin/apps/</div>`;
+};
 
 /* ---------------- hooks ---------------- */
-$("#hooks-flow").innerHTML = (D.hooks||[]).map(ev => `
-  <div class="evt"><h3>${esc(ev.event)}</h3><div class="lane">
-    ${ev.hooks.map(h => `<div class="hkrow">
-      <span class="match">${esc(h.matcher)}</span><span class="arrow">-&gt;</span>
-      <span class="cmd">${esc(h.script)}
-        <span class="badge to">${h.timeout ?? "?"}s</span>
-        ${h.fail_closed?'<span class="badge fc">fail_closed</span>':""}
-      </span></div>`).join("")}
-  </div></div>`).join("");
+_renderers.hooks = () => {
+  $("#hooks-flow").innerHTML = (D.hooks||[]).map(ev => `
+    <div class="evt"><h3>${esc(ev.event)}</h3><div class="lane">
+      ${ev.hooks.map(h => `<div class="hkrow">
+        <span class="match">${esc(h.matcher)}</span><span class="arrow">-&gt;</span>
+        <span class="cmd">${esc(h.script)}
+          <span class="badge to">${h.timeout ?? "?"}s</span>
+          ${h.fail_closed?'<span class="badge fc">fail_closed</span>':""}
+        </span></div>`).join("")}
+    </div></div>`).join("");
+};
 
 /* ---------------- scripts ---------------- */
-$("#script-list").innerHTML = (D.scripts||[]).map(s => `
-  <div class="srow"><div class="sf">${esc(s.file)}</div>
-    <div class="sd">${esc(s.doc||"")}</div>
-    <div class="sl">${s.lines} lines</div></div>`).join("");
+_renderers.scripts = () => {
+  $("#script-list").innerHTML = (D.scripts||[]).map(s => `
+    <div class="srow"><div class="sf">${esc(s.file)}</div>
+      <div class="sd">${esc(s.doc||"")}</div>
+      <div class="sl">${s.lines} lines</div></div>`).join("");
+};
 
 /* ---------------- readers (adr / docs) ---------------- */
-function openDoc(kind, i){
+async function openDoc(kind, i){
   const list = kind === "adr" ? D.adrs : D.docs;
   const body = $(`#${kind}-body`), idx = $(`#${kind}-index`);
   if(!list || !list.length){ body.innerHTML = "<p>empty</p>"; return; }
@@ -232,10 +248,10 @@ function openDoc(kind, i){
   const d = list[i];
   idx.innerHTML = list.map((x,j) =>
     `<button aria-current="${j===i}" data-kind="${kind}" data-i="${j}">${esc(x.title)}</button>`).join("");
-  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p>` + d.html;
-  if(d.has_mermaid && window.mermaid){
-    try{ mermaid.run({nodes: $$("pre.mermaid", body)}); }catch(e){}
-  }
+  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p><p class="dim">loading…</p>`;
+  const html = await htmlOf(d);
+  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p>` + html;
+  if(d.has_mermaid) mermaidRun(body);
   body.scrollTop = 0;
 }
 document.addEventListener("click", e => {
@@ -244,13 +260,17 @@ document.addEventListener("click", e => {
 });
 
 /* ---------------- changelog ---------------- */
-$("#changelog-log").innerHTML = (D.changelog||[]).map(r => `
-  <div class="rel"><span class="rv">${esc(r.version)}</span>
-    <span class="rd">${esc(r.date)}</span>
-    <span class="rentries">${r.entries} entr(ies)</span>
-    <div class="doc">${r.html}</div></div>`).join("");
+_renderers.changelog = async () => {
+  const rows = await Promise.all((D.changelog||[]).map(async r => `
+    <div class="rel"><span class="rv">${esc(r.version)}</span>
+      <span class="rd">${esc(r.date)}</span>
+      <span class="rentries">${r.entries} entr(ies)</span>
+      <div class="doc">${await htmlOf(r)}</div></div>`));
+  $("#changelog-log").innerHTML = rows.join("");
+};
 
 /* ---------------- issues board ---------------- */
+_renderers.issues = () => {
 $("#issues-board").innerHTML = (D.issues||[]).map(g => `
   <div class="rel"><span class="rv">${esc(g.group)}</span>
     <span class="rd">${g.resolved}/${g.count} resolved</span>
@@ -261,9 +281,39 @@ $("#issues-board").innerHTML = (D.issues||[]).map(g => `
       <td><span class="st ${i.status==="resolved"?"ok":"op"}">${esc(i.status)||"?"}</span></td>
       <td class="dim">${i.answered?"answered":""}</td></tr>`).join("")}</tbody></table></div>`).join("") ||
   `<div class="dim">no issue ledgers under .devin/scratch/*/issues/</div>`;
+};
+
+/* ---------------- mermaid lazy-load (2MB CDN only when needed) ---------------- */
+let _mermaidP = null;
+function mermaidReady(){
+  if(window.mermaid) return Promise.resolve();
+  if(!_mermaidP){
+    _mermaidP = new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    }).catch(() => { _mermaidP = null; });
+  }
+  return _mermaidP;
+}
+function mermaidRun(container){
+  const nodes = $$("pre.mermaid", container);
+  if(!nodes.length) return;
+  mermaidReady().then(() => { try{ mermaid.run({nodes}); }catch(e){} });
+}
 
 /* ---------------- modal pager ---------------- */
 const modal = $("#modal");
+const _htmlCache = new Map();
+async function fetchHtml(ref){
+  if(!ref) return "";
+  if(!_htmlCache.has(ref)){
+    _htmlCache.set(ref, fetch("data/"+ref+".html").then(r => r.ok ? r.text() : "<p>failed to load "+esc(ref)+"</p>").catch(() => "<p>failed to load "+esc(ref)+"</p>"));
+  }
+  return _htmlCache.get(ref);
+}
+async function htmlOf(it){ return it ? (it.html ?? await fetchHtml(it.html_ref)) : ""; }
 let _modalReturnFocus = null;
 function openModal(title, html, link){
   _modalReturnFocus = document.activeElement;
@@ -277,8 +327,7 @@ function openModal(title, html, link){
   $("#modal-link").style.visibility = link ? "visible" : "hidden";
   $("#modal-close").focus();
   $("#modal-body").scrollTop = 0;
-  const mnodes = $$("pre.mermaid", $("#modal-body"));
-  if(mnodes.length && window.mermaid){ try{ mermaid.run({nodes: mnodes}); }catch(e){} }
+  mermaidRun($("#modal-body"));
 }
 let _modalHash = null, _modalLink = null;
 $("#modal-link").addEventListener("click", async () => {
@@ -306,13 +355,13 @@ document.addEventListener("click", e => {
     const kind = c.dataset.open, name = c.dataset.name;
     if(kind === "skill"){
       const s = (D.skills||[]).find(x => x.dir === name);
-      if(s) openModal(`skills/${s.dir}/SKILL.md`, s.html, `skill/${s.dir}`);
+      if(s) htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`));
     } else if(kind === "agent"){
       const a = (D.agents||[]).find(x => x.name === name);
-      if(a) openModal(`agents/${a.name}.md`, a.html, `agent/${a.name}`);
+      if(a) htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`));
     } else if(kind === "app"){
       const ap = (D.apps||[]).find(x => x.name === name);
-      if(ap) openModal(ap.file, ap.html, `app/${ap.name}`);
+      if(ap) htmlOf(ap).then(h => openModal(ap.file, h, `app/${ap.name}`));
     }
   }
   if(e.target === modal || e.target.id === "modal-close") closeModal();
@@ -324,11 +373,11 @@ const pal = $("#palette"), palIn = $("#pal-input"), palRes = $("#pal-results");
 const COMMANDS = [
   ...SECTIONS.map(s => ({label:`cd ${s}`, run:()=>go(s)})),
   ...(D.skills||[]).map(s => ({label:`open ${s.name}`, sub:s.desc?.slice(0,70),
-    run:()=>{ openModal(`skills/${s.dir}/SKILL.md`, s.html, `skill/${s.dir}`); }})),
+    run:()=>{ htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`)); }})),
   ...(D.agents||[]).map(a => ({label:`open agent ${a.name}`, sub:a.desc?.slice(0,70),
-    run:()=>{ openModal(`agents/${a.name}.md`, a.html, `agent/${a.name}`); }})),
+    run:()=>{ htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`)); }})),
   ...(D.apps||[]).map(a => ({label:`open app ${a.name}`, sub:a.intent?.slice(0,70),
-    run:()=>{ openModal(a.file, a.html, `app/${a.name}`); }})),
+    run:()=>{ htmlOf(a).then(h => openModal(a.file, h, `app/${a.name}`)); }})),
   {label:"help", sub:"sections: "+SECTIONS.join(", "), run:()=>palIn.value="cd "},
 ];
 function palShow(v){
@@ -420,9 +469,9 @@ function findThing(q){
 }
 function openThing(t){
   if(!t) return false;
-  if(t.kind === "skill") openModal(`skills/${t.s.dir}/SKILL.md`, t.s.html, `skill/${t.s.dir}`);
-  else if(t.kind === "agent") openModal(`agents/${t.a.name}.md`, t.a.html, `agent/${t.a.name}`);
-  else if(t.kind === "app") openModal(t.ap.file, t.ap.html, `app/${t.ap.name}`);
+  if(t.kind === "skill") htmlOf(t.s).then(h => openModal(`skills/${t.s.dir}/SKILL.md`, h, `skill/${t.s.dir}`));
+  else if(t.kind === "agent") htmlOf(t.a).then(h => openModal(`agents/${t.a.name}.md`, h, `agent/${t.a.name}`));
+  else if(t.kind === "app") htmlOf(t.ap).then(h => openModal(t.ap.file, h, `app/${t.ap.name}`));
   else { go(t.kind === "adr" ? "adr" : "docs"); openDoc(t.kind, t.i); }
   return true;
 }
@@ -593,9 +642,9 @@ const HERO = (() => {
   const q = $("#hero-q"), out = $("#hero-results");
   if(!q || !out) return;
   const corpus = [
-    ...(D.skills||[]).map(s => ({k:"skill", n:s.dir, d:s.desc, run:()=>openModal(`skills/${s.dir}/SKILL.md`, s.html, `skill/${s.dir}`)})),
-    ...(D.agents||[]).map(a => ({k:"agent", n:a.name, d:a.desc, run:()=>openModal(`agents/${a.name}.md`, a.html, `agent/${a.name}`)})),
-    ...(D.apps||[]).map(a => ({k:"app", n:a.name, d:a.intent, run:()=>openModal(a.file, a.html, `app/${a.name}`)})),
+    ...(D.skills||[]).map(s => ({k:"skill", n:s.dir, d:s.desc, run:()=>htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`))})),
+    ...(D.agents||[]).map(a => ({k:"agent", n:a.name, d:a.desc, run:()=>htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`))})),
+    ...(D.apps||[]).map(a => ({k:"app", n:a.name, d:a.intent, run:()=>htmlOf(a).then(h => openModal(a.file, h, `app/${a.name}`))})),
     ...(D.adrs||[]).map((x,i) => ({k:"adr", n:x.title, d:x.file, run:()=>{go("adr");openDoc("adr",i);}})),
     ...(D.docs||[]).map((x,i) => ({k:"doc", n:x.title, d:x.file, run:()=>{go("docs");openDoc("docs",i);}})),
     ...(D.scripts||[]).map(s => ({k:"script", n:s.file, d:s.doc, run:()=>go("scripts")})),
@@ -635,11 +684,11 @@ if(/^(skill|agent|app|adr|doc)\//.test(_h)){
   const [kind, name] = _h.split("/", 2);
   _linking = true;
   if(kind === "skill"){ const s = (D.skills||[]).find(x => x.dir === name || x.name === name);
-    if(s){ go("skills"); _linking = true; openModal(`skills/${s.dir}/SKILL.md`, s.html); _modalHash = _h; } else go("skills"); }
+    if(s){ go("skills"); _linking = true; htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h)); _modalHash = _h; } else go("skills"); }
   else if(kind === "agent"){ const a = (D.agents||[]).find(x => x.name === name);
-    if(a){ go("agents"); _linking = true; openModal(`agents/${a.name}.md`, a.html); _modalHash = _h; } else go("agents"); }
+    if(a){ go("agents"); _linking = true; htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h)); _modalHash = _h; } else go("agents"); }
   else if(kind === "app"){ const ap = (D.apps||[]).find(x => x.name === name);
-    if(ap){ go("apps"); _linking = true; openModal(ap.file, ap.html); _modalHash = _h; } else go("apps"); }
+    if(ap){ go("apps"); _linking = true; htmlOf(ap).then(h => openModal(ap.file, h)); _modalHash = _h; } else go("apps"); }
   else if(kind === "adr" || kind === "doc"){
     const k = kind === "adr" ? "adr" : "docs";
     const i = (D[k === "adr" ? "adrs" : "docs"]||[]).findIndex(x =>
