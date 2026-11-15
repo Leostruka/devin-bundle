@@ -68,7 +68,7 @@ logins can be filled into pages - `fillCredential` on another type fails with
   secret - only run commands you'd trust with the secret anyway.
 
 Reach for `getCredential` only when the task genuinely needs the value in
-your context (composing it into a config file, reading it out to the user) - 
+your context (composing it into a config file, reading it out to the user) -
 never just to fill a form or run a command.
 
 **TOTP/2FA is deliberately not exposed** (`totp_not_supported`): releasing a
@@ -118,7 +118,7 @@ command-env injection, or revealing the raw value to you - and a remembered
 grant covers only the kind it was approved for (a fill-only grant never
 authorizes `getCredential`; a full-access grant covers everything), so a
 `user_denied` on getCredential can follow an approved fill: that's the user
-declining the ESCALATION, not the task. The prompt also shows a purpose line - 
+declining the ESCALATION, not the task. The prompt also shows a purpose line -
 `fillCredential`/`runWithCredential` compose it automatically; pass
 `{purpose: '…'}` to `getCredential` so the user sees why you need the value. On denial the call throws `user_denied` - surface that and stop,
 don't retry. If status is `locked` or `logged_out`, tell the user to

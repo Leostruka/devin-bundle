@@ -159,7 +159,7 @@ Core surface - full semantics in this file:
   to be the browser's topmost hit-test result; a covered/disabled control is
   refused rather than reached through page JS.
 - Challenges/consent: `detectChallenge()`,
-  `waitForChallengeClearance({attempts, interval})`, `acceptCookies(opts?)` - 
+  `waitForChallengeClearance({attempts, interval})`, `acceptCookies(opts?)` -
   see "Cloudflare challenges" and "Cookie-consent banners"
 - Dialogs: `handleDialog(accept, promptText?)` (current tab),
   `dismissDialog(targetId, accept, promptText?)` (browser-level - frees any
@@ -568,7 +568,7 @@ secret-touching step. The always-true rules:
   `user_denied` is the user's answer: surface it and stop - never retry.
 - **TOTP/2FA is never exposed** (`totp_not_supported`): a 2FA step is the
   user's - `handOff('Enter your 2FA code, then hand back')`.
-- **Fills are origin-bound**: an `origin_mismatch` refusal is a safety stop - 
+- **Fills are origin-bound**: an `origin_mismatch` refusal is a safety stop -
   never work around it by fetching with `getCredential` and filling manually.
 - Filled secrets are scrubbed from everything the round prints and page
   scans report password inputs as `•••` - verify a login by its outcome (the
@@ -610,7 +610,7 @@ always-true rules:
 3. Act with `click('@N')` / `fillInput('@N', text)` (refs/locators from
    `observe()`), `pressKey('Enter')`, `scroll`, or DOM-level `js(...)`. Use
    `click(x, y)` with screenshot coordinates only for canvas-like surfaces.
-4. Re-observe after meaningful actions before assuming success - 
+4. Re-observe after meaningful actions before assuming success -
    `observe({diff: true})` / `snapshotText({diff: true})` keeps that cheap:
    print what changed, not the whole page again.
 5. Extract data with `js` returning JSON-serializable values.
@@ -632,7 +632,7 @@ always-true rules:
   module: `import … from` statements won't parse there. `require(...)` IS
   provided (anchored at your cwd), and `await import('pkg')` works too - use
   either for node builtins or installed packages.
-- Opening many tabs: fire the opens concurrently - 
+- Opening many tabs: fire the opens concurrently -
   `await Promise.all(urls.map((u) => openTab(u)))` - and the loads + consent
   passes run in parallel. Each call claims its own tab; the LAST one to
   finish stays the current tab, so `switchTab` to a specific tab before

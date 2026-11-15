@@ -7,7 +7,7 @@
 //
 // Flow: opens a demo agent Space against a local HTTP server, hands control
 // to you (Phi shows the native handoff prompt), and the moment you click
-// "Hand back" it performs every input primitive as a watchable choreography - 
+// "Hand back" it performs every input primitive as a watchable choreography -
 // mouse movement across hover targets, clicks, a double-click, a raw
 // coordinate click, paced typing (fillInput + typeText + Enter), and
 // scrolling - while the demo page counts what actually landed. Each phase is

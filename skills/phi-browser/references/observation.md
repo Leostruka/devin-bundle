@@ -31,7 +31,7 @@ regular tab there would use - reported by the app and re-checked before each
 action, so a Sidebar toggle, a bar, a panel or a window resize mid-task is
 picked up at your next action.
 **Do not change the viewport on normal sites.** To read more of a long page
-(an article, a feed, search results), scroll and re-observe - 
+(an article, a feed, search results), scroll and re-observe -
 `observe({diff: true})` keeps that cheap - instead of growing the viewport.
 
 `setViewport({width?, height?})` exists for the exceptions only:

@@ -15,7 +15,7 @@
 // the item once with getCredential to learn the expected values, then checks
 // that fillCredential's in-app dispatch lands exactly those values in the
 // page and that its return carries no secret. Pass a domain that exists in
-// the user's vault. Phi pops its approve prompt for each secret call - 
+// the user's vault. Phi pops its approve prompt for each secret call -
 // approve, and grant the 10-minute remember to be asked only once. Secrets
 // never appear in this test's output (details print lengths and booleans,
 // not values).

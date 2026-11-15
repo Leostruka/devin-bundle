@@ -149,8 +149,8 @@ export function discoverEndpoints() {
     // Unix socket file is, so existence is proven by the connect probe alone
     // (a stale pipe name refuses fast - see isDeadSocketError).
     if (socketPath) {
-      // Remembered by pipe name so every later request over that pipe - 
-      // including channels other modules open with just the socketPath - 
+      // Remembered by pipe name so every later request over that pipe -
+      // including channels other modules open with just the socketPath -
       // carries the token without threading it through every constructor.
       if (token) PIPE_TOKENS.set(socketPath, token)
       out.push({ socketPath, token: token || null })
@@ -194,7 +194,7 @@ function launchPhi() {
   return null
 }
 
-/** True for errors meaning "this socket file has no listener behind it" - 
+/** True for errors meaning "this socket file has no listener behind it" -
  *  a crash-orphaned socket refuses instantly (a crash skips the clean-quit
  *  unlink), so walking on to the next candidate is safe. Anything else is a
  *  real answer from a live endpoint (denial, sandbox wall, timeout) and

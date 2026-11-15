@@ -37,7 +37,7 @@ const state = {
   cdp: null,            // CdpClient (browser target)
   task: null,           // {taskId, spaceId, windowId, ownership, status}
   userSpace: null,      // {spaceId, name, windowId} when bound to a USER
-                        // Space via ensureUserSpace instead of a task - 
+                        // Space via ensureUserSpace instead of a task -
                         // mutually exclusive with `task` (see ensureUserSpace)
   sessionId: null,      // current page session (flat mode)
   targetId: null,       // current page target
@@ -76,7 +76,7 @@ const state = {
   pageAreaCheckedAt: 0,      // when it was last re-checked - see maybeTrackPageArea
   lastPingAt: 0,             // epoch ms of the last keep-alive ping (see maybePing)
   pingTimer: null,           // round-long heartbeat interval (see ensureAgentSpace)
-  explicitTtl: null,         // {taskId, deadline} bought by ping(ttlSeconds) - 
+  explicitTtl: null,         // {taskId, deadline} bought by ping(ttlSeconds) -
                              // honored over the default round-end grace while
                              // the deadline lies ahead (see releaseTtlSeconds)
 }
@@ -133,8 +133,8 @@ async function cdpClient() {
 
 /** Raw escape hatch: send any CDP command on the current page session. */
 export async function cdp(method, params = {}) {
-  // The escape hatch must not be an escape from page safety. Release phases - 
-  // in EVERY dispatch family, including drag, touch, and emulated touch - 
+  // The escape hatch must not be an escape from page safety. Release phases -
+  // in EVERY dispatch family, including drag, touch, and emulated touch -
   // always remain available so a held key/pointer/gesture cannot get stuck;
   // every phase that can begin or mutate user input goes through the same
   // document gate as the high-level helpers. Raw coordinates are still
@@ -837,7 +837,7 @@ export async function listTabs() {
  * a user-tab's page area is what this page would get there. http(s) pages
  * first: a WebUI tab (Phi's NTP) is a native view whose backing WebContents
  * is a near-window-sized shell, not the page area. Tabs of agent windows are
- * skipped implicitly: their metrics read 0×0 and fail the >0 check. Passive - 
+ * skipped implicitly: their metrics read 0×0 and fail the >0 check. Passive -
  * a flat
  * attach + one Page.getLayoutMetrics, no activation, no overrides.
  */
@@ -899,7 +899,7 @@ async function agentPageArea() {
  *     straight from the window layout - authoritative, works for NTP-only
  *     windows and covers watch mode (the visible window is then this very
  *     Space);
- *  2. this tab's own Page.getLayoutMetrics with the override cleared - 
+ *  2. this tab's own Page.getLayoutMetrics with the override cleared -
  *     correct whenever the agent window is actually on screen; 0×0 while it
  *     is hidden, which falls through;
  *  3. a tab in one of the user's windows (`userWindowPanelSize`);
@@ -1075,7 +1075,7 @@ function releaseTtlSeconds(taskId) {
 
 /**
  * Mid-round rebind away from a live agent context: flip its badge idle (a
- * no-op for shadow, which has no badge) and buy the release grace NOW - 
+ * no-op for shadow, which has no badge) and buy the release grace NOW -
  * __dispose only releases the task still bound when the round ends, so
  * without this the departing Space or shadow window would expire ~120s into
  * the gap despite the session being alive, and a later re-enter would get a
@@ -1254,7 +1254,7 @@ function attachTab(targetId) {
 // Browser-level JavaScript-dialog recovery (PhiAgentSpace domain)
 //
 // A JavaScript dialog (alert/confirm/prompt/beforeunload) parks the tab's
-// renderer main thread inside a modal IPC, so every renderer-gated command - 
+// renderer main thread inside a modal IPC, so every renderer-gated command -
 // Page.enable (its response comes from the renderer), Runtime.evaluate,
 // Page.captureScreenshot - hangs until the dialog closes. A session attached
 // AFTER the dialog opened can neither see it (no javascriptDialogOpening
@@ -1342,7 +1342,7 @@ async function attachTabNow(targetId) {
     })
   }
   armDialogListeners()
-  // Attach stays passive - no tab activation, no viewport override below - 
+  // Attach stays passive - no tab activation, no viewport override below -
   // whenever the USER owns what's on screen: while they hold control of an
   // agent Space (takeOver()/waitForAgentControl restores agent presentation),
   // and ALWAYS in a user-Space binding, where Target.activateTarget would
@@ -1474,8 +1474,8 @@ const BLANK_TAB_URLS = new Set([
 ])
 
 // Tabs already adopted by an openTab call this round. Concurrent opens
-// (Promise.all(openTab × N)) are supported, so each call must claim its tab - 
-// the single blank seed tab, or a target another call's open just created - 
+// (Promise.all(openTab × N)) are supported, so each call must claim its tab -
+// the single blank seed tab, or a target another call's open just created -
 // before doing anything to it. Claims are made synchronously (no await
 // between check and add), which is what makes them race-free.
 const claimedTabs = new Set()
@@ -1484,7 +1484,7 @@ const claimedTabs = new Set()
  * Load-side setup of one tab on its OWN short-lived CDP session, so
  * concurrent openTab calls never contend for the shared current-tab session
  * (whose attach/detach cycle is serialized and would otherwise be yanked out
- * from under a parallel caller mid-wait). Applies the agent viewport first - 
+ * from under a parallel caller mid-wait). Applies the agent viewport first -
  * a hidden-window tab has no size until one is imposed, and the consent
  * pass's visibility checks need real layout - then optionally navigates,
  * polls the document ready, and runs the consent pass. Runtime.evaluate and
@@ -1984,7 +1984,7 @@ export async function pageInfo() {
  *   'turnstile'    - an unsolved Turnstile widget embedded in a normal page
  *                    (login/signup forms); a solved widget returns null
  *   'blocked'      - a Cloudflare block/error page ("Attention Required",
- *                    "Sorry, you have been blocked"); nothing to solve - 
+ *                    "Sorry, you have been blocked"); nothing to solve -
  *                    report it to the user instead of handing off
  * Observation only - not ownership-gated. Use waitForChallengeClearance for
  * the bounded passive settling window; never click, reload, navigate, or
@@ -2168,7 +2168,7 @@ export async function waitForChallengeClearance({
 // ---------------------------------------------------------------------------
 // Cookie-consent auto-accept
 //
-// A static rule set that dismisses cookie/GDPR banners deterministically - 
+// A static rule set that dismisses cookie/GDPR banners deterministically -
 // no model reasoning, no screenshot. Selector facts are cross-checked against
 // the corpora the consent-handling projects maintain: DuckDuckGo autoconsent
 // (whose per-CMP optIn click rules subsume Consent-O-Matic's),
@@ -2210,7 +2210,7 @@ const PAGE_OPERABLE_POINT_DECL = `
     var hitMatches = hit === el || (hit && el.contains(hit));
     if (!hitMatches && hit && hit !== doc.body && hit !== doc.documentElement &&
         hit.contains(el)) {
-      // An ANCESTOR legitimately receives the hit for the control it wraps - 
+      // An ANCESTOR legitimately receives the hit for the control it wraps -
       // the custom checkbox/radio pattern styles a label/span over the real
       // input, and a human click there toggles the input. body/html are
       // excluded so a target clipped out of view never reads as operable.
@@ -2639,7 +2639,7 @@ async function activateConsentCandidate(candidate, opts, sessionId = undefined,
 }
 
 // Best-effort automatic pass wired into goto()/openTab(): CMP selectors only
-// - accept table first, then vendor close controls for notice-only banners - 
+// - accept table first, then vendor close controls for notice-only banners -
 // (near-zero false positive), never throws, never blocks navigation. On a
 // first visit the banner is usually injected a beat after load, so this polls
 // for it to surface rather than checking once: it clicks the instant an accept
@@ -2673,7 +2673,7 @@ async function autoAcceptConsent({ waitMs = 3000, graceMs = 1200, intervalMs = 3
 }
 
 /**
- * Deterministically dismiss a cookie-consent banner via the static rule set - 
+ * Deterministically dismiss a cookie-consent banner via the static rule set -
  * no model reasoning, no screenshot. Scans the top document and same-origin
  * frames. Tier order: per-CMP accept selectors, accept-label heuristic,
  * per-CMP close controls (notice-only banners - e.g. the CCPA OneTrust
@@ -2984,7 +2984,7 @@ const PHI_SCAN_FN = `function (opts) {
   const out = []
   const els = []
   const headings = []
-  // Offset of the frame currently being walked, in TOP-page viewport coords - 
+  // Offset of the frame currently being walked, in TOP-page viewport coords -
   // rects recorded inside same-origin iframes stay directly clickable.
   let foX = 0, foY = 0
   // True while walking a subtree that failed the visibility check (only
@@ -3048,7 +3048,7 @@ const PHI_SCAN_FN = `function (opts) {
   const CLICKABLE_ROLE = /^(button|link|tab|menuitem|checkbox|radio|switch|option)$/
   const walk = (node, depth) => {
     if (node.nodeType === Node.TEXT_NODE) {
-      // Hidden subtrees contribute their CONTROLS (flagged), not their prose - 
+      // Hidden subtrees contribute their CONTROLS (flagged), not their prose -
       // a collapsed menu's labels ride the recorded links/buttons anyway.
       if (hiddenNow) return
       const t = clean(node.textContent)
@@ -3184,7 +3184,7 @@ async function pageScan({ within = null, showHidden = false, withRects = false }
   const client = await cdpClient()
   const sid = requireSession()
   // The scan returns {data, nodes} BY REFERENCE. Both reads below ride the
-  // wrapper's own objectId, so they land in the context the scan ran in - 
+  // wrapper's own objectId, so they land in the context the scan ran in -
   // child frame included - with no pinning of their own.
   let wrapperId
   if (within == null) {
@@ -3245,7 +3245,7 @@ async function scanView(client, sid, wrapperId) {
 
 /**
  * Maps the scan's node array (in scan order) to CDP backendNodeIds: one
- * Runtime.getProperties over the array, then a DOM.describeNode per node - 
+ * Runtime.getProperties over the array, then a DOM.describeNode per node -
  * issued concurrently, the CDP client multiplexes by command id. backendNodeId
  * comes from the renderer itself, which is what lets a ref outlive the scan
  * that produced it.
@@ -3278,7 +3278,7 @@ async function scanBackendIds(client, sid, wrapperId, count) {
 }
 
 /**
- * PRIMARY observation: the page's actionable surface as structured data - 
+ * PRIMARY observation: the page's actionable surface as structured data -
  * `{url, title, headings, elements}` where each element is
  * `{ref, role, name, loc, ...}` (inputs also carry `type`/`value`, links
  * `href`). Feed `@ref` or `loc` straight into click/hover/fillInput/etc.
@@ -3581,7 +3581,7 @@ function normalizeTarget(target) {
   throw new Error('unsupported target: ' + describeTarget(target))
 }
 
-// In-page finder for css/xpath/href/role specs. Ref specs never reach it - 
+// In-page finder for css/xpath/href/role specs. Ref specs never reach it -
 // a ref is a backendNodeId, resolved Node-side via DOM.resolveNode.
 // Searches the top document first, then every same-origin child frame, so
 // locs produced by the scan inside iframes still resolve.
@@ -4255,7 +4255,7 @@ async function mediaFromNode(url, maxBytes) {
  * background images are NOT collected. Each URL is fetched via the first
  * route that works: renderer cache -> in-page fetch -> cookie-carrying Node
  * fetch; data: URLs decode directly, blob: URLs only work in-page (MSE
- * streams fail honestly). URLs/filenames in the result are page-derived - 
+ * streams fail honestly). URLs/filenames in the result are page-derived -
  * the untrusted-content rules apply.
  * Options: {types: ['image']} (add 'video'/'audio'), {within: target},
  * {dir} (default under the OS temp dir), {limit: 100},
@@ -5150,7 +5150,7 @@ async function fillTargetValue(spec, target, str, { instant = false, label = 'fi
     if (!/not human-operable/.test(String(err?.message || ''))) throw err
     // Distinguish WHY the point failed. A real input hidden by its OWN
     // styling - the styled-widget pattern: a display:none select behind
-    // Select2/Chosen, an opacity-0/offscreen input under a custom control - 
+    // Select2/Chosen, an opacity-0/offscreen input under a custom control -
     // has no point a pointer could reach, yet filling it through the native
     // setter is exactly what worked before the pointer path existed, and
     // what its framework expects. Only a field that RENDERS but is covered
@@ -5800,7 +5800,7 @@ export async function dismissDialog(targetId, accept = false, promptText = undef
 // Presence / ownership / lifecycle
 
 export async function setStatus(caption) {
-  // Neither user-space mode nor a shadow window has an overlay pill - 
+  // Neither user-space mode nor a shadow window has an overlay pill -
   // narration belongs in chat there. Quiet no-op (not a
   // refusal) so shared flows need no branching, matching markError below.
   if (contextKind() === 'user' || contextKind() === 'shadow') return
@@ -6067,7 +6067,7 @@ export async function waitForAgentControl({ timeout = 600 } = {}) {
     }
     // Backstop: a Space delete drops the task record with it (caught as
     // 'finished' above), but if the window died while the record lingered
-    // (an inconsistent teardown), waiting forever would strand the watcher - 
+    // (an inconsistent teardown), waiting forever would strand the watcher -
     // probe the window itself and report 'deleted' so the caller purges it.
     try {
       await (await cdpClient()).send('Browser.getWindowBounds',
@@ -6114,7 +6114,7 @@ export async function handOffAndWait(message, { timeout = 100 } = {}) {
 /**
  * Finishes the task and closes the agent Space (and its window). Ephemeral
  * Spaces (the default) are removed entirely; a PERSISTENT Space (created with
- * ensureAgentSpace's {persistent: true}) keeps its Space in the switcher - 
+ * ensureAgentSpace's {persistent: true}) keeps its Space in the switcher -
  * only the task ends and its window closes, and a later
  * ensureAgentSpace(name, {persistent: true}) re-binds to it. If the user
  * needs a live page left open in an ephemeral Space, hand it to them with
@@ -6415,7 +6415,7 @@ export async function updateSpace(space, { name, themeId, colorHex, iconName } =
 }
 
 /** Deletes a Space: closes its windows and cascade-deletes its bookmarks and
- *  URL rules. Refused for the default Space and agent Spaces. DESTRUCTIVE - 
+ *  URL rules. Refused for the default Space and agent Spaces. DESTRUCTIVE -
  *  only on the user's explicit ask. */
 export async function deleteSpace(space) {
   const spaceId = await resolveSpaceId(space)
@@ -6928,7 +6928,7 @@ function scrubSecrets(text, secrets) {
 }
 
 // Secret values this round has handled (filled into a page or injected into a
-// child process). Everything that leaves the runner for the agent's context - 
+// child process). Everything that leaves the runner for the agent's context -
 // cliLog and the runner's error printer - is scrubbed of their exact values,
 // so a secret can't ride back in through a page readback (a "show password"
 // toggle flipping the input to type=text, a js() probe, an echoing page).
@@ -7626,7 +7626,7 @@ export async function __dispose() {
       taskId: state.task.taskId,
       ttlSeconds: releaseTtlSeconds(state.task.taskId),
     }).catch(() => {})
-    // Reclaim the renderer's between-rounds bloat while the Space is idle - 
+    // Reclaim the renderer's between-rounds bloat while the Space is idle -
     // this runs only at hand-back, so it never races a live action.
     if (state.sessionId) {
       await reclaimAgentRenderer(state.cdp, state.sessionId).catch(() => {})

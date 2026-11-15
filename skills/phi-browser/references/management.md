@@ -61,7 +61,7 @@ Space.
   when clicked). Mutation helpers settle before returning - they poll until
   their own write is readable - so a list right after a mutation reflects
   it. On a slow write the poll can lapse: the return then carries
-  `settled: false` (or `deleted`/`closed`/`removed`/`ungrouped: false`) - 
+  `settled: false` (or `deleted`/`closed`/`removed`/`ungrouped: false`) -
   the operation was SENT but unconfirmed, not failed; re-list to check
   before assuming either way.
 - `openSpaceTab(space, url, {activate, window})` - open a URL as a new tab
@@ -104,7 +104,7 @@ single-item asks ("pin this", "bookmark that") just do it.
 
 This whole surface (and the `{space}` tab-layout path) sits behind a user
 permission: Settings ▸ Developer ▸ "Allow agents to operate your Spaces"
-(off by default on Windows). When it's off, these helpers fail with `user_space_operations_disabled` - 
+(off by default on Windows). When it's off, these helpers fail with `user_space_operations_disabled` -
 don't retry or work around it; tell the user to flip the toggle if they want
 the operation, and continue inside the agent Space otherwise. Agent-Space
 work is never affected.
@@ -246,7 +246,7 @@ title, active, kind}]` - the window's FULL inventory: `kind` is `normal`,
 `pinned` (an open pinned tab), or `bookmark` (a tab opened from a bookmark
 or a bookmark-bound split), so pinned/bookmark tabs the sidebar projects
 outside the normal list are still listed. The integer `tabId`s work
-directly as tab references (a user tab may have no CDP target - 
+directly as tab references (a user tab may have no CDP target -
 `targetId: null` - its `tabId` still works). Needs the Space to have an
 open window (`space_not_open` otherwise; `window_not_ready` means the
 window exists but its state is still attaching - transient, retry).
@@ -267,7 +267,7 @@ immediately - do it only when asked.
   `removeSplitView(splitId, {space})` ends the split, keeping both tabs.
 - `listTabGroups({space})` / `listSplitViews({space})` return members as
   `{tabId, targetId}` pairs (`targetId` null for a tab that has no live CDP
-  target). Membership state flows back from the browser asynchronously - 
+  target). Membership state flows back from the browser asynchronously -
   re-list to confirm after a mutation rather than assuming.
 - A split's panes and a group's members must be tabs of the targeted window;
   resolving a target from another window fails.

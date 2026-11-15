@@ -14,7 +14,7 @@ relaunches, runs in a shadow window, or uses `saveState`/`importCookies`.
 ## Profiles and agent permissions
 
 `enterContext` picks the first browser profile by default; pass
-`{profile: 'Default'}` (profileId or display name) to choose - 
+`{profile: 'Default'}` (profileId or display name) to choose -
 `listProfiles()` enumerates what's available.
 
 The user can restrict which profiles agents may create Spaces in (Settings ▸
@@ -168,7 +168,7 @@ Other differences worth knowing:
   and from other shadow tasks. `profile` still names the PARENT profile
   (extensions and settings come from it; per-profile agent permission
   applies), so `credentialStatus`/`fillCredential` vault access works but the
-  page starts logged OUT of everything. Use it for clean-state checks - 
+  page starts logged OUT of everything. Use it for clean-state checks -
   "how does this page look logged out", price comparisons without
   personalization, testing a signup flow. A taskId's incognito-ness is fixed
   at creation: re-binding the same name with the other value fails
@@ -225,7 +225,7 @@ with the tab inventory in hand - check it before opening more tabs.
 ## Keep-alive
 
 Ephemeral Spaces only - persistent Spaces are exempt. An agent Space
-auto-closes when its driver goes silent - 
+auto-closes when its driver goes silent -
 ~120s while driving (a live round heartbeats automatically, even through long
 waits, so it never expires; a killed round's Space closes on its own) and
 ~30 minutes between rounds (bought by the round-end heartbeat; the next
@@ -259,7 +259,7 @@ profile - add `{openTabs: true}` to also reopen the saved URLs. Names are
 cookies affect the user's own sessions for those domains: load only state
 the user asked you to restore.
 
-`importCookies(source)` bootstraps a session from cookies the USER provides - 
+`importCookies(source)` bootstraps a session from cookies the USER provides -
 the one-call replacement for hand-rolled `cdp('Storage.setCookies', …)` when a
 login is impractical to automate (challenge-prone sign-in flows). `source` is
 an array of cookie objects or a path to a JSON file holding one; a
