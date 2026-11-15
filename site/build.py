@@ -368,7 +368,8 @@ def collect_github():
                     and lb.split(":", 1)[1] in _PRI), "")
         row = {"file": f"#{it['number']}", "title": it["title"],
                "priority": pri, "status": "open",
-               "answered": bool(it.get("comments"))}
+               "answered": bool(it.get("comments")),
+               "url": it.get("html_url", "")}
         (prs if "pull_request" in it else issues).append(row)
     groups = []
     if issues:

@@ -40,6 +40,8 @@ hr{border:0;border-top:1px dashed var(--line);margin:1.2em 0}
   font:inherit;color:var(--dim);background:none;border:0;cursor:pointer;
   padding:9px 14px;border-right:1px solid var(--line)}
 .statusline button::before{content:"› "}
+.statusline .tn{color:var(--cyan);font-size:.72em;margin-left:.5em;vertical-align:.15em}
+.statusline button[aria-selected="true"] .tn{color:var(--bg)}
 .statusline button[aria-selected="true"]{color:var(--bg);background:var(--green)}
 .statusline button:hover:not([aria-selected="true"]){color:var(--fg)}
 .statusline button:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
@@ -60,6 +62,39 @@ main{flex:1;max-width:1200px;width:100%;margin:0 auto;padding:28px 20px 60px}
   vertical-align:-.15em;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 .hint{color:var(--dim);font-size:.85em;margin-top:22px}
+
+/* hero find on boot */
+.hero-find{display:flex;align-items:baseline;gap:10px;margin-top:26px;
+  border-bottom:1px dashed var(--line);padding-bottom:10px}
+.hero-find input{flex:0 1 40em;background:var(--panel);border:1px solid var(--line);
+  color:var(--green);font:inherit;padding:8px 12px;caret-color:var(--green);font-size:1.05em}
+.hero-find input:focus{outline:2px solid var(--green)}
+#hero-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:8px;margin-top:12px}
+#hero-results .hcard{border:1px solid var(--line);background:var(--panel);
+  padding:9px 13px;cursor:pointer;text-align:left;font:inherit;color:var(--fg);
+  display:block;width:100%}
+#hero-results .hcard:hover,#hero-results .hcard:focus-visible{border-color:var(--green);outline:none}
+#hero-results .hk{display:inline-block;color:var(--amber);font-size:.72em;
+  border:1px solid var(--amber);padding:0 .4em;margin-right:.6em;vertical-align:.15em}
+#hero-results .hn{color:var(--green);font-weight:700}
+#hero-results .hd{display:block;color:var(--dim);font-size:.8em;margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hero-results .hnone{grid-column:1/-1;color:var(--dim)}
+
+/* conversion CTA on boot */
+.cta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  border:1px solid var(--green);background:var(--panel);
+  box-shadow:0 0 24px rgba(51,255,102,.12);
+  padding:12px 16px;margin-top:24px;font-size:.92em}
+.cta .cta-lead{color:var(--amber);font-weight:700}
+.cta code{color:var(--fg);word-break:break-all}
+.cta #cta-copy{font:inherit;background:none;border:1px solid var(--line);
+  color:var(--dim);cursor:pointer;padding:1px 8px}
+.cta #cta-copy:hover{color:var(--green);border-color:var(--green)}
+.cta #cta-copy.copied{color:var(--green);border-color:var(--green)}
+.cta .cta-repo{color:var(--cyan);margin-left:auto;text-decoration:none;white-space:nowrap}
+.cta .cta-repo:hover{text-decoration:underline}
 
 /* grep row + cards */
 .grep{display:flex;align-items:baseline;gap:10px;color:var(--fg);
