@@ -119,8 +119,14 @@ function logoSwap(){
 function boot(){
   const el = $("#bootlog");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(reduced){
+  const seen = sessionStorage.getItem("atlas-booted");
+  sessionStorage.setItem("atlas-booted","1");
+  if(reduced || seen){
     el.innerHTML = LINES.map(([c,t]) => `<span class="${c}">${esc(t) || " "}</span>`).join("\n");
+    el.innerHTML += `<div class="dim"><button id="replay" class="lnk">[replay boot]</button></div>`;
+    $("#replay")?.addEventListener("click", () => {
+      sessionStorage.removeItem("atlas-booted"); el.innerHTML = ""; boot();
+    });
     logoSwap();
     return;
   }
@@ -156,8 +162,32 @@ $("#skill-q").addEventListener("input", e => {
     const s = (D.skills||[]).find(x => x.dir === c.dataset.name);
     const hit = !q || (s.name+" "+s.desc).toLowerCase().includes(q);
     c.style.display = hit ? "" : "none"; if(hit) n++;
+    c.querySelector(".cdesc").innerHTML = s && q
+      ? esc(s.desc||"").replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig"), "<mark>$1</mark>")
+      : esc(s?.desc||"");
+    c.querySelector(".cname").innerHTML = s && q
+      ? esc(s.name).replace(new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig"), "<mark>$1</mark>")
+      : esc(s?.name||"");
   });
   $("#skill-count").textContent = `${n} match(es)`;
+  $$("#skill-chips button").forEach(b => b.classList.toggle("on", b.dataset.q === q));
+});
+let skillSort = "az";
+$("#skill-sort").addEventListener("click", () => {
+  skillSort = skillSort === "az" ? "size" : "az";
+  $("#skill-sort").textContent = skillSort === "az" ? "az↓" : "sz↓";
+  const cards = $$(".card", grid);
+  cards.sort((a,b) => {
+    const sa = (D.skills||[]).find(x => x.dir === a.dataset.name);
+    const sb = (D.skills||[]).find(x => x.dir === b.dataset.name);
+    return skillSort === "az" ? sa.name.localeCompare(sb.name) : sb.lines - sa.lines;
+  });
+  cards.forEach(c => grid.appendChild(c));
+});
+$("#skill-chips").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  const q = $("#skill-q"); q.value = b.dataset.q;
+  q.dispatchEvent(new Event("input")); q.focus();
 });
 
 /* ---------------- agents ---------------- */
@@ -234,20 +264,35 @@ $("#issues-board").innerHTML = (D.issues||[]).map(g => `
 
 /* ---------------- modal pager ---------------- */
 const modal = $("#modal");
+let _modalReturnFocus = null;
 function openModal(title, html, link){
+  _modalReturnFocus = document.activeElement;
   $("#modal-title").textContent = title;
   $("#modal-body").innerHTML = html;
   modal.hidden = false;
   if(link && !_linking){
     _modalHash = link; history.replaceState(null,"",`#${link}`);
   }
+  _modalLink = link || null;
+  $("#modal-link").style.visibility = link ? "visible" : "hidden";
+  $("#modal-close").focus();
   $("#modal-body").scrollTop = 0;
   const mnodes = $$("pre.mermaid", $("#modal-body"));
   if(mnodes.length && window.mermaid){ try{ mermaid.run({nodes: mnodes}); }catch(e){} }
 }
-let _modalHash = null;
+let _modalHash = null, _modalLink = null;
+$("#modal-link").addEventListener("click", async () => {
+  if(!_modalLink) return;
+  const b = $("#modal-link");
+  try{
+    await navigator.clipboard.writeText(location.origin + location.pathname + "#" + _modalLink);
+    b.textContent = "[copied!]";
+  }catch{ b.textContent = "[err]"; }
+  setTimeout(() => { b.textContent = "[link]"; }, 1600);
+});
 function closeModal(){
   modal.hidden = true;
+  if(_modalReturnFocus && _modalReturnFocus.focus){ _modalReturnFocus.focus(); _modalReturnFocus = null; }
   if(_modalHash){
     _modalHash = null;
     _linking = true;
