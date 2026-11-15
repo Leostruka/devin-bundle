@@ -3,23 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050807">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://github.com">
 <title>devin-bundle // atlas</title>
 <meta name="description" content="Interactive atlas of the devin-bundle: __N_SKILLS__ skills, __N_AGENTS__ agent profiles, the hooks pipeline, ADRs, docs and changelog — rendered as the terminal it ships in.">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23050807'/><text x='3' y='12' font-family='monospace' font-size='11' fill='%2333ff66'>&gt;_</text></svg>">
 </head>
 <body>
+<a class="skip" href="#main">skip to content</a>
 <div class="crt" aria-hidden="true"></div>
 
 <header class="titlebar">
   <span class="dots"><i></i><i></i><i></i></span>
   <span class="tb-title">visitor@devin-bundle:~/atlas</span>
+  <button id="theme-toggle" class="tb-btn" title="cycle theme: phosphor / amber / mono" aria-label="cycle theme">◐ phosphor</button>
   <span class="tb-meta" id="tb-version"></span>
 </header>
 
 <nav class="statusline" id="tabs" role="tablist" aria-label="sections"></nav>
 
-<main>
+<main id="main">
   <section id="view-boot" class="view" role="tabpanel">
     <pre class="logo" aria-label="devin bundle">
  ____            _          ____                  _ _
@@ -29,6 +34,17 @@
 |____/ \___| \_/ |_|_| |_|  |____/ \__,_|_| |_|\__,_|_|\___|
 </pre>
     <pre id="bootlog" class="bootlog" aria-live="polite"></pre>
+    <div class="hero-find">
+      <span class="prompt">$</span> find
+      <input id="hero-q" type="search" placeholder="a skill, agent, doc or adr… (try: memory, review, hooks)" aria-label="find anything">
+    </div>
+    <div id="hero-results"></div>
+    <div class="cta" id="cta">
+      <span class="cta-lead">install it:</span>
+      <code id="cta-cmd">git clone https://github.com/Leostruka/devin-bundle.git && cd devin-bundle && ./install.ps1</code>
+      <button id="cta-copy" title="copy to clipboard">[copy]</button>
+      <a class="cta-repo" href="https://github.com/Leostruka/devin-bundle" target="_blank" rel="noopener">github.com/Leostruka/devin-bundle ↗</a>
+    </div>
     <p class="hint">type <kbd>/</kbd> or press <kbd>Ctrl</kbd>+<kbd>K</kbd> for the command palette · tabs are <code>cd</code> targets</p>
   </section>
 
@@ -37,6 +53,10 @@
       <span class="prompt">$</span> grep -i
       <input id="skill-q" type="search" placeholder="pattern… (try: review, debug, video, audit)" aria-label="filter skills">
       <span class="count" id="skill-count"></span>
+      <span class="sort"><button id="skill-sort" title="toggle sort">az↓</button></span>
+    </div>
+    <div class="chips" id="skill-chips">
+      <button data-q="review">review</button><button data-q="git">git</button><button data-q="design">design</button><button data-q="audit">audit</button><button data-q="memory">memory</button><button data-q="test">test</button><button data-q="docs">docs</button><button data-q="">clear</button>
     </div>
     <div class="grid" id="skill-grid"></div>
   </section>
@@ -88,13 +108,12 @@
 </div>
 
 <div id="modal" hidden>
-  <div class="modal-box">
-    <div class="modal-bar"><span id="modal-title"></span><button id="modal-close" aria-label="close">[q]</button></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-bar"><span id="modal-title"></span><span class="modal-actions"><button id="modal-link" aria-label="copy link">[link]</button><button id="modal-close" aria-label="close">[q]</button></span></div>
     <article id="modal-body" class="doc"></article>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js" defer></script>
 <script>window.DATA = /*__DATA__*/;</script>
 <script src="app.js" defer></script>
 </body>

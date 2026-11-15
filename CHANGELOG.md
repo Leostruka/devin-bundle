@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(site): atlas UX loop - 32-cycle improvement pass across conversion, edges/a11y, performance, and delight. Payload split: skill/agent/app/adr/doc/changelog HTML bodies moved to `site/dist/data/*.html` fetched on demand with cache, index.html 2.09MB -> 134KB; mermaid 2MB CDN lazy-loads only when a diagram exists; section grids render on first tab visit; deep links `#skill/x` `#agent/x` `#app/x` `#adr/x` `#doc/x` with modal hash sync + copy-link; hero install CTA + global search; fuzzy command palette; REPL `stats`/`issues`/`matrix`/`sudo`; tab count badges; mobile layout + skip link + dialog semantics + reduced-motion coverage; theme toggle (phosphor/amber/mono, persisted); design_lint pass moved 9 hardcoded colors to `var()`/`color-mix()` (PR #642). Findings: `.devin/research/2026-11-15-atlas-ux-loop-findings.md`.
+
+- feat(skills): `phi-browser` imported - browser automation through Phi Browser agent Spaces over CDP (187 -> 188 skills; PR #641).
+
 - feat(rules): Rule 30 "Verified commits" in AGENTS.md + `.devin/global_rules.md` - commits must be cryptographically signed so GitHub shows "Verified"; SSH/GPG one-time setup documented, `commit.gpgsign=false` downgrade forbidden (issue #616, PR #617). `manifest.rule_count` 24 -> 25 + README badge.
 
 - chore(deps): dependabot batch - actions/checkout 5 -> 7, setup-python 6 -> 7, numpy -> 2.5.4 (3 manifests), winrt-Windows.Storage.Streams + Graphics.Imaging -> 4!10.0.28000.2957, comtypes -> 1.5.0 (PR #630); pywinpty 3.0.5 -> 3.1.2 (PR #621).

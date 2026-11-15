@@ -368,7 +368,8 @@ def collect_github():
                     and lb.split(":", 1)[1] in _PRI), "")
         row = {"file": f"#{it['number']}", "title": it["title"],
                "priority": pri, "status": "open",
-               "answered": bool(it.get("comments"))}
+               "answered": bool(it.get("comments")),
+               "url": it.get("html_url", "")}
         (prs if "pull_request" in it else issues).append(row)
     groups = []
     if issues:
@@ -451,6 +452,29 @@ def main():
             p = os.path.join(DIST, entry)
             shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
     os.makedirs(DIST, exist_ok=True)
+
+    # Lazy HTML: move big rendered bodies out of window.DATA into
+    # per-item files fetched on demand (skills ~1.3MB, docs ~240KB).
+    os.makedirs(os.path.join(DIST, "data"), exist_ok=True)
+
+    def _lazy(items, prefix, key):
+        for i, it in enumerate(items):
+            html = it.pop("html", None)
+            if html is None:
+                continue
+            ref = f"{prefix}-{it.get(key, i)}"
+            with open(os.path.join(DIST, "data", ref + ".html"),
+                      "w", encoding="utf-8") as fh:
+                fh.write(html)
+            it["html_ref"] = ref
+
+    _lazy(skills, "skill", "dir")
+    _lazy(agents, "agent", "name")
+    _lazy(adrs, "adr", None)
+    _lazy(docs, "doc", None)
+    _lazy(apps, "app", "name")
+    _lazy(data["changelog"], "rel", "version")
+
     tpl = read("index.html", SRC)
     tpl = (tpl
            .replace("__N_SKILLS__", str(len(skills)))

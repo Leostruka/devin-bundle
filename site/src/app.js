@@ -7,12 +7,26 @@ const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','
 
 /* ---------------- tabs / router ---------------- */
 const SECTIONS = ["boot","skills","agents","hooks","scripts","adr","docs","issues","changelog","apps"];
+const TAB_COUNT = () => ({
+  skills: D.counts?.skills, agents: D.counts?.agents, scripts: D.counts?.scripts,
+  adr: D.counts?.adrs, docs: D.counts?.docs, apps: D.counts?.apps,
+  issues: (D.issues||[]).reduce((n,g) => n + (g.count - g.resolved), 0) || null,
+  hooks: (D.hooks||[]).reduce((n,e) => n + e.hooks.length, 0) || null,
+});
+const tabCount = TAB_COUNT();
 const tabs = $("#tabs");
 tabs.innerHTML = SECTIONS.map(s =>
-  `<button role="tab" data-sec="${s}" aria-selected="${s==="boot"}">~/${s}</button>`).join("");
+  `<button role="tab" data-sec="${s}" aria-selected="${s==="boot"}">~/${s}${tabCount[s] ? `<span class="tn">${tabCount[s]}</span>` : ""}</button>`).join("");
+
+let _linking = false;
+/* lazy section render: heavy grids/tables build on first visit, not on load */
+const _rendered = {};
+const _renderers = {}; // populated below
 
 function go(sec){
   if(!SECTIONS.includes(sec)) sec = "boot";
+  if(!_rendered[sec]){ _rendered[sec] = 1; _renderers[sec]?.(); }
+  _linking = true;
   SECTIONS.forEach(s => {
     $("#view-"+s).hidden = s !== sec;
     $(`button[data-sec="${s}"]`).setAttribute("aria-selected", s===sec);
@@ -24,6 +38,7 @@ function go(sec){
   if(sec === "docs" && !$("#docs-body").innerHTML) openDoc("docs", 0);
   if(sec !== "boot") document.title = `devin-bundle // atlas — ${sec}`;
   window.scrollTo(0,0);
+  _linking = false;
 }
 tabs.addEventListener("click", e => { const b = e.target.closest("button"); if(b) go(b.dataset.sec); });
 addEventListener("hashchange", () => go(location.hash.slice(1) || "boot"));
@@ -109,8 +124,14 @@ function logoSwap(){
 function boot(){
   const el = $("#bootlog");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(reduced){
+  const seen = sessionStorage.getItem("atlas-booted");
+  sessionStorage.setItem("atlas-booted","1");
+  if(reduced || seen){
     el.innerHTML = LINES.map(([c,t]) => `<span class="${c}">${esc(t) || " "}</span>`).join("\n");
+    el.innerHTML += `<div class="dim"><button id="replay" class="lnk">[replay boot]</button></div>`;
+    $("#replay")?.addEventListener("click", () => {
+      sessionStorage.removeItem("atlas-booted"); el.innerHTML = ""; boot();
+    });
     logoSwap();
     return;
   }
@@ -137,54 +158,89 @@ function skillCard(s){
     <span class="cmeta"><span class="tag">${s.lines}L</span>${s.vendor?'<span class="tag cy">'+esc(s.vendor)+"</span>":""}</span>
   </button>`;
 }
-grid.innerHTML = (D.skills||[]).map(skillCard).join("");
-$("#skill-count").textContent = `${(D.skills||[]).length} match(es)`;
-$("#skill-q").addEventListener("input", e => {
-  const q = e.target.value.trim().toLowerCase();
-  let n = 0;
-  $$(".card", grid).forEach(c => {
-    const s = (D.skills||[]).find(x => x.dir === c.dataset.name);
-    const hit = !q || (s.name+" "+s.desc).toLowerCase().includes(q);
-    c.style.display = hit ? "" : "none"; if(hit) n++;
+let skillSort = "az";
+let _grepT = null;
+_renderers.skills = () => {
+  grid.innerHTML = (D.skills||[]).map(skillCard).join("");
+  $("#skill-count").textContent = `${(D.skills||[]).length} match(es)`;
+  $("#skill-q").addEventListener("input", e => {
+    clearTimeout(_grepT);
+    _grepT = setTimeout(() => {
+      const q = e.target.value.trim().toLowerCase();
+      let n = 0;
+      const rx = q ? new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","ig") : null;
+      $$(".card", grid).forEach(c => {
+        const s = (D.skills||[]).find(x => x.dir === c.dataset.name);
+        const hit = !q || (s.name+" "+s.desc).toLowerCase().includes(q);
+        c.style.display = hit ? "" : "none"; if(hit) n++;
+        c.querySelector(".cdesc").innerHTML = s && rx ? esc(s.desc||"").replace(rx, "<mark>$1</mark>") : esc(s?.desc||"");
+        c.querySelector(".cname").innerHTML = s && rx ? esc(s.name).replace(rx, "<mark>$1</mark>") : esc(s?.name||"");
+      });
+      $("#skill-count").textContent = `${n} match(es)`;
+      $$("#skill-chips button").forEach(b => b.classList.toggle("on", b.dataset.q === q));
+    }, 90);
   });
-  $("#skill-count").textContent = `${n} match(es)`;
-});
+  $("#skill-sort").addEventListener("click", () => {
+    skillSort = skillSort === "az" ? "size" : "az";
+    $("#skill-sort").textContent = skillSort === "az" ? "az↓" : "sz↓";
+    const cards = $$(".card", grid);
+    cards.sort((a,b) => {
+      const sa = (D.skills||[]).find(x => x.dir === a.dataset.name);
+      const sb = (D.skills||[]).find(x => x.dir === b.dataset.name);
+      return skillSort === "az" ? sa.name.localeCompare(sb.name) : sb.lines - sa.lines;
+    });
+    cards.forEach(c => grid.appendChild(c));
+  });
+  $("#skill-chips").addEventListener("click", e => {
+    const b = e.target.closest("button"); if(!b) return;
+    const q = $("#skill-q"); q.value = b.dataset.q;
+    q.dispatchEvent(new Event("input")); q.focus();
+  });
+};
 
 /* ---------------- agents ---------------- */
-$("#agent-grid").innerHTML = (D.agents||[]).map(a => `
-  <button class="card" data-open="agent" data-name="${esc(a.name)}">
-    <span class="cname">${esc(a.name)}</span>
-    <span class="cdesc">${esc(a.desc||"")}</span>
-    <span class="cmeta">${a.model?`<span class="tag am">${esc(a.model)}</span>`:""}</span>
-  </button>`).join("");
+_renderers.agents = () => {
+  $("#agent-grid").innerHTML = (D.agents||[]).map(a => `
+    <button class="card" data-open="agent" data-name="${esc(a.name)}">
+      <span class="cname">${esc(a.name)}</span>
+      <span class="cdesc">${esc(a.desc||"")}</span>
+      <span class="cmeta">${a.model?`<span class="tag am">${esc(a.model)}</span>`:""}</span>
+    </button>`).join("");
+};
 
 /* ---------------- apps ---------------- */
-$("#app-grid").innerHTML = (D.apps||[]).map(a => `
-  <button class="card" data-open="app" data-name="${esc(a.name)}">
-    <span class="cname">${esc(a.name)}</span>
-    <span class="cdesc">${esc(a.intent||"")}</span>
-    <span class="cmeta">${a.schedule?`<span class="tag am">${esc(a.schedule)}</span>`:""}</span>
-  </button>`).join("") || `<div class="dim">no apps under .devin/apps/</div>`;
+_renderers.apps = () => {
+  $("#app-grid").innerHTML = (D.apps||[]).map(a => `
+    <button class="card" data-open="app" data-name="${esc(a.name)}">
+      <span class="cname">${esc(a.name)}</span>
+      <span class="cdesc">${esc(a.intent||"")}</span>
+      <span class="cmeta">${a.schedule?`<span class="tag am">${esc(a.schedule)}</span>`:""}</span>
+    </button>`).join("") || `<div class="dim">no apps under .devin/apps/</div>`;
+};
 
 /* ---------------- hooks ---------------- */
-$("#hooks-flow").innerHTML = (D.hooks||[]).map(ev => `
-  <div class="evt"><h3>${esc(ev.event)}</h3><div class="lane">
-    ${ev.hooks.map(h => `<div class="hkrow">
-      <span class="match">${esc(h.matcher)}</span><span class="arrow">-&gt;</span>
-      <span class="cmd">${esc(h.script)}
-        <span class="badge to">${h.timeout ?? "?"}s</span>
-        ${h.fail_closed?'<span class="badge fc">fail_closed</span>':""}
-      </span></div>`).join("")}
-  </div></div>`).join("");
+_renderers.hooks = () => {
+  $("#hooks-flow").innerHTML = (D.hooks||[]).map(ev => `
+    <div class="evt"><h3>${esc(ev.event)}</h3><div class="lane">
+      ${ev.hooks.map(h => `<div class="hkrow">
+        <span class="match">${esc(h.matcher)}</span><span class="arrow">-&gt;</span>
+        <span class="cmd">${esc(h.script)}
+          <span class="badge to">${h.timeout ?? "?"}s</span>
+          ${h.fail_closed?'<span class="badge fc">fail_closed</span>':""}
+        </span></div>`).join("")}
+    </div></div>`).join("");
+};
 
 /* ---------------- scripts ---------------- */
-$("#script-list").innerHTML = (D.scripts||[]).map(s => `
-  <div class="srow"><div class="sf">${esc(s.file)}</div>
-    <div class="sd">${esc(s.doc||"")}</div>
-    <div class="sl">${s.lines} lines</div></div>`).join("");
+_renderers.scripts = () => {
+  $("#script-list").innerHTML = (D.scripts||[]).map(s => `
+    <div class="srow"><div class="sf">${esc(s.file)}</div>
+      <div class="sd">${esc(s.doc||"")}</div>
+      <div class="sl">${s.lines} lines</div></div>`).join("");
+};
 
 /* ---------------- readers (adr / docs) ---------------- */
-function openDoc(kind, i){
+async function openDoc(kind, i){
   const list = kind === "adr" ? D.adrs : D.docs;
   const body = $(`#${kind}-body`), idx = $(`#${kind}-index`);
   if(!list || !list.length){ body.innerHTML = "<p>empty</p>"; return; }
@@ -192,10 +248,10 @@ function openDoc(kind, i){
   const d = list[i];
   idx.innerHTML = list.map((x,j) =>
     `<button aria-current="${j===i}" data-kind="${kind}" data-i="${j}">${esc(x.title)}</button>`).join("");
-  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p>` + d.html;
-  if(d.has_mermaid && window.mermaid){
-    try{ mermaid.run({nodes: $$("pre.mermaid", body)}); }catch(e){}
-  }
+  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p><p class="dim">loading…</p>`;
+  const html = await htmlOf(d);
+  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p>` + html;
+  if(d.has_mermaid) mermaidRun(body);
   body.scrollTop = 0;
 }
 document.addEventListener("click", e => {
@@ -204,48 +260,108 @@ document.addEventListener("click", e => {
 });
 
 /* ---------------- changelog ---------------- */
-$("#changelog-log").innerHTML = (D.changelog||[]).map(r => `
-  <div class="rel"><span class="rv">${esc(r.version)}</span>
-    <span class="rd">${esc(r.date)}</span>
-    <span class="rentries">${r.entries} entr(ies)</span>
-    <div class="doc">${r.html}</div></div>`).join("");
+_renderers.changelog = async () => {
+  const rows = await Promise.all((D.changelog||[]).map(async r => `
+    <div class="rel"><span class="rv">${esc(r.version)}</span>
+      <span class="rd">${esc(r.date)}</span>
+      <span class="rentries">${r.entries} entr(ies)</span>
+      <div class="doc">${await htmlOf(r)}</div></div>`));
+  $("#changelog-log").innerHTML = rows.join("");
+};
 
 /* ---------------- issues board ---------------- */
+_renderers.issues = () => {
 $("#issues-board").innerHTML = (D.issues||[]).map(g => `
   <div class="rel"><span class="rv">${esc(g.group)}</span>
     <span class="rd">${g.resolved}/${g.count} resolved</span>
     <table class="tbl"><tbody>${g.items.map(i => `
-      <tr><td class="mono">${esc(i.file.replace(/\.md$/,""))}</td>
+      <tr><td class="mono">${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.file.replace(/\.md$/,""))}</a>` : esc(i.file.replace(/\.md$/,""))}</td>
       <td>${esc(i.title)}</td>
       <td>${i.priority ? `<span class="pri p${esc(i.priority)}">${esc(i.priority)}</span>` : ""}</td>
       <td><span class="st ${i.status==="resolved"?"ok":"op"}">${esc(i.status)||"?"}</span></td>
       <td class="dim">${i.answered?"answered":""}</td></tr>`).join("")}</tbody></table></div>`).join("") ||
   `<div class="dim">no issue ledgers under .devin/scratch/*/issues/</div>`;
+};
+
+/* ---------------- mermaid lazy-load (2MB CDN only when needed) ---------------- */
+let _mermaidP = null;
+function mermaidReady(){
+  if(window.mermaid) return Promise.resolve();
+  if(!_mermaidP){
+    _mermaidP = new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    }).catch(() => { _mermaidP = null; });
+  }
+  return _mermaidP;
+}
+function mermaidRun(container){
+  const nodes = $$("pre.mermaid", container);
+  if(!nodes.length) return;
+  mermaidReady().then(() => { try{ mermaid.run({nodes}); }catch(e){} });
+}
 
 /* ---------------- modal pager ---------------- */
 const modal = $("#modal");
-function openModal(title, html){
+const _htmlCache = new Map();
+async function fetchHtml(ref){
+  if(!ref) return "";
+  if(!_htmlCache.has(ref)){
+    _htmlCache.set(ref, fetch("data/"+ref+".html").then(r => r.ok ? r.text() : "<p>failed to load "+esc(ref)+"</p>").catch(() => "<p>failed to load "+esc(ref)+"</p>"));
+  }
+  return _htmlCache.get(ref);
+}
+async function htmlOf(it){ return it ? (it.html ?? await fetchHtml(it.html_ref)) : ""; }
+let _modalReturnFocus = null;
+function openModal(title, html, link){
+  _modalReturnFocus = document.activeElement;
   $("#modal-title").textContent = title;
   $("#modal-body").innerHTML = html;
   modal.hidden = false;
+  if(link && !_linking){
+    _modalHash = link; history.replaceState(null,"",`#${link}`);
+  }
+  _modalLink = link || null;
+  $("#modal-link").style.visibility = link ? "visible" : "hidden";
+  $("#modal-close").focus();
   $("#modal-body").scrollTop = 0;
-  const mnodes = $$("pre.mermaid", $("#modal-body"));
-  if(mnodes.length && window.mermaid){ try{ mermaid.run({nodes: mnodes}); }catch(e){} }
+  mermaidRun($("#modal-body"));
 }
-function closeModal(){ modal.hidden = true; }
+let _modalHash = null, _modalLink = null;
+$("#modal-link").addEventListener("click", async () => {
+  if(!_modalLink) return;
+  const b = $("#modal-link");
+  try{
+    await navigator.clipboard.writeText(location.origin + location.pathname + "#" + _modalLink);
+    b.textContent = "[copied!]";
+  }catch{ b.textContent = "[err]"; }
+  setTimeout(() => { b.textContent = "[link]"; }, 1600);
+});
+function closeModal(){
+  modal.hidden = true;
+  if(_modalReturnFocus && _modalReturnFocus.focus){ _modalReturnFocus.focus(); _modalReturnFocus = null; }
+  if(_modalHash){
+    _modalHash = null;
+    _linking = true;
+    history.replaceState(null,"",curSec === "boot" ? "#" : `#${curSec}`);
+    _linking = false;
+  }
+}
 document.addEventListener("click", e => {
   const c = e.target.closest("[data-open]");
   if(c){
     const kind = c.dataset.open, name = c.dataset.name;
     if(kind === "skill"){
       const s = (D.skills||[]).find(x => x.dir === name);
-      if(s) openModal(`skills/${s.dir}/SKILL.md`, s.html);
+      if(s) htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`));
     } else if(kind === "agent"){
       const a = (D.agents||[]).find(x => x.name === name);
-      if(a) openModal(`agents/${a.name}.md`, a.html);
+      if(a) htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`));
     } else if(kind === "app"){
       const ap = (D.apps||[]).find(x => x.name === name);
-      if(ap) openModal(ap.file, ap.html);
+      if(ap) htmlOf(ap).then(h => openModal(ap.file, h, `app/${ap.name}`));
     }
   }
   if(e.target === modal || e.target.id === "modal-close") closeModal();
@@ -257,19 +373,31 @@ const pal = $("#palette"), palIn = $("#pal-input"), palRes = $("#pal-results");
 const COMMANDS = [
   ...SECTIONS.map(s => ({label:`cd ${s}`, run:()=>go(s)})),
   ...(D.skills||[]).map(s => ({label:`open ${s.name}`, sub:s.desc?.slice(0,70),
-    run:()=>{ openModal(`skills/${s.dir}/SKILL.md`, s.html); }})),
+    run:()=>{ htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`)); }})),
   ...(D.agents||[]).map(a => ({label:`open agent ${a.name}`, sub:a.desc?.slice(0,70),
-    run:()=>{ openModal(`agents/${a.name}.md`, a.html); }})),
+    run:()=>{ htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`)); }})),
   ...(D.apps||[]).map(a => ({label:`open app ${a.name}`, sub:a.intent?.slice(0,70),
-    run:()=>{ openModal(a.file, a.html); }})),
+    run:()=>{ htmlOf(a).then(h => openModal(a.file, h, `app/${a.name}`)); }})),
   {label:"help", sub:"sections: "+SECTIONS.join(", "), run:()=>palIn.value="cd "},
 ];
 function palShow(v){
   pal.hidden = false; palIn.value = v||""; palIn.focus(); palFilter();
 }
+function fuzzy(q, s){
+  let i = 0, score = 0, streak = 0;
+  for(const ch of s){
+    if(ch === q[i]){ i++; score += 1 + streak * 2; streak++; }
+    else streak = 0;
+    if(i >= q.length) return score + (s.length - q.length > 20 ? 0 : 2);
+  }
+  return i >= q.length ? score : -1;
+}
 function palFilter(){
   const q = palIn.value.trim().toLowerCase().replace(/^(cd|open)\s+/,"");
-  const hits = COMMANDS.filter(c => !q || c.label.toLowerCase().includes(q)).slice(0,14);
+  const hits = (q
+    ? COMMANDS.map(c => ({c, s: Math.max(fuzzy(q, c.label.toLowerCase()), fuzzy(q, (c.sub||"").toLowerCase()) - 2)}))
+        .filter(x => x.s >= 0).sort((a,b) => b.s - a.s).map(x => x.c)
+    : COMMANDS).slice(0,14);
   palRes.innerHTML = hits.map((c,i) =>
     `<button data-i="${COMMANDS.indexOf(c)}" class="${i===0?"sel":""}">
       ${esc(c.label)}${c.sub?`<span class="sub">${esc(c.sub)}</span>`:""}</button>`).join("")
@@ -341,9 +469,9 @@ function findThing(q){
 }
 function openThing(t){
   if(!t) return false;
-  if(t.kind === "skill") openModal(`skills/${t.s.dir}/SKILL.md`, t.s.html);
-  else if(t.kind === "agent") openModal(`agents/${t.a.name}.md`, t.a.html);
-  else if(t.kind === "app") openModal(t.ap.file, t.ap.html);
+  if(t.kind === "skill") htmlOf(t.s).then(h => openModal(`skills/${t.s.dir}/SKILL.md`, h, `skill/${t.s.dir}`));
+  else if(t.kind === "agent") htmlOf(t.a).then(h => openModal(`agents/${t.a.name}.md`, h, `agent/${t.a.name}`));
+  else if(t.kind === "app") htmlOf(t.ap).then(h => openModal(t.ap.file, h, `app/${t.ap.name}`));
   else { go(t.kind === "adr" ? "adr" : "docs"); openDoc(t.kind, t.i); }
   return true;
 }
@@ -359,6 +487,8 @@ const REPL_HELP = [
   ["","version                 bundle version"],
   ["","pwd                     current section path"],
   ["","history                 command history"],
+  ["","stats                   bundle vitals table"],
+  ["","issues                  open GitHub issues/PRs + local ledgers"],
   ["","clear                   clear this scrollback"],
   ["",":q                      try it"],
 ];
@@ -416,7 +546,30 @@ function replRun(raw){
     return;
   }
   if(c === "pwd"){ rprint([["",`~/atlas${curSec === "boot" ? "" : "/" + curSec}`]]); return; }
+  if(c === "stats"){
+    const hookN = (D.hooks||[]).reduce((n,e) => n + e.hooks.length, 0);
+    const open = (D.issues||[]).reduce((n,g) => n + (g.count - g.resolved), 0);
+    rprint([
+      ["r-cyan",`devin-bundle v${D.version ?? "?"}`],
+      ["",`  skills ${D.counts?.skills ?? "?"}   agents ${D.counts?.agents ?? "?"}   hooks ${hookN}   scripts ${D.counts?.scripts ?? "?"}`],
+      ["",`  adrs ${D.counts?.adrs ?? "?"}      docs ${D.counts?.docs ?? "?"}     apps ${D.counts?.apps ?? 0}    open issues ${open}`],
+      ["r-dim",`  built ${D.generated_at ?? "?"}${D.git_sha ? " @ " + D.git_sha : ""}`],
+    ]);
+    return;
+  }
+  if(c === "issues"){
+    const rows = [];
+    for(const g of D.issues||[]){
+      rows.push(["r-cyan", `${g.group}  (${g.count - g.resolved} open / ${g.count} total)`]);
+      for(const i of g.items.filter(x => x.status !== "resolved").slice(0, 12))
+        rows.push(["", `  ${i.file.replace(/\.md$/,"")}  ${i.title}${i.priority ? "  [" + i.priority + "]" : ""}`]);
+    }
+    rprint(rows.length ? rows : [["r-dim","no open issues"]]);
+    return;
+  }
   if(c === "history"){ rprint(hist.map((h,i) => ["r-dim",`  ${i+1}  ${h}`])); return; }
+  if(c === "matrix"){ matrixRain(); rprint([["r-ok","wake up, neo."]]); return; }
+  if(c === "sudo"){ rprint([["r-dim","visitor is not in the sudoers file. this incident will be reported."]]); return; }
   if(c === "clear"){ replOut.innerHTML = ""; replOut.hidden = true; return; }
   if(c === ":q" || c === "exit" || c === "quit"){
     rprint([["r-dim","no escape. there is only the bundle."]]);
@@ -442,7 +595,7 @@ repl.addEventListener("keydown", e => {
     e.preventDefault();
     const v = repl.value, parts = v.split(/\s+/);
     if(parts.length <= 1){
-      const names = ["help","cd","ls","cat","open","grep","doctor","install","version","pwd","history","clear",":q",...SECTIONS];
+      const names = ["help","cd","ls","cat","open","grep","doctor","install","version","pwd","history","matrix","sudo","clear",":q",...SECTIONS];
       const m = names.filter(n => n.startsWith(v));
       if(m.length === 1) repl.value = m[0] + " ";
       else if(m.length) rprint([["r-dim", m.join("   ")]]);
@@ -468,6 +621,13 @@ document.addEventListener("keydown", e => {
   if(e.key === "Escape"){ pal.hidden = true; closeModal(); return; }
   if(e.key === "q" && !typing && !modal.hidden){ closeModal(); return; }
   if(typing || !modal.hidden || !pal.hidden) return;
+  if((curSec === "adr" || curSec === "docs") && ["[","]","j","k","ArrowLeft","ArrowRight"].includes(e.key)){
+    const list = D[curSec === "adr" ? "adrs" : "docs"] || [];
+    const idx = [...$(`#${curSec}-index`).children].findIndex(b => b.getAttribute("aria-current") === "true");
+    const dir = ["[","k","ArrowLeft"].includes(e.key) ? -1 : 1;
+    const next = Math.max(0, Math.min(list.length - 1, (idx < 0 ? 0 : idx) + dir));
+    openDoc(curSec, next); e.preventDefault(); return;
+  }
   const n = +e.key;
   if(e.key === "0" && SECTIONS.length >= 10){ go(SECTIONS[9]); return; }
   if(n >= 1 && n <= SECTIONS.length){ go(SECTIONS[n-1]); return; }
@@ -479,8 +639,103 @@ document.addEventListener("keydown", e => {
   }
 });
 
+/* ---------------- hero find ---------------- */
+const HERO = (() => {
+  const q = $("#hero-q"), out = $("#hero-results");
+  if(!q || !out) return;
+  const corpus = [
+    ...(D.skills||[]).map(s => ({k:"skill", n:s.dir, d:s.desc, run:()=>htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`))})),
+    ...(D.agents||[]).map(a => ({k:"agent", n:a.name, d:a.desc, run:()=>htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`))})),
+    ...(D.apps||[]).map(a => ({k:"app", n:a.name, d:a.intent, run:()=>htmlOf(a).then(h => openModal(a.file, h, `app/${a.name}`))})),
+    ...(D.adrs||[]).map((x,i) => ({k:"adr", n:x.title, d:x.file, run:()=>{go("adr");openDoc("adr",i);}})),
+    ...(D.docs||[]).map((x,i) => ({k:"doc", n:x.title, d:x.file, run:()=>{go("docs");openDoc("docs",i);}})),
+    ...(D.scripts||[]).map(s => ({k:"script", n:s.file, d:s.doc, run:()=>go("scripts")})),
+  ];
+  const render = () => {
+    const v = q.value.trim().toLowerCase();
+    if(v.length < 2){ out.innerHTML = ""; return; }
+    const hits = corpus.filter(c =>
+      c.n.toLowerCase().includes(v) || (c.d||"").toLowerCase().includes(v)).slice(0,8);
+    out.innerHTML = hits.map((c,i) =>
+      `<button class="hcard" data-i="${corpus.indexOf(c)}"><span class="hk">${c.k}</span><span class="hn">${esc(c.n)}</span><span class="hd">${esc((c.d||"").slice(0,110))}</span></button>`).join("")
+      || `<div class="hnone">no match for '${esc(v)}' — try the palette (<kbd>/</kbd>)</div>`;
+  };
+  q.addEventListener("input", render);
+  q.addEventListener("keydown", e => {
+    if(e.key === "Enter"){ const b = $(".hcard", out); if(b) corpus[+b.dataset.i].run(); }
+  });
+  out.addEventListener("click", e => {
+    const b = e.target.closest(".hcard"); if(b) corpus[+b.dataset.i].run();
+  });
+})();
+
+/* ---------------- copy CTA ---------------- */
+$("#cta-copy")?.addEventListener("click", async () => {
+  const b = $("#cta-copy");
+  try{
+    await navigator.clipboard.writeText($("#cta-cmd").textContent);
+    b.textContent = "[copied!]"; b.classList.add("copied");
+  }catch{ b.textContent = "[select+ctrl-c]"; }
+  setTimeout(() => { b.textContent = "[copy]"; b.classList.remove("copied"); }, 1600);
+});
+
 /* ---------------- init ---------------- */
 $("#tb-version").innerHTML = `v<b>${esc(D.version||"?")}</b> · ${D.counts?.skills??"?"} skills · ${D.counts?.agents??"?"} agents · built ${esc(D.generated_at||"?")}${D.git_sha ? "@" + esc(D.git_sha) : ""}`;
-go(location.hash.slice(1) || "boot");
+
+/* theme toggle: phosphor -> amber -> mono (persisted) */
+const THEMES = [["","◐ phosphor"],["amber","◑ amber"],["mono","◒ mono"]];
+{
+  const html = document.documentElement, btn = $("#theme-toggle");
+  let ti = Math.max(0, THEMES.findIndex(t => t[0] === localStorage.getItem("atlas-theme")));
+  const apply = () => {
+    const [v,label] = THEMES[ti];
+    v ? html.setAttribute("data-theme", v) : html.removeAttribute("data-theme");
+    btn.textContent = label; localStorage.setItem("atlas-theme", v);
+  };
+  apply();
+  btn.addEventListener("click", () => { ti = (ti+1) % THEMES.length; apply(); });
+}
+/* easter egg: matrix rain overlay, ~4s, respects reduced-motion */
+function matrixRain(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = document.createElement("canvas");
+  cv.id = "matrix-rain"; document.body.appendChild(cv);
+  const ctx = cv.getContext("2d");
+  cv.width = innerWidth; cv.height = innerHeight;
+  const cols = Math.floor(cv.width/14), drops = Array(cols).fill(0).map(() => Math.random()*-40|0);
+  const chars = "devin-bundle01<>/#$";
+  const acc = getComputedStyle(document.documentElement).getPropertyValue("--green").trim() || "#33ff66";
+  const t0 = performance.now();
+  (function frame(t){
+    ctx.fillStyle = "rgba(0,0,0,.14)"; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle = acc; ctx.font = "14px monospace";
+    drops.forEach((y,i) => {
+      ctx.fillText(chars[Math.random()*chars.length|0], i*14, y*14);
+      drops[i] = y*14 > cv.height && Math.random() > .97 ? 0 : y+1;
+    });
+    if(t - t0 < 3800) requestAnimationFrame(frame); else cv.remove();
+  })(t0);
+}
+
+const _h = location.hash.slice(1);
+if(/^(skill|agent|app|adr|doc)\//.test(_h)){
+  const [kind, name] = _h.split("/", 2);
+  _linking = true;
+  if(kind === "skill"){ const s = (D.skills||[]).find(x => x.dir === name || x.name === name);
+    if(s){ go("skills"); _linking = true; htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h)); _modalHash = _h; } else go("skills"); }
+  else if(kind === "agent"){ const a = (D.agents||[]).find(x => x.name === name);
+    if(a){ go("agents"); _linking = true; htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h)); _modalHash = _h; } else go("agents"); }
+  else if(kind === "app"){ const ap = (D.apps||[]).find(x => x.name === name);
+    if(ap){ go("apps"); _linking = true; htmlOf(ap).then(h => openModal(ap.file, h)); _modalHash = _h; } else go("apps"); }
+  else if(kind === "adr" || kind === "doc"){
+    const k = kind === "adr" ? "adr" : "docs";
+    const i = (D[k === "adr" ? "adrs" : "docs"]||[]).findIndex(x =>
+      x.title.toLowerCase().includes(name.toLowerCase()) || x.file.includes(name));
+    go(k); if(i >= 0) openDoc(k, i);
+  }
+  _linking = false;
+} else {
+  go(_h || "boot");
+}
 boot();
 })();
