@@ -568,6 +568,8 @@ function replRun(raw){
     return;
   }
   if(c === "history"){ rprint(hist.map((h,i) => ["r-dim",`  ${i+1}  ${h}`])); return; }
+  if(c === "matrix"){ matrixRain(); rprint([["r-ok","wake up, neo."]]); return; }
+  if(c === "sudo"){ rprint([["r-dim","visitor is not in the sudoers file. this incident will be reported."]]); return; }
   if(c === "clear"){ replOut.innerHTML = ""; replOut.hidden = true; return; }
   if(c === ":q" || c === "exit" || c === "quit"){
     rprint([["r-dim","no escape. there is only the bundle."]]);
@@ -593,7 +595,7 @@ repl.addEventListener("keydown", e => {
     e.preventDefault();
     const v = repl.value, parts = v.split(/\s+/);
     if(parts.length <= 1){
-      const names = ["help","cd","ls","cat","open","grep","doctor","install","version","pwd","history","clear",":q",...SECTIONS];
+      const names = ["help","cd","ls","cat","open","grep","doctor","install","version","pwd","history","matrix","sudo","clear",":q",...SECTIONS];
       const m = names.filter(n => n.startsWith(v));
       if(m.length === 1) repl.value = m[0] + " ";
       else if(m.length) rprint([["r-dim", m.join("   ")]]);
@@ -679,6 +681,42 @@ $("#cta-copy")?.addEventListener("click", async () => {
 
 /* ---------------- init ---------------- */
 $("#tb-version").innerHTML = `v<b>${esc(D.version||"?")}</b> · ${D.counts?.skills??"?"} skills · ${D.counts?.agents??"?"} agents · built ${esc(D.generated_at||"?")}${D.git_sha ? "@" + esc(D.git_sha) : ""}`;
+
+/* theme toggle: phosphor -> amber -> mono (persisted) */
+const THEMES = [["","◐ phosphor"],["amber","◑ amber"],["mono","◒ mono"]];
+{
+  const html = document.documentElement, btn = $("#theme-toggle");
+  let ti = Math.max(0, THEMES.findIndex(t => t[0] === localStorage.getItem("atlas-theme")));
+  const apply = () => {
+    const [v,label] = THEMES[ti];
+    v ? html.setAttribute("data-theme", v) : html.removeAttribute("data-theme");
+    btn.textContent = label; localStorage.setItem("atlas-theme", v);
+  };
+  apply();
+  btn.addEventListener("click", () => { ti = (ti+1) % THEMES.length; apply(); });
+}
+/* easter egg: matrix rain overlay, ~4s, respects reduced-motion */
+function matrixRain(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cv = document.createElement("canvas");
+  cv.id = "matrix-rain"; document.body.appendChild(cv);
+  const ctx = cv.getContext("2d");
+  cv.width = innerWidth; cv.height = innerHeight;
+  const cols = Math.floor(cv.width/14), drops = Array(cols).fill(0).map(() => Math.random()*-40|0);
+  const chars = "devin-bundle01<>/#$";
+  const acc = getComputedStyle(document.documentElement).getPropertyValue("--green").trim() || "#33ff66";
+  const t0 = performance.now();
+  (function frame(t){
+    ctx.fillStyle = "rgba(0,0,0,.14)"; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle = acc; ctx.font = "14px monospace";
+    drops.forEach((y,i) => {
+      ctx.fillText(chars[Math.random()*chars.length|0], i*14, y*14);
+      drops[i] = y*14 > cv.height && Math.random() > .97 ? 0 : y+1;
+    });
+    if(t - t0 < 3800) requestAnimationFrame(frame); else cv.remove();
+  })(t0);
+}
+
 const _h = location.hash.slice(1);
 if(/^(skill|agent|app|adr|doc)\//.test(_h)){
   const [kind, name] = _h.split("/", 2);
