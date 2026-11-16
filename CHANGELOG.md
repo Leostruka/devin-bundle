@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- test(site): atlas section renderer-coverage guard - every SECTIONS entry must declare a `_renderers` handler or a reader path (PR #649).
+
 - test(memory): regression guard for the BM25 fusion scorer - paraphrase retrieval, additive-not-gated fusion, cue weights, E2E hook injection (PR #648).
 
 - feat(site): raw markdown link in doc/ADR readers - verbatim source copies at `site/dist/raw/<ref>.md` (36 files: 11 ADRs + 23 docs + 2 apps) (PR #647).
