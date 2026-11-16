@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(site): raw source for skills+agents - modal `[raw]` button, `file` metadata on skills/agents, 245 raw files in dist (PR #651).
+
 
 ## [3.23.1] - 2026-11-16
 

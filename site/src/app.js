@@ -337,7 +337,7 @@ async function fetchHtml(ref){
 }
 async function htmlOf(it){ return it ? (it.html ?? await fetchHtml(it.html_ref)) : ""; }
 let _modalReturnFocus = null;
-function openModal(title, html, link){
+function openModal(title, html, link, raw){
   _modalReturnFocus = document.activeElement;
   $("#modal-title").textContent = title;
   $("#modal-body").innerHTML = html;
@@ -347,6 +347,9 @@ function openModal(title, html, link){
   }
   _modalLink = link || null;
   $("#modal-link").style.visibility = link ? "visible" : "hidden";
+  const ra = $("#modal-raw");
+  if(ra){ if(raw){ ra.href = `raw/${raw}`; ra.style.visibility = "visible"; }
+          else ra.style.visibility = "hidden"; }
   $("#modal-close").focus();
   $("#modal-body").scrollTop = 0;
   mermaidRun($("#modal-body"));
@@ -377,13 +380,13 @@ document.addEventListener("click", e => {
     const kind = c.dataset.open, name = c.dataset.name;
     if(kind === "skill"){
       const s = (D.skills||[]).find(x => x.dir === name);
-      if(s) htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`));
+      if(s) htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`, s.raw_ref));
     } else if(kind === "agent"){
       const a = (D.agents||[]).find(x => x.name === name);
-      if(a) htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`));
+      if(a) htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`, a.raw_ref));
     } else if(kind === "app"){
       const ap = (D.apps||[]).find(x => x.name === name);
-      if(ap) htmlOf(ap).then(h => openModal(ap.file, h, `app/${ap.name}`));
+      if(ap) htmlOf(ap).then(h => openModal(ap.file, h, `app/${ap.name}`, ap.raw_ref));
     }
   }
   if(e.target === modal || e.target.id === "modal-close") closeModal();
@@ -395,9 +398,9 @@ const pal = $("#palette"), palIn = $("#pal-input"), palRes = $("#pal-results");
 const COMMANDS = [
   ...SECTIONS.map(s => ({label:`cd ${s}`, run:()=>go(s)})),
   ...(D.skills||[]).map(s => ({label:`open ${s.name}`, sub:s.desc?.slice(0,70),
-    run:()=>{ htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`)); }})),
+    run:()=>{ htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`, s.raw_ref)); }})),
   ...(D.agents||[]).map(a => ({label:`open agent ${a.name}`, sub:a.desc?.slice(0,70),
-    run:()=>{ htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`)); }})),
+    run:()=>{ htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`, a.raw_ref)); }})),
   ...(D.apps||[]).map(a => ({label:`open app ${a.name}`, sub:a.intent?.slice(0,70),
     run:()=>{ htmlOf(a).then(h => openModal(a.file, h, `app/${a.name}`)); }})),
   {label:"help", sub:"sections: "+SECTIONS.join(", "), run:()=>palIn.value="cd "},
@@ -491,9 +494,9 @@ function findThing(q){
 }
 function openThing(t){
   if(!t) return false;
-  if(t.kind === "skill") htmlOf(t.s).then(h => openModal(`skills/${t.s.dir}/SKILL.md`, h, `skill/${t.s.dir}`));
-  else if(t.kind === "agent") htmlOf(t.a).then(h => openModal(`agents/${t.a.name}.md`, h, `agent/${t.a.name}`));
-  else if(t.kind === "app") htmlOf(t.ap).then(h => openModal(t.ap.file, h, `app/${t.ap.name}`));
+  if(t.kind === "skill") htmlOf(t.s).then(h => openModal(`skills/${t.s.dir}/SKILL.md`, h, `skill/${t.s.dir}`, t.s.raw_ref));
+  else if(t.kind === "agent") htmlOf(t.a).then(h => openModal(`agents/${t.a.name}.md`, h, `agent/${t.a.name}`, t.a.raw_ref));
+  else if(t.kind === "app") htmlOf(t.ap).then(h => openModal(t.ap.file, h, `app/${t.ap.name}`, t.ap.raw_ref));
   else { go(t.kind === "adr" ? "adr" : "docs"); openDoc(t.kind, t.i); }
   return true;
 }
@@ -666,8 +669,8 @@ const HERO = (() => {
   const q = $("#hero-q"), out = $("#hero-results");
   if(!q || !out) return;
   const corpus = [
-    ...(D.skills||[]).map(s => ({k:"skill", n:s.dir, d:s.desc, run:()=>htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`))})),
-    ...(D.agents||[]).map(a => ({k:"agent", n:a.name, d:a.desc, run:()=>htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`))})),
+    ...(D.skills||[]).map(s => ({k:"skill", n:s.dir, d:s.desc, run:()=>htmlOf(s).then(h => openModal(`skills/${s.dir}/SKILL.md`, h, `skill/${s.dir}`, s.raw_ref))})),
+    ...(D.agents||[]).map(a => ({k:"agent", n:a.name, d:a.desc, run:()=>htmlOf(a).then(h => openModal(`agents/${a.name}.md`, h, `agent/${a.name}`, a.raw_ref))})),
     ...(D.apps||[]).map(a => ({k:"app", n:a.name, d:a.intent, run:()=>htmlOf(a).then(h => openModal(a.file, h, `app/${a.name}`))})),
     ...(D.adrs||[]).map((x,i) => ({k:"adr", n:x.title, d:x.file, run:()=>{go("adr");openDoc("adr",i);}})),
     ...(D.docs||[]).map((x,i) => ({k:"doc", n:x.title, d:x.file, run:()=>{go("docs");openDoc("docs",i);}})),
