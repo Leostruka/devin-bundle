@@ -493,6 +493,9 @@ def main():
             ref = "script-" + s["file"].rsplit("/", 1)[-1][:-3]
             shutil.copy(src, os.path.join(rawdir, ref + ".py"))
             s["raw_ref"] = ref + ".py"
+    hv = os.path.join(ROOT, "hooks.v1.json")
+    if os.path.isfile(hv):
+        shutil.copy(hv, os.path.join(rawdir, "hooks.v1.json"))
 
     tpl = read("index.html", SRC)
     tpl = (tpl
