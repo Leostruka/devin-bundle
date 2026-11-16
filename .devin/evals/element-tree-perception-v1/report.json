@@ -1,0 +1,26 @@
+{
+  "eval": "element-tree-perception-v1",
+  "date": "2026-11-16",
+  "targets": {
+    "WindowsTerminal": {
+      "tree_bytes": 5664,
+      "tree_tok_est": 1416,
+      "uia_coverage": true
+    },
+    "Discord": {
+      "uia_coverage": false,
+      "error": "snapshot TIMEOUT 3s (Electron, no AX tree)"
+    }
+  },
+  "screenshot": {
+    "px": "1920x1080",
+    "png_bytes": 456871,
+    "vision_tok_est": 2764
+  },
+  "ratio_per_perceive_step": 1.95,
+  "vendor_claim": "-84% (198k->31k) task-level",
+  "measured": {
+    "per_step_reduction": "49%",
+    "coverage": "UIA apps only; Electron/canvas = 0 (fallback needed)"
+  }
+}
