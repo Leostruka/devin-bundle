@@ -21,6 +21,14 @@ cd devin-bundle
 
 Linux, macOS or WSL: use `./install.sh --dry-run` then `./install.sh`.
 
+Foreign agents (Claude Code, Codex, OpenCode, Cline, Copilot +15) can
+also consume individual skills via the open skills spec:
+
+```bash
+npx skills add Leostruka/devin-bundle              # all skills
+npx skills add Leostruka/devin-bundle --skill leo  # one skill
+```
+
 Use `-Force` / `--force` only to overwrite an existing Devin CLI setup,
 preferably together with `--backup` (`.\install.ps1 -Force -Backup` /
 `./install.sh --force --backup`). Force bypasses the merge-and-skip
