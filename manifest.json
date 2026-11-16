@@ -1558,7 +1558,7 @@
     {
       "name": "memory-retrieval.py",
       "purpose": "UserPromptSubmit hook — cue-anchored retrieval from .devin/memory/ notes",
-      "export_hash": "12c8ef01ce3172c6f5a746a343dc1debc09cb8f83bfd6e2d168a9196252cf719",
+      "export_hash": "bb86a7555b79a55bd0305c0b8a4f63de94f0013082fef53f758e9ec24b547643",
       "exported_at": "2026-11-13"
     },
     {
