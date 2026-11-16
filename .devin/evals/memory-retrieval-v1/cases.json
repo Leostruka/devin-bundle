@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "eval": "memory-retrieval-v1",
+  "top_k": 3,
+  "cases": [
+    {"case_id": "mr-01", "query": "the install failed again on a winrt pin conflict", "gold": "winrt-fix", "difficulty": "easy"},
+    {"case_id": "mr-02", "query": "youtube captions are rate limited, how did we handle it", "gold": "asr-fallback", "difficulty": "hard"},
+    {"case_id": "mr-03", "query": "why does the static check complain about my changelog", "gold": "changelog-refs", "difficulty": "easy"},
+    {"case_id": "mr-04", "query": "I want to delete old merged branches safely", "gold": "branch-cleanup", "difficulty": "easy"},
+    {"case_id": "mr-05", "query": "the docs page was two megabytes before we split it", "gold": "site-lazy-payload", "difficulty": "hard"},
+    {"case_id": "mr-06", "query": "how do I get the green verified badge on commits", "gold": "signing-setup", "difficulty": "easy"},
+    {"case_id": "mr-07", "query": "the pre-write hook rejected the vendor files I imported", "gold": "em-dash-guard", "difficulty": "hard"},
+    {"case_id": "mr-08", "query": "that google calendar test keeps failing on github runners", "gold": "caldav-flake", "difficulty": "hard"},
+    {"case_id": "mr-09", "query": "audit says my installed copy differs from the repo", "gold": "install-drift", "difficulty": "hard"},
+    {"case_id": "mr-10", "query": "my pull request is blocked because the body lacks an issue reference", "gold": "pr-quality-gate", "difficulty": "hard"},
+    {"case_id": "mr-11", "query": "should we add embeddings to memory notes", "gold": "memory-design", "difficulty": "easy"},
+    {"case_id": "mr-12", "query": "which tags can I apply to a new ticket on this repo", "gold": "issue-labels", "difficulty": "hard"},
+    {"case_id": "mr-13", "query": "can I gitignore the temporary working files", "gold": "scratch-gitignore", "difficulty": "hard"},
+    {"case_id": "mr-14", "query": "dozen dependency update PRs all need rebasing", "gold": "dependabot-batch", "difficulty": "hard"},
+    {"case_id": "mr-15", "query": "force-pushing windows runtime packages broke the resolver", "gold": "winrt-fix", "difficulty": "hard"},
+    {"case_id": "mr-16", "query": "transcribe audio locally when the remote API refuses", "gold": "asr-fallback", "difficulty": "hard"},
+    {"case_id": "mr-17", "query": "what do the CI quality gates check on pull requests", "gold": "pr-quality-gate", "difficulty": "easy"},
+    {"case_id": "mr-18", "query": "how does the agent remember things between sessions", "gold": "memory-design", "difficulty": "hard"},
+    {"case_id": "mr-19", "query": "merge queue keeps bouncing stale dependency branches", "gold": "dependabot-batch", "difficulty": "hard"},
+    {"case_id": "mr-20", "query": "gpg key registered but commits still show unverified", "gold": "signing-setup", "difficulty": "hard"}
+  ]
+}

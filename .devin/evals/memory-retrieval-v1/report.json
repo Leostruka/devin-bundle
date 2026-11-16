@@ -1,0 +1,208 @@
+{
+  "eval": "memory-retrieval-v1",
+  "corpus": 14,
+  "cases": 20,
+  "top_k": 3,
+  "recall_at_k": {
+    "cue": 0.25,
+    "bm25": 0.85,
+    "rrf": 0.6,
+    "hybrid": 0.85
+  },
+  "by_difficulty": {
+    "easy": {
+      "cue": 0.667,
+      "bm25": 0.833,
+      "rrf": 0.833,
+      "hybrid": 0.833
+    },
+    "hard": {
+      "cue": 0.071,
+      "bm25": 0.857,
+      "rrf": 0.5,
+      "hybrid": 0.857
+    }
+  },
+  "detail": [
+    {
+      "case": "mr-01",
+      "gold": "winrt-fix",
+      "difficulty": "easy",
+      "cue": true,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-02",
+      "gold": "asr-fallback",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-03",
+      "gold": "changelog-refs",
+      "difficulty": "easy",
+      "cue": true,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-04",
+      "gold": "branch-cleanup",
+      "difficulty": "easy",
+      "cue": false,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-05",
+      "gold": "site-lazy-payload",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": false,
+      "hybrid": true
+    },
+    {
+      "case": "mr-06",
+      "gold": "signing-setup",
+      "difficulty": "easy",
+      "cue": true,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-07",
+      "gold": "em-dash-guard",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-08",
+      "gold": "caldav-flake",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-09",
+      "gold": "install-drift",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-10",
+      "gold": "pr-quality-gate",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": false,
+      "hybrid": true
+    },
+    {
+      "case": "mr-11",
+      "gold": "memory-design",
+      "difficulty": "easy",
+      "cue": true,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-12",
+      "gold": "issue-labels",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": false,
+      "hybrid": true
+    },
+    {
+      "case": "mr-13",
+      "gold": "scratch-gitignore",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": false,
+      "hybrid": true
+    },
+    {
+      "case": "mr-14",
+      "gold": "dependabot-batch",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-15",
+      "gold": "winrt-fix",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": false,
+      "hybrid": true
+    },
+    {
+      "case": "mr-16",
+      "gold": "asr-fallback",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    },
+    {
+      "case": "mr-17",
+      "gold": "pr-quality-gate",
+      "difficulty": "easy",
+      "cue": false,
+      "bm25": false,
+      "rrf": false,
+      "hybrid": false
+    },
+    {
+      "case": "mr-18",
+      "gold": "memory-design",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": false,
+      "rrf": false,
+      "hybrid": false
+    },
+    {
+      "case": "mr-19",
+      "gold": "dependabot-batch",
+      "difficulty": "hard",
+      "cue": false,
+      "bm25": false,
+      "rrf": false,
+      "hybrid": false
+    },
+    {
+      "case": "mr-20",
+      "gold": "signing-setup",
+      "difficulty": "hard",
+      "cue": true,
+      "bm25": true,
+      "rrf": true,
+      "hybrid": true
+    }
+  ]
+}
