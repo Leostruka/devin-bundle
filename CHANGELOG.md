@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.23.0] - 2026-11-15
+
+- feat(memory): BM25 additive fusion in `scripts/memory-retrieval.py` - cue-substring kept as boost, BM25 fills the paraphrase gap (zero deps); held-out eval `.devin/evals/memory-retrieval-v1/` recall@3 0.25 -> 0.85 overall, paraphrase 0.07 -> 0.86 (issue #639, PR #643).
+
+- docs(skills): open skills-spec distribution documented - `npx skills add Leostruka/devin-bundle [--skill leo]` verified installing `.agents/skills/leo` for 20 external agents; element-tree perception eval report added (`.devin/evals/element-tree-perception-v1/`): UIA tree -49%/perception-step vs screenshot on Windows Terminal, Electron needs screenshot fallback (issues #632 #633, PR #644).
+
+- feat(site): issue board all/open/resolved filter chips (PR #645).
+
 - feat(site): atlas UX loop - 32-cycle improvement pass across conversion, edges/a11y, performance, and delight. Payload split: skill/agent/app/adr/doc/changelog HTML bodies moved to `site/dist/data/*.html` fetched on demand with cache, index.html 2.09MB -> 134KB; mermaid 2MB CDN lazy-loads only when a diagram exists; section grids render on first tab visit; deep links `#skill/x` `#agent/x` `#app/x` `#adr/x` `#doc/x` with modal hash sync + copy-link; hero install CTA + global search; fuzzy command palette; REPL `stats`/`issues`/`matrix`/`sudo`; tab count badges; mobile layout + skip link + dialog semantics + reduced-motion coverage; theme toggle (phosphor/amber/mono, persisted); design_lint pass moved 9 hardcoded colors to `var()`/`color-mix()` (PR #642). Findings: `.devin/research/2026-11-15-atlas-ux-loop-findings.md`.
 
 - feat(skills): `phi-browser` imported - browser automation through Phi Browser agent Spaces over CDP (187 -> 188 skills; PR #641).
