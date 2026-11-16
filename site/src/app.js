@@ -234,7 +234,7 @@ _renderers.hooks = () => {
 /* ---------------- scripts ---------------- */
 _renderers.scripts = () => {
   $("#script-list").innerHTML = (D.scripts||[]).map(s => `
-    <div class="srow"><div class="sf">${esc(s.file)}</div>
+    <div class="srow"><div class="sf">${s.raw_ref ? `<a href="raw/${esc(s.raw_ref)}" target="_blank" rel="noopener">${esc(s.file)}</a>` : esc(s.file)}</div>
       <div class="sd">${esc(s.doc||"")}</div>
       <div class="sl">${s.lines} lines</div></div>`).join("");
 };

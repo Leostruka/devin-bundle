@@ -487,6 +487,12 @@ def main():
             if ref and src and os.path.isfile(src):
                 shutil.copy(src, os.path.join(rawdir, ref + ".md"))
                 it["raw_ref"] = ref + ".md"
+    for s in scripts:
+        src = os.path.join(ROOT, s["file"])
+        if s["file"].endswith(".py") and os.path.isfile(src):
+            ref = "script-" + s["file"].rsplit("/", 1)[-1][:-3]
+            shutil.copy(src, os.path.join(rawdir, ref + ".py"))
+            s["raw_ref"] = ref + ".py"
 
     tpl = read("index.html", SRC)
     tpl = (tpl
