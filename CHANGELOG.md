@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(site): raw markdown link in doc/ADR readers - verbatim source copies at `site/dist/raw/<ref>.md` (36 files: 11 ADRs + 23 docs + 2 apps) (PR #647).
+
 ## [3.23.0] - 2026-11-15
 
 - feat(memory): BM25 additive fusion in `scripts/memory-retrieval.py` - cue-substring kept as boost, BM25 fills the paraphrase gap (zero deps); held-out eval `.devin/evals/memory-retrieval-v1/` recall@3 0.25 -> 0.85 overall, paraphrase 0.07 -> 0.86 (issue #639, PR #643).

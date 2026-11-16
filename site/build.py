@@ -475,6 +475,17 @@ def main():
     _lazy(apps, "app", "name")
     _lazy(data["changelog"], "rel", "version")
 
+    # Raw markdown copies alongside the lazy HTML (reader "raw" link).
+    rawdir = os.path.join(DIST, "raw")
+    os.makedirs(rawdir, exist_ok=True)
+    for items in (adrs, docs, apps):
+        for it in items:
+            ref, f = it.get("html_ref"), it.get("file", "")
+            src = os.path.join(ROOT, f) if f.endswith(".md") else None
+            if ref and src and os.path.isfile(src):
+                shutil.copy(src, os.path.join(rawdir, ref + ".md"))
+                it["raw_ref"] = ref + ".md"
+
     tpl = read("index.html", SRC)
     tpl = (tpl
            .replace("__N_SKILLS__", str(len(skills)))
