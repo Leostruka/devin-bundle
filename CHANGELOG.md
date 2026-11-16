@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- feat(site): script rows link to verbatim `.py` source at `dist/raw/script-*.py` (57 files) (PR #652).
+
 - feat(site): raw source for skills+agents - modal `[raw]` button, `file` metadata on skills/agents, 245 raw files in dist (PR #651).
 
 
