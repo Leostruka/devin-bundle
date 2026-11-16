@@ -270,17 +270,38 @@ _renderers.changelog = async () => {
 };
 
 /* ---------------- issues board ---------------- */
+let _issueFilter = "all";
+function _issueRow(i){
+  return `<tr><td class="mono">${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.file.replace(/\.md$/,""))}</a>` : esc(i.file.replace(/\.md$/,""))}</td>
+    <td>${esc(i.title)}</td>
+    <td>${i.priority ? `<span class="pri p${esc(i.priority)}">${esc(i.priority)}</span>` : ""}</td>
+    <td><span class="st ${i.status==="resolved"?"ok":"op"}">${esc(i.status)||"?"}</span></td>
+    <td class="dim">${i.answered?"answered":""}</td></tr>`;
+}
+function _issueBoard(){
+  const groups = (D.issues||[]).map(g => {
+    const items = _issueFilter === "all" ? g.items
+      : g.items.filter(i => _issueFilter === "resolved" ? i.status === "resolved" : i.status !== "resolved");
+    return {...g, items};
+  }).filter(g => g.items.length);
+  $("#issues-board").innerHTML = groups.map(g => `
+    <div class="rel"><span class="rv">${esc(g.group)}</span>
+      <span class="rd">${g.resolved}/${g.count} resolved</span>
+      <table class="tbl"><tbody>${g.items.map(_issueRow).join("")}</tbody></table></div>`).join("") ||
+    `<div class="dim">no issues match filter '${esc(_issueFilter)}'</div>`;
+  $$("#issue-chips button").forEach(b => b.classList.toggle("on", b.dataset.f === _issueFilter));
+}
 _renderers.issues = () => {
-$("#issues-board").innerHTML = (D.issues||[]).map(g => `
-  <div class="rel"><span class="rv">${esc(g.group)}</span>
-    <span class="rd">${g.resolved}/${g.count} resolved</span>
-    <table class="tbl"><tbody>${g.items.map(i => `
-      <tr><td class="mono">${i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.file.replace(/\.md$/,""))}</a>` : esc(i.file.replace(/\.md$/,""))}</td>
-      <td>${esc(i.title)}</td>
-      <td>${i.priority ? `<span class="pri p${esc(i.priority)}">${esc(i.priority)}</span>` : ""}</td>
-      <td><span class="st ${i.status==="resolved"?"ok":"op"}">${esc(i.status)||"?"}</span></td>
-      <td class="dim">${i.answered?"answered":""}</td></tr>`).join("")}</tbody></table></div>`).join("") ||
-  `<div class="dim">no issue ledgers under .devin/scratch/*/issues/</div>`;
+  const bar = $("#issue-chips");
+  if(bar && !bar.innerHTML){
+    bar.innerHTML = ["all","open","resolved"].map(f =>
+      `<button data-f="${f}" class="${f==="all"?"on":""}">${f}</button>`).join("");
+    bar.addEventListener("click", e => {
+      const b = e.target.closest("button"); if(!b) return;
+      _issueFilter = b.dataset.f; _issueBoard();
+    });
+  }
+  _issueBoard();
 };
 
 /* ---------------- mermaid lazy-load (2MB CDN only when needed) ---------------- */
