@@ -166,6 +166,7 @@ def collect_skills():
         skills.append({
             "name": fm.get("name", name),
             "dir": name,
+            "file": f"skills/{name}/SKILL.md",
             "desc": desc,
             "title": first_h.group(1).strip() if first_h else name,
             "html": md_to_html(body),
@@ -184,6 +185,7 @@ def collect_agents():
                                     encoding="utf-8-sig").read())
         agents.append({
             "name": fm.get("name", fn[:-3]),
+            "file": f"agents/{fn}",
             "model": fm.get("model", ""),
             "desc": fm.get("description", ""),
             "html": md_to_html(body),
@@ -478,7 +480,7 @@ def main():
     # Raw markdown copies alongside the lazy HTML (reader "raw" link).
     rawdir = os.path.join(DIST, "raw")
     os.makedirs(rawdir, exist_ok=True)
-    for items in (adrs, docs, apps):
+    for items in (adrs, docs, apps, skills, agents):
         for it in items:
             ref, f = it.get("html_ref"), it.get("file", "")
             src = os.path.join(ROOT, f) if f.endswith(".md") else None
