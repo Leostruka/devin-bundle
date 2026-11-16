@@ -49,6 +49,22 @@ def test_every_section_has_data():
 
 LISTABLE = {"skills", "agents", "apps", "adr", "docs", "scripts", "hooks"}
 
+# Sections rendered through dedicated reader paths instead of _renderers.
+READER_SECTIONS = {"adr", "docs"}
+
+
+def test_every_section_has_a_renderer():
+    """A section in SECTIONS with neither _renderers entry nor a reader
+    path renders as a dead tab - same drift class as the missing
+    _renderers.issues terminator."""
+    src = open(os.path.join(ROOT, "site", "src", "app.js"), encoding="utf-8").read()
+    rendered = set(re.findall(r'_renderers\.([a-z_]+)\s*=', src))
+    for sec in _sections():
+        if sec in STATIC_SECTIONS:
+            continue
+        assert sec in rendered or sec in READER_SECTIONS, (
+            f"section '{sec}' has no _renderers.{sec} and is not a reader")
+
 
 def test_repl_ls_covers_listable_sections():
     src = open(os.path.join(ROOT, "site", "src", "app.js"), encoding="utf-8").read()
