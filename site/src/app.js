@@ -248,9 +248,10 @@ async function openDoc(kind, i){
   const d = list[i];
   idx.innerHTML = list.map((x,j) =>
     `<button aria-current="${j===i}" data-kind="${kind}" data-i="${j}">${esc(x.title)}</button>`).join("");
-  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p><p class="dim">loading…</p>`;
+  const meta = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}${d.raw_ref ? ` · <a href="raw/${esc(d.raw_ref)}" target="_blank" rel="noopener">raw</a>` : ""}</p>`;
+  body.innerHTML = meta + `<p class="dim">loading…</p>`;
   const html = await htmlOf(d);
-  body.innerHTML = `<p style="color:var(--dim);font-size:.8em">${esc(d.file)}</p>` + html;
+  body.innerHTML = meta + html;
   if(d.has_mermaid) mermaidRun(body);
   body.scrollTop = 0;
 }
