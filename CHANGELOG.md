@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- test(memory): regression guard for the BM25 fusion scorer - paraphrase retrieval, additive-not-gated fusion, cue weights, E2E hook injection (PR #648).
+
 - feat(site): raw markdown link in doc/ADR readers - verbatim source copies at `site/dist/raw/<ref>.md` (36 files: 11 ADRs + 23 docs + 2 apps) (PR #647).
 
 ## [3.23.0] - 2026-11-15
