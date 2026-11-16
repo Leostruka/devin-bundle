@@ -763,4 +763,8 @@ if(/^(skill|agent|app|adr|doc)\//.test(_h)){
   go(_h || "boot");
 }
 boot();
+if("serviceWorker" in navigator &&
+   (location.protocol === "https:" || location.hostname === "localhost")){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
 })();

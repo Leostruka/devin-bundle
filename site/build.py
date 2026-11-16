@@ -501,7 +501,7 @@ def main():
     tpl = (tpl
            .replace("__N_SKILLS__", str(len(skills)))
            .replace("__N_AGENTS__", str(len(agents))))
-    for asset in ("style.css", "app.js"):
+    for asset in ("style.css", "app.js", "sw.js"):
         shutil.copy(os.path.join(SRC, asset), os.path.join(DIST, asset))
     open(os.path.join(DIST, "index.html"), "w",
          encoding="utf-8").write(
