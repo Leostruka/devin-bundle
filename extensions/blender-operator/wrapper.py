@@ -405,6 +405,8 @@ def main():
     else:
         ap.print_help()
         sys.exit(2)
+    if isinstance(result, list):
+        result = {"ok": True, "items": result}
     _stamp(result)
     print(json.dumps(result, indent=1))
     sys.exit(0 if result.get("ok") else 1)

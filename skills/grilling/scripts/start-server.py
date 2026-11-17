@@ -60,6 +60,8 @@ def _stamp(d):
 
 
 def _dumps(d, **kw):
+    if isinstance(d, list):
+        d = {"ok": True, "items": d}
     return json.dumps(_stamp(d), **kw)
 
 

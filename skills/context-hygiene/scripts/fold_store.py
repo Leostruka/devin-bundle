@@ -62,6 +62,8 @@ def _stamp(payload):
 
 
 def _dumps(payload, **kw):
+    if isinstance(payload, list):
+        payload = {"ok": True, "items": payload}
     return json.dumps(_stamp(payload), **kw)
 
 
@@ -173,7 +175,11 @@ def main():
         print(_dumps(save(fid, summary, content)))
         return 0
     if cmd == "unfold" and len(args) == 2:
-        print(unfold(args[1]), end="")
+        try:
+            print(unfold(args[1]), end="")
+        except (OSError, KeyError) as exc:
+            print(_dumps({"ok": False, "error": f"no such fold: {args[1]}"}))
+            return 1
         return 0
     if cmd == "grep" and len(args) == 2:
         print(_dumps(grep(args[1]), indent=1))
@@ -182,7 +188,11 @@ def main():
         print(_dumps(list_folds(), indent=1))
         return 0
     if cmd == "delete" and len(args) == 2:
-        delete(args[1])
+        try:
+            delete(args[1])
+        except OSError:
+            print(_dumps({"ok": False, "error": f"no such fold: {args[1]}"}))
+            return 1
         return 0
     print(__doc__, file=sys.stderr)
     return 2

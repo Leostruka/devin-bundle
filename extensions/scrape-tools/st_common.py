@@ -53,6 +53,8 @@ def _stamp(payload):
 
 def emit(payload):
     """Stamp contract v2 fields and print payload as JSON."""
+    if isinstance(payload, list):
+        payload = {"ok": True, "items": payload}
     _stamp(payload)
     print(json.dumps(payload))
 

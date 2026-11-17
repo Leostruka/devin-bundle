@@ -49,14 +49,17 @@ def _answered_by():
 def _stamp(payload):
     if not isinstance(payload, dict):
         return payload
-    payload["api_version"] = 2
-    if not isinstance(payload.get("meta"), dict):
-        payload["meta"] = {}
-    payload["meta"].setdefault("answered_by", _answered_by())
-    return payload
+    out = dict(payload)
+    out["api_version"] = 2
+    meta = dict(out.get("meta")) if isinstance(out.get("meta"), dict) else {}
+    meta.setdefault("answered_by", _answered_by())
+    out["meta"] = meta
+    return out
 
 
 def _dumps(payload, **kw):
+    if isinstance(payload, list):
+        payload = {"ok": True, "items": payload}
     return json.dumps(_stamp(payload), **kw)
 
 

@@ -107,6 +107,8 @@ def envelope(action, status, duration, result=None, error=None):
 
 
 def emit(payload, code=0):
+    if isinstance(payload, list):
+        payload = {"ok": True, "items": payload}
     _stamp(payload)
     print(json.dumps(payload, ensure_ascii=False))
     return code
