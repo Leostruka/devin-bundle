@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(craft-bridge): expose batch path via script subcommand (#676)
 - fix(craft-bridge): align argv with live filmcraft-cli contract (#674)
 - docs(craft-bridge): filmcraft live catalog audit (#672)
 - docs(issue-03): filmcraft-cli live verified on release binary (#670)
