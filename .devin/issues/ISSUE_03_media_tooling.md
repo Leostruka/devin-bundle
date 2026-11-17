@@ -66,15 +66,18 @@ Todo app craft expõe o mesmo trio: **CLI + JSON control channel + MCP server**.
 1. Install/build the craft CLIs needed (filmcraft, photocraft, word/pdf/grid/deck-craft; cargo or releases); verify headless commands + `*-cli mcp` spawn on this machine.
    - Prefer official release binaries over cargo builds (verified 2026-11-17); `cargo build --release` exists as fallback (toolchain present, deps fetched OK before disk-full abort).
 2. Audit command catalogs vs needed ops; produce `ops_matrix.md` (coverage map per app).
+   - DONE 2026-11-17 (filmcraft): `ops_matrix.md` carries the live 718-command catalog audit - all needed timeline/edit/mixer/export/captions ops present; motion/position/scale map through `effects.apply`/`effects.setParam` + keyframes; true gaps = no warp-stabilizer analog, proxy = presets-only.
 3. `bridge.py` + mcp_config entries (lazy-enabled); smoke: open→edit→export a PSD and cut+export a video clip via commands only.
+   - DONE 2026-11-17 (contract fix, PRs #674/#676/#678): bridge previously emitted a nonexistent `run --command --params` argv. Corrected to the verified contract - `run_command` -> `exec <id> <json>`, new `run_script`/`script` subcommand -> `run -` JSONL batch, `list_commands` -> `commands [filter] --json`. Live-verified: `run_command('filmcraft','project.inspect')` and `bridge.py script filmcraft - --demo` both return real envelopes from the 0.20.1 binary. Remaining: mcp_config entries, PSD/video smoke.
 4. `scene_manifest` schema v1 + mapper to filmcraft/photocraft command sequences; golden-output tests.
 5. `spark-view` preview for splat assets.
 6. Update skills (`media-tools`, `creative-engineering`, `mcp-lazy-enablement` entry).
 
 ## Progress (2026-11-09 audit)
 
-- Landed: `extensions/craft-bridge/` (bridge.py, ops_matrix.md, scene_manifest.py, spark-view) + tests/test_craft_bridge.py (13 tests, green); media-tools skill references craft engines
-- Pending: verify steps 3-6 against live craft CLIs (smoke open->edit->export, golden-output tests, spark-view preview check on this machine)
+- Landed: `extensions/craft-bridge/` (bridge.py, ops_matrix.md, scene_manifest.py, spark-view) + tests/test_craft_bridge.py (15 tests, green); media-tools skill references craft engines
+- 2026-11-17: filmcraft steps 0-3 verified against release binary; bridge contract corrected end-to-end
+- Pending: mcp_config entries + PSD/video smoke (step 3 remainder), steps 4-6 (golden-output tests, spark-view preview check on this machine)
 
 ## Non-goals
 
