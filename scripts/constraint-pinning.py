@@ -25,6 +25,8 @@ Source: "Governance Decay" (arXiv:2606.22528v2, Chen, 27 Jun 2026)
   Constraint Pinning restores violation to 0% for ~47 pinned tokens (<0.5%).
 """
 import sys, json, os, re, hashlib, tempfile
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 PINNED_CONSTRAINTS = """Pinned governance constraints (re-injected after context compaction):
 
@@ -201,12 +203,7 @@ HANDLERS = {
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         data = json.load(sys.stdin)
         if not isinstance(data, dict):
             raise ValueError("payload not a dict")

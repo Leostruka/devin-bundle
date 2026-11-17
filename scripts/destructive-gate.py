@@ -27,7 +27,9 @@ Source: "Reason Less, Verify More" (arXiv:2607.07405, KDD 2026 Workshop)
   Gates are deterministic, read-only, pre-execution predicates.
   Fail-open: if a gate raises an exception, log and allow.
 """
-import sys, json, re
+import sys, json, os, re
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 # Whitelisted path prefixes for rm -rf (build/cache dirs safe to remove)
 RM_RF_WHITELIST = (
@@ -211,12 +213,7 @@ def strip_commit_message(command):
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open: cannot parse, allow

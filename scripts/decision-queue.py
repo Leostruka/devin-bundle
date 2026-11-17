@@ -23,6 +23,8 @@ import time
 import sys as _sys, os as _os
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from bundle_envelope import bind
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 
 _stamp, _dumps = bind("decision-queue")
@@ -103,12 +105,7 @@ def main(argv=None):
         print(_dumps({"ok": found, "id": rid}))
         return 0 if found else 1
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         payload = json.load(sys.stdin)
     except (ValueError, OSError):
         payload = {}

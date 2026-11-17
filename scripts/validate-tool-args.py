@@ -29,6 +29,8 @@ Excluded (matcher does not fire — tool fails clearly without validation):
   loss of real validation value.
 """
 import sys, json, os, re, time
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 
 def _devin_home():
@@ -479,12 +481,7 @@ CHECKS = {
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open

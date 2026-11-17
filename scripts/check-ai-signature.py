@@ -18,6 +18,8 @@ Exit codes (per /cli/extensibility/hooks/overview#exit-codes):
 Enforces AGENTS.md Rule 2 (no AI signatures in deliverables).
 """
 import sys, json, re, os, subprocess
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 _CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
@@ -375,12 +377,7 @@ HANDLERS = {
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open

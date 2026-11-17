@@ -14,6 +14,8 @@ import os
 import re
 import subprocess
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 
 def _project_dir():
@@ -63,12 +65,7 @@ def _shortstat(root):
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         data = json.load(sys.stdin)
         if not isinstance(data, dict):
             raise ValueError("payload not a dict")

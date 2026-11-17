@@ -18,12 +18,7 @@ TEXT_ONLY = ['check-ai-signature.py', 'validate-mermaid.py']
 
 if __name__ == '__main__':
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         payload = {}
