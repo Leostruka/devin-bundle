@@ -1,20 +1,24 @@
 """bridge — uniform command dispatch across the storytold craft suite.
 
-Every craft app exposes the same trio (verified against the repos):
-  * `<app>-cli commands`   -> catalog listing
-  * `<app>-cli run ...`    -> headless one-shot command execution
+Every craft app exposes the same surface (verified against the repos
+and the filmcraft-cli 0.20.1 release binary):
+  * `<app>-cli commands [filter] --json` -> catalog listing
+  * `<app>-cli exec <id> [json|key=value]` -> headless one-shot command
+  * `<app>-cli run <script.jsonl | ->` -> batch, one {"id","params"} per line
   * `<app>-cli mcp`        -> stdio MCP server (JSON-RPC)
   * `--control <port>`     -> JSON-lines TCP control channel (some apps)
 
 This is a THIN bridge, not a new engine: it normalizes
-`list_commands(app)` / `run_command(app, command_id, params)` over
-whichever channel the app's CLI provides. Commands are the app's own
-registry entries; we never reimplement operations.
+`list_commands(app)` / `run_command(app, command_id, params)` /
+`run_script(app, lines)` over whichever channel the app's CLI provides.
+Commands are the app's own registry entries; we never reimplement
+operations.
 
 Usage (CLI):
   python bridge.py doctor                      # which CLIs are present
   python bridge.py commands photocraft         # app command catalog
   python bridge.py run photocraft crop '{"w":100,"h":100,"x":0,"y":0}'
+  python bridge.py script filmcraft plan.jsonl # batch JSONL (or - for stdin)
 """
 from __future__ import annotations
 
@@ -23,6 +27,9 @@ import json
 import shutil
 import socket
 import subprocess
+import sys
+
+from pathlib import Path
 
 from craft_envelope import _stamp, _dumps
 
@@ -230,6 +237,11 @@ def main(argv=None):
     pr.add_argument("command_id")
     pr.add_argument("params", nargs="?", default=None)
     pr.add_argument("--file", action="append", default=[])
+    ps = sub.add_parser("script")
+    ps.add_argument("app")
+    ps.add_argument("file", nargs="?", default="-",
+                    help="JSONL path, or - for stdin")
+    ps.add_argument("--demo", action="store_true")
     args = ap.parse_args(argv)
     if args.cmd == "doctor":
         res = doctor()
@@ -241,6 +253,13 @@ def main(argv=None):
         params = json.loads(args.params) if args.params else None
         res = run_command(args.app, args.command_id, params,
                           files=args.file)
+        print(_dumps(res, indent=2))
+    elif args.cmd == "script":
+        src = (sys.stdin.read() if args.file == "-"
+               else Path(args.file).read_text(encoding="utf-8"))
+        res = run_script(args.app,
+                         [l for l in src.splitlines() if l.strip()],
+                         demo=args.demo)
         print(_dumps(res, indent=2))
     return 0 if res.get("ok") else 1
 
