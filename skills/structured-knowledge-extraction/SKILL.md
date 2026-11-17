@@ -76,7 +76,7 @@ After installation the helper is available at `~/.config/devin/skills/structured
 
 ## Cross-references
 
-- `/devin-manager` - audit `.devin/` health before writing.
+- `/devin-config` - audit `.devin/` health before writing.
 - `/mcp-context-audit` - measure MCP tool-definition cost before enabling an integration.
 - `/research` - verify primary-source claims before adding external integrations.
 - `/ontology-validator` - validate extracted entities and relations against domain rules before side effects.

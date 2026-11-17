@@ -194,8 +194,6 @@ PROBES = [
      ["benchmark", "--fixture", "nonexistent"], "craft-bridge"),
     ("skills/youtube-fetcher/scripts/fetch.py",
      ["validate", "dQw4w9WgXcQ"], "youtube-fetcher"),
-    ("skills/devin-manager/scripts/devin-manager.py",
-     ["scan", "."], "devin-manager"),
     ("skills/devin-config/scripts/devin-manager.py",
      ["scan", "."], "devin-config"),
     ("skills/structured-knowledge-extraction/scripts/extract.py",
