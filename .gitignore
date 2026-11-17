@@ -15,7 +15,6 @@ extensions/*/.venv/
 .devin/checkpoints/
 .devin/scratch/*-install/
 .devin/rts/
-.devin/subagent-trace.jsonl
 .devin/ledgers/*
 !.devin/ledgers/bitter-lesson.md
 !.devin/ledgers/grilling-frontier.md
