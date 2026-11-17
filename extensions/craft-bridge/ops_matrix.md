@@ -42,6 +42,14 @@ keyframe ops. scene_manifest must target effect-param paths, not verb ids.
 True gaps: no warp-stabilizer analog; proxy workflow is presets-only
 (`media.proxyPresets`, no create/attach).
 
+ops_map.json seam vocabulary verified against this catalog
+(2026-11-17): cut->timeline.razor, grade->lumetri.applyPreset,
+mix->clipMixer.set, export->export.quick, text->graphics.newText,
+layer->file.newAdjustmentLayer, render->sequence.renderInToOut;
+trim/open/save ids exist verbatim. Seven prior ids (timeline.cut,
+color.grade, audio.mix, file.export, text.insert, layer.add,
+render.frame) did not exist and were corrected.
+
 ## Coverage vs our needs
 
 | Need | Covered by | Gap filler |
