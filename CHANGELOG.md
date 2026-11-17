@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(craft-bridge): pin stdin utf-8 for script subcommand (#678)
 - fix(craft-bridge): expose batch path via script subcommand (#676)
 - fix(craft-bridge): align argv with live filmcraft-cli contract (#674)
 - docs(craft-bridge): filmcraft live catalog audit (#672)
