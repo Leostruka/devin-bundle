@@ -6,6 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- refactor(hooks): fold repeated stdio utf-8 pin into _hookrun.pin_stdio_utf8 (#662)
+- fix(issues): resolve committed merge markers; gitignore dedupe (#661)
 - chore(evals+changelog): remap sp-013 gold to devin-config, record #657 #658 (#659)
 
 - chore(rules): dedupe and compress rule surfaces - AGENTS.md/global_rules/pinned-constraints deduplicated, stale devin-manager skill removed (PR #657).
