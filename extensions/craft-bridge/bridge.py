@@ -227,6 +227,12 @@ def attach(app, host="127.0.0.1", port=None):
 
 
 def main(argv=None):
+    reconfigure = getattr(sys.stdin, "reconfigure", None)
+    if reconfigure:
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description="craft suite bridge")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("doctor")
