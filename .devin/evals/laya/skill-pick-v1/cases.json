@@ -773,7 +773,7 @@
   },
   {
    "case_id": "sp-013",
-   "gold": "devin-manager",
+   "gold": "devin-config",
    "request": {
     "version": 1,
     "request_id": "sp-013",
