@@ -86,14 +86,18 @@ def doctor():
     return out
 
 
-def list_commands(app, timeout=TIMEOUT_S):
-    """`<app>-cli commands` -> raw catalog text (format is app-owned)."""
+def list_commands(app, filter=None, timeout=TIMEOUT_S):
+    """`<app>-cli commands [filter] --json` -> raw catalog text."""
     cli = cli_argv(app)
     if not cli:
         return {"ok": False, "app": app,
                 "error": f"{APPS[app]['cli']} not on PATH"}
+    argv = cli + ["commands"]
+    if filter:
+        argv.append(filter)
+    argv.append("--json")
     try:
-        p = subprocess.run(cli + ["commands"], capture_output=True,
+        p = subprocess.run(argv, capture_output=True,
                            text=True, encoding="utf-8", errors="replace",
                            timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except (OSError, subprocess.TimeoutExpired) as e:
@@ -105,21 +109,23 @@ def list_commands(app, timeout=TIMEOUT_S):
 
 def run_command(app, command_id, params=None, timeout=TIMEOUT_S,
                 files=None):
-    """Headless one-shot: `<app>-cli run --command <id> [--params <json>]`.
+    """Headless one-shot: `<app>-cli exec <id> [<json params>]`.
 
-    params dict serializes to JSON on argv; `files` (input/output paths)
-    pass through as repeated --file args for apps that take positional
-    file operands. Returns {ok, app, command, stdout, stderr, exit}.
+    Verified against filmcraft-cli 0.20.1: `exec` takes the command id,
+    optional key=value args, or one JSON object arg. `files` are appended
+    as positional args (real apps take file operands through command
+    params like `file.import`, not flags). Returns
+    {ok, app, command, stdout, stderr, exit}.
     """
     cli = cli_argv(app)
     if not cli:
         return {"ok": False, "app": app, "command": command_id,
                 "error": f"{APPS[app]['cli']} not on PATH"}
-    argv = cli + ["run", "--command", command_id]
-    if params:
-        argv += ["--params", json.dumps(params)]
+    argv = cli + ["exec", command_id]
+    if params is not None:
+        argv.append(json.dumps(params))
     for f in files or []:
-        argv += ["--file", str(f)]
+        argv.append(str(f))
     try:
         p = subprocess.run(argv, capture_output=True, text=True,
                            encoding="utf-8", errors="replace",
@@ -130,6 +136,44 @@ def run_command(app, command_id, params=None, timeout=TIMEOUT_S,
     return {"ok": p.returncode == 0, "app": app, "command": command_id,
             "stdout": p.stdout, "stderr": p.stderr,
             "exit": p.returncode}
+
+
+def run_script(app, lines, demo=False, timeout=TIMEOUT_S):
+    """Batch path: `<app>-cli run [-]`, one {"id","params"} per line.
+
+    `lines` is a list of dicts (or raw JSONL strings). Per-line results
+    come back as {"id","line","ok","result"|"error"} envelopes; a bad
+    line does not abort the batch. `demo=True` adds `--demo` for the
+    bundled demo project (verified on filmcraft 0.20.1). Returns
+    {ok, app, results, stderr, exit}.
+    """
+    cli = cli_argv(app)
+    if not cli:
+        return {"ok": False, "app": app,
+                "error": f"{APPS[app]['cli']} not on PATH"}
+    argv = cli + ["run"]
+    if demo:
+        argv.append("--demo")
+    argv.append("-")
+    payload = "\n".join(
+        line if isinstance(line, str) else json.dumps(line)
+        for line in lines)
+    try:
+        p = subprocess.run(argv, input=payload, capture_output=True,
+                           text=True, encoding="utf-8", errors="replace",
+                           timeout=timeout, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return {"ok": False, "app": app, "error": f"{type(e).__name__}"}
+    results = []
+    for raw in p.stdout.splitlines():
+        raw = raw.strip()
+        if raw.startswith("{"):
+            try:
+                results.append(json.loads(raw))
+            except json.JSONDecodeError:
+                results.append({"ok": False, "raw": raw})
+    return {"ok": p.returncode == 0, "app": app, "results": results,
+            "stderr": p.stderr, "exit": p.returncode}
 
 
 class ControlChannel:
