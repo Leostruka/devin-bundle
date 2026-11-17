@@ -39,7 +39,8 @@ def test_default_scan_reports_real_repo_rules():
     # AGENTS.md when present, making clause counts environment-dependent
     r = run(str(ROOT / ".devin" / "global_rules.md"))
     d = json.loads(r.stdout)
-    assert d["ok"] and d["enforceable_clauses"] >= 6
+    # floor tracks the deduplicated project rules file (3 enforceable clauses)
+    assert d["ok"] and d["enforceable_clauses"] >= 3
     # secrets/signature/utf-8 classes must all be covered
     for rule in d["rules"]:
         t = rule["text"].lower()
