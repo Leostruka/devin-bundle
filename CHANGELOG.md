@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- docs(issue-03): filmcraft-cli live verified on release binary (#670)
 - docs(issue-03): filmcraft/craft-libs source probe verified (#668)
 - docs(issue-03): storytold org triage - 82 repos verified (#666)
 - chore(scratch): untrack 38MB of committed media artifacts (#664)
