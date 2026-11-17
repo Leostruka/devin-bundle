@@ -21,6 +21,26 @@ several add `--control <port>` JSON-lines channel.
 | spark | gsplat render | npm @sparkjsdev/spark | js api | .PLY/.SPZ preview (see spark-view/) |
 | craft-libs | shared codecs | cargo git dep | crates | RAW/codecs when an app misses a need |
 
+### filmcraft live catalog (718 commands, verified 2026-11-17 on release 0.20.1)
+
+Domain histogram: graphics 83, file 57, clip 57, timeline 57, sequence 51,
+project 40, edit 39, multicam 35, markers 33, trim 24, captions 23,
+mixer 20, export 19, media 17, effects 16, shortcuts 16, playhead 14,
+transcript 14, masks 12, mediaBrowser 10.
+
+Confirmed coverage: razor, ripple (5), slip (5), slide (5), roll, nest (3),
+rateStretch, clip.synchronize, transitions (6), lumetri.* (8: presets,
+setInputLut, setLook, applyMatch, exportCube), sequence.colorSettings,
+mixer.* (24 incl. setKeyframe), effects.*Keyframe (8), export.presets.* +
+sequence.render* (8), multicam.* (35), captions + transcript (37 total).
+
+Mapping caveat: motion/position/scale/opacity/blend have no dedicated
+commands - they dispatch through `effects.apply` + `effects.setParam` +
+keyframe ops. scene_manifest must target effect-param paths, not verb ids.
+
+True gaps: no warp-stabilizer analog; proxy workflow is presets-only
+(`media.proxyPresets`, no create/attach).
+
 ## Coverage vs our needs
 
 | Need | Covered by | Gap filler |
