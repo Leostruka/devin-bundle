@@ -53,9 +53,11 @@ def _load(path):
             line = line.strip()
             if line:
                 try:
-                    out.append(json.loads(line))
+                    rec = json.loads(line)
                 except ValueError:
                     continue
+                if isinstance(rec, dict):
+                    out.append(rec)
     return out
 
 

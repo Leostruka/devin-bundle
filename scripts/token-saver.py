@@ -30,7 +30,8 @@ def _project_dir():
 def _read_json(path):
     try:
         with open(path, encoding="utf-8-sig") as fh:
-            return json.load(fh)
+            data = json.load(fh)
+        return data if isinstance(data, dict) else {}
     except (OSError, ValueError):
         return {}
 

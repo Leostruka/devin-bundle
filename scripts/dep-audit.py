@@ -137,7 +137,11 @@ def _pip_audit(root, dl=None):
                 continue
             deps = data if isinstance(data, list) else data.get("dependencies", [])
             for d in deps:
+                if not isinstance(d, dict):
+                    continue
                 for v in d.get("vulns", []):
+                    if not isinstance(v, dict):
+                        continue
                     findings.append({
                         "pkg": d.get("name"), "id": v.get("id"),
                         "severity": (v.get("severity") or "").lower() or None,
@@ -153,7 +157,11 @@ def _pip_audit(root, dl=None):
             data = []
         deps = data if isinstance(data, list) else data.get("dependencies", [])
         for d in deps:
+            if not isinstance(d, dict):
+                continue
             for v in d.get("vulns", []):
+                if not isinstance(v, dict):
+                    continue
                 findings.append({
                     "pkg": d.get("name"), "id": v.get("id"),
                     "severity": (v.get("severity") or "").lower() or None,
@@ -214,11 +222,19 @@ def _osv_scanner(root, dl=None):
     except json.JSONDecodeError:
         return None, "osv-scanner: unparseable output"
     findings = []
+    if not isinstance(data, dict):
+        return {"findings": []}, None
     for res in data.get("results", []):
+        if not isinstance(res, dict):
+            continue
         for pkg in res.get("packages", []):
+            if not isinstance(pkg, dict):
+                continue
             name = (pkg.get("package") or {}).get("name")
             eco = (pkg.get("package") or {}).get("ecosystem")
             for v in pkg.get("vulnerabilities", []):
+                if not isinstance(v, dict):
+                    continue
                 findings.append({
                     "pkg": name, "id": v.get("id"),
                     "severity": (v.get("database_specific", {}) or {})

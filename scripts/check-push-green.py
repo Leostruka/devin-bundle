@@ -31,11 +31,18 @@ TEST_TIMEOUT = 120
 # Fail-closed means a timeout blocks the push, so the cap must exceed real
 # suite time but stay under the pre-exec-guard hook budget (300s here).
 # Repos with bigger suites or tighter budgets tune BUNDLE_PUSH_GATE_TIMEOUT.
-MAIN_TIMEOUT = int(os.environ.get("BUNDLE_PUSH_GATE_TIMEOUT", "250"))
+def _env_int(name, default):
+    try:
+        return int(os.environ.get(name, ""))
+    except (TypeError, ValueError):
+        return default
+
+
+MAIN_TIMEOUT = _env_int("BUNDLE_PUSH_GATE_TIMEOUT", 250)
 # scoped-tier wall budget: the outer hook kill hits ~60s; held-out
 # always runs, mapped tests get the remainder, overflow defers to
 # required CI by name (BUNDLE_PUSH_GATE_BUDGET overrides).
-BUDGET_S = int(os.environ.get("BUNDLE_PUSH_GATE_BUDGET", "50"))
+BUDGET_S = _env_int("BUNDLE_PUSH_GATE_BUDGET", 50)
 
 
 def block(reason):
@@ -90,18 +97,19 @@ def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
         out_file.close()
 
 
-def is_git_push(command):
-    """True when the command issues a git push.
+def _push_segment(command):
+    """Return the shell segment that issues a git push, or None.
 
     Tokenizes shell segments so whitespace variants (`git  push`),
     global flags between verb and subcommand (`git -C repo push`,
-    `git -c k=v push`) and command chaining (`x && git push`) are caught.
+    `git -c k=v push`) and command chaining (`x && git push`,
+    `x & git push`, `` `git push` ``, `(git push)`) are caught.
     """
     import shlex
     # git options that consume the next token as a value.
     git_opts_with_arg = {"-C", "-c", "--git-dir", "--work-tree",
                          "--namespace", "--exec-path"}
-    for segment in re.split(r"&&|\|\||;|\|", command):
+    for segment in re.split(r"&&|\|\||[;&|()`]", command):
         try:
             tokens = shlex.split(segment, posix=(os.name != "nt"))
         except ValueError:
@@ -122,10 +130,15 @@ def is_git_push(command):
                         continue
                     break
                 if j < len(tokens) and tokens[j].lower() == "push":
-                    return True
+                    return segment
                 i = j
             i += 1
-    return False
+    return None
+
+
+def is_git_push(command):
+    """True when the command issues a git push."""
+    return _push_segment(command) is not None
 
 
 def detect_test_command(cwd):
@@ -489,6 +502,8 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open
 
@@ -498,11 +513,18 @@ def main():
         sys.exit(0)
 
     tool_input = data.get("tool_input") or {}
-    command = tool_input.get("command", "") or ""
-    if not is_git_push(command):
+    if not isinstance(tool_input, dict):
         sys.exit(0)
-    # A dry run does not publish anything, so let it through.
-    if "--dry-run" in command:
+    command = tool_input.get("command", "") or ""
+    if not isinstance(command, str):
+        sys.exit(0)
+    push_segment = _push_segment(command)
+    if push_segment is None:
+        sys.exit(0)
+    # A dry run does not publish anything, so let it through — but the
+    # flag must belong to the push itself: `--dry-run` elsewhere in the
+    # command (echo, commit message) must not bypass the gate.
+    if "--dry-run" in push_segment:
         sys.exit(0)
 
     cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()

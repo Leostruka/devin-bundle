@@ -81,6 +81,14 @@ ERROR_INDICATORS = (
     re.compile(r"\bFAIL\s+(?:github\.com|./)", re.IGNORECASE),
 )
 
+# Python source-statement lines (from read/grep/sed of .py files) are not
+# runtime errors: `import traceback`, `except OSError:`, `raise ValueError`
+# all shape-match error indicators when they are just code on screen.
+SOURCE_LINE_RE = re.compile(
+    r"^\s*(?:\d+[-:]\s*)?(?:import\s+\w+|from\s+\w+\s+import|except\b"
+    r"|raise\s+\w+|elif\s+.*:|try:|finally:|except\s+.*as\s+\w+)",
+    re.IGNORECASE)
+
 # Lines to ignore (routine warnings, not failures)
 NOISE_PATTERNS = (
     re.compile(r"deprecat", re.IGNORECASE),
@@ -121,6 +129,8 @@ def signal_lines(text):
                      re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b", re.IGNORECASE),
                      re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE)}
     for ln in text.split("\n"):
+        if SOURCE_LINE_RE.match(ln):
+            continue  # source code on screen, not a runtime error
         is_noise = any(n.search(ln) for n in NOISE_PATTERNS)
         has_error = any(p.search(ln) for p in ERROR_INDICATORS)
         # If a line is mostly a warning, 'error:' alone is too weak; require a
@@ -169,6 +179,8 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open
 

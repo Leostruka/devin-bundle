@@ -72,9 +72,11 @@ def _load(path):
 
 def _save(path, recs):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         for r in recs:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(tmp, path)
 
 
 def _record(args, piped=None):
@@ -141,9 +143,9 @@ def main(argv=None):
     args = p.parse_args(argv[1:])
     try:
         return _main(args)
-    except Exception as e:  # fail-open
+    except Exception as e:  # fail-open envelope, but never exit 0 on it
         print(_dumps({"ok": False, "error": str(e)}))
-        return 0
+        return 2
 
 
 def _main(args):

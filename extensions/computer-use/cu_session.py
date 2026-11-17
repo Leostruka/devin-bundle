@@ -80,6 +80,8 @@ def worker_main():
             env = json.loads(line)
         except json.JSONDecodeError:
             continue
+        if not isinstance(env, dict):
+            continue
         sys.stdout.write(json.dumps(_run_op(env.get("cmd") or {})) + "\n")
         sys.stdout.flush()
 

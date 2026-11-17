@@ -80,6 +80,8 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
 
@@ -90,8 +92,12 @@ def main():
         sys.exit(0)
 
     tool_input = data.get('tool_input') or {}
+    if not isinstance(tool_input, dict):
+        sys.exit(0)
     tool_response = data.get('tool_response') or {}
     command = tool_input.get('command', '')
+    if not isinstance(command, str):
+        command = ''
     output = ''
     if isinstance(tool_response, str):
         output = tool_response

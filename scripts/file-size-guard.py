@@ -13,7 +13,14 @@ import json
 import os
 import sys
 
-THRESHOLD = int(os.environ.get('BUNDLE_FILESIZE_WARN', '800'))
+def _env_int(name, default):
+    try:
+        return int(os.environ.get(name, ""))
+    except (TypeError, ValueError):
+        return default
+
+
+THRESHOLD = _env_int('BUNDLE_FILESIZE_WARN', 800)
 BAND = 400
 CODE_EXTS = {'.py', '.ts', '.tsx', '.js', '.jsx', '.go', '.rs', '.java',
              '.cs', '.cpp', '.c', '.h', '.rb', '.php', '.sh', '.ps1'}
@@ -38,8 +45,13 @@ def main():
         payload = json.loads(sys.stdin.read() or '{}')
     except Exception:
         return
-    path = (payload.get('tool_input') or {}).get('file_path') or ''
-    if not path:
+    if not isinstance(payload, dict):
+        return
+    tool_input = payload.get('tool_input')
+    if not isinstance(tool_input, dict):
+        return
+    path = tool_input.get('file_path') or ''
+    if not isinstance(path, str) or not path:
         return
     ext = os.path.splitext(path)[1].lower()
     parts = set(os.path.normpath(path).lower().split(os.sep))

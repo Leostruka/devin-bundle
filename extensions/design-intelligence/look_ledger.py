@@ -73,9 +73,13 @@ def main(argv):
             try:
                 for line in Path(ledger).read_text(
                         encoding="utf-8").splitlines():
-                    e = json.loads(line)
-                    if e["skeleton"] == sig["skeleton"] \
-                            and e["file"] != str(argv[2]):
+                    try:
+                        e = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(e, dict) \
+                            and e.get("skeleton") == sig["skeleton"] \
+                            and e.get("file") != str(argv[2]):
                         hits.append(e["file"])
             except OSError:
                 pass

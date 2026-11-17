@@ -186,15 +186,17 @@ def report(path, as_json=False, simulated_tokens=None):
             extra_rules_tokens=extra_total_tok,
             total_rules_tokens=total_tok,
         )
-    smart_zone_share = 100.0 * total_tok / smart_zone_tokens
+    smart_zone_share = (100.0 * total_tok / smart_zone_tokens
+                        if smart_zone_tokens else 0.0)
 
     share_rows = []
-    if parent:
-        share = 100.0 * total_tok / parent["context_window"]
-        share_rows.append({"model_id": parent["id"], "name": parent["name"], "share_pct": round(share, 2)})
-    if subagent:
-        share = 100.0 * total_tok / subagent["context_window"]
-        share_rows.append({"model_id": subagent["id"], "name": subagent["name"], "share_pct": round(share, 2)})
+    for m in (parent, subagent):
+        if isinstance(m, dict) and m.get("context_window"):
+            share = 100.0 * total_tok / m["context_window"]
+            share_rows.append({
+                "model_id": m.get("id", "?"),
+                "name": m.get("name", "?"),
+                "share_pct": round(share, 2)})
 
     if as_json:
         print(_dumps({

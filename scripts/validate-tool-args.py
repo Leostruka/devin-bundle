@@ -274,6 +274,20 @@ def check_notebook_edit(ti):
     require_abs_path("notebook_edit", ti.get("notebook_path", ""), "notebook_path")
 
 
+# Constructs ripgrep's Rust regex engine rejects but Python re accepts —
+# a Python-valid pattern still fails in the tool, so catch it here.
+_RIPGREP_UNSUPPORTED = re.compile(
+    r"\(\?<?[=!]|"            # lookahead ( ?= ?! ) / lookbehind ( ?<= ?<! )
+    r"\\[1-9]|"               # numeric backreferences \1..\9
+    r"\\k<[^>]+>|"            # named backreference \k<name>
+    r"\(\?>|"                 # atomic group
+    r"\(\?\(|"                # conditional
+    r"\\[GC]")                # \G anchor, \C byte-class
+RG_SUPPORT_NOTE = ("ripgrep (Rust regex) does not support look-around, "
+                   "backreferences, atomic groups, or conditionals. "
+                   "Rewrite without them, e.g. use foo\\([^)] instead of "
+                   "foo\\((?!\\)).")
+
 def check_grep(ti):
     pattern = ti.get("pattern", "")
     if not pattern:
@@ -282,6 +296,10 @@ def check_grep(ti):
         re.compile(pattern)
     except re.error as exc:
         block(f"grep pattern is not a valid regex: {exc}.")
+    if _RIPGREP_UNSUPPORTED.search(pattern.replace("\\\\", "")):
+        block(
+            f"grep pattern uses syntax ripgrep cannot run: '{pattern[:60]}'. "
+            + RG_SUPPORT_NOTE)
     path = ti.get("path", "")
     if path and not os.path.exists(path):
         block(f"grep path does not exist: '{path}'.")
@@ -471,6 +489,8 @@ def main():
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open
 
+    if not isinstance(data, dict):
+        sys.exit(0)
     tool_name = data.get("tool_name", "") or ""
     tool_input = data.get("tool_input") or {}
 

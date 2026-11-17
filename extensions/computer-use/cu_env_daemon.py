@@ -85,10 +85,14 @@ class Journal:
         try:
             for line in self.path.read_text("utf-8").splitlines():
                 if line.strip():
-                    r = json.loads(line)
-                    self._recs[r["request_id"]] = {
-                        "state": r["state"],
-                        "response": r.get("response")}
+                    try:
+                        r = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(r, dict) and "request_id" in r:
+                        self._recs[r["request_id"]] = {
+                            "state": r.get("state"),
+                            "response": r.get("response")}
         except FileNotFoundError:
             pass
 

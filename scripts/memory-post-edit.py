@@ -77,6 +77,8 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
 
@@ -88,8 +90,10 @@ def main():
         sys.exit(0)
 
     tool_input = data.get('tool_input') or {}
+    if not isinstance(tool_input, dict):
+        sys.exit(0)
     file_path = tool_input.get('file_path', '')
-    if not file_path:
+    if not file_path or not isinstance(file_path, str):
         sys.exit(0)
 
     try:
@@ -104,7 +108,10 @@ def main():
     for p in glob.glob(os.path.join(BASE, '**', '*.md'), recursive=True):
         if p.endswith('MOC.md'):
             continue
-        notes.append(load_note(p))
+        try:
+            notes.append(load_note(p))
+        except (OSError, UnicodeDecodeError):
+            continue  # one unreadable note must not kill the hook
 
     scored = [(score_path(n, rel), n) for n in notes]
     scored = [(s, n) for s, n in scored if s > 0]
