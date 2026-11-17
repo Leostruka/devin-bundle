@@ -2,8 +2,8 @@
 """UserPromptSubmit hook: injects a behavioral self-check checklist.
 
 Unlike mechanical hooks (validate-tool-args, destructive-gate), behavioral
-rules (Rule 7 opinion-silent, Rule 8 telegraphic, Rule 4 skill discovery,
-Rule 17 verify-with-tools) cannot be enforced by code — they require the
+rules (Rule 7 opinion-silent, Rule 8 telegraphic, Rule 3 skill discovery,
+Rule 12 verify-with-tools) cannot be enforced by code — they require the
 model to self-enforce. This hook increases compliance probability by
 re-injecting a concise checklist before each response.
 
@@ -15,7 +15,7 @@ Exit code: 0 (always — this is a nudge, not a gate).
 """
 import sys, json
 
-NUDGE = """Self-check before responding (Rules 7, 8, 4, 17):
+NUDGE = """Self-check before responding (Rules 7, 8, 3, 12):
 
 - Scope: exactly what was asked — no more, no less.
 - Output: telegraphic, no filler or unsolicited opinions.
