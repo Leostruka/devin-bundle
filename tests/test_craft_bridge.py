@@ -41,6 +41,25 @@ if args[:1] == ["run"] or args[:2] == ["run", "--demo"]:
         except Exception as e:
             results.append({"line": i + 1, "ok": False, "error": str(e)})
     print("\\n".join(json.dumps(r) for r in results)); sys.exit(0)
+if args and args[0] == "mcp":
+    for raw in sys.stdin:
+        m = json.loads(raw)
+        rid = m.get("id")
+        if m.get("method") == "initialize":
+            print(json.dumps({"jsonrpc": "2.0", "id": rid, "result":
+                {"protocolVersion": "2025-06-18", "capabilities": {},
+                 "serverInfo": {"name": "fake", "version": "0"}}}),
+                flush=True)
+        elif m.get("method") == "tools/list":
+            print(json.dumps({"jsonrpc": "2.0", "id": rid, "result":
+                {"tools": [{"name": "command_run"}]}}), flush=True)
+        elif m.get("method") == "tools/call":
+            a = m["params"]["arguments"]
+            print(json.dumps({"jsonrpc": "2.0", "id": rid, "result":
+                {"content": [{"type": "text", "text": json.dumps(
+                    {"ran": a.get("id"),
+                     "params": a.get("params", {})})}]}}), flush=True)
+    sys.exit(0)
 sys.exit(2)
 """
 
@@ -98,6 +117,18 @@ def test_run_script_streams_jsonl_lines(fake_app):
 def test_run_script_missing_cli_errors():
     r = bridge.run_script("filmcraft", [{"id": "x", "params": {}}])
     assert r["ok"] is False and "not on PATH" in r["error"]
+
+
+def test_mcp_client_roundtrip(fake_app):
+    with bridge.McpClient(fake_app) as m:
+        r = m.command_run("timeline.razor", {"time": 1})
+        assert r["ok"] and r["result"]["ran"] == "timeline.razor"
+        assert "command_run" in m.tools()
+
+
+def test_mcp_client_missing_cli_errors():
+    with pytest.raises(FileNotFoundError):
+        bridge.McpClient("filmcraft")
 
 
 def test_unknown_app_raises():
