@@ -99,7 +99,8 @@ def test_run_command_passes_params(fake_app):
     assert ran["params"] == {"at_s": 2.0}
 
 
-def test_run_command_missing_cli_errors():
+def test_run_command_missing_cli_errors(monkeypatch):
+    monkeypatch.setattr(bridge.shutil, "which", lambda *a, **k: None)
     r = bridge.run_command("filmcraft", "x")
     assert r["ok"] is False and "not on PATH" in r["error"]
 
@@ -114,7 +115,8 @@ def test_run_script_streams_jsonl_lines(fake_app):
     assert r["results"][0]["result"]["params"] == {"at_s": 1}
 
 
-def test_run_script_missing_cli_errors():
+def test_run_script_missing_cli_errors(monkeypatch):
+    monkeypatch.setattr(bridge.shutil, "which", lambda *a, **k: None)
     r = bridge.run_script("filmcraft", [{"id": "x", "params": {}}])
     assert r["ok"] is False and "not on PATH" in r["error"]
 
@@ -126,7 +128,8 @@ def test_mcp_client_roundtrip(fake_app):
         assert "command_run" in m.tools()
 
 
-def test_mcp_client_missing_cli_errors():
+def test_mcp_client_missing_cli_errors(monkeypatch):
+    monkeypatch.setattr(bridge.shutil, "which", lambda *a, **k: None)
     with pytest.raises(FileNotFoundError):
         bridge.McpClient("filmcraft")
 
@@ -232,3 +235,35 @@ def test_load_ops_map_invalid_json_typed(tmp_path):
 
 def test_ops_map_file_matches_defaults():
     assert sm.load_ops_map() == sm._DEFAULT_OPS
+
+
+# --- live golden (skipped unless a real filmcraft-cli is on PATH) ---------
+
+import shutil  # noqa: E402
+
+FILMCRAFT = shutil.which("filmcraft-cli")
+
+
+@pytest.mark.skipif(not FILMCRAFT, reason="filmcraft-cli not on PATH")
+def test_filmcraft_live_razor_splits_clip():
+    """Golden: manifest -> compile -> run_script --demo -> real split.
+
+    Demo project ships a V1 track (id 15) whose clip 29 spans ~5s; a
+    razor at 1s must turn 6 items into 7. Re-run locally with
+    filmcraft-cli on PATH; CI skips when the binary is absent.
+    """
+    tick = 254016000000  # 1 second
+    m = {"version": 1, "scenes": [{"id": "s1", "layers": [
+        {"type": "video", "source": "demo",
+         "ops": [{"op": "cut", "params": {"time": tick, "clip": 29}}]}]}]}
+    out = sm.compile(m)
+    assert out["ok"] and not out["notes"]
+    lines = ([{"id": "sequence.inspect", "params": {}}]
+             + [{"id": s["command"], "params": s["params"]}
+                for s in out["plan"]]
+             + [{"id": "sequence.inspect", "params": {}}])
+    r = bridge.run_script("filmcraft", lines, demo=True)
+    assert r["ok"] and len(r["results"]) == 3
+    before = len(r["results"][0]["result"]["video"][0]["items"])
+    after = len(r["results"][2]["result"]["video"][0]["items"])
+    assert r["results"][1]["ok"] and after == before + 1
