@@ -316,3 +316,11 @@ tmp/ci-sim/tests/validation/test_youtube_fetcher.py
 # test re-added below calling _tokenizer_or_skip(); grep-verified still
 # present in tests/test_openui_runtime.py. Part of the in-progress
 # audit.py -> audit_checks refactor (parallel session, uncommitted).
+
+# 2026-11-17 - test_run_command_missing_cli_errors,
+# test_run_script_missing_cli_errors, test_mcp_client_missing_cli_errors:
+# NOT deletions (signature refactors). Each gains a `monkeypatch` param
+# that stubs bridge.shutil.which -> None so the "missing CLI" path is
+# deterministic even when a real *-cli binary is on PATH; the test bodies
+# still assert the same error envelope. Part of craft-bridge live-contract
+# work (tests/test_craft_bridge.py).
