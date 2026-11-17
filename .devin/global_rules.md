@@ -24,8 +24,6 @@ This is a single-context repository. See `.devin/agents/domain.md`.
 
 Run `python audit.py` and `python -m pytest` before committing.
 
-Commits must be cryptographically signed so GitHub shows the "Verified" badge; configure SSH/GPG signing once per machine and declare it in the PR if an environment cannot sign.
-
 Run the platform exporter in dry-run mode when changing exported bundle resources.
 
 ## Security and project hygiene
@@ -33,11 +31,5 @@ Run the platform exporter in dry-run mode when changing exported bundle resource
 - Never output or log secrets, API keys, passwords, tokens, or private keys.
 - Never commit secrets to the repository. If a secret is exposed, warn and ask for rotation.
 - Treat user input as untrusted; validate and sanitize before use.
-- Default to private endpoints, private S3/storage URLs, and least privilege. Public endpoints or URLs require documented justification.
-- Use secure defaults: confirmation for destructive actions, hidden credentials with opt-in reveal, multi-factor auth where applicable.
-- Keep the database and internal services inside private networks/VPCs; don't expose credentials to frontend code.
-- Don't delete tests without explicit approval.
 - CLI contract conventions (audit checks [36]-[38]/[44]/[45] enforce): tools emitting `{"ok": false}` envelopes must exit non-zero; user-named output paths (`--out`/`-o`/`dst`) must refuse to overwrite existing files; all text-mode I/O must pin UTF-8 - `subprocess text=True` calls get `encoding="utf-8", errors="replace"`, and `Path.read_text()/write_text()`/`open()` get `encoding="utf-8"` (Windows cp1252 decode corrupts non-ASCII). No stdlib APIs newer than the 3.11 floor (`read_text(newline=)` is 3.13+, `itertools.batched`/`Path.walk` are 3.12+).
 - Envelope v2 (`.devin/docs/CLI-CONTRACT.md`): agent-facing JSON CLIs route stdout through `_dumps`/`_stamp` - `api_version: 2` + `meta.answered_by {bundle, wrapper}`, bundle version from nearest ancestor `manifest.json` with `"name"`. New emitters: copy the trio + add a PROBES row in `tests/test_envelope_contract_v2.py` (subprocess probe, offline argv).
-- Prefer the smallest solution that works; reject overengineering and token maxing.
-- Declare intent, user impact, and boundaries before coding.

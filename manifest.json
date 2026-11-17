@@ -400,14 +400,6 @@
       "exported_at": "2026-11-11T06:36:31.795"
     },
     {
-      "name": "devin-manager",
-      "source": "devin-bundle",
-      "purpose": "Use when auditing or managing a project's `.devin/` configuration, producing deterministic read-only reports, detecting broken references, duplicates, and divergences, and generating plans that only persist under `.devin/` after explicit approval.",
-      "original_path": "%APPDATA%\\devin\\skills\\devin-manager",
-      "export_hash": "dd2168cbba15d078f2c88979c0c9fdff83f08368257c112b35771c39b5e31484",
-      "exported_at": "2026-11-02T20:52:47.097911"
-    },
-    {
       "name": "diagnosing-bugs",
       "source": "devin-bundle",
       "purpose": "Use when the user says 'diagnose', 'debug this', reports something broken, throwing, failing, or slow, or when encountering a bug, test failure, or unexpected behavior and a fix is not yet obvious.",
@@ -1392,8 +1384,8 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     }
   ],
-  "skill_count": 188,
-  "rule_count": 25,
+  "skill_count": 187,
+  "rule_count": 20,
   "scripts": [
     {
       "name": "_hookrun.py",

@@ -80,3 +80,6 @@ node_modules/
 .devin/metrics/
 .devin/decisions.jsonl
 tmp/
+
+# Local agent session state - already-tracked .devin files are unaffected
+.devin/
