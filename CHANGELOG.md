@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(craft-bridge): verify ops_map seam ids against live catalog (#682)
 - docs(issue-03): bridge contract corrected and live-verified (#680)
 - fix(craft-bridge): pin stdin utf-8 for script subcommand (#678)
 - fix(craft-bridge): expose batch path via script subcommand (#676)
