@@ -60,6 +60,7 @@ Todo app craft expõe o mesmo trio: **CLI + JSON control channel + MCP server**.
 ## Step-by-step (on authorization)
 
 0. **Repo exploration pass**: enumerate all 44 `storytold` repos via GitHub API; triage into craft-apps / shared-libs (craft-libs) / ML-audio / legacy-capture / infra; shallow-clone the craft suite + craft-libs; inspect actual crate layout, command registries, MCP/CLI entry points, build requirements per repo. README claims get verified against source before committing to consume.
+   - DONE 2026-11-17 (enumeration + triage): 82 public repos verified via `gh api` (org grew from 44). Full categorized table + license audit in `.devin/research/2026-11-17-storytold-repo-triage.md`. Source spot-check: filmcraft ships `.mcp.json` + Cargo workspace; consume-first set identified (photocraft/filmcraft/vectorcraft/lightcraft/effectcraft/gridcraft/deckcraft, all Apache-2.0). Remaining: shallow-clone + per-repo crate layout/command-registry verification (needs local toolchain decision).
 1. Install/build the craft CLIs needed (filmcraft, photocraft, word/pdf/grid/deck-craft; cargo or releases); verify headless commands + `*-cli mcp` spawn on this machine.
 2. Audit command catalogs vs needed ops; produce `ops_matrix.md` (coverage map per app).
 3. `bridge.py` + mcp_config entries (lazy-enabled); smoke: open→edit→export a PSD and cut+export a video clip via commands only.

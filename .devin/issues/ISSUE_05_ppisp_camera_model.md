@@ -27,6 +27,7 @@ Status: in-progress · Source: transcript (user-provided) + NVIDIA `nv-tlabs/ppi
 ## Step-by-step (on authorization)
 
 0. Clone `nv-tlabs/ppisp`, verify license + env requirements (torch, CUDA optional); read upstream training entry points.
+   - DONE 2026-11-17 (remote verification, no local clone yet): Apache-2.0, 474 stars, Python. Layout: `ppisp/` package + `tests/` + pyproject/setup.py. Env reality: torch runtime dep AND a compiled CUDA extension via `torch.utils.cpp_extension` - upstream recommends `pip install . --no-build-isolation` so the kernel builds against the local torch ABI. Not "CUDA optional": the differentiable kernel requires a CUDA build toolchain (nvcc) + GPU for training. Training entry point documented in README (controller distillation loop). Local clone still needed for step 2 e2e.
 1. `photo_qc.py` on a real mixed-device photo set; calibrate variance thresholds.
 2. `ppisp_runner.py` end-to-end on the same set; gate: corrected render vs raw render floaters visible diff + upstream metrics.
 3. Wire into `ai3d-gen` intake (skill edit); document camera-mix guidance.
