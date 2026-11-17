@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Skills](https://img.shields.io/badge/skills-188-blue.svg)](#2-skills)
 
-[![Rules](https://img.shields.io/badge/rules-25-green.svg)](#1-regras-globais)
+[![Rules](https://img.shields.io/badge/rules-20-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.24.1-orange.svg)](CHANGELOG.md)
 [![Atlas](https://img.shields.io/badge/atlas-github%20pages-33ff66.svg)](https://leostruka.github.io/devin-bundle/)
 
@@ -130,7 +130,7 @@ flowchart TD
 
 ### 1. Regras globais
 
-`AGENTS.md` (~11KB) é carregado em toda sessão e contém 24 entradas de regra — 19 corpos consolidados + 5 aliases de regras fundidas — formuladas principalmente como restrições e complementadas por procedimentos verificáveis. As regras centrais determinam que o agente:
+`AGENTS.md` (~11KB) é carregado em toda sessão e contém 20 entradas de regra - formuladas principalmente como restrições e complementadas por procedimentos verificáveis. As regras centrais determinam que o agente:
 
 - descubra e invoque skills antes de ações não triviais;
 - execute pedidos claros sem reformular ou oferecer opinião não solicitada;
