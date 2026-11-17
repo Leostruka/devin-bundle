@@ -158,7 +158,7 @@ def test_compile_routes_layers_and_marks_unverified():
     assert out["ok"]
     plan = out["plan"]
     assert plan[0]["app"] == "filmcraft"
-    assert plan[0]["command"] == "timeline.cut"
+    assert plan[0]["command"] == "timeline.razor"
     assert plan[1]["app"] == "photocraft"
     assert plan[1]["unverified"] is True
     assert any("unrouted_layer_type:hologram" in n for n in out["notes"])
@@ -197,3 +197,7 @@ def test_load_ops_map_invalid_json_typed(tmp_path):
     f.write_text("{bad", encoding="utf-8")
     with pytest.raises(ValueError, match="ops map unreadable"):
         sm.load_ops_map(str(f))
+
+
+def test_ops_map_file_matches_defaults():
+    assert sm.load_ops_map() == sm._DEFAULT_OPS
