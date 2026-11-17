@@ -232,7 +232,10 @@ def test_install_ps1_skips_empty_extension_dirs():
 def test_audit_prefers_appdata_on_windows():
     """On os.name == 'nt' the CLI reads %APPDATA%/devin; auditing the
     .config shadow instead masks real drift."""
-    content = read_script('audit.py')
+    import glob as _glob
+    content = read_script('audit.py') + ''.join(
+        read_script(p) for p in sorted(
+            _glob.glob('audit_checks/*.py', root_dir=REPO_ROOT)))
     assert "os.name == 'nt'" in content
     assert 'shadow config dir' in content
 

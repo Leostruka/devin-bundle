@@ -57,7 +57,9 @@
   (stdlib-only), `extensions/` = local tools (`computer-use`, `media-tools`,
   `rust-core` Cargo workspace), `agents/` = subagent profiles,
   `data/` = model data, `.devin/` = project config
-  (adr/, ledgers/, rules/, plans/, docs/), `tests/` = pytest suites.
+  (adr/, ledgers/, rules/, plans/, docs/), `tests/` = pytest suites,
+  `audit.py` + `audit_checks/` = repo audit orchestrator + per-section
+  check modules (`m_*.py`, shared ctx/state in `_ctx.py`).
 - **Forbidden crossings:** `scripts/` hooks take no third-party pip deps
   (stdlib only). One documented exception: `laya-guard.py` sys.path-imports
   `decision_contract` + `laya_client` from `extensions/laya-tools/`
