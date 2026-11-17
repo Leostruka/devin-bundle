@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- chore(rules): dedupe and compress rule surfaces - AGENTS.md/global_rules/pinned-constraints deduplicated, stale devin-manager skill removed (PR #657).
+
+- chore(hardening): salvage parallel-session WIP - audit_checks package, envelope list-wrap + stamp-copies, hook payload guards and gate bypass closures (PR #658).
+
 
 ## [3.24.1] - 2026-11-16
 
