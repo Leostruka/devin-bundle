@@ -264,7 +264,6 @@ Ferramentas locais em `extensions/`, invocadas pelas skills homônimas:
 | `code-graph` | Índice estrutural SQLite FTS5 (símbolos/refs/outline/incremental), fallback rg/glob |
 | `harness-tree` | Árvore de componentes do harness (c1..c8 via SurfaceSpec): snapshot/diff/apply/validate + runs namespaced em `.devin/runs/` |
 | `design-intelligence` | Motor BM25 local (stdlib) sobre corpus de design: 34 domínios CSV + 22 stacks + frontend-rules vercel; search.py auto-detect, design_system.py fan-out MASTER.md/pages, validate_csv.py |
-| `craft-bridge` | Dispatch uniforme na suíte storytold craft |
 | `laya-compactor` | CLI de pruning de transcript dirigido pelo laya |
 | `ppisp-prep` | Pré-check fotométrico barato em sets de imagem |
 | `gcal` | Google Calendar free/busy + roteiro planner + event write (`add`/`apply` gated by `--confirm`, dedicated `AGdevin` calendar find-or-create, needs `calendar.events` scope) + `--ics` dev mode (OAuth refresh via urllib, sem deps) |

@@ -71,7 +71,7 @@ through a per-dir module - `scrape-tools/st_common.py`,
 `media-tools/media_envelope.py`, `remotion-render/remotion_envelope.py`,
 `image-forensics/forensics_envelope.py`,
 `design-intelligence/design_envelope.py`,
-`craft-bridge/craft_envelope.py`, and `scripts/bundle_envelope.py`
+`ui-dsl/ui_envelope.py`, and `scripts/bundle_envelope.py`
 (`bind(wrapper)` for per-file names).
 Deduplicated after independent review - one fix site per dir instead
 of ~70 identical copies. Dirs with only 1-2 emitters keep a local
@@ -119,7 +119,7 @@ were fixed in passing (`metadata.py`, `plan_check.py` no-args IndexError,
 JSON with non-zero exit.
 
 Remaining emitters (wave 9, #604): `laya-compactor`, `ppisp-prep`,
-`mesh-utils`, `api-bridge`, `diagram-tools`, `craft-bridge`,
+`mesh-utils`, `api-bridge`, `diagram-tools`,
 `harness-tree`, plus `scripts/graph-query.py` (agent-facing
 graph-before-grep retrieval). `ns.py resume` gained a JSON error path
 (FileNotFoundError crash -> `{"ok": false}` + exit 1).
@@ -138,7 +138,7 @@ surface: every `print(json.dumps` outside `system-control`'s separate
 contract and hook-runtime infrastructure now carries v2.
 
 Completeness wave (#610 follow-up): `pulse.py`, `simplify-scan.py`,
-`changelog-refs.py`, `craft-bridge/ui_dsl.py` (benchmark + `{"ok":
+`changelog-refs.py`, `ui-dsl/ui_dsl.py` (benchmark + `{"ok":
 false}` on unreadable input), `fold_store.py save`,
 `devin-manager`/`devin-config` `devin-manager.py scan` (also fixed a
 crash on JSON-array artifacts),

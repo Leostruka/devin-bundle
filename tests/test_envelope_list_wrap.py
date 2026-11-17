@@ -19,7 +19,7 @@ MODULES = [
     "extensions/ai-tools/ai_envelope.py",
     "extensions/laya-tools/laya_envelope.py",
     "extensions/image-forensics/forensics_envelope.py",
-    "extensions/craft-bridge/craft_envelope.py",
+    "extensions/ui-dsl/ui_envelope.py",
     "extensions/asr/asr_envelope.py",
     "extensions/remotion-render/remotion_envelope.py",
     "extensions/design-intelligence/design_envelope.py",

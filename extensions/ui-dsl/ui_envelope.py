@@ -1,4 +1,4 @@
-"""Shared envelope-v2 helper for craft-bridge CLIs."""
+"""Shared envelope-v2 helper for ui-dsl CLIs."""
 import json
 from pathlib import Path
 
@@ -27,7 +27,7 @@ def _bundle_version():
 
 
 def _answered_by():
-    return {"bundle": _bundle_version(), "wrapper": "craft-bridge"}
+    return {"bundle": _bundle_version(), "wrapper": "ui-dsl"}
 
 
 def _stamp(payload):

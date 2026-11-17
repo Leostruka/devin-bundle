@@ -1,6 +1,6 @@
 """openui runtime — strict line DSL parser, streaming feeder, HTML renderer.
 
-Exercises extensions/craft-bridge/ui_dsl.py: grammar, roundtrip, bounds,
+Exercises extensions/ui-dsl/ui_dsl.py: grammar, roundtrip, bounds,
 XSS-safe rendering, semantic-equivalent JSON, real-tokenizer benchmark.
 """
 import importlib.util
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-CB_DIR = Path(__file__).resolve().parents[1] / "extensions" / "craft-bridge"
+CB_DIR = Path(__file__).resolve().parents[1] / "extensions" / "ui-dsl"
 sys.path.insert(0, str(CB_DIR))
 
 import ui_dsl

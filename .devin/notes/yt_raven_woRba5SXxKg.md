@@ -13,7 +13,7 @@ API ainda instavel por declaracao do autor.
 
 ## Veredito: avaliado e rejeitado para o bundle (rastrear apenas)
 
-- `extensions/craft-bridge/ui_dsl` ja renderiza HUDs/forms em HTML --
+- `extensions/ui-dsl/ui_dsl` ja renderiza HUDs/forms em HTML --
   zero deps nativas, roda em qualquer browser/webview.
 - Um backend Raven exigiria renderer Vulkan + bindings C para
   beneficio marginal neste caso de uso.

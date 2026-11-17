@@ -46,7 +46,7 @@ def test_camera_addenda_reference_existing_owner(path):
 
 
 def test_openui_example_has_balanced_blocks_and_parseable_attributes():
-    doc = text("extensions/craft-bridge/openui-lang.md")
+    doc = text("extensions/ui-dsl/openui-lang.md")
     example = re.search(r"```\n(.*?)\n```", doc, re.S).group(1)
     stack = []
     for line in example.splitlines():
@@ -63,7 +63,7 @@ def test_openui_example_has_balanced_blocks_and_parseable_attributes():
                 continue
             assert "=" in part, part
     assert not stack, f"unclosed blocks: {stack}"
-    sys.path.insert(0, str(ROOT / "extensions" / "craft-bridge"))
+    sys.path.insert(0, str(ROOT / "extensions" / "ui-dsl"))
     import ui_dsl
     parsed = ui_dsl.parse(example)
     assert len(parsed.blocks) == len(
@@ -107,7 +107,7 @@ def test_spec_separates_documentation_from_runtime_acceptance():
         "extensions/laya-tools/doc_coverage.py",
         "extensions/laya-tools/explore.py",
         "extensions/computer-use/cu_dom_picker.py",
-        "extensions/craft-bridge/ui_dsl.py",
+        "extensions/ui-dsl/ui_dsl.py",
     ):
         assert (ROOT / artifact).is_file(), artifact
 

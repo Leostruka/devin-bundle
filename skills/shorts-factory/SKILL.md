@@ -70,7 +70,7 @@ render stage produce all visuals when no keys are set.
 ### 5. Scene plan (scene-plan v2)
 
 Reuse the scene-plan v2 schema from `skills/animation-direction`
-(`craft-bridge` scene_manifest v1 + `motion_spec` + `sync_range`):
+(`motion_spec` + `sync_range`):
 
 ```json
 {"scenes": [{"id": "s1", "sync_range": [0.0, 3.2],

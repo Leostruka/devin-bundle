@@ -134,5 +134,5 @@ CLI bundle; live config at `%APPDATA%\devin` is the installed copy. Sync via
 - #346 umbrella: ladder delivered; closeout pending PR merge.
 - #431: deliberate activation decision (mode stays `off`).
 - ISSUE_02/05 held-out: blocked on fresh datasets.
-- ISSUE_03 craft-bridge: blocked on storytold CLI installs.
+- ISSUE_03 craft-bridge: dropped 2026-11-17 (suite removed, issue file deleted).
 - `edge-audit` effort (61 open issues) parked as next-week triage.

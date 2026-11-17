@@ -76,5 +76,5 @@ AE. No paid TTS/ASR services; plan approval is a hard gate, always.
   `render.py` (materialize template + render), `composite.py` (ffmpeg
   overlay onto source, narration-first audio), `templates/remotion-project/`
   (Root + PlanComposition + primitives).
-- Plan contract extends `craft-bridge` scene_manifest v1 with
-  `motion_spec` + `sync_range` (v2).
+- Plan contract is the scene-plan schema v2 (`motion_spec` +
+  `sync_range`).

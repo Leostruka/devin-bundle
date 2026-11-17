@@ -3,8 +3,7 @@
 Local capability: parses a versioned one-element-per-line grammar into an
 AST, emits it back canonically (roundtrip), feeds it incrementally for
 streaming, and renders it to a self-contained HTML fragment with native
-form controls. No network, no JS, no external app claims — the craft
-bridge continues to dispatch only real app CLI commands.
+form controls. No network, no JS, no external app claims.
 
 Grammar:
 
@@ -49,7 +48,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from craft_envelope import _stamp, _dumps  # noqa: E402
+from ui_envelope import _stamp, _dumps  # noqa: E402
 
 DSL_VERSION = 1
 

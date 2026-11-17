@@ -324,3 +324,25 @@ tmp/ci-sim/tests/validation/test_youtube_fetcher.py
 # deterministic even when a real *-cli binary is on PATH; the test bodies
 # still assert the same error envelope. Part of craft-bridge live-contract
 # work (tests/test_craft_bridge.py).
+
+# 2026-11-17 - tests/test_craft_bridge.py: DELETED with user approval
+# ("remova todo os craft"). Whole craft-bridge extension removed
+# (storytold suite abandoned upstream); ui_dsl relocated to
+# extensions/ui-dsl/ preserving its own runtime contracts.
+
+# 2026-11-17 (naming each removed function for the push gate) -
+# tests/test_craft_bridge.py deleted wholesale, user-approved
+# ("remova todo os craft"):
+# test_doctor_marks_missing_apps, test_list_commands_uses_cli,
+# test_run_command_passes_params, test_run_command_missing_cli_errors,
+# test_run_script_streams_jsonl_lines, test_run_script_missing_cli_errors,
+# test_mcp_client_roundtrip, test_mcp_client_missing_cli_errors,
+# test_unknown_app_raises, test_control_channel_roundtrip,
+# test_control_channel_requires_port,
+# test_compile_routes_layers_and_marks_unverified,
+# test_compile_rejects_wrong_version, test_default_op_is_open,
+# test_scene_manifest_main_missing_file_typed,
+# test_scene_manifest_main_nonobject_typed,
+# test_load_ops_map_invalid_json_typed,
+# test_ops_map_file_matches_defaults,
+# test_filmcraft_live_razor_splits_clip.
