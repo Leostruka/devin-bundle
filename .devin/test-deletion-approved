@@ -310,3 +310,9 @@ tmp/ci-sim/tests/validation/test_system_control_workflow.py
 tmp/ci-sim/tests/validation/test_task_adaptive_harness.py
 tmp/ci-sim/tests/validation/test_tools_map_hooks.py
 tmp/ci-sim/tests/validation/test_youtube_fetcher.py
+
+# 2026-11-16 - test_tokenizer_benchmark_dsl_beats_json: NOT a deletion
+# (signature refactor). `git diff HEAD` shows -def removed but the same
+# test re-added below calling _tokenizer_or_skip(); grep-verified still
+# present in tests/test_openui_runtime.py. Part of the in-progress
+# audit.py -> audit_checks refactor (parallel session, uncommitted).

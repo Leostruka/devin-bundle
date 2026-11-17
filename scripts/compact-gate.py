@@ -479,6 +479,8 @@ def main():
             except (OSError, ValueError):
                 pass
         payload = json.load(sys.stdin)
+        if not isinstance(payload, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
     ev = payload.get("hook_event_name", "")
@@ -496,10 +498,17 @@ def main():
         cfg = None
         mode = "off"
 
-    state = _load_json(_state_path(), {"digest": {}, "calls": 0,
-                                       "turns": 0, "last_eval_call": -999,
-                                       "last_action_ts": 0,
-                                       "session_id": ""})
+    state = _load_json(_state_path(), {})
+    if not isinstance(state, dict):
+        state = {}
+    # A partial/corrupt state file must not KeyError every hook call —
+    # merge defaults over whatever survived.
+    for k, v in (("digest", {}), ("calls", 0), ("turns", 0),
+                 ("last_eval_call", -999), ("last_action_ts", 0),
+                 ("session_id", "")):
+        state.setdefault(k, v)
+    if not isinstance(state["digest"], dict):
+        state["digest"] = {}
     sid = payload.get("session_id", "")
     if sid and state.get("session_id") and state["session_id"] != sid:
         state = {"digest": {}, "calls": 0, "turns": 0,
@@ -509,7 +518,10 @@ def main():
     state["calls"] = state.get("calls", 0) + 1
     if ev == "UserPromptSubmit":
         state["turns"] = state.get("turns", 0) + 1
-    _update_digest(state, payload, cfgd)
+    try:
+        _update_digest(state, payload, cfgd)
+    except (AttributeError, TypeError):
+        state["digest"] = {}  # corrupt state file — reset, keep going
 
     p = _pressure()
     floor, at, force = (cfgd["eval_floor"], cfgd["compact_at"],
@@ -526,7 +538,10 @@ def main():
     # The daemon is detached: a short wait abstains this turn but the daemon
     # keeps booting for later turns. Never burn a full 60s spawn timeout
     # inside a 20s/30s hook budget (#546).
-    spawn_wait = float(os.environ.get("LAYA_SPAWN_WAIT_S", "8"))
+    try:
+        spawn_wait = float(os.environ.get("LAYA_SPAWN_WAIT_S", "8"))
+    except (TypeError, ValueError):
+        spawn_wait = 8.0
     daemon = _ensure_daemon(cfg_path, spawn_timeout_s=spawn_wait)
     st = _digest_state(state, p)
     deadline = cfg.get("deadline_ms", 1000) \

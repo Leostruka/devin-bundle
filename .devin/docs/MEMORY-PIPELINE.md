@@ -55,3 +55,21 @@ Scoring details:
 - Editing a file under a `path` cue -> up to 2 related notes injected.
 - Running a command matching `symbol`/`keyword` cues -> up to 2 notes.
 - Session end -> stderr summary only.
+
+## Evaluated alternative: L0-L3 layered memory (Tencent, MIT) - issue #639
+
+Video/vendor claims (-61% tokens, 33%->50% solve) are UNREPRODUCED;
+evaluation verdict against this pipeline:
+
+| Their layer | Our equivalent | Status |
+|---|---|---|
+| L0 raw log | durable session log (SessionStart/Stop hooks) | adopted already |
+| L1 atoms (facts/cues per ~5 turns) | notes + frontmatter cues | adopted already |
+| L2 scenes (episodic consolidation) | none | deferred: needs write-side auto-consolidation, which changes the no-auto-write contract |
+| L3 persona (~50 memories) | AGENTS.md curated rules | adopted already |
+| sqlite-vec BM25+vector RRF | cue-keyword scoring | rejected: new dep violates stdlib-only hooks |
+| skip-injection on slow recall | deterministic O(notes) scan, TOP_K=2 | adopted already (bounded by design) |
+
+Residual risk they flag (prefix-cache poisoning via injected memory):
+our injection is bounded (2 notes, user-approved authors only). Re-eval
+if an auto-consolidation writer is ever proposed.

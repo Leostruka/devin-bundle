@@ -81,6 +81,23 @@ Não há override local - apenas enterprise settings podem mudar isso.
 (`agents/researcher.md`, pin `model: swe-2-max`, gratuito, veja `data/bundle-models.json`)
 que tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
 
+### Fusion (lead/sidekick) - cognition.com/blog/local-fusion
+
+O runtime Fusion pareia um modelo frontier ("lead", plano+review) com um
+cost-effective ("sidekick", execução). Decisões que mudam por par:
+
+- **Brief prescriptive vs solto**: sidekick mais forte (SWE-2) permite ao lead
+  deixar detalhes de implementação em aberto; sidekick fraco exige briefs
+  prescritivos (mais tokens de lead, menos rodadas de correção).
+- **Pushback**: sidekick forte -> encorajar challenge (pega erros do plano);
+  fraco -> opinativo degrada custo/qualidade.
+- **Custo total**: sidekick mais forte não sobe o custo na prática - cada erro
+  evitado poupa rodadas de raciocínio do frontier model. Preço/token menor é
+  menos útil que menos tentativas.
+
+Implicação no bundle: pairing `swe-2-max` lead + `swe-2-max` sidekick é coerente
+com a fonte; downgrade do sidekick só economiza se o brief subir de prescrição.
+
 ### Self-compaction (diferencial chave)
 
 Os subagentes do bundle são treinados para:

@@ -262,6 +262,11 @@ def main():
             sys.stdout.write(json.dumps(_error(None, -32700, "parse error")) + "\n")
             sys.stdout.flush()
             continue
+        if not isinstance(msg, dict):
+            sys.stdout.write(json.dumps(
+                _error(None, -32600, "invalid request")) + "\n")
+            sys.stdout.flush()
+            continue
         resp = _handle(msg)
         if resp is not None:
             sys.stdout.write(json.dumps(resp) + "\n")

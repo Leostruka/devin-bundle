@@ -512,6 +512,34 @@ def window_foreground(hwnd):
     return ctypes.windll.user32.GetForegroundWindow() == hwnd
 
 
+def resolve_name(name, scope="focused", timeout=6.0):
+    """Find a clickable element by its UIA name in a LIVE enumeration.
+
+    Unlike resolve_hint (frozen sidecar), this enumerates clickables fresh,
+    so no prior --hints observation is required. Returns (entry, reason,
+    matches): entry is the best-match element dict with x, y, name, type,
+    bounds, hwnd, enabled — shape compatible with uia_perform(); reason is
+    None on a single unambiguous match, else a typed code; matches is the
+    candidate name list on ambiguity (empty otherwise).
+    Match order: exact case-insensitive name, then substring."""
+    if not name or not str(name).strip():
+        return None, "empty_name", []
+    res = enum_clickables(scope=scope, timeout=timeout)
+    if res is None:
+        return None, "enum_failed", []
+    els = res.get("elements") or []
+    want = str(name).strip().lower()
+    exact = [e for e in els if (e.get("name") or "").strip().lower() == want]
+    pool = exact or [e for e in els
+                     if want in (e.get("name") or "").strip().lower()]
+    if not pool:
+        return None, "no_match", []
+    if len(pool) > 1:
+        names = sorted({(e.get("name") or "").strip() for e in pool})[:12]
+        return None, "ambiguous", names
+    return pool[0], None, []
+
+
 def resolve_hint(hint_id, session=None, generation=None, scope=None):
     """Return (entry, reason). entry has x, y, name, type, bounds, hwnd,
     enabled; reason is None on success, else a typed staleness code —

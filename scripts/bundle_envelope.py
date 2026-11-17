@@ -40,12 +40,15 @@ def _bundle_version():
 def _stamp(payload, wrapper):
     if not isinstance(payload, dict):
         return payload
-    payload["api_version"] = 2
-    if not isinstance(payload.get("meta"), dict):
-        payload["meta"] = {}
-    payload["meta"].setdefault(
+    # Stamp a copy: callers' dicts stay unpolluted (api_version/meta must
+    # not leak into downstream reuse — see harness-tree tree_hash bug).
+    out = dict(payload)
+    out["api_version"] = 2
+    meta = dict(out.get("meta")) if isinstance(out.get("meta"), dict) else {}
+    meta.setdefault(
         "answered_by", {"bundle": _bundle_version(), "wrapper": wrapper})
-    return payload
+    out["meta"] = meta
+    return out
 
 
 def bind(wrapper):
@@ -54,6 +57,8 @@ def bind(wrapper):
         return _stamp(payload, wrapper)
 
     def dumps(payload, **kw):
+        if isinstance(payload, list):
+            payload = {"ok": True, "items": payload}
         return json.dumps(stamp(payload), **kw)
 
     return stamp, dumps

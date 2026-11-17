@@ -27,6 +27,8 @@ if __name__ == '__main__':
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
     checks = list(ALWAYS)
     if payload.get('tool_name') in ('write', 'edit'):
         checks += TEXT_ONLY

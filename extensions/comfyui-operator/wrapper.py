@@ -69,6 +69,8 @@ def _stamp(payload):
 
 
 def _out(obj, code=0):
+    if isinstance(obj, list):
+        obj = {"ok": True, "items": obj}
     _stamp(obj)
     print(json.dumps(obj, indent=2, sort_keys=True))
     sys.exit(code)

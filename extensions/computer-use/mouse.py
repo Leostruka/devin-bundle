@@ -58,21 +58,26 @@ def _resolve_xy(args):
     """click/move may take --hint instead of x y positionals.
     Returns (x, y, entry|None). Stale/invalid hints are rejected BEFORE any
     controller call — never click coordinates from an outdated observation."""
-    if getattr(args, "hint", None):
+    if getattr(args, "hint", None) or getattr(args, "name", None):
         # resolved once at parse time (see main) — reuse that entry so the
         # coordinates are frozen at the moment of validation, not re-read
         # from a possibly newer observation
         entry = getattr(args, "_hint_entry", None)
         if entry is None:
-            entry, reason = cu_hints.resolve_hint(
-                args.hint, session=cu_hints.session_id(),
-                generation=getattr(args, "gen", None))
-            if not entry:
-                fail(f"hint {args.hint!r} rejected: {reason} — "
-                     "rerun screenshot.py --hints")
+            if getattr(args, "name", None):
+                entry, reason, _ = cu_hints.resolve_name(args.name)
+                if not entry:
+                    fail(f"--name {args.name!r} rejected: {reason}", 2)
+            else:
+                entry, reason = cu_hints.resolve_hint(
+                    args.hint, session=cu_hints.session_id(),
+                    generation=getattr(args, "gen", None))
+                if not entry:
+                    fail(f"hint {args.hint!r} rejected: {reason} — "
+                         "rerun screenshot.py --hints")
         return entry["x"], entry["y"], entry
     if args.x is None or args.y is None:
-        fail("x and y are required unless --hint is given", 2)
+        fail("x and y are required unless --hint or --name is given", 2)
     return args.x, args.y, None
 
 
@@ -306,6 +311,10 @@ def main():
                             help="generation from the same --hints output; "
                                  "pins the observation so a newer snapshot "
                                  "rejects the hint as stale_generation")
+            sp.add_argument("--name", default=None,
+                            help="clickable's UIA name, looked up live "
+                                 "(no prior --hints needed; exact match, "
+                                 "then substring - ambiguous names reject)")
         else:
             sp.add_argument("x", type=int)
             sp.add_argument("y", type=int)
@@ -350,9 +359,11 @@ def main():
     if channel in cu_scope.CHANNELS:
         _scoped_mouse(args, channel)
         return
+    if getattr(args, "hint", None) and getattr(args, "name", None):
+        fail("--hint and --name are mutually exclusive", 2)
     if getattr(args, "via", None) == "browser" and \
-            not getattr(args, "hint", None):
-        fail("--via browser requires --hint (needs element hwnd)", 2)
+            not (getattr(args, "hint", None) or getattr(args, "name", None)):
+        fail("--via browser requires --hint or --name (needs element hwnd)", 2)
     if getattr(args, "hint", None):
         e, r = cu_hints.resolve_hint(
             args.hint, session=cu_hints.session_id(),
@@ -360,6 +371,12 @@ def main():
         if not e:
             fail(f"hint {args.hint!r} rejected: {r} — "
                  "rerun screenshot.py --hints")
+        args._hint_entry = e  # freeze: single resolution per invocation
+    elif getattr(args, "name", None):
+        e, r, matches = cu_hints.resolve_name(args.name)
+        if not e:
+            extra = (f" candidates={matches}" if matches else "")
+            fail(f"--name {args.name!r} rejected: {r}{extra}", 2)
         args._hint_entry = e  # freeze: single resolution per invocation
     set_dpi_awareness()
 
@@ -388,7 +405,10 @@ def main():
                                     timings_ms={"move": None, "dispatch": None,
                                                 "total": _ms(cu_actions.now_ms() - t0)})
             if entry is not None:
-                out["hint"] = args.hint
+                if getattr(args, "name", None):
+                    out["name"] = args.name
+                else:
+                    out["hint"] = args.hint
             if args.dry_run:
                 out["dry_run"] = True
                 out["x"], out["y"] = x, y
@@ -473,7 +493,10 @@ def main():
             fx, fy = (x, y) if invoked or args.dry_run else mouse.position
             out["x"], out["y"] = fx, fy
             if entry is not None:
-                out["hint"] = args.hint
+                if getattr(args, "name", None):
+                    out["name"] = args.name
+                else:
+                    out["hint"] = args.hint
                 out["hint_name"] = entry.get("name", "")
             if args.verify and entry is not None and not args.dry_run:
                 res, _ = cu_hints.uia_perform(entry, "locate")

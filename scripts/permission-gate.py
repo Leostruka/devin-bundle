@@ -51,7 +51,7 @@ GIT_DANGEROUS_ARG = re.compile(
     r"^ext::|"                       # ext:: transport executes the payload
     r"^--output(=|$)|"               # arbitrary file write
     r"^(--exec(ute)?|--receive-pack|--upload-pack)(=|$)|"  # protocol exec
-    r"^(--open-files-in-pager|--ext-diff|--textconv)(=|$)",  # exec helpers
+    r"^(--open-files-in-pager|--ext-diff|--textconv|--filters)(=|$)",  # exec helpers
     re.I)
 # git grep -O<pager> executes the pager; case-sensitive (-o is --others).
 GIT_GREP_PAGER = re.compile(r"^-O")

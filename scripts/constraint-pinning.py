@@ -135,7 +135,11 @@ def summary_retains_constraints(summary):
 
 def handle_post_compaction(data):
     summary = data.get("summary") or ""
+    if not isinstance(summary, str):
+        summary = ""
     session_id = data.get("session_id", "")
+    if not isinstance(session_id, str):
+        session_id = ""
 
     if summary_retains_constraints(summary):
         print(
@@ -160,10 +164,18 @@ def handle_post_compaction(data):
 
 def handle_user_prompt_submit(data):
     session_id = data.get("session_id", "")
+    if not isinstance(session_id, str):
+        session_id = ""
     marker = read_marker(session_id)
+    # A PostCompaction payload without session_id writes the unscoped
+    # marker; a scoped read here would miss it and dropped constraints
+    # would never be re-injected. Fall back, then clear both names.
+    if not marker and session_id:
+        marker = read_marker("")
     if not marker:
         sys.exit(0)
     clear_marker(session_id)
+    clear_marker("")
     print(
         f"constraint-pinning: re-injected pinned constraints (hash={PINNED_HASH})",
         file=sys.stderr,
@@ -196,6 +208,8 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open
 

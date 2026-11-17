@@ -206,6 +206,8 @@ def _stamp(payload):
 
 
 def emit(payload, code=0):
+    if isinstance(payload, list):
+        payload = {"ok": True, "items": payload}
     _stamp(payload)
     json.dump(payload, sys.stdout, indent=2, sort_keys=False)
     sys.stdout.write("\n")

@@ -18,12 +18,18 @@ import getpass
 
 def step(instruction):
     print(f"\n>>> {instruction}")
-    input("    [Enter when done] ")
+    try:
+        input("    [Enter when done] ")
+    except EOFError:
+        pass  # closed stdin (piped/agent-run) = proceed
 
 
 def capture(var_name, question):
     print(f"\n>>> {question}")
-    answer = input("    > ")
+    try:
+        answer = input("    > ")
+    except EOFError:
+        answer = ""  # closed stdin = empty response
     globals()[var_name] = answer
     return answer
 

@@ -45,15 +45,21 @@ RM_DANGEROUS_TARGETS = {
     "C:", "C:\\", "C:/", "D:", "D:\\", "D:/", "*.*",
 }
 
+# git global flags interposed between `git` and the verb (-C dir, -c k=v,
+# -P, --no-pager, --git-dir[= ]x, --work-tree[= ]x, --exec-path[= ]x) —
+# without this, `git -C repo push -f` bypasses every git gate.
+_GIT_FLAGS = (r"(?:\s+(?:-[a-zA-Z](?:\s+\S+)??|--[\w-]+(?:=\S+|\s+\S+)??))*")
+_GIT = r"\bgit\b" + _GIT_FLAGS
+
 # git push --force without --dry-run.
 # Negative lookahead on -f avoids matching --follow-tags.
 # --force-with-lease is intentionally EXCLUDED: it is the recommended safe
 # alternative to --force (fails if remote has new commits). Blocking it would
 # encourage users to use the more dangerous --force instead.
-GIT_FORCE_PUSH = re.compile(r"\bgit\s+push\b[^|;&]*?(?:\s-f\b|\s-[a-zA-Z]*f[a-zA-Z]*\b|\s--force\b(?!-with-lease))")
+GIT_FORCE_PUSH = re.compile(_GIT + r"\s+push\b[^|;&]*?(?:\s-f\b|\s-[a-zA-Z]*f[a-zA-Z]*\b|\s--force\b(?!-with-lease))")
 GIT_DRY_RUN = re.compile(r"(?:\s--dry-run(?![\w-])|\s-n(?![\w-]))")
 
-GIT_RESET_HARD = re.compile(r"\bgit\s+reset\s+--hard\b")
+GIT_RESET_HARD = re.compile(_GIT + r"\s+reset\s+--hard\b")
 
 SQL_DESTRUCTIVE = re.compile(
     r"\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA)|TRUNCATE\s+TABLE)\b",
@@ -69,7 +75,7 @@ SQL_CLIENTS = re.compile(
     re.IGNORECASE,
 )
 
-CHMOD_DANGEROUS = re.compile(r"\bchmod\s+(?:-[a-zA-Z]*R[a-zA-Z]*\s+)777\s+(?:/|~|\$HOME)(?:\s|$)")
+CHMOD_DANGEROUS = re.compile(r"\bchmod\s+(?:(?:-[a-zA-Z]*R[a-zA-Z]*|--recursive)\s+)777\s+(?:/|~|\$HOME)(?:\s|$)")
 
 # Windows recursive-delete equivalents: Remove-Item -Recurse -Force, rd /s /q,
 # del /s /q, rmdir /s. These are the Windows counterparts to rm -rf.
@@ -103,14 +109,19 @@ WIN_RM_RE_NOTARGET = re.compile(
 # git clean -fdx: removes untracked AND ignored files (irreversible, no reflog)
 # Excludes -n (dry-run) — if -n is present, it's a preview, not a destructive op.
 # Matches combined flags (-fdx, -xfd) and --force with separate -d/-x flags.
-GIT_CLEAN_FORCE = re.compile(r"\bgit\s+clean\s+(?:-[a-zA-Z]*[fF][a-zA-Z]*[dDxX][a-zA-Z]*|-[a-zA-Z]*[dDxX][a-zA-Z]*[fF][a-zA-Z]*|--force\b(?:\s+-[a-zA-Z]+)*\s+-[a-zA-Z]*[dDxX]|-f\b(?:\s+-[a-zA-Z]+)*\s+-[a-zA-Z]*[dDxX])")
-GIT_CLEAN_DRY_RUN = re.compile(r"\bgit\s+clean\s+(?:-[a-zA-Z]*n[a-zA-Z]*|-[a-zA-Z]*\s+--dry-run\b)")
+GIT_CLEAN_FORCE = re.compile(_GIT + r"\s+clean\s+(?:-[a-zA-Z]*[fF][a-zA-Z]*[dDxX][a-zA-Z]*|-[a-zA-Z]*[dDxX][a-zA-Z]*[fF][a-zA-Z]*|--force\b(?:\s+-[a-zA-Z]+)*\s+-[a-zA-Z]*[dDxX]|-f\b(?:\s+-[a-zA-Z]+)*\s+-[a-zA-Z]*[dDxX])")
+GIT_CLEAN_DRY_RUN = re.compile(
+    _GIT + r"\s+clean\b[^|;&]*?(?:-[a-zA-Z]*n[a-zA-Z]*\b|--dry-run\b)")
 
 # git branch -D: force-delete branch (loses unmerged commits)
-GIT_BRANCH_FORCE_DELETE = re.compile(r"\bgit\s+branch\s+(?:-[a-zA-Z]*D[a-zA-Z]*\b|--delete\s+--force\b)")
+GIT_BRANCH_FORCE_DELETE = re.compile(_GIT + r"\s+branch\s+(?:-[a-zA-Z]*D[a-zA-Z]*\b|--delete\s+--force\b)")
 
 # mkfs / dd to disk devices (filesystem wipe / raw disk write)
 DISK_WIPE = re.compile(r"\b(?:mkfs(?:\.\w+)?|dd\s+.*\bof=/dev/(?:sd|nvme|hd|vd|disk))", re.IGNORECASE)
+
+# Windows disk wipe: `format X:` quick/full format, `diskpart` interactive
+WIN_DISK_WIPE = re.compile(r"\bformat\s+[a-zA-Z]:(?=[\s/]|$)|\bdiskpart\b",
+                           re.IGNORECASE)
 
 
 def block(reason):
@@ -186,11 +197,12 @@ def strip_commit_message(command):
 
     For non-commit commands, returns the original string unchanged.
     """
-    if "git commit" not in command.lower():
+    if not re.search(_GIT + r"\s+commit\b", command, re.IGNORECASE):
         return command
-    # Strip everything after -m / --message= / --message / -F
+    # Strip everything after -m (incl. clustered -am/-sm and attached
+    # -m"msg") / --message / -F / --file so message prose is never gated.
     stripped = re.split(
-        r"\s+(?:-m\b|--message(?:=|\s)|-F\b|--file(?:=|\s))",
+        r"\s+(?:-[a-zA-Z]*m\b|--message(?:=|\s)|-F\b|--file(?:=|\s))",
         command,
         maxsplit=1,
     )
@@ -209,12 +221,16 @@ def main():
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open: cannot parse, allow
 
+    if not isinstance(data, dict):
+        sys.exit(0)
     if data.get("tool_name", "") != "exec":
         sys.exit(0)
 
-    tool_input = data.get("tool_input") or {}
+    tool_input = data.get("tool_input")
+    if not isinstance(tool_input, dict):
+        sys.exit(0)
     command = tool_input.get("command", "") or ""
-    if not command.strip():
+    if not isinstance(command, str) or not command.strip():
         sys.exit(0)
 
     # Scan only the actual command, not commit message text.
@@ -303,6 +319,18 @@ def main():
                 "mkfs or dd to a disk device wipes the filesystem / writes raw "
                 "data to the device. This is irreversible. Confirm the device "
                 "path explicitly if this is intentional."
+            )
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+    # Gate 8b: Windows format / diskpart (disk wipe)
+    try:
+        if WIN_DISK_WIPE.search(scan_command):
+            block(
+                "format/diskpart wipes or repartitions a disk. This is "
+                "irreversible. Confirm the target explicitly if intentional."
             )
     except SystemExit:
         raise

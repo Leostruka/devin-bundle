@@ -65,6 +65,21 @@ def test_fail_open_on_garbage():
     assert run_hook(path=r"C:\nonexistent\ghost.css").returncode == 0
 
 
+def test_fail_open_on_non_dict_payload():
+    # payload itself a non-dict JSON value must not traceback
+    for raw in ('[1,2]', '"x"', '42', 'null'):
+        r = run_hook(raw=raw)
+        assert r.returncode == 0 and 'Traceback' not in r.stderr
+
+
+def test_fail_open_on_non_dict_tool_input():
+    # tool_input as string/list must not AttributeError on .get
+    for raw in ('{"tool_input":"x"}', '{"tool_input":[1]}',
+                '{"tool_input":42}'):
+        r = run_hook(raw=raw)
+        assert r.returncode == 0 and 'Traceback' not in r.stderr
+
+
 def test_fixture_skipped(tmp_path):
     # files under fixtures/ or extensions/ are never linted by the hook
     d = os.path.join(tmp_path, "extensions")

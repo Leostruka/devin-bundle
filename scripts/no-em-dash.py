@@ -227,9 +227,16 @@ def handle_pre_tool_use(data):
 
     if tool_name == "exec":
         command = tool_input.get("command", "") or ""
+        if not isinstance(command, str):
+            return
         low = command.lower()
         cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
-        if re.search(r"git\s+(commit|tag|merge|cherry-pick|rebase|stash)\b", low):
+        # Tolerate global flags between the binary and the verb
+        # (`git -c k=v commit`, `gh -R owner/repo pr create`).
+        _flags = r"(?:\s+(?:-[a-zA-Z](?:\s+\S+)??|--[\w-]+(?:=\S+|\s+\S+)??))*"
+        if re.search(r"\bgit\b" + _flags
+                     + r"\s+(commit|tag|merge|cherry-pick|rebase|stash)\b",
+                     low):
             msg_file = extract_flag_file(command, r"file|message")
             if msg_file:
                 if has_prose_em_dash(read_text_file(msg_file, cwd)):
@@ -242,7 +249,8 @@ def handle_pre_tool_use(data):
                       "Rewrite the text naturally.")
             return
         if re.search(
-                r"gh\s+(pr|issue|release)\s+"
+                r"\bgh\b" + _flags
+                + r"\s+(pr|issue|release)\s+"
                 r"(create|comment|edit|review|close|reopen)", low):
             body_file = extract_flag_file(
                 command, r"body-file|notes-file", short_f=False)
@@ -260,11 +268,15 @@ def handle_pre_tool_use(data):
     if tool_name in ("write", "edit", "notebook_edit"):
         file_path = tool_input.get("file_path", "") \
             or tool_input.get("notebook_path") or ""
+        if not isinstance(file_path, str):
+            return
         if SELF_FILE in file_path or not is_text_path(file_path):
             return
         content = tool_input.get("content") \
             or tool_input.get("new_string") \
             or tool_input.get("new_source") or ""
+        if not isinstance(content, str):
+            return
         if has_prose_em_dash(content):
             block(
                 f"em-dash (U+2014) detected in {tool_name} content. "
@@ -288,6 +300,8 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open
 

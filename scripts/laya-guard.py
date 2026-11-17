@@ -66,8 +66,11 @@ def _profile_path():
 # T0: read-only command prefixes — never reach laya.
 T0_ALLOW = re.compile(
     r"^\s*(?:"
-    r"git\s+(?:status|diff|log|show|branch\b|rev-parse|ls-files|blame|"
+    r"git\s+(?:status|diff|log|show|rev-parse|ls-files|blame|"
     r"remote -v|stash list)\b|"
+    # `git branch` T0-passes only in flag-only form (list variants);
+    # positional names create/force/delete refs and must reach T2.
+    r"git\s+branch(?:\s+--?[a-zA-Z-]+)*\s*$|"
     r"ls\b|dir\b|pwd\b|cd\b|echo\b|cat\b|type\b|rg\b|grep\b|findstr\b|"
     r"head\b|tail\b|wc\b|which\b|where\b|whoami\b|hostname\b|"
     r"Get-ChildItem|Get-Content|Get-Location|Select-String|"
@@ -155,12 +158,16 @@ def main():
             except (OSError, ValueError):
                 pass
         payload = json.load(sys.stdin)
+        if not isinstance(payload, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
     if payload.get("hook_event_name") != "PreToolUse" \
             or payload.get("tool_name") != "exec":
         sys.exit(0)
-    cmd = ((payload.get("tool_input") or {}).get("command") or "").strip()
+    _ti = payload.get("tool_input")
+    cmd = _ti.get("command") if isinstance(_ti, dict) else ""
+    cmd = (cmd if isinstance(cmd, str) else "").strip()
     if not cmd:
         sys.exit(0)
 

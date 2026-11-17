@@ -43,7 +43,10 @@ INSTALL_RE = re.compile(
     r"|(?:^|[;&|]\s*)(?:sudo\s+)?(?:bundle|bundler)\s+install\b"
     r"|(?:^|[;&|]\s*)(?:sudo\s+)?mix\s+deps\.(?:get|update)\b"
     r"|(?:^|[;&|]\s*)(?:sudo\s+)?dotnet\s+"
-    r"(?:add\b|tool\s+install\b|restore\b)",
+    r"(?:add\b|tool\s+install\b|restore\b)"
+    # windows package managers (scoop/winget/choco install)
+    r"|(?:^|[;&|]\s*)(?:scoop|winget|choco(?:latey)?)\s+"
+    r"(?:install|add|update|upgrade)\b",
     re.IGNORECASE)
 
 SCANNER_HINTS = ("pip-audit", "osv-scanner", "npm", "cargo-audit",
@@ -63,12 +66,17 @@ def main():
             except (OSError, ValueError):
                 pass
         payload = json.load(sys.stdin)
+        if not isinstance(payload, dict):
+            raise ValueError("payload not a dict")
     except Exception:
         return 0
     if payload.get("tool_name") != "exec":
         return 0
-    cmd = (payload.get("tool_input") or {}).get("command") or ""
-    if not INSTALL_RE.search(cmd):
+    ti = payload.get("tool_input") or {}
+    if not isinstance(ti, dict):
+        ti = {}
+    cmd = ti.get("command") or ""
+    if not isinstance(cmd, str) or not INSTALL_RE.search(cmd):
         return 0
     if not _scanners_present():
         return 0
@@ -90,13 +98,19 @@ def main():
         return 0
     if not data.get("ok"):
         return 0
-    total = sum(len(s.get("findings", [])) for s in data.get("scanned", []))
-    if total == 0:
+    try:
+        scanned = [s for s in data.get("scanned", []) if isinstance(s, dict)]
+        total = sum(len(s.get("findings") or [])
+                    for s in scanned)
+        if total == 0:
+            return 0
+        ids = []
+        for s in scanned:
+            for f in (s.get("findings") or [])[:5]:
+                if isinstance(f, dict):
+                    ids.append(f"{f.get('pkg') or '?'}:{f.get('id') or '?'}")
+    except (TypeError, AttributeError):
         return 0
-    ids = []
-    for s in data.get("scanned", []):
-        for f in s.get("findings", [])[:5]:
-            ids.append(f"{f.get('pkg') or '?'}:{f.get('id') or '?'}")
     more = total - len(ids)
     suffix = f" (+{more} more)" if more > 0 else ""
     ctx = (f"[DEP-AUDIT] {total} vulnerable dependenc"

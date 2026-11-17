@@ -210,6 +210,48 @@ def handle_stop(_data):
                 "stopping (AGENTS.md Rule 2)."
             )
 
+    # Post-commit scan: messages delivered via `commit -F -` (stdin), $()
+    # substitution, or an interactive editor are invisible to the -m/-F
+    # checks above. Unpushed commits are still amendable, so scan their
+    # messages + identities (bounded to @{u}..HEAD; skipped without
+    # upstream, where we can't tell ours from history).
+    try:
+        result = _run(
+            ["git", "rev-list", "@{u}..HEAD"],
+            capture_output=True, text=True, timeout=10, cwd=cwd,
+            encoding="utf-8", errors="replace",
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        result = None
+    if result is not None and result.returncode == 0:
+        for sha in result.stdout.split()[:20]:
+            try:
+                info = _run(
+                    ["git", "log", "-1",
+                     "--format=%B\n--IDENT--\n%an\n%ae\n%cn\n%ce", sha],
+                    capture_output=True, text=True, timeout=10, cwd=cwd,
+                    encoding="utf-8", errors="replace",
+                )
+            except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+                continue
+            if info.returncode != 0:
+                continue
+            body, _, ident = info.stdout.partition("\n--IDENT--\n")
+            if check_text(body):
+                block(
+                    "AI signature detected in unpushed commit "
+                    f"{sha[:8]} message (AGENTS.md Rule 2). Amend it to "
+                    "remove the signature before stopping."
+                )
+            if ident and any(
+                    AI_IDENTITY.search(line)
+                    for line in ident.splitlines() if line.strip()):
+                block(
+                    "AI identity in unpushed commit " + sha[:8] +
+                    " author/committer (AGENTS.md Rule 2). Amend with a "
+                    "real identity before stopping."
+                )
+
     # Untracked files never appear in a diff; a signature written via exec
     # redirect (cat > file, heredoc) would otherwise escape the Stop scan.
     try:
@@ -222,7 +264,7 @@ def handle_stop(_data):
         return  # no git or no repo: allow
     if result.returncode != 0:
         return
-    for rel in result.stdout.split():
+    for rel in result.stdout.split("\n"):
         if any(rel.replace("\\", "/").endswith(sf) for sf in self_files):
             continue
         path = os.path.join(cwd, rel)
@@ -269,6 +311,8 @@ def handle_pre_tool_use(data):
 
     if tool_name == "exec":
         command = tool_input.get("command", "") or ""
+        if not isinstance(command, str):
+            return
         check_identity(command)
         # `git -c key=val commit` / `git -C dir commit` place flags between
         # "git" and "commit"; the adjacent substring gate missed them.
@@ -286,8 +330,12 @@ def handle_pre_tool_use(data):
                     f"'{commit_file}' (AGENTS.md Rule 2)."
                 )
             return
-        # Extract -m message: find -m followed by quoted or unquoted text
-        m_match = re.search(r"""-m\s+['"]?(.*?)['"]?\s*(?:&&|;|\||$)""", command)
+        # Extract message from every -m/-am/-sm/--message form. The bare
+        # -m\s+ missed clustered (-am "x"), attached (-m"x"), and long
+        # (--message[= ]x) spellings — all carry the same signature risk.
+        m_match = re.search(
+            r"""(?:--message\s*=|--message\s+|-(?!-)[a-zA-Z]*?m)"""
+            r"""\s*['"]?(.*?)['"]?\s*(?:&&|;|\||$)""", command)
         if m_match:
             msg = m_match.group(1)
             if check_text(msg):
@@ -302,6 +350,8 @@ def handle_pre_tool_use(data):
         # patterns), the signature strings are the detector code itself,
         # not an AI signature in a deliverable.
         file_path = tool_input.get("file_path", "") or ""
+        if not isinstance(file_path, str):
+            return
         self_files = (
             "check-ai-signature.py",
             "validate-skill-format.py",
@@ -309,6 +359,8 @@ def handle_pre_tool_use(data):
         if any(f in file_path for f in self_files):
             return
         content = tool_input.get("content") or tool_input.get("new_string") or ""
+        if not isinstance(content, str):
+            return
         if check_text(content):
             block(
                 f"AI signature detected in {tool_name} content (AGENTS.md Rule 2)."
@@ -333,6 +385,8 @@ def main():
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)  # fail-open
 
+    if not isinstance(data, dict):
+        sys.exit(0)
     handler = HANDLERS.get(data.get("hook_event_name", ""))
     if handler is not None:
         handler(data)

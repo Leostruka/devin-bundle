@@ -220,9 +220,12 @@ def estimate_rules_cost():
 def load_marker():
     try:
         with open(MARKER_FILE, encoding="utf-8", errors="replace") as f:
-            return json.load(f)
+            data = json.load(f)
+        if isinstance(data, dict):
+            return data
     except (OSError, json.JSONDecodeError):
-        return {"tool_output_tokens": 0, "calls": 0, "session_start": None}
+        pass
+    return {"tool_output_tokens": 0, "calls": 0, "session_start": None}
 
 
 def save_marker(marker):
@@ -248,6 +251,8 @@ def process_hook(payload_str):
     try:
         payload = json.loads(payload_str) if payload_str else {}
     except json.JSONDecodeError:
+        payload = {}
+    if not isinstance(payload, dict):
         payload = {}
 
     resp = payload.get("tool_response") or payload.get("tool_output") or {}
@@ -282,8 +287,12 @@ def process_hook(payload_str):
     if not marker.get("session_start"):
         marker["session_start"] = datetime.datetime.now().isoformat()
 
-    marker["tool_output_tokens"] = marker.get("tool_output_tokens", 0) + output_tokens
-    marker["calls"] = marker.get("calls", 0) + 1
+    for _k in ("tool_output_tokens", "calls"):
+        if not isinstance(marker.get(_k), (int, float)) \
+                or isinstance(marker.get(_k), bool):
+            marker[_k] = 0
+    marker["tool_output_tokens"] += output_tokens
+    marker["calls"] += 1
 
     # Estimate total context
     rules_tokens = estimate_rules_cost()
@@ -460,7 +469,7 @@ def evaluate_refinement_cost_benefit(before_tokens, after_tokens, benefit_score,
             "benefit_score": benefit_score,
         }
     # Normalize cost by a reference window so the ratio is interpretable.
-    reference_window = get_default_window()
+    reference_window = get_default_window() or 200_000
     normalized_cost = delta / reference_window
     if normalized_cost > benefit_score * max_cost_benefit_ratio:
         return {
@@ -516,9 +525,11 @@ def replay_events(log_path=None):
                 if not line:
                     continue
                 try:
-                    events.append(json.loads(line))
+                    ev = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+                if isinstance(ev, dict):
+                    events.append(ev)
     except OSError:
         pass
     return events
@@ -561,7 +572,7 @@ def load_recipes():
     if RECIPES_DATA is not None:
         return RECIPES_DATA
     data = load_bundle_file("recipes.json")
-    if data and "recipes" in data:
+    if data and isinstance(data.get("recipes"), dict):
         RECIPES_DATA = data["recipes"]
     else:
         RECIPES_DATA = {}
@@ -570,7 +581,8 @@ def load_recipes():
 
 def resolve_preferred_model(recipe):
     """Resolve a recipe's preferred_model, using role mapping from bundle-models."""
-    env_override = os.environ.get(f"BUNDLE_RECIPE_{recipe['name'].upper()}_MODEL")
+    env_override = os.environ.get(
+        f"BUNDLE_RECIPE_{str(recipe.get('name', '')).upper()}_MODEL")
     if env_override:
         return env_override
     if recipe.get("preferred_model"):
@@ -600,9 +612,11 @@ def resolve_preferred_model(recipe):
 
 def score_recipe(recipe, instruction, tools, model, confidence_threshold=0.25):
     """Score how well a recipe matches task evidence."""
+    if not isinstance(recipe, dict):
+        recipe = {}
     instruction = (instruction or "").lower()
     tokens = set(re.findall(r"\w+", instruction))
-    signals = recipe["instruction_signals"]
+    signals = recipe.get("instruction_signals") or ()
     if not isinstance(signals, set):
         signals = set(signals)
     overlap = len(tokens & signals)
@@ -611,7 +625,7 @@ def score_recipe(recipe, instruction, tools, model, confidence_threshold=0.25):
     tool_score = 0.0
     if tools:
         available = set(t.lower() for t in tools)
-        needed = set(t.lower() for t in recipe["tools"])
+        needed = set(t.lower() for t in (recipe.get("tools") or ()))
         tool_score = len(available & needed) / max(1, len(needed))
 
     preferred = resolve_preferred_model(recipe)
@@ -619,7 +633,7 @@ def score_recipe(recipe, instruction, tools, model, confidence_threshold=0.25):
 
     score = 0.5 * instruction_score + 0.3 * tool_score + 0.2 * model_score
     return {
-        "recipe": recipe["name"],
+        "recipe": recipe.get("name", "?"),
         "score": score,
         "instruction_score": instruction_score,
         "tool_score": tool_score,

@@ -88,3 +88,36 @@ def test_clear_abort_missing_is_ok(tmp_path):
     out = json.loads(r.stdout)
     assert r.returncode == 0 and out["ok"] is True
     assert out["removed"] is False
+
+
+def test_unexpected_error_exits_nonzero(tmp_path, monkeypatch):
+    # {"ok": false} envelope must never exit 0 (CLI contract + docstring)
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("st2", SCRIPT)
+    st = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(st)
+    monkeypatch.setattr(st, "_load",
+                        lambda p: (_ for _ in ()).throw(RuntimeError("boom")))
+    r = subprocess.run(
+        [sys.executable, "-c",
+         "import importlib.util,sys;"
+         "s=importlib.util.spec_from_file_location('st',r'" + str(SCRIPT) + "');"
+         "m=importlib.util.module_from_spec(s);s.loader.exec_module(m);"
+         "m._load=lambda p:(_ for _ in ()).throw(RuntimeError('boom'));"
+         "sys.exit(m.main(['x','--list']))"],
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    out = json.loads(r.stdout)
+    assert out["ok"] is False and r.returncode != 0
+
+
+def test_concurrent_record_keeps_trace_intact(tmp_path):
+    # atomic _save: trace file must remain valid JSONL after writes
+    import concurrent.futures
+    def rec(i):
+        return run(["record"], {"id": f"t{i}", "status": "running"},
+                   proj=tmp_path)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:
+        list(ex.map(rec, range(8)))
+    lines = trace_file(tmp_path).read_text(encoding="utf-8").strip().splitlines()
+    ids = {json.loads(l)["id"] for l in lines}
+    assert len(ids) == len(lines)  # every line valid, no torn writes

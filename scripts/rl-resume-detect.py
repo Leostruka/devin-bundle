@@ -75,6 +75,8 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
 

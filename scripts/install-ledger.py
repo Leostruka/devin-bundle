@@ -89,9 +89,12 @@ def _ledger_path():
 def _load_ledger():
     try:
         with open(_ledger_path(), encoding="utf-8") as fh:
-            return json.load(fh)
+            data = json.load(fh)
+        if isinstance(data, dict):
+            return data
     except (OSError, ValueError):
-        return {"version": 1, "files": {}}
+        pass
+    return {"version": 1, "files": {}}
 
 
 def _save_ledger(data):

@@ -60,9 +60,13 @@ def _events():
             if not line:
                 continue
             try:
-                out.append(json.loads(line))
+                ev = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            t = ev.get("t") if isinstance(ev, dict) else None
+            if (isinstance(t, (int, float))
+                    and not isinstance(t, bool)):
+                out.append(ev)
     return out
 
 

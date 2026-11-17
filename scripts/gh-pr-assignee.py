@@ -23,7 +23,9 @@ def _run(*a, **kw):
         kw.setdefault('errors', 'replace')
     return subprocess.run(*a, **kw)
 
-_CREATE_RX = re.compile(r"\bgh\s+pr\s+create\b")
+_CREATE_RX = re.compile(
+    r"\bgh\b(?:\s+(?:-[a-zA-Z](?:\s+\S+)??|--[\w-]+(?:=\S+|\s+\S+)??))*"
+    r"\s+pr\s+create\b")
 _URL_RX = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
 
 
@@ -38,18 +40,29 @@ def main():
             except (OSError, ValueError):
                 pass
         data = json.load(sys.stdin)
+        if not isinstance(data, dict):
+            raise ValueError("payload not a dict")
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
     if data.get("tool_name") != "exec":
         sys.exit(0)
     resp = data.get("tool_response") or {}
+    if not isinstance(resp, dict):
+        resp = {}
     if not resp.get("success", True):
         sys.exit(0)
     ti = data.get("tool_input") or {}
+    if not isinstance(ti, dict):
+        ti = {}
     cmd = ti.get("command") or ""
+    if not isinstance(cmd, str):
+        sys.exit(0)
     if not _CREATE_RX.search(cmd) or "--assignee" in cmd:
         sys.exit(0)
-    m = _URL_RX.search(resp.get("output") or "")
+    out = resp.get("output")
+    if not isinstance(out, str):
+        sys.exit(0)
+    m = _URL_RX.search(out)
     if not m:
         sys.exit(0)  # no PR URL in output — create may have failed anyway
 
