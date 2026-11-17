@@ -33,6 +33,21 @@ METRICS_MAX_BYTES = 512 * 1024
 SLOW_SCRIPT_MS = 5000
 
 
+def pin_stdio_utf8(stream):
+    """Reconfigure a stdio stream to UTF-8 with replace errors.
+
+    Windows consoles default to cp1252; hook stdin/stdout carrying
+    non-ASCII payloads would corrupt or crash. No-op when the stream
+    lacks reconfigure (redirected pipes on some platforms).
+    """
+    recfg = getattr(stream, "reconfigure", None)
+    if recfg:
+        try:
+            recfg(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
+
+
 def metrics_sink_path():
     """Append-only JSONL metric sink (gitignored via '.devin/ledgers/*').
 

@@ -18,6 +18,8 @@ Fail-open everywhere: any exception -> exit 0 silent.
 import json
 import os
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 MODE_FILE_REL = os.path.join(".devin", "output-mode.json")
 PRESETS_REL = os.path.join("data", "output-modes.json")
@@ -47,12 +49,7 @@ def _emit(context):
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)

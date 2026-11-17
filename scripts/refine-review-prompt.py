@@ -21,6 +21,8 @@ Evidence: instruction compliance decays 5.6% per generation step
 on exit are gone.
 """
 import sys, json, os, re
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 
 STOPWORDS = frozenset({
@@ -83,12 +85,7 @@ def find_marker():
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         data = json.load(sys.stdin)
         if not isinstance(data, dict):
             raise ValueError("payload not a dict")

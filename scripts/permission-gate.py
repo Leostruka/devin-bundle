@@ -10,8 +10,11 @@ the human prompt proceeds. `block` is never emitted: an unexpected payload
 is a bug in the gate, not a reason to hide a decision from the user.
 """
 import json
+import os
 import re
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 # Shell composition: an approved command is ONE invocation.
 UNSAFE_CHARS = re.compile(r"[;&|`$<>\\\r\n{}]|\(|\)")
@@ -170,12 +173,7 @@ def _exec_verdict(command):
 
 
 def main():
-    reconfigure = getattr(sys.stdin, "reconfigure", None)
-    if reconfigure:
-        try:
-            reconfigure(encoding="utf-8", errors="replace")
-        except (OSError, ValueError):
-            pass
+    _hookrun.pin_stdio_utf8(sys.stdin)
     try:
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, EOFError, ValueError):

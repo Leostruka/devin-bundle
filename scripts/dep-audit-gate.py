@@ -11,6 +11,8 @@ import re
 import shutil
 import subprocess
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 try:
     _CF = subprocess.CREATE_NO_WINDOW
@@ -59,12 +61,7 @@ def _scanners_present():
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         payload = json.load(sys.stdin)
         if not isinstance(payload, dict):
             raise ValueError("payload not a dict")

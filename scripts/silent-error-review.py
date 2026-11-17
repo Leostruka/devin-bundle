@@ -40,6 +40,7 @@ At most one finding is emitted per call to avoid multi-finding spam.
 import sys, json, re, os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 try:
     from _hookrun import emit_metric
 except Exception:
@@ -172,12 +173,7 @@ def emit(findings):
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         data = json.load(sys.stdin)
         if not isinstance(data, dict):
             raise ValueError("payload not a dict")

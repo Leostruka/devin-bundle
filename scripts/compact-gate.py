@@ -27,6 +27,8 @@ import socket
 import subprocess
 import sys
 import time
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import _hookrun
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROFILE_ACTION = "compact-gate-v1"
@@ -472,12 +474,7 @@ def _inject(text):
 
 def main():
     try:
-        _recfg = getattr(sys.stdin, "reconfigure", None)
-        if _recfg:
-            try:
-                _recfg(encoding="utf-8", errors="replace")
-            except (OSError, ValueError):
-                pass
+        _hookrun.pin_stdio_utf8(sys.stdin)
         payload = json.load(sys.stdin)
         if not isinstance(payload, dict):
             raise ValueError("payload not a dict")
