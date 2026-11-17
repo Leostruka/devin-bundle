@@ -24,10 +24,23 @@ args = sys.argv[1:]
 if args and args[0] == "commands":
     print("timeline.cut\\nfile.export\\nfile.open")
     sys.exit(0)
-if args[:2] == ["run", "--command"]:
-    out = {"ran": args[2], "params": json.loads(
-        args[args.index("--params") + 1]) if "--params" in args else {}}
+if args and args[0] == "exec":
+    out = {"ran": args[1], "params": json.loads(
+        args[2]) if len(args) > 2 else {}}
     print(json.dumps(out)); sys.exit(0)
+if args[:1] == ["run"] or args[:2] == ["run", "--demo"]:
+    results = []
+    for i, raw in enumerate(sys.stdin):
+        raw = raw.strip()
+        if not raw:
+            continue
+        try:
+            line = json.loads(raw)
+            results.append({"id": line["id"], "line": i + 1, "ok": True,
+                            "result": {"params": line.get("params", {})}})
+        except Exception as e:
+            results.append({"line": i + 1, "ok": False, "error": str(e)})
+    print("\\n".join(json.dumps(r) for r in results)); sys.exit(0)
 sys.exit(2)
 """
 
@@ -69,6 +82,21 @@ def test_run_command_passes_params(fake_app):
 
 def test_run_command_missing_cli_errors():
     r = bridge.run_command("filmcraft", "x")
+    assert r["ok"] is False and "not on PATH" in r["error"]
+
+
+def test_run_script_streams_jsonl_lines(fake_app):
+    lines = [{"id": "timeline.cut", "params": {"at_s": 1}},
+             {"id": "project.inspect", "params": {}}]
+    r = bridge.run_script(fake_app, lines)
+    assert r["ok"] and len(r["results"]) == 2
+    assert all(x["ok"] for x in r["results"])
+    assert r["results"][0]["id"] == "timeline.cut"
+    assert r["results"][0]["result"]["params"] == {"at_s": 1}
+
+
+def test_run_script_missing_cli_errors():
+    r = bridge.run_script("filmcraft", [{"id": "x", "params": {}}])
     assert r["ok"] is False and "not on PATH" in r["error"]
 
 
