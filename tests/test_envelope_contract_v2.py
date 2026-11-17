@@ -119,9 +119,6 @@ PROBES = [
     ("extensions/api-bridge/bridge.py", ["doctor"], "api-bridge"),
     ("extensions/diagram-tools/plantuml_renderer.py",
      ["--self-test"], "diagram-tools"),
-    ("extensions/craft-bridge/bridge.py", ["doctor"], "craft-bridge"),
-    ("extensions/craft-bridge/scene_manifest.py",
-     ["nope"], "craft-bridge"),
     ("extensions/harness-tree/ns.py",
      ["resume", "nonexistent"], "harness-tree"),
     ("extensions/harness-tree/tree.py",
@@ -185,13 +182,13 @@ PROBES = [
      ["x", "--json"], "design-intelligence"),
     # holistic-review pass: tool emitters misfiled as hook-protocol
     # (pulse, simplify-scan), literal-JSON emitters (changelog-refs),
-    # sys.stdout.buffer.write skill CLIs, and craft-bridge ui_dsl.
+    # sys.stdout.buffer.write skill CLIs, and ui-dsl.
     ("scripts/pulse.py", ["--dry-run"], "pulse"),
     ("scripts/simplify-scan.py",
      ["--root", "nonexistent"], "simplify-scan"),
     ("scripts/changelog-refs.py", [], "changelog-refs"),
-    ("extensions/craft-bridge/ui_dsl.py",
-     ["benchmark", "--fixture", "nonexistent"], "craft-bridge"),
+    ("extensions/ui-dsl/ui_dsl.py",
+     ["benchmark", "--fixture", "nonexistent"], "ui-dsl"),
     ("skills/youtube-fetcher/scripts/fetch.py",
      ["validate", "dQw4w9WgXcQ"], "youtube-fetcher"),
     ("skills/devin-config/scripts/devin-manager.py",

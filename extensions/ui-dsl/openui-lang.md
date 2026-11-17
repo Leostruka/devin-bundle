@@ -2,9 +2,9 @@
 
 Implemented local pattern: a strict, versioned one-element-per-line DSL for
 streamed HUDs and interactive grilling forms, implemented in
-`extensions/craft-bridge/ui_dsl.py` (`DSL_VERSION = 1`). Local capability
+`extensions/ui-dsl/ui_dsl.py` (`DSL_VERSION = 1`). Local capability
 only - no claim of upstream OpenUI grammar compatibility and no external
-app contract. The craft bridge still dispatches only real app CLI commands.
+app contract.
 
 ## Grammar (v1)
 
@@ -62,7 +62,7 @@ python ui_dsl.py benchmark --fixture in.dsl [--tokenizer PATH_OR_ID] [--output r
 
 ## Measured benchmark (fixture-specific, not a universal claim)
 
-`extensions/craft-bridge/benchmark-results.json` on the shipped fixture:
+`extensions/ui-dsl/benchmark-results.json` on the shipped fixture:
 `Xenova/gpt-4`, minified JSON comparison, `dsl_tokens=108` vs
 `json_tokens=191` -> ratio **0.5654**. The ~50% target was NOT met on
 this fixture; the result is one fixture and one tokenizer, not a
@@ -72,12 +72,11 @@ universal savings claim.
 
 | Surface | Change |
 |---|---|
-| `extensions/craft-bridge/` | Parser/renderer shipped in `ui_dsl.py`. Still no `ops_map.json` entry: the bridge dispatches external CLI commands, and no external app is verified to accept this DSL. |
+| `extensions/ui-dsl/` | Parser/renderer shipped in `ui_dsl.py`. No external app is verified to accept this DSL. |
 | Grilling forms | `ask_user_question` payloads stay native; DSL covers custom HUD/form surfaces only. |
-| `spark-view` (craft-bridge) | Renderer support unverified; incremental consumption via `StreamParser` exists locally but no spark-view integration is shipped. |
 
 ## Non-goals
 
-No breaking change to existing craft-bridge ops; no new runtime deps in
+No new runtime deps in
 `scripts/`; no layout engine (renderer decides geometry); no claim that any
 external Katana/Seedance-style service consumes this DSL.

@@ -96,6 +96,10 @@ Flagship: **craft suite**, clean-room Rust reimplementations of Adobe/Office med
 
 Media ops as **deterministic code pipelines**, agent-native: craft apps dispatch every action through typed command registries exposed via CLI, JSON control channel, and built-in **MCP server** (filmcraft 650+ cmds `filmcraft-cli mcp`; photocraft 500+ cmds `photocraft-cli run`). Decision: consume their engines (MIT/Apache) via `extensions/craft-bridge`; build only seam (`scene_manifest`) + gaps. See ISSUE_03.
 
+> REVERTED 2026-11-17: craft suite consumption abandoned (unfinished
+> upstream); `extensions/craft-bridge` + ISSUE_03 removed. `ui_dsl`
+> survives under `extensions/ui-dsl/`.
+
 ---
 
 ## Front 5: PPISP (NVIDIA nv-tlabs/ppisp)

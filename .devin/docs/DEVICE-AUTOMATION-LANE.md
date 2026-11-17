@@ -17,7 +17,7 @@ beyond desktop GUI automation.
 - Survey row R7-18
   (`.devin/research/2026-11-10-reels-batch7-survey.md`): "doc the
   agent->physical-device lane (TV/Kindle/router class); map to
-  craft-bridge/system-control/computer-use."
+  system-control/computer-use."
 
 ## What "device automation" means here
 

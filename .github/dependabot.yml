@@ -9,7 +9,6 @@ updates:
     directories:
       - /extensions/ai-tools
       - /extensions/computer-use
-      - /extensions/craft-bridge
       - /extensions/image-forensics
       - /extensions/laya-tools
       - /extensions/media-tools

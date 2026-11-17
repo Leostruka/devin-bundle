@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(ROOT / "extensions" / "laya-tools"))
 sys.path.insert(0, str(ROOT / "extensions" / "computer-use"))
-sys.path.insert(0, str(ROOT / "extensions" / "craft-bridge"))
+sys.path.insert(0, str(ROOT / "extensions" / "ui-dsl"))
 sys.path.insert(0, str(ROOT / "extensions" / "scrape-tools"))
 
 import doc_coverage as dco
@@ -186,7 +186,7 @@ def test_doc_coverage_map_targets_are_real():
     mapping = _map()
     required = {
         ".devin/research/LAYA_MASTER_ARCHITECTURE.md",
-        "extensions/craft-bridge/openui-lang.md",
+        "extensions/ui-dsl/openui-lang.md",
         ".devin/sdd/goldfish-review.md",
     }
     assert required <= set(mapping), "core docs unmapped"

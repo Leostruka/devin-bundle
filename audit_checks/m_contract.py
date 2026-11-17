@@ -611,7 +611,7 @@ def c45(ctx):
         _SKIP45 = {
             'extensions/remotion-render/render.py',   # out_name -> remotion out/; workdir rmtree-guarded
             'extensions/comfyui-operator/wrapper.py',  # --out is a download dir (makedirs refresh)
-            'extensions/craft-bridge/ui_dsl.py',      # O_EXCL atomic refusal inside _write_output
+            'extensions/ui-dsl/ui_dsl.py',            # O_EXCL atomic refusal inside _write_output
             'extensions/computer-use/terminal.py',    # dst = session-link id, not a file
             'extensions/computer-use/browser.py',     # target = env/URL, not a file
             'extensions/ppisp-prep/ppisp_runner.py',  # --out = dir forwarded to upstream trainer

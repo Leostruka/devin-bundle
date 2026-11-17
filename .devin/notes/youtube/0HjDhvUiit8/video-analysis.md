@@ -23,7 +23,7 @@ Code. Fluxo mostrado:
 - Tutorial de consumidor; nenhuma lib, API, protocolo ou padrao novo
   -- sideload webOS dev-mode + Claude Code iterando sobre uma UI.
 - O padrao "agente gera dashboard custom" ja e coberto por
-  `craft-bridge/ui_dsl` (HUDs/forms HTML) -- nada a portar.
+  `ui-dsl/ui_dsl` (HUDs/forms HTML) -- nada a portar.
 - Repos externos sao projetos de terceiros para TVs; fora do escopo
   do bundle (nao somos um launcher de TV).
 - Nenhuma mudanca de skill/extensao justificada.
