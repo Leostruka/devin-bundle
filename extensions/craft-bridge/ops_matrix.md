@@ -2,8 +2,9 @@
 
 All craft apps: Rust, Apache-2.0 (dual MIT/Apache for filmcraft/photocraft
 per READMEs). spark: TypeScript, MIT (`@sparkjsdev/spark`).
-Every app exposes the trio: `<app>-cli commands` / `run` / `mcp`;
-several add `--control <port>` JSON-lines channel.
+Every app exposes `<app>-cli commands` / `exec` / `run` / `mcp`
+(`exec` = one-shot, `run` = batch JSONL); several add `--control <port>`
+JSON-lines channel.
 
 | App | Domain | CLI | Channels | Consume for |
 |---|---|---|---|---|
