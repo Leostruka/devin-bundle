@@ -99,6 +99,14 @@ The bundle does not own:
 - Subsystem archaeology: `.devin/research/INDEX.md` maps major
   subsystems to their research/plan/handoff artifacts.
 
+## `.devin/` tracking policy
+
+`.gitignore` carries a blanket `.devin/` rule: new files under `.devin/`
+(notes, plans, session state) are local-only by default and do not enter
+the repository. Already-tracked `.devin/` files stay tracked and are
+edited normally; staging their modifications or adding a new tracked
+`.devin/` file requires `git add -f <path>`.
+
 ## Vocabulary constraints
 
 - Use **bundle** for repository-distributed resources.
