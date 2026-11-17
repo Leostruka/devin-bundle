@@ -243,5 +243,3 @@ def c15(ctx):
             else:
                 ctx.warnings.append('skills/' + s + ' live != bundle')
                 print('  WARN skills/' + s + ' live=' + h1 + ' bundle=' + h2)
-
-

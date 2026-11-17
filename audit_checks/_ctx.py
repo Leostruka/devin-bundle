@@ -24,6 +24,3 @@ def _scan_py_files():
             for _fn in _filenames:
                 if _fn.endswith('.py'):
                     yield os.path.join(_dirpath, _fn)
-
-
-

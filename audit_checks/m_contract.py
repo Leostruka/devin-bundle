@@ -643,6 +643,3 @@ def c45(ctx):
             print('  OK  all --out emitters refuse to overwrite')
     except Exception as _e45:
         print('  SKIP out-refusal check failed: ' + str(_e45))
-
-
-

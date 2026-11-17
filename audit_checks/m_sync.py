@@ -122,5 +122,3 @@ def c22(ctx):
 
     # 22b. Structural validation for export/install scripts
     print()
-
-

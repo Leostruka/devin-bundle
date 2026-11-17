@@ -113,5 +113,3 @@ def c5(ctx):
 
     # 6. AGENTS.md rule count
     print()
-
-

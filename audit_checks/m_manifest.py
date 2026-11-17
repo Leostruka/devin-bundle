@@ -147,5 +147,3 @@ def c10(ctx):
 
     # 10b. mcp_config.json schema validation
     print()
-
-

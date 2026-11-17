@@ -303,5 +303,3 @@ def c36(ctx):
     # or crashes on undefined bytes. Every subprocess text=True call needs an
     # encoding= kwarg on the same call (count heuristics mask per-call gaps).
     print()
-
-

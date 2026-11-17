@@ -211,5 +211,3 @@ def c28(ctx):
 
     # 29. All arXiv refs in scripts/ and tests/ must be in MODEL-GUIDE.md source table
     print()
-
-
