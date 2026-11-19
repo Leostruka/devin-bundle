@@ -626,8 +626,9 @@ if [[ -d "$ext_src" ]]; then
   done
 
   # --- 8c. extension Python deps (isolated venv, no system/user-site) ---
-  for ext_name in computer-use scrape-tools laya-tools; do
-    ext_dir="$ext_dst/$ext_name"
+  for ext_dir_item in "$ext_dst"/*/; do
+    ext_name="$(basename "$ext_dir_item")"
+    ext_dir="${ext_dir_item%/}"
     [[ -f "$ext_dir/requirements.txt" ]] || continue
     if [[ -z "$PY" ]]; then
       warn "python not found - skipping $ext_name venv (scripts need pip deps)"
