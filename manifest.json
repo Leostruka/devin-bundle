@@ -1388,9 +1388,15 @@
       "source": "github:caldoai/skills (MIT)",
       "purpose": "Use when you want to untangle a whole codebase in one pass, so agents working in it read less per change, break less without noticing, and debug faster.",
       "original_path": "%APPDATA%\\devin\\skills\\untangle-codebase"
+    },
+    {
+      "name": "prune-tests",
+      "source": "github:caldoai/skills (MIT)",
+      "purpose": "Use when you want to prune tests that guard no behavior.",
+      "original_path": "%APPDATA%\\devin\\skills\\prune-tests"
     }
   ],
-  "skill_count": 188,
+  "skill_count": 189,
   "rule_count": 21,
   "scripts": [
     {

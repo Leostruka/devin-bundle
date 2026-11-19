@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- feat(skills): import prune-tests from caldoai/skills (MIT, NOTICE attribution) - completes #698
 - fix(install): extension venv creation scans requirements.txt (was hardcoded 3-name list) - ai-tools/image-forensics/media-tools/ppisp-prep/ui-dsl deps now install (#705)
 - docs(ledger): cyclic review close-out (#704)
 - feat(skills): import untangle-codebase from caldoai/skills (MIT, NOTICE attribution) (#698, #702)
