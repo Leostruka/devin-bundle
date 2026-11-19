@@ -22,7 +22,8 @@
     "copilot": false,
     "opencode": false,
     "zed": false,
-    "cloud": false
+    "cloud": false,
+    "kiro": false
   },
   "shell": {
     "setup_complete": true,

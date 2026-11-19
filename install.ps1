@@ -11,7 +11,7 @@
     - config.json        → %APPDATA%\devin\config.json (MERGE — preserves local org_id)
     - hooks              → merged into %APPDATA%\devin\config.json under "hooks" key
     - scripts\*          → %APPDATA%\devin\scripts\
-    - extensions\*       → %APPDATA%\devin\extensions\ (+ .venv for computer-use/scrape-tools/laya-tools, + rust-core cargo build)
+    - extensions\*       → %APPDATA%\devin\extensions\ (+ .venv where requirements.txt exists, + rust-core cargo build)
     - mcp_config.json    → %APPDATA%\devin\mcp_config.json (skips if MASKED)
     - credentials.toml   → %APPDATA%\devin\credentials.toml (only with -RestoreSecrets)
 
@@ -684,8 +684,9 @@ if (Test-Path $extSrc) {
   foreach ($cand in @("python", "python3", "py")) {
     if (Get-Command $cand -ErrorAction SilentlyContinue) { $pyCmd = $cand; break }
   }
-  foreach ($extName in @("computer-use", "scrape-tools", "laya-tools")) {
-    $extDir = Join-Path $extDst $extName
+  foreach ($extItem in (Get-ChildItem $extDst -Directory -ErrorAction SilentlyContinue)) {
+    $extName = $extItem.Name
+    $extDir = $extItem.FullName
     $extReq = Join-Path $extDir "requirements.txt"
     if (-not (Test-Path $extReq)) { continue }
     if (-not $pyCmd) {
