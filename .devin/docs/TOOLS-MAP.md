@@ -2,7 +2,7 @@
 
 Mapeia TODAS as ferramentas, subagentes, hooks, e configs do Devin CLI
 runtime vs o que o bundle cobre. Fonte: docs.devin.ai + runtime observado
-(versão validada: `3000.12.43` em `data/bundle-identity.json`).
+(versão validada: `3000.14.30821` em `data/bundle-identity.json`).
 
 ## Ferramentas do runtime (26 ativas + 2 modo-dependentes)
 
@@ -245,6 +245,9 @@ tools com side effects - não é o agente pedindo, é o runtime.
 | `/resume` com projeto+idade; `Alt+G` | REPL | Busca por projeto; alterna dir atual vs todos os projetos (3000.12.17) |
 | `1`/`2`/`3`/`4` no approval prompt | REPL | Once/Session/Project/Always sem setas (3000.12.17) |
 | `devin rules`, `devin skills`, `devin plugins`, `devin doctor` | Config | Gerência nativa de rules/skills/plugins e diagnóstico |
+| `devin daemon start\|stop\|status` | CLI | Gerencia o daemon de sessões locais (3000.13.4) |
+| `--process-model daemon\|in-process` | CLI flag | Sessão em daemon ou in-process (3000.13.4) |
+| `devin worker start` / `devin worker outpost` | Cloud | Worker de Outposts para sessões cloud enfileiradas (hidden, 3000.14.x) |
 
 **Nota 3000.11.1:** bloco `otel` no `config.json` ou `OTEL_EXPORTER_OTLP_*`
 exportam eventos/métricas para um collector OpenTelemetry; não adotado
@@ -272,6 +275,23 @@ exportam eventos/métricas para um collector OpenTelemetry; não adotado
 - Fixes relevantes: approvals de plan mostram resumo+path; Accept Edits/Smart
   reconhecem edits em network shares Windows/WSL; `devin -p` continua após
   tool call negada; imagens indecodificáveis não derrubam o turn.
+
+**Notas 3000.13.4 / 3000.14.30821:**
+- Daemon: sessões locais rodam em processo background (`devin daemon
+  start|stop|status`); `--process-model daemon|in-process` por launch, chave
+  `process_model` no config. Bundle não fixa `process_model` - o default
+  (`daemon`) é a superfície validada. Quirk: forma com espaço
+  `--process-model daemon` lê `daemon` como subcomando; usar
+  `--process-model=daemon`. `devin-N.ps1`/`devin-session-launcher.ps1` não
+  afetados; `devin ls --format json` mantém o mesmo shape.
+- `read_config_from.kiro` (novo): `false` bloqueia skills de `.kiro/skills/`
+  (projeto + `~/.kiro/skills/`). Adotado como `false` no bundle, alinhado com
+  os demais providers externos.
+- `devin worker` (hidden): Outposts worker para sessões cloud; sem consumidor
+  no bundle.
+- Fixes relevantes: stream de modelo retenta após 40s (era 4min); AGENTS.md/
+  CLAUDE.md carregam após `cd`; entradas malformadas de MCP/hooks não escondem
+  irmãs; crash de env var non-UTF8; overflow files >7d removidos no startup.
 
 ## Modelos disponíveis (Devin CLI `3000.12.17`)
 

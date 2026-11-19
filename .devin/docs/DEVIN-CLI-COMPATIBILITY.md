@@ -2,7 +2,7 @@
 
 ## Validated release
 
-The bundle is validated against Devin CLI `3000.12.43` (see `data/bundle-identity.json`).
+The bundle is validated against Devin CLI `3000.14.30821` (see `data/bundle-identity.json`).
 
 Release notes for the validated version and intermediate CLI versions are tracked in `data/bundle-identity.json` and the Devin CLI changelog.
 
@@ -179,6 +179,25 @@ Capabilities and runtime contracts verified in `3000.12.43` (`517d03d73926`) sin
 | `devin migrate hooks` / `migrate workflows` | documented | Imports `.windsurf/hooks.json` into `.devin/hooks.v1.json` and converts workflow files into skills. Useful when onboarding Windsurf-era projects; no bundle action needed (hooks already canonical). |
 | `devin cloud drs` | spec drafted, live blocked | Declarative Repo Setup - environment blueprints, sandbox sessions and builds for cloud sessions. Org lacks DRS entitlement (whoami OK, blueprint-list -> Organization not found); draft blueprint spec at `.devin/docs/DRS-BLUEPRINT-SPEC.md` (#456). |
 | `devin setup` wizard, `devin uninstall` | adopted (passive) | Interactive onboarding / full removal flows. |
+
+## 3000.14.30821 capabilities (verified 2026-11-18, CLI 3000.14.30821)
+
+Capabilities and runtime contracts verified in `3000.14.30821` (`a09cd7f323ee`), covering `3000.12.43` -> `3000.14.30821` (`3000.12.57` fixes, `3000.13.4` daemon milestone, `3000.14.30821` fixes). `static.devin.ai/cli/current/manifest.json` confirms `3000.14.30821` is the latest promoted build.
+
+| Capability | Decision | Rationale |
+|---|---|---|
+| Daemon process model: local sessions run in a background process; close/reopen CLI without stopping; multiple clients attach | adopted | Verified: `devin daemon status` reports `running (pid N), N session(s) loaded`; headless `devin --process-model=daemon -p` auto-starts the daemon and unloads the session on exit. Improves `devin-N`/launcher resilience (terminal close no longer kills sessions). |
+| `devin daemon start\|stop\|status` | documented | New subcommand; daemon self-exits ~10min after last client. |
+| `--process-model daemon\|in-process` flag + `process_model` config key | documented | Verified both modes under `-p`. Arg-parse quirk: `--process-model daemon` (space form) parses `daemon` as the subcommand - use `--process-model=daemon` or place the flag before positionals. Bundle `config.json` does not pin `process_model`; CLI default (`daemon`) is the validated surface. |
+| `.kiro/skills/` discovery (project + `~/.kiro/skills/`) gated by `read_config_from.kiro` | adopted (off) | Verified empirically: a probe skill in `~/.kiro/skills/` appeared in `devin skills list`; with `read_config_from.kiro: false` via `--config` it disappears. `config.json` now ships `"kiro": false`, consistent with all other foreign config sources (cursor/windsurf/claude/copilot/opencode/zed/cloud). |
+| `devin ls` / `devin -r` / `/resume` -> interactive session monitor | adopted (passive) | `devin ls --format json` still returns the same shape (`id`, `working_directory`, `last_activity_at`, `title`, `state`) - `devin-N.ps1` shared-cache path unaffected. |
+| Stalled model stream retried after 40s (was 4min "Running tools") | adopted (passive) | Upstream fix; benefits long unattended `scheduled-turns`/AFK runs. |
+| `devin worker` (hidden): Outposts worker for queued cloud sessions; org picker when configured org unavailable | documented | Hidden subcommand (not in `--help`, runnable in all channels). No bundle consumer; cloud-lane only. |
+| Sandbox + enterprise domain allowlist = hard limit; cloud MCP "ask" tools run once with approved args | documented | Enterprise policy surfaces; no bundle config. |
+| Overflow files older than 7 days deleted at startup (3000.12.57) | adopted (passive) | Stops `devin.exe-overflows/` accumulation noted in hook workflows. |
+| Fixes: AGENTS.md/CLAUDE.md load after `cd` into repo; malformed MCP/hooks entries no longer hide siblings; non-UTF8 env var crash; `/rename` quote stripping; picker cursor stability; Vim `yy`/`dd`/`J` | adopted (passive) | Upstream fixes; rules-after-`cd` closes a rules-loading gap on Windows workflows. |
+| kitty/Ghostty prompt image thumbnails | documented | Terminal UX; no config. |
+| `devin doctor` 3/3, `devin rules list` + `devin skills list` resolve bundle surface, compat tests 6/6 | adopted (passive) | Re-verified on `3000.14.30821` against the live bundle. |
 
 ## Model policy
 
