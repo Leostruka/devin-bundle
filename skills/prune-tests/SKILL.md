@@ -38,6 +38,7 @@ For example:
 
 **2. Prune**
 
+- List every test slated for deletion or rewrite and get explicit approval first; record the reason for each deletion in the ledger.
 - Delete every test that isn't anchored to intended behavior.
 - Where one also covers behavior something relies on, rewrite it against that behavior instead.
 - Delete production code that only existed for the tests you removed.
