@@ -22,3 +22,31 @@ EVIDENCE: rule index 1-30 has no source-of-truth precedence entry;
 Plan: add terse non-pinned rule 6 (free slot): code-over-docs
 precedence + report mismatch; plan-overlap check before building
 unticketed work from plans/notes. Keep to ~4 lines (Rule 18 lean).
+EVIDENCE: applied; audit c6 green (rule_count 21), pytest rules-coverage
+3/3. PR #701 merged (75f7ad81). STATE: applied.
+
+## Cycle 2: #698 untangle-codebase import (CHANGE_CLASS: doc-only skill)
+
+OUTCOME: dominant batch cluster (3 sources) had no bundle equivalent
+CHECK: skills/ lacks untangle-codebase; legacy-refactor is incremental
+EXPECT: MIT import with NOTICE attribution; purpose sync required
+EVIDENCE: imported; "Use when" prefix adaptation; audit 0 errors,
+skill-format+install-ledger 17/17, full CI matrix green.
+PR #702 merged (13669288). prune-tests deferred (Rule 25 gating).
+STATE: applied.
+
+## Cycle 3: live sync + hygiene
+
+EVIDENCE: install.ps1 -Force -> AGENTS.md/rule6 + kiro:false +
+untangle-codebase live; doctor 3/3; drift warning cleared.
+docs/changelog-702 PR #703 for merge-ref convention.
+STATE: applied.
+
+## Deferred
+
+- #698 remainder: prune-tests -> needs Rule-25-aware gating design
+- #700: eval comment posted; Omnigraph -> defer (prototype budget);
+  dictionary-glossary -> candidate for data-analyst note
+- #431 laya media-intent: untouched (needs laya context)
+- Extension venv warnings at install: pre-existing (ai-tools,
+  image-forensics, media-tools, ppisp-prep, ui-dsl)
