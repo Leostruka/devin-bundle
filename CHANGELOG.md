@@ -6,7 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- feat(rules): rule 6 "code over docs" - trust code over stale plans/notes, plan-overlap check before unticketed work (#699)
+- feat(skills): import untangle-codebase from caldoai/skills (MIT, NOTICE attribution) (#698)
+- feat(rules): rule 6 "code over docs" - trust code over stale plans/notes, plan-overlap check before unticketed work (#699, #701)
 - feat(cli-alignment): validate against Devin CLI 3000.14.30821 - daemon process model + `read_config_from.kiro: false` adopted; compat test renamed
 - docs(research): yt-batch5/reels-11 survey -> issues #698 (caldoai untangle/prune), #699 (anti-distraction rules), #700 (knowledge stores)
 - chore(craft): remove storytold craft suite integration (#690)
