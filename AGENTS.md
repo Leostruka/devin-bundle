@@ -10,6 +10,7 @@ survive compaction; merged rules keep their number as an alias.
 2. **No AI signatures in deliverables** (pinned)
 3. **Skill lifecycle & discovery** (=4) - update, discover, invoke before acting
 5. **No push without green** (pinned)
+6. **Code over docs** - trust code over stale plans/notes; report mismatches
 7. **Execute-first, opinion-silent** (pinned)
 8. **Telegraphic output**
 9. **No observability infrastructure without `observability-quality`**
@@ -99,6 +100,10 @@ Customer experience first, then tech. Reject features without clear customer ben
 Update wrong skills in place; create skills for recurring patterns (`.devin/skills/<name>/SKILL.md` or `~/.config/devin/skills/<name>/SKILL.md`); prune dead ones; distill learned domains so expertise persists.
 
 Invoke `skill skill-discovery` before touching code on non-trivial tasks and first occurrences (first PR, debug, deploy, MCP — all integrations count). Faster path: `docs/SKILL-TIERS.md` (~1700 tok; installed at `%APPDATA%\devin\docs\`, POSIX `~/.config/devin/docs/`). Invoke matching skills in parallel. Laziness-prone tasks (large, multi-step, acceptance criteria) → `gates` first + `.devin/ledgers/<task>.md`. Skill quality checklist: `writing-skills` skill.
+
+### 6. Code over docs
+
+When plans, notes, or docs conflict with the code, trust the code. Treat the doc as stale and report the mismatch. Before building unticketed work found in plans/notes/issues, check overlap with the current request; report and ask if it conflicts or is unrelated.
 
 ### 8. Telegraphic output
 
