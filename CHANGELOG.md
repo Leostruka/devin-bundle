@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(install): extension venv creation scans requirements.txt (was hardcoded 3-name list) - ai-tools/image-forensics/media-tools/ppisp-prep/ui-dsl deps now install
 - feat(skills): import untangle-codebase from caldoai/skills (MIT, NOTICE attribution) (#698, #702)
 - feat(rules): rule 6 "code over docs" - trust code over stale plans/notes, plan-overlap check before unticketed work (#699, #701)
 - feat(cli-alignment): validate against Devin CLI 3000.14.30821 - daemon process model + `read_config_from.kiro: false` adopted; compat test renamed
