@@ -61,11 +61,37 @@ count.
 Decision heuristic: task starts → needs MCP tools? NO → minimal servers
 active. YES → enable only what's needed → audit cost → work → disable.
 
+## Pin and drift-check (rug-pull defense)
+
+A tool's description feeds straight into the agent prompt, so a swapped
+server or a swapped tool description is prompt injection via supply chain
+(the Invariant Labs "rug pull" demo). Pin once, check on a cadence and
+before enabling a new server:
+
+```bash
+P={{APPDATA}}/devin/skills/mcp-governance/scripts/mcp-pin.py
+python3 $P update --config mcp_config.json                 # write pins
+python3 $P update --config mcp_config.json --tools gh=t.json --force
+python3 $P check  --config mcp_config.json                 # exit 1 on drift
+```
+
+- Pins live in `<config-stem>.pins.json` next to the config; only
+  structure is pinned (command, args, url, env/header key names) - never
+  secret values, so credential rotation does not create noise.
+- `--tools name=path` also pins the live tool list
+  (name/description/input_schema from an `mcp_list_tools` dump). A
+  description change with unchanged config is `tools_changed` - the
+  rug-pull signal the config pin alone cannot see.
+- `check` drift kinds: `added`, `removed`, `config_changed`,
+  `tools_changed`. Investigate before `--force`-refreshing pins; a refresh
+  you cannot explain is the attack succeeding.
+
 ## Anti-patterns
 
 - Keeping all servers always-on "just in case" — the #1 cause of MCP bloat.
 - Auditing once and never again — servers grow tools over time.
 - Adding servers without measuring before/after.
+- Refreshing pins after drift without reading what changed first.
 - Trusting tool count alone — check token cost.
 - Skipping the trust review — MCP servers run with user permissions; evaluate
   architecture patterns/anti-patterns before adding.

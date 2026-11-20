@@ -1,0 +1,33 @@
+{
+  "comment": "Vetted package names that skills/profiles/scripts may reference unpinned (audit check [46], slop-squatting guard). A name here means 'reviewed, real, expected'; it is not an endorsement of unpinned installs in production code. Add a name only after confirming the package exists upstream and the reference is intentional.",
+  "packages": {
+    "npx": [
+      "ascii.rest",
+      "husky",
+      "hyperframes",
+      "lint-staged",
+      "pkg",
+      "playwright",
+      "remotion",
+      "skills",
+      "tsc"
+    ],
+    "npm": [
+      "ascii.rest",
+      "@commitlint/cli",
+      "@commitlint/config-conventional"
+    ],
+    "pip": [
+      "laya",
+      "pymeshlab",
+      "trimesh",
+      "tzdata",
+      "usd-core"
+    ],
+    "uv": [
+      "agent-reach"
+    ],
+    "pipx": [],
+    "cargo": []
+  }
+}

@@ -5,6 +5,7 @@ from audit_checks import m_contract
 from audit_checks import m_integrity
 from audit_checks import m_lifecycle
 from audit_checks import m_manifest
+from audit_checks import m_packages
 from audit_checks import m_repo
 from audit_checks import m_rules
 from audit_checks import m_scripts
@@ -174,6 +175,9 @@ m_contract.c44(ctx)
 
 print('[45] --out overwrite-refusal')
 m_contract.c45(ctx)
+
+print('[46] Package install/exec refs (slop-squatting guard)')
+m_packages.c46(ctx)
 
 print()
 print('=== SUMMARY ===')

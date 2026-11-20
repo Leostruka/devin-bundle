@@ -172,6 +172,15 @@ cancel each other out are a common failure (a type-based selector like
 `.section` versus an element selector like `.cta`), especially with
 padding/margin between sections.
 
+Rounded corners are a detail agents get wrong. Nested rounded corners must
+be concentric, sharing one center point: outer radius = inner radius +
+gap between the surfaces. A 12px card holding an 8px button with 4px of
+padding reads as designed; equal radii at different depths read as
+generated. Where the platform supports it, prefer continuous (superellipse)
+corners over plain circular arcs: CSS `corner-shape`/`superellipse()`
+where available, Apple's corner API on iOS, and a border-radius
+approximation elsewhere.
+
 ## Restraint and self-critique
 
 Spend your boldness in one place. Let one element be the memorable thing,

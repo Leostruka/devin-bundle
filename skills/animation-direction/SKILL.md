@@ -60,7 +60,10 @@ props = error before the gate); unknown types fall back to
 KineticText. Bool is not a number - `to: true` fails the check.
 
 Sync rules: beat duration >= read time (160 WPM); one visual on screen
-unless `overlay: true`; no motion during narration cuts.
+unless `overlay: true`; no motion during narration cuts. Audio/visual
+offsets are allowed at cut boundaries (J-cut: audio leads the next
+visual; L-cut: audio outlives the visual) -- the prohibition is on
+motion *during* the narration cut itself.
 
 ## Renderer selection
 

@@ -2,8 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-189-blue.svg)](#2-skills)
-
+[![Skills](https://img.shields.io/badge/skills-192-blue.svg)](#2-skills)
 [![Rules](https://img.shields.io/badge/rules-21-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.24.1-orange.svg)](CHANGELOG.md)
 [![Atlas](https://img.shields.io/badge/atlas-github%20pages-33ff66.svg)](https://leostruka.github.io/devin-bundle/)
@@ -147,8 +146,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 189 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
-
+As 192 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 
@@ -474,8 +472,7 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
 ├── agents/                    # 21 perfis customizados
-├── skills/                    # 189 workflows invocáveis
-
+├── skills/                    # 192 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools, gcal)
 ├── data/                      # modelos, integrações e metadados versionados
@@ -640,8 +637,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 189 skills |
-
+| [manifest.json](manifest.json) | Inventário e metadados das 192 skills |
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |
 | [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md) | Política e características dos modelos |

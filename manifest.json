@@ -44,6 +44,12 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "agent-eval",
+      "source": "devin-bundle",
+      "purpose": "Use when measuring whether a skill, rule, or tool actually improves agent output - run a fixed held-out prompt set through N configurations, have a judge subagent score the builds, and log every result (including regressions) to an append-only eval ledger. The bundle's held-out validation concept applied to agent work quality, adapted from Astryx-style nightly agent builds.",
+      "export_hash": "78c4b4efcaf95c97345e3a8c78093df017294a22bcd0f252b16264943783505f"
+    },
+    {
       "name": "agent-reach",
       "source": "devin-bundle",
       "purpose": "Use when researching trends or public sources across credential-free channels (YouTube transcripts/metadata, RSS/Atom feeds). Routes to extensions/agent-reach/wrapper.py, a whitelist passthrough to the agent-reach CLI (`get` grammar)",
@@ -523,7 +529,7 @@
       "name": "frontend-design",
       "source": "devin-bundle",
       "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view for this brief.",
-      "export_hash": "B0412673D6BDCC7F87FEC9DD3BF8DE670ED606403FA9E48D78BFBD5CB6E89FBB",
+      "export_hash": "72c36c4146f72b02863373a10cbd82448207bfe60cabccb691e8d0424a2f1849",
       "exported_at": "2026-11-13T08:50:22.026078"
     },
     {
@@ -664,6 +670,12 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "issue-factory",
+      "source": "devin-bundle",
+      "purpose": "Use when running a batch of ready implementation issues through one \"factory\" pipeline - intake and risk tiering, parallel implementer subagents in per-issue worktrees, graded gates, risk-tiered review, one PR per issue - instead of working issues one at a time. Composes afk-loop, dispatching-parallel-agents, git-workflows, and pr-review; for the sequential unattended variant use afk-loop.",
+      "export_hash": "689bba2b50e67950c1d9c8b5af3899bcc362801cb4cbde9f9545d3828d39e534"
+    },
+    {
       "name": "jira",
       "source": "created:Devin bundle",
       "purpose": "Use when the user asks to interact with Jira — search issues, read or update tickets, transition status, add comments, list projects, or run JQL. Routes operations through the Atlassian Rovo MCP server (mcp__atlassian__* tools).",
@@ -741,7 +753,7 @@
       "name": "mcp-governance",
       "source": "devin-bundle",
       "purpose": "Use when considering adding an MCP server, when context feels bloated with tool definitions, when auditing which servers consume the most context budget, before committing mcp_config.json changes, or when deciding which servers to keep active per task. Estimates per-server tool-definition token cost and guides lazy enablement.",
-      "export_hash": "1fca840ad7198f6ffbe5f956fb3acd2fd63ef157dbf69c97002f277f9d519d31"
+      "export_hash": "a5016626d8c662704094a992a44b665d5788f3a3c34ecfadf5f6ddd9e3a7b4d1"
     },
     {
       "name": "mcp-lazy-enablement",
@@ -1132,6 +1144,12 @@
       "exported_at": "2026-11-13T09:25:17.324362"
     },
     {
+      "name": "skill-docs",
+      "source": "devin-bundle",
+      "purpose": "Use when searching the installed skill corpus by keyword, reading a skill's docs or frontmatter without loading the whole file, or dumping the machine-readable skill manifest - the \"CLI is the docs\" companion to ask-bundle/leo routing. Routes to skills/skill-docs/scripts/skill_docs.py, a stdlib-only CLI over skills/*/SKILL.md.",
+      "export_hash": "68df28f78be6a1c78a0c0128cf1852699b1430c5ca20eecbaf759ae570423bd9"
+    },
+    {
       "name": "social-midia",
       "source": "devin-bundle",
       "purpose": "Use when the user wants to draft, post, schedule, or analyze content on a social network (LinkedIn, X/Twitter, Instagram, Facebook, TikTok, YouTube, Threads, Reddit), asks about a platform's official API (auth, scopes, endpoints, rate limits, analytics), or needs cross-network publishing workflows. Routes to the per-network skill; does not execute the work itself.",
@@ -1268,6 +1286,12 @@
       "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
+      "name": "untangle-codebase",
+      "source": "github:caldoai/skills (MIT)",
+      "purpose": "Use when you want to untangle a whole codebase in one pass, so agents working in it read less per change, break less without noticing, and debug faster.",
+      "original_path": "%APPDATA%\\devin\\skills\\untangle-codebase"
+    },
+    {
       "name": "using-git-worktrees",
       "source": "devin-bundle",
       "purpose": "Use when starting feature work that needs isolation from the current workspace.",
@@ -1384,19 +1408,13 @@
       "exported_at": "2026-09-08T21:39:22.462266"
     },
     {
-      "name": "untangle-codebase",
-      "source": "github:caldoai/skills (MIT)",
-      "purpose": "Use when you want to untangle a whole codebase in one pass, so agents working in it read less per change, break less without noticing, and debug faster.",
-      "original_path": "%APPDATA%\\devin\\skills\\untangle-codebase"
-    },
-    {
       "name": "prune-tests",
       "source": "github:caldoai/skills (MIT)",
       "purpose": "Use when you want to prune tests that guard no behavior.",
       "original_path": "%APPDATA%\\devin\\skills\\prune-tests"
     }
   ],
-  "skill_count": 189,
+  "skill_count": 192,
   "rule_count": 21,
   "scripts": [
     {

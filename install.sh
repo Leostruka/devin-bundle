@@ -279,7 +279,57 @@ else
   ok "created target directories"
 fi
 
-# --- 1. Install AGENTS.md ---
+# --- 1. Install AGENTS.md (managed block) ---
+# The bundle owns the content between the markers; anything outside them
+# (user notes, project rules) survives installs. Model: the Astryx managed
+# agent-instruction block, refreshed on upgrade.
+MB_BEGIN='<!-- devin-bundle:begin -->'
+MB_END='<!-- devin-bundle:end -->'
+
+# rc: 0 = markers well-formed, 1 = absent, 2 = malformed
+managed_block_ok() {
+  awk -v b="$MB_BEGIN" -v e="$MB_END" '
+    { sub(/\r$/, "") }
+    $0 == b { if (inblock || seenend) m = 1; inblock = 1; seenbeg++; next }
+    $0 == e { if (!inblock) m = 1; inblock = 0; seenend++; next }
+    END { if (m || inblock || seenend > 1) exit 2; if (!seenbeg) exit 1; exit 0 }
+  ' "$1"
+}
+
+managed_extract() {  # block body of a well-formed file to stdout
+  awk -v b="$MB_BEGIN" -v e="$MB_END" '
+    { sub(/\r$/, "") }
+    $0 == b { inblock = 1; next }
+    $0 == e { inblock = 0; next }
+    inblock { print }
+  ' "$1"
+}
+
+# Replace the managed block in $2 with the contents of $1, in place.
+managed_replace() {
+  local tmp; tmp="$(mktemp)"
+  awk -v b="$MB_BEGIN" -v e="$MB_END" -v src="$1" '
+    { sub(/\r$/, "") }
+    $0 == b { print; while ((getline l < src) > 0) print l; inblock = 1; next }
+    $0 == e { inblock = 0; print; next }
+    !inblock { print }
+    END { close(src) }
+  ' "$2" > "$tmp" && mv "$tmp" "$2"
+}
+
+# Write a fresh managed-block file: $1=src $2=dst $3=optional preserved file
+managed_wrap() {
+  {
+    printf '%s\n' "$MB_BEGIN"
+    cat "$1"
+    printf '%s\n' "$MB_END"
+    if [[ -n "$3" && -f "$3" ]]; then
+      printf '\n%s\n' '<!-- devin-bundle:preserved (pre-managed-block content) -->'
+      cat "$3"
+    fi
+  } > "$2.mbw.$$" && mv "$2.mbw.$$" "$2"
+}
+
 step "Install AGENTS.md"
 agents_md_src="$BUNDLE_DIR/AGENTS.md"
 agents_md_dst="$DEVIN_HOME/AGENTS.md"
@@ -287,16 +337,31 @@ if [[ -f "$agents_md_src" ]]; then
   if [[ -f "$agents_md_dst" ]]; then
     if diff -q "$agents_md_src" "$agents_md_dst" >/dev/null 2>&1; then
       ok "AGENTS.md already up-to-date"
-    elif [[ $FORCE -eq 1 ]]; then
-      if [[ $BACKUP -eq 1 ]]; then backup_file "$agents_md_dst"; fi
-      if [[ $DRY_RUN -eq 1 ]]; then skip "would overwrite AGENTS.md"
-      else cp "$agents_md_src" "$agents_md_dst"; ok "AGENTS.md installed"; fi
     else
-      warn "AGENTS.md exists and differs. Use --force to overwrite."
+      managed_block_ok "$agents_md_dst"; mb=$?
+      if [[ $mb -eq 0 ]]; then
+        if managed_extract "$agents_md_dst" | diff -q - "$agents_md_src" >/dev/null 2>&1; then
+          ok "AGENTS.md already up-to-date (managed block)"
+        elif [[ $DRY_RUN -eq 1 ]]; then
+          skip "would refresh AGENTS.md managed block"
+        else
+          if [[ $BACKUP -eq 1 ]]; then backup_file "$agents_md_dst"; fi
+          managed_replace "$agents_md_src" "$agents_md_dst"
+          ok "AGENTS.md managed block refreshed (outer content preserved)"
+        fi
+      elif [[ $FORCE -eq 1 ]]; then
+        if [[ $BACKUP -eq 1 ]]; then backup_file "$agents_md_dst"; fi
+        if [[ $DRY_RUN -eq 1 ]]; then skip "would install AGENTS.md managed block (existing content preserved)"
+        else managed_wrap "$agents_md_src" "$agents_md_dst" "$agents_md_dst"; ok "AGENTS.md installed as managed block (previous content preserved)"; fi
+      elif [[ $mb -eq 2 ]]; then
+        warn "AGENTS.md managed-block markers malformed. Use --force to rewrite."
+      else
+        warn "AGENTS.md exists and differs. Use --force to overwrite."
+      fi
     fi
   else
     if [[ $DRY_RUN -eq 1 ]]; then skip "would install AGENTS.md"
-    else cp "$agents_md_src" "$agents_md_dst"; ok "AGENTS.md installed"; fi
+    else managed_wrap "$agents_md_src" "$agents_md_dst" ""; ok "AGENTS.md installed (managed block)"; fi
   fi
 else
   warn "AGENTS.md not found in bundle"

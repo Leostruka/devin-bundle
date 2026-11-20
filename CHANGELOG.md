@@ -6,7 +6,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- feat(skills): import prune-tests from caldoai/skills (MIT, NOTICE attribution) - completes #698
+- feat(skills): import prune-tests from caldoai/skills (MIT, NOTICE attribution) - completes #698 (#711)
+- feat(skills): phi-browser single agent Space policy (#708)
+- fix(skills): drop token from phi-browser purpose (#710)
+- chore(deps): bump pillow to 13.0.0 in extensions/computer-use, media-tools and ppisp-prep (#693, #695, #696, #697)
+- chore(deps): bump websocket-client to 1.9.2 and laya to 0.4.35 in extensions/computer-use and laya-tools (#692, #694)
+- feat(install): AGENTS.md installs as a managed `devin-bundle` block - bundle-owned section refreshes in place, user content outside the markers survives (install/export, sh+ps1); Astryx managed-block pattern
+- feat(skills): issue-factory - parallel GitHub-issue pipeline (intake/spec/build gates, risk-tiered review, PR-per-issue) composing worktrees + afk-loop + MODEL-GUIDE tiers
+- feat(skills): agent-eval - vibe-test protocol: same prompt builds, judge subagent scores, logged verdicts over tests/held-out
+- feat(skills): skill-docs - `scripts/skill_docs.py` search/get/manifest CLI over the corpus, envelope v2 (Astryx "the CLI is the docs" pattern)
+- feat(mcp-governance): `mcp-pin.py` pin + drift-check for server configs and tool-description hashes (MCP rug-pull defense)
+- feat(audit): check [46] package install/exec refs - flags unpinned npm/npx/pip/uv/pipx/cargo refs vs data/allowed-packages.json (slop-squatting guard)
 - fix(install): extension venv creation scans requirements.txt (was hardcoded 3-name list) - ai-tools/image-forensics/media-tools/ppisp-prep/ui-dsl deps now install (#705)
 - docs(ledger): cyclic review close-out (#704)
 - feat(skills): import untangle-codebase from caldoai/skills (MIT, NOTICE attribution) (#698, #702)

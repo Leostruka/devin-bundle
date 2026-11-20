@@ -109,6 +109,20 @@ pad=1080:1920:(ow-iw)/2:(oh-ih)/2,subtitles=captions.srt:force_style='Fontsize=1
 Build `captions.srt` from ASR segments. Pick aspect per platform:
 9:16 Shorts/Reels/TikTok (default), 1:1 feed, 16:9 YouTube.
 
+### Editing rhythm (decupagem rules)
+
+- **Respiro** - do not normalize every silence to zero. Keep a
+  ~150-250ms breath before emphasis beats and effect landings; a flat
+  gap-to-gap timeline reads as robotic.
+- **J/L cuts** - offset audio and visual boundaries at scene changes.
+  J-cut: let the next segment's audio start ~0.2-0.4s before its scene;
+  L-cut: cut the b-roll/scene while narration continues (natural when
+  `sync_range` extends past the clip). Avoid syncing every cut to the
+  transcript boundary.
+- **B-roll** - one clip per concrete noun or claim, swapped on topic
+  change; semantic match beats aesthetics. Talking about X while X is
+  on screen is the coverage rule, not decoration.
+
 ## Example flow
 
 ```bash
