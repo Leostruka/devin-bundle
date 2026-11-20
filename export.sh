@@ -287,19 +287,49 @@ if [[ ! -d "$BUNDLE_DIR" ]]; then
 fi
 
 # --- 1. Export AGENTS.md ---
+# Managed-block aware: when the live file carries the bundle markers, only
+# the block body is exported; content outside the markers is user-local and
+# never enters the repository.
 step "Export AGENTS.md"
 agents_md_src="$DEVIN_HOME/AGENTS.md"
 agents_md_dst="$BUNDLE_DIR/AGENTS.md"
+MB_BEGIN='<!-- devin-bundle:begin -->'
+MB_END='<!-- devin-bundle:end -->'
 if [[ -f "$agents_md_src" ]]; then
-  src_h="$(file_hash "$agents_md_src")"
+  export_src="$agents_md_src"
+  tmp_src=""
+  mb_rc=1
+  if grep -qF "$MB_BEGIN" "$agents_md_src" 2>/dev/null; then
+    mb_rc=0
+    awk -v b="$MB_BEGIN" -v e="$MB_END" '
+      { sub(/\r$/, "") }
+      $0 == b { if (inblock || seenend) m = 1; inblock = 1; seenbeg++; next }
+      $0 == e { if (!inblock) m = 1; inblock = 0; seenend++; next }
+      END { if (m || inblock || seenend > 1 || !seenbeg) exit 2; exit 0 }
+    ' "$agents_md_src" || mb_rc=$?
+    if [[ $mb_rc -eq 0 ]]; then
+      tmp_src="$(mktemp)"
+      awk -v b="$MB_BEGIN" -v e="$MB_END" '
+        { sub(/\r$/, "") }
+        $0 == b { inblock = 1; next }
+        $0 == e { inblock = 0; next }
+        inblock { print }
+      ' "$agents_md_src" > "$tmp_src"
+      export_src="$tmp_src"
+    else
+      warn "AGENTS.md managed-block markers malformed; exporting whole file"
+    fi
+  fi
+  src_h="$(file_hash "$export_src")"
   dst_h=""
   if [[ -f "$agents_md_dst" ]]; then dst_h="$(file_hash "$agents_md_dst")"; fi
   if [[ "$src_h" == "$dst_h" ]]; then
     ok "AGENTS.md (unchanged)"
   else
     if [[ $DRY_RUN -eq 1 ]]; then skip "would copy AGENTS.md"
-    else cp "$agents_md_src" "$agents_md_dst"; convert_to_lf "$agents_md_dst"; ok "AGENTS.md exported"; fi
+    else cp "$export_src" "$agents_md_dst"; convert_to_lf "$agents_md_dst"; ok "AGENTS.md exported"; fi
   fi
+  if [[ -n "$tmp_src" ]]; then rm -f "$tmp_src"; fi
 else
   warn "AGENTS.md not found at $agents_md_src"
 fi

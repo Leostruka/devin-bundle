@@ -200,6 +200,10 @@ PROBES = [
      ["search", "x", "nonexistent-proj"], "knowledge-modeling"),
     ("skills/grilling/scripts/stop-server.py",
      ["nonexistent"], "grilling"),
+    ("skills/skill-docs/scripts/skill_docs.py",
+     ["manifest"], "skill-docs"),
+    ("skills/mcp-governance/scripts/mcp-pin.py",
+     ["check", "--config", "nonexistent.json"], "mcp-pin"),
 ]
 
 # Keys that could turn a probe into a real network call.

@@ -201,6 +201,92 @@ function Install-File($src, $dst, $label) {
   }
 }
 
+# --- Managed block helpers (AGENTS.md) ---
+# The bundle owns the content between the markers; anything outside survives
+# installs. Mirrors the managed_block_* helpers in install.sh.
+$script:MbBegin = '<!-- devin-bundle:begin -->'
+$script:MbEnd   = '<!-- devin-bundle:end -->'
+
+function Get-ManagedBlockState($path) {
+  $inblock = $false; $beg = 0; $end = 0; $mal = $false
+  foreach ($l in (Get-Content $path -Encoding UTF8)) {
+    $t = $l -replace "`r$", ""
+    if ($t -eq $script:MbBegin) { if ($inblock -or $end -gt 0) { $mal = $true }; $inblock = $true; $beg++; continue }
+    if ($t -eq $script:MbEnd)   { if (-not $inblock) { $mal = $true }; $inblock = $false; $end++; continue }
+  }
+  if ($mal -or $inblock -or $end -gt 1) { return 'malformed' }
+  if ($beg -eq 0) { return 'absent' }
+  return 'ok'
+}
+
+function Get-ManagedBlockBody($path) {
+  $inblock = $false; $body = New-Object System.Collections.Generic.List[string]
+  foreach ($l in (Get-Content $path -Encoding UTF8)) {
+    $t = $l -replace "`r$", ""
+    if ($t -eq $script:MbBegin) { $inblock = $true; continue }
+    if ($t -eq $script:MbEnd)   { $inblock = $false; continue }
+    if ($inblock) { $body.Add($l) }
+  }
+  return ($body -join "`n")
+}
+
+function Write-Utf8Lf($path, $content) {
+  $utf8NoBom = [Text.UTF8Encoding]::new($false)
+  [IO.File]::WriteAllText($path, ($content -replace "`r`n", "`n"), $utf8NoBom)
+}
+
+function Install-AgentsMd($src, $dst) {
+  $srcText = (((Get-Content $src -Raw -Encoding UTF8) -replace "`r`n", "`n").TrimEnd("`n")) + "`n"
+  if (Test-Path $dst) {
+    if ((Get-Content $src -Raw -Encoding UTF8) -eq (Get-Content $dst -Raw -Encoding UTF8)) {
+      Write-Ok "AGENTS.md already up-to-date"
+      $script:Skipped++
+      return
+    }
+    $state = Get-ManagedBlockState $dst
+    if ($state -eq 'ok') {
+      $body = ((Get-ManagedBlockBody $dst).TrimEnd("`n")) + "`n"
+      if ($body -eq $srcText) {
+        Write-Ok "AGENTS.md already up-to-date (managed block)"
+        $script:Skipped++
+        return
+      }
+      if ($DryRun) { Write-Skip "would refresh AGENTS.md managed block"; return }
+      if ($Backup) { Backup-Or-Abort $dst "AGENTS.md" }
+      $out = New-Object System.Collections.Generic.List[string]
+      $inblock = $false
+      foreach ($l in (Get-Content $dst -Encoding UTF8)) {
+        $t = $l -replace "`r$", ""
+        if ($t -eq $script:MbBegin) { $out.Add($script:MbBegin); $out.Add($srcText.TrimEnd("`n")); $inblock = $true; continue }
+        if ($t -eq $script:MbEnd)   { $inblock = $false; $out.Add($script:MbEnd); continue }
+        if (-not $inblock) { $out.Add($l) }
+      }
+      Write-Utf8Lf $dst (($out -join "`n") + "`n")
+      Write-Ok "AGENTS.md managed block refreshed (outer content preserved)"
+      $script:Overwritten++
+    } elseif ($Force) {
+      if ($Backup) { Backup-Or-Abort $dst "AGENTS.md" }
+      if ($DryRun) { Write-Skip "would install AGENTS.md managed block (existing content preserved)"; return }
+      $old = Get-Content $dst -Raw -Encoding UTF8
+      $text = $script:MbBegin + "`n" + $srcText + $script:MbEnd + "`n`n<!-- devin-bundle:preserved (pre-managed-block content) -->`n" + $old
+      Write-Utf8Lf $dst $text
+      Write-Ok "AGENTS.md installed as managed block (previous content preserved)"
+      $script:Overwritten++
+    } elseif ($state -eq 'malformed') {
+      Write-Warn "AGENTS.md managed-block markers malformed. Use -Force to rewrite."
+      $script:Skipped++
+    } else {
+      Write-Warn "AGENTS.md — exists and differs (use -Force to overwrite)"
+      $script:Skipped++
+    }
+  } else {
+    if ($DryRun) { Write-Skip "would install AGENTS.md"; return }
+    Write-Utf8Lf $dst ($script:MbBegin + "`n" + $srcText + $script:MbEnd + "`n")
+    Write-Ok "AGENTS.md installed (managed block)"
+    $script:Copied++
+  }
+}
+
 # Copy a directory tree, skipping paths matching $exclude (regex on FullName).
 # When $exclude is null, falls back to a plain recursive copy.
 function Copy-FilteredDir($src, $dst, $exclude = $null) {
@@ -493,9 +579,9 @@ if (-not $DryRun) {
 Write-Step "Remove legacy ~/.config/devin (requires -Force)"
 Remove-LegacyConfig
 
-# --- 1. AGENTS.md ---
+# --- 1. AGENTS.md (managed block) ---
 Write-Step "Install AGENTS.md"
-Install-File -src $rulesSrc -dst $rulesDst -label "AGENTS.md"
+Install-AgentsMd -src $rulesSrc -dst $rulesDst
 
 # --- 1b. Dedup AGENTS.md case variants (Windows/WSL bug workaround) ---
 Write-Step "Dedup AGENTS.md case variants"

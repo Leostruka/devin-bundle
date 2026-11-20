@@ -143,6 +143,35 @@ function Write-FileLF($path, $content) {
   [IO.File]::WriteAllText($path, $lf, $utf8NoBom)
 }
 
+# --- Managed block helpers (AGENTS.md) ---
+# Mirrors managed_block_* in export.sh: the bundle owns content between the
+# markers; everything outside is user-local and is never exported.
+$script:MbBegin = '<!-- devin-bundle:begin -->'
+$script:MbEnd   = '<!-- devin-bundle:end -->'
+
+function Get-ManagedBlockState($path) {
+  $inblock = $false; $beg = 0; $end = 0; $mal = $false
+  foreach ($l in (Get-Content $path -Encoding UTF8)) {
+    $t = $l -replace "`r$", ""
+    if ($t -eq $MbBegin) { if ($inblock -or $end -gt 0) { $mal = $true }; $inblock = $true; $beg++; continue }
+    if ($t -eq $MbEnd)   { if (-not $inblock) { $mal = $true }; $inblock = $false; $end++; continue }
+  }
+  if ($mal -or $inblock -or $end -gt 1) { return 'malformed' }
+  if ($beg -eq 0) { return 'absent' }
+  return 'ok'
+}
+
+function Get-ManagedBlockBody($path) {
+  $inblock = $false; $body = New-Object System.Collections.Generic.List[string]
+  foreach ($l in (Get-Content $path -Encoding UTF8)) {
+    $t = $l -replace "`r$", ""
+    if ($t -eq $MbBegin) { $inblock = $true; continue }
+    if ($t -eq $MbEnd)   { $inblock = $false; continue }
+    if ($inblock) { $body.Add($l) }
+  }
+  return ($body -join "`n")
+}
+
 function Copy-TopFiles($src, $dst, $label) {
   if (-not (Test-Path $src)) {
     Write-Skip "$label (source not found: $src)"
@@ -335,18 +364,29 @@ if ($Push -and $NoMask -and -not $DryRun) {
   exit 1
 }
 
-# --- 1. AGENTS.md ---
+# --- 1. AGENTS.md (managed block) ---
+# When the live file carries the bundle markers, only the block body is
+# exported; content outside the markers is user-local and never enters the repo.
 Write-Step "Export AGENTS.md (consolidated rules)"
 if (Test-Path $rulesSrc) {
-  $srcHash = Get-FileHash256 $rulesSrc
-  $dstHash = Get-FileHash256 $rulesDst
-  if ($srcHash -eq $dstHash) {
+  $exportText = Get-Content $rulesSrc -Raw -Encoding UTF8
+  if ($exportText -match [regex]::Escape($MbBegin)) {
+    $state = Get-ManagedBlockState $rulesSrc
+    if ($state -eq 'ok') {
+      $exportText = (Get-ManagedBlockBody $rulesSrc) + "`n"
+    } else {
+      Write-Warn "AGENTS.md managed-block markers malformed; exporting whole file"
+    }
+  }
+  $srcNorm = $exportText -replace "`r`n", "`n"
+  $dstNorm = ""
+  if (Test-Path $rulesDst) { $dstNorm = (Get-Content $rulesDst -Raw -Encoding UTF8) -replace "`r`n", "`n" }
+  if ($srcNorm -eq $dstNorm) {
     Write-Ok "AGENTS.md (unchanged)"
   } else {
     if ($DryRun) { Write-Skip "would copy $rulesSrc" }
     else {
-      $content = Get-Content $rulesSrc -Raw
-      Write-FileLF $rulesDst $content
+      Write-FileLF $rulesDst $exportText
       Write-Ok "AGENTS.md exported"
     }
   }
