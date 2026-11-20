@@ -525,6 +525,23 @@ fi
 step "Project hooks template"
 skip "hooks.v1.json is project-level; copy it into .devin/ when needed"
 
+# --- Bundle identity used by installed Envelope v2 wrappers ---
+manifest_src="$BUNDLE_DIR/manifest.json"
+manifest_dst="$DEVIN_HOME/manifest.json"
+if [[ -f "$manifest_src" ]]; then
+  if [[ -f "$manifest_dst" ]] && cmp -s "$manifest_src" "$manifest_dst"; then
+    ok "manifest.json (unchanged)"
+  elif [[ -e "$manifest_dst" && $FORCE -ne 1 ]]; then
+    warn "manifest.json exists and differs. Use --force to update."
+  elif [[ $DRY_RUN -eq 1 ]]; then
+    skip "would install manifest.json"
+  else
+    if [[ $BACKUP -eq 1 ]]; then backup_file "$manifest_dst"; fi
+    cp "$manifest_src" "$manifest_dst"
+    ok "manifest.json installed"
+  fi
+fi
+
 # --- 6. Install scripts/ ---
 step "Install scripts/"
 scripts_src="$BUNDLE_DIR/scripts"

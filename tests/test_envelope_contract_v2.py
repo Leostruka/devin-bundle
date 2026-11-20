@@ -24,6 +24,7 @@ MANIFEST_VERSION = json.loads(
 # (wrapper path, argv that yields a JSON envelope without side effects,
 #  expected answered_by.wrapper)
 PROBES = [
+    ("extensions/devin-memory/wrapper.py", ["--json", "status"], "devin-memory"),
     ("extensions/agent-reach/wrapper.py", [], "agent-reach"),
     ("extensions/voicebox/wrapper.py", [], "voicebox"),
     ("extensions/hyperframes/wrapper.py", [], "hyperframes"),
@@ -230,11 +231,15 @@ def test_wrappers_emit_api_version_and_provenance():
 
 @pytest.mark.parametrize("rel,argv,wrapper", PROBES,
                          ids=[w for _, _, w in PROBES])
-def test_wrapper_emits_contract_v2(rel, argv, wrapper):
+def test_wrapper_emits_contract_v2(rel, argv, wrapper, tmp_path):
+    env = PROBE_ENV
+    if wrapper == "devin-memory":
+        state = str(tmp_path / "local-state")
+        env = dict(PROBE_ENV, LOCALAPPDATA=state, XDG_STATE_HOME=state)
     proc = subprocess.run(
         [sys.executable, str(ROOT / rel)] + argv,
         capture_output=True, text=True, encoding="utf-8",
-        errors="replace", timeout=90, env=PROBE_ENV, cwd=str(ROOT))
+        errors="replace", timeout=90, env=env, cwd=str(ROOT))
     payload = json.loads(proc.stdout)
     assert payload.get("api_version") == 2, \
         f"{wrapper}: api_version={payload.get('api_version')!r}"

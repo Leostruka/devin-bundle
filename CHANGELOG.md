@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- feat(memory): add manual global and project memory, with cited lookup, read-only legacy migration previews, and conflict-preserving JSONL transfers. The legacy prompt hook remains unchanged.
 - feat(skills): import prune-tests from caldoai/skills (MIT, NOTICE attribution) - completes #698 (#711)
 - feat(skills): phi-browser single agent Space policy (#708)
 - fix(skills): drop token from phi-browser purpose (#710)
