@@ -638,6 +638,9 @@ if (Test-Path $configSrc) {
   Write-Skip "config.json not in bundle"
 }
 
+# --- Bundle identity used by installed Envelope v2 wrappers ---
+Install-File (Join-Path $bundleRoot "manifest.json") (Join-Path $devinHome "manifest.json") "manifest.json"
+
 # --- 4a. user hooks rendered from hooks.v1.json (single source) ---
 # hooks.v1.json is authored with project-relative `python scripts/...` commands;
 # user-level hooks need absolute paths — render and inject into config.json.hooks.

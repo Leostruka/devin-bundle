@@ -235,6 +235,7 @@ Ferramentas locais em `extensions/`, invocadas pelas skills homônimas:
 
 | Extensão | O que faz |
 |---|---|
+| [`devin-memory`](extensions/devin-memory/README.md) | Memória local global e por projeto, com busca manual e união de acervos sob aprovação |
 | `computer-use` | Automação de GUI (screenshot, mouse, teclado, hints UIA), leitura/controle de terminais (WT/conhost/mintty) e browser via CDP/BiDi |
 | `system-control` | Controle autorizado do OS (processos, serviços, exec one-shot, sessões, eventos, cópias verificadas) — APIs de sistema em vez de GUI |
 | `ai-tools` | Ferramentas ML locais offline-first (abliteration PoC), JSON stdout |
