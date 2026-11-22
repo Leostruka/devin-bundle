@@ -6,18 +6,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- feat(memory): add manual global and project memory, with cited lookup, read-only legacy migration previews, and conflict-preserving JSONL transfers. The legacy prompt hook remains unchanged.
+- chore(deps): update opencv-python requirement from >=5.0.0.93 to >=5.1.0.95 in /extensions/media-tools (#718)
+- chore(deps): update numpy requirement from >=2.5.4 to >=2.5.5 in /extensions/ppisp-prep (#719)
+- chore(deps): bump numpy from 2.5.4 to 2.5.5 in /extensions/media-tools (#717)
+- chore(deps): bump winrt-runtime from 4.1.0 to 4.2.0 in /extensions/computer-use (#716)
+- chore(deps): bump numpy from 2.5.4 to 2.5.5 in /extensions/ai-tools (#715)
+- feat(memory): add manual global and project memory, with cited lookup, read-only legacy migration previews, and conflict-preserving JSONL transfers. The legacy prompt hook remains unchanged. (#714)
 - feat(skills): import prune-tests from caldoai/skills (MIT, NOTICE attribution) - completes #698 (#711)
 - feat(skills): phi-browser single agent Space policy (#708)
 - fix(skills): drop token from phi-browser purpose (#710)
 - chore(deps): bump pillow to 13.0.0 in extensions/computer-use, media-tools and ppisp-prep (#693, #695, #696, #697)
 - chore(deps): bump websocket-client to 1.9.2 and laya to 0.4.35 in extensions/computer-use and laya-tools (#692, #694)
-- feat(install): AGENTS.md installs as a managed `devin-bundle` block - bundle-owned section refreshes in place, user content outside the markers survives (install/export, sh+ps1); Astryx managed-block pattern
-- feat(skills): issue-factory - parallel GitHub-issue pipeline (intake/spec/build gates, risk-tiered review, PR-per-issue) composing worktrees + afk-loop + MODEL-GUIDE tiers
-- feat(skills): agent-eval - vibe-test protocol: same prompt builds, judge subagent scores, logged verdicts over tests/held-out
-- feat(skills): skill-docs - `scripts/skill_docs.py` search/get/manifest CLI over the corpus, envelope v2 (Astryx "the CLI is the docs" pattern)
-- feat(mcp-governance): `mcp-pin.py` pin + drift-check for server configs and tool-description hashes (MCP rug-pull defense)
-- feat(audit): check [46] package install/exec refs - flags unpinned npm/npx/pip/uv/pipx/cargo refs vs data/allowed-packages.json (slop-squatting guard)
+- feat(install): AGENTS.md installs as a managed `devin-bundle` block - bundle-owned section refreshes in place, user content outside the markers survives (install/export, sh+ps1); Astryx managed-block pattern (#712)
+- feat(skills): issue-factory - parallel GitHub-issue pipeline (intake/spec/build gates, risk-tiered review, PR-per-issue) composing worktrees + afk-loop + MODEL-GUIDE tiers (#712)
+- feat(skills): agent-eval - vibe-test protocol: same prompt builds, judge subagent scores, logged verdicts over tests/held-out (#712)
+- feat(skills): skill-docs - `scripts/skill_docs.py` search/get/manifest CLI over the corpus, envelope v2 (Astryx "the CLI is the docs" pattern) (#712)
+- feat(mcp-governance): `mcp-pin.py` pin + drift-check for server configs and tool-description hashes (MCP rug-pull defense) (#712)
+- feat(audit): check [46] package install/exec refs - flags unpinned npm/npx/pip/uv/pipx/cargo refs vs data/allowed-packages.json (slop-squatting guard) (#712)
 - fix(install): extension venv creation scans requirements.txt (was hardcoded 3-name list) - ai-tools/image-forensics/media-tools/ppisp-prep/ui-dsl deps now install (#705)
 - docs(ledger): cyclic review close-out (#704)
 - feat(skills): import untangle-codebase from caldoai/skills (MIT, NOTICE attribution) (#698, #702)

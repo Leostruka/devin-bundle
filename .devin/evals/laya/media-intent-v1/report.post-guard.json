@@ -1,0 +1,345 @@
+{
+ "name": "media-intent-v1-post-guard-40",
+ "profile": "media-intent-v1",
+ "guard": "intent.request_shaped (consumer-side, deterministic lexicon)",
+ "simulated_mode": "assist",
+ "total": 40,
+ "correct": 25,
+ "wrong": 1,
+ "abstained": 6,
+ "correct_abstain": 8,
+ "guard_blocked": 8,
+ "guard_blocked_gold_none": 8,
+ "decided": 26,
+ "accuracy": 0.9615384615384616,
+ "adopted_n": 22,
+ "adopted_correct": 22,
+ "adopted_wrong": [],
+ "baseline": {
+  "adopted_precision": 0.9565,
+  "adopted": "22/23 correct",
+  "source": "issue #431 held-out evidence 2026-11-09"
+ },
+ "cases": [
+  {
+   "case_id": "mi-h01",
+   "gold": "stylize_image",
+   "picked": "__none__",
+   "outcome": "abstained",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h02",
+   "gold": "stylize_image",
+   "picked": "stylize_image",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h03",
+   "gold": "stylize_image",
+   "picked": "ui_design",
+   "outcome": "wrong",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h04",
+   "gold": "stylize_video",
+   "picked": "__none__",
+   "outcome": "abstained",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h05",
+   "gold": "stylize_video",
+   "picked": "stylize_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h06",
+   "gold": "diagram",
+   "picked": "diagram",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h07",
+   "gold": "diagram",
+   "picked": "diagram",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h08",
+   "gold": "launch_video",
+   "picked": "launch_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h09",
+   "gold": "launch_video",
+   "picked": "launch_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h10",
+   "gold": "ui_design",
+   "picked": "ui_design",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h11",
+   "gold": "ui_design",
+   "picked": "ui_design",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h12",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h13",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h14",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h15",
+   "gold": "stylize_image",
+   "picked": "__none__",
+   "outcome": "abstained",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h16",
+   "gold": "diagram",
+   "picked": "diagram",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h17",
+   "gold": "launch_video",
+   "picked": "launch_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h18",
+   "gold": "ui_design",
+   "picked": "ui_design",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h19",
+   "gold": "stylize_video",
+   "picked": "stylize_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h20",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h21",
+   "gold": "stylize_image",
+   "picked": "__none__",
+   "outcome": "abstained",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h22",
+   "gold": "stylize_image",
+   "picked": "__none__",
+   "outcome": "abstained",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h23",
+   "gold": "stylize_image",
+   "picked": "stylize_image",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h24",
+   "gold": "stylize_image",
+   "picked": "__none__",
+   "outcome": "abstained",
+   "guard_blocked": false,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h25",
+   "gold": "stylize_video",
+   "picked": "stylize_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h26",
+   "gold": "stylize_video",
+   "picked": "stylize_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h27",
+   "gold": "stylize_video",
+   "picked": "stylize_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h28",
+   "gold": "diagram",
+   "picked": "diagram",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h29",
+   "gold": "diagram",
+   "picked": "diagram",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h30",
+   "gold": "diagram",
+   "picked": "diagram",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h31",
+   "gold": "launch_video",
+   "picked": "launch_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h32",
+   "gold": "launch_video",
+   "picked": "launch_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h33",
+   "gold": "launch_video",
+   "picked": "launch_video",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h34",
+   "gold": "ui_design",
+   "picked": "ui_design",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h35",
+   "gold": "ui_design",
+   "picked": "ui_design",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h36",
+   "gold": "ui_design",
+   "picked": "ui_design",
+   "outcome": "correct",
+   "guard_blocked": false,
+   "adopted": true
+  },
+  {
+   "case_id": "mi-h37",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h38",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h39",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  },
+  {
+   "case_id": "mi-h40",
+   "gold": "__none__",
+   "picked": "__none__",
+   "outcome": "correct_abstain",
+   "guard_blocked": true,
+   "adopted": false
+  }
+ ]
+}
