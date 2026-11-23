@@ -77,6 +77,7 @@ def _frontmatter_yaml_issues(frontmatter_text):
     frontmatter as real YAML and drops the skill on a parse error or a
     silently truncated value, while naive key: value checks pass."""
     naive = {}
+    inline = {}
     last_key = None
     for line in frontmatter_text.split("\n"):
         if not line.strip():
@@ -85,6 +86,7 @@ def _frontmatter_yaml_issues(frontmatter_text):
         if m and not line[0].isspace():
             last_key = m.group(1).strip()
             naive[last_key] = m.group(2).strip()
+            inline[last_key] = m.group(2).strip()
         elif last_key is not None:
             naive[last_key] = (naive[last_key] + " " + line.strip()).strip()
     try:
@@ -104,8 +106,11 @@ def _frontmatter_yaml_issues(frontmatter_text):
             if isinstance(pv, str) and " ".join(_fm_naive_scalar(nv).split()) != " ".join(pv.split()):
                 issues.append("'" + key + "': value differs under strict YAML")
         return issues
+    # Check breakers on the inline scalar only: indented continuations are
+    # legal YAML (block sequences, nested maps, folded text) whose contents
+    # must not be folded into the value being checked.
     issues = []
-    for key, value in naive.items():
+    for key, value in inline.items():
         if not value or value[0] in "\"'[{>|":
             continue
         for pat, why in _FM_YAML_BREAKERS:

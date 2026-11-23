@@ -78,6 +78,8 @@ def test_frontmatter_yaml_gate_fixtures():
         ("name: x\ndescription: 'a: b'", False),
         ("name: x\ndescription: a:b", False),
         ("name: x\ndescription: >\n  folded: still fine", False),
+        ("name: x\ntriggers:\n  - user\n  - model", False),
+        ("name: x\nmetadata:\n  author: me\n  version: \"1.0\"", False),
     ]
     for gate in (script_gate, audit_gate):
         for text, expect_issues in cases:
