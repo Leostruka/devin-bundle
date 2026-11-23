@@ -1,6 +1,6 @@
 ---
 name: firmware-probe
-description: Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools: binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.
+description: Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools - binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.
 triggers: [user, model]
 ---
 

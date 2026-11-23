@@ -1,6 +1,6 @@
 ---
 name: career-ops
-description: Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications.
+description: Use when the user wants help running a job hunt end to end - scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications.
 triggers: [user, model]
 ---
 

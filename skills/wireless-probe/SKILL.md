@@ -1,6 +1,6 @@
 ---
 name: wireless-probe
-description: Use when assessing declared wireless/RF targets under an engagement contract (Wi-Fi capture analysis, handshake conversion, BLE/SDR signal review, RFID). Routes to extensions/offsec-tools/wrapper.py tools: aircrack-ng, hcxdumptool, hcxtools, kismet, bettercap, hashcat, urh. Offline analysis needs no hardware; capture/inject needs usbipd-win passthrough.
+description: Use when assessing declared wireless/RF targets under an engagement contract (Wi-Fi capture analysis, handshake conversion, BLE/SDR signal review, RFID). Routes to extensions/offsec-tools/wrapper.py tools - aircrack-ng, hcxdumptool, hcxtools, kismet, bettercap, hashcat, urh. Offline analysis needs no hardware; capture/inject needs usbipd-win passthrough.
 triggers: [user, model]
 ---
 

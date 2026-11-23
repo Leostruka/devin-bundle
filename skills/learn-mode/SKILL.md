@@ -1,6 +1,6 @@
 ---
 name: learn-mode
-description: Use when the user wants to own the design while the agent teaches and implements — unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).
+description: Use when the user wants to own the design while the agent teaches and implements - unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first - the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).
 triggers: [user]
 ---
 

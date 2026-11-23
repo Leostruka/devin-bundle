@@ -1,6 +1,6 @@
 ---
 name: camera-blocking
-description: Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt template to a video-repaint model (Seedance-class) and scaffold the result as a scroll-bound web hero.
+description: Use when turning a product or scene into a camera-directed hero video - blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt template to a video-repaint model (Seedance-class) and scaffold the result as a scroll-bound web hero.
 triggers: [user]
 ---
 
