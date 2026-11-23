@@ -1,6 +1,6 @@
 ---
 name: saas-replacer
-description: Use when auditing paid subscriptions and replacing the replaceable ones with minimal self-hosted clones — inventory -> rank -> clone -> maintain. The cheap sibling of device-repurpose: pure software, zero hardware risk.
+description: Use when auditing paid subscriptions and replacing the replaceable ones with minimal self-hosted clones - inventory -> rank -> clone -> maintain. The cheap sibling of device-repurpose - pure software, zero hardware risk.
 triggers: [user, model]
 allowed-tools: [read, grep, find_file_by_name, write, edit, exec, webfetch]
 ---

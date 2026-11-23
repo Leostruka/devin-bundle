@@ -1,6 +1,6 @@
 ---
 name: roteiro
-description: Use when planning a day against a real calendar: pack tasks into actual free slots, re-plan when meetings move, and flag what fits vs. what slips. Composes with extensions/gcal for free/busy data and scheduled-turns for the recurring morning run.
+description: Use when planning a day against a real calendar - pack tasks into actual free slots, re-plan when meetings move, and flag what fits vs. what slips. Composes with extensions/gcal for free/busy data and scheduled-turns for the recurring morning run.
 disable-model-invocation: true
 ---
 

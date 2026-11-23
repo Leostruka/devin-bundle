@@ -1,6 +1,6 @@
 ---
 name: powershell-safe
-description: Use whenever running powershell.exe/pwsh, writing .ps1 scripts, or doing file I/O via shell on Windows. Prevents blanked files, encoding corruption, and accidental deletion: read-modify-write pipeline trap, UTF-16/BOM redirection pitfalls, JSON depth truncation, dangerous aliases, empty-variable deletes, verify-after-write discipline.
+description: Use whenever running powershell.exe/pwsh, writing .ps1 scripts, or doing file I/O via shell on Windows. Prevents blanked files, encoding corruption, and accidental deletion - read-modify-write pipeline trap, UTF-16/BOM redirection pitfalls, JSON depth truncation, dangerous aliases, empty-variable deletes, verify-after-write discipline.
 triggers: [user, model]
 allowed-tools: [read, exec, write, edit, grep]
 ---

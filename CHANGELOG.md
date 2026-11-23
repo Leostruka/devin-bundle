@@ -6,6 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- fix(skills): remove colon-space from 17 SKILL.md descriptions - strict YAML frontmatter rejected them at load (CLI reported errors=17, 182/199 skills loaded)
 - chore(deps): update opencv-python requirement from >=5.0.0.93 to >=5.1.0.95 in /extensions/media-tools (#718)
 - chore(deps): update numpy requirement from >=2.5.4 to >=2.5.5 in /extensions/ppisp-prep (#719)
 - chore(deps): bump numpy from 2.5.4 to 2.5.5 in /extensions/media-tools (#717)

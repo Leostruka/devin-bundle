@@ -1,6 +1,6 @@
 ---
 name: net-probe
-description: Use when probing declared hosts or networks under an engagement contract (port/service scan, SMB/AD enumeration, TLS audit, vulnerability scan). Routes to extensions/offsec-tools/wrapper.py tools: nmap, masscan, netexec, enum4linux-ng, testssl.sh, openvas. Verify-not-exploit by default.
+description: Use when probing declared hosts or networks under an engagement contract (port/service scan, SMB/AD enumeration, TLS audit, vulnerability scan). Routes to extensions/offsec-tools/wrapper.py tools - nmap, masscan, netexec, enum4linux-ng, testssl.sh, openvas. Verify-not-exploit by default.
 triggers: [user, model]
 ---
 

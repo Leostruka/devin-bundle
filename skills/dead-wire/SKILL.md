@@ -1,6 +1,6 @@
 ---
 name: dead-wire
-description: Use when running completeness audits, before declaring "it works", or when something looks too implemented to be true. Hunts cut wires: features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.
+description: Use when running completeness audits, before declaring "it works", or when something looks too implemented to be true. Hunts cut wires - features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.
 triggers: [user, model]
 allowed-tools: [read, grep, find_file_by_name, exec]
 ---

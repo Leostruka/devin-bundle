@@ -1,6 +1,6 @@
 ---
 name: scan
-description: Use when the user wants a goal-driven, codebase-wide investigation — "scan for dead code", "find N+1 queries", "check test coverage gaps", "audit style/migration compliance". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence.
+description: Use when the user wants a goal-driven, codebase-wide investigation - "scan for dead code", "find N+1 queries", "check test coverage gaps", "audit style/migration compliance". Replicates Devin Cloud's /scan (Code Scans) - Plan -> Shard -> Map -> Reduce, parallel read-only subagents, prioritized findings report with evidence.
 triggers: [user, model]
 ---
 

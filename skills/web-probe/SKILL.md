@@ -1,6 +1,6 @@
 ---
 name: web-probe
-description: Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools: zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.
+description: Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools - zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.
 triggers: [user, model]
 ---
 
