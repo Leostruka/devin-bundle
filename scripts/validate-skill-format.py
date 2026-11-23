@@ -66,6 +66,73 @@ VALID_NAME = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
 
 KEY_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$")
 
+# Strict-YAML gate (issue #721): the Devin CLI skills loader parses
+# frontmatter as real YAML and drops the whole skill on a parse error or a
+# silently truncated value, while the naive KEY_RE parser below accepts
+# those scalars without complaint.
+_YAML_VALUE_BREAKERS = (
+    (re.compile(r":\s"), "': ' inside an unquoted value is a new mapping key to YAML"),
+    (re.compile(r"\s#"), "' #' inside an unquoted value starts a YAML comment"),
+    (re.compile(r"^[*!%@`&?,:|]"), "value starts with a YAML indicator char"),
+    (re.compile(r"^-\s"), "leading '- ' turns the value into a YAML sequence"),
+)
+
+
+def _naive_scalar(value):
+    v = value.strip()
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+        return v[1:-1]
+    if v[:1] in (">", "|"):
+        return v[2:].lstrip() if v[1:2] in ("-", "+") else v[1:].lstrip()
+    return v
+
+
+def frontmatter_yaml_issues(frontmatter_text):
+    """Strict-YAML problems in a frontmatter block.
+
+    Exact `yaml.safe_load` + str-value comparison against the naive parse
+    when PyYAML is importable (catches both parse errors and silent
+    truncations like `#` comments); otherwise a zero-dependency heuristic
+    over unquoted scalar values a real parser would reject.
+    """
+    naive = {}
+    last_key = None
+    for line in frontmatter_text.split("\n"):
+        if not line.strip():
+            continue
+        m = KEY_RE.match(line)
+        if m and not line[0].isspace():
+            last_key = m.group(1).strip()
+            naive[last_key] = m.group(2).strip()
+        elif last_key is not None:
+            naive[last_key] = (naive[last_key] + " " + line.strip()).strip()
+    try:
+        import yaml
+    except ImportError:
+        yaml = None
+    if yaml is not None:
+        try:
+            parsed = yaml.safe_load(frontmatter_text)
+        except Exception as exc:
+            return ["frontmatter is not valid YAML: " + str(exc).split("\n")[0]]
+        if not isinstance(parsed, dict):
+            return ["frontmatter is not a YAML mapping"]
+        issues = []
+        for key, nv in naive.items():
+            pv = parsed.get(key)
+            if isinstance(pv, str) and " ".join(_naive_scalar(nv).split()) != " ".join(pv.split()):
+                issues.append(f"'{key}': value differs under strict YAML (check quotes/comments)")
+        return issues
+    issues = []
+    for key, value in naive.items():
+        if not value or value[0] in "\"'[{>|":
+            continue
+        for pat, why in _YAML_VALUE_BREAKERS:
+            if pat.search(value):
+                issues.append(f"'{key}': {why} (strict YAML loader drops the skill)")
+                break
+    return issues
+
 
 def parse_frontmatter(content):
     """Extract a frontmatter dict from SKILL.md, joining folded multi-line values.
@@ -111,6 +178,12 @@ def validate_skill(skill_path):
     if fm is None:
         issues.append("no frontmatter (--- ... --- block)")
         return 0, issues
+
+    # Check 2b: frontmatter must survive a strict YAML parse (issue #721)
+    fm_match = FRONTMATTER_RE.match(content)
+    for issue in frontmatter_yaml_issues(fm_match.group(1)):
+        issues.append(issue)
+        score -= 45
 
     # Check 2: name field
     name = fm.get("name", "")

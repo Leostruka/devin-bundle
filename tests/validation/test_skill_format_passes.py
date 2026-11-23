@@ -35,3 +35,51 @@ def test_skills_have_minimal_content():
         assert text.startswith('---'), f"{skill} missing frontmatter"
         assert text.count('---') >= 2, f"{skill} frontmatter not closed"
         assert len(text.split('---')[-1].strip()) > 100, f"{skill} has too little content"
+
+
+def _load_vsf():
+    import importlib.util
+    root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    spec = importlib.util.spec_from_file_location(
+        "vsf", os.path.join(root, "scripts", "validate-skill-format.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_FM_RE = __import__('re').compile(r'^---\s*\n(.*?)\n---', __import__('re').S)
+
+
+def test_skill_frontmatter_strict_yaml_sweep():
+    """Every repo SKILL.md frontmatter passes the strict-YAML gate (#721)."""
+    root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    gate = _load_vsf().frontmatter_yaml_issues
+    for skill in sorted(os.listdir(os.path.join(root, 'skills'))):
+        path = os.path.join(root, 'skills', skill, 'SKILL.md')
+        if not os.path.exists(path):
+            continue
+        m = _FM_RE.match(open(path, encoding='utf-8').read())
+        assert m, f"{skill}: frontmatter block not found"
+        issues = gate(m.group(1))
+        assert not issues, f"{skill}: {issues}"
+
+
+def test_frontmatter_yaml_gate_fixtures():
+    """The gate flags scalars real YAML rejects/truncates, both copies (#721)."""
+    root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0, root)
+    from audit_checks.m_integrity import _frontmatter_yaml_issues as audit_gate
+    script_gate = _load_vsf().frontmatter_yaml_issues
+    cases = [
+        ("name: x\ndescription: a: b", True),
+        ("name: x\ndescription: foo #bar", True),
+        ("name: x\ndescription: - foo", True),
+        ("name: x\ndescription: \"a: b\"", False),
+        ("name: x\ndescription: 'a: b'", False),
+        ("name: x\ndescription: a:b", False),
+        ("name: x\ndescription: >\n  folded: still fine", False),
+    ]
+    for gate in (script_gate, audit_gate):
+        for text, expect_issues in cases:
+            issues = gate(text)
+            assert bool(issues) == expect_issues, f"{gate.__module__} {text!r} -> {issues}"
