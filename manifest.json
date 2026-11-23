@@ -1737,7 +1737,7 @@
     {
       "name": "validate-skill-format.py",
       "purpose": "Validator — checks SKILL.md frontmatter and format",
-      "export_hash": "10EA11EA662CBCE5A2873D9BBCA749C7EFD1D3B5A8B3AB1FB0C74CB1C51E96D7",
+      "export_hash": "7EAB2DE74DBAF7224BAC882B6A8E1B6AD01B7F8FA347AF9872118B7E4F2F48C8",
       "exported_at": "2026-11-17"
     },
     {

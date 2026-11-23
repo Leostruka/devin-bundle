@@ -464,7 +464,13 @@ def test_scripts_import_boundary():
     stdlib = set(_sys.stdlib_module_names)
     siblings = {os.path.basename(f)[:-3] for f in os.listdir(
         os.path.join(REPO_ROOT, 'scripts')) if f.endswith('.py')}
-    exceptions = {'laya-guard.py': {'decision_contract', 'laya_client'}}
+    # validate-skill-format.py: yaml is an ImportError-guarded optional
+    # import for the strict frontmatter gate (issue #721); stdlib-only
+    # environments fall back to the zero-dependency heuristic.
+    exceptions = {
+        'laya-guard.py': {'decision_contract', 'laya_client'},
+        'validate-skill-format.py': {'yaml'},
+    }
     viol = []
     script_files = [os.path.join(REPO_ROOT, 'scripts', f) for f in
                     os.listdir(os.path.join(REPO_ROOT, 'scripts'))

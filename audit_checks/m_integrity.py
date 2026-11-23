@@ -54,6 +54,72 @@ def c2b(ctx):
     print()
 
 
+_FM_KEY_RE = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$")
+_FM_YAML_BREAKERS = (
+    (re.compile(r":\s"), "': ' inside an unquoted value is a new mapping key to YAML"),
+    (re.compile(r"\s#"), "' #' inside an unquoted value starts a YAML comment"),
+    (re.compile(r"^[*!%@`&?,:|]"), "value starts with a YAML indicator char"),
+    (re.compile(r"^-\s"), "leading '- ' turns the value into a YAML sequence"),
+)
+
+
+def _fm_naive_scalar(value):
+    v = value.strip()
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+        return v[1:-1]
+    if v[:1] in (">", "|"):
+        return v[2:].lstrip() if v[1:2] in ("-", "+") else v[1:].lstrip()
+    return v
+
+
+def _frontmatter_yaml_issues(frontmatter_text):
+    """Strict-YAML gate (issue #721): the CLI skills loader parses
+    frontmatter as real YAML and drops the skill on a parse error or a
+    silently truncated value, while naive key: value checks pass."""
+    naive = {}
+    inline = {}
+    last_key = None
+    for line in frontmatter_text.split("\n"):
+        if not line.strip():
+            continue
+        m = _FM_KEY_RE.match(line)
+        if m and not line[0].isspace():
+            last_key = m.group(1).strip()
+            naive[last_key] = m.group(2).strip()
+            inline[last_key] = m.group(2).strip()
+        elif last_key is not None:
+            naive[last_key] = (naive[last_key] + " " + line.strip()).strip()
+    try:
+        import yaml
+    except ImportError:
+        yaml = None
+    if yaml is not None:
+        try:
+            parsed = yaml.safe_load(frontmatter_text)
+        except Exception as exc:
+            return ["frontmatter is not valid YAML: " + str(exc).split("\n")[0]]
+        if not isinstance(parsed, dict):
+            return ["frontmatter is not a YAML mapping"]
+        issues = []
+        for key, nv in naive.items():
+            pv = parsed.get(key)
+            if isinstance(pv, str) and " ".join(_fm_naive_scalar(nv).split()) != " ".join(pv.split()):
+                issues.append("'" + key + "': value differs under strict YAML")
+        return issues
+    # Check breakers on the inline scalar only: indented continuations are
+    # legal YAML (block sequences, nested maps, folded text) whose contents
+    # must not be folded into the value being checked.
+    issues = []
+    for key, value in inline.items():
+        if not value or value[0] in "\"'[{>|":
+            continue
+        for pat, why in _FM_YAML_BREAKERS:
+            if pat.search(value):
+                issues.append("'" + key + "': " + why)
+                break
+    return issues
+
+
 def c3(ctx):
     ctx.skills_dir = 'skills'
     ctx.skill_count = 0
@@ -67,6 +133,9 @@ def c3(ctx):
         with open(skill_path, encoding='utf-8') as f:
             content = f.read()
         issues = []
+        fm_match = re.match(r'^---\s*\n(.*?)\n---', content, re.S)
+        if fm_match:
+            issues.extend(_frontmatter_yaml_issues(fm_match.group(1)))
         if not re.search(r'^name:\s*' + re.escape(skill_name), content, re.M):
             issues.append('name mismatch')
         if 'description:' not in content:
