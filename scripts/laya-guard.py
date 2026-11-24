@@ -174,7 +174,7 @@ def main():
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
     if payload.get("hook_event_name") != "PreToolUse" \
-            or payload.get("tool_name") != "exec":
+            or payload.get("tool_name") not in ("exec", "write_to_process"):
         sys.exit(0)
     _ti = payload.get("tool_input")
     cmd = _ti.get("command") if isinstance(_ti, dict) else ""

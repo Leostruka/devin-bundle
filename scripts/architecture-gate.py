@@ -179,7 +179,7 @@ def main():
     try:
         if tool_name in WRITE_TOOLS:
             check_write_edit(tool_input)
-        elif tool_name == "exec":
+        elif tool_name in ("exec", "write_to_process"):
             check_exec(tool_input)
     except SystemExit:
         raise

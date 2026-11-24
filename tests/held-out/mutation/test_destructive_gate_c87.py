@@ -441,6 +441,8 @@ def test_wtp_cursor_insert_underdetection():
     {"shell_id": "s", "bytes_input": "<HOME>x<CR>"},
     {"shell_id": "s", "bytes_input": "<C-i><CR>"},
     {"shell_id": "s", "bytes_input": "ls<ESC><CR>"},
+    {"shell_id": "s", "bytes_input": "lss<BS><CR>"},     # C97: BS = edit
+    {"shell_id": "s", "bytes_input": "ls<C-h><CR>"},     # C97: C-h = BS
 ])
 def test_wtp_line_edit_controls_blocked(ti):
     """Line-editing controls make the submitted line diverge from the
@@ -452,7 +454,6 @@ def test_wtp_line_edit_controls_blocked(ti):
 @pytest.mark.parametrize("ti", [
     {"shell_id": "s", "bytes_input": "<C-l>"},          # clear screen
     {"shell_id": "s", "bytes_input": "<C-l>y<CR>"},     # then answer
-    {"shell_id": "s", "bytes_input": "lss<BS><CR>"},    # backspace typo
     {"shell_id": "s", "bytes_input": "ls<C-m>"},        # C-m IS CR (benign)
 ])
 def test_wtp_neutral_controls_silent(ti):
@@ -470,3 +471,79 @@ def test_wtp_cm_cj_are_submits():
     code, _ = run_gate_wtp(
         {"shell_id": "s", "bytes_input": "git push --force<C-j>"}, sid)
     assert code == 2
+
+
+# --- C97: pass-4 review fixes (write_to_process semantic layer) ---
+# F1: line-edit controls and literal BS/DEL bytes are under-detection -
+# the model sees the pre-edit text while the shell executes the edited
+# line. <BS>/<BACKSPACE>/<C-h> + literal \x08/\x7f -> sentinel -> block.
+@pytest.mark.parametrize("ti", [
+    {"shell_id": "s", "bytes_input": "git push --forceX<BS><CR>"},
+    {"shell_id": "s", "text_input": "git push --force\x7f\n"},
+    {"shell_id": "s", "bytes_input": "rm -rf /tmp/x<LEFT><LEFT><BS><CR>"},
+])
+def test_c97_edit_controls_block(ti):
+    code, out = run_gate_wtp(ti, session_id="c97e-" + str(abs(hash(str(ti)))))
+    assert code == 2, f"edit-control submit should block, got {code}: {out}"
+
+
+# F2: a clear-control byte erases only the segment it terminates - it
+# must not erase lines already submitted in the same text_input.
+def test_c97_clear_is_per_segment():
+    code, out = run_gate_wtp(
+        {"shell_id": "s", "text_input": "git push --force\n\x03"},
+        session_id="c97-f2")
+    assert code == 2, f"pre-clear submitted line must still block: {out}"
+
+
+# F3: the pending-line buffer key drops prompt_id - a split write across
+# a UserPromptSubmit rotation still accumulates. Same session+shell, so
+# the pending text survives; the gate sees the completed line.
+def test_c97_split_write_still_blocked():
+    code, out = run_gate_wtp({"shell_id": "r1", "text_input": "git push --force"},
+                             session_id="c97-f3")
+    assert code == 0
+    code, out = run_gate_wtp({"shell_id": "r1", "bytes_input": "<CR>"},
+                             session_id="c97-f3")
+    assert code == 2, f"split submit should block, got {code}: {out}"
+
+
+# F4: a foreign 'command' key on a wtp payload is untrusted - the gate
+# extracts submitted lines regardless of what command claims.
+def test_c97_foreign_command_ignored():
+    code, out = run_gate_wtp(
+        {"shell_id": "s", "command": "ls",
+         "text_input": "git push --force\n"},
+        session_id="c97-f4")
+    assert code == 2, f"injected command key must not bypass: {out}"
+
+
+# F5: a line padded past the 4KB cap blocks - the head (verb) survives
+# head-keep truncation and the tail is sentinel-tainted.
+def test_c97_oversized_line_blocks():
+    code, out = run_gate_wtp(
+        {"shell_id": "s", "text_input": "echo " + "x" * 4200 + "; rm -rf /\n"},
+        session_id="c97-f5")
+    assert code == 2, f"oversized submitted line should block: {out}"
+
+
+# F10: cd/pushd into a state dir + a bare state-basename target evades
+# the state/-path anchor - covered by the dedicated _STATE_CD arm.
+@pytest.mark.parametrize("cmd", [
+    "cd state && rm wtp-abc.txt",
+    "cd .devin/state; echo x > wtp-abc.txt",
+    "pushd state && del subagent-sess1.json",
+])
+def test_c97_cd_state_basename_blocks(cmd):
+    code, out = run_gate(cmd)
+    assert code == 2, f"cd-into-state target should block, got {code}: {out}"
+
+
+@pytest.mark.parametrize("cmd", [
+    "cd docs && rm notes.md",
+    "cd state && cat wtp-abc.txt",
+    "cd state && echo x > notes.md",
+])
+def test_c97_cd_state_benign_silent(cmd):
+    code, out = run_gate(cmd)
+    assert code == 0, f"benign cd command should stay silent, got {code}: {out}"

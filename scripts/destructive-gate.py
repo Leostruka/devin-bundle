@@ -204,6 +204,12 @@ WIN_RM_RE_NOTARGET = re.compile(
 _STATE_PATH = (r"(?:^|[\\/]|\s)state[\\/]+"
                r"(?:subagent-[\w.-]*\.jsonl?|wtp-[\w.-]*\.txt)\b")
 _STATE_DIR = r"(?:^|[\\/]|\s)devin[\\/]state\b"
+# `cd ...state && rm wtp-x.txt` - a bare state-basename target after a
+# cd/pushd into a state dir carries no `state/` component in the operand.
+# Self-contained arm (prefix + separator + verb + basename target).
+_STATE_CD = (r"(?:^|[|;&`$(]|\s)(?:cd|chdir|pushd|Set-Location)\s+"
+             r"[\"']?[^|;&\"']*?\bstate\b[\"']?\s*[|;&]+\s*")
+_STATE_NAME = r"[\"']?(?:subagent-[\w.-]*\.jsonl?|wtp-[\w.-]*\.txt)\b"
 _STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
 # Command-position anchor: a verb only runs at command start, after a
 # separator/command-substitution, under a privilege wrapper, or inside a
@@ -218,7 +224,10 @@ STATE_FILE_DELETE = re.compile(
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe|"
     r"mv|move|Move-Item)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
     r"|" + _CMD_POS + r"find\b[^|;&]*?(?:" + _STATE_TARGET + ")"
-    r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+(?:rm|shred|srm)\b)",
+    r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+(?:rm|shred|srm)\b)"
+    r"|" + _STATE_CD +
+    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe|"
+    r"mv|move|Move-Item)\b\s+" + _STATE_NAME,
     re.IGNORECASE,
 )
 # Writes are as dangerous as deletes: `>` truncates (json.load fails ->
@@ -231,7 +240,11 @@ STATE_FILE_WRITE = re.compile(
     r"(?:tee|truncate|Out-File|Set-Content|"
     r"sed\b[^|;&]*-i|dd\b[^|;&]*of=)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
     r"|" + _CMD_POS + r"(?:cp|copy|Copy-Item|rsync|install)\b[^|;&]*?"
-    r"(?:" + _STATE_TARGET + r")[\\/'\"]*\s*(?:$|[|;&])",
+    r"(?:" + _STATE_TARGET + r")[\\/'\"]*\s*(?:$|[|;&])"
+    r"|" + _STATE_CD +
+    r"(?:tee|truncate|Out-File|Set-Content|sed\b[^|;&]*-i|"
+    r"dd\b[^|;&]*of=|cp|copy|Copy-Item)\b[^|;&]*?" + _STATE_NAME +
+    r"|" + _STATE_CD + r"[^|;&]*?>>?\s*" + _STATE_NAME,
     re.IGNORECASE,
 )
 
@@ -624,9 +637,11 @@ def main():
         sys.exit(0)
     command = tool_input.get("command", "") or ""
     if tool_name == "write_to_process":
-        if not command.strip():
-            # Direct invocation (no _hookrun normalization upstream):
-            # extract the submitted lines ourselves.
+        if not tool_input.get("_wtp_normalized"):
+            # Not normalized upstream: the 'command' key is foreign
+            # (wtp has no command schema field) - never trust it.
+            # Extract the submitted lines ourselves. The marker also
+            # avoids double-consuming the pending buffer.
             command = _hookrun.wtp_submitted_text(data)
         if "\x1e" in command:
             # Line-edit sentinel: history recall, cursor moves, edits and

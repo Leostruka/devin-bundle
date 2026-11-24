@@ -559,7 +559,7 @@ def main():
 
     if data.get("hook_event_name", "") != "PreToolUse":
         sys.exit(0)
-    if data.get("tool_name", "") != "exec":
+    if data.get("tool_name", "") not in ("exec", "write_to_process"):
         sys.exit(0)
 
     tool_input = data.get("tool_input") or {}
@@ -568,6 +568,17 @@ def main():
     command = tool_input.get("command", "") or ""
     if not isinstance(command, str):
         sys.exit(0)
+    if data.get("tool_name") == "write_to_process" and \
+            not tool_input.get("_wtp_normalized"):
+        # Leaf script parses its own payload - _hookrun.run() never saw
+        # it, so the command field is not populated for wtp. Extract the
+        # submitted lines (shared pending-line model). A recalled/edited
+        # line carries the \x1e sentinel: uninspectable -> block.
+        command = _hookrun.wtp_submitted_text(data)
+        if "\x1e" in command:
+            block("write_to_process submitted a line that cannot be "
+                  "inspected (history recall / cursor edit) - push "
+                  "verification impossible (AGENTS.md Rule 5).")
     push_tokens = _push_tokens(command)
     if push_tokens is None:
         sys.exit(0)

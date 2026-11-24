@@ -123,10 +123,14 @@ _WTP_CLEAR = re.compile(r"(?i)<C-c>|<C-u>")
 # can shift a pattern boundary - under-detection).
 _WTP_RECALL = re.compile(
     r"(?i)<UP>|<DOWN>|<LEFT>|<RIGHT>|<HOME>|<END>|<INSERT>|<DELETE>|"
-    r"<TAB>|<ESC>|"
+    r"<BS>|<BACKSPACE>|<TAB>|<ESC>|"
     # C-a/C-b/C-d/C-e/C-f/C-k/C-n/C-p/C-r/C-t/C-w/C-y/C-_: edit/recall.
     # C-l (clear screen) is line-neutral; C-m IS carriage-return.
-    r"<C-[abdefknprtwy_]>")
+    # Deletes count too: a deleted char can complete a pattern boundary
+    # (git push --forceX<BS> submits git push --force) - under-detection.
+    r"<C-[abdefhknprtwy_]>")
+# Literal control bytes with the same edit semantics in raw text_input.
+_WTP_LIT_EDIT = re.compile(r"[\x08\x7f]")
 # Keep the HEAD of an oversized line: gated verbs/flags lead the command,
 # so tail-truncation preserves detection. A >4KB single line still scans
 # only its first 4KB (paste-size residual).
@@ -147,7 +151,9 @@ def _wtp_buf_path(payload, tool_input):
     try:
         key = "|".join([
             str(payload.get("session_id", "")),
-            str(payload.get("prompt_id", "")),
+            # prompt_id rotates per user prompt while the shell's input
+            # line persists - including it would re-open the split-write
+            # bypass across prompt boundaries.
             # Pre- and post-event hooks each see the same stdin stream and
             # must model the pending line independently - sharing one
             # buffer would double-count the text.
@@ -184,14 +190,14 @@ def wtp_submitted_text(payload):
     if is_bytes:
         text = re.sub(r"(?i)<CR>|<LF>|<C-m>|<C-j>|\r\n?", "\n", text)
         # Control-byte equivalents: C-g aborts the line like C-c;
-        # C-i is TAB (line-edit oracle); C-h is BS (kept in the model -
-        # deletions only shrink the real line, an over-approximation).
+        # C-i is TAB (line-edit oracle).
         text = re.sub(r"(?i)<C-g>", "\x03", text)
         text = re.sub(r"(?i)<C-i>", "\x1e", text)
-        text = re.sub(r"(?i)<C-h>", "", text)
         text = _WTP_CLEAR.sub("\x03", text)
         text = _WTP_RECALL.sub("\x1e", text)
         text = _WTP_SPECIAL.sub("", text)
+    # Literal BS/DEL bytes are the same unmodelable edits as their tokens.
+    text = _WTP_LIT_EDIT.sub("\x1e", text)
     pending = ""
     buf = _wtp_buf_path(payload, tool_input)
     if buf:
@@ -201,14 +207,21 @@ def wtp_submitted_text(payload):
         except OSError:
             pending = ""
     combined = pending + text
-    # C-c / C-u discards the input line: drop everything up to the last
-    # clear-control (incl. pending from earlier calls).
-    combined = combined.rsplit("\x03", 1)[-1]
-    lines = re.split(r"\r\n|\r|\n", combined)
+    # C-c / C-u discards the CURRENT input line only - a submitted line
+    # (before its newline) already ran and must stay in the model, so
+    # clear applies per segment, never across a newline boundary.
+    lines = [seg.rsplit("\x03", 1)[-1]
+             for seg in re.split(r"\r\n|\r|\n", combined)]
+    tail = lines[-1]
     if buf:
         try:
             with open(buf, "w", encoding="utf-8") as fh:
-                fh.write(lines[-1][:_WTP_BUF_CAP])
+                if len(tail) > _WTP_BUF_CAP:
+                    # Truncated tail is uninspectable - mark it tainted so
+                    # a submit carrying it blocks instead of under-scanning.
+                    fh.write("\x1e" + tail[:_WTP_BUF_CAP])
+                else:
+                    fh.write(tail)
         except OSError:
             pass
     return "\n".join(lines[:-1])
@@ -222,9 +235,14 @@ def _normalize_wtp(payload):
         if payload.get("tool_name") != "write_to_process":
             return
         ti = payload.get("tool_input")
-        if not isinstance(ti, dict) or ti.get("command"):
+        if not isinstance(ti, dict):
             return
+        # Always overwrite: a 'command' key on a wtp payload is not part of
+        # the tool schema - an injected one would defeat normalization.
         ti["command"] = wtp_submitted_text(payload)
+        # Marker so gates invoked downstream do not re-extract (double
+        # buffer consumption corrupts the pending model).
+        ti["_wtp_normalized"] = True
     except Exception:
         pass
 

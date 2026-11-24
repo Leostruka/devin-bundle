@@ -322,7 +322,7 @@ def handle_pre_tool_use(data):
     if not isinstance(tool_input, dict):
         return
 
-    if tool_name == "exec":
+    if tool_name in ("exec", "write_to_process"):
         command = tool_input.get("command", "") or ""
         if not isinstance(command, str):
             return

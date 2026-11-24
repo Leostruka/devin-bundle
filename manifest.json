@@ -1426,13 +1426,13 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "3AF158881C80EB363A923C663259B5FAE06C6C5C2524E581C3E1F56D0AC680CB",
+      "export_hash": "319E82C3636967B12200B15E9BACC49BC8BD44D323B474B5764861E35F48E892",
       "exported_at": "2026-11-17"
     },
     {
       "name": "architecture-gate.py",
       "purpose": "PreToolUse hook — blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
-      "export_hash": "39bd19b9abf3849f41edfccae09672cefb312cecf12cd3411bc7025b85352682",
+      "export_hash": "391CE603049A3E3FF5FA07ED52725A6F2A5B104A12A45B18E945A3E2F3F1ABE3",
       "exported_at": "2026-11-17"
     },
     {
@@ -1450,13 +1450,13 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "857b3dc8193cccad05e602ea935505ca89c39de8901410a3767b5910b4c80760",
+      "export_hash": "8D100EF44B49FC32AFDB8820839D82410780985ECBA5D0F1CA38B8D3C424A276",
       "exported_at": "2026-11-17"
     },
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "da7a4b99835a15a40f201ddd408324d8d4814e67b7ef41754d9e76ccc80a7e17",
+      "export_hash": "02E849F18247B6FBDE2C1C94C76B8E2A94BD8AD83D71A2951BB6060EC693E39C",
       "exported_at": "2026-11-17"
     },
     {
@@ -1499,7 +1499,7 @@
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "877FD45680E9439D08849AF26D3DA071FADC844230B535E09F2BDEBD497CEF70",
+      "export_hash": "A2378DDFA6076CFFF52D4DE915287E11A705A99E479384CE2EF1C09BFFA85D85",
       "exported_at": "2026-11-17"
     },
     {
@@ -1519,7 +1519,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "588FC45BFEB883A7FE4DBAC95CFC0875DF83FF3F2A24BC97EB7D9BADA294EFE0",
+      "export_hash": "7279799A0F6B629B4119E70499989B3977B6B49B060A2BBC5C8F86B04FFF8D45",
       "exported_at": "2026-11-17"
     },
     {
@@ -1568,7 +1568,7 @@
     {
       "name": "laya-guard.py",
       "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
-      "export_hash": "5fe9aee561e2dbb84369c4e5da0a8a1343aa09193df1caaef02be2c770f3c516",
+      "export_hash": "F8EE0ADC5900DFED0368B7EDED25D480BB2463A3ED1F78B74AD815B1C5640DBC",
       "exported_at": "2026-11-17"
     },
     {
@@ -1604,7 +1604,7 @@
     {
       "name": "no-em-dash.py",
       "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code, vendored extension data and binary files exempt",
-      "export_hash": "c8fce2d6edc6fa99b8a019580ba6b36b28a141fadc4798eb4bb0ec668303849b",
+      "export_hash": "A77DADF3E8A6E80EB9EB00824FCB60FA6D98299A45D2CBB0C7B0D18E4A0515D9",
       "exported_at": "2026-11-17"
     },
     {
