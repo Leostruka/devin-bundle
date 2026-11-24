@@ -62,6 +62,26 @@ For the chosen issue:
    - Save the issue file.
 5. Recompute the frontier.
 
+## Ticket contract (executor-proof fields)
+
+Issue files generated from a plan or spec SHOULD carry these fields; when
+present they are binding on the implementer (contract: writing-plans
+"Executor-proof plan contract"):
+
+- `Planned at: <sha8>` - the commit the ticket was written against. Before
+  implementing, run `git rev-parse --short=8 HEAD`; on mismatch treat it as
+  a STOP condition: record the drift in `## Answer`, do not improvise.
+- `Verify:` - the gate command(s) + expected output per step or per
+  acceptance criterion. Run each gate and record the output excerpt as
+  evidence; a step without a runnable gate is a ticket defect, report it.
+- `STOP if:` - explicit stop conditions (drift, unverifiable step,
+  out-of-scope edit needed). On trigger: stop, record the trigger in
+  `## Answer`, and set `Status: blocked` with the reason instead of
+  forcing a resolution.
+- Report format: `## Answer` uses the executor report shape - `STATUS`,
+  per-step results with files + gate excerpts, `FILES CHANGED`, `NOTES` -
+  not just a one-line gist, when the ticket carried `Planned at`/`Verify:`.
+
 ## Stop conditions
 
 Stop and report immediately if:

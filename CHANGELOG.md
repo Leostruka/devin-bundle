@@ -6,6 +6,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- feat(skills): media-osint - OSINT pipeline skill (yt-dlp batch -> captions digest -> ffmpeg contact sheets -> local ASR via extensions/asr -> <=3 concurrent researcher source cards -> verify table) with overwrite-refusal, timeouts, UTF-8, and data-not-instructions hardening
+- feat(skills): executor-proof plan contract - `Planned at` SHA + drift check, verify-per-step gates, STOP conditions, executor report format, and rejected-approaches registry in writing-plans; ticket fields grafted into afk-loop and issue-factory
+- feat(research): 5-strata coverage checklist (mainstream, academic/papers, surface-web long-tail, multilingual, diagonal synthesis) added to research external mode and montador-de-ideias Phase 1
 - chore(deps): update opencv-python requirement from >=5.0.0.93 to >=5.1.0.95 in /extensions/media-tools (#718)
 - chore(deps): update numpy requirement from >=2.5.4 to >=2.5.5 in /extensions/ppisp-prep (#719)
 - chore(deps): bump numpy from 2.5.4 to 2.5.5 in /extensions/media-tools (#717)

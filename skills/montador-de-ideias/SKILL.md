@@ -50,6 +50,13 @@ Read `reference/journalistic-osint-protocol.md`. Dispatch `researcher` (`model: 
   - Changelogs, postmortems, CVE advisories, Wayback Machine diffs, public API payloads, and package manifests.
   - User frustration mining (1-3 star reviews, Reddit/HN/X migration threads, "why I quit X" posts) to capture exact pain vocabulary.
   - Local binary/package inspection via `binary-triage` when authorized local artifacts exist.
+- **Coverage strata (mandatory before synthesis)** - walk all five; each stratum is either cited or explicitly declared absent, no silent gaps:
+  1. **Mainstream** sources (official docs, major publications, top repos/forums).
+  2. **Academic / papers** (arXiv, conference sources, papers-with-code).
+  3. **Surface-web long-tail** (blogs, Tumblr, Reddit, GitHub issues, changelogs, forums).
+  4. **Multilingual / non-English** (at least one non-English pass when the topic has global uptake).
+  5. **Diagonal synthesis** separating *evidence* (cited, observed) from *inference* (labeled as such).
+  Self-quiz: every stratum cited or declared absent before synthesis.
 - **Output**: Competitor Weakness & Opportunity Matrix with primary-source citations.
 
 ### Phase 2: First-Principles Truth & Master Architecture Justification
