@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """PreToolUse hook: blocks destructive commands that are irreversible or high-risk.
 
+Fires on exec and write_to_process (C90). write_to_process is a laundered
+exec channel: its text reaches a live shell's stdin, so only CR/LF-terminated
+lines (actually submitted) are scanned - partial keystrokes are not yet
+executable.
+
 Stdin payload (per Devin CLI docs /cli/extensibility/hooks/lifecycle-hooks):
   {"hook_event_name": "PreToolUse", "tool_name": "exec",
    "tool_input": {"command": "..."}, "session_id": "...", "prompt_id": "..."}
@@ -596,6 +601,28 @@ def strip_commit_message(command):
     return stripped[0] if stripped else command
 
 
+_WTP_SPECIAL = re.compile(r"<[^>]*>")
+
+
+def _submitted_lines(tool_input):
+    """Extract only lines a write_to_process call actually submits.
+
+    A line runs in the target shell only when followed by CR/LF — trailing
+    text without a terminator is a partial keystroke (TUI input, vim
+    motions) and is not executable yet. bytes_input uses angle-bracket
+    notation (<CR>, <C-c>) which is decoded to real control chars first.
+    """
+    text = tool_input.get("text_input")
+    if not isinstance(text, str) or not text:
+        text = tool_input.get("bytes_input")
+        if not isinstance(text, str) or not text:
+            return ""
+        text = re.sub(r"(?i)<CR>|<LF>|\r\n?", "\n", text)
+        text = _WTP_SPECIAL.sub("", text)
+    lines = re.split(r"\r\n|\r|\n", text)
+    return "\n".join(lines[:-1])
+
+
 def main():
     try:
         _hookrun.pin_stdio_utf8(sys.stdin)
@@ -605,13 +632,17 @@ def main():
 
     if not isinstance(data, dict):
         sys.exit(0)
-    if data.get("tool_name", "") != "exec":
+    tool_name = data.get("tool_name", "")
+    if tool_name not in ("exec", "write_to_process"):
         sys.exit(0)
 
     tool_input = data.get("tool_input")
     if not isinstance(tool_input, dict):
         sys.exit(0)
-    command = tool_input.get("command", "") or ""
+    if tool_name == "write_to_process":
+        command = _submitted_lines(tool_input)
+    else:
+        command = tool_input.get("command", "") or ""
     if not isinstance(command, str) or not command.strip():
         sys.exit(0)
 

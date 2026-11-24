@@ -20,7 +20,9 @@ Scope (ALTK SPARC, arXiv:2603.15473, ACM CAIS 2026):
     option counts, URL scheme, status enum
 
 Excluded (matcher does not fire — tool fails clearly without validation):
-  get_output, write_to_process, kill_shell (shell_id presence is trivial),
+  get_output, kill_shell (shell_id presence is trivial),
+  write_to_process (C90: its stdin channel is destructive-gated via the
+  pre-exec-guard matcher; only submitted lines - CR/LF-terminated - scan),
   read_subagent (agent_id presence is trivial),
   close_browser_preview (preview_id presence is trivial),
   mcp_list_tools, mcp_list_servers (no required args to validate),

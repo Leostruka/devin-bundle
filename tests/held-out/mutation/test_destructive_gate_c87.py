@@ -263,3 +263,48 @@ def test_state_delete_wrapper_verbs_blocked(cmd):
     the verb is still what runs."""
     code, out = run_gate(cmd)
     assert code == 2, f"wrapped state delete should block, got {code}: {out}"
+
+
+# --- C90: write_to_process stdin channel ---
+
+def run_gate_wtp(tool_input: dict) -> tuple[int, str]:
+    payload = json.dumps({
+        "hook_event_name": "PreToolUse",
+        "tool_name": "write_to_process",
+        "tool_input": tool_input,
+        "session_id": "test",
+    })
+    result = subprocess.run(
+        [sys.executable, GATE_SCRIPT],
+        input=payload, capture_output=True, text=True, encoding="utf-8")
+    return result.returncode, result.stdout + result.stderr
+
+
+@pytest.mark.parametrize("ti", [
+    {"shell_id": "s", "text_input": "git push --force\n"},
+    {"shell_id": "s", "bytes_input": "git branch -D divergent-zz<CR>"},
+    {"shell_id": "s", "bytes_input": "rm state/subagent-x.json<CR>"},
+    {"shell_id": "s", "text_input": "ls\nrm -rf /\n"},
+    {"shell_id": "s", "bytes_input": "sudo dd if=/dev/zero of=/dev/sda<CR>"},
+])
+def test_wtp_submitted_dangerous_blocked(ti):
+    """write_to_process launders exec: typed text + CR executes in the
+    target shell with zero gate coverage unless the gate scans submitted
+    lines."""
+    code, out = run_gate_wtp(ti)
+    assert code == 2, f"submitted dangerous line should block, got {code}: {out}"
+
+
+@pytest.mark.parametrize("ti", [
+    {"shell_id": "s", "text_input": "rm -rf /"},            # no CR: not submitted
+    {"shell_id": "s", "bytes_input": "dd<ESC>dd"},         # vim keystrokes
+    {"shell_id": "s", "bytes_input": "y<CR>"},             # prompt answer
+    {"shell_id": "s", "bytes_input": "<C-c>"},             # control only
+    {"shell_id": "s", "text_input": "echo hi\n"},          # benign line
+    {"shell_id": "s", "text_input": "ls\nrm -rf /"},       # partial tail
+])
+def test_wtp_partial_and_benign_silent(ti):
+    """Lines without a CR/LF terminator are not yet submitted to the
+    process - keystrokes for TUIs/prompts must stay silent."""
+    code, out = run_gate_wtp(ti)
+    assert code == 0, f"non-submitted/benign input should stay silent: {out}"
