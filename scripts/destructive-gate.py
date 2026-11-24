@@ -218,7 +218,8 @@ _STATE_PATH = (r"(?:^|[\\/]|\s)state[\\/]+" + _STATE_FILE_NAME +
 # (`rm -rf state`, `find ./state -delete`). Terminator lookahead
 # excludes `state-old`/`mystate` compounds.
 _STATE_DIR = (r"(?:^|[\\/]|\s|\.\s*[/\\])(?:devin[\\/]+)?state"
-              r"(?=[/\\'\"\s|;&\n]|$)")
+              # Win32 strips trailing dots: `rm -rf state.` deletes `state`.
+              r"\.{0,3}(?=[/\\'\"\s|;&\n]|$)")
 # `cd ...state && rm wtp-x.txt` - a bare state-basename target after a
 # cd/pushd into a state dir carries no `state/` component in the operand.
 # Self-contained arm: the separator class includes newlines (wtp joins
@@ -228,15 +229,18 @@ _STATE_DIR = (r"(?:^|[\\/]|\s|\.\s*[/\\])(?:devin[\\/]+)?state"
 # Wrappers that may precede cd or the verb: env/nice/sudo/xargs exec the
 # following verb directly (`cd state && env rm x`); bash/sh/cmd need a
 # -c//c flag, powershell/pwsh take a bare command (Remove-Item ...).
-_STATE_WRAP = (r"(?:(?:env|nice|nohup|sudo|doas|runas|timeout|xargs|"
+_STATE_WRAP = (r"(?:[({!]+\s*)*"
+               r"(?:(?:env|nice|nohup|sudo|doas|runas|timeout|xargs|"
                r"watch|stdbuf|ionice|taskset|chrt|command|builtin|exec|"
-               r"noglob|time|busybox)\s+(?:\S+\s+)*)?"
+               r"noglob|time|busybox|eval|strace|ltrace|setsid|pkexec|"
+               r"detach|flock|unshare|nsenter|chroot|while|until|for|"
+               r"do|then|elif|else|if|case)\s+(?:\S+\s+)*)?"
                r"(?:(?:powershell|pwsh)\s+|"
                r"(?:bash|sh|dash|zsh|cmd)\b[^|;&\n]*?"
                r"(?:-c|/c|-Command)\s+[\"']?)?")
 _STATE_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
              r"(?:cd|chdir|pushd|Set-Location)\s+"
-             r"[\"']?[^|;&\n\"']*?(?<![\w.-])state"
+             r"[\"']?[^|;&\n\"']*?(?<![\w.-])state\.{0,3}"
              r"(?=[/\\'\"\s|;&\n]|$)[/\\]?[\"']?"
              r"(?:\s*>>?\s*[^\s|;&\n]+)?\s*[|;&\n]+\s*" + _STATE_WRAP)
 # Two-hop form: `cd devin && rm -rf state` - cd into the devin home then
@@ -246,12 +250,26 @@ _DEVIN_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
              r"[\"']?[^|;&\n\"']*?(?<![\w.-])devin"
              r"(?=[/\\'\"\s|;&\n]|$)[/\\]?[\"']?"
              r"(?:\s*>>?\s*[^\s|;&\n]+)?\s*[|;&\n]+\s*" + _STATE_WRAP +
-             r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
-             r"unlink|shred|srm|wipe|mv|move|Move-Item|find\b[^|;&\n]*?"
-             r"-delete)\b[^|;&\n]*?(?<![\w.-])state"
-             r"(?=[/\\'\"\s|;&\n]|$)")
+             r"(?:(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|"
+             r"ren\b|unlink|shred|srm|wipe|mv|move|Move-Item|"
+             r"find\b[^|;&\n]*?-delete)\b[^|;&\n]*?(?<![\w.-])state"
+             r"(?=[/\\'\"\s|;&\n]|$)"
+             # `cd devin && find . -delete` / `... | xargs rm` - the
+             # whole-dir wipe needs no `state` operand to hit it.
+             r"|find\b[^|;&\n]*-delete\b|[^|;&\n]*\|\s*(?:xargs\s+)*"
+             r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|"
+             r"wipe)\b)")
 _STATE_NAME = (r"[\"']?(?:\.[/\\])?" + _STATE_FILE_NAME +
-               r"(?=[\s|;&'\"\n]|$)")
+               r"(?=[\s|;&'\"\n)]|$)")
+# A command substitution inside a delete-verb's operand resolves at
+# run time - `rm -rf sta$(echo te)` targets `state` while the scan sees
+# only `sta$(`. Same uninspectable-transport class as ENCODED_EXEC: the
+# operand text the gate needs is produced by code it cannot read.
+_STATE_SUBST_TARGET = re.compile(
+    r"(?:^|[|;&\n])\s*(?:rm|del|erase|ri|rd|rmdir|Remove-Item|"
+    r"Rename-Item|ren|unlink|shred|srm|wipe|mv|move|Move-Item|"
+    r"find|xargs)\b[^|;&\n]*?(?:\$\(|`)",
+    re.IGNORECASE)
 _STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
 # Command-position anchor: a verb only runs at command start, after a
 # separator/command-substitution, under a privilege wrapper, or inside a
@@ -269,11 +287,21 @@ STATE_FILE_DELETE = re.compile(
     r"|\bFile\]::(?:Delete|Move|Replace)\w*\s*\([^)]*?"
     r"(?:['\"]?state[\\/]+" + _STATE_FILE_NAME + "|" + _STATE_DIR + ")"
     r"|" + _CMD_POS + r"find\b[^|;&]*?(?:" + _STATE_TARGET + ")"
-    r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+(?:rm|shred|srm)\b)"
+    r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+\S)"
+    # `find state -type f | xargs rm` - state files flow through the
+    # pipe into a delete verb; the find itself carries no -delete flag.
+    r"|" + _CMD_POS + r"find\b[^|;&]*?(?:" + _STATE_TARGET + ")"
+    r"[^|;&]*\|\s*(?:xargs\s+)*(?:rm|del|erase|ri|rd|rmdir|Remove-Item|"
+    r"Rename-Item|ren|unlink|shred|srm|wipe|mv|move|Move-Item)\b"
     r"|" + _STATE_CD +
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
     r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&\n]*?" + _STATE_NAME +
     r"|" + _STATE_CD + r"find\b[^|;&\n]*?-delete\b"
+    # `cd state && ls | xargs rm` - piped operands hit state files with
+    # no literal name in the rm arg list at all.
+    r"|" + _STATE_CD + r"[^|;&\n]*\|\s*(?:xargs\s+)*"
+    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren|unlink|"
+    r"shred|srm|wipe|mv|move|Move-Item)\b"
     r"|" + _DEVIN_CD,
     re.IGNORECASE,
 )
@@ -427,7 +455,12 @@ DISK_WIPE = re.compile(
 # malware pattern; never legitimate agent work.
 ENCODED_EXEC = re.compile(
     r"\b(?:powershell|pwsh)(?:\.exe)?\b[^|;&]*?"
-    r"\s-(?:e|ec|en|enc|encodedcommand)\b|"
+    # PS resolves any unambiguous parameter prefix - every prefix of
+    # EncodedCommand (-e/-en/-enc/-enco/-encod/-encode/-encoded/
+    # -encodedc/-encodedco/-encodedcom/-encodedcomm/-encodedcomman/
+    # -encodedcommand) plus the -ec alias.
+    r"\s-(?:e|ec|en|enc|enco|encod|encode|encoded|encodedc|encodedco|"
+    r"encodedcom|encodedcomm|encodedcomman|encodedcommand)\b|"
     r"\b(?:base64|certutil|openssl\s+enc|xxd)\b[^|;&]*?"
     r"(?:-d\b|--decode\b|-D\b|-decode\b|-r\b)[^|;&]*?"
     r"\|\s*(?:bash|sh|zsh|dash|ash|ksh|eval|source|python|perl|ruby|node|"
@@ -762,6 +795,20 @@ def _unwrap_quoted_tokens(text):
     return _QUOTED_TOKEN.sub(r"\2", text)
 
 
+def _deescape_shell(text):
+    # Bash resolves \x -> x in unquoted words: r\m -> rm, st\ate -> state,
+    # conf\ig -> config - the escaped spelling launders gated verbs and
+    # targets. Brace expansion ({state}, state{,}) and $IFS (expands to a
+    # separator) resolve the same way. The scan runs on raw AND de-escaped
+    # forms (union - over-detect is the safe direction): raw keeps the
+    # Windows-path view `devin\state`, the variant keeps the bash view
+    # `devinstate` plus every escape-collapsed word.
+    t = re.sub(r"\\(.)", r"\1", text)
+    t = t.replace("{,}", "")
+    t = re.sub(r"\$IFS\b", " ", t)
+    return t.replace("{", "").replace("}", "")
+
+
 # The exec tool's `env` dict is an injection channel the command scan
 # cannot see: the command text stays benign while an env var smuggles the
 # payload. Blocked keys (case-insensitive match, POSIX+Windows):
@@ -901,6 +948,13 @@ def main():
     # A commit message that describes "added git clean -fdx gate" is not
     # a destructive command — it's prose. Gates must match real commands.
     scan_command = _unwrap_quoted_tokens(strip_commit_message(command))
+    # Union with the bash-resolved form: every gate below searches the
+    # combined text, so an escaped spelling hits the same arm as its
+    # resolved word. `;` joins the variants - a hard boundary every
+    # operand span ([^|;&...]) stops at, so a line-1 tail cannot read a
+    # line-2 head as its operand (the \n joiner made `lvremove\nman`
+    # look like `lvremove man`).
+    scan_command += ";" + _deescape_shell(scan_command)
 
     # Gate 1: rm -rf dangerous paths
     try:
@@ -1056,6 +1110,21 @@ def main():
                 "removing or corrupting it resets the session's own "
                 "profile/budget limits or the stdin-channel line buffers. "
                 "Ask the user to change policy instead.")
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+    # Gate 8e: command substitution inside a delete-verb's operand -
+    # the target resolves at run time and the gate cannot read it.
+    try:
+        if _STATE_SUBST_TARGET.search(scan_command):
+            block(
+                "delete/move verb takes a command substitution or "
+                "backtick operand - the real target resolves inside the "
+                "substitution and is invisible to the gate (e.g. a "
+                "state-file path built at run time). Expand the target "
+                "list first, then run the delete on literal names.")
     except SystemExit:
         raise
     except Exception:

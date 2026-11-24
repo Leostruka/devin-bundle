@@ -396,3 +396,62 @@ def test_c101b_reject_replay_no_growth(tmp_path):
                          sess, state) == 0
     assert run_guard_wtp({"text_input": "ls\n", "shell_id": sh},
                          sess, state) == 0
+
+
+# --- C102: pass-7 review - escape/expansion normalization + arm widening -----
+# p7 probes verified: bash \x->x escape launders verbs/targets, brace
+# expansion and $IFS do the same, Win32 strips trailing dots, PS accepts
+# any unambiguous parameter prefix, find -exec ran only plain rm, cd-into
+# state/devin missed subshells/brace-groups/compound keywords/pipe verbs,
+# and $(...)/backtick operands hide targets at run time.
+S = "st" + "ate"
+D = "de" + "vin"
+
+
+@pytest.mark.parametrize("cmd", [
+    # bash resolves \x -> x in unquoted words: verbs and targets both
+    "r\\m -rf /", "gi\\t push --force", "git con\\fig core.hooksPath /x",
+    f"rm -rf {S[:2]}\\{S[2:]}", f"rm -rf {S}\\",
+    # brace expansion + $IFS resolve to the gated word
+    f"rm -rf {{{S}}}", f"rm -rf {S}{{,}}", f"rm -rf {S}$IFS",
+    "rm -rf {/}x",
+    # Win32 strips trailing dots
+    f"rm -rf {S}.", f"rm -rf {S}..", f"cd {S}. && rm wtp-x.txt",
+    # run-time substitution hides the target (uninspectable operand)
+    f"rm -rf {S[:3]}$(echo {S[3:]})", "rm -f `echo x`",
+    "rm -rf $(cat /tmp/list)", "rm -f `ls`",
+    # PS accepts any unambiguous prefix of EncodedCommand
+    "pwsh -encoded X", "powershell -enco X", "powershell -encode X",
+    "powershell -encodedcomm X", "powershell -encodedcommand X",
+    "pwsh -ec X",
+    # find -exec runs ANY verb on the state dir
+    f"find {S} -exec sh -c 'echo $1' _ {{}} +",
+    f"find {S} -execdir rm {{}} +",
+    # state files piped through find into a delete verb
+    f"find {S} -type f | xargs rm -f",
+    f"find {S} -name 'wtp-*' | xargs rm",
+    # cd-into-state compounds and wrappers
+    f"cd {S} && (rm wtp-x.txt)", f"cd {S} && {{ rm wtp-x.txt; }}",
+    f"cd {S} && ls | xargs rm -f", f"cd {S} && eval rm wtp-x.txt",
+    f"cd {S} && strace rm wtp-x.txt", f"cd {S} && ltrace rm wtp-x.txt",
+    f"cd {S} && setsid rm wtp-x.txt", f"cd {S} && pkexec rm wtp-x.txt",
+    f"cd {S} && while :; do rm -f wtp-x.txt; done",
+    f"cd {S} && if true; then rm wtp-x.txt; fi",
+    # cd-into-devin whole-dir wipes need no `state` operand
+    f"cd {D} && find . -delete", f"cd {D} && find . -type f | xargs rm -f",
+])
+def test_c102_blocked(cmd):
+    rc, _ = run_gate(cmd)
+    assert rc == 2, cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "ls state", "echo state",
+    "find . -type f | xargs rm -f",               # no state anchor
+    "cd x && (rm y)", "find /tmp -exec ls {} +",  # non-state targets
+    "powershell -encodedcmd X",                   # invalid prefix: PS errors
+    "pwsh -ExecutionPolicy Bypass -c 'ls'",
+])
+def test_c102_silent(cmd):
+    rc, _ = run_gate(cmd)
+    assert rc == 0, cmd
