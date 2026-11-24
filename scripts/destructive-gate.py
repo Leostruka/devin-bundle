@@ -239,13 +239,16 @@ _CMD_POS = (r"(?:^|[|;&`$(]|\b(?:sudo|doas|runas|xargs|env|nice|nohup|"
             r"(?:-[ckCK]|-Command|/[ckCK]|eval)\s*[\"'`])\s*")
 STATE_FILE_DELETE = re.compile(
     r"(?:" + _CMD_POS +
-    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe|"
-    r"mv|move|Move-Item)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
+    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
+    r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&]*?)"
+    r"(?:" + _STATE_TARGET + ")"
+    r"|\bFile\]::(?:Delete|Move|Replace)\w*\s*\([^)]*?"
+    r"(?:['\"]?state[\\/]+" + _STATE_FILE_NAME + "|" + _STATE_DIR + ")"
     r"|" + _CMD_POS + r"find\b[^|;&]*?(?:" + _STATE_TARGET + ")"
     r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+(?:rm|shred|srm)\b)"
     r"|" + _STATE_CD +
-    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe|"
-    r"mv|move|Move-Item)\b[^|;&\n]*?" + _STATE_NAME +
+    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
+    r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&\n]*?" + _STATE_NAME +
     r"|" + _STATE_CD + r"find\b[^|;&\n]*?" + _STATE_NAME +
     r"[^|;&\n]*?-delete\b",
     re.IGNORECASE,
@@ -257,13 +260,17 @@ STATE_FILE_DELETE = re.compile(
 # reads state and stays allowed.
 STATE_FILE_WRITE = re.compile(
     r"(?:>>?\s*[\"']?[^|;&]*?|" + _CMD_POS +
-    r"(?:tee|truncate|Out-File|Set-Content|"
-    r"sed\b[^|;&]*-i|dd\b[^|;&]*of=)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
+    r"(?:tee|truncate|Out-File|Set-Content|Add-Content|Clear-Content|"
+    r"sc\b|Set-ItemProperty|sed\b[^|;&]*-i|"
+    r"dd\b[^|;&]*of=)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
+    r"|\bFile\]::(?:Write|Append|Create|Copy|Move|Replace)\w*\s*\([^)]*?"
+    r"(?:['\"]?state[\\/]+" + _STATE_FILE_NAME + "|" + _STATE_DIR + ")"
     r"|" + _CMD_POS + r"(?:cp|copy|Copy-Item|rsync|install)\b[^|;&]*?"
     r"(?:" + _STATE_TARGET + r")[\\/'\"]*\s*(?:$|[|;&])"
     r"|" + _STATE_CD +
-    r"(?:tee|truncate|Out-File|Set-Content|sed\b[^|;&]*-i|"
-    r"dd\b[^|;&]*of=|cp|copy|Copy-Item)\b[^|;&]*?" + _STATE_NAME +
+    r"(?:tee|truncate|Out-File|Set-Content|Add-Content|Clear-Content|sc\b|"
+    r"sed\b[^|;&]*-i|dd\b[^|;&]*of=|cp|copy|Copy-Item)\b[^|;&]*?" +
+    _STATE_NAME +
     r"|" + _STATE_CD + r"[^|;&]*?>>?\s*" + _STATE_NAME,
     re.IGNORECASE,
 )
@@ -294,6 +301,81 @@ _BRANCH_VALUE_FLAGS = frozenset({
     "--column", "--color", "--abbrev", "--edit-description",
 })
 
+# git config writes and `git -c k=v`/`--config-env` inline config:
+# exec-capable keys turn a benign git op into code execution - the
+# command text still reads `git status` while core.hooksPath / alias.* /
+# credential.helper / filter.*.clean / mergetool.*.cmd etc. exec on the
+# op itself or every later git call. Reads/removals (`config key`,
+# `--get`, `--unset`, `--list`, `-e`) stay allowed - only a WRITE of a
+# denied key blocks.
+_GIT_SEG = re.compile(r"\bgit(?:\.(?:exe|cmd|bat|com))?(?=\s)[^|;&\n]*")
+_GIT_CFG_INLINE = re.compile(
+    r"(?:^|\s)(?:-c|--config-env)(?:\s+|=)[\"']?([\w.+-]+)\s*=")
+_GIT_CFG_DENY_EXACT = frozenset({
+    "core.hookspath", "core.fsmonitor", "core.sshcommand",
+    "core.pager", "core.editor", "core.gitproxy", "core.askpass",
+    "diff.external", "init.templatedir", "safe.directory",
+    "man.viewer", "interactive.difffilter", "sendemail.sendmailcmd",
+    "http.sslverify", "http.sslcainfo", "http.sslcapath",
+    "ssh.variant", "web.browser",
+})
+_GIT_CFG_DENY_PREFIX = (
+    "alias.", "include.", "includeif.", "pager.",
+    "browser.", "web.", "instaweb.", "gpg.ssh.", "extcmd.")
+# Program/exec suffixes across tool namespaces (mergetool.*.cmd,
+# filter.*.clean/smudge/process, gpg.*.program, tar.*.command,
+# protocol.*.allow, merge.*.driver, remote-free .url kept out -
+# remote.*.url writes are benign and common).
+_GIT_CFG_DENIED_KEY = re.compile(
+    r"\.(?:driver|cmd|program|helper|insteadof|pushinsteadof|command|"
+    r"clean|smudge|process|required|variant|fsmonitor|askpass|pager|"
+    r"editor|hookspath|difffilter|sendmailcmd|viewer|external|allow)$|"
+    r"^submodule\..*\.(?:update|url|path)$")
+# Mode flags that make `git config` a read or a removal - not a write.
+_GIT_CFG_NONWRITE = re.compile(
+    r"^--?(?:get.*|list|l$|unset.*|remove-section|rename-section|"
+    r"edit|e$|show-origin|show-scope|name-only|fixed-value|z$)$")
+# config flags that consume the following token (never a key/value).
+_GIT_CFG_VALFLAGS = frozenset({
+    "-f", "--file", "--blob", "--type", "--default", "--value",
+    "--get-urlmatch"})
+
+
+def _git_cfg_denied(key):
+    k = key.lower()
+    return (k in _GIT_CFG_DENY_EXACT
+            or k.startswith(_GIT_CFG_DENY_PREFIX)
+            or bool(_GIT_CFG_DENIED_KEY.search(k)))
+
+
+def _git_cfg_danger(command):
+    """Return a denied git-config key being SET in the command, or None.
+    Covers `git -c k=v`/`--config-env` inline sets and `git config k v`
+    writes; reads/removals pass."""
+    for m in _GIT_SEG.finditer(command):
+        seg = m.group(0)
+        for im in _GIT_CFG_INLINE.finditer(seg):
+            if _git_cfg_denied(im.group(1)):
+                return im.group(1)
+        cm = re.search(r"\bconfig\b", seg)
+        if cm and not _GIT_CFG_NONWRITE.search(seg):
+            toks = seg[cm.end():].split()
+            pos = []
+            skip = False
+            for t in toks:
+                t = t.strip("'\"")
+                if skip:
+                    skip = False
+                    continue
+                if t.startswith("-"):
+                    skip = t in _GIT_CFG_VALFLAGS
+                    continue
+                pos.append(t)
+            if len(pos) >= 2 and _git_cfg_denied(pos[0]):
+                return pos[0]
+    return None
+
+
 # mkfs / dd to disk devices (filesystem wipe / raw disk write).
 # Device prefixes: sd/hd/vd (virt), xvd (AWS EBS), nvme, mmcblk (SD/eMMC),
 # loop, nbd, dm-/mapper (LVM/device-mapper), disk (macOS), plus the Windows
@@ -313,9 +395,33 @@ DISK_WIPE = re.compile(
     r"sgdisk\b[^|;&]*-Z|wsl(?:\.exe)?\s+--unregister))",
     re.IGNORECASE)
 
-# Windows disk wipe: `format X:` quick/full format, `diskpart` interactive
-WIN_DISK_WIPE = re.compile(r"\bformat\s+[a-zA-Z]:(?=[\s/]|$)|\bdiskpart\b",
-                           re.IGNORECASE)
+# Encoded execution: the gate scans command text, so a payload smuggled
+# through a decoder is uninspectable - powershell -e/-ec/-enc/
+# -EncodedCommand (PS accepts parameter prefixes), any base64/certutil/
+# openssl/xxd decode piped or substituted into a shell/eval, decode-
+# wrapping command substitutions inside a sh/eval argument. Canonical
+# malware pattern; never legitimate agent work.
+ENCODED_EXEC = re.compile(
+    r"\b(?:powershell|pwsh)(?:\.exe)?\b[^|;&]*?"
+    r"\s-(?:e|ec|en|enc|encodedcommand)\b|"
+    r"\b(?:base64|certutil|openssl\s+enc|xxd)\b[^|;&]*?"
+    r"(?:-d\b|--decode\b|-D\b|-decode\b|-r\b)[^|;&]*?"
+    r"\|\s*(?:bash|sh|zsh|dash|ash|ksh|eval|source|python|perl|ruby|node|"
+    r"powershell|pwsh|cmd)\b|"
+    r"\b(?:bash|sh|zsh|dash|ash|ksh|eval|source|cmd)\b[^|;&]*?"
+    r"\$\([^)]*?(?:base64\b|certutil\b|openssl\b|xxd\b)[^)]*?\)|"
+    r"\b(?:eval|source)\b\s*[\"'`]?[$<]\([^)]*?"
+    r"(?:base64|certutil|openssl|xxd|printf\b[^)]*?\\x)[^)]*?\)",
+    re.IGNORECASE)
+
+# Windows disk wipe: `format X:` quick/full format, `diskpart` interactive,
+# PowerShell Format-Volume/Clear-Disk erase a volume/disk without the
+# `format X:` shape.
+WIN_DISK_WIPE = re.compile(
+    r"\bformat\s+[a-zA-Z]:(?=[\s/]|$)|\bdiskpart\b|"
+    r"\bFormat-Volume\b|\bClear-Disk\b[^|;&]*?(?:-RemoveData|"
+    r"-RemoveOEM|-Force\b)",
+    re.IGNORECASE)
 
 # Recoverability killers (warn): cipher /w erases free-space data, sdelete
 # and shred bypass every recovery path by design, Clear-RecycleBin destroys
@@ -586,7 +692,9 @@ def check_rm_rf(command):
         if not targets:
             return True  # recursive-force delete with no target is malformed
         for target in targets:
-            if target in RM_DANGEROUS_TARGETS:
+            # Trailing slashes don't change the target: `rm -rf ./` is `.`.
+            norm = target.rstrip("/\\") or target
+            if norm in RM_DANGEROUS_TARGETS:
                 return True
             # Absolute or home-relative paths are dangerous unless whitelisted
             if target.startswith(("/", "~", "$HOME")):
@@ -620,6 +728,67 @@ def _unwrap_quoted_tokens(text):
     # before the single-token unwrap or they defeat name anchoring.
     text = _EMPTY_QUOTES.sub("", text)
     return _QUOTED_TOKEN.sub(r"\2", text)
+
+
+# The exec tool's `env` dict is an injection channel the command scan
+# cannot see: the command text stays benign while an env var smuggles the
+# payload. Blocked keys (case-insensitive match, POSIX+Windows):
+# - startup files: BASH_ENV/ENV/ZDOTDIR/PROMPT_COMMAND source attacker
+#   files before the command runs
+# - loader/runtime injection: LD_*/DYLD_*, NODE_OPTIONS, PYTHONSTARTUP/
+#   PYTHONPATH/PYTHONHOME, RUBYOPT, PERL5OPT/PERL5LIB, JAVA_*_OPTIONS,
+#   MAKEFILES/MAKEFLAGS
+# - spawned helpers (themselves programs git/shell exec):
+#   GIT_SSH_COMMAND/GIT_SSH, *ASKPASS, EDITOR/VISUAL/GIT_*_EDITOR, PAGER/
+#   GIT_PAGER/MANPAGER, GIT_EXTERNAL_DIFF
+# - git state/config redirect: GIT_DIR, GIT_WORK_TREE, GIT_CONFIG_COUNT +
+#   GIT_CONFIG_KEY_*/GIT_CONFIG_VALUE_* (core.hooksPath -> RCE on any git
+#   op), GIT_CONFIG_GLOBAL/SYSTEM, XDG_CONFIG_HOME, HOME/USERPROFILE
+#   (relocates ~/.gitconfig lookup)
+# - prefixes: BASH_FUNC_* (exported function bodies), GIT_CONFIG_KEY_*,
+#   GIT_CONFIG_VALUE_*, DYLD_*
+_ENV_DENY = {
+    "bash_env", "env", "zdotdir", "prompt_command", "shelldir",
+    "ld_preload", "ld_audit", "ld_library_path", "ld_debug",
+    "dyld_insert_libraries", "dyld_library_path",
+    "dyld_fallback_library_path", "dyld_print_libraries",
+    "node_options", "pythonstartup", "pythonpath", "pythonhome",
+    "rubyopt", "perl5opt", "perl5lib", "perl5db",
+    "java_tool_options", "jdk_java_options", "_java_options",
+    "makefiles", "makeflags", "mflags",
+    "git_ssh_command", "git_ssh", "git_askpass", "ssh_askpass",
+    "sudo_askpass", "git_editor", "editor", "visual",
+    "git_sequence_editor", "git_pager", "pager", "manpager",
+    "git_external_diff", "git_dir", "git_work_tree",
+    "git_config_count", "git_config_global", "git_config_system",
+    "git_config_nosystem", "xdg_config_home", "home", "userprofile",
+    "histfile", "inputrc", "bash_history", "psmodulepath",
+    "browser", "cvs_rsh", "rsync_rsh", "svn_ssh", "hg_ssh",
+    "darcs_ssh", "git_ssh_variant", "ssh_command", "ansible_ask_pass",
+}
+_ENV_DENY_PREFIX = ("bash_func_", "git_config_key_", "git_config_value_",
+                    "dyld_")
+# PATH is the strongest env vector: custom dirs shadow EVERY binary the
+# command names (`{"PATH": "/tmp/x"}` + `ls` runs /tmp/x/ls). Allowed only
+# when the inherited-path reference comes first - appended dirs can add
+# binaries but cannot shadow ones that already resolve.
+_PATH_SELF = re.compile(r"\$env:path|\$path|%path%", re.IGNORECASE)
+
+
+def _env_violations(env):
+    """Dangerous keys / shadowing PATH in an exec env dict (key names are
+    the attack surface; values are program-parsed, not shell-expanded)."""
+    bad = []
+    for k, v in env.items():
+        key = str(k).lower()
+        if key in _ENV_DENY or key.startswith(_ENV_DENY_PREFIX):
+            bad.append(str(k))
+        elif key == "path":
+            val = "" if v is None else str(v)
+            m = _PATH_SELF.search(val)
+            if not m or val[: m.start()].strip(";:"):
+                bad.append("PATH")
+    return bad
 
 
 def strip_commit_message(command):
@@ -660,6 +829,17 @@ def main():
     tool_input = data.get("tool_input")
     if not isinstance(tool_input, dict):
         sys.exit(0)
+    env = tool_input.get("env")
+    if isinstance(env, dict):
+        bad = _env_violations(env)
+        if bad:
+            block(
+                "env override " + ", ".join(sorted(bad)) +
+                " injects executable state invisible to the command "
+                "scan (startup files, loader/runtime hooks, git config, "
+                "spawned helpers, or binary shadowing). Set it inside "
+                "the command text where the gate can see it - e.g. "
+                "`export PATH=\"$PATH:dir\"; cmd`.")
     command = tool_input.get("command", "") or ""
     if tool_name == "write_to_process":
         # The 'command' key on a wtp payload is never trusted - it is not
@@ -708,6 +888,22 @@ def main():
                 "git push --force without --dry-run. Run with --dry-run first to "
                 "verify what will be pushed, then repeat without it."
             )
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+    # Gate 3c: git config writes / -c inline config with exec-capable
+    # keys - a benign `git status` becomes RCE via core.hooksPath,
+    # alias.*, credential.helper, filter.*.clean, includeIf.*.path etc.
+    try:
+        bad_key = _git_cfg_danger(scan_command)
+        if bad_key:
+            block(
+                f"git config key '{bad_key}' executes code (hooks, "
+                "alias expansion, credential/pager/filter programs, or "
+                "config inclusion). Setting it would run arbitrary "
+                "commands on this or a later git operation.")
     except SystemExit:
         raise
     except Exception:
@@ -788,7 +984,7 @@ def main():
     except Exception:
         pass
 
-    # Gate 8b: Windows format / diskpart (disk wipe)
+    # Gate 8b: Windows format / diskpart / PowerShell disk wipe
     try:
         if WIN_DISK_WIPE.search(scan_command):
             block(
@@ -800,7 +996,21 @@ def main():
     except Exception:
         pass
 
-    # Gate 8c: deleting subagent enforcement state (profile records,
+    # Gate 8c: encoded execution - a decoded payload is uninspectable to
+    # the command scan, so the transport itself is blocked.
+    try:
+        if ENCODED_EXEC.search(scan_command):
+            block(
+                "encoded/obfuscated execution (powershell -enc, base64/"
+                "certutil/openssl/xxd decode piped or substituted into a "
+                "shell/eval) hides the real command from the gate. "
+                "Run the decoded command as plain text instead.")
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+    # Gate 8d: deleting subagent enforcement state (profile records,
     # dispatch ledger, budget policy) - self-unlimiting class; the
     # file-tool side is guarded in validate-tool-args.
     try:
