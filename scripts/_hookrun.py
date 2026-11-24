@@ -168,6 +168,27 @@ def _wtp_buf_path(payload, tool_input):
         return None
 
 
+# Same-payload re-extraction window (seconds): _normalize_wtp consumes
+# the stdin stream once, then every downstream gate re-extracts the SAME
+# payload. The buffer file records the last input hash so a repeat call
+# inside this window returns the prior output without double-consuming.
+# Outside the window an identical payload is a genuinely new keystroke
+# and must consume normally (legit repeated input appends again).
+_WTP_DEDUP_S = 30.0
+
+
+def _wtp_input_key(payload, tool_input, is_bytes, raw):
+    """sha256 of the raw stdin inputs - the dedup anchor. Derives from
+    attacker-visible fields only, but lives in the gated buffer file so
+    a forged '_wtp_normalized'/'command' pair cannot fake it."""
+    key = "|".join([
+        str(payload.get("session_id", "")),
+        str(payload.get("hook_event_name", "")),
+        str(tool_input.get("shell_id", "")),
+        "b" if is_bytes else "t", raw])
+    return hashlib.sha256(key.encode("utf-8")).hexdigest()[:24]
+
+
 def wtp_submitted_text(payload):
     """Return the lines a write_to_process call actually submits to the
     target shell.
@@ -176,6 +197,12 @@ def wtp_submitted_text(payload):
     shell's input line and is buffered per shell across calls. C-c/C-u
     clear-controls discard the pending line. bytes_input uses
     angle-bracket notation (<CR>, <C-c>) decoded to real chars first.
+
+    Idempotent within _WTP_DEDUP_S for the same inputs: downstream gates
+    always call this on wtp payloads (a 'command' or '_wtp_normalized'
+    key supplied by the caller is untrusted and ignored) - the dedup
+    record in the gated buffer file proves whether this input was
+    already consumed, so re-extraction cannot corrupt the pending model.
     """
     tool_input = payload.get("tool_input")
     if not isinstance(tool_input, dict):
@@ -187,6 +214,7 @@ def wtp_submitted_text(payload):
         is_bytes = True
         if not isinstance(text, str) or not text:
             return ""
+    raw = text
     if is_bytes:
         text = re.sub(r"(?i)<CR>|<LF>|<C-m>|<C-j>|\r\n?", "\n", text)
         # Control-byte equivalents: C-g aborts the line like C-c;
@@ -198,12 +226,32 @@ def wtp_submitted_text(payload):
         text = _WTP_SPECIAL.sub("", text)
     # Literal BS/DEL bytes are the same unmodelable edits as their tokens.
     text = _WTP_LIT_EDIT.sub("\x1e", text)
+    in_key = _wtp_input_key(payload, tool_input, is_bytes, raw)
     pending = ""
+    dedup_i = ""
     buf = _wtp_buf_path(payload, tool_input)
     if buf:
         try:
-            with open(buf, encoding="utf-8", errors="replace") as fh:
-                pending = fh.read()[:_WTP_BUF_CAP]
+            rec = ""
+            fresh = False
+            if os.path.isfile(buf):
+                fresh = time.time() - os.path.getmtime(buf) < _WTP_DEDUP_S
+                with open(buf, encoding="utf-8", errors="replace") as fh:
+                    rec = fh.read()
+            try:
+                obj = json.loads(rec)
+            except ValueError:
+                obj = None
+            if isinstance(obj, dict):
+                pending = str(obj.get("p", ""))[:_WTP_BUF_CAP]
+                dedup_i = str(obj.get("i", "")) if fresh else ""
+            elif rec:
+                # Legacy plain-text pending line (pre-JSON buffers).
+                pending = rec[:_WTP_BUF_CAP]
+            if dedup_i == in_key:
+                # Same stdin input already consumed in this hook
+                # invocation - return the prior output untouched.
+                return str(obj.get("o", ""))
         except OSError:
             pending = ""
     combined = pending + text
@@ -213,18 +261,18 @@ def wtp_submitted_text(payload):
     lines = [seg.rsplit("\x03", 1)[-1]
              for seg in re.split(r"\r\n|\r|\n", combined)]
     tail = lines[-1]
+    if len(tail) > _WTP_BUF_CAP:
+        # Truncated tail is uninspectable - mark it tainted so a submit
+        # carrying it blocks instead of under-scanning.
+        tail = "\x1e" + tail[:_WTP_BUF_CAP]
+    out = "\n".join(lines[:-1])
     if buf:
         try:
             with open(buf, "w", encoding="utf-8") as fh:
-                if len(tail) > _WTP_BUF_CAP:
-                    # Truncated tail is uninspectable - mark it tainted so
-                    # a submit carrying it blocks instead of under-scanning.
-                    fh.write("\x1e" + tail[:_WTP_BUF_CAP])
-                else:
-                    fh.write(tail)
+                fh.write(json.dumps({"p": tail, "i": in_key, "o": out}))
         except OSError:
             pass
-    return "\n".join(lines[:-1])
+    return out
 
 
 def _normalize_wtp(payload):
@@ -239,10 +287,10 @@ def _normalize_wtp(payload):
             return
         # Always overwrite: a 'command' key on a wtp payload is not part of
         # the tool schema - an injected one would defeat normalization.
+        # No trust marker is written: any payload-visible flag could be
+        # forged by the caller. Extraction is idempotent instead (dedup
+        # record in the gated buffer file), so gates re-extract safely.
         ti["command"] = wtp_submitted_text(payload)
-        # Marker so gates invoked downstream do not re-extract (double
-        # buffer consumption corrupts the pending model).
-        ti["_wtp_normalized"] = True
     except Exception:
         pass
 

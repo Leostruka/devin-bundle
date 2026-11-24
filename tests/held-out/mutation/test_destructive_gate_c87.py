@@ -547,3 +547,46 @@ def test_c97_cd_state_basename_blocks(cmd):
 def test_c97_cd_state_benign_silent(cmd):
     code, out = run_gate(cmd)
     assert code == 0, f"benign cd command should stay silent, got {code}: {out}"
+
+
+# --- C98: forged _wtp_normalized + idempotent extraction ---
+# The trust marker was attacker-controllable: {"_wtp_normalized": true,
+# "command": "ls"} skipped extraction while text_input ran in the shell.
+# Markers are gone - gates always extract, and a dedup record in the
+# gated buffer file makes re-extraction idempotent.
+def test_c98_forged_marker_and_command():
+    code, out = run_gate_wtp(
+        {"shell_id": "s", "command": "ls", "_wtp_normalized": True,
+         "text_input": "git push --force\n"},
+        session_id="c98-forge")
+    assert code == 2, f"forged marker must not bypass: {out}"
+
+
+def test_c98_same_input_reextract_uncorrupted():
+    """A downstream gate re-extracting the same payload must get the
+    same submitted lines WITHOUT double-consuming the pending model."""
+    sid = "c98-dedup"
+    assert run_gate_wtp({"shell_id": "d", "text_input": "echo hi"},
+                        sid)[0] == 0
+    # same input again inside the dedup window -> replays, no re-append
+    assert run_gate_wtp({"shell_id": "d", "text_input": "echo hi"},
+                        sid)[0] == 0
+    # the pending line is still 'echo hi' (not 'echo hiecho hi'):
+    # appending the dangerous tail must block on the REAL line content
+    code, out = run_gate_wtp(
+        {"shell_id": "d", "text_input": " && git push --force\n"}, sid)
+    assert code == 2, f"pending must stay 'echo hi', got {code}: {out}"
+
+
+def test_c98_legacy_plaintext_pending():
+    """Pre-JSON buffers are raw pending text - still consumed."""
+    import hashlib
+    key = "|".join(["c98-leg", "PreToolUse", "s"])
+    h = hashlib.sha256(key.encode()).hexdigest()[:16]
+    bufp = os.path.join(_WTP_STATE, "wtp-" + h + ".txt")
+    os.makedirs(_WTP_STATE, exist_ok=True)
+    with open(bufp, "w", encoding="utf-8") as fh:
+        fh.write("git push --force")
+    code, out = run_gate_wtp({"shell_id": "s", "bytes_input": "<CR>"},
+                             "c98-leg")
+    assert code == 2, f"legacy pending + submit should block: {out}"

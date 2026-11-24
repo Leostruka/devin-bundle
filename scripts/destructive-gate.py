@@ -637,12 +637,11 @@ def main():
         sys.exit(0)
     command = tool_input.get("command", "") or ""
     if tool_name == "write_to_process":
-        if not tool_input.get("_wtp_normalized"):
-            # Not normalized upstream: the 'command' key is foreign
-            # (wtp has no command schema field) - never trust it.
-            # Extract the submitted lines ourselves. The marker also
-            # avoids double-consuming the pending buffer.
-            command = _hookrun.wtp_submitted_text(data)
+        # The 'command' key on a wtp payload is never trusted - it is not
+        # part of the tool schema and could be injected by the caller.
+        # Extraction is idempotent (dedup record in the gated buffer
+        # file), so always extract the submitted lines ourselves.
+        command = _hookrun.wtp_submitted_text(data)
         if "\x1e" in command:
             # Line-edit sentinel: history recall, cursor moves, edits and
             # completion all produce a submitted line the append-model

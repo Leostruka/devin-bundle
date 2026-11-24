@@ -85,11 +85,10 @@ def main():
     if not isinstance(ti, dict):
         ti = {}
     cmd = ti.get("command") or ""
-    if payload.get("tool_name") == "write_to_process" and \
-            not ti.get("_wtp_normalized"):
-        # Foreign 'command' keys are untrusted on wtp (not in its tool
-        # schema) - extract the submitted lines. Standalone PostToolUse
-        # entry: normalization only runs inside _hookrun.run children.
+    if payload.get("tool_name") == "write_to_process":
+        # 'command' on a wtp payload is never trusted (not in its tool
+        # schema; injectable by the caller). Extraction is idempotent so
+        # always extract the submitted lines ourselves.
         cmd = _hookrun.wtp_submitted_text(payload)
     if not isinstance(cmd, str) or not INSTALL_RE.search(cmd):
         return 0

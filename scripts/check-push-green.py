@@ -568,12 +568,11 @@ def main():
     command = tool_input.get("command", "") or ""
     if not isinstance(command, str):
         sys.exit(0)
-    if data.get("tool_name") == "write_to_process" and \
-            not tool_input.get("_wtp_normalized"):
-        # Leaf script parses its own payload - _hookrun.run() never saw
-        # it, so the command field is not populated for wtp. Extract the
-        # submitted lines (shared pending-line model). A recalled/edited
-        # line carries the \x1e sentinel: uninspectable -> block.
+    if data.get("tool_name") == "write_to_process":
+        # 'command' on a wtp payload is never trusted (not in its tool
+        # schema; injectable by the caller). Extraction is idempotent so
+        # always extract the submitted lines. A recalled/edited line
+        # carries the \x1e sentinel: uninspectable -> block.
         command = _hookrun.wtp_submitted_text(data)
         if "\x1e" in command:
             block("write_to_process submitted a line that cannot be "
