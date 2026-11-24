@@ -467,9 +467,9 @@ def _digest_state(state, p):
     }
 
 
-def _inject(text):
+def _inject(text, ev):
     print(json.dumps({"hookSpecificOutput": {
-                      "hookEventName": "Stop",
+                      "hookEventName": ev,
                       "additionalContext": text}}))
 
 
@@ -604,7 +604,7 @@ def main():
         state["last_action_ts"] = time.time()
     _save_json(_state_path(), state)
     if notice:
-        _inject(notice)
+        _inject(notice, ev)
     sys.exit(0)
 
 

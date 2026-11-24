@@ -32,11 +32,14 @@ SAFE_BINARIES = {
 # paths: `cat ~/.ssh/id_rsa` is read-only but exfiltrates a secret into the
 # transcript. These names fall through to the human prompt instead.
 SECRET_PATH = re.compile(
-    r"(?:^|[\\/])(?:\.env(?:rc)?\b|\.ssh[\\/]|\.aws[\\/]credentials\b|"
-    r"\.gnupg[\\/]|\.netrc\b|id_rsa|id_dsa|id_ecdsa|id_ed25519|"
-    r"credentials(?:\.|_|$)|secrets?\.|.*\.(?:pem|key|pfx|p12|kdbx|keystore|jks)|"
-    r"\.kube[\\/]config\b|\.docker[\\/]config\.json\b|"
-    r"\.config[\\/]gcloud[\\/])",
+    r"(?:^|[\\/]|\s)(?:\.env(?:rc)?\b|\.netrc\b|\.npmrc\b|\.pypirc\b|"
+    r"\.git-credentials\b|"
+    r"\.(?:ssh|aws|gnupg|kube|docker)(?:[\\/]|$)|"
+    r"etc[\\/]shadow\b|id_rsa|id_dsa|id_ecdsa|id_ed25519|"
+    r"credentials(?:\.|_|$)|[^\\/]*secrets?(?:\.|_|$)|"
+    r"[^\\/]*token\.json\b|"
+    r"[^\\/]*\.(?:pem|key|pfx|p12|kdbx|keystore|jks|credentials)|"
+    r"\.config[\\/]gcloud(?:[\\/]|$))",
     re.IGNORECASE,
 )
 

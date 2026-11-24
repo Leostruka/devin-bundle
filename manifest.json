@@ -1426,7 +1426,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "84aae2c018563d3d1ff65e5a78aa82f3e323d7595f3ade9ebe8a9f30e37270fe",
+      "export_hash": "D986F7FAFA519C6BAFC7641DD0C53D5E7704EC9199DDAE7B595A7A2316FA1C34",
       "exported_at": "2026-11-17"
     },
     {
@@ -1468,7 +1468,7 @@
     {
       "name": "compact-gate.py",
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
-      "export_hash": "896970111e8f5413db5640cbdd2f6e69323557f9cdb53c7a8f1a114eba7113db",
+      "export_hash": "8F77BA293514006433196613E279BD5E7C0FA4FBF1F0D5C5BCC3706795D55855",
       "exported_at": "2026-11-17"
     },
     {
@@ -1499,7 +1499,7 @@
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "312ed5b7b3067558fad5736564e6825a40619a3a2099a8dce68b05c28aeed4c3",
+      "export_hash": "94D417019BF08F2B49DE5CF2E122FE2568F71E722DB5C07A3C5F06DC16A19718",
       "exported_at": "2026-11-17"
     },
     {
@@ -1519,7 +1519,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "f3f22f7e7ea721107d0719e33aeb648e1ddd3cbc7ad4688fa03fa7a4787f5ade",
+      "export_hash": "EA4ED778BAE6C51A3A881353BCDEAAB0F7D52E72173B80D6E84AF4D96239F68E",
       "exported_at": "2026-11-17"
     },
     {
@@ -1749,7 +1749,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "458bad730ab2342e048b0bd2838ddcc721ac30358cd16b437145a34a87986ff4",
+      "export_hash": "D0BFFEC9136682D793E26C7FBA7BA444774E5D04594DE6343C902D8C5A7A23C9",
       "exported_at": "2026-11-17"
     },
     {
@@ -1768,7 +1768,7 @@
       "name": "permission-gate.py",
       "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
       "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
-      "export_hash": "7b8fba7022d3ffad24fa3f196d5300b3f82da9f840ba83d26dd7fbb794d19780",
+      "export_hash": "1CB6B5B989BC865E41C74A14226EE2579280E12013368960C8FB6889331BA9A2",
       "exported_at": "2026-11-17"
     },
     {

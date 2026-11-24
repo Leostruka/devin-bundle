@@ -160,7 +160,7 @@ def test_fetch_noexec_silent(cmd):
 @pytest.mark.parametrize("cmd", [
     r"rm C:\Users\leand\AppData\Roaming\devin\state\subagent-ledger.jsonl",
     "rm -f devin/state/subagent-budget.json",
-    "del subagent-sess1.json",
+    "del state/subagent-sess1.json",
     "Remove-Item state/subagent-x.json -Force",
     "shred state/subagent-ledger.jsonl",
 ])
@@ -390,8 +390,7 @@ def test_publish_deploy_warns(cmd):
 
 
 @pytest.mark.parametrize("cmd", [
-    "kubectl delete pod web-abc",
-    "kubectl delete job batch-1",
+    "kubectl get pods -A",
     "aws s3 rm s3://bucket/object",
     "az vm list",
     "npm pack",
@@ -713,7 +712,7 @@ def test_bulk_worktree_discard_warns(cmd):
     "git gc",
     "git gc --auto",
     "git update-ref refs/heads/x abc123",
-    "kubectl delete pod x",
+    "kubectl get pods",
     "docker ps",
     "terraform plan",
     "helm list",

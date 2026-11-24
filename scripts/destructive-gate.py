@@ -187,11 +187,22 @@ WIN_RM_RE_NOTARGET = re.compile(
     re.IGNORECASE,
 )
 
-# Deleting subagent enforcement state (profile records, dispatch ledger,
-# budget policy) resets the session's own limits - self-unlimiting class.
+# Deleting or corrupting subagent enforcement state (profile records,
+# dispatch ledger, budget policy) resets the session's own limits -
+# self-unlimiting class. Anchored on the state/ path component (matches
+# <devin-home>/state/subagent-*; bare "subagent-x.json" elsewhere is fine).
+_STATE_PATH = r"(?:^|[\\/]|\s)state[\\/]+subagent-[\w.-]*\.jsonl?\b"
 STATE_FILE_DELETE = re.compile(
     r"\b(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe)\b"
-    r"[^|;&]*?\bsubagent-[\w.-]*\.jsonl?\b",
+    r"[^|;&]*?" + _STATE_PATH,
+    re.IGNORECASE,
+)
+# Writes are as dangerous as deletes: `>` truncates (json.load fails ->
+# uncapped fail-open), `>>`/append poisons ts fields, cp/mv/tee/truncate
+# replace content.
+STATE_FILE_WRITE = re.compile(
+    r"(?:>>?\s*[\"']?[^|;&]*?|\b(?:tee|truncate|mv|cp|copy|move|Copy-Item|"
+    r"Move-Item|Set-Content|Out-File)\b[^|;&]*?)" + _STATE_PATH,
     re.IGNORECASE,
 )
 
@@ -215,9 +226,11 @@ DISK_WIPE = re.compile(
     r"|dd\s+.*\bof="
     r"(?:/dev/(?:sd|nvme|hd|vd|xvd|mmcblk|loop|nbd|dm-|mapper|disk)"
     r"|[\\/]+[.][\\/]+PhysicalDrive)"
-    # Volume/partition destroyers - the target IS the volume, no /dev needed
-    r"|\b(?:zpool\s+destroy|lvremove|vgremove|pvremove|"
-    r"mdadm\b[^|;&]*--zero-superblock|newfs(?:_\w+)?\s|"
+    # Volume/partition destroyers - the target IS the volume, no /dev
+    # needed. (lv|vg|pv)remove requires a non-flag operand so `man lvremove`
+    # / `lvremove --help` stay silent; `lvremove -f vg/lv` still blocks.
+    r"|\b(?:zpool\s+destroy|(?:lv|vg|pv)remove\b[^|;&]*?\s(?![-|;&])\S|"
+    r"mdadm\b[^|;&]*--zero-superblock|newfs(?:_\w+)?\b[^|;&]*?\s(?![-|;&])\S|"
     r"diskutil\s+eraseDisk|parted\s+\S+\s+mklabel|"
     r"sgdisk\b[^|;&]*-Z|wsl(?:\.exe)?\s+--unregister))",
     re.IGNORECASE)
@@ -237,11 +250,13 @@ SECURE_ERASE = re.compile(
 # Infra destroyers (warn): these destroy live resources/state - the blast
 # radius exceeds a local worktree. Advisory only (often intentional).
 INFRA_DESTROY = re.compile(
-    r"\b(?:docker\s+(?:system\s+prune\b[^|;&]*-[af]|volume\s+prune|"
-    r"compose\s+down\b[^|;&]*-v)|"
+    r"\b(?:docker\s+(?:system\s+prune\b[^|;&]*-[af]|volume\s+prune)|"
+    r"docker(?:\s+compose|-compose)\s+down\b[^|;&]*-v|"
     r"terraform\s+(?:destroy|apply\b[^|;&]*-destroy)|"
     r"kubectl\s+delete\s+(?:namespace|ns|pvc|pv|deployment|statefulset|"
-    r"daemonset|ingress|secret|configmap)\b|"
+    r"daemonset|ingress|secret|configmap|pods?|cronjobs?|jobs?|"
+    r"services?|svc|nodes?)\b|"
+    r"kubectl\s+delete\b[^|;&]*(?:--all\b|-f\b)|"
     r"helm\s+(?:uninstall|delete)\b|"
     r"vagrant\s+destroy\b|"
     r"aws\s+(?:s3\s+(?:rb|rm\b[^|;&]*(?:--recursive|-r\b))|"
@@ -255,9 +270,10 @@ INFRA_DESTROY = re.compile(
     r"storage\s+(?:rm|buckets\s+delete)|functions\s+delete)\b|"
     r"doctl\s+(?:[\w-]+\s+)*delete\b|"
     r"rclone\s+(?:delete|purge|deletefile)\b|"
-    r"gsutil\s+rm\b|"
+    r"gsutil\s+(?:-[\w-]+\s+)*rm\b|"
     r"git\S*\s+push\b[^|;&]*(?:\s--delete\b|\s:[\w./-]+)|"
-    r"gh\S*\s+(?:repo\s+delete\b|api\b[^|;&]*-X\s*DELETE))",
+    r"gh\S*\s+(?:repo\s+delete\b|api\b[^|;&]*(?:-X|--method)[=\s]*"
+    r"DELETE))",
     re.IGNORECASE)
 
 # Publish/deploy (warn): pushes public/production state - packages become
@@ -282,10 +298,12 @@ PUBLISH_DEPLOY = re.compile(
 _FETCH_VERBS = r"(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)"
 _INTERPRETERS = (
     r"(?:sudo\s+)?(?:(?:ba|z|da|k|c|fi|a)?sh|iex|Invoke-Expression|powershell(?:\.exe)?|"
-    r"pwsh|cmd|python[0-9.]*|node|ruby|perl)\b")
+    r"pwsh|cmd|python[0-9.]*|node|ruby|perl)\b|"
+    r"/(?:usr/)?bin/(?:ba|z|da|k|c|fi|a)?sh\b")
 FETCH_PIPE_EXEC = re.compile(
     r"\b" + _FETCH_VERBS + r"\b[^|;]*\|\s*" + _INTERPRETERS + r"|"
     r"\b" + _FETCH_VERBS + r"\b[^|;]*&&\s*" + _INTERPRETERS + r"|"
+    r"\b" + _FETCH_VERBS + r"\b[^|;]*;\s*" + _INTERPRETERS + r"|"
     r"\b(?:iex|Invoke-Expression)\s*\([^)]*\b(?:iwr|irm|Invoke-WebRequest|"
     r"Invoke-RestMethod|DownloadString|WebClient)\b",
     re.IGNORECASE)
@@ -311,10 +329,14 @@ SESSION_KILL = re.compile(
     re.IGNORECASE)
 
 # PowerShell pipe-delete (warn): source piped into a delete verb deletes
-# every piped object - only possible under PS semantics.
+# every piped object - only possible under PS semantics. Covers the bare
+# `| ri` form, pipeline-variable targets (`| ri $_.FullName`), and
+# ForEach-Object delete blocks (`| % { ri $_ }`).
 PS_PIPE_DELETE = re.compile(
     r"\|\s*(?:Remove-Item|ri)\s*(?:-[a-zA-Z]+)*\s*['\"`]?\s*"
-    r"(?:$|[|;&])",
+    r"(?:$|[|;&])|"
+    r"\|\s*(?:Remove-Item|ri)\b[^|;&]*\$_\.\w+|"
+    r"\|\s*(?:%|foreach(?:-Object)?)\s*\{[^}]*\b(?:Remove-Item|ri)\b",
     re.IGNORECASE)
 
 # File-destroyers outside the rm family (warn): interpreter tree-deletes,
@@ -400,9 +422,14 @@ def _branch_d_targets(command):
     out = []
     for tok in (m.group(1) or "").split():
         tok = tok.strip().strip("'\"")
-        if not tok or tok in ("&&", "||", ";", "|", ">", ">>") \
-                or tok.startswith("-"):
+        if not tok:
+            continue
+        if tok in ("&&", "||", ";", "|", ">", ">>"):
             break
+        # Flags (-D, --force, --delete) are modifiers; `--` is the POSIX
+        # end-of-options marker - everything after it is still an operand.
+        if tok.startswith("-"):
+            continue
         out.append(tok)
     return out
 
@@ -666,12 +693,13 @@ def main():
     # dispatch ledger, budget policy) - self-unlimiting class; the
     # file-tool side is guarded in validate-tool-args.
     try:
-        if STATE_FILE_DELETE.search(scan_command):
+        if STATE_FILE_DELETE.search(scan_command) or \
+                STATE_FILE_WRITE.search(scan_command):
             block(
-                "delete targeting subagent enforcement state "
+                "delete/write targeting subagent enforcement state "
                 "(subagent-*.json / subagent-ledger.jsonl / "
-                "subagent-budget.json) - removing it resets the "
-                "session's own profile/budget limits. Ask the user to "
+                "subagent-budget.json) - removing or corrupting it resets "
+                "the session's own profile/budget limits. Ask the user to "
                 "change policy instead.")
     except SystemExit:
         raise
@@ -679,10 +707,12 @@ def main():
         pass
 
     # Gate 9: Windows reserved device name outside a cmd/powershell wrapper
-    # (literal ghost artifact or silent discard in bash)
+    # (literal ghost artifact or silent discard in bash). Windows-only: on
+    # POSIX, `nul`/`con`/`aux` are ordinary legal filenames.
     try:
-        if (RESERVED_REDIRECT.search(scan_command)
-                or RESERVED_VERB.search(scan_command)) \
+        if os.name == "nt" \
+                and (RESERVED_REDIRECT.search(scan_command)
+                     or RESERVED_VERB.search(scan_command)) \
                 and not SHELL_WRAPPER.search(scan_command):
             block(
                 "bash has no NUL/CON/AUX/PRN/COM1-9/LPT1-9 device: that "

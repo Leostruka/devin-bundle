@@ -26,10 +26,12 @@ _SEG = r"(?:^|[;&|(`$]\s*)"
 _WRAP = (r"(?:(?:cmd(?:\.exe)?\s+/[ckCK]|"
          r"(?:powershell|pwsh|bash|sh)(?:\.exe)?\s+-c)\s+)?")
 # Global flags may sit between the manager name and the install verb
-# (`pip -q install`, `npm -g i`, `npm --prefix app i`) - allow boolean
-# flags, --flag=val, and the small set of value-taking globals.
-_GAP = (r"(?:(?:--(?:prefix|filter|cwd|global-dir|python|target)\s+\S+|"
-        r"-[a-zA-Z][\w-]*|--[\w-]+(?:=\S*)?)\s+)*")
+# (`pip -q install`, `npm -g i`, `npm --prefix app i`). Any flag may take
+# a space-separated value (-i URL, --registry URL, -r req.txt): the
+# optional \S+ operand keeps `pip -i https://evil install x` inside the
+# match instead of skipping the audit entirely; backtracking keeps
+# boolean flags working (`-q install` -> -q flag, install verb).
+_GAP = (r"(?:(?:-[a-zA-Z][\w-]*|--[\w-]+(?:=\S*)?)(?:\s+\S+)?\s+)*")
 _PFX = _SEG + r"(?:sudo\s+)?" + _WRAP
 
 INSTALL_RE = re.compile(

@@ -87,12 +87,12 @@ PROFILE_DENY = {
     # Profiles whose allowed-tools declare no exec. Deny is uniform-only
     # per session (see _enforce_profile_deny) - mixed-profile sessions fail
     # open on attribution ambiguity.
-    "researcher": frozenset({"exec"}),
-    "issue-tracker": frozenset({"exec"}),
-    "triage-labels": frozenset({"exec"}),
-    "subagent_explore": frozenset({"exec"}),
-    "domain": frozenset({"exec"}),
-    "architect": frozenset({"exec"}),
+    "researcher": frozenset({"exec", "run_subagent"}),
+    "issue-tracker": frozenset({"exec", "run_subagent"}),
+    "triage-labels": frozenset({"exec", "run_subagent"}),
+    "subagent_explore": frozenset({"exec", "run_subagent"}),
+    "domain": frozenset({"exec", "run_subagent"}),
+    "architect": frozenset({"exec", "run_subagent"}),
 }
 
 
@@ -104,6 +104,11 @@ def _profile_state_path(session_id):
 
 
 def _record_profile(session_id, profile):
+    # Skip the implicit default: subagent_general carries no deny rules, so
+    # recording it only poisons the uniform-deny set (an unprofiled dispatch
+    # would unlock a denied sibling - C82 completeness).
+    if profile == "subagent_general":
+        return
     try:
         os.makedirs(os.path.dirname(_profile_state_path(session_id)),
                     exist_ok=True)
@@ -327,9 +332,12 @@ def _check_state_file(tool_name, file_path):
         return
     state_dir = os.environ.get("DEVIN_STATE_DIR") or STATE_DIR
     try:
-        norm = os.path.normcase(os.path.abspath(file_path))
+        # realpath (not abspath): a symlink pointing into the state dir must
+        # resolve to its target before the prefix check.
+        norm = os.path.normcase(os.path.realpath(file_path))
         base = os.path.basename(norm)
-        if (os.path.dirname(norm) == os.path.normcase(os.path.abspath(state_dir))
+        if (os.path.dirname(norm)
+                == os.path.normcase(os.path.realpath(state_dir))
                 and base.startswith("subagent-")):
             block(
                 f"{tool_name} refused: '{base}' is subagent enforcement state "

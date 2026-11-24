@@ -203,9 +203,9 @@ def run(script_names, payload):
         # tool call with an opaque error). Synthesize it from the payload
         # when no child emitted one (C84).
         if 'hookEventName' not in hso_out:
-            hso_out['hookEventName'] = (
-                payload.get('hook_event_name')
-                or payload.get('hookEventName') or '')
+            ev = payload.get('hook_event_name') or payload.get('hookEventName')
+            if ev:
+                hso_out['hookEventName'] = ev
         result['hookSpecificOutput'] = hso_out
     if result:
         print(json.dumps(result))

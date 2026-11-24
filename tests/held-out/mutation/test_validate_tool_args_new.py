@@ -106,6 +106,38 @@ def test_profile_deny_blocked_dispatch_no_unlock(tmp_path):
     assert code == 2, f"blocked dispatch must not unlock exec, got {code}: {out}"
 
 
+def test_profile_deny_unprofiled_dispatch_no_unlock(tmp_path):
+    """C87: an unprofiled dispatch resolves to subagent_general, which has
+    no deny rules - recording it poisons the uniform-deny set and unlocks
+    a denied sibling. It must not be recorded."""
+    sid = "deny-default"
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    _run_session("run_subagent", {"task": "no profile"}, sid, tmp_path)
+    code, out = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=True)
+    assert code == 2, f"unprofiled dispatch must not unlock exec, got {code}: {out}"
+
+
+def test_profile_deny_unprofiled_order_independent(tmp_path):
+    """Same poison in the other order: unprofiled first, then researcher."""
+    sid = "deny-default-rev"
+    _run_session("run_subagent", {"task": "no profile"}, sid, tmp_path)
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    code, out = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=True)
+    assert code == 2, f"deny must hold regardless of order, got {code}: {out}"
+
+
+def test_profile_deny_nested_dispatch_blocked(tmp_path):
+    """C87: a denied subagent could self-unlock by dispatching a non-denied
+    profile (records it -> session ambiguous -> fail open). run_subagent is
+    itself denied for exec-free profiles."""
+    sid = "deny-nested"
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    code, out = _run_session(
+        "run_subagent", {"task": "y", "profile": "implementer"},
+        sid, tmp_path, is_subagent=True)
+    assert code == 2, f"nested dispatch must be denied, got {code}: {out}"
+
+
 def test_state_file_write_blocked(tmp_path):
     """C82: subagent enforcement state is not agent-writable - overwriting
     the dispatch ledger or a profile record resets its own limits."""
