@@ -629,17 +629,18 @@ def main():
             # extract the submitted lines ourselves.
             command = _hookrun.wtp_submitted_text(data)
         if "\x1e" in command:
-            # History-recall sentinel: an arrow/C-p/C-n/C-r keypress means
-            # the submitted line came from shell history, which the gate
-            # cannot inspect (HISTFILE may hold commands from outside this
-            # gated session). Same block whether recall and submit share
-            # one call or are split across calls (sentinel lives in the
-            # pending buffer).
+            # Line-edit sentinel: history recall, cursor moves, edits and
+            # completion all produce a submitted line the append-model
+            # cannot reproduce - the gate cannot inspect what executes.
+            # Same block whether the control and submit share one call or
+            # are split across calls (sentinel lives in the pending
+            # buffer).
             block(
-                "history-recall (<UP>/<DOWN>/<C-p>/<C-n>/<C-r>) before a "
-                "submit executes a shell-history command the gate cannot "
-                "inspect. Re-type the command as text - typed input is "
-                "gated normally.")
+                "line-editing control (arrows/C-a/C-e/<TAB>/<C-r>/etc.) "
+                "before a submit makes the executed text uninspectable - "
+                "history entries and mid-line edits are invisible to the "
+                "gate. Re-type the command as one contiguous string - "
+                "typed input is gated normally.")
     if not isinstance(command, str) or not command.strip():
         sys.exit(0)
 

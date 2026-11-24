@@ -419,3 +419,54 @@ def test_wtp_oversized_line_keeps_head():
     pad = "rm -rf /" + " " * 5000
     assert run_gate_wtp({"shell_id": "s", "text_input": pad}, sid)[0] == 0
     assert run_gate_wtp({"shell_id": "s", "text_input": "\n"}, sid)[0] == 2
+
+
+# --- C96: cursor-edit under-detection + control-byte submits ---
+
+def test_wtp_cursor_insert_underdetection():
+    """rm -rf x + <LEFT> + '/' inserts mid-line: real line is 'rm -rf /x'
+    (absolute) but the append-model sees 'rm -rf x/' (relative). The
+    sentinel must block the submit."""
+    sid = "cursor-1"
+    assert run_gate_wtp({"shell_id": "s", "text_input": "rm -rf x"}, sid)[0] == 0
+    assert run_gate_wtp(
+        {"shell_id": "s", "bytes_input": "<LEFT>/"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "text_input": "\n"}, sid)[0] == 2
+
+
+@pytest.mark.parametrize("ti", [
+    {"shell_id": "s", "bytes_input": "<C-a>rm<CR>"},
+    {"shell_id": "s", "bytes_input": "gi<TAB><CR>"},
+    {"shell_id": "s", "bytes_input": "<C-w><CR>"},
+    {"shell_id": "s", "bytes_input": "<HOME>x<CR>"},
+    {"shell_id": "s", "bytes_input": "<C-i><CR>"},
+    {"shell_id": "s", "bytes_input": "ls<ESC><CR>"},
+])
+def test_wtp_line_edit_controls_blocked(ti):
+    """Line-editing controls make the submitted line diverge from the
+    model in uninspectable ways - block on submit."""
+    code, out = run_gate_wtp(ti, session_id="edit-" + str(abs(hash(str(ti)))))
+    assert code == 2, f"line-edit submit should block, got {code}: {out}"
+
+
+@pytest.mark.parametrize("ti", [
+    {"shell_id": "s", "bytes_input": "<C-l>"},          # clear screen
+    {"shell_id": "s", "bytes_input": "<C-l>y<CR>"},     # then answer
+    {"shell_id": "s", "bytes_input": "lss<BS><CR>"},    # backspace typo
+    {"shell_id": "s", "bytes_input": "ls<C-m>"},        # C-m IS CR (benign)
+])
+def test_wtp_neutral_controls_silent(ti):
+    code, out = run_gate_wtp(ti, session_id="neut-" + str(abs(hash(str(ti)))))
+    assert code == 0, f"neutral control should stay silent: {out}"
+
+
+def test_wtp_cm_cj_are_submits():
+    """<C-m>/<C-j> are the CR/LF control bytes - real submits."""
+    sid = "cm-1"
+    code, _ = run_gate_wtp(
+        {"shell_id": "s", "bytes_input": "git push --force<C-m>"}, sid)
+    assert code == 2
+    sid = "cj-1"
+    code, _ = run_gate_wtp(
+        {"shell_id": "s", "bytes_input": "git push --force<C-j>"}, sid)
+    assert code == 2

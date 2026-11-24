@@ -115,11 +115,18 @@ def emit_metric(event, **fields):
 
 _WTP_SPECIAL = re.compile(r"<[^>]*>")
 _WTP_CLEAR = re.compile(r"(?i)<C-c>|<C-u>")
-# History-recall keys pull a shell-history entry onto the input line. The
-# gate cannot inspect history (HISTFILE may hold commands from outside
-# the gated session), so these inject a \x1e sentinel into the pending
-# model - a later submit carrying it means "executing unseen text".
-_WTP_RECALL = re.compile(r"(?i)<UP>|<DOWN>|<C-p>|<C-n>|<C-r>")
+# Line-editing controls the pending model cannot replicate inject a \x1e
+# sentinel - a submit carrying it means "executing text the gate cannot
+# inspect": history recall (<UP>/<C-r>...) sources unseen HISTFILE text;
+# cursor moves/edits (<LEFT>/<C-a>/<C-w>/<TAB>) change the line in ways
+# the append-model cannot reproduce (an insert at a moved cursor position
+# can shift a pattern boundary - under-detection).
+_WTP_RECALL = re.compile(
+    r"(?i)<UP>|<DOWN>|<LEFT>|<RIGHT>|<HOME>|<END>|<INSERT>|<DELETE>|"
+    r"<TAB>|<ESC>|"
+    # C-a/C-b/C-d/C-e/C-f/C-k/C-n/C-p/C-r/C-t/C-w/C-y/C-_: edit/recall.
+    # C-l (clear screen) is line-neutral; C-m IS carriage-return.
+    r"<C-[abdefknprtwy_]>")
 # Keep the HEAD of an oversized line: gated verbs/flags lead the command,
 # so tail-truncation preserves detection. A >4KB single line still scans
 # only its first 4KB (paste-size residual).
@@ -175,7 +182,13 @@ def wtp_submitted_text(payload):
         if not isinstance(text, str) or not text:
             return ""
     if is_bytes:
-        text = re.sub(r"(?i)<CR>|<LF>|\r\n?", "\n", text)
+        text = re.sub(r"(?i)<CR>|<LF>|<C-m>|<C-j>|\r\n?", "\n", text)
+        # Control-byte equivalents: C-g aborts the line like C-c;
+        # C-i is TAB (line-edit oracle); C-h is BS (kept in the model -
+        # deletions only shrink the real line, an over-approximation).
+        text = re.sub(r"(?i)<C-g>", "\x03", text)
+        text = re.sub(r"(?i)<C-i>", "\x1e", text)
+        text = re.sub(r"(?i)<C-h>", "", text)
         text = _WTP_CLEAR.sub("\x03", text)
         text = _WTP_RECALL.sub("\x1e", text)
         text = _WTP_SPECIAL.sub("", text)
