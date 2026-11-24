@@ -66,10 +66,14 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 - **write_to_process normalization**: `run()` injects the CR/LF-submitted
   stdin lines as `tool_input.command` before dispatch, so every inner
   gate sees the real commands (C90-C93). Pending input-line text is
-  buffered per `session|prompt|event|shell` under `state/wtp-*.txt`
-  (phase-keyed so pre/post hooks model the same stream independently;
-  C-c/C-u clear). File buffers are enforcement state - the state-file
-  guards cover them.
+  buffered per `session|event|shell` under `state/wtp-*.txt` (phase-keyed
+  so pre/post hooks model the same stream independently; C-c/C-u/C-g
+  clear). Buffers are JSON `{p, i, o}` records: `i` (input hash) makes
+  extraction idempotent so downstream gates always re-extract - a
+  caller-supplied `command` or trust flag on wtp is never trusted
+  (C98). Line-edit/recall controls map to a `\x1e` sentinel; a submit
+  carrying it blocks (C94/C96/C97). File buffers are enforcement state -
+  the state-file guards cover them (incl. the `cd state &&` arm, C97).
 
 ## Exit-code mapping
 
