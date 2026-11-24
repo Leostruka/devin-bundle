@@ -410,3 +410,12 @@ def test_wtp_ctrl_c_clears_recall_taint():
     assert run_gate_wtp({"shell_id": "s", "bytes_input": "<UP>"}, sid)[0] == 0
     assert run_gate_wtp(
         {"shell_id": "s", "bytes_input": "<C-c>ls<CR>"}, sid)[0] == 0
+
+
+def test_wtp_oversized_line_keeps_head():
+    """C95: the 4KB buffer cap must keep the line's HEAD - verbs lead the
+    command, so padding past the cap must not drop them."""
+    sid = "cap-head"
+    pad = "rm -rf /" + " " * 5000
+    assert run_gate_wtp({"shell_id": "s", "text_input": pad}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "text_input": "\n"}, sid)[0] == 2

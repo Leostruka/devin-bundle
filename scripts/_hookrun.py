@@ -120,6 +120,9 @@ _WTP_CLEAR = re.compile(r"(?i)<C-c>|<C-u>")
 # the gated session), so these inject a \x1e sentinel into the pending
 # model - a later submit carrying it means "executing unseen text".
 _WTP_RECALL = re.compile(r"(?i)<UP>|<DOWN>|<C-p>|<C-n>|<C-r>")
+# Keep the HEAD of an oversized line: gated verbs/flags lead the command,
+# so tail-truncation preserves detection. A >4KB single line still scans
+# only its first 4KB (paste-size residual).
 _WTP_BUF_CAP = 4096
 
 
@@ -181,7 +184,7 @@ def wtp_submitted_text(payload):
     if buf:
         try:
             with open(buf, encoding="utf-8", errors="replace") as fh:
-                pending = fh.read()[-_WTP_BUF_CAP:]
+                pending = fh.read()[:_WTP_BUF_CAP]
         except OSError:
             pending = ""
     combined = pending + text
@@ -192,7 +195,7 @@ def wtp_submitted_text(payload):
     if buf:
         try:
             with open(buf, "w", encoding="utf-8") as fh:
-                fh.write(lines[-1][-_WTP_BUF_CAP:])
+                fh.write(lines[-1][:_WTP_BUF_CAP])
         except OSError:
             pass
     return "\n".join(lines[:-1])
