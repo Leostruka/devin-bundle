@@ -206,19 +206,32 @@ WIN_RM_RE_NOTARGET = re.compile(
 # same wipe). Glob metachars live in the name class; the terminator
 # lookahead replaces \b (a trailing * is not a word char).
 _STATE_FILE_NAME = (r"(?:subagent-[\w.*?{}\[\],-]*(?:\.jsonl?)?|"
-                    r"wtp-[\w.*?{}\[\],-]*(?:\.txt)?)")
+                    r"wtp-[\w.*?{}\[\],-]*(?:\.txt)?|"
+                    # Any name carrying glob metachars under state/ can
+                    # resolve to an enforcement file (?tp-*, [s]ubagent,
+                    # {a,b}, bare *). state/ contents are all gated
+                    # files - no glob in there is innocent.
+                    r"[\w.*?{}\[\],+~-]*[*?{\[][\w.*?{}\[\],+~.-]*)")
 _STATE_PATH = (r"(?:^|[\\/]|\s)state[\\/]+" + _STATE_FILE_NAME +
                r"(?=[\s|;&'\"\n]|$)")
-_STATE_DIR = r"(?:^|[\\/]|\s)devin[\\/]state\b"
+# The dir target itself: `devin/state` OR a bare `state` component
+# (`rm -rf state`, `find ./state -delete`). Terminator lookahead
+# excludes `state-old`/`mystate` compounds.
+_STATE_DIR = (r"(?:^|[\\/]|\s|\.\s*[/\\])(?:devin[\\/]+)?state"
+              r"(?=[/\\'\"\s|;&\n]|$)")
 # `cd ...state && rm wtp-x.txt` - a bare state-basename target after a
 # cd/pushd into a state dir carries no `state/` component in the operand.
 # Self-contained arm: the separator class includes newlines (wtp joins
 # submitted lines with \n), the dir tolerates quotes/trailing slash and
 # a redirect after it, and a shell -c/-Command wrapper may precede the
 # verb. `cd state\nrm wtp-x` is the natural two-line wtp flow.
-# Shell wrapper that may precede cd or the verb: bash/sh/cmd need a
+# Wrappers that may precede cd or the verb: env/nice/sudo/xargs exec the
+# following verb directly (`cd state && env rm x`); bash/sh/cmd need a
 # -c//c flag, powershell/pwsh take a bare command (Remove-Item ...).
-_STATE_WRAP = (r"(?:(?:powershell|pwsh)\s+|"
+_STATE_WRAP = (r"(?:(?:env|nice|nohup|sudo|doas|runas|timeout|xargs|"
+               r"watch|stdbuf|ionice|taskset|chrt|command|builtin|exec|"
+               r"noglob|time|busybox)\s+(?:\S+\s+)*)?"
+               r"(?:(?:powershell|pwsh)\s+|"
                r"(?:bash|sh|dash|zsh|cmd)\b[^|;&\n]*?"
                r"(?:-c|/c|-Command)\s+[\"']?)?")
 _STATE_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
@@ -226,6 +239,17 @@ _STATE_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
              r"[\"']?[^|;&\n\"']*?(?<![\w.-])state"
              r"(?=[/\\'\"\s|;&\n]|$)[/\\]?[\"']?"
              r"(?:\s*>>?\s*[^\s|;&\n]+)?\s*[|;&\n]+\s*" + _STATE_WRAP)
+# Two-hop form: `cd devin && rm -rf state` - cd into the devin home then
+# hit the bare state dir. Same quoting/separator tolerances as _STATE_CD.
+_DEVIN_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
+             r"(?:cd|chdir|pushd|Set-Location)\s+"
+             r"[\"']?[^|;&\n\"']*?(?<![\w.-])devin"
+             r"(?=[/\\'\"\s|;&\n]|$)[/\\]?[\"']?"
+             r"(?:\s*>>?\s*[^\s|;&\n]+)?\s*[|;&\n]+\s*" + _STATE_WRAP +
+             r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
+             r"unlink|shred|srm|wipe|mv|move|Move-Item|find\b[^|;&\n]*?"
+             r"-delete)\b[^|;&\n]*?(?<![\w.-])state"
+             r"(?=[/\\'\"\s|;&\n]|$)")
 _STATE_NAME = (r"[\"']?(?:\.[/\\])?" + _STATE_FILE_NAME +
                r"(?=[\s|;&'\"\n]|$)")
 _STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
@@ -249,8 +273,8 @@ STATE_FILE_DELETE = re.compile(
     r"|" + _STATE_CD +
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
     r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&\n]*?" + _STATE_NAME +
-    r"|" + _STATE_CD + r"find\b[^|;&\n]*?" + _STATE_NAME +
-    r"[^|;&\n]*?-delete\b",
+    r"|" + _STATE_CD + r"find\b[^|;&\n]*?-delete\b"
+    r"|" + _DEVIN_CD,
     re.IGNORECASE,
 )
 # Writes are as dangerous as deletes: `>` truncates (json.load fails ->
@@ -648,8 +672,16 @@ def _cherry_merged(branch):
     return all(not line.startswith("+") for line in p.stdout.splitlines())
 
 
+# Stashed by main() so block() can re-pend a denied wtp line - the
+# keystrokes stay on the real input line after a deny (blocked-call
+# desync), and direct invocation does not pass through _hookrun.run().
+_WTP_PAYLOAD = None
+
+
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
+    if _WTP_PAYLOAD is not None:
+        _hookrun.wtp_reject(_WTP_PAYLOAD)
     print(json.dumps({"decision": "block", "reason": reason}))
     sys.exit(2)
 
@@ -846,6 +878,8 @@ def main():
         # part of the tool schema and could be injected by the caller.
         # Extraction is idempotent (dedup record in the gated buffer
         # file), so always extract the submitted lines ourselves.
+        global _WTP_PAYLOAD
+        _WTP_PAYLOAD = data
         command = _hookrun.wtp_submitted_text(data)
         if "\x1e" in command:
             # Line-edit sentinel: history recall, cursor moves, edits and

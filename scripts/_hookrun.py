@@ -257,6 +257,13 @@ def wtp_submitted_text(payload):
             if isinstance(obj, dict):
                 pending = str(obj.get("p", ""))[:_WTP_BUF_CAP]
                 dedup_i = str(obj.get("i", "")) if fresh else ""
+                if str(obj.get("r", "")) == in_key:
+                    # This input was denied and its submitted text is
+                    # already re-pended into 'p'. Re-extraction by the
+                    # sibling gates still queued in this run is a pure
+                    # read - consuming again would append the re-pended
+                    # text to 'o' once per gate (reject replay bug).
+                    return str(obj.get("o", ""))
             elif rec:
                 # Legacy plain-text pending line (pre-JSON buffers).
                 pending = rec[:_WTP_BUF_CAP]
@@ -308,6 +315,58 @@ def wtp_submitted_text(payload):
         except OSError:
             pass
     return out
+
+
+def wtp_reject(payload):
+    """A denied wtp submit never reached the shell - the typed text is
+    STILL on the real input line. Re-pend the submitted lines so the
+    next submit re-scans them instead of letting a bare <CR> execute
+    what the model now thinks is an empty line (blocked-call desync).
+    A clear-control (C-c/C-u) clears the model like the real buffer."""
+    try:
+        tool_input = payload.get("tool_input")
+        if not isinstance(tool_input, dict):
+            return
+        buf = _wtp_buf_path(payload, tool_input)
+        if not buf or not os.path.isfile(buf):
+            return
+        try:
+            with open(buf, encoding="utf-8", errors="replace") as fh:
+                obj = json.loads(fh.read() or "null")
+        except (OSError, ValueError):
+            return
+        if not isinstance(obj, dict):
+            return
+        out = str(obj.get("o", ""))
+        if not out:
+            return
+        # Idempotent: a deny fires this twice - once inside the blocking
+        # child's own block() and again here in run(). The 'r' record marks
+        # the call already re-pended; the next extraction overwrites it,
+        # so it only dedupes the immediate double-call.
+        is_bytes = False
+        text = tool_input.get("text_input")
+        if not isinstance(text, str) or not text:
+            text = tool_input.get("bytes_input")
+            is_bytes = True
+            if not isinstance(text, str):
+                text = ""
+        in_key = _wtp_input_key(payload, tool_input, is_bytes, text)
+        if str(obj.get("r", "")) == in_key:
+            return
+        p = str(obj.get("p", ""))
+        # Pre-consume order: submitted lines led, trailing partial last.
+        new_p = (out + "\n" + p if p else out)[:_WTP_BUF_CAP]
+        # 'i' stays: a resubmitted identical payload dedups to 'o' - the
+        # denied text itself - and re-blocks. Clearing it would let
+        # sibling gates still queued in this run re-consume the buffer.
+        fh_text = json.dumps(
+            {"p": new_p, "i": str(obj.get("i", "")),
+             "o": out, "r": in_key})
+        with open(buf, "w", encoding="utf-8") as fh:
+            fh.write(fh_text)
+    except Exception:
+        pass
 
 
 def _normalize_wtp(payload):
@@ -415,6 +474,10 @@ def run(script_names, payload):
                 for k, v in hso.items():
                     if k not in ('additionalContext', 'updatedInput'):
                         merged.setdefault('hookSpecificOutput', {})[k] = v
+    if (blocked is not None or final_code == 2) and \
+            payload.get('tool_name') == 'write_to_process':
+        # The denied keystrokes are still on the real input line.
+        wtp_reject(payload)
     result = {}
     if blocked is not None:
         result = blocked

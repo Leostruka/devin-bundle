@@ -12,6 +12,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 import pytest
 
@@ -251,3 +252,147 @@ def test_c100e_git_cfg_exec_key_blocks(cmd):
 def test_c100e_git_cfg_benign_silent(cmd):
     rc, _ = run_gate(cmd)
     assert rc == 0, cmd
+
+
+_WTP_STATE = tempfile.mkdtemp(prefix="wtp_c101")
+
+
+def run_gate_wtp(tool_input: dict, session_id: str = "") -> tuple[int, str]:
+    if not session_id:
+        session_id = "t" + str(abs(hash(json.dumps(
+            tool_input, sort_keys=True))))
+    payload = json.dumps({
+        "hook_event_name": "PreToolUse",
+        "tool_name": "write_to_process",
+        "tool_input": tool_input,
+        "session_id": session_id,
+    })
+    env = dict(os.environ)
+    env["DEVIN_STATE_DIR"] = _WTP_STATE
+    result = subprocess.run(
+        [sys.executable, GATE_SCRIPT],
+        input=payload, capture_output=True, text=True, encoding="utf-8",
+        env=env)
+    return result.returncode, result.stdout + result.stderr
+
+
+# --- C101: pass-6 review - state-guard + blocked-submit desync ---------------
+# The pass-6 reviewer's probes (recovered after its run died) verified:
+# - bare `state` dir targets (rm -rf state, find state -delete, rm -rf
+#   -- state) skipped the devin/state anchor entirely
+# - `cd devin && rm -rf state` two-hop junction
+# - env/nice/timeout/command wrappers missing from _STATE_WRAP
+# - glob-name evasions: ?tp-*, [s]ubagent, {a,b} braces, bare *
+# - blocked-submit desync: a denied wtp line stays on the REAL input
+#   line while the model clears pending - a later bare <CR> executes it
+@pytest.mark.parametrize("cmd", [
+    "rm -rf state", "rm -rf ./state", "rm -r state", "rm -rf state/",
+    "rm -rf -- state", "find state -delete", "find ./state -delete",
+    "find state -name 'wtp-abc.txt' -delete",
+    "find state -type f -delete",
+    "cd devin && rm -rf state",
+    "cd ~/AppData/Roaming/devin && rm -rf state",
+    "cd state && env rm wtp-abc.txt",
+    "cd state && sudo rm wtp-abc.txt",
+    "cd state && nice rm wtp-abc.txt",
+    "cd state && timeout 5 rm wtp-abc.txt",
+    "cd state && command rm wtp-abc.txt",
+    "cd state && env tee wtp-abc.txt",
+    "rm state/*", "rm state/?tp-*.txt", "rm state/[w]tp-*.txt",
+    "rm state/{wtp-*,subagent-*}", "rm state/**",
+    "rm state/[s]ubagent-s.json",
+    "rm state/{subagent-s.json,wtp-a.txt}",
+    "cd state && rm *", "cd state && rm ./*", "cd state && rm -r *",
+    "cd state && mv * /tmp/", "cd state && tee *",
+    "mv state/* /tmp/", "echo x > state/*", "echo x > state/?tp-*.txt",
+    "cd state && find . -delete",
+])
+def test_c101_state_guard_evasions(cmd):
+    rc, _ = run_gate(cmd)
+    assert rc == 2, cmd
+
+
+# Blocked-submit desync: the denied text re-pends, so a subsequent bare
+# <CR> re-scans and re-blocks it instead of executing on an empty model.
+def test_c101_blocked_submit_repends():
+    shell = "c101a"
+    # A: dangerous text without submit -> pending
+    assert run_gate_wtp({"text_input": "rm -rf /", "shell_id": shell},
+                        "s101")[0] == 0
+    # B: the CR is denied (real buffer still holds the text)
+    assert run_gate_wtp({"text_input": "\n", "shell_id": shell},
+                        "s101")[0] == 2
+    # C: a bare <CR> re-submit must re-block, not pass on an empty
+    # model - every form of resubmit dies until C-c clears.
+    assert run_gate_wtp({"bytes_input": "<CR>", "shell_id": shell},
+                        "s101")[0] == 2
+    assert run_gate_wtp({"text_input": "\n", "shell_id": shell},
+                        "s101")[0] == 2
+    # C-c clears the model like the real line - next input types free
+    assert run_gate_wtp({"bytes_input": "<C-c>", "shell_id": shell},
+                        "s101")[0] == 0
+    assert run_gate_wtp({"text_input": "ls\n", "shell_id": shell},
+                        "s101")[0] == 0
+
+
+GUARD_SCRIPT = os.path.join(SCRIPTS_DIR, "pre-exec-guard.py")
+
+
+def run_guard_wtp(tool_input: dict, session_id: str, state_dir: str):
+    """Invoke the consolidated runner - the replay bug only exists
+    across multi-gate dispatch (sibling gates re-extract after the
+    blocking child's wtp_reject)."""
+    payload = json.dumps({
+        "hook_event_name": "PreToolUse",
+        "tool_name": "write_to_process",
+        "tool_input": tool_input,
+        "session_id": session_id,
+    })
+    env = dict(os.environ)
+    env["DEVIN_STATE_DIR"] = state_dir
+    result = subprocess.run(
+        [sys.executable, GUARD_SCRIPT],
+        input=payload, capture_output=True, text=True, encoding="utf-8",
+        errors="replace", env=env)
+    return result.returncode
+
+
+def _wtp_buf(state_dir: str) -> dict:
+    for f in os.listdir(state_dir):
+        if f.startswith("wtp-"):
+            with open(os.path.join(state_dir, f),
+                      encoding="utf-8") as fh:
+                return json.load(fh)
+    return {}
+
+
+# Reject replay: a denied call fires wtp_reject inside the blocking
+# child's block() AND in run() after dispatch - and sibling gates still
+# queued re-extract the same payload. Without the 'r' reject record,
+# each re-extraction appends the re-pended text to 'o' again (observed:
+# 'o' grew one copy per sibling gate). Invariant: denied text re-pends
+# exactly once and every resubmit still re-blocks.
+def test_c101b_reject_replay_no_growth(tmp_path):
+    state = str(tmp_path)
+    sh, sess = "c101b", "s101b"
+    assert run_guard_wtp({"text_input": "rm -rf /", "shell_id": sh},
+                         sess, state) == 0
+    n = _wtp_buf(state)["p"].count("rm -rf /")
+    assert n >= 1
+    assert run_guard_wtp({"text_input": "\n", "shell_id": sh},
+                         sess, state) == 2
+    buf = _wtp_buf(state)
+    assert "rm -rf /" in buf["p"]
+    assert buf.get("r")
+    # 'o' holds the denied lines once - sibling re-extractions must not
+    # each append another copy.
+    assert buf["o"].count("rm -rf /") <= n + 1
+    assert run_guard_wtp({"text_input": "\n", "shell_id": sh},
+                         sess, state) == 2
+    buf = _wtp_buf(state)
+    assert "rm -rf /" in buf["p"]
+    assert buf["o"].count("rm -rf /") <= n + 1
+    assert run_guard_wtp({"bytes_input": "<C-c>", "shell_id": sh},
+                         sess, state) == 0
+    assert run_guard_wtp({"text_input": "ls\n", "shell_id": sh},
+                         sess, state) == 0
