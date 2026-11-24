@@ -31,8 +31,21 @@ Rules:
 CLI:
     python ui_dsl.py parse --input in.dsl [--output out.dsl] [--force]
     python ui_dsl.py render --input in.dsl --output out.html [--force]
+    python ui_dsl.py emit --input in.dsl --output out.json --format a2ui
+        [--force]
     python ui_dsl.py benchmark --fixture in.dsl [--tokenizer PATH_OR_ID]
         [--output res.json]
+
+A2UI emit boundary (P5, ADR-02):
+    `emit --format a2ui` projects the AST onto the A2UI v1.0 basic
+    catalog as a single surfaceUpdate document. The emitter produces
+    STRUCTURE + REFERENCES ONLY: every data-bearing field is an
+    {"@path": ...} JSON-Pointer binding that the host fills server-side
+    via updateDataModel; only static copy stays literal. The document
+    therefore carries no secrets, credentials, or business data - the
+    grammar has no channel for them, and bindings point at paths the
+    host owns. Operational or sensitive values must never be inlined
+    into the DSL expecting them to ship; bind them instead.
 """
 from __future__ import annotations
 
@@ -51,6 +64,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ui_envelope import _stamp, _dumps  # noqa: E402
 
 DSL_VERSION = 1
+
+A2UI_VERSION = "1.0"
+A2UI_CATALOG_ID = ("https://a2ui.org/specification/v1_0/catalogs/"
+                   "basic/catalog.json")
 
 MAX_LINES = 2000
 MAX_BYTES = 128 * 1024
@@ -437,6 +454,110 @@ def to_jsonable(doc):
                        for b in doc.blocks]}
 
 
+def _a2ui_block_children(el, bi, ci, block, comps):
+    """Append A2UI components for one leaf element; return [component_id].
+    Data-bearing attrs become {"@path": ...} bindings (structure +
+    references only); static copy stays literal."""
+    a = el.attrs
+    base = f"blk{bi}-ch{ci}"
+
+    def add(comp):
+        comps.append(comp)
+        return comp["id"]
+
+    def text(tid, value, variant=None):
+        c = {"id": tid, "component": "Text", "text": value}
+        if variant:
+            c["variant"] = variant
+        return add(c)
+
+    if el.type == "row":
+        kids = [text(f"{base}-label", a["label"], "caption"),
+                text(f"{base}-value",
+                     {"@path": f"/blocks/{bi}/children/{ci}/value"})]
+        if "of" in a:
+            kids.append(text(
+                f"{base}-of",
+                {"@call": "formatString",
+                 "args": {"value": f"/${{blocks/{bi}/children/{ci}/of}}"}}))
+        return [add({"id": f"{base}-row", "component": "Row",
+                     "children": kids, "justify": "spaceBetween"})]
+    if el.type == "bar":
+        # the basic catalog has no gauge primitive; a bound Text stands
+        # in and the host supplies the display string via the data model
+        return [text(f"{base}-bar",
+                     {"@path": f"/blocks/{bi}/children/{ci}/value"})]
+    if el.type == "q":
+        qroot = f"/forms/{block.attrs['id']}/questions/{a['id']}"
+        kids = [text(f"{base}-qtext", a["text"], "caption")]
+        for k, opt in enumerate(a["options"]):
+            kids.append(add({
+                "id": f"{base}-opt{k}", "component": "CheckBox",
+                "label": opt,
+                "value": {"@path": f"{qroot}/options/{k}"}}))
+        return [add({"id": f"{base}-q", "component": "Column",
+                     "children": kids})]
+    if el.type == "btn":
+        lbl = text(f"{base}-btnlabel", a.get("label", a["action"]))
+        ev = {"name": a["action"]}
+        if block.type == "form":
+            ev["context"] = {"form": block.attrs["id"]}
+        return [add({"id": f"{base}-btn", "component": "Button",
+                     "child": lbl, "variant":
+                     "primary" if a["action"] == "submit" else "borderless",
+                     "action": {"event": ev}})]
+    return []
+
+
+def to_a2ui(doc):
+    """Project a Document onto the A2UI v1.0 basic catalog as a single
+    surfaceUpdate document. Flat adjacency list; `root` mounts on the
+    surface's canonical Surface container. Deterministic: identical
+    canonical DSL input yields identical output."""
+    comps = []
+
+    def add(comp):
+        comps.append(comp)
+        return comp["id"]
+
+    def text(tid, value, variant=None):
+        c = {"id": tid, "component": "Text", "text": value}
+        if variant:
+            c["variant"] = variant
+        return add(c)
+
+    root_kids = []
+    for bi, block in enumerate(doc.blocks):
+        bid = f"blk{bi}"
+        col_kids = []
+        if "title" in block.attrs:
+            # v1 Text variant enum is caption|body only; headings are
+            # expressed with the catalog's markdown-lite '# ' prefix
+            col_kids.append(text(f"{bid}-title",
+                                 "# " + block.attrs["title"]))
+        for ci, c in enumerate(block.children):
+            col_kids.extend(_a2ui_block_children(c, bi, ci, block, comps))
+        col = add({"id": f"{bid}-col", "component": "Column",
+                   "children": col_kids})
+        root_kids.append(add({"id": bid, "component": "Card",
+                              "child": col}))
+    surface_id = "dsl-" + hashlib.sha256(
+        emit(doc).encode("utf-8")).hexdigest()[:12]
+    comps.insert(0, {"id": "root", "component": "Column",
+                     "children": root_kids})
+    return {"version": A2UI_VERSION,
+            "surfaceUpdate": {"surfaceId": surface_id,
+                              "catalogId": A2UI_CATALOG_ID,
+                              "components": comps}}
+
+
+def a2ui_json(doc):
+    """Serialized A2UI surface document (UTF-8 JSON artifact, not an
+    envelope - it is consumed by a renderer, not by the agent)."""
+    return json.dumps(to_a2ui(doc), ensure_ascii=False,
+                      indent=2) + "\n"
+
+
 def _e(s):
     return html.escape(str(s), quote=True)
 
@@ -624,6 +745,11 @@ def main(argv=None):
         p.add_argument("--input", default="-")
         p.add_argument("--output", default="-")
         p.add_argument("--force", action="store_true")
+    pe = sub.add_parser("emit")
+    pe.add_argument("--input", default="-")
+    pe.add_argument("--output", default="-")
+    pe.add_argument("--format", default="a2ui")
+    pe.add_argument("--force", action="store_true")
     pb = sub.add_parser("benchmark")
     pb.add_argument("--fixture", required=True)
     pb.add_argument("--tokenizer", default=None)
@@ -638,13 +764,26 @@ def main(argv=None):
             _write_output(args.output,
                           render_html(parse(_read_input(args.input))),
                           args.force)
+        elif args.cmd == "emit":
+            if args.format != "a2ui":
+                print(_dumps({"ok": False,
+                              "error": "unsupported format "
+                                       f"{args.format!r} (only 'a2ui')"}))
+                return 2
+            _write_output(args.output,
+                          a2ui_json(parse(_read_input(args.input))),
+                          args.force)
         elif args.cmd == "benchmark":
             res = benchmark(_read_input(args.fixture), args.tokenizer,
                             fixture_name=args.fixture)
             _write_output(args.output,
                           _dumps(res, indent=2) + "\n", args.force)
     except ParseError as e:
-        print(f"ui_dsl: {e}", file=sys.stderr)
+        if getattr(args, "cmd", None) == "emit":
+            # emit is agent-facing JSON: typed ok:false envelope + nonzero
+            print(_dumps({"ok": False, "error": f"parse:{e}"}))
+        else:
+            print(f"ui_dsl: {e}", file=sys.stderr)
         return 2
     except OSError as e:
         print(_dumps({"ok": False, "error": f"io:{e}"}))

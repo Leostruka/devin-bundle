@@ -26,6 +26,24 @@ Before improvising tool/library discovery, check
 `.devin/research/resource-index.md` (curated high-signal repos: papers,
 apis, algorithms, learning paths) for an existing primary source.
 
+### Coverage strata checklist (external research)
+
+Before synthesizing, walk all five strata; each is either cited or
+explicitly declared absent, no silent gaps:
+
+- [ ] **1. Mainstream** - official docs, major publications, top repos/forums.
+- [ ] **2. Academic / papers** - arXiv, conference sources, papers-with-code.
+- [ ] **3. Surface-web long-tail** - blogs, Tumblr, Reddit, GitHub issues,
+      changelogs, forums (the abandoned ~97% where non-obvious solutions live).
+- [ ] **4. Multilingual / non-English** - at least one non-English pass when
+      the topic has global uptake (PT/ES/JA/DE/...; use the query language
+      of the stratum, not only English).
+- [ ] **5. Diagonal synthesis** - separate *evidence* (cited, observed) from
+      *inference* (your synthesis); label inference as such.
+
+Self-quiz: every stratum either cited or explicitly declared absent before
+synthesis.
+
 ## Mode: deep-mode (codebase)
 
 When: "deep search the codebase", "map all callers of Y", architecture-level

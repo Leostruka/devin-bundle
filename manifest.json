@@ -764,6 +764,12 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "media-osint",
+      "source": "devin-bundle",
+      "purpose": "Use when running OSINT or multimodal evidence extraction over media sources - YouTube videos, Instagram/TikTok reels, podcasts, or mixed URL lists - needing a captions digest, ffmpeg contact sheets, local ASR transcripts, per-source evidence cards, and a final verification table; also for deep media research feeding idea refinement, competitor teardown, or devin-bundle analysis.",
+      "export_hash": "541EB5A3BDA77E934DA378E9008A99CE4E748BDE6154A0796CFFAFD3835E6F85"
+    },
+    {
       "name": "media-tools",
       "source": "devin-bundle",
       "purpose": "Use when generating visual artifacts — ASCII art, halftone, dithering, matrix-rain, VHS, pixel-sort, voronoi, and other image/video FX — from images, GIFs, videos, GLB models, or webcam input. Local, offline-first.",
@@ -1414,7 +1420,7 @@
       "original_path": "%APPDATA%\\devin\\skills\\prune-tests"
     }
   ],
-  "skill_count": 192,
+  "skill_count": 193,
   "rule_count": 21,
   "scripts": [
     {
