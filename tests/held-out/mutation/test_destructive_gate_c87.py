@@ -375,3 +375,38 @@ def test_wtp_buffer_delete_blocked(cmd):
     split-write bypass - buffers are enforcement state."""
     code, out = run_gate(cmd)
     assert code == 2, f"buffer delete should block, got {code}: {out}"
+
+
+# --- C94: shell-history recall executes uninspectable text ---
+
+@pytest.mark.parametrize("ti", [
+    {"shell_id": "s", "bytes_input": "<UP><CR>"},
+    {"shell_id": "s", "bytes_input": "<DOWN><CR>"},
+    {"shell_id": "s", "bytes_input": "<C-r>ls<CR>"},
+    {"shell_id": "s", "bytes_input": "<UP>x<CR>"},
+    {"shell_id": "s", "bytes_input": "<C-p><CR>"},
+])
+def test_wtp_history_recall_blocked(ti):
+    """Recall + submit runs a history entry the gate cannot inspect -
+    HISTFILE may hold commands from outside the gated session."""
+    code, out = run_gate_wtp(ti, session_id="hist-" + str(abs(hash(str(ti)))))
+    assert code == 2, f"history recall should block, got {code}: {out}"
+
+
+def test_wtp_split_recall_blocked():
+    """<UP> in one call and <CR> in the next still executes history."""
+    sid = "hist-split"
+    assert run_gate_wtp({"shell_id": "s", "bytes_input": "<UP>"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "bytes_input": "<CR>"}, sid)[0] == 2
+
+
+def test_wtp_recall_nav_only_silent():
+    sid = "hist-nav"
+    assert run_gate_wtp({"shell_id": "s", "bytes_input": "<UP><DOWN>"}, sid)[0] == 0
+
+
+def test_wtp_ctrl_c_clears_recall_taint():
+    sid = "hist-cc"
+    assert run_gate_wtp({"shell_id": "s", "bytes_input": "<UP>"}, sid)[0] == 0
+    assert run_gate_wtp(
+        {"shell_id": "s", "bytes_input": "<C-c>ls<CR>"}, sid)[0] == 0

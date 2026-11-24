@@ -115,6 +115,11 @@ def emit_metric(event, **fields):
 
 _WTP_SPECIAL = re.compile(r"<[^>]*>")
 _WTP_CLEAR = re.compile(r"(?i)<C-c>|<C-u>")
+# History-recall keys pull a shell-history entry onto the input line. The
+# gate cannot inspect history (HISTFILE may hold commands from outside
+# the gated session), so these inject a \x1e sentinel into the pending
+# model - a later submit carrying it means "executing unseen text".
+_WTP_RECALL = re.compile(r"(?i)<UP>|<DOWN>|<C-p>|<C-n>|<C-r>")
 _WTP_BUF_CAP = 4096
 
 
@@ -169,6 +174,7 @@ def wtp_submitted_text(payload):
     if is_bytes:
         text = re.sub(r"(?i)<CR>|<LF>|\r\n?", "\n", text)
         text = _WTP_CLEAR.sub("\x03", text)
+        text = _WTP_RECALL.sub("\x1e", text)
         text = _WTP_SPECIAL.sub("", text)
     pending = ""
     buf = _wtp_buf_path(payload, tool_input)

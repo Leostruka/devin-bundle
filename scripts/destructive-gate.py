@@ -623,10 +623,23 @@ def main():
     if not isinstance(tool_input, dict):
         sys.exit(0)
     command = tool_input.get("command", "") or ""
-    if tool_name == "write_to_process" and not command.strip():
-        # Direct invocation (no _hookrun normalization upstream): extract
-        # the submitted lines ourselves.
-        command = _hookrun.wtp_submitted_text(data)
+    if tool_name == "write_to_process":
+        if not command.strip():
+            # Direct invocation (no _hookrun normalization upstream):
+            # extract the submitted lines ourselves.
+            command = _hookrun.wtp_submitted_text(data)
+        if "\x1e" in command:
+            # History-recall sentinel: an arrow/C-p/C-n/C-r keypress means
+            # the submitted line came from shell history, which the gate
+            # cannot inspect (HISTFILE may hold commands from outside this
+            # gated session). Same block whether recall and submit share
+            # one call or are split across calls (sentinel lives in the
+            # pending buffer).
+            block(
+                "history-recall (<UP>/<DOWN>/<C-p>/<C-n>/<C-r>) before a "
+                "submit executes a shell-history command the gate cannot "
+                "inspect. Re-type the command as text - typed input is "
+                "gated normally.")
     if not isinstance(command, str) or not command.strip():
         sys.exit(0)
 
