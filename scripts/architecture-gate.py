@@ -51,6 +51,31 @@ MUTATING_RE = re.compile("|".join(MUTATING_PATTERNS), re.IGNORECASE)
 SQUOTED_RE = re.compile(r"'[^']*'")
 DQUOTED_RE = re.compile(r'"[^"]*"')
 
+# Rooted path tokens inside commands (C:\x, \\unc, /posix, msys /d/x).
+ABS_PATH_TOKEN = re.compile(r"^(?:[a-zA-Z]:[\\/]|\\\\|/(?![/0-9]))")
+MSYS_DRIVE = re.compile(r"^/([a-zA-Z])[/\\](.*)")
+
+
+def _abs_targets(command):
+    """Yield absolute-path tokens a mutating command may write to.
+
+    Root detection anchors on workdir/cwd, which a command can sidestep:
+    `workdir=C:\\` + `touch D:\\managed\\x.py` mutates a project the cwd
+    check never sees. Bounded: whitespace tokens, strip quotes and
+    redirect/fd prefixes, keep only rooted paths.
+    """
+    for tok in command.split():
+        t = tok.strip("'\"").lstrip("<>0123456789&")
+        if len(t) < 3 or t.startswith("-") or ":" not in t and \
+                not t.startswith(("/", "\\")):
+            continue
+        if not ABS_PATH_TOKEN.match(t):
+            continue
+        m = MSYS_DRIVE.match(t)
+        if m:
+            t = m.group(1).upper() + ":\\" + m.group(2)
+        yield os.path.abspath(t)
+
 
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
@@ -111,9 +136,7 @@ def check_exec(tool_input):
     if not MUTATING_RE.search(scan):
         return  # read-only command — always allowed
     root = find_project_root(tool_input.get("workdir") or os.getcwd())
-    if not root:
-        return
-    if not os.path.isfile(manifest_path(root)):
+    if root and not os.path.isfile(manifest_path(root)):
         block(
             f"Architecture gate: '{root}' has no .devin/{MANIFEST_NAME}. "
             "Source mutations are blocked until it exists. Suspend code "
@@ -122,6 +145,21 @@ def check_exec(tool_input):
             "from the template at .devin/templates/ARCHITECTURE_MANIFEST.md "
             "in the bundle repo (installed: docs/templates/)."
         )
+    # Absolute-path targets resolve against their own project root - a
+    # command may point into a managed, manifestless project while the cwd
+    # is elsewhere (workdir spoof / foreign cwd bypass).
+    for target in _abs_targets(command):
+        troot = find_project_root(os.path.dirname(target))
+        if not troot or is_inside(target, os.path.join(troot, ".devin")):
+            continue
+        if not os.path.isfile(manifest_path(troot)):
+            block(
+                f"Architecture gate: command targets '{troot}', which has "
+                f"no .devin/{MANIFEST_NAME}. Source mutations are blocked "
+                "until it exists. Elicit the architecture from the user "
+                f"first (.devin/templates/{MANIFEST_NAME} in the bundle "
+                "repo, installed: docs/templates/)."
+            )
 
 
 def main():

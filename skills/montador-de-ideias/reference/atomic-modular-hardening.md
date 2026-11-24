@@ -10,7 +10,7 @@ Ensure every idea assembled by `montador-de-ideias` is engineered for extreme ro
 
 Every atomic unit in the specification must enforce:
 1. **Parse, Don't Validate**: untrusted inputs (CLI args, JSON payloads, web responses, user text, file paths) are parsed into strict, immutable types at the entry boundary; raw strings/dicts never propagate inward.
-2. **Minimize Contact Surface (`sec-needs`)**: every line of code and every input field is attack surface. Strip unused fields, sanitize paths against traversal (`..`, symlink escapes), and bound string/payload lengths.
+2. **Minimize Attack Surface**: every line of code and every input field is attack surface (see `security-audit` / `secure-defaults-check`). Strip unused fields, sanitize paths against traversal (`..`, symlink escapes), and bound string/payload lengths.
 3. **Safe File & Output Semantics**:
    - User-named output paths (`--out`, `-o`, `dst`) refuse to overwrite existing files unless `--force` is explicitly passed (`O_EXCL` / pre-flight check, exit code 2).
    - Atomic writes via temp-file + rename when state corruption on crash is possible.

@@ -8,11 +8,11 @@ triggers: [user, model]
 
 ## Overview
 
-Transform any seed project idea or raw prompt into two verified, traceable artifacts:
+Transform any seed project idea or raw prompt into two verified, traceable artifacts (MACRO track; MICRO seeds skip artifacts, see Scope Triage):
 1. **Investigative & First-Principles Dossier** (`.devin/specs/<slug>-idea-dossier.md`)
 2. **Compiled Master Prompt** (`.devin/specs/<slug>-compiled-prompt.md`)
 
-Every proposal is grounded in the fundamental axioms of each involved discipline (physical/compute limits, cognitive psychology, economics, software architecture, security, UX) and competitive OSINT evidence proving why and how the design outperforms market incumbents across every axis.
+Every proposal is grounded in the fundamental axioms of each involved discipline (physical/compute limits, cognitive psychology, economics, software architecture, security, UX) and competitive OSINT or adjacent-pattern evidence proving why and how the design outperforms incumbents and prior art across every axis.
 
 Detail playbooks (load on demand):
 - `reference/journalistic-osint-protocol.md` - investigative journalism, public/semi-public leak/fragment mining, competitor teardown, PRISMA-lite + lateral reading.
@@ -21,25 +21,42 @@ Detail playbooks (load on demand):
 - `reference/contact-surfaces-excellence.md` - contact surface design bar: **Facilitar, Resolver, Impressionar, Ser Intuitivo**.
 - `templates/idea-dossier.md` and `templates/compiled-prompt.md` - mandatory output schemas.
 
+## Scope Triage (run BEFORE the pipeline)
+
+Size the seed like `task-sizer`; wrong sizing is the main way this skill wastes effort:
+
+| Track | Trigger | What Runs | Output |
+|---|---|---|---|
+| **MICRO** | Bugfix, single-feature change, copy/design tweak inside an existing codebase | Phase 0 verbatim capture + first-principles justification inline; skip Phases 1-5 | The design rationale lands directly in code/commit. NO dossier artifacts |
+| **MACRO** | New product/tool/agent, multi-system capability, "turn this idea into a spec" | All phases 0-5 | Both `.devin/specs/` artifacts |
+
+Never run the MACRO pipeline on a MICRO seed: a dossier for a one-file fix is token waste and process theater.
+
 <HARD-GATE>
-1. ORIGINAL PROMPT IMMUTABILITY: Compute `original_prompt_sha256` of the user's seed prompt immediately and store the verbatim text in a frozen block. NEVER alter, delete, dilute, or silently reinterpret any requirement from the original prompt.
+1. ORIGINAL PROMPT IMMUTABILITY: Write the verbatim seed to `.devin/specs/<slug>-seed.txt`, then compute `original_prompt_sha256` over that file (exact command below). NEVER alter, delete, dilute, or silently reinterpret any requirement from the original prompt.
+   - `python -c "import hashlib,sys;print(hashlib.sha256(open(sys.argv[1],'rb').read()).hexdigest())" .devin/specs/<slug>-seed.txt`
 2. GUIDANCE BEFORE ANY PROMPT CHANGE: Before adding, modifying, or reframing any part of the original prompt, you MUST ask the user via `ask_user_question` (1-4 questions per call, 2-4 concrete options with trade-offs + recommended stance) to align on the tool's philosophy, the core problem it solves, the acute pain point it heals, and which proposed expansions they approve.
+   - BATCH: collect ALL Phase-0 questions into the fewest `ask_user_question` calls possible (max 4 questions/call is a ceiling, not a quota). Same for Phase 5: one Prompt Evolution Table round, not a drip-feed.
+   - AFK/AUTONOMOUS (`/goal`, `afk-loop`, unattended): user gates cannot block. Mark the dossier `status: DRAFT-AUTO`, record every unapproved delta in section 2 of the compiled prompt as `PENDING-APPROVAL`, and proceed with the option you recommend. The next interactive session converts PENDING rows via a single `ask_user_question` round.
 3. NO DEDUCTION WITHOUT EVIDENCE: Competitor weaknesses, technical limits, and architectural trade-offs must be verified with tools (`researcher` subagent, `agent-reach`, `scrape-tools`, `web_search`, `webfetch`, `grep`, `read`) before being stated as fact (Rule 12).
+4. IDEMPOTENT RESUME: before Phase 1, if `.devin/specs/<slug>-idea-dossier.md` exists, hash the current seed and compare with `original_prompt_sha256` inside it. Same hash -> resume from the last incomplete phase (don't re-run OSINT). Different hash -> archive the old dossier (`-vN` suffix) and restart.
 </HARD-GATE>
 
 ## Pipeline (6 Atomic Phases)
 
 ### Phase 0: Anchor & Philosophy Alignment (`ask_user_question`)
 
-1. Capture the verbatim seed prompt and compute `original_prompt_sha256`.
+1. Write the verbatim seed to `.devin/specs/<slug>-seed.txt` and compute `original_prompt_sha256` over that file (HARD-GATE command).
 2. Extract what is already explicit vs. what is underspecified across four axes:
    - **Filosofia da Ferramenta**: worldview, non-negotiable principles, identity.
    - **Problema Raiz**: structural cause vs. symptom.
    - **Dor Real (Pain Point)**: who suffers, how often, cost of inaction, why current workarounds fail.
    - **Restrições Inegociáveis**: stack, privacy/local-first, latency, budget, platform.
-3. Run frontier rounds with `ask_user_question` (1-4 questions per call, 2-4 options + recommendation). Do not proceed until the user confirms the philosophy and pain-point anchor.
+3. Run ONE batched frontier round with `ask_user_question` (up to 4 questions, 2-4 options + recommendation). Do not proceed until the user confirms the philosophy and pain-point anchor. AFK/unattended: proceed with recommended options, mark deltas `PENDING-APPROVAL`, dossier `status: DRAFT-AUTO`.
 
 ### Phase 1: Journalistic OSINT & Competitor Teardown
+
+**SKIP-GATE**: for internal/personal tools with no market axis (private automations, single-user companions, internal CLIs), replace competitor teardown with *adjacent-pattern recon*: mine the local codebase (`grep`/`glob`), public repos solving the same sub-problem, and postmortems of similar architectures. Still cite sources; still fill the matrix with at least 3 adjacent implementations or prior-art approaches.
 
 Read `reference/journalistic-osint-protocol.md`. Dispatch `researcher` (`model: swe-2-max`, free) and/or run `agent-reach`, `scrape-tools`, `web_search`, and `webfetch` to investigate the problem space like an investigative journalist:
 
@@ -99,12 +116,18 @@ Read `reference/contact-surfaces-excellence.md`. Enumerate every surface where a
 
 ### Phase 5: Prompt Delta Approval & Artifact Materialization
 
-1. Present a **Prompt Evolution Table** to the user via `ask_user_question`:
+1. Present a **Prompt Evolution Table** to the user via `ask_user_question` (one batched round; AFK mode: mark `PENDING-APPROVAL`, proceed with recommendation):
    - Show each proposed addition, refinement, or structural expansion relative to the original prompt.
    - Let the user approve, amend, or reject each delta while guaranteeing 100% fidelity to the original philosophy.
 2. Write `.devin/specs/<slug>-idea-dossier.md` using `templates/idea-dossier.md`.
 3. Write `.devin/specs/<slug>-compiled-prompt.md` using `templates/compiled-prompt.md` (containing the verbatim original prompt + `original_prompt_sha256` + approved delta log + the self-contained Master Prompt).
-4. Verify both files exist, are non-empty, contain zero placeholders (`TBD`/`TODO`), and offer the downstream handoff (`project-orchestrator`, `planning`, or `grilling`).
+4. Verify with commands, not inspection (Rule 15):
+   - Recompute the seed hash and prove the verbatim block inside the compiled prompt matches the frozen seed:
+     `python -c "import hashlib;print(hashlib.sha256(open('.devin/specs/<slug>-seed.txt','rb').read()).hexdigest())"`
+     must equal `original_prompt_sha256` in both artifact frontmatters.
+   - `rg -n "TBD|TODO|<[A-Z_]+>" .devin/specs/<slug>-*.md` must return nothing outside the frozen original prompt block.
+   - Both files exist and are non-empty; `status:` reflects reality (`APPROVED` only after user approval; `DRAFT-AUTO` if AFK).
+5. Offer the downstream handoff (`project-orchestrator`, `planning`, or `grilling`).
 
 ## Cross-Skills
 

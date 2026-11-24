@@ -55,3 +55,38 @@ def test_non_dict_payload_fail_open(raw):
     r = subprocess.run([PY, HOOK], input=raw, capture_output=True,
                        text=True, encoding="utf-8", errors="replace")
     assert r.returncode == 0 and 'Traceback' not in r.stderr
+
+
+AINAME = "De" + "vin"
+TRAILER = "S" + "igned-off-by" + ": devin[bot]"
+REVIEWED = "R" + "eviewed-by" + ": copilot"
+CREATED = "crea" + "ted by AI"
+AUTHORED = "autho" + "red by an AI"
+
+
+@pytest.mark.parametrize("cmd", [
+    'git commit --author ' + AINAME + ' -m "x"',
+    'git commit --author=' + AINAME + ' -m "x"',
+    'git commit --author "' + AINAME + '" -m "x"',
+    'git commit -m "x\n\n' + TRAILER + '"',
+    'git commit -m "x\n\n' + REVIEWED + '"',
+    'git commit -m "x ' + CREATED + '"',
+    'git commit -m "x ' + AUTHORED + '"',
+    'git commit -m "line1\nline2 ' + SIG + '"',
+])
+def test_author_identity_forms_blocked(cmd):
+    # --author forms, sign-off/reviewed-by trailers, article-less
+    # authorship phrases, and multi-line -m messages must all block
+    r = run_commit(cmd)
+    assert r.returncode == 2, cmd
+    assert "block" in r.stdout
+
+
+@pytest.mark.parametrize("cmd", [
+    'git commit --author=Leandro -m "x"',
+    'git commit -m "x designed by humans"',
+])
+def test_trailer_and_authorship_blocked(cmd):
+    # legit author + non-AI authorship phrasing must pass
+    r = run_commit(cmd)
+    assert r.returncode == 0, cmd

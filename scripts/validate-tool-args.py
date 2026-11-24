@@ -84,32 +84,50 @@ _CURRENT_TOOL = ""
 # exec so a prompt-injected or drifted agent cannot mutate the system.
 STATE_DIR = os.path.join(_devin_home(), "state")
 PROFILE_DENY = {
+    # Profiles whose allowed-tools declare no exec. Deny is uniform-only
+    # per session (see _enforce_profile_deny) - mixed-profile sessions fail
+    # open on attribution ambiguity.
     "researcher": frozenset({"exec"}),
     "issue-tracker": frozenset({"exec"}),
     "triage-labels": frozenset({"exec"}),
+    "subagent_explore": frozenset({"exec"}),
+    "domain": frozenset({"exec"}),
+    "architect": frozenset({"exec"}),
 }
 
 
 def _profile_state_path(session_id):
     safe = re.sub(r"[^A-Za-z0-9_.-]", "_", session_id or "unknown")
-    return os.path.join(STATE_DIR, "subagent-{}.json".format(safe))
+    return os.path.join(
+        os.environ.get("DEVIN_STATE_DIR") or STATE_DIR,
+        "subagent-{}.json".format(safe))
 
 
 def _record_profile(session_id, profile):
     try:
-        os.makedirs(STATE_DIR, exist_ok=True)
+        os.makedirs(os.path.dirname(_profile_state_path(session_id)),
+                    exist_ok=True)
+        profiles = _session_profiles(session_id)
+        profiles.add(profile)
         with open(_profile_state_path(session_id), "w", encoding="utf-8") as f:
-            json.dump({"profile": profile, "session_id": session_id}, f)
+            json.dump({"profiles": sorted(profiles),
+                       "session_id": session_id}, f)
     except (OSError, IOError):
         pass
 
 
-def _session_profile(session_id):
+def _session_profiles(session_id):
+    """All profiles dispatched this session. Reads both the current
+    {'profiles': [...]} shape and the legacy single-profile file."""
     try:
         with open(_profile_state_path(session_id), "r", encoding="utf-8") as f:
-            return (json.load(f).get("profile") or "").strip()
+            d = json.load(f)
+        if isinstance(d.get("profiles"), list):
+            return {str(p) for p in d["profiles"] if str(p).strip()}
+        legacy = (d.get("profile") or "").strip()
+        return {legacy} if legacy else set()
     except (OSError, IOError, ValueError):
-        return ""
+        return set()
 
 
 # --- Subagent dispatch budgets (optional, opt-in) ---
@@ -199,22 +217,33 @@ def _enforce_budget(session_id, tool_input):
 
 
 def _enforce_profile_deny(session_id, tool_name, data):
-    """Block tools denied for the session's recorded subagent profile.
+    """Block tools denied for the session's recorded subagent profiles.
 
     Enforcement requires the payload to identify a subagent context
     (agent_id / subagent_id / is_subagent). session_id is session-wide in
     the Devin CLI, so a denied profile recorded at dispatch would otherwise
     also block the parent agent's own calls.
+
+    Deny is uniform-only: a tool is blocked when EVERY recorded profile in
+    the session denies it. Mixed-profile sessions (researcher +
+    implementer in parallel) cannot attribute a call to its dispatch, so
+    ambiguity fails open - but the old last-recorded-wins scheme let a
+    later non-denied dispatch silently unlock a denied subagent's tools.
     """
     if not (data.get("agent_id") or data.get("subagent_id")
             or data.get("is_subagent")):
         return
-    profile = _session_profile(session_id)
-    denied = PROFILE_DENY.get(profile)
-    if denied and tool_name in denied:
+    profiles = _session_profiles(session_id)
+    if not profiles:
+        return
+    deny_sets = [PROFILE_DENY[p] for p in profiles if p in PROFILE_DENY]
+    if len(deny_sets) != len(profiles) or not deny_sets:
+        return  # ambiguous attribution or nothing denied
+    denied = frozenset.intersection(*deny_sets)
+    if tool_name in denied:
         block(
-            "Tool '{}' is denied for subagent profile '{}' "
-            "(per-profile sandboxing).".format(tool_name, profile)
+            "Tool '{}' is denied for subagent profile(s) '{}' "
+            "(per-profile sandboxing).".format(tool_name, "/".join(sorted(profiles)))
         )
 
 
@@ -249,9 +278,73 @@ def check_read(ti):
     require_abs_path("read", ti.get("file_path", ""))
 
 
+# Windows reserved device basenames (stem, case-insensitive, extension
+# ignored: nul.txt also hits the device). Writes to them are silently
+# discarded and os.path.exists() even returns True on the device - the
+# same silent wrong-state class as `> nul` in bash. Observed 2026-11-24:
+# open('nul','w') returned success with no file created.
+_WIN_RESERVED = ({"con", "prn", "aux", "nul"}
+                 | {f"com{i}" for i in range(1, 10)}
+                 | {f"lpt{i}" for i in range(1, 10)})
+
+
+def _check_reserved_name(tool_name, file_path):
+    if os.name != "nt" or not isinstance(file_path, str):
+        return
+    basename = os.path.basename(file_path)
+    # A ':' inside the basename is an NTFS alternate-data-stream separator:
+    # 'f.txt:hidden' creates a 0-byte f.txt plus a hidden stream holding the
+    # content - os.path.exists() resolves the stream, but f.txt itself stays
+    # empty (verified 2026-11-24). Same silent wrong-state class as 'nul'.
+    if ":" in basename:
+        block(
+            f"{tool_name} target '{basename}' contains ':' which writes to an "
+            "NTFS alternate data stream - the named file is created empty and "
+            "the content is silently diverted. Rename the file.")
+    # Win32 strips trailing spaces/dots before device resolution:
+    # 'nul ', 'nul .txt', 'con.' all hit the device (verified 2026-11-24).
+    stem = os.path.splitext(basename)[0].lower().rstrip(" .")
+    if stem in _WIN_RESERVED:
+        block(
+            f"{tool_name} target '{basename}' is a Windows "
+            "reserved device name (con/prn/aux/nul/com1-9/lpt1-9) - writes are "
+            "silently discarded and no file is created. Rename the file.")
+    # Win32 strips trailing dots/spaces from basenames: 'file.', 'file ' and
+    # 'file..' all resolve to 'file' - multiple "different" names collapse to
+    # one path and overwrite each other (verified 2026-11-24).
+    if basename and basename != basename.rstrip(" ."):
+        block(
+            f"{tool_name} target '{basename}' ends in a dot or space - Win32 "
+            "strips it, so the write silently lands on "
+            f"'{basename.rstrip(' .')}' instead. Rename the file.")
+
+
+def _check_state_file(tool_name, file_path):
+    """Subagent enforcement state (profile records, dispatch ledger, budget
+    policy) must not be agent-writable - a denied or budget-capped subagent
+    could otherwise overwrite its own limits (self-unlimiting class)."""
+    if not file_path:
+        return
+    state_dir = os.environ.get("DEVIN_STATE_DIR") or STATE_DIR
+    try:
+        norm = os.path.normcase(os.path.abspath(file_path))
+        base = os.path.basename(norm)
+        if (os.path.dirname(norm) == os.path.normcase(os.path.abspath(state_dir))
+                and base.startswith("subagent-")):
+            block(
+                f"{tool_name} refused: '{base}' is subagent enforcement state "
+                "managed by validate-tool-args; agents may not edit their own "
+                "profile/budget records. Ask the user to change policy."
+            )
+    except (OSError, ValueError):
+        return
+
+
 def check_write(ti):
     file_path = ti.get("file_path", "")
     require_abs_path("write", file_path)
+    _check_reserved_name("write", file_path)
+    _check_state_file("write", file_path)
     parent = os.path.dirname(file_path)
     if parent and not os.path.isdir(parent):
         block(
@@ -262,6 +355,8 @@ def check_write(ti):
 
 def check_edit(ti):
     require_abs_path("edit", ti.get("file_path", ""))
+    _check_reserved_name("edit", ti.get("file_path", ""))
+    _check_state_file("edit", ti.get("file_path", ""))
     if not ti.get("old_string"):
         block("edit requires a non-empty old_string.")
     if ti.get("old_string") == ti.get("new_string"):
@@ -273,7 +368,10 @@ def check_notebook_read(ti):
 
 
 def check_notebook_edit(ti):
-    require_abs_path("notebook_edit", ti.get("notebook_path", ""), "notebook_path")
+    nb_path = ti.get("notebook_path", "")
+    require_abs_path("notebook_edit", nb_path, "notebook_path")
+    _check_reserved_name("notebook_edit", nb_path)
+    _check_state_file("notebook_edit", nb_path)
 
 
 # Constructs ripgrep's Rust regex engine rejects but Python re accepts —
@@ -496,13 +594,7 @@ def main():
 
     session_id = data.get("session_id", "") or ""
 
-    # Record the dispatched profile so later calls in this session can be
-    # denied per-profile even though the hook payload has no skill identity.
-    if tool_name == "run_subagent" and isinstance(tool_input, dict):
-        prof = tool_input.get("profile", "") or "subagent_general"
-        _record_profile(session_id, prof)
-        _enforce_budget(session_id, tool_input)
-
+    # The deny gate must run unconditionally for every tool call.
     _enforce_profile_deny(session_id, tool_name, data)
 
     check = CHECKS.get(tool_name)
@@ -517,6 +609,15 @@ def main():
         raise
     except Exception:
         sys.exit(0)  # fail-open on unexpected validator error
+
+    # Record ONLY on the allow path: a blocked dispatch (invalid profile,
+    # budget exceeded) must not write profile state - a recorded-but-denied
+    # profile flips the session set ambiguous and would silently unlock
+    # exec for genuinely denied subagents in the same session.
+    if tool_name == "run_subagent":
+        _enforce_budget(session_id, tool_input)
+        prof = tool_input.get("profile", "") or "subagent_general"
+        _record_profile(session_id, prof)
 
     _log_hit(tool_name, "allow")
     sys.exit(0)

@@ -114,6 +114,30 @@ def test_silent_on_other_tools():
                      "tool_input": {"file_path": "x"}}) == ""
 
 
+def test_silent_on_secret_reads():
+    """C85: auto-approve must not bypass the human prompt on reads that
+    dump secrets into the transcript."""
+    for c in ("printenv", "printenv PATH", "env",
+              "cat ~/.ssh/id_rsa", "cat .env", "cat .env.local",
+              "cat dir/.envrc", "head -20 ~/.aws/credentials",
+              "cat /home/u/.kube/config", "file cert.pfx",
+              "cat test.key", "cat credentials.json",
+              "cat secrets.yaml", "cat ~/.gnupg/secring.gpg",
+              "cat ~/.netrc", "cat id_ed25519",
+              "cat ~/.docker/config.json",
+              "cat ~/.config/gcloud/credentials.db",
+              "echo %AWS_SECRET_ACCESS_KEY%"):
+        assert gate(c) == "", c
+
+
+def test_secret_path_still_allows_benign():
+    """Ordinary file reads keep auto-approving (no friction regression)."""
+    for c in ("cat normal.txt", "head -5 src/main.py", "cat keys.txt",
+              "ls -la", "echo hello", "echo 100% done"):
+        out = gate(c)
+        assert json.loads(out)["decision"] == "approve", c
+
+
 def test_fail_open_on_garbage():
     r = subprocess.run([sys.executable, SCRIPT], input="not json",
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)

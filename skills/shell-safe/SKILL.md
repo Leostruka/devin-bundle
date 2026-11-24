@@ -59,6 +59,15 @@ Mandatory defenses:
 - Always `"$VAR"` double-quoted (unquoted, spaces split into args and empties vanish silently).
 - In scripts: `set -u` makes undefined variables an error, not "".
 
+## One-shot shells: cwd does not persist
+
+Each `exec` call runs in a fresh shell at the workspace root - `cd` in one
+call is gone in the next. A path relative to a previous call's `cd` fails
+(observed: `cd ../../x` resolved from root, not from the earlier dir).
+
+- Chain in one call: `cd sub && cmd`.
+- Or use absolute paths and never depend on cwd at all.
+
 ## cd then delete: order matters
 
 ```bash
@@ -67,6 +76,12 @@ cd build && rm -rf *      # correct: rm only runs if cd worked
 ```
 
 Better: do not depend on cwd. `rm -rf build/*` or `find build -mindepth 1 -delete`.
+
+## MSYS mangles `/flag` on Windows native tools
+
+Git Bash converts `tool /s /t 30` into path-like args (`C:/s`...) and the
+tool prints usage. Use dash syntax (`shutdown -s -t 60`), or escape with
+`//flag` (`cmd //c`), or wrap in `cmd /c "tool /s"`.
 
 ## Pipe swallows exit codes
 

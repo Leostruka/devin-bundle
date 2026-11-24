@@ -99,28 +99,33 @@ def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
         out_file.close()
 
 
-def _push_segment(command):
-    """Return the shell segment that issues a git push, or None.
+GIT_EXE_RE = re.compile(r"^git(?:\.(?:exe|cmd|bat|com))?$", re.I)
 
-    Tokenizes shell segments so whitespace variants (`git  push`),
-    global flags between verb and subcommand (`git -C repo push`,
-    `git -c k=v push`) and command chaining (`x && git push`,
-    `x & git push`, `` `git push` ``, `(git push)`) are caught.
-    """
+
+def _segment_tokens(segment):
+    """Tokenize one shell segment, stripping the quotes the shell would."""
     import shlex
+    try:
+        raw = shlex.split(segment, posix=(os.name != "nt"))
+    except ValueError:
+        raw = segment.split()
+    # posix=False (Windows) keeps quote chars inside tokens - the shell
+    # strips them before argv, so normalize the same way per token.
+    return [t.strip("'\"") for t in raw]
+
+
+def _push_tokens(command):
+    """Tokens of the segment issuing a git push, or None."""
     # git options that consume the next token as a value.
     git_opts_with_arg = {"-C", "-c", "--git-dir", "--work-tree",
                          "--namespace", "--exec-path"}
     for segment in re.split(r"&&|\|\||[;&|()`]", command):
-        try:
-            tokens = shlex.split(segment, posix=(os.name != "nt"))
-        except ValueError:
-            tokens = segment.split()
+        tokens = _segment_tokens(segment)
         i = 0
         while i < len(tokens):
             tok = tokens[i]
             base = os.path.basename(tok).lower()
-            if base in ("git", "git.exe") or tok.lower().endswith("\\git.exe"):
+            if GIT_EXE_RE.match(base):
                 j = i + 1
                 while j < len(tokens):
                     t = tokens[j]
@@ -132,10 +137,58 @@ def _push_segment(command):
                         continue
                     break
                 if j < len(tokens) and tokens[j].lower() == "push":
-                    return segment
+                    return tokens
                 i = j
             i += 1
     return None
+
+
+def _push_segment(command):
+    """Return the shell segment that issues a git push, or None.
+
+    Tokenizes shell segments so whitespace variants (`git  push`),
+    global flags between verb and subcommand (`git -C repo push`,
+    `git -c k=v push`) and command chaining (`x && git push`,
+    `x & git push`, `` `git push` ``, `(git push)`) are caught.
+    """
+    tokens = _push_tokens(command)
+    return " ".join(tokens) if tokens is not None else None
+
+
+def _push_repo(tokens, base):
+    """Resolve the repo a push targets.
+
+    `-C`/`--git-dir`/`--work-tree` inside the segment and `GIT_DIR=`/
+    `GIT_WORK_TREE=` env prefixes all redirect the git invocation; the
+    checks below must run against THAT repo, not the shell cwd — running
+    the local suite to bless a foreign-repo push is the wrong-tree
+    bypass (2026-11-24).
+    """
+    repo = None
+    for i, t in enumerate(tokens):
+        if t.startswith(("GIT_DIR=", "GIT_WORK_TREE=")):
+            repo = t.split("=", 1)[1]
+        elif GIT_EXE_RE.match(os.path.basename(t).lower()):
+            j = i + 1
+            while j < len(tokens) and tokens[j] != "push":
+                if tokens[j] in ("-C", "--git-dir", "--work-tree"):
+                    if j + 1 < len(tokens):
+                        repo = tokens[j + 1]
+                        j += 1
+                elif tokens[j].startswith("--git-dir=") or \
+                        tokens[j].startswith("--work-tree="):
+                    repo = tokens[j].split("=", 1)[1]
+                j += 1
+            break
+    if not repo:
+        return base
+    repo = (repo if os.path.isabs(repo)
+            else os.path.normpath(os.path.join(base, repo)))
+    # `--git-dir=x/.git` without --work-tree: the checks run in the
+    # worktree (markers live there), not inside .git.
+    if os.path.basename(repo.rstrip("/\\")).lower() == ".git":
+        repo = os.path.dirname(repo.rstrip("/\\"))
+    return repo
 
 
 def is_git_push(command):
@@ -515,16 +568,28 @@ def main():
     command = tool_input.get("command", "") or ""
     if not isinstance(command, str):
         sys.exit(0)
-    push_segment = _push_segment(command)
-    if push_segment is None:
+    push_tokens = _push_tokens(command)
+    if push_tokens is None:
         sys.exit(0)
     # A dry run does not publish anything, so let it through — but the
-    # flag must belong to the push itself: `--dry-run` elsewhere in the
-    # command (echo, commit message) must not bypass the gate.
-    if "--dry-run" in push_segment:
+    # flag must be an exact push token: `--dry-run` anywhere else (echo,
+    # commit message) or inside a ref name (`feat--dry-run`) must not
+    # bypass the gate.
+    if "--dry-run" in push_tokens or "-n" in push_tokens:
         sys.exit(0)
 
-    cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+    base = tool_input.get("workdir") or \
+        os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
+    cwd = _push_repo(push_tokens, base)
+
+    # An explicit repo redirect (-C/--git-dir/GIT_DIR=) that resolves to a
+    # directory that does not exist cannot be verified; fail closed rather
+    # than skipping every check below on a phantom tree.
+    if cwd != base and not os.path.isdir(cwd):
+        block(
+            "git push rejected: the push redirects git to "
+            f"{cwd} which does not exist, so the gate cannot verify the "
+            "pushed tree (AGENTS.md Rule 5).")
 
     # Defense in depth: block push if secrets are unmasked in bundle files.
     check_unmasked_secrets(cwd)

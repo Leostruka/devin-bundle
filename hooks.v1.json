@@ -21,6 +21,17 @@
           "fail_closed": true
         }
       ]
+    },
+    {
+      "matcher": "^(run_subagent|mcp_call_tool|mcp_read_resource|webfetch|web_search|skill|request_scope|ask_user_question|todo_write|browser_preview)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "python scripts/validate-tool-args.py",
+          "timeout": 30,
+          "fail_closed": true
+        }
+      ]
     }
   ],
   "PostToolUse": [

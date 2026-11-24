@@ -24,6 +24,7 @@ JSON envelopes; exit non-zero on {"ok": false}. Fail-open on I/O errors.
 import argparse
 import json
 import os
+import re
 import sys
 import time
 
@@ -55,7 +56,16 @@ def _abort_dir():
     return os.path.join(_root(), ".devin", "subagent-abort")
 
 
+_ID_RE = re.compile(r"[A-Za-z0-9._-]+\Z")
+
+
 def _abort_path(rid):
+    # rid is caller-controlled; separators would escape the abort dir.
+    # '--abort ../refinements.log.jsonl' truncated the evidence ledger and
+    # '--clear-abort ../../file' deleted arbitrary paths (2026-11-24 probe).
+    if not isinstance(rid, str) or not _ID_RE.fullmatch(rid) \
+            or rid.startswith("."):
+        raise ValueError(f"invalid dispatch id for abort path: {rid!r}")
     return os.path.join(_abort_dir(), rid)
 
 

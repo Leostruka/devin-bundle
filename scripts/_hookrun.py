@@ -59,7 +59,10 @@ def metrics_sink_path():
         return os.path.join(explicit, ".devin", "ledgers", "metrics.jsonl")
     start = os.getcwd()
     cur = os.path.abspath(start)
-    for _ in range(4):
+    # Walk well past any realistic subtree depth: 4 hops missed
+    # tests/held-out/mutation/x (5 levels) and created a stray
+    # <deep>/.devin/ledgers tree (same class as the Temp\.devin leak).
+    for _ in range(10):
         if os.path.isdir(os.path.join(cur, ".devin")) \
                 or os.path.isfile(os.path.join(cur, "manifest.json")):
             return os.path.join(cur, ".devin", "ledgers", "metrics.jsonl")
@@ -195,6 +198,14 @@ def run(script_names, payload):
     if updated_input:
         hso_out['updatedInput'] = updated_input
     if hso_out:
+        # The CLI rejects hookSpecificOutput without hookEventName (parse
+        # fail -> the whole hook call "fails" -> fail_closed blocks the
+        # tool call with an opaque error). Synthesize it from the payload
+        # when no child emitted one (C84).
+        if 'hookEventName' not in hso_out:
+            hso_out['hookEventName'] = (
+                payload.get('hook_event_name')
+                or payload.get('hookEventName') or '')
         result['hookSpecificOutput'] = hso_out
     if result:
         print(json.dumps(result))

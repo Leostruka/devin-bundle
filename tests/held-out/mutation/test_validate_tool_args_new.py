@@ -34,6 +34,109 @@ def run_validate(tool_name: str, tool_input: dict) -> tuple[int, str]:
     return result.returncode, result.stdout.strip()
 
 
+def _run_session(tool_name, tool_input, session_id, state_dir, is_subagent=False):
+    """Like run_validate but with a scoped session + isolated state dir."""
+    payload = json.dumps({
+        "hook_event_name": "PreToolUse",
+        "tool_name": tool_name,
+        "tool_input": tool_input,
+        "session_id": session_id,
+        **({"is_subagent": True} if is_subagent else {}),
+    })
+    env = dict(os.environ, DEVIN_STATE_DIR=str(state_dir))
+    r = subprocess.run(
+        [sys.executable, VALIDATE_SCRIPT],
+        input=payload, capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=10, env=env,
+    )
+    return r.returncode, r.stdout.strip()
+
+
+def test_profile_deny_blocks_exec(tmp_path):
+    """C82: a researcher-profile dispatch records the profile; the
+    subagent's later exec call is denied."""
+    sid = "deny-single"
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    code, out = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=True)
+    assert code == 2, f"researcher exec should be denied, got {code}: {out}"
+
+
+def test_profile_deny_mixed_session_fails_open(tmp_path):
+    """C82: researcher + implementer in one session cannot attribute a call
+    to its dispatch - uniform-deny must fail OPEN (no false block), which
+    also fixes the old last-recorded-wins scheme that denied whichever
+    profile was written last."""
+    sid = "deny-mixed"
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    _run_session("run_subagent", {"task": "build y", "profile": "implementer"}, sid, tmp_path)
+    code, _ = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=True)
+    assert code == 0, f"mixed-profile session must not over-block, got {code}"
+
+
+def test_profile_deny_uniform_set_blocks(tmp_path):
+    """C82: researcher + issue-tracker both deny exec - the union still
+    blocks (old last-wins scheme allowed it when issue-tracker recorded
+    after researcher... and vice versa)."""
+    sid = "deny-uniform"
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    _run_session("run_subagent", {"task": "triage y", "profile": "issue-tracker"}, sid, tmp_path)
+    code, out = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=True)
+    assert code == 2, f"uniformly-denied exec should block, got {code}: {out}"
+
+
+def test_profile_deny_parent_not_blocked(tmp_path):
+    """Deny only applies to subagent-marked calls; the parent's own exec
+    in a session carrying a denied profile stays allowed."""
+    sid = "deny-parent"
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    code, _ = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=False)
+    assert code == 0, f"parent exec must not be denied, got {code}"
+
+
+def test_profile_deny_blocked_dispatch_no_unlock(tmp_path):
+    """C82: a BLOCKED dispatch must not write profile state. Record-before-
+    validate let a bogus-profile dispatch (exit 2) flip the session set
+    ambiguous and silently unlock exec for denied subagents."""
+    sid = "deny-blocked"
+    _run_session("run_subagent", {"task": "research x", "profile": "researcher"}, sid, tmp_path)
+    # invalid profile -> dispatch blocked, must NOT record
+    code, _ = _run_session("run_subagent", {"task": "evil", "profile": "bogus-profile"}, sid, tmp_path)
+    assert code == 2
+    code, out = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=True)
+    assert code == 2, f"blocked dispatch must not unlock exec, got {code}: {out}"
+
+
+def test_state_file_write_blocked(tmp_path):
+    """C82: subagent enforcement state is not agent-writable - overwriting
+    the dispatch ledger or a profile record resets its own limits."""
+    for tool, key in (("write", "file_path"), ("edit", "file_path"),
+                      ("notebook_edit", "notebook_path")):
+        code, out = _run_session(
+            tool, {key: str(tmp_path / "subagent-ledger.jsonl"),
+                   "old_string": "x", "new_string": "y"},
+            "state-guard", tmp_path)
+        assert code == 2, f"{tool} to state file should block, got {code}: {out}"
+
+
+def test_state_dir_other_files_allowed(tmp_path):
+    """Only subagent-* state files are protected; other state writes pass."""
+    (tmp_path).mkdir(exist_ok=True)
+    code, _ = _run_session(
+        "write", {"file_path": str(tmp_path / "notes.txt")},
+        "state-ok", tmp_path)
+    assert code == 0, f"non-state write should be allowed, got {code}"
+
+
+def test_profile_deny_legacy_file(tmp_path):
+    """Legacy single-profile state files still deny."""
+    sid = "deny-legacy"
+    os.makedirs(tmp_path, exist_ok=True)
+    with open(tmp_path / f"subagent-{sid}.json", "w", encoding="utf-8") as f:
+        json.dump({"profile": "researcher", "session_id": sid}, f)
+    code, _ = _run_session("exec", {"command": "ls"}, sid, tmp_path, is_subagent=True)
+    assert code == 2, "legacy profile file should still deny exec"
+
+
 def test_ask_user_question_max_4_questions():
     """ask_user_question with 5 questions must be blocked."""
     questions = [{"question": f"Q{i}?", "header": f"H{i}", "options": [{"label": "a"}, {"label": "b"}]} for i in range(5)]

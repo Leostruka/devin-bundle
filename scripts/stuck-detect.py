@@ -27,7 +27,8 @@ WARNED_MAX = 16
 SIG_MAX = 200
 
 _EXIT_NONZERO = re.compile(
-    r"(?:exit\s+code|EXIT=)\s*:?\s*([1-9]\d*)\b", re.IGNORECASE)
+    r"\b(?:exit[\s_]?code|errorlevel|return\s+code|rc|EXIT)"
+    r"\s*[:=]?\s*([1-9]\d*)\b", re.IGNORECASE)
 _WS = re.compile(r"\s+")
 
 

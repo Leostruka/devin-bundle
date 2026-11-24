@@ -6,9 +6,8 @@ Handles three events, dispatched on `hook_event_name`:
   PostCompaction   - compaction just happened. Per Devin CLI docs, PostCompaction
                      does NOT support hookSpecificOutput.additionalContext
                      (only UserPromptSubmit, SessionStart and PostToolUse do),
-                     so this event writes a pending-reinjection marker and logs
-                     the summary. It also emits additionalContext on a
-                     best-effort basis in case support is added later.
+                     so this event only writes a pending-reinjection marker
+                     and logs the summary.
   UserPromptSubmit - if a marker exists, re-inject the pinned constraints via
                      additionalContext and clear the marker.
   SessionStart     - clear any stale marker from a previous session.

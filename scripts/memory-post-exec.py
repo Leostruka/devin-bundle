@@ -63,7 +63,9 @@ def score(note, command, output):
     text_l = text.lower()
     sc = 0
     for kind, val in note['cues']:
-        if val in text_l:
+        # '' in text_l is always True - an empty cue value would score on
+        # every exec and crowd out real matches.
+        if val and val in text_l:
             if kind == 'symbol':
                 sc += 5
             elif kind == 'keyword':

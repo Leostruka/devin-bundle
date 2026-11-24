@@ -323,3 +323,33 @@ def test_pkgs_unpinned_sibling_flagged(tmp_path, monkeypatch):
             if not (pinned and not floating):
                 flagged.append((eco, name))
     assert ("npm", "sneaky-unvetted") in flagged
+
+
+def test_pin_declared_transport_and_cwd_pinned(cfg, tmp_path):
+    # material must pin the DECLARED transport value, not an inference -
+    # and cwd/type keys must be hash-visible
+    import pathlib
+    custom = {"mcpServers": {
+        "svc": {"command": "node", "args": ["s.js"], "cwd": "/srv",
+                "type": "stdio"}}}
+    c = write(tmp_path / "mcp_config.json", json.dumps(custom))
+    assert run(PIN, "update", "--config", c)[0] == 0
+    pins = json.loads(open(str(pathlib.Path(c).with_suffix('')) +
+                           ".pins.json", encoding="utf-8").read()) \
+        if not c.endswith(".pins.json") else {}
+    pins = json.loads(open(c.replace(".json", ".pins.json"),
+                           encoding="utf-8").read())
+    mat = pins["servers"]["svc"]["material"]
+    assert mat.get("cwd") == "/srv" and mat.get("type") == "stdio"
+
+
+def test_pin_disabled_flip_drifts(cfg):
+    # a pinned-disabled server flipped on must surface as drift
+    import pathlib
+    assert run(PIN, "update", "--config", cfg)[0] == 0
+    cfgd = json.loads(open(cfg, encoding="utf-8").read())
+    cfgd["mcpServers"]["alpha"]["disabled"] = True
+    write(pathlib.Path(cfg), json.dumps(cfgd))
+    rc, out = run(PIN, "check", "--config", cfg)
+    assert rc == 1 and out["ok"] is False
+    assert any("alpha" in json.dumps(d) for d in out["drift"])

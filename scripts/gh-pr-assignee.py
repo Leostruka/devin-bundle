@@ -26,7 +26,8 @@ def _run(*a, **kw):
     return subprocess.run(*a, **kw)
 
 _CREATE_RX = re.compile(
-    r"\bgh\b(?:\s+(?:-[a-zA-Z](?:\s+\S+)??|--[\w-]+(?:=\S+|\s+\S+)??))*"
+    r"\bgh(?:\.(?:exe|cmd|bat|com))?\b"
+    r"(?:\s+(?:-[a-zA-Z](?:\s+\S+)??|--[\w-]+(?:=\S+|\s+\S+)??))*"
     r"\s+pr\s+create\b")
 _URL_RX = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
 
@@ -54,7 +55,11 @@ def main():
     cmd = ti.get("command") or ""
     if not isinstance(cmd, str):
         sys.exit(0)
-    if not _CREATE_RX.search(cmd) or "--assignee" in cmd:
+    # Strip quoted strings before the flag check: `--body "--assignee x"`
+    # mentions the flag without passing it (substring check suppressed
+    # the auto-assign; probe 2026-11-24).
+    _flag_view = re.sub(r'"[^"]*"|\'[^\']*\'', '', cmd)
+    if not _CREATE_RX.search(cmd) or "--assignee" in _flag_view:
         sys.exit(0)
     out = resp.get("output")
     if not isinstance(out, str):

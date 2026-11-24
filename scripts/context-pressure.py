@@ -311,18 +311,28 @@ def process_hook(payload_str):
 
     save_marker(marker)
 
-    # Report to stderr (does NOT inject into context — avoids bloat)
+    # Report only at/above warn_pct (no per-call noise). stderr covers direct
+    # invocation; additionalContext is what actually surfaces under _hookrun -
+    # child stderr is dropped there (fail_closed treats stderr as rejection),
+    # so without this the advisory reached nobody.
     if pct >= warn_pct:
         level = "WARN" if pct < critical_pct else ("CRITICAL" if pct < clear_pct else "CLEAR NOW")
-        print(f"context-pressure: {level} — ~{total_est}/{window} tokens ({pct:.0f}%)", file=sys.stderr)
-        print(f"  rules: ~{rules_tokens}  mcp: ~{mcp_tokens}  tool-output: ~{marker['tool_output_tokens']}  calls: {marker['calls']}", file=sys.stderr)
+        lines = [
+            f"context-pressure: {level} — ~{total_est}/{window} tokens ({pct:.0f}%)",
+            f"  rules: ~{rules_tokens}  mcp: ~{mcp_tokens}  tool-output: ~{marker['tool_output_tokens']}  calls: {marker['calls']}",
+        ]
         if pct >= clear_pct:
-            print(f"  ACTION: clear or compact now. Lost-in-the-middle is severe at {pct:.0f}%.", file=sys.stderr)
-            print(f"  Default: clear (blank slate). Use compact only to preserve current task intent.", file=sys.stderr)
+            lines.append(f"  ACTION: clear or compact now. Lost-in-the-middle is severe at {pct:.0f}%.")
+            lines.append("  Default: clear (blank slate). Use compact only to preserve current task intent.")
         elif pct >= critical_pct:
-            print(f"  ACTION: clear or compact soon. Consider context-hygiene for large docs.", file=sys.stderr)
+            lines.append("  ACTION: clear or compact soon. Consider context-hygiene for large docs.")
         else:
-            print(f"  Monitor: approaching pressure zone. Plan to clear/compact before {critical_pct}%.", file=sys.stderr)
+            lines.append(f"  Monitor: approaching pressure zone. Plan to clear/compact before {critical_pct}%.")
+        body = "\n".join(lines)
+        print(body, file=sys.stderr)
+        print(json.dumps({"hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": body}}))
 
     return 0
 

@@ -236,7 +236,9 @@ def handle_pre_tool_use(data):
         # Tolerate global flags between the binary and the verb
         # (`git -c k=v commit`, `gh -R owner/repo pr create`).
         _flags = r"(?:\s+(?:-[a-zA-Z](?:\s+\S+)??|--[\w-]+(?:=\S+|\s+\S+)??))*"
-        if re.search(r"\bgit\b" + _flags
+        # Windows resolves git.exe/git.cmd/gh.exe too - mirror
+        # check-push-green's GIT_EXE_RE so suffix forms cannot bypass.
+        if re.search(r"\bgit(?:\.(?:exe|cmd|bat|com))?\b" + _flags
                      + r"\s+(commit|tag|merge|cherry-pick|rebase|stash)\b",
                      low):
             msg_file = extract_flag_file(command, r"file|message")
@@ -251,7 +253,7 @@ def handle_pre_tool_use(data):
                       "Rewrite the text naturally.")
             return
         if re.search(
-                r"\bgh\b" + _flags
+                r"\bgh(?:\.(?:exe|cmd|bat|com))?\b" + _flags
                 + r"\s+(pr|issue|release)\s+"
                 r"(create|comment|edit|review|close|reopen)", low):
             body_file = extract_flag_file(

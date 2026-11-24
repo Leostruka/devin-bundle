@@ -56,3 +56,11 @@ def test_no_match_silent(tmp_path, monkeypatch):
                      {"good.md": "---\nstatus: active\n---\nnothing"})
     assert code == 0
     assert out == ""
+
+
+def test_empty_cue_value_never_scores(tmp_path, monkeypatch):
+    # C43: cues: [{keyword: ""}] made `'' in text` True on every exec
+    note = ("---\ntitle: \"t\"\nstatus: active\ncues:\n"
+            "  - keyword: \"\"\n---\nbody")
+    code, out = _run(tmp_path, monkeypatch, {"n.md": note})
+    assert code == 0 and out == ""

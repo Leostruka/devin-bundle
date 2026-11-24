@@ -47,3 +47,5 @@ Return a structured summary:
 - **Recommendations:** next steps for the controller
 
 Never paste full file contents. Reference paths and lines. Under 500 words unless explicitly asked for depth.
+
+Always end your turn with the report as your final message. A run that finishes with only tool calls returns nothing to the controller - if you have nothing verified, end with a "BLOCKED/GAPS" report naming the failed sources.

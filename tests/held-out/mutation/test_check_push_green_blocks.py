@@ -102,3 +102,42 @@ def test_mutation_empty_function(tmp_path):
                               cwd=_secrets_block_dir(tmp_path))
         killed = code != 2
         assert killed, "mut_empty_function survived: secrets scenario still blocked"
+
+
+# --- C38: push-verb and flag bypasses ----------------------------------
+
+def test_quoted_push_verb_gated(tmp_path):
+    """git "push" must still reach the gate (Windows shlex keeps quotes)."""
+    code = run_push_check('git "push" origin main',
+                          cwd=_secrets_block_dir(tmp_path))
+    assert code == 2
+
+
+def test_dash_dash_dry_run_in_refnames_not_a_dry_run(tmp_path):
+    """A refname containing --dry-run is not the dry-run flag."""
+    code = run_push_check("git push origin feat--dry-run",
+                          cwd=_secrets_block_dir(tmp_path))
+    assert code == 2
+
+
+def test_git_c_foreign_repo_evaluated(tmp_path):
+    """git -C <dir> push must run checks against <dir>, not cwd."""
+    code = run_push_check("git -C " + str(tmp_path) + " push",
+                          cwd=_secrets_block_dir(tmp_path))
+    assert code == 2  # secrets dir is the -C target -> block
+
+
+def test_git_c_nonexistent_dir_fail_closed(tmp_path):
+    """-C pointing nowhere must fail closed, not silently skip checks."""
+    code = run_push_check(
+        "git -C " + str(tmp_path / "nope") + " push",
+        cwd=_secrets_block_dir(tmp_path))
+    assert code == 2
+
+
+def test_git_exe_binary_still_gated(tmp_path):
+    """git.exe/git.cmd/git.bat must not slip the push matcher."""
+    for exe in ("git.exe", "git.cmd", "git.bat"):
+        code = run_push_check(exe + " push origin main",
+                              cwd=_secrets_block_dir(tmp_path))
+        assert code == 2, exe

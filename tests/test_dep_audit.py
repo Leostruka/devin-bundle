@@ -175,6 +175,20 @@ def test_gate_silent_on_clean():
     "composer global require phpunit/phpunit",
     "sudo npm install lodash",
     "cd app && cargo add serde",
+    # C39: flag between manager and verb
+    "pip -q install requests",
+    "pip --no-cache-dir install requests",
+    "npm -g i lodash",
+    "npm --prefix app i lodash",
+    # C39: shell wrappers and subshells
+    "cmd /c pip install requests",
+    "powershell -c npm i lodash",
+    "(pip install requests)",
+    "x=$(pip install requests)",
+    # C39: .exe suffixes
+    "pip.exe install requests",
+    "npm.exe i lodash",
+    "uv.exe add requests",
 ])
 def test_install_re_matches(cmd):
     assert gate.INSTALL_RE.search(cmd), cmd

@@ -19,36 +19,46 @@ try:
 except AttributeError:
     _CF = 0
 
+# Segment start: also `(` subshells, backtick / $( ) command substitution
+# and shell-wrapper prefixes (cmd /c, powershell -c, bash -c) - each
+# previously made the whole install invisible to the gate.
+_SEG = r"(?:^|[;&|(`$]\s*)"
+_WRAP = (r"(?:(?:cmd(?:\.exe)?\s+/[ckCK]|"
+         r"(?:powershell|pwsh|bash|sh)(?:\.exe)?\s+-c)\s+)?")
+# Global flags may sit between the manager name and the install verb
+# (`pip -q install`, `npm -g i`, `npm --prefix app i`) - allow boolean
+# flags, --flag=val, and the small set of value-taking globals.
+_GAP = (r"(?:(?:--(?:prefix|filter|cwd|global-dir|python|target)\s+\S+|"
+        r"-[a-zA-Z][\w-]*|--[\w-]+(?:=\S*)?)\s+)*")
+_PFX = _SEG + r"(?:sudo\s+)?" + _WRAP
+
 INSTALL_RE = re.compile(
-    r"(?:^|[;&|]\s*)(?:sudo\s+)?"
+    _PFX +
     # python family: pip/pip3 (incl. `python -m pip`), uv, poetry,
     # pipenv, pipx, conda/mamba (issue #404 coverage gaps)
-    r"(?:(?:python3?(?:\.\d+)?|py)\s+-m\s+)?pip3?\s+"
-    r"(?:install|add|sync|update|upgrade)\b"
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?"
-    r"uv\s+(?:pip\s+)?(?:install|add|sync|update|upgrade)\b"
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?"
-    r"(?:poetry|pipenv|pipx|conda|mamba)\s+"
-    r"(?:install|add|sync|update|upgrade)\b"
+    r"(?:(?:(?:python3?(?:\.\d+)?|py)\s+-m\s+)?pip3?|uv|poetry|pipenv|"
+    r"pipx|conda|mamba)(?:\.exe)?\s+" + _GAP +
+    r"(?:pip\s+)?(?:install|add|sync|update|upgrade)\b"
     # node family
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?"
-    r"(?:npm|pnpm|yarn|bun)\s+"
+    r"|" + _PFX + r"(?:npm|pnpm|yarn|bun)(?:\.exe)?\s+" + _GAP +
     r"(?:install|i|add|ci|update|up|upgrade)\b"
     # rust / go / php
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?cargo\s+(?:add|install|update)\b"
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?go\s+(?:get|install|mod\s+tidy)\b"
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?composer\s+"
+    r"|" + _PFX + r"cargo(?:\.exe)?\s+" + _GAP +
+    r"(?:add|install|update)\b"
+    r"|" + _PFX + r"go(?:\.exe)?\s+" + _GAP +
+    r"(?:get|install|mod\s+tidy)\b"
+    r"|" + _PFX + r"composer(?:\.exe)?\s+" + _GAP +
     r"(?:global\s+)?(?:require|install|update)\b"
     # ruby / elixir / dotnet (issue #404: detected ecosystems whose
     # install commands never triggered the gate)
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?gem\s+install\b"
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?(?:bundle|bundler)\s+install\b"
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?mix\s+deps\.(?:get|update)\b"
-    r"|(?:^|[;&|]\s*)(?:sudo\s+)?dotnet\s+"
+    r"|" + _PFX + r"gem(?:\.exe)?\s+" + _GAP + r"install\b"
+    r"|" + _PFX + r"(?:bundle|bundler)(?:\.exe)?\s+" + _GAP + r"install\b"
+    r"|" + _PFX + r"mix(?:\.exe)?\s+" + _GAP + r"deps\.(?:get|update)\b"
+    r"|" + _PFX + r"dotnet(?:\.exe)?\s+" + _GAP +
     r"(?:add\b|tool\s+install\b|restore\b)"
     # windows package managers (scoop/winget/choco install)
-    r"|(?:^|[;&|]\s*)(?:scoop|winget|choco(?:latey)?)\s+"
-    r"(?:install|add|update|upgrade)\b",
+    r"|" + _PFX + r"(?:scoop|winget|choco(?:latey)?)(?:\.exe)?\s+" +
+    _GAP + r"(?:install|add|update|upgrade)\b",
     re.IGNORECASE)
 
 SCANNER_HINTS = ("pip-audit", "osv-scanner", "npm", "cargo-audit",

@@ -28,13 +28,18 @@ def test_json_report_on_real_agents_md():
     assert out["chars"] > 0 and out["lines"] > 0
 
 
-def test_human_output_goes_to_stderr_only(tmp_path):
+def test_human_output_emits_additional_context(tmp_path):
+    """C80: under the session-start runner child stderr is dropped, so the
+    report must emit hookSpecificOutput.additionalContext on stdout. Still
+    kept to a single emission per SessionStart (Rule 18)."""
+    import json as _json
     f = tmp_path / "AGENTS.md"
     f.write_text("# rules\n" + "x" * 400, encoding="utf-8")
     p = _run([str(f)])
     assert p.returncode == 0
-    assert p.stdout == ""  # never injects into context (Rule 18)
     assert "tokens" in p.stderr
+    obj = _json.loads(p.stdout.strip())
+    assert "tokens" in obj["hookSpecificOutput"]["additionalContext"]
 
 
 def test_missing_file_reports_error(tmp_path):

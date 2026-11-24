@@ -121,3 +121,22 @@ def test_concurrent_record_keeps_trace_intact(tmp_path):
     lines = trace_file(tmp_path).read_text(encoding="utf-8").strip().splitlines()
     ids = {json.loads(l)["id"] for l in lines}
     assert len(ids) == len(lines)  # every line valid, no torn writes
+
+
+def test_abort_id_traversal_rejected(tmp_path):
+    # rid is joined into the abort path - traversal must not write/delete
+    # outside <proj>/.devin (was: --abort ../../x truncated arbitrary files)
+    victim = tmp_path / "victim.txt"
+    victim.write_text("keep me", encoding="utf-8")
+    for bad in ["../../victim", "../victim", ".", "..", "a/b", "a\b",
+                ".hidden"]:
+        r = run(["--abort", bad], proj=tmp_path)
+        out = json.loads(r.stdout)
+        assert out["ok"] is False and r.returncode == 2, bad
+        r = run(["--clear-abort", bad], proj=tmp_path)
+        out = json.loads(r.stdout)
+        assert out["ok"] is False and r.returncode == 2, bad
+    assert victim.read_text(encoding="utf-8") == "keep me"
+    # legit id still works
+    r = run(["--abort", "ok-id_1.2"], proj=tmp_path)
+    assert json.loads(r.stdout)["ok"] is True

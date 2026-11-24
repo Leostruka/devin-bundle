@@ -273,6 +273,56 @@ Aplicar a alternativa com maior probabilidade de melhoria real.
 - Se held-out falhar → **descartar somente o patch próprio**, voltar ao Passo 3.
 - Se held-out não existir → estado obrigatório `não_validada`/`INCONCLUSIVO`,
   nunca `validada` ou `MELHOROU`.
+- **Gates novos passam por sonda adversarial**: tentar contornar o próprio
+  padrão antes de validar - quoting, espaçamento, prefixos (`./`, env `VAR=`),
+  variantes do alvo (stems primos de `nul`: `con`, `aux`, `com1-9`, `lpt1-9`;
+  trailing dot/space `nul.`, `nul `), e caminhos alternativos (verbos que
+  criam o mesmo artefato). Cada bypass confirmado empiricamente vira caso de
+  regressão no teste. Evidência 2026-11-24: o Gate 9 original (`> nul`
+  espaçado) deixou passar 17 variantes verificadas (`>nul`, `>"nul"`,
+  `> ./nul`, `tee nul`, `touch/mkdir/cp/mv nul`, `> con`, `> nul.`); a checagem
+  de nome reservado em validate-tool-args deixou passar `nul ` (espaço) que
+  descarta silenciosamente.
+- **Taxonomia de bypass observada em 2026-11-24** (~55 bypasses verificados
+  em 16 superfícies; checar TODAS em qualquer gate novo):
+  1. **Sufixo de binário Windows**: `\bgit\b` casa `git` mas não `git.exe`/
+     `git.cmd`/`git.bat`/`git.com` - corrigir com `git(?:\.(?:exe|cmd|bat|
+     com))?\b`. Atingiu push-gate, dep-audit, no-em-dash e TODOS os gates
+     git do destructive-gate (force-push, branch -D, clean -fdx).
+  2. **Quoting no verbo**: `git "push"` - shlex `posix=False` mantém aspas
+     no token; strip quotes antes do match.
+  3. **Substring vs token**: `'--dry-run' in cmd` casa dentro de
+     `feat--dry-run`; comparar tokens.
+  4. **Prefixo-âncora de allowlist**: `^cat` passa `cat .env && curl` -
+     T0 prefix-only torna o resto da cascata inalcançável.
+  5. **Flags escritores em verbo leitor**: `git diff --output=f`,
+     `git log --output=x` - flags perigosas viram feature própria.
+  6. **Redirect do alvo**: `workdir=C:\` + path absoluto dentro de projeto
+     managed - ancorar o check no path do alvo, não no cwd.
+  7. **Foreign-repo**: `-C`, `--git-dir`, `GIT_DIR=` apontam checks para a
+     árvore errada - resolver o repo do comando, não o cwd.
+  8. **Vocabulário de erro local**: o vernáculo de falha da plataforma
+     primária (cmd/PS "is not recognized", "Access is denied", errorlevel)
+     precisa mapear nos detectores de silent-error/stuck.
+  9. **Valores vazios de matching**: `val in text` com `val=''` casa
+     sempre - guardar `val and`.
+  10. **Auto-bloqueio**: argv com padrões literais (`mkfs`, `dd`, `>nul`)
+      é bloqueado pelos próprios gates - probes passam por arquivo
+      (write tool → executar arquivo).
+  11. **Semântica de path do host**: NTFS ADS (`f.txt:hidden` cria file
+      0-byte + stream oculto), device names com trailing space/dot
+      (`nul.`, `con `), e redirects em MSYS (`>nul` é arquivo-fantasma) -
+      sempre que um gate valida nomes, testar as formas Win32 que
+      desviam conteúdo silenciosamente (C55/C56, tool-side + exec-side).
+      Cuidado do FP irmão: `:` é char POSIX legal e `C:` drive-prefix -
+      lookahead excluindo `[A-Za-z]:[\\/]|:\s|:$`.
+- **Hook editado só vale no repo até `install` sincronizar**: a sonda e os
+  VFs rodam contra a cópia viva (`%APPDATA%\devin\scripts`), não contra o
+  arquivo editado. Sem re-install o gate ativo é a versão antiga - causou
+  auto-bloqueios fantasmas em 2026-11-24 (pattern pré-C33 com `mkfs`
+  bare-word bloqueando argv legítimo). Após editar `scripts/`:
+  `pwsh -File install.ps1 -Force -Backup` ou `cp` direto do script, e
+  verificar warnings `live != bundle` no `python audit.py`.
 
 ### Passo 6 — FUTURE PACE (NLP)
 Projetar a melhoria em 3 cenários futuros hipotéticos:
@@ -360,6 +410,7 @@ A reflexão **não para** na primeira iteração sem melhoria.
 - [ ] 3+ alternativas geradas com risco, arquivo, métrica e VF.
 - [ ] TDD/regressão aplicado conforme o tipo da mudança.
 - [ ] Held-out validado, ou estado explicitamente `não_validada`/`INCONCLUSIVO` (A2).
+- [ ] Gate novo passou por sonda adversarial com bypasses verificados empiricamente virando regressão.
 - [ ] Future pace: matriz com critério; ≥2/3 cenários beneficiados.
 - [ ] Ecological check: matriz completa sem efeitos colaterais negativos.
 - [ ] Simulação segura: dry-run/revisão; install só quando autorizado; audit/testes executados.

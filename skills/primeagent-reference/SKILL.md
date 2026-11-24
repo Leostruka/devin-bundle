@@ -654,7 +654,8 @@ optimizing cheating skills instead of legitimate ones (PrimeIntellect blog,
 
 ### Outcome Tracking (Refinement Log)
 
-Every refinement must be logged to `.devin/refinements.log.jsonl` (project) or
+Every refinement must be logged to `.devin/refinements.log.jsonl` (project; prefer
+`python scripts/log-refinement.py` for unique-id + schema enforcement) or
 `~/.config/devin/refinements.log.jsonl` (global). This enables:
 - Reviewing what was refined and when
 - Tracking whether a refinement helped or hurt

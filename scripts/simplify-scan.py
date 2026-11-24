@@ -25,7 +25,7 @@ if hasattr(sys.stdout, "reconfigure"):
 SIZE_LIMIT = 800
 MARKER_RE = re.compile(r"\b(TODO|FIXME|HACK|XXX)\b")
 SKIP_DIRS = {".git", ".venv", "node_modules", "target", "__pycache__",
-             "dist", "build", ".devin"}
+             "dist", "build", ".devin", ".worktrees"}
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bundle_envelope import bind  # noqa: E402

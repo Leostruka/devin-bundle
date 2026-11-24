@@ -20,10 +20,25 @@ import _hookrun
 UNSAFE_CHARS = re.compile(r"[;&|`$<>\\\r\n{}]|\(|\)")
 
 # Binaries that can only read/print — every arg form is safe.
+# `printenv` is deliberately absent: a bare `printenv`/`env` dumps EVERY
+# env var (API keys, tokens) into the transcript with no prompt - the
+# auto-approve path must not bypass the human check on whole-env reads.
 SAFE_BINARIES = {
     "ls", "dir", "pwd", "cat", "head", "tail", "wc", "file", "which",
-    "whereis", "uname", "whoami", "printenv", "echo",
+    "whereis", "uname", "whoami", "echo",
 }
+
+# Read tools approved above still must not auto-run on credential-shaped
+# paths: `cat ~/.ssh/id_rsa` is read-only but exfiltrates a secret into the
+# transcript. These names fall through to the human prompt instead.
+SECRET_PATH = re.compile(
+    r"(?:^|[\\/])(?:\.env(?:rc)?\b|\.ssh[\\/]|\.aws[\\/]credentials\b|"
+    r"\.gnupg[\\/]|\.netrc\b|id_rsa|id_dsa|id_ecdsa|id_ed25519|"
+    r"credentials(?:\.|_|$)|secrets?\.|.*\.(?:pem|key|pfx|p12|kdbx|keystore|jks)|"
+    r"\.kube[\\/]config\b|\.docker[\\/]config\.json\b|"
+    r"\.config[\\/]gcloud[\\/])",
+    re.IGNORECASE,
+)
 
 # git verbs that cannot mutate (given the arg rules below). Positionals are
 # allowed unless flagged as creating refs.
@@ -152,6 +167,11 @@ def _exec_verdict(command):
     exe = parts[0].rsplit("/", 1)[-1].rsplit("\\", 1)[-1].lower()
     exe = re.sub(r"\.exe$", "", exe)
     if exe in SAFE_BINARIES:
+        # Credential-shaped paths and env-var expansion still need the
+        # human prompt (secret -> transcript leak).
+        if any(SECRET_PATH.search(a) or re.search(r"%\w+%", a)
+               for a in parts[1:]):
+            return False
         return True
     if exe == "git":
         return _git_ok(parts)

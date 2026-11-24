@@ -132,7 +132,9 @@ def main():
     if not hits:
         sys.exit(0)
     names = ", ".join(n for n, _ in hits)
-    print(json.dumps({"hookSpecificOutput": {"additionalContext":
+    print(json.dumps({"hookSpecificOutput": {
+        "hookEventName": "UserPromptSubmit",
+        "additionalContext":
                       "SKILL-HINTS (lexical match — read before use; "
                       "never auto-invoked): " + names}}))
     sys.exit(0)

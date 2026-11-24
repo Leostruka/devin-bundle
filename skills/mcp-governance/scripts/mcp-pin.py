@@ -90,8 +90,10 @@ def _server_material(name, scfg):
         args = [args]
     elif not isinstance(args, list):
         args = []
-    transport = "http" if "url" in scfg else "stdio"
-    return {
+    # Pin the declared transport when present - an inferred value would let
+    # a declared-but-wrong "type" slip through pin material unchanged.
+    transport = scfg.get("type") or ("http" if "url" in scfg else "stdio")
+    mat = {
         "name": name,
         "transport": transport,
         "command": scfg.get("command") or "",
@@ -100,6 +102,12 @@ def _server_material(name, scfg):
         "env_keys": sorted(env) if isinstance(env, dict) else [],
         "header_keys": sorted(headers) if isinstance(headers, dict) else [],
     }
+    # conditional-include keeps pins stable for configs that lack these
+    # keys, but a pinned-disabled server flipped on must drift
+    for k in ("disabled", "cwd", "type"):
+        if k in scfg:
+            mat[k] = scfg[k]
+    return mat
 
 
 def _sha(data):
@@ -294,3 +302,4 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main())
+#drift-probe

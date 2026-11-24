@@ -2,10 +2,16 @@
 schema_version: 1
 artifact: .devin/specs/<slug>-idea-dossier.md
 skill: montador-de-ideias
+slug: <slug>
 original_prompt_sha256: <sha256_of_verbatim_seed_prompt>
-status: APPROVED
+seed_file: .devin/specs/<slug>-seed.txt
+status: DRAFT
 date: YYYY-MM-DD
 ---
+
+<!-- status lifecycle: DRAFT (in-flight) -> DRAFT-AUTO (AFK run, deltas
+     PENDING-APPROVAL) -> APPROVED (user approved every delta in Phase 5).
+     Never write APPROVED before the user approves; that is integrity fraud. -->
 
 # Dossie Mestre da Ideia: <Project Name>
 

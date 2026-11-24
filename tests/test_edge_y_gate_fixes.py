@@ -297,7 +297,7 @@ def test_profile_recorded_on_dispatch(tmp_path):
     assert r.returncode == 0
     state = tmp_path / "devin" / "state" / "subagent-sess-1.json"
     assert state.exists()
-    assert json.loads(state.read_text(encoding="utf-8"))["profile"] == "researcher"
+    assert json.loads(state.read_text(encoding="utf-8"))["profiles"] == ["researcher"]
 
 
 def test_profile_deny_requires_subagent_context(tmp_path):
@@ -480,3 +480,36 @@ def test_push_gate_cache_miss_on_dirty_tree(tmp_path):
                   env_extra=env, timeout=60)
     assert r2.returncode == 0
     assert "cached green" not in r2.stderr
+
+
+# --- C37: abs-path tokens must resolve against their OWN project root ---
+
+def test_arch_gate_abs_target_in_managed_project_blocked(tmp_path):
+    # C37: workdir spoof - foreign cwd + absolute path into a managed
+    # (manifestless) project must still gate the write
+    managed = tmp_path / "managed"
+    (managed / ".devin").mkdir(parents=True)
+    foreign = os.environ.get("SystemRoot", "C:\\Windows")
+    r = run_hook("architecture-gate.py", {
+        "hook_event_name": "PreToolUse",
+        "tool_name": "exec",
+        "tool_input": {
+            "command": "touch " + str(managed / "x.py").replace("\\", "/"),
+            "workdir": foreign},
+    }, timeout=15)
+    assert r.returncode == 2
+
+
+def test_arch_gate_abs_target_in_unmanaged_allowed(tmp_path):
+    # a path with no .devin ancestry is ungated regardless of cwd; the
+    # path need not exist - the gate only scans command tokens
+    plain = "D:/plain"
+    foreign = os.environ.get("SystemRoot", "C:\\Windows")
+    r = run_hook("architecture-gate.py", {
+        "hook_event_name": "PreToolUse",
+        "tool_name": "exec",
+        "tool_input": {
+            "command": "touch " + plain + "/x.py",
+            "workdir": foreign},
+    }, timeout=15)
+    assert r.returncode == 0

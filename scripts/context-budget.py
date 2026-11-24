@@ -213,27 +213,36 @@ def report(path, as_json=False, simulated_tokens=None):
         }))
         return 0
 
-    print(f"context-budget: {path}", file=sys.stderr)
-    print(f"  chars:    {chars}", file=sys.stderr)
-    print(f"  lines:    {lines}", file=sys.stderr)
-    print(f"  tokens:   ~{tok} (chars/4 heuristic)", file=sys.stderr)
+    lines = [
+        f"context-budget: {path}",
+        f"  chars:    {chars}",
+        f"  lines:    {lines}",
+        f"  tokens:   ~{tok} (chars/4 heuristic)",
+    ]
     for row in share_rows:
-        print(f"  {row['model_id']} share ({row['name']}): {row['share_pct']:.2f}%", file=sys.stderr)
+        lines.append(f"  {row['model_id']} share ({row['name']}): {row['share_pct']:.2f}%")
     if extras:
-        print(f"  extra rules files: {len(extras)} (~{extra_total_tok} tokens)", file=sys.stderr)
+        lines.append(f"  extra rules files: {len(extras)} (~{extra_total_tok} tokens)")
         for ed in extra_details:
-            print(f"    - {ed['file']}: ~{ed['tokens']} tokens", file=sys.stderr)
-        print(f"  TOTAL rules tokens: ~{total_tok}", file=sys.stderr)
+            lines.append(f"    - {ed['file']}: ~{ed['tokens']} tokens")
+        lines.append(f"  TOTAL rules tokens: ~{total_tok}")
         for row in share_rows:
-            print(f"  TOTAL {row['model_id']} share: {row['share_pct']:.2f}%", file=sys.stderr)
-    print(f"  smart-zone share (~{smart_zone_tokens:,}): {smart_zone_share:.2f}%", file=sys.stderr)
+            lines.append(f"  TOTAL {row['model_id']} share: {row['share_pct']:.2f}%")
+    lines.append(f"  smart-zone share (~{smart_zone_tokens:,}): {smart_zone_share:.2f}%")
     if total_tok >= smart_zone_tokens:
-        print(f"  SMART ZONE NUDGE: loaded rules are at or above ~{smart_zone_tokens:,} tokens.", file=sys.stderr)
-        print(f"    Prefer `/clear` (fresh thread) over `/compact`; compaction keeps lossy", file=sys.stderr)
-        print(f"    sediment and still consumes attention. See `context-hygiene`.", file=sys.stderr)
+        lines.append(f"  SMART ZONE NUDGE: loaded rules are at or above ~{smart_zone_tokens:,} tokens.")
+        lines.append(f"    Prefer `/clear` (fresh thread) over `/compact`; compaction keeps lossy")
+        lines.append(f"    sediment and still consumes attention. See `context-hygiene`.")
     elif share_rows and share_rows[0]["share_pct"] >= 10:
-        print(f"  WARN: total rules are >=10% of a {share_rows[0]['model_id']} window before the first", file=sys.stderr)
-        print(f"        message. Consider compressing/modularizing (context-hygiene).", file=sys.stderr)
+        lines.append(f"  WARN: total rules are >=10% of a {share_rows[0]['model_id']} window before the first")
+        lines.append(f"        message. Consider compressing/modularizing (context-hygiene).")
+    body = "\n".join(lines)
+    print(body, file=sys.stderr)
+    # session-start runner drops child stderr; additionalContext is what
+    # actually surfaces the budget report to the agent (C80).
+    print(json.dumps({"hookSpecificOutput": {
+        "hookEventName": "SessionStart",
+        "additionalContext": body}}))
     return 0
 
 

@@ -468,8 +468,9 @@ def _digest_state(state, p):
 
 
 def _inject(text):
-    print(json.dumps({"hookSpecificOutput":
-                      {"additionalContext": text}}))
+    print(json.dumps({"hookSpecificOutput": {
+                      "hookEventName": "Stop",
+                      "additionalContext": text}}))
 
 
 def main():

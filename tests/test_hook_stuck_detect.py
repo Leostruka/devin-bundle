@@ -123,3 +123,23 @@ def test_state_file_capped(_state_dir):
     state = os.path.join(_state_dir, ".stuck-detect.json")
     data = json.load(open(state, encoding="utf-8"))
     assert len(data["history"]) <= 12
+
+
+def test_exit_code_variants_count_as_failures(_state_dir):
+    # exitcode=, exit_code, rc=, errorlevel, return code all nonzero;
+    # each variant must count toward the streak (fires once at threshold)
+    variants = ("exitcode=2", "exit_code: 1", "rc=4",
+                "errorlevel 1", "return code 7")
+    fired = []
+    for out_text in variants:
+        _, out = _run(_payload(success=True, output=out_text))
+        fired.append("stuck-detect" in out)
+    assert any(fired)  # threshold reached via the variant formats
+
+
+def test_src_assignment_not_counted(_state_dir):
+    # word-boundary guard: src=4 / graceful=1 are not exit codes
+    for _ in range(6):
+        _, out = _run(_payload(success=True,
+                               output="set src=4 graceful=1"))
+        assert "stuck-detect" not in out

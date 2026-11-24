@@ -98,7 +98,9 @@ def score(note, prompt):
     prompt_l = prompt.lower()
     sc = 0
     for kind, val in note['cues']:
-        if val in prompt_l:
+        # '' in prompt_l is always True - same empty-cue bug fixed in
+        # memory-post-exec (score guard, 2026-11-24).
+        if val and val in prompt_l:
             if kind == 'keyword':
                 sc += 3
             elif kind == 'symbol':

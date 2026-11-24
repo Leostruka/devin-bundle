@@ -261,3 +261,24 @@ def test_stop_untracked_table_row_allowed(tmp_path):
         f"| a | {EM} |\n", encoding="utf-8")
     p = run("no-em-dash.py", {"hook_event_name": "Stop"}, cwd=tmp_path)
     assert p.returncode == 0
+
+
+def test_commit_message_windows_binary_blocked():
+    # git.exe / git.cmd / git.bat must not slip the commit-message scan
+    for exe in ("git.exe", "git.cmd", "git.bat"):
+        p = run("no-em-dash.py", _pre("exec",
+                {"command": f'{exe} commit -m "x {EM} y"'}))
+        assert p.returncode == 2, exe
+
+
+def test_gh_exe_body_blocked():
+    p = run("no-em-dash.py", _pre("exec",
+            {"command": f'gh.exe pr create -t x -b "body {EM}"'}))
+    assert p.returncode == 2
+
+
+def test_gitx_lookalike_allowed():
+    # a non-git binary containing "git" must not be treated as git
+    p = run("no-em-dash.py", _pre("exec",
+            {"command": f'echo "gitx {EM}"'}))
+    assert p.returncode == 0

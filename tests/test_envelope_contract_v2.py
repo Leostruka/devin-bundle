@@ -308,6 +308,12 @@ def test_no_unstamped_stdout_pattern(rel):
         if isinstance(node, ast.Call) and isinstance(
                 node.func, ast.Name) and node.func.id == "print":
             for a in node.args:
+                # Hook-protocol output (hookSpecificOutput/decision JSON
+                # for the CLI) is not envelope-v2 CLI output - stamp only
+                # applies to agent-facing tool JSON (C84 context-budget).
+                seg = ast.get_source_segment(src, a) or ""
+                if "hookSpecificOutput" in seg or '"decision"' in seg:
+                    continue
                 if isinstance(a, ast.Call) and isinstance(
                         a.func, ast.Attribute) and a.func.attr == "dumps":
                     pytest.fail(

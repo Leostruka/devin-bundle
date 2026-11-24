@@ -48,5 +48,40 @@ def test_project_agents_have_frontmatter():
             f"{name}: frontmatter name mismatch"
 
 
+def _profile_deny():
+    src = open(os.path.join(ROOT, "scripts", "validate-tool-args.py"),
+               encoding="utf-8").read()
+    m = re.search(r"PROFILE_DENY = \{(.*?)\n\}", src, re.S)
+    assert m, "PROFILE_DENY map not found in validate-tool-args.py"
+    return set(re.findall(r'"([^"]+)":\s*frozenset', m.group(1)))
+
+
+def _exec_free_profiles():
+    """agents/*.md profiles whose allowed-tools do not grant exec."""
+    out = set()
+    for name in _disk_profiles():
+        path = next(
+            (p for p in (os.path.join(ROOT, "agents", name + ".md"),
+                         os.path.join(ROOT, ".devin", "agents", name + ".md"))
+             if os.path.exists(p)), None)
+        if not path:
+            continue
+        head = open(path, encoding="utf-8").read(4000)
+        m = re.search(r"allowed-tools:\n((?:\s+-[^\n]+\n)+)", head)
+        tools = set(re.findall(r"-\s*(\w+)", m.group(1))) if m else set()
+        if "exec" not in tools:
+            out.add(name)
+    return out
+
+
+def test_exec_free_profiles_are_in_profile_deny():
+    """A read-only (no exec) profile missing from PROFILE_DENY leaves its
+    sandbox unenforced on the hook path - drift parity, same class as
+    VALID_PROFILES coverage."""
+    missing = _exec_free_profiles() - _profile_deny()
+    assert not missing, (
+        f"exec-free profiles not in PROFILE_DENY: {sorted(missing)}")
+
+
 if __name__ == "__main__":
     sys.exit(__import__("pytest").main([__file__, "-q"]))

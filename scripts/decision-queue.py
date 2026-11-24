@@ -64,8 +64,10 @@ def _load(path):
 
 
 def _hook(payload):
+    # Field parity with rl-resume-detect.py which scans the same trio:
+    # payloads that carry only "reason" were invisible here.
     msg = (payload.get("last_assistant_message")
-           or payload.get("message") or "")
+           or payload.get("message") or payload.get("reason") or "")
     if not any(p.search(msg) for p in DECISION_MARKERS):
         return
     path = _queue_path()

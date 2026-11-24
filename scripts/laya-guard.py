@@ -101,6 +101,19 @@ SYSTEM_SCOPE = re.compile(
     re.IGNORECASE)
 OUTSIDE_REPO = re.compile(r"\.\.[\\/]|^[A-Za-z]:[\\/]|^\s*/")
 
+# Read-shaped git verbs turn into writers with these flags - mirrors
+# permission-gate's GIT_DANGEROUS_ARG (`git diff --output=f` overwrites
+# files, --exec/-O execute helpers).
+GIT_WRITE_FLAGS = re.compile(
+    r"--(?:output|ext-diff|textconv|filters|exec|receive-pack|"
+    r"upload-pack|open-files-in-pager)\b|\s-O\w",
+    re.IGNORECASE)
+
+# Features that veto a T0/T1 fast pass — the command must reach the laya
+# tier (or abstain) rather than skip the cascade outright.
+RISKY_FEATS = ("admin", "egress", "secret_touch", "system_scope",
+               "outside_repo", "git_write_flags")
+
 
 def extract_features(cmd):
     """Deterministic feature vector — stage-1 cascade classifier."""
@@ -113,6 +126,7 @@ def extract_features(cmd):
         "secret_touch": bool(SECRET_TOUCH.search(cmd)),
         "system_scope": bool(SYSTEM_SCOPE.search(cmd)),
         "outside_repo": bool(OUTSIDE_REPO.search(cmd)),
+        "git_write_flags": bool(GIT_WRITE_FLAGS.search(cmd)),
         "len": len(cmd),
     }
 
@@ -121,9 +135,7 @@ def trivially_safe(cmd, feats):
     """Single-token or short command with no metachars and no risky
     feature — resolved without laya."""
     if feats["len"] <= 200 and not META_CHARS.search(cmd) \
-            and not any(feats[k] for k in
-                        ("admin", "egress", "secret_touch",
-                         "system_scope", "outside_repo")):
+            and not any(feats[k] for k in RISKY_FEATS):
         return True
     return False
 
@@ -147,7 +159,9 @@ def block(reason):
 
 
 def warn_ctx(text):
-    print(json.dumps({"hookSpecificOutput": {"additionalContext": text}}))
+    print(json.dumps({"hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "additionalContext": text}}))
     sys.exit(0)
 
 
@@ -168,9 +182,16 @@ def main():
     if not cmd:
         sys.exit(0)
 
-    if T0_ALLOW.search(cmd):
-        sys.exit(0)
     feats = extract_features(cmd)
+    # T0 prefix alone is not sufficient: `ls && curl x`, `cat .env` and
+    # `git diff --output=f` all start with an allowlisted verb yet carry
+    # chaining, secret reads or file writes. The fast pass requires a
+    # single metachar-free command with no risky feature (2026-11-24
+    # adversarial pass: prefix-only T0 made the rest of the cascade
+    # unreachable for those shapes).
+    if T0_ALLOW.search(cmd) and not META_CHARS.search(cmd) \
+            and not any(feats[k] for k in RISKY_FEATS):
+        sys.exit(0)
     if trivially_safe(cmd, feats):
         sys.exit(0)
 

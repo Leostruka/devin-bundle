@@ -18,8 +18,44 @@ Gates (deterministic, read-only, fail-open):
   4. DROP TABLE / DROP DATABASE / TRUNCATE in SQL
   5. chmod -R 777 on root or home
   6. git clean -fdx (removes untracked + ignored files, irreversible)
-  7. git branch -D (force delete branch, loses unmerged work)
-  8. mkfs / dd to disk devices (filesystem wipe)
+  7. git branch -D (force delete branch; allowed when `git cherry` proves
+     every commit patch-equivalent in HEAD - squash/rebase-merge safe)
+  8. mkfs / wipefs / blkdiscard / dd to disk devices (filesystem wipe)
+  9. Windows reserved device basename (nul/con/aux/prn/com1-9/lpt1-9, any
+     ext) used as redirect target or tee/touch/mkdir/cp/mv/ln/install arg,
+     outside a cmd/powershell/pwsh wrapper - bash has no device mapping:
+     creates literal ghost artifacts or silently discards output
+ 10. NTFS ADS: ':' in a redirect/verb target basename (Windows-scoped)
+
+Warn-path advisories (stderr, never block):
+  - bulk worktree discard: git checkout/restore '.' , stash drop/clear,
+    forced switch/remove (checkout|switch -f, --force, --discard-changes,
+    worktree remove --force, reset --merge)
+  - recovery-net destroyers + Gate-7 bypass: reflog expire --expire now,
+    gc --prune=now, update-ref -d, vssadmin delete shadows, wbadmin
+    delete, bcdedit /delete, netsh * reset, reg delete HKLM
+  - secure-erase tools: shred, sdelete, cipher /w, Clear-RecycleBin
+  - session killers: shutdown/reboot/halt/poweroff/logoff/
+    Restart-Computer/init 0|6/systemctl poweroff/killall/kill -9 -1
+  - protection/evidence destroyers: Defender disable|exclusion,
+    advfirewall state off, Set-ExecutionPolicy Unrestricted|Bypass,
+    event-log/audit-policy/USN-journal clears
+  - permission wipe: icacls/cacls recursive Everyone:F (chmod -R 777)
+  - infra destroyers: docker prune -v/compose down -v, terraform destroy,
+    kubectl delete ns/pvc/pv/workload/secret, helm uninstall,
+    vagrant destroy, cloud deletes (aws s3 rm -r/ec2 terminate/cfn
+    stack/rds/ecs, az vm/aks/storage/webapp, gcloud instances/
+    clusters/sql/storage/functions, doctl * delete), rclone
+    delete|purge, gsutil rm, git push --delete/':ref', gh repo
+    delete, gh api -X DELETE
+  - publish/deploy: package pushes (npm|pnpm|yarn, twine, cargo, gem,
+    nuget, poetry), docker/helm push, --prod deploys (vercel/netlify/
+    firebase/fly/serverless/sam/cdk/wrangler)
+  - remote-code fetch-pipe: curl|wget|iwr|irm piped/chained into a shell
+    or interpreter, iex (iwr ...) cradle
+  - SQL data wipes: WHERE-less DELETE, ALTER TABLE ... DROP (Gate 4 also
+    blocks DROP USER|ROLE|INDEX|VIEW|... + FLUSHALL/FLUSHDB/
+    dropDatabase/db.x.drop on psql/mysql/sqlite/mongo/redis clients)
 
 Source: "Reason Less, Verify More" (arXiv:2607.07405, KDD 2026 Workshop)
   4-gate suite raised success 29.6%->42.0% (+12.4pp, P=0.0012, replicated P=0.0008)
@@ -51,7 +87,9 @@ RM_DANGEROUS_TARGETS = {
 # -P, --no-pager, --git-dir[= ]x, --work-tree[= ]x, --exec-path[= ]x) —
 # without this, `git -C repo push -f` bypasses every git gate.
 _GIT_FLAGS = (r"(?:\s+(?:-[a-zA-Z](?:\s+\S+)??|--[\w-]+(?:=\S+|\s+\S+)??))*")
-_GIT = r"\bgit\b" + _GIT_FLAGS
+# Windows resolves git.exe/git.cmd/git.bat too - without the suffix arm
+# `git.exe push --force` bypasses every git gate below (probe 2026-11-24).
+_GIT = r"\bgit(?:\.(?:exe|cmd|bat|com))?\b" + _GIT_FLAGS
 
 # git push --force without --dry-run.
 # Negative lookahead on -f avoids matching --follow-tags.
@@ -63,8 +101,48 @@ GIT_DRY_RUN = re.compile(r"(?:\s--dry-run(?![\w-])|\s-n(?![\w-]))")
 
 GIT_RESET_HARD = re.compile(_GIT + r"\s+reset\s+--hard\b")
 
+# Bulk worktree discard: checkout/restore of "." discards EVERY uncommitted
+# change in one shot (2026-11-24 incident: `git checkout -- .` reverted a
+# full session of uncommitted gate fixes - recovery needed live copies).
+# Warn-path like reset --hard; file-level `checkout -- f` stays silent.
+GIT_BULK_DISCARD = re.compile(
+    _GIT + r"\s+(?:checkout|restore)\b[^|;&]*?(?:\s--\s*\.|\s\.(?:[/\\]|\s|$))"
+)
+# Force-switch discards uncommitted changes silently: checkout/switch -f,
+# --force, --discard-changes; worktree remove --force kills a worktree with
+# its changes; reset --merge drops local modifications.
+GIT_FORCE_SWITCH = re.compile(
+    _GIT + r"\s+(?:(?:checkout|switch)\b[^|;&]*?(?:\s-f\b|"
+    r"\s--force\b|\s--discard-changes\b)|worktree\s+remove\b[^|;&]*"
+    r"(?:\s-f\b|\s--force\b)|reset\s+--merge\b)"
+)
+GIT_STASH_DROP = re.compile(_GIT + r"\s+stash\s+(?:drop|clear)\b")
+# Recovery-net destroyers + Gate-7 bypasses: reflog expire erases the only
+# rollback for orphaned commits; gc --prune=now drops unreachable objects
+# immediately; update-ref -d deletes refs without the branch -D gate.
+GIT_RECOVERY_KILL = re.compile(
+    _GIT + r"\s+(?:reflog\s+expire\b[^|;&]*--expire(?:=|\s)now|"
+    r"gc\b[^|;&]*--prune(?:=|\s)now|update-ref\s+-d\b)|"
+    r"\b(?:vssadmin\s+delete\s+shadows|wbadmin\s+delete|"
+    r"bcdedit\b[^|;&]*/delete|netsh\b[^|;&]*\breset\b|"
+    r"reg\s+delete\s+(?:\\\\[^ |;&]+\\)?HKLM|"
+    r"crontab\s+-r\b|schtasks\s+/delete\b[^|;&]*/tn\s+\*|"
+    r"Unregister-ScheduledTask\b|certutil\s+-delstore\b|"
+    r"net\s+user\s+\S+\s+/delete\b|Remove-LocalUser\b)")
+
 SQL_DESTRUCTIVE = re.compile(
-    r"\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA)|TRUNCATE\s+TABLE)\b",
+    r"\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA|USER|ROLE|INDEX|VIEW|"
+    r"PROCEDURE|FUNCTION|TRIGGER|SEQUENCE|EXTENSION)\b|"
+    r"TRUNCATE\s+TABLE\b|FLUSHALL|FLUSHDB|dropDatabase\s*\(|"
+    r"db\.\w+\.drop\s*\()",
+    re.IGNORECASE,
+)
+
+# Lower-tier data destruction (warn): WHERE-less DELETE wipes every row;
+# ALTER ... DROP destroys schema+data but is routine in migrations.
+SQL_WARN = re.compile(
+    r"\bDELETE\s+FROM\s+[\"'`\w.]+\s*[\"'`;]?\s*(?:$|[|;&])|"
+    r"\bALTER\s+TABLE\s+\S+\s+DROP\b",
     re.IGNORECASE,
 )
 
@@ -73,7 +151,8 @@ SQL_DESTRUCTIVE = re.compile(
 # keywords is not falsely blocked.
 SQL_CLIENTS = re.compile(
     r"\b(?:psql|mysql|sqlite3?|sqlcmd|cockroach(?:-sql)?|db2|sqlplus|"
-    r"pgcli|mycli|litecli|usql|sqlshell|psql)\b",
+    r"pgcli|mycli|litecli|usql|sqlshell|mongo(?:sh)?|redis-cli|"
+    r"valkey-cli)\b",
     re.IGNORECASE,
 )
 
@@ -83,7 +162,7 @@ CHMOD_DANGEROUS = re.compile(r"\bchmod\s+(?:(?:-[a-zA-Z]*R[a-zA-Z]*|--recursive)
 # del /s /q, rmdir /s. These are the Windows counterparts to rm -rf.
 # Pattern 1: flags before target (Remove-Item -Recurse -Force C:\)
 WIN_RM_RE = re.compile(
-    r"\b(?:Remove-Item|del|rmdir|rd)\b"
+    r"\b(?:Remove-Item|del|erase|rmdir|rd|ri|rm)\b"
     r"(?:\s+-[a-zA-Z]+)*\s+"
     r"(?:(?:-[a-zA-Z]*[rR][a-zA-Z]*[fF][a-zA-Z]*|-[a-zA-Z]*[fF][a-zA-Z]*[rR][a-zA-Z]*|--Recurse\s+--Force|--Force\s+--Recurse|-Recurse\s+-Force|-Force\s+-Recurse|/s\s*/q|/s)\s+)"
     r"(.+)",
@@ -92,7 +171,7 @@ WIN_RM_RE = re.compile(
 # Pattern 2: target before flags (Remove-Item C:\ -Recurse -Force) — PowerShell
 # allows parameters in any order. The path must NOT start with '-' (a flag).
 WIN_RM_RE_PATH_FIRST = re.compile(
-    r"\b(?:Remove-Item|del|rmdir|rd)\b"
+    r"\b(?:Remove-Item|del|erase|rmdir|rd|ri|rm)\b"
     r"(?:\s+(?:-[a-zA-Z]+))*\s+"  # optional leading flags
     r"([^-]\S*)"  # the target path (must not start with '-')
     r"(?:\s+(?:-[a-zA-Z]*[rR][a-zA-Z]*[fF][a-zA-Z]*|-[a-zA-Z]*[fF][a-zA-Z]*[rR][a-zA-Z]*|--Recurse\s+--Force|--Force\s+--Recurse|-Recurse\s+-Force|-Force\s+-Recurse|/s\s*/q|/s)\b)",
@@ -101,10 +180,18 @@ WIN_RM_RE_PATH_FIRST = re.compile(
 # Pattern 3: recursive-force flags with NO target (malformed, like POSIX rm -rf
 # with no target — treated as dangerous by check_rm_rf).
 WIN_RM_RE_NOTARGET = re.compile(
-    r"\b(?:Remove-Item|del|rmdir|rd)\b"
+    r"\b(?:Remove-Item|del|erase|rmdir|rd|ri|rm)\b"
     r"(?:\s+-[a-zA-Z]+)*\s+"
     r"(?:-[a-zA-Z]*[rR][a-zA-Z]*[fF][a-zA-Z]*|-[a-zA-Z]*[fF][a-zA-Z]*[rR][a-zA-Z]*|--Recurse\s+--Force|--Force\s+--Recurse|-Recurse\s+-Force|-Force\s+-Recurse|/s\s*/q|/s)"
     r"(?:\s+(?:-[a-zA-Z]+))*\s*$",
+    re.IGNORECASE,
+)
+
+# Deleting subagent enforcement state (profile records, dispatch ledger,
+# budget policy) resets the session's own limits - self-unlimiting class.
+STATE_FILE_DELETE = re.compile(
+    r"\b(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe)\b"
+    r"[^|;&]*?\bsubagent-[\w.-]*\.jsonl?\b",
     re.IGNORECASE,
 )
 
@@ -116,14 +203,230 @@ GIT_CLEAN_DRY_RUN = re.compile(
     _GIT + r"\s+clean\b[^|;&]*?(?:-[a-zA-Z]*n[a-zA-Z]*\b|--dry-run\b)")
 
 # git branch -D: force-delete branch (loses unmerged commits)
-GIT_BRANCH_FORCE_DELETE = re.compile(_GIT + r"\s+branch\s+(?:-[a-zA-Z]*D[a-zA-Z]*\b|--delete\s+--force\b)")
+GIT_BRANCH_FORCE_DELETE = re.compile(_GIT + r"\s+branch\s+(?:-[a-zA-Z]*D[a-zA-Z]*\b|--delete\s+--force\b)\s*(.*)")
 
-# mkfs / dd to disk devices (filesystem wipe / raw disk write)
-DISK_WIPE = re.compile(r"\b(?:mkfs(?:\.\w+)?|dd\s+.*\bof=/dev/(?:sd|nvme|hd|vd|disk))", re.IGNORECASE)
+# mkfs / dd to disk devices (filesystem wipe / raw disk write).
+# Device prefixes: sd/hd/vd (virt), xvd (AWS EBS), nvme, mmcblk (SD/eMMC),
+# loop, nbd, dm-/mapper (LVM/device-mapper), disk (macOS), plus the Windows
+# raw-device path \\.\PhysicalDriveN - all verified real targets 2026-11-24.
+DISK_WIPE = re.compile(
+    r"\b(?:(?:mkfs(?:\.\w+)?|mke2fs|wipefs|blkdiscard)\s[^|;&]*?"
+    r"(?:/dev/|[\\/]+[.][\\/]+PhysicalDrive)"
+    r"|dd\s+.*\bof="
+    r"(?:/dev/(?:sd|nvme|hd|vd|xvd|mmcblk|loop|nbd|dm-|mapper|disk)"
+    r"|[\\/]+[.][\\/]+PhysicalDrive)"
+    # Volume/partition destroyers - the target IS the volume, no /dev needed
+    r"|\b(?:zpool\s+destroy|lvremove|vgremove|pvremove|"
+    r"mdadm\b[^|;&]*--zero-superblock|newfs(?:_\w+)?\s|"
+    r"diskutil\s+eraseDisk|parted\s+\S+\s+mklabel|"
+    r"sgdisk\b[^|;&]*-Z|wsl(?:\.exe)?\s+--unregister))",
+    re.IGNORECASE)
 
 # Windows disk wipe: `format X:` quick/full format, `diskpart` interactive
 WIN_DISK_WIPE = re.compile(r"\bformat\s+[a-zA-Z]:(?=[\s/]|$)|\bdiskpart\b",
                            re.IGNORECASE)
+
+# Recoverability killers (warn): cipher /w erases free-space data, sdelete
+# and shred bypass every recovery path by design, Clear-RecycleBin destroys
+# the bin safety net.
+SECURE_ERASE = re.compile(
+    r"\b(?:cipher\s+/w\b|sdelete\b|shred\b|(?:srm|wipe)\s+\S|"
+    r"Clear-RecycleBin\b)",
+    re.IGNORECASE)
+
+# Infra destroyers (warn): these destroy live resources/state - the blast
+# radius exceeds a local worktree. Advisory only (often intentional).
+INFRA_DESTROY = re.compile(
+    r"\b(?:docker\s+(?:system\s+prune\b[^|;&]*-[af]|volume\s+prune|"
+    r"compose\s+down\b[^|;&]*-v)|"
+    r"terraform\s+(?:destroy|apply\b[^|;&]*-destroy)|"
+    r"kubectl\s+delete\s+(?:namespace|ns|pvc|pv|deployment|statefulset|"
+    r"daemonset|ingress|secret|configmap)\b|"
+    r"helm\s+(?:uninstall|delete)\b|"
+    r"vagrant\s+destroy\b|"
+    r"aws\s+(?:s3\s+(?:rb|rm\b[^|;&]*(?:--recursive|-r\b))|"
+    r"ec2\s+terminate-instances|cloudformation\s+delete-stack|"
+    r"ecs\s+delete-service|rds\s+delete-db)\b|"
+    r"az\s+(?:group\s+delete|vm\s+delete|vmss\s+delete|aks\s+delete|"
+    r"storage\s+(?:account\s+delete|blob\s+delete-batch)|"
+    r"webapp\s+delete|functionapp\s+delete)\b|"
+    r"gcloud\s+(?:projects\s+delete|compute\s+instances\s+delete|"
+    r"container\s+clusters\s+delete|sql\s+instances\s+delete|"
+    r"storage\s+(?:rm|buckets\s+delete)|functions\s+delete)\b|"
+    r"doctl\s+(?:[\w-]+\s+)*delete\b|"
+    r"rclone\s+(?:delete|purge|deletefile)\b|"
+    r"gsutil\s+rm\b|"
+    r"git\S*\s+push\b[^|;&]*(?:\s--delete\b|\s:[\w./-]+)|"
+    r"gh\S*\s+(?:repo\s+delete\b|api\b[^|;&]*-X\s*DELETE))",
+    re.IGNORECASE)
+
+# Publish/deploy (warn): pushes public/production state - packages become
+# visible (npm unpublish is 72h-limited), images overwrite shared tags,
+# --prod deploys mutate live systems.
+PUBLISH_DEPLOY = re.compile(
+    r"\b(?:(?:npm|pnpm)\s+publish|yarn\s+npm\s+publish|"
+    r"twine\s+upload|cargo\s+publish|gem\s+push|"
+    r"(?:dotnet\s+)?nuget\s+push|poetry\s+publish|"
+    r"docker\s+push|helm\s+push|"
+    r"vercel\b[^|;&]*(?:--prod|deploy\b[^|;&]*--prod)|"
+    r"netlify\s+deploy\b[^|;&]*--prod|"
+    r"firebase\s+deploy|(?:flyctl|fly)\s+deploy|"
+    r"serverless\s+deploy|sam\s+deploy|cdk\s+deploy|"
+    r"wrangler\s+(?:deploy|publish))\b",
+    re.IGNORECASE)
+
+# Remote-code fetch-pipe (warn): a download verb feeding an interpreter runs
+# unvetted remote code. Advisory only (installers legitimately use it, but the
+# blast radius is the whole machine). Covers pipe form (curl|sh, iwr|iex),
+# chained form (wget x && sh x) and the PS cradle (iex (iwr ...)).
+_FETCH_VERBS = r"(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)"
+_INTERPRETERS = (
+    r"(?:sudo\s+)?(?:(?:ba|z|da|k|c|fi|a)?sh|iex|Invoke-Expression|powershell(?:\.exe)?|"
+    r"pwsh|cmd|python[0-9.]*|node|ruby|perl)\b")
+FETCH_PIPE_EXEC = re.compile(
+    r"\b" + _FETCH_VERBS + r"\b[^|;]*\|\s*" + _INTERPRETERS + r"|"
+    r"\b" + _FETCH_VERBS + r"\b[^|;]*&&\s*" + _INTERPRETERS + r"|"
+    r"\b(?:iex|Invoke-Expression)\s*\([^)]*\b(?:iwr|irm|Invoke-WebRequest|"
+    r"Invoke-RestMethod|DownloadString|WebClient)\b",
+    re.IGNORECASE)
+
+# Windows chmod-777 equivalent (warn): recursive Everyone:F grants destroy the
+# ACL model on whatever path they hit - same class as CHMOD_DANGEROUS.
+ACL_WIPE = re.compile(
+    r"\b(?:icacls|cacls|xcacls)\b(?=[^|;&]*/t\b)[^|;&]*"
+    r"/(?:grant|g)\b[^|;&]*(?:Everyone|\*?S-1-1-0)[^|;&]*:F\b",
+    re.IGNORECASE)
+
+# Session/state killers (warn): shutdown/reboot/logoff kill every running
+# process and all in-flight work. Command-position anchored (^, &&, ;, |) so
+# `cd shutdown` or `cat reboot.log` stay silent. kill -9 -1 / killall5 hit
+# every owned process at once.
+SESSION_KILL = re.compile(
+    r"(?:^|&&|\|\||[|;])\s*(?:sudo\s+)?(?:shutdown|reboot|halt|poweroff|"
+    r"logoff|Restart-Computer|Stop-Computer|init\s+[06]|telinit\s+[06]|"
+    r"systemctl\s+(?:poweroff|reboot|halt)|killall5?|loginctl\s+"
+    r"(?:poweroff|reboot|halt|terminate-user))\b|"
+    r"\bkill\s+(?:-[a-zA-Z]*9|-KILL)\s+-1\b|"
+    r"\bpkill\b[^|;&]*\s-u\b",
+    re.IGNORECASE)
+
+# PowerShell pipe-delete (warn): source piped into a delete verb deletes
+# every piped object - only possible under PS semantics.
+PS_PIPE_DELETE = re.compile(
+    r"\|\s*(?:Remove-Item|ri)\s*(?:-[a-zA-Z]+)*\s*['\"`]?\s*"
+    r"(?:$|[|;&])",
+    re.IGNORECASE)
+
+# File-destroyers outside the rm family (warn): interpreter tree-deletes,
+# find -delete on broad roots, rsync --delete mirroring, dd zero-fills.
+# Literal dangerous targets only (root/home/drive/dot) - rmtree('build')
+# stays silent like the whitelisted rm -rf.
+FILE_DESTROY = re.compile(
+    r"\b(?:shutil\.rmtree|FileUtils\.rm_rf|remove_tree)\s*\(\s*"
+    r"['\"]?(?:/|~|\.\.?|[A-Za-z]:[\\/])|"
+    r"\bfind\s+(?:/|~|\.\.?|[A-Za-z]:[\\/])[^|;&]*"
+    r"(?:-delete\b|-exec(?:dir)?\s+(?:rm|shred|srm)\b)|"
+    r"\brsync\b[^|;&]*--delete\b|"
+    r"\bdd\b[^|;&]*\bif=/dev/(?:zero|random|urandom)\b[^|;&]*\bof=",
+    re.IGNORECASE)
+
+# Protection/evidence destroyers (warn): disarm defenses or wipe the forensic
+# trail - Defender disables/exclusions, firewall off, execution-policy bypass,
+# event-log/audit-policy/USN-journal clears.
+PROTECTION_KILL = re.compile(
+    r"\b(?:Set-MpPreference\b[^|;&]*(?:-Disable\w+\s+\$?[tT]rue|"
+    r"Exclusion\w*)|"
+    r"Add-MpPreference\b[^|;&]*Exclusion\w*|"
+    r"netsh\s+advfirewall\b[^|;&]*\bstate\s+off\b|"
+    r"Set-ExecutionPolicy\b[^|;&]*\b(?:Unrestricted|Bypass)\b|"
+    r"wevtutil\s+cl\b|(?:Clear|Remove)-EventLog\b|"
+    r"auditpol\b[^|;&]*/(?:clear|remove)\b|"
+    r"fsutil\s+usn\s+deletejournal|"
+    r"ip6?tables\s+-F\b|nft\s+flush\b|ufw\s+(?:disable|reset)\b|"
+    r"ip\s+route\s+flush\b|firewall-cmd\b[^|;&]*--panic-on|"
+    r"Set-NetFirewallProfile\b[^|;&]*-Enabled\s+(?:\$?[fF]alse|0))\b",
+    re.IGNORECASE)
+
+# Windows reserved device basenames in bash have no device mapping:
+# `> nul`, `> con`, `> com1`, `> "nul"`, `> ./nul`, `>nul` (no space),
+# `tee nul`, `touch nul`, `mkdir nul`, `cp/mv x nul`, `ln x nul` all create
+# literal ghost files/dirs (or silently discard for `nul.txt`-style stems).
+# Observed live 2026-11-24 (adversarial probe after Gate 9 shipped).
+# Only safe inside cmd/powershell/pwsh wrappers, which resolve the names
+# to real devices themselves.
+_RESERVED_STEM = r"(?:nul|con|aux|prn|com[1-9]|lpt[1-9])"
+# Win32 also strips trailing dots/spaces: `> nul.` and `> "nul "` hit the
+# device path (verified 2026-11-24) - the ext group allows zero chars.
+_RESERVED_TARGET = (r"[\"']?\.{0,2}[\\/]?" + _RESERVED_STEM +
+                    r"(?:\.[\w-]*)?[\"']?(?=[\s;|&]|$)")
+RESERVED_REDIRECT = re.compile(
+    r">{1,2}\s*" + _RESERVED_TARGET, re.IGNORECASE)
+RESERVED_VERB = re.compile(
+    r"\b(?:tee|touch|mkdir|cp|mv|ln|install)\b(?:\s+-[\w-]+)*\s+[^|;&]*?"
+    + _RESERVED_TARGET, re.IGNORECASE)
+SHELL_WRAPPER = re.compile(
+    r"\b(?:cmd(?:\.exe)?|powershell(?:\.exe)?|pwsh(?:\.exe)?)\b",
+    re.IGNORECASE)
+
+# NTFS alternate data streams: a ':' in the basename of a redirect/verb
+# target silently diverts content into a hidden stream while the named file
+# is created 0-byte (verified 2026-11-24 - same wrong-state class as the
+# reserved names above). The pattern requires the ':' AFTER the last path
+# separator so 'C:\dir\file.txt' drive prefixes do not match. Windows-only:
+# ':' is a legal POSIX filename char.
+_ADS_BASENAME = (r"(?:[^\s|;&>\"']*[\\/])*"
+                 r"(?![A-Za-z](?::[\\/]|:\s|:$))"
+                 r"[^\s|;&>\"'/\\]+:")
+ADS_REDIRECT = re.compile(r">{1,2}\s*[\"']?" + _ADS_BASENAME)
+ADS_VERB = re.compile(
+    r"\b(?:tee|touch|mkdir|cp|mv|ln|install)\b(?:\s+-[\w-]+)*\s+[^|;&]*?"
+    + _ADS_BASENAME)
+
+# Trailing-dot/space collapse: Win32 strips them, so '> f.' writes 'f' -
+# several "different" names land on one path (verified 2026-11-24, same
+# silent wrong-state class as ADS). Windows-only (POSIX keeps 'f.').
+_DOT_TARGET = r"[^\s|;&>\"']*[.]\s*[\"'`]?\s*(?:$|[|;&])"
+DOT_REDIRECT = re.compile(r">{1,2}\s*[\"']?" + _DOT_TARGET)
+DOT_VERB = re.compile(
+    r"\b(?:tee|touch|mkdir|cp|mv|ln|install|rmdir)\b(?:\s+-[\w-]+)*\s+"
+    r"[^|;&]*?" + _DOT_TARGET)
+
+
+def _branch_d_targets(command):
+    """Branch operands of `git branch -D` (stop at flags/operators)."""
+    m = GIT_BRANCH_FORCE_DELETE.search(command)
+    if not m:
+        return []
+    out = []
+    for tok in (m.group(1) or "").split():
+        tok = tok.strip().strip("'\"")
+        if not tok or tok in ("&&", "||", ";", "|", ">", ">>") \
+                or tok.startswith("-"):
+            break
+        out.append(tok)
+    return out
+
+
+def _cherry_merged(branch):
+    """True when every commit on <branch> is patch-equivalent in HEAD.
+
+    `git cherry HEAD <branch>` marks commits `+` when they have no
+    patch-equivalent upstream - squash/rebase merges rewrite SHAs but keep
+    patch-ids, so a fully merged branch reports zero `+` lines even though
+    `git branch -d` still refuses the delete (observed 2026-11-24:
+    post-squash lane cleanup needed `update-ref -d` to bypass this gate).
+    Unresolvable refs or git failures count as NOT merged (fail-safe).
+    """
+    try:
+        import subprocess as _sp
+        p = _sp.run(["git", "cherry", "HEAD", branch],
+                    capture_output=True, text=True, encoding="utf-8",
+                    errors="replace", timeout=15)
+    except Exception:
+        return False
+    if p.returncode != 0:
+        return False
+    return all(not line.startswith("+") for line in p.stdout.splitlines())
 
 
 def block(reason):
@@ -189,6 +492,18 @@ def check_rm_rf(command):
     return False
 
 
+# Quoted single tokens hide verbs and flag values from every gate below:
+# `git "push" --force`, `git "branch" -D`, `dd of="/dev/x"` all scanned
+# clean pre-fix (probe 2026-11-24). Only single-token quotes unwrap -
+# multi-word quoted text is prose/paths, not command syntax, and stays
+# untouched so echo "text" shapes keep today's behavior.
+_QUOTED_TOKEN = re.compile(r"(['\"])([A-Za-z0-9_./\\:~=+*-]+)\1")
+
+
+def _unwrap_quoted_tokens(text):
+    return _QUOTED_TOKEN.sub(r"\2", text)
+
+
 def strip_commit_message(command):
     """Remove commit message text from git commit commands so gates don't
     match descriptive text inside -m '...' or -F file references.
@@ -233,7 +548,7 @@ def main():
     # Scan only the actual command, not commit message text.
     # A commit message that describes "added git clean -fdx gate" is not
     # a destructive command — it's prose. Gates must match real commands.
-    scan_command = strip_commit_message(command)
+    scan_command = _unwrap_quoted_tokens(strip_commit_message(command))
 
     # Gate 1: rm -rf dangerous paths
     try:
@@ -264,7 +579,8 @@ def main():
     try:
         if SQL_DESTRUCTIVE.search(scan_command) and SQL_CLIENTS.search(scan_command):
             block(
-                "SQL destructive operation (DROP TABLE/DATABASE/SCHEMA or TRUNCATE) detected. "
+                "SQL destructive operation (DROP/TRUNCATE/FLUSHALL/"
+                "dropDatabase) detected. "
                 "Use a reversible migration instead, or run it directly in a DB shell if intentional."
             )
     except SystemExit:
@@ -298,10 +614,22 @@ def main():
         pass
 
     # Gate 7: git branch -D (force delete branch, loses unmerged work)
+    # Allows the delete when `git cherry` proves every commit on the branch
+    # is already patch-equivalent in HEAD (covers squash/rebase merges that
+    # `git branch -d` cannot see). Unknown/unresolved refs stay blocked.
     try:
-        if GIT_BRANCH_FORCE_DELETE.search(scan_command):
+        targets = _branch_d_targets(scan_command)
+        # -C <dir>/--git-dir/--work-tree and GIT_DIR=/GIT_WORK_TREE= env
+        # prefixes point at another repo: the cherry check cannot verify
+        # it, so treat as unverifiable and keep the block.
+        foreign_repo = targets and (re.search(
+            r"\bgit(?:\.(?:exe|cmd|bat|com))?\b\s+(?:-c\s+\S+\s+)*"
+            r"(-C|--git-dir\b|--work-tree\b)",
+            scan_command) or re.search(r"\bGIT_(?:DIR|WORK_TREE)=",
+                                       scan_command))
+        if foreign_repo or (targets and not all(_cherry_merged(b) for b in targets)):
             block(
-                "git branch -D force-deletes a branch, losing unmerged commits. "
+                "git branch -D force-deletes a branch with unmerged commits. "
                 "Use -d (safe delete, blocks if unmerged) or merge first."
             )
     except SystemExit:
@@ -334,13 +662,131 @@ def main():
     except Exception:
         pass
 
-    # Gate 3: git reset --hard — warn only (legitimate after rebase)
+    # Gate 8c: deleting subagent enforcement state (profile records,
+    # dispatch ledger, budget policy) - self-unlimiting class; the
+    # file-tool side is guarded in validate-tool-args.
     try:
-        if GIT_RESET_HARD.search(scan_command):
-            print(
-                "WARNING: git reset --hard discards all uncommitted changes.",
-                file=sys.stderr,
+        if STATE_FILE_DELETE.search(scan_command):
+            block(
+                "delete targeting subagent enforcement state "
+                "(subagent-*.json / subagent-ledger.jsonl / "
+                "subagent-budget.json) - removing it resets the "
+                "session's own profile/budget limits. Ask the user to "
+                "change policy instead.")
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+    # Gate 9: Windows reserved device name outside a cmd/powershell wrapper
+    # (literal ghost artifact or silent discard in bash)
+    try:
+        if (RESERVED_REDIRECT.search(scan_command)
+                or RESERVED_VERB.search(scan_command)) \
+                and not SHELL_WRAPPER.search(scan_command):
+            block(
+                "bash has no NUL/CON/AUX/PRN/COM1-9/LPT1-9 device: that "
+                "name creates a literal ghost file/dir (or silently "
+                "discards for stem.ext forms). Use '/dev/null' for "
+                "discard, a different filename, or wrap in "
+                "cmd /c / powershell where the name resolves to a device."
             )
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+    # Gate 10: NTFS alternate-data-stream target ('name:stream') - the named
+    # file is created 0-byte and content diverts into a hidden stream.
+    # Windows-only; ':' is a legal POSIX filename char.
+    try:
+        if os.name == "nt" \
+                and (ADS_REDIRECT.search(scan_command)
+                     or ADS_VERB.search(scan_command)):
+            block(
+                "redirect/verb target basename contains ':' - on Windows "
+                "this is an NTFS alternate data stream, so the named file "
+                "is created empty and content is silently diverted. Use a "
+                "filename without ':'.")
+        if os.name == "nt" \
+                and (DOT_REDIRECT.search(scan_command)
+                     or DOT_VERB.search(scan_command)):
+            block(
+                "redirect/verb target ends in a dot or space - Win32 "
+                "strips it, so the write silently lands on the stripped "
+                "name. Remove the trailing '.'/' '.")
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+    # Gate 3: advisory warn-paths (stderr, never block) - reset --hard is
+    # legitimate after rebase, the rest need operator awareness only.
+    warn_checks = [
+        (GIT_RESET_HARD.search,
+         "WARNING: git reset --hard discards all uncommitted changes."),
+        (GIT_BULK_DISCARD.search,
+         "WARNING: git checkout/restore of '.' discards ALL "
+         "uncommitted changes - prefer file-scoped checkout or "
+         "'git stash' first."),
+        (GIT_FORCE_SWITCH.search,
+         "WARNING: forced switch/remove/reset discards uncommitted "
+         "changes - 'git stash' first."),
+        (GIT_STASH_DROP.search,
+         "WARNING: git stash drop/clear deletes stashed work "
+         "irreversibly."),
+        (GIT_RECOVERY_KILL.search,
+         "WARNING: destroys the recovery net (reflog expire, "
+         "gc --prune=now, shadow copies, backups, bcdedit, "
+         "HKLM registry) or deletes refs directly (update-ref -d)."),
+        (SECURE_ERASE.search,
+         "WARNING: secure-erase tool (shred/sdelete/srm/wipe/cipher /w/"
+         "Clear-RecycleBin) - deleted content is unrecoverable "
+         "by design."),
+        (INFRA_DESTROY.search,
+         "WARNING: destroys live infra/resources (docker prune -v, "
+         "terraform destroy, kubectl delete, helm uninstall, "
+         "vagrant destroy, cloud deletes, remote ref delete)."),
+        (FETCH_PIPE_EXEC.search,
+         "WARNING: downloads and executes remote code in one step "
+         "(curl|sh, iwr|iex) - unvetted content runs with full "
+         "user privileges."),
+        (ACL_WIPE.search,
+         "WARNING: recursive Everyone:F ACL grant (icacls/cacls "
+         "/t) destroys the permission model - Windows chmod -R 777."),
+        (SESSION_KILL.search,
+         "WARNING: shuts down/reboots the session or kills all "
+         "processes - all in-flight work is lost."),
+        (PROTECTION_KILL.search,
+         "WARNING: disarms a defense or wipes the forensic trail "
+         "(Defender disable/exclusion, firewall off, exec-policy "
+         "bypass, event-log/audit clear)."),
+        (lambda c: SQL_WARN.search(c) and SQL_CLIENTS.search(c),
+         "WARNING: data-destroying SQL (WHERE-less DELETE wipes "
+         "every row; ALTER TABLE ... DROP loses column data)."),
+        (PUBLISH_DEPLOY.search,
+         "WARNING: publishes or deploys to public/production "
+         "state (package registry push, image push, --prod "
+         "deploy) - externally visible and hard to undo."),
+        (PS_PIPE_DELETE.search,
+         "WARNING: pipes objects into a delete verb (x | "
+         "Remove-Item) - deletes every piped item."),
+        (FILE_DESTROY.search,
+         "WARNING: destroys files outside the rm gate "
+         "(rmtree/remove_tree on a root target, find -delete, "
+         "rsync --delete, dd zero-fill)."),
+    ]
+    try:
+        warnings = [msg for check, msg in warn_checks if check(scan_command)]
+        if warnings:
+            # stderr for direct invocation; additionalContext is the channel
+            # that actually surfaces under _hookrun (child stderr is dropped
+            # because fail_closed treats hook stderr as rejection).
+            for msg in warnings:
+                print(msg, file=sys.stderr)
+            print(json.dumps({"hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "additionalContext": "\n".join(warnings)}}))
     except Exception:
         pass  # fail-soft: cleanup; preserve primary error
 

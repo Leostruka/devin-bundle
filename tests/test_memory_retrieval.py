@@ -115,3 +115,12 @@ def test_no_match_exits_cleanly(tmp_path):
         text=True, encoding="utf-8", errors="replace", env=env, check=False)
     assert out.returncode == 0
     assert out.stdout.strip() == ""
+
+
+def test_empty_cue_values_score_zero():
+    """C51: an empty cue value made `'' in text` True on every prompt -
+    empty keyword/symbol/path must contribute nothing."""
+    m = _load()
+    n = _note("t", "b", cues=[("keyword", ""), ("symbol", ""),
+                              ("path", "")])
+    assert m.score(n, "anything at all") == 0

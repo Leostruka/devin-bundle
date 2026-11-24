@@ -94,7 +94,7 @@ def c25(ctx):
     if os.path.exists(reflog):
         ref_ids = []
         ref_errors = []
-        required_ref_keys = ['id', 'timestamp', 'repro_command', 'expected', 'actual', 'verdict']
+        required_ref_keys = ['id', 'timestamp', 'type', 'target', 'evidence', 'status']
         missing_evidence = []
         for line in open(reflog, encoding='utf-8'):
             line = line.strip()

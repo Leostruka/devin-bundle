@@ -29,7 +29,8 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 | `memory-post-edit.py` | PostToolUse `^(write\|edit)$` | direct (no aggregator) |
 | `compact-gate.py` | PostToolUse `^(write\|edit)$` | direct |
 | `user-prompt.py` | UserPromptSubmit | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate, token-saver |
-| `session-start.py` | SessionStart | constraint-pinning, context-budget |
+| `validate-tool-args.py` | PreToolUse `^(run_subagent\|mcp_call_tool\|mcp_read_resource\|webfetch\|web_search\|skill\|request_scope\|ask_user_question\|todo_write\|browser_preview)$` | direct |
+| `session-start.py` | SessionStart | constraint-pinning, context-budget, hook-drift |
 | `constraint-pinning.py` | PostCompaction | direct |
 | `stop-guard.py` | Stop | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect, decision-queue |
 | `memory-stop.py` | SessionEnd | direct |
@@ -49,8 +50,16 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 - `hookSpecificOutput.updatedInput` objects shallow-merge (later keys
   overwrite earlier).
 - Other `hookSpecificOutput` keys are set on first sight (setdefault).
-- Non-JSON stdout lines are routed to stderr; hook stdout stays clean
-  JSON for the CLI.
+- Non-JSON stdout lines are dropped (shown only with
+  `DEVIN_HOOKRUN_DEBUG`); hook stdout stays clean JSON for the CLI.
+- **Child stderr is dropped** (the CLI treats hook stderr as a failure
+  under `fail_closed`). Warn/advisory output from an inner script MUST go
+  through `hookSpecificOutput.additionalContext` on stdout; printing to
+  stderr too is fine, but stderr alone reaches nobody (C80).
+- **`hookSpecificOutput` requires `hookEventName`**: an emission without
+  it fails CLI parsing, the whole hook call "fails", and `fail_closed`
+  blocks the tool call with an opaque error (C84). `_hookrun`
+  synthesizes the field from the payload as a backstop.
 - A crashing inner script is fail-open: traceback to stderr, does not
   block, remaining scripts still run. No short-circuit on block either;
   all scripts run so context output is not lost.

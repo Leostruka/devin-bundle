@@ -60,9 +60,13 @@ ERROR_INDICATORS = (
     re.compile(r"\b(?:command not found|no such file or directory)\b", re.IGNORECASE),
     re.compile(r"\bpermission denied\b", re.IGNORECASE),
     re.compile(r"\b[1-9]\d*\s+(?:tests?\s+)?fail(?:ed|ures?)?\b", re.IGNORECASE),
-    # Non-zero exit codes (exit code 1, Exit code 255, etc.)
-    re.compile(r"\bexit\s+code\s+[1-9]\d*\b", re.IGNORECASE),
+    # Non-zero exit codes — all common renderings (exit code 1,
+    # exit_code=2, exitcode: 3, rc=4, errorlevel 5, return code 7).
+    re.compile(r"\bexit[\s_]?code\s*[:=]?\s*[1-9]\d*\b", re.IGNORECASE),
     re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b", re.IGNORECASE),
+    re.compile(r"\berrorlevel\s*[:=]?\s*[1-9]\d*\b", re.IGNORECASE),
+    re.compile(r"\breturn\s+code\s*[:=]?\s*[1-9]\d*\b", re.IGNORECASE),
+    re.compile(r"\brc\s*=\s*[1-9]\d*\b", re.IGNORECASE),
     # Common errno names that indicate real failures
     re.compile(r"\bEACCES\b|\bECONNREFUSED\b|\bECONNRESET\b|\bETIMEDOUT\b|\bENOENT\b"),
     # Python exception types — active error context only:
@@ -80,6 +84,25 @@ ERROR_INDICATORS = (
     re.compile(r"\bcargo(?::[a-z]+)*\s+(?:error|FAILED)\b", re.IGNORECASE),
     re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE),
     re.compile(r"\bFAIL\s+(?:github\.com|./)", re.IGNORECASE),
+    # Windows-first failure strings (cmd.exe / PowerShell / native tools) —
+    # the canonical error vocabulary on this bundle's primary platform.
+    # Verified-miss list 2026-11-24: cmd "not recognized", "Access is
+    # denied", "cannot find the file/path specified", PS "not recognized
+    # as the name of a cmdlet", CommandNotFoundException, execution-
+    # policy block, docker daemon errors, git auth, HTTP 403, go exec.
+    re.compile(r"is not recognized as (?:an internal or external command|"
+               r"the name of a cmdlet)", re.IGNORECASE),
+    re.compile(r"\baccess is denied\b", re.IGNORECASE),
+    re.compile(r"the system cannot find the (?:file|path) specified",
+               re.IGNORECASE),
+    re.compile(r"\bCommandNotFoundException\b", re.IGNORECASE),
+    re.compile(r"cannot be loaded because running scripts is disabled",
+               re.IGNORECASE),
+    re.compile(r"\berror response from daemon\b", re.IGNORECASE),
+    re.compile(r"\bauthentication failed\b", re.IGNORECASE),
+    re.compile(r"\b403\s+forbidden\b", re.IGNORECASE),
+    re.compile(r"\bcontext deadline exceeded\b", re.IGNORECASE),
+    re.compile(r"\bsignal:\s*killed\b", re.IGNORECASE),
 )
 
 # Python source-statement lines (from read/grep/sed of .py files) are not
@@ -126,9 +149,32 @@ def signal_lines(text):
                      # Non-zero failure counts and exit codes are strong even
                      # on lines that also match noise (e.g. "1 failed, 1 warning").
                      re.compile(r"\b[1-9]\d*\s+(?:tests?\s+)?fail(?:ed|ures?)?\b", re.IGNORECASE),
-                     re.compile(r"\bexit\s+code\s+[1-9]\d*\b", re.IGNORECASE),
-                     re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b", re.IGNORECASE),
-                     re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE)}
+                     re.compile(r"\bexit[\s_]?code\s*[:=]?\s*[1-9]\d*\b",
+                                re.IGNORECASE),
+                     re.compile(r"\bexited\s+with\s+(?:code\s+)?[1-9]\d*\b",
+                                re.IGNORECASE),
+                     re.compile(r"\berrorlevel\s*[:=]?\s*[1-9]\d*\b",
+                                re.IGNORECASE),
+                     re.compile(r"\breturn\s+code\s*[:=]?\s*[1-9]\d*\b",
+                                re.IGNORECASE),
+                     re.compile(r"\brc\s*=\s*[1-9]\d*\b", re.IGNORECASE),
+                     re.compile(r"\bBUILD\s+FAILED\b", re.IGNORECASE),
+                     # Windows/runner strings are unambiguous failures even
+                     # on lines that also carry noise words.
+                     re.compile(r"is not recognized as (?:an internal or "
+                                r"external command|the name of a cmdlet)",
+                                re.IGNORECASE),
+                     re.compile(r"\baccess is denied\b", re.IGNORECASE),
+                     re.compile(r"the system cannot find the (?:file|path) "
+                                r"specified", re.IGNORECASE),
+                     re.compile(r"\bCommandNotFoundException\b",
+                                re.IGNORECASE),
+                     re.compile(r"cannot be loaded because running scripts "
+                                r"is disabled", re.IGNORECASE),
+                     re.compile(r"\berror response from daemon\b",
+                                re.IGNORECASE),
+                     re.compile(r"\bauthentication failed\b",
+                                re.IGNORECASE)}
     for ln in text.split("\n"):
         if SOURCE_LINE_RE.match(ln):
             continue  # source code on screen, not a runtime error

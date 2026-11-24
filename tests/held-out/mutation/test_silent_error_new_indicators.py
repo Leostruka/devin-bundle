@@ -98,3 +98,38 @@ def test_fail_open_on_invalid_json():
         input="not json", capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10,
     )
     assert result.returncode == 0
+
+
+@pytest.mark.parametrize("output", [
+    "'foo' is not recognized as an internal or external command",
+    "'foo' is not recognized as the name of a cmdlet",
+    "Access is denied",
+    "The system cannot find the file specified",
+    "The system cannot find the path specified",
+    "CommandNotFoundException: bar",
+    "File cannot be loaded because running scripts is disabled",
+    "Error response from daemon: conflict",
+    "remote: authentication failed",
+    "403 Forbidden",
+    "context deadline exceeded",
+    "signal: killed",
+])
+def test_windows_runner_failures_detected(output):
+    """C41: canonical Windows/runner failure strings must flag."""
+    code, out = run_silent_check(output)
+    assert "hookSpecificOutput" in out or "additionalContext" in out, \
+        f"Should flag: {output!r} -> {out}"
+
+
+@pytest.mark.parametrize("output", [
+    "access granted to share",
+    "the file specified exists",
+    "403 lines returned",
+    "daemon started",
+    "internal review complete",
+])
+def test_windows_shapes_not_overflagged(output):
+    """FP guard: near-miss shapes must stay silent."""
+    code, out = run_silent_check(output)
+    assert "additionalContext" not in out, \
+        f"Over-flagged: {output!r} -> {out}"

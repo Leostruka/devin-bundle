@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """SessionStart consolidated hook — one spawn.
 
-Runs in-process: constraint-pinning, context-budget.
+Runs in-process: constraint-pinning, context-budget, hook-drift.
 """
 import os
 import sys
@@ -13,4 +13,5 @@ if __name__ == '__main__':
     _hookrun.main([
         'constraint-pinning.py',
         'context-budget.py',
+        'hook-drift.py',
     ])

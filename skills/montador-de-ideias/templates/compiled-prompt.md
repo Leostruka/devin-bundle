@@ -3,7 +3,7 @@ schema_version: 1
 artifact: .devin/specs/<slug>-compiled-prompt.md
 dossier_ref: .devin/specs/<slug>-idea-dossier.md
 original_prompt_sha256: <sha256_of_verbatim_seed_prompt>
-status: APPROVED
+status: DRAFT
 date: YYYY-MM-DD
 ---
 
@@ -19,9 +19,9 @@ date: YYYY-MM-DD
 
 ## 2. Registro de Mudancas Aprovadas pelo Usuario
 
-Todas as expansoes e refinamentos abaixo foram submetidos ao usuario via `ask_user_question` com opcoes e trade-offs antes de compilar o prompt final:
+Todas as expansoes e refinamentos abaixo foram submetidos ao usuario via `ask_user_question` com opcoes e trade-offs antes de compilar o prompt final. Em execucao AFK (`DRAFT-AUTO`), a coluna de escolha fica `PENDING-APPROVAL` ate a proxima rodada interativa:
 
-| ID | Trecho / Ideia Original | Expansao / Refinamento Proposto | Opcao Escolhida pelo Usuario | Justificativa (Filosofia + Dor + Primeiros Principios) |
+| ID | Trecho / Ideia Original | Expansao / Refinamento Proposto | Opcao Escolhida pelo Usuario (ou PENDING-APPROVAL) | Justificativa (Filosofia + Dor + Primeiros Principios) |
 |---|---|---|---|---|
 | D1 | `<Original excerpt or implicit gap>` | `<Proposed refinement>` | `<Approved option>` | `<Why this honors the philosophy and heals the pain>` |
 

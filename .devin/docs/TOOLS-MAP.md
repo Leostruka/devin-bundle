@@ -99,9 +99,9 @@ thermo-nuclear-review-subagent, triage-labels, ux-researcher. 28 perfis
 validados (parity com `agents/*.md` + `.devin/agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
-## Hooks (8 eventos, 14 entry points, 57 scripts)
+## Hooks (8 eventos, 15 entry points, 59 scripts)
 
-Duas camadas: `hooks.v1.json` liga 14 comandos (6 entry points consolidados + 8 diretos); cada
+Duas camadas: `hooks.v1.json` liga 15 comandos (6 entry points consolidados + 9 diretos); cada
 entry point agregador executa seus scripts internos num único processo
 via `scripts/_hookrun.py` (merge rules em `.devin/docs/HOOKS-PIPELINE.md`,
 fluxo em `.devin/docs/diagrams/hook-event-flow.md`). Scripts internos
@@ -119,7 +119,7 @@ renderizada para `config.json.hooks` no install (ver
 | PostToolUse | `^(write\|edit)$` | `memory-post-edit.py` (10s) + `compact-gate.py` (15s) + `file-size-guard.py` (warn) + `design-lint-gate.py` (10s) | entry points diretos (sem agregador) | não |
 | PostCompaction | (nenhum) | `constraint-pinning.py` (5s) | direto; evento canônico de pinning | não |
 | UserPromptSubmit | (nenhum) | `user-prompt.py` (20s) | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate, token-saver | não |
-| SessionStart | (nenhum) | `session-start.py` (10s) | constraint-pinning, context-budget | não |
+| SessionStart | (nenhum) | `session-start.py` (10s) | constraint-pinning, context-budget, hook-drift | não |
 | Stop | (nenhum) | `stop-guard.py` (25s) | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect, decision-queue | não |
 | SessionEnd | (nenhum) | `memory-stop.py` (5s) | direto | não |
 | PermissionRequest | `^exec$` | `permission-gate.py` (15s) | direto; approve-only em read-only estrito, silêncio = humano decide | não |
@@ -165,7 +165,7 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 21 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local + README (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 193 skills || extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` - GUI automation; `system-control` - OS autorizado; `scrape-tools` - fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` - whisper.cpp local; `gcal` - Google Calendar free/busy + roteiro + escrita `add`/`apply` (gated por `--confirm`); `code-graph` - índice estrutural FTS5; `harness-tree` - árvore c1..c8 diff/validate/snapshot; `design-intelligence` - BM25 + corpus design 34 domínios) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 57 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 59 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |
 | MODEL-GUIDE.md | `./.devin/docs/MODEL-GUIDE.md` | `~/.config/devin/docs/MODEL-GUIDE.md` | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./.devin/docs/SKILL-TIERS.md` | `~/.config/devin/docs/SKILL-TIERS.md` | Discovery por domínio + custos |

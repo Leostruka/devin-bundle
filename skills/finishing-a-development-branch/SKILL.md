@@ -135,6 +135,19 @@ delete the branch:
 git branch -d <feature-branch>
 ```
 
+**Squash/rebase merges rewrite commits**, so `-d` refuses with "not fully
+merged" even though the content is in base. Verify the diff is empty
+(`git diff <base>...<branch> --stat` shows nothing), then delete by ref:
+
+```bash
+git update-ref -d refs/heads/<feature-branch>
+```
+
+**Post-merge housekeeping** (when the repo ships
+`scripts/changelog-refs.py`): run `python scripts/changelog-refs.py --write`
+to append the merged-PR refs to `[Unreleased]`, and commit that docs sweep
+if the audit still warns.
+
 ### Option 2: Push and Create PR
 
 ```bash
