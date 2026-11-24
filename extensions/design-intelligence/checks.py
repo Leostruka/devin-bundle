@@ -8,6 +8,8 @@ Heuristics follow impeccable's rule intent, adapted to a static pass.
 import re
 from html.parser import HTMLParser
 
+import checks_p4  # noqa: E402  (P4 rules merged into CHECKS below)
+
 # ---------- helpers ----------
 
 _FONT_OVERUSED = ("inter", "roboto", "geist", "fraunces", "poppins",
@@ -690,3 +692,4 @@ CHECKS = {
     "flat-type-hierarchy": check_flat_type,
     "shape-assembled-illustration": check_shape_assembled,
 }
+CHECKS.update(checks_p4.CHECKS)

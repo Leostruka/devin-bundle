@@ -57,8 +57,36 @@ Strict rules (violations raise `ParseError`):
 ```
 python ui_dsl.py parse --input in.dsl [--output out.dsl] [--force]
 python ui_dsl.py render --input in.dsl --output out.html [--force]
+python ui_dsl.py emit --input in.dsl --output out.json --format a2ui [--force]
 python ui_dsl.py benchmark --fixture in.dsl [--tokenizer PATH_OR_ID] [--output res.json]
 ```
+
+## A2UI emit (P5) and the structure/data boundary
+
+`emit --format a2ui` projects the AST onto the **A2UI v1.0 basic
+catalog** (`catalogs/basic/v1/catalog.json`) as a single
+`{"version":"1.0","surfaceUpdate":{"surfaceId","catalogId","components"}}`
+document. Components are the flat adjacency list (`id`, `component`,
+`children`/`child` id refs) using only catalog primitives: `Text`,
+`Row`, `Column`, `Card`, `Button`, `CheckBox` (plus `Divider`/`List`/
+`TextField` available for future grammar elements).
+
+**Boundary - who binds what.** The emitter produces STRUCTURE +
+REFERENCES ONLY. Every data-bearing field is an `{"@path": ...}`
+JSON-Pointer binding the host resolves server-side via
+`updateDataModel` (row/bar values at `/blocks/{b}/children/{c}/value`,
+question options at `/forms/{fid}/questions/{qid}/options/{k}`;
+`row of=` uses `formatString`). Static copy (titles, labels, option
+names, button actions) stays literal. The emitted document therefore
+contains **no secrets, credentials, or business data** - the grammar
+has no channel for them, and bindings point at paths the host owns.
+Operational or sensitive values must never be inlined into the DSL;
+bind them instead. `bar` degrades to a bound `Text` (no gauge primitive
+in the allowed catalog subset); `q choice` renders as a CheckBox group
+with per-option boolean paths - the host enforces exclusivity.
+`hud anchor` is dropped (positioning is a renderer concern). `btn`
+actions become `{"event":{"name": ...}}` with `context.form` set when
+inside a form.
 
 ## Measured benchmark (fixture-specific, not a universal claim)
 

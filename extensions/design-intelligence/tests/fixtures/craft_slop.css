@@ -1,0 +1,22 @@
+:root {
+  --bg: #0b0f14;
+  --surface: #111827;
+  --ink: #e5e7eb;
+  --accent: #38bdf8;
+  --warn: #f59e0b;
+}
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+}
+.card {
+  border-radius: 16px;
+  padding: 16px;
+}
+.card .thumb {
+  border-radius: 8px;
+}
+.carousel {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
