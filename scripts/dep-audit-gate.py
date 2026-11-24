@@ -24,7 +24,7 @@ except AttributeError:
 # previously made the whole install invisible to the gate.
 _SEG = r"(?:^|[;&|(`$]\s*)"
 _WRAP = (r"(?:(?:cmd(?:\.exe)?\s+/[ckCK]|"
-         r"(?:powershell|pwsh|bash|sh)(?:\.exe)?\s+-c)\s+)?")
+         r"(?:powershell|pwsh|bash|sh)(?:\.exe)?\s+-c)\s+[\"']?)?")
 # Global flags may sit between the manager name and the install verb
 # (`pip -q install`, `npm -g i`, `npm --prefix app i`). Any flag may take
 # a space-separated value (-i URL, --registry URL, -r req.txt): the

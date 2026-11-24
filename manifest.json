@@ -1426,7 +1426,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "D986F7FAFA519C6BAFC7641DD0C53D5E7704EC9199DDAE7B595A7A2316FA1C34",
+      "export_hash": "32030892E2E5CFCDAD8067F4C5E074BB54606B21F45638CE2CBF607915E731F4",
       "exported_at": "2026-11-17"
     },
     {
@@ -1499,7 +1499,7 @@
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "94D417019BF08F2B49DE5CF2E122FE2568F71E722DB5C07A3C5F06DC16A19718",
+      "export_hash": "3F98B505FF6E724A2308894BC998D02BC938B6538A3AACC21A1432C89898B390",
       "exported_at": "2026-11-17"
     },
     {
@@ -1519,7 +1519,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "EA4ED778BAE6C51A3A881353BCDEAAB0F7D52E72173B80D6E84AF4D96239F68E",
+      "export_hash": "CD82140360D1407FFA7B885E409314A393D91426EEACC1D1C238E2F541890F84",
       "exported_at": "2026-11-17"
     },
     {
@@ -1749,7 +1749,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "D0BFFEC9136682D793E26C7FBA7BA444774E5D04594DE6343C902D8C5A7A23C9",
+      "export_hash": "CBAD901E232A56965D6371F4127DB88219CB736A6890CB6199E8BF8AD27A53EE",
       "exported_at": "2026-11-17"
     },
     {

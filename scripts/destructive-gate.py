@@ -190,19 +190,36 @@ WIN_RM_RE_NOTARGET = re.compile(
 # Deleting or corrupting subagent enforcement state (profile records,
 # dispatch ledger, budget policy) resets the session's own limits -
 # self-unlimiting class. Anchored on the state/ path component (matches
-# <devin-home>/state/subagent-*; bare "subagent-x.json" elsewhere is fine).
+# <devin-home>/state/subagent-*; bare "subagent-x.json" elsewhere is fine)
+# or the whole state dir itself (devin/state -> rm -rf state-dir).
 _STATE_PATH = r"(?:^|[\\/]|\s)state[\\/]+subagent-[\w.-]*\.jsonl?\b"
+_STATE_DIR = r"(?:^|[\\/]|\s)devin[\\/]state\b"
+_STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
+# Command-position anchor: a verb only runs at command start, after a
+# separator/command-substitution, under a privilege wrapper, or inside a
+# shell -c/-Command quote - mid-string occurrences are prose
+# (`echo "rm state/x"` stays silent; `bash -c 'rm state/x'` still hits).
+_CMD_POS = (r"(?:^|[|;&`$(]|\b(?:sudo|doas|runas|xargs)\s+|"
+            r"(?:-[ckCK]|-Command|/[ckCK])\s*[\"'`])\s*")
 STATE_FILE_DELETE = re.compile(
-    r"\b(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe)\b"
-    r"[^|;&]*?" + _STATE_PATH,
+    r"(?:" + _CMD_POS +
+    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe|"
+    r"mv|move|Move-Item)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
+    r"|" + _CMD_POS + r"find\b[^|;&]*?(?:" + _STATE_TARGET + ")"
+    r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+(?:rm|shred|srm)\b)",
     re.IGNORECASE,
 )
 # Writes are as dangerous as deletes: `>` truncates (json.load fails ->
-# uncapped fail-open), `>>`/append poisons ts fields, cp/mv/tee/truncate
-# replace content.
+# uncapped fail-open), `>>`/append poisons ts fields, tee/truncate/sed -i/
+# dd of=/rsync --delete replace content. cp/install write the state path
+# only when it is the DESTINATION (last operand) - `cp state/x /tmp/bak`
+# reads state and stays allowed.
 STATE_FILE_WRITE = re.compile(
-    r"(?:>>?\s*[\"']?[^|;&]*?|\b(?:tee|truncate|mv|cp|copy|move|Copy-Item|"
-    r"Move-Item|Set-Content|Out-File)\b[^|;&]*?)" + _STATE_PATH,
+    r"(?:>>?\s*[\"']?[^|;&]*?|" + _CMD_POS +
+    r"(?:tee|truncate|Out-File|Set-Content|"
+    r"sed\b[^|;&]*-i|dd\b[^|;&]*of=)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
+    r"|" + _CMD_POS + r"(?:cp|copy|Copy-Item|rsync|install)\b[^|;&]*?"
+    r"(?:" + _STATE_TARGET + r")[\\/'\"]*\s*(?:$|[|;&])",
     re.IGNORECASE,
 )
 
@@ -213,8 +230,23 @@ GIT_CLEAN_FORCE = re.compile(_GIT + r"\s+clean\s+(?:-[a-zA-Z]*[fF][a-zA-Z]*[dDxX
 GIT_CLEAN_DRY_RUN = re.compile(
     _GIT + r"\s+clean\b[^|;&]*?(?:-[a-zA-Z]*n[a-zA-Z]*\b|--dry-run\b)")
 
-# git branch -D: force-delete branch (loses unmerged commits)
-GIT_BRANCH_FORCE_DELETE = re.compile(_GIT + r"\s+branch\s+(?:-[a-zA-Z]*D[a-zA-Z]*\b|--delete\s+--force\b)\s*(.*)")
+# git branch -D: force-delete branch (loses unmerged commits). Other flags
+# may sit between `branch` and the delete flag (`branch -d -D x`,
+# `branch --list -D x`), so the prefix allows flag tokens; [^|;&] capture
+# stops at command separators so finditer sees each -D in a chain.
+GIT_BRANCH_FORCE_DELETE = re.compile(
+    _GIT + r"\s+branch\s+(?:(?:-[a-zA-Z][\w-]*|--[\w-]+(?:=\S*)?)\s+)*"
+    r"(?:-[a-zA-Z]*D[a-zA-Z]*\b|--delete\s+--force\b)\s*([^|;&]*)")
+
+# git branch flags that consume the following token as a value (rename
+# target, sort key, upstream, filter ref) - their operand is not a branch
+# to delete.
+_BRANCH_VALUE_FLAGS = frozenset({
+    "-m", "-M", "-c", "-C", "-u", "-t",
+    "--set-upstream-to", "--sort", "--format", "--points-at",
+    "--merged", "--no-merged", "--contains", "--no-contains",
+    "--column", "--color", "--abbrev", "--edit-description",
+})
 
 # mkfs / dd to disk devices (filesystem wipe / raw disk write).
 # Device prefixes: sd/hd/vd (virt), xvd (AWS EBS), nvme, mmcblk (SD/eMMC),
@@ -270,7 +302,7 @@ INFRA_DESTROY = re.compile(
     r"storage\s+(?:rm|buckets\s+delete)|functions\s+delete)\b|"
     r"doctl\s+(?:[\w-]+\s+)*delete\b|"
     r"rclone\s+(?:delete|purge|deletefile)\b|"
-    r"gsutil\s+(?:-[\w-]+\s+)*rm\b|"
+    r"gsutil\s+(?:-[\w-]+(?:\s+\S+)?\s+)*rm\b|"
     r"git\S*\s+push\b[^|;&]*(?:\s--delete\b|\s:[\w./-]+)|"
     r"gh\S*\s+(?:repo\s+delete\b|api\b[^|;&]*(?:-X|--method)[=\s]*"
     r"DELETE))",
@@ -297,7 +329,7 @@ PUBLISH_DEPLOY = re.compile(
 # chained form (wget x && sh x) and the PS cradle (iex (iwr ...)).
 _FETCH_VERBS = r"(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)"
 _INTERPRETERS = (
-    r"(?:sudo\s+)?(?:(?:ba|z|da|k|c|fi|a)?sh|iex|Invoke-Expression|powershell(?:\.exe)?|"
+    r"(?:(?:sudo|env)\s+)?(?:(?:ba|z|da|k|c|fi|a)?sh|iex|Invoke-Expression|powershell(?:\.exe)?|"
     r"pwsh|cmd|python[0-9.]*|node|ruby|perl)\b|"
     r"/(?:usr/)?bin/(?:ba|z|da|k|c|fi|a)?sh\b")
 FETCH_PIPE_EXEC = re.compile(
@@ -395,10 +427,12 @@ SHELL_WRAPPER = re.compile(
 # is created 0-byte (verified 2026-11-24 - same wrong-state class as the
 # reserved names above). The pattern requires the ':' AFTER the last path
 # separator so 'C:\dir\file.txt' drive prefixes do not match. Windows-only:
-# ':' is a legal POSIX filename char.
+# ':' is a legal POSIX filename char. Remote/URI forms are not ADS: ':' not
+# followed by a path separator (ctr:/x, s3://b) and '@' tokens (user@host:)
+# are excluded - docker cp/scp/rsync destinations stay allowed.
 _ADS_BASENAME = (r"(?:[^\s|;&>\"']*[\\/])*"
                  r"(?![A-Za-z](?::[\\/]|:\s|:$))"
-                 r"[^\s|;&>\"'/\\]+:")
+                 r"(?<![^\s|;&>\"'\\/])[^\s|;&>\"'/\\@]+:(?![\\/])")
 ADS_REDIRECT = re.compile(r">{1,2}\s*[\"']?" + _ADS_BASENAME)
 ADS_VERB = re.compile(
     r"\b(?:tee|touch|mkdir|cp|mv|ln|install)\b(?:\s+-[\w-]+)*\s+[^|;&]*?"
@@ -415,22 +449,28 @@ DOT_VERB = re.compile(
 
 
 def _branch_d_targets(command):
-    """Branch operands of `git branch -D` (stop at flags/operators)."""
-    m = GIT_BRANCH_FORCE_DELETE.search(command)
-    if not m:
-        return []
+    """Branch operands of every `git branch -D` in the command."""
     out = []
-    for tok in (m.group(1) or "").split():
-        tok = tok.strip().strip("'\"")
-        if not tok:
-            continue
-        if tok in ("&&", "||", ";", "|", ">", ">>"):
-            break
-        # Flags (-D, --force, --delete) are modifiers; `--` is the POSIX
-        # end-of-options marker - everything after it is still an operand.
-        if tok.startswith("-"):
-            continue
-        out.append(tok)
+    for m in GIT_BRANCH_FORCE_DELETE.finditer(command):
+        skip_next = False
+        for tok in (m.group(1) or "").split():
+            tok = tok.strip().strip("'\"")
+            if not tok:
+                continue
+            if tok in ("&&", "||", ";", "|", ">", ">>"):
+                break
+            if skip_next:
+                skip_next = False
+                continue
+            # Flags (-D, --force, --delete) are modifiers; `--` is the
+            # POSIX end-of-options marker; value-taking flags consume
+            # the next token (a rename/sort target, not a branch).
+            if tok in _BRANCH_VALUE_FLAGS:
+                skip_next = True
+            elif tok.startswith("-"):
+                continue
+            else:
+                out.append(tok)
     return out
 
 

@@ -96,11 +96,11 @@ PROFILE_DENY = {
 }
 
 
-def _profile_state_path(session_id):
+def _profile_state_path(session_id, ext=".jsonl"):
     safe = re.sub(r"[^A-Za-z0-9_.-]", "_", session_id or "unknown")
     return os.path.join(
         os.environ.get("DEVIN_STATE_DIR") or STATE_DIR,
-        "subagent-{}.json".format(safe))
+        "subagent-{}{}".format(safe, ext))
 
 
 def _record_profile(session_id, profile):
@@ -112,27 +112,52 @@ def _record_profile(session_id, profile):
     try:
         os.makedirs(os.path.dirname(_profile_state_path(session_id)),
                     exist_ok=True)
-        profiles = _session_profiles(session_id)
-        profiles.add(profile)
-        with open(_profile_state_path(session_id), "w", encoding="utf-8") as f:
-            json.dump({"profiles": sorted(profiles),
-                       "session_id": session_id}, f)
+        # Append-only .jsonl: parallel dispatches can't lose each other's
+        # record the way a read-modify-write rewrite did (C87 race fix).
+        with open(_profile_state_path(session_id), "a",
+                  encoding="utf-8") as f:
+            f.write(json.dumps({"profile": profile}) + "\n")
     except (OSError, IOError):
         pass
 
 
 def _session_profiles(session_id):
-    """All profiles dispatched this session. Reads both the current
-    {'profiles': [...]} shape and the legacy single-profile file."""
+    """All profiles dispatched this session. Reads the append-only .jsonl
+    (one {"profile": ...} per line) plus the legacy single-object .json
+    shapes ({'profiles': [...]} and {'profile': 'x'})."""
+    out = set()
     try:
-        with open(_profile_state_path(session_id), "r", encoding="utf-8") as f:
+        with open(_profile_state_path(session_id), "r",
+                  encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    d = json.loads(line)
+                except ValueError:
+                    continue  # corrupt/poisoned line: skip, don't fail
+                p = (d.get("profile") or "").strip()
+                if p:
+                    out.add(p)
+    except (OSError, IOError):
+        pass
+    try:
+        with open(_profile_state_path(session_id, ".json"), "r",
+                  encoding="utf-8") as f:
             d = json.load(f)
         if isinstance(d.get("profiles"), list):
-            return {str(p) for p in d["profiles"] if str(p).strip()}
-        legacy = (d.get("profile") or "").strip()
-        return {legacy} if legacy else set()
+            out.update(str(p) for p in d["profiles"] if str(p).strip())
+        else:
+            legacy = (d.get("profile") or "").strip()
+            if legacy:
+                out.add(legacy)
     except (OSError, IOError, ValueError):
-        return set()
+        pass
+    # The implicit default carries no deny rules - a legacy record of it
+    # poisons the uniform-deny set exactly like a fresh dispatch would.
+    out.discard("subagent_general")
+    return out
 
 
 # --- Subagent dispatch budgets (optional, opt-in) ---

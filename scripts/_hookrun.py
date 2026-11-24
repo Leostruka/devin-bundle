@@ -63,9 +63,18 @@ def metrics_sink_path():
     # tests/held-out/mutation/x (5 levels) and created a stray
     # <deep>/.devin/ledgers tree (same class as the Temp\.devin leak).
     for _ in range(10):
-        if os.path.isdir(os.path.join(cur, ".devin")) \
-                or os.path.isfile(os.path.join(cur, "manifest.json")):
+        if os.path.isdir(os.path.join(cur, ".devin")):
             return os.path.join(cur, ".devin", "ledgers", "metrics.jsonl")
+        man = os.path.join(cur, "manifest.json")
+        if os.path.isfile(man):
+            try:
+                import json as _json
+                with open(man, encoding="utf-8") as f:
+                    if _json.load(f).get("name") == "devin-bundle":
+                        return os.path.join(
+                            cur, ".devin", "ledgers", "metrics.jsonl")
+            except (OSError, ValueError):
+                pass
         parent = os.path.dirname(cur)
         if parent == cur:
             break

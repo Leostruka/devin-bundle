@@ -295,9 +295,11 @@ def test_profile_recorded_on_dispatch(tmp_path):
         "session_id": "sess-1",
     }, env_extra=_vta_env(tmp_path))
     assert r.returncode == 0
-    state = tmp_path / "devin" / "state" / "subagent-sess-1.json"
+    state = tmp_path / "devin" / "state" / "subagent-sess-1.jsonl"
     assert state.exists()
-    assert json.loads(state.read_text(encoding="utf-8"))["profiles"] == ["researcher"]
+    lines = [json.loads(l) for l in
+             state.read_text(encoding="utf-8").splitlines() if l.strip()]
+    assert [d["profile"] for d in lines] == ["researcher"]
 
 
 def test_profile_deny_requires_subagent_context(tmp_path):

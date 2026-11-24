@@ -150,3 +150,86 @@ def test_infra_extended_scoped_silent(cmd):
 def test_ps_pipe_delete_extended_warn(cmd):
     code, out = _warn_text(cmd)
     assert code == 0 and "WARNING" in out.upper(), cmd
+
+
+# --- C88: second-pass reviewer findings ---
+
+@pytest.mark.parametrize("cmd", [
+    "git branch -d -D divergent-zz",
+    "git branch -v -D divergent-zz",
+    "git branch --list -D divergent-zz",
+    "git branch -D ok && git branch -D divergent-zz",
+    "git branch -D --sort=x divergent-zz",
+])
+def test_branch_d_flag_position_bypasses_blocked(cmd):
+    """Flags before -D or a second -D segment must not drop operands."""
+    code, out = run_gate(cmd)
+    assert code == 2, f"flag-position -D bypass should block, got {code}: {out}"
+
+
+def test_branch_d_value_flag_not_collected():
+    """`-m`'s operand is a rename target, not a branch to check - a
+    `branch -D -m newname` (git itself rejects -D+-m) must not over-block
+    on a phantom branch name."""
+    code, _ = run_gate("git branch -D -m")
+    assert code == 0  # no operands collected, git errors naturally
+
+
+@pytest.mark.parametrize("cmd", [
+    "rm -rf devin/state",
+    "rmdir /s devin/state",
+    "find devin/state -delete",
+    "sed -i s/a/b/ devin/state/subagent-budget.json",
+    "mv devin/state/subagent-s.json /tmp/x.json",
+    "mv /tmp/x devin/state/subagent-s.json",
+    "rsync src/ devin/state/",
+    "install x devin/state/subagent-s.json",
+    "dd of=devin/state/subagent-s.json",
+])
+def test_state_dir_wholesale_ops_blocked(cmd):
+    """The whole state dir and non-rm mutators are the same self-unlimiting
+    class as file deletes."""
+    code, out = run_gate(cmd)
+    assert code == 2, f"state-dir op should block, got {code}: {out}"
+
+
+@pytest.mark.parametrize("cmd", [
+    "cp /x/state/subagent-s.json /tmp/bak.json",
+    "echo tee state/subagent-x.json",
+    "rsync devin/state/subagent-s.json /tmp/bak",
+])
+def test_state_read_from_or_prose_silent(cmd):
+    """Copying FROM state is a read; prose verbs are not commands."""
+    code, out = _warn_text(cmd)
+    assert code == 0 and "WARNING" not in out.upper(), cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "docker cp f ctr:/x",
+    "cp f s3://bucket",
+    "cp f user@host:dir",
+    "scp f host:/tmp/x",
+])
+def test_ads_remote_forms_silent(cmd):
+    """container:/scheme:// and user@host: forms are not NTFS ADS."""
+    code, out = _warn_text(cmd)
+    assert code == 0 and "WARNING" not in out.upper(), cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "echo x > file:hidden",
+    "touch note:stream",
+    "cp a dir/f:hidden",
+])
+def test_ads_local_forms_still_blocked(cmd):
+    code, out = run_gate(cmd)
+    assert code == 2, f"local ADS target should block, got {code}: {out}"
+
+
+@pytest.mark.parametrize("cmd", [
+    "curl x | env sh",
+    "gsutil -o x rm -r gs://b",
+])
+def test_second_pass_extended_shapes_warn(cmd):
+    code, out = _warn_text(cmd)
+    assert code == 0 and "WARNING" in out.upper(), cmd
