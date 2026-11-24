@@ -190,6 +190,10 @@ PROBES = [
     ("scripts/changelog-refs.py", [], "changelog-refs"),
     ("extensions/ui-dsl/ui_dsl.py",
      ["benchmark", "--fixture", "nonexistent"], "ui-dsl"),
+    # emit error path: missing input -> stamped ok:false envelope
+    ("extensions/ui-dsl/ui_dsl.py",
+     ["emit", "--input", "nonexistent.dsl", "--format", "a2ui"],
+     "ui-dsl"),
     ("skills/youtube-fetcher/scripts/fetch.py",
      ["validate", "dQw4w9WgXcQ"], "youtube-fetcher"),
     ("skills/devin-config/scripts/devin-manager.py",

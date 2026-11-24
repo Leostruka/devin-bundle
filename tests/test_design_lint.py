@@ -21,7 +21,7 @@ def run(script, *argv):
 
 
 def test_registry_counts():
-    assert len(ANTIPATTERNS) == 62
+    assert len(ANTIPATTERNS) == 72
     cats = {r["category"] for r in ANTIPATTERNS}
     assert cats == {"slop", "quality"}
     for r in ANTIPATTERNS:
@@ -37,7 +37,7 @@ def test_all_static_rules_implemented():
 def test_list_rules():
     r = run("design_lint.py", ".", "--list-rules")
     assert r.returncode == 0
-    assert "62 rules" in r.stdout
+    assert "72 rules" in r.stdout
     assert "side-tab" in r.stdout
 
 
