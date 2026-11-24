@@ -79,12 +79,15 @@ def main():
             raise ValueError("payload not a dict")
     except Exception:
         return 0
-    if payload.get("tool_name") != "exec":
+    if payload.get("tool_name") not in ("exec", "write_to_process"):
         return 0
     ti = payload.get("tool_input") or {}
     if not isinstance(ti, dict):
         ti = {}
     cmd = ti.get("command") or ""
+    if payload.get("tool_name") == "write_to_process" and \
+            not cmd.strip():
+        cmd = _hookrun.wtp_submitted_text(payload)
     if not isinstance(cmd, str) or not INSTALL_RE.search(cmd):
         return 0
     if not _scanners_present():

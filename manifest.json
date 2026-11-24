@@ -1426,7 +1426,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "A36D7A9BD29F0320F23BEE5B8544FA24D891D816FD10CB0409C50E3BFD4F55EE",
+      "export_hash": "02D91D8A7A3C6D5B074F7EA5FE6235FB10941DD23B001E671AD5E80F611D8A1B",
       "exported_at": "2026-11-17"
     },
     {
@@ -1499,7 +1499,7 @@
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "3F98B505FF6E724A2308894BC998D02BC938B6538A3AACC21A1432C89898B390",
+      "export_hash": "877FD45680E9439D08849AF26D3DA071FADC844230B535E09F2BDEBD497CEF70",
       "exported_at": "2026-11-17"
     },
     {
@@ -1519,7 +1519,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "4BFB15ADD43D409D962E7A6C7837A555386BF462238161563AE44245AF1440B3",
+      "export_hash": "C8EE6B941F7B485DF9191E8711709C323E1359A5A48DE92EC8B9F23D49C1F8DC",
       "exported_at": "2026-11-17"
     },
     {

@@ -36,7 +36,7 @@
   ],
   "PostToolUse": [
     {
-      "matcher": "^exec$",
+      "matcher": "^(exec|write_to_process)$",
       "hooks": [
         {
           "type": "command",

@@ -20,10 +20,12 @@ disk scans. A hung script hangs the whole consolidated phase until the
 outer hook timeout kills everything; hooks.v1.json `timeout` is the only
 bound. Keep each script well under its phase budget.
 """
+import hashlib
 import importlib.util
 import io
 import json
 import os
+import re
 import sys
 import time
 import traceback
@@ -111,6 +113,100 @@ def emit_metric(event, **fields):
         pass  # fail-soft: cleanup; preserve primary error
 
 
+_WTP_SPECIAL = re.compile(r"<[^>]*>")
+_WTP_CLEAR = re.compile(r"(?i)<C-c>|<C-u>")
+_WTP_BUF_CAP = 4096
+
+
+def _devin_home():
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
+def _wtp_buf_path(payload, tool_input):
+    """Per-shell pending-line buffer for write_to_process (split-write
+    bypass: dangerous text can arrive in one call and the CR in the next,
+    so the gate must model the shell's current input line across calls)."""
+    try:
+        key = "|".join([
+            str(payload.get("session_id", "")),
+            str(payload.get("prompt_id", "")),
+            # Pre- and post-event hooks each see the same stdin stream and
+            # must model the pending line independently - sharing one
+            # buffer would double-count the text.
+            str(payload.get("hook_event_name", "")),
+            str(tool_input.get("shell_id", ""))])
+        h = hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+        d = os.environ.get("DEVIN_STATE_DIR") or os.path.join(
+            _devin_home(), "state")
+        os.makedirs(d, exist_ok=True)
+        return os.path.join(d, "wtp-" + h + ".txt")
+    except Exception:
+        return None
+
+
+def wtp_submitted_text(payload):
+    """Return the lines a write_to_process call actually submits to the
+    target shell.
+
+    A line runs only when followed by CR/LF - trailing text stays on the
+    shell's input line and is buffered per shell across calls. C-c/C-u
+    clear-controls discard the pending line. bytes_input uses
+    angle-bracket notation (<CR>, <C-c>) decoded to real chars first.
+    """
+    tool_input = payload.get("tool_input")
+    if not isinstance(tool_input, dict):
+        return ""
+    is_bytes = False
+    text = tool_input.get("text_input")
+    if not isinstance(text, str) or not text:
+        text = tool_input.get("bytes_input")
+        is_bytes = True
+        if not isinstance(text, str) or not text:
+            return ""
+    if is_bytes:
+        text = re.sub(r"(?i)<CR>|<LF>|\r\n?", "\n", text)
+        text = _WTP_CLEAR.sub("\x03", text)
+        text = _WTP_SPECIAL.sub("", text)
+    pending = ""
+    buf = _wtp_buf_path(payload, tool_input)
+    if buf:
+        try:
+            with open(buf, encoding="utf-8", errors="replace") as fh:
+                pending = fh.read()[-_WTP_BUF_CAP:]
+        except OSError:
+            pending = ""
+    combined = pending + text
+    # C-c / C-u discards the input line: drop everything up to the last
+    # clear-control (incl. pending from earlier calls).
+    combined = combined.rsplit("\x03", 1)[-1]
+    lines = re.split(r"\r\n|\r|\n", combined)
+    if buf:
+        try:
+            with open(buf, "w", encoding="utf-8") as fh:
+                fh.write(lines[-1][-_WTP_BUF_CAP:])
+        except OSError:
+            pass
+    return "\n".join(lines[:-1])
+
+
+def _normalize_wtp(payload):
+    """write_to_process carries shell stdin, not a command field - inject
+    the submitted lines as tool_input.command so every inner gate sees the
+    real commands (C90/C91: otherwise each gate silently no-ops)."""
+    try:
+        if payload.get("tool_name") != "write_to_process":
+            return
+        ti = payload.get("tool_input")
+        if not isinstance(ti, dict) or ti.get("command"):
+            return
+        ti["command"] = wtp_submitted_text(payload)
+    except Exception:
+        pass
+
+
 def _run_one(script_name, payload):
     """Run scripts/<script_name> main() in-process. Returns (exit_code, stdout, stderr)."""
     path = os.path.join(SCRIPTS_DIR, script_name)
@@ -141,6 +237,7 @@ def _run_one(script_name, payload):
 
 def run(script_names, payload):
     """Run scripts in order, merge hook output, print result. Returns exit code."""
+    _normalize_wtp(payload)
     merged = {}
     contexts = []
     updated_input = {}

@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """PreToolUse hook: blocks destructive commands that are irreversible or high-risk.
 
-Fires on exec and write_to_process (C90). write_to_process is a laundered
-exec channel: its text reaches a live shell's stdin, so only CR/LF-terminated
-lines (actually submitted) are scanned - partial keystrokes are not yet
-executable.
+Fires on exec and write_to_process (C90-C91). write_to_process is a
+laundered exec channel: its text reaches a live shell's stdin, so only
+CR/LF-terminated lines (actually submitted) are scanned. _hookrun
+normalizes wtp payloads - injects the submitted lines as
+tool_input.command so every runner child sees real commands; the local
+extraction below is the direct-invocation fallback. Pending input-line
+text is buffered per shell (state/wtp-*.txt) so text and its CR arriving
+in separate calls still gate (split-write bypass).
 
 Stdin payload (per Devin CLI docs /cli/extensibility/hooks/lifecycle-hooks):
   {"hook_event_name": "PreToolUse", "tool_name": "exec",
@@ -68,7 +72,7 @@ Source: "Reason Less, Verify More" (arXiv:2607.07405, KDD 2026 Workshop)
   Gates are deterministic, read-only, pre-execution predicates.
   Fail-open: if a gate raises an exception, log and allow.
 """
-import sys, json, os, re, hashlib
+import sys, json, os, re
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
 
@@ -602,78 +606,6 @@ def strip_commit_message(command):
     return stripped[0] if stripped else command
 
 
-_WTP_SPECIAL = re.compile(r"<[^>]*>")
-_WTP_CLEAR = re.compile(r"(?i)<C-c>|<C-u>")
-_WTP_BUF_CAP = 4096
-
-
-def _devin_home():
-    appdata = os.environ.get("APPDATA", "")
-    if appdata:
-        return os.path.join(appdata, "devin")
-    return os.path.join(os.path.expanduser("~"), ".config", "devin")
-
-
-def _wtp_buf_path(data, tool_input):
-    """Per-shell pending-line buffer (split-write bypass: the dangerous text
-    can arrive in one call and the CR in the next, so the gate must model
-    the shell's current input line across calls)."""
-    try:
-        key = "|".join([
-            str(data.get("session_id", "")),
-            str(data.get("prompt_id", "")),
-            str(tool_input.get("shell_id", ""))])
-        h = hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
-        d = os.environ.get("DEVIN_STATE_DIR") or os.path.join(
-            _devin_home(), "state")
-        os.makedirs(d, exist_ok=True)
-        return os.path.join(d, "wtp-" + h + ".txt")
-    except Exception:
-        return None
-
-
-def _submitted_lines(tool_input, data):
-    """Extract only lines a write_to_process call actually submits.
-
-    A line runs in the target shell only when followed by CR/LF — trailing
-    text without a terminator stays on the shell's input line. That pending
-    text is buffered per shell across calls (split-write bypass), and
-    C-c/C-u/C-k (line-clear controls) discard it. bytes_input uses
-    angle-bracket notation (<CR>, <C-c>) decoded to real chars first.
-    """
-    is_bytes = False
-    text = tool_input.get("text_input")
-    if not isinstance(text, str) or not text:
-        text = tool_input.get("bytes_input")
-        is_bytes = True
-        if not isinstance(text, str) or not text:
-            return ""
-    if is_bytes:
-        text = re.sub(r"(?i)<CR>|<LF>|\r\n?", "\n", text)
-        text = _WTP_CLEAR.sub("\x03", text)
-        text = _WTP_SPECIAL.sub("", text)
-    pending = ""
-    buf = _wtp_buf_path(data, tool_input)
-    if buf:
-        try:
-            with open(buf, encoding="utf-8", errors="replace") as fh:
-                pending = fh.read()[-_WTP_BUF_CAP:]
-        except OSError:
-            pending = ""
-    combined = pending + text
-    # C-c / C-u / C-k discards the current input line: drop everything up to
-    # the last clear-control (incl. pending from earlier calls).
-    combined = combined.rsplit("\x03", 1)[-1]
-    lines = re.split(r"\r\n|\r|\n", combined)
-    if buf:
-        try:
-            with open(buf, "w", encoding="utf-8") as fh:
-                fh.write(lines[-1][-_WTP_BUF_CAP:])
-        except OSError:
-            pass
-    return "\n".join(lines[:-1])
-
-
 def main():
     try:
         _hookrun.pin_stdio_utf8(sys.stdin)
@@ -690,10 +622,11 @@ def main():
     tool_input = data.get("tool_input")
     if not isinstance(tool_input, dict):
         sys.exit(0)
-    if tool_name == "write_to_process":
-        command = _submitted_lines(tool_input, data)
-    else:
-        command = tool_input.get("command", "") or ""
+    command = tool_input.get("command", "") or ""
+    if tool_name == "write_to_process" and not command.strip():
+        # Direct invocation (no _hookrun normalization upstream): extract
+        # the submitted lines ourselves.
+        command = _hookrun.wtp_submitted_text(data)
     if not isinstance(command, str) or not command.strip():
         sys.exit(0)
 

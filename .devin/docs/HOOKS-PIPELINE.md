@@ -22,7 +22,7 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 
 | Entry point | Event / matcher | Inner scripts (order) |
 |---|---|---|
-| `pre-exec-guard.py` | PreToolUse `^exec$` | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard |
+| `pre-exec-guard.py` | PreToolUse `^(exec\|write_to_process)$` | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard |
 | `pre-write-guard.py` | PreToolUse `^(write\|edit\|notebook_edit)$` | ALWAYS: architecture-gate, validate-tool-args, no-em-dash; TEXT_ONLY (write/edit only): check-ai-signature, validate-mermaid |
 | `post-exec.py` | PostToolUse `^(exec\|mcp_call_tool)$` | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat |
 | `dep-audit-gate.py` | PostToolUse `^exec$` | direct |
@@ -63,6 +63,13 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 - A crashing inner script is fail-open: traceback to stderr, does not
   block, remaining scripts still run. No short-circuit on block either;
   all scripts run so context output is not lost.
+- **write_to_process normalization**: `run()` injects the CR/LF-submitted
+  stdin lines as `tool_input.command` before dispatch, so every inner
+  gate sees the real commands (C90-C93). Pending input-line text is
+  buffered per `session|prompt|event|shell` under `state/wtp-*.txt`
+  (phase-keyed so pre/post hooks model the same stream independently;
+  C-c/C-u clear). File buffers are enforcement state - the state-file
+  guards cover them.
 
 ## Exit-code mapping
 
