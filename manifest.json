@@ -1426,7 +1426,7 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "4AEC35D1BCAB983EFC83C1E84BFB65E574017387BEE1AACC7D7B567C0F8D0E95",
+      "export_hash": "78D14C6998FA2B83A4143064CEB5E953711AAD7440478768E1BB5D977C6EE07B",
       "exported_at": "2026-11-17"
     },
     {
@@ -1519,7 +1519,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "972646F900B0733DC72D3C16AE533CDBEE7D244AAFC91508D0B447360BBA39A7",
+      "export_hash": "BCC687D5338A36DDDEF298F31FA1274F30A022C4EA92C3AECF8FB3E8E12819C5",
       "exported_at": "2026-11-17"
     },
     {

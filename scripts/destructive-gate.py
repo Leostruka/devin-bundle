@@ -137,7 +137,8 @@ GIT_RECOVERY_KILL = re.compile(
     r"reg\s+delete\s+(?:\\\\[^ |;&]+\\)?HKLM|"
     r"crontab\s+-r\b|schtasks\s+/delete\b[^|;&]*/tn\s+\*|"
     r"Unregister-ScheduledTask\b|certutil\s+-delstore\b|"
-    r"net\s+user\s+\S+\s+/delete\b|Remove-LocalUser\b)")
+    r"net\s+user\s+(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+"
+    r"/delete\b|Remove-LocalUser\b)")
 
 SQL_DESTRUCTIVE = re.compile(
     r"\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA|USER|ROLE|INDEX|VIEW|"
@@ -151,7 +152,7 @@ SQL_DESTRUCTIVE = re.compile(
 # ALTER ... DROP destroys schema+data but is routine in migrations.
 SQL_WARN = re.compile(
     r"\bDELETE\s+FROM\s+[\"'`\w.]+\s*[\"'`;]?\s*(?:$|[|;&])|"
-    r"\bALTER\s+TABLE\s+\S+\s+DROP\b",
+    r"\bALTER\s+TABLE\s+(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+DROP\b",
     re.IGNORECASE,
 )
 
@@ -212,12 +213,24 @@ _STATE_FILE_NAME = (r"(?:subagent-[\w.*?{}\[\],-]*(?:\.jsonl?)?|"
                     # {a,b}, bare *). state/ contents are all gated
                     # files - no glob in there is innocent.
                     r"[\w.*?{}\[\],+~-]*[*?{\[][\w.*?{}\[\],+~.-]*)")
-_STATE_PATH = (r"(?:^|[\\/]|\s)state[\\/]+" + _STATE_FILE_NAME +
+# Left boundary is a lookbehind (not consumed): `>`/`=`/`:` stay with the
+# operator (`>state/x`, `of=state/x`, `h:state/x`) while still bounding
+# the state component. `[^\s\\/>=:]` = "no non-boundary char before".
+# File-level targets keep the broad boundary: `x/state/subagent-*.json`
+# carries an enforcement-specific basename wherever `state` sits - a
+# DEVIN_STATE_DIR may point anywhere.
+_STATE_PATH = (r"(?<![^\s\\/>=:])state[\\/]+" + _STATE_FILE_NAME +
                r"(?=[\s|;&'\"\n]|$)")
-# The dir target itself: `devin/state` OR a bare `state` component
-# (`rm -rf state`, `find ./state -delete`). Terminator lookahead
-# excludes `state-old`/`mystate` compounds.
-_STATE_DIR = (r"(?:^|[\\/]|\s|\.\s*[/\\])(?:devin[\\/]+)?state"
+# Bare-dir targets anchor tighter: a `state` segment counts at path root
+# (`./`/`../`/`seg/../` prefixes resolve to it) or under a `devin`
+# segment (the enforcement dir lives under the devin home wherever that
+# is). `src/state`/`dist/state` are project dirs (Redux-style) - a
+# mid-path `state` after an ordinary segment does not anchor.
+_STATE_PRE = (
+    r"(?:(?<![^\s>=:'\"])(?:(?:\.{1,2}|[^\s\\/>=:]+[\\/]+\.\.)[\\/]+)*"
+    r"|(?:(?<![^\s>=:'\"])|(?<=[\\/]))"
+    r"(?:[^\s|;&>=:\\/]+[\\/])*(?<![\w-])devin[\\/]+)")
+_STATE_DIR = (_STATE_PRE + r"state"
               # Win32 strips trailing dots: `rm -rf state.` deletes `state`.
               r"\.{0,3}(?=[/\\'\"\s|;&\n]|$)")
 # `cd ...state && rm wtp-x.txt` - a bare state-basename target after a
@@ -229,24 +242,29 @@ _STATE_DIR = (r"(?:^|[\\/]|\s|\.\s*[/\\])(?:devin[\\/]+)?state"
 # Wrappers that may precede cd or the verb: env/nice/sudo/xargs exec the
 # following verb directly (`cd state && env rm x`); bash/sh/cmd need a
 # -c//c flag, powershell/pwsh take a bare command (Remove-Item ...).
-_STATE_WRAP = (r"(?:[({!]+\s*)*"
+_STATE_WRAP = (r"(?:[({!`]+\s*|\$\(\s*)*"
+               # Env-assignment (`A=1 rm`) and redirect (`> f rm`)
+               # prefixes precede the verb without executing it.
+               r"(?:[\w.]+=(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")*\s+|"
+               r">>?\s*(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+)*"
                r"(?:(?:env|nice|nohup|sudo|doas|runas|timeout|xargs|"
                r"watch|stdbuf|ionice|taskset|chrt|command|builtin|exec|"
                r"noglob|time|busybox|eval|strace|ltrace|setsid|pkexec|"
                r"detach|flock|unshare|nsenter|chroot|while|until|for|"
-               r"do|then|elif|else|if|case)\s+(?:\S+\s+)*)?"
+               r"do|then|elif|else|if|case)\s+"
+               r"(?:(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+)*)?"
                r"(?:(?:powershell|pwsh)\s+|"
                r"(?:bash|sh|dash|zsh|cmd)\b[^|;&\n]*?"
                r"(?:-c|/c|-Command)\s+[\"']?)?")
 _STATE_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
-             r"(?:cd|chdir|pushd|Set-Location)\s+"
+             r"(?:cd|chdir|pushd|Set-Location|sl)\s+"
              r"[\"']?[^|;&\n\"']*?(?<![\w.-])state\.{0,3}"
              r"(?=[/\\'\"\s|;&\n]|$)[/\\]?[\"']?"
              r"(?:\s*>>?\s*[^\s|;&\n]+)?\s*[|;&\n]+\s*" + _STATE_WRAP)
 # Two-hop form: `cd devin && rm -rf state` - cd into the devin home then
 # hit the bare state dir. Same quoting/separator tolerances as _STATE_CD.
 _DEVIN_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
-             r"(?:cd|chdir|pushd|Set-Location)\s+"
+             r"(?:cd|chdir|pushd|Set-Location|sl)\s+"
              r"[\"']?[^|;&\n\"']*?(?<![\w.-])devin"
              r"(?=[/\\'\"\s|;&\n]|$)[/\\]?[\"']?"
              r"(?:\s*>>?\s*[^\s|;&\n]+)?\s*[|;&\n]+\s*" + _STATE_WRAP +
@@ -260,7 +278,11 @@ _DEVIN_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
              r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|"
              r"wipe)\b)")
 _STATE_NAME = (r"[\"']?(?:\.[/\\])?" + _STATE_FILE_NAME +
-               r"(?=[\s|;&'\"\n)]|$)")
+               r"(?=[\s|;&'\"\n)`]|$)")
+# After `cd state`, extra segments may precede the verb
+# (`cd state && sl . && rm x`, `cd state && for f in y; do rm $f`) -
+# each tolerates any single-segment command then re-anchors the verb.
+_CD_SEGS = r"(?:[^|;&\n]*?[|;&\n]+\s*" + _STATE_WRAP + r")*"
 # A command substitution inside a delete-verb's operand resolves at
 # run time - `rm -rf sta$(echo te)` targets `state` while the scan sees
 # only `sta$(`. Same uninspectable-transport class as ENCODED_EXEC: the
@@ -277,7 +299,7 @@ _STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
 # (`echo "rm state/x"` stays silent; `bash -c 'rm state/x'` still hits).
 _CMD_POS = (r"(?:^|[|;&`$(]|\b(?:sudo|doas|runas|xargs|env|nice|nohup|"
             r"timeout|ionice|watch|stdbuf|strace|ltrace|taskset|chrt)\s+"
-            r"(?:\S+\s+)*|"
+            r"(?:(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+)*|"
             r"(?:-[ckCK]|-Command|/[ckCK]|eval)\s*[\"'`])\s*")
 STATE_FILE_DELETE = re.compile(
     r"(?:" + _CMD_POS +
@@ -288,20 +310,26 @@ STATE_FILE_DELETE = re.compile(
     r"(?:['\"]?state[\\/]+" + _STATE_FILE_NAME + "|" + _STATE_DIR + ")"
     r"|" + _CMD_POS + r"find\b[^|;&]*?(?:" + _STATE_TARGET + ")"
     r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+\S)"
-    # `find state -type f | xargs rm` - state files flow through the
-    # pipe into a delete verb; the find itself carries no -delete flag.
-    r"|" + _CMD_POS + r"find\b[^|;&]*?(?:" + _STATE_TARGET + ")"
+    # Any producer mentioning a state path piped into a delete verb:
+    # `find state | xargs rm`, `echo state/x | xargs rm` - the operands
+    # ride the pipe, invisible to the verb's arg list.
+    r"|" + _CMD_POS + r"[^|;&]*?(?:" + _STATE_TARGET + ")"
     r"[^|;&]*\|\s*(?:xargs\s+)*(?:rm|del|erase|ri|rd|rmdir|Remove-Item|"
     r"Rename-Item|ren|unlink|shred|srm|wipe|mv|move|Move-Item)\b"
-    r"|" + _STATE_CD +
+    r"|" + _STATE_CD + _CD_SEGS +
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
     r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&\n]*?" + _STATE_NAME +
-    r"|" + _STATE_CD + r"find\b[^|;&\n]*?-delete\b"
+    r"|" + _STATE_CD + _CD_SEGS + r"find\b[^|;&\n]*?-delete\b"
     # `cd state && ls | xargs rm` - piped operands hit state files with
     # no literal name in the rm arg list at all.
-    r"|" + _STATE_CD + r"[^|;&\n]*\|\s*(?:xargs\s+)*"
+    r"|" + _STATE_CD + _CD_SEGS + r"[^|;&\n]*\|\s*(?:xargs\s+)*"
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren|unlink|"
     r"shred|srm|wipe|mv|move|Move-Item)\b"
+    # `cd state && for f in wtp-x; do rm $f; done` - loop-var/subst
+    # operands resolve at run time, invisible to the name scan.
+    r"|" + _STATE_CD + _CD_SEGS +
+    r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
+    r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&\n]*?[$`]"
     r"|" + _DEVIN_CD,
     re.IGNORECASE,
 )
@@ -314,16 +342,41 @@ STATE_FILE_WRITE = re.compile(
     r"(?:>>?\s*[\"']?[^|;&]*?|" + _CMD_POS +
     r"(?:tee|truncate|Out-File|Set-Content|Add-Content|Clear-Content|"
     r"sc\b|Set-ItemProperty|sed\b[^|;&]*-i|"
-    r"dd\b[^|;&]*of=)\b[^|;&]*?)(?:" + _STATE_TARGET + ")"
+    r"dd\b[^|;&]*of=)(?:\b|(?<==))[^|;&]*?)(?:" + _STATE_TARGET + ")"
     r"|\bFile\]::(?:Write|Append|Create|Copy|Move|Replace)\w*\s*\([^)]*?"
     r"(?:['\"]?state[\\/]+" + _STATE_FILE_NAME + "|" + _STATE_DIR + ")"
     r"|" + _CMD_POS + r"(?:cp|copy|Copy-Item|rsync|install)\b[^|;&]*?"
     r"(?:" + _STATE_TARGET + r")[\\/'\"]*\s*(?:$|[|;&])"
-    r"|" + _STATE_CD +
+    r"|" + _STATE_CD + _CD_SEGS +
     r"(?:tee|truncate|Out-File|Set-Content|Add-Content|Clear-Content|sc\b|"
     r"sed\b[^|;&]*-i|dd\b[^|;&]*of=|cp|copy|Copy-Item)\b[^|;&]*?" +
     _STATE_NAME +
-    r"|" + _STATE_CD + r"[^|;&]*?>>?\s*" + _STATE_NAME,
+    r"|" + _STATE_CD + _CD_SEGS + r"[^|;&]*?>>?\s*" + _STATE_NAME +
+    # Tools whose path operand is flag-shaped: curl -o, wget -O,
+    # iwr -OutFile, gcc/javac/rustc -o/-d, tar -cf/-C, unzip -d,
+    # pandoc -o, certutil -encode/-decode <out>, ffmpeg output.
+    r"|" + _CMD_POS +
+    r"(?:curl|wget|iwr|Invoke-WebRequest|Invoke-RestMethod|"
+    r"gcc|g\+\+|clang|cc|ld|objcopy|javac|rustc|go|pandoc|"
+    r"pg_dump|certutil|msbuild|cl\b|link|lib|fsutil|tar|unzip)"
+    r"\b[^|;&]*?"
+    r"(?:-o\b|-O\b|-d\b|-c\w*|-C\s|--output(?:-document|-file)?[\s=]|"
+    r"-OutFile\b|--directory\b|--destdir[\s=]|--prefix[\s=]|"
+    r"-Path\b|seteof\b)[^|;&]*?(?:" + _STATE_TARGET + r")" +
+    # Positional last-arg destinations: scp/rsync/install/gzip-family/
+    # New-Item/bitsadmin/ffmpeg - the state path must sit at the END
+    # (source-position reads stay allowed). tar/unzip/zip/7z keep out:
+    # their state-named operand is the SOURCE archive, not a write.
+    r"|" + _CMD_POS +
+    r"(?:scp|install|rsync|gzip|gunzip|bzip2|bunzip2|xz|unxz|"
+    r"New-Item|bitsadmin|ffmpeg)\b"
+    r"[^|;&]*?(?:" + _STATE_TARGET + r")"
+    r"(?:[\\/][^\s\\/|;&]*)*(?:\s+-[\w:]+)*\s*(?:$|[|;&])" +
+    # robocopy /MIR wipes extras in the DEST dir - a state dir named
+    # anywhere in the args with /mir present is a mirror into it.
+    r"|\brobocopy\b(?=[^|;&]*/mir\b)[^|;&]*?(?:" + _STATE_TARGET + r")"
+    # zip's output archive is the FIRST operand: `zip state/x files`.
+    r"|\bzip\b\s*(?:-\S+\s+)*(?:" + _STATE_TARGET + r")",
     re.IGNORECASE,
 )
 
@@ -360,7 +413,21 @@ _BRANCH_VALUE_FLAGS = frozenset({
 # op itself or every later git call. Reads/removals (`config key`,
 # `--get`, `--unset`, `--list`, `-e`) stay allowed - only a WRITE of a
 # denied key blocks.
-_GIT_SEG = re.compile(r"\bgit(?:\.(?:exe|cmd|bat|com))?(?=\s)[^|;&\n]*")
+_GIT_SEG = re.compile(
+    # `git` must sit at command position - `echo "git config x y"` /
+    # `man git-config` are prose, not invocations. Wrappers that exec
+    # the next word keep it reachable (xargs feeds config operands via
+    # stdin; loops/env-assign do the same).
+    r"(?:^|[|;&`$(\n])\s*"
+    r"(?:[\w.]+=(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")*\s+)*"
+    r"(?:(?:sudo|doas|env|nice|nohup|xargs|command|builtin|exec|eval|"
+    r"time|noglob|strace|ltrace|setsid|pkexec|watch|stdbuf|ionice|"
+    r"taskset|chrt|while|until|for|if|then|do|elif|else)\s+"
+    r"(?:(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+)*)*"
+    # Path-qualified binary: `/usr/bin/git`, `C:\tools\git.exe`,
+    # `./git` - any dir prefix ending in a separator before `git`.
+    r"(?:[^\s|;&`'\"$(\n]*[\\/])*"
+    r"git(?:\.(?:exe|cmd|bat|com))?(?=\s)[^|;&\n]*")
 _GIT_CFG_INLINE = re.compile(
     r"(?:^|\s)(?:-c|--config-env)(?:\s+|=)[\"']?([\w.+-]+)\s*=")
 _GIT_CFG_DENY_EXACT = frozenset({
@@ -369,11 +436,12 @@ _GIT_CFG_DENY_EXACT = frozenset({
     "diff.external", "init.templatedir", "safe.directory",
     "man.viewer", "interactive.difffilter", "sendemail.sendmailcmd",
     "http.sslverify", "http.sslcainfo", "http.sslcapath",
-    "ssh.variant", "web.browser",
+    "http.proxy", "https.proxy", "ssh.variant", "web.browser",
+    "instaweb.httpd", "instaweb.modulepath",
 })
 _GIT_CFG_DENY_PREFIX = (
     "alias.", "include.", "includeif.", "pager.",
-    "browser.", "web.", "instaweb.", "gpg.ssh.", "extcmd.")
+    "browser.", "web.", "gpg.ssh.", "extcmd.")
 # Program/exec suffixes across tool namespaces (mergetool.*.cmd,
 # filter.*.clean/smudge/process, gpg.*.program, tar.*.command,
 # protocol.*.allow, merge.*.driver, remote-free .url kept out -
@@ -383,10 +451,14 @@ _GIT_CFG_DENIED_KEY = re.compile(
     r"clean|smudge|process|required|variant|fsmonitor|askpass|pager|"
     r"editor|hookspath|difffilter|sendmailcmd|viewer|external|allow)$|"
     r"^submodule\..*\.(?:update|url|path)$")
-# Mode flags that make `git config` a read or a removal - not a write.
+# Mode flags that make `git config` a read - not a write.
+# rename-section/remove-section WRITE config (remove can strip protective
+# keys like core.hooksPath), so they are handled as writes below.
 _GIT_CFG_NONWRITE = re.compile(
-    r"^--?(?:get.*|list|l$|unset.*|remove-section|rename-section|"
+    r"^--?(?:get.*|list|l$|unset.*|"
     r"edit|e$|show-origin|show-scope|name-only|fixed-value|z$)$")
+# Section rewrite ops - every operand is a section/key name.
+_GIT_CFG_SECTION_OP = re.compile(r"--?(?:rename-section|remove-section)")
 # config flags that consume the following token (never a key/value).
 _GIT_CFG_VALFLAGS = frozenset({
     "-f", "--file", "--blob", "--type", "--default", "--value",
@@ -400,10 +472,21 @@ def _git_cfg_denied(key):
             or bool(_GIT_CFG_DENIED_KEY.search(k)))
 
 
+# git global flags that redirect execution: --exec-path replaces every
+# sub-command lookup, and -C/--git-dir/--work-tree aim git at a foreign
+# repo whose hooks run on the subcommand (post-checkout, commit-msg...).
+_GIT_EXEC_FLAGS = re.compile(
+    r"--exec-path(?:\s|=)|(?:-C|--git-dir|--work-tree)(?:\s|=)[^|;&\n]*\b"
+    r"(?:commit|checkout|switch|restore|merge|rebase|pull|am\b|"
+    r"cherry-pick|revert|worktree\s+add|submodule|stash\b.*\bpop)")
+
+
 def _git_cfg_danger(command):
     """Return a denied git-config key being SET in the command, or None.
     Covers `git -c k=v`/`--config-env` inline sets and `git config k v`
     writes; reads/removals pass."""
+    if _GIT_EXEC_FLAGS.search(command):
+        return "<git exec-path/foreign-repo flag>"
     for m in _GIT_SEG.finditer(command):
         seg = m.group(0)
         for im in _GIT_CFG_INLINE.finditer(seg):
@@ -423,6 +506,20 @@ def _git_cfg_danger(command):
                     skip = t in _GIT_CFG_VALFLAGS
                     continue
                 pos.append(t)
+            # Operands assembled at run time are uninspectable: xargs
+            # pipes key+value in, read-loops/vars/$()/backtick build the
+            # key itself - a denied key can't be matched when the key is
+            # dynamic, so the whole write form blocks.
+            if pos and re.search(r"[$`]", pos[0]):
+                return "<dynamic git-config operand>"
+            if not pos and re.search(r"\bxargs\b|\bread\b", seg):
+                return "<stdin-fed git config>"
+            # rename/remove-section: every operand is a section name, and
+            # removing a section can strip protective keys - all checked.
+            if _GIT_CFG_SECTION_OP.search(seg):
+                if any(_git_cfg_denied(p) for p in pos):
+                    return "<git config section op>"
+                continue
             if len(pos) >= 2 and _git_cfg_denied(pos[0]):
                 return pos[0]
     return None
@@ -443,7 +540,8 @@ DISK_WIPE = re.compile(
     # / `lvremove --help` stay silent; `lvremove -f vg/lv` still blocks.
     r"|\b(?:zpool\s+destroy|(?:lv|vg|pv)remove\b[^|;&]*?\s(?![-|;&])\S|"
     r"mdadm\b[^|;&]*--zero-superblock|newfs(?:_\w+)?\b[^|;&]*?\s(?![-|;&])\S|"
-    r"diskutil\s+eraseDisk|parted\s+\S+\s+mklabel|"
+    r"diskutil\s+eraseDisk|parted\s+"
+    r"(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+mklabel|"
     r"sgdisk\b[^|;&]*-Z|wsl(?:\.exe)?\s+--unregister))",
     re.IGNORECASE)
 
@@ -465,10 +563,41 @@ ENCODED_EXEC = re.compile(
     r"(?:-d\b|--decode\b|-D\b|-decode\b|-r\b)[^|;&]*?"
     r"\|\s*(?:bash|sh|zsh|dash|ash|ksh|eval|source|python|perl|ruby|node|"
     r"powershell|pwsh|cmd)\b|"
+    # `bash -c "$(printf '\x41..')"` - a transform producer inside a
+    # command substitution that feeds an interpreter decodes payload
+    # bytes the scan never sees as shell words.
     r"\b(?:bash|sh|zsh|dash|ash|ksh|eval|source|cmd)\b[^|;&]*?"
-    r"\$\([^)]*?(?:base64\b|certutil\b|openssl\b|xxd\b)[^)]*?\)|"
+    r"\$\([^)]*?(?:base64\b|certutil\b|openssl\b|xxd\b|printf\b|"
+    r"uudecode\b|uudeview\b|echo\s+-[a-zA-Z]*e|rev\b|tr\s)[^)]*?\)|"
     r"\b(?:eval|source)\b\s*[\"'`]?[$<]\([^)]*?"
-    r"(?:base64|certutil|openssl|xxd|printf\b[^)]*?\\x)[^)]*?\)",
+    r"(?:base64|certutil|openssl|xxd|printf\b[^)]*?\\x)[^)]*?\)|"
+    # A transform producer piped into a shell/interpreter launders the
+    # payload: printf/echo -e escape bytes, rev/tr rearrange them, the
+    # decoders unencode them - the executed text never appears as a
+    # shell word. Direct producers (cat/curl/find) pass output through
+    # untouched - same exposure class as `sh file`, which the gate
+    # already accepts (file contents are outside the scan model).
+    r"\b(?:printf|echo\s+-[a-zA-Z]*e|rev|tac|tr\s|fold|dd\b[^|;&]*conv|"
+    r"sed\b|awk\b|perl\b|python\d*|php\b|node\b|ruby\b|xxd\b|base64\b|"
+    r"openssl\b|certutil\b|uudecode\b|uudeview\b|hexdump\b|od\b|"
+    r"(?<![\w.])(?:cmd|bash|sh|zsh|dash|ksh|pwsh|powershell)\b)"
+    r"[^|;&]*\|\s*(?:(?:sudo|doas|xargs)\s+)?"
+    r"(?:bash|sh|zsh|dash|ash|ksh|csh|tcsh|ssh|cmd|pwsh|powershell)\b|"
+    r"\b(?:printf|echo\s+-[a-zA-Z]*e|rev|tr\s|xxd\b|base64\b|openssl\b|"
+    r"certutil\b|uudecode\b|uudeview\b)[^|;&]*\|\s*"
+    r"(?:python\d*|perl|ruby|php|node|deno)\b"
+    r"(?:\s+-[ce]\b|\s+-(?:\s|$)|\s*$|\s*(?=[|;&]))|"
+    # `bash <(...)`, `sh <(...)`, `source <(...)` - process substitution
+    # feeds produced bytes to the interpreter.
+    r"\b(?:bash|sh|zsh|dash|ash|ksh|eval|source)\b[^|;&]*?<[<(]|"
+    # `eval $'\x41..'` - ANSI-C $'..' escapes decode inside eval; quote
+    # unwrapping may leave the bare backslash form `eval \x41..`.
+    r"\b(?:eval|source)\b\s*[\"'`]?(?:\$'|\\x)|"
+    # `python -c 'import base64;exec(..)'` etc - inline interpreter decode
+    # or exec verbs in the -c/-e payload.
+    r"\b(?:python\d*|perl|ruby|node|php|lua|deno)\b[^|;&]*?-[ce]\s*"
+    r"[\"'`]?[^|;&]*?(?:base64|b64|fromhex|unhex|decode|eval\b|exec\b|"
+    r"system\(|popen|subprocess|os\.system)",
     re.IGNORECASE)
 
 # Windows disk wipe: `format X:` quick/full format, `diskpart` interactive,
@@ -758,8 +887,16 @@ def check_rm_rf(command):
             return True  # recursive-force delete with no target is malformed
         for target in targets:
             # Trailing slashes don't change the target: `rm -rf ./` is `.`.
+            # Dot components collapse too: `dir/..`, `x/../../y`,
+            # `node_modules/..` and `./.` all land on cwd or a parent -
+            # normpath resolves them where rstrip cannot.
             norm = target.rstrip("/\\") or target
-            if norm in RM_DANGEROUS_TARGETS:
+            try:
+                collapsed = os.path.normpath(norm).rstrip("/\\")
+            except (ValueError, OSError):
+                collapsed = norm
+            if norm in RM_DANGEROUS_TARGETS or \
+                    collapsed in RM_DANGEROUS_TARGETS or collapsed == ".":
                 return True
             # Absolute or home-relative paths are dangerous unless whitelisted
             if target.startswith(("/", "~", "$HOME")):
@@ -767,9 +904,14 @@ def check_rm_rf(command):
             # Windows drive roots (C:\, D:/, etc.)
             if re.match(r"^[A-Za-z]:[\\/]", target):
                 return True
-            if target.startswith(".."):
+            # `..` only as a path component - `..foo`/`...` are legit names.
+            def _is_parent(p):
+                return p == ".." or p.startswith(("../", "..\\"))
+            if _is_parent(target) or _is_parent(collapsed):
                 return True
-            if "*" in target and not is_whitelisted(target):
+            # Globs widen the target set - `?` matches one char like `*`.
+            if ("*" in target or "?" in target) and \
+                    not is_whitelisted(target):
                 return True
             if not is_whitelisted(target):
                 # Relative non-whitelisted path: allow, but only if it is a
@@ -840,7 +982,8 @@ _ENV_DENY = {
     "git_sequence_editor", "git_pager", "pager", "manpager",
     "git_external_diff", "git_dir", "git_work_tree",
     "git_config_count", "git_config_global", "git_config_system",
-    "git_config_nosystem", "xdg_config_home", "home", "userprofile",
+    "git_config_nosystem", "git_config_parameters", "git_exec_path",
+    "git_template_dir", "xdg_config_home", "home", "userprofile",
     "histfile", "inputrc", "bash_history", "psmodulepath",
     "browser", "cvs_rsh", "rsync_rsh", "svn_ssh", "hg_ssh",
     "darcs_ssh", "git_ssh_variant", "ssh_command", "ansible_ask_pass",
@@ -854,6 +997,23 @@ _ENV_DENY_PREFIX = ("bash_func_", "git_config_key_", "git_config_value_",
 _PATH_SELF = re.compile(r"\$env:path|\$path|%path%", re.IGNORECASE)
 
 
+# exec `workdir` relocates relative targets the scan sees as bare names:
+# `rm -rf x` + workdir=/ removes /x. Recursive/wipe-class verbs with a
+# sensitive root (fs root, home, system dirs) can't be verified -> block.
+_WORKDIR_SENSITIVE = re.compile(
+    r"^(?:~|%USERPROFILE%|%SystemRoot%|%WINDIR%|[\\/]|"
+    r"[A-Za-z]:[\\/]*|[A-Za-z]:[\\/]+(?:Windows|Users|Program\s*Files|"
+    r"ProgramData)[\\/]*|/(?:home|etc|usr|var|bin|sbin|lib|boot|opt|"
+    r"root|srv)[\\/]*)$",
+    re.IGNORECASE)
+_WORKDIR_WIPE = re.compile(
+    r"\brm\b[^|;&]*-[a-zA-Z]*[rR][a-zA-Z]*|\brm\b[^|;&]*[*?]|"
+    r"\b(?:del|rd|rmdir|Remove-Item)\b[^|;&]*(?:/s\b|-r\b|-Recurse\b)|"
+    r"\brobocopy\b[^|;&]*/mir\b|\b(?:format|mkfs|shred|srm|wipe)\b|"
+    r"\bdd\b[^|;&]*\bof=",
+    re.IGNORECASE)
+
+
 def _env_violations(env):
     """Dangerous keys / shadowing PATH in an exec env dict (key names are
     the attack surface; values are program-parsed, not shell-expanded)."""
@@ -865,7 +1025,10 @@ def _env_violations(env):
         elif key == "path":
             val = "" if v is None else str(v)
             m = _PATH_SELF.search(val)
-            if not m or val[: m.start()].strip(";:"):
+            # Leading separator = empty first segment = the CURRENT dir
+            # shadows every inherited binary (`":$PATH"` / `";%PATH%"`).
+            if (not m or val[: m.start()].strip(";:")
+                    or val.startswith((":", ";"))):
                 bad.append("PATH")
     return bad
 
@@ -920,6 +1083,16 @@ def main():
                 "the command text where the gate can see it - e.g. "
                 "`export PATH=\"$PATH:dir\"; cmd`.")
     command = tool_input.get("command", "") or ""
+    workdir = tool_input.get("workdir")
+    if (tool_name == "exec" and isinstance(workdir, str)
+            and _WORKDIR_SENSITIVE.search(workdir.strip())
+            and isinstance(command, str)
+            and _WORKDIR_WIPE.search(command)):
+        block(
+            "wipe-class verb with a sensitive `workdir` root (" +
+            workdir.strip() + ") - relative targets land somewhere "
+            "dangerous and the command scan cannot resolve them. "
+            "cd into the directory inside the command text instead.")
     if tool_name == "write_to_process":
         # The 'command' key on a wtp payload is never trusted - it is not
         # part of the tool schema and could be injected by the caller.
@@ -1045,7 +1218,8 @@ def main():
         # prefixes point at another repo: the cherry check cannot verify
         # it, so treat as unverifiable and keep the block.
         foreign_repo = targets and (re.search(
-            r"\bgit(?:\.(?:exe|cmd|bat|com))?\b\s+(?:-c\s+\S+\s+)*"
+            r"\bgit(?:\.(?:exe|cmd|bat|com))?\b\s+"
+            r"(?:-c\s+(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+)*"
             r"(-C|--git-dir\b|--work-tree\b)",
             scan_command) or re.search(r"\bGIT_(?:DIR|WORK_TREE)=",
                                        scan_command))

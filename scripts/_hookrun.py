@@ -242,6 +242,15 @@ def wtp_submitted_text(payload):
     pending = ""
     dedup_i = ""
     buf = _wtp_buf_path(payload, tool_input)
+
+    def _join_conts(out):
+        # Shell continuations splice submitted lines into one command:
+        # backslash-EOL joins with NO space (`-\` + `f` -> `-f`, a flag
+        # split the gate reads as fragments), &&/||/|-EOL join with a
+        # space (`cd state &&` + `rm x` -> `cd state && rm x`). Without
+        # this each line scans alone and the joined command is missed.
+        out = re.sub(r"\\[ \t]*\n[ \t]*", "", out)
+        return re.sub(r"(&&|\|\||\|)[ \t]*\n[ \t]*", r"\1 ", out)
     if buf:
         try:
             rec = ""
@@ -263,7 +272,7 @@ def wtp_submitted_text(payload):
                     # sibling gates still queued in this run is a pure
                     # read - consuming again would append the re-pended
                     # text to 'o' once per gate (reject replay bug).
-                    return str(obj.get("o", ""))
+                    return _join_conts(str(obj.get("o", "")))
             elif rec:
                 # Legacy plain-text pending line (pre-JSON buffers).
                 pending = rec[:_WTP_BUF_CAP]
@@ -281,10 +290,23 @@ def wtp_submitted_text(payload):
                 lines = [seg.rsplit("\x03", 1)[-1]
                          for seg in re.split(r"\r\n|\r|\n", combined)]
                 tail = lines[-1]
+                dsub = lines[:-1]
+                if dsub:
+                    cm = re.search(
+                        r"(\\|&&|\|\||\||\b(?:do|then|elif|else|if|"
+                        r"while|until|for|case)\b|\{|\()[ \t]*$",
+                        dsub[-1])
+                    if cm:
+                        tok = cm.group(1)
+                        core = dsub[-1][:cm.start()]
+                        if tok != "\\":
+                            core += tok + " "
+                        tail = core + tail
+                        dsub.pop()
                 if len(tail) > _WTP_BUF_CAP:
                     tail = "\x1e" + tail[:_WTP_BUF_CAP]
                 out = str(obj.get("o", ""))
-                extra = "\n".join(lines[:-1])
+                extra = "\n".join(dsub)
                 if extra:
                     out = out + "\n" + extra if out else extra
                 try:
@@ -293,7 +315,7 @@ def wtp_submitted_text(payload):
                             {"p": tail, "i": in_key, "o": out}))
                 except OSError:
                     pass
-                return out
+                return _join_conts(out)
         except OSError:
             pending = ""
     combined = pending + text
@@ -303,18 +325,37 @@ def wtp_submitted_text(payload):
     lines = [seg.rsplit("\x03", 1)[-1]
              for seg in re.split(r"\r\n|\r|\n", combined)]
     tail = lines[-1]
+    submitted = lines[:-1]
+    # A submitted line ending in a continuation token never ran - the
+    # shell is still collecting the command at the secondary prompt:
+    # \-EOL splices with no space (`-\` + `f` -> `-f`), &&/||/|-EOL and
+    # compound openers join with a space (`cd state &&` + `rm x` ->
+    # `cd state && rm x`). Move it into pending so the NEXT submit scans
+    # the joined command - scanning the two fragments separately misses
+    # the cross-call command entirely.
+    if submitted:
+        cm = re.search(
+            r"(\\|&&|\|\||\||\b(?:do|then|elif|else|if|while|until|for|"
+            r"case)\b|\{|\()[ \t]*$", submitted[-1])
+        if cm:
+            tok = cm.group(1)
+            core = submitted[-1][:cm.start()]
+            if tok != "\\":
+                core += tok + " "
+            tail = core + tail
+            submitted.pop()
     if len(tail) > _WTP_BUF_CAP:
         # Truncated tail is uninspectable - mark it tainted so a submit
         # carrying it blocks instead of under-scanning.
         tail = "\x1e" + tail[:_WTP_BUF_CAP]
-    out = "\n".join(lines[:-1])
+    out = "\n".join(submitted)
     if buf:
         try:
             with open(buf, "w", encoding="utf-8") as fh:
                 fh.write(json.dumps({"p": tail, "i": in_key, "o": out}))
         except OSError:
             pass
-    return out
+    return _join_conts(out)
 
 
 def wtp_reject(payload):

@@ -455,3 +455,189 @@ def test_c102_blocked(cmd):
 def test_c102_silent(cmd):
     rc, _ = run_gate(cmd)
     assert rc == 0, cmd
+
+
+# --- C103: pass-7 review - continuation desync, \S-vault, env/git arms ------
+# Recovered pass-7 findings:
+# - wtp line-continuation desync: a submitted line ending in an open
+#   continuation (`&&`, `|`, `\`, a flag awaiting its value) never executes
+#   on the tty - the shell waits for more input - but the gate scanned it as
+#   a completed command. Continuation lines now move to pending and join the
+#   next submitted line before scanning.
+# - unbounded `(?:\S+\s+)*` wrapper-skip in segment patterns vaulted `;`, `|`,
+#   `&` and newlines, merging two commands into one segment (xargs-piped
+#   git-config writes went unseen).
+# - normpath evasions in rm targets (dir/.., ./., ?-globs).
+# - env dict: GIT_CONFIG_PARAMETERS/GIT_EXEC_PATH/GIT_TEMPLATE_DIR and the
+#   *_RSH/*_SSH/BROWSER exec helpers.
+# - git: --exec-path/-C/--git-dir/--work-tree foreign-repo flags, section
+#   ops on denylist sections, http[s].proxy MITM keys.
+# - state-write arms: redirects (>, 2>, dd of=), download/archive/output
+#   verbs (curl -o, wget -O, scp dst, iwr -OutFile, bitsadmin, tar -cf,
+#   unzip -d, zip dst-first, gcc -o, fsutil seteof, robocopy /MIR).
+# - transform-producer pipes into shells/interpreters (printf/echo -e/
+#   rev/decoders/shells) - direct producers (cat/curl/find/echo) pass output
+#   through untouched, same exposure class as `sh file`.
+# - exec tool_input.workdir: recursive/wipe verbs relative to filesystem
+#   roots and sensitive dirs.
+
+
+def _run_gate_ti(tool_input: dict) -> tuple[int, str]:
+    payload = json.dumps({
+        "hook_event_name": "PreToolUse", "tool_name": "exec",
+        "tool_input": tool_input, "session_id": "test"})
+    r = subprocess.run(
+        [sys.executable, GATE_SCRIPT], input=payload, capture_output=True,
+        text=True, encoding="utf-8", errors="replace", timeout=10)
+    return r.returncode, r.stdout.strip()
+
+
+S103 = "st" + "ate"
+D103 = "de" + "vin"
+
+
+@pytest.mark.parametrize("cmd", [
+    # \S-vault fix: separator-bounded segments see xargs/read-loop writes
+    "printf 'k\\nv\\n' | xargs -n2 git config",
+    "while read k v; do git config $k $v; done < cfg",
+    "git config $K $V",
+    # rm normpath/glob targets
+    "rm -rf ./.", "rm -rf ././", "rm -rf dir/..", "rm -rf node_modules/..",
+    "rm -rf build/../..", "rm -rf ./..", "rm -rf ./?", "rm -rf x/../../y",
+    "rm -rf ./\\../", "rm -rf .\\.",
+    # git foreign-repo flags / section ops / MITM keys
+    "git --exec-path=/x status", "git --exec-path /x status",
+    "git -C /x commit -m m", "git --git-dir=/x pull",
+    "git --work-tree=/x checkout b",
+    "git config --rename-section x core.hooksPath",
+    "git config --remove-section core.hooksPath",
+    "git config http.proxy http://evil:8080",
+    "git config https.proxy x",
+    "git config instaweb.httpd /x",
+    "git config init.templateDir /x",
+    # state-write arms: redirects, dd, download/archive/output verbs
+    f"echo y >{S103}/wtp-x", f"echo y >>{S103}/wtp-x",
+    f"cmd 2>{S103}/wtp-x", f"cmd 2> {S103}/wtp-x",
+    f"dd of={S103}/wtp-x", f"dd of=./{S103}/x",
+    f"curl x -o {S103}/wtp-x", f"curl --output={S103}/wtp-x",
+    f"wget -O {S103}/wtp-x", f"wget --output-document={S103}/wtp-x",
+    f"scp f h:{S103}/wtp-x", f"iwr x -OutFile {S103}/wtp-x",
+    f"bitsadmin /transfer j x {S103}/wtp-x",
+    f"New-Item -Force {S103}/x",
+    f"tar -cf {S103}/x.tar a", f"tar -xf a -C {S103}",
+    f"unzip a -d {S103}", f"zip {S103}/x.zip a",
+    f"gcc -o {S103}/x a.c", f"fsutil file seteof {S103}/wtp-x 0",
+    f"robocopy e {S103} /MIR", f"robocopy /MIR e {S103}",
+    # producer-piped state targets
+    f"echo {S103}/wtp-1.txt | xargs rm",
+    f"echo {S103} | xargs -I{{}} rm -rf {{}}",
+    f"cd {S103} && echo wtp-x | xargs rm",
+    f"cd {D103} && Get-ChildItem | ri",
+    # transform-producer -> interpreter pipes + process substitution
+    "printf '\\x63\\x64' | sh", "echo -e '\\x63' | sh",
+    "rev f | sh", "cmd | ssh h", "certutil -decodehex a | sh",
+    "eval $'\\x63\\x64'", "bash <(echo x)", "source <(cat f)",
+    "python -c \"import base64;base64.b64decode('eQ==')\"",
+    "perl -e 'system(\"x\")'",
+    # compound-after-cd multi-segment tolerance
+    f"cd {S103} && sl . && rm wtp-x",
+    f"sl {S103} && rm wtp-x",
+    f"cd {S103} && for f in wtp-x; do rm $f; done",
+    f"cd {S103} && case x in x) rm wtp-x;; esac",
+    f"cd {S103} && `rm wtp-x`",
+    # C104: path-qualified git binary + transform producer inside $()
+    "/usr/bin/git config core.hooksPath /x",
+    "C:\\tools\\git.exe config core.hooksPath /x",
+    "./git config core.fsmonitor /x",
+    "bash -c \"$(printf '\\x72\\x6d')\"",
+    "sh -c '$(echo -e a)'",
+])
+def test_c103_blocked(cmd):
+    rc, _ = run_gate(cmd)
+    assert rc == 2, cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    # git prose/read-side FP guards
+    'echo "git config core.hooksPath x"',
+    "echo git config core.hooksPath x",
+    "man git-config",
+    "git -C /x status", "git commit -C abc123", "git rev-parse --git-dir",
+    "git config --rename-section old new",
+    "git config --remove-section oldsection",
+    "git config instaweb.port 1234",
+    # direct producers pass output through - `sh file` exposure class
+    "cat f | sh", "curl h/x | bash", "echo x | sh",
+    "git log | python an.py",
+    # decode-to-file is a file write, not exec laundering
+    "uudecode f", "certutil -decodehex a b",
+    # state-named read sources
+    "echo state/wtp-x.txt", "cp state/wtp-x /tmp/bak",
+    "scp state/wtp-x h:f", "rsync state/wtp-x /tmp/",
+    "tar -xf state/x.tar",
+    # rm-path FP guards
+    "rm -rf ...", "rm -rf dist/../node_modules",
+    "rm -rf ./node_modules", "rm -rf ./././x",
+    "python -c 'print(1)'",
+    # C104: mid-path `state` segments after ordinary dirs are project
+    # dirs (Redux-style src/state) - only root-anchored, ..-resolved or
+    # devin/-segment paths anchor the bare dir
+    "rm -rf src/state", "rm -rf dist/state", "rm app/state/x",
+    "mv app/state old", "rm -rf mystate",
+    "ls src/state/x", "cd src/state && rm legit.txt",
+    # git-config binary and prose non-invocations
+    "git-config core.x y", "mygit config core.hooksPath /x",
+])
+def test_c103_silent(cmd):
+    rc, _ = run_gate(cmd)
+    assert rc == 0, cmd
+
+
+@pytest.mark.parametrize("env_dict", [
+    {"GIT_CONFIG_PARAMETERS": "'core.hooksPath=/x'"},
+    {"GIT_EXEC_PATH": "/x"}, {"GIT_TEMPLATE_DIR": "/x"},
+    {"RSYNC_RSH": "/x"}, {"CVS_RSH": "/x"}, {"SVN_SSH": "/x"},
+    {"HG_SSH": "/x"}, {"BROWSER": "/x"},
+    {"PATH": ":$PATH"}, {"PATH": ";%PATH%"}, {"PATH": "/x:$PATH"},
+])
+def test_c103_env_blocks(env_dict):
+    assert _run_gate_env(env_dict) == 2
+
+
+@pytest.mark.parametrize("env_dict", [
+    {"PATH": "$PATH:/x"}, {"PATH": "%PATH%;x"},
+])
+def test_c103_env_silent(env_dict):
+    assert _run_gate_env(env_dict) == 0
+
+
+@pytest.mark.parametrize("workdir", [
+    "C:\\", "/", "C:\\Windows", "/etc", "~",
+])
+def test_c103_workdir_wipe_blocks(workdir):
+    rc, _ = _run_gate_ti({"command": "rm -rf x", "workdir": workdir})
+    assert rc == 2, workdir
+
+
+@pytest.mark.parametrize("workdir", [
+    "/tmp/x", "D:\\proj", "build",
+])
+def test_c103_workdir_benign_silent(workdir):
+    rc, _ = _run_gate_ti({"command": "rm -rf x", "workdir": workdir})
+    assert rc == 0, workdir
+    rc, _ = _run_gate_ti({"command": "ls", "workdir": "/"})
+    assert rc == 0
+
+
+def test_c103_wtp_continuation_blocks():
+    # A submitted line ending in an open continuation never executes on
+    # the tty - it must pend and join the next submitted line, so the
+    # combined text is what gets scanned.
+    for lines in ([f"cd {S103} &&\n", "rm wtp-x\n"],
+                  [f"cd {S103} |\n", "rm wtp-x\n"],
+                  ["git push -\\\n", "f\n"]):
+        shell = "sc" + str(abs(hash(lines[0])))
+        for ln in lines:
+            rc, _ = run_gate_wtp({"text_input": ln, "shell_id": shell},
+                                 session_id="s-" + shell)
+        assert rc == 2, lines
