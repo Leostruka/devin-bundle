@@ -201,15 +201,33 @@ WIN_RM_RE_NOTARGET = re.compile(
 # self-unlimiting class. Anchored on the state/ path component (matches
 # <devin-home>/state/subagent-*; bare "subagent-x.json" elsewhere is fine)
 # or the whole state dir itself (devin/state -> rm -rf state-dir).
-_STATE_PATH = (r"(?:^|[\\/]|\s)state[\\/]+"
-               r"(?:subagent-[\w.-]*\.jsonl?|wtp-[\w.-]*\.txt)\b")
+# A state-file target: exact names AND glob forms (rm state/wtp-*.txt
+# wipes every pending-line buffer; wtp-* without an extension is the
+# same wipe). Glob metachars live in the name class; the terminator
+# lookahead replaces \b (a trailing * is not a word char).
+_STATE_FILE_NAME = (r"(?:subagent-[\w.*?{}\[\],-]*(?:\.jsonl?)?|"
+                    r"wtp-[\w.*?{}\[\],-]*(?:\.txt)?)")
+_STATE_PATH = (r"(?:^|[\\/]|\s)state[\\/]+" + _STATE_FILE_NAME +
+               r"(?=[\s|;&'\"\n]|$)")
 _STATE_DIR = r"(?:^|[\\/]|\s)devin[\\/]state\b"
 # `cd ...state && rm wtp-x.txt` - a bare state-basename target after a
 # cd/pushd into a state dir carries no `state/` component in the operand.
-# Self-contained arm (prefix + separator + verb + basename target).
-_STATE_CD = (r"(?:^|[|;&`$(]|\s)(?:cd|chdir|pushd|Set-Location)\s+"
-             r"[\"']?[^|;&\"']*?\bstate\b[\"']?\s*[|;&]+\s*")
-_STATE_NAME = r"[\"']?(?:subagent-[\w.-]*\.jsonl?|wtp-[\w.-]*\.txt)\b"
+# Self-contained arm: the separator class includes newlines (wtp joins
+# submitted lines with \n), the dir tolerates quotes/trailing slash and
+# a redirect after it, and a shell -c/-Command wrapper may precede the
+# verb. `cd state\nrm wtp-x` is the natural two-line wtp flow.
+# Shell wrapper that may precede cd or the verb: bash/sh/cmd need a
+# -c//c flag, powershell/pwsh take a bare command (Remove-Item ...).
+_STATE_WRAP = (r"(?:(?:powershell|pwsh)\s+|"
+               r"(?:bash|sh|dash|zsh|cmd)\b[^|;&\n]*?"
+               r"(?:-c|/c|-Command)\s+[\"']?)?")
+_STATE_CD = (r"(?:^|[|;&`$(\n]|\s)" + _STATE_WRAP +
+             r"(?:cd|chdir|pushd|Set-Location)\s+"
+             r"[\"']?[^|;&\n\"']*?(?<![\w.-])state"
+             r"(?=[/\\'\"\s|;&\n]|$)[/\\]?[\"']?"
+             r"(?:\s*>>?\s*[^\s|;&\n]+)?\s*[|;&\n]+\s*" + _STATE_WRAP)
+_STATE_NAME = (r"[\"']?(?:\.[/\\])?" + _STATE_FILE_NAME +
+               r"(?=[\s|;&'\"\n]|$)")
 _STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
 # Command-position anchor: a verb only runs at command start, after a
 # separator/command-substitution, under a privilege wrapper, or inside a
@@ -227,7 +245,9 @@ STATE_FILE_DELETE = re.compile(
     r"[^|;&]*?(?:-delete\b|-exec(?:dir)?\s+(?:rm|shred|srm)\b)"
     r"|" + _STATE_CD +
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe|"
-    r"mv|move|Move-Item)\b\s+" + _STATE_NAME,
+    r"mv|move|Move-Item)\b[^|;&\n]*?" + _STATE_NAME +
+    r"|" + _STATE_CD + r"find\b[^|;&\n]*?" + _STATE_NAME +
+    r"[^|;&\n]*?-delete\b",
     re.IGNORECASE,
 )
 # Writes are as dangerous as deletes: `>` truncates (json.load fails ->
@@ -590,10 +610,15 @@ def check_rm_rf(command):
 # clean pre-fix (probe 2026-11-24). Only single-token quotes unwrap -
 # multi-word quoted text is prose/paths, not command syntax, and stays
 # untouched so echo "text" shapes keep today's behavior.
-_QUOTED_TOKEN = re.compile(r"(['\"])([A-Za-z0-9_./\\:~=+*-]+)\1")
+_QUOTED_TOKEN = re.compile(r"\$?(['\"])([A-Za-z0-9_./\\:~=+*-]+)\1")
+_EMPTY_QUOTES = re.compile(r"(''|\"\")")
 
 
 def _unwrap_quoted_tokens(text):
+    # Empty quote pairs concatenate away in shell (st''ate == state);
+    # $'...' is ANSI-C quoting ($'state' == state) - both must collapse
+    # before the single-token unwrap or they defeat name anchoring.
+    text = _EMPTY_QUOTES.sub("", text)
     return _QUOTED_TOKEN.sub(r"\2", text)
 
 

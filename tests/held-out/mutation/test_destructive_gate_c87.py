@@ -563,19 +563,32 @@ def test_c98_forged_marker_and_command():
 
 
 def test_c98_same_input_reextract_uncorrupted():
-    """A downstream gate re-extracting the same payload must get the
-    same submitted lines WITHOUT double-consuming the pending model."""
+    """Identical inputs are indistinguishable from a downstream gate's
+    re-extraction, so a repeat consumes (pending tracks the real shell)
+    and returns the union of prior + newly completed lines (C99)."""
     sid = "c98-dedup"
     assert run_gate_wtp({"shell_id": "d", "text_input": "echo hi"},
                         sid)[0] == 0
-    # same input again inside the dedup window -> replays, no re-append
     assert run_gate_wtp({"shell_id": "d", "text_input": "echo hi"},
                         sid)[0] == 0
-    # the pending line is still 'echo hi' (not 'echo hiecho hi'):
-    # appending the dangerous tail must block on the REAL line content
+    # pending now models 'echo hiecho hi' (repeat tracked); a dangerous
+    # tail appended after still blocks on the submitted line.
     code, out = run_gate_wtp(
         {"shell_id": "d", "text_input": " && git push --force\n"}, sid)
-    assert code == 2, f"pending must stay 'echo hi', got {code}: {out}"
+    assert code == 2, f"submit after repeat must still scan: {out}"
+
+
+def test_c99_dedup_junction_blocks():
+    """The repeat-seam junction: X benign but X|X forms a dangerous
+    pattern across the seam - tracking pending makes the real line
+    visible to the gate."""
+    sid = "c99-junction"
+    assert run_gate_wtp({"shell_id": "j",
+                         "text_input": " --force;git push"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "j",
+                         "text_input": " --force;git push"}, sid)[0] == 0
+    code, out = run_gate_wtp({"shell_id": "j", "text_input": "\n"}, sid)
+    assert code == 2, f"junction-formed push should block: {out}"
 
 
 def test_c98_legacy_plaintext_pending():
@@ -590,3 +603,98 @@ def test_c98_legacy_plaintext_pending():
     code, out = run_gate_wtp({"shell_id": "s", "bytes_input": "<CR>"},
                              "c98-leg")
     assert code == 2, f"legacy pending + submit should block: {out}"
+
+
+# --- C99: pass-5 review fixes ---
+# Literal control bytes carry the same edit semantics as their tokens:
+# \x10=C-p (history recall), \x05=C-e (end-of-line), \x09 real TAB,
+# \x1b ESC prefix - all unmodelable -> sentinel on submit.
+@pytest.mark.parametrize("text", [
+    "\x10\n",                          # C-p recall
+    "git push --for\x05ce\n",          # C-e mid-word edit
+    "git pu\tsh --force\n",            # literal TAB oracle
+    "ls\x1b[3~\n",                     # ESC prefix (delete-word seq)
+])
+def test_c99_literal_control_bytes_block(text):
+    code, out = run_gate_wtp(
+        {"shell_id": "s", "text_input": text},
+        session_id="c99-lit-" + str(abs(hash(text))))
+    assert code == 2, f"literal control byte submit should block: {out}"
+
+
+def test_c99_literal_clear_stays_clear():
+    code, out = run_gate_wtp(
+        {"shell_id": "s", "text_input": "echo hi\n\x03"},
+        session_id="c99-clr")
+    assert code == 0, f"\x03 clear should stay clear: {out}"
+
+
+# Both stdin fields populated: which one the shell honors is
+# implementation-defined -> uninspectable -> block.
+def test_c99_both_stdin_fields_block():
+    code, out = run_gate_wtp(
+        {"shell_id": "s", "text_input": "ls\n",
+         "bytes_input": "git push --force<CR>"},
+        session_id="c99-both")
+    assert code == 2, f"ambiguous dual input should block: {out}"
+
+
+# _STATE_CD arm hardening (C99): newline separators (wtp flow), flag
+# gaps, ./ prefixes, quoted dirs, trailing slash, redirects, shell
+# -c/-Command wrappers, find -delete.
+@pytest.mark.parametrize("cmd", [
+    "cd state && rm -f wtp-abc.txt",
+    "cd state && rm -rf wtp-abc.txt",
+    "cd state && rm ./wtp-abc.txt",
+    'cd "state" && rm wtp-abc.txt',
+    "cd state/ && rm wtp-abc.txt",
+    "cd state > /dev/null && rm wtp-abc.txt",
+    "cd state\nrm wtp-abc.txt",
+    "cd state\necho x > wtp-abc.txt",
+    'cmd /c "cd state && rm wtp-abc.txt"',
+    "cd state && bash -c 'rm wtp-abc.txt'",
+    "cd state && powershell Remove-Item wtp-abc.txt",
+    "cd state && find . -name 'wtp-*' -delete",
+])
+def test_c99_cd_state_variants_block(cmd):
+    code, out = run_gate(cmd)
+    assert code == 2, f"cd-into-state variant should block, got {code}: {out}"
+
+
+# Glob state targets: rm state/wtp-*.txt wipes every buffer/ledger.
+@pytest.mark.parametrize("cmd", [
+    "rm state/wtp-*.txt",
+    "rm state/wtp-*",
+    "rm state/wtp-?b.txt",
+    "rm state/subagent-*",
+    "del state\\wtp-*.txt",
+    "echo x > state/wtp-*.txt",
+    "rm state/wtp-{a,b}.txt",
+])
+def test_c99_glob_state_targets_block(cmd):
+    code, out = run_gate(cmd)
+    assert code == 2, f"glob state wipe should block, got {code}: {out}"
+
+
+# Quote-concat + ANSI-C quoting evade name anchors without collapsing.
+@pytest.mark.parametrize("cmd", [
+    "rm st''ate/wtp-abc.txt",
+    "rm $'state/wtp-abc.txt'",
+    "rm s't'ate/wtp-abc.txt",
+    'rm "state/wtp-abc.txt"',
+])
+def test_c99_quote_forms_state_block(cmd):
+    code, out = run_gate(cmd)
+    assert code == 2, f"quoted state target should block, got {code}: {out}"
+
+
+# Benign neighbors must stay silent (anchor precision).
+@pytest.mark.parametrize("cmd", [
+    "cd docs && rm notes.md",
+    "cd mystatedir && rm wtp-abc.txt",
+    "cd state-old && rm wtp-abc.txt",
+    "cd state && cat wtp-abc.txt",
+])
+def test_c99_cd_state_benign_silent(cmd):
+    code, out = run_gate(cmd)
+    assert code == 0, f"benign cd command should stay silent, got {code}: {out}"

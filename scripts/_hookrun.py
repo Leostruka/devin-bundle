@@ -129,8 +129,13 @@ _WTP_RECALL = re.compile(
     # Deletes count too: a deleted char can complete a pattern boundary
     # (git push --forceX<BS> submits git push --force) - under-detection.
     r"<C-[abdefhknprtwy_]>")
-# Literal control bytes with the same edit semantics in raw text_input.
-_WTP_LIT_EDIT = re.compile(r"[\x08\x7f]")
+# Literal control bytes carry the same edit semantics as their tokens
+# in raw text_input and post-decode bytes_input: \x10 is C-p (history
+# recall), \x05 C-e (end-of-line), \x09 a real TAB (completion oracle),
+# \x1b an ESC prefix - all unmodelable -> sentinel. Excluded on purpose:
+# \x03 is the clear byte (per-segment reset), \x0a/\x0d are the submit
+# terminators handled by the line split.
+_WTP_LIT_EDIT = re.compile(r"[\x00-\x02\x04-\x09\x0b\x0c\x0e-\x1f\x7f]")
 # Keep the HEAD of an oversized line: gated verbs/flags lead the command,
 # so tail-truncation preserves detection. A >4KB single line still scans
 # only its first 4KB (paste-size residual).
@@ -209,6 +214,13 @@ def wtp_submitted_text(payload):
         return ""
     is_bytes = False
     text = tool_input.get("text_input")
+    if isinstance(text, str) and text and \
+            isinstance(tool_input.get("bytes_input"), str) and \
+            tool_input["bytes_input"]:
+        # Both stdin channels populated: which one the shell honors is
+        # tool-implementation-defined - the gate cannot pick safely, so
+        # the submitted line is uninspectable by definition.
+        return "\x1e"
     if not isinstance(text, str) or not text:
         text = tool_input.get("bytes_input")
         is_bytes = True
@@ -249,9 +261,32 @@ def wtp_submitted_text(payload):
                 # Legacy plain-text pending line (pre-JSON buffers).
                 pending = rec[:_WTP_BUF_CAP]
             if dedup_i == in_key:
-                # Same stdin input already consumed in this hook
-                # invocation - return the prior output untouched.
-                return str(obj.get("o", ""))
+                # Same stdin input already consumed. Two cases are
+                # indistinguishable: (a) a downstream gate re-extracting
+                # this same hook invocation, (b) a genuinely new call
+                # repeating identical keystrokes. For (b) the pending
+                # model MUST advance (the real shell appended too); for
+                # (a) the extra append only over-detects (model superset).
+                # Output is the union of the prior result and the lines
+                # this appended text completes - a forged/stale 'o'
+                # cannot hide the input's own submitted lines.
+                combined = pending + text
+                lines = [seg.rsplit("\x03", 1)[-1]
+                         for seg in re.split(r"\r\n|\r|\n", combined)]
+                tail = lines[-1]
+                if len(tail) > _WTP_BUF_CAP:
+                    tail = "\x1e" + tail[:_WTP_BUF_CAP]
+                out = str(obj.get("o", ""))
+                extra = "\n".join(lines[:-1])
+                if extra:
+                    out = out + "\n" + extra if out else extra
+                try:
+                    with open(buf, "w", encoding="utf-8") as fh:
+                        fh.write(json.dumps(
+                            {"p": tail, "i": in_key, "o": out}))
+                except OSError:
+                    pass
+                return out
         except OSError:
             pending = ""
     combined = pending + text

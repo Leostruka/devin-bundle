@@ -196,6 +196,10 @@ PROBES = [
      "ui-dsl"),
     ("skills/youtube-fetcher/scripts/fetch.py",
      ["validate", "dQw4w9WgXcQ"], "youtube-fetcher"),
+    # --dry-run prints the stamped record envelope with no ledger write
+    ("scripts/log-refinement.py",
+     ["--type", "hook", "--target", "probe", "--change", "c",
+      "--evidence", "e", "--dry-run"], "log-refinement"),
     ("skills/devin-config/scripts/devin-manager.py",
      ["scan", "."], "devin-config"),
     ("skills/structured-knowledge-extraction/scripts/extract.py",

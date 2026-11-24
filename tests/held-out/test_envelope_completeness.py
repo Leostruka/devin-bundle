@@ -63,6 +63,7 @@ UNSTAMPED = {
     "scripts/stuck-detect.py",
     "scripts/token-saver.py", "scripts/validate-mermaid.py",
     "scripts/validate-tool-args.py",
+    "scripts/context-pressure.py",  # hookSpecificOutput emitter
     "scripts/_hookrun.py",
     # config-document / transport / benchmark surfaces
     "scripts/render-user-hooks.py",
