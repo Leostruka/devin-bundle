@@ -143,3 +143,18 @@ def test_fail_open_on_garbage():
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=10)
     assert r.returncode == 0
     assert r.stdout.strip() == ""
+
+
+def test_silent_on_pathed_fake_binaries():
+    r"""C92: basename-only matching let ./cat or D:\ws\cat.exe auto-approve
+    as 'cat' - a workspace-local fake binary would bypass the read-only
+    grammar entirely. Pathed executables must face the human prompt."""
+    for c in ("./cat /etc/passwd", "bin/cat file.txt", "tools\\bin\\cat x",
+              "C:\\ws\\cat.exe file.txt", "/tmp/evil/git status",
+              "./git status", "scripts\\fd -e py"):
+        assert gate(c) == "", c
+
+
+def test_approves_bare_exe_suffix():
+    out = gate("cat.exe file.txt")
+    assert json.loads(out)["decision"] == "approve"

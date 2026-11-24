@@ -167,7 +167,13 @@ def _exec_verdict(command):
     # Quote removal: the shell strips ALL quotes after tokenization, so
     # `--out""put` runs as `--output`. Normalize the same way per token.
     parts = [p.replace("'", "").replace('"', "") for p in cmd.split()]
-    exe = parts[0].rsplit("/", 1)[-1].rsplit("\\", 1)[-1].lower()
+    # Auto-approve only bare PATH-resolved names. A pathed executable
+    # (./cat, bin\cat, D:\ws\cat.exe) may be a workspace-local fake whose
+    # basename matches a SAFE_BINARIES entry - it must face the human
+    # prompt instead of the read-only fast path.
+    if "/" in parts[0] or "\\" in parts[0]:
+        return False
+    exe = parts[0].lower()
     exe = re.sub(r"\.exe$", "", exe)
     if exe in SAFE_BINARIES:
         # Credential-shaped paths and env-var expansion still need the
