@@ -1,6 +1,6 @@
 ---
 name: shell-safe
-description: Use whenever running shell commands or writing .sh/.bash scripts. Prevents blanked files, wrong-directory deletes, and silent failures: same-file redirect truncation, empty-variable rm -rf, unquoted expansion, pipe exit-code swallowing, cd-then-delete traps, sed -i portability, tarbombs, verify-after-write discipline.
+description: Use whenever running shell commands or writing .sh/.bash scripts. Prevents blanked files, wrong-directory deletes, and silent failures - same-file redirect truncation, empty-variable rm -rf, unquoted expansion, pipe exit-code swallowing, cd-then-delete traps, sed -i portability, tarbombs, verify-after-write discipline.
 triggers: [user, model]
 allowed-tools: [read, exec, write, edit, grep]
 ---

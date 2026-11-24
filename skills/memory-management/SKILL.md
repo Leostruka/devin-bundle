@@ -1,6 +1,6 @@
 ---
 name: memory-management
-description: Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only — improving skills/rules/hooks belongs to `self-improvement`.
+description: Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope - memory hygiene only - improving skills/rules/hooks belongs to `self-improvement`.
 triggers: [user, model]
 ---
 

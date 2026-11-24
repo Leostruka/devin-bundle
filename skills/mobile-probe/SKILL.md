@@ -1,6 +1,6 @@
 ---
 name: mobile-probe
-description: Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools: jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.
+description: Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools - jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.
 triggers: [user, model]
 ---
 

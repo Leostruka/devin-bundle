@@ -197,7 +197,7 @@
     },
     {
       "name": "camera-blocking",
-      "purpose": "Use when turning a product or scene into a camera-directed hero video: blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt template to a video-repaint model (Seedance-class) and scaffold the result as a scroll-bound web hero.",
+      "purpose": "Use when turning a product or scene into a camera-directed hero video - blockout low-poly scene in headless Blender, keyframe a camera path, playblast to MP4, then hand a second-by-second prompt template to a video-repaint model (Seedance-class) and scaffold the result as a scroll-bound web hero.",
       "export_hash": "7ec22afcae4acebc094316a9831e9621ab49924dc34e458c2d41c64681840e26",
       "exported_at": "2026-11-06T11:47:27.072797",
       "path": "skills/camera-blocking/SKILL.md"
@@ -205,7 +205,7 @@
     {
       "name": "career-ops",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants help running a job hunt end to end: scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications.",
+      "purpose": "Use when the user wants help running a job hunt end to end - scanning public job boards, scoring role fit, tailoring a CV or cover letter, and tracking applications in a local tracker. The agent never submits applications.",
       "export_hash": "8a28a64caba50cb6aff216210781aa3d8761de95421a1fd10ecefec89e4d3da2"
     },
     {
@@ -237,7 +237,7 @@
       "source": "devin-bundle",
       "purpose": "Use when you need to see or control the local screen (screenshots, screen recording with video + contact sheet for catching transient bugs/animations, mouse clicks/movement, typing text and hotkeys) or to read/control terminals (Windows Terminal, conhost, mintty, spawned PTYs). GUI automation for desktop apps and browsers, replicating Devin Cloud Computer Use in the CLI.",
       "original_path": "%APPDATA%\\devin\\skills\\computer-use",
-      "export_hash": "352952b59cd73c71909c7fc1b1109329ec3a95047ca09061feb3e8f773f157fc",
+      "export_hash": "a0cdd95a90e254292e03fb4f1610b57d0e2671160540951aa58321854af744fa",
       "exported_at": "2026-09-15T23:29:25.416194"
     },
     {
@@ -348,7 +348,7 @@
     {
       "name": "dead-wire",
       "source": "devin-bundle",
-      "purpose": "Use when running completeness audits, before declaring \"it works\", or when something looks too implemented to be true. Hunts cut wires: features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.",
+      "purpose": "Use when running completeness audits, before declaring \"it works\", or when something looks too implemented to be true. Hunts cut wires - features that look alive but are dead - tables never populated, buttons leading nowhere, events without emitter or listener, flags without write path, request fields the server ignores.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\dead-wire",
       "export_hash": "198d06dd7f0d6ae082238ec327b852e4a32e738c34caa2fb4c789eb8977ee59d",
       "exported_at": "2026-10-30T14:43:55.745135"
@@ -514,7 +514,7 @@
     {
       "name": "firmware-probe",
       "source": "devin-bundle",
-      "purpose": "Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools: binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.",
+      "purpose": "Use when analyzing a declared firmware image or embedded artifact under an engagement contract (extraction, SBOM, CVE mapping, config/credential review). Routes to extensions/offsec-tools/wrapper.py tools - binwalk, unblob, emba; deep RE of extracted binaries goes to re-binary.",
       "export_hash": "5c010e22f75234b036389cb9794ed7f2ecc96ba1f00964823d11a75e34daae06"
     },
     {
@@ -706,7 +706,7 @@
     {
       "name": "learn-mode",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants to own the design while the agent teaches and implements — unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first: the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
+      "purpose": "Use when the user wants to own the design while the agent teaches and implements - unfamiliar stacks, junior ramp-up, deliberate-practice sessions. Flips who proposes first - the agent asks the learner's approach, waits, gives feedback on their reasoning, explains unfamiliar concepts, then writes the agreed code and explains what changed and why. Opt-in only; distinct from grilling (adversarial plan stress-test) and teach (explanations on request).",
       "export_hash": "1ef7eed23c3bb8b9a352a8ff1db864f1f78988d841a6f748bd0e4c80f93e31ec"
     },
     {
@@ -786,7 +786,7 @@
     {
       "name": "memory-management",
       "source": "devin-bundle",
-      "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope: memory hygiene only — improving skills/rules/hooks belongs to `self-improvement`.",
+      "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope - memory hygiene only - improving skills/rules/hooks belongs to `self-improvement`.",
       "export_hash": "c5686b5262e90df001a5fd846ff00684d76ba82a56ef99a9d8cdc92dff2e0d60"
     },
     {
@@ -798,7 +798,7 @@
     {
       "name": "mobile-probe",
       "source": "devin-bundle",
-      "purpose": "Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools: jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.",
+      "purpose": "Use when assessing a declared Android or iOS application under an engagement contract (static analysis, decompilation, runtime instrumentation on emulators/devices). Routes to extensions/offsec-tools/wrapper.py tools - jadx, apktool, mobsf, frida, objection. Methodology per OWASP MASVS/MASTG.",
       "export_hash": "8cc940afd212613644c29b04dee0ee7afcd8423529bbd6c4678c84c6d41bea40"
     },
     {
@@ -820,7 +820,7 @@
     {
       "name": "net-probe",
       "source": "devin-bundle",
-      "purpose": "Use when probing declared hosts or networks under an engagement contract (port/service scan, SMB/AD enumeration, TLS audit, vulnerability scan). Routes to extensions/offsec-tools/wrapper.py tools: nmap, masscan, netexec, enum4linux-ng, testssl.sh, openvas. Verify-not-exploit by default.",
+      "purpose": "Use when probing declared hosts or networks under an engagement contract (port/service scan, SMB/AD enumeration, TLS audit, vulnerability scan). Routes to extensions/offsec-tools/wrapper.py tools - nmap, masscan, netexec, enum4linux-ng, testssl.sh, openvas. Verify-not-exploit by default.",
       "export_hash": "afa1fad5fe389852851da9a7e44435dd5a4b7d334612eca9193e9a5bfb200863"
     },
     {
@@ -906,7 +906,7 @@
     {
       "name": "powershell-safe",
       "source": "devin-bundle",
-      "purpose": "Use whenever running powershell.exe/pwsh, writing .ps1 scripts, or doing file I/O via shell on Windows. Prevents blanked files, encoding corruption, and accidental deletion: read-modify-write pipeline trap, UTF-16/BOM redirection pitfalls, JSON depth truncation, dangerous aliases, empty-variable deletes, verify-after-write discipline.",
+      "purpose": "Use whenever running powershell.exe/pwsh, writing .ps1 scripts, or doing file I/O via shell on Windows. Prevents blanked files, encoding corruption, and accidental deletion - read-modify-write pipeline trap, UTF-16/BOM redirection pitfalls, JSON depth truncation, dangerous aliases, empty-variable deletes, verify-after-write discipline.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\powershell-safe",
       "export_hash": "45016e4d1cb5b2943cdfc4aa77d888bcc7b9ba8f0491bdd6ebf5a73df12f5d7f",
       "exported_at": "2026-10-30T14:43:55.745135"
@@ -1036,7 +1036,7 @@
     {
       "name": "roteiro",
       "source": "created:issue-345 agenda-roteiro A-03",
-      "purpose": "Use when planning a day against a real calendar: pack tasks into actual free slots, re-plan when meetings move, and flag what fits vs. what slips. Composes with extensions/gcal for free/busy data and scheduled-turns for the recurring morning run.",
+      "purpose": "Use when planning a day against a real calendar - pack tasks into actual free slots, re-plan when meetings move, and flag what fits vs. what slips. Composes with extensions/gcal for free/busy data and scheduled-turns for the recurring morning run.",
       "original_path": "%APPDATA%\\devin\\skills\\roteiro",
       "export_hash": "d125bfdc611bed9943d82e3c16794f31313fab6527ebd2242f061445a05674d5",
       "exported_at": "2026-11-06T00:00:00"
@@ -1044,7 +1044,7 @@
     {
       "name": "saas-replacer",
       "source": "created:yt-batch2 #514",
-      "purpose": "Use when auditing paid subscriptions and replacing the replaceable ones with minimal self-hosted clones — inventory -> rank -> clone -> maintain. The cheap sibling of device-repurpose: pure software, zero hardware risk.",
+      "purpose": "Use when auditing paid subscriptions and replacing the replaceable ones with minimal self-hosted clones - inventory -> rank -> clone -> maintain. The cheap sibling of device-repurpose - pure software, zero hardware risk.",
       "original_path": "%APPDATA%\\devin\\skills\\saas-replacer",
       "export_hash": "9270fbbfe27ef25ecc014ea006ddcbee5148b3338bc8f334db72f754aa0ca7e5",
       "exported_at": "2026-11-11T13:25:38.996584"
@@ -1052,7 +1052,7 @@
     {
       "name": "scan",
       "source": "devin-bundle",
-      "purpose": "Use when the user wants a goal-driven, codebase-wide investigation — \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans): Plan → Shard → Map → Reduce, parallel read-only subagents, prioritized findings report with evidence.",
+      "purpose": "Use when the user wants a goal-driven, codebase-wide investigation - \"scan for dead code\", \"find N+1 queries\", \"check test coverage gaps\", \"audit style/migration compliance\". Replicates Devin Cloud's /scan (Code Scans) - Plan -> Shard -> Map -> Reduce, parallel read-only subagents, prioritized findings report with evidence.",
       "export_hash": "92bd8d9f72a0ef6bcd57a4eeb20a3abcce79ac0d4d3568c9390fd737c817038f"
     },
     {
@@ -1109,7 +1109,7 @@
     {
       "name": "self-improvement",
       "source": "devin-bundle",
-      "purpose": "Use when improving the AGENT/BUNDLE itself: self-improvement sessions (deep research + validated loop), capturing recurring failure patterns as skills/rules/hooks (/refine), researching harness design patterns (PrimeAgent/RLM vs Devin CLI), A2A messaging between subagents, or deciding whether to dispatch a subagent, which profile, and what budget. For remembering user/project facts use `memory-management`.",
+      "purpose": "Use when improving the AGENT/BUNDLE itself - self-improvement sessions (deep research + validated loop), capturing recurring failure patterns as skills/rules/hooks (/refine), researching harness design patterns (PrimeAgent/RLM vs Devin CLI), A2A messaging between subagents, or deciding whether to dispatch a subagent, which profile, and what budget. For remembering user/project facts use `memory-management`.",
       "export_hash": "710b6d3f390e2900a8d853203356207cfb9163a1bc8713f6208dd1cf676773f6"
     },
     {
@@ -1129,7 +1129,7 @@
     {
       "name": "shell-safe",
       "source": "devin-bundle",
-      "purpose": "Use whenever running shell commands or writing .sh/.bash scripts. Prevents blanked files, wrong-directory deletes, and silent failures: same-file redirect truncation, empty-variable rm -rf, unquoted expansion, pipe exit-code swallowing, cd-then-delete traps, sed -i portability, tarbombs, verify-after-write discipline.",
+      "purpose": "Use whenever running shell commands or writing .sh/.bash scripts. Prevents blanked files, wrong-directory deletes, and silent failures - same-file redirect truncation, empty-variable rm -rf, unquoted expansion, pipe exit-code swallowing, cd-then-delete traps, sed -i portability, tarbombs, verify-after-write discipline.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\shell-safe",
       "export_hash": "e2406b909079745e2f0369665bb1e37a5571bd25856c263726d6375fe83803a7",
       "exported_at": "2026-10-30T14:43:55.745135"
@@ -1202,7 +1202,7 @@
     {
       "name": "technical-writing",
       "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
-      "purpose": "Use when writing or reviewing user-facing docs, RFCs, READMEs, PR descriptions, or commit messages. Layered standard: Diataxis structure, Google developer style, STE instruction rules, Global English.",
+      "purpose": "Use when writing or reviewing user-facing docs, RFCs, READMEs, PR descriptions, or commit messages. Layered standard - Diataxis structure, Google developer style, STE instruction rules, Global English.",
       "original_path": "%APPDATA%\\devin\\skills\\technical-writing",
       "export_hash": "10dcbc5e347a5b299354bb3bf9dc6fa49d701886ac77d4fc06d9ec51956e6efa",
       "exported_at": "2026-11-04T21:35:00.409400"
@@ -1356,7 +1356,7 @@
     {
       "name": "web-probe",
       "source": "devin-bundle",
-      "purpose": "Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools: zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.",
+      "purpose": "Use when probing a declared web application or API for vulnerabilities under an engagement contract (OWASP-style checks, injection, auth, fuzzing, templated scans). Routes to extensions/offsec-tools/wrapper.py tools - zap-baseline, sqlmap, nuclei, ffuf. Passive-first; active scanning requires confirmation.",
       "export_hash": "c51bd22cd7d7d202c96d51fa05472cd792c8de23f640ecd8d482f6ae572dbeb1"
     },
     {
@@ -1370,7 +1370,7 @@
     {
       "name": "wireless-probe",
       "source": "devin-bundle",
-      "purpose": "Use when assessing declared wireless/RF targets under an engagement contract (Wi-Fi capture analysis, handshake conversion, BLE/SDR signal review, RFID). Routes to extensions/offsec-tools/wrapper.py tools: aircrack-ng, hcxdumptool, hcxtools, kismet, bettercap, hashcat, urh. Offline analysis needs no hardware; capture/inject needs usbipd-win passthrough.",
+      "purpose": "Use when assessing declared wireless/RF targets under an engagement contract (Wi-Fi capture analysis, handshake conversion, BLE/SDR signal review, RFID). Routes to extensions/offsec-tools/wrapper.py tools - aircrack-ng, hcxdumptool, hcxtools, kismet, bettercap, hashcat, urh. Offline analysis needs no hardware; capture/inject needs usbipd-win passthrough.",
       "export_hash": "606a31a264bdf5c875d03c1b8cbf056cd76e0d208d1b55a4d23a813ddaa1b8ad"
     },
     {
@@ -1743,7 +1743,7 @@
     {
       "name": "validate-skill-format.py",
       "purpose": "Validator — checks SKILL.md frontmatter and format",
-      "export_hash": "10EA11EA662CBCE5A2873D9BBCA749C7EFD1D3B5A8B3AB1FB0C74CB1C51E96D7",
+      "export_hash": "7EAB2DE74DBAF7224BAC882B6A8E1B6AD01B7F8FA347AF9872118B7E4F2F48C8",
       "exported_at": "2026-11-17"
     },
     {

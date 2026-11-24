@@ -1,6 +1,6 @@
 ---
 name: technical-writing
-description: Use when writing or reviewing user-facing docs, RFCs, READMEs, PR descriptions, or commit messages. Layered standard: Diataxis structure, Google developer style, STE instruction rules, Global English.
+description: Use when writing or reviewing user-facing docs, RFCs, READMEs, PR descriptions, or commit messages. Layered standard - Diataxis structure, Google developer style, STE instruction rules, Global English.
 disable-model-invocation: true
 ---
 

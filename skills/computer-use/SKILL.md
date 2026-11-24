@@ -48,8 +48,15 @@ PY mouse.py click --hint as --env <id>  # tap element center via adb
 PY terminal.py exec "ls /sdcard" --env <id>  # adb shell
 ```
 
+## Browser work
+
+Prefer the **`phi-browser` skill** for any browser automation task - it
+drives Phi Browser's agent Spaces over CDP, reusing the user's login state
+while they can watch live or take control. `browser.py bind` stays the
+fallback for non-Phi browsers and raw CDP/BiDi endpoints.
+
 Terminal/browser details (read paths, send/exec/recv, events daemon) are in
-`USAGE.md` — same directory.
+`USAGE.md` - same directory.
 
 Workflow: `screenshot.py --hints` → pick the target by `name`/`type` from the
 JSON (or the badge letters in the PNG) → `mouse.py click --hint <id>` →
