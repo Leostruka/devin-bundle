@@ -70,9 +70,10 @@ def metrics_sink_path():
             try:
                 import json as _json
                 with open(man, encoding="utf-8") as f:
-                    if _json.load(f).get("name") == "devin-bundle":
-                        return os.path.join(
-                            cur, ".devin", "ledgers", "metrics.jsonl")
+                    d = _json.load(f)
+                if isinstance(d, dict) and d.get("name") == "devin-bundle":
+                    return os.path.join(
+                        cur, ".devin", "ledgers", "metrics.jsonl")
             except (OSError, ValueError):
                 pass
         parent = os.path.dirname(cur)

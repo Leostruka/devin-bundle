@@ -199,8 +199,10 @@ _STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
 # separator/command-substitution, under a privilege wrapper, or inside a
 # shell -c/-Command quote - mid-string occurrences are prose
 # (`echo "rm state/x"` stays silent; `bash -c 'rm state/x'` still hits).
-_CMD_POS = (r"(?:^|[|;&`$(]|\b(?:sudo|doas|runas|xargs)\s+|"
-            r"(?:-[ckCK]|-Command|/[ckCK])\s*[\"'`])\s*")
+_CMD_POS = (r"(?:^|[|;&`$(]|\b(?:sudo|doas|runas|xargs|env|nice|nohup|"
+            r"timeout|ionice|watch|stdbuf|strace|ltrace|taskset|chrt)\s+"
+            r"(?:\S+\s+)*|"
+            r"(?:-[ckCK]|-Command|/[ckCK]|eval)\s*[\"'`])\s*")
 STATE_FILE_DELETE = re.compile(
     r"(?:" + _CMD_POS +
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|unlink|shred|srm|wipe|"
@@ -235,7 +237,8 @@ GIT_CLEAN_DRY_RUN = re.compile(
 # `branch --list -D x`), so the prefix allows flag tokens; [^|;&] capture
 # stops at command separators so finditer sees each -D in a chain.
 GIT_BRANCH_FORCE_DELETE = re.compile(
-    _GIT + r"\s+branch\s+(?:(?:-[a-zA-Z][\w-]*|--[\w-]+(?:=\S*)?)\s+)*"
+    _GIT + r"\s+branch\s+(?:(?:-[a-zA-Z][\w-]*|--[\w-]+(?:=\S*)?)"
+    r"(?:\s+\S+)?\s+)*"
     r"(?:-[a-zA-Z]*D[a-zA-Z]*\b|--delete\s+--force\b)\s*([^|;&]*)")
 
 # git branch flags that consume the following token as a value (rename

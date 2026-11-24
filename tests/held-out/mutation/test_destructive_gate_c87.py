@@ -233,3 +233,33 @@ def test_ads_local_forms_still_blocked(cmd):
 def test_second_pass_extended_shapes_warn(cmd):
     code, out = _warn_text(cmd)
     assert code == 0 and "WARNING" in out.upper(), cmd
+
+
+# --- C89: flag-value prefixes + wrapper verbs ---
+
+@pytest.mark.parametrize("cmd", [
+    "git branch --sort x -D divergent-zz",
+    "git branch --points-at a -D divergent-zz",
+    "git branch -c old -D divergent-zz",
+])
+def test_branch_d_flag_value_prefixes_blocked(cmd):
+    """A space-separated flag value before -D must not break matching."""
+    code, out = run_gate(cmd)
+    assert code == 2, f"flag-value -D bypass should block, got {code}: {out}"
+
+
+@pytest.mark.parametrize("cmd", [
+    "env rm state/subagent-x.json",
+    "env FOO=1 rm state/subagent-x.json",
+    "nice rm state/subagent-x.json",
+    "nohup rm state/subagent-x.json",
+    "timeout 5 rm state/subagent-x.json",
+    "eval \"rm state/subagent-x.json\"",
+    "xargs rm state/subagent-x.json",
+    "sudo -u root rm state/subagent-x.json",
+])
+def test_state_delete_wrapper_verbs_blocked(cmd):
+    """Privilege/env/scheduler wrappers cannot launder a state delete -
+    the verb is still what runs."""
+    code, out = run_gate(cmd)
+    assert code == 2, f"wrapped state delete should block, got {code}: {out}"
