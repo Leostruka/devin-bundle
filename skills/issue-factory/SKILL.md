@@ -48,6 +48,15 @@ For each ready issue, write `Risk:` into the issue file:
 Ambiguous spec or acceptance criteria: send to `/intake` first, do not
 build.
 
+Ticket contract (executor-proof fields, per writing-plans): tickets
+generated from a plan/spec SHOULD carry `Planned at: <sha8>`, `Verify:`
+gate commands + expected output, `STOP if:` conditions, and expect the
+executor report shape (`STATUS` / per-step results / `FILES CHANGED` /
+`NOTES`) in `## Answer`. The board's `sha` column records the Planned-at
+SHA. On drift (`git rev-parse --short=8 HEAD` mismatch) or a STOP trigger
+the worker reports BLOCKED instead of improvising; the orchestrator
+requeues once, then marks the issue blocked with the reason.
+
 ## Factory loop
 
 1. Recompute the frontier (afk-loop rules: open + unblocked + unclaimed).
@@ -55,7 +64,9 @@ build.
    response so they run in parallel. Each prompt carries: the issue file
    path, spec pointer, an exclusive worktree path
    (`/using-git-worktrees`, one lane per issue, `git-workflows` lane
-   ownership), the TDD contract, and "commit on the lane branch only".
+   ownership), the TDD contract, the ticket's executor-proof fields
+   (`Planned at` SHA + drift check first, `Verify:` gates, `STOP if:`),
+   and "commit on the lane branch only".
    Respect `data/bundle-models.json` tiers: low risk builds on the cheap
    profile; high risk on `subagent_general`.
 3. As each worker returns: run `scripts/done-evaluator.py --strict` on its

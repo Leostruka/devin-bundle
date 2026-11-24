@@ -77,11 +77,19 @@ refactors are the exception; sequence them as expand–contract, not as a slice.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use /dispatching-parallel-agents (recommended) or /executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Executor instructions**: Follow this plan step by step. Run every
+> verification command and confirm the expected result before moving to the
+> next step. Record the gate evidence per step. If anything in "STOP
+> conditions" occurs (including a drift-check mismatch), stop and report;
+> do not improvise. When done, emit the executor report format below.
+
 **Goal:** [One sentence describing what this builds]
 
 **Architecture:** [2-3 sentences about approach]
 
 **Tech Stack:** [Key technologies/libraries]
+
+**Planned at:** <sha8> (<YYYY-MM-DD>), output of `git rev-parse --short=8 HEAD` at write time
 
 ## Global Constraints
 
@@ -157,6 +165,56 @@ git add tests/path/test.py src/path/file.py
 git commit -m "feat: add specific feature"
 ```
 ````
+
+## Executor-proof plan contract
+
+Every generated plan is executed by a model with zero context, often a
+cheaper executor in an isolated worktree. The plan must be mechanically
+verifiable end to end; a plan missing any element below fails its own gate.
+
+**Drift check (executor runs FIRST).** The plan stamps `Planned at: <sha8>`.
+Before touching code the executor runs `git rev-parse --short=8 HEAD` (the
+stamp command; plain `--short HEAD` may abbreviate to 7 chars and is NOT the
+check); if it differs from the stamp, STOP and report (the plan may be
+stale). Then run `git diff --stat <sha8>..HEAD -- <in-scope paths>`; any
+change to an in-scope file means compare the plan's "current state"
+excerpts against the live code, and a mismatch is a STOP condition.
+
+**Verify per step.** Every step already ends with `Run:` + `Expected:`;
+treat it as a hard gate: run the command, compare output to expected, and
+record the excerpt as evidence in the executor report. A step without a
+runnable gate is a plan defect; fix the plan before handing it off.
+
+**STOP conditions.** Every plan MUST enumerate its own STOP conditions
+(plan-specific risks, not boilerplate). The defaults that must appear when
+relevant:
+
+- Drift: HEAD SHA or in-scope diff diverged from `Planned at`.
+- A step is unverifiable: its gate command cannot run, or the expected
+  output cannot be checked against reality.
+- A verification gate fails twice after a reasonable fix attempt.
+- The fix appears to require editing an out-of-scope file.
+- A "current state" excerpt no longer matches the live code.
+
+**Executor report format.** The executor's final message MUST use this
+shape:
+
+```text
+STATUS: DONE | BLOCKED | PARTIAL
+PLANNED-AT: <sha8>  HEAD: <sha8>  DRIFT: none | <summary>
+STEPS:
+  - Step N <title>: PASS | FAIL | SKIPPED - files: <paths> - gate: `<cmd>` -> <output excerpt>
+FILES CHANGED: <list, or "none">
+NOTES: <deviations, rejected-approach hits, follow-ups>
+```
+
+**Rejected approaches registry.** Every plan MUST name where rejected
+alternatives are recorded so they are not re-proposed: append a
+`## Rejected approaches` section to the plan (one line per rejected option
+plus rationale), or, when the plan belongs to a batch, reference the batch
+index's "Findings considered and rejected" section (e.g.
+`.devin/plans/README.md`). An executor that discovers a better approach
+mid-flight records it there instead of silently switching.
 
 ## No Placeholders
 
