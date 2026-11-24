@@ -365,11 +365,14 @@ def _check_state_file(tool_name, file_path):
         base = os.path.basename(norm)
         if (os.path.dirname(norm)
                 == os.path.normcase(os.path.realpath(state_dir))
-                and base.startswith("subagent-")):
+                and (base.startswith("subagent-")
+                     or (base.startswith("wtp-")
+                         and base.endswith(".txt")))):
             block(
-                f"{tool_name} refused: '{base}' is subagent enforcement state "
-                "managed by validate-tool-args; agents may not edit their own "
-                "profile/budget records. Ask the user to change policy."
+                f"{tool_name} refused: '{base}' is hook enforcement state "
+                "managed by the gate scripts; agents may not edit their own "
+                "profile/budget records or gate buffers. Ask the user to "
+                "change policy."
             )
     except (OSError, ValueError):
         return

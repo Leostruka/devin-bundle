@@ -68,7 +68,7 @@ Source: "Reason Less, Verify More" (arXiv:2607.07405, KDD 2026 Workshop)
   Gates are deterministic, read-only, pre-execution predicates.
   Fail-open: if a gate raises an exception, log and allow.
 """
-import sys, json, os, re
+import sys, json, os, re, hashlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
 
@@ -197,7 +197,8 @@ WIN_RM_RE_NOTARGET = re.compile(
 # self-unlimiting class. Anchored on the state/ path component (matches
 # <devin-home>/state/subagent-*; bare "subagent-x.json" elsewhere is fine)
 # or the whole state dir itself (devin/state -> rm -rf state-dir).
-_STATE_PATH = r"(?:^|[\\/]|\s)state[\\/]+subagent-[\w.-]*\.jsonl?\b"
+_STATE_PATH = (r"(?:^|[\\/]|\s)state[\\/]+"
+               r"(?:subagent-[\w.-]*\.jsonl?|wtp-[\w.-]*\.txt)\b")
 _STATE_DIR = r"(?:^|[\\/]|\s)devin[\\/]state\b"
 _STATE_TARGET = _STATE_PATH + "|" + _STATE_DIR
 # Command-position anchor: a verb only runs at command start, after a
@@ -602,24 +603,74 @@ def strip_commit_message(command):
 
 
 _WTP_SPECIAL = re.compile(r"<[^>]*>")
+_WTP_CLEAR = re.compile(r"(?i)<C-c>|<C-u>")
+_WTP_BUF_CAP = 4096
 
 
-def _submitted_lines(tool_input):
+def _devin_home():
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return os.path.join(appdata, "devin")
+    return os.path.join(os.path.expanduser("~"), ".config", "devin")
+
+
+def _wtp_buf_path(data, tool_input):
+    """Per-shell pending-line buffer (split-write bypass: the dangerous text
+    can arrive in one call and the CR in the next, so the gate must model
+    the shell's current input line across calls)."""
+    try:
+        key = "|".join([
+            str(data.get("session_id", "")),
+            str(data.get("prompt_id", "")),
+            str(tool_input.get("shell_id", ""))])
+        h = hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
+        d = os.environ.get("DEVIN_STATE_DIR") or os.path.join(
+            _devin_home(), "state")
+        os.makedirs(d, exist_ok=True)
+        return os.path.join(d, "wtp-" + h + ".txt")
+    except Exception:
+        return None
+
+
+def _submitted_lines(tool_input, data):
     """Extract only lines a write_to_process call actually submits.
 
     A line runs in the target shell only when followed by CR/LF — trailing
-    text without a terminator is a partial keystroke (TUI input, vim
-    motions) and is not executable yet. bytes_input uses angle-bracket
-    notation (<CR>, <C-c>) which is decoded to real control chars first.
+    text without a terminator stays on the shell's input line. That pending
+    text is buffered per shell across calls (split-write bypass), and
+    C-c/C-u/C-k (line-clear controls) discard it. bytes_input uses
+    angle-bracket notation (<CR>, <C-c>) decoded to real chars first.
     """
+    is_bytes = False
     text = tool_input.get("text_input")
     if not isinstance(text, str) or not text:
         text = tool_input.get("bytes_input")
+        is_bytes = True
         if not isinstance(text, str) or not text:
             return ""
+    if is_bytes:
         text = re.sub(r"(?i)<CR>|<LF>|\r\n?", "\n", text)
+        text = _WTP_CLEAR.sub("\x03", text)
         text = _WTP_SPECIAL.sub("", text)
-    lines = re.split(r"\r\n|\r|\n", text)
+    pending = ""
+    buf = _wtp_buf_path(data, tool_input)
+    if buf:
+        try:
+            with open(buf, encoding="utf-8", errors="replace") as fh:
+                pending = fh.read()[-_WTP_BUF_CAP:]
+        except OSError:
+            pending = ""
+    combined = pending + text
+    # C-c / C-u / C-k discards the current input line: drop everything up to
+    # the last clear-control (incl. pending from earlier calls).
+    combined = combined.rsplit("\x03", 1)[-1]
+    lines = re.split(r"\r\n|\r|\n", combined)
+    if buf:
+        try:
+            with open(buf, "w", encoding="utf-8") as fh:
+                fh.write(lines[-1][-_WTP_BUF_CAP:])
+        except OSError:
+            pass
     return "\n".join(lines[:-1])
 
 
@@ -640,7 +691,7 @@ def main():
     if not isinstance(tool_input, dict):
         sys.exit(0)
     if tool_name == "write_to_process":
-        command = _submitted_lines(tool_input)
+        command = _submitted_lines(tool_input, data)
     else:
         command = tool_input.get("command", "") or ""
     if not isinstance(command, str) or not command.strip():
@@ -770,11 +821,11 @@ def main():
         if STATE_FILE_DELETE.search(scan_command) or \
                 STATE_FILE_WRITE.search(scan_command):
             block(
-                "delete/write targeting subagent enforcement state "
-                "(subagent-*.json / subagent-ledger.jsonl / "
-                "subagent-budget.json) - removing or corrupting it resets "
-                "the session's own profile/budget limits. Ask the user to "
-                "change policy instead.")
+                "delete/write targeting hook enforcement state "
+                "(subagent-*.json* / wtp-*.txt / the devin/state dir) - "
+                "removing or corrupting it resets the session's own "
+                "profile/budget limits or the stdin-channel line buffers. "
+                "Ask the user to change policy instead.")
     except SystemExit:
         raise
     except Exception:

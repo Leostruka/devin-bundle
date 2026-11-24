@@ -1519,7 +1519,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "149008540B92DF2DE62EACB5245DA16755F3BAD10A076269C59132F9871D1778",
+      "export_hash": "4BFB15ADD43D409D962E7A6C7837A555386BF462238161563AE44245AF1440B3",
       "exported_at": "2026-11-17"
     },
     {
@@ -1749,7 +1749,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "DE83DCED92327042EA5BEF4ACB1FAE35AA58080BC4E339482530DEF6CAC75915",
+      "export_hash": "B379AD5A2D5CDD94CF5894C4663654F35ADA9BA9BA4A4A50CEF0C8DC45C286C1",
       "exported_at": "2026-11-17"
     },
     {

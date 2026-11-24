@@ -267,16 +267,24 @@ def test_state_delete_wrapper_verbs_blocked(cmd):
 
 # --- C90: write_to_process stdin channel ---
 
-def run_gate_wtp(tool_input: dict) -> tuple[int, str]:
+def run_gate_wtp(tool_input: dict, session_id: str = "") -> tuple[int, str]:
+    if not session_id:
+        # Per-input session so pending-line buffers never leak between
+        # parametrized cases that share the same shell_id.
+        session_id = "t" + str(abs(hash(json.dumps(
+            tool_input, sort_keys=True))))
     payload = json.dumps({
         "hook_event_name": "PreToolUse",
         "tool_name": "write_to_process",
         "tool_input": tool_input,
-        "session_id": "test",
+        "session_id": session_id,
     })
+    env = dict(os.environ)
+    env["DEVIN_STATE_DIR"] = _WTP_STATE
     result = subprocess.run(
         [sys.executable, GATE_SCRIPT],
-        input=payload, capture_output=True, text=True, encoding="utf-8")
+        input=payload, capture_output=True, text=True, encoding="utf-8",
+        env=env)
     return result.returncode, result.stdout + result.stderr
 
 
@@ -308,3 +316,62 @@ def test_wtp_partial_and_benign_silent(ti):
     process - keystrokes for TUIs/prompts must stay silent."""
     code, out = run_gate_wtp(ti)
     assert code == 0, f"non-submitted/benign input should stay silent: {out}"
+
+
+# --- C91: split-write bypass + buffer-state guards ---
+
+import tempfile
+_WTP_STATE = tempfile.mkdtemp(prefix="wtpbuf")
+
+
+def test_wtp_split_write_blocked():
+    """Dangerous text in call 1 + CR in call 2 executes in the shell;
+    the gate must model the pending input line across calls."""
+    sid = "split-wtp-1"
+    assert run_gate_wtp({"shell_id": "s", "text_input": "rm -rf /"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "text_input": "\n"}, sid)[0] == 2
+
+
+def test_wtp_split_across_three_calls():
+    sid = "split-wtp-2"
+    assert run_gate_wtp({"shell_id": "s", "text_input": "rm -rf"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "text_input": " /"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "text_input": "\n"}, sid)[0] == 2
+
+
+def test_wtp_ctrl_c_clears_pending():
+    """C-c discards the input line in a real shell - pending must reset."""
+    sid = "split-wtp-3"
+    assert run_gate_wtp({"shell_id": "s", "text_input": "rm -rf /"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "bytes_input": "<C-c>"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "s", "text_input": "ls\n"}, sid)[0] == 0
+
+
+def test_wtp_cross_form_accumulation():
+    """text_input partial + bytes_input CR: the shell sees one line."""
+    sid = "split-wtp-4"
+    assert run_gate_wtp(
+        {"shell_id": "s", "text_input": "git push --force"}, sid)[0] == 0
+    assert run_gate_wtp(
+        {"shell_id": "s", "bytes_input": "<CR>"}, sid)[0] == 2
+
+
+def test_wtp_buffers_are_per_shell():
+    """shell_id partitions pending state - a CR on another shell must not
+    inherit the first shell's pending text."""
+    sid = "split-wtp-5"
+    assert run_gate_wtp({"shell_id": "sA", "text_input": "rm -rf /"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "sB", "text_input": "\n"}, sid)[0] == 0
+    assert run_gate_wtp({"shell_id": "sA", "text_input": "\n"}, sid)[0] == 2
+
+
+@pytest.mark.parametrize("cmd", [
+    "rm state/wtp-abc123.txt",
+    "del state\\wtp-deadbeef.txt",
+    "rm -rf devin/state",
+])
+def test_wtp_buffer_delete_blocked(cmd):
+    """Deleting a pending-line buffer before the CR re-opens the
+    split-write bypass - buffers are enforcement state."""
+    code, out = run_gate(cmd)
+    assert code == 2, f"buffer delete should block, got {code}: {out}"
