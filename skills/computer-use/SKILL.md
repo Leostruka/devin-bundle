@@ -80,3 +80,20 @@ Details and limits: `USAGE.md` → "Isolated environments".
 
 If the venv is missing, run the bundle installer (`install.ps1`/`install.sh`)
 or create it per `USAGE.md`.
+
+## Playtest pattern (interactive apps/games)
+
+A successful build is not a playtest. To verify an interactive app behaves:
+
+1. `open` the app (launch or focus its window) and grab the first state.
+2. `act` in batches - a list of input + wait steps per call, not one keystroke
+   at a time; re-read state after each batch.
+3. `capture` a screenshot after every act batch as evidence.
+4. `close` the session when the verdict is recorded.
+5. If the app can expose it, prefer a `__PLAYTEST__.snapshot()` hook for
+   machine-readable state over OCR/pixels.
+6. Multiplayer/multi-window: one session per player, act in each, compare
+   snapshots.
+
+Verdict goes in the run report: what was acted, what state/screens showed,
+pass/fail vs expectation (pattern adopted from ohmygame-studio, Apache-2.0).

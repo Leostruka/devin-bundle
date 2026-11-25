@@ -228,18 +228,53 @@ def c15(ctx):
                 ctx.warnings.append('scripts/' + ctx.s + ' live != bundle')
                 print('  WARN scripts/' + ctx.s + ' live=' + h1 + ' bundle=' + h2)
 
-    # 16. New skills live vs bundle sync
-    print()
-    print('[16] Skills live vs bundle sync')
-    new_skills = sorted(d for d in os.listdir('skills') if os.path.isdir(os.path.join('skills', d)))
-    for s in new_skills:
-        lp = os.path.join(ctx.live_base, 'skills', s, 'SKILL.md')
-        bp = os.path.join('skills', s, 'SKILL.md')
-        if os.path.exists(lp) and os.path.exists(bp):
-            h1 = hashlib.sha256(open(lp, 'rb').read()).hexdigest()[:16]
-            h2 = hashlib.sha256(open(bp, 'rb').read()).hexdigest()[:16]
-            if h1 == h2:
-                print('  OK  skills/' + s + ' (live=bundle)')
-            else:
-                ctx.warnings.append('skills/' + s + ' live != bundle')
-                print('  WARN skills/' + s + ' live=' + h1 + ' bundle=' + h2)
+    # 16. Skills live vs bundle sync lives in m_sync.c16 (single copy).
+    # 16b. Managed-tree repo->live drift: full skill trees (not just
+    # SKILL.md), agents, data, extensions, and the .devin -> docs remaps
+    # install.ps1 exports. Direction is repo->live only: live-only extras
+    # (state, build artifacts, per-user plans) are never flagged.
+    if ctx.live_base:
+        _skip_dirs = ('.venv', '__pycache__', 'node_modules', 'target')
+        _maps = (
+            ('skills', 'skills'),
+            ('agents', 'agents'),
+            ('data', 'data'),
+            ('extensions', 'extensions'),
+            ('.devin/docs', 'docs'),
+            ('.devin/plans', os.path.join('docs', 'plans')),
+            ('.devin/templates', os.path.join('docs', 'templates')),
+        )
+        _drift = []
+        for _f in ('manifest.json',):
+            _bp = _f
+            _lp = os.path.join(ctx.live_base, _f)
+            if os.path.isfile(_lp) and hashlib.sha256(
+                    open(_lp, 'rb').read()).hexdigest() != hashlib.sha256(
+                    open(_bp, 'rb').read()).hexdigest():
+                _drift.append(_f)
+        for repo_dir, live_rel in _maps:
+            if not os.path.isdir(repo_dir):
+                continue
+            for _dp, _dns, _fns in os.walk(repo_dir):
+                _dns[:] = [d for d in _dns if d not in _skip_dirs]
+                for _fn in _fns:
+                    if _fn.endswith('.pyc'):
+                        continue
+                    bp2 = os.path.join(_dp, _fn)
+                    rel = os.path.relpath(bp2, repo_dir)
+                    lp = os.path.join(ctx.live_base, live_rel, rel)
+                    tag = repo_dir + '/' + rel.replace(os.sep, '/')
+                    if not os.path.isfile(lp):
+                        _drift.append(tag + ' (missing live)')
+                    elif hashlib.sha256(open(lp, 'rb').read()).hexdigest() != \
+                            hashlib.sha256(open(bp2, 'rb').read()).hexdigest():
+                        _drift.append(tag)
+        if _drift:
+            ctx.warnings.append('repo->live drift: ' + str(len(_drift))
+                                + ' file(s): ' + ', '.join(_drift[:15]))
+            print('  WARN repo->live drift ' + str(len(_drift)) + ' file(s):')
+            for _d in _drift[:15]:
+                print('       ' + _d)
+        else:
+            print('  OK  managed trees live=bundle '
+                  '(skills/agents/data/extensions/docs/plans/templates)')

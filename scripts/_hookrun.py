@@ -458,8 +458,13 @@ def _run_one(script_name, payload):
     return code, stdout_buf.getvalue(), stderr_buf.getvalue()
 
 
-def run(script_names, payload):
-    """Run scripts in order, merge hook output, print result. Returns exit code."""
+def run(script_names, payload, event=None):
+    """Run scripts in order, merge hook output, print result. Returns exit code.
+
+    `event` is the runner's statically registered hook event (e.g.
+    'PreToolUse'); used as fallback when the payload omits
+    hook_event_name, so a synthesized hookSpecificOutput still carries a
+    valid hookEventName (the CLI rejects it otherwise)."""
     _normalize_wtp(payload)
     merged = {}
     contexts = []
@@ -537,7 +542,8 @@ def run(script_names, payload):
         # tool call with an opaque error). Synthesize it from the payload
         # when no child emitted one (C84).
         if 'hookEventName' not in hso_out:
-            ev = payload.get('hook_event_name') or payload.get('hookEventName')
+            ev = (payload.get('hook_event_name')
+                  or payload.get('hookEventName') or event)
             if ev:
                 hso_out['hookEventName'] = ev
         result['hookSpecificOutput'] = hso_out
@@ -546,7 +552,7 @@ def run(script_names, payload):
     rc = 2 if blocked is not None or final_code == 2 else 0
     emit_metric(
         'hookrun',
-        hook_event=payload.get('hook_event_name', ''),
+        hook_event=payload.get('hook_event_name') or event or '',
         scripts=','.join(script_names),
         duration_ms=int((time.time() - t0) * 1000),
         exit_code=rc,
@@ -555,7 +561,7 @@ def run(script_names, payload):
     return rc
 
 
-def main(script_names):
+def main(script_names, event=None):
     try:
         _recfg = getattr(sys.stdin, "reconfigure", None)
         if _recfg:
@@ -568,7 +574,7 @@ def main(script_names):
         payload = {}
     if not isinstance(payload, dict):
         payload = {}
-    sys.exit(run(script_names, payload))
+    sys.exit(run(script_names, payload, event=event))
 
 
 if __name__ == '__main__':

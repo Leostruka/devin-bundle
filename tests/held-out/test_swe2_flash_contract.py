@@ -49,10 +49,59 @@ def test_free_window_metadata_exact():
     assert models['swe-2-flash-high']['free_tier_permanent'] is False
     assert models['swe-2-flash-max']['free_tier_permanent'] is False
 
+    for mid in ('swe-2-1-low', 'swe-2-1-medium', 'swe-2-1',
+                'swe-2-1-high', 'swe-2-1-xhigh', 'swe-2-1-max'):
+        m = models[mid]
+        assert m['free_until'] == '2026-12-08', mid
+        assert m['free_tier_permanent'] is False, mid
+        assert m['context_window'] == 262144, mid
+
     # Exactly one permanent-free model in the registry.
     permanent = [m['id'] for m in registry['models']
                  if m.get('free_tier_permanent') is True]
     assert permanent == ['swe-2-flash-medium']
+
+    # Exactly one default parent and one default subagent. The 2026-11-25
+    # SWE-2.1 migration initially left the legacy swe-2-max flags set, making
+    # default resolution array-order dependent.
+    parents = [m['id'] for m in registry['models'] if m.get('is_default_parent')]
+    subs = [m['id'] for m in registry['models'] if m.get('is_default_subagent')]
+    assert len(parents) == 1, parents
+    assert len(subs) == 1, subs
+
+
+def test_free_window_expiry_boundary_semantics():
+    """The tripwire parser is load-bearing for policy enforcement that fires
+    in the future; pin exact boundary behavior so refactors cannot shift it."""
+    import datetime
+    cp = load_context_pressure()
+
+    # Date-only form: free through the END of that UTC date (vendor wording
+    # 'free through <date>'). Expiry instant is midnight of the next day.
+    expiry = cp.free_window_expiry({'free_until': '2026-12-08'})
+    assert expiry == datetime.datetime(2026, 12, 9, 0, 0,
+                                       tzinfo=datetime.timezone.utc)
+
+    # Datetime form carries its own offset; no extra day.
+    expiry = cp.free_window_expiry({'free_until': '2026-12-04T18:00:00Z'})
+    assert expiry == datetime.datetime(2026, 12, 4, 18, 0,
+                                       tzinfo=datetime.timezone.utc)
+
+    # Missing free_until means no expiry (static free declaration).
+    assert cp.free_window_expiry({}) is None
+
+    # is_currently_free integration: boundary instants.
+    last_free = datetime.datetime(2026, 12, 8, 23, 59,
+                                  tzinfo=datetime.timezone.utc)
+    first_paid = datetime.datetime(2026, 12, 9, 0, 0,
+                                   tzinfo=datetime.timezone.utc)
+    assert cp.is_currently_free('swe-2-1-max', last_free) is True
+    assert cp.is_currently_free('swe-2-1-max', first_paid) is False
+    # Permanent-free never expires.
+    far_future = datetime.datetime(2030, 1, 1, tzinfo=datetime.timezone.utc)
+    assert cp.is_currently_free('swe-2-flash-medium', far_future) is True
+    # Unknown / paid entries are never free.
+    assert cp.is_currently_free('nonexistent-id') is False
 
 
 def test_fast_role_resolution_and_env_override(monkeypatch):
@@ -91,8 +140,8 @@ def test_config_flash_family_preference():
     config = load_json('config.json')
     preferred = config['agent']['preferred_family_models']
     assert preferred['swe-2-flash'] == 'swe-2-flash-high'
-    assert preferred['swe-2'] == 'swe-2-max'
-    assert config['agent']['model'] == 'swe-2-max'
+    assert preferred['swe-2-1'] == 'swe-2-1-max'
+    assert config['agent']['model'] == 'swe-2-1-max'
 
 
 def test_docs_carry_exact_window_dates():
@@ -101,6 +150,7 @@ def test_docs_carry_exact_window_dates():
     for doc in (guide, tools_map):
         assert '2026-11-30' in doc, 'missing SWE-2 free cutoff date'
         assert '2026-12-04' in doc, 'missing Flash free cutoff date'
+        assert '2026-12-08' in doc, 'missing SWE-2.1 free cutoff date'
         assert 'swe-2-flash-medium' in doc
     # Flash cutoff must be documented at 18:00 UTC, not as a bare date or 11/30.
     assert ('2026-12-04T18:00:00Z' in guide
@@ -116,11 +166,11 @@ def test_agent_pins_match_config_and_docs():
         == 'swe-2-flash-high'
 
     for profile, expected in (
-            ('implementer', 'swe-2-flash-high'),
-            ('debugger', 'swe-2-flash-high'),
-            ('qa-ci', 'swe-2-flash-high'),
-            ('researcher', 'swe-2-max'),
-            ('reviewer', 'swe-2-max')):
+            ('implementer', 'swe-2-1-high'),
+            ('debugger', 'swe-2-1-high'),
+            ('qa-ci', 'swe-2-1-high'),
+            ('researcher', 'swe-2-1-max'),
+            ('reviewer', 'swe-2-1-max')):
         text = load_text('agents', f'{profile}.md')
         assert f'model: {expected}' in text, (
             f'{profile}: expected pin {expected}')

@@ -137,7 +137,7 @@ def main() -> None:
                   {"type": "object",
                    "properties": {"expr": {"type": "string"}},
                    "required": ["expr"]})]
-    req_body = build_request(key, "swe-2-max", tools)
+    req_body = build_request(key, "swe-2-1-max", tools)
     auth = base64.b64encode(key.encode()).decode()
     req = urllib.request.Request(
         base + "/exa.api_server_pb.ApiServerService/GetChatMessage",

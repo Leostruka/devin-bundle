@@ -10,7 +10,7 @@ run" admissions) -> not_done. Claim with no verification output at all
 -> uncertain. Claim + verification evidence + no contradictions -> done.
 
 Pass 2 (--emit-brief): emit a grading brief for a separate model tier
-(swe-2-medium) so ambiguous cases get a real second opinion instead of
+(swe-2-1-medium) so ambiguous cases get a real second opinion instead of
 self-trust. The orchestrator dispatches the brief and reads the verdict.
 
 Usage:
@@ -135,7 +135,7 @@ def emit_brief(transcript, task_text, verdict, signals):
     """Grading brief for a separate model tier (writer != grader)."""
     return {
         "role": "done_grader",
-        "model_hint": "swe-2-medium",
+        "model_hint": "swe-2-1-medium",
         "instruction": (
             "You are grading whether a worker's DONE claim is real. "
             "Read the task, then the transcript tail. Verdict JSON only: "

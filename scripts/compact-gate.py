@@ -482,6 +482,18 @@ def main():
     except (json.JSONDecodeError, EOFError, ValueError):
         sys.exit(0)
     ev = payload.get("hook_event_name", "")
+    if ev == "PostCompaction":
+        # Digest/turns describe pre-compaction history the live context no
+        # longer contains; reset the epoch but keep session identity.
+        state = _load_json(_state_path(), {})
+        if not isinstance(state, dict):
+            state = {}
+        state = {"digest": {}, "calls": 0, "turns": 0,
+                 "last_eval_call": -999, "last_action_ts": 0,
+                 "session_id": payload.get("session_id", "")
+                 or state.get("session_id", "")}
+        _save_json(_state_path(), state)
+        sys.exit(0)
     if ev not in ("PostToolUse", "UserPromptSubmit"):
         sys.exit(0)
 

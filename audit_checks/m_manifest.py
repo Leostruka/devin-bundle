@@ -6,7 +6,7 @@ def c8(ctx):
     ctx.script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
     print('  Scripts: ' + str(ctx.script_files))
     # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-    manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py', 'simplify-scan.py', 'graph-query.py', 'subagent-trace.py', 'done-evaluator.py', 'ship-metrics.py', 'changelog-refs.py', 'bundle_envelope.py', 'phase-zero.py', 'log-refinement.py'}
+    manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', '_gitscan.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py', 'simplify-scan.py', 'graph-query.py', 'subagent-trace.py', 'done-evaluator.py', 'ship-metrics.py', 'changelog-refs.py', 'bundle_envelope.py', 'phase-zero.py', 'log-refinement.py', 'laya-shadow-report.py'}
     for ctx.s in ctx.script_files:
         if ctx.s not in ctx.scripts_referenced and ctx.s not in manual_scripts:
             ctx.warnings.append(ctx.s + ' not referenced in hooks.v1.json')

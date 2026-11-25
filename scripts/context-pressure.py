@@ -166,6 +166,51 @@ def get_model_window(model_id=None):
     return get_default_window()
 
 
+def free_window_expiry(entry):
+    """Parse a registry entry's free_until into an aware datetime, or None.
+
+    Date-only form ('2026-12-08') means free through the end of that UTC date,
+    matching the vendor's 'free through <date>' wording; datetime form carries
+    its own offset ('2026-12-04T18:00:00Z').
+    """
+    import datetime
+    free_until = entry.get("free_until")
+    if not free_until:
+        return None
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", free_until):
+        base = datetime.datetime.fromisoformat(free_until).replace(
+            tzinfo=datetime.timezone.utc)
+        return base + datetime.timedelta(days=1)
+    return datetime.datetime.fromisoformat(free_until.replace("Z", "+00:00"))
+
+
+def is_currently_free(model_id, now=None):
+    """Date-aware cost resolution: cost_tier 'free' holds only inside the window.
+
+    Static cost_tier alone goes stale silently when a promotional window closes;
+    policy checks (audit, validation tests) must use this instead of the raw field.
+    """
+    import datetime
+    data = load_model_data()
+    if not data:
+        return False
+    entry = None
+    for m in data.get("models", []):
+        if m.get("id") == model_id:
+            entry = m
+            break
+    if entry is None or entry.get("cost_tier") != "free":
+        return False
+    if entry.get("free_tier_permanent"):
+        return True
+    expiry = free_window_expiry(entry)
+    if expiry is None:
+        return True
+    if now is None:
+        now = datetime.datetime.now(datetime.timezone.utc)
+    return now < expiry
+
+
 def get_thresholds():
     # Prefer dedicated context-budget file; fall back to bundle-models or constants
     budget = load_bundle_file("context-budget.json")
@@ -254,6 +299,18 @@ def process_hook(payload_str):
         payload = {}
     if not isinstance(payload, dict):
         payload = {}
+
+    if payload.get("hook_event_name") == "PostCompaction":
+        # The compactor just rewrote the live context; cumulative output
+        # totals describe pre-compaction history, not live pressure. Without
+        # this reset p inflates without bound (observed p=20.6 in
+        # .devin/laya/shadow.jsonl, 2026-11-25) and every threshold trips
+        # forever on a context that no longer exists.
+        try:
+            os.remove(MARKER_FILE)
+        except OSError:
+            pass
+        return 0
 
     resp = payload.get("tool_response") or payload.get("tool_output") or {}
     if isinstance(resp, dict):
@@ -394,7 +451,7 @@ def main():
     ap = argparse.ArgumentParser(description="Context pressure estimator")
     ap.add_argument("--reset", action="store_true", help="clear session marker")
     ap.add_argument("--report", action="store_true", help="show current estimate")
-    ap.add_argument("--model", help="model ID for window size (e.g. swe-2-high, swe-2-max)")
+    ap.add_argument("--model", help="model ID for window size (e.g. swe-2-1-high, swe-2-1-max)")
     args = ap.parse_args()
 
     if args.model:

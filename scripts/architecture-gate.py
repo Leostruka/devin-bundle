@@ -71,9 +71,12 @@ def _abs_targets(command):
             continue
         if not ABS_PATH_TOKEN.match(t):
             continue
-        m = MSYS_DRIVE.match(t)
-        if m:
-            t = m.group(1).upper() + ":\\" + m.group(2)
+        # MSYS /d/x drive translation only exists under Windows bash; on
+        # POSIX /d/x is an ordinary absolute path (data/hook-scope.json).
+        if os.name == "nt":
+            m = MSYS_DRIVE.match(t)
+            if m:
+                t = m.group(1).upper() + ":\\" + m.group(2)
         yield os.path.abspath(t)
 
 

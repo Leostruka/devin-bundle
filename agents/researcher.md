@@ -1,6 +1,6 @@
 ---
 name: researcher
-model: swe-2-max
+model: swe-2-1-max
 description: Use for codebase reconnaissance, external documentation lookup, web research, and primary-source investigation. Read-only, free model. Delegate when scope is broad or uncertain, when external docs are needed, or when exploration would flood the main context.
 allowed-tools:
   - read

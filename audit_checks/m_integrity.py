@@ -1,11 +1,27 @@
 import os, re, json, hashlib, sys, py_compile, subprocess, glob
 from ._ctx import Ctx, text_hash_matches, _scan_py_files
 
+_SKIP_DIRS = ('.git', '.venv', 'node_modules', 'target', '__pycache__')
+# Local junk paths: probes, worktree checkouts, caches. Not distributable
+# bundle content - a scratch .py/.json with a syntax error must not fail
+# the repo gate, and compiling them floods output with warnings that hide
+# real signal (measured 2026-11-25: 1161 warning/scratch lines, 781 .py
+# under .devin/scratch alone).
+_SKIP_PATHS = frozenset(
+    os.path.normpath(p)
+    for p in ('.devin/scratch', '.worktrees', 'tmp', '.pytest_cache'))
+
+
+def _prune_dirs(root, dirs):
+    dirs[:] = [d for d in dirs
+               if d not in _SKIP_DIRS
+               and os.path.normpath(os.path.join(root, d)) not in _SKIP_PATHS]
+
 
 def c1(ctx):
     json_files = []
     for root, dirs, files in os.walk('.'):
-        dirs[:] = [d for d in dirs if d not in ('.git', '.venv', 'node_modules', 'target', '__pycache__')]
+        _prune_dirs(root, dirs)
         for f in files:
             if f.endswith('.json'):
                 json_files.append(os.path.join(root, f))
@@ -24,7 +40,7 @@ def c1(ctx):
 def c2(ctx):
     ctx.py_files = []
     for root, dirs, files in os.walk('.'):
-        dirs[:] = [d for d in dirs if d not in ('.git', '.venv', 'node_modules', 'target', '__pycache__')]
+        _prune_dirs(root, dirs)
         for f in files:
             if f.endswith('.py'):
                 ctx.py_files.append(os.path.join(root, f))

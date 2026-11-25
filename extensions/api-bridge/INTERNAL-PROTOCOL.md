@@ -60,7 +60,7 @@ f10* tool:    f1 name · f2 description · f3 json_schema(string)
 f15 msg:      f1 uuid · f2 1 · f3 4
 f16 request uuid
 f20 varint 1
-f21 agent/model label ('swe-2-max', 'session-titler')
+f21 agent/model label (session model id, e.g. 'swe-2-1-max'; 'session-titler' for title-gen)
 f22 uuid
 f28 'user-<uid>:<session-slug>'
 ```
@@ -101,7 +101,8 @@ harnesses never see them (OpenAI schema has no field).
 
 ## Model uids (GetCliModelConfigs, ~1000)
 
-`swe-2-max`, `swe-2-flash-*`, `swe-1p6`, `gpt-5-*`, `gpt-6-*`,
+Observed at probe time (2026-11): `swe-2-max`, `swe-2-flash-*`, `swe-1p6`, `gpt-5-*`, `gpt-6-*`;
+current sessions also resolve `swe-2-1-*` uids (post-2026-11-25 default).
 `claude-*`, `gpt-6-luna-low` (title-gen). Errors observed:
 `unknown` (capacity), `invalid_argument` (shape), `permission_denied`
 (model not entitled), `internal`/`unimplemented` (stale ids on replay).

@@ -1,6 +1,6 @@
 ---
 name: tech-lead
-model: swe-2-max
+model: swe-2-1-max
 description: Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer persona with ADRs with rejected alternatives, folder tree to file granularity, interface contracts, NFR budgets. Consumes 04_BLOCKERS.md on rework. Never writes functional code.
 allowed-tools:
   - read

@@ -75,11 +75,28 @@ def c30(ctx):
 
 def c31(ctx):
     model_data_path = 'data/model-context-windows.json'
-    required_models = {
-        'swe-2-medium': 262144,
-        'swe-2-high': 262144,
-        'swe-2-max': 262144,
-    }
+    registry_path = 'data/bundle-models.json'
+    # Generation-independent invariant: every model id in the bundle registry
+    # must resolve a context window, or context-pressure falls back silently.
+    required_models = {}
+    if os.path.isfile(registry_path):
+        try:
+            with open(registry_path, encoding='utf-8-sig') as fh:
+                registry = json.load(fh)
+            for entry in registry.get('models', []):
+                mid = entry.get('id', '')
+                if mid:
+                    # 262K is the documented SWE-2/2.1/flash family window; other
+                    # families only get a presence requirement (window None).
+                    required_models[mid] = 262144 if mid.startswith('swe-2') else None
+        except (OSError, json.JSONDecodeError):
+            pass
+    if not required_models:
+        required_models = {
+            'swe-2-medium': 262144,
+            'swe-2-high': 262144,
+            'swe-2-max': 262144,
+        }
     if os.path.isfile(model_data_path):
         try:
             with open(model_data_path, encoding='utf-8-sig') as fh:
@@ -90,7 +107,7 @@ def c31(ctx):
             for mid, expected in required_models.items():
                 if mid not in found_models:
                     missing.append(mid)
-                elif found_models[mid] != expected:
+                elif expected is not None and found_models[mid] != expected:
                     wrong_window.append(f"{mid} expected {expected} got {found_models[mid]}")
             if missing:
                 ctx.errors.append('data/model-context-windows.json missing models: ' + ', '.join(missing))
@@ -99,7 +116,7 @@ def c31(ctx):
                 ctx.errors.append('data/model-context-windows.json wrong context_window: ' + '; '.join(wrong_window))
                 print('  FAIL wrong context_window: ' + '; '.join(wrong_window))
             if not missing and not wrong_window:
-                print('  OK  data/model-context-windows.json has required SWE-2 (262K) entries')
+                print('  OK  data/model-context-windows.json covers all registry models (' + str(len(required_models)) + ', 262K)')
         except (OSError, json.JSONDecodeError) as e:
             ctx.errors.append('data/model-context-windows.json is invalid: ' + str(e))
             print('  FAIL invalid data/model-context-windows.json: ' + str(e))
@@ -109,6 +126,75 @@ def c31(ctx):
 
     # 32. CHANGELOG [Unreleased] covers PR merges since the released version
     print()
+
+
+def c31b(ctx):
+    """Free-window transitions: promotional cost_tier free entries go stale
+    silently when free_until passes. Warn ahead, error when a config pin
+    violates the free-primary policy in reality."""
+    import datetime, importlib.util
+    registry_path = 'data/bundle-models.json'
+    if not os.path.isfile(registry_path):
+        print('  SKIP bundle-models.json missing')
+        return
+    try:
+        spec = importlib.util.spec_from_file_location(
+            'context_pressure', os.path.join('scripts', 'context-pressure.py'))
+        cp = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cp)
+    except Exception as exc:
+        ctx.warnings.append('could not load context-pressure for free-window check ' + str(exc))
+        print('  WARN context-pressure load failed')
+        return
+    registry = json.load(open(registry_path, encoding='utf-8-sig'))
+    now = datetime.datetime.now(datetime.timezone.utc)
+    warn_days = 7
+    try:
+        config = json.load(open('config.json', encoding='utf-8-sig'))
+        pinned = {config.get('agent', {}).get('model', ''),
+                  config.get('agent', {}).get('subagent_model', '')}
+    except (OSError, json.JSONDecodeError):
+        pinned = set()
+    # Scope: only operationally used ids trip the wire - config pins plus
+    # registry role mappings. Legacy entries nobody routes through would
+    # produce perpetual warning noise and train warning-blindness.
+    role_mapped = set()
+    for key in ('default_parent_model', 'default_subagent_model',
+                'fast_role_model', 'medium_role_model', 'advisor_role_model'):
+        val = registry.get(key, '')
+        if val:
+            role_mapped.add(val)
+    for entry in registry.get('models', []):
+        if entry.get('is_default_parent') or entry.get('is_default_subagent'):
+            role_mapped.add(entry.get('id', ''))
+    operational = (pinned | role_mapped) - {''}
+    approaching = []
+    violated = []
+    for entry in registry.get('models', []):
+        mid = entry.get('id', '')
+        if mid not in operational:
+            continue
+        if entry.get('cost_tier') != 'free' or entry.get('free_tier_permanent'):
+            continue
+        expiry = cp.free_window_expiry(entry)
+        if expiry is None:
+            continue
+        delta = (expiry - now).total_seconds() / 86400.0
+        if delta < 0:
+            violated.append(mid)
+        elif delta <= warn_days:
+            approaching.append(mid + ' (' + str(int(delta) + 1) + 'd left)')
+    for mid in violated:
+        ctx.errors.append(
+            'free-primary policy violated - operational pin ' + mid + ' free window closed;'
+            ' re-pin or consciously accept paid and update the policy')
+        print('  FAIL free window closed for pinned ' + mid)
+    for item in approaching:
+        ctx.warnings.append('free window closing soon ' + item)
+        print('  WARN free window closing ' + item)
+    if not violated and not approaching:
+        print('  OK  no free-window transitions within ' + str(warn_days) + 'd'
+              ' (' + str(len(operational)) + ' operational ids watched)')
 
 
 def c32(ctx):
@@ -216,7 +302,12 @@ def c34(ctx):
             ctx.warnings.append('ledger drift: ' + ', '.join(_drift[:20]))
             print('  WARN drift: Modified=' + str(len(_rep['Modified']))
                   + ' Foreign=' + str(len(_rep['Foreign'])))
-        else:
+        _stale = _rep.get('Outdated', []) + _rep.get('Removed', [])
+        if _stale:
+            ctx.warnings.append('ledger stale-install: ' + ', '.join(_stale[:20]))
+            print('  WARN stale-install: Outdated=' + str(len(_rep.get('Outdated', [])))
+                  + ' Removed=' + str(len(_rep.get('Removed', []))))
+        if not _drift and not _stale:
             print('  OK  no Modified/Foreign drift ('
                   + str(len(_rep['Current'])) + ' current)')
     except Exception as _e:

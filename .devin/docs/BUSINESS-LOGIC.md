@@ -64,7 +64,7 @@ rule changes, update this doc and the enforcing check together.
 - **R14. No unverified aliases.** Short names (`opus`, `sonnet`,
   `codex`, `gemini`, `adaptive`) may resolve to paid entries; check the
   registry before use. `subagent_explore` routes through the CLI default
-  router and is avoided; use `researcher` (`swe-2-max`).
+  router and is avoided; use `researcher` (`swe-2-1-max`).
 - **R15. Env overrides.** `BUNDLE_DEFAULT_MODEL`, `BUNDLE_MAX_MODEL`,
   `BUNDLE_MEDIUM_MODEL` override per installation; values must still be
   registry UIDs (enforcement planned, issue 32).

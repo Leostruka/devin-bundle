@@ -1,6 +1,6 @@
 # media-tools roadmap
 
-## Katana camera-blocking ingest (implemented, spec: `.devin/scratch/egm-laya-bitnet-upgrade/`)
+## Katana camera-blocking ingest (implemented, spec: `.devin/issues/egm-laya-bitnet-upgrade/`)
 
 Canonical owner: `.devin/issues/MILESTONE_2_13_camera_blocking.md`.
 This addendum's ingest helper is shipped: `playblast_ingest.py` validates a

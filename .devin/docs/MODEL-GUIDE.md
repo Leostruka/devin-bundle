@@ -2,15 +2,102 @@
 
 Política de modelos do bundle, nativa SWE-2. O roteamento é por **nível de esforço** (Medium/High/Max) mais a **fast lane** da família Flash, não por tamanho de modelo. Valores concretos estão em `data/bundle-models.json`; as variáveis de ambiente `BUNDLE_DEFAULT_MODEL`, `BUNDLE_MAX_MODEL`, `BUNDLE_MEDIUM_MODEL` e `BUNDLE_FAST_MODEL` podem sobrescrever os padrões. A versão validada do CLI está em `data/bundle-identity.json`.
 
-## Effort levels (SWE-2)
+## Comparação técnica: SWE-2.1 vs SWE-2 vs SWE-2 Flash (2026-11-25)
 
-No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é um campo separado na config - a variante escolhida define o esforço. A UI oferece `Alt+T` para alternar.
+Fonte primária: cognition.com/blog/swe-2-1 (2026-11-24) + `devin models list`.
+Ressalva metodológica: benchmarks são vendor-run (Cognition), publicados há 1
+dia, sem reprodução independente; porém SWE-2 foi re-executado no mesmo harness
+e edição de benchmark, então os deltas são de modelo, não de edição. Rollback
+de qualquer pin é trivial (1 linha), então o risco de adoção é baixo.
+
+### Qualidade (mesma edição de benchmark, mesmo harness)
+
+| Benchmark | SWE-2.1 | SWE-2 | delta |
+|---|---|---|---|
+| Terminal-Bench 4.1 | 50.0 | 24.2 | +25.8 (+107%) |
+| FrontierCode 2.0 | 41.3 | 24.1 | +17.2 |
+| ProgramBench | 44.0 | 17.0 | +27.0 |
+| SWE-Atlas QA | 71.0 | 63.7 | +7.3 |
+| SWE Marathon v1.2 | 54.9 | 32.5 | +22.4 |
+| ExploitBench | 80.0 | 36.1 | +43.9 |
+
+SWE-2 Flash não aparece nessas tabelas: é uma família diferente (post-train do
+Inkling-Small 276B/12B MoE, Apache-2.0) otimizada para throughput, não para
+teto de qualidade. Ordem de qualidade esperada: SWE-2.1 > SWE-2 > Flash.
+
+### Velocidade, contexto, custo
+
+| | SWE-2.1 | SWE-2 | SWE-2 Flash |
+|---|---|---|---|
+| Throughput | ~60 tok/s | ~60 tok/s | ~200 tok/s (3.3x) |
+| Contexto | 262K | 262K | 262K |
+| Effort tiers | low/medium/default/high/xhigh/max (6) | medium/high/max (3) | medium/high/max (3) |
+| Free até | **2026-12-08** | 2026-11-30 | 2026-12-04 (flash-medium: permanente) |
+| Depois do free | desconto até 2027-01-30 | pago | flash-high/max pagos; flash-medium continua free |
+| Ultrafast | Cerebras 10x, pago ($5/$25 por 1M) | lightning pago | lightning pago |
+
+Leitura-chave: SWE-2.1 **domina estritamente** SWE-2 - mesma velocidade, mesmo
+contexto, mesma classe de custo, qualidade muito maior, janela free mais longa.
+Não existe razão para pinar swe-2-* onde swe-2-1-* existe no mesmo esforço.
+O tradeoff real é contra o Flash: 3.3x throughput vs teto de qualidade menor.
+
+### Decisão por papel (análise de custo-de-falha, 2026-11-25)
+
+**Julgamento / exploração profunda - 14 profiles -> `swe-2-1-max`** (architect,
+product-manager, red-team-lead, researcher, reviewer, scrum-master,
+security-auditor, sre, tech-lead, thermo-nuclear x2, ux-researcher, domain,
+repo-reviewer): upgrade estritamente dominante. A qualidade de julgamento é o
+produto inteiro desses papéis; velocidade é secundária. red-team-lead ganha
+especialmente: ExploitBench 36.1 -> 80.0.
+
+**Execução técnica correctness-critical - 5 profiles -> `swe-2-1-high`**
+(implementer, debugger, qa-ci, performance-engineer, art-director): o custo de
+falha domina a perda de 3.3x em throughput. implementer: uma implementação
+errada custa um loop inteiro de retry (mais lento que a diferença de tok/s).
+debugger: diagnóstico errado manda a investigação inteira pelo caminho errado -
+e root-cause em terminal é exatamente o que o benchmark que mais subiu mede.
+qa-ci: é o gate de verificação independente; falso passe/falha corrompe a
+cadeia de confiança. performance-engineer: interpretação de profiling é
+julgamento sobre medição. art-director: output é artefato final sem validação
+por execução - não existe loop auto-corretivo, qualidade é tudo.
+
+**`data-analyst` permanece `swe-2-flash-high`**: SQL-first é auto-corretivo -
+erros de query surfam imediatamente na execução, e o trabalho é iterativo por
+natureza (exploração). Throughput de iteração domina; quando uma análise é
+conclusiva e cara, o parent (2.1-max) revisa.
+
+**Volume mecânico / triagem - 5 profiles permanecem `swe-2-flash-medium`**
+(chief-of-staff, copywriter, issue-tracker, sentinel, triage-labels): trabalho
+mecânico constrainado por template/contrato, teto de qualidade do flash
+suficiente, e flash-medium é o único modelo permanentemente free - depois de
+2026-12-08 é a única lane gratuita garantida. copywriter é borderline (texto é
+artefato final), mas o trabalho é spec-constrainado com claims traceability -
+mecânico por design.
+
+**Parent/default -> `swe-2-1-max`**: mesmo raciocínio de dominância.
+
+**Fast lane (`fast_role_model`) permanece `swe-2-flash-high`**: a lane existe
+para throughput em trabalho bounded; trocar por 2.1-high eliminaria a única
+opção de velocidade da matriz. Quando a janela free fechar (12/8), revisar:
+se 2.1 pago for a opção do usuário, a lane fast perde sentido de custo e vira
+puramente de latência.
+
+**Novos tiers aproveitáveis**: `swe-2-1-xhigh` fica entre high e max - candidato
+futuro para papéis que estão em max por completude mas não por profundidade
+(ex.: scrum-master). `swe-2-1-low`/default: execução simples com qualidade de
+geração atual. Nenhum pin usa ainda - adoção depende de evidência de que max
+está overkill em algum papel (medir, não assumir).
+
+## Effort levels
+
+No SWE-2.1 (e legado SWE-2), esforço é o nível de raciocínio embutido no `model_uid`. Não é um campo separado na config - a variante escolhida define o esforço. A UI oferece `Alt+T` para alternar.
 
 | Nível | model_uid | Quando usar | Custo |
 |---|---|---|---|
-| **Medium** | `swe-2-medium` | Tarefas simples, ajustes pontuais, scripts isolados, edições mecânicas. Spec claro; sucesso verificável por um teste/build. | **Free até 2026-11-30** (`free_until`); depois pago (~$3/1M in, $15/1M out) |
-| **High** | `swe-2-high` | Tarefas que atravessam múltiplos arquivos, debugging bounded, decisões com várias constraints. **Default geral.** | **Free até 2026-11-30**; depois pago |
-| **Max** | `swe-2-max` | Tarefas abertas, refatorações globais, long-horizon coding, decisão custosa/irreversível. | **Free até 2026-11-30**; depois pago |
+| **Medium** | `swe-2-1-medium` | Tarefas simples, ajustes pontuais, scripts isolados, edições mecânicas. Spec claro; sucesso verificável por um teste/build. | **Free até 2026-12-08** (`free_until`); depois pago |
+| **High** | `swe-2-1-high` | Tarefas que atravessam múltiplos arquivos, debugging bounded, decisões com várias constraints. **Default geral.** | **Free até 2026-12-08**; depois pago |
+| **Max** | `swe-2-1-max` | Tarefas abertas, refatorações globais, long-horizon coding, decisão custosa/irreversível. | **Free até 2026-12-08**; depois pago |
+| legado | `swe-2-{medium,high,max}` | Geração anterior, dominada estritamente pela 2.1 (ver comparação no topo) - não pinar. | free até 2026-11-30 |
 | **Fast** | `swe-2-flash-{medium,high,max}` | Fast lane Flash (~200 tok/s, 3x SWE-2): execução bounded, volume mecânico, coding rotineiro. | **Free até 2026-12-04 18:00 UTC**; depois só `swe-2-flash-medium` permanece free |
 
 **Regra prática:** comece no nível que corresponde à forma da tarefa. Suba um nível quando a verificação falhar, não antes. Ver `context-hygiene` para a base empírica.
@@ -19,16 +106,16 @@ No SWE-2, esforço é o nível de raciocínio embutido no `model_uid`. Não é u
 
 Dois padrões da comunidade que o bundle já suporta:
 
-- **"Ultrathink" (escalonamento de um turno):** para uma decisão pontual de alta exigência (arquitetura crítica, bug que resistiu a 2+ hipóteses), suba para `swe-2-max` naquele turno via `Alt+T` e volte ao nível normal em seguida. Não rode a sessão inteira em Max - é desperdício no resto do trabalho.
-- **Advisor (consulta escalonada):** trabalho corrente em High/Medium; subagents rotineiros na fast lane (`swe-2-flash-high` execução bounded / `swe-2-flash-medium` volume); e quando aparece decisão difícil (arquitetura, bug estranho, julgamento irreversível), consulte o papel `advisor` (`advisor_role_model: swe-2-max` em `data/bundle-models.json`) - na prática, dispare um subagent `architect`/`reviewer` (Max, gratuito) como segunda opinião em vez de mudar o modelo do parent. O parent continua conversando e implementando; o advisor só decide.
+- **"Ultrathink" (escalonamento de um turno):** para uma decisão pontual de alta exigência (arquitetura crítica, bug que resistiu a 2+ hipóteses), suba para `swe-2-1-max` naquele turno via `Alt+T` e volte ao nível normal em seguida. Não rode a sessão inteira em Max - é desperdício no resto do trabalho.
+- **Advisor (consulta escalonada):** trabalho corrente em High/Medium; subagents rotineiros na fast lane (`swe-2-flash-high` execução bounded / `swe-2-flash-medium` volume); e quando aparece decisão difícil (arquitetura, bug estranho, julgamento irreversível), consulte o papel `advisor` (`advisor_role_model: swe-2-1-max` em `data/bundle-models.json`) - na prática, dispare um subagent `architect`/`reviewer` (Max, gratuito) como segunda opinião em vez de mudar o modelo do parent. O parent continua conversando e implementando; o advisor só decide.
 
 ## Primary model (parent)
 
-O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bundle-models.json.default_parent_model`). Default do bundle: **`swe-2-max`** (Max effort, 262K, free até 2026-11-30).
+O modelo primário (parent) é definido por `BUNDLE_DEFAULT_MODEL` (ou `data/bundle-models.json.default_parent_model`). Default do bundle: **`swe-2-1-max`** (Max effort, 262K, free até 2026-12-08).
 
 | Atributo | Valor | Fonte |
 |---|---|---|
-| model_uid | `swe-2-max` | `data/bundle-models.json` / `devin models list` |
+| model_uid | `swe-2-1-max` | `data/bundle-models.json` / `devin models list` |
 | Context window | `context_window` do registro | `data/bundle-models.json` |
 | Effort | definido pelo sufixo do `model_uid` | esta tabela |
 | Tool use | nativo durante inferência | Devin docs |
@@ -62,15 +149,17 @@ Subagents usam os variantes SWE-2 e SWE-2 Flash, escolhidos por nível de esfor�
 
 | Campo | Descrição | Effort | Custo | Notas |
 |---|---|---|---|---|
-| `swe-2-max` | Parent + Subagent Max (`swe-2-max`) | max | **Free até 2026-11-30** | Default do bundle; julgamento, exploração, review |
-| `swe-2-medium` | Variante Medium (`BUNDLE_MEDIUM_MODEL`) | medium | **Free até 2026-11-30** | Nenhum profile pinado; disponível p/ overrides |
-| `swe-2-high` | Variante High (`BUNDLE_DEFAULT_MODEL` alternativa) | high | **Free até 2026-11-30** | Multi-arquivo econômico; sem pin atual |
+| `swe-2-1-max` | Parent + Subagent Max | max | **Free até 2026-12-08** | Default do bundle; julgamento, exploração, review |
+| `swe-2-1-high` | Execução correctness-critical | high | **Free até 2026-12-08** | implementer/debugger/qa-ci/perf-engineer/art-director |
+| `swe-2-1-medium` | Variante Medium (`BUNDLE_MEDIUM_MODEL`) | medium | **Free até 2026-12-08** | Nenhum profile pinado; disponível p/ overrides |
+| `swe-2-1-{low,xhigh}` | Tiers novos sem pin ainda | low/xhigh | **Free até 2026-12-08** | Candidatos futuros; adoção exige evidência |
+| `swe-2-{medium,high,max}` | Legado (geração anterior) | - | free até 2026-11-30 | Dominado pela 2.1; não pinar |
 | `swe-2-flash-high` | Fast lane high (`fast_role_model`) | high | **Free até 2026-12-04 18:00 UTC** | Execução técnica bounded; depois ~$0.10/1M in, $0.50/1M out |
 | `swe-2-flash-medium` | Fast lane medium | medium | **Free permanente** (`free_tier_permanent: true`) | Volume mecânico, triagem; único modelo free após 2026-12-04 |
 | `swe-2-flash-max` | Fast lane max | max | **Free até 2026-12-04 18:00 UTC** | Escalonamento barato dentro da janela |
 
 **⚠️ CRÍTICO**: aliases não canônicos podem apontar para um modelo pago - **não use** sem verificar `data/bundle-models.json`.
-Os agents/ devem fazer pin com os variantes canônicos (`swe-2-max` / `swe-2-flash-high` / `swe-2-flash-medium`) do bundle.
+Os agents/ devem fazer pin com os variantes canônicos (`swe-2-1-max` / `swe-2-1-high` / `swe-2-flash-high` / `swe-2-flash-medium`) do bundle.
 
 **Nota swe-2-flash (2026-11-04):** familia `swe-2-flash-{medium,high,max}` (262K, `devin models list`) - lane rapida para volume: automacoes, code review mecanico, docs, feature dev simples. ~200 tok/s (3x SWE-2), post-train de Inkling-Small 276B/12B; benchmarks self-reported, sem API nem pesos publicos. **Janela free ate 2026-12-04 18:00 UTC**; apos a janela, somente `swe-2-flash-medium` permanece no plano Free (`free_tier_permanent: true`) e `flash-high`/`flash-max` passam a ~$0.10/1M input, $0.50/1M output, $0.01/1M cache read, $0.125/1M cache write. Prefira Flash para subagents de execucao bounded.
 
@@ -78,7 +167,7 @@ Os agents/ devem fazer pin com os variantes canônicos (`swe-2-max` / `swe-2-fla
 `subagent_explore` roda no default router do CLI, que pode cobrar por token.
 Não há override local - apenas enterprise settings podem mudar isso.
 **NUNCA dispatchar `subagent_explore`.** Usar o profile customizado `researcher`
-(`agents/researcher.md`, pin `model: swe-2-max`, gratuito, veja `data/bundle-models.json`)
+(`agents/researcher.md`, pin `model: swe-2-1-max`, gratuito, veja `data/bundle-models.json`)
 que tem as mesmas capacidades read-only. Fonte: docs.devin.ai/cli/subagents.
 
 ### Fusion (lead/sidekick) - cognition.com/blog/local-fusion
@@ -95,7 +184,7 @@ cost-effective ("sidekick", execução). Decisões que mudam por par:
   evitado poupa rodadas de raciocínio do frontier model. Preço/token menor é
   menos útil que menos tentativas.
 
-Implicação no bundle: pairing `swe-2-max` lead + `swe-2-max` sidekick é coerente
+Implicação no bundle: pairing `swe-2-1-max` lead + `swe-2-1-max` sidekick é coerente
 com a fonte; downgrade do sidekick só economiza se o brief subir de prescrição.
 
 ### Self-compaction (diferencial chave)
@@ -152,64 +241,64 @@ mantém cada loop long-lived sob seu cap. Use subagents para evitar que
 trabalho bulk entre no parent window; use compaction quando o trabalho
 já está no parent e precisa continuar coerente.
 
-Para o parent (`swe-2-max`) despachando subagents:
-- Pesquisa/exploração extensa → `researcher` (Max, retorna só síntese)
-- Implementação bounded → `implementer` (Flash High, ~3x mais rápido)
-- Verificação mecânica de gates → `qa-ci` (Flash High)
+Para o parent (`swe-2-1-max`) despachando subagents:
+- Pesquisa/exploração extensa → `researcher` (2.1 Max, retorna só síntese)
+- Implementação bounded → `implementer` (2.1 High)
+- Verificação mecânica de gates → `qa-ci` (2.1 High)
 - Debugging iterativo que precisa de contexto acumulado → inline + compaction
 - Arquitetura/decisão que precisa ver tudo → inline (parent, High)
 
 ## Estratégia de model pin em agents/
 
-Alto julgamento e exploração agêntica profunda ficam em `swe-2-max` (DeepSWE 73 vs 60 do Flash; trabalho agentic pesado é onde SWE-2 ganha). Execução técnica bounded vai para `swe-2-flash-high` (~3x mais rápido, qualidade ~= SWE-2 em coding rotineiro). Volume mecânico e triagem vão para `swe-2-flash-medium` (permanece free após a janela).
+Geração migrada para SWE-2.1 em 2026-11-25 (dominância estrita sobre SWE-2 - ver comparação no topo). Julgamento fica em `swe-2-1-max`; execução correctness-critical em `swe-2-1-high`; loops auto-corrigíveis e volume mecânico permanecem na fast lane Flash (throughput 3.3x; flash-medium permanece free após a janela).
 
 | Agent | model: pin | Lane | Racional |
 |---|---|---|---|
-| researcher | `swe-2-max` | Max | Read-only, alto contexto, exploração profunda |
-| architect | `swe-2-max` | Max | Trade-off analysis |
-| reviewer | `swe-2-max` | Max | Julgamento independente |
-| repo-reviewer (.devin) | `swe-2-max` | Max | Review local two-axis |
-| domain (.devin) | `swe-2-max` | Max | Interpretação de domínio/arquitetura |
-| product-manager | `swe-2-max` | Max | Spec authoring, RICE/Kano |
-| tech-lead | `swe-2-max` | Max | Architecture spec, ADRs |
-| security-auditor | `swe-2-max` | Max | STRIDE/DPIA audit |
-| scrum-master | `swe-2-max` | Max | Detecção de conflito de spec, verdicts de pipeline |
-| red-team-lead | `swe-2-max` | Max | Planejamento de engagement, evidence discipline |
-| sre | `swe-2-max` | Max | Incident response, rollback decisions |
-| ux-researcher | `swe-2-max` | Max | Usability research, heuristic evaluation |
-| thermo-nuclear-review-subagent | `swe-2-max` | Max | Branch audit profundo |
-| thermo-nuclear-code-quality-review-subagent | `swe-2-max` | Max | Quality audit profundo |
-| implementer | `swe-2-flash-high` | Fast High | Bounded coding, spec'd work |
-| debugger | `swe-2-flash-high` | Fast High | Iteração de hipóteses, root cause |
-| qa-ci | `swe-2-flash-high` | Fast High | Re-execução mecânica de gates |
+| researcher | `swe-2-1-max` | Max | Read-only, alto contexto, exploração profunda |
+| architect | `swe-2-1-max` | Max | Trade-off analysis |
+| reviewer | `swe-2-1-max` | Max | Julgamento independente |
+| repo-reviewer (.devin) | `swe-2-1-max` | Max | Review local two-axis |
+| domain (.devin) | `swe-2-1-max` | Max | Interpretação de domínio/arquitetura |
+| product-manager | `swe-2-1-max` | Max | Spec authoring, RICE/Kano |
+| tech-lead | `swe-2-1-max` | Max | Architecture spec, ADRs |
+| security-auditor | `swe-2-1-max` | Max | STRIDE/DPIA audit |
+| scrum-master | `swe-2-1-max` | Max | Detecção de conflito de spec, verdicts de pipeline |
+| red-team-lead | `swe-2-1-max` | Max | Planejamento de engagement, evidence discipline |
+| sre | `swe-2-1-max` | Max | Incident response, rollback decisions |
+| ux-researcher | `swe-2-1-max` | Max | Usability research, heuristic evaluation |
+| thermo-nuclear-review-subagent | `swe-2-1-max` | Max | Branch audit profundo |
+| thermo-nuclear-code-quality-review-subagent | `swe-2-1-max` | Max | Quality audit profundo |
+| implementer | `swe-2-1-high` | 2.1 High | Bounded coding, spec'd work |
+| debugger | `swe-2-1-high` | 2.1 High | Iteração de hipóteses, root cause |
+| qa-ci | `swe-2-1-high` | 2.1 High | Re-execução mecânica de gates |
 | data-analyst | `swe-2-flash-high` | Fast High | SQL/viz bounded |
-| performance-engineer | `swe-2-flash-high` | Fast High | Profiling, measured optimization |
-| art-director | `swe-2-flash-high` | Fast High | Design spec authoring bounded |
+| performance-engineer | `swe-2-1-high` | 2.1 High | Profiling, measured optimization |
+| art-director | `swe-2-1-high` | 2.1 High | Design spec authoring bounded |
 | copywriter | `swe-2-flash-medium` | Fast Medium | Docs/marketing map, volume |
 | sentinel | `swe-2-flash-medium` | Fast Medium | Observador paralelo, diff-checking |
 | chief-of-staff | `swe-2-flash-medium` | Fast Medium | SysAdmin watchdog, AUTO-FIX whitelist |
 | issue-tracker (.devin) | `swe-2-flash-medium` | Fast Medium | CRUD de issues Markdown |
 | triage-labels (.devin) | `swe-2-flash-medium` | Fast Medium | Mapeamento de labels, mecânico |
 
-Built-ins sem pin possível: `subagent_general` (herda parent), `subagent_explore` (router pago possível, **nunca dispatchar**, usar `researcher`), `watchdog`/`advisor` (sem arquivo de profile; o papel `advisor` resolve via `advisor_role_model: swe-2-max` no registro).
+Built-ins sem pin possível: `subagent_general` (herda parent), `subagent_explore` (router pago possível, **nunca dispatchar**, usar `researcher`), `watchdog`/`advisor` (sem arquivo de profile; o papel `advisor` resolve via `advisor_role_model: swe-2-1-max` no registro).
 
 **Por que pin e não alias?** Aliases não canônicos podem apontar para um modelo pago.
-Use os variantes canônicos do bundle (`swe-2-max` / `swe-2-flash-high` / `swe-2-flash-medium`)
+Use os variantes canônicos do bundle (`swe-2-1-max` / `swe-2-1-high` / `swe-2-flash-high` / `swe-2-flash-medium`)
 que são gratuitos e têm a maior `context_window`. Sem pin, o router pode
 resolver para um modelo pago. Quando novas versões saírem, atualize os agents/
 para os novos modelos listados em `data/bundle-models.json`.
 
-O parent (`swe-2-max`) faz trabalho complexo inline. Para implementação
+O parent (`swe-2-1-max`) faz trabalho complexo inline. Para implementação
 que precisa do parent, usar `subagent_general` (herda parent, **gratuito**
-quando parent é free) ou pin `model: swe-2-max` no agent.
+quando parent é free) ou pin `model: swe-2-1-max` no agent.
 
 ### Profiles built-in vs custom agents (custo)
 
 | Profile | Modelo | Custo | Quando usar |
 |---|---|---|---|
-| `subagent_general` | Herda parent (`swe-2-max`) | **Gratuito** (quando parent é free) | Implementação que precisa do parent, contexto isolado |
+| `subagent_general` | Herda parent (`swe-2-1-max`) | **Gratuito** (quando parent é free) | Implementação que precisa do parent, contexto isolado |
 | `subagent_explore` | Default router do CLI | **PAGO** (possível) | **EVITAR** — usar custom agent `researcher` (gratuito) em vez |
-| Custom agents (researcher, architect, etc.) | `swe-2-max` / `swe-2-flash-high` / `swe-2-flash-medium` (pin) | **Gratuito** (quando free no registro) | Pesquisa, arquitetura, review, debug, implementação |
+| Custom agents (researcher, architect, etc.) | `swe-2-1-max` / `swe-2-1-high` / `swe-2-flash-high` / `swe-2-flash-medium` (pin) | **Gratuito** (quando free no registro) | Pesquisa, arquitetura, review, debug, implementação |
 
 **⚠️ Nunca usar `subagent_explore`** - ele pode resolver para um modelo pago.
 Os custom agents com os pins canônicos são gratuitos e têm mais contexto.
@@ -226,9 +315,8 @@ spawnaram normalmente).
 **Gratuitos** na assinatura são definidos em `data/bundle-models.json`
 com `cost_tier: free`:
 
-- `swe-2-max`: parent + subagent (default, Max) - free **até 2026-11-30**
-- `swe-2-high`: variante High - free **até 2026-11-30**
-- `swe-2-medium`: variante Medium (`BUNDLE_MEDIUM_MODEL`, sem pin atual) - free **até 2026-11-30**
+- `swe-2-1-{low,medium,default,high,xhigh,max}`: geração atual - free **até 2026-12-08**, depois desconto até 2027-01-30
+- `swe-2-{medium,high,max}`: legado, dominado - free **até 2026-11-30**
 - `swe-2-flash-{high,max}`: fast lane - free **até 2026-12-04 18:00 UTC**
 - `swe-2-flash-medium`: fast lane - free **permanente** (`free_tier_permanent`)
 
@@ -236,39 +324,75 @@ com `cost_tier: free`:
 incluindo aliases/short names. Sempre verifique o registro antes de usar um
 modelo não-canônico.
 
-### Janelas gratuitas e a virada de custo (2026-11-30 / 2026-12-04)
+### Janelas gratuitas e a virada de custo (2026-11-30 / 12-04 / 12-08)
 
 | Período | Free | Pago |
 |---|---|---|
-| Hoje → 2026-11-30 | `swe-2-{medium,high,max}` + `swe-2-flash-{medium,high,max}` | aliases/paid |
-| 2026-11-30 → 2026-12-04 18:00 UTC | só `swe-2-flash-{medium,high,max}` | `swe-2-*` (~$3/1M in, $15/1M out, $0.30/1M cache read) |
-| Após 2026-12-04 18:00 UTC | só `swe-2-flash-medium` (`free_tier_permanent: true`) | `swe-2-*` + `swe-2-flash-{high,max}` (~$0.10/1M in, $0.50/1M out, $0.01/1M cache read, $0.125/1M cache write) |
+| Hoje → 2026-11-30 | tudo: `swe-2-1-*` + `swe-2-*` + `swe-2-flash-*` | aliases/paid |
+| 2026-11-30 → 2026-12-04 18:00 UTC | `swe-2-1-*` + `swe-2-flash-*` | `swe-2-*` legado |
+| 2026-12-04 → 2026-12-08 | `swe-2-1-*` + `swe-2-flash-medium` | legado + flash high/max |
+| Após 2026-12-08 | só `swe-2-flash-medium` (`free_tier_permanent: true`) | tudo o resto; 2.1 com desconto até 2027-01-30 |
+
+Leitura operacional: a migracao para SWE-2.1 estende a janela free da politica
+atual em 8 dias alem do colapso do flash (12/04 -> 12/08). A virada real da
+politica FREE-ONLY agora e 2026-12-08, nao 2026-12-04.
 
 Os campos `free_until` e `free_tier_permanent` em `data/bundle-models.json`
 registram essas datas; consulte o registro, não a memória.
 
-### Matriz de decisão FREE-ONLY pós-2026-11-30
+### Matriz de decisão FREE-ONLY pós-2026-12-08
 
-Quando `swe-2-*` sair do tier free, a política FREE-ONLY colapsa para
+Quando `swe-2-1-*` sair do tier free, a política FREE-ONLY colapsa para
 `swe-2-flash-medium` como único modelo gratuito permanente:
 
 | Política | Parent | Subagents | Custo |
 |---|---|---|---|
 | Free puro (default) | `swe-2-flash-medium` | `swe-2-flash-medium` | $0 - aceita perda de esforço max/high |
 | Plano pago, menor custo | `swe-2-flash-high` | `swe-2-flash-high` + `swe-2-flash-medium` | ~$0.10/1M in, $0.50/1M out (~1/5 do SWE-2) |
-| Plano pago, máxima qualidade | `swe-2-max` | `swe-2-max` para julgamento | ~$3/1M in, $15/1M out |
+| Plano pago, máxima qualidade | `swe-2-1-max` | `swe-2-1-max` para julgamento | verificar pricing pos-janela |
 
 Decisão pendente do usuário na virada (revisitar preços finais da Cognition);
 até lá, dentro das janelas free, os pins atuais já são todos `cost_tier: free`.
+
+### Runbook: execução da transição de janela
+
+O tripwire automático: audit check [31b] avisa 7 dias antes de uma janela
+operacional fechar e falha (erro) quando um pin operacional viola a política
+free-primary; `test_config_uses_available_free_primary_model` fica vermelho no
+mesmo dia. Quando disparar:
+
+0. **Transição intermediária 2026-12-04 (fast lane)**: flash-high/max saem do
+   free ANTES do colapso final. Como `swe-2-1-*` continua free até 12/8, as
+   opções para `fast_role_model` nessa janela são: (a) flash-medium - mantém
+   velocidade, perde quality ceiling; (b) `swe-2-1-high` - mantém qualidade,
+   perde o throughput 3.3x que justifica a lane; (c) aceitar flash-high pago 4
+   dias se a lane for crítica. Decisão de custo do usuário; default recomendado
+   (b) por consistência com a política free-primary, re-avaliado em 12/8 quando
+   tudo colapsa para flash-medium de qualquer forma.
+1. **Decidir política com o usuário** (é decisão de custo, não técnica):
+   free-only (colapsa para flash-medium, perde max/high), flash pago (~1/5 do
+   custo SWE-2 legacy), ou 2.1 pago com desconto até 2027-01-30.
+2. **Re-pinar conforme a matriz acima**: `config.json` (model + subagent_model),
+   `data/bundle-models.json` (role mappings + `is_default_*` flags - exatamente
+   um de cada, invariante pinado no held-out), profiles em `agents/` e
+   `.devin/agents/` conforme a análise custo-de-falha por papel.
+3. **Atualizar o registro**: flip `cost_tier` para `paid` nos ids cuja janela
+   fechou (a data em `free_until` não muda - é registro histórico).
+4. **Atualizar esta matriz** com os preços finais observados em
+   `devin models list` / cognition.com/pricing.
+5. **Verificar**: `python audit.py` (55 checks), foco em
+   `test_config_uses_available_free_primary_model` +
+   `test_swe2_flash_contract.py`, sync live (`install-ledger.py record-all`),
+   entrada no ledger. Não editar nada durante o full suite.
 
 ### Política CONDICIONAL ao modelo do parent
 
 **Caso 1 - Parent FREE (`cost_tier: free`): subagents DEVEM ser FREE.**
 
 Protocolo FREE-ONLY:
-1. Parent (`swe-2-max`, Max) - tentativa inicial
-2. Subagent fan-out (`swe-2-max` Max para julgamento / `swe-2-flash-high` execução bounded / `swe-2-flash-medium` volume) - paralelismo
-3. Parent com esforço `max` (via `Alt+T` ou `/model swe-2-max`) - mais raciocínio, mesmo modelo gratuito
+1. Parent (`swe-2-1-max`, Max) - tentativa inicial
+2. Subagent fan-out (`swe-2-1-max` para julgamento / `swe-2-1-high` execução / `swe-2-flash-high` loops auto-corrigíveis / `swe-2-flash-medium` volume) - paralelismo
+3. Parent com esforço `max` (via `Alt+T` ou `/model swe-2-1-max`) - mais raciocínio, mesmo modelo gratuito
 4. Repetir com contexto mais limpo (`clear` + recarregar apenas o necessário)
 5. Se todos os gratuitos falharem: **parar e reportar ao usuário** - não escalar para pago
 
@@ -280,7 +404,7 @@ sem verificar `data/bundle-models.json`, **NUNCA usar modelos pagos** para subag
 O usuário já optou por pagar pelo parent. Neste caso:
 - `subagent_explore` (default router, possivelmente pago) é permitido se for mais barato que o parent
 - `subagent_general` herda o modelo pago do parent (já está pago)
-- Custom profiles com os pins canônicos (`swe-2-max`, `swe-2-flash-high`, `swe-2-flash-medium`) continuam FREE dentro das janelas - preferir quando possível
+- Custom profiles com os pins canônicos (`swe-2-1-max`, `swe-2-1-high`, `swe-2-flash-high`, `swe-2-flash-medium`) continuam FREE dentro das janelas - preferir quando possível
 - Para reasoning pesado, pode-se usar o mesmo modelo do parent via `subagent_general`
 
 **Como detectar o caso**: verificar o `cost_tier` do modelo ativo no parent em `data/bundle-models.json`. Se for `free`, é Caso 1 (FREE-ONLY). Qualquer outro modelo é Caso 2.

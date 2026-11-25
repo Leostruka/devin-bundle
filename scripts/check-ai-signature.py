@@ -20,10 +20,18 @@ Enforces AGENTS.md Rule 2 (no AI signatures in deliverables).
 import sys, json, re, os, subprocess
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
+import _gitscan
 
 _CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 def _run(*a, **kw):
+    # Read-only git scans memoize per process (_gitscan): the consolidated
+    # Stop event runs this script and no-em-dash in one interpreter, and
+    # both scan the same diffs. Hook execution is atomic - the tree cannot
+    # change mid-event - so the cache is exact.
+    argv = a[0] if a else None
+    if isinstance(argv, list) and argv and argv[0] == 'git':
+        return _gitscan.run_git(argv, kw.get('cwd'))
     kw.setdefault('creationflags', _CF)
     return subprocess.run(*a, **kw)
 

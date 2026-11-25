@@ -8,6 +8,8 @@ CLI contract (JSON on stdout, like other bundle extensions):
         "notes": [...]}
 
   python verdict.py --build-ref DIR --out ref.npy   (reference builder)
+      [--resize WxH: downscale captures first, for resolution-matched
+       refs on downscaled inputs like WhatsApp recompressed photos]
 
 Rules (see skills/image-forensics): never claim provenance from a
 single signal; residual energy below the denoiser floor abstains;
@@ -88,7 +90,7 @@ def _load_ref(ref_path, shape):
     return ref
 
 
-def build_ref(dir_path, out_path):
+def build_ref(dir_path, out_path, resize=None):
     import numpy as np
     arrays = []
     skipped = []
@@ -96,14 +98,38 @@ def build_ref(dir_path, out_path):
         if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".tif",
                                 ".tiff", ".bmp", ".webp"):
             try:
-                arrays.append(prnu.load_gray(f))
+                if resize:
+                    from PIL import Image
+                    with Image.open(f) as im:
+                        im = im.convert("L").resize(
+                            resize, Image.LANCZOS)
+                        arr = np.asarray(im, dtype=np.float64) / 255.0
+                    arrays.append(arr)
+                else:
+                    arrays.append(prnu.load_gray(f))
             except Exception:
                 skipped.append(f.name)
                 continue
     ref = prnu.build_reference(arrays)
     np.save(out_path, ref)
-    return {"ok": True, "images": len(arrays), "skipped": skipped,
-            "ref": str(out_path)}
+    out = {"ok": True, "images": len(arrays), "skipped": skipped,
+           "ref": str(out_path)}
+    if resize:
+        out["resize"] = list(resize)
+    return out
+
+
+def _parse_resize(text):
+    """Parse 'WxH' into (w, h) ints for PIL resize."""
+    try:
+        w, h = text.lower().split("x")
+        w, h = int(w), int(h)
+        if w <= 0 or h <= 0:
+            raise ValueError
+        return (w, h)
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"--resize expects WxH (e.g. 1280x960), got {text!r}")
 
 
 def main(argv=None):
@@ -115,6 +141,11 @@ def main(argv=None):
     ap.add_argument("--pce-real", type=float, default=PCE_REAL)
     ap.add_argument("--pce-synth", type=float, default=PCE_SYNTH)
     ap.add_argument("--build-ref")
+    ap.add_argument("--resize", type=_parse_resize, default=None,
+                    help="WxH (with --build-ref): downscale each flat "
+                         "capture before residual extraction so the ref "
+                         "matches downscaled inputs (e.g. WhatsApp "
+                         "960x1280)")
     ap.add_argument("--out")
     args = ap.parse_args(argv)
     if args.build_ref:
@@ -125,7 +156,8 @@ def main(argv=None):
                                    "delete it first)"}, ensure_ascii=False))
             return 2
         try:
-            res = build_ref(args.build_ref, args.out or "ref.npy")
+            res = build_ref(args.build_ref, args.out or "ref.npy",
+                            resize=args.resize)
         except (ValueError, OSError) as e:
             res = {"ok": False, "error": str(e)}
         print(_dumps(res, ensure_ascii=False))

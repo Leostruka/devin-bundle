@@ -1,7 +1,7 @@
 ---
 name: sre
 description: Use for incident response, production reliability work, deploy verification, rollback decisions, runbook authoring, and postmortem drafting. Read + exec access. Owns the ops loop; pairs with debugger (code bugs) and security-auditor (security findings).
-model: swe-2-max
+model: swe-2-1-max
 allowed-tools:
   - read
   - write

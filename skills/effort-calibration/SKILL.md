@@ -5,15 +5,15 @@ triggers: [user, model]
 ---
 # Effort Calibration
 
-Reasoning effort is a **scarce resource to match to task difficulty**, not a dial to maximize. Overthinking spends tokens without accuracy gain; under-thinking fails hard tasks. In this bundle, effort maps to the SWE-2 variants in `data/bundle-models.json` (`swe-2-medium` / `swe-2-high` / `swe-2-max`). The default is the lowest tier that fits the task shape, raised only when verification fails or the task is genuinely hard.
+Reasoning effort is a **scarce resource to match to task difficulty**, not a dial to maximize. Overthinking spends tokens without accuracy gain; under-thinking fails hard tasks. In this bundle, effort maps to the SWE-2.1 variants in `data/bundle-models.json` (`swe-2-1-medium` / `swe-2-1-high` / `swe-2-1-max`). The default is the lowest tier that fits the task shape, raised only when verification fails or the task is genuinely hard.
 
 ## Decision framework: effort level by task type
 
 | Level | model_uid | When | Evidence |
 |---|---|---|---|
-| **Medium** | `swe-2-medium` | Simple tasks, spot fixes, isolated scripts, one-line edits, mechanical refactors. Spec is clear; success is verifiable by a single test/build. | E3 matches 100% success at 85% cost cut on simple edits (arXiv:2607.13034). Overthinking: 1,953% more tokens on "2+3=?" with no accuracy gain (arXiv:2412.21187). |
-| **High** | `swe-2-high` | Tasks spanning multiple files with clear dependencies, bugs needing reproduction, decisions with several constraints. Default for general work. | Compute-optimal allocates per-prompt by difficulty, 4× more efficient than uniform best-of-N (arXiv:2408.03314). |
-| **Max** | `swe-2-max` | Open-ended tasks, global refactors, long-horizon coding, architecture decisions, novel debugging, tasks that failed at lower effort. | Higher effort lifted first-try perfect runs 28%→89% on a hard real-time app (arXiv:2607.02436). Use when verification fails at lower tiers. |
+| **Medium** | `swe-2-1-medium` | Simple tasks, spot fixes, isolated scripts, one-line edits, mechanical refactors. Spec is clear; success is verifiable by a single test/build. | E3 matches 100% success at 85% cost cut on simple edits (arXiv:2607.13034). Overthinking: 1,953% more tokens on "2+3=?" with no accuracy gain (arXiv:2412.21187). |
+| **High** | `swe-2-1-high` | Tasks spanning multiple files with clear dependencies, bugs needing reproduction, decisions with several constraints. Default for general work. | Compute-optimal allocates per-prompt by difficulty, 4× more efficient than uniform best-of-N (arXiv:2408.03314). |
+| **Max** | `swe-2-1-max` | Open-ended tasks, global refactors, long-horizon coding, architecture decisions, novel debugging, tasks that failed at lower effort. | Higher effort lifted first-try perfect runs 28%→89% on a hard real-time app (arXiv:2607.02436). Use when verification fails at lower tiers. |
 
 **Rule of thumb:** start at Medium, raise one level only when (a) verification fails, or (b) the task matches the Max description. Never start at Max for a task you haven't tried at Medium.
 

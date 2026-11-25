@@ -200,3 +200,24 @@ def test_eval_set_ref_error_bucket(tmp_path):
     out = ev.evaluate(str(real_dir), str(synth_dir), str(ref_path),
                       pce_real=100.0, pce_synth=50.0)
     assert out["classes"]["real"]["verdicts"]["ref_error"] == 1
+
+
+def test_build_ref_resize_downscales(tmp_path):
+    # --resize WxH productizes the resolution-matched ref recipe
+    # (downscaled inputs like WhatsApp recompressed photos):
+    # ref shape must be (h, w) and the result reports the resize.
+    imgs, _ = make_set(3, stamp=True)
+    d = tmp_path / "flats"
+    d.mkdir()
+    for i, a in enumerate(imgs):
+        _save(a, d / ("f" + str(i) + ".png"))
+    out_path = tmp_path / "ref_small.npy"
+    res = vd.build_ref(str(d), str(out_path), resize=(48, 32))
+    assert res["ok"] and res["images"] == 3
+    assert res["resize"] == [48, 32]
+    assert np.load(out_path).shape == (32, 48)
+    # default path unchanged: no resize key, full-size shape
+    out_full = tmp_path / "ref_full.npy"
+    res2 = vd.build_ref(str(d), str(out_full))
+    assert "resize" not in res2
+    assert np.load(out_full).shape == SIZE

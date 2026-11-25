@@ -99,7 +99,8 @@ def load_variant_map():
                 variants[alias] = variants[fam]
         if variants:
             return variants
-    return {"swe-2": {"medium": "swe-2-medium", "high": "swe-2-high", "max": "swe-2-max"},
+    return {"swe-2": {"medium": "swe-2-1-medium", "high": "swe-2-1-high", "max": "swe-2-1-max"},
+            "swe-2-1": {"medium": "swe-2-1-medium", "high": "swe-2-1-high", "max": "swe-2-1-max"},
             "swe-2-flash": {"medium": "swe-2-flash-medium", "high": "swe-2-flash-high",
                             "max": "swe-2-flash-max"}}
 

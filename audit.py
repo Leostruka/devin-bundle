@@ -134,6 +134,9 @@ m_lifecycle.c30(ctx)
 print('[31] Model context windows data file')
 m_lifecycle.c31(ctx)
 
+print('[31b] Model free-window transitions')
+m_lifecycle.c31b(ctx)
+
 print('[32] CHANGELOG [Unreleased] merge coverage')
 m_lifecycle.c32(ctx)
 

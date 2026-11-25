@@ -117,7 +117,7 @@ On top of whatever the repo documents, the Standards axis always carries the **s
 
 **Option A: Single sub-agent (lighter weight)**
 
-Dispatch a `subagent_general` subagent using the template at [code-reviewer.md](code-reviewer.md), enhanced with the two-axis methodology. Fill placeholders:
+Dispatch a `subagent_general` subagent using the template at [code-reviewer.md](../code-reviewer.md), enhanced with the two-axis methodology. Fill placeholders:
 - `{DESCRIPTION}` — brief summary of what was built
 - `{PLAN_OR_REQUIREMENTS}` — what it should do (spec path, issue text, or requirements)
 - `{BASE_SHA}` — starting commit
@@ -226,4 +226,4 @@ When the repository has a `.coderabbit.yaml` (or Code Rabbit is enabled), the au
 - Use `execution` before starting work to decide whether this change needs deep review or just a final diff check.
 - Use `context-hygiene` to match review depth to task difficulty and avoid overthinking simple renames.
 
-See template at: [code-reviewer.md](code-reviewer.md)
+See template at: [code-reviewer.md](../code-reviewer.md)

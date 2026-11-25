@@ -67,7 +67,7 @@ sentences change the quoted text the checkers verify.
 - Work dir: `.devin/scratch/fact-check/<slug>-<YYYYMMDD-HHMM>/`. Keep run
   outputs out of commits.
 - Pick profiles: pass 1 checkers default to `researcher` (read-only,
-  `swe-2-max`, has web access); pass 2 defaults to `subagent_general` for a
+  `swe-2-1-max`, has web access); pass 2 defaults to `subagent_general` for a
   stronger second read. If the user asks for specific profiles or they are
   unavailable, adapt and note it.
 
@@ -199,5 +199,8 @@ re-verify that every approved pass-1 fix actually shipped.
 
 - `research`: when a claim needs investigation beyond the checker's
   verdict (deeper primary-source work).
+- `image-forensics`: when visual evidence (photos, screenshots of
+  captures) is part of the claim: PRNU provenance check before trusting
+  an image as real-camera evidence.
 - `humanizer`: rewrite fixed prose so it keeps the writer's voice.
 - `gates`: when the fact-check is part of a larger publish gate.

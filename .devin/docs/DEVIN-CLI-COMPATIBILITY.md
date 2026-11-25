@@ -79,7 +79,7 @@ Capabilities introduced in `3000.11.3` and `3000.11.92` that interact with bundl
 
 | Capability | Decision | Rationale |
 |---|---|---|
-| `agent.subagent_model` (user `config.json`) | adopted | Verified empirically: `subagent_explore` ran on SWE-2 Max with the key set vs SWE-2 High (parent inheritance) without it (`sessions.db` tool-result `subagent/model`). Ships `swe-2-max`, matching `default_subagent_model` in `data/bundle-models.json`. Affects `subagent_explore` and custom agents without a `model:` pin only; all bundle agent profiles pin explicitly. |
+| `agent.subagent_model` (user `config.json`) | adopted | Verified empirically: `subagent_explore` ran on SWE-2 Max with the key set vs SWE-2 High (parent inheritance) without it (`sessions.db` tool-result `subagent/model`). Ships `swe-2-1-max`, matching `default_subagent_model` in `data/bundle-models.json`. Affects `subagent_explore` and custom agents without a `model:` pin only; all bundle agent profiles pin explicitly. |
 | `PreCompact`/`PostCompact` hook events (matchers `manual`/`auto`; failures non-blocking) | documented | Ten supported events now; existing `PostCompaction` remains supported and keeps `constraint-pinning.py`. Not adopted as a trigger: `compact-gate.py` decides when to compact, which a compaction notification cannot replace. Lifecycle-hooks docs page does not list them yet; changelog is the primary source. |
 | `/goal <objective>` auto-continue (50-turn pause cap; `resume`/`clear`) | adopted (docs) | Runtime-native continuation across turns, overlapping `afk-loop` semantics at UI level; `afk-loop` stays the file-based DAG path. No config surface. |
 | Steering: mid-work message feeds the running turn; `Ctrl+Enter` queues | documented | UX; no config. |
@@ -203,17 +203,17 @@ Capabilities and runtime contracts verified in `3000.14.30821` (`a09cd7f323ee`),
 
 `config.json` reads the primary model from `BUNDLE_DEFAULT_MODEL` (with `data/bundle-models.json` as the canonical registry). `devin models list` for the validated CLI reports the current free and paid models; the bundle's free-primary policy is enforced by choosing a `cost_tier: free` entry as the parent and matching subagent models from `data/bundle-models.json`.
 
-The bundle default parent model is `swe-2-high` and the default subagent model is `swe-2-max`, with `swe-2-medium` as the lighter alternative. Short aliases that resolve to paid entries (see `data/bundle-models.json` aliases) are avoided.
+The bundle default parent model is `swe-2-1-max` and the default subagent model is `swe-2-1-max` (migrated 2026-11-25 to the SWE-2.1 generation - strictly dominant over SWE-2 at equal speed/cost; comparison in MODEL-GUIDE.md), with `swe-2-1-medium` as the lighter alternative. Short aliases that resolve to paid entries (see `data/bundle-models.json` aliases) are avoided.
 
 Alternatives evaluated:
 
 | Alternative | Result |
 |---|---|
 | Keep the CLI's default paid router | Valid model, but contradicts the bundle's explicit free-primary policy. |
-| Pin `swe-2-high` | Matches the documented policy and the CLI model registry. Selected. |
+| Pin `swe-2-high` | Matched the documented policy and the CLI model registry at decision time; selected then, superseded 2026-11-25 by the SWE-2.1 migration (`swe-2-1-max`, strictly dominant). |
 | Omit the model | Delegates selection to local defaults and makes installs nondeterministic. |
 
-Custom subagents remain pinned to `swe-2-max` (see `data/bundle-models.json`). Since `3000.11.92`, `agent.subagent_model` in `config.json` pins the fallback model for `subagent_explore` and any custom agent without its own `model:`; the template ships `swe-2-max`, matching `default_subagent_model`. The `tools` frontmatter key is accepted as an alias for `allowed-tools` in recent CLI versions, but this bundle keeps `allowed-tools` as its canonical spelling.
+Custom subagents are pinned to `swe-2-1-max` / `swe-2-1-high` / flash lanes (see `data/bundle-models.json` and MODEL-GUIDE.md per-role rationale). Since `3000.11.92`, `agent.subagent_model` in `config.json` pins the fallback model for `subagent_explore` and any custom agent without its own `model:`; the template ships `swe-2-1-max`, matching `default_subagent_model`. The `tools` frontmatter key is accepted as an alias for `allowed-tools` in recent CLI versions, but this bundle keeps `allowed-tools` as its canonical spelling.
 
 ## Lifecycle hooks
 

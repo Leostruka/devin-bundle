@@ -95,5 +95,5 @@ def test_preferred_family_models_resolve_to_registry_ids():
     assert 'swe-2-flash' in preferred, 'missing swe-2-flash family preference'
     for family, model_id in preferred.items():
         assert model_id in ids, f'{family} -> {model_id} not in bundle-models.json'
-    assert config['agent']['model'] == 'swe-2-max'
-    assert config['agent']['subagent_model'] == 'swe-2-max'
+    assert config['agent']['model'] == 'swe-2-1-max'
+    assert config['agent']['subagent_model'] == 'swe-2-1-max'

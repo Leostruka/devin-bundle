@@ -58,7 +58,7 @@ Never run the MACRO pipeline on a MICRO seed: a dossier for a one-file fix is to
 
 **SKIP-GATE**: for internal/personal tools with no market axis (private automations, single-user companions, internal CLIs), replace competitor teardown with *adjacent-pattern recon*: mine the local codebase (`grep`/`glob`), public repos solving the same sub-problem, and postmortems of similar architectures. Still cite sources; still fill the matrix with at least 3 adjacent implementations or prior-art approaches.
 
-Read `reference/journalistic-osint-protocol.md`. Dispatch `researcher` (`model: swe-2-max`, free) and/or run `agent-reach`, `scrape-tools`, `web_search`, and `webfetch` to investigate the problem space like an investigative journalist:
+Read `reference/journalistic-osint-protocol.md`. Dispatch `researcher` (`model: swe-2-1-max`, free) and/or run `agent-reach`, `scrape-tools`, `web_search`, and `webfetch` to investigate the problem space like an investigative journalist:
 
 - **Direct & Adjacent Competitors**: map market leaders, open-source challengers, and abandoned tools.
 - **Furos, Fragmentos & Sinais Semi-Públicos (OSINT)**:

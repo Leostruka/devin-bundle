@@ -1,6 +1,6 @@
 ---
 name: reviewer
-model: swe-2-max
+model: swe-2-1-max
 description: Use for code review, spec compliance checking, and verification. Read-only with exec for tests. Runs two-axis review (Standards vs Spec). Delegate after implementation tasks, before merges, or when unbiased assessment is needed.
 allowed-tools:
   - read

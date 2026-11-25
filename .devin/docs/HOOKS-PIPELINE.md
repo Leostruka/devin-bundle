@@ -26,16 +26,15 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 | `pre-write-guard.py` | PreToolUse `^(write\|edit\|notebook_edit)$` | ALWAYS: architecture-gate, validate-tool-args, no-em-dash; TEXT_ONLY (write/edit only): check-ai-signature, validate-mermaid |
 | `post-exec.py` | PostToolUse `^(exec\|mcp_call_tool)$` | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat |
 | `dep-audit-gate.py` | PostToolUse `^exec$` | direct |
-| `memory-post-edit.py` | PostToolUse `^(write\|edit)$` | direct (no aggregator) |
-| `compact-gate.py` | PostToolUse `^(write\|edit)$` | direct |
+| `post-write-guard.py` | PostToolUse `^(write\|edit)$` | memory-post-edit, compact-gate, file-size-guard, design-lint-gate |
 | `user-prompt.py` | UserPromptSubmit | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate, token-saver |
 | `validate-tool-args.py` | PreToolUse `^(run_subagent\|mcp_call_tool\|mcp_read_resource\|webfetch\|web_search\|skill\|request_scope\|ask_user_question\|todo_write\|browser_preview)$` | direct |
 | `session-start.py` | SessionStart | constraint-pinning, context-budget, hook-drift |
 | `constraint-pinning.py` | PostCompaction | direct |
+| `context-pressure.py` | PostCompaction | direct (resets pressure marker; also inner of post-exec) |
+| `compact-gate.py` | PostCompaction | direct (resets gate state; also inner of post-write-guard/post-exec/user-prompt) |
 | `stop-guard.py` | Stop | check-ai-signature, refine-review-prompt, memory-stop, no-em-dash, rl-resume-detect, decision-queue |
 | `memory-stop.py` | SessionEnd | direct |
-| `file-size-guard.py` | PostToolUse `^(write\|edit)$` | direct |
-| `design-lint-gate.py` | PostToolUse `^(write\|edit)$` | direct |
 | `permission-gate.py` | PermissionRequest `^exec$` | direct (approve-only; silent = human decides) |
 
 ## Merge rules (`_hookrun.run`)
@@ -98,3 +97,23 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 An inner script must: read one JSON payload from stdin; emit at most one
 JSON object on stdout; exit 0/2; treat malformed input as allow; be
 idempotent; and never be referenced directly in `hooks.v1.json`.
+
+## CLI payload contract (fields the pipeline depends on)
+
+The runtime trusts these inbound fields; if the CLI stops sending them
+the corresponding enforcement silently degrades:
+
+- `hook_event_name`: drives event-scoped arms and the synthesized
+  `hookEventName` on merged `hookSpecificOutput`. When absent, each
+  consolidated entry point falls back to its statically registered event
+  (`_hookrun.main(..., event=...)` / `run(..., event=...)`; C13/C123).
+- `agent_id` / `subagent_id` / `is_subagent`: `_enforce_profile_deny`
+  (validate-tool-args.py) only fires when the payload carries one of
+  these markers. If the CLI ever drops them, every profile deny no-ops.
+  Pinned by fixture tests; mixed-profile sessions fail open by design
+  (uniform-deny) because the CLI does not send a reliable per-agent id.
+- `session_id`: keys wtp buffers, gate state, and the context-pressure
+  marker. Absent -> per-call state collapses to stateless behavior.
+- `tool_name` / `tool_input`: matcher and gate scan surface. The wtp
+  channel synthesizes `tool_input.command` from raw stdin lines before
+  dispatch so gates always see real commands.

@@ -1,9 +1,11 @@
 """Agent model-pin contract: every model: pin in agents/*.md and
 .devin/agents/*.md must resolve to a model_uid declared in
 data/bundle-models.json, and must match the routing matrix:
-  - judgment / deep exploration  -> swe-2-max
-  - bounded technical execution  -> swe-2-flash-high
+  - judgment / deep exploration  -> swe-2-1-max
+  - bounded technical execution  -> swe-2-1-high (correctness-critical)
+    or swe-2-flash-high (self-correcting loops, throughput-critical)
   - mechanical volume / triage   -> swe-2-flash-medium
+Generation rationale in MODEL-GUIDE.md (SWE-2.1 comparison, 2026-11-25).
 """
 import json
 import os
@@ -19,27 +21,27 @@ AGENT_DIRS = [
 # Declared pin matrix: profile -> expected model pin.
 EXPECTED_PINS = {
     # judgment / deep exploration stays on Max
-    'architect': 'swe-2-max',
-    'product-manager': 'swe-2-max',
-    'red-team-lead': 'swe-2-max',
-    'researcher': 'swe-2-max',
-    'reviewer': 'swe-2-max',
-    'scrum-master': 'swe-2-max',
-    'security-auditor': 'swe-2-max',
-    'sre': 'swe-2-max',
-    'tech-lead': 'swe-2-max',
-    'thermo-nuclear-code-quality-review-subagent': 'swe-2-max',
-    'thermo-nuclear-review-subagent': 'swe-2-max',
-    'ux-researcher': 'swe-2-max',
-    'domain': 'swe-2-max',
-    'repo-reviewer': 'swe-2-max',
+    'architect': 'swe-2-1-max',
+    'product-manager': 'swe-2-1-max',
+    'red-team-lead': 'swe-2-1-max',
+    'researcher': 'swe-2-1-max',
+    'reviewer': 'swe-2-1-max',
+    'scrum-master': 'swe-2-1-max',
+    'security-auditor': 'swe-2-1-max',
+    'sre': 'swe-2-1-max',
+    'tech-lead': 'swe-2-1-max',
+    'thermo-nuclear-code-quality-review-subagent': 'swe-2-1-max',
+    'thermo-nuclear-review-subagent': 'swe-2-1-max',
+    'ux-researcher': 'swe-2-1-max',
+    'domain': 'swe-2-1-max',
+    'repo-reviewer': 'swe-2-1-max',
     # bounded technical execution -> Flash High
-    'art-director': 'swe-2-flash-high',
+    'art-director': 'swe-2-1-high',
     'data-analyst': 'swe-2-flash-high',
-    'debugger': 'swe-2-flash-high',
-    'implementer': 'swe-2-flash-high',
-    'performance-engineer': 'swe-2-flash-high',
-    'qa-ci': 'swe-2-flash-high',
+    'debugger': 'swe-2-1-high',
+    'implementer': 'swe-2-1-high',
+    'performance-engineer': 'swe-2-1-high',
+    'qa-ci': 'swe-2-1-high',
     # mechanical volume / triage -> Flash Medium
     'chief-of-staff': 'swe-2-flash-medium',
     'copywriter': 'swe-2-flash-medium',

@@ -19,8 +19,26 @@ def run_memory_hook(payload):
 
 
 def test_config_uses_available_free_primary_model():
+    import importlib.util
     config = json.loads((ROOT / "config.json").read_text(encoding="utf-8-sig"))
-    assert config["agent"]["model"] == "swe-2-max"
+    registry = json.loads((ROOT / "data" / "bundle-models.json").read_text(encoding="utf-8-sig"))
+    models = {m["id"]: m for m in registry["models"]}
+    primary = config["agent"]["model"]
+    # Invariant: the primary model is a declared registry id currently in a
+    # free window - never a paid alias. Exact id is a routing decision owned
+    # by bundle-models.json + MODEL-GUIDE.md, not by this test.
+    assert primary in models, f"{primary} not declared in bundle-models.json"
+    assert models[primary]["cost_tier"] == "free", f"{primary} is not free-tier"
+    # Date-aware enforcement: a promotional free_until window closing turns the
+    # pin into silent paid usage. Goes red the day the window closes - re-pin or
+    # consciously accept paid and update the policy, do not let it slide.
+    spec = importlib.util.spec_from_file_location(
+        "context_pressure", ROOT / "scripts" / "context-pressure.py")
+    cp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cp)
+    assert cp.is_currently_free(primary), (
+        f"{primary} free window closed - free-primary policy violated;"
+        " re-pin or update policy deliberately")
 
 
 def test_stop_accepts_last_assistant_message():

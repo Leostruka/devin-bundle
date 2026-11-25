@@ -1,9 +1,9 @@
 {
   "comment": "Central model registry for the bundle. SWE-2 native: routing is by effort level (Medium/High/Max), not model size. Install/export scripts may expand {{...}} placeholders. Env overrides: BUNDLE_DEFAULT_MODEL, BUNDLE_DEFAULT_SUBAGENT_MODEL, BUNDLE_MAX_MODEL, BUNDLE_MEDIUM_MODEL, BUNDLE_FAST_MODEL.",
-  "default_parent_model": "swe-2-max",
-  "default_subagent_model": "swe-2-max",
-  "max_role_model": "swe-2-max",
-  "medium_role_model": "swe-2-medium",
+  "default_parent_model": "swe-2-1-max",
+  "default_subagent_model": "swe-2-1-max",
+  "max_role_model": "swe-2-1-max",
+  "medium_role_model": "swe-2-1-medium",
   "fast_role_model": "swe-2-flash-high",
   "effort_levels": {
     "medium": "Simple tasks, spot fixes, isolated scripts.",
@@ -13,6 +13,65 @@
     "fast": "Flash fast lane: bounded mechanical execution and routine volume, ~200 tok/s."
   },
   "models": [
+    {
+      "id": "swe-2-1-low",
+      "name": "SWE-2.1 Low",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "effort": "low",
+      "free_until": "2026-12-08",
+      "free_tier_permanent": false
+    },
+    {
+      "id": "swe-2-1-medium",
+      "name": "SWE-2.1 Medium",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "effort": "medium",
+      "free_until": "2026-12-08",
+      "free_tier_permanent": false,
+      "role": "medium"
+    },
+    {
+      "id": "swe-2-1",
+      "name": "SWE-2.1",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "effort": "default",
+      "free_until": "2026-12-08",
+      "free_tier_permanent": false
+    },
+    {
+      "id": "swe-2-1-high",
+      "name": "SWE-2.1 High",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "effort": "high",
+      "free_until": "2026-12-08",
+      "free_tier_permanent": false
+    },
+    {
+      "id": "swe-2-1-xhigh",
+      "name": "SWE-2.1 XHigh",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "effort": "xhigh",
+      "free_until": "2026-12-08",
+      "free_tier_permanent": false
+    },
+    {
+      "id": "swe-2-1-max",
+      "name": "SWE-2.1 Max",
+      "context_window": 262144,
+      "cost_tier": "free",
+      "effort": "max",
+      "free_until": "2026-12-08",
+      "free_tier_permanent": false,
+      "role": "max",
+      "is_default_parent": true,
+      "is_default_subagent": true,
+      "notes": "SWE-2.1 (2026-11-24): pure-RL post-train on Kimi K3, same generation family as SWE-2. Same speed (~60 tok/s) and context (262K); large gains on every benchmark (Terminal-Bench 4.1 24.2->50.0, FrontierCode 2.0 24.1->41.3, ProgramBench 17.0->44.0, SWE Marathon 32.5->54.9, vendor-run same-harness re-runs). Free through 2026-12-08, then discounted until 2027-01-30. Strictly dominant over swe-2-max at equal cost while free."
+    },
     {
       "id": "swe-2-medium",
       "name": "SWE-2 Medium",
@@ -40,8 +99,8 @@
       "cost_tier": "free",
       "role": "max",
       "effort": "max",
-      "is_default_parent": true,
-      "is_default_subagent": true,
+      "is_default_parent": false,
+      "is_default_subagent": false,
       "free_until": "2026-11-30",
       "free_tier_permanent": false
     },
@@ -82,5 +141,5 @@
   "aliases": {
     "swe": "swe-2"
   },
-  "advisor_role_model": "swe-2-max"
+  "advisor_role_model": "swe-2-1-max"
 }

@@ -1,6 +1,6 @@
 ---
 name: scrum-master
-model: swe-2-max
+model: swe-2-1-max
 description: Use as the agency pipeline's error handler and planner; validates artifact presence/freshness (sha8 vs upstream_hashes), detects spec conflicts, writes docs/05_Pipeline_Report.md + docs/00_INDEX.md sprint plan with fixed ticket schema. Declares DONE/REWORK/BLOCKED. Never writes app code.
 allowed-tools:
   - read

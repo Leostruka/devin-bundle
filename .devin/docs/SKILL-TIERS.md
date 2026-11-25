@@ -14,13 +14,13 @@ GitHub Pages: build, launch, doctor, navegação, evidência - invocação manua
 
 | model_uid | Effort | Contexto | Uso | Notas |
 |---|---|---|---|---|
-| `BUNDLE_MEDIUM_MODEL` (default `swe-2-medium`) | Medium | 262K | Tarefas simples, ajustes pontuais, scripts isolados | **gratuito até 2026-11-30** |
-| `BUNDLE_DEFAULT_MODEL` (default `swe-2-max`) | Max | 262K | Primário (parent); julgamento, multi-arquivo | **gratuito até 2026-11-30**, default geral |
-| `BUNDLE_MAX_MODEL` (default `swe-2-max`) | Max | 262K | Subagent Max (`model:` pin); julgamento, exploração profunda | **gratuito até 2026-11-30** |
+| `BUNDLE_MEDIUM_MODEL` (default `swe-2-1-medium`) | Medium | 262K | Tarefas simples, ajustes pontuais, scripts isolados | **gratuito até 2026-11-30** |
+| `BUNDLE_DEFAULT_MODEL` (default `swe-2-1-max`) | Max | 262K | Primário (parent); julgamento, multi-arquivo | **gratuito até 2026-11-30**, default geral |
+| `BUNDLE_MAX_MODEL` (default `swe-2-1-max`) | Max | 262K | Subagent Max (`model:` pin); julgamento, exploração profunda | **gratuito até 2026-11-30** |
 | `BUNDLE_FAST_MODEL` (default `swe-2-flash-high`) | High (fast lane) | 262K | Subagent execução bounded (`model:` pin); ~200 tok/s | **gratuito até 2026-12-04 18:00 UTC** |
 | `swe-2-flash-medium` | Medium (fast lane) | 262K | Subagent volume mecânico/triagem (`model:` pin) | **gratuito permanente** (`free_tier_permanent`) |
 
-Subagents customizados usam `model: swe-2-max` (julgamento/auditoria), `model: swe-2-flash-high` (execução bounded) ou `model: swe-2-flash-medium` (volume mecânico), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL` / `BUNDLE_FAST_MODEL`. **NÃO usar aliases pagos não verificados** - eles podem apontar para um modelo pago.
+Subagents customizados usam `model: swe-2-1-max` (julgamento/auditoria), `model: swe-2-1-high` (execução correctness-critical), `model: swe-2-flash-high` (loops auto-corrigíveis) ou `model: swe-2-flash-medium` (volume mecânico), conforme `data/bundle-models.json` e as variáveis `BUNDLE_MAX_MODEL` / `BUNDLE_MEDIUM_MODEL` / `BUNDLE_FAST_MODEL`. **NÃO usar aliases pagos não verificados** - eles podem apontar para um modelo pago.
 Sem pin, os custom agents usam o default router do CLI (possivelmente pago). `subagent_general` herda o parent (`BUNDLE_DEFAULT_MODEL`) quando esse for gratuito. **Evitar `subagent_explore`** - pode resolver para um modelo pago; usar o custom `researcher` (gratuito, veja `data/bundle-models.json`).
 
 ## Núcleo (raciocínio lógico, qualquer trabalho)
@@ -242,4 +242,4 @@ O parent (`BUNDLE_DEFAULT_MODEL`) tem thinking mode (raciocina antes de output) 
 | Compact quando precisa do detalhe | `context-hygiene` |
 | `obsidian-workflow` para edição pontual (~17485 tok) | Só para operações Obsidian reais |
 | Subagent general para pesquisa | Use researcher (`BUNDLE_MAX_MODEL`, gratuito, veja `data/bundle-models.json`) |
-| Pin `model: pago` em agents read-only | Pin `model: swe-2-max` → subagent Max gratuito (veja `data/bundle-models.json`) |
+| Pin `model: pago` em agents read-only | Pin `model: swe-2-1-max` → subagent Max gratuito (veja `data/bundle-models.json`) |

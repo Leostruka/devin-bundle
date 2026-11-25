@@ -2,7 +2,7 @@
 name: pr-review
 description: Use when the user asks to review a Pull Request on GitHub with inline comments and code suggestions via the GitHub API. Enforces a repeatable cycle of check -> comment/suggest -> check next, with a gates ledger for evidence.
 version: 1.0.0
-model: swe-2-max
+model: swe-2-1-max
 subagent: true
 agent: reviewer
 triggers: [user, model]

@@ -1,6 +1,6 @@
 ---
 name: repo-reviewer
-model: swe-2-max
+model: swe-2-1-max
 description: Project-local reviewer for this repository. Use for independent two-axis review (Standards vs Spec) of changes here. Read-only with exec for verification commands only. Never edits code.
 allowed-tools:
   - read

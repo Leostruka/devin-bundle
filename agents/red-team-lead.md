@@ -1,6 +1,6 @@
 ---
 name: red-team-lead
-model: swe-2-max
+model: swe-2-1-max
 description: Use for authorized offensive-security engagements against declared targets under an engagement contract (target/window/ROE). Plans and coordinates domain probes (binary, web, network, wireless, firmware, mobile) via the red-team skills and offsec-tools/rea-ops wrappers, with strict evidence discipline.
 allowed-tools:
   - read

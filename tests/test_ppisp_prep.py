@@ -85,41 +85,60 @@ def test_runner_refuses_unverified_license(tmp_path, monkeypatch):
     assert out["error"] == "license_unverified"
 
 
+def test_runner_run_is_integration_required(tmp_path, monkeypatch):
+    up = tmp_path / "up"
+    up.mkdir()
+    (up / "README.md").write_text("ppisp", encoding="utf-8")
+    (up / "LICENSE").write_text("MIT License\nPermission is hereby granted", encoding="utf-8")
+    monkeypatch.setenv("PPISP_DIR", str(up))
+    out = ppisp_runner.run(str(tmp_path), str(tmp_path / "out"))
+    assert out["ok"] is False
+    assert out["error"] == "integration_required"
+    assert "smoke" in out["hint"]
+
+
+def test_doctor_reports_library_kind(tmp_path, monkeypatch):
+    monkeypatch.setenv("PPISP_DIR", str(tmp_path / "nope"))
+    d = ppisp_runner.doctor()
+    assert d["upstream_kind"] == "library"
+    assert "torch_cuda" in d and "ppisp_importable" in d
+
+
 def _licensed_upstream(tmp_path, monkeypatch):
     up = tmp_path / "up"
     up.mkdir()
     (up / "README.md").write_text("ppisp", encoding="utf-8")
     (up / "LICENSE").write_text("MIT License\nPermission is hereby granted", encoding="utf-8")
-    (up / "train.py").write_text("print('hi')", encoding="utf-8")
+    (up / "tests").mkdir()
     monkeypatch.setenv("PPISP_DIR", str(up))
     return up
 
 
-def test_runner_timeout_typed_error(tmp_path, monkeypatch):
+def test_smoke_timeout_typed_error(tmp_path, monkeypatch):
     import subprocess
     _licensed_upstream(tmp_path, monkeypatch)
 
     def _boom(*a, **kw):
         raise subprocess.TimeoutExpired(cmd=a[0], timeout=kw.get("timeout"))
     monkeypatch.setattr(ppisp_runner.subprocess, "run", _boom)
-    out = ppisp_runner.run(str(tmp_path), str(tmp_path / "out"))
+    out = ppisp_runner.smoke()
     assert out["ok"] is False
     assert out["error"].startswith("upstream_timeout")
 
 
-def test_runner_spawn_error_typed(tmp_path, monkeypatch):
+def test_smoke_spawn_error_typed(tmp_path, monkeypatch):
     _licensed_upstream(tmp_path, monkeypatch)
 
     def _boom(*a, **kw):
         raise OSError("cannot spawn")
     monkeypatch.setattr(ppisp_runner.subprocess, "run", _boom)
-    out = ppisp_runner.run(str(tmp_path), str(tmp_path / "out"))
+    out = ppisp_runner.smoke()
     assert out["ok"] is False
     assert out["error"].startswith("spawn_failed")
 
 
-def test_runner_bad_timeout_env_falls_back(tmp_path, monkeypatch):
+def test_smoke_bad_timeout_env_falls_back(tmp_path, monkeypatch):
     _licensed_upstream(tmp_path, monkeypatch)
     monkeypatch.setenv("PPISP_TIMEOUT", "abc")
-    out = ppisp_runner.run(str(tmp_path), str(tmp_path / "out"))
-    assert "error" not in out or out.get("exit") == 0
+    out = ppisp_runner.smoke()
+    assert "error" not in out or out.get("exit") is not None

@@ -1,6 +1,6 @@
 ---
 name: debugger
-model: swe-2-flash-high
+model: swe-2-1-high
 description: Use for systematic debugging, root cause analysis, and failure investigation. Read + exec access. Delegate when problems persist after initial attempts, when root cause is unclear, or when parallel investigation of independent failures is needed.
 allowed-tools:
   - read

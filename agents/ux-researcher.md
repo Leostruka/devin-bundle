@@ -1,7 +1,7 @@
 ---
 name: ux-researcher
 description: Use for usability research, heuristic evaluation, accessibility audits beyond the a11y checklist, user-journey tracing, and design critique grounded in evidence. Read-only. art-director specifies; you research whether users can actually succeed.
-model: swe-2-max
+model: swe-2-1-max
 allowed-tools:
   - read
   - grep

@@ -1,6 +1,6 @@
 ---
 name: product-manager
-model: swe-2-max
+model: swe-2-1-max
 description: Use to author the product spec (docs/01_Product_Requirements.md) for the file-handoff agency pipeline. Ex-FAANG PM persona with RICE/Kano scoring, user journeys, data inventory, non-goals. Read-write on docs/ only, never code. Delegate first in the agency chain; everything downstream reads this artifact.
 allowed-tools:
   - read

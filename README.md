@@ -189,9 +189,9 @@ O parent coordena o trabalho e pode delegar subtarefas independentes. Cada subag
 | `subagent_explore` | Exploração built-in | Não |
 | `subagent_general` | Trabalho geral built-in | Sim |
 
-Com o parent gratuito em `swe-2-max`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
+Com o parent gratuito em `swe-2-1-max`, prefira o perfil customizado `researcher`: `subagent_explore` pode resolver para um modelo pago no router padrão. Use `subagent_general` quando a subtarefa realmente precisar herdar o modelo e as ferramentas gerais do parent.
 
-O bundle roteia por **nível de esforço SWE-2** mais a **fast lane Flash**: `swe-2-max` (Max: parent default, julgamento, exploração profunda, auditoria), `swe-2-flash-high` (execução bounded ~200 tok/s) e `swe-2-flash-medium` (volume mecânico, free permanente). Os vinte e um perfis customizados estão em `agents/` com pin em `swe-2-max`, `swe-2-flash-high` ou `swe-2-flash-medium`. O parent usa `swe-2-max`. SWE-2 sai do tier free em 2026-11-30; a família Flash é free até 2026-12-04 18:00 UTC e só `swe-2-flash-medium` permanece free depois. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
+O bundle roteia por **nível de esforço SWE-2.1** mais a **fast lane Flash**: `swe-2-1-max` (parent default, julgamento, exploração profunda, auditoria), `swe-2-1-high` (execução multi-arquivo), `swe-2-flash-high` (loops bounded auto-corrigíveis, ~200 tok/s) e `swe-2-flash-medium` (volume mecânico, free permanente). Os vinte e um perfis customizados estão em `agents/` com pin nesses ids. O parent usa `swe-2-1-max` (migrado 2026-11-25; SWE-2.1 é estritamente dominante sobre SWE-2 a mesma velocidade e custo). Janelas free: SWE-2.1 até 2026-12-08, flash high/max até 2026-12-04 18:00 UTC, e só `swe-2-flash-medium` permanece free depois. Consulte [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md).
 
 ### 4. Ferramentas e MCP
 
@@ -214,7 +214,7 @@ Os hooks são controles determinísticos ao redor do modelo. Eles recebem JSON p
 | `SessionEnd` | Salva artefatos e registra o estado da memória |
 | `PermissionRequest` | Evento suportado, atualmente sem handler ativo |
 
-Há 59 scripts Python em `scripts/`: 15 entry points de hooks (6 consolidados que executam 28 módulos de check in-process via `_hookrun`, 9 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
+Há 62 scripts Python em `scripts/`: 16 entry points de hooks (6 consolidados que executam módulos de check in-process via `_hookrun`, 10 diretos), mais utilitários (`render-user-hooks.py`, `validate-*`, `spec-consistency.py`, `audit.py` auxiliares) e 1 helper JavaScript para Mermaid.
 
 ### 6. Configuração e distribuição
 

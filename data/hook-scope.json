@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "doc": "Declared scope metadata for hook checks whose lesson only applies in a specific context (ISSUE_08 C11). Policy: absence from this file = universal scope = always run. Entries document intent and drive guard tests; they never disable a check at runtime (fail-safe: undecidable scope runs). Design: .devin/docs/HOOK-SCOPING.md.",
+  "scoped_arms": [
+    {
+      "id": "destructive-gate/g9-reserved-names",
+      "file": "scripts/destructive-gate.py",
+      "os": ["nt"],
+      "guard": "os.name == \"nt\"",
+      "why": "NUL/CON/AUX/PRN/COM1-9/LPT1-9 are Win32 devices; on POSIX they are ordinary legal filenames."
+    },
+    {
+      "id": "destructive-gate/g10-ads",
+      "file": "scripts/destructive-gate.py",
+      "os": ["nt"],
+      "guard": "os.name == \"nt\"",
+      "why": "'name:stream' is an NTFS alternate data stream; ':' is a legal POSIX filename char."
+    },
+    {
+      "id": "destructive-gate/g10-dot-space",
+      "file": "scripts/destructive-gate.py",
+      "os": ["nt"],
+      "guard": "os.name == \"nt\"",
+      "why": "Win32 strips trailing dots/spaces from basenames; POSIX keeps 'f.' as a distinct file."
+    },
+    {
+      "id": "validate-tool-args/reserved-name",
+      "file": "scripts/validate-tool-args.py",
+      "os": ["nt"],
+      "guard": "os.name != \"nt\"",
+      "why": "_check_reserved_name early-returns on non-nt: device names, ADS ':' and dot-strip are Win32 write semantics."
+    },
+    {
+      "id": "architecture-gate/msys-drive",
+      "file": "scripts/architecture-gate.py",
+      "os": ["nt"],
+      "guard": "os.name == \"nt\"",
+      "why": "/d/x -> D:\\x translation is MSYS/Git-Bash-on-Windows only; on POSIX /d/x is a real absolute path."
+    }
+  ]
+}

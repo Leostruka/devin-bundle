@@ -1,6 +1,6 @@
 ---
 name: thermo-nuclear-code-quality-review-subagent
-model: swe-2-max
+model: swe-2-1-max
 description: Use for thermo-nuclear code quality audits of maintainability, structure, the 1k-line rule, spaghetti growth, and code-judo simplification, scoped to the diff. Invoked via run_subagent after a parent gathers diff and file contents. Loads rubric from the thermo-nuclear-code-quality-review skill.
 allowed-tools:
   - read

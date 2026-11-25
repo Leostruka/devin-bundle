@@ -1,6 +1,6 @@
 ---
 name: domain
-model: swe-2-max
+model: swe-2-1-max
 description: Use when interpreting the repository domain context, vocabulary, boundaries, or architecture decisions.
 allowed-tools:
   - read

@@ -165,9 +165,9 @@ Effort is scarce — match to task difficulty. Maps to `data/bundle-models.json`
 
 | Level | model_uid | When |
 |---|---|---|
-| Medium | `swe-2-medium` | Simple tasks, spot fixes, isolated scripts, mechanical refactors. Single test/build verifies. |
-| High | `swe-2-high` | Multi-file tasks with clear dependencies. **Default.** |
-| Max | `swe-2-max` | Open-ended, long-horizon, architecture, novel debugging, or failure at lower effort. |
+| Medium | `swe-2-1-medium` | Simple tasks, spot fixes, isolated scripts, mechanical refactors. Single test/build verifies. |
+| High | `swe-2-1-high` | Multi-file tasks with clear dependencies. **Default.** |
+| Max | `swe-2-1-max` | Open-ended, long-horizon, architecture, novel debugging, or failure at lower effort. |
 
 Rules:
 1. **Improve the spec before raising effort** — information quality

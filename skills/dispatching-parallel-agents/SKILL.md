@@ -149,10 +149,10 @@ sensitivity:
 
 | Task type | Profile | Why |
 |---|---|---|
-| Codebase research, doc lookup | `researcher` (`swe-2-max`) | Read-only, free, fast |
-| Code review, spec compliance | `reviewer` (`swe-2-max`) | Needs judgment, free |
+| Codebase research, doc lookup | `researcher` (`swe-2-1-max`) | Read-only, free, fast |
+| Code review, spec compliance | `reviewer` (`swe-2-1-max`) | Needs judgment, free |
 | Bounded implementation | `implementer` (`swe-2-flash-high`) | Needs full tools + coding strength; fast lane suffices for spec'd work |
-| Architecture, trade-offs | `architect` (`swe-2-max`) | Needs judgment, read-only, free |
+| Architecture, trade-offs | `architect` (`swe-2-1-max`) | Needs judgment, read-only, free |
 | Debugging, root cause | `debugger` (`swe-2-flash-high`) | Needs exec + iterative hypothesis testing |
 | Complex reasoning, context isolation | `subagent_general` (parent model) | Inherits parent model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`), free, for tasks needing the parent model's reasoning mode |
 
@@ -277,7 +277,7 @@ a human can kill a runaway subagent. The helper is
 `.devin/`):
 
 - **At launch:** record the dispatch before/while dispatching —
-  `echo '{"agent":"implementer","title":"...","profile":"swe-2-medium"}' | python scripts/subagent-trace.py record`
+  `echo '{"agent":"implementer","title":"...","profile":"swe-2-1-medium"}' | python scripts/subagent-trace.py record`
   It appends a line to `.devin/subagent-trace.jsonl`
   (`{id, ts, agent, title, profile, status, notes}`, status starts
   `running`). Reuse the dispatch's real ID via `--id` when you have one.
@@ -485,9 +485,9 @@ conflicts that only emerge from implementation.
 
 ### Model Selection
 
-In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the CLI default router (possibly paid). **When parent is FREE (default): never use `subagent_explore`** — use the custom `researcher` profile (`agents/researcher.md`, `model: swe-2-max`, free) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin SWE-2 effort variants to stay within the bundle's free tier.
+In Devin CLI, a `subagent_general` subagent inherits the parent session's model (`BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free by default). The built-in `subagent_explore` runs on the CLI default router (possibly paid). **When parent is FREE (default): never use `subagent_explore`**; use the custom `researcher` profile (`agents/researcher.md`, `model: swe-2-1-max`, free) instead. When parent is PAID (user switched via `/model`), `subagent_explore` is permitted. You cannot name a model directly in a `run_subagent` call; the profile determines the model. Custom profiles in `agents/*.md` pin SWE-2 effort variants to stay within the bundle's free tier.
 
-**Effort-level routing:** pick the effort level that matches the task shape (see `context-hygiene`): **Fast** (`swe-2-flash-high` bounded / `swe-2-flash-medium` mechanical) for bounded execution, **High** (`swe-2-high`) for multi-file work, **Max** (`swe-2-max`) for open-ended or judgment-heavy work.
+**Effort-level routing:** pick the effort level that matches the task shape (see `context-hygiene`): **Fast** (`swe-2-flash-high` bounded / `swe-2-flash-medium` mechanical) for bounded execution, **High** (`swe-2-1-high`) for multi-file work, **Max** (`swe-2-1-max`) for open-ended or judgment-heavy work.
 
 **Use `subagent_general` (inherits parent `BUNDLE_DEFAULT_MODEL` / `data/bundle-models.json`, free) for:**
 - Final whole-branch review — the judgment task that needs the most capability.
@@ -496,11 +496,11 @@ In Devin CLI, a `subagent_general` subagent inherits the parent session's model 
 - Complex reasoning tasks that benefit from context isolation but need the parent model's effort level.
 
 **Use custom profiles (free, context per `data/bundle-models.json`) for:**
-- `researcher` — codebase research and fact-finding (read-only, `swe-2-max`).
+- `researcher`: codebase research and fact-finding (read-only, `swe-2-1-max`).
 - `implementer`: bounded coding tasks (`swe-2-flash-high`).
 - `debugger`: root cause analysis and debugging (`swe-2-flash-high`).
-- `architect` — routine architecture and trade-off analysis (read-only, `swe-2-max`).
-- `reviewer` — code review and spec compliance (read-only + exec for tests, `swe-2-max`).
+- `architect`: routine architecture and trade-off analysis (read-only, `swe-2-1-max`).
+- `reviewer`: code review and spec compliance (read-only + exec for tests, `swe-2-1-max`).
 
 **To run a different model for a subagent:**
 1. Switch the parent session model with `/model <model>` before dispatching (affects all `subagent_general` dispatches from this session).

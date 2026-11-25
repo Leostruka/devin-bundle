@@ -118,7 +118,7 @@ The worker never gets the last word on its own DONE claim. Before setting
    - `not_done` (exit 4): do NOT mark resolved. Record the signals in the
      issue and continue the loop or stop per stop conditions.
    - `uncertain`: emit a grading brief (`--emit-brief`) and dispatch it to a
-     separate cheap-tier model (swe-2-medium) - a grader that is not the
+     separate cheap-tier model (swe-2-1-medium) - a grader that is not the
      writer. Accept `{"done": true}` only with no `missing` items.
    - `done`: proceed to mark resolved.
 3. `uncertain` verdicts that the grader resolves to not-done are appended

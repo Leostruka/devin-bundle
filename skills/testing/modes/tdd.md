@@ -150,7 +150,7 @@ Tests verify behavior through public interfaces, not implementation details. Cod
 | **Clear** | Name describes behavior | `test('test1')` |
 | **Shows intent** | Demonstrates desired API | Obscures what code should do |
 
-See [writing-good-tests.md](writing-good-tests.md) for the full rules that keep tests honest, [tests.md](tests.md) for good/bad examples, and [mocking.md](mocking.md) for mocking guidelines.
+See [writing-good-tests.md](../reference/writing-good-tests.md) for the full rules that keep tests honest, [tests.md](../reference/tests.md) for good/bad examples, and [mocking.md](../reference/mocking.md) for mocking guidelines.
 
 ## Common Rationalizations
 

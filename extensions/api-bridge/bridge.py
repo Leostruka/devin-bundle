@@ -407,7 +407,7 @@ class InternalBackend:
 
     SERVICE = "/exa.api_server_pb.ApiServerService/GetChatMessage"
 
-    def __init__(self, api_key, base, model_default="swe-2-max",
+    def __init__(self, api_key, base, model_default="swe-2-1-max",
                  timeout=300):
         self.key = api_key
         self.base = base.rstrip("/")

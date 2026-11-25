@@ -132,8 +132,8 @@ Routing by effort level — `data/bundle-models.json` maps roles to SWE-2 varian
 
 - **Medium** = simple/spot fixes; **High** = multi-file (default); **Max** = open-ended/long-horizon.
 - SWE-2 plans natively — no forced chain-of-thought. State WHAT + acceptance criteria; leave HOW to the model.
-- **Never dispatch `subagent_explore`** (CLI default router, possibly paid) — use `researcher` (`swe-2-max`, free).
-- Model policy follows the parent: parent free → subagents free (`swe-2-max`/`swe-2-flash-high`/`swe-2-flash-medium`) or stop; parent paid → paid allowed.
+- **Never dispatch `subagent_explore`** (CLI default router, possibly paid); use `researcher` (`swe-2-1-max`, free).
+- Model policy follows the parent: parent free → subagents free (`swe-2-1-max`/`swe-2-1-high`/`swe-2-flash-high`/`swe-2-flash-medium`) or stop; parent paid → paid allowed.
 - Keep AGENTS.md and system-prompt prefixes cache-stable.
 
 ### 25. No test deletion without approval

@@ -37,7 +37,7 @@ def test_drift_audit_reuses_existing_skill():
 @pytest.mark.parametrize("path", [
     "extensions/blender-operator/ROADMAP.md",
     "extensions/media-tools/ROADMAP.md",
-    ".devin/scratch/egm-laya-bitnet-upgrade/issues/03-katana-camera-blocking.md",
+    ".devin/issues/egm-laya-bitnet-upgrade/issues/03-katana-camera-blocking.md",
 ])
 def test_camera_addenda_reference_existing_owner(path):
     owner = ".devin/issues/MILESTONE_2_13_camera_blocking.md"
@@ -99,7 +99,7 @@ def test_manifest_documents_security_guard_exception():
 
 
 def test_spec_separates_documentation_from_runtime_acceptance():
-    spec = text(".devin/scratch/egm-laya-bitnet-upgrade/spec.md")
+    spec = text(".devin/issues/egm-laya-bitnet-upgrade/spec.md")
     assert "## Runtime acceptance" in spec
     for artifact in (
         "scripts/skill-picker.py",

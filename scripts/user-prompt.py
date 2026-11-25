@@ -19,4 +19,4 @@ if __name__ == '__main__':
         'skill-picker.py',
         'compact-gate.py',
         'token-saver.py',
-    ])
+    ], event='UserPromptSubmit')

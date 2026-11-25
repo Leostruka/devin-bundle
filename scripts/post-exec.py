@@ -19,4 +19,4 @@ if __name__ == '__main__':
         'gh-pr-assignee.py',
         'stuck-detect.py',
         'git-diff-stat.py',
-    ])
+    ], event='PostToolUse')

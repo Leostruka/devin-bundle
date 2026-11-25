@@ -100,11 +100,11 @@ Include the `### Triage labels` sub-block, and write `.devin/agents/triage-label
 
 Then write the docs files using the seed templates in this skill folder as a starting point:
 
-- [issue-tracker-github.md](./issue-tracker-github.md) — GitHub issue tracker
-- [issue-tracker-gitlab.md](./issue-tracker-gitlab.md) — GitLab issue tracker
-- [issue-tracker-local.md](./issue-tracker-local.md) — local-markdown issue tracker
-- [triage-labels.md](./triage-labels.md) — label mapping (only if `intake` is installed)
-- [domain.md](./domain.md) — domain doc consumer rules + layout
+- [issue-tracker-github.md](../reference/issue-tracker-github.md): GitHub issue tracker
+- [issue-tracker-gitlab.md](../reference/issue-tracker-gitlab.md): GitLab issue tracker
+- [issue-tracker-local.md](../reference/issue-tracker-local.md): local-markdown issue tracker
+- [triage-labels.md](../reference/triage-labels.md): label mapping (only if `intake` is installed)
+- [domain.md](../reference/domain.md): domain doc consumer rules + layout
 
 For "other" issue trackers, write `.devin/agents/issue-tracker.md` from scratch using the user's description.
 

@@ -10,6 +10,7 @@ points. License is verified at clone time — read upstream LICENSE and
 record it before first use (ppisp_upstream/LICENSE).
 
   python ppisp_runner.py doctor
+  python ppisp_runner.py smoke
   python ppisp_runner.py run <images_dir> --out corrected/ [--steps N]
 """
 from __future__ import annotations
@@ -97,16 +98,29 @@ def _license_kind(path):
 def doctor():
     up = upstream_dir()
     torch = None
+    torch_cuda = None
     try:
-        import torch  # noqa
+        import torch as _t  # noqa
         torch = True
+        torch_cuda = bool(_t.cuda.is_available())
     except ImportError:
         torch = False
+    ppisp_importable = None
+    try:
+        import ppisp  # noqa
+        ppisp_importable = True
+    except ImportError:
+        ppisp_importable = False
+    except Exception:
+        ppisp_importable = "error"
     return {
         "upstream": str(up),
+        "upstream_kind": "library",
         "present": (up / "README.md").exists() or any(up.glob("*.py")),
         "license": _license_kind(up) if up.exists() else "absent",
         "torch": torch,
+        "torch_cuda": torch_cuda,
+        "ppisp_importable": ppisp_importable,
         "cuda": shutil.which("nvidia-smi") is not None,
         "hint": None if up.exists() else
             f"git clone https://github.com/nv-tlabs/ppisp {up} "
@@ -122,43 +136,54 @@ def run(images_dir, out_dir, steps=None, extra=None):
     if d["license"] in ("missing", "unrecognized:review-required"):
         return {"ok": False, "error": "license_unverified",
                 "license": d["license"]}
+    return {
+        "ok": False,
+        "error": "integration_required",
+        "detail": "upstream ppisp is a library: a differentiable module "
+                  "integrated into a radiance-field training loop "
+                  "(3DGS/NeRF), with no standalone train entry. "
+                  "Correction requires the reconstruction-pipeline "
+                  "integration milestone (poses via COLMAP + gsplat "
+                  "training with the ppisp module in the loop).",
+        "hint": "run `ppisp_runner.py smoke` to validate the built "
+                "kernel on this host via upstream's own test suite",
+    }
+
+
+def smoke():
+    """Validate the built kernel via upstream's own pytest suite."""
+    d = doctor()
+    if not d["present"]:
+        return {"ok": False, "error": "upstream_missing",
+                "hint": d["hint"]}
+    if d["license"] in ("missing", "unrecognized:review-required"):
+        return {"ok": False, "error": "license_unverified",
+                "license": d["license"]}
     up = upstream_dir()
-    entry = None
-    for cand in ("train.py", "scripts/train.py", "ppisp/train.py"):
-        if (up / cand).exists():
-            entry = up / cand
-            break
-    if entry is None:
-        return {"ok": False, "error": "entrypoint_not_found",
-                "hint": "read upstream README for the training entry"}
-    argv = [sys.executable, str(entry), "--data", str(images_dir),
-            "--out", str(out_dir)]
-    if steps:
-        argv += ["--steps", str(steps)]
-    argv += list(extra or [])
+    argv = [sys.executable, "-m", "pytest", "tests", "-x", "-q"]
     try:
-        timeout = int(os.environ.get("PPISP_TIMEOUT", "3600"))
+        timeout = int(os.environ.get("PPISP_TIMEOUT", "1800"))
     except ValueError:
-        timeout = 3600
+        timeout = 1800
     try:
         p = subprocess.run(argv, cwd=up, capture_output=True, text=True,
                            encoding="utf-8", errors="replace",
-                           timeout=timeout,
-                           creationflags=getattr(
-                               subprocess, "CREATE_NO_WINDOW", 0))
+                           timeout=timeout)
     except subprocess.TimeoutExpired:
         return {"ok": False, "error": f"upstream_timeout:{timeout}s"}
     except OSError as e:
         return {"ok": False, "error": f"spawn_failed:{e}"}
+    tail = (p.stdout.strip().splitlines() or [""])[-1]
     return {"ok": p.returncode == 0, "exit": p.returncode,
-            "out": str(out_dir), "stdout": p.stdout[-2000:],
-            "stderr": p.stderr[-2000:]}
+            "summary": tail[-400:],
+            "stdout": p.stdout[-2000:], "stderr": p.stderr[-2000:]}
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="PPISP correction runner")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("doctor")
+    sub.add_parser("smoke")
     pr = sub.add_parser("run")
     pr.add_argument("images_dir")
     pr.add_argument("--out", required=True)
@@ -166,6 +191,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if args.cmd == "doctor":
         res = doctor()
+    elif args.cmd == "smoke":
+        res = smoke()
     else:
         res = run(args.images_dir, args.out, args.steps)
     print(_dumps(res, indent=2))

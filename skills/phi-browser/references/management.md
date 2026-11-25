@@ -14,7 +14,7 @@ agent window.
 > each one reads, the capability it costs and the errors it can
 > answer - is generated from the client's verb registry into
 > [verbs.md](verbs.md). Read that when a call refuses and the helper
-> does not say why.
+> does not say why - grep the verb name, read only its section.
 
 The data model, in one breath: a **Space** is a workspace bound to exactly one
 **profile** (fixed at creation; one profile can back many Spaces).

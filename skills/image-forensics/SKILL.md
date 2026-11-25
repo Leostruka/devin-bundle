@@ -30,6 +30,21 @@ Route: `extensions/image-forensics/verdict.py` — JSON contract
 
 - Residual energy below the denoiser floor (flat or heavily recompressed
   input) -> `inconclusive`, note `low_residual_energy`.
+- PCE is shape-bound: downscaled inputs never match a full-res ref.
+  WhatsApp normalizes the long edge to 1280 but PRESERVES aspect ratio
+  (4:3 devices -> 1280x960, 16:9 -> 1280x720). Build a resolution-matched
+  ref by downscaling flat captures before averaging. Measured 2026-11-25
+  (VISION D02/D15 natWA, n=12 each): per-image stochastic survival -
+  ~43 is a working abstain threshold at 1280x960; below it devices are
+  indistinguishable (75% of iPhone4s natWA die vs 17% of iPhone6).
+  Held-out validation on never-calibrated devices (same dataset,
+  `.devin/scratch/prnu-vision/heldout-2026-11-25.json`): nat detection
+  validated - D05 mean 966/min 294 and D24 mean 1078/min 734 vs
+  cross-device floor max 38.7 (7.6x+ margin). natWA marginal as
+  predicted: D05 mean 232 but min 24.6 falls INSIDE the floor range
+  (max 29.4); D24 (16:9) mean 44.4 hovers at the abstain threshold.
+  Per-image abstain is not optional for natWA; 16:9-crop devices are
+  near-unclassifiable after WhatsApp.
 - Heavy crop/resize/recompression weakens the signal; say so in notes.
 - Never claim provenance from a single signal: combine metadata flags +
   residual + PCE. For publication, pair with `fact-check`.
@@ -47,6 +62,7 @@ Route: `extensions/image-forensics/verdict.py` — JSON contract
 ```bash
 python extensions/image-forensics/verdict.py shot.jpg --ref ref.npy
 python extensions/image-forensics/verdict.py --build-ref known_phone/ --out ref.npy
+python extensions/image-forensics/verdict.py --build-ref known_phone/ --out ref_small.npy --resize 1280x960
 python extensions/image-forensics/metadata.py shot.jpg
 ```
 

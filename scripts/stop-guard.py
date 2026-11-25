@@ -18,4 +18,4 @@ if __name__ == '__main__':
         'no-em-dash.py',
         'rl-resume-detect.py',
         'decision-queue.py',
-    ])
+    ], event='Stop')

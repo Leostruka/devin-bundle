@@ -123,3 +123,16 @@ Upstream dirs: `engineering/` (20: code-review, codebase-design, diagnosing-bugs
 ## Out of scope confirmed
 
 No production code written. Issues = planning artifacts only.
+
+## Candidate tool note: OCRia family (2026-11-25)
+- OCRia-nano-1 (LlamaIndex, released 2026-11-23): 8.1M-param 7-model
+  pipeline inside LiteParse (Apache-2.0); weights = modified Open
+  RAIL-M (use restrictions - license review required before vendoring).
+  CPU-local: 426ms/page single-core, ~28 pgs/s @16 workers; MD/JSON
+  out; Latin/CJK/RTL. No charts/handwriting/math -> needs OCRia-1 (4B).
+- Fit assessment: componente futuro, nao necessidade atual. Bundle gap
+  would be scanned-PDF ingestion (obsidian-workflow wiki, agentic-rag
+  index) - hoje nenhum workload exige. Text-layer PDFs = pdftotext/
+  PyMuPDF resolve free. cu_ocr = dominio diferente (screen text).
+- Benchmarks self-published (ParseBench-2 vendor bench); release 2d
+  old. Re-avaliar quando surgir workload real de ingestao.

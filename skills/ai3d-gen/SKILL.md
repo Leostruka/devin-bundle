@@ -72,7 +72,13 @@ Before spending a reconstruction/splat run on user photos:
    produce bad splats.
 2. **Photometric QC**: run `extensions/ppisp-prep/photo_qc.py` on the
    set; `correct`/`recapture` verdicts route through the PPISP
-   correction pass or a re-shoot before generation.
+   correction pass or a re-shoot before generation. Evidence
+   (synthetic held-out, 2026-11-25): PPISP correction is a reliable
+   win only with strong per-frame appearance variation (+2.1dB mean
+   over 4 seeds, all positive); at mild uniform drift the effect is a seed lottery
+   around zero. Strong spread across frames (mixed devices, changing
+   light) -> correct with confidence; small uniform spread -> consider
+   training uncorrected and comparing.
 
 ## Recipes
 

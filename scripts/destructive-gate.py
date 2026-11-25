@@ -945,7 +945,10 @@ def _deescape_shell(text):
     # forms (union - over-detect is the safe direction): raw keeps the
     # Windows-path view `devin\state`, the variant keeps the bash view
     # `devinstate` plus every escape-collapsed word.
-    t = re.sub(r"\\(.)", r"\1", text)
+    # Exception: `X:\` drive prefixes keep their backslash - collapsing
+    # `C:\dir` to `C:dir` destroys the separator the ADS/drive lookahead
+    # needs, turning every `X:\` target into a fake basename-colon match.
+    t = re.sub(r"(?<![A-Za-z]:)\\(.)", r"\1", text)
     t = t.replace("{,}", "")
     t = re.sub(r"\$IFS\b", " ", t)
     return t.replace("{", "").replace("}", "")

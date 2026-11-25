@@ -14,4 +14,4 @@ if __name__ == '__main__':
         'constraint-pinning.py',
         'context-budget.py',
         'hook-drift.py',
-    ])
+    ], event='SessionStart')

@@ -20,4 +20,4 @@ if __name__ == '__main__':
         'validate-tool-args.py',
         'no-em-dash.py',
         'laya-guard.py',
-    ])
+    ], event='PreToolUse')

@@ -418,7 +418,7 @@
       "source": "devin-bundle",
       "purpose": "Use when facing two or more independent tasks with no shared state or ordering, OR when executing a multi-task plan by dispatching a fresh subagent per task.",
       "original_path": "%APPDATA%\\devin\\skills\\dispatching-parallel-agents",
-      "export_hash": "c28b249dac57bd9d25e878d57259ec5f235bc7d46df804425e1d1bb3ba2b478a",
+      "export_hash": "7E3C62DCCED428529E32B48B7B7CAD9FBD3B42E54FEFA49778F7F68AE8ABC62F",
       "exported_at": "2026-09-08T21:39:22.437929"
     },
     {
@@ -1426,14 +1426,20 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "78D14C6998FA2B83A4143064CEB5E953711AAD7440478768E1BB5D977C6EE07B",
+      "export_hash": "4769EB99AEC33F6F8F3A6686FF91E55B8775336A039037702200F9C414B122E1",
+      "exported_at": "2026-11-17"
+    },
+    {
+      "name": "_gitscan.py",
+      "purpose": "Per-process memoization for read-only git hook scans - shared across consolidated children",
+      "export_hash": "9F04EE2522FD2E45205082138BB3FD1CB93FDED52DFBC0EBFE9B2EC3F4053731",
       "exported_at": "2026-11-17"
     },
     {
       "name": "architecture-gate.py",
       "purpose": "PreToolUse hook — blocks source edits in projects lacking .devin/ARCHITECTURE_MANIFEST.md",
-      "export_hash": "391CE603049A3E3FF5FA07ED52725A6F2A5B104A12A45B18E945A3E2F3F1ABE3",
-      "exported_at": "2026-11-17"
+      "export_hash": "DAF11667A81E19728CB6832AA36D559CC80FBC8B6CF9078BA893F92E8586AA18",
+      "exported_at": "2026-11-25"
     },
     {
       "name": "behavioral-nudge.py",
@@ -1450,7 +1456,7 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "8D100EF44B49FC32AFDB8820839D82410780985ECBA5D0F1CA38B8D3C424A276",
+      "export_hash": "07D37A01C170B887DE9602BD01ED0F884BFF45CC3FEC8283384E434F2DB76B84",
       "exported_at": "2026-11-17"
     },
     {
@@ -1468,8 +1474,8 @@
     {
       "name": "compact-gate.py",
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
-      "export_hash": "8F77BA293514006433196613E279BD5E7C0FA4FBF1F0D5C5BCC3706795D55855",
-      "exported_at": "2026-11-17"
+      "export_hash": "3C861D644D3C9BB3A68E017CEE2F3E4B585166EC2BBB502BBACCEB1B0DF09F8D",
+      "exported_at": "2026-11-25"
     },
     {
       "name": "constraint-pinning.py",
@@ -1486,8 +1492,8 @@
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "f6dc6e14a4ff753c436b2c616e3cf832748b2e74dd47d7aed4ad188284550fce",
-      "exported_at": "2026-11-17"
+      "export_hash": "A4553B11F65BCBE880D18F7D61BD05D57A39F7FE2908DD859BC58FDF474B00FA",
+      "exported_at": "2026-11-25"
     },
     {
       "name": "decision-queue.py",
@@ -1519,13 +1525,13 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "BCC687D5338A36DDDEF298F31FA1274F30A022C4EA92C3AECF8FB3E8E12819C5",
+      "export_hash": "01EC8F020D855FB31E0CCDBF50C052B2227C3EE1D2D779EC221CB05B7C970C14",
       "exported_at": "2026-11-17"
     },
     {
       "name": "done-evaluator.py",
       "purpose": "grades a claimed done against transcript evidence - writer is not the grader (issue #437)",
-      "export_hash": "33a2c4e5a929d9f4ba8dc4669831e3a9964fb07ce66bdbf14092669138fc63bd",
+      "export_hash": "37c5eb0af09d5dbdfc623bfb248877cb227c34d51e98c371c94a511307e01061",
       "exported_at": "2026-11-17"
     },
     {
@@ -1562,7 +1568,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "7a6a8dab5b1e15b937890f9fcc9cb553c94920aa41b3b07dc93ba902ab7f821b",
+      "export_hash": "78a92acec72e19ecc523ca9ad754a30a347d19a9711942aa318d2c6ba67fb992",
       "exported_at": "2026-11-17"
     },
     {
@@ -1570,6 +1576,12 @@
       "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
       "export_hash": "F8EE0ADC5900DFED0368B7EDED25D480BB2463A3ED1F78B74AD815B1C5640DBC",
       "exported_at": "2026-11-17"
+    },
+    {
+      "name": "laya-shadow-report.py",
+      "purpose": "Manual CLI - summarizes compact-gate shadow.jsonl decisions (p quantiles, actions, abstains, per-session max) for threshold calibration",
+      "export_hash": "d8840ecc95625da2ad2e044260ead72d323af51ca0d13255f191caa542a73642",
+      "exported_at": "2026-11-25"
     },
     {
       "name": "memory-post-edit.py",
@@ -1604,25 +1616,31 @@
     {
       "name": "no-em-dash.py",
       "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code, vendored extension data and binary files exempt",
-      "export_hash": "A77DADF3E8A6E80EB9EB00824FCB60FA6D98299A45D2CBB0C7B0D18E4A0515D9",
+      "export_hash": "50BEF7AEDFD8F1DF7FC7544A33EDC7F99D28E83868783926DE4161DAEDD12CE9",
       "exported_at": "2026-11-17"
     },
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "7afeedf589e59b4cf55886a8dd5ea764b1ab63a2982e23405766dc3971a015f5",
+      "export_hash": "FE71A45F418016D74B54666FF12916B83011F3534F157B8F8702DDA5A9890892",
+      "exported_at": "2026-11-17"
+    },
+    {
+      "name": "post-write-guard.py",
+      "purpose": "PostToolUse write|edit consolidated guard - one spawn for memory-post-edit, compact-gate, file-size-guard, design-lint-gate",
+      "export_hash": "13DE27E05B1EFF50DBAD9CE19EDDE7D1E34282688E2EC911190B04ACF6507E01",
       "exported_at": "2026-11-17"
     },
     {
       "name": "pre-exec-guard.py",
       "purpose": "PreToolUse exec consolidated guard (destructive+arch+signature+push-green+tool-args+em-dash)",
-      "export_hash": "216d4d62ecee08753ba8476cc2e69ee0c1832f0f9628eb1546ffda7bfb55f021",
+      "export_hash": "FA6D1F9E0B0BFEFF0E9E8402FC9256AF53BA76E0374DCD50CE3EFC1F48F8D30E",
       "exported_at": "2026-11-17"
     },
     {
       "name": "pre-write-guard.py",
       "purpose": "PreToolUse write/edit/notebook_edit consolidated guard (arch+tool-args+em-dash[+signature+mermaid])",
-      "export_hash": "09b5fc9b30c9b588a1ced88a69e1aa5c5928b3912c01a986c47592409a1faef5",
+      "export_hash": "EB6979F87C97A765F09DDE35AC7DA64D2B077B9CE9CF8E3933E43DFB6BD890F1",
       "exported_at": "2026-11-17"
     },
     {
@@ -1659,13 +1677,13 @@
     {
       "name": "rules-coverage.py",
       "purpose": "Manual-run audit - maps NL rules to deterministic controls (hooks/audit/permissions), reports unenforced",
-      "export_hash": "f6bed70cdac0be54ec111d87079683bee2e2d29dfd263cad2622ee0b64dc06fe",
+      "export_hash": "33fcbd47c75d97d9399536a32c2d26a9d09243b7603f4dd6d44c4f87bb22c5fa",
       "exported_at": "2026-11-17"
     },
     {
       "name": "session-start.py",
       "purpose": "SessionStart consolidated hook (constraint-pinning+context-budget)",
-      "export_hash": "c4f281c17501b37d6098bccbcc154798f543600cef600623a971654a323fc268",
+      "export_hash": "A639139D33BEC10833F9AEBDED277330057464F40E36E1B69F15B0CC0F1AD916",
       "exported_at": "2026-11-17"
     },
     {
@@ -1701,7 +1719,7 @@
     {
       "name": "stop-guard.py",
       "purpose": "Stop consolidated guard (signature+refine-review+memory-stop+em-dash)",
-      "export_hash": "2cf15b3d7894818e1126381a4dd75c9343782da70b3c0bdb1d45a2419b273037",
+      "export_hash": "1CE11C97CE0E69048729427948E38099D8E00F59A96FD024E86F99E566277FC2",
       "exported_at": "2026-11-17"
     },
     {
@@ -1725,7 +1743,7 @@
     {
       "name": "user-prompt.py",
       "purpose": "UserPromptSubmit consolidated hook (constraint-pinning+nudge+memory-retrieval)",
-      "export_hash": "fb9bd12119ff899f7e1e1d900e7409f95368228b346c6e4d16e1c9e6e161550c",
+      "export_hash": "3612DB5E6A5D09DCAB380AC4AF410AB21F36D776D8DDC83296FD1AF9EFE31D5E",
       "exported_at": "2026-11-17"
     },
     {
@@ -1743,7 +1761,7 @@
     {
       "name": "validate-skill-format.py",
       "purpose": "Validator — checks SKILL.md frontmatter and format",
-      "export_hash": "7eab2de74dbaf7224bac882b6a8e1b6ad01b7f8fa347af9872118b7e4f2f48c8",
+      "export_hash": "B8CDD61525D7DA0CE7A78B619C15DCA4FFE1755AF563B5FDB3C0C8D5D6DA1BF0",
       "exported_at": "2026-11-17"
     },
     {
@@ -1790,7 +1808,7 @@
       "exported_at": "2026-11-24"
     }
   ],
-  "script_count": 59,
+  "script_count": 62,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,
@@ -1809,13 +1827,13 @@
       "name": "architect",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\architect.md",
-      "export_hash": "A44167CA5C7BFBC8047E0A802E3362FBE52D4958BA91DD4B5E0E8C1DA3D002C6",
+      "export_hash": "ea162f42b66570a67ae825b2a0e51d24dde8be7155b08ff485d281f4d60fab48",
       "exported_at": "2026-09-08T21:39:22.431676"
     },
     {
       "name": "art-director",
       "purpose": "Use to author the design system (docs/03_UI_UX_Guidelines.md). Award-winning UI/UX: journey traceability, design tokens, WCAG 2.1 AA per component, state coverage matrix.",
-      "export_hash": "1D08930931123202A5DA2D6DAD82B3EEDF7FB799C6D9F8D99ABDF1EA1E48C4F5",
+      "export_hash": "67df27fcf72079a94487298cdfcd488318a8be0a78513cb5cff66d9c9f6f2e08",
       "exported_at": "2026-10-27T15:18:55.679807"
     },
     {
@@ -1833,76 +1851,76 @@
       "name": "debugger",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\debugger.md",
-      "export_hash": "F93617C76CCCFF9CA3E02E155CC46C488F6AB92ACA25C88EFFC6E10728A39CB8",
+      "export_hash": "e82328bdec581365e45e0d8ab36b8692279e3370eb501c3efb90745563866233",
       "exported_at": "2026-09-08T21:39:22.431753"
     },
     {
       "name": "implementer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\implementer.md",
-      "export_hash": "1566EA69E188711DAE50F25327A511D48DAD518728CF72D71B5D0D4AC05B2793",
+      "export_hash": "8891281a854bcc5a389fc969f1d9295a3de8e9fb3ee4a2931cd4fc89d5c4a4e8",
       "exported_at": "2026-09-08T21:39:22.431827"
     },
     {
       "name": "product-manager",
       "purpose": "Use to author the product spec (docs/01_Product_Requirements.md) for the file-handoff agency pipeline. Ex-FAANG PM persona: RICE/Kano, user journeys, data inventory, non-goals.",
-      "export_hash": "6882125BC0E4FC1E3F01BB5A836B98A00EAF80CCEEB3B56D63F555FC7E284F9E"
+      "export_hash": "8434b4f78533e55a277069a655277caa4a427e950514dc0c0884381ba31c4010"
     },
     {
       "name": "qa-ci",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\qa-ci.md",
-      "export_hash": "6496E488C475FD1FFA54D9B1330B9858E14CF33DDF9B6C023775B32999AF2995",
+      "export_hash": "7db976626aad9ecb1153561e66c6425848a5be08b4beeb5342d92907fcf5b34c",
       "exported_at": "2026-09-08T21:39:22.431900"
     },
     {
       "name": "red-team-lead",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\red-team-lead.md",
-      "export_hash": "0B97729BF98DDC326859177034F4D20A9943C1FD707B5DB75A11E68FB98AE630",
+      "export_hash": "b833090a356d2df52a6c2bb9a0259711e6c7869d31c9ac9130c817db2dd47bf8",
       "exported_at": "2026-10-01T00:00:00.000000"
     },
     {
       "name": "researcher",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\researcher.md",
-      "export_hash": "bc9d2bb99cf5d19e7700410acc0c37e200e5f342abed5cacac70f56fb8a8a08f",
+      "export_hash": "285b2a20776a7db4e9abd2222b283ce3904520b98c3a4c8a8957d46aea7fa4dd",
       "exported_at": "2026-09-08T21:39:22.431990"
     },
     {
       "name": "reviewer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\reviewer.md",
-      "export_hash": "22d24f9a129e1e9454c43ef665810cf4380c987d4c6d1ca3bfa45bf6102725e1",
+      "export_hash": "61cdb41d0519ed868f882a55ed78769c944ee5ac478eb04b72f02de356bd0b43",
       "exported_at": "2026-09-08T21:39:22.432096"
     },
     {
       "name": "scrum-master",
       "purpose": "Use as the agency pipeline error handler and planner: validates artifact freshness, detects spec conflicts, writes 05_Pipeline_Report + 00_INDEX sprint plan, DONE/REWORK/BLOCKED verdict.",
-      "export_hash": "8E5F71BECC95A8208406E7A0D383BA37206E3A6812E7D206E95664C0E4B2F677"
+      "export_hash": "3b4a9027ca61c06d1debb1c7354545226c4d1add29e00a51416ed1f95fd0c8e0"
     },
     {
       "name": "security-auditor",
       "purpose": "Use to run the CISO/DPO audit (docs/04_Security_Audit.md). STRIDE per component, DPIA/LGPD, severity taxonomy with measurable fixes, 04_BLOCKERS.md rework channel.",
-      "export_hash": "71039BE9DFFBBBABC21DD3A94F30B0E15D586E99A6E61AA0162E751CF80B9323"
+      "export_hash": "a3d9b446d40aca908c3ce347f7c37060c3684aa1d72dc5c7c501fa0d27dc46e7"
     },
     {
       "name": "tech-lead",
       "purpose": "Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer: ADRs with rejected alternatives, file-granular tree, interface contracts, NFR budgets.",
-      "export_hash": "3A327B19C4A0B1A96D2B8FF5A7DECFBBC5183F08440B3DD849DD105520924434"
+      "export_hash": "945d884797996cb2509400dffde8a79ee32c9a610d537dda47040b2dc0e00e76"
     },
     {
       "name": "thermo-nuclear-code-quality-review-subagent",
       "source": "vendored:v3.19.0 cursor/plugins thermos (MIT)",
       "original_path": "%APPDATA%\\devin\\agents\\thermo-nuclear-code-quality-review-subagent.md",
-      "export_hash": "D297812F518574CCF322FD1FE5392EA33F54B1058F158D2B5964AE95535D07B3",
+      "export_hash": "7510d88684288db0054b255d53814e2c062b8cb3a8f0da0b1aebeb97a9a7d938",
       "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
       "name": "thermo-nuclear-review-subagent",
       "source": "vendored:v3.19.0 cursor/plugins thermos (MIT)",
       "original_path": "%APPDATA%\\devin\\agents\\thermo-nuclear-review-subagent.md",
-      "export_hash": "180AB9723D2E4D348AF82C51F35C20B373D5E1F96DBB21CC68F738C1718F06B7",
+      "export_hash": "0ef6e67dd82a795489c9a2c420dc4280ac5434b73b939543f6e043bb0d98fa64",
       "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
@@ -1923,21 +1941,21 @@
       "name": "sre",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\sre.md",
-      "export_hash": "62AAB39CD267C878E8BB59A45E33E3837709FC17D8BBE80A0280F1BEF906E04C",
+      "export_hash": "7b179e896239f85b3f525df8bdf3b37b859f8da7a4f2e9c647c8d16b72f94ef7",
       "exported_at": "2026-11-07T15:10:32.216367"
     },
     {
       "name": "ux-researcher",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\ux-researcher.md",
-      "export_hash": "AA7F0511C10EEF921D870B84C6417D92A0389B0A2EDB570BE822057C62DC1400",
+      "export_hash": "5f0fb1a593f0087c4b9261a8da857ad56ac03316ed1f7a0015b5bda551db03a2",
       "exported_at": "2026-11-07T15:10:32.216367"
     },
     {
       "name": "performance-engineer",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\performance-engineer.md",
-      "export_hash": "97CF71936D7BFA9B10F0ACADAF0D4654FD5066473F32FEBBC506E69EAF7C5234",
+      "export_hash": "b9487b6c20d87a04376107cb0497cca358292264fb3e643a6e5f4ab49f1ef1be",
       "exported_at": "2026-11-07T15:10:32.216367"
     }
   ]

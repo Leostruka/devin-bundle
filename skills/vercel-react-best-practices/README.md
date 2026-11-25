@@ -4,14 +4,17 @@ A structured repository for creating and maintaining React Best Practices optimi
 
 ## Structure
 
-- `rules/` - Individual rule files (one per rule)
-  - `_sections.md` - Section metadata (titles, impacts, descriptions)
-  - `_template.md` - Template for creating new rules
-  - `area-description.md` - Individual rule files
-- `src/` - Build scripts and utilities
-- `metadata.json` - Document metadata (version, organization, abstract)
-- __`AGENTS.md`__ - Compiled output (generated)
-- __`test-cases.json`__ - Test cases for LLM evaluation (generated)
+This vendored copy splits upstream's compiled `AGENTS.md` monolith by
+category so only the relevant section loads into context:
+
+- `SKILL.md` - Category table + quick reference of all 70 rules
+- `references/index.md` - Abstract + table of contents (links into category files)
+- `references/01-eliminating-waterfalls.md` ... `references/08-advanced.md` -
+  Rule bodies grouped by category (each rule is a `###` section)
+- `references/references.md` - Upstream references
+
+Upstream repo layout (not vendored here): `rules/` per-rule files,
+`src/` build scripts, `metadata.json`, `pnpm build` compiles `AGENTS.md`.
 
 ## Getting Started
 

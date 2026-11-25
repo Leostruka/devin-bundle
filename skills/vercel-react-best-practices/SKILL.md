@@ -23,16 +23,16 @@ Reference these guidelines when:
 
 ## Rule Categories by Priority
 
-| Priority | Category | Impact | Prefix |
-|----------|----------|--------|--------|
-| 1 | Eliminating Waterfalls | CRITICAL | `async-` |
-| 2 | Bundle Size Optimization | CRITICAL | `bundle-` |
-| 3 | Server-Side Performance | HIGH | `server-` |
-| 4 | Client-Side Data Fetching | MEDIUM-HIGH | `client-` |
-| 5 | Re-render Optimization | MEDIUM | `rerender-` |
-| 6 | Rendering Performance | MEDIUM | `rendering-` |
-| 7 | JavaScript Performance | LOW-MEDIUM | `js-` |
-| 8 | Advanced Patterns | LOW | `advanced-` |
+| Priority | Category | Impact | Prefix | File |
+|----------|----------|--------|--------|------|
+| 1 | Eliminating Waterfalls | CRITICAL | `async-` | [01](references/01-eliminating-waterfalls.md) |
+| 2 | Bundle Size Optimization | CRITICAL | `bundle-` | [02](references/02-bundle-size.md) |
+| 3 | Server-Side Performance | HIGH | `server-` | [03](references/03-server-side.md) |
+| 4 | Client-Side Data Fetching | MEDIUM-HIGH | `client-` | [04](references/04-client-side.md) |
+| 5 | Re-render Optimization | MEDIUM | `rerender-` | [05](references/05-rerender.md) |
+| 6 | Rendering Performance | MEDIUM | `rendering-` | [06](references/06-rendering.md) |
+| 7 | JavaScript Performance | LOW-MEDIUM | `js-` | [07](references/07-javascript.md) |
+| 8 | Advanced Patterns | LOW | `advanced-` | [08](references/08-advanced.md) |
 
 ## Quick Reference
 
@@ -132,21 +132,29 @@ Reference these guidelines when:
 
 ## How to Use
 
-Read individual rule files for detailed explanations and code examples:
+Rules are grouped by category under `references/`. Read the category file
+matching your task, then jump to the rule's `###` section:
 
 ```
-rules/async-parallel.md
-rules/bundle-barrel-imports.md
+references/01-eliminating-waterfalls.md   (rules 1.1-1.6)
+references/02-bundle-size.md              (rules 2.1-2.6)
+references/03-server-side.md              (rules 3.1-3.10)
+references/04-client-side.md              (rules 4.1-4.4)
+references/05-rerender.md                 (rules 5.1-5.15)
+references/06-rendering.md                (rules 6.1-6.11)
+references/07-javascript.md               (rules 7.1-7.14)
+references/08-advanced.md                 (rules 8.1-8.4)
 ```
 
-Each rule file contains:
+Each rule entry contains:
 - Brief explanation of why it matters
 - Incorrect code example with explanation
 - Correct code example with explanation
 - Additional context and references
 
-## Full Compiled Document
+## Index
 
-For the complete guide with all rules expanded: `AGENTS.md`
+Full table of contents and category index: `references/index.md`
+(70 rules across 8 categories, Vercel Engineering v1.0.0)
 
 Source: MIT, https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices

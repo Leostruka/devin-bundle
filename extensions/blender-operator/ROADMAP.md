@@ -1,6 +1,6 @@
 # blender-operator roadmap
 
-## Katana camera blocking (implemented, spec: `.devin/scratch/egm-laya-bitnet-upgrade/`)
+## Katana camera blocking (implemented, spec: `.devin/issues/egm-laya-bitnet-upgrade/`)
 
 Canonical owner: `.devin/issues/MILESTONE_2_13_camera_blocking.md`.
 This is an addendum for camera metadata, not a parallel implementation plan.

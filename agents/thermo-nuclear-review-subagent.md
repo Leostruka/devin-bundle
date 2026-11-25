@@ -1,6 +1,6 @@
 ---
 name: thermo-nuclear-review-subagent
-model: swe-2-max
+model: swe-2-1-max
 description: Use for thermo-nuclear branch audits of bugs, breaking changes, security issues, devex regressions, and feature-flag leaks, scoped to the diff. Invoked via run_subagent after a parent gathers diff and file contents. Loads rubric from the thermo-nuclear-review skill.
 allowed-tools:
   - read
