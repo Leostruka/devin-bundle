@@ -1,8 +1,0 @@
-[
-  {"name": "RESEARCH: Busy Bar API spec + Huw/Rose setup + bundle surface audit", "minutes": 60, "priority": 1},
-  {"name": "DESIGN: devin-integrate skill arch + N-areas capability map", "minutes": 60, "priority": 2},
-  {"name": "ISSUES: milestone + detailed issues on GitHub", "minutes": 60, "priority": 3},
-  {"name": "IMPL: devin-integrate skill v0.1 + tests", "minutes": 90, "priority": 4},
-  {"name": "REVIEW+SHIP: PR, CI, merge; flex pulls #484 if early", "minutes": 50, "priority": 5},
-  {"name": "closeout: ledger+audit+state doc+agenda check", "minutes": 25, "priority": 6}
-]
