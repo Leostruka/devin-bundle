@@ -25,11 +25,14 @@ def write(tmpdir, name, text):
 
 
 def test_registered_in_hooks_v1():
-    v1 = json.load(open(os.path.join(os.path.dirname(__file__), "..",
-                                     "hooks.v1.json"), encoding="utf-8"))
+    root = os.path.join(os.path.dirname(__file__), "..")
+    v1 = json.load(open(os.path.join(root, "hooks.v1.json"), encoding="utf-8"))
     cmds = [h["command"] for m in v1["PostToolUse"]
             for h in m.get("hooks", [])]
-    assert any("design-lint-gate" in c for c in cmds)
+    assert any("post-write-guard.py" in c for c in cmds)
+    guard = open(os.path.join(root, "scripts", "post-write-guard.py"),
+                 encoding="utf-8").read()
+    assert "design-lint-gate.py" in guard
 
 
 def test_slop_warns(tmp_path):

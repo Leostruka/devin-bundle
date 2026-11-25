@@ -23,8 +23,6 @@ mode=off updates the digest only — zero subprocess, zero weight reads.
 import hashlib
 import json
 import os
-import socket
-import subprocess
 import sys
 import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -160,6 +158,14 @@ def _effective_mode(cfg):
     return "shadow" if mode == "shadow" else "off"
 
 
+def _shadow_log_capped(cfg_path):
+    log = os.path.join(os.path.dirname(cfg_path), "shadow.jsonl")
+    try:
+        return os.path.isfile(log) and os.path.getsize(log) >= 2_000_000
+    except OSError:
+        return False
+
+
 def _daemon_info(laya_dir):
     info = _load_json(os.path.join(laya_dir, "daemon.json"), None)
     if not isinstance(info, dict) or not info.get("port") \
@@ -189,6 +195,7 @@ def _pid_alive(pid):
 
 
 def _port_open(port, timeout=0.5):
+    import socket
     try:
         with socket.create_connection(("127.0.0.1", port),
                                       timeout=timeout):
@@ -198,6 +205,7 @@ def _port_open(port, timeout=0.5):
 
 
 def _terminate(pid):
+    import subprocess
     try:
         if os.name == "nt":
             subprocess.run(["taskkill", "/PID", str(pid), "/F"],
@@ -211,6 +219,7 @@ def _terminate(pid):
 
 
 def _spawn_daemon(config_path):
+    import subprocess
     cli = _laya_cli_path()
     if not cli:
         return None
@@ -300,6 +309,7 @@ def _abstain(rid, reason):
 
 
 def _recommend(request, daemon, timeout_s):
+    import socket
     rid = str(request.get("request_id", ""))
     cand_ids = {c.get("id") for c in request.get("candidates") or []
                 if isinstance(c, dict)}
@@ -541,6 +551,9 @@ def main():
             and state["calls"] - state["last_eval_call"] >= cfgd["k_calls"]) \
         or p >= at
     if not due or mode == "off" or cli is None:
+        _save_json(_state_path(), state)
+        sys.exit(0)
+    if mode == "shadow" and _shadow_log_capped(cfg_path):
         _save_json(_state_path(), state)
         sys.exit(0)
 

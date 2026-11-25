@@ -9,6 +9,11 @@ from unittest.mock import patch
 import pytest
 
 SCRIPTS = os.path.join(os.path.dirname(__file__), "..", "scripts")
+LAYA_TOOLS = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..", "extensions", "laya-tools"))
+sys.path.insert(0, LAYA_TOOLS)
+
+import laya_client as lc  # noqa: E402
 
 
 def _load(name):
@@ -37,6 +42,72 @@ def _run_main(mod, payload):
 def _exec_payload(cmd):
     return {"hook_event_name": "PreToolUse", "tool_name": "exec",
             "tool_input": {"command": cmd}, "session_id": "t"}
+
+
+def _guard_profile(tmp_path, mode):
+    sha = "b" * 64
+    cfg = {"version": 1, "mode": mode, "deadline_ms": 1000,
+           "profiles": ["cmd-risk-v1"],
+           "models": {"english": {"path": "x", "sha256": sha,
+                                  "identity": "english"}}}
+    if mode == "assist":
+        cfg["calibration"] = {
+            "id": "cal-test", "threshold": 0.9,
+            "checkpoint_sha256": sha, "profile": "cmd-risk-v1",
+            "locale": "en", "cardinality": 5,
+            "data_source": "test", "evaluation_id": "eval-test",
+            "map": {"kind": "identity"}}
+    prof = tmp_path / "laya" / "profile.json"
+    prof.parent.mkdir(parents=True)
+    prof.write_text(json.dumps(cfg), encoding="utf-8")
+    return prof
+
+
+def _bind_guard_profile(monkeypatch, prof):
+    monkeypatch.setattr(guard, "_profile_path", lambda: str(prof))
+    monkeypatch.setattr(guard, "_laya_dir", lambda: LAYA_TOOLS)
+
+
+def test_guard_capped_shadow_skips_t2(monkeypatch, tmp_path):
+    prof = _guard_profile(tmp_path, "shadow")
+    (prof.parent / "shadow.jsonl").write_bytes(b"x" * 2_000_001)
+    _bind_guard_profile(monkeypatch, prof)
+    calls = []
+    monkeypatch.setattr(lc, "ensure_daemon",
+                        lambda *a, **kw: calls.append("ensure") or None)
+    code, out = _run_main(
+        guard, _exec_payload('echo hi && python -c "print(1)"'))
+    assert code == 0 and out == ""
+    assert calls == []
+
+
+def test_guard_capped_assist_still_reaches_t2(monkeypatch, tmp_path):
+    prof = _guard_profile(tmp_path, "assist")
+    (prof.parent / "shadow.jsonl").write_bytes(b"x" * 2_000_001)
+    _bind_guard_profile(monkeypatch, prof)
+    calls = []
+    monkeypatch.setattr(lc, "ensure_daemon",
+                        lambda *a, **kw: calls.append("ensure") or None)
+    code, out = _run_main(
+        guard, _exec_payload('echo hi && python -c "print(1)"'))
+    assert code == 0 and out == ""
+    assert calls == ["ensure"]
+
+
+def test_guard_uncapped_shadow_reaches_t2_and_logs(monkeypatch, tmp_path):
+    prof = _guard_profile(tmp_path, "shadow")
+    _bind_guard_profile(monkeypatch, prof)
+    calls = []
+    monkeypatch.setattr(lc, "ensure_daemon",
+                        lambda *a, **kw: calls.append("ensure") or None)
+    code, out = _run_main(
+        guard, _exec_payload('echo hi && python -c "print(1)"'))
+    assert code == 0 and out == ""
+    assert calls == ["ensure"]
+    entries = (prof.parent / "shadow.jsonl").read_text(
+        encoding="utf-8").splitlines()
+    assert len(entries) == 1
+    assert json.loads(entries[0])["profile"] == "cmd-risk-v1"
 
 
 def test_guard_non_exec_ignored():
@@ -152,6 +223,67 @@ def test_gate_off_mode_above_floor_no_laya(gate_env):
         code, out = _run_main(gate, _post_payload())
     assert code == 0 and out == ""  # mode off: never injects
     assert _read_state(gate_env)["last_eval_call"] == -999
+
+
+def _set_gate_mode(prof_path, mode):
+    prof = json.loads(open(prof_path, encoding="utf-8").read())
+    prof["mode"] = mode
+    if mode == "assist":
+        sha = "c" * 64
+        prof["models"] = {"english": {"path": "x", "sha256": sha,
+                                      "identity": "english"}}
+        prof["calibration"] = {
+            "id": "cal-test", "threshold": 0.9,
+            "checkpoint_sha256": sha, "profile": "compact-gate-v1",
+            "locale": "en", "cardinality": 5,
+            "data_source": "test", "evaluation_id": "eval-test",
+            "map": {"kind": "identity"}}
+    open(prof_path, "w", encoding="utf-8").write(json.dumps(prof))
+
+
+def _patch_gate_daemon(monkeypatch):
+    calls = []
+    monkeypatch.setattr(gate, "_laya_cli_path", lambda: "fake-laya")
+    monkeypatch.setattr(gate, "_ensure_daemon",
+                        lambda *a, **kw: calls.append("ensure") or None)
+    return calls
+
+
+def test_gate_capped_shadow_skips_daemon(gate_env, monkeypatch):
+    _set_gate_mode(gate_env, "shadow")
+    shadow = gate_env.parent / "shadow.jsonl"
+    shadow.write_bytes(b"x" * 2_000_001)
+    before = shadow.stat().st_size
+    calls = _patch_gate_daemon(monkeypatch)
+    with patch.object(gate, "_pressure", return_value=0.6):
+        code, out = _run_main(gate, _post_payload())
+    assert code == 0 and out == ""
+    assert calls == []
+    assert shadow.stat().st_size == before
+    assert _read_state(gate_env)["digest"]["tool_hist"] == {"exec": 1}
+
+
+def test_gate_uncapped_shadow_reaches_daemon_and_logs(gate_env, monkeypatch):
+    _set_gate_mode(gate_env, "shadow")
+    calls = _patch_gate_daemon(monkeypatch)
+    with patch.object(gate, "_pressure", return_value=0.6):
+        code, out = _run_main(gate, _post_payload())
+    assert code == 0 and out == ""
+    assert calls == ["ensure"]
+    shadow = gate_env.parent / "shadow.jsonl"
+    entries = shadow.read_text(encoding="utf-8").splitlines()
+    assert len(entries) == 1
+    assert json.loads(entries[0])["profile"] == "compact-gate"
+
+
+def test_gate_capped_assist_still_reaches_daemon(gate_env, monkeypatch):
+    _set_gate_mode(gate_env, "assist")
+    (gate_env.parent / "shadow.jsonl").write_bytes(b"x" * 2_000_001)
+    calls = _patch_gate_daemon(monkeypatch)
+    with patch.object(gate, "_pressure", return_value=0.6):
+        code, out = _run_main(gate, _post_payload())
+    assert code == 0 and out == ""
+    assert calls == ["ensure"]
 
 
 def _real_laya_cli():

@@ -11,15 +11,13 @@ surface as additionalContext so the agent can retry manually.
 import json
 import os
 import re
-import subprocess
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
 
-_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-
 def _run(*a, **kw):
-    kw.setdefault('creationflags', _CF)
+    import subprocess
+    kw.setdefault('creationflags', getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     if kw.get('text') or kw.get('universal_newlines'):
         kw.setdefault('encoding', 'utf-8')
         kw.setdefault('errors', 'replace')

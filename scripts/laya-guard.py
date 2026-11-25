@@ -9,7 +9,9 @@ Cascade:
   T3 policy merge              -> ladder only goes UP:
       assist:  irreversible|egress_or_secret -> BLOCK (exit 2)
                mutating|ambiguous + outside-repo -> WARN context + PASS
-      shadow:  everything logged to .devin/laya/shadow.jsonl, PASS
+      shadow:  logged to .devin/laya/shadow.jsonl until its size cap,
+               PASS; a capped shadow log skips T2 because the inference
+               can neither affect behavior nor be recorded
       off:     T0/T1 only, zero subprocess
 
 Laya output is a suggestion, never proof: it can only raise severity
@@ -140,13 +142,21 @@ def trivially_safe(cmd, feats):
     return False
 
 
+def shadow_log_capped():
+    try:
+        log = os.path.join(os.path.dirname(_profile_path()), "shadow.jsonl")
+        return os.path.isfile(log) and os.path.getsize(log) > 2_000_000
+    except OSError:
+        return False
+
+
 def shadow_log(entry):
     try:
         logdir = os.path.dirname(_profile_path())
         os.makedirs(logdir, exist_ok=True)
-        log = os.path.join(logdir, "shadow.jsonl")
-        if os.path.isfile(log) and os.path.getsize(log) > 2_000_000:
+        if shadow_log_capped():
             return
+        log = os.path.join(logdir, "shadow.jsonl")
         with open(log, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except OSError:
@@ -201,7 +211,6 @@ def main():
     sys.path.insert(0, laya_dir)
     try:
         import decision_contract as dc
-        import laya_client as lc
     except ImportError:
         sys.exit(0)
 
@@ -209,6 +218,12 @@ def main():
     cfg = dc.load_config(config_path)
     mode = dc.effective_mode(cfg)
     if mode == "off":
+        sys.exit(0)
+    if mode == "shadow" and shadow_log_capped():
+        sys.exit(0)
+    try:
+        import laya_client as lc
+    except ImportError:
         sys.exit(0)
 
     state = {

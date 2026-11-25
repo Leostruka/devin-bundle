@@ -1426,13 +1426,13 @@
     {
       "name": "_hookrun.py",
       "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "4769EB99AEC33F6F8F3A6686FF91E55B8775336A039037702200F9C414B122E1",
+      "export_hash": "998DBA299C5C1DD2041419AA1A6AC46E1B38827757D8F6FC67874E59038628AE",
       "exported_at": "2026-11-17"
     },
     {
       "name": "_gitscan.py",
       "purpose": "Per-process memoization for read-only git hook scans - shared across consolidated children",
-      "export_hash": "9F04EE2522FD2E45205082138BB3FD1CB93FDED52DFBC0EBFE9B2EC3F4053731",
+      "export_hash": "A796D71AEB3CD4ED656EEC57CB7CAAEC6B257534DB147DBB5E19E8D733B6CD45",
       "exported_at": "2026-11-17"
     },
     {
@@ -1456,13 +1456,13 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "07D37A01C170B887DE9602BD01ED0F884BFF45CC3FEC8283384E434F2DB76B84",
+      "export_hash": "05FD61E0D62FBF05F31DE03EF861D30F48D252C4E391166C4F1C55929C0A5556",
       "exported_at": "2026-11-17"
     },
     {
       "name": "check-push-green.py",
       "purpose": "PrePush hook — blocks push when held-out tests fail",
-      "export_hash": "7838CA87ADE99986F56C76827DE518D98674CF6556FFEDA2832176F08F714D26",
+      "export_hash": "E36FFE97E255D08095BADBF6362C491D4E19ABFDDE6C6AD413CD2A0F5E245BD9",
       "exported_at": "2026-11-17"
     },
     {
@@ -1474,7 +1474,7 @@
     {
       "name": "compact-gate.py",
       "purpose": "Layer 7 Smart Window trigger: session digest + pressure bands (compact-gate-v1/boundary-v1); injects one-line directive in assist, logs in shadow",
-      "export_hash": "3C861D644D3C9BB3A68E017CEE2F3E4B585166EC2BBB502BBACCEB1B0DF09F8D",
+      "export_hash": "16BBB3CCDA9D754A97B0D4CCAF67F3D31D99FD0EF7640707D437CD3981788BE2",
       "exported_at": "2026-11-25"
     },
     {
@@ -1492,7 +1492,7 @@
     {
       "name": "context-pressure.py",
       "purpose": "PostToolUse hook — estimates cumulative context-window pressure and warns at thresholds",
-      "export_hash": "A4553B11F65BCBE880D18F7D61BD05D57A39F7FE2908DD859BC58FDF474B00FA",
+      "export_hash": "AF8EE12A085C2823969A3C9EB457B2546ECE121291384B0B053A757A650BEEB0",
       "exported_at": "2026-11-25"
     },
     {
@@ -1505,7 +1505,7 @@
       "name": "dep-audit-gate.py",
       "source": "devin-bundle",
       "purpose": "PostToolUse(exec) gate - install-command pre-filter + scanner-presence check, [DEP-AUDIT] additionalContext on findings, fail-open (R5-01)",
-      "export_hash": "D3C6A9793F10AD04744B9DBB15A0A7EEF03B899A0E79B839399700BEE5A86B39",
+      "export_hash": "52ADF3D6D2890B79552B052558DFE145853942B2158097318C45A68EF07733C3",
       "exported_at": "2026-11-17"
     },
     {
@@ -1525,7 +1525,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "01EC8F020D855FB31E0CCDBF50C052B2227C3EE1D2D779EC221CB05B7C970C14",
+      "export_hash": "96B75883E72D450734A88E1B9E0923ADFBC1582E57AC169D1EA37C442D1716ED",
       "exported_at": "2026-11-17"
     },
     {
@@ -1550,13 +1550,13 @@
     {
       "name": "gh-pr-assignee.py",
       "purpose": "PostToolUse hook — auto-assigns PRs created via `gh pr create` (gh pr edit --add-assignee)",
-      "export_hash": "bb8e426557b3764338bb266447e16befc1905af665dd3935c4032633e478ad0a",
+      "export_hash": "16BC297E74421DECDB13A84386E673F76DF26FF441B793D347F6B64C06229694",
       "exported_at": "2026-11-17"
     },
     {
       "name": "git-diff-stat.py",
       "purpose": "PostToolUse hook - one-line 'diff-stat:' footer after exec calls when the active output-mode preset flags diff_footer (caveman/lean)",
-      "export_hash": "e7420542136b9ae698f04792e4eaec562f2c374613aaa51d46082cc03e81bd9f",
+      "export_hash": "E88DDF6013DE9157F7E18D039F02CA41B2278CD05BBB95EA0C9FDE0D7C7462A4",
       "exported_at": "2026-11-17"
     },
     {
@@ -1574,7 +1574,7 @@
     {
       "name": "laya-guard.py",
       "purpose": "PreToolUse exec gate, Layer 4: deterministic feature vector + laya cmd-risk-v1 for gray-zone commands; never relaxes deterministic verdicts",
-      "export_hash": "F8EE0ADC5900DFED0368B7EDED25D480BB2463A3ED1F78B74AD815B1C5640DBC",
+      "export_hash": "B40BB4FF447BA600A5DE37D3093505EBDFD1BD84709179FF290EBDD9F122F0F0",
       "exported_at": "2026-11-17"
     },
     {
@@ -1616,7 +1616,7 @@
     {
       "name": "no-em-dash.py",
       "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code, vendored extension data and binary files exempt",
-      "export_hash": "50BEF7AEDFD8F1DF7FC7544A33EDC7F99D28E83868783926DE4161DAEDD12CE9",
+      "export_hash": "B1120A54A24AC40F4DBCC74E2F1F7E53005E3E7B4C498150B13EAC372CADC6F4",
       "exported_at": "2026-11-17"
     },
     {

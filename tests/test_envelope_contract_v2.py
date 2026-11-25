@@ -116,6 +116,8 @@ PROBES = [
      ["-o", "probe-x.out", "nope"], "laya-compactor"),
     ("extensions/ppisp-prep/photo_qc.py", ["nope"], "ppisp-prep"),
     ("extensions/ppisp-prep/ppisp_runner.py", ["doctor"], "ppisp-prep"),
+    # GPU training harness: --doctor is the offline no-training surface.
+    ("extensions/ppisp-prep/synth_harness.py", ["--doctor"], "ppisp-prep"),
     ("extensions/mesh-utils/meshops.py", ["doctor"], "mesh-utils"),
     ("extensions/api-bridge/bridge.py", ["doctor"], "api-bridge"),
     ("extensions/diagram-tools/plantuml_renderer.py",

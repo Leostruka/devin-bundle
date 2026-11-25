@@ -3,6 +3,8 @@ import importlib.util
 import io
 import json
 import os
+import shutil
+import subprocess
 import sys
 from unittest.mock import patch
 
@@ -89,9 +91,9 @@ def _gate_run(payload, scanners=("pip-audit",)):
     with patch.object(sys, "stdin", io.StringIO(json.dumps(payload))), \
          patch.object(sys, "stdout", out), \
          patch.dict(os.environ, env), \
-         patch.object(gate.shutil, "which",
+         patch.object(shutil, "which",
                       lambda n: "/x" if n in scanners else None), \
-         patch.object(gate.subprocess, "run") as run:
+         patch.object(subprocess, "run") as run:
         run.return_value = type("P", (), {
             "stdout": json.dumps({"ok": True, "scanned": [
                 {"findings": [{"pkg": "requests", "id": "CVE-1"}]}],
@@ -147,8 +149,8 @@ def test_gate_silent_on_clean():
     with patch.object(sys, "stdin", io.StringIO(json.dumps(payload))), \
          patch.object(sys, "stdout", out), \
          patch.dict(os.environ, {"DEVIN_PROJECT_DIR": os.getcwd()}), \
-         patch.object(gate.shutil, "which", lambda n: "/x"), \
-         patch.object(gate.subprocess, "run", lambda *a, **k: P()):
+         patch.object(shutil, "which", lambda n: "/x"), \
+         patch.object(subprocess, "run", lambda *a, **k: P()):
         import contextlib
         with contextlib.suppress(SystemExit):
             gate.main()
@@ -191,7 +193,7 @@ def test_gate_silent_on_clean():
     "uv.exe add requests",
 ])
 def test_install_re_matches(cmd):
-    assert gate.INSTALL_RE.search(cmd), cmd
+    assert gate._install_re().search(cmd), cmd
 
 
 @pytest.mark.parametrize("cmd", [
@@ -207,7 +209,7 @@ def test_install_re_matches(cmd):
     "git status",
 ])
 def test_install_re_ignores_non_install(cmd):
-    assert not gate.INSTALL_RE.search(cmd), cmd
+    assert not gate._install_re().search(cmd), cmd
 
 
 def test_gate_scan_bounded_by_hook_budget():
@@ -227,8 +229,8 @@ def test_gate_scan_bounded_by_hook_budget():
     with patch.object(sys, "stdin", io.StringIO(json.dumps(payload))), \
          patch.object(sys, "stdout", out), \
          patch.dict(os.environ, {"DEVIN_PROJECT_DIR": os.getcwd()}), \
-         patch.object(gate.shutil, "which", lambda n: "/x"), \
-         patch.object(gate.subprocess, "run") as run:
+         patch.object(shutil, "which", lambda n: "/x"), \
+         patch.object(subprocess, "run") as run:
         run.return_value = P()
         import contextlib
         with contextlib.suppress(SystemExit):

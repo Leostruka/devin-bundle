@@ -26,14 +26,13 @@ Commands that merely inspect or replace the character (grep, sed, python
 one-liners) stay allowed - exec is only checked where the character would
 enter a deliverable: the git commit message.
 """
-import sys, json, re, os, subprocess
+import sys, json, re, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
-import _gitscan
-
-_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 def _run(*a, **kw):
+    import subprocess
+    import _gitscan
     # Read-only git scans memoize per process (_gitscan): the consolidated
     # Stop event runs this script and no-em-dash in one interpreter, and
     # both scan the same diffs. Hook execution is atomic - the tree cannot
@@ -41,7 +40,7 @@ def _run(*a, **kw):
     argv = a[0] if a else None
     if isinstance(argv, list) and argv and argv[0] == 'git':
         return _gitscan.run_git(argv, kw.get('cwd'))
-    kw.setdefault('creationflags', _CF)
+    kw.setdefault('creationflags', getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     return subprocess.run(*a, **kw)
 
 EM_DASH = chr(0x2014)
@@ -170,6 +169,7 @@ def added_text_lines(diff_output):
 
 def handle_stop(_data):
     """Scan staged and unstaged changes for the em-dash character."""
+    import subprocess
     cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
     for args in (
         ["git", "diff", "--cached", "--unified=0"],
@@ -197,6 +197,7 @@ def handle_stop(_data):
 
 def scan_untracked(cwd):
     """Scan files git diff never lists: new, unstaged-for-add files."""
+    import subprocess
     try:
         result = _run(
             ["git", "ls-files", "--others", "--exclude-standard"],

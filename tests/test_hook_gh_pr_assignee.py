@@ -33,7 +33,7 @@ def _run(payload, run_result=None):
     out_buf = io.StringIO()
     rr = run_result if run_result is not None else \
         subprocess.CompletedProcess([], 0, "ok", "")
-    with patch.object(mod.subprocess, "run", return_value=rr) as m, \
+    with patch.object(subprocess, "run", return_value=rr) as m, \
          patch.object(sys, "stdin", io.StringIO(json.dumps(payload))), \
          patch.object(sys, "stdout", out_buf), \
          pytest.raises(SystemExit) as e:

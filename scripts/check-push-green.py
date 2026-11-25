@@ -19,14 +19,13 @@ Sources:
   Kernel-Bench and 46.8% ALE-Bench optimizations show proxy gains without real
   gains, so agent-chosen tests alone are not evidence of improvement.
 """
-import sys, json, subprocess, os, re, time
+import sys, json, os, re, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
 
-_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-
 def _run(*a, **kw):
-    kw.setdefault('creationflags', _CF)
+    import subprocess
+    kw.setdefault('creationflags', getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     return subprocess.run(*a, **kw)
 
 TEST_TIMEOUT = 120
@@ -64,6 +63,7 @@ def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
     orphans the grandchild (pytest), which would otherwise hold the pipe
     open and block run() past the timeout while its console window leaks.
     """
+    import subprocess
     import tempfile
     out_file = tempfile.TemporaryFile(mode="w+t", encoding="utf-8",
                                       errors="replace")
@@ -72,9 +72,11 @@ def run_check(cmd, cwd, timeout=TEST_TIMEOUT):
     env = dict(os.environ)
     env.pop("DEVIN_PROJECT_DIR", None)
     try:
-        proc = subprocess.Popen(cmd, shell=True, cwd=cwd, stdout=out_file,
-                                stderr=subprocess.STDOUT, creationflags=_CF,
-                                env=env)
+        proc = subprocess.Popen(
+            cmd, shell=True, cwd=cwd, stdout=out_file,
+            stderr=subprocess.STDOUT,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            env=env)
         try:
             proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -315,6 +317,7 @@ def check_test_deletions(cwd):
     or removed test/class, otherwise the push blocks. Env
     TEST_DELETION_APPROVED=1 remains the manual override.
     """
+    import subprocess
     if os.environ.get("TEST_DELETION_APPROVED") == "1":
         return
     approved = _approval_text(cwd)
@@ -380,6 +383,7 @@ def _tree_fingerprint(cwd):
     and to HEAD+tree it carries precisely. Returns None outside a repo.
     """
     import hashlib
+    import subprocess
     try:
         head = _run(["git", "rev-parse", "HEAD"], capture_output=True,
                     text=True, cwd=cwd, timeout=15,
@@ -532,6 +536,7 @@ def _cache_write(path, fp):
 def _auto_merge_armed(cwd):
     """True when the current branch's open PR has auto-merge armed.
     Fail-soft: no gh / no PR / any error -> False (never blocks)."""
+    import subprocess
     try:
         p = _run(["gh", "pr", "view", "--json", "autoMergeRequest,state"],
                  capture_output=True, text=True, cwd=cwd, timeout=10,

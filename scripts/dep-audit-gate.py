@@ -8,16 +8,9 @@ install AND at least one audit scanner is on PATH. On findings, injects a
 import json
 import os
 import re
-import shutil
-import subprocess
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
-
-try:
-    _CF = subprocess.CREATE_NO_WINDOW
-except AttributeError:
-    _CF = 0
 
 # Segment start: also `(` subshells, backtick / $( ) command substitution
 # and shell-wrapper prefixes (cmd /c, powershell -c, bash -c) - each
@@ -34,7 +27,7 @@ _WRAP = (r"(?:(?:cmd(?:\.exe)?\s+/[ckCK]|"
 _GAP = (r"(?:(?:-[a-zA-Z][\w-]*|--[\w-]+(?:=\S*)?)(?:\s+\S+)?\s+)*")
 _PFX = _SEG + r"(?:sudo\s+)?" + _WRAP
 
-INSTALL_RE = re.compile(
+_INSTALL_RE_PATTERN = (
     _PFX +
     # python family: pip/pip3 (incl. `python -m pip`), uv, poetry,
     # pipenv, pipx, conda/mamba (issue #404 coverage gaps)
@@ -60,14 +53,36 @@ INSTALL_RE = re.compile(
     r"(?:add\b|tool\s+install\b|restore\b)"
     # windows package managers (scoop/winget/choco install)
     r"|" + _PFX + r"(?:scoop|winget|choco(?:latey)?)(?:\.exe)?\s+" +
-    _GAP + r"(?:install|add|update|upgrade)\b",
-    re.IGNORECASE)
+    _GAP + r"(?:install|add|update|upgrade)\b"
+)
+
+_INSTALL_HINTS = (
+    "python", "pip", "uv", "poetry", "pipenv", "pipx", "conda",
+    "mamba", "npm", "pnpm", "yarn", "bun", "cargo", "go", "composer",
+    "gem", "bundle", "mix", "dotnet", "scoop", "winget", "choco",
+    "py",
+)
+_INSTALL_RE = None
+
+
+def _install_re():
+    global _INSTALL_RE
+    if _INSTALL_RE is None:
+        _INSTALL_RE = re.compile(_INSTALL_RE_PATTERN, re.IGNORECASE)
+    return _INSTALL_RE
+
+
+def _has_install_hint(cmd):
+    lowered = cmd.lower()
+    return any(hint in lowered for hint in _INSTALL_HINTS)
+
 
 SCANNER_HINTS = ("pip-audit", "osv-scanner", "npm", "cargo-audit",
                  "govulncheck")
 
 
 def _scanners_present():
+    import shutil
     return any(shutil.which(s) for s in SCANNER_HINTS)
 
 
@@ -90,7 +105,8 @@ def main():
         # schema; injectable by the caller). Extraction is idempotent so
         # always extract the submitted lines ourselves.
         cmd = _hookrun.wtp_submitted_text(payload)
-    if not isinstance(cmd, str) or not INSTALL_RE.search(cmd):
+    if not isinstance(cmd, str) or not _has_install_hint(cmd) \
+            or not _install_re().search(cmd):
         return 0
     if not _scanners_present():
         return 0
@@ -101,12 +117,13 @@ def main():
         # hook budget is 35s (hooks.v1.json): keep the child scan under
         # it - dep-audit self-limits via --max-seconds, this is the
         # hard kill (issue #404: 300s timeout could never finish).
+        import subprocess
         p = subprocess.run(
             [sys.executable, script, "--root", root,
              "--max-seconds", "28"],
             capture_output=True, text=True, encoding="utf-8",
             errors="replace", timeout=32,
-            creationflags=_CF)
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         data = json.loads(p.stdout or "{}")
     except Exception:
         return 0

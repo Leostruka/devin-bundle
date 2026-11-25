@@ -27,7 +27,7 @@ Manual:
 
 Token estimate: chars/4 heuristic. This is an estimate, not exact.
 """
-import sys, os, re, json, argparse, glob
+import sys, os, re, json
 
 
 def devin_home():
@@ -448,6 +448,7 @@ def main():
         payload = read_stdin()
         sys.exit(process_hook(payload))
 
+    import argparse
     ap = argparse.ArgumentParser(description="Context pressure estimator")
     ap.add_argument("--reset", action="store_true", help="clear session marker")
     ap.add_argument("--report", action="store_true", help="show current estimate")

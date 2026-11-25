@@ -20,7 +20,6 @@ disk scans. A hung script hangs the whole consolidated phase until the
 outer hook timeout kills everything; hooks.v1.json `timeout` is the only
 bound. Keep each script well under its phase budget.
 """
-import hashlib
 import importlib.util
 import io
 import json
@@ -28,7 +27,6 @@ import os
 import re
 import sys
 import time
-import traceback
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 METRICS_MAX_BYTES = 512 * 1024
@@ -164,6 +162,7 @@ def _wtp_buf_path(payload, tool_input):
             # buffer would double-count the text.
             str(payload.get("hook_event_name", "")),
             str(tool_input.get("shell_id", ""))])
+        import hashlib
         h = hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
         d = os.environ.get("DEVIN_STATE_DIR") or os.path.join(
             _devin_home(), "state")
@@ -191,6 +190,7 @@ def _wtp_input_key(payload, tool_input, is_bytes, raw):
         str(payload.get("hook_event_name", "")),
         str(tool_input.get("shell_id", "")),
         "b" if is_bytes else "t", raw])
+    import hashlib
     return hashlib.sha256(key.encode("utf-8")).hexdigest()[:24]
 
 
@@ -451,6 +451,7 @@ def _run_one(script_name, payload):
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else (0 if e.code in (None, '') else 1)
     except Exception:
+        import traceback
         traceback.print_exc(file=sys.stderr)
         code = 0  # fail-open, same policy as the scripts themselves
     finally:

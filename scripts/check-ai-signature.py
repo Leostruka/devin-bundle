@@ -17,14 +17,13 @@ Exit codes (per /cli/extensibility/hooks/overview#exit-codes):
 
 Enforces AGENTS.md Rule 2 (no AI signatures in deliverables).
 """
-import sys, json, re, os, subprocess
+import sys, json, re, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
-import _gitscan
-
-_CF = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 
 def _run(*a, **kw):
+    import subprocess
+    import _gitscan
     # Read-only git scans memoize per process (_gitscan): the consolidated
     # Stop event runs this script and no-em-dash in one interpreter, and
     # both scan the same diffs. Hook execution is atomic - the tree cannot
@@ -32,7 +31,7 @@ def _run(*a, **kw):
     argv = a[0] if a else None
     if isinstance(argv, list) and argv and argv[0] == 'git':
         return _gitscan.run_git(argv, kw.get('cwd'))
-    kw.setdefault('creationflags', _CF)
+    kw.setdefault('creationflags', getattr(subprocess, 'CREATE_NO_WINDOW', 0))
     return subprocess.run(*a, **kw)
 
 SIGNATURES = (
@@ -64,29 +63,27 @@ SIGNATURES = (
     r"Gemini|Cursor|Windsurf|Anthropic|OpenAI|aider|codex|tabnine|"
     r"deepmind|codeium|cody|sweep)\b)",
 )
-PATTERN = re.compile("|".join(SIGNATURES), re.IGNORECASE)
 
 # Descriptive contexts where "AI-assisted" / "AI-generated" appears as a
 # topic reference, not a signature claim. These are allowlisted to avoid
 # false positives on documentation and commit messages that mention AI
 # tooling without claiming authorship.
 ALLOWED_CONTEXTS = (
-    re.compile(r"\bAI-assisted\s+(?:tooling|tool|tools|development|review|testing|coding|workflow|workflows|approach|process|pipeline|analysis)\b", re.IGNORECASE),
-    re.compile(r"\bAI-generated\s+(?:content|images|art|text|code|data|samples|examples|responses|output|outputs|uis?|interfaces?|pages?)\b", re.IGNORECASE),
+    r"\bAI-assisted\s+(?:tooling|tool|tools|development|review|testing|coding|workflow|workflows|approach|process|pipeline|analysis)\b",
+    r"\bAI-generated\s+(?:content|images|art|text|code|data|samples|examples|responses|output|outputs|uis?|interfaces?|pages?)\b",
 )
 
 # AI service markers in a git author/committer identity value. The commit
 # author is part of the deliverable: `git -c user.name="Devin" ... commit`
 # embeds an AI signature in history even when the message is clean (Rule 2).
 # `[bot]` catches GitHub App bot emails (devin-ai-integration[bot], copilot[bot]).
-AI_IDENTITY = re.compile(
+AI_IDENTITY_PATTERN = (
     r"\[bot\]"
     r"|devin[\s_-]*ai|devin-ai-integration|\bdevin\b"
     r"|\bclaude\b|\banthropic\b|\bcopilot\b|\bchatgpt\b|\bopenai\b|\bgpt-\w+"
     r"|\bgemini\b|\bdeepmind\b|\bcursor\b|\bwindsurf\b|\bcodeium\b"
     r"|\baider\b|\bcody\b|\bsweep\b|\bcodex\b|\btabnine\b"
-    r"|\bai[\s_-]?(?:assistant|agent|integration)\b",
-    re.IGNORECASE,
+    r"|\bai[\s_-]?(?:assistant|agent|integration)\b"
 )
 
 # Each pattern captures the identity VALUE being injected in group 1:
@@ -95,31 +92,15 @@ AI_IDENTITY = re.compile(
 #   GIT_AUTHOR_*/GIT_COMMITTER_* env vars on the command line
 #   git config [--global|--local] user.name X  (persistent injection)
 IDENTITY_VALUE_PATTERNS = (
-    re.compile(
-        r"-c\s*['\"]?user\.(?:name|email)\s*=\s*"
-        r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"--author\s*=\s*('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"--author\s+('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"GIT_(?:AUTHOR|COMMITTER)_(?:NAME|EMAIL)\s*=\s*"
-        r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
-        re.IGNORECASE,
-    ),
-    re.compile(
-        r"\bconfig\s+[^;&|]*?user\.(?:name|email)\s+"
-        r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
-        re.IGNORECASE,
-    ),
+    r"-c\s*['\"]?user\.(?:name|email)\s*=\s*"
+    r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+    r"--author\s*=\s*('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+    r"--author\s+('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+    r"GIT_(?:AUTHOR|COMMITTER)_(?:NAME|EMAIL)\s*=\s*"
+    r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
+    r"\bconfig\s+[^;&|]*?user\.(?:name|email)\s+"
+    r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
 )
-
 
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
@@ -128,15 +109,18 @@ def block(reason):
 
 
 def check_text(text):
-    if not text or not PATTERN.search(text):
+    if not text:
+        return False
+    signature = re.compile("|".join(SIGNATURES), re.IGNORECASE)
+    if not signature.search(text):
         return False
     # Allow descriptive contexts (e.g. "AI-assisted tooling") that are not
     # signature claims. Strip ALL allowed contexts at once, then re-check;
     # if no signature pattern remains, the text is purely descriptive.
     stripped = text
     for ctx in ALLOWED_CONTEXTS:
-        stripped = ctx.sub("", stripped)
-    if not PATTERN.search(stripped):
+        stripped = re.compile(ctx, re.IGNORECASE).sub("", stripped)
+    if not signature.search(stripped):
         return False
     return True
 
@@ -198,20 +182,22 @@ def extract_commit_file(command):
 
 def handle_stop(_data):
     """Scan staged and unstaged changes for AI signatures."""
+    import subprocess
+    import _gitscan
     cwd = os.environ.get("DEVIN_PROJECT_DIR") or os.getcwd()
     # Self-detection skip: diffs from these files contain the detector patterns
     # themselves (SIGNATURES list, ALLOWED_CONTEXTS, comments mentioning AI).
     self_files = ("check-ai-signature.py", "validate-skill-format.py")
-    for args in (
+    scan_args = (
         ["git", "diff", "--cached", "--unified=0"],
         ["git", "diff", "--unified=0"],
-    ):
-        try:
-            result = _run(
-                args, capture_output=True, text=True, timeout=10, cwd=cwd,
-                encoding="utf-8", errors="replace",
-            )
-        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        ["git", "rev-list", "@{u}..HEAD"],
+        ["git", "ls-files", "--others", "--exclude-standard"],
+    )
+    scan_results = _gitscan.run_git_batch(scan_args, cwd)
+    scan_errors = (subprocess.TimeoutExpired, FileNotFoundError, OSError)
+    for args, result in zip(scan_args[:2], scan_results[:2]):
+        if isinstance(result, scan_errors):
             return  # no git or no repo: allow
         if result.returncode != 0:
             continue
@@ -236,13 +222,8 @@ def handle_stop(_data):
     # checks above. Unpushed commits are still amendable, so scan their
     # messages + identities (bounded to @{u}..HEAD; skipped without
     # upstream, where we can't tell ours from history).
-    try:
-        result = _run(
-            ["git", "rev-list", "@{u}..HEAD"],
-            capture_output=True, text=True, timeout=10, cwd=cwd,
-            encoding="utf-8", errors="replace",
-        )
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+    result = scan_results[2]
+    if isinstance(result, scan_errors):
         result = None
     if result is not None and result.returncode == 0:
         for sha in result.stdout.split()[:20]:
@@ -264,8 +245,9 @@ def handle_stop(_data):
                     f"{sha[:8]} message (AGENTS.md Rule 2). Amend it to "
                     "remove the signature before stopping."
                 )
+            identity_re = re.compile(AI_IDENTITY_PATTERN, re.IGNORECASE)
             if ident and any(
-                    AI_IDENTITY.search(line)
+                    identity_re.search(line)
                     for line in ident.splitlines() if line.strip()):
                 block(
                     "AI identity in unpushed commit " + sha[:8] +
@@ -275,13 +257,8 @@ def handle_stop(_data):
 
     # Untracked files never appear in a diff; a signature written via exec
     # redirect (cat > file, heredoc) would otherwise escape the Stop scan.
-    try:
-        result = _run(
-            ["git", "ls-files", "--others", "--exclude-standard"],
-            capture_output=True, text=True, timeout=10, cwd=cwd,
-            encoding="utf-8", errors="replace",
-        )
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+    result = scan_results[3]
+    if isinstance(result, scan_errors):
         return  # no git or no repo: allow
     if result.returncode != 0:
         return
@@ -311,10 +288,12 @@ def check_identity(command):
     """
     if "git" not in command.lower():
         return
+    identity_re = re.compile(AI_IDENTITY_PATTERN, re.IGNORECASE)
     for pattern in IDENTITY_VALUE_PATTERNS:
-        for m in pattern.finditer(command):
+        value_re = re.compile(pattern, re.IGNORECASE)
+        for m in value_re.finditer(command):
             value = m.group(1).strip("'\"")
-            if AI_IDENTITY.search(value):
+            if identity_re.search(value):
                 block(
                     "AI identity injected into git author/committer "
                     f"('{value}'). The commit identity is a deliverable "

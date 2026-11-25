@@ -301,7 +301,7 @@ _CMD_POS = (r"(?:^|[|;&`$(]|\b(?:sudo|doas|runas|xargs|env|nice|nohup|"
             r"timeout|ionice|watch|stdbuf|strace|ltrace|taskset|chrt)\s+"
             r"(?:(?:[^\s|;&`'\"$(\n]|'[^'\n]*'|\"[^\"\n]*\")+\s+)*|"
             r"(?:-[ckCK]|-Command|/[ckCK]|eval)\s*[\"'`])\s*")
-STATE_FILE_DELETE = re.compile(
+_STATE_FILE_DELETE_PATTERN = (
     r"(?:" + _CMD_POS +
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
     r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&]*?)"
@@ -330,15 +330,14 @@ STATE_FILE_DELETE = re.compile(
     r"|" + _STATE_CD + _CD_SEGS +
     r"(?:rm|del|erase|ri|rd|rmdir|Remove-Item|Rename-Item|ren\b|"
     r"unlink|shred|srm|wipe|mv|move|Move-Item)\b[^|;&\n]*?[$`]"
-    r"|" + _DEVIN_CD,
-    re.IGNORECASE,
+    r"|" + _DEVIN_CD
 )
 # Writes are as dangerous as deletes: `>` truncates (json.load fails ->
 # uncapped fail-open), `>>`/append poisons ts fields, tee/truncate/sed -i/
 # dd of=/rsync --delete replace content. cp/install write the state path
 # only when it is the DESTINATION (last operand) - `cp state/x /tmp/bak`
 # reads state and stays allowed.
-STATE_FILE_WRITE = re.compile(
+_STATE_FILE_WRITE_PATTERN = (
     r"(?:>>?\s*[\"']?[^|;&]*?|" + _CMD_POS +
     r"(?:tee|truncate|Out-File|Set-Content|Add-Content|Clear-Content|"
     r"sc\b|Set-ItemProperty|sed\b[^|;&]*-i|"
@@ -376,9 +375,31 @@ STATE_FILE_WRITE = re.compile(
     # anywhere in the args with /mir present is a mirror into it.
     r"|\brobocopy\b(?=[^|;&]*/mir\b)[^|;&]*?(?:" + _STATE_TARGET + r")"
     # zip's output archive is the FIRST operand: `zip state/x files`.
-    r"|\bzip\b\s*(?:-\S+\s+)*(?:" + _STATE_TARGET + r")",
-    re.IGNORECASE,
+    r"|\bzip\b\s*(?:-\S+\s+)*(?:" + _STATE_TARGET + r")"
 )
+
+_STATE_FILE_DELETE_RE = None
+_STATE_FILE_WRITE_RE = None
+
+
+def _state_file_patterns():
+    global _STATE_FILE_DELETE_RE, _STATE_FILE_WRITE_RE
+    if _STATE_FILE_DELETE_RE is None:
+        _STATE_FILE_DELETE_RE = re.compile(
+            _STATE_FILE_DELETE_PATTERN, re.IGNORECASE)
+    if _STATE_FILE_WRITE_RE is None:
+        _STATE_FILE_WRITE_RE = re.compile(
+            _STATE_FILE_WRITE_PATTERN, re.IGNORECASE)
+    return _STATE_FILE_DELETE_RE, _STATE_FILE_WRITE_RE
+
+
+def _state_file_targeted(command):
+    lowered = command.lower()
+    if "state" not in lowered and "devin" not in lowered:
+        return False
+    delete_re, write_re = _state_file_patterns()
+    return bool(delete_re.search(command) or write_re.search(command))
+
 
 # git clean -fdx: removes untracked AND ignored files (irreversible, no reflog)
 # Excludes -n (dry-run) — if -n is present, it's a preview, not a destructive op.
@@ -596,8 +617,14 @@ ENCODED_EXEC = re.compile(
     # `python -c 'import base64;exec(..)'` etc - inline interpreter decode
     # or exec verbs in the -c/-e payload.
     r"\b(?:python\d*|perl|ruby|node|php|lua|deno)\b[^|;&]*?-[ce]\s*"
-    r"[\"'`]?[^|;&]*?(?:base64|b64|fromhex|unhex|decode|eval\b|exec\b|"
-    r"system\(|popen|subprocess|os\.system)",
+    r"(?:\"(?:[^\"\\]|\\.)*?(?:base64|b64|fromhex|unhex|decode|eval\b|"
+    r"exec\b|system\(|popen|subprocess|os\.system)(?:[^\"\\]|\\.)*?\"|"
+    r"'(?:[^'\\]|\\.)*?(?:base64|b64|fromhex|unhex|decode|eval\b|"
+    r"exec\b|system\(|popen|subprocess|os\.system)(?:[^'\\]|\\.)*?'|"
+    r"`(?:[^`\\]|\\.)*?(?:base64|b64|fromhex|unhex|decode|eval\b|"
+    r"exec\b|system\(|popen|subprocess|os\.system)(?:[^`\\]|\\.)*?`|"
+    r"[^\s|;&\"'`]*?(?:base64|b64|fromhex|unhex|decode|eval\b|exec\b|"
+    r"system\(|popen|subprocess|os\.system)[^\s|;&\"'`]*)",
     re.IGNORECASE)
 
 # Windows disk wipe: `format X:` quick/full format, `diskpart` interactive,
@@ -1279,8 +1306,7 @@ def main():
     # dispatch ledger, budget policy) - self-unlimiting class; the
     # file-tool side is guarded in validate-tool-args.
     try:
-        if STATE_FILE_DELETE.search(scan_command) or \
-                STATE_FILE_WRITE.search(scan_command):
+        if _state_file_targeted(scan_command):
             block(
                 "delete/write targeting hook enforcement state "
                 "(subagent-*.json* / wtp-*.txt / the devin/state dir) - "

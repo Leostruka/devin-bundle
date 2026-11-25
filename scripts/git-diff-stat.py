@@ -12,7 +12,6 @@ Fail-open everywhere: any exception -> exit 0 silent.
 import json
 import os
 import re
-import subprocess
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
@@ -43,6 +42,7 @@ def _footer_enabled(root):
 
 
 def _shortstat(root):
+    import subprocess
     try:
         r = subprocess.run(
             ["git", "diff", "--shortstat", "HEAD"],

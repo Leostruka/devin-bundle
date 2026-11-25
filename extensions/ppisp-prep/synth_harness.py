@@ -16,15 +16,100 @@ import argparse
 import json
 import math
 import sys
+from pathlib import Path
 
-try:
-    import torch
-    from gsplat import rasterization
-except ImportError as exc:  # env-provided GPU deps; see README WSL2 recipe
-    raise SystemExit(
-        f"missing GPU dependency ({exc}); torch+gsplat are provided by the "
-        "prepared environment, not pip-installed by the bundle - see "
-        "extensions/ppisp-prep/README.md")
+torch = None
+rasterization = None
+
+_BUNDLE_VERSION_CACHE = None
+
+
+def _bundle_version():
+    """Nearest ancestor manifest.json with a "name" marker, else ""."""
+    global _BUNDLE_VERSION_CACHE
+    if _BUNDLE_VERSION_CACHE is not None:
+        return _BUNDLE_VERSION_CACHE
+    import json as _json
+    for parent in Path(__file__).absolute().parents:
+        manifest = parent / "manifest.json"
+        if manifest.is_file():
+            try:
+                data = _json.loads(
+                    manifest.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                break
+            if isinstance(data, dict) and data.get("name"):
+                _BUNDLE_VERSION_CACHE = str(data.get("version") or "")
+            else:
+                _BUNDLE_VERSION_CACHE = ""
+            return _BUNDLE_VERSION_CACHE
+    _BUNDLE_VERSION_CACHE = ""
+    return _BUNDLE_VERSION_CACHE
+
+
+def _answered_by():
+    return {"bundle": _bundle_version(), "wrapper": "ppisp-prep"}
+
+
+def _stamp(payload):
+    if not isinstance(payload, dict):
+        return payload
+    payload["api_version"] = 2
+    if not isinstance(payload.get("meta"), dict):
+        payload["meta"] = {}
+    payload["meta"].setdefault("answered_by", _answered_by())
+    return payload
+
+
+def _dumps(payload, **kw):
+    if isinstance(payload, list):
+        payload = {"ok": True, "items": payload}
+    return json.dumps(_stamp(payload), **kw)
+
+
+def _load_deps():
+    """Import env-provided GPU deps lazily; return None or an error string."""
+    global torch, rasterization
+    if torch is None:
+        try:
+            import torch as torch_mod
+        except ImportError as exc:
+            return f"torch: {exc}"
+        torch = torch_mod
+    if rasterization is None:
+        try:
+            from gsplat import rasterization as rasterization_mod
+        except ImportError as exc:
+            return f"gsplat: {exc}"
+        rasterization = rasterization_mod
+    return None
+
+
+def _dep_hint():
+    return ("torch+gsplat are provided by the prepared environment, not "
+            "pip-installed by the bundle - see extensions/ppisp-prep/README.md")
+
+
+def doctor():
+    """Offline dependency report; never starts training."""
+    missing = _load_deps()
+    deps = {
+        "torch": {"available": torch is not None},
+        "gsplat": {"available": rasterization is not None},
+    }
+    if torch is not None:
+        deps["torch"]["version"] = getattr(torch, "__version__", "")
+        deps["torch"]["cuda_available"] = bool(torch.cuda.is_available())
+    payload = {
+        "ok": missing is None,
+        "status": "ok" if missing is None else "missing",
+        "dependencies": deps,
+    }
+    if missing is not None:
+        payload["error"] = f"missing GPU dependency ({missing})"
+        payload["hint"] = _dep_hint()
+    return payload
+
 
 dev = "cuda"
 W, H = 320, 240
@@ -184,7 +269,22 @@ def main():
     ap.add_argument("--regime", choices=sorted(REGIMES), default="strong")
     ap.add_argument("--steps", type=int, default=6000)
     ap.add_argument("--out", default="synth_ppisp_result.json")
+    ap.add_argument("--doctor", action="store_true",
+                    help="print dependency status as JSON and exit")
     args = ap.parse_args()
+    if args.doctor:
+        payload = doctor()
+        print(_dumps(payload, indent=1))
+        sys.exit(0 if payload["ok"] else 1)
+    missing = _load_deps()
+    if missing is not None:
+        print(_dumps({
+            "ok": False,
+            "status": "missing",
+            "error": f"missing GPU dependency ({missing})",
+            "hint": _dep_hint(),
+        }, indent=1))
+        sys.exit(1)
     steps = args.steps
     torch.manual_seed(args.seed)
     gt = make_gt_scene()
@@ -229,6 +329,8 @@ def main():
         for i in range(arm_novel.shape[0])])
 
     res = {
+        "ok": True,
+        "status": "ok",
         "baseline_novel_psnr": round(psnr(base_novel, gt_novel), 3),
         "ppisp_raw_novel_psnr": round(psnr(arm_novel, gt_novel), 3),
         "ppisp_corrected_novel_psnr": round(psnr(corrected, gt_novel), 3),
@@ -245,7 +347,7 @@ def main():
         "corruption": f"regime={args.regime}",
         "heldout": "novel orbit radius 3.8 height 0.6 vs training 3.2/0.0",
     }
-    print(json.dumps(res, indent=1))
+    print(_dumps(res, indent=1))
     import os
     if os.path.exists(args.out):
         print(f"refusing to overwrite existing file: {args.out}", file=sys.stderr)
