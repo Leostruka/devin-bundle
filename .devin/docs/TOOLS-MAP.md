@@ -99,7 +99,7 @@ thermo-nuclear-review-subagent, triage-labels, ux-researcher. 28 perfis
 validados (parity com `agents/*.md` + `.devin/agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
-## Hooks (8 eventos, 16 entry points, 62 scripts)
+## Hooks (8 eventos, 16 entry points, 63 scripts)
 
 Duas camadas: `hooks.v1.json` liga 16 comandos (6 entry points consolidados + 10 diretos); cada
 entry point agregador executa seus scripts internos num único processo
@@ -114,7 +114,7 @@ renderizada para `config.json.hooks` no install (ver
 |---|---|---|---|---|
 | PreToolUse | `^exec$` | `pre-exec-guard.py` (300s) | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard | sim |
 | PreToolUse | `^(write\|edit\|notebook_edit)$` | `pre-write-guard.py` (90s) | always: architecture-gate, validate-tool-args, no-em-dash; + check-ai-signature, validate-mermaid apenas em `write`/`edit` | sim |
-| PostToolUse | `^(exec\|mcp_call_tool)$` | `post-exec.py` (30s) | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat | não |
+| PostToolUse | `^(exec\|write_to_process\|mcp_call_tool)$` | `post-exec-guard.py` (40s) | roteamento por tool: dep-audit-gate + post-exec (nested: silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat) | não |
 | PostToolUse | `^exec$` | `dep-audit-gate.py` (35s) | dep-audit install pre-filter + scanner check; [DEP-AUDIT] additionalContext em findings; fail-open | não |
 | PostToolUse | `^(write\|edit)$` | `post-write-guard.py` (30s) | memory-post-edit, compact-gate, file-size-guard, design-lint-gate | não |
 | PostCompaction | (nenhum) | `constraint-pinning.py` (5s) + `context-pressure.py` + `compact-gate.py` | diretos; pinning + reset do marcador de pressao/estado do gate pos-compaction | não |
@@ -165,7 +165,7 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | agents/ | `./agents/` | `~/.config/devin/agents/` | 21 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local + README (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 193 skills || extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` - GUI automation; `system-control` - OS autorizado; `scrape-tools` - fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` - whisper.cpp local; `gcal` - Google Calendar free/busy + roteiro + escrita `add`/`apply` (gated por `--confirm`); `code-graph` - índice estrutural FTS5; `harness-tree` - árvore c1..c8 diff/validate/snapshot; `design-intelligence` - BM25 + corpus design 34 domínios) |
-| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 62 scripts Python + 1 JS |
+| scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 63 scripts Python + 1 JS |
 | docs/ (dissolvida) | `./.devin/{docs,plans,templates}/` | `~/.config/devin/docs/` | Documentação do bundle |
 | MODEL-GUIDE.md | `./.devin/docs/MODEL-GUIDE.md` | `~/.config/devin/docs/MODEL-GUIDE.md` | Guia de modelos (veja `data/bundle-models.json`) |
 | SKILL-TIERS.md | `./.devin/docs/SKILL-TIERS.md` | `~/.config/devin/docs/SKILL-TIERS.md` | Discovery por domínio + custos |

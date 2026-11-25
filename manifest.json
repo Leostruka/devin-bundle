@@ -1622,7 +1622,13 @@
     {
       "name": "post-exec.py",
       "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "FE71A45F418016D74B54666FF12916B83011F3534F157B8F8702DDA5A9890892",
+      "export_hash": "DD006C93B9B9B7D23215B165342CADE1ABD8B7035B43D52EEDEB1B9060540F9F",
+      "exported_at": "2026-11-17"
+    },
+    {
+      "name": "post-exec-guard.py",
+      "purpose": "PostToolUse exec/write_to_process/mcp consolidated guard - one spawn, routes children by tool",
+      "export_hash": "52E618C2348D7F54A4CAFF1D7EAA42D06026287C57AFC7FA2A50097D0DC9B2E2",
       "exported_at": "2026-11-17"
     },
     {
@@ -1808,7 +1814,7 @@
       "exported_at": "2026-11-24"
     }
   ],
-  "script_count": 62,
+  "script_count": 63,
   "mcp_count": 1,
   "agent_count": 21,
   "tool_count": 28,

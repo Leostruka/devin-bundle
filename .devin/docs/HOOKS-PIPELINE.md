@@ -24,8 +24,7 @@ of truth for wiring: `hooks.v1.json` (ADR 005). Aggregation mechanics:
 |---|---|---|
 | `pre-exec-guard.py` | PreToolUse `^(exec\|write_to_process)$` | destructive-gate, architecture-gate, check-ai-signature, check-push-green, validate-tool-args, no-em-dash, laya-guard |
 | `pre-write-guard.py` | PreToolUse `^(write\|edit\|notebook_edit)$` | ALWAYS: architecture-gate, validate-tool-args, no-em-dash; TEXT_ONLY (write/edit only): check-ai-signature, validate-mermaid |
-| `post-exec.py` | PostToolUse `^(exec\|mcp_call_tool)$` | silent-error-review, context-pressure, compact-gate, memory-post-exec, gh-pr-assignee, stuck-detect, git-diff-stat |
-| `dep-audit-gate.py` | PostToolUse `^exec$` | direct |
+| `post-exec-guard.py` | PostToolUse `^(exec\|write_to_process\|mcp_call_tool)$` | routes by tool: exec -> dep-audit-gate + post-exec; write_to_process -> dep-audit-gate; mcp_call_tool -> post-exec |
 | `post-write-guard.py` | PostToolUse `^(write\|edit)$` | memory-post-edit, compact-gate, file-size-guard, design-lint-gate |
 | `user-prompt.py` | UserPromptSubmit | constraint-pinning, behavioral-nudge, memory-retrieval, skill-picker, compact-gate, token-saver |
 | `validate-tool-args.py` | PreToolUse `^(run_subagent\|mcp_call_tool\|mcp_read_resource\|webfetch\|web_search\|skill\|request_scope\|ask_user_question\|todo_write\|browser_preview)$` | direct |

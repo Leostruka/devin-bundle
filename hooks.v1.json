@@ -36,22 +36,12 @@
   ],
   "PostToolUse": [
     {
-      "matcher": "^(exec|write_to_process)$",
+      "matcher": "^(exec|write_to_process|mcp_call_tool)$",
       "hooks": [
         {
           "type": "command",
-          "command": "python scripts/dep-audit-gate.py",
-          "timeout": 35
-        }
-      ]
-    },
-    {
-      "matcher": "^(exec|mcp_call_tool)$",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "python scripts/post-exec.py",
-          "timeout": 30
+          "command": "python scripts/post-exec-guard.py",
+          "timeout": 40
         }
       ]
     },

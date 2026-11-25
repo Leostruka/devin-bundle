@@ -50,11 +50,14 @@ def test_no_event_anywhere_keeps_prior_shape(monkeypatch, capsys):
     assert rc == 0
 
 
-def test_entry_point_event_literals_match_registration():
-    """Tripwire: each consolidated entry point's `event='X'` literal
-    must equal the event hooks.v1.json registers it under - a stale
-    literal would synthesize the WRONG hookEventName on eventless
-    payloads."""
+def _consolidation_graph():
+    """Registered entry scripts plus the transitive child graph.
+
+    A guard can route to another aggregator (post-exec-guard ->
+    post-exec -> grandchildren), so reachability must be transitive.
+    Existence-gated like audit_checks.m_rules: quoted py-names without a
+    scripts/ file are prose, not children."""
+    import os
     import re
     hooks = json.load(open("hooks.v1.json", encoding="utf-8"))
     registered = {}
@@ -64,15 +67,52 @@ def test_entry_point_event_literals_match_registration():
                 m = re.search(r"scripts[\\/]([\w.-]+\.py)", h.get("command", ""))
                 if m:
                     registered.setdefault(m.group(1), event)
-    entry_points = ["pre-exec-guard.py", "pre-write-guard.py",
-                    "post-exec.py", "user-prompt.py",
-                    "session-start.py", "stop-guard.py"]
-    for name in entry_points:
-        src = open("scripts/" + name, encoding="utf-8").read()
+
+    def children_of(name):
+        path = os.path.join("scripts", name)
+        if not os.path.exists(path):
+            return set()
+        src = open(path, encoding="utf-8").read()
+        return {m.group(1) for m in re.finditer(r"['\"]([\w-]+\.py)['\"]", src)
+                if os.path.exists(os.path.join("scripts", m.group(1)))}
+
+    # reaches[root] = every script transitively executed under root
+    reaches = {}
+    for root in registered:
+        seen, frontier = set(), [root]
+        while frontier:
+            cur = frontier.pop()
+            if cur in seen:
+                continue
+            seen.add(cur)
+            frontier.extend(children_of(cur) - seen)
+        reaches[root] = seen
+    return registered, reaches
+
+
+def test_entry_point_event_literals_match_registration():
+    """Tripwire: an `event='X'` literal must match the registration event
+    of every entry point that (transitively) executes the script - a stale
+    literal would synthesize the WRONG hookEventName on eventless payloads."""
+    import os
+    import re
+    registered, reaches = _consolidation_graph()
+    # Reverse index: script -> events of the registered roots reaching it.
+    reached_by = {}
+    for root, scripts_in_scope in reaches.items():
+        for s in scripts_in_scope:
+            reached_by.setdefault(s, set()).add(registered[root])
+    for path in sorted(os.listdir("scripts")):
+        if not path.endswith(".py"):
+            continue
+        src = open("scripts/" + path, encoding="utf-8").read()
         m = re.search(r"event='(\w+)'", src)
-        assert m, name + " passes no event= literal"
-        assert registered.get(name) == m.group(1), (
-            name + " registered under " + str(registered.get(name))
+        if not m:
+            continue  # direct scripts pass no event literal; nothing to pin
+        events = reached_by.get(path, set())
+        assert events, path + " passes event= but no registered entry reaches it"
+        assert events == {m.group(1)}, (
+            path + " executes under " + str(sorted(events))
             + " but passes event=" + m.group(1))
 
 
@@ -96,11 +136,10 @@ def test_direct_script_event_literals_match_registration():
     # context-pressure.py inside post-exec.py) emit under the ENTRY
     # point's event, not their own registration - their literal is
     # checked transitively by the entry-point pin above, so skip them.
+    _, reaches = _consolidation_graph()
     modules = set()
-    for ep in ["pre-exec-guard.py", "pre-write-guard.py", "post-exec.py",
-               "user-prompt.py", "session-start.py", "stop-guard.py"]:
-        src = open("scripts/" + ep, encoding="utf-8").read()
-        modules.update(re.findall(r"[\w-]+\.py", src))
+    for scripts_in_scope in reaches.values():
+        modules.update(scripts_in_scope)
     for path in glob.glob("scripts/*.py"):
         name = os.path.basename(path)
         if name not in registered or name in modules:

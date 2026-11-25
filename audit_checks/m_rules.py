@@ -98,14 +98,29 @@ def c7(ctx):
                 if '%APPDATA%' in cmd:
                     ctx.warnings.append('Hook command uses %APPDATA% (not expanded): ' + cmd[:80])
                     print('  WARN %APPDATA% in command (use {{APPDATA}} or absolute path)')
-    # Follow one level of indirection: consolidated guards reference check modules
-    # in their internal lists (executed in-process via _hookrun).
-    for ctx.s in list(ctx.scripts_referenced):
-        sp = os.path.join('scripts', ctx.s)
-        if os.path.exists(sp):
-            src = open(sp, encoding='utf-8').read()
-            for m in re.finditer(r"['\"]([a-z-]+\.py)['\"]", src):
-                ctx.scripts_referenced.add(m.group(1))
+    # Follow indirection transitively: consolidated guards reference check
+    # modules in their internal lists (executed in-process via _hookrun), and
+    # a guard can route to another aggregator (post-exec-guard -> post-exec
+    # -> grandchildren), so one level is not enough. Fixpoint loop; the graph
+    # is small and acyclic by construction.
+    scanned = set()
+    while True:
+        pending = [s for s in ctx.scripts_referenced if s not in scanned]
+        if not pending:
+            break
+        for ctx.s in pending:
+            scanned.add(ctx.s)
+            sp = os.path.join('scripts', ctx.s)
+            if os.path.exists(sp):
+                src = open(sp, encoding='utf-8').read()
+                for m in re.finditer(r"['\"]([a-z-]+\.py)['\"]", src):
+                    # Existence-gated: aggregators only ever execute real
+                    # scripts/ children, while prose and data tables quote
+                    # py-names that live elsewhere ('audit.py' at repo root,
+                    # 'setup.py' in dep-audit's manifest list). Quoted names
+                    # with no scripts/ file are not hook children.
+                    if os.path.exists(os.path.join('scripts', m.group(1))):
+                        ctx.scripts_referenced.add(m.group(1))
     for ctx.s in sorted(ctx.scripts_referenced):
         path = os.path.join('scripts', ctx.s)
         if os.path.exists(path):
