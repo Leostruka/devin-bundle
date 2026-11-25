@@ -385,6 +385,90 @@ mesmo dia. Quando disparar:
    `test_swe2_flash_contract.py`, sync live (`install-ledger.py record-all`),
    entrada no ledger. Não editar nada durante o full suite.
 
+### Plano de contingência pós-janela free (2026-12-08+)
+
+Planejamento pedido pelo usuário: o 2.1 pode deixar de ser grátis. Três
+políticas possíveis, matriz de fallback pré-computada para execução mecânica
+no dia da virada. Decisão de custo é do usuário; este plano torna cada opção
+concreta antes da pressão do deadline.
+
+#### Âncoras de preço observadas (2026-11-25, `devin models list`)
+
+| referência | input/1M | cached/1M | output/1M |
+|---|---|---|---|
+| swe-2 lightning (ultrafast, pago hoje) | $1 | $0.10 | $5 |
+| gemini-3.8-flash | $0.75 | $0.08 | $3.75 |
+| glm-5.3-flash | $0.15 | $0.03 | $0.50 |
+| claude-sonnet-5.5 fusion (sidekick flash-max free) | $2 | $0.10 | $10 |
+
+Preço pós-free do SWE-2.1 ainda não publicado; o blog promete desconto até
+2027-01-30. Flash pós-janela: 1/5 do preço do SWE-2 legacy (nota do registry).
+`free_tier_permanent` garante flash-medium free para sempre no Desktop+CLI.
+
+#### Volume: gap honesto de telemetria
+
+CLI local não loga tokens por chamada (verificado em 4.4MB de log de sessão
+pesada: zero hits de input/output_tokens). Volume real vem do dashboard cloud.
+Ordem de grandeza para modelo mental: um dia pesado de sessão interativa
+consome ~2-5M tokens blended; com cache hit alto (harness re-lê contexto,
+cached é 10x mais barato) o custo blended real fica bem abaixo do preço de
+tabela. Fórmula: custo/dia ~= volume_in x $in + volume_out x $out, medir o
+volume real no dashboard antes de decidir.
+
+#### Matriz de fallback por política (25 profiles)
+
+| papel atual | A: free-only | B: flash pago | C: 2.1 pago (desconto) |
+|---|---|---|---|
+| 14 julgamento (2.1-max) | flash-medium | flash-max | 2.1-max (inalterado) |
+| 5 execução (2.1-high) | flash-medium | flash-high | 2.1-high (inalterado) |
+| data-analyst (flash-high) | flash-medium | flash-high (inalterado) | flash-high (inalterado) |
+| 5 mecânicos (flash-medium) | flash-medium (inalterado) | flash-medium (inalterado) | flash-medium (inalterado) |
+| parent/subagent default | flash-medium | flash-max | 2.1-max (inalterado) |
+| fast lane | flash-medium | flash-high | 2.1-high |
+
+Leitura da tabela: política A degrada TODA a inteligência do bundle para o
+tier mecânico (o delta de benchmark 2.1 vs flash é o produto inteiro);
+política C é a única que preserva a matriz de decisão atual; política B é o
+meio-termo em custo mas perde o quality ceiling nos papéis de julgamento,
+exatamente onde o custo-de-falha é mais alto.
+
+#### Política D recomendada (híbrida) - candidato default para 12/8
+
+Custo de erro assimétrico justifica gastar onde errar é caro:
+
+- julgamento (14 profiles + parent): 2.1-max pago. São poucas chamadas de
+  alto valor; volume de tokens dominado por execução mecânica, não por elas.
+- execução correctness-critical (5): 2.1-high pago OU flash-high conforme o
+  preço final publicado. Decisão no dia com preço real.
+- volume mecânico (5) + data-analyst: flash-medium free permanente /
+  flash-high conforme necessidade medida.
+- fast lane: flash-high pago (1/5 do legacy) se throughput importar,
+  senão flash-medium free.
+
+#### Alternativas externas no catálogo (56 famílias)
+
+Para a conversa de custo, sem re-arquitetar o bundle agora:
+
+- glm-5.3-flash a $0.15/$0.50 é 6-10x mais barato que a âncora SWE;
+  qualidade para coding agentic não avaliada pelo bundle. Não há evidência
+  held-out; tratar como hipótese a testar, não opção pronta.
+- fusion sonnet-5.5 + sidekick flash-max free: frontier reasoning a $2/$10
+  com mecânica free. Modelo de custo interessante se julgamento frontier
+  superar 2.1-max em tarefas específicas; sem benchmark bundle-interno.
+- gemini-3.8-flash: classe de preço similar ao lightning, contexto 1M.
+
+Nenhuma alternativa externa tem contrato de esforço/QA verificado no harness
+do bundle. Adotar qualquer uma exige validação held-out primeiro (Rule 15).
+
+#### Instrumentação pendente (fechar antes de 12/8)
+
+1. Medir volume real: dashboard cloud ou instrumentar metrics.jsonl com
+   contagem aproximada de tokens por sessão. Sem isso toda decisão de custo
+   é cega.
+2. Quando o preço pós-desconto do 2.1 for publicado, atualizar as âncoras
+   acima e computar o custo/dia projetado por política com o volume medido.
+3. O tripwire [31b] dispara o runbook; este plano é o anexo de decisão.
+
 ### Política CONDICIONAL ao modelo do parent
 
 **Caso 1 - Parent FREE (`cost_tier: free`): subagents DEVEM ser FREE.**
