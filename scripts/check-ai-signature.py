@@ -68,7 +68,7 @@ SIGNATURES = (
 # topic reference, not a signature claim. These are allowlisted to avoid
 # false positives on documentation and commit messages that mention AI
 # tooling without claiming authorship.
-ALLOWED_CONTEXTS = (
+_ALLOWED_CONTEXT_SRC = (
     r"\bAI-assisted\s+(?:tooling|tool|tools|development|review|testing|coding|workflow|workflows|approach|process|pipeline|analysis)\b",
     r"\bAI-generated\s+(?:content|images|art|text|code|data|samples|examples|responses|output|outputs|uis?|interfaces?|pages?)\b",
 )
@@ -91,7 +91,7 @@ AI_IDENTITY_PATTERN = (
 #   git commit --author=X / --author "X"
 #   GIT_AUTHOR_*/GIT_COMMITTER_* env vars on the command line
 #   git config [--global|--local] user.name X  (persistent injection)
-IDENTITY_VALUE_PATTERNS = (
+_IDENTITY_VALUE_SRC = (
     r"-c\s*['\"]?user\.(?:name|email)\s*=\s*"
     r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
     r"--author\s*=\s*('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
@@ -101,6 +101,29 @@ IDENTITY_VALUE_PATTERNS = (
     r"\bconfig\s+[^;&|]*?user\.(?:name|email)\s+"
     r"('[^']*'|\"[^\"]*\"|[^\s;&|\"']+)",
 )
+
+
+def __getattr__(name):
+    # PEP 562 lazy module attributes. The CI workflow imports this module
+    # and scans the tree with PATTERN / ALLOWED_CONTEXTS expecting compiled
+    # regexes; compiling eagerly at import cost ~2ms on every hook
+    # invocation, including events that never scan text (C136). Compile on
+    # first access instead, then cache in module globals.
+    if name == "PATTERN":
+        value = re.compile("|".join(SIGNATURES), re.IGNORECASE)
+    elif name == "ALLOWED_CONTEXTS":
+        value = tuple(
+            re.compile(c, re.IGNORECASE) for c in _ALLOWED_CONTEXT_SRC)
+    elif name == "AI_IDENTITY":
+        value = re.compile(AI_IDENTITY_PATTERN, re.IGNORECASE)
+    elif name == "IDENTITY_VALUE_PATTERNS":
+        value = tuple(
+            re.compile(p, re.IGNORECASE) for p in _IDENTITY_VALUE_SRC)
+    else:
+        raise AttributeError(
+            f"module {__name__!r} has no attribute {name!r}")
+    globals()[name] = value
+    return value
 
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
@@ -118,7 +141,7 @@ def check_text(text):
     # signature claims. Strip ALL allowed contexts at once, then re-check;
     # if no signature pattern remains, the text is purely descriptive.
     stripped = text
-    for ctx in ALLOWED_CONTEXTS:
+    for ctx in _ALLOWED_CONTEXT_SRC:
         stripped = re.compile(ctx, re.IGNORECASE).sub("", stripped)
     if not signature.search(stripped):
         return False
@@ -289,7 +312,7 @@ def check_identity(command):
     if "git" not in command.lower():
         return
     identity_re = re.compile(AI_IDENTITY_PATTERN, re.IGNORECASE)
-    for pattern in IDENTITY_VALUE_PATTERNS:
+    for pattern in _IDENTITY_VALUE_SRC:
         value_re = re.compile(pattern, re.IGNORECASE)
         for m in value_re.finditer(command):
             value = m.group(1).strip("'\"")
