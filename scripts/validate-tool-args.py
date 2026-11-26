@@ -67,6 +67,7 @@ VALID_PROFILES = frozenset({
     "ux-researcher", "performance-engineer",
     "thermo-nuclear-code-quality-review-subagent",
     "sentinel", "thermo-nuclear-review-subagent", "triage-labels",
+    "video-fixer",
 })
 
 # A query made up only of stopwords carries no search signal.
