@@ -664,6 +664,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "inference-optimisation",
+      "source": "vendored:sybil-solutions/inference-optimisation-skill (MIT), adapted",
+      "purpose": "Use when optimizing, tuning, benchmarking, or hill-climbing a local LLM server (vLLM, SGLang, llama.cpp, ExLlama/TabbyAPI, MLX, TensorRT-LLM) on any hardware or quantization - decode/prefill tok/s, speculative decoding, KV cache, TTFT, startup time, under a memory cap with full-context stability. Computes the theoretical ceiling first, runs noise-controlled A/B experiments, keeps a failure-inclusive ledger, and qualifies the winner before publishing.",
+      "original_path": "%APPDATA%\\devin\\skills\\inference-optimisation",
+      "export_hash": "ab72f1a1d3f107250932ce74b835f567b0dc0f1dbb462428ede892facffeea10",
+      "exported_at": "2026-11-26T10:49:46.330675+00:00"
+    },
+    {
       "name": "intake",
       "source": "devin-bundle",
       "purpose": "Use when SIZING a task or PR and deciding whether to split it, validating the \"intent\" field in tickets/specs/PRDs before implementation, or moving issues and external PRs through triage states (categorise, verify, grill, write agent-ready briefs). Feeds `planning`; does not author plans.",
@@ -1430,7 +1438,7 @@
       "export_hash": "262419438972692e06cf02e4581b6d04e1b93b7828d83f52a9efdda4378b4dc5"
     }
   ],
-  "skill_count": 194,
+  "skill_count": 195,
   "rule_count": 21,
   "scripts": [
     {
