@@ -20,6 +20,7 @@ Modern TypeScript and Node.js. The compiler only helps if you do not lie to it -
 - Type guard: `function isX(v: unknown): v is X` - real narrowing instead of cast.
 - `interface` for objects/contracts, `type` for unions/intersections/utilities. `enum` only when a runtime value is needed; `as const` + union covers the rest.
 - Generics with constraints (`<T extends X>`); hidden `any` in a generic does not count as typed.
+- Library does not export a type you need? Extract it from the exported function instead of redeclaring it: `type ThirdParam = Parameters<typeof fn>[2]`, `type Result = ReturnType<typeof fn>`, `type Resolved = Awaited<ReturnType<typeof fn>>`. Positional tuple extraction is brittle across library upgrades - prefer it over copy-pasted types because the compiler breaks the build when the signature changes, which is exactly what you want.
 
 ## Null safety
 
