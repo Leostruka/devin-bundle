@@ -95,9 +95,11 @@ Put the switcher in a single shared component so both sub-shapes can reuse it. L
 
 Surface the URL (and the `?variant=` keys). The user will flip through whenever they get to it. The interesting feedback is usually **"I want the header from B with the sidebar from C"** — that's the actual design they want.
 
+When the variant count is 3+ and the decision matters, also produce a **variant matrix**: one screenshot per variant at the same viewport, data, and theme, arranged side by side in a single image or HTML page. Serial flipping taxes working memory; differences invisible when flipping become obvious side by side (evidence: Onlook's variation canvas, `.devin/research/media-osint-20261126-yt2/cards/BogcYWf4siM.md`). The matrix is cheap review evidence: attach it to the issue or PR instead of asking the reviewer to flip through a running app.
+
 ### 6. Capture the answer and clean up
 
-Once a variant has won, capture the answer — which variant and why — then capture the prototype the way the [SKILL](SKILL.md) describes. Fold the winner into the real code and move the rest onto the throwaway branch, not into main:
+Once a variant has won, capture the answer — which variant and why — then capture the prototype the way the [SKILL](SKILL.md) describes. Record the decision durably, not just in chat: `.devin/design/<surface>/decisions.md` (or the implementation issue when no such directory exists) with one row per variant: stable name, the question it answered, verdict, and rejection reason for the losers. Rejected directions are design knowledge; losing them means re-generating them next quarter. Fold the winner into the real code and move the rest onto the throwaway branch, not into main:
 
 - **Sub-shape A** — fold the winner into the existing page; drop the losing variants and the switcher from main.
 - **Sub-shape B** — promote the winning variant to a real route; drop the throwaway route and the switcher from main.
