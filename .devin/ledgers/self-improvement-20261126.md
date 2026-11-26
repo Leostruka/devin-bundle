@@ -192,3 +192,13 @@ Reviewer be0e17c8 verdict ISSUES-FOUND: 1 critical + 7 important + 4 minor. Reso
 | 13 | min | stale narrowing comment in gate | removed |
 
 Tests: 8 new regression tests in tests/test_behavioral_eval_sandbox.py encode the exploit shapes (must stay fixed). 18/18 behavioral eval tests pass. 85/85 gate tests pass. audit rc=0.
+
+
+## CHECKPOINT pos-review completo (~15:25)
+
+- Push final: 56fdba8 (3 commits: fix review findings + equals-form + ledgers)
+- Suite local: 3676 passed, 66 skipped
+- CI rodando para 56fdba8 - verificar com: gh run list --limit 3
+- Reviewer be0e17c8: 13 findings, 12 resolvidos + probes adversariais, #9 divida aceita documentada
+- RESTA para closeout: (1) CI verde confirmar, (2) relatorio final commit final, (3) install final doctor 3/3, (4) encerrar as 18h ou antes se contexto esgotar
+- Deadline: 18:00 Brasilia. Contexto critico - trabalhar enxuto.

@@ -158,7 +158,13 @@ def _safe_relpath(rel):
     reach into arbitrary local files."""
     if not isinstance(rel, str) or not rel:
         return None
-    if os.path.isabs(rel) or re.match(r"^[a-zA-Z]:[\\/]", rel):
+    drive = re.match(r"^[a-zA-Z]:[\\/]", rel)
+    if drive and not os.path.isabs(rel):
+        # Windows drive-letter path on a POSIX host: realpath would join
+        # it onto cwd (it does not start with / there), making the sandbox
+        # check meaningless. It is never a legitimate import on POSIX.
+        return None
+    if os.path.isabs(rel) or drive:
         try:
             real = os.path.realpath(rel)
             roots = [os.path.realpath(os.getcwd()),
