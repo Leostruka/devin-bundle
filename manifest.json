@@ -1480,7 +1480,7 @@
     {
       "name": "check-ai-signature.py",
       "purpose": "PreCommit hook — blocks AI signatures in commits",
-      "export_hash": "05FD61E0D62FBF05F31DE03EF861D30F48D252C4E391166C4F1C55929C0A5556",
+      "export_hash": "3a8ff3095ca74290bc4c1786dce343aefb37b8325577976dd02befe087b6c4e7",
       "exported_at": "2026-11-17"
     },
     {
@@ -1549,7 +1549,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "96B75883E72D450734A88E1B9E0923ADFBC1582E57AC169D1EA37C442D1716ED",
+      "export_hash": "92f24d749dc58a3f6c93c4e459c930f730066d2fb2c981b4619e2079c7882ba8",
       "exported_at": "2026-11-17"
     },
     {
@@ -1798,7 +1798,7 @@
     {
       "name": "sync-manifest.py",
       "purpose": "Sync manifest counts and export hashes with disk state; --check read-only drift detection (skill hash drift repair, 2026-11-26)",
-      "export_hash": "3305c83175b0312ed2299bfada48b14bc9bd3f5ba73d71090f9d65750ad1689f",
+      "export_hash": "63aa18746f4da13546744ec9d0dbbc8c7897d5b8d80d7dd4555a70278e2df1ce",
       "exported_at": "2026-11-26"
     },
     {
@@ -1834,7 +1834,7 @@
     {
       "name": "validate-tool-args.py",
       "purpose": "Validator — checks tool argument schemas",
-      "export_hash": "B379AD5A2D5CDD94CF5894C4663654F35ADA9BA9BA4A4A50CEF0C8DC45C286C1",
+      "export_hash": "1aac82e893a54aa2e97f2d8d5d2c2a014352e5ea0a682e2b99210507f46fc816",
       "exported_at": "2026-11-17"
     }
   ],
@@ -1991,7 +1991,7 @@
     {
       "name": "video-fixer",
       "source": "created:v3.x media-osint-20261126 batch1 P0",
-      "original_path": "%APPDATA%\\devin\u0007gents\u000bideo-fixer.md",
+      "original_path": "%APPDATA%\\devin\\agents\\video-fixer.md",
       "export_hash": "cd67013507bd4120cba65ee4d7791ae041d0f52e993136d15a526c944803e0d0",
       "exported_at": "2026-11-26T10:40:52.849764+00:00"
     }

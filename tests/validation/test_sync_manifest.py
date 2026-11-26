@@ -22,6 +22,9 @@ def _fixture(tmp_path, hash_fn=None):
     agent_bytes = b"---\nname: beta\n---\nbody\n"
     (tmp_path / "skills" / "alpha" / "SKILL.md").write_bytes(skill_bytes)
     (tmp_path / "agents" / "beta.md").write_bytes(agent_bytes)
+    (tmp_path / "scripts").mkdir()
+    script_bytes = b"print(1)\n"
+    (tmp_path / "scripts" / "gamma.py").write_bytes(script_bytes)
     h = hash_fn or (lambda b: hashlib.sha256(b).hexdigest())
     manifest = {
         "name": "fixture", "version": "0.0.1",
@@ -29,6 +32,8 @@ def _fixture(tmp_path, hash_fn=None):
         "skill_count": 1,
         "agents": [{"name": "beta", "export_hash": h(agent_bytes)}],
         "agent_count": 1,
+        "scripts": [{"name": "gamma.py", "export_hash": h(script_bytes)}],
+        "script_count": 1,
     }
     (tmp_path / "manifest.json").write_text(
         json.dumps(manifest), encoding="utf-8")
@@ -85,7 +90,12 @@ def test_unlisted_skill_reported_not_added(tmp_path):
     proc = _run(tmp_path, "--check")
     payload = json.loads(proc.stdout)
     assert any("gamma" in p for p in payload["problems"])
-    _run(tmp_path)
+    # structural problems fail the check (review 2026-11-26: ok used to
+    # ignore problems entirely, false-greening unlisted entries)
+    assert proc.returncode == 1
+    assert payload["ok"] is False
+    proc = _run(tmp_path)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
     manifest = json.loads(
         (tmp_path / "manifest.json").read_text(encoding="utf-8"))
     assert all(s["name"] != "gamma" for s in manifest["skills"])

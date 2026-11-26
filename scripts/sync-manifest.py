@@ -10,9 +10,9 @@ Modes:
   (default)   apply: rewrite manifest.json with corrected counts/hashes
   --check     read-only: exit 1 when drift exists, 0 when clean
 
-Never adds or removes skill/agent entries: unlisted-on-disk and
-missing-on-disk are reported for a human decision. Counts always reflect
-the entries actually present in the manifest.
+Never adds or removes skill/agent/script entries: unlisted-on-disk and
+missing-on-disk are reported for a human decision, and --check fails on
+them. Counts follow the audit canon: entries on disk.
 """
 import argparse
 import hashlib
@@ -51,10 +51,15 @@ def collect():
         and os.path.isfile(os.path.join("skills", d, "SKILL.md")))
     agents = sorted(
         f[:-3] for f in os.listdir("agents") if f.endswith(".md"))
-    return skills, agents
+    # .js helpers (e.g. mermaid-parse-check.js) are listed in the
+    # manifest but excluded from script_count, which counts .py only.
+    scripts = sorted(
+        f for f in os.listdir("scripts")
+        if f.endswith((".py", ".js")))
+    return skills, agents, scripts
 
 
-def diff_state(manifest, skills, agents):
+def diff_state(manifest, skills, agents, scripts):
     changes, problems = [], []
     entries = {s["name"]: s for s in manifest.get("skills", [])}
     for name in skills:
@@ -68,8 +73,8 @@ def diff_state(manifest, skills, agents):
     for name in entries:
         if name not in skills:
             problems.append("manifest skill missing on disk: " + name)
-    if manifest.get("skill_count") != len(manifest.get("skills", [])):
-        changes.append(("count", "skill_count", len(manifest.get("skills", []))))
+    if manifest.get("skill_count") != len(skills):
+        changes.append(("count", "skill_count", len(skills)))
     agent_entries = {a["name"]: a for a in manifest.get("agents", [])}
     for name in agents:
         entry = agent_entries.get(name)
@@ -82,8 +87,23 @@ def diff_state(manifest, skills, agents):
     for name in agent_entries:
         if name not in agents:
             problems.append("manifest agent missing on disk: " + name)
-    if manifest.get("agent_count") != len(manifest.get("agents", [])):
-        changes.append(("count", "agent_count", len(manifest.get("agents", []))))
+    if manifest.get("agent_count") != len(agents):
+        changes.append(("count", "agent_count", len(agents)))
+    script_entries = {s["name"]: s for s in manifest.get("scripts", [])}
+    for name in scripts:
+        entry = script_entries.get(name)
+        if entry is None:
+            problems.append("unlisted script on disk: " + name)
+            continue
+        spath = os.path.join("scripts", name)
+        if is_stale(spath, entry.get("export_hash", "")):
+            changes.append(("script", name, sha(spath)))
+    for name in script_entries:
+        if name not in scripts:
+            problems.append("manifest script missing on disk: " + name)
+    py_count = sum(1 for s in scripts if s.endswith(".py"))
+    if manifest.get("script_count") != py_count:
+        changes.append(("count", "script_count", py_count))
     return changes, problems
 
 
@@ -96,10 +116,10 @@ def main():
         return 2
     with open("manifest.json", encoding="utf-8") as fh:
         manifest = json.load(fh)
-    skills, agents = collect()
-    changes, problems = diff_state(manifest, skills, agents)
+    skills, agents, scripts = collect()
+    changes, problems = diff_state(manifest, skills, agents, scripts)
     if args.check:
-        ok = not changes
+        ok = not changes and not problems
         print(_dumps({
             "ok": ok, "drift": len(changes),
             "items": [{"type": c, "name": n} for c, n, _ in changes],
@@ -107,6 +127,7 @@ def main():
         return 0 if ok else 1
     entries = {s["name"]: s for s in manifest.get("skills", [])}
     agent_entries = {a["name"]: a for a in manifest.get("agents", [])}
+    script_entries = {s["name"]: s for s in manifest.get("scripts", [])}
     applied = []
     for kind, name, want in changes:
         if kind == "skill" and name in entries:
@@ -114,6 +135,9 @@ def main():
             applied.append(kind + ":" + name)
         elif kind == "agent" and name in agent_entries:
             agent_entries[name]["export_hash"] = want
+            applied.append(kind + ":" + name)
+        elif kind == "script" and name in script_entries:
+            script_entries[name]["export_hash"] = want
             applied.append(kind + ":" + name)
         elif kind == "count":
             manifest[name] = want
