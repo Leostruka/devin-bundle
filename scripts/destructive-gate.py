@@ -1063,6 +1063,63 @@ def _env_violations(env):
     return bad
 
 
+_HEREDOC_OP = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?")
+_SHELL_RECIPIENT = re.compile(
+    r"\b(?:sh|bash|zsh|dash|ksh|ash|eval)(?:\.exe)?\b")
+
+
+def _strip_data_heredocs(text):
+    """Remove heredoc bodies that are stdin data, not shell code.
+
+    Reproduced false positive (2026-11-26, 4x in one session): writing a
+    python test file via `python - <<'PY'` whose string literals contain
+    `> f.txt:hidden` or `git branch -D` tripped gates 9/10/7 even though
+    the heredoc body is never shell-interpreted - it is stdin data for
+    python, so no redirect/verb in it can create an ADS stream or a ghost
+    artifact. Exception: when the receiving pipeline invokes a shell
+    (sh <<EOF ... or ... | sh), the body DOES execute, so it stays in the
+    scan. Unclosed heredocs fail safe: body kept.
+    """
+    lines = text.split("\n")
+    out = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        m = _HEREDOC_OP.search(line)
+        if not m:
+            out.append(line)
+            i += 1
+            continue
+        delim = m.group(1)
+        # Line ending in a connector means the pipeline continues onto the
+        # next line, where a shell recipient may hide (`cat <<EOF | \` then
+        # `sh`): treat unterminated pipelines as shell-executing (the strip
+        # is only for bodies guaranteed to be interpreter data).
+        shell_exec = bool(_SHELL_RECIPIENT.search(line)) \
+            or bool(re.search(r"[|&\\]\s*$", line))
+        # find the closing delimiter line
+        j = i + 1
+        closed = False
+        while j < len(lines):
+            if lines[j].strip() == delim:
+                closed = True
+                break
+            j += 1
+        if shell_exec or not closed:
+            out.append(line)
+            i += 1
+            continue
+        # strip the body (lines i+1 .. j-1); keep operator and delimiter
+        # lines so the command structure stays visible to other gates.
+        out.append(line)
+        for _ in range(i + 1, j):
+            out.append("")
+        if j < len(lines):
+            out.append(lines[j])
+        i = j + 1
+    return "\n".join(out)
+
+
 def strip_commit_message(command):
     """Remove commit message text from git commit commands so gates don't
     match descriptive text inside -m '...' or -F file references.
@@ -1158,6 +1215,11 @@ def main():
     # line-2 head as its operand (the \n joiner made `lvremove\nman`
     # look like `lvremove man`).
     scan_command += ";" + _deescape_shell(scan_command)
+    # Variant with non-shell heredoc bodies removed: gates 9/10 guard
+    # Windows filesystem artifacts created by the SHELL's own redirect/
+    # verb machinery - inside a python/node heredoc body the same text is
+    # inert string data, so scanning it there is pure false positive.
+    scan_nodata = _strip_data_heredocs(scan_command)
 
     # Gate 1: rm -rf dangerous paths
     try:
@@ -1338,8 +1400,8 @@ def main():
     # POSIX, `nul`/`con`/`aux` are ordinary legal filenames.
     try:
         if os.name == "nt" \
-                and (RESERVED_REDIRECT.search(scan_command)
-                     or RESERVED_VERB.search(scan_command)) \
+                and (RESERVED_REDIRECT.search(scan_nodata)
+                     or RESERVED_VERB.search(scan_nodata)) \
                 and not SHELL_WRAPPER.search(scan_command):
             block(
                 "bash has no NUL/CON/AUX/PRN/COM1-9/LPT1-9 device: that "
@@ -1357,8 +1419,8 @@ def main():
     # file is created 0-byte and content diverts into a hidden stream.
     # Windows-only; ':' is a legal POSIX filename char.
     try:
-        ads_match = ADS_REDIRECT.search(scan_command) \
-            or ADS_VERB.search(scan_command)
+        ads_match = ADS_REDIRECT.search(scan_nodata) \
+            or ADS_VERB.search(scan_nodata)
         if os.name == "nt" and ads_match:
             block(
                 "redirect/verb target basename contains ':' - on Windows "
@@ -1369,8 +1431,8 @@ def main():
                 "positive (e.g. a git ref like HEAD:file inside a quoted "
                 "string), report it so the gate can be narrowed.")
         if os.name == "nt" \
-                and (DOT_REDIRECT.search(scan_command)
-                     or DOT_VERB.search(scan_command)):
+                and (DOT_REDIRECT.search(scan_nodata)
+                     or DOT_VERB.search(scan_nodata)):
             block(
                 "redirect/verb target ends in a dot or space - Win32 "
                 "strips it, so the write silently lands on the stripped "

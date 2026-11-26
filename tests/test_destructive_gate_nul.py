@@ -108,6 +108,35 @@ def test_ads_legit_targets_allowed(cmd):
     assert run_gate(cmd).returncode == 0
 
 
+# Heredoc narrowing (2026-11-26): bodies fed to non-shell interpreters are
+# stdin data, never shell redirects - scanning them for gates 9/10 was
+# pure false positive (4 blocks in one session writing test files).
+@pytest.mark.skipif(os.name != 'nt', reason='ADS gate is Windows-only')
+@pytest.mark.parametrize("cmd", [
+    "python - <<'PY'\nx = 'echo a > f.txt:hidden'\nPY",
+    "python <<'PY'\nprint('x > nul')\nPY",
+    "python3 - <<'EOF'\ns = 'touch con'\nEOF",
+    "node <<'JS'\nvar s = 'echo x > f.txt:ads'\nJS",
+])
+def test_data_heredoc_body_not_scanned_for_windows_artifact_gates(cmd):
+    assert run_gate(cmd).returncode == 0
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='ADS gate is Windows-only')
+@pytest.mark.parametrize("cmd", [
+    # shell recipient: the body DOES execute - stays scanned
+    "sh <<'EOF'\necho x > f.txt:hidden\nEOF",
+    "bash <<EOF\necho x > nul\nEOF",
+    "cat <<EOF | sh\necho x > f.txt:hidden\nEOF",
+    # redirect in the command portion (not the body) always scans
+    "cat > f.txt:hidden <<EOF\nx\nEOF",
+    # unclosed heredoc fails safe: body kept in scan
+    "python <<'PY'\necho x > f.txt:hidden",
+])
+def test_shell_heredoc_and_command_redirects_still_blocked(cmd):
+    assert run_gate(cmd).returncode == 2
+
+
 @pytest.mark.parametrize("cmd", [
     'cmd /c "echo x > nul"',
     'cmd //c "echo x > nul"',
