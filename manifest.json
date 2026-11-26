@@ -1840,7 +1840,7 @@
     {
       "name": "behavioral-eval.py",
       "purpose": "Behavioral tool-use eval harness - deterministic grading, append-only ledger, same-model baseline compare (never calls models; T3 evals pattern)",
-      "export_hash": "f49666768f3d260dfa9420b537b7cbb91c55dabe61f1092c63fb584d20e39f86",
+      "export_hash": "11f38a66a321d678819dea7f084f9cc663815d049cd6f1c8050915028668fe1d",
       "exported_at": "2026-11-26"
     }
   ],

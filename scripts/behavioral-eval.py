@@ -378,6 +378,7 @@ def main():
                     fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
                 results.append({"idx": idx, "passed": passed,
                                 "timed_out": meta["timed_out"],
+                                "workspace": meta["workspace"],
                                 "detail": detail[:200]})
         passed_n = sum(1 for r in results if r["passed"])
         # protocol: the case fails when half or more samples fail
