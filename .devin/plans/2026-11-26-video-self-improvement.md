@@ -1,5 +1,10 @@
 # Plano: melhoria dos videos + self-improvement (2026-11-26, deadline 18:00 BRT)
 
+STATUS 11:00 BRT: I-01..I-11 TODOS APLICADOS E PUSHADOS. Campanha adicional completa:
+CI healing 21->0 falhas (fetch-depth 2 + fixtures), incidente de seguranca resolvido
+(narrowing revertido pos-veredito UNSAFE do council), behavioral-eval loop fechado
+com baseline real 3/3. Ledger: `.devin/ledgers/self-improvement-20261126.md`.
+
 Fontes: `.devin/research/media-osint-20261126/bundle_refinement_report.md` (8 fontes)
 e `.devin/research/media-osint-20261126-yt2/bundle_refinement_report.md` (2 fontes).
 
