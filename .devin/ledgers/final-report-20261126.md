@@ -82,4 +82,11 @@ Janela: ~07:20 - 18:00 Brasilia. Escopo: executar o plano de melhoria dos videos
 
 ## Ciclo de review independente (tarde)
 
-O revisor independente do diff completo do dia retornou ISSUES-FOUND: 1 critical + 7 important + 4 minor — incluindo um escape de isolamento verificado por exploit no harness behavioral-eval e um false-pass de grader por contaminacao de estado `.devin`. Todas as correcoes aplicadas e re-verificadas adversarialmente (3/3 exploit shapes eliminados, zero overcorrection), com 8 testes de regressao novos codificando as formas de exploit. Uma finding (#9 contratos de validacao para docs de instrucao) aceita como divida processual documentada. Licao: o harness que avalia agentes precisa do mesmo rigor adversarial que os gates que ele testa — o reviewer pagou seu custo em um ciclo.
+O revisor independente do diff completo do dia retornou ISSUES-FOUND: 1 critical + 7 important + 4 minor - incluindo um escape de isolamento verificado por exploit no harness behavioral-eval e um false-pass de grader por contaminacao de estado `.devin`. Todas as correcoes aplicadas e re-verificadas adversarialmente (3/3 exploit shapes eliminados, zero overcorrection), com 8 testes de regressao novos codificando as formas de exploit. Uma finding (#9 contratos de validacao para docs de instrucao) aceita como divida processual documentada. Licao: o harness que avalia agentes precisa do mesmo rigor adversarial que os gates que ele testa - o reviewer pagou seu custo em um ciclo.
+
+
+## Encerramento
+
+O fix POSIX do sandbox (drive-letter em realpath) foi o ultimo bug do dia - encontrado pelo proprio CI multi-plataforma, nao por revisao humana: windows verde escondia a falha macos/ubuntu. Licao final registrada: testes de sandbox de paths precisam de cobertura POSIX ou o CI e a unica rede.
+
+Estado final: tudo commitado e pushed, install final doctor 3/3, CI em verificacao. Sessao encerrada dentro do deadline de 18:00 com o plano dos videos completo, a campanha de cura do CI completa, um incidente de seguranca revertido e convertido em regressao, e um ciclo completo de review independente resolvido.
