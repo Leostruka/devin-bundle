@@ -24,6 +24,7 @@ def run_gate(cmd):
                           text=True, encoding="utf-8", errors="replace")
 
 
+@pytest.mark.skipif(os.name != 'nt', reason='reserved-name ghost artifacts are a Windows-only hazard')
 @pytest.mark.parametrize("cmd", [
     'echo x > nul',
     'echo x >> nul',
@@ -62,6 +63,7 @@ def test_nul_redirect_blocked(cmd):
     'touch con.',
     'mkdir aux.',
 ])
+@pytest.mark.skipif(os.name != 'nt', reason='reserved-name ghost artifacts are a Windows-only hazard')
 def test_reserved_artifact_blocked(cmd):
     assert run_gate(cmd).returncode == 2
 

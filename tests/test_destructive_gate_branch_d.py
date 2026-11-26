@@ -28,9 +28,16 @@ def run_gate(cmd):
 
 
 def _git(*args):
+    # commit-tree needs a committer identity; CI runners have none.
+    # Throwaway fixture objects only - never pushed, no attribution meaning.
+    env = dict(os.environ)
+    env.setdefault("GIT_COMMITTER_NAME", "gate7-fixture")
+    env.setdefault("GIT_COMMITTER_EMAIL", "gate7-fixture@localhost")
+    env.setdefault("GIT_AUTHOR_NAME", "gate7-fixture")
+    env.setdefault("GIT_AUTHOR_EMAIL", "gate7-fixture@localhost")
     return subprocess.run(["git"] + list(args), capture_output=True,
                           text=True, encoding="utf-8", errors="replace",
-                          cwd=REPO)
+                          cwd=REPO, env=env)
 
 
 @pytest.fixture
