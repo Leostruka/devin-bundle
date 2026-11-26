@@ -111,7 +111,7 @@ https://www.instagram.com/animmaster_studio/reel/DgHqphRRXo4/
 
 Get more cool projects in my Telegram channel / link in bio 🚀
 
-❤️ Like | 💬 Share | 📌 Save for later 
+❤️ Like | 💬 Share | 📌 Save for later
 
 Follow 👉 @animmaster_studio for more epic UI animations!
 
@@ -182,9 +182,9 @@ Hoje eu fecho 11 meses de estudo e publico a minha monografia técnica:
 
 📄 “Trunk and Branches” — Isaque 2.0
 
-Ela está aberta para todo mundo no Zenodo e no GitHub, com todas as referências. Nos links: 
+Ela está aberta para todo mundo no Zenodo e no GitHub, com todas as referências. Nos links:
 
-https://zenodo.org/records/24221509 
+https://zenodo.org/records/24221509
 
 https://github.com/lcsmotta7/trunk-and-branches-isaque-2
 
@@ -248,18 +248,18 @@ https://riseclub.tech/
 
 🔔 Inscreva-se no canal para mais dicas e reviews!
 
-#skills #skill #ia #ias #desenvolvimentoweb #design #uidesign #uxdesign 
+#skills #skill #ia #ias #desenvolvimentoweb #design #uidesign #uxdesign
 
 00:00 Introdução
-00:28 Design Genérico 
+00:28 Design Genérico
 01:00 Primeiros passos
 02:16 Prompt para a Skill
 03:08 Repositório Desigin Enginner
-03:54 Habilidades 
+03:54 Habilidades
 04:52 Resposta da IA
 05:24 Resultado
-07:07 Responsividade 
-07:18 Outras Seções 
+07:07 Responsividade
+07:18 Outras Seções
 07:54 Comparação
 08:33 Final
 
@@ -405,7 +405,7 @@ Claude motion graphics, step by step. In this Claude motion tutorial we build a 
 
 Try Wispr Flow Notetaker on your iPhone and get a month of Pro free through our link, with unlimited words and meetings: https://wisprflow.ai/?promo_code=AILABS&creator_name=AI+Labs
 
-Community with All Resources: https://ailabspro.io/?v=eFog2ttK95g 
+Community with All Resources: https://ailabspro.io/?v=eFog2ttK95g
 
 The Roundup, our daily newsletter covering the AI stories that matter. Join now: https://www.theroundup.so/
 

@@ -1,7 +1,7 @@
 # Media OSINT -> devin-bundle refinement report
 
-Date: 2026-11-26  
-Input: 8 media URLs in `links.txt`  
+Date: 2026-11-26
+Input: 8 media URLs in `links.txt`
 Evidence base: `cards/`, `frames/`, `transcripts/`, `metadata_digest.md`, `external/`, `github_repo_snapshot.json`, `verify.md`
 
 ## Executive synthesis
@@ -33,8 +33,8 @@ A third medium-value gap is **granular UI motion taste**. `frontend-design` + `i
 
 ### P0 - Evolve `animation-direction` into a full video-motion workflow
 
-**Evidence:** `cards/eFog2ttK95g.md`; frames `eFog2ttK95g_04.jpg` through `_13.jpg`; transcript lines 344-460, 531-598.  
-**Current bundle state:** `animation-direction` already covers narration -> scene-plan v2 -> approval -> Remotion render -> ffmpeg composite, with `plan_check.py`.  
+**Evidence:** `cards/eFog2ttK95g.md`; frames `eFog2ttK95g_04.jpg` through `_13.jpg`; transcript lines 344-460, 531-598.
+**Current bundle state:** `animation-direction` already covers narration -> scene-plan v2 -> approval -> Remotion render -> ffmpeg composite, with `plan_check.py`.
 **Gap:** no durable video brief schema, no video-specific slop corpus, no browser scrub/review loop, no timestamped note protocol, no scoped fixer contract, no measurement-based visual verifier.
 
 Recommended refinement:
@@ -51,8 +51,8 @@ Why first: directly reduces token burn, context churn, and rebuild loops, which 
 
 ### P1 - Add an `inference-optimisation` skill or absorb its protocol into `performance`
 
-**Evidence:** `cards/DgLtA_qSr5D.md`; `external/inference_skill.md`; `external/inference_levers.md`.  
-**Current bundle state:** `performance` covers baseline/profile/fix/re-measure generically; `continuous-improvement` covers evidence/held-out discipline.  
+**Evidence:** `cards/DgLtA_qSr5D.md`; `external/inference_skill.md`; `external/inference_levers.md`.
+**Current bundle state:** `performance` covers baseline/profile/fix/re-measure generically; `continuous-improvement` covers evidence/held-out discipline.
 **Gap:** no model-serving-specific optimization loop.
 
 Portable protocol worth importing:
@@ -71,8 +71,8 @@ Implementation choice: a compact new skill is cleaner than bloating `performance
 
 ### P1 - Selectively strengthen UI motion/design taste
 
-**Evidence:** `cards/5cQUE-9Gtyw.md`, `cards/DgHqphRRXo4.md`; `external/emil_*`; `external/sakuga_README.md`.  
-**Current bundle state:** `frontend-design` sets distinctive direction; `impeccable` audits/polishes with lint, state coverage, anti-slop patterns, and bounded critique loops. This is already strong.  
+**Evidence:** `cards/5cQUE-9Gtyw.md`, `cards/DgHqphRRXo4.md`; `external/emil_*`; `external/sakuga_README.md`.
+**Current bundle state:** `frontend-design` sets distinctive direction; `impeccable` audits/polishes with lint, state coverage, anti-slop patterns, and bounded critique loops. This is already strong.
 **Gap:** granular motion expertise is dispersed and less operational than Emil's skill family.
 
 Recommended compact additions, preferably one `ui-motion` skill/reference rather than 18 new skills:
@@ -87,12 +87,12 @@ Recommended compact additions, preferably one `ui-motion` skill/reference rather
 
 ### P2 - Add utility-type extraction examples to `typescript-node`
 
-**Evidence:** `cards/RSG2qySs0ps.md`.  
+**Evidence:** `cards/RSG2qySs0ps.md`.
 Small insertion: when a library does not export parameter types, use `Parameters<typeof fn>[n]`, plus related `ReturnType<typeof fn>` and `Awaited<ReturnType<typeof fn>>` patterns. Include a caution about tuple positional brittleness when library signatures change.
 
 ### P2 - Steal resilient-download ideas, not the Prism product
 
-**Evidence:** `cards/DgCwVKpvkYm.md`; `external/prism_README.md`.  
+**Evidence:** `cards/DgCwVKpvkYm.md`; `external/prism_README.md`.
 Potential applications inside existing bundle surfaces:
 
 - media acquisition: resume partial downloads and verify file/version changes;
@@ -103,12 +103,12 @@ Do not build or embed a download manager; document/evaluate Prism as an optional
 
 ### P3 - Treat OpenMAIC as adjacent-pattern recon only
 
-**Evidence:** `cards/DgGh9C1AHTp.md`; `external/openmaic_README.md`.  
+**Evidence:** `cards/DgGh9C1AHTp.md`; `external/openmaic_README.md`.
 Interesting patterns: role-based teacher/classmate agents, durable course artifact, interactive scenes, offline export. No direct bundle gap unless the user wants education/course generation. Keep as reference for future agent-artifact design.
 
 ### Rejected / parked - Trunk and Branches
 
-**Evidence:** `cards/DfuvBDqRQ8R.md`; `external/trunk_README.md`.  
+**Evidence:** `cards/DfuvBDqRQ8R.md`; `external/trunk_README.md`.
 Do not import architectural claims. The project is self-published, low-adoption, and extraordinary claims lack independent replication. It still reinforces a useful bundle rule: raw receipts and frozen baselines are necessary but not sufficient; extraordinary performance/retention claims require held-out reproduction.
 
 ## Suggested next actions

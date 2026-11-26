@@ -12,7 +12,7 @@
 
 🌐 **[Ler em Português Brasileiro (PT-BR)](README.pt-BR.md)** · 📄 **[English Monograph PDF (18 pages)](paper/trunk_and_branches_isaque_2_0_en_doi_24221509.pdf)** · 📄 **[Monografia em Português PDF (18 páginas)](paper/tronco_e_ramos_isaque_2_0_pt_br_doi_24221509.pdf)**
 
-*Author:* **Lucas Alves Motta** ([ORCID: 0009-0001-3081-5505](https://orcid.org/0009-0001-3081-5505))  
+*Author:* **Lucas Alves Motta** ([ORCID: 0009-0001-3081-5505](https://orcid.org/0009-0001-3081-5505))
 *Beyond Adonai Research Laboratory · Indaial, Santa Catarina, Brazil · November 2026 (Rev. 5.0 — Pure Audit Edition)*
 
 </div>

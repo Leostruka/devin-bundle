@@ -220,6 +220,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+        with:
+          # depth 2: branch_d gate fixtures build a merged branch at
+          # HEAD~1; the default shallow depth-1 checkout has no parent
+          # commit and fixture creation fails with "not a valid object
+          # name: 'HEAD~1'" (diagnosed 2026-11-26 via instrumented CI).
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@v7
