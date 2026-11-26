@@ -61,7 +61,7 @@ YAML frontmatter (normative, the portable token export): `name`, `description`, 
 
 1. **sec0 fact-verify** - before any direction work, verify product facts (name, purpose, platform, versions, audience) with `web_search`/repo evidence. Write verified facts to `product-facts.md`; if a material fact cannot be verified, ask the user - never invent.
 2. **Five Form Questions** - answer all five against the facts: papel narrativo, distancia de audiencia, temperatura visual, capacidade/densidade, motivo visual. Map each to `extensions/design-intelligence/search.py --domain` (style, product, colors, typography) - the corpus dial, not taste.
-3. **Direction gate** - generate 6 direction candidates; select 3 real directions + 3 documented alternatives with rationale. Write `direction-approved.md` recording the choice, the alternatives rejected, and every exemption verbatim (exact user words granting each exception). Exemptions are never paraphrased.
+3. **Direction gate** - generate 6 direction candidates; select 3 real directions + 3 documented alternatives with rationale. Write `direction-approved.md` recording the choice, the alternatives rejected, and every exemption verbatim (exact user words granting each exception). Exemptions are never paraphrased. Record named negatives the same way: elicit specific styles/elements the user does not want (a color, a shape, a pattern, a reference they dislike) and keep them verbatim in `direction-approved.md` as anti-references. "Avoid generic" is a non-answer - ask for one concrete element.
 4. Only after the gate, produce the brief and (if asked) implementation.
 
 ## Muscle wiring (deterministic first pass)

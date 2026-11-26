@@ -537,7 +537,7 @@
       "name": "frontend-design",
       "source": "devin-bundle",
       "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view for this brief.",
-      "export_hash": "bbf16bbc5465ca050468820a4af41cf17dbe865d4e4ec0dfa5864a8eddeba7d1",
+      "export_hash": "d8ceccb44307f2235ae990b81075f0d793db73b345cf56426ee28a1d47159153",
       "exported_at": "2026-11-13T08:50:22.026078"
     },
     {
@@ -638,7 +638,7 @@
       "name": "impeccable",
       "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
       "purpose": "Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template.",
-      "export_hash": "bbe2419c21cf40370624ea22030e63bde92272ec937dc7d6b455e67e06052ad5",
+      "export_hash": "fe8bca7c6e16471bcf9a02da0a082ea11c8d3e9e7cb0012a0b1d72ddf6410e18",
       "exported_at": "2026-11-14T17:54:35.340780"
     },
     {
@@ -682,7 +682,7 @@
       "source": "devin-bundle",
       "purpose": "Use when capturing and validating the \"intent\" field in tickets, specs, or PRDs before implementation. Ensures every task has a clear objective, landing zone, and user impact.",
       "original_path": "%APPDATA%\\devin\\skills\\intention-capture",
-      "export_hash": "3a3bc105264481c74523f056d2888a464621f9c05fcf6ca266f9197fa488cc97",
+      "export_hash": "1f3353b38e2658923fab521ba324e846aff8a970655fbc9f4d5fa81ec9380909",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {

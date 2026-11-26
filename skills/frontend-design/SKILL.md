@@ -30,6 +30,13 @@ where distinctive visual choices come from: a toy for kids aged 8-11 and
 a dashboard for financial analysts are aesthetically different worlds.
 Build with the brief's real content throughout.
 
+Elicit named negatives from the client before planning: which specific
+styles, elements, or looks they do not want. "Avoid a generic look" is a
+non-answer - ask for concrete elements instead (a color, a shape, a
+layout pattern, a reference site they dislike). Record the negatives
+verbatim in the design plan and check the plan against them before
+building; they are constraints, not vibes.
+
 ## Design principles
 
 For web designs, the hero is the first thing viewers see. Open with the

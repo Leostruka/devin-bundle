@@ -21,6 +21,7 @@ Captures and validates the "intent" field in tickets, specs, or PRDs. Ensures ev
 2. **Landing zone.** Which project, module, or feature the change affects.
 3. **User impact.** How the change affects the user or the product.
 4. **Boundaries.** What is in scope and what is out of scope.
+5. **Ask-first conditions.** The missing data or decisions that should stop execution and trigger a question, stated upfront. This is a bidirectional contract: listed conditions mean stop and ask; everything else means proceed without asking. Omitting the field does not mean "ask whenever unsure" - it means the default judgment rules apply.
 
 ## Process
 
@@ -41,6 +42,7 @@ User requests work
 - **Landing zone:** `src/auth/` module, `LoginScreen` component.
 - **User impact:** Users can sign in with Google or Apple instead of email.
 - **Boundaries:** No password reset flow, no social profile sync.
+- **Ask first if:** the client IDs for Google/Apple are missing, or the minimum OS version is undecided.
 ```
 
 ## Anti-patterns
@@ -49,6 +51,7 @@ User requests work
 - Skipping the landing zone and making changes in the wrong module.
 - Ignoring user impact and building something nobody wants.
 - Vague boundaries that lead to scope creep.
+- Stalling to ask about something the ask-first conditions did not list, or plowing through a condition they did list.
 
 ## Cross-skills
 
