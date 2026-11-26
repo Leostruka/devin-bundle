@@ -108,23 +108,33 @@ def test_ads_legit_targets_allowed(cmd):
     assert run_gate(cmd).returncode == 0
 
 
-# Heredoc narrowing (2026-11-26): bodies fed to non-shell interpreters are
-# stdin data, never shell redirects - scanning them for gates 9/10 was
-# pure false positive (4 blocks in one session writing test files).
+# SECURITY REGRESSION (2026-11-26 adversarial review, verdict UNSAFE):
+# a regex-based heredoc-body stripper was reverted after the reviewer
+# verified 7 working bypasses with real artifact-creating probes. Heredoc
+# stdin for interpreters is executable code (os.system etc), so bodies
+# are scanned like the rest of the command. Cost: writing payloads whose
+# string literals mention ADS/reserved names inside a heredoc is blocked
+# (accepted FP; workaround: write the file with the write tool instead).
+# These cases pin the fail-closed behavior; do NOT re-narrow without a
+# real shell parser.
 @pytest.mark.skipif(os.name != 'nt', reason='ADS gate is Windows-only')
 @pytest.mark.parametrize("cmd", [
+    # accepted-FP cases: inert-looking but unprovable without a real
+    # shell parser - blocked by design (fail closed)
     "python - <<'PY'\nx = 'echo a > f.txt:hidden'\nPY",
-    "python <<'PY'\nprint('x > nul')\nPY",
     "python3 - <<'EOF'\ns = 'touch con'\nEOF",
     "node <<'JS'\nvar s = 'echo x > f.txt:ads'\nJS",
-])
-def test_data_heredoc_body_not_scanned_for_windows_artifact_gates(cmd):
-    assert run_gate(cmd).returncode == 0
-
-
-@pytest.mark.skipif(os.name != 'nt', reason='ADS gate is Windows-only')
-@pytest.mark.parametrize("cmd", [
-    # shell recipient: the body DOES execute - stays scanned
+    # bypass vectors verified against the reverted narrowing - every one
+    # must stay blocked forever
+    "# <<true\necho x > nul\ntrue",
+    ": '<<true'\necho x > f.txt:hidden\ntrue",
+    "python - <<'true-x'\nprint(1)\ntrue-x\necho x > nul\ntrue",
+    "python <<A <<B\nprint('x')\nA\n# <<true\nB\necho x > nul\ntrue",
+    's=/bin/s; t=h; s=$s$t\n"$s" <<\'EOF\'\necho x > nul\nEOF',
+    "cmd <<'EOF'\necho x > f.txt:hidden\nexit\nEOF",
+    "echo '<\\<true'\necho x > n\\ul\ntrue",
+    "python - <<'PY'\nimport os\nos.system('echo x > f.txt:hidden')\nPY",
+    # shell recipient bodies execute - always scanned
     "sh <<'EOF'\necho x > f.txt:hidden\nEOF",
     "bash <<EOF\necho x > nul\nEOF",
     "cat <<EOF | sh\necho x > f.txt:hidden\nEOF",
@@ -133,8 +143,20 @@ def test_data_heredoc_body_not_scanned_for_windows_artifact_gates(cmd):
     # unclosed heredoc fails safe: body kept in scan
     "python <<'PY'\necho x > f.txt:hidden",
 ])
-def test_shell_heredoc_and_command_redirects_still_blocked(cmd):
+def test_heredoc_bodies_scanned_fail_closed(cmd):
     assert run_gate(cmd).returncode == 2
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='ADS gate is Windows-only')
+@pytest.mark.parametrize("cmd", [
+    # control: a heredoc with no artifact patterns must not block
+    "python - <<'PY'\nprint('hello')\nPY",
+    # 'x > nul' is single-quoted even to a real shell - no redirect exists
+    # in any interpretation, so this must pass
+    "python <<'PY'\nprint('x > nul')\nPY",
+])
+def test_plain_python_heredoc_passes(cmd):
+    assert run_gate(cmd).returncode == 0
 
 
 @pytest.mark.parametrize("cmd", [
