@@ -6,7 +6,7 @@ def c8(ctx):
     ctx.script_files = [f for f in os.listdir('scripts') if f.endswith('.py')]
     print('  Scripts: ' + str(ctx.script_files))
     # Manual-run scripts (not hooks) — these are run on-demand, not via config.json hooks
-    manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', '_gitscan.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py', 'simplify-scan.py', 'graph-query.py', 'subagent-trace.py', 'done-evaluator.py', 'ship-metrics.py', 'changelog-refs.py', 'bundle_envelope.py', 'phase-zero.py', 'log-refinement.py', 'laya-shadow-report.py'}
+    manual_scripts = {'validate-refinement-evidence.py', 'validate-skill-format.py', 'render-user-hooks.py', '_hookrun.py', '_gitscan.py', 'spec-consistency.py', 'install-ledger.py', 'check-tools.py', 'roadmap-board.py', 'status_vocab.py', 'focus.py', 'rules-coverage.py', 'pulse.py', 'simplify-scan.py', 'graph-query.py', 'subagent-trace.py', 'done-evaluator.py', 'ship-metrics.py', 'changelog-refs.py', 'bundle_envelope.py', 'phase-zero.py', 'log-refinement.py', 'laya-shadow-report.py', 'sync-manifest.py'}
     for ctx.s in ctx.script_files:
         if ctx.s not in ctx.scripts_referenced and ctx.s not in manual_scripts:
             ctx.warnings.append(ctx.s + ' not referenced in hooks.v1.json')
@@ -103,6 +103,33 @@ def c9c(ctx):
             print('  WARN agent hash mismatch: ' + ', '.join(hash_mismatch))
         else:
             print('  OK  manifest agents consistent (' + str(len(manifest_agents)) + ' agents)')
+
+    # 9d. manifest.json skill export_hash drift (warning level, repair
+    # with scripts/sync-manifest.py; reproduced gap 2026-11-26: 73 stale
+    # skill hashes accumulated because detection covered only scripts and
+    # agents)
+    print()
+
+
+def c9d(ctx):
+    manifest_skills = ctx.manifest.get('skills', [])
+    hash_mismatch = []
+    missing = []
+    for s in manifest_skills:
+        path = os.path.join('skills', s['name'], 'SKILL.md')
+        if not os.path.isfile(path):
+            missing.append(s['name'])
+        elif s.get('export_hash'):
+            if not text_hash_matches(path, s['export_hash']):
+                hash_mismatch.append(s['name'])
+    if missing:
+        ctx.errors.append('manifest skills missing on disk: ' + ', '.join(missing))
+        print('  FAIL skills missing: ' + ', '.join(missing))
+    elif hash_mismatch:
+        ctx.warnings.append('manifest skill hash mismatch (repair: python scripts/sync-manifest.py): ' + ', '.join(hash_mismatch))
+        print('  WARN skill hash mismatch: ' + ', '.join(hash_mismatch))
+    else:
+        print('  OK  manifest skill hashes consistent (' + str(len(manifest_skills)) + ' skills)')
 
     # 10. No unmasked secrets
     print()

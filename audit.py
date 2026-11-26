@@ -59,6 +59,9 @@ m_manifest.c9b(ctx)
 print('[9c] manifest.json agents')
 m_manifest.c9c(ctx)
 
+print('[9d] manifest.json skill hashes')
+m_manifest.c9d(ctx)
+
 print('[10] Secrets check')
 m_manifest.c10(ctx)
 

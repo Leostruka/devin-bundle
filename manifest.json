@@ -1442,15 +1442,15 @@
   "rule_count": 21,
   "scripts": [
     {
-      "name": "_hookrun.py",
-      "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
-      "export_hash": "998DBA299C5C1DD2041419AA1A6AC46E1B38827757D8F6FC67874E59038628AE",
-      "exported_at": "2026-11-17"
-    },
-    {
       "name": "_gitscan.py",
       "purpose": "Per-process memoization for read-only git hook scans - shared across consolidated children",
       "export_hash": "A796D71AEB3CD4ED656EEC57CB7CAAEC6B257534DB147DBB5E19E8D733B6CD45",
+      "exported_at": "2026-11-17"
+    },
+    {
+      "name": "_hookrun.py",
+      "purpose": "Shared in-process hook runner — merges N hook checks into one spawn",
+      "export_hash": "998DBA299C5C1DD2041419AA1A6AC46E1B38827757D8F6FC67874E59038628AE",
       "exported_at": "2026-11-17"
     },
     {
@@ -1469,6 +1469,12 @@
       "name": "bundle_envelope.py",
       "purpose": "Shared envelope v2 helpers (_stamp/_dumps funnel) for scripts/ CLIs - per-file wrapper names via bind().",
       "export_hash": "2997f81254a33dc2e4743040d9075c43a5a859927b864533ca99c096bf2fd9d7",
+      "exported_at": "2026-11-17"
+    },
+    {
+      "name": "changelog-refs.py",
+      "purpose": "append missing merged-PR refs to CHANGELOG [Unreleased] (#488)",
+      "export_hash": "a568c45094af0c3bdb834a5105708435455377e5211849063a8c58ca057351aa",
       "exported_at": "2026-11-17"
     },
     {
@@ -1584,6 +1590,12 @@
       "exported_at": "2026-11-17"
     },
     {
+      "name": "hook-drift.py",
+      "purpose": "SessionStart advisory: byte-compares live scripts/agents/skills vs repo, warns on drift/orphans",
+      "export_hash": "72e69d9b805b7233781e9214cc4446cbad13a93393b006a905d4ca401bcab54b",
+      "exported_at": "2026-11-24"
+    },
+    {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
       "export_hash": "78a92acec72e19ecc523ca9ad754a30a347d19a9711942aa318d2c6ba67fb992",
@@ -1600,6 +1612,12 @@
       "purpose": "Manual CLI - summarizes compact-gate shadow.jsonl decisions (p quantiles, actions, abstains, per-session max) for threshold calibration",
       "export_hash": "d8840ecc95625da2ad2e044260ead72d323af51ca0d13255f191caa542a73642",
       "exported_at": "2026-11-25"
+    },
+    {
+      "name": "log-refinement.py",
+      "purpose": "append verified refinement records to .devin/refinements.log.jsonl",
+      "export_hash": "fd5ada81b5ac0e1184e03c1a5721911e2363d9ee6d99f5f248fcbaa009eaa846",
+      "exported_at": "2026-11-24"
     },
     {
       "name": "memory-post-edit.py",
@@ -1638,15 +1656,28 @@
       "exported_at": "2026-11-17"
     },
     {
-      "name": "post-exec.py",
-      "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
-      "export_hash": "DD006C93B9B9B7D23215B165342CADE1ABD8B7035B43D52EEDEB1B9060540F9F",
+      "name": "permission-gate.py",
+      "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
+      "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
+      "export_hash": "8420014E534AAF83BC381F61301CB9EB349F516BC19FAE0C0C26CFD653FBBEAB",
+      "exported_at": "2026-11-17"
+    },
+    {
+      "name": "phase-zero.py",
+      "purpose": "Read-only Fase Zero situational-awareness battery (git + GitHub state) emitted as JSON envelope v2 (#612)",
+      "export_hash": "6a97212b91f05f6d4ded182a77ff7d9ea68a235a7b0f3fd9c28f48f1c177c943",
       "exported_at": "2026-11-17"
     },
     {
       "name": "post-exec-guard.py",
       "purpose": "PostToolUse exec/write_to_process/mcp consolidated guard - one spawn, routes children by tool",
       "export_hash": "52E618C2348D7F54A4CAFF1D7EAA42D06026287C57AFC7FA2A50097D0DC9B2E2",
+      "exported_at": "2026-11-17"
+    },
+    {
+      "name": "post-exec.py",
+      "purpose": "PostToolUse exec consolidated checks (silent-error+context-pressure+memory-post-exec+gh-pr-assignee)",
+      "export_hash": "DD006C93B9B9B7D23215B165342CADE1ABD8B7035B43D52EEDEB1B9060540F9F",
       "exported_at": "2026-11-17"
     },
     {
@@ -1711,6 +1742,12 @@
       "exported_at": "2026-11-17"
     },
     {
+      "name": "ship-metrics.py",
+      "purpose": "DORA lead-time log — .devin/metrics/ships.jsonl + report (#486)",
+      "export_hash": "3499e31ac53758a083d9486b86807bb1f7ddfe6aa8f2d448e8fd1bca70c9cac7",
+      "exported_at": "2026-11-17"
+    },
+    {
       "name": "silent-error-review.py",
       "purpose": "PostToolUse hook — detects silent errors in tool output",
       "export_hash": "9f9f8af8d67dfabc7ba90b304f46189ce4b3bbe3c93792b0643ea9aad344b4e0",
@@ -1759,6 +1796,12 @@
       "exported_at": "2026-11-17"
     },
     {
+      "name": "sync-manifest.py",
+      "purpose": "Sync manifest counts and export hashes with disk state; --check read-only drift detection (skill hash drift repair, 2026-11-26)",
+      "export_hash": "3305c83175b0312ed2299bfada48b14bc9bd3f5ba73d71090f9d65750ad1689f",
+      "exported_at": "2026-11-26"
+    },
+    {
       "name": "token-saver.py",
       "purpose": "UserPromptSubmit hook - injects output-mode preset fragment only on mode change (PandaCode-style token saver; presets in data/output-modes.json, state in .devin/output-mode.json)",
       "export_hash": "e5bba31a19633b669cebb6dbd311df38681ab1a8b22b11b51d090d3198883e35",
@@ -1793,46 +1836,9 @@
       "purpose": "Validator — checks tool argument schemas",
       "export_hash": "B379AD5A2D5CDD94CF5894C4663654F35ADA9BA9BA4A4A50CEF0C8DC45C286C1",
       "exported_at": "2026-11-17"
-    },
-    {
-      "name": "ship-metrics.py",
-      "purpose": "DORA lead-time log — .devin/metrics/ships.jsonl + report (#486)",
-      "export_hash": "3499e31ac53758a083d9486b86807bb1f7ddfe6aa8f2d448e8fd1bca70c9cac7",
-      "exported_at": "2026-11-17"
-    },
-    {
-      "name": "changelog-refs.py",
-      "purpose": "append missing merged-PR refs to CHANGELOG [Unreleased] (#488)",
-      "export_hash": "a568c45094af0c3bdb834a5105708435455377e5211849063a8c58ca057351aa",
-      "exported_at": "2026-11-17"
-    },
-    {
-      "name": "permission-gate.py",
-      "original_path": "%APPDATA%\\devin\\scripts\\permission-gate.py",
-      "purpose": "PermissionRequest hook: auto-approves provably read-only exec commands, silent otherwise.",
-      "export_hash": "8420014E534AAF83BC381F61301CB9EB349F516BC19FAE0C0C26CFD653FBBEAB",
-      "exported_at": "2026-11-17"
-    },
-    {
-      "name": "phase-zero.py",
-      "purpose": "Read-only Fase Zero situational-awareness battery (git + GitHub state) emitted as JSON envelope v2 (#612)",
-      "export_hash": "6a97212b91f05f6d4ded182a77ff7d9ea68a235a7b0f3fd9c28f48f1c177c943",
-      "exported_at": "2026-11-17"
-    },
-    {
-      "name": "hook-drift.py",
-      "purpose": "SessionStart advisory: byte-compares live scripts/agents/skills vs repo, warns on drift/orphans",
-      "export_hash": "72e69d9b805b7233781e9214cc4446cbad13a93393b006a905d4ca401bcab54b",
-      "exported_at": "2026-11-24"
-    },
-    {
-      "name": "log-refinement.py",
-      "purpose": "append verified refinement records to .devin/refinements.log.jsonl",
-      "export_hash": "fd5ada81b5ac0e1184e03c1a5721911e2363d9ee6d99f5f248fcbaa009eaa846",
-      "exported_at": "2026-11-24"
     }
   ],
-  "script_count": 63,
+  "script_count": 64,
   "mcp_count": 1,
   "agent_count": 22,
   "tool_count": 28,
