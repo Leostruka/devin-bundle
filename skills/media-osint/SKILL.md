@@ -203,6 +203,13 @@ Re-run only the failed cells' stages (idempotent resume makes this cheap).
   never reproduce tokens, cookies, or `.env` values found in metadata.
 - **Deterministic before LLM:** extraction (1-4) is pure CLI; only card
   writing (5) uses model judgment.
+- **Download resilience** (evidence: batch1 Prism review): prefer resume
+  over restart for partial downloads (`yt-dlp --continue` is default for
+  its own `.part` files - never delete them on failure); when a checksum
+  or etag is available from the platform, record it in `source_map.json`;
+  frame-accurate clipping is an ffmpeg operation (`-ss` before `-i` for
+  fast seek, accurate seek after `-i` when frame precision matters), not
+  a re-download.
 
 ## Output contract
 

@@ -638,7 +638,7 @@
       "name": "impeccable",
       "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
       "purpose": "Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template.",
-      "export_hash": "bfea2a6c233f07425ca99082a969a7b535d881bb581a1bfc9425c1cd32537b31",
+      "export_hash": "bbe2419c21cf40370624ea22030e63bde92272ec937dc7d6b455e67e06052ad5",
       "exported_at": "2026-11-14T17:54:35.340780"
     },
     {
@@ -783,7 +783,7 @@
       "name": "media-osint",
       "source": "devin-bundle",
       "purpose": "Use when running OSINT or multimodal evidence extraction over media sources - YouTube videos, Instagram/TikTok reels, podcasts, or mixed URL lists - needing a captions digest, ffmpeg contact sheets, local ASR transcripts, per-source evidence cards, and a final verification table; also for deep media research feeding idea refinement, competitor teardown, or devin-bundle analysis.",
-      "export_hash": "da511d16c7a61e76788b3afca848a835027f5ac29bd31c9dc5c281b8bd2fe752"
+      "export_hash": "af26b3a973407e65afd17e08b2feb3ae0793caebc9dc53ac03f0e099457ec9b4"
     },
     {
       "name": "media-tools",

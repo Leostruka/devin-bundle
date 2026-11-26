@@ -164,6 +164,7 @@ After each pass that produces code changes: run the project's tests/build; commi
 
 ## Cross-skills
 
+- `prototype` - variant exploration upstream. Shared convention: design work persists in `.devin/design/<surface>/` (`brief.md`, `references/`, `variants/<name>/`, matrix, `decisions.md`, `approved/`) so references, rejected directions, and verdicts survive the chat instead of scrolling away (evidence: media-osint-20261126-yt2 spatial-canvas review).
 - `a11y-audit` - WCAG verification (contrast, focus, labels) before shipping.
 - `creative-engineering` - named visual styles/archetypes (CRT, dither, brutalist): load its retrieval step-0 and technical anatomy.
 - `context7` - named UI framework (React, Vue, Svelte, Tailwind, shadcn): fetch docs before proposing implementation.
