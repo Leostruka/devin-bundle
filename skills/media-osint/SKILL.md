@@ -17,7 +17,7 @@ visual read. Failures name source + stage + retry hint, never silent.
 
 ## Invocation
 
-`/media-osint <url-file|url ...> [--depth light|full] [--out <dir>] [--force]`
+`/media-osint <url-file|url ...> [--depth light|full] [--out <dir>] [--media-cache <dir>] [--force]`
 
 - Input is a file (one URL per line, `#` comments allowed) or inline URLs.
 - `--out` defaults to `.devin/research/media-osint-<YYYYMMDD>/`; if the dir
@@ -36,6 +36,23 @@ Missing whisper binary/model: run `python extensions/asr/bootstrap.py`
 once, then continue. `transcribe.py` is credential-free and offline; it is
 the ONLY ASR path. Credential-requiring platforms go through yt-dlp's normal
 auth flow; never scrape, never embed cookies in commands, never log tokens.
+
+**Disk preflight before any download** (both 2026-11-26 runs hit a full
+disk mid-pipeline): estimate needed space as ~100-300MB per hour of video
+and check free space on the target drive. If the `--out` drive cannot hold
+the media, pick one explicitly:
+
+- `--media-cache <dir>` on a drive with space (the media cache is
+  disposable; only text artifacts must live in `--out`); or
+- **stream mode**: do not store full video at all. Pipe yt-dlp low-res
+  format directly into ffmpeg for contact sheets, and download
+  audio-only (`-f worstaudio`) for ASR. Verified working on the
+  2026-11-26-yt2 run: 30 contact sheets from two videos with zero full
+  video stored.
+
+Record the chosen mode and the real cache path in the final report; a
+report that says `media/` when the files are actually in a temp cache is
+a verification defect.
 
 ## Pipeline
 
@@ -71,6 +88,15 @@ entries (prefer manual subs, then auto). Write ONE `captions.md` digest,
 per source: id, lang, and timestamped lines, instead of N separate reads.
 Sources with no captions are marked `captions: none` in the digest.
 
+YouTube rate-limits caption fetches with HTTP 429 after a few downloads
+(observed on both 2026-11-26 runs). The fallback order is: one retry after
+a pause -> try a different caption language variant -> accept the English
+auto-caption when present -> mark `captions: 429-limited` and rely on ASR.
+Official captions, when present, outrank ASR as transcript evidence: on
+the yt2 run ASR both degenerated (repeated placeholder text on a short EN
+video) and timed out (360s on a 31min video) while captions were complete.
+Record which evidence is primary per source in the verify table.
+
 ### 3. Contact sheets (ffmpeg)
 
 One ffmpeg pass per video, argv-list (never shell-string concat; paths may
@@ -86,6 +112,13 @@ until the sheet count covers duration/3s / 16 frames per sheet. The proven
 run emitted `<id>_NN.jpg` per sheet. A 0-duration/empty video yields 0
 sheets without crashing; record it as `visual: empty`.
 
+**Persist visual observations incrementally.** Write `frames/<id>.notes.md`
+(or the VISUAL card section draft) after each sheet batch is read, not at
+the end of the run. On the yt2 run the sheets were read but no notes were
+written before a context compaction; the entire visual pass had to be
+redone from disk. Visual reads that exist only in conversation context are
+not evidence.
+
 ### 4. Local ASR (extensions/asr)
 
 Per media file, one process (no model reload between files):
@@ -99,6 +132,16 @@ python extensions/asr/transcribe.py "media/<id>.<ext>" --model small --lang auto
   garbles PT-BR); `--lang auto` lets whisper detect. The envelope carries
   `detected_lang`/`lang_confidence`/`warnings`; propagate `warnings` into
   the card.
+- ASR is slow on CPU: a 31-minute video did not finish within 360s with
+  `small` on the yt2 run. Videos over ~10 minutes need a per-file timeout
+  decision upfront:
+  chunk the audio, accept a longer window, or declare captions-primary when
+  official captions exist. A timeout is recorded as `ok:false` data with the
+  elapsed seconds, never retried blindly in a loop.
+- Degenerate output is a failure mode: repeated placeholder text
+  ("(speaking in foreign language)" x N) means the audio or detection
+  failed, even when `ok:true`. Spot-check the first transcript lines before
+  trusting the batch.
 - `ok:false` is data, not a crash: record `asr: <error>` on the source and
   continue. A silent-audio file returns `ok:true` with empty `text`; mark
   `asr: no-speech`.
@@ -163,8 +206,18 @@ Re-run only the failed cells' stages (idempotent resume makes this cheap).
 
 ## Output contract
 
-Deliverables under `--out`: `links.txt`, `meta/`, `media/`, `frames/`,
-`transcripts/`, `captions.md`, `cards/`, `verify.md`, `dl_errors.log`.
+Deliverables under `--out`: `links.txt`, `meta/`, `media/` (or the declared
+cache path), `frames/`, `transcripts/`, `captions.md`, `cards/`, `verify.md`,
+`dl_errors.log`.
 Final report to the user: counts per stage (downloaded/failed, sheets,
-transcripts ok/empty/failed), card count, verify-table pass rate, and every
+transcripts ok/empty/failed), card count, verify-table pass rate, the real
+media cache path when it deviates from `media/` inside `--out`, which
+transcript evidence is primary per source (captions vs ASR), and every
 `dl_errors.log` entry summarized by stage.
+
+**Retention:** full media files are disposable cache, not evidence. The
+evidence is metadata, captions, transcripts, contact sheets, notes, and
+cards - all small text or images. After the verify table passes, media may
+be deleted or left for a stated retention reason (re-ASR with a bigger
+model, frame re-extraction); either way the report says which. Never let a
+finished run silently hold gigabytes.
