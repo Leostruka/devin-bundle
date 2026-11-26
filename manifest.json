@@ -295,6 +295,14 @@
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
+      "name": "council",
+      "source": "created:v3.x media-osint-20261126-yt2 tstack-council adapted",
+      "purpose": "Use when a high-stakes change needs independent multi-model review before merge - several strong reviewers in parallel, iterating rounds until they are satisfied, with scores and costs ledgered. Distinct from arena (competing builders); council reviews one finished change.",
+      "original_path": "%APPDATA%\\devin\\skills\\council",
+      "export_hash": "e4de0f61efd179f436edcb1d0afbc0e4bbf91db7bedab68843ee0490c44e01ed",
+      "exported_at": "2026-11-26T10:34:58.336989+00:00"
+    },
+    {
       "name": "create-verification-skill",
       "source": "vendored:v3.19.x cursor/plugins pstack (MIT), adapted",
       "purpose": "Use when a project needs a scripted way to drive the real app the way a user does and prove behavior, or when asked to make a control/verification skill for the repo. Generates a project-local verify-<app> skill.",
@@ -1420,7 +1428,7 @@
       "original_path": "%APPDATA%\\devin\\skills\\prune-tests"
     }
   ],
-  "skill_count": 193,
+  "skill_count": 194,
   "rule_count": 21,
   "scripts": [
     {

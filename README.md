@@ -146,7 +146,7 @@ O arquivo de projeto `.devin/global_rules.md` complementa as regras globais para
 
 ### 2. Skills
 
-As 193 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
+As 194 skills são workflows invocáveis em `skills/<nome>/SKILL.md`. O `manifest.json` mantém nome, origem e finalidade, enquanto o diretório em disco é a fonte descoberta pelo exportador.
 
 As skills são carregadas sob demanda. A forma recomendada de escolher é:
 
@@ -638,7 +638,7 @@ Registre esta regra de negócio na memória do projeto e me mostre o texto antes
 | Documento | Conteúdo |
 |---|---|
 | [AGENTS.md](AGENTS.md) | Regras globais do agente |
-| [manifest.json](manifest.json) | Inventário e metadados das 193 skills |
+| [manifest.json](manifest.json) | Inventário e metadados das 194 skills |
 | [.devin/docs/SKILL-TIERS.md](.devin/docs/SKILL-TIERS.md) | Skills por domínio e custo de contexto |
 | [.devin/docs/TOOLS-MAP.md](.devin/docs/TOOLS-MAP.md) | Ferramentas, subagentes, hooks, modelos e MCP |
 | [.devin/docs/MODEL-GUIDE.md](.devin/docs/MODEL-GUIDE.md) | Política e características dos modelos |
