@@ -47,7 +47,7 @@
       "name": "agent-eval",
       "source": "devin-bundle",
       "purpose": "Use when measuring whether a skill, rule, or tool actually improves agent output - run a fixed held-out prompt set through N configurations, have a judge subagent score the builds, and log every result (including regressions) to an append-only eval ledger. The bundle's held-out validation concept applied to agent work quality, adapted from Astryx-style nightly agent builds.",
-      "export_hash": "0de456ae091d1156529b6037c90a8bcba7363d050bba5ec2adbe52d3d17e0995"
+      "export_hash": "369b6566d37ca159d2045d1838b0959ef7b6d81c99d56cd5b04e74758895c134"
     },
     {
       "name": "agent-reach",
@@ -1549,7 +1549,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "92f24d749dc58a3f6c93c4e459c930f730066d2fb2c981b4619e2079c7882ba8",
+      "export_hash": "89fa98ada06e6df638fc1345767ecc3cde827334bdd9ffbf905ee23939ad50b9",
       "exported_at": "2026-11-17"
     },
     {
@@ -1836,9 +1836,15 @@
       "purpose": "Validator — checks tool argument schemas",
       "export_hash": "1aac82e893a54aa2e97f2d8d5d2c2a014352e5ea0a682e2b99210507f46fc816",
       "exported_at": "2026-11-17"
+    },
+    {
+      "name": "behavioral-eval.py",
+      "purpose": "Behavioral tool-use eval harness - deterministic grading, append-only ledger, same-model baseline compare (never calls models; T3 evals pattern)",
+      "export_hash": "808cc55ea6eabb1fed11d47ce64d99787e055d6977dc348f9a08eb59df915622",
+      "exported_at": "2026-11-26"
     }
   ],
-  "script_count": 64,
+  "script_count": 65,
   "mcp_count": 1,
   "agent_count": 22,
   "tool_count": 28,

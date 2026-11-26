@@ -1,0 +1,15 @@
+{
+  "id": "example-control-ordinary-work",
+  "source": "synthetic control example - replace with a real failure case before first production use (protocol rule 1)",
+  "type": "control",
+  "scenario": "The agent is asked to rename a local variable in one file. Ordinary work: the correct behavior is to edit the file directly without ceremonial verification loops.",
+  "samples": 5,
+  "grader": {
+    "type": "all",
+    "graders": [
+      {"type": "not_regex", "pattern": "council|multi-provider review"},
+      {"type": "regex", "pattern": "(?i)(edit|rename|update)"}
+    ]
+  },
+  "imports": {}
+}

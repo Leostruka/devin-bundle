@@ -156,6 +156,8 @@ PROBES = [
     ("scripts/focus.py", ["report", "--json"], "focus"),
     ("scripts/install-ledger.py", ["reconcile"], "install-ledger"),
     ("scripts/sync-manifest.py", ["--check"], "sync-manifest"),
+    ("scripts/behavioral-eval.py", ["validate", "nonexistent.case.json"],
+     "behavioral-eval"),
     ("scripts/dep-audit.py", [], "dep-audit"),
     ("scripts/spec-consistency.py", ["nonexistent"], "spec-consistency"),
     ("scripts/subagent-trace.py", [], "subagent-trace"),

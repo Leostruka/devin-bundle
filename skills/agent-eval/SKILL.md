@@ -102,6 +102,24 @@ Rules for behavioral cases:
     compress, then re-run the same cases. Context reduction without the
     behavioral gate is how tools silently stop being used correctly.
 
+## Harness: scripts/behavioral-eval.py
+
+The deterministic core is implemented; it never calls models (CI rule 8):
+
+- `validate <case.json>...` - schema-check cases in CI.
+- `grade --case C --sample F` - grade one sampled output file.
+- `record --case --model --run --idx --passed [--cost]` - append-only ledger
+  `.devin/ledgers/behavioral-eval.jsonl` with cost accounting (rule 9).
+- `compare --baseline R1 --candidate R2` - per-case pass rates, same-model
+  enforced, exits non-zero on regression.
+
+Cases live in `evals/cases/*.case.json`. Graders import live tool text via
+`${import:name}` placeholders resolved from the case's `imports` map -
+never paste tool text into a case (rule 4). Sampling is external by
+design: run the scenario N times through whatever model path is under
+test, save each output to a file, then grade + record. A case fails when
+half or more of its samples fail (rule 5).
+
 ## Cross-skills
 
 - `/gates` + `/autonomous-gates` - ledger discipline and done-claims.
