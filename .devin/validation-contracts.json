@@ -44,5 +44,22 @@
   ],
   ".devin/docs/TOOLS-MAP.md": [
     "tests/validation/test_tools_map_hooks.py"
+  ],
+  "skills/agent-eval/SKILL.md": [
+    "tests/validation/test_instruction_doc_contracts.py::test_agent_eval_skill_documents_sample_command",
+    "tests/validation/test_instruction_doc_contracts.py::test_behavioral_harness_excludes_devin_from_digest",
+    "tests/validation/test_instruction_doc_contracts.py::test_behavioral_harness_runs_in_process"
+  ],
+  "skills/council/SKILL.md": [
+    "tests/validation/test_instruction_doc_contracts.py::test_council_skill_requires_adversarial_review_for_security_narrowing"
+  ],
+  "skills/media-osint/SKILL.md": [
+    "tests/validation/test_instruction_doc_contracts.py::test_media_osint_documents_disk_preflight_and_429"
+  ],
+  "skills/inference-optimisation/SKILL.md": [
+    "tests/validation/test_instruction_doc_contracts.py::test_inference_optimisation_carries_mit_attribution"
+  ],
+  ".devin/plans/2026-11-26-video-self-improvement.md": [
+    "tests/validation/test_instruction_doc_contracts.py::test_video_improvement_plan_records_i09_scope_honestly"
   ]
 }
