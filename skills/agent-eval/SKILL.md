@@ -62,6 +62,46 @@ Benches live under `.devin/evals/<bench>/` (gitignored, local-only):
 - "Improved" requires: same bench, same rubric, higher mean, and no
   per-prompt regression left unexplained.
 
+## Behavioral tool-use evals (MCP schemas, instructions, tool text)
+
+A different eval type from quality benches: not "is the output good" but
+"does the agent use the tool correctly in scenario X". Use it whenever a
+change edits what a model sees or does: agent instructions, MCP tool
+descriptions and schemas, tool result text, generated titles. A unit test
+cannot catch these regressions because model output varies run to run and
+a small copy change can move it. Pattern verified from T3 Code's merged
+evals package (PR #24635, evidence
+`.devin/research/media-osint-20261126-yt2/external/t3code_evals_README.md`).
+
+Rules for behavioral cases:
+
+1. **Cases come from real failures.** Mine agent histories, review
+   threads, and incidents. Each case names its source (PR, issue, thread).
+   A case reproduces a real bad experience or guards a real good one.
+2. **Add the case before the fix.** It must fail on the old text and pass
+   on the new. Prefer fixing the tool text over loosening the case.
+3. **Controls are mandatory.** Cases where the correct action is ordinary
+   work catch fixes that overcorrect (a fix that makes the agent use the
+   tool everywhere is not a fix).
+4. **Import from source, never copy.** The eval imports prompts, tool
+   descriptions, and schemas from the code under test. Copied text makes
+   the eval test a snapshot, not the current behavior.
+5. **Repeated samples.** Model output varies; run each case several
+   times. A case fails when half or more of its samples fail.
+6. **Compare against a baseline on the same model**, never against an
+   absolute intuition or a different model's numbers.
+7. **No user data in fixtures.** Synthetic paths and accounts only; read
+   every captured fixture before committing it.
+8. **Graders are plain logic tested in CI.** CI unit-tests the grader and
+   typechecks the harness; CI never calls paid models.
+9. **Cost accounting.** Record model, sample count, and cost per run in
+   the ledger. Run only the cases a change touches until they pass, then
+   one full run per model before merge.
+10. **Compress last.** When trimming tool descriptions for context
+    savings, correctness pins first: behavior green on the full text, then
+    compress, then re-run the same cases. Context reduction without the
+    behavioral gate is how tools silently stop being used correctly.
+
 ## Cross-skills
 
 - `/gates` + `/autonomous-gates` - ledger discipline and done-claims.
@@ -69,3 +109,5 @@ Benches live under `.devin/evals/<bench>/` (gitignored, local-only):
 - `/dispatching-parallel-agents` - builder/judge dispatch mechanics.
 - `tests/held-out/` - the repo-side analogue; benches must not reuse
   validation prompts the agent tuned against.
+- `mcp-governance` + `mcp-pin` - the context-cost and drift-detection
+  halves of MCP stewardship; this skill adds the behavioral half.
