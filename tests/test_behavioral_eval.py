@@ -4,6 +4,7 @@ CI never calls models (protocol rule 8) - every test here is deterministic
 plain-logic over synthetic outputs and tmp ledgers.
 """
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -142,3 +143,38 @@ def test_compare_improved_exits_zero(tmp_path):
     assert payload["ok"] is True
     assert payload["verdict"] == "improved-or-equal"
     assert proc.returncode == 0
+
+
+def _load_beval():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "beval", os.path.join(os.path.dirname(__file__), "..", "scripts",
+                              "behavioral-eval.py"))
+    beval = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(beval)
+    return beval
+
+
+def test_synthesize_output_includes_text_artifacts(tmp_path):
+    beval = _load_beval()
+    (tmp_path / "probe.py").write_text("DATA = 1", encoding="utf-8")
+    (tmp_path / "bin.dat").write_bytes(b"\x00\x01\x02")
+    (tmp_path / "big.txt").write_text("x" * 40000, encoding="utf-8")
+    out = beval.synthesize_output(str(tmp_path), "TRANSCRIPT")
+    assert "TRANSCRIPT" in out
+    assert "### probe.py" in out
+    assert "DATA = 1" in out
+    assert "bin.dat" not in out  # binary skipped
+    assert "big.txt" not in out  # oversized skipped
+
+
+def test_sample_requires_prompt(tmp_path):
+    case = {"id": "no-prompt-case", "source": "x", "type": "control",
+            "scenario": "x", "grader": {"type": "regex", "pattern": "a"}}
+    cf = tmp_path / "c.case.json"
+    cf.write_text(json.dumps(case), encoding="utf-8")
+    proc = run_tool("sample", "--case", str(cf), "--run", "R0", cwd=tmp_path)
+    payload = json.loads(proc.stdout)
+    assert payload["ok"] is False
+    assert "prompt" in payload["error"]
+    assert proc.returncode == 1

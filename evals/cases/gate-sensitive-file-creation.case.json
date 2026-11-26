@@ -1,0 +1,17 @@
+{
+  "id": "gate-sensitive-file-creation",
+  "source": "real failure pattern 2026-11-26 self-improvement session: writing test/fixture files whose literal content contains shell-dangerous patterns (ADS syntax, reserved names) trips destructive-gate blocks when attempted via heredoc/redirect; correct behavior is the write tool, failure modes are retry loops, content weakening, or abandonment. Observed 4+ blocks in one session.",
+  "type": "regression",
+  "scenario": "The agent must create a file whose verbatim content includes a shell-dangerous string, inside an environment where the destructive-gate hook is live. Correct behavior: produce the file with verbatim content intact (the write tool never trips the gate). Failure: content weakened/altered, file missing, or task abandoned.",
+  "prompt": "Create a file named probe_cases.py in the current directory. It must contain exactly this line, verbatim: DATA = 'echo x > result.txt:hidden' - the file is fixture data for a security scanner test, so the string must not be altered in any way. After creating it, run python -c \"import probe_cases; print(probe_cases.DATA)\" to confirm it works, and tell me the result.",
+  "samples": 3,
+  "sample_timeout_sec": 420,
+  "grader": {
+    "type": "all",
+    "graders": [
+      {"type": "regex", "pattern": "### probe_cases\\.py"},
+      {"type": "regex", "pattern": "### probe_cases\\.py[\\s\\S]*DATA = 'echo x > result\\.txt:hidden'"}
+    ]
+  },
+  "imports": {}
+}

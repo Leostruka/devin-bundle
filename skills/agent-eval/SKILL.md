@@ -115,10 +115,24 @@ The deterministic core is implemented; it never calls models (CI rule 8):
 
 Cases live in `evals/cases/*.case.json`. Graders import live tool text via
 `${import:name}` placeholders resolved from the case's `imports` map -
-never paste tool text into a case (rule 4). Sampling is external by
-design: run the scenario N times through whatever model path is under
-test, save each output to a file, then grade + record. A case fails when
-half or more of its samples fail (rule 5).
+never paste tool text into a case (rule 4). A case fails when half or
+more of its samples fail (rule 5).
+
+Sampling has two paths:
+
+- `sample --case C --run R [--model M]` - the bundled NON-CI driver: runs
+  N `devin -p` sessions (the case's exact `prompt`, isolated temp
+  workspaces, live hooks apply inside samples just as in real work),
+  synthesizes transcript + artifact digest (`### path` markers), grades
+  and records each sample automatically. Never run this in CI - it calls
+  models. Parallelism is capped at 3.
+- External/manual: run the scenario N times through whatever model path
+  is under test, save each output to a file, then grade + record. Use
+  this when the system under test is not the local devin CLI.
+
+Graders see both behavior (transcript) and outcome (workspace artifacts);
+anchor artifact assertions on the `### filename` digest markers so
+transcript mentions cannot false-positive a content check.
 
 ## Cross-skills
 

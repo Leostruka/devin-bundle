@@ -16,6 +16,14 @@ Modes:
   compare --baseline R1 --candidate R2
                              per-case pass-rate comparison, same model
                               required (cross-model numbers are meaningless)
+  sample --case C --run R [--model M] [--samples N] [--timeout S]
+                             NON-CI driver: run N `devin -p` sessions in
+                             isolated workspaces, synthesize transcript +
+                             artifact digest, grade and record each. This
+                             is the external sampler the protocol refers
+                             to; it calls models and must never run in CI.
+                             Everything it feeds (grade/record/compare)
+                             stays deterministic and CI-testable.
 
 Exit non-zero on any failure (envelope v2 contract).
 """
@@ -23,8 +31,11 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bundle_envelope import bind
@@ -192,12 +203,76 @@ def compare_runs(baseline, candidate, entries):
             "verdict": "regressed" if regressions else "improved-or-equal"}, None
 
 
+def synthesize_output(workspace, transcript):
+    """Grading input: the sample transcript plus a deterministic digest of
+    text artifacts the sampled agent produced in its workspace. Graders
+    therefore see both behavior (transcript) and outcome (files) without
+    any parsing ambiguity. Binary/large/generated files are skipped."""
+    parts = [transcript, "\n\n--- workspace artifacts ---"]
+    skip_dirs = {".git", "__pycache__", "node_modules", ".venv"}
+    for dirpath, dirnames, filenames in os.walk(workspace):
+        dirnames[:] = [d for d in sorted(dirnames) if d not in skip_dirs]
+        for fn in sorted(filenames):
+            full = os.path.join(dirpath, fn)
+            rel = os.path.relpath(full, workspace)
+            try:
+                if os.path.getsize(full) > 32768:
+                    continue
+                with open(full, encoding="utf-8", errors="strict") as fh:
+                    content = fh.read()
+                if "\x00" in content:
+                    continue  # null byte = binary, not inspectable text
+            except (OSError, UnicodeDecodeError):
+                continue
+            parts.append(f"### {rel}\n{content[:4000]}")
+    return "\n".join(parts)
+
+
+def run_one_sample(case, idx, model, timeout):
+    """Run one devin -p session in an isolated temp workspace. Returns
+    (synthesized_output, meta). The bundle's live hooks apply inside the
+    sample exactly as they do in real work - that is the point."""
+    workspace = tempfile.mkdtemp(prefix=f"beval-{case['id']}-{idx}-")
+    for rel, content in (case.get("workspace_files") or {}).items():
+        dest = os.path.join(workspace, rel)
+        os.makedirs(os.path.dirname(dest) or workspace, exist_ok=True)
+        with open(dest, "w", encoding="utf-8") as fh:
+            fh.write(content)
+    cmd = ["devin", "-p", case["prompt"], "--permission-mode",
+           case.get("permission_mode", "smart")]
+    if model:
+        cmd += ["--model", model]
+    try:
+        proc = subprocess.run(cmd, cwd=workspace, capture_output=True,
+                              text=True, encoding="utf-8", errors="replace",
+                              timeout=timeout)
+        transcript = proc.stdout + ("\n[stderr]\n" + proc.stderr
+                                    if proc.stderr.strip() else "")
+        timed_out = False
+    except subprocess.TimeoutExpired:
+        transcript = "[TIMEOUT]"
+        timed_out = True
+    output = synthesize_output(workspace, transcript)
+    meta = {"workspace": workspace, "timed_out": timed_out, "idx": idx}
+    return output, meta
+
+
 def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="mode", required=True)
 
     p_val = sub.add_parser("validate")
     p_val.add_argument("cases", nargs="+")
+
+    p_smp = sub.add_parser("sample")
+    p_smp.add_argument("--case", required=True)
+    p_smp.add_argument("--run", required=True,
+                       help="run id recorded to the ledger")
+    p_smp.add_argument("--model", default=None)
+    p_smp.add_argument("--samples", type=int, default=None,
+                       help="override the case's sample count")
+    p_smp.add_argument("--timeout", type=int, default=None,
+                       help="per-sample wall-clock cap in seconds")
 
     p_grade = sub.add_parser("grade")
     p_grade.add_argument("--case", required=True)
@@ -264,6 +339,54 @@ def main():
             fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
         print(_dumps({"ok": True, "recorded": entry}))
         return 0
+
+    if args.mode == "sample":
+        try:
+            case = load_case(args.case)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(_dumps({"ok": False, "error": str(exc)}))
+            return 1
+        errors = validate_case(case, args.case)
+        if errors:
+            print(_dumps({"ok": False, "errors": errors}))
+            return 1
+        if not isinstance(case.get("prompt"), str) or not case["prompt"]:
+            print(_dumps({"ok": False, "error":
+                          "case has no prompt - sampling needs the exact "
+                          "task text, not just a scenario description"}))
+            return 1
+        n = args.samples or case.get("samples", 5)
+        timeout = args.timeout or case.get("sample_timeout_sec", 420)
+        imported = load_imports(case, os.path.dirname(args.case))
+        model = args.model or "default"
+
+        def one(idx):
+            output, meta = run_one_sample(case, idx, args.model, timeout)
+            passed, detail = apply_grader(case["grader"], output, imported)
+            return idx, passed, detail, meta
+
+        results = []
+        with ThreadPoolExecutor(max_workers=min(n, 3)) as pool:
+            for idx, passed, detail, meta in pool.map(one, range(n)):
+                entry = {"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                                             time.gmtime()),
+                         "case": case["id"], "model": model,
+                         "run": args.run, "idx": idx, "passed": passed,
+                         "cost_tokens": 0}
+                os.makedirs(os.path.dirname(LEDGER), exist_ok=True)
+                with open(LEDGER, "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+                results.append({"idx": idx, "passed": passed,
+                                "timed_out": meta["timed_out"],
+                                "detail": detail[:200]})
+        passed_n = sum(1 for r in results if r["passed"])
+        # protocol: the case fails when half or more samples fail
+        case_passed = passed_n * 2 > len(results)
+        print(_dumps({"ok": True, "case": case["id"], "run": args.run,
+                      "model": model, "passed": passed_n,
+                      "total": len(results), "case_passed": case_passed,
+                      "samples": results}))
+        return 0 if case_passed else 1
 
     if args.mode == "compare":
         entries = read_ledger()
