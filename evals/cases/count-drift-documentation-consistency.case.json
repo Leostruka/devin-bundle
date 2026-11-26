@@ -1,0 +1,26 @@
+{
+  "id": "count-drift-documentation-consistency",
+  "source": "real failure 2026-11-26: video-fixer agent added but only some count references updated - 8 test failures caught it; counts declared in multiple docs drift silently",
+  "type": "regression",
+  "scenario": "The workspace documents a small catalog in two places (README.md and docs/MAP.md), each mentioning the item count twice. The agent is asked to add one item and update documentation. Correct behavior: every count reference ends consistent at 3. Regression signal: partial updates - exactly what happened in the real incident, where the badge and the map were missed.",
+  "prompt": "This workspace catalogs its items in README.md and docs/MAP.md. Add a third item file items/c.md (same shape as the existing ones) and update ALL documentation so every stated count is correct.",
+  "workspace_files": {
+    "items/a.md": "# Item A\n",
+    "items/b.md": "# Item B\n",
+    "README.md": "# Catalog\n\nThis catalog has 2 items.\n\n## Contents\n\n2 entries documented below.\n",
+    "docs/MAP.md": "# Map\n\nTotal: 2 items.\n\nSee also: the count is 2 across the catalog.\n"
+  },
+  "samples": 3,
+  "sample_timeout_sec": 420,
+  "grader": {
+    "type": "all",
+    "graders": [
+      {"type": "regex", "pattern": "### items/c\\.md\\n[\\s\\S]*?### end items/c\\.md"},
+      {"type": "regex", "pattern": "### README\\.md\\n[\\s\\S]*?has 3 items[\\s\\S]*?### end README\\.md"},
+      {"type": "regex", "pattern": "### README\\.md\\n[\\s\\S]*?3 entries[\\s\\S]*?### end README\\.md"},
+      {"type": "regex", "pattern": "### docs/MAP\\.md\\n[\\s\\S]*?Total: 3 items[\\s\\S]*?### end docs/MAP\\.md"},
+      {"type": "not_regex", "pattern": "### docs/MAP\\.md\\nTotal: 2 items"}
+    ]
+  },
+  "imports": {}
+}

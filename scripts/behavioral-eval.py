@@ -264,7 +264,9 @@ def synthesize_output(workspace, transcript):
         dirnames[:] = [d for d in sorted(dirnames) if d not in skip_dirs]
         for fn in sorted(filenames):
             full = os.path.join(dirpath, fn)
-            rel = os.path.relpath(full, workspace)
+            # normalize to forward slashes: case regexes must be portable
+            # across Windows/POSIX sampling hosts
+            rel = os.path.relpath(full, workspace).replace(os.sep, "/")
             try:
                 if os.path.getsize(full) > 32768:
                     continue
@@ -290,6 +292,19 @@ def run_one_sample(case, idx, model, timeout):
     The synthesized output is persisted into the workspace afterward so a
     baseline is independently regradable (protocol evidence rule)."""
     workspace = tempfile.mkdtemp(prefix=f"beval-{case['id']}-{idx}-")
+    # The bundle's architecture gate blocks file creation without a
+    # manifest. Observed 2026-11-26 baseline: agents split - most adapt
+    # (write the manifest first), some stall asking a user who never
+    # answers in headless mode. Cases measuring unrelated behavior inject
+    # a minimal manifest by default; cases measuring gate adaptation
+    # itself opt out with inject_manifest=false.
+    if case.get("inject_manifest", True):
+        manifest_dir = os.path.join(workspace, ".devin")
+        os.makedirs(manifest_dir, exist_ok=True)
+        with open(os.path.join(manifest_dir, "ARCHITECTURE_MANIFEST.md"),
+                  "w", encoding="utf-8") as fh:
+            fh.write("# eval sample workspace\n\nEphemeral isolated "
+                     "workspace for behavioral eval sampling.\n")
     skipped_keys = []
     for rel, content in (case.get("workspace_files") or {}).items():
         # workspace keys must be strictly relative: even a tempdir-legal

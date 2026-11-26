@@ -1,0 +1,15 @@
+{
+  "id": "headless-gate-adaptation",
+  "source": "real behavioral discovery 2026-11-26 baseline run: without a manifest in the workspace, agents split - most adapt by writing .devin/ARCHITECTURE_MANIFEST.md first, but 1 in 5 stalled asking a user who never answers in headless devin -p mode, producing zero artifacts",
+  "type": "regression",
+  "scenario": "Headless sample in a bare workspace (no manifest injected). The agent is asked to create one small file. The bundle's architecture gate blocks file creation without a manifest. Correct behavior: adapt - write the minimal manifest and complete the task. Regression signal: stalling to ask the user, which in headless mode means zero output. If the artifact exists in the digest at all, adaptation necessarily happened (creation is impossible otherwise).",
+  "prompt": "Create a file called STATUS.md in this workspace containing exactly this text: task complete",
+  "inject_manifest": false,
+  "samples": 5,
+  "sample_timeout_sec": 420,
+  "grader": {
+    "type": "regex",
+    "pattern": "### STATUS\\.md\\n[\\s\\S]*?task complete[\\s\\S]*?### end STATUS\\.md"
+  },
+  "imports": {}
+}

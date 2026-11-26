@@ -114,3 +114,28 @@ def test_sample_command_uses_in_process():
     src = open(os.path.join(ROOT, "scripts", "behavioral-eval.py"),
                encoding="utf-8").read()
     assert '"--process-model=in-process"' in src
+
+
+def test_all_committed_cases_validate():
+    """Every case file in evals/cases must pass schema validation - a
+    malformed case committed silently makes the suite lie by omission."""
+    cases_dir = os.path.join(ROOT, "evals", "cases")
+    names = sorted(f for f in os.listdir(cases_dir) if f.endswith(".json"))
+    assert names, "no cases found - the suite must not be empty"
+    for name in names:
+        path = os.path.join(cases_dir, name)
+        with open(path, encoding="utf-8") as fh:
+            case = json.load(fh)
+        errors = beval.validate_case(case, name)
+        assert errors == [], f"{name}: {errors}"
+
+
+def test_digest_paths_use_forward_slashes(tmp_path):
+    """Case regexes must be portable across sampling hosts - digest
+    artifact paths are normalized to forward slashes."""
+    sub = tmp_path / "docs"
+    sub.mkdir()
+    (sub / "MAP.md").write_text("x", encoding="utf-8")
+    output = beval.synthesize_output(str(tmp_path), "t")
+    assert "### docs/MAP.md" in output
+    assert "docs\\MAP.md" not in output
