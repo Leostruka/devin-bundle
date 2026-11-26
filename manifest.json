@@ -299,7 +299,7 @@
       "source": "created:v3.x media-osint-20261126-yt2 tstack-council adapted",
       "purpose": "Use when a high-stakes change needs independent multi-model review before merge - several strong reviewers in parallel, iterating rounds until they are satisfied, with scores and costs ledgered. Distinct from arena (competing builders); council reviews one finished change.",
       "original_path": "%APPDATA%\\devin\\skills\\council",
-      "export_hash": "e4de0f61efd179f436edcb1d0afbc0e4bbf91db7bedab68843ee0490c44e01ed",
+      "export_hash": "63d673ed365a9d59dc6a7fc7c75977e92fc63181175e782c5a687ed190ca289c",
       "exported_at": "2026-11-26T10:34:58.336989+00:00"
     },
     {

@@ -53,6 +53,21 @@ asks. A normal change gets `code-review`, not a council.
   filed as separate issues, not fixed in this change. A council that keeps
   growing the diff never terminates.
 
+## Mandatory triggers (non-negotiable)
+
+- **Any narrowing, weakening, or exception added to a security control**
+  (destructive gate, hook denylist, auth check, sandbox boundary, parser
+  that gates execution) requires adversarial council review BEFORE merge,
+  not after. Green tests are not evidence here: they encode the threat
+  model the author already understood, and the failure mode is exactly
+  the bypass the author did not imagine. Verified incident 2026-11-26:
+  a regex heredoc-body stripper merged with 125 green tests while seven
+  working bypasses (verified artifact-creating probes) went unnoticed
+  until post-merge review.
+- Delegates for a security narrowing must run real exploitation probes,
+  not just read the diff: construct the input that defeats the narrowing
+  and execute it. A review without a working-or-refuted probe is incomplete.
+
 ## Cost discipline
 
 - Set the budget before round 1: max rounds (default 3) and max spend.
