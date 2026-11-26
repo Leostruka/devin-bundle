@@ -54,12 +54,21 @@ def _load_module(name):
     return mod
 
 
-def test_msys_drive_translation_is_nt_scoped():
+@pytest.mark.skipif(os.name != "nt", reason="drive-letter translation "
+                    "assertions require ntpath semantics - posixpath never "
+                    "roots D:\\... as a drive, so the prefix check cannot "
+                    "hold on a real POSIX host")
+def test_msys_drive_translation_on_nt():
     mod = _load_module("architecture_gate")
     cmd = "touch /d/work/x.py"
     nt_targets = list(mod._abs_targets(cmd))
     assert any(t.startswith("D:") or t.startswith("d:")
                for t in nt_targets), nt_targets
+
+
+def test_msys_drive_translation_skipped_on_posix():
+    mod = _load_module("architecture_gate")
+    cmd = "touch /d/work/x.py"
     saved = os.name
     try:
         os.name = "posix"

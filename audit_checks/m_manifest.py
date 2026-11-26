@@ -115,20 +115,25 @@ def c9d(ctx):
     manifest_skills = ctx.manifest.get('skills', [])
     hash_mismatch = []
     missing = []
+    no_hash = []
     for s in manifest_skills:
         path = os.path.join('skills', s['name'], 'SKILL.md')
         if not os.path.isfile(path):
             missing.append(s['name'])
-        elif s.get('export_hash'):
-            if not text_hash_matches(path, s['export_hash']):
-                hash_mismatch.append(s['name'])
+        elif not s.get('export_hash'):
+            no_hash.append(s['name'])
+        elif not text_hash_matches(path, s['export_hash']):
+            hash_mismatch.append(s['name'])
     if missing:
         ctx.errors.append('manifest skills missing on disk: ' + ', '.join(missing))
         print('  FAIL skills missing: ' + ', '.join(missing))
-    elif hash_mismatch:
+    if no_hash:
+        ctx.warnings.append('manifest skills without export_hash (repair: python scripts/sync-manifest.py): ' + ', '.join(no_hash))
+        print('  WARN skills missing export_hash: ' + ', '.join(no_hash))
+    if hash_mismatch:
         ctx.warnings.append('manifest skill hash mismatch (repair: python scripts/sync-manifest.py): ' + ', '.join(hash_mismatch))
         print('  WARN skill hash mismatch: ' + ', '.join(hash_mismatch))
-    else:
+    if not missing and not no_hash and not hash_mismatch:
         print('  OK  manifest skill hashes consistent (' + str(len(manifest_skills)) + ' skills)')
 
     # 10. No unmasked secrets

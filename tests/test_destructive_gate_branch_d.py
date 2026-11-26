@@ -59,12 +59,27 @@ def unmerged_branch():
     _git("branch", "-D", name)
 
 
+def _diag(cmd, proc):
+    cherry = ""
+    for tok in cmd.split():
+        if tok.startswith("gate7-test"):
+            c = _git("cherry", "HEAD", tok)
+            cherry += (f"cherry {tok}: rc={c.returncode} "
+                       f"out={c.stdout[:120]!r} err={c.stderr[:120]!r} ")
+    return (f"rc={proc.returncode} out={proc.stdout[:200]!r} "
+            f"err={proc.stderr[:200]!r} {cherry}")
+
+
 def test_merged_branch_allowed(merged_branch):
-    assert run_gate(f"git branch -D {merged_branch}").returncode == 0
+    cmd = f"git branch -D {merged_branch}"
+    proc = run_gate(cmd)
+    assert proc.returncode == 0, _diag(cmd, proc)
 
 
 def test_unmerged_branch_blocked(unmerged_branch):
-    assert run_gate(f"git branch -D {unmerged_branch}").returncode == 2
+    cmd = f"git branch -D {unmerged_branch}"
+    proc = run_gate(cmd)
+    assert proc.returncode == 2, _diag(cmd, proc)
 
 
 def test_nonexistent_branch_blocked():

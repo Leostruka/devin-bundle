@@ -85,6 +85,17 @@ def test_ads_stream_target_blocked(cmd):
     assert run_gate(cmd).returncode == 2
 
 
+@pytest.mark.skipif(os.name != 'nt', reason='ADS only exists on NTFS')
+def test_ads_block_reason_includes_matched_text():
+    """2026-11-26: two false-positive blocks could not be reproduced because
+    the gate never revealed which substring matched. The reason now carries
+    the first 80 chars of the match so FPs are self-diagnosing."""
+    proc = run_gate('echo x > f.txt:hidden')
+    assert proc.returncode == 2
+    assert "Matched" in proc.stdout
+    assert "f.txt:" in proc.stdout
+
+
 @pytest.mark.skipif(os.name != 'nt', reason='ADS gate is Windows-only')
 @pytest.mark.parametrize("cmd", [
     "echo x > 'C:\\dir\\file.txt'",
