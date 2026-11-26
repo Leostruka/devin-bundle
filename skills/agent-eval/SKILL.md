@@ -125,7 +125,10 @@ Sampling has two paths:
   workspaces, live hooks apply inside samples just as in real work),
   synthesizes transcript + artifact digest (`### path` markers), grades
   and records each sample automatically. Never run this in CI - it calls
-  models. Parallelism is capped at 3.
+  models. Parallelism is capped at 3. Known limitation: `devin -p` does
+  not expose token usage in machine-readable output, so cost_tokens is
+  recorded as 0 until a usage source exists; wall time and pass/fail are
+  still ledgered.
 - External/manual: run the scenario N times through whatever model path
   is under test, save each output to a file, then grade + record. Use
   this when the system under test is not the local devin CLI.

@@ -47,7 +47,7 @@
       "name": "agent-eval",
       "source": "devin-bundle",
       "purpose": "Use when measuring whether a skill, rule, or tool actually improves agent output - run a fixed held-out prompt set through N configurations, have a judge subagent score the builds, and log every result (including regressions) to an append-only eval ledger. The bundle's held-out validation concept applied to agent work quality, adapted from Astryx-style nightly agent builds.",
-      "export_hash": "397000df623d92cd72adafcf6c9ab3fa6885a4e30fda2be7d48a90e9a6ff5732"
+      "export_hash": "a977ba2b45bdd302867c16c5fd3cbb7c1f77bf6075b87d79a24eb3eb1cc07d06"
     },
     {
       "name": "agent-reach",
