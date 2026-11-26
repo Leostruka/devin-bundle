@@ -114,6 +114,22 @@ evidence `.devin/research/2026-11-14-yt-batch3-reels10-survey.md` T1):
 4. Finalize the static design before the motion pass; motion references
    are screen recordings, not screenshots.
 5. Human approval is the ship gate, not the score.
+6. Hide the numeric target and the desired verdict from the judge's prompt.
+   A judge that knows the goal rationalizes toward it (target leakage;
+   evidence `.devin/research/media-osint-20261126-yt2/cards/xq0eB8vxeqk.md`).
+   The judge sees only the evidence packet: current screenshot, previous
+   screenshot, reference screenshots, rubric dimensions.
+7. Keep the evidence packet stable across rounds: same viewport, data,
+   theme, and navigation state for before/after captures. A score jump
+   caused by a changed viewport is measurement noise, not improvement.
+8. Score by rubric dimension, never one holistic number. Log each round in
+   `.devin/ledgers/design-<surface>.md`: judge, dimension scores, evidence
+   hash, cost. Repeated-pass variance is signal - high variance means the
+   rubric is ambiguous, not that the design improved.
+9. Escalate cheap-to-expensive: lint and a cheap judge first, strong judge
+   only near the acceptance threshold or on high-stakes surfaces. Unbounded
+   score-chasing is a cost failure mode (~956M tokens for one UI campaign
+   in the source evidence).
 
 ### State and motion coverage (eval R7-12)
 
