@@ -129,6 +129,27 @@ Sampling has two paths:
   not expose token usage in machine-readable output, so cost_tokens is
   recorded as 0 until a usage source exists; wall time and pass/fail are
   still ledgered.
+
+  Isolation contract (hardened 2026-11-26 after adversarial review):
+  `workspace_files` keys must be strictly relative - absolute paths and
+  `..` are skipped, never written; sessions run
+  `--process-model=in-process` so the timeout is a real wall-clock cap;
+  the synthesized grading output is persisted per sample as
+  `.beval-output.txt` beside the artifacts, and ledger entries carry
+  workspace/timed_out/wall_sec/detail/evidence. The digest excludes
+  `.devin` (hook state contains the prompt verbatim and would false-pass
+  content graders) and normalizes artifact paths to forward slashes, so
+  case regexes are portable across sampling hosts.
+
+  Sample workspaces inject a minimal `.devin/ARCHITECTURE_MANIFEST.md`
+  by default: without it the architecture gate blocks all file creation
+  and samples measure gate friction instead of the case's behavior
+  (observed split in the first baseline - most agents adapt and write
+  the manifest, some stall asking a user who never answers in headless
+  mode). Cases measuring gate adaptation itself set
+  `inject_manifest: false`; for those, the artifact existing at all in
+  the digest proves adaptation happened, since creation is impossible
+  otherwise.
 - External/manual: run the scenario N times through whatever model path
   is under test, save each output to a file, then grade + record. Use
   this when the system under test is not the local devin CLI.
