@@ -589,7 +589,7 @@
       "source": "devin-bundle",
       "purpose": "Use when writing or reviewing .github/workflows YAML files or debugging CI. GitHub Actions security and best practices - SHA-pinned actions, least-privilege permissions, script injection via PR context, pull_request_target dangers, secrets and OIDC, cache poisoning, matrix and artifacts.",
       "original_path": "%APPDATA%\\\\devin\\\\skills\\\\github-actions",
-      "export_hash": "5b3313afc95d6d18750d8c78085084c7dc4041de213a2379b8672d40ce25bb06",
+      "export_hash": "3082063a636314bb6beb28e58f32250d850efe42e652a6c8454e2425cbce8bd4",
       "exported_at": "2026-10-30T14:43:55.745135"
     },
     {
@@ -1652,7 +1652,7 @@
     {
       "name": "no-em-dash.py",
       "purpose": "PreToolUse/Stop hook - blocks U+2014 in prose position within prose deliverables (md/txt/rst/ipynb writes, git/gh message files and text commands, prose diffs and untracked prose files); structural markdown uses allowed (table rows, dash bullets, quote attribution, fenced code); code, vendored extension data and binary files exempt",
-      "export_hash": "B1120A54A24AC40F4DBCC74E2F1F7E53005E3E7B4C498150B13EAC372CADC6F4",
+      "export_hash": "213dc03a32fae6be71c097f53cd6e3df69386ae12a0d114d4879c0e0a498acba",
       "exported_at": "2026-11-17"
     },
     {

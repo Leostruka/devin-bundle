@@ -15,7 +15,7 @@ CI/CD is the most common place to leak secrets and take supply-chain attacks: th
 - `pull_request` from a fork runs WITHOUT secrets (safe-ish); `pull_request_target` runs with secrets + write token ON FORK CODE = the most dangerous trigger in Actions. Only with restricted `types:` + checkout of the base (never the head) + minimal permissions, or an `environment:` with manual review.
 - `workflow_run`/`workflow_dispatch` with inputs: validate them (`type: choice` when possible).
 - `paths:`/`branches:` filters so a README change does not run the whole CI.
-- `concurrency:` to cancel redundant runs (`cancel-in-progress: true` on PRs).
+- `concurrency:` to cancel redundant runs (`cancel-in-progress: true` on PRs). Corollary for push cadence (reproduced 2026-11-26): with branch-scoped cancel-in-progress, every push to the same ref kills the previous run mid-verification - four consecutive pushes meant zero completed CI runs. Batch commits locally and push once per verification cycle; rapid-fire pushing is a CI-cost bug, not diligence.
 
 ## Permissions (the default is dangerous)
 

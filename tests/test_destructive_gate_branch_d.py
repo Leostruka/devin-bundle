@@ -27,7 +27,7 @@ def run_gate(cmd):
                           cwd=REPO)
 
 
-def _git(*args):
+def _git(*args, extra_env=None, stdin=None):
     # commit-tree needs a committer identity; CI runners have none.
     # Throwaway fixture objects only - never pushed, no attribution meaning.
     env = dict(os.environ)
@@ -35,15 +35,23 @@ def _git(*args):
     env.setdefault("GIT_COMMITTER_EMAIL", "gate7-fixture@localhost")
     env.setdefault("GIT_AUTHOR_NAME", "gate7-fixture")
     env.setdefault("GIT_AUTHOR_EMAIL", "gate7-fixture@localhost")
+    if extra_env:
+        env.update(extra_env)
     return subprocess.run(["git"] + list(args), capture_output=True,
                           text=True, encoding="utf-8", errors="replace",
-                          cwd=REPO, env=env)
+                          cwd=REPO, env=env, input=stdin)
 
 
 @pytest.fixture
 def merged_branch():
     name = "gate7-test-merged"
-    _git("branch", "-f", name, "HEAD~1")
+    r = _git("branch", "-f", name, "HEAD~1")
+    # CI diagnostics 2026-11-26: cherry reported "unknown commit" on macos/
+    # ubuntu while WSL passed - pin down whether fixture creation itself
+    # fails rather than guessing at gate behavior.
+    assert r.returncode == 0, f"branch -f failed: {r.stderr!r}"
+    v = _git("rev-parse", "--verify", name)
+    assert v.returncode == 0, f"created branch unverifiable: {v.stderr!r}"
     yield name
     _git("branch", "-D", name)
 
@@ -51,10 +59,37 @@ def merged_branch():
 @pytest.fixture
 def unmerged_branch():
     name = "gate7-test-unmerged"
-    tree = _git("rev-parse", "HEAD^{tree}").stdout.strip()
-    sha = _git("commit-tree", tree, "-m", "gate7 unmerged").stdout.strip()
+    # A root commit's patch-id is undefined/empty in some git versions
+    # (diff-tree without --root), so cherry can mark it '-' on CI while
+    # marking it '+' elsewhere - the observed inversion. Build a commit
+    # with a proper parent and a real content delta instead: the patch-id
+    # is then well-defined and unique.
+    parent = _git("rev-parse", "HEAD").stdout.strip()
+    assert parent
+    blob = _git("hash-object", "-w", "--stdin",
+                stdin="gate7 unmerged fixture\n").stdout.strip()
+    assert blob
+    idx = os.path.join(REPO, ".git", "gate7-test-index")
+    idx_env = {"GIT_INDEX_FILE": idx}
+    try:
+        r = _git("read-tree", "HEAD", extra_env=idx_env)
+        assert r.returncode == 0, f"read-tree: {r.stderr!r}"
+        r = _git("update-index", "--add", "--cacheinfo",
+                 f"100644,{blob},gate7-unmerged-fixture.txt",
+                 extra_env=idx_env)
+        assert r.returncode == 0, f"update-index: {r.stderr!r}"
+        tree = _git("write-tree", extra_env=idx_env).stdout.strip()
+        assert tree
+    finally:
+        if os.path.exists(idx):
+            os.unlink(idx)
+    sha = _git("commit-tree", tree, "-p", parent, "-m",
+               "gate7 unmerged").stdout.strip()
     assert sha
-    _git("branch", "-f", name, sha)
+    r = _git("branch", "-f", name, sha)
+    assert r.returncode == 0, f"branch -f failed: {r.stderr!r}"
+    v = _git("rev-parse", "--verify", name)
+    assert v.returncode == 0, f"created branch unverifiable: {v.stderr!r}"
     yield name
     _git("branch", "-D", name)
 
