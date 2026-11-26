@@ -130,6 +130,29 @@ def test_all_committed_cases_validate():
         assert errors == [], f"{name}: {errors}"
 
 
+def test_compare_disjoint_runs_are_incomparable():
+    """Two runs sharing no case have nothing being compared; a
+    pass-flavored verdict there is a lie by omission."""
+    entries = [
+        {"run": "r1", "case": "a", "model": "m", "passed": True},
+        {"run": "r2", "case": "b", "model": "m", "passed": True},
+    ]
+    result, err = beval.compare_runs("r1", "r2", entries)
+    assert err is None
+    assert result["verdict"] == "incomparable-no-overlapping-cases"
+    assert result["overlap"] == 0
+
+
+def test_compare_overlapping_regression_detected():
+    entries = [
+        {"run": "r1", "case": "a", "model": "m", "passed": True},
+        {"run": "r2", "case": "a", "model": "m", "passed": False},
+    ]
+    result, err = beval.compare_runs("r1", "r2", entries)
+    assert result["verdict"] == "regressed"
+    assert result["overlap"] == 1
+
+
 def test_digest_paths_use_forward_slashes(tmp_path):
     """Case regexes must be portable across sampling hosts - digest
     artifact paths are normalized to forward slashes."""

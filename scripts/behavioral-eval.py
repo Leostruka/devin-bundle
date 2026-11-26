@@ -237,16 +237,27 @@ def compare_runs(baseline, candidate, entries):
 
     table = []
     regressions = []
+    overlap = 0
     for case_id in cases:
         br, bn = rate(b, case_id)
         cr, cn = rate(c, case_id)
         row = {"case": case_id, "baseline": br, "candidate": cr,
                "baseline_samples": bn, "candidate_samples": cn}
         table.append(row)
-        if br is not None and cr is not None and cr < br:
-            regressions.append(case_id)
+        if br is not None and cr is not None:
+            overlap += 1
+            if cr < br:
+                regressions.append(case_id)
+    # disjoint runs share no case: there is literally nothing being
+    # compared, so a pass-flavored verdict would be a lie by omission
+    if overlap == 0:
+        verdict = "incomparable-no-overlapping-cases"
+    elif regressions:
+        verdict = "regressed"
+    else:
+        verdict = "improved-or-equal"
     return {"cases": table, "regressions": regressions,
-            "verdict": "regressed" if regressions else "improved-or-equal"}, None
+            "overlap": overlap, "verdict": verdict}, None
 
 
 def synthesize_output(workspace, transcript):

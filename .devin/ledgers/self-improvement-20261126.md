@@ -202,3 +202,19 @@ Tests: 8 new regression tests in tests/test_behavioral_eval_sandbox.py encode th
 - Reviewer be0e17c8: 13 findings, 12 resolvidos + probes adversariais, #9 divida aceita documentada
 - RESTA para closeout: (1) CI verde confirmar, (2) relatorio final commit final, (3) install final doctor 3/3, (4) encerrar as 18h ou antes se contexto esgotar
 - Deadline: 18:00 Brasilia. Contexto critico - trabalhar enxuto.
+
+
+## Behavioral eval baseline estabelecido (13:15)
+
+Runs ledgered em .devin/ledgers/behavioral-eval.jsonl:
+
+| run | case | n | passed | interpretacao |
+|-----|------|---|--------|---------------|
+| baseline-20261126 | gate-sensitive-file-creation | 5 | 4/5 | 1 stall: agente parou no architecture gate pedindo usuario (dead-end headless); 4 adaptaram escrevendo manifest |
+| adapt-first | headless-gate-adaptation | 5 | 5/5 | prompt simples: todos adaptaram (evidencia verificada: manifest criado explicitamente) |
+| control-first | control-trivial-bugfix-no-ceremony | 3 | 3/3 | zero overcorrection: nenhum council/subagent em tarefa trivial |
+| hardened-smoke | gate-sensitive-file-creation | 1 | 1/1 | validacao pos-hardening do loop |
+
+Descoberta comportamental verificada por evidencia primaria: variance de adaptacao ao architecture gate em modo headless e real e prompt-dependente. Hooks user-level aplicam em workspaces temporarios (verificado: agentes relatam o gate e o contornam corretamente).
+
+Casos minerados agora: 1 controle + 3 regressao, todos de falhas/descobertas reais do dia. CI valida schema de todos os casos commitados.
