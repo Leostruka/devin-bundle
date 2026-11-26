@@ -537,7 +537,7 @@
       "name": "frontend-design",
       "source": "devin-bundle",
       "purpose": "Use when building new UI or reshaping an existing one and the result must look distinctive and intentional, not templated. Guides aesthetic direction, typography, layout, and copy so the page has a specific point of view for this brief.",
-      "export_hash": "37d31759f1545daaa1392737fe33ea78b7e7d9c814ccc404683572bcfdebd249",
+      "export_hash": "bbf16bbc5465ca050468820a4af41cf17dbe865d4e4ec0dfa5864a8eddeba7d1",
       "exported_at": "2026-11-13T08:50:22.026078"
     },
     {
@@ -638,7 +638,7 @@
       "name": "impeccable",
       "source": "pbakaus/impeccable (Apache 2.0), adapted for Devin CLI",
       "purpose": "Use when the user asks for UI/UX work, wants to fix or polish a page/component, or when an interface looks bland, inconsistent, or like a default template.",
-      "export_hash": "b908d57f320e771fc722a353b4e0d7070f47b50d7c45828cdefc32ec2c80cdb7",
+      "export_hash": "bfea2a6c233f07425ca99082a969a7b535d881bb581a1bfc9425c1cd32537b31",
       "exported_at": "2026-11-14T17:54:35.340780"
     },
     {

@@ -85,7 +85,7 @@ When the user says "fix the design" without naming a command, run in order and s
 4. `layout` - spacing, rhythm, alignment, breakpoints.
 5. `typeset` - hierarchy, line-height, weights, casing.
 6. `colorize` - all color uses map to theme tokens (`primary`, `on-primary`, `surface`); fix mismatched tokens.
-7. `harden` - reduced motion, keyboard nav, screen-reader labels, error states, long text, small viewports, dark mode.
+7. `harden` - reduced motion, keyboard nav, screen-reader labels, error states, extreme data (long text, huge numbers, empty states, missing images, unicode), small viewports, dark mode. Designs that only survive perfect demo data are not finished (evidence: media-osint-20261126 batch1 break-ui).
 8. `polish` - shadows, transitions, radius consistency, icon sizing.
 
 ### Bounded iteration (eval R7-13)

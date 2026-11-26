@@ -89,6 +89,30 @@ engineered or tweened. Working spec:
   reuse the same layoutId across shared objects so the element animates
   between states instead of unmounting.
 
+Choreography rules when several elements move together (evidence:
+media-osint-20261126 batch1, Emil Kowalski choreograph, MIT):
+
+- One entrance per container. If the panel slides in, its content is
+  already there; never animate a parent's entrance and also stagger its
+  children - the user waits through both.
+- Never stagger high-frequency UI: dropdown items, menu rows, command
+  palettes, tab content. A stagger looks nice once and taxes every use
+  after that.
+- Product staggers run 30-80ms per item with the total under ~300ms; for
+  long lists stagger only the first handful and let the rest arrive with
+  the last one.
+- Uniform stagger reads as mechanical as linear easing: cast elements as
+  lead (moves first, travels furthest), support (shorter, smaller),
+  decoration (fades only), static (does not move). Order follows
+  importance, not DOM order.
+- An element that leaves stops taking up space immediately: siblings
+  close the gap while it fades (popLayout mode or absolute-position the
+  exiting element), or the interaction reads as slow even when every
+  piece is smooth.
+- Every sequence must survive interruption: triggered mid-flight it
+  neither breaks nor replays out of order.
+- Motion never blocks interaction: everything visible is clickable.
+
 User-editable layouts (dashboards, widget grids) need layout-reflow
 motion, not just micro-interactions: when a widget is dragged or resized,
 animate neighbor displacement with spring physics and snap resizes to
