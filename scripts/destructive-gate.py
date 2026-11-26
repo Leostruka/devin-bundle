@@ -1357,14 +1357,17 @@ def main():
     # file is created 0-byte and content diverts into a hidden stream.
     # Windows-only; ':' is a legal POSIX filename char.
     try:
-        if os.name == "nt" \
-                and (ADS_REDIRECT.search(scan_command)
-                     or ADS_VERB.search(scan_command)):
+        ads_match = ADS_REDIRECT.search(scan_command) \
+            or ADS_VERB.search(scan_command)
+        if os.name == "nt" and ads_match:
             block(
                 "redirect/verb target basename contains ':' - on Windows "
                 "this is an NTFS alternate data stream, so the named file "
                 "is created empty and content is silently diverted. Use a "
-                "filename without ':'.")
+                "filename without ':'. Matched "
+                f"{ads_match.group(0)[:80]!r} - if this is a false "
+                "positive (e.g. a git ref like HEAD:file inside a quoted "
+                "string), report it so the gate can be narrowed.")
         if os.name == "nt" \
                 and (DOT_REDIRECT.search(scan_command)
                      or DOT_VERB.search(scan_command)):
