@@ -72,7 +72,7 @@ Source: "Reason Less, Verify More" (arXiv:2607.07405, KDD 2026 Workshop)
   Gates are deterministic, read-only, pre-execution predicates.
   Fail-open: if a gate raises an exception, log and allow.
 """
-import sys, json, os, re
+import sys, json, os, re, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _hookrun
 
@@ -867,10 +867,37 @@ def _cherry_merged(branch):
 _WTP_PAYLOAD = None
 
 
+def _log_block(reason):
+    """Append-only machine-local telemetry: one JSONL line per block.
+
+    Proportionate observability for an internal tool (observability-quality
+    skill): a structured log, no backend, negligible cost. Motivation: FP
+    frequency was estimated from memory for months ('~2 blocks/day') with
+    no data; friction claims in self-improvement loops need numbers. The
+    log lives beside the live config (machine-local, never committed).
+    Fail-safe: telemetry failure must never affect the security decision.
+    """
+    try:
+        cfg = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        metrics = os.path.join(cfg, "metrics")
+        os.makedirs(metrics, exist_ok=True)
+        entry = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "kind": reason[:80],
+            "cwd": os.path.basename(os.getcwd()),
+        }
+        with open(os.path.join(metrics, "gate-blocks.jsonl"), "a",
+                  encoding="utf-8") as fh:
+            fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
 def block(reason):
     """Emit a block decision and exit with code 2 (deny)."""
     if _WTP_PAYLOAD is not None:
         _hookrun.wtp_reject(_WTP_PAYLOAD)
+    _log_block(reason)
     print(json.dumps({"decision": "block", "reason": reason}))
     sys.exit(2)
 

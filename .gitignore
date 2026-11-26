@@ -84,3 +84,6 @@ tmp/
 
 # Local agent session state - already-tracked .devin files are unaffected
 .devin/
+
+# gate telemetry written when repo-copy hooks run in-repo (live writes to live config)
+/metrics/
