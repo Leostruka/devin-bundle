@@ -44,6 +44,38 @@ def test_edit_blocked():
     assert p.returncode == 2
 
 
+def test_edit_carryover_allowed():
+    """2026-11-26 friction: edits preserving pre-existing em-dash lines
+    verbatim were blocked even though the character is legacy file
+    content, not new usage. old_string lines are exact-match file text,
+    so the exemption cannot be padded."""
+    legacy = f"first line\nlegacy prose {EM} kept verbatim\nlast line"
+    p = run("no-em-dash.py", _pre("edit",
+            {"file_path": str(ROOT / "x.md"), "old_string": legacy,
+             "new_string": legacy.replace("first", "edited first")}))
+    assert p.returncode == 0
+
+
+def test_edit_carryover_plus_new_em_dash_still_blocked():
+    legacy = f"legacy prose {EM} kept"
+    new = legacy + f"\nbrand new {EM} addition"
+    p = run("no-em-dash.py", _pre("edit",
+            {"file_path": str(ROOT / "x.md"), "old_string": legacy,
+             "new_string": new}))
+    assert p.returncode == 2
+
+
+def test_edit_duplicated_carryover_line_still_blocked():
+    """Duplicating a legacy em-dash line introduces a new usage: multiset
+    subtraction removes only the carried instance."""
+    legacy = f"legacy prose {EM} kept"
+    new = legacy + "\n" + legacy
+    p = run("no-em-dash.py", _pre("edit",
+            {"file_path": str(ROOT / "x.md"), "old_string": legacy,
+             "new_string": new}))
+    assert p.returncode == 2
+
+
 def test_notebook_edit_blocked():
     p = run("no-em-dash.py", _pre("notebook_edit",
             {"notebook_path": str(ROOT / "x.ipynb"), "cell_number": 0,

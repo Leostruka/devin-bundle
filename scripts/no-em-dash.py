@@ -291,6 +291,21 @@ def handle_pre_tool_use(data):
         if not isinstance(content, str):
             return
         if has_prose_em_dash(content):
+            # Carryover exemption (2026-11-26 friction): for edit, prose
+            # em-dash lines that also appear verbatim in old_string are
+            # pre-existing file content the edit merely preserves - the
+            # exact-match requirement means old_string cannot be padded,
+            # so this cannot be gamed. Only genuinely new lines count.
+            if tool_name == "edit":
+                old = tool_input.get("old_string") or ""
+                if isinstance(old, str) and old:
+                    carried = list(prose_em_dash_lines(old))
+                    remaining = list(prose_em_dash_lines(content))
+                    for line in carried:
+                        if line in remaining:
+                            remaining.remove(line)
+                    if not remaining:
+                        return
             block(
                 f"em-dash (U+2014) detected in {tool_name} content. "
                 "Rewrite the sentence naturally - commas, periods or "
