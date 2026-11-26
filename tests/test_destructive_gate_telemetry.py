@@ -58,3 +58,26 @@ def test_telemetry_never_breaks_block_decision():
     r = run_gate("rm -rf /")
     assert r.returncode == 2
     assert '"decision": "block"' in r.stdout
+
+
+def test_matched_excerpt_lifted_into_telemetry_field():
+    """Block reasons embed the matched excerpt after 'Matched'; telemetry
+    must lift it into its own field so friction analysis does not depend
+    on re-parsing the truncated kind string."""
+    before = len(_lines())
+    r = run_gate("echo x > result.txt:hidden")
+    assert r.returncode == 2
+    after = _lines()
+    assert len(after) == before + 1
+    entry = json.loads(after[-1])
+    assert "matched" in entry
+    assert "result.txt" in entry["matched"]
+
+
+def test_plain_block_without_excerpt_omits_matched():
+    before = len(_lines())
+    r = run_gate("rm -rf /")  # reason carries no Matched excerpt
+    assert r.returncode == 2
+    after = _lines()
+    entry = json.loads(after[-1])
+    assert "matched" not in entry

@@ -1549,7 +1549,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "f2c723727aaed4696e2cd3d37c69d012bbd9f74817fbd704cb18c7dbb85b2f43",
+      "export_hash": "e2ed6e7cdd88ca2a8e74ad80afe07bccf182f0bfbdf431c62e659653cefb1636",
       "exported_at": "2026-11-17"
     },
     {

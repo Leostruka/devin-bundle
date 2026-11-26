@@ -886,6 +886,12 @@ def _log_block(reason):
             "kind": reason[:80],
             "cwd": os.path.basename(os.getcwd()),
         }
+        # The block reason embeds the matched excerpt after "Matched '...'";
+        # lifting it into its own field makes friction analysis possible
+        # without re-parsing truncated kind strings.
+        m = re.search(r"Matched '((?:[^'\\]|\\.){0,120})'", reason)
+        if m:
+            entry["matched"] = m.group(1)
         with open(os.path.join(metrics, "gate-blocks.jsonl"), "a",
                   encoding="utf-8") as fh:
             fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
