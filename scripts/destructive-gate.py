@@ -1379,9 +1379,12 @@ def main():
                 "this is an NTFS alternate data stream, so the named file "
                 "is created empty and content is silently diverted. Use a "
                 "filename without ':'. Matched "
-                f"{ads_match.group(0)[:80]!r} - if this is a false "
-                "positive (e.g. a git ref like HEAD:file inside a quoted "
-                "string), report it so the gate can be narrowed.")
+                f"{ads_match.group(0)[:80]!r} - if you are writing a file "
+                "whose literal content mentions such a pattern, use the "
+                "write tool to create the file instead of a shell heredoc "
+                "or redirect (the body is scanned because interpreter "
+                "stdin is executable code). If this is a false positive, "
+                "report it - but note the gate fails closed by design.")
         if os.name == "nt" \
                 and (DOT_REDIRECT.search(scan_command)
                      or DOT_VERB.search(scan_command)):
