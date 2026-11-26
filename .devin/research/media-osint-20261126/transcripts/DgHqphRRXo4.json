@@ -1,0 +1,1 @@
+{"ok": true, "text": "(upbeat music)", "segments": [{"start": 0.0, "end": 2.58, "text": "(upbeat music)"}], "model": "small", "source": "C:\\Users\\leand\\AppData\\Local\\Temp\\media-osint-20261126-cache\\media\\DgHqphRRXo4.mp4", "detected_lang": "en", "api_version": 2, "meta": {"answered_by": {"bundle": "3.24.1", "wrapper": "asr"}}}

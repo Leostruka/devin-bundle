@@ -1,0 +1,86 @@
+[
+  {
+    "full_name": "FortoGraphy/prism-download-manager",
+    "description": "Free, open-source IDM alternative for Windows, macOS and Linux — up to 32 connections, browser integration, video & MP3 downloads, torrents, crash-safe resume.",
+    "stargazers_count": 1625,
+    "forks_count": 95,
+    "open_issues_count": 68,
+    "created_at": "2026-10-15T10:11:39Z",
+    "pushed_at": "2026-11-24T16:13:36Z",
+    "license": "MIT",
+    "homepage": "https://prismdl.site",
+    "default_branch": "main"
+  },
+  {
+    "full_name": "THU-MAIC/OpenMAIC",
+    "description": "Open Multi-Agent Interactive Classroom — Get an immersive, multi-agent learning experience in just one click",
+    "stargazers_count": 44468,
+    "forks_count": 6842,
+    "open_issues_count": 81,
+    "created_at": "2026-03-11T10:13:16Z",
+    "pushed_at": "2026-11-26T09:42:51Z",
+    "license": "MIT",
+    "homepage": null,
+    "default_branch": "main"
+  },
+  {
+    "full_name": "tensorfish/squid5090",
+    "description": "Highly Optimized Inference Engine for Inkling Mini 2 on NVIDIA 5090",
+    "stargazers_count": 257,
+    "forks_count": 32,
+    "open_issues_count": 5,
+    "created_at": "2026-11-23T06:39:43Z",
+    "pushed_at": "2026-11-25T21:44:17Z",
+    "license": "NOASSERTION",
+    "homepage": null,
+    "default_branch": "main"
+  },
+  {
+    "full_name": "sybil-solutions/inference-optimisation-skill",
+    "description": "Agent skill for hill-climbing local LLM serving speed (decode, speculative decoding, prefill, KV, startup, TTFT) on any hardware and quantization",
+    "stargazers_count": 2750,
+    "forks_count": 250,
+    "open_issues_count": 26,
+    "created_at": "2026-11-16T18:40:04Z",
+    "pushed_at": "2026-11-16T18:40:08Z",
+    "license": "MIT",
+    "homepage": null,
+    "default_branch": "main"
+  },
+  {
+    "full_name": "finktheartist/sakuga-vfx",
+    "description": "Twelve ordinary UI controls that react like anime. One file each, no dependencies.",
+    "stargazers_count": 872,
+    "forks_count": 80,
+    "open_issues_count": 3,
+    "created_at": "2026-11-15T21:19:28Z",
+    "pushed_at": "2026-11-15T21:19:34Z",
+    "license": "MIT",
+    "homepage": "https://sakuga-vfx.vercel.app",
+    "default_branch": "main"
+  },
+  {
+    "full_name": "emilkowalski/skills",
+    "description": "Skills for Designers and Engineers.",
+    "stargazers_count": 59775,
+    "forks_count": 3541,
+    "open_issues_count": 3,
+    "created_at": "2026-03-16T13:52:31Z",
+    "pushed_at": "2026-11-15T12:42:50Z",
+    "license": "MIT",
+    "homepage": "https://aiforui.dev/skills",
+    "default_branch": "main"
+  },
+  {
+    "full_name": "lcsmotta7/trunk-and-branches-isaque-2",
+    "description": "Trunk and Branches (Isaque 2.0): Thermodynamic Parsimony (~22.3W), Frozen Qwen3.5-4B Trunk, Orthogonal 16 MiB DoRA+O-LoRA Columns & Sparsegen LD-MoLE Routing — Bilingual Monograph (EN/PT-BR) · CERN DOI: 10.5281/zenodo.24221509",
+    "stargazers_count": 6,
+    "forks_count": 2,
+    "open_issues_count": 0,
+    "created_at": "2026-11-14T15:22:17Z",
+    "pushed_at": "2026-11-14T19:02:31Z",
+    "license": "NOASSERTION",
+    "homepage": "https://doi.org/10.5281/zenodo.24221509",
+    "default_branch": "main"
+  }
+]
