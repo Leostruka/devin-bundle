@@ -6,10 +6,13 @@ claims in self-improvement loops were memory-based guesses; friction
 needs numbers. The telemetry must be fail-safe (never affects decisions)
 and must not log allowed commands.
 """
+import importlib.util
 import json
 import os
 import subprocess
 import sys
+
+import pytest
 
 HOOK = os.path.join(os.path.dirname(__file__), "..", "scripts",
                     "destructive-gate.py")
@@ -60,6 +63,10 @@ def test_telemetry_never_breaks_block_decision():
     assert '"decision": "block"' in r.stdout
 
 
+@pytest.mark.skipif(os.name != "nt",
+                    reason="ADS gate is NT-scoped by design: ':' is a "
+                           "legal POSIX filename char, so the probe command "
+                           "is correctly allowed on POSIX")
 def test_matched_excerpt_lifted_into_telemetry_field():
     """Block reasons embed the matched excerpt after 'Matched'; telemetry
     must lift it into its own field so friction analysis does not depend
@@ -72,6 +79,34 @@ def test_matched_excerpt_lifted_into_telemetry_field():
     entry = json.loads(after[-1])
     assert "matched" in entry
     assert "result.txt" in entry["matched"]
+
+
+def test_matched_excerpt_lift_unit_portable():
+    """The lift itself is platform-independent regex over the reason
+    string; cover it on every platform by calling _log_block directly
+    (the ADS end-to-end path above is NT-only)."""
+    spec = importlib.util.spec_from_file_location("destructive_gate", HOOK)
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    before = len(_lines())
+    gate._log_block("probe reason. Matched 'echo x > result.txt:hidden'"
+                    " - trailing guidance")
+    after = _lines()
+    assert len(after) == before + 1
+    entry = json.loads(after[-1])
+    assert entry["matched"] == "echo x > result.txt:hidden"
+
+
+def test_matched_excerpt_absent_unit_portable():
+    spec = importlib.util.spec_from_file_location("destructive_gate", HOOK)
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    before = len(_lines())
+    gate._log_block("plain reason without any excerpt")
+    after = _lines()
+    assert len(after) == before + 1
+    entry = json.loads(after[-1])
+    assert "matched" not in entry
 
 
 def test_plain_block_without_excerpt_omits_matched():
