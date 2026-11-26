@@ -113,4 +113,4 @@ def test_sample_command_uses_in_process():
     """Daemon mode outlives the CLI child; timeout must be a real cap."""
     src = open(os.path.join(ROOT, "scripts", "behavioral-eval.py"),
                encoding="utf-8").read()
-    assert '"--process-model", "in-process"' in src
+    assert '"--process-model=in-process"' in src

@@ -298,9 +298,10 @@ def run_one_sample(case, idx, model, timeout):
         os.makedirs(os.path.dirname(dest) or workspace, exist_ok=True)
         with open(dest, "x", encoding="utf-8") as fh:
             fh.write(content)
-    cmd = ["devin", "-p", case["prompt"], "--permission-mode",
-           case.get("permission_mode", "smart"),
-           "--process-model", "in-process"]
+    # equals form is mandatory: the space form parses the value as a
+    # subcommand (verified CLI arg-parse quirk in DEVIN-CLI-COMPATIBILITY)
+    cmd = ["devin", "--process-model=in-process", "-p", case["prompt"],
+           "--permission-mode", case.get("permission_mode", "smart")]
     if model:
         cmd += ["--model", model]
     started = time.time()
