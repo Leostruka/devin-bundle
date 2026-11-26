@@ -46,3 +46,10 @@ the Python standard library.
 - Constitutional AI (Anthropic, 2022) and RISE (arXiv:2407.18219)
   (`self-improvement` improvement-loop)
 - Anthropic multi-agent research, 2025-06 (`dispatching-parallel-agents`)
+
+### zeroshade/inference-optimisation (upstream: Sybil Solutions) - MIT License
+
+`skills/inference-optimisation/` is adapted for Devin CLI from the
+inference-optimisation playbook by Sybil Solutions contributors.
+Copyright (c) 2026 Sybil Solutions contributors. Used under the MIT license;
+upstream copyright and permission notices are preserved per MIT terms.

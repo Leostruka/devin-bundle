@@ -114,8 +114,19 @@ def main():
     if not os.path.isfile("manifest.json"):
         print(_dumps({"ok": False, "error": "manifest.json not in cwd"}))
         return 2
-    with open("manifest.json", encoding="utf-8") as fh:
-        manifest = json.load(fh)
+    try:
+        with open("manifest.json", encoding="utf-8") as fh:
+            manifest = json.load(fh)
+    except json.JSONDecodeError as exc:
+        print(_dumps({"ok": False, "error": "manifest.json malformed: "
+                      + str(exc)}))
+        return 2
+    missing = [d for d in ("skills", "agents", "scripts")
+               if not os.path.isdir(d)]
+    if missing:
+        print(_dumps({"ok": False, "error":
+                      "missing dirs: " + ", ".join(missing)}))
+        return 2
     skills, agents, scripts = collect()
     changes, problems = diff_state(manifest, skills, agents, scripts)
     if args.check:

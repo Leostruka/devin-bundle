@@ -28,7 +28,7 @@ FORA DE SCOPE: tests/held-out/ (anti-trapaca), segredos, assinaturas IA.
 ### Wave 3 - grande
 - I-07 animation-direction: VIDEO.md duravel, anti-patterns, preview, notas timestamped, video-fixer, medicao-antes-de-screenshot, gate de render (batch1 P0)
 - I-08 inference-optimisation skill nova (batch1 P1)
-- I-09 frontend-design/impeccable: coreografia motion, staggers, break-ui, learn-taste, Sakuga (batch1 P1)
+- I-09 frontend-design/impeccable: coreografia motion + staggers aplicados; break-ui parcial; learn-taste e Sakuga NAO importados (deferidos, commit 83109ed)
 
 ### Wave 4 - restante
 - I-10 resiliencia de downloads Prism-like (batch1 P2)

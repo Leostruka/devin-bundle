@@ -472,8 +472,8 @@ Os hooks não transformam o runtime em sandbox. Código não confiável deve ser
 ```text
 devin-bundle/
 ├── AGENTS.md                  # regras globais distribuídas
-├── agents/                    # 21 perfis customizados
-├── skills/                    # 193 workflows invocáveis
+├── agents/                    # 22 perfis customizados
+├── skills/                    # 195 workflows invocáveis
 ├── scripts/                   # hooks, validadores e helper Mermaid
 ├── extensions/                # ferramentas locais (computer-use, system-control, ai-tools, media-tools, diagram-tools, laya-tools, rust-core, rea-ops, offsec-tools, gcal)
 ├── data/                      # modelos, integrações e metadados versionados

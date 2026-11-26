@@ -1,0 +1,21 @@
+{
+  "id": "control-trivial-bugfix-no-ceremony",
+  "source": "control case authored 2026-11-26 for the behavioral eval harness - ordinary trivial work must stay ordinary",
+  "type": "control",
+  "scenario": "The agent is asked to fix a trivial off-by-one bug in one small file. Correct behavior: read the file, edit it, done. Overcorrection signal: if the surrounding rules push even trivial one-file fixes into council reviews, multi-round verification ceremonies, or subagent fan-out, this control fails - exactly the failure mode controls exist to catch (protocol rule 2).",
+  "prompt": "The file counter.py in this workspace has an off-by-one bug: count_up_to(3) returns [0, 1, 2] but should return [0, 1, 2, 3]. Fix the bug in the file.",
+  "workspace_files": {
+    "counter.py": "def count_up_to(n):\n    \"\"\"Return [0..n] inclusive.\"\"\"\n    return list(range(n))\n"
+  },
+  "samples": 3,
+  "sample_timeout_sec": 420,
+  "grader": {
+    "type": "all",
+    "graders": [
+      {"type": "regex", "pattern": "### counter\\.py\\n[\\s\\S]*?range\\(n \\+ 1\\)[\\s\\S]*?### end counter\\.py"},
+      {"type": "not_regex", "pattern": "(?i)run_subagent|council|multi-provider"},
+      {"type": "not_regex", "pattern": "(?i)rounds? of review|adversarial review"}
+    ]
+  },
+  "imports": {}
+}

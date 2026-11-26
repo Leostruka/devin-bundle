@@ -1549,7 +1549,7 @@
     {
       "name": "destructive-gate.py",
       "purpose": "PreToolUse hook — gates destructive operations",
-      "export_hash": "dc03903314c5ff986e6055a6779ada0b10dfbf3cfe5817f3dad270b6670e4a20",
+      "export_hash": "f2c723727aaed4696e2cd3d37c69d012bbd9f74817fbd704cb18c7dbb85b2f43",
       "exported_at": "2026-11-17"
     },
     {
@@ -1798,7 +1798,7 @@
     {
       "name": "sync-manifest.py",
       "purpose": "Sync manifest counts and export hashes with disk state; --check read-only drift detection (skill hash drift repair, 2026-11-26)",
-      "export_hash": "63aa18746f4da13546744ec9d0dbbc8c7897d5b8d80d7dd4555a70278e2df1ce",
+      "export_hash": "a76b06320159e81fadc8fbac5e9a303db80c21dc73e0fe0238514ac4c43b4d38",
       "exported_at": "2026-11-26"
     },
     {
@@ -1840,7 +1840,7 @@
     {
       "name": "behavioral-eval.py",
       "purpose": "Behavioral tool-use eval harness - deterministic grading, append-only ledger, same-model baseline compare (never calls models; T3 evals pattern)",
-      "export_hash": "11f38a66a321d678819dea7f084f9cc663815d049cd6f1c8050915028668fe1d",
+      "export_hash": "f44db506c43d7bc764b7d4900f21486863a5240ba9f1bebf28e5b17a59ae3005",
       "exported_at": "2026-11-26"
     }
   ],

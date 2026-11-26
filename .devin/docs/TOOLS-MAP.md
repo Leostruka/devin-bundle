@@ -95,7 +95,7 @@ product-manager, qa-ci, README, red-team-lead, repo-reviewer,
 researcher, reviewer, scrum-master, security-auditor, sentinel, sre,
 subagent_explore, subagent_general, tech-lead,
 thermo-nuclear-code-quality-review-subagent,
-thermo-nuclear-review-subagent, triage-labels, ux-researcher. 28 perfis
+thermo-nuclear-review-subagent, triage-labels, ux-researcher, video-fixer. 29 perfis
 validados (parity com `agents/*.md` + `.devin/agents/*.md` garantida por
 `tests/validation/test_profile_parity.py`).
 
@@ -162,7 +162,7 @@ hooks.v1.json cobre apenas falha do próprio entry point.
 | hooks.v1.json | `./hooks.v1.json` | — (renderizado em `config.json.hooks` no install) | Fonte única de hooks (`.devin/adr/005-hooks-single-source.md`); também template `.devin/` |
 | credentials.toml | `./credentials.toml` | — | Credenciais (MASKED) |
 | CLI-CONTRACT.md | `./.devin/docs/` | — | Envelope v2: `api_version: 2` + `meta.answered_by` em todo JSON CLI agent-facing (waves 1-11, #604) |
-| agents/ | `./agents/` | `~/.config/devin/agents/` | 21 perfis user-level |
+| agents/ | `./agents/` | `~/.config/devin/agents/` | 22 perfis user-level |
 | .devin/agents/ | `./.devin/agents/` | — | 4 perfis project-local + README (ver `.devin/agents/README.md`) |
 | skills/ | `./skills/` | `~/.config/devin/skills/` | 195 skills || extensions/ | `./extensions/` | `~/.config/devin/extensions/` | Utilitários locais (`computer-use` - GUI automation; `system-control` - OS autorizado; `scrape-tools` - fetch/parse web via Scrapling, ver `extensions/scrape-tools/USAGE.md`; `asr` - whisper.cpp local; `gcal` - Google Calendar free/busy + roteiro + escrita `add`/`apply` (gated por `--confirm`); `code-graph` - índice estrutural FTS5; `harness-tree` - árvore c1..c8 diff/validate/snapshot; `design-intelligence` - BM25 + corpus design 34 domínios) |
 | scripts/ | `./scripts/` | `~/.config/devin/scripts/` | 65 scripts Python + 1 JS |

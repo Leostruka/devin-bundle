@@ -1185,10 +1185,6 @@ def main():
     # line-2 head as its operand (the \n joiner made `lvremove\nman`
     # look like `lvremove man`).
     scan_command += ";" + _deescape_shell(scan_command)
-    # Variant with non-shell heredoc bodies removed: gates 9/10 guard
-    # Windows filesystem artifacts created by the SHELL's own redirect/
-    # verb machinery - inside a python/node heredoc body the same text is
-    # inert string data, so scanning it there is pure false positive.
 
     # Gate 1: rm -rf dangerous paths
     try:

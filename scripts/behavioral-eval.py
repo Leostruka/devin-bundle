@@ -31,6 +31,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -109,10 +110,16 @@ def apply_grader(grader, output, imported_texts):
     t = grader["type"]
     if t == "contains":
         needle = resolve_imports(grader["text"], imported_texts)
+        if not needle:
+            # '' in output is trivially true, so an empty needle (usually a
+            # missing import) is a meaningless grader - fail visibly.
+            return False, "contains EMPTY needle (missing import?): False"
         ok = needle in output
         return ok, f"contains {needle[:40]!r}: {ok}"
     if t == "not_contains":
         needle = resolve_imports(grader["text"], imported_texts)
+        if not needle:
+            return False, "not_contains EMPTY needle (missing import?): False"
         ok = needle not in output
         return ok, f"not_contains {needle[:40]!r}: {ok}"
     if t == "regex":
@@ -140,17 +147,50 @@ def resolve_imports(text, imported_texts):
     return re.sub(r"\$\{import:([^}]+)\}", _sub, text)
 
 
+_MISSING_IMPORT = "\x00missing-import\x00"
+
+
+def _safe_relpath(rel):
+    """Validate case-declared paths. Relative paths must not traverse
+    upward. Absolute paths are allowed only inside the working tree or
+    the system temp dir (tests stage fixtures there) - anywhere else is
+    outside the sandbox and rejected. Cases are data, and data must not
+    reach into arbitrary local files."""
+    if not isinstance(rel, str) or not rel:
+        return None
+    if os.path.isabs(rel) or re.match(r"^[a-zA-Z]:[\\/]", rel):
+        try:
+            real = os.path.realpath(rel)
+            roots = [os.path.realpath(os.getcwd()),
+                     os.path.realpath(tempfile.gettempdir())]
+            if any(real == r or real.startswith(r + os.sep) for r in roots):
+                return real
+        except OSError:
+            pass
+        return None
+    parts = rel.replace("\\", "/").split("/")
+    if any(p in ("..", "") for p in parts):
+        return None
+    return os.path.join(*parts)
+
+
 def load_imports(case, case_dir):
     """Read every file the case declares in `imports` (name -> relpath).
-    Paths resolve against the repo root; missing files are empty strings
-    so grading degrades to a visible failure rather than a crash."""
+    Paths must be relative and stay inside the working tree - absolute
+    paths and parent traversal resolve to the missing sentinel. Missing
+    files resolve to a sentinel that cannot match real content, so broken
+    cases fail visibly instead of passing on empty strings."""
     texts = {}
     for name, rel in (case.get("imports") or {}).items():
+        safe = _safe_relpath(rel)
+        if safe is None:
+            texts[name] = _MISSING_IMPORT
+            continue
         try:
-            with open(rel, encoding="utf-8", errors="replace") as fh:
+            with open(safe, encoding="utf-8", errors="replace") as fh:
                 texts[name] = fh.read()
         except OSError:
-            texts[name] = ""
+            texts[name] = _MISSING_IMPORT
     return texts
 
 
@@ -207,9 +247,13 @@ def synthesize_output(workspace, transcript):
     """Grading input: the sample transcript plus a deterministic digest of
     text artifacts the sampled agent produced in its workspace. Graders
     therefore see both behavior (transcript) and outcome (files) without
-    any parsing ambiguity. Binary/large/generated files are skipped."""
+    any parsing ambiguity. Binary/large/generated files are skipped, and
+    so is `.devin` - hook/session state in there can contain the original
+    prompt verbatim, which would false-pass content graders (verified by
+    independent review 2026-11-26). Each artifact is end-delimited so a
+    regex anchored on one file cannot bleed into the next."""
     parts = [transcript, "\n\n--- workspace artifacts ---"]
-    skip_dirs = {".git", "__pycache__", "node_modules", ".venv"}
+    skip_dirs = {".git", "__pycache__", "node_modules", ".venv", ".devin"}
     for dirpath, dirnames, filenames in os.walk(workspace):
         dirnames[:] = [d for d in sorted(dirnames) if d not in skip_dirs]
         for fn in sorted(filenames):
@@ -224,24 +268,42 @@ def synthesize_output(workspace, transcript):
                     continue  # null byte = binary, not inspectable text
             except (OSError, UnicodeDecodeError):
                 continue
-            parts.append(f"### {rel}\n{content[:4000]}")
+            parts.append(f"### {rel}\n{content[:4000]}\n### end {rel}")
     return "\n".join(parts)
 
 
 def run_one_sample(case, idx, model, timeout):
     """Run one devin -p session in an isolated temp workspace. Returns
     (synthesized_output, meta). The bundle's live hooks apply inside the
-    sample exactly as they do in real work - that is the point."""
+    sample exactly as they do in real work - that is the point.
+
+    Isolation contract: workspace_files keys are validated against escape
+    (absolute paths and parent traversal are skipped, never written);
+    --process-model=in-process ties the agent's lifetime to the CLI child
+    so the timeout is a real wall-clock cap (daemon mode outlives it).
+    The synthesized output is persisted into the workspace afterward so a
+    baseline is independently regradable (protocol evidence rule)."""
     workspace = tempfile.mkdtemp(prefix=f"beval-{case['id']}-{idx}-")
+    skipped_keys = []
     for rel, content in (case.get("workspace_files") or {}).items():
-        dest = os.path.join(workspace, rel)
+        # workspace keys must be strictly relative: even a tempdir-legal
+        # absolute path would escape THIS sample's isolation boundary.
+        safe = None if (os.path.isabs(rel) or
+                        re.match(r"^[a-zA-Z]:[\\/]", rel or "")) \
+            else _safe_relpath(rel)
+        if safe is None:
+            skipped_keys.append(rel)
+            continue
+        dest = os.path.join(workspace, safe)
         os.makedirs(os.path.dirname(dest) or workspace, exist_ok=True)
-        with open(dest, "w", encoding="utf-8") as fh:
+        with open(dest, "x", encoding="utf-8") as fh:
             fh.write(content)
     cmd = ["devin", "-p", case["prompt"], "--permission-mode",
-           case.get("permission_mode", "smart")]
+           case.get("permission_mode", "smart"),
+           "--process-model", "in-process"]
     if model:
         cmd += ["--model", model]
+    started = time.time()
     try:
         proc = subprocess.run(cmd, cwd=workspace, capture_output=True,
                               text=True, encoding="utf-8", errors="replace",
@@ -252,8 +314,16 @@ def run_one_sample(case, idx, model, timeout):
     except subprocess.TimeoutExpired:
         transcript = "[TIMEOUT]"
         timed_out = True
+    wall = time.time() - started
     output = synthesize_output(workspace, transcript)
-    meta = {"workspace": workspace, "timed_out": timed_out, "idx": idx}
+    try:
+        with open(os.path.join(workspace, ".beval-output.txt"), "w",
+                  encoding="utf-8") as fh:
+            fh.write(output)
+    except OSError:
+        pass
+    meta = {"workspace": workspace, "timed_out": timed_out, "idx": idx,
+            "wall_sec": round(wall, 1), "skipped_keys": skipped_keys}
     return output, meta
 
 
@@ -360,6 +430,12 @@ def main():
         imported = load_imports(case, os.path.dirname(args.case))
         model = args.model or "default"
 
+        if shutil.which("devin") is None:
+            print(_dumps({"ok": False, "error":
+                          "devin executable not found on PATH - sampling "
+                          "needs the Devin CLI installed"}))
+            return 1
+
         def one(idx):
             output, meta = run_one_sample(case, idx, args.model, timeout)
             passed, detail = apply_grader(case["grader"], output, imported)
@@ -372,7 +448,13 @@ def main():
                                              time.gmtime()),
                          "case": case["id"], "model": model,
                          "run": args.run, "idx": idx, "passed": passed,
-                         "cost_tokens": 0}
+                         "cost_tokens": 0,
+                         "timed_out": meta["timed_out"],
+                         "wall_sec": meta["wall_sec"],
+                         "workspace": meta["workspace"],
+                         "detail": detail[:200],
+                         "evidence": os.path.join(meta["workspace"],
+                                                  ".beval-output.txt")}
                 os.makedirs(os.path.dirname(LEDGER), exist_ok=True)
                 with open(LEDGER, "a", encoding="utf-8") as fh:
                     fh.write(json.dumps(entry, ensure_ascii=False) + "\n")

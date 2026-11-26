@@ -1,0 +1,14 @@
+[
+  {
+    "id": "BogcYWf4siM",
+    "status": "ok-degenerate",
+    "seconds": "unknown",
+    "note": "wrapper exited 0 but small/auto ASR emitted repeated foreign-language placeholders; captions primary"
+  },
+  {
+    "id": "xq0eB8vxeqk",
+    "status": "timeout",
+    "seconds": 360,
+    "note": "official English captions primary"
+  }
+]

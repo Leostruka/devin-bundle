@@ -1,0 +1,43 @@
+[
+  {
+    "input_url": "https://www.youtube.com/watch?v=BogcYWf4siM",
+    "platform": "yt",
+    "id": "BogcYWf4siM",
+    "title": "Onlook is back: the open-source developer tool for designers",
+    "uploader": "Onlook",
+    "upload_date": "20261119",
+    "webpage_url": "https://www.youtube.com/watch?v=BogcYWf4siM",
+    "description": "Onlook is the open-source developer tool for designers – a desktop app that opens any repo and puts your real product on a canvas, so you can explore ideas with your agent and refine them in actual code.\n\nIn this video I design 5 real projects with it: a calendar app, an editor, a flipdot display, 3D cards, and a synthesizer. Then I show how artifacts work – they're snippets you can remix and reuse.\n\nFree, open source, and every change lands as a normal pull request.\n\n0:00 - Intro\n0:33 - Calendar App • Variations\n2:30 - Editor • Adding a new panel\n3:48 - Flipdot display • Creative visuals\n4:30 - 3D Cards • Hero variations\n5:15 - Synthesizer • Images as references\n6:13 - Artifacts • HTML/CSS Snippets\n7:12 - Outro\n\nVisit the GitHub repo and don't forget to star it – https://github.com/onlook-dev/onlook \n\nVisit our website to learn more about Onlook, and to start designing in real code today – https://onlook.com\n\nJoin our Discord to get a sneak-peek of features before they go live - https://discord.gg/ZZzadNQtns",
+    "duration_seconds": 476,
+    "media_path": ".devin\\research\\media-osint-20261126-yt2\\media_audio\\BogcYWf4siM.mp4",
+    "media_kind": "audio-only worstaudio; full video streamed for frames",
+    "meta_path": ".devin\\research\\media-osint-20261126-yt2\\meta\\BogcYWf4siM.info.json",
+    "caption_files": [
+      ".devin\\research\\media-osint-20261126-yt2\\meta\\BogcYWf4siM.en-orig.vtt",
+      ".devin\\research\\media-osint-20261126-yt2\\meta\\BogcYWf4siM.pt-orig.vtt",
+      ".devin\\research\\media-osint-20261126-yt2\\meta\\BogcYWf4siM.pt.vtt"
+    ],
+    "has_media": true,
+    "has_metadata": true
+  },
+  {
+    "input_url": "https://www.youtube.com/watch?v=xq0eB8vxeqk",
+    "platform": "yt",
+    "id": "xq0eB8vxeqk",
+    "title": "Agents Sucked At UI (Until Today)",
+    "uploader": "Theo - t3․gg",
+    "upload_date": "20261103",
+    "webpage_url": "https://www.youtube.com/watch?v=xq0eB8vxeqk",
+    "description": "It’s time to make agents good at design, so let’s breakdown how I made Opus hill climb till it finally was making what I wanted it to\n\nThank you Magic Patterns for sponsoring the video! Check them out at: https://soydev.link/magicpatterns\n\nWant to sponsor a video? Learn more here: https://soydev.link/sponsor-me\n\nCheck out my Twitch, Twitter, Discord more at https://t3.gg\n\nS/O @Ph4seon3 for the awesome edit 🙏\n\n#ai #programming #coding",
+    "duration_seconds": 1904,
+    "media_path": ".devin\\research\\media-osint-20261126-yt2\\media_audio\\xq0eB8vxeqk.mp4",
+    "media_kind": "audio-only worstaudio; full video streamed for frames",
+    "meta_path": ".devin\\research\\media-osint-20261126-yt2\\meta\\xq0eB8vxeqk.info.json",
+    "caption_files": [
+      ".devin\\research\\media-osint-20261126-yt2\\meta\\xq0eB8vxeqk.en-orig.vtt",
+      ".devin\\research\\media-osint-20261126-yt2\\meta\\xq0eB8vxeqk.en.vtt"
+    ],
+    "has_media": true,
+    "has_metadata": true
+  }
+]
