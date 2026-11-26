@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/Leostruka/devin-bundle/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Skills](https://img.shields.io/badge/skills-193-blue.svg)](#2-skills)
+[![Skills](https://img.shields.io/badge/skills-194-blue.svg)](#2-skills)
 [![Rules](https://img.shields.io/badge/rules-21-green.svg)](#1-regras-globais)
 [![Version](https://img.shields.io/badge/version-3.24.1-orange.svg)](CHANGELOG.md)
 [![Atlas](https://img.shields.io/badge/atlas-github%20pages-33ff66.svg)](https://leostruka.github.io/devin-bundle/)

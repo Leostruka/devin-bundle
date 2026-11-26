@@ -85,7 +85,7 @@
       "name": "animation-direction",
       "source": "devin-bundle",
       "purpose": "Use when turning narrated video/audio into synced code-rendered motion graphics — narration -> timestamped transcript -> scene plan -> approval gate -> Remotion render -> ffmpeg composite. Covers the motion vocabulary, beat-to-visual mapping, scene-plan v2 schema, and the mandatory plan gate via extensions/asr + extensions/remotion-render.",
-      "export_hash": "fe6aeac27f3c8633d0f409df0a69e2848a6b89a3b80a84154ef5b7fe7553aaba"
+      "export_hash": "8e2992df302d38c0424eab675197cb54ecbd1a1223150417e6fc20f82e78e22f"
     },
     {
       "name": "api-context-spec",
@@ -1826,7 +1826,7 @@
   ],
   "script_count": 63,
   "mcp_count": 1,
-  "agent_count": 21,
+  "agent_count": 22,
   "tool_count": 28,
   "docs": [
     "AGENTS.md",
@@ -1864,6 +1864,13 @@
       "export_hash": "F673432CD61A80A6A3AF1AFD908F472A5A20A34E04BD20DE209D73709726B3C1"
     },
     {
+      "name": "data-analyst",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\data-analyst.md",
+      "export_hash": "F413759135E3A67FF7CAA0789D0EAA68D970C8B7FAFB6673AD9033E3F181BE3B",
+      "exported_at": "2026-11-07T15:10:32.216367"
+    },
+    {
       "name": "debugger",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\debugger.md",
@@ -1876,6 +1883,13 @@
       "original_path": "%APPDATA%\\devin\\agents\\implementer.md",
       "export_hash": "8891281a854bcc5a389fc969f1d9295a3de8e9fb3ee4a2931cd4fc89d5c4a4e8",
       "exported_at": "2026-09-08T21:39:22.431827"
+    },
+    {
+      "name": "performance-engineer",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\performance-engineer.md",
+      "export_hash": "b9487b6c20d87a04376107cb0497cca358292264fb3e643a6e5f4ab49f1ef1be",
+      "exported_at": "2026-11-07T15:10:32.216367"
     },
     {
       "name": "product-manager",
@@ -1921,6 +1935,20 @@
       "export_hash": "a3d9b446d40aca908c3ce347f7c37060c3684aa1d72dc5c7c501fa0d27dc46e7"
     },
     {
+      "name": "sentinel",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\sentinel.md",
+      "export_hash": "64e458a243407b705e6009bfc6d2b7046e795d152eec3b8129a4dc3f0c09c0c3",
+      "exported_at": "2026-11-05T07:49:44.220070"
+    },
+    {
+      "name": "sre",
+      "source": "devin-bundle",
+      "original_path": "%APPDATA%\\devin\\agents\\sre.md",
+      "export_hash": "7b179e896239f85b3f525df8bdf3b37b859f8da7a4f2e9c647c8d16b72f94ef7",
+      "exported_at": "2026-11-07T15:10:32.216367"
+    },
+    {
       "name": "tech-lead",
       "purpose": "Use to author the architecture spec (docs/02_Architecture.md) from the PRD. Principal Staff Engineer: ADRs with rejected alternatives, file-granular tree, interface contracts, NFR budgets.",
       "export_hash": "945d884797996cb2509400dffde8a79ee32c9a610d537dda47040b2dc0e00e76"
@@ -1940,27 +1968,6 @@
       "exported_at": "2026-11-03T21:03:31.749175"
     },
     {
-      "name": "sentinel",
-      "source": "devin-bundle",
-      "original_path": "%APPDATA%\\devin\\agents\\sentinel.md",
-      "export_hash": "64e458a243407b705e6009bfc6d2b7046e795d152eec3b8129a4dc3f0c09c0c3",
-      "exported_at": "2026-11-05T07:49:44.220070"
-    },
-    {
-      "name": "data-analyst",
-      "source": "devin-bundle",
-      "original_path": "%APPDATA%\\devin\\agents\\data-analyst.md",
-      "export_hash": "F413759135E3A67FF7CAA0789D0EAA68D970C8B7FAFB6673AD9033E3F181BE3B",
-      "exported_at": "2026-11-07T15:10:32.216367"
-    },
-    {
-      "name": "sre",
-      "source": "devin-bundle",
-      "original_path": "%APPDATA%\\devin\\agents\\sre.md",
-      "export_hash": "7b179e896239f85b3f525df8bdf3b37b859f8da7a4f2e9c647c8d16b72f94ef7",
-      "exported_at": "2026-11-07T15:10:32.216367"
-    },
-    {
       "name": "ux-researcher",
       "source": "devin-bundle",
       "original_path": "%APPDATA%\\devin\\agents\\ux-researcher.md",
@@ -1968,11 +1975,11 @@
       "exported_at": "2026-11-07T15:10:32.216367"
     },
     {
-      "name": "performance-engineer",
-      "source": "devin-bundle",
-      "original_path": "%APPDATA%\\devin\\agents\\performance-engineer.md",
-      "export_hash": "b9487b6c20d87a04376107cb0497cca358292264fb3e643a6e5f4ab49f1ef1be",
-      "exported_at": "2026-11-07T15:10:32.216367"
+      "name": "video-fixer",
+      "source": "created:v3.x media-osint-20261126 batch1 P0",
+      "original_path": "%APPDATA%\\devin\u0007gents\u000bideo-fixer.md",
+      "export_hash": "cd67013507bd4120cba65ee4d7791ae041d0f52e993136d15a526c944803e0d0",
+      "exported_at": "2026-11-26T10:40:52.849764+00:00"
     }
   ]
 }

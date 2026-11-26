@@ -9,6 +9,18 @@ Motion-graphics direction without a video editor: "explain X" -> synced
 b-roll/infographic animation. Corrections happen at the cheap plan
 stage, never post-render.
 
+## VIDEO.md (durable brief, written first)
+
+Every piece starts as `VIDEO.md` in the output directory, the single
+source of truth that survives context compaction: goal, audience,
+aspect/duration, copy, timed shot list, palette/type, motion direction,
+sound, assets, constraints, approval state, and build notes. The plan
+derives from it; corrections update it; the render is accountable to it.
+A piece without VIDEO.md is improvised, and improvisation is where slop
+comes from. Before the approval gate, check the plan against
+`reference/slop-video-patterns.md` - a plan containing a listed
+anti-pattern is not ready.
+
 ## Pipeline
 
 1. **Enrich** — `extensions/asr/transcribe.py url|file` (yt-dlp +
@@ -64,6 +76,31 @@ unless `overlay: true`; no motion during narration cuts. Audio/visual
 offsets are allowed at cut boundaries (J-cut: audio leads the next
 visual; L-cut: audio outlives the visual) -- the prohibition is on
 motion *during* the narration cut itself.
+
+## Preview and fix loop (before any MP4 render)
+
+Rendering is the expensive step; everything before it should be cheap.
+
+1. **Preview in the browser, not in your head.** Serve the unrendered
+   composition (Remotion Studio: `npx remotion studio` in the generated
+   project) so the reviewer can play and scrub the real timing. A plan
+   approved only as JSON gets rejected as video.
+2. **Timestamped notes, batched by scene.** Reviewer feedback is collected
+   as `{timecode, scene_id, text}` notes and grouped per scene before any
+   edit. Classify each note: small fix (copy, font size, dimensions,
+   colors, timings) or design change (layout, structure, new scenes).
+3. **Small fixes go to the scoped fixer.** The `video-fixer` agent profile
+   applies small fixes only and bounces design changes back. Design
+   changes return to the plan stage and re-enter the approval gate -
+   they are never smuggled into the fix loop.
+4. **Verify by measurement first.** DOM geometry, exact beat/cut times,
+   font and color values, viewport behavior, asset dimensions. Screenshots
+   are the fallback for questions measurement cannot answer (composition
+   feel, overlap artifacts), and when needed they are cropped to the
+   region in question, never full-frame dumps.
+5. **Render MP4 only after explicit approval** of the previewed result,
+   recorded in VIDEO.md's approval state. "Looks good so far" in chat is
+   not approval.
 
 ## Renderer selection
 
