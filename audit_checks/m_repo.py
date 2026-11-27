@@ -167,8 +167,20 @@ def c15(ctx):
         lp = os.path.join(ctx.live_base, live_rel)
         bp = os.path.join('.', bundle_rel)
         if os.path.exists(lp) and os.path.exists(bp):
-            h1 = hashlib.sha256(open(lp, 'rb').read()).hexdigest()[:16]
-            h2 = hashlib.sha256(open(bp, 'rb').read()).hexdigest()[:16]
+            live_bytes = open(lp, 'rb').read()
+            bundle_bytes = open(bp, 'rb').read()
+            # AGENTS.md installs as managed block + preserved user content by
+            # design (install.ps1 Get-ManagedBlockState). Full-file compare is
+            # a permanent false positive; compare the managed portion only.
+            if live_rel == 'AGENTS.md':
+                mblock = re.search(
+                    rb'<!-- devin-bundle:begin -->(.*?)<!-- devin-bundle:end -->',
+                    live_bytes, re.S)
+                if mblock:
+                    live_bytes = mblock.group(1).strip()
+                    bundle_bytes = bundle_bytes.strip()
+            h1 = hashlib.sha256(live_bytes).hexdigest()[:16]
+            h2 = hashlib.sha256(bundle_bytes).hexdigest()[:16]
             if h1 == h2:
                 print('  OK  ' + bundle_rel + ' (live=bundle)')
             else:
