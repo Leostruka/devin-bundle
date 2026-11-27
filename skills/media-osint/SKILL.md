@@ -63,6 +63,17 @@ Parse-don't-validate: extract source IDs with strict patterns (YouTube
 git repo `github.com/<owner>/<repo>`), dedupe by ID before any download.
 Malformed entries go to `dl_errors.log` with a reason; the loop continues.
 
+**Prior-run dedup (before downloading anything):** scan existing
+`.devin/research/*/cards/<id>.md` for each extracted platform ID. An ID
+that already has a card in any earlier run is reported as
+`skip: <id> -> <path-to-prior-card>` in the final report and excluded
+from download, sheets, ASR, and fanout, unless the user asked for a
+refresh. Dedup keys on the platform ID, never content hash: re-uploads
+and edits change bytes, the ID is stable. The scan is fail-open: if it
+errors, warn and continue (dedup is an optimization, not a gate).
+Evidence: the 2026-11-27 run re-downloaded and re-carded 2 videos already
+mined the day before in `media-osint-20261126-yt2`.
+
 ```bash
 yt-dlp -a links.txt \
   --write-info-json --no-playlist --ignore-errors \
@@ -87,6 +98,17 @@ From each `meta/<id>.info.json`, pull `subtitles`/`automatic_captions`
 entries (prefer manual subs, then auto). Write ONE `captions.md` digest,
 per source: id, lang, and timestamped lines, instead of N separate reads.
 Sources with no captions are marked `captions: none` in the digest.
+
+**Primary-track detection:** the digest quotes the ORIGINAL language
+track, not a translation. `<id>.<lang>-orig.srt` marks the original;
+for non-EN videos the `-orig` file in the video's own language wins
+(`pt-orig` for PT-BR), and the `en-orig` file is then a translation
+artifact, NOT the original. Evidence: in the 2026-11-27 run the PT-BR
+video `5cQUE-9Gtyw` had both `en-orig` and `pt-orig`; `en-orig` opened
+with the English translation while the original speech was Portuguese.
+Cross-check with the info.json `language` field when present, and record
+the chosen track per source in the digest header. Pain vocab is quoted
+in the original language; translations are reference-only.
 
 YouTube rate-limits caption fetches with HTTP 429 after a few downloads
 (observed on both 2026-11-26 runs). The fallback order is: one retry after
@@ -154,6 +176,19 @@ Fan out `researcher` subagents, max 3 concurrent, each with a disjoint
 slice of source IDs. Each card is one file `cards/<id>.md` (~15-25 lines)
 citing the artifacts it actually read (`meta/<id>.info.json`,
 `captions.md#<id>`, `frames/<id>_NN.jpg`, `transcripts/<id>.json`):
+
+**Payload-return contract (hard requirement):** the `researcher` profile
+is READ-ONLY and cannot write `cards/` or `frames/*.notes.md` itself
+(verified 2026-11-27: all 3 fanout researchers hit the write wall and
+reported "WRITE STATUS: BLOCKED"). Therefore the dispatch prompt must
+instruct each researcher to return every card as a verbatim markdown
+payload inside its completion report, plus a compact per-sheet visual
+digest. The controller then writes the payload files verbatim (normalizing
+only characters the write gates reject, and recording any normalization
+in `verify.md`). A run whose researchers were told to write files
+themselves has silently lost cards before; never trust fanout self-report,
+check `cards/` exists per ID (Rule 12). The same contract applies to
+`frames/<id>.notes.md`: researchers return the digest, controller persists.
 
 ```markdown
 # Card: <id> - <title>
