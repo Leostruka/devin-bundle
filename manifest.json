@@ -47,7 +47,7 @@
       "name": "agent-eval",
       "source": "devin-bundle",
       "purpose": "Use when measuring whether a skill, rule, or tool actually improves agent output - run a fixed held-out prompt set through N configurations, have a judge subagent score the builds, and log every result (including regressions) to an append-only eval ledger. The bundle's held-out validation concept applied to agent work quality, adapted from Astryx-style nightly agent builds.",
-      "export_hash": "5d2da9e2c21dbcabb3d00bbe867693e94d39bc83b6f692bb4c79dcf2fddff51b"
+      "export_hash": "f8f1c22efd1edff2660468ef6d88f5e9c41e2f987466df78cd9c73ecb5ba6fff"
     },
     {
       "name": "agent-reach",
@@ -72,7 +72,7 @@
       "name": "ai-tools",
       "source": "devin-bundle",
       "purpose": "Use when running local, offline-first ML tooling (mechanistic interpretability PoCs like refusal-direction ablation on local safetensors or the HF cache), when adding self-contained model experiments that print JSON, or when post-training, distilling (s1K/R1-style), or RLVR/GRPO-tuning a reasoning or domain model.",
-      "export_hash": "C8BE898E90A1EBA3A23BA0E2E542C896207C44D25B7D4675AD0C1FD22E7B6DD0",
+      "export_hash": "9417c6ee5f4caa5e4943ece0eb5594ba5de1cd35e5e4d3ac140f7b080c02bfdc",
       "exported_at": "2026-11-13T07:08:14.733703"
     },
     {
@@ -299,7 +299,7 @@
       "source": "created:v3.x media-osint-20261126-yt2 tstack-council adapted",
       "purpose": "Use when a high-stakes change needs independent multi-model review before merge - several strong reviewers in parallel, iterating rounds until they are satisfied, with scores and costs ledgered. Distinct from arena (competing builders); council reviews one finished change.",
       "original_path": "%APPDATA%\\devin\\skills\\council",
-      "export_hash": "63d673ed365a9d59dc6a7fc7c75977e92fc63181175e782c5a687ed190ca289c",
+      "export_hash": "5ae3f39be17babb5464b2b35360d37e77372c00c52c5075b38bea8c59f453a49",
       "exported_at": "2026-11-26T10:34:58.336989+00:00"
     },
     {
@@ -668,7 +668,7 @@
       "source": "vendored:sybil-solutions/inference-optimisation-skill (MIT), adapted",
       "purpose": "Use when optimizing, tuning, benchmarking, or hill-climbing a local LLM server (vLLM, SGLang, llama.cpp, ExLlama/TabbyAPI, MLX, TensorRT-LLM) on any hardware or quantization - decode/prefill tok/s, speculative decoding, KV cache, TTFT, startup time, under a memory cap with full-context stability. Computes the theoretical ceiling first, runs noise-controlled A/B experiments, keeps a failure-inclusive ledger, and qualifies the winner before publishing.",
       "original_path": "%APPDATA%\\devin\\skills\\inference-optimisation",
-      "export_hash": "ab72f1a1d3f107250932ce74b835f567b0dc0f1dbb462428ede892facffeea10",
+      "export_hash": "d1870465295eef1e4fbc1a6c17028d6d0917cf15f972f14a4ff6b7244175852f",
       "exported_at": "2026-11-26T10:49:46.330675+00:00"
     },
     {
@@ -783,7 +783,7 @@
       "name": "media-osint",
       "source": "devin-bundle",
       "purpose": "Use when running OSINT or multimodal evidence extraction over media sources - YouTube videos, Instagram/TikTok reels, podcasts, or mixed URL lists - needing a captions digest, ffmpeg contact sheets, local ASR transcripts, per-source evidence cards, and a final verification table; also for deep media research feeding idea refinement, competitor teardown, or devin-bundle analysis.",
-      "export_hash": "af26b3a973407e65afd17e08b2feb3ae0793caebc9dc53ac03f0e099457ec9b4"
+      "export_hash": "4b7cdbdd31f7ad7fba08a690aa7348d8ea3d9fcefd25a3db148629ccf1718bf5"
     },
     {
       "name": "media-tools",
@@ -796,14 +796,14 @@
       "source": "devin-bundle",
       "purpose": "Use when deciding whether to use cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or bloated, when preferences leak across unrelated tasks, or when choosing between stateless and memory-equipped operation. Covers memory accumulation, temporal contamination, reasoning drift, and user-authored vs auto-saved preferences.",
       "original_path": "%APPDATA%\\devin\\skills\\memory-hygiene",
-      "export_hash": "3f3fafa52e951865b9e51a4200b15b750cd5c8e94b4d296e481d43d63a109cb5",
+      "export_hash": "2751523428958bec6b7b436e1ea7b51c71a6457dffc4daa82144ae17866a2463",
       "exported_at": "2026-11-02T20:52:47.097911"
     },
     {
       "name": "memory-management",
       "source": "devin-bundle",
       "purpose": "Use when deciding whether to persist knowledge in cross-session agent memory (MEMORY.md, auto-memory), when auto-memory seems stale or preferences leak across tasks, or capturing session outputs worth remembering (answered questions, business rules, conventions, failed approaches). Scope - memory hygiene only - improving skills/rules/hooks belongs to `self-improvement`.",
-      "export_hash": "915525008a17d3c4b137419c300497652498318a354d0061803cc95ce3ce7c36"
+      "export_hash": "4d48f3e8b4a6f526f5d7793306ac19c7ce342b3c7968b114f2dbb0296a98e62f"
     },
     {
       "name": "mesh-utils",
@@ -1598,7 +1598,7 @@
     {
       "name": "install-ledger.py",
       "purpose": "Install drift ledger - record-all/record snapshots after install, reconcile reports Current/Outdated/Modified/Removed/Foreign (M2_06)",
-      "export_hash": "78a92acec72e19ecc523ca9ad754a30a347d19a9711942aa318d2c6ba67fb992",
+      "export_hash": "b3e5945ca53fb505063d90ab79e2583a48bbdf1b51bb563ff05cac18e4e133ed",
       "exported_at": "2026-11-17"
     },
     {

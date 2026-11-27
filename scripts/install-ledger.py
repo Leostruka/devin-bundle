@@ -218,6 +218,28 @@ def cmd_record(args):
     return 0
 
 
+def _agents_compare_hash(path):
+    """Hash only the devin-bundle managed block of an installed AGENTS.md.
+
+    install.ps1 merges bundle rules into live AGENTS.md as a managed block
+    plus preserved user content, so full-file hashes can never match the
+    bundle source (same false-positive family fixed in audit_checks/m_repo
+    on 2026-11-27). Returns None when no managed block markers exist.
+    """
+    import re as _re
+    try:
+        with open(path, "rb") as fh:
+            raw = fh.read()
+    except OSError:
+        return None
+    m = _re.search(
+        rb"<!-- devin-bundle:begin -->(.*?)<!-- devin-bundle:end -->",
+        raw, _re.S)
+    if not m:
+        return None
+    return hashlib.sha256(m.group(1).strip()).hexdigest()
+
+
 def reconcile():
     """Return {state: [rels]} across the five states."""
     root, live = _root(), _live()
@@ -235,6 +257,19 @@ def reconcile():
             continue
         live_hash = _sha256(dst)
         bundle_hash = _bundle_hash(root, rel)
+        if rel == "AGENTS.md" and bundle_hash is not None:
+            # managed-block merge: compare the block against stripped source
+            block_hash = _agents_compare_hash(dst)
+            if block_hash is not None:
+                src = os.path.join(root, rel)
+                try:
+                    with open(src, "rb") as fh:
+                        src_stripped = fh.read().strip()
+                except OSError:
+                    src_stripped = b""
+                if block_hash == hashlib.sha256(src_stripped).hexdigest():
+                    out["Current"].append(rel)
+                    continue
         if rec is None:
             if bundle_hash is not None and live_hash == bundle_hash:
                 out["Current"].append(rel)
