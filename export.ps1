@@ -742,6 +742,19 @@ Masked: $(-not $NoMask)
 if ($DryRun) {
   Write-Host "`nDry-run complete. Re-run without -DryRun to apply." -ForegroundColor Yellow
 } else {
+  # Regression guard (2026-11-27 incident): export copies live->repo, so when
+  # live lags behind repo HEAD it silently reverts committed improvements in
+  # the working tree. Surface any tracked file that now differs from HEAD.
+  if (-not $DryRun) {
+    $regressed = git status --porcelain 2>$null | Where-Object { $_ -match '^\s*M |^M ' }
+    if ($regressed) {
+      Write-Warn "tracked files differ from git HEAD after export:"
+      $regressed | Select-Object -First 10 | ForEach-Object { Write-Host "      $_" -ForegroundColor Yellow }
+      Write-Host "      If live was stale, export just regressed committed work: review with 'git diff'," -ForegroundColor Yellow
+      Write-Host "      restore with 'git checkout -- <path>', then sync live before exporting." -ForegroundColor Yellow
+    }
+  }
+
   Write-Host "`nExport complete." -ForegroundColor Green
   if (-not $Commit -and -not $Push) {
     Write-Host "  Tip: run with -Commit -Push to commit and push in one step." -ForegroundColor DarkGray
