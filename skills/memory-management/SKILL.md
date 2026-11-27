@@ -31,6 +31,11 @@ not auto-saved memory.
 Anti-patterns: append-only MEMORY.md; auto-saving every preference; "delete
 all memory" (managed memory helps); opaque memory.
 
+Security threat model lives in `memory-hygiene` (single source): stored
+injection, plaintext secrets, generated-persona drift, cache stability,
+trust-model provenance. Run its adoption checklist before enabling any
+automatic capture/injection this skill describes.
+
 ## Capturing project memory
 
 When the session produces knowledge worth keeping — answered questions,

@@ -64,6 +64,32 @@ procfs), and anywhere memory-safety guarantees matter.
   `pyo3` dep with `abi3-py39,extension-module`. The workspace glob
   (`members = ["crates/*"]`) picks it up — no registry edits.
 
+## Review gate for crate PRs (checklist)
+
+Derived from the rust-anything gate pattern (evidence
+`.devin/research/media-osint-20261127/cards/nRlqH4izAU8.md`: record real
+behavior, replay, diff, gate; 91.9% byte-identical over 17k recorded cases
+in the source project). Every PR touching `crates/` fills this checklist
+in the PR body or review thread; a crate PR without it does not merge:
+
+1. `cargo fmt --check` clean.
+2. `cargo clippy -- -D warnings` clean (warnings as errors, not noise).
+3. Zero `unwrap()`/`panic!` outside tests; grep the diff, justify any
+   exception inline.
+4. `unsafe` audit: every `unsafe` block carries a justification comment;
+   report the count even when zero.
+5. Size cap: compiled artifact within 3x of the baseline it replaces, or
+   the PR argues why the growth buys measured performance.
+6. Behavior match: replay recorded real inputs through the Rust kernel
+   and diff outputs against the Python/JS reference. Byte-identical is
+   the target where semantics allow; semantic divergences (example from
+   evidence: UTF-16 `indexOf` counts emoji as two units in JS) must be
+   enumerated, not discovered by users.
+7. FFI cost: bridge crossings can regress tiny hot functions (observed in
+   source evidence). Any kernel under ~1 ms of work per call needs a
+   before/after bench in the PR; if the crossing costs more than the
+   kernel saves, stay in Python.
+
 ## Consequences
 
 - Users without cargo get a warning and keep all Python functionality.

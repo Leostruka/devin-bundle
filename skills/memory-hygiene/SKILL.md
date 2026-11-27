@@ -49,6 +49,38 @@ Cross-session agent memory is a **contract with the user**, not a black box. Nai
 - **"Delete all memory."** The opposite extreme. Managed memory helps (+10% vs naive, arXiv:2505.16067; MemGPT, arXiv:2310.08560). The problem is naive accumulation, not memory itself.
 - **Opaque memory.** Auto-memory the user cannot inspect or edit violates the contract.
 
+## Threat model (security review of any memory feature)
+
+Before adopting or extending ANY automatic memory capture/injection,
+answer these in writing (evidence: TencentDB-Agent-Memory audit,
+`.devin/research/media-osint-20261127/cards/W3yHP9_jYNk.md`):
+
+1. **Stored injection.** Memory written in session N is content in session
+   N+1. Anything memory has ever ingested becomes a deferred prompt-
+   injection channel (live example: TencentDB-Agent-Memory issue #2005,
+   open). What sanitizes untrusted content BEFORE it enters memory?
+2. **Plaintext secrets.** Memory stores are plaintext unless proven
+   otherwise (issue #2057: user keys stored in plaintext). Rule: secrets
+   never enter memory content; if a user pastes one, warn and ask for
+   rotation, do not store.
+3. **Generated persona = drift.** Auto-generated persona/memory layers
+   (Tencent L3 persona) are exactly the contamination vector the academic
+   section documents. A persona the user never authored is inference
+   trusted as fact.
+4. **Cache stability.** Memory injected into the system-prompt prefix
+   breaks prefix caching: every injection change re-prices the whole
+   conversation (measured in Tencent issue #120, fixed by partitioning).
+   Rule: memory injection NEVER goes into the cache-stable prefix; it
+   belongs in late, per-turn positions or on-demand retrieval.
+5. **Trust-model contradiction.** If memory can be written by the agent
+   but is read as user ground truth, the trust model is contradictory
+   (issue #2043). Writes and reads must carry provenance: who wrote this,
+   when, from what evidence.
+
+Adoption checklist: no automatic capture without selective deletion;
+no injection into stable prefixes; no opaque memory; no secrets in
+memory; provenance on every entry. One "cannot answer" = do not adopt.
+
 ## Academic basis
 
 - **Memory accumulation degrades reliability.** Shao et al. 2026, "When Stored Evidence Stops Being Usable" (arXiv:2605.07313): HippoRAG loses 16-20 percentage points in budget-compliant reliability as irrelevant sessions accumulate, even with task evidence held fixed.
