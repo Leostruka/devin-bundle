@@ -76,7 +76,11 @@ asks. A normal change gets `code-review`, not a council.
   with itself. Unbounded iteration is a cost failure mode (source
   evidence: ~956M tokens for one UI campaign).
 - Log rounds in `.devin/ledgers/council-<change>.md`: round, delegate,
-  provider/model, score, findings count, cost, verdict.
+  provider/model, score, findings count, cost, verdict. Close each round
+  with a spread line: score variance across blocking delegates and the
+  findings they disagreed on. A wide spread is rubric or diff ambiguity,
+  not a pass/fail signal; treat it as a finding itself. Never average
+  away disagreement into a single mean score.
 
 ## Output
 

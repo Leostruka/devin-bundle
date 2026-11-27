@@ -39,9 +39,19 @@ Benches live under `.devin/evals/<bench>/` (gitignored, local-only):
 3. Judge: dispatch a `reviewer` (never the builder, never the prompt
    author inline) with the rubric + the produced artifact + the prompt.
    The judge does not see which configuration produced which build
-   (shuffle labels, strip mentions).
+   (shuffle labels, strip mentions). The judge also does not see the
+   pass bar or which outcome the operator wants: strip the pass-bar
+   line from the judge-facing rubric copy and apply the bar yourself
+   when reading scores. A judge that knows the target rationalizes
+   toward it (target leakage; evidence
+   `.devin/research/media-osint-20261127/cards/xq0eB8vxeqk.md`).
 4. Score and log: append `{"ts", "bench", "prompt_id", "config",
    "score", "criteria": {...}, "artifact", "judge", "build_sha"}` per run.
+   When a comparison is close (delta inside one rubric step) or
+   high-stakes, repeat the judge pass and record the per-criterion
+   variance across passes in the ledger line. High variance means the
+   rubric is ambiguous, not that one config won; tighten the rubric
+   before declaring anything.
 5. Report the FULL record: mean per config, per-prompt deltas, worst
    regression. Publishing only good nights is fabrication (the Astryx
    team published a 77-score bad night for a reason).
