@@ -93,7 +93,16 @@ target is above the ceiling, say so early, with the arithmetic.
    output.
 9. **Log everything in `PLAN.md`, including failures and why.** Negative
    results are the most reusable output.
-10. **Secrets:** never print them, never copy them or their paths into
+10. **Publish with a preflight disclosure table.** Any config or claim
+    shared as "runs locally/offline" carries: weights size per
+    quantization, runtime memory overhead and recommended RAM/VRAM,
+    backend, one-time download size, cache growth, network exceptions,
+    and measured speed with method (or UNMEASURED in caps). A published
+    winner without the table fails review; users must never install
+    gigabytes blind (evidence: Antigravity offline SDK needed 16.8GB
+    download + 24GB memory behind one word, "offline";
+    `.devin/research/media-osint-20261127/cards/Irlkli0vKhY.md`).
+11. **Secrets:** never print them, never copy them or their paths into
     anything published.
 
 ## 3. The loop

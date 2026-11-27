@@ -22,6 +22,17 @@ Covers two surfaces:
 - `--self-test` runs fully offline asserts; exit 1 on failure.
 - No network: real inputs come from explicit file paths or the local HF cache only.
 - Deps pinned in `requirements.txt`, installed on demand.
+- **Offline/local claims carry a preflight disclosure table.** Any
+  statement that a model or tool "runs locally/offline" is incomplete
+  without: weights size per quantization (4-bit/8-bit), runtime memory
+  overhead and recommended RAM/VRAM, backend (LiteRT/Ollama/CUDA/Metal/
+  CPU), one-time download size, cache growth behavior, network exceptions
+  (what still needs connectivity), and measured speed with method. If
+  speed was never measured, the table says UNMEASURED loudly. A claim
+  without the table fails review (evidence: Antigravity offline-SDK
+  analysis, `.devin/research/media-osint-20261127/cards/Irlkli0vKhY.md` -
+  16.8GB download and 24GB recommendation hidden behind the word
+  "offline").
 
 ### Current tools
 
