@@ -7,7 +7,7 @@ dependencies = [
   "librosa>=0.10.2",
   "numpy>=2.4.6",
   "scipy>=1.11",
-  "soundfile>=0.12",
+  "soundfile>=0.14.0",
 ]
 
 [tool.uv]
